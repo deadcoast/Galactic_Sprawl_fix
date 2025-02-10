@@ -227,6 +227,7 @@ export function MineralProcessingCentre({ tier, onNodeSelect }: MineralProcessin
             onSelectNode={setSelectedNode}
             techBonuses={techBonuses}
             ships={[]}
+            quality={quality}
           >
             <ResourceTransfer transfers={mockTransfers} />
           </MiningMap>
