@@ -1,4 +1,3 @@
-import React from 'react';
 import { Shield, Sword, AlertTriangle, Rocket } from 'lucide-react';
 import { useFleetAI } from '../../hooks/useFleetAI';
 import { useAdaptiveAI } from '../../hooks/useAdaptiveAI';

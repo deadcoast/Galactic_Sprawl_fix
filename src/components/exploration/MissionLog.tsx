@@ -49,9 +49,15 @@ export function MissionLog({ onClose }: MissionLogProps) {
     if (searchQuery && !entry.description.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
-    if (filter === 'discoveries' && entry.type !== 'discovery') return false;
-    if (filter === 'anomalies' && entry.type !== 'anomaly') return false;
-    if (filter === 'completions' && entry.type !== 'completion') return false;
+    if (filter === 'discoveries' && entry.type !== 'discovery') {
+      return false;
+    }
+    if (filter === 'anomalies' && entry.type !== 'anomaly') {
+      return false;
+    }
+    if (filter === 'completions' && entry.type !== 'completion') {
+      return false;
+    }
     return true;
   });
 

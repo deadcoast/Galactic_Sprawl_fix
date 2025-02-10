@@ -1,4 +1,3 @@
-import React from 'react';
 import { Package, ArrowRight, Database } from 'lucide-react';
 
 interface Salvage {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { X, AlertTriangle, Rocket, Map, ChevronRight } from 'lucide-react';
 
 interface Sector {

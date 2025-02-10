@@ -1,4 +1,3 @@
-import React from 'react';
 import { Rocket, ChevronRight } from 'lucide-react';
 
 interface ReconShip {

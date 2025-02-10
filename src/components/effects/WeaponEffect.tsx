@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface WeaponEffectProps {
   type: 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets';
   color: string;

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Sword, Shield, AlertTriangle, Rocket } from 'lucide-react';
 
 interface SpaceRatShipProps {

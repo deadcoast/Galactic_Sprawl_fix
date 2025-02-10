@@ -1,4 +1,3 @@
-import React from 'react';
 import { Crown, Flag, ChevronRight, AlertTriangle, Handshake, Swords, Scale } from 'lucide-react';
 
 interface DiplomacyAction {

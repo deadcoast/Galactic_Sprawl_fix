@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface SmokeTrailProps {
   position: { x: number; y: number };
   direction: number;

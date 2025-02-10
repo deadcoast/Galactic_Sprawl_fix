@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertTriangle, Shield, Sword, Zap } from 'lucide-react';
 
 interface AIBehavior {

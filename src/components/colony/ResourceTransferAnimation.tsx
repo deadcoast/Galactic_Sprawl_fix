@@ -1,4 +1,3 @@
-import React from 'react';
 import { ArrowRight, Package } from 'lucide-react';
 
 interface CargoShipProps {

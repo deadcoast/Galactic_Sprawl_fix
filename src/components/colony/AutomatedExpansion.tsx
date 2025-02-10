@@ -1,4 +1,3 @@
-import React from 'react';
 import { Rocket, Users, ArrowRight, Settings, AlertTriangle } from 'lucide-react';
 
 interface ExpansionData {

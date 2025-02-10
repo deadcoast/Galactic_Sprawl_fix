@@ -1,4 +1,3 @@
-import React from 'react';
 import { Brain, AlertTriangle, Target, Route } from 'lucide-react';
 
 interface DebugState {

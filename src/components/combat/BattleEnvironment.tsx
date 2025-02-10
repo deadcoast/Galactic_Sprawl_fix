@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertTriangle, Zap, Shield } from 'lucide-react';
 
 interface Hazard {
