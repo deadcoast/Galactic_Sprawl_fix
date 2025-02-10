@@ -1,0 +1,70 @@
+/* Population Growth Animations */
+@keyframes wave {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Module Upgrade Animations */
+@keyframes expand {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes energyField {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+/* Quality-based Effects */
+.vpr-quality-high {
+  --particle-count: 16;
+  --glow-intensity: 12px;
+  --animation-smoothness: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vpr-quality-medium {
+  --particle-count: 8;
+  --glow-intensity: 8px;
+  --animation-smoothness: ease;
+}
+
+.vpr-quality-low {
+  --particle-count: 4;
+  --glow-intensity: 4px;
+  --animation-smoothness: linear;
+}
