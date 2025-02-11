@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { Database, Pickaxe, Truck, Settings, X, ChevronRight, AlertTriangle, Grid2X2, Map } from 'lucide-react';
-import { ResourceNode } from './ResourceNode';
+import { useState } from 'react';
+import { Database, Pickaxe, Truck, Settings, X, ChevronRight, AlertTriangle, Grid2X2, Map, ArrowUp, ArrowDown, HelpCircle } from 'lucide-react';import { ResourceNode } from './ResourceNode';
 import { MiningControls } from './MiningControls';
 import { MiningTutorial } from './MiningTutorial';
 import { TechBonus } from './TechBonus';
@@ -212,7 +211,7 @@ export function MiningWindow() {
               onClick={() => setShowTutorial(true)}
               className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
             >
-              <QuestionMarkCircle className="w-5 h-5 text-gray-400" />
+              <HelpCircle className="w-5 h-5 text-gray-400" />
             </button>
             <button
               onClick={() => setShowSettings(true)}

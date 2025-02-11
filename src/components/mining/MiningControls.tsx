@@ -1,4 +1,3 @@
-import React from 'react';
 import { Settings, AlertTriangle, Truck, ArrowRight } from 'lucide-react';
 
 interface Resource {
