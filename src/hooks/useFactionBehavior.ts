@@ -59,15 +59,18 @@ interface FactionManager {
 
 declare const factionManager: FactionManager;
 
+interface TerritorialControl {
+  center: { x: number; y: number };
+  radius: number;
+  controlPoints: { x: number; y: number }[];
+  facing: number;
+}
+
 interface FactionBehavior {
   aggressionLevel: number;
   expansionPriority: number;
   tradingPreference: number;
-  territorialControl: {
-    center: { x: number; y: number };
-    radius: number;
-    controlPoints: { x: number; y: number }[];
-  };
+  territorialControl: TerritorialControl;
   activeFleets: number;
   maxFleets: number;
   fleetStrength: number;
@@ -87,7 +90,8 @@ export function useFactionBehavior(factionId: string) {
     territorialControl: {
       center: { x: 0, y: 0 },
       radius: 100,
-      controlPoints: []
+      controlPoints: [],
+      facing: 0
     },
     activeFleets: 0,
     maxFleets: 10,

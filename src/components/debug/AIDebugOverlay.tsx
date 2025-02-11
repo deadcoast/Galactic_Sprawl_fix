@@ -22,7 +22,9 @@ interface AIDebugOverlayProps {
 }
 
 export function AIDebugOverlay({ debugStates, visible, onToggleVisibility }: AIDebugOverlayProps) {
-  if (!visible) return null;
+  if (!visible) {
+    return null;
+  }
 
   return (
     <div className="fixed top-4 right-4 w-96 bg-gray-900/95 backdrop-blur-sm rounded-lg border border-gray-700 shadow-xl">

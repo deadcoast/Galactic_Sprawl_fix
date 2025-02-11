@@ -1,24 +1,51 @@
 import { factionManager } from './factionManager';
 
-interface CombatUnit {
+export interface Fleet {
+  units: CombatUnit[];
+}
+
+export interface CombatManager {
+  getFleetStatus: (fleetId: string) => Fleet | undefined;
+  getUnitsInRange: (position: { x: number; y: number }, range: number) => CombatUnit[];
+  getThreatsInRange: (position: { x: number; y: number }, range: number) => Threat[];
+  moveUnit: (unitId: string, position: { x: number; y: number }) => void;
+  removeUnit: (unitId: string) => void;
+}
+
+export interface Threat {
   id: string;
-  type: string;
-  faction: string;
   position: { x: number; y: number };
+  severity: 'low' | 'medium' | 'high';
+  type: string;
+}
+
+export interface CombatUnit {
+  id: string;
+  faction: string;
+  type: 'spitflare' | 'starSchooner' | 'orionFrigate' | 'harbringerGalleon' | 'midwayCarrier' | 'motherEarthRevenge';
+  tier: 1 | 2 | 3;
+  position: { x: number; y: number };
+  status: 'idle' | 'patrolling' | 'engaging' | 'returning' | 'damaged' | 'retreating' | 'disabled';
   health: number;
   maxHealth: number;
   shield: number;
   maxShield: number;
+  target?: string;
   weapons: {
     id: string;
-    type: string;
-    damage: number;
+    type: 'machineGun' | 'gaussCannon' | 'railGun' | 'mgss' | 'rockets';
     range: number;
+    damage: number;
     cooldown: number;
-    lastFired: number;
+    status: 'ready' | 'charging' | 'cooling';
+    lastFired?: number;
   }[];
-  status: 'idle' | 'engaging' | 'retreating' | 'disabled';
-  target?: string;
+  specialAbilities?: {
+    name: string;
+    description: string;
+    cooldown: number;
+    active: boolean;
+  }[];
 }
 
 interface CombatZone {
@@ -29,10 +56,11 @@ interface CombatZone {
   threatLevel: number;
 }
 
-class CombatManager {
+class CombatManagerImpl implements CombatManager {
   private combatZones: Map<string, CombatZone> = new Map();
   private units: Map<string, CombatUnit> = new Map();
   private autoDispatchEnabled: boolean = true;
+  private threats: Map<string, Threat> = new Map();
 
   // Combat Thresholds
   private readonly ENGAGEMENT_RANGE = 500;  // Units within this range will engage
@@ -245,14 +273,23 @@ class CombatManager {
     // Check if weapons are in range and ready
     unit.weapons.forEach(weapon => {
       const distance = this.getDistance(unit.position, target.position);
-      if (distance <= weapon.range && this.canFire(weapon)) {
+      if (distance <= weapon.range && this.canFireWeapon(weapon)) {
         this.fireWeapon(unit, target, weapon);
       }
     });
   }
 
-  private canFire(weapon: CombatUnit['weapons'][0]): boolean {
-    return Date.now() - weapon.lastFired >= weapon.cooldown;
+  private canFireWeapon(weapon: CombatUnit['weapons'][0]): boolean {
+    const now = Date.now();
+    return weapon.status === 'ready' && 
+           (!weapon.lastFired || now - weapon.lastFired >= weapon.cooldown * 1000);
+  }
+
+  private updateWeaponStatus(weapon: CombatUnit['weapons'][0]): void {
+    if (this.canFireWeapon(weapon)) {
+      weapon.status = 'charging';
+      weapon.lastFired = Date.now();
+    }
   }
 
   private fireWeapon(unit: CombatUnit, target: CombatUnit, weapon: CombatUnit['weapons'][0]) {
@@ -322,6 +359,34 @@ class CombatManager {
   public getUnitStatus(unitId: string) {
     return this.units.get(unitId);
   }
+
+  getFleetStatus(fleetId: string) {
+    const fleetUnits = Array.from(this.units.values()).filter(unit => unit.faction === fleetId);
+    return fleetUnits.length > 0 ? { units: fleetUnits } : undefined;
+  }
+
+  getUnitsInRange(position: { x: number; y: number }, range: number): CombatUnit[] {
+    return Array.from(this.units.values()).filter(unit => {
+      const dx = unit.position.x - position.x;
+      const dy = unit.position.y - position.y;
+      return Math.sqrt(dx * dx + dy * dy) <= range;
+    });
+  }
+
+  getThreatsInRange(position: { x: number; y: number }, range: number): Threat[] {
+    return Array.from(this.threats.values()).filter(threat => {
+      const dx = threat.position.x - position.x;
+      const dy = threat.position.y - position.y;
+      return Math.sqrt(dx * dx + dy * dy) <= range;
+    });
+  }
+
+  moveUnit(unitId: string, position: { x: number; y: number }): void {
+    const unit = this.units.get(unitId);
+    if (unit) {
+      unit.position = position;
+    }
+  }
 }
 
-export const combatManager = new CombatManager();
+export const combatManager = new CombatManagerImpl();
