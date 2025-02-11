@@ -38,9 +38,10 @@ interface MiningMapProps {
   };
   ships: MiningShip[];
   children?: React.ReactNode;
+  quality: 'low' | 'medium' | 'high';
 }
 
-export function MiningMap({ resources, selectedNode, onSelectNode, techBonuses, ships, children }: MiningMapProps) {
+export function MiningMap({ resources, selectedNode, onSelectNode, techBonuses, ships, children, quality }: MiningMapProps) {
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const isDragging = useRef(false);
