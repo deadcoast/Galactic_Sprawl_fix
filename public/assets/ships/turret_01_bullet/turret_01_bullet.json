@@ -1,0 +1,39 @@
+{
+  "frames": {
+    "turret_01_bullet_01": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 8,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 8,
+        "h": 8
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
+    "image": "turret_01_bullet.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 12,
+      "h": 12
+    },
+    "scale": 1
+  }
+}

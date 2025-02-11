@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Database, Settings, AlertTriangle, Truck, Grid2X2, Map, ChevronRight } from 'lucide-react';
+import { Database, AlertTriangle, Truck, Grid2X2, Map } from 'lucide-react';
 import { useScalingSystem } from '../../hooks/useScalingSystem';
-import { ResourceNode } from './ResourceNode';
 import { MiningControls } from './MiningControls';
 import { ResourceStorage } from './ResourceStorage';
-import { ResourceTransfer } from './ResourceTransfer';
 import { MiningMap } from './MiningMap';
+import { ThresholdManager } from './ThresholdManager';
+import { AutomationMonitor } from './AutomationMonitor';
+import { ResourceTransferManager } from './ResourceTransferManager';
+import { ThresholdProvider, useThreshold } from '../../contexts/ThresholdContext';
 
 interface Resource {
   id: string;
@@ -24,15 +26,21 @@ interface Resource {
 
 interface MineralProcessingCentreProps {
   tier: 1 | 2 | 3;
-  onNodeSelect?: (nodeId: string) => void;
 }
 
-export function MineralProcessingCentre({ tier, onNodeSelect }: MineralProcessingCentreProps) {
+function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) {
   const [selectedNode, setSelectedNode] = useState<Resource | null>(null);
   const [filter, setFilter] = useState<'all' | 'mineral' | 'gas' | 'exotic'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [view, setView] = useState<'map' | 'grid'>('map');
   const [mineAll, setMineAll] = useState(false);
+  const [techBonuses, setTechBonuses] = useState({
+    extractionRate: 1,
+    storageCapacity: 1,
+    efficiency: 1
+  });
+
+  const { state, dispatch } = useThreshold();
 
   const scaling = useScalingSystem();
   const quality = scaling.performance.fps > 45 ? 'high' : 
@@ -75,6 +83,34 @@ export function MineralProcessingCentre({ tier, onNodeSelect }: MineralProcessin
     }
   ];
 
+  // Initialize resources in threshold state
+  useEffect(() => {
+    mockResources.forEach(resource => {
+      if (!state.resources[resource.id]) {
+        dispatch({
+          type: 'ADD_RESOURCE',
+          payload: {
+            id: resource.id,
+            name: resource.name,
+            type: resource.type,
+            currentAmount: 0,
+            maxCapacity: resource.thresholds.max,
+            thresholds: resource.thresholds,
+            autoMine: false
+          }
+        });
+      }
+    });
+  }, []);
+
+  // Handle mine all toggle
+  useEffect(() => {
+    dispatch({
+      type: 'SET_GLOBAL_AUTO_MINE',
+      payload: mineAll
+    });
+  }, [mineAll]);
+
   // Mock storage data
   const mockStorageData = [
     {
@@ -97,26 +133,6 @@ export function MineralProcessingCentre({ tier, onNodeSelect }: MineralProcessin
     }
   ];
 
-  // Mock transfer animations
-  const mockTransfers = [
-    {
-      id: 'transfer-1',
-      sourceId: 'iron-belt-1',
-      targetId: 'iron-storage',
-      resourceType: 'Iron',
-      amount: 50,
-      progress: 0.3
-    },
-    {
-      id: 'transfer-2',
-      sourceId: 'helium-cloud-1',
-      targetId: 'helium-storage',
-      resourceType: 'Helium-3',
-      amount: 25,
-      progress: 0.7
-    }
-  ];
-
   const filteredResources = mockResources.filter(resource => {
     if (searchQuery && !resource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
@@ -127,12 +143,15 @@ export function MineralProcessingCentre({ tier, onNodeSelect }: MineralProcessin
     return true;
   });
 
-  // Tech bonuses (in a real app, these would come from the tech tree state)
-  const techBonuses = {
-    extractionRate: 1.2, // 20% bonus from tech
-    storageCapacity: 1.5, // 50% bonus from tech
-    efficiency: 1.1 // 10% bonus from tech
-  };
+  // Implement useEffect for tier-based tech bonuses
+  useEffect(() => {
+    const tierBonuses = {
+      1: { extractionRate: 1, storageCapacity: 1, efficiency: 1 },
+      2: { extractionRate: 1.5, storageCapacity: 1.5, efficiency: 1.25 },
+      3: { extractionRate: 2, storageCapacity: 2, efficiency: 1.5 }
+    };
+    setTechBonuses(tierBonuses[tier]);
+  }, [tier]);
 
   return (
     <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">
@@ -190,9 +209,6 @@ export function MineralProcessingCentre({ tier, onNodeSelect }: MineralProcessin
               <Truck className="w-4 h-4" />
               <span>Mine All</span>
             </button>
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
-              <Settings className="w-5 h-5 text-gray-400" />
-            </button>
           </div>
         </div>
 
@@ -220,65 +236,68 @@ export function MineralProcessingCentre({ tier, onNodeSelect }: MineralProcessin
         </div>
 
         {/* Resource View (Map or Grid) */}
-        {view === 'map' ? (
-          <MiningMap
-            resources={filteredResources}
-            selectedNode={selectedNode}
-            onSelectNode={setSelectedNode}
-            techBonuses={techBonuses}
-            ships={[]}
-            quality={quality}
-          >
-            <ResourceTransfer transfers={mockTransfers} />
-          </MiningMap>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1">
-            {filteredResources.map(resource => (
-              <ResourceNode
-                key={resource.id}
-                resource={resource}
-                isSelected={selectedNode?.id === resource.id}
-                techBonuses={techBonuses}
-                onClick={() => {
-                  setSelectedNode(resource);
-                  onNodeSelect?.(resource.id);
-                }}
-              />
-            ))}
-          </div>
-        )}
+        <div className="relative flex-1">
+          {view === 'map' ? (
+            <MiningMap
+              resources={filteredResources}
+              selectedNode={selectedNode}
+              onSelectNode={setSelectedNode}
+              techBonuses={techBonuses}
+              ships={[]}
+              quality={quality}
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1">
+              {filteredResources.map(resource => (
+                <ThresholdManager
+                  key={resource.id}
+                  resourceId={resource.id}
+                  resourceName={resource.name}
+                  resourceType={resource.type}
+                  currentAmount={state.resources[resource.id]?.currentAmount || 0}
+                  maxCapacity={resource.thresholds.max}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Resource Transfer Manager */}
+          <ResourceTransferManager storageNodes={mockStorageData} />
+        </div>
       </div>
 
       {/* Right Panel - Controls & Details */}
-      <div className="w-1/3 p-6">
+      <div className="w-1/3 p-6 flex flex-col space-y-6">
         {selectedNode ? (
           <MiningControls
             resource={selectedNode}
+            techBonuses={techBonuses}
+            onExperienceGained={(exp) => {
+              // Handle mining experience gained
+              if (exp.unlockedTech.length > 0) {
+                // TODO: Unlock tech tree nodes
+              }
+            }}
           />
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-400 text-center">
+          <div className="h-48 flex items-center justify-center text-gray-400 text-center">
             <div>
               <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>Select a resource node to view details and adjust mining parameters</p>
             </div>
           </div>
         )}
+
+        <AutomationMonitor />
       </div>
-
-      {/* Tier-specific Features */}
-      {tier >= 2 && (
-        <div className="absolute bottom-6 left-6 px-4 py-2 bg-indigo-900/50 border border-indigo-700/30 rounded-lg flex items-center space-x-2">
-          <Database className="w-4 h-4 text-indigo-400" />
-          <span className="text-sm text-indigo-200">Advanced Processing Active</span>
-        </div>
-      )}
-
-      {tier >= 3 && (
-        <div className="absolute bottom-6 right-6 px-4 py-2 bg-green-900/50 border border-green-700/30 rounded-lg flex items-center space-x-2">
-          <Settings className="w-4 h-4 text-green-400" />
-          <span className="text-sm text-green-200">Automated Optimization Enabled</span>
-        </div>
-      )}
     </div>
+  );
+}
+
+export function MineralProcessingCentre(props: MineralProcessingCentreProps) {
+  return (
+    <ThresholdProvider>
+      <MineralProcessingCentreContent {...props} />
+    </ThresholdProvider>
   );
 }

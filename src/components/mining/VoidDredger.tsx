@@ -1,4 +1,3 @@
-import React from 'react';
 import { Database, Truck, AlertTriangle, Zap } from 'lucide-react';
 
 interface VoidDredgerProps {
@@ -39,7 +38,7 @@ export function VoidDredger({
   onSetTarget
 }: VoidDredgerProps) {
   return (
-    <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg p-6">
+    <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg p-6" data-dredger-id={id}>
       {/* Ship Header */}
       <div className="flex items-start justify-between mb-6">
         <div>

@@ -1,0 +1,39 @@
+{
+  "frames": {
+    "32": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 323,
+        "h": 242
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 323,
+        "h": 242
+      },
+      "sourceSize": {
+        "w": 323,
+        "h": 242
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
+    "image": "32.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 327,
+      "h": 246
+    },
+    "scale": 1
+  }
+}

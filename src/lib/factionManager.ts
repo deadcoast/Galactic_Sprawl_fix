@@ -1,4 +1,4 @@
-import { FactionConfig, factionConfigs } from '../config/factions';
+import { factionConfigs } from '../config/factions';
 
 interface FactionState {
   activeShips: number;
@@ -45,7 +45,9 @@ class FactionManager {
   private checkFactionActivation() {
     Object.values(factionConfigs).forEach(config => {
       const state = this.factionStates.get(config.id);
-      if (!state) return;
+      if (!state) {
+        return;
+      }
 
       // Check activation conditions
       const shouldActivate = 
@@ -62,7 +64,9 @@ class FactionManager {
 
   private activateFaction(factionId: string) {
     const state = this.factionStates.get(factionId);
-    if (!state) return;
+    if (!state) {
+      return;
+    }
 
     state.isActive = true;
     state.lastActivity = Date.now();
@@ -78,7 +82,9 @@ class FactionManager {
 
   private deactivateFaction(factionId: string) {
     const state = this.factionStates.get(factionId);
-    if (!state) return;
+    if (!state) {
+      return;
+    }
 
     state.isActive = false;
     state.activeShips = 0;
@@ -92,7 +98,9 @@ class FactionManager {
   public getFactionBehavior(factionId: string) {
     const config = factionConfigs[factionId];
     const state = this.factionStates.get(factionId);
-    if (!config || !state) return null;
+    if (!config || !state) {
+      return null;
+    }
 
     return {
       isHostile: this.isHostileToPlayer(factionId),
@@ -105,9 +113,13 @@ class FactionManager {
   private isHostileToPlayer(factionId: string): boolean {
     const config = factionConfigs[factionId];
     const state = this.factionStates.get(factionId);
-    if (!config || !state) return false;
+    if (!config || !state) {
+      return false;
+    }
 
-    if (config.specialRules.alwaysHostile) return true;
+    if (config.specialRules.alwaysHostile) {
+      return true;
+    }
     if (config.specialRules.requiresProvocation) {
       return state.relationshipWithPlayer < -0.5;
     }
@@ -117,7 +129,9 @@ class FactionManager {
   private willInitiateAttack(factionId: string): boolean {
     const config = factionConfigs[factionId];
     const state = this.factionStates.get(factionId);
-    if (!config || !state) return false;
+    if (!config || !state) {
+      return false;
+    }
 
     const aggressionCheck = Math.random() < config.behavior.baseAggression;
     const strengthCheck = state.fleetStrength > config.behavior.retreatThreshold;
@@ -128,7 +142,9 @@ class FactionManager {
   private calculateExpansionPriority(factionId: string): number {
     const config = factionConfigs[factionId];
     const state = this.factionStates.get(factionId);
-    if (!config || !state) return 0;
+    if (!config || !state) {
+      return 0;
+    }
 
     const territoryFactor = state.activeShips / config.spawnConditions.maxShips;
     const timeFactor = (Date.now() - state.lastActivity) / 60000; // minutes since last activity
@@ -138,20 +154,22 @@ class FactionManager {
 
   public update() {
     this.factionStates.forEach((state, factionId) => {
-      if (!state.isActive) return;
+      if (!state.isActive) {
+        return;
+      }
 
       const config = factionConfigs[factionId];
-      if (!config) return;
+      if (!config) {
+        return;
+      }
 
       // Update fleet strength based on active ships
       state.fleetStrength = state.activeShips / config.spawnConditions.maxShips;
 
       // Check for new ship spawns
-      if (state.activeShips < config.spawnConditions.maxShips) {
-        if (Math.random() < config.spawnConditions.spawnRate) {
-          state.activeShips++;
-          state.lastActivity = Date.now();
-        }
+      if (state.activeShips < config.spawnConditions.maxShips && Math.random() < config.spawnConditions.spawnRate) {
+            state.activeShips++;
+            state.lastActivity = Date.now();
       }
 
       // Update territory

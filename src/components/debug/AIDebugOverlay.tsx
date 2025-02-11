@@ -1,4 +1,4 @@
-import { Brain, AlertTriangle, Target, Route } from 'lucide-react';
+import { Brain, Target } from 'lucide-react';
 
 interface DebugState {
   aiState: {

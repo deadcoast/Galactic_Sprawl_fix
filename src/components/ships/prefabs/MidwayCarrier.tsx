@@ -1,4 +1,3 @@
-import React from 'react';
 import { Crosshair, Shield, Rocket, Zap, AlertTriangle, Users } from 'lucide-react';
 
 interface Fighter {
@@ -65,7 +64,7 @@ export function MidwayCarrier({
       {/* Ship Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h3 className="text-lg font-medium text-white">Midway Carrier</h3>
+          <h3 className="text-lg font-medium text-white">Midway Carrier {id}</h3>
           <div className="text-sm text-gray-400">Tier 3 Capital Ship</div>
         </div>
         <div className={`px-3 py-1 rounded-full text-sm ${
@@ -95,6 +94,13 @@ export function MidwayCarrier({
               style={{ width: `${(hull / maxHull) * 100}%` }}
             />
           </div>
+          {/* Repair Rate Indicator */}
+          {repairRate > 0 && (
+            <div className="text-xs text-emerald-400 mt-1 flex items-center">
+              <Zap className="w-3 h-3 mr-1" />
+              Repairing: +{repairRate}/s
+            </div>
+          )}
         </div>
 
         <div>
@@ -119,14 +125,22 @@ export function MidwayCarrier({
             {fighters.length}/{maxFighters} Total
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <div className="p-3 bg-gray-700/50 rounded-lg">
-            <div className="text-sm text-gray-300 mb-1">Deployed</div>
+        <div className="grid grid-cols-4 gap-2 mb-3">
+          <div className="p-2 bg-gray-700/50 rounded-lg">
+            <div className="text-xs text-gray-300">Deployed</div>
             <div className="text-lg font-medium text-fuchsia-400">{deployedFighters}</div>
           </div>
-          <div className="p-3 bg-gray-700/50 rounded-lg">
-            <div className="text-sm text-gray-300 mb-1">Docked</div>
+          <div className="p-2 bg-gray-700/50 rounded-lg">
+            <div className="text-xs text-gray-300">Docked</div>
             <div className="text-lg font-medium text-fuchsia-400">{dockedFighters}</div>
+          </div>
+          <div className="p-2 bg-gray-700/50 rounded-lg">
+            <div className="text-xs text-gray-300">Returning</div>
+            <div className="text-lg font-medium text-fuchsia-400">{returningFighters}</div>
+          </div>
+          <div className="p-2 bg-gray-700/50 rounded-lg">
+            <div className="text-xs text-gray-300">Lost</div>
+            <div className="text-lg font-medium text-red-400">{lostFighters}</div>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">

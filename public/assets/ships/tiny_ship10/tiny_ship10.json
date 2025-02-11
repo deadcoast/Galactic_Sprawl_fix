@@ -1,0 +1,39 @@
+{
+  "frames": {
+    "tiny_ship10": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 40,
+        "h": 28
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 28
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 28
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
+    "image": "tiny_ship10.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 44,
+      "h": 32
+    },
+    "scale": 1
+  }
+}

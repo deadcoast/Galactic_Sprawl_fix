@@ -228,14 +228,14 @@ export function MiningWindow() {
         {/* Resource Type Filters */}
         <div className="flex space-x-2 mb-6">
           {[
-            { id: 'all', label: 'All Resources', icon: Database },
-            { id: 'mineral', label: 'Minerals', icon: Pickaxe },
-            { id: 'gas', label: 'Gas', icon: Database },
-            { id: 'exotic', label: 'Exotic', icon: AlertTriangle }
+            { id: 'all' as const, label: 'All Resources', icon: Database },
+            { id: 'mineral' as const, label: 'Minerals', icon: Pickaxe },
+            { id: 'gas' as const, label: 'Gas', icon: Database },
+            { id: 'exotic' as const, label: 'Exotic', icon: AlertTriangle }
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setFilter(id as any)}
+              onClick={() => setFilter(id)}
               className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
                 filter === id
                   ? 'bg-indigo-600 text-white'
@@ -277,6 +277,7 @@ export function MiningWindow() {
             onSelectNode={setSelectedNode}
             techBonuses={techBonuses}
             ships={mockShips}
+            quality="high"
           >
             <ResourceTransfer transfers={mockTransfers} />
           </MiningMap>
@@ -330,6 +331,10 @@ export function MiningWindow() {
           <MiningControls 
             resource={selectedNode}
             techBonuses={techBonuses}
+            onExperienceGained={(amount) => {
+              // Here we would update the tech tree progress
+              console.log(`Mining experience gained: ${amount}`);
+            }}
           />
         ) : (
           <div className="h-full flex items-center justify-center text-gray-400 text-center">

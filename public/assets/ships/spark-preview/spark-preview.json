@@ -1,0 +1,39 @@
+{
+  "frames": {
+    "spark-preview": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 63,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 63,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 63,
+        "h": 32
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
+    "image": "spark-preview.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 67,
+      "h": 36
+    },
+    "scale": 1
+  }
+}

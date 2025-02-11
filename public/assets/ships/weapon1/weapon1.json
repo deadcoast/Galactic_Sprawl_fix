@@ -1,0 +1,39 @@
+{
+  "frames": {
+    "weapon1": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 6,
+        "h": 12
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 12
+      },
+      "sourceSize": {
+        "w": 6,
+        "h": 12
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
+    "image": "weapon1.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 10,
+      "h": 16
+    },
+    "scale": 1
+  }
+}

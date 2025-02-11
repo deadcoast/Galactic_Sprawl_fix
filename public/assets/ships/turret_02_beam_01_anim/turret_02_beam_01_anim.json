@@ -1,0 +1,63 @@
+{
+  "frames": {
+    "turret_02_beam_01_anim": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 160,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 160,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 160,
+        "h": 32
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "turret_02_beam_01_anim": {
+      "frame": {
+        "x": 166,
+        "y": 2,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
+    "image": "turret_02_beam_01_anim.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 200,
+      "h": 36
+    },
+    "scale": 1
+  }
+}

@@ -143,7 +143,9 @@ class CombatManagerImpl implements CombatManager {
   }
 
   private processAutoDispatch() {
-    if (!this.autoDispatchEnabled) return;
+    if (!this.autoDispatchEnabled) {
+      return;
+    }
 
     this.combatZones.forEach(zone => {
       if (zone.threatLevel > this.REINFORCEMENT_THRESHOLD) {
@@ -159,7 +161,9 @@ class CombatManagerImpl implements CombatManager {
 
   private findNearbyAllies(zone: CombatZone): CombatUnit[] {
     return Array.from(this.units.values()).filter(unit => {
-      if (unit.status !== 'idle') return false;
+      if (unit.status !== 'idle') {
+        return false;
+      }
       const distance = this.getDistance(unit.position, zone.position);
       return distance <= this.ENGAGEMENT_RANGE;
     });
@@ -196,11 +200,15 @@ class CombatManagerImpl implements CombatManager {
       factionManager.getFactionBehavior(u.faction)?.isHostile
     );
 
-    if (hostileUnits.length === 0) return null;
+    if (hostileUnits.length === 0) {
+      return null;
+    }
 
     // Prioritize targets based on threat and distance
     return hostileUnits.reduce((best, current) => {
-      if (!best) return current;
+      if (!best) {
+        return current;
+      }
 
       const bestScore = this.calculateTargetScore(unit, best);
       const currentScore = this.calculateTargetScore(unit, current);
@@ -219,7 +227,9 @@ class CombatManagerImpl implements CombatManager {
 
   private updateUnitBehaviors() {
     this.units.forEach(unit => {
-      if (unit.status === 'disabled') return;
+      if (unit.status === 'disabled') {
+        return;
+      }
 
       // Check for retreat conditions
       if (this.shouldRetreat(unit)) {
@@ -293,10 +303,16 @@ class CombatManagerImpl implements CombatManager {
   }
 
   private fireWeapon(unit: CombatUnit, target: CombatUnit, weapon: CombatUnit['weapons'][0]) {
+    // Skip if unit is disabled
+    if (unit.status === 'disabled') {
+      return;
+    }
+
     weapon.lastFired = Date.now();
+    this.updateWeaponStatus(weapon);
     
     // Calculate damage considering shields
-    let damage = weapon.damage;
+    let {damage} = weapon;
     if (target.shield > 0) {
       const shieldDamage = Math.min(target.shield, damage * 0.7);
       target.shield -= shieldDamage;

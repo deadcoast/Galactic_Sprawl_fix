@@ -55,6 +55,7 @@ venv/bin/python ./tools/llm_api.py --prompt "What is the capital of France?" --p
 ```
 
 The LLM API supports multiple providers:
+
 - OpenAI (default, model: gpt-4o)
 - Azure OpenAI (model: configured via AZURE_OPENAI_MODEL_DEPLOYMENT in .env file, defaults to gpt-4o-ms)
 - DeepSeek (model: deepseek-chat)
@@ -90,7 +91,8 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 
 ## User Specified Lessons
 
-- You have a python venv in ./venv. Use it.
+- You have a Knowledge on the Project. Use it before you start the task.
+  - KNOWLEDGE_BASE_PATH="/Users/deadcoast/CursorProjects/Galactic_Sprawl/GalaxySprawlDocs"
 - Include info useful for debugging in the program output.
 - Read the file before you try to edit it.
 - Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
@@ -101,296 +103,111 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Add debug information to stderr while keeping the main output clean in stdout for better pipeline integration
 - When using seaborn styles in matplotlib, use 'seaborn-v0_8' instead of 'seaborn' as the style name due to recent seaborn version changes
 - Use 'gpt-4o' as the model name for OpenAI's GPT-4 with vision capabilities
+- When implementing threshold-based systems, use proper TypeScript types and React Context for global state management
+- Handle lexical declarations in switch-case blocks by using block scoping with curly braces
+- Remove unused imports to avoid TypeScript linter warnings
+- Use 'as const' assertions to properly type string literals in TypeScript
+- Properly handle cleanup in useEffect to prevent memory leaks with intervals
+- When fixing linter errors about unused variables in React components:
+  1. First remove unused imports
+  2. Then remove unused props from both interface and component parameters
+  3. Finally remove unused local variables
+  4. Keep props in the interface if they might be used by other components even if not used in the current component
 
 # Scratchpad
 
-## Project Overview: Galactic Sprawl
+## Current Project State: Galactic Sprawl
 
-Key Components and Systems:
+### Current Implementation Task: Mining Threshold System
 
-1. Core Game Structure:
-- Mothership as central hub
-- Empire naming and banner creation
-- Basic camera and player control system
+3. Next Steps
+   [ ] Create threshold presets system
+   [ ] Add threshold history tracking
 
-2. UI/Visual Systems:
-- VPR (Visual Progress Representation) Star System View
-- Global HUD with module-specific UI elements
-- Civilization Sprawl View for empire overview
-- Tech Tree with 3-tier progression system
-- Local Galaxy Map with travel mechanics
+### Current Implementation Focus:
 
-3. Major Game Modules:
-- Mothership & Colony Star Stations
-- Exploration Hub & Mineral Processing
-- Officer Academy & Ship Hangar
-- Habitable Worlds
-- Experience & Leveling System
+1. Automation Systems
+   [X] Mining automation with threshold-based logic
+      - Resource node management
+      - Auto-dispatch mining ships
+      - Threshold monitoring
+      - Resource collection & storage
+      - Automated resource transfers
+      - Visual threshold indicators
+   [ ] Exploration automation with recon ships
+      - Sector mapping
+      - Anomaly detection
+      - Data collection
+      - XP system integration
+   [ ] Colony growth and trade automation
+      - Population management
+      - Resource exchange
+      - Trade route optimization
+   [ ] Combat and defense automation
+      - Threat detection
+      - Ship deployment
+      - Combat resolution
 
-4. Advanced Systems:
-- Ship Arsenal & Combat
-- Factions & Enemy AI
-- Scaling & Visual Enhancements
+2. UI Enhancement
+   [X] Real-time resource tracking
+   [X] Resource transfer visualization
+   [X] Visual threshold indicators
+   [ ] Interactive galaxy map
+   [ ] Advanced visual feedback
+   [ ] Performance optimization
 
-Technical Stack:
-- TypeScript & React (.tsx)
-- Recommended libraries:
-  - react-three-fiber for 3D
-  - react-spring/Framer Motion for animations
-  - d3.js for maps and layouts
-  - Material-UI for consistent styling
+### Technical Stack & Libraries:
 
-Current Focus:
-[X] Review project development plan
-[X] Review GameplayLogic documentation
-[X] Review Automation, Progression, and Visual systems
-[ ] Continue with current task (BattleEnvironment.tsx implementation)
+1. Core Framework:
+   - TypeScript & React (.tsx)
+   - React Context/Redux for state management
+   - RxJS for event streams
 
-## Core Gameplay Logic Analysis
+2. UI/Visual Libraries:
+   - react-three-fiber for 3D
+   - react-spring/Framer Motion for animations
+   - d3.js for maps and layouts
+   - Material-UI for styling
+   - GSAP for complex animations
+   - react-konva for 2D canvas
 
-Key Architecture Requirements:
+3. Performance Optimizations:
+   - React.memo for component memoization
+   - useMemo for complex calculations
+   - Proper cleanup in useEffect
+   - Optimized rendering cycles
 
-1. Global State & Event System:
-- Use React Context/Redux for global state management
-- Implement centralized event bus for module communication
-- Automated timers/game loops for background processes
-- TypeScript interfaces for all asset types
+### Next Steps:
 
-2. Module System Architecture:
-- Each module (Mothership, Colony, etc.) operates autonomously
-- Modules interact through global event system
-- Visual feedback through VPR (Visual Progression Representation)
-- Tiered progression (1-3) with Tech Tree integration
+1. Performance Optimization
+   [ ] Add memoization for filtered sectors
+   [ ] Optimize rendering with React.memo
+   [ ] Add proper cleanup in useEffect
+   [ ] Implement React.memo for sector and ship components
+   [ ] Add useMemo for complex calculations
+   [ ] Optimize real-time update intervals
 
-3. Core Modules Implementation:
+2. Feature Implementation
+   [ ] Complete automation systems
+      - Mining threshold system
+      - Exploration mapping
+      - Colony trade routes
+      - Combat response
+   [ ] Enhance visual feedback
+      - Trade route particles
+      - Ship movement trails
+      - Resource flow indicators
+   [ ] Implement advanced game mechanics
+      - Tech tree progression
+      - Officer training
+      - Ship upgrades
+   [ ] Add notification system for discoveries
 
-### Mothership Core
-- Central hub for resource tracking
-- Global state integration for asset management
-- Dynamic HUD with real-time stats
-- Automated event initiation
-- Visual upgrade system
+### Tech Stack Notes:
 
-### Colony Star Station
-- Semi-autonomous operation
-- Population & resource management
-- Automated trade cycles (5s intervals)
-- Visual trade routes with particle effects
-- Expandable sub-modules
-
-### Radar System
-- Object detection within radius
-- Event dispatch for detected objects
-- Visual feedback (antenna/dish animation)
-- Upgrade path for extended capabilities
-
-### Ship Hangar
-- Production queue management
-- Automated ship deployment
-- Visual docking bay representation
-- Integration with global events
-
-### Officer Academy
-- XP and training system
-- Automated progression
-- Visual rank representation
-- Fleet performance enhancement
-
-### Mineral Processing
-- Resource node management
-- Automated mining dispatch
-- Threshold-based automation
-- Real-time resource visualization
-
-### Exploration Hub
-- Recon ship deployment
-- Automated sector mapping
-- Anomaly detection system
-- Visual map progression
-
-4. Technical Implementation Requirements:
-
-UI/Visual:
-- Framer Motion/react-spring for animations
-- D3.js for data visualization
-- react-konva for 2D canvas elements
-- react-three-fiber for 3D elements
-- Styled-components for theming
-
-State/Events:
-- Redux/Context for global state
-- RxJS for event streams
-- TypeScript interfaces for type safety
-- Centralized automation system
-
-Interaction:
-- react-hotkeys for shortcuts
-- react-tooltip for info display
-- Custom scrollbars
-- Modular menu system
-
-## Current Task: Review BattleEnvironment.tsx Implementation
-
-Checking implementation against GS_SC-ShipsAndCombat.md requirements:
-
-[X] Review documentation
-[X] Understand system integration requirements
-[ ] Compare current implementation
-[ ] Identify missing features
-[ ] Propose necessary updates
-
-Key Combat System Requirements:
-- Hazard system integration
-- Real-time ship-hazard collision detection
-- Visual particle effects based on quality settings
-- Dynamic movement and effect system
-- Integration with global event system
-
-Implementation Considerations:
-1. Automation Integration:
-- Auto-response to threats
-- Hazard movement patterns
-- Collision detection system
-
-2. Progression Elements:
-- Quality-based visual effects
-- Hazard severity scaling
-- Effect system evolution
-
-3. Visual Feedback:
-- Particle effects system
-- Dynamic animations
-- Quality-based rendering
-
-## System Analysis & Integration Requirements
-
-### 1. Automation System (from GS_GL-AutomationFunctions.md)
-
-Key Concepts:
-- **Automation Purpose (AP)** defines behavior for:
-  - War: Auto attack/defend
-  - Recon: Auto exploration
-  - Mining: Auto resource extraction
-
-Automated Processes:
-1. Per-System Progress:
-- Independent state management
-- Background resource generation
-- Progress persistence
-
-2. Development & Expansion:
-- Auto-colonization via tech tree
-- Food/biodome growth systems
-- Dynamic trade route formation
-
-3. Fleet Behavior:
-- War Ships: Auto-intercept and combat
-- Recon Ships: Auto-mapping and exploration
-- Mining Ships: Threshold-based extraction
-
-Integration Requirements:
-- React/TypeScript Architecture
-- Component-based automation
-- Global state synchronization
-- Real-time visual feedback
-
-### 2. Progression System (from GS_GL-ProgressionSystem.md)
-
-Core Elements:
-1. Visual Feedback:
-- VPR for asset upgrades
-- Dynamic UI transformations
-- Real-time status indicators
-
-2. Tech Tree Research (TTR):
-- Three-tier progression system
-- Interdependent upgrades
-- Resource-based unlocks
-
-3. Experience System:
-- Ship/Officer leveling
-- Performance improvements
-- Visual rank indicators
-
-Module Progression:
-- Mothership: Central evolution
-- Colony: Expandable modules
-- Buildings: Tier-based upgrades
-- Ships: Class-specific advancement
-
-### 3. Visual Progress Representation (from GS_MV-VisualProgressRepresentationUIView.md)
-
-Component Architecture:
-1. Core Components:
-- Star System Backdrop (parallax)
-- Central Mothership VPR
-- Colony/Module VPRs
-- Interactive elements
-
-2. Technical Stack:
-- React components hierarchy
-- State management (Context/Redux)
-- Animation libraries integration
-- Responsive design system
-
-Visual Implementation:
-- Framer Motion/react-spring for animations
-- react-three-fiber for 3D elements
-- D3.js for data visualization
-- Particle effects for trade routes
-
-## Integration Strategy
-
-1. Component Relationships:
-- Automation drives progression
-- Progression updates visuals
-- Visuals provide feedback
-
-2. State Management:
-- Global state for progression
-- Local state for animations
-- Event system for updates
-
-3. Performance Optimization:
-- Lazy loading for visuals
-- Memoization for calculations
-- Efficient update cycles
-
-Current Focus:
-[X] Review project development plan
-[X] Review GameplayLogic documentation
-[X] Review Automation, Progression, and Visual systems
-[ ] Continue with current task (BattleEnvironment.tsx implementation)
-
-## Current Task: Review BattleEnvironment.tsx Implementation
-
-Checking implementation against GS_SC-ShipsAndCombat.md requirements:
-
-[X] Review documentation
-[X] Understand system integration requirements
-[ ] Compare current implementation
-[ ] Identify missing features
-[ ] Propose necessary updates
-
-Key Combat System Requirements:
-- Hazard system integration
-- Real-time ship-hazard collision detection
-- Visual particle effects based on quality settings
-- Dynamic movement and effect system
-- Integration with global event system
-
-Implementation Considerations:
-1. Automation Integration:
-- Auto-response to threats
-- Hazard movement patterns
-- Collision detection system
-
-2. Progression Elements:
-- Quality-based visual effects
-- Hazard severity scaling
-- Effect system evolution
-
-3. Visual Feedback:
-- Particle effects system
-- Dynamic animations
-- Quality-based rendering
+- Using react-spring for animations
+- D3.js recommended for map visualizations
+- Consider using react-tooltip for tooltips
+- Use React Context for real-time data management
+- GSAP for complex animation sequences
+- RxJS for event stream management

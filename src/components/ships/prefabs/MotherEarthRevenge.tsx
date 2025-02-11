@@ -1,5 +1,4 @@
-import React from 'react';
-import { Crosshair, Shield, Rocket, Zap, AlertTriangle, Users, Anchor } from 'lucide-react';
+import { Crosshair, Shield, AlertTriangle } from 'lucide-react';
 
 interface DockingBay {
   id: string;
@@ -9,7 +8,6 @@ interface DockingBay {
 }
 
 interface MotherEarthRevengeProps {
-  id: string;
   status: 'idle' | 'engaging' | 'retreating' | 'damaged';
   hull: number;
   maxHull: number;
@@ -29,17 +27,14 @@ interface MotherEarthRevengeProps {
     active: boolean;
     cooldown: number;
   }[];
-  repairRate: number;
   alerts?: string[];
   onFire: (weaponId: string) => void;
   onActivateAbility: (abilityName: string) => void;
   onLaunchShip: (bayId: string) => void;
-  onDockShip: (shipId: string, bayId: string) => void;
   onRetreat: () => void;
 }
 
 export function MotherEarthRevenge({
-  id,
   status,
   hull,
   maxHull,
@@ -48,15 +43,12 @@ export function MotherEarthRevenge({
   dockingBays,
   weapons,
   specialAbilities,
-  repairRate,
   alerts,
   onFire,
   onActivateAbility,
   onLaunchShip,
-  onDockShip,
   onRetreat
 }: MotherEarthRevengeProps) {
-  const emptyBays = dockingBays.filter(bay => bay.status === 'empty').length;
   const occupiedBays = dockingBays.filter(bay => bay.status === 'occupied').length;
 
   return (
@@ -209,8 +201,6 @@ export function MotherEarthRevenge({
         </div>
       </div>
 
-       Continuing the MotherEarthRevenge.tsx file content exactly where we left off:
-
       {/* Combat Actions */}
       <div className="grid grid-cols-2 gap-3">
         <button
@@ -254,5 +244,3 @@ export function MotherEarthRevenge({
     </div>
   );
 }
-
-Let me know if you'd like me to continue implementing the combat automation and engagement logic, global rules for auto-dispatch, or adaptive AI

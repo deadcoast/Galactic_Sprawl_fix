@@ -1,81 +1,230 @@
-import React from 'react';
-import { Crosshair, Shield, Rocket, Zap, AlertTriangle } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { AlertTriangle } from 'lucide-react';
+import * as PIXI from 'pixi.js';
+import { ThrusterEffect } from '../../effects/ThrusterEffect';
 
-interface HarbringerGalleonProps {
-  id: string;
-  status: 'idle' | 'engaging' | 'retreating' | 'damaged';
-  hull: number;
-  maxHull: number;
-  shield: number;
-  maxShield: number;
-  weapons: {
-    id: string;
-    name: string;
-    type: 'machineGun' | 'gaussCannon' | 'rockets';
-    damage: number;
-    status: 'ready' | 'charging' | 'cooling';
-  }[];
-  specialAbilities: {
-    name: string;
-    description: string;
-    active: boolean;
-    cooldown: number;
-  }[];
-  onFire: (weaponId: string) => void;
-  onActivateAbility: (abilityName: string) => void;
-  onRetreat: () => void;
+// Type augmentation for PIXI.js
+declare module 'pixi.js' {
+  export interface ApplicationOptions {
+    backgroundAlpha?: number;
+  }
+  
+  export interface AssetsBundle<T> {
+    [key: string]: T;
+  }
+
+  export interface AssetsInit {
+    manifest: {
+      bundles: Array<{
+        name: string;
+        assets: Array<{
+          name: string;
+          srcs: string;
+        }>;
+      }>;
+    };
+  }
+
+  export interface AssetsClass {
+    init(options: AssetsInit): Promise<void>;
+    loadBundle<T>(name: string): Promise<AssetsBundle<T>>;
+  }
+
+  export const Assets: AssetsClass;
 }
 
-export function HarbringerGalleon({
-  id,
-  status,
-  hull,
-  maxHull,
-  shield,
-  maxShield,
-  weapons,
-  specialAbilities,
-  onFire,
-  onActivateAbility,
-  onRetreat
-}: HarbringerGalleonProps) {
-  return (
-    <div className="bg-purple-900/20 border border-purple-700/30 rounded-lg p-6">
-      {/* Ship Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-medium text-white">Harbringer Galleon</h3>
-          <div className="text-sm text-gray-400">Tier 2 Heavy Warship</div>
-        </div>
-        <div className={`px-3 py-1 rounded-full text-sm ${
-          status === 'engaging' ? 'bg-red-900/50 text-red-400' :
-          status === 'retreating' ? 'bg-yellow-900/50 text-yellow-400' :
-          status === 'damaged' ? 'bg-red-900/50 text-red-400' :
-          'bg-green-900/50 text-green-400'
-        }`}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
-        </div>
-      </div>
+interface HarbringerGalleonProps {
+  x: number;
+  y: number;
+  status: 'idle' | 'engaging' | 'retreating' | 'damaged';
+  health: number;
+  maxHealth: number;
+  shield: number;
+  maxShield: number;
+  onStatusChange?: (status: string) => void;
+}
 
-      {/* Combat Status */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+interface SpriteAtlas {
+  frames: {
+    [key: string]: {
+      frame: { x: number; y: number; w: number; h: number };
+      sourceSize: { w: number; h: number };
+      spriteSourceSize: { x: number; y: number; w: number; h: number };
+    };
+  };
+  animations: {
+    [key: string]: string[];
+  };
+}
+
+export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({ x, y, status, health, maxHealth, shield, maxShield, onStatusChange }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const appRef = useRef<PIXI.Application>();
+  const spriteRef = useRef<PIXI.Container | null>(null);
+  const texturesRef = useRef<PIXI.Texture[]>([]);
+  const currentStatus = useRef(status);
+  const animationFrameRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    // Initialize PixiJS Application
+    const app = new PIXI.Application({
+      width: 400,
+      height: 400,
+      backgroundColor: 0x000000,
+      backgroundAlpha: 0,
+      antialias: true,
+      resolution: window.devicePixelRatio || 1
+    });
+
+    containerRef.current.appendChild(app.view as unknown as Node);
+    appRef.current = app;
+
+    const loadSprites = async () => {
+      try {
+        // Initialize asset loader
+        const manifest: PIXI.AssetsInit = {
+          manifest: {
+            bundles: [{
+              name: 'spike-ship',
+              assets: [{
+                name: 'spike_spritesheet',
+                srcs: '/assets/ships/spike_spritesheet.json'
+              }]
+            }]
+          }
+        };
+
+        await PIXI.Assets.init(manifest);
+
+        // Load the sprite atlas
+        const atlas = await PIXI.Assets.loadBundle<SpriteAtlas>('spike-ship');
+        const spritesheet = atlas['spike_spritesheet'];
+        
+        // Create textures from the frames
+        texturesRef.current = Object.keys(spritesheet.frames).map(frame => 
+          PIXI.Texture.from(`spike_${frame}.png`)
+        );
+
+        // Create sprite container
+        const container = new PIXI.Container();
+        container.x = x;
+        container.y = y;
+        container.scale.set(1);
+
+        // Create initial sprite
+        const sprite = new PIXI.Sprite(texturesRef.current[0]);
+        sprite.anchor.set(0.5);
+        container.addChild(sprite);
+
+        spriteRef.current = container;
+        app.stage.addChild(container);
+
+        // Update animation based on status
+        updateAnimation(status);
+      } catch (error) {
+        console.error('Error loading Spike ship sprites:', error);
+      }
+    };
+
+    loadSprites();
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      app.destroy(true);
+      if (spriteRef.current) {
+        spriteRef.current.destroy();
+      }
+    };
+  }, [status, x, y]);
+
+  useEffect(() => {
+    if (status !== currentStatus.current) {
+      currentStatus.current = status;
+      updateAnimation(status);
+      onStatusChange?.(status);
+    }
+  }, [status, onStatusChange]);
+
+  const updateAnimation = (newStatus: string) => {
+    if (!spriteRef.current || texturesRef.current.length === 0) {
+      return;
+    }
+
+    const container = spriteRef.current;
+    let frameStart = 0;
+    const frameCount = 4;
+    let frameDelay = 100;
+
+    switch (newStatus) {
+      case 'idle':
+        frameStart = 0;
+        frameDelay = 150;
+        break;
+      case 'engaging':
+        frameStart = 4;
+        frameDelay = 100;
+        break;
+      case 'retreating':
+        frameStart = 8;
+        frameDelay = 120;
+        break;
+      case 'damaged':
+        frameStart = 12;
+        frameDelay = 200;
+        break;
+    }
+
+    let currentFrame = 0;
+    const animate = () => {
+      if (!container.children[0]) return;
+      
+      const spriteIndex = frameStart + (currentFrame % frameCount);
+      (container.children[0] as PIXI.Sprite).texture = texturesRef.current[spriteIndex];
+      
+      currentFrame++;
+      animationFrameRef.current = requestAnimationFrame(() => {
+        setTimeout(animate, frameDelay);
+      });
+    };
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    animate();
+  };
+
+  return (
+    <div className="relative">
+      {/* Ship Container */}
+      <div ref={containerRef} className="relative w-[400px] h-[400px]" />
+
+      {/* Status Indicators */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
+        {/* Health Bar */}
         <div>
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-400">Hull Integrity</span>
-            <span className={hull < maxHull * 0.3 ? 'text-red-400' : 'text-gray-300'}>
-              {Math.round((hull / maxHull) * 100)}%
+            <span className={health < maxHealth * 0.3 ? 'text-red-400' : 'text-gray-300'}>
+              {Math.round((health / maxHealth) * 100)}%
             </span>
           </div>
           <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                hull < maxHull * 0.3 ? 'bg-red-500' : 'bg-green-500'
+                health < maxHealth * 0.3 ? 'bg-red-500' : 'bg-green-500'
               }`}
-              style={{ width: `${(hull / maxHull) * 100}%` }}
+              style={{ width: `${(health / maxHealth) * 100}%` }}
             />
           </div>
         </div>
 
+        {/* Shield Bar */}
         <div>
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-400">Shield Power</span>
@@ -90,101 +239,22 @@ export function HarbringerGalleon({
         </div>
       </div>
 
-      {/* Weapon Systems */}
-      <div className="space-y-4 mb-6">
-        <h4 className="text-sm font-medium text-gray-300">Weapon Systems</h4>
-        <div className="grid grid-cols-2 gap-3">
-          {weapons.map(weapon => (
-            <button
-              key={weapon.id}
-              onClick={() => onFire(weapon.id)}
-              disabled={weapon.status !== 'ready'}
-              className={`p-3 rounded-lg transition-colors ${
-                weapon.status === 'ready'
-                  ? 'bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30'
-                  : 'bg-gray-700/50 border border-gray-600/30 cursor-not-allowed'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-medium text-white">{weapon.name}</div>
-                <div className={`text-xs ${
-                  weapon.status === 'ready' ? 'text-green-400' :
-                  weapon.status === 'charging' ? 'text-yellow-400' :
-                  'text-red-400'
-                }`}>
-                  {weapon.status.charAt(0).toUpperCase() + weapon.status.slice(1)}
-                </div>
-              </div>
-              <div className="text-xs text-gray-400">
-                Damage: {weapon.damage}
-              </div>
-            </button>
-          ))}
-        </div>
+      {/* Thruster Effects */}
+      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
+        <ThrusterEffect
+          size="large"
+          color="#4f46e5"
+          intensity={status === 'retreating' ? 1.5 : 1}
+        />
       </div>
 
-      {/* Special Abilities */}
-      <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Special Abilities</h4>
-        <div className="space-y-2">
-          {specialAbilities.map(ability => (
-            <button
-              key={ability.name}
-              onClick={() => onActivateAbility(ability.name)}
-              disabled={ability.active}
-              className={`w-full p-3 rounded-lg text-left transition-colors ${
-                ability.active
-                  ? 'bg-purple-500/20 border border-purple-500/30'
-                  : 'bg-gray-700/50 hover:bg-gray-600/50'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-white">{ability.name}</span>
-                {ability.active ? (
-                  <span className="text-xs text-green-400">Active</span>
-                ) : (
-                  <span className="text-xs text-gray-400">{ability.cooldown}s</span>
-                )}
-              </div>
-              <p className="text-xs text-gray-400">{ability.description}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Combat Actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={() => onFire(weapons[0].id)}
-          disabled={!weapons.some(w => w.status === 'ready')}
-          className={`px-4 py-2 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            weapons.some(w => w.status === 'ready')
-              ? 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-200'
-              : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          <Crosshair className="w-4 h-4" />
-          <span>Fire Weapons</span>
-        </button>
-        <button
-          onClick={onRetreat}
-          disabled={status === 'damaged'}
-          className={`px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            status === 'damaged' ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-        >
-          <Shield className="w-4 h-4" />
-          <span>Retreat</span>
-        </button>
-      </div>
-
-      {/* Status Warnings */}
+      {/* Status Warning */}
       {status === 'damaged' && (
-        <div className="mt-4 p-3 bg-red-900/20 border border-red-700/30 rounded-lg flex items-start space-x-2">
-          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-          <span className="text-sm text-red-200">Ship systems critically damaged</span>
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-red-900/80 border border-red-700 rounded-full flex items-center space-x-2">
+          <AlertTriangle className="w-4 h-4 text-red-400" />
+          <span className="text-sm text-red-200">Critical Damage</span>
         </div>
       )}
     </div>
   );
-}
+};
