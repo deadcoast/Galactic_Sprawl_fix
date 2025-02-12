@@ -1,16 +1,22 @@
-import { Database } from 'lucide-react';
+import { Database } from "lucide-react";
 
 interface TradeRouteEffectProps {
   source: { x: number; y: number };
   target: { x: number; y: number };
   volume: number;
   active: boolean;
-  quality: 'low' | 'medium' | 'high';
+  quality: "low" | "medium" | "high";
 }
 
-export function TradeRouteEffect({ source, target, volume, active, quality }: TradeRouteEffectProps) {
-  const particleCount = quality === 'high' ? 8 : quality === 'medium' ? 5 : 3;
-  const glowIntensity = quality === 'low' ? 2 : quality === 'medium' ? 4 : 8;
+export function TradeRouteEffect({
+  source,
+  target,
+  volume,
+  active,
+  quality,
+}: TradeRouteEffectProps) {
+  const particleCount = quality === "high" ? 8 : quality === "medium" ? 5 : 3;
+  const glowIntensity = quality === "low" ? 2 : quality === "medium" ? 4 : 8;
 
   // Calculate path
   const dx = target.x - source.x;
@@ -77,18 +83,21 @@ export function TradeRouteEffect({ source, target, volume, active, quality }: Tr
           fill="rgba(99, 102, 241, 0.2)"
           className="animate-pulse"
         />
-        <Database
-          className="w-4 h-4 text-indigo-400 transform -translate-x-2 -translate-y-2"
-        />
+        <Database className="w-4 h-4 text-indigo-400 transform -translate-x-2 -translate-y-2" />
       </g>
     </g>
   );
 }
 
-function getPointOnPath(path: string, progress: number): { x: number; y: number } {
+function getPointOnPath(
+  path: string,
+  progress: number,
+): { x: number; y: number } {
   // Simple linear interpolation for demo
   // In production, use proper path interpolation
-  const match = path.match(/M ([\d.-]+) ([\d.-]+) Q ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+)/);
+  const match = path.match(
+    /M ([\d.-]+) ([\d.-]+) Q ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+)/,
+  );
   if (!match) {
     return { x: 0, y: 0 };
   }
@@ -99,6 +108,6 @@ function getPointOnPath(path: string, progress: number): { x: number; y: number 
 
   return {
     x: u * u * x1 + 2 * u * t * cx + t * t * x2,
-    y: u * u * y1 + 2 * u * t * cy + t * t * y2
+    y: u * u * y1 + 2 * u * t * cy + t * t * y2,
   };
 }

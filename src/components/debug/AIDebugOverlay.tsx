@@ -1,4 +1,4 @@
-import { Brain, Target } from 'lucide-react';
+import { Brain, Target } from "lucide-react";
 
 interface DebugState {
   aiState: {
@@ -21,7 +21,11 @@ interface AIDebugOverlayProps {
   onToggleVisibility: () => void;
 }
 
-export function AIDebugOverlay({ debugStates, visible, onToggleVisibility }: AIDebugOverlayProps) {
+export function AIDebugOverlay({
+  debugStates,
+  visible,
+  onToggleVisibility,
+}: AIDebugOverlayProps) {
   if (!visible) {
     return null;
   }
@@ -46,12 +50,18 @@ export function AIDebugOverlay({ debugStates, visible, onToggleVisibility }: AID
           {Object.entries(debugStates).map(([id, state]) => (
             <div key={id} className="p-3 bg-gray-800/50 rounded-lg">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-300">Unit {id}</span>
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  state.aiState.behaviorState === 'engaging' ? 'bg-red-900/50 text-red-400' :
-                  state.aiState.behaviorState === 'retreating' ? 'bg-yellow-900/50 text-yellow-400' :
-                  'bg-blue-900/50 text-blue-400'
-                }`}>
+                <span className="text-sm font-medium text-gray-300">
+                  Unit {id}
+                </span>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${
+                    state.aiState.behaviorState === "engaging"
+                      ? "bg-red-900/50 text-red-400"
+                      : state.aiState.behaviorState === "retreating"
+                        ? "bg-yellow-900/50 text-yellow-400"
+                        : "bg-blue-900/50 text-blue-400"
+                  }`}
+                >
                   {state.aiState.behaviorState}
                 </span>
               </div>
@@ -73,7 +83,9 @@ export function AIDebugOverlay({ debugStates, visible, onToggleVisibility }: AID
                 {state.aiState.targetId && (
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-400">Target</span>
-                    <span className="text-yellow-400">{state.aiState.targetId}</span>
+                    <span className="text-yellow-400">
+                      {state.aiState.targetId}
+                    </span>
                   </div>
                 )}
               </div>
@@ -85,16 +97,20 @@ export function AIDebugOverlay({ debugStates, visible, onToggleVisibility }: AID
                   <div className="grid grid-cols-2 gap-2">
                     <div className="text-xs">
                       <span className="text-gray-500">Type: </span>
-                      <span className="text-gray-300">{state.formation.type}</span>
+                      <span className="text-gray-300">
+                        {state.formation.type}
+                      </span>
                     </div>
                     <div className="text-xs">
                       <span className="text-gray-500">Spacing: </span>
-                      <span className="text-gray-300">{state.formation.spacing}</span>
+                      <span className="text-gray-300">
+                        {state.formation.spacing}
+                      </span>
                     </div>
                     <div className="text-xs">
                       <span className="text-gray-500">Facing: </span>
                       <span className="text-gray-300">
-                        {Math.round(state.formation.facing * (180/Math.PI))}°
+                        {Math.round(state.formation.facing * (180 / Math.PI))}°
                       </span>
                     </div>
                   </div>
@@ -107,11 +123,15 @@ export function AIDebugOverlay({ debugStates, visible, onToggleVisibility }: AID
                 <div className="flex space-x-4">
                   <div className="text-xs">
                     <span className="text-gray-500">X: </span>
-                    <span className="text-gray-300">{Math.round(state.position.x)}</span>
+                    <span className="text-gray-300">
+                      {Math.round(state.position.x)}
+                    </span>
                   </div>
                   <div className="text-xs">
                     <span className="text-gray-500">Y: </span>
-                    <span className="text-gray-300">{Math.round(state.position.y)}</span>
+                    <span className="text-gray-300">
+                      {Math.round(state.position.y)}
+                    </span>
                   </div>
                 </div>
               </div>

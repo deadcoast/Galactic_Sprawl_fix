@@ -1,4 +1,4 @@
-import { WeaponType } from './CombatTypes';
+import { WeaponType } from '../combat/CombatTypes';
 import { FactionId } from './FactionTypes';
 
 export interface ShipStats {

@@ -1,4 +1,4 @@
-import { Zap, Crown } from 'lucide-react';
+import { Crown, Zap } from "lucide-react";
 
 interface CentralMothershipProps {
   tier: 1 | 2 | 3;
@@ -8,7 +8,7 @@ interface CentralMothershipProps {
   maxShield: number;
   power: number;
   maxPower: number;
-  quality: 'low' | 'medium' | 'high';
+  quality: "low" | "medium" | "high";
   onHover?: () => void;
   onClick?: () => void;
 }
@@ -23,13 +23,13 @@ export function CentralMothership({
   maxPower,
   quality,
   onHover,
-  onClick
+  onClick,
 }: CentralMothershipProps) {
-  const particleCount = quality === 'high' ? 16 : quality === 'medium' ? 8 : 4;
-  const glowIntensity = quality === 'low' ? 4 : quality === 'medium' ? 8 : 12;
+  const particleCount = quality === "high" ? 16 : quality === "medium" ? 8 : 4;
+  const glowIntensity = quality === "low" ? 4 : quality === "medium" ? 8 : 12;
 
   return (
-    <div 
+    <div
       className="relative w-96 h-96 cursor-pointer"
       onMouseEnter={onHover}
       onClick={onClick}
@@ -51,7 +51,7 @@ export function CentralMothership({
               className="absolute inset-0 border-2 border-indigo-500/20 rounded-full"
               style={{
                 animation: `spin ${20 + i * 10}s linear infinite`,
-                transform: `scale(${1.2 + i * 0.2}) rotate(${i * 30}deg)`
+                transform: `scale(${1.2 + i * 0.2}) rotate(${i * 30}deg)`,
               }}
             />
           ))}
@@ -63,7 +63,7 @@ export function CentralMothership({
               style={{
                 transform: `scale(${1.5})`,
                 opacity: shield / maxShield,
-                filter: `blur(${glowIntensity}px)`
+                filter: `blur(${glowIntensity}px)`,
               }}
             />
           )}
@@ -74,10 +74,10 @@ export function CentralMothership({
               key={i}
               className="absolute"
               style={{
-                top: '50%',
-                left: '50%',
+                top: "50%",
+                left: "50%",
                 transform: `rotate(${i * 90}deg) translateY(-80px)`,
-                opacity: power / maxPower
+                opacity: power / maxPower,
               }}
             >
               <Zap className="w-6 h-6 text-indigo-400 animate-pulse" />
@@ -93,7 +93,7 @@ export function CentralMothership({
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 2}s`,
-                opacity: 0.5 + Math.random() * 0.5
+                opacity: 0.5 + Math.random() * 0.5,
               }}
             />
           ))}
@@ -106,14 +106,18 @@ export function CentralMothership({
         <div className="w-48">
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-400">Hull Integrity</span>
-            <span className={health < maxHealth * 0.3 ? 'text-red-400' : 'text-gray-300'}>
+            <span
+              className={
+                health < maxHealth * 0.3 ? "text-red-400" : "text-gray-300"
+              }
+            >
               {Math.round((health / maxHealth) * 100)}%
             </span>
           </div>
           <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                health < maxHealth * 0.3 ? 'bg-red-500' : 'bg-green-500'
+                health < maxHealth * 0.3 ? "bg-red-500" : "bg-green-500"
               }`}
               style={{ width: `${(health / maxHealth) * 100}%` }}
             />
@@ -124,7 +128,9 @@ export function CentralMothership({
         <div className="w-48">
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-400">Shield Power</span>
-            <span className="text-gray-300">{Math.round((shield / maxShield) * 100)}%</span>
+            <span className="text-gray-300">
+              {Math.round((shield / maxShield) * 100)}%
+            </span>
           </div>
           <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
             <div

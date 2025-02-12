@@ -1,4 +1,9 @@
-import { WeaponType, WeaponStats, WeaponCategory, WeaponVariant } from '../types/CombatTypes';
+import {
+  WeaponCategory,
+  WeaponStats,
+  WeaponType,
+  WeaponVariant,
+} from "../../types/combat/CombatTypes";
 
 // Base stats for each weapon category
 const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
@@ -64,7 +69,7 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
       shieldDamageBonus: 0.5,
     },
   },
-  
+
   // Gauss Cannon variants
   gaussPlaner: {
     damage: 25,
@@ -78,7 +83,7 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
     rateOfFire: 5,
     energyCost: 20,
   },
-  
+
   // Rail Gun variants
   lightShot: {
     damage: 150,
@@ -96,7 +101,7 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
       armorPenetration: 0.4,
     },
   },
-  
+
   // MGSS variants
   engineAssistedSpool: {
     rateOfFire: 20,
@@ -111,7 +116,7 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
       armorPenetration: 0.2,
     },
   },
-  
+
   // Rocket variants
   emprRockets: {
     damage: 30,
@@ -142,11 +147,11 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
 export function createWeaponType(
   id: string,
   category: WeaponCategory,
-  variant: WeaponVariant
+  variant: WeaponVariant,
 ): WeaponType {
   const baseStats = baseWeaponStats[category];
   const modifiers = variantModifiers[variant];
-  
+
   return {
     id,
     category,
@@ -166,24 +171,44 @@ export function createWeaponType(
 // Pre-configured weapon types
 export const weaponTypes: Record<string, WeaponType> = {
   // Machine Guns
-  basicMachineGun: createWeaponType('basicMachineGun', 'machineGun', 'basic'),
-  plasmaMachineGun: createWeaponType('plasmaMachineGun', 'machineGun', 'plasmaRounds'),
-  sparkMachineGun: createWeaponType('sparkMachineGun', 'machineGun', 'sparkRounds'),
-  
+  basicMachineGun: createWeaponType("basicMachineGun", "machineGun", "basic"),
+  plasmaMachineGun: createWeaponType(
+    "plasmaMachineGun",
+    "machineGun",
+    "plasmaRounds",
+  ),
+  sparkMachineGun: createWeaponType(
+    "sparkMachineGun",
+    "machineGun",
+    "sparkRounds",
+  ),
+
   // Gauss Cannons
-  gaussPlaner: createWeaponType('gaussPlaner', 'gaussCannon', 'gaussPlaner'),
-  recirculatingGauss: createWeaponType('recirculatingGauss', 'gaussCannon', 'recirculatingGauss'),
-  
+  gaussPlaner: createWeaponType("gaussPlaner", "gaussCannon", "gaussPlaner"),
+  recirculatingGauss: createWeaponType(
+    "recirculatingGauss",
+    "gaussCannon",
+    "recirculatingGauss",
+  ),
+
   // Rail Guns
-  lightShot: createWeaponType('lightShot', 'railGun', 'lightShot'),
-  maurader: createWeaponType('maurader', 'railGun', 'maurader'),
-  
+  lightShot: createWeaponType("lightShot", "railGun", "lightShot"),
+  maurader: createWeaponType("maurader", "railGun", "maurader"),
+
   // MGSS
-  engineAssistedMGSS: createWeaponType('engineAssistedMGSS', 'mgss', 'engineAssistedSpool'),
-  slugMGSS: createWeaponType('slugMGSS', 'mgss', 'slugMGSS'),
-  
+  engineAssistedMGSS: createWeaponType(
+    "engineAssistedMGSS",
+    "mgss",
+    "engineAssistedSpool",
+  ),
+  slugMGSS: createWeaponType("slugMGSS", "mgss", "slugMGSS"),
+
   // Rockets
-  emprRockets: createWeaponType('emprRockets', 'rockets', 'emprRockets'),
-  swarmRockets: createWeaponType('swarmRockets', 'rockets', 'swarmRockets'),
-  bigBangRockets: createWeaponType('bigBangRockets', 'rockets', 'bigBangRockets'),
-}; 
+  emprRockets: createWeaponType("emprRockets", "rockets", "emprRockets"),
+  swarmRockets: createWeaponType("swarmRockets", "rockets", "swarmRockets"),
+  bigBangRockets: createWeaponType(
+    "bigBangRockets",
+    "rockets",
+    "bigBangRockets",
+  ),
+};

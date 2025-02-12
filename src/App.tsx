@@ -1,6 +1,5 @@
-import React from 'react';
-import { ExplorationHub } from './components/exploration/ExplorationHub';
-import { TooltipProvider } from './components/ui/TooltipProvider';
+import { ExplorationHub } from "@/components/buildings/modules/ExplorationHub/ExplorationHub";
+import { TooltipProvider } from "@/components/ui/TooltipProvider";
 
 export function App() {
   return (

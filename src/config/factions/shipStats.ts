@@ -1,6 +1,6 @@
-import { ShipStats, ShipType } from '../types/ShipTypes';
-import { WeaponType } from '../types/CombatTypes';
-import { shipClassConfigs } from './factionConfig';
+import { shipClassConfigs } from "../../config/factions/factionConfig";
+import { WeaponType } from "../../types/combat/CombatTypes";
+import { ShipStats, ShipType } from "../../types/ships/CommonShipTypes";
 
 // Base stats for different ship tiers
 const tierBaseStats: Record<number, ShipStats> = {
@@ -99,7 +99,7 @@ export function createShipType(
   name: string,
   faction: keyof typeof shipClassConfigs,
   baseStats: Partial<ShipType>,
-  weapons: WeaponType[]
+  weapons: WeaponType[],
 ): ShipType {
   return {
     id,
@@ -117,4 +117,4 @@ export function createShipType(
     },
     visualAsset: `ships/${faction}/${id}`,
   };
-} 
+}

@@ -1,4 +1,4 @@
-import { factionConfigs } from '../config/factions';
+import { factionConfigs, type FactionConfig } from "../../config/factions/factions";
 
 interface FactionState {
   activeShips: number;
@@ -7,7 +7,7 @@ interface FactionState {
     radius: number;
   };
   fleetStrength: number;
-  relationshipWithPlayer: number;  // -1 to 1
+  relationshipWithPlayer: number; // -1 to 1
   lastActivity: number;
   isActive: boolean;
 }
@@ -21,17 +21,17 @@ class FactionManager {
 
   constructor() {
     // Initialize faction states
-    Object.values(factionConfigs).forEach(config => {
+    Object.values(factionConfigs).forEach((config: FactionConfig) => {
       this.factionStates.set(config.id, {
         activeShips: 0,
         territory: {
           center: { x: 0, y: 0 },
-          radius: config.spawnConditions.territorySize
+          radius: config.spawnConditions.territorySize,
         },
         fleetStrength: 1,
         relationshipWithPlayer: config.specialRules.alwaysHostile ? -1 : 0,
         lastActivity: Date.now(),
-        isActive: false
+        isActive: false,
       });
     });
   }
@@ -43,16 +43,17 @@ class FactionManager {
   }
 
   private checkFactionActivation() {
-    Object.values(factionConfigs).forEach(config => {
+    Object.values(factionConfigs).forEach((config) => {
       const state = this.factionStates.get(config.id);
       if (!state) {
         return;
       }
 
       // Check activation conditions
-      const shouldActivate = 
+      const shouldActivate =
         this.playerTier >= config.spawnConditions.minTier &&
-        (!config.specialRules.powerThreshold || this.playerPower >= config.specialRules.powerThreshold);
+        (!config.specialRules.powerThreshold ||
+          this.playerPower >= config.specialRules.powerThreshold);
 
       if (shouldActivate && !state.isActive) {
         this.activateFaction(config.id);
@@ -76,7 +77,7 @@ class FactionManager {
     const distance = 200 + Math.random() * 100;
     state.territory.center = {
       x: Math.cos(angle) * distance,
-      y: Math.sin(angle) * distance
+      y: Math.sin(angle) * distance,
     };
   }
 
@@ -106,7 +107,8 @@ class FactionManager {
       isHostile: this.isHostileToPlayer(factionId),
       willAttack: this.willInitiateAttack(factionId),
       expansionPriority: this.calculateExpansionPriority(factionId),
-      reinforcementNeeded: state.fleetStrength < config.behavior.reinforcementThreshold
+      reinforcementNeeded:
+        state.fleetStrength < config.behavior.reinforcementThreshold,
     };
   }
 
@@ -134,9 +136,12 @@ class FactionManager {
     }
 
     const aggressionCheck = Math.random() < config.behavior.baseAggression;
-    const strengthCheck = state.fleetStrength > config.behavior.retreatThreshold;
-    
-    return aggressionCheck && strengthCheck && this.isHostileToPlayer(factionId);
+    const strengthCheck =
+      state.fleetStrength > config.behavior.retreatThreshold;
+
+    return (
+      aggressionCheck && strengthCheck && this.isHostileToPlayer(factionId)
+    );
   }
 
   private calculateExpansionPriority(factionId: string): number {
@@ -149,7 +154,11 @@ class FactionManager {
     const territoryFactor = state.activeShips / config.spawnConditions.maxShips;
     const timeFactor = (Date.now() - state.lastActivity) / 60000; // minutes since last activity
 
-    return config.behavior.expansionRate * (1 - territoryFactor) * Math.min(timeFactor, 1);
+    return (
+      config.behavior.expansionRate *
+      (1 - territoryFactor) *
+      Math.min(timeFactor, 1)
+    );
   }
 
   public update() {
@@ -167,9 +176,12 @@ class FactionManager {
       state.fleetStrength = state.activeShips / config.spawnConditions.maxShips;
 
       // Check for new ship spawns
-      if (state.activeShips < config.spawnConditions.maxShips && Math.random() < config.spawnConditions.spawnRate) {
-            state.activeShips++;
-            state.lastActivity = Date.now();
+      if (
+        state.activeShips < config.spawnConditions.maxShips &&
+        Math.random() < config.spawnConditions.spawnRate
+      ) {
+        state.activeShips++;
+        state.lastActivity = Date.now();
       }
 
       // Update territory

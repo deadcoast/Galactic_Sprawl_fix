@@ -1,9 +1,9 @@
-import { useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useRef } from "react";
+import * as THREE from "three";
 
 interface ThrusterEffectProps {
-  size: 'small' | 'medium' | 'large';
+  size: "small" | "medium" | "large";
   color: string;
   intensity: number;
 }
@@ -15,7 +15,7 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
   const sizeScale = {
     small: 0.5,
     medium: 1,
-    large: 1.5
+    large: 1.5,
   };
 
   const particleCount = Math.floor(1000 * sizeScale[size]);
@@ -30,14 +30,15 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
 
     const material = particlesRef.current.material as THREE.ShaderMaterial;
     material.uniforms.time.value = time;
-    material.uniforms.intensity.value = intensity * (0.8 + Math.sin(time * 2) * 0.2); // Pulsing intensity
+    material.uniforms.intensity.value =
+      intensity * (0.8 + Math.sin(time * 2) * 0.2); // Pulsing intensity
   });
 
   const thrusterShader = {
     uniforms: {
       time: { value: 0 },
       color: { value: new THREE.Color(color) },
-      intensity: { value: intensity }
+      intensity: { value: intensity },
     },
     vertexShader: `
       attribute float size;
@@ -106,7 +107,7 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
         
         gl_FragColor = vec4(finalColor, vAlpha * (glow + corePower));
       }
-    `
+    `,
   };
 
   // Generate particle attributes
@@ -119,11 +120,11 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
     const i3 = i * 3;
     const radius = Math.random() * 0.2 * sizeScale[size];
     const angle = Math.random() * Math.PI * 2;
-    
+
     positions[i3] = Math.cos(angle) * radius;
     positions[i3 + 1] = Math.random() * 2 * sizeScale[size];
     positions[i3 + 2] = Math.sin(angle) * radius;
-    
+
     sizes[i] = (Math.random() * 0.5 + 0.5) * 20 * sizeScale[size];
     speeds[i] = Math.random() * 0.5 + 0.5;
     offsets[i] = Math.random();
@@ -170,11 +171,15 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
   );
 }
 
-export function ThrusterEffect({ size, color, intensity }: ThrusterEffectProps) {
+export function ThrusterEffect({
+  size,
+  color,
+  intensity,
+}: ThrusterEffectProps) {
   const sizeMap = {
     small: 40,
     medium: 60,
-    large: 80
+    large: 80,
   };
 
   return (
@@ -182,12 +187,12 @@ export function ThrusterEffect({ size, color, intensity }: ThrusterEffectProps) 
       className="relative"
       style={{
         width: sizeMap[size],
-        height: sizeMap[size] * 2
+        height: sizeMap[size] * 2,
       }}
     >
       <Canvas
         camera={{ position: [0, 0, 2], fov: 75 }}
-        style={{ background: 'transparent' }}
+        style={{ background: "transparent" }}
       >
         <ThrusterParticles size={size} color={color} intensity={intensity} />
       </Canvas>
@@ -199,7 +204,7 @@ export function ThrusterEffect({ size, color, intensity }: ThrusterEffectProps) 
           background: `radial-gradient(circle at 50% 0%, ${color}66 0%, ${color}00 70%)`,
           filter: `blur(${intensity * 8}px)`,
           opacity: intensity * 0.8,
-          animation: 'pulse 2s ease-in-out infinite'
+          animation: "pulse 2s ease-in-out infinite",
         }}
       />
     </div>
@@ -207,7 +212,7 @@ export function ThrusterEffect({ size, color, intensity }: ThrusterEffectProps) 
 }
 
 // Add to global styles
-const style = document.createElement('style');
+const style = document.createElement("style");
 style.textContent = `
   @keyframes pulse {
     0%, 100% { opacity: 0.8; transform: scale(1); }

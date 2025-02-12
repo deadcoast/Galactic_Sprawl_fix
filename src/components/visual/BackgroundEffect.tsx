@@ -1,12 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface BackgroundEffectProps {
-  quality: 'low' | 'medium' | 'high';
+  quality: "low" | "medium" | "high";
   intensity: number;
-  colorScheme: 'blue' | 'purple' | 'cyan';
+  colorScheme: "blue" | "purple" | "cyan";
 }
 
-export function BackgroundEffect({ quality, intensity, colorScheme }: BackgroundEffectProps) {
+export function BackgroundEffect({
+  quality,
+  intensity,
+  colorScheme,
+}: BackgroundEffectProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -15,7 +19,7 @@ export function BackgroundEffect({ quality, intensity, colorScheme }: Background
       return;
     }
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;
     }
@@ -26,10 +30,11 @@ export function BackgroundEffect({ quality, intensity, colorScheme }: Background
       canvas.height = window.innerHeight;
     };
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener("resize", resizeCanvas);
 
     // Particle system
-    const particleCount = quality === 'high' ? 200 : quality === 'medium' ? 100 : 50;
+    const particleCount =
+      quality === "high" ? 200 : quality === "medium" ? 100 : 50;
     const particles: Particle[] = [];
 
     class Particle {
@@ -73,13 +78,20 @@ export function BackgroundEffect({ quality, intensity, colorScheme }: Background
 
       draw() {
         const gradient = this.ctx.createRadialGradient(
-          this.x, this.y, 0,
-          this.x, this.y, this.size
+          this.x,
+          this.y,
+          0,
+          this.x,
+          this.y,
+          this.size,
         );
 
-        const color = colorScheme === 'blue' ? '59, 130, 246' :
-                     colorScheme === 'purple' ? '139, 92, 246' :
-                     '34, 211, 238';
+        const color =
+          colorScheme === "blue"
+            ? "59, 130, 246"
+            : colorScheme === "purple"
+              ? "139, 92, 246"
+              : "34, 211, 238";
 
         gradient.addColorStop(0, `rgba(${color}, ${this.opacity * intensity})`);
         gradient.addColorStop(1, `rgba(${color}, 0)`);
@@ -100,26 +112,36 @@ export function BackgroundEffect({ quality, intensity, colorScheme }: Background
     let animationFrame: number;
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       // Update and draw particles
-      particles.forEach(particle => {
+      particles.forEach((particle) => {
         particle.update();
         particle.draw();
       });
 
       // Draw nebula effect
-      if (quality !== 'low') {
+      if (quality !== "low") {
         const nebulaGradient = ctx.createRadialGradient(
-          canvas.width / 2, canvas.height / 2, 0,
-          canvas.width / 2, canvas.height / 2, canvas.width / 2
+          canvas.width / 2,
+          canvas.height / 2,
+          0,
+          canvas.width / 2,
+          canvas.height / 2,
+          canvas.width / 2,
         );
 
-        const nebulaColor = colorScheme === 'blue' ? '29, 78, 216' :
-                          colorScheme === 'purple' ? '109, 40, 217' :
-                          '8, 145, 178';
+        const nebulaColor =
+          colorScheme === "blue"
+            ? "29, 78, 216"
+            : colorScheme === "purple"
+              ? "109, 40, 217"
+              : "8, 145, 178";
 
-        nebulaGradient.addColorStop(0, `rgba(${nebulaColor}, ${0.05 * intensity})`);
-        nebulaGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        nebulaGradient.addColorStop(
+          0,
+          `rgba(${nebulaColor}, ${0.05 * intensity})`,
+        );
+        nebulaGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
 
         ctx.fillStyle = nebulaGradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -131,7 +153,7 @@ export function BackgroundEffect({ quality, intensity, colorScheme }: Background
     animate();
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener("resize", resizeCanvas);
       cancelAnimationFrame(animationFrame);
     };
   }, [quality, intensity, colorScheme]);

@@ -1,18 +1,26 @@
-import { useEffect, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useSpring, animated } from '@react-spring/three';
-import * as THREE from 'three';
-import gsap from 'gsap';
+import { animated, useSpring } from "@react-spring/three";
+import { Canvas, useFrame } from "@react-three/fiber";
+import gsap from "gsap";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
 
 // src/components/effects/ExplosionEffect.tsx
 interface ExplosionEffectProps {
   position: { x: number; y: number };
-  size: 'small' | 'medium' | 'large';
+  size: "small" | "medium" | "large";
   color: string;
   onComplete: () => void;
 }
 
-function ExplosionParticles({ color, size, onComplete }: { color: string; size: number; onComplete: () => void }) {
+function ExplosionParticles({
+  color,
+  size,
+  onComplete,
+}: {
+  color: string;
+  size: number;
+  onComplete: () => void;
+}) {
   const particles = useRef<THREE.Points>(null);
   const particleCount = size * 100;
   const velocitiesRef = useRef<Float32Array>();
@@ -27,7 +35,7 @@ function ExplosionParticles({ color, size, onComplete }: { color: string; size: 
     velocitiesRef.current = velocities;
 
     const color1 = new THREE.Color(color);
-    const color2 = new THREE.Color('#ffffff');
+    const color2 = new THREE.Color("#ffffff");
 
     for (let i = 0; i < particleCount; i++) {
       // Random sphere distribution
@@ -56,9 +64,12 @@ function ExplosionParticles({ color, size, onComplete }: { color: string; size: 
 
     if (particles.current) {
       const geometry = particles.current.geometry as THREE.BufferGeometry;
-      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-      geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+      geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(positions, 3),
+      );
+      geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+      geometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
 
       // GSAP Animation
       gsap.to(particles.current.scale, {
@@ -66,33 +77,34 @@ function ExplosionParticles({ color, size, onComplete }: { color: string; size: 
         y: 2,
         z: 2,
         duration: 1,
-        ease: "expo.out"
+        ease: "expo.out",
       });
 
       gsap.to(particles.current.material as THREE.Material, {
         opacity: 0,
         duration: 1.5,
         ease: "power2.out",
-        onComplete
+        onComplete,
       });
     }
   }, [color, size, onComplete, particleCount]);
 
   useFrame((state, delta) => {
     if (particles.current && velocitiesRef.current) {
-      const positions = (particles.current.geometry as THREE.BufferGeometry).attributes.position;
+      const positions = (particles.current.geometry as THREE.BufferGeometry)
+        .attributes.position;
       const velocities = velocitiesRef.current;
 
       // Add time-based variation to particle movement
       const time = state.clock.elapsedTime;
-      
+
       for (let i = 0; i < positions.count; i++) {
         const timeOffset = Math.sin(time + i * 0.1) * 0.2;
         positions.setXYZ(
           i,
           positions.getX(i) + (velocities[i * 3] + timeOffset) * delta,
           positions.getY(i) + (velocities[i * 3 + 1] + timeOffset) * delta,
-          positions.getZ(i) + velocities[i * 3 + 2] * delta
+          positions.getZ(i) + velocities[i * 3 + 2] * delta,
         );
       }
       positions.needsUpdate = true;
@@ -102,7 +114,7 @@ function ExplosionParticles({ color, size, onComplete }: { color: string; size: 
   const { scale } = useSpring({
     from: { scale: 0 },
     to: { scale: 1 },
-    config: { mass: 1, tension: 280, friction: 60 }
+    config: { mass: 1, tension: 280, friction: 60 },
   });
 
   return (
@@ -119,11 +131,16 @@ function ExplosionParticles({ color, size, onComplete }: { color: string; size: 
   );
 }
 
-export function ExplosionEffect({ position, size, color, onComplete }: ExplosionEffectProps) {
+export function ExplosionEffect({
+  position,
+  size,
+  color,
+  onComplete,
+}: ExplosionEffectProps) {
   const sizeMap = {
     small: 5,
     medium: 10,
-    large: 15
+    large: 15,
   };
 
   return (
@@ -134,12 +151,12 @@ export function ExplosionEffect({ position, size, color, onComplete }: Explosion
         top: position.y,
         width: sizeMap[size] * 20,
         height: sizeMap[size] * 20,
-        transform: 'translate(-50%, -50%)'
+        transform: "translate(-50%, -50%)",
       }}
     >
       <Canvas
         camera={{ position: [0, 0, 20], fov: 75 }}
-        style={{ background: 'transparent' }}
+        style={{ background: "transparent" }}
       >
         <ambientLight intensity={0.5} />
         <ExplosionParticles
@@ -154,7 +171,7 @@ export function ExplosionEffect({ position, size, color, onComplete }: Explosion
         className="absolute inset-0 rounded-full"
         style={{
           background: `radial-gradient(circle, ${color}cc 0%, ${color}00 100%)`,
-          animation: 'flash 0.3s ease-out forwards'
+          animation: "flash 0.3s ease-out forwards",
         }}
       />
     </div>
@@ -162,7 +179,7 @@ export function ExplosionEffect({ position, size, color, onComplete }: Explosion
 }
 
 // Add to global styles
-const style = document.createElement('style');
+const style = document.createElement("style");
 style.textContent = `
   @keyframes flash {
     0% { transform: scale(0.5); opacity: 1; }

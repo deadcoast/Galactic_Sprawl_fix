@@ -1,6 +1,6 @@
 # Instructions
 
-During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again. 
+During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again.
 
 You should also use the `.cursorrules` file as a Scratchpad to organize your thoughts. Especially when you receive a new task, you should first review the content of the Scratchpad, clear old different task if necessary, first explain the task, and plan the steps you need to take to complete the task. You can use todo markers to indicate the progress, e.g.
 [X] Task 1
@@ -10,7 +10,7 @@ Also update the progress of the task in the Scratchpad when you finish a subtask
 Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan.
 The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
 
-# Tools
+## Tools
 
 Note all the tools are in python. So in the case you need to do batch processing, you can always consult the python files and write your own script.
 
@@ -18,17 +18,20 @@ Note all the tools are in python. So in the case you need to do batch processing
 
 The screenshot verification workflow allows you to capture screenshots of web pages and verify their appearance using LLMs. The following tools are available:
 
-1. Screenshot Capture:
+- Screenshot Capture:
+
 ```bash
 venv/bin/python tools/screenshot_utils.py URL [--output OUTPUT] [--width WIDTH] [--height HEIGHT]
 ```
 
-2. LLM Verification with Images:
+- LLM Verification with Images:
+
 ```bash
 venv/bin/python tools/llm_api.py --prompt "Your verification question" --provider {openai|anthropic} --image path/to/screenshot.png
 ```
 
 Example workflow:
+
 ```python
 from screenshot_utils import take_screenshot_sync
 from llm_api import query_llm
@@ -50,7 +53,8 @@ print(response)
 ## LLM
 
 You always have an LLM at your side to help you with the task. For simple tasks, you could invoke the LLM by running the following command:
-```
+
+```bash
 venv/bin/python ./tools/llm_api.py --prompt "What is the capital of France?" --provider "anthropic"
 ```
 
@@ -68,26 +72,32 @@ But usually it's a better idea to check the content of the file and use the APIs
 ## Web browser
 
 You could use the `tools/web_scraper.py` file to scrape the web.
-```
+
+```bash
 venv/bin/python ./tools/web_scraper.py --max-concurrent 3 URL1 URL2 URL3
 ```
+
 This will output the content of the web pages.
 
 ## Search engine
 
 You could use the `tools/search_engine.py` file to search the web.
-```
+
+```bash
 venv/bin/python ./tools/search_engine.py "your search keywords"
 ```
+
 This will output the search results in the following format:
-```
+
+```plaintext
 URL: https://example.com
 Title: This is the title of the search result
 Snippet: This is a snippet of the search result
 ```
+
 If needed, you can further use the `web_scraper.py` file to scrape the web page content.
 
-# Lessons
+## Lessons
 
 ## User Specified Lessons
 
@@ -114,147 +124,262 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   2. Then remove unused props from both interface and component parameters
   3. Finally remove unused local variables
   4. Keep props in the interface if they might be used by other components even if not used in the current component
+- When organizing TypeScript types in a game project:
+  1. Keep core/base types in a central location (e.g., GameTypes.ts)
+  2. Use inheritance for shared properties (e.g., extending BaseStats)
+  3. Maintain clear type hierarchies (base -> specific -> component props)
+  4. Group related types together with clear section comments
+  5. Re-export types that are commonly used together
+- When managing Pixi.js dependencies:
+  1. Use compatible versions between pixi.js and its plugins
+  2. Prefer using the main pixi.js package (v7.x) as it includes most previously separate packages
+  3. Remove @types/pixi.js when using Pixi.js v7+ as types are included in the main package
+  4. Be careful with pixi-spine and particle-emitter versions to ensure compatibility
+- When fixing TypeScript import paths:
+  1. For files in the same directory, use `./` prefix (e.g., `import { Component } from "./Component"`)
+  2. For files in parent directories, use the correct number of `../` segments
+  3. Double-check the actual file location when changing from alias imports (e.g., `@/`) to relative paths
+  4. Keep imports organized by type (React, local components, utilities, types, etc.)
 
-# Scratchpad
+## Scratchpad
 
 ## Current Project State: Galactic Sprawl
 
-### Current Implementation Task: Faction System Restructuring
+### Project Overview
 
-### Directory Structure:
-```
-src/
-├── types/                              # Centralized type definitions
-│   ├── common.ts                       # Shared types
-│   ├── factions/
-│   │   ├── FactionTypes.ts            # Core faction interfaces
-│   │   ├── ShipTypes.ts               # Ship-related types
-│   │   └── CombatTypes.ts             # Combat-related types
-│   ├── ships/
-│   │   ├── ShipTypes.ts               # Ship interfaces
-│   │   └── WeaponTypes.ts             # Weapon interfaces
-│   ├── combat/
-│   │   └── CombatTypes.ts             # Combat system types
-│   └── ui/
-│       └── UITypes.ts                  # UI-specific types
+Galactic Sprawl is a space-themed strategy game built with React/TypeScript and Vite. The project follows a well-organized structure with clear separation of concerns and modular architecture.
 
-├── config/                             # Configuration files
-│   ├── factions/
-│   │   ├── factionConfig.ts           # Core faction configuration
-│   │   ├── shipStats.ts               # Ship statistics
-│   │   └── weaponConfig.ts            # Weapon configurations
-│   ├── ships/
-│   │   └── playerShipStats.ts         # Player ship configurations
-│   ├── combat/
-│   │   └── combatConfig.ts            # Combat system settings
-│   └── game/
-│       └── gameConfig.ts              # Global game settings
+### Directory Structure Analysis
 
-├── components/
-│   ├── ships/                         # Ship-related components
-│   │   ├── common/                    # Shared ship components
-│   │   │   ├── ShipBase.tsx
-│   │   │   ├── WeaponMount.tsx
-│   │   │   └── ShipStats.tsx
-│   │   ├── player/                    # Player ship components
-│   │   │   ├── prefabs/
-│   │   │   └── controls/
-│   │   └── factions/                  # Faction ship components
-│   │       ├── spaceRats/
-│   │       ├── lostNova/
-│   │       └── equatorHorizon/
-│   ├── combat/
-│   ├── ui/
-│   ├── colony/
-│   ├── mining/
-│   ├── exploration/
-│   └── visual/
+[X] Root Level Organization
 
-├── effects/                           # Visual effects
-│   ├── combat/
-│   │   ├── WeaponEffect.tsx
-│   │   ├── ExplosionEffect.tsx
-│   │   └── ShieldEffect.tsx
-│   ├── visual/
-│   │   ├── ThrusterEffect.tsx
-│   │   └── SmokeTrailEffect.tsx
-│   └── particles/
+- Project uses Vite as build tool with TypeScript configuration
+- Standard config files present (eslint, postcss, tailwind, tsconfig)
+- Documentation in GalaxySprawlDocs directory
+- Source code in src directory
 
-├── hooks/                             # Custom hooks
-│   ├── factions/
-│   │   ├── useFactionBehavior.ts
-│   │   ├── useFactionAI.ts
-│   │   └── useEnemyAI.ts
-│   ├── combat/
-│   │   └── useCombatSystem.ts
-│   ├── ui/
-│   │   └── useTooltip.ts
-│   └── game/
-│       └── useGameState.ts
+[X] Documentation Structure (GalaxySprawlDocs/)
 
-├── lib/                               # Core game logic
-│   ├── factions/
-│   │   └── factionManager.ts
-│   ├── combat/
-│   │   └── combatManager.ts
-│   ├── ai/
-│   │   └── behaviorTree.ts
-│   └── game/
-│       └── gameManager.ts
+- Well-organized documentation covering all major aspects:
+  - Factions and AI (FAI)
+  - Gameplay Logic (GL)
+  - Ships and Combat (SC)
+  - Tech Tree (TTR)
+  - UI and Map Views (UI-MV)
+  - Project Development Plan
+  - Directory Structure
 
-├── utils/                             # Utility functions
-│   ├── math.ts
-│   ├── idGenerator.ts
-│   └── helpers.ts
+[X] Source Code Organization (src/)
 
-├── contexts/                          # React contexts
-│   ├── GameContext.tsx
-│   └── ThresholdContext.tsx
+1. Core Application Files:
+   - App.tsx, main.tsx as entry points
+   - Vite environment setup
 
-└── styles/                            # CSS styles
-    ├── components/
-    ├── effects/
-    └── ui/
-```
+2. Type Definitions (types/):
+   - Common types
+   - Domain-specific types (UI, ships, combat, etc.)
+   - Faction-related types
 
-### Implementation Steps:
+3. React Components (components/):
+   - UI components (notifications, tooltips)
+   - Ship-related components
+   - Combat system components
+   - Colony and resource management
+   - Visual effects and debug overlays
+   - Organized by feature domains:
+     - Ships (player, factions, common)
+     - Combat
+     - Trade
+     - Officers
+     - Colony
+     - Mining
+     - Exploration
+     - Visual effects
 
-1. **Phase 1: Type System & Configuration** [IN PROGRESS]
-   [X] Create basic type structure under `src/types/`
-   [ ] Move and consolidate faction types from components
-   [ ] Create proper type hierarchies
-   [ ] Move configuration files to `src/config/`
+4. Game Logic:
+   - Contexts for state management
+   - Configuration files
+   - Utility functions
+   - Custom hooks
+   - Core game libraries
 
-2. **Phase 2: Component Reorganization** [NEXT]
-   [ ] Create `src/components/ships/common/` structure
-   [ ] Move shared components (ShipBase, WeaponMount)
-   [ ] Reorganize faction ships under `components/ships/factions/`
-   [ ] Set up player ship component structure
+5. Styling:
+   - Component-specific styles
+   - UI system styles
+   - Effect styles
 
-3. **Phase 3: Effects System**
-   [ ] Move effects to dedicated `src/effects/` directory
-   [ ] Organize by combat/visual/particles
-   [ ] Update effect imports in components
+### Key Features and Systems
 
-4. **Phase 4: Logic & State**
-   [ ] Set up hooks directory structure
-   [ ] Move faction AI logic to proper hooks
-   [ ] Implement core game logic in lib/
-   [ ] Create context structure
+[X] Identified Core Game Systems:
 
-5. **Phase 5: Cleanup & Integration**
-   [ ] Update all import paths
-   [ ] Implement proper style organization
-   [ ] Add utility functions
-   [ ] Test full system integration
+- Ship Management and Combat
+- Resource Management and Mining
+- Colony Development
+- Exploration System
+- Tech Tree Progression
+- Faction AI and Diplomacy
+- Visual Effects and UI
 
-### Next Steps:
-1. Complete type consolidation in `src/types/`
-2. Move configuration files to `src/config/`
-3. Begin component reorganization
+[X] Technical Stack:
 
-### Tech Stack Decisions:
-- Use XState for complex state machines in AI behavior
-- Implement behavior trees using custom implementation
-- Use React Context for global state management
-- RxJS for handling complex event streams in combat
+- React/TypeScript for frontend
+- Vite for build system
+- Tailwind CSS for styling
+- Various React libraries for specific features
+
+### Development Progress Tracking
+
+Current Implementation Tasks:
+
+1. **Phase 1: Project Structure Cleanup** [IN PROGRESS]
+   [X] Review current project structure
+   [X] Document existing components and their relationships
+   [X] Identify core game mechanics and required components
+   [ ] Plan proper type system based on actual game mechanics
+
+2. **Phase 2: Core Game Systems** [PENDING]
+   [ ] Document faction system requirements
+   [ ] Define core game mechanics interfaces
+   [ ] Implement basic game loop
+   [ ] Set up state management
+
+3. **Phase 3: Asset Integration** [PENDING]
+   [ ] Organize pixel art assets
+   [ ] Create asset loading system
+   [ ] Implement sprite management
+   [ ] Set up animation system
+
+4. **Phase 4: UI/UX Implementation** [PENDING]
+   [ ] Design core game UI
+   [ ] Implement component system
+   [ ] Create effect system
+   [ ] Set up debug overlays
+
+### Next Steps
+
+1. Complete type system planning
+2. Begin implementing core game mechanics
+3. Set up proper state management system
+4. Start asset integration
+
+### Tech Stack Decisions
+
+- React + TypeScript + Vite as core stack
+- Tailwind CSS for styling
+- Need to evaluate additional libraries for:
+  - State management (Redux vs Context)
+  - Animation systems
+  - Game loop management
+  - Asset handling
+
+## Current Task: Ship System Reorganization
+
+### Task Overview
+
+Need to properly separate and organize player ships and faction ships to eliminate duplicates and confusion. This includes proper file naming, type definitions, and component organization.
+
+### Current Issues Identified
+
+1. File naming inconsistency between player and faction ships
+2. Duplicate type definitions
+3. Mixed up ship stats and configurations
+4. Unclear separation between player and faction ship components
+
+### Required Changes
+
+[ ] Type System Organization
+
+- [ ] Create clear ship type hierarchy
+- [ ] Separate player and faction specific types
+- [ ] Define shared/common types
+
+[ ] File Structure Cleanup
+
+- [ ] Reorganize ship-related files with clear naming
+- [ ] Ensure proper imports and exports
+- [ ] Remove duplicates
+
+[ ] Component Separation
+
+- [ ] Clean up player ship components
+- [ ] Clean up faction ship components
+- [ ] Extract common functionality
+
+[ ] Configuration Files
+
+- [ ] Separate player and faction ship stats
+- [ ] Clean up weapon configurations
+- [ ] Organize ship abilities
+
+### Files to Review/Modify
+
+1. Types:
+   - src/types/ships/ship.ts
+   - src/types/ships/ShipTypes.ts
+   - src/types/ships/WeaponTypes.ts
+
+2. Stats/Config:
+   - src/config/ships/playerShipStats.ts
+   - src/config/factions/factionShipStats.ts
+
+3. Components:
+   - src/components/ships/player/PlayerShipStats.tsx
+   - src/components/ships/factions/FactionShipStats.tsx
+   - src/components/ships/common/*.tsx
+
+### Correction Steps
+
+1. Review and analyze current type definitions
+2. Create proper type hierarchy
+3. Clean up configuration files
+4. Update components to use new structure
+
+## Current Task: Building Module Organization
+
+### Building Modules Structure
+
+[ ] Core Modules (Both Mothership & Colony):
+
+- Radar
+- Ship Hangar
+- Officer Academy
+
+[ ] Colony-Only Modules:
+
+- Exploration Hub
+- Mineral Processing Centre
+- Trading Hub
+
+[ ] Implementation Tasks:
+
+1. [ ] Create base module interfaces
+2. [ ] Implement core modules
+3. [ ] Implement colony-specific modules
+4. [ ] Create module attachment system
+5. [ ] Implement module UI menus
+
+### Files to Create/Update
+
+1. Core Module Types:
+   - src/types/buildings/ModuleTypes.ts
+   - src/types/buildings/CoreModuleTypes.ts
+   - src/types/buildings/ColonyModuleTypes.ts
+
+2. Module Components:
+   - src/components/buildings/modules/radar/
+   - src/components/buildings/modules/hangar/
+   - src/components/buildings/modules/academy/
+   - src/components/buildings/modules/exploration/
+   - src/components/buildings/modules/mineral/
+   - src/components/buildings/modules/trading/
+
+3. Building Core Components:
+   - src/components/buildings/mothership/MothershipCore.tsx
+   - src/components/buildings/colony/ColonyCore.tsx
+
+### Future Steps
+
+1. Create type definitions for modules
+2. Implement core module components
+3. Create module attachment system
+4. Implement colony-specific modules

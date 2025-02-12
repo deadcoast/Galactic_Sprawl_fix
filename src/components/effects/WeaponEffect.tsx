@@ -1,24 +1,28 @@
-import { useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useSpring } from '@react-spring/three';
-import * as THREE from 'three';
-import { Trail } from '@react-three/drei';
+import { useSpring } from "@react-spring/three";
+import { Trail } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useRef } from "react";
+import * as THREE from "three";
 
 interface WeaponEffectProps {
-  type: 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets';
+  type: "machineGun" | "railGun" | "gaussCannon" | "rockets" | "mgss";
   color: string;
   position: { x: number; y: number };
   rotation: number;
   firing: boolean;
 }
 
-function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' | 'rotation'>) {
+function WeaponBeam({
+  type,
+  color,
+  firing,
+}: Omit<WeaponEffectProps, "position" | "rotation">) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const timeRef = useRef(0);
 
   const { intensity } = useSpring({
     intensity: firing ? 1 : 0,
-    config: { tension: 280, friction: 60 }
+    config: { tension: 280, friction: 60 },
   });
 
   // Create shader material directly
@@ -27,7 +31,7 @@ function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' 
       time: { value: 0 },
       color: { value: new THREE.Color(color) },
       intensity: { value: 0 },
-      weaponType: { value: 0 }
+      weaponType: { value: 0 },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -98,12 +102,19 @@ function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' 
           alpha = (1.0 - core) * (plasma + rings * 0.3) * intensity;
           finalColor = mix(color, vec3(1.0), fresnel * 0.8 + plasma * 0.4);
         }
-        else { // Rockets
+        else if (weaponType == 3) { // Rockets
           float rocketCore = smoothstep(0.45, 0.55, abs(uv.x - 0.5));
           float exhaust = fbm(vec2(uv.x * 5.0, uv.y * 2.0 - time * 3.0));
           float sparkles = noise(uv * 20.0 + time * 4.0);
           alpha = (1.0 - rocketCore) * (exhaust + sparkles * 0.2) * intensity;
           finalColor = mix(color, vec3(1.0), fresnel * 0.6 + exhaust * 0.3);
+        }
+        else if (weaponType == 4) { // MGSS
+          float beamCore = smoothstep(0.47, 0.53, abs(uv.x - 0.5));
+          float swirl = sin(uv.y * 40.0 + time * 8.0 + uv.x * 5.0) * 0.5 + 0.5;
+          float energyField = fbm(uv * 6.0 + time * 1.5);
+          alpha = (1.0 - beamCore) * (swirl + energyField * 0.4) * intensity;
+          finalColor = mix(color, vec3(1.0), fresnel * 0.9 + swirl * 0.3);
         }
         
         // Add global glow
@@ -111,7 +122,7 @@ function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' 
         
         gl_FragColor = vec4(finalColor, alpha);
       }
-    `
+    `,
   };
 
   useFrame((_state, delta) => {
@@ -127,7 +138,8 @@ function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' 
     machineGun: 0,
     railGun: 1,
     gaussCannon: 2,
-    rockets: 3
+    rockets: 3,
+    mgss: 4,
   };
 
   return (
@@ -142,7 +154,7 @@ function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' 
         vertexShader={shader.vertexShader}
         fragmentShader={shader.fragmentShader}
       />
-      {type !== 'machineGun' && (
+      {type !== "machineGun" && (
         <Trail
           width={0.2}
           length={5}
@@ -154,21 +166,27 @@ function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' 
   );
 }
 
-export function WeaponEffect({ type, color, position, rotation, firing }: WeaponEffectProps) {
+export function WeaponEffect({
+  type,
+  color,
+  position,
+  rotation,
+  firing,
+}: WeaponEffectProps) {
   return (
     <div
       className="absolute"
       style={{
         left: position.x,
         top: position.y,
-        width: '100px',
-        height: '200px',
-        transform: `rotate(${rotation}deg)`
+        width: "100px",
+        height: "200px",
+        transform: `rotate(${rotation}deg)`,
       }}
     >
       <Canvas
         camera={{ position: [0, 0, 2], fov: 75 }}
-        style={{ background: 'transparent' }}
+        style={{ background: "transparent" }}
       >
         <WeaponBeam type={type} color={color} firing={firing} />
       </Canvas>
@@ -180,18 +198,18 @@ export function WeaponEffect({ type, color, position, rotation, firing }: Weapon
             className="absolute inset-0 pointer-events-none"
             style={{
               background: `radial-gradient(circle at 50% 0%, ${color}66 0%, ${color}00 70%)`,
-              filter: 'blur(8px)',
+              filter: "blur(8px)",
               opacity: 0.8,
-              animation: 'pulse 1.5s ease-in-out infinite'
+              animation: "pulse 1.5s ease-in-out infinite",
             }}
           />
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background: `radial-gradient(circle at 50% 0%, ${color}33 0%, ${color}00 100%)`,
-              filter: 'blur(16px)',
+              filter: "blur(16px)",
               opacity: 0.6,
-              animation: 'pulse 2s ease-in-out infinite reverse'
+              animation: "pulse 2s ease-in-out infinite reverse",
             }}
           />
         </>

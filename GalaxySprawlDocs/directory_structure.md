@@ -3,6 +3,7 @@
 ```
 Galactic_Sprawl/
 │   └── .cursorrules
+│   └── README.md
 │   └── eslint.config.js
 │   └── future_update
 │   └── index.html
@@ -51,7 +52,6 @@ Galactic_Sprawl/
 │   │   │   │   └── GS_UIM-HabitableWorlds.md
 │   │   │   │   └── GS_UIM-MothershipAndColonyUIMenu.md
 │   │   │   │   └── GS_UIM-OfficersAcademyAndShipHanger.md
-│   └── public/
 │   └── src/
 │   │   └── App.tsx
 │   │   └── index.css
@@ -59,13 +59,23 @@ Galactic_Sprawl/
 │   │   └── vite-env.d.ts
 │   │   └── types/
 │   │   │   └── common.ts
+│   │   │   └── index.ts
 │   │   │   └── ui/
 │   │   │   │   └── UITypes.ts
 │   │   │   └── ships/
-│   │   │   │   └── ShipTypes.ts
+│   │   │   │   └── CommonShipTypes.ts
+│   │   │   │   └── FactionShipTypes.ts
+│   │   │   │   └── PlayerShipTypes.ts
 │   │   │   │   └── WeaponTypes.ts
+│   │   │   └── buildings/
+│   │   │   │   └── ModuleTypes.ts
+│   │   │   └── core/
+│   │   │   │   └── GameTypes.ts
 │   │   │   └── combat/
 │   │   │   │   └── CombatTypes.ts
+│   │   │   │   └── SalvageTypes.ts
+│   │   │   └── weapons/
+│   │   │   │   └── WeaponTypes.ts
 │   │   │   └── factions/
 │   │   │   │   └── CombatTypes.ts
 │   │   │   │   └── FactionTypes.ts
@@ -75,35 +85,41 @@ Galactic_Sprawl/
 │   │   │   └── ThresholdContext.tsx
 │   │   │   └── ThresholdTypes.ts
 │   │   └── config/
-│   │   │   └── playerShipStats.ts
 │   │   │   └── ships/
 │   │   │   │   └── playerShipStats.ts
 │   │   │   └── combat/
 │   │   │   │   └── combatConfig.ts
+│   │   │   │   └── weaponConfig.ts
 │   │   │   └── game/
 │   │   │   │   └── gameConfig.ts
 │   │   │   └── factions/
 │   │   │   │   └── factionConfig.ts
+│   │   │   │   └── factionShipStats.ts
+│   │   │   │   └── factions.ts
 │   │   │   │   └── shipStats.ts
 │   │   │   │   └── weaponConfig.ts
 │   │   └── utils/
 │   │   │   └── helpers.ts
 │   │   │   └── idGenerator.ts
 │   │   │   └── math.ts
+│   │   │   └── shipUtils.ts
+│   │   │   └── types/
+│   │   │   └── math/
 │   │   └── styles/
-│   │   │   └── capital-ships.css
-│   │   │   └── colony.css
-│   │   │   └── effects.css
-│   │   │   └── exploration.css
-│   │   │   └── habitable-world.css
-│   │   │   └── mineral-processing.css
-│   │   │   └── mothership.css
-│   │   │   └── vpr-effects.css
-│   │   │   └── vpr-system.css
 │   │   │   └── ui/
+│   │   │   │   └── vpr-system.css
 │   │   │   └── components/
+│   │   │   │   └── capital-ships.css
+│   │   │   │   └── colony.css
+│   │   │   │   └── exploration.css
+│   │   │   │   └── habitable-world.css
+│   │   │   │   └── mineral-processing.css
+│   │   │   │   └── mothership.css
 │   │   │   └── effects/
+│   │   │   │   └── effects.css
+│   │   │   │   └── vpr-effects.css
 │   │   └── components/
+│   │   │   └── DiplomacyPanel.tsx
 │   │   │   └── GalaxyMap.tsx
 │   │   │   └── GameHUD.tsx
 │   │   │   └── GameLayout.tsx
@@ -113,69 +129,122 @@ Galactic_Sprawl/
 │   │   │   └── VPRLoadingFallback.tsx
 │   │   │   └── VPRStarSystemView.tsx
 │   │   │   └── ui/
+│   │   │   │   └── NotificationSystem.tsx
 │   │   │   │   └── TooltipProvider.tsx
 │   │   │   │   └── tooltip-context.ts
 │   │   │   └── ships/
-│   │   │   │   └── ShipStats.tsx
+│   │   │   │   └── ShipHangar.tsx
+│   │   │   │   └── reconships/
 │   │   │   │   └── common/
-│   │   │   │   │   └── ShipBase.tsx
-│   │   │   │   │   └── ShipStats.tsx
+│   │   │   │   │   └── CommonShipMovement.tsx
+│   │   │   │   │   └── CommonShipStats.tsx
 │   │   │   │   │   └── WeaponMount.tsx
 │   │   │   │   └── factions/
+│   │   │   │   │   └── FactionAI.tsx
+│   │   │   │   │   └── FactionFleet.tsx
+│   │   │   │   │   └── FactionManager.tsx
+│   │   │   │   │   └── FactionShipBase.tsx
+│   │   │   │   │   └── FactionShipStats.tsx
 │   │   │   │   │   └── lostNova/
 │   │   │   │   │   │   └── DarkMatterReaper.tsx
 │   │   │   │   │   │   └── EclipseScythe.tsx
+│   │   │   │   │   │   └── LostNovaShip.tsx
+│   │   │   │   │   │   └── NullHunter.tsx
 │   │   │   │   │   └── equatorHorizon/
 │   │   │   │   │   │   └── CelestialArbiter.tsx
+│   │   │   │   │   │   └── EquatorHorizonShip.tsx
 │   │   │   │   │   │   └── EtherealGalleon.tsx
 │   │   │   │   │   │   └── StellarEquinox.tsx
 │   │   │   │   │   └── spaceRats/
 │   │   │   │   │   │   └── AsteroidMarauder.tsx
 │   │   │   │   │   │   └── RatKing.tsx
 │   │   │   │   │   │   └── RogueNebula.tsx
+│   │   │   │   │   │   └── SpaceRatShip.tsx
+│   │   │   │   └── miningships/
 │   │   │   │   └── player/
-│   │   │   │   │   └── prefabs/
-│   │   │   │   │   └── controls/
+│   │   │   │   │   └── PlayerShipStats.tsx
+│   │   │   │   │   └── types/
+│   │   │   │   │   │   └── reconships/
+│   │   │   │   │   │   │   └── ReconShipControl.tsx
+│   │   │   │   │   │   │   └── ReconShipStatus.tsx
+│   │   │   │   │   │   └── miningships/
+│   │   │   │   │   │   │   └── VoidDredgerMiner.tsx
+│   │   │   │   │   │   └── warships/
+│   │   │   │   │   │   │   └── HarbringerGalleon.tsx
+│   │   │   │   │   │   │   └── MidwayCarrier.tsx
+│   │   │   │   │   │   │   └── MotherEarthRevenge.tsx
+│   │   │   │   │   │   │   └── OrionFrigate.tsx
+│   │   │   │   │   │   │   └── PlayerWarShipCombat.tsx
+│   │   │   │   │   │   │   └── Spitflare.tsx
+│   │   │   │   │   │   │   └── StarSchooner.tsx
+│   │   │   │   │   │   │   └── WarShip.tsx
+│   │   │   │   │   └── customization/
+│   │   │   │   │   │   └── PlayerShipCustomization.tsx
+│   │   │   │   │   │   └── PlayerShipUpgrade.tsx
+│   │   │   │   │   │   └── PlayerShipUpgradeSystem.tsx
+│   │   │   │   │   └── base/
+│   │   │   │   │   │   └── PlayerShipBase.tsx
+│   │   │   │   │   │   └── PlayerShipStats.tsx
+│   │   │   │   └── warships/
+│   │   │   │   │   └── tier1/
+│   │   │   │   │   └── tier3/
+│   │   │   │   │   └── tier2/
+│   │   │   └── buildings/
+│   │   │   │   └── colony/
+│   │   │   │   │   └── AutomatedExpansion.tsx
+│   │   │   │   │   └── BiodomeModule.tsx
+│   │   │   │   │   └── ColonyCore.tsx
+│   │   │   │   │   └── CulturalCenter.tsx
+│   │   │   │   │   └── EconomicHub.tsx
+│   │   │   │   │   └── HabitableWorld.tsx
+│   │   │   │   │   └── ResourceTransferAnimation.tsx
+│   │   │   │   └── modules/
+│   │   │   │   │   └── academy/
+│   │   │   │   │   │   └── HiringPanel.tsx
+│   │   │   │   │   │   └── OfficerAcademy.tsx
+│   │   │   │   │   │   └── OfficerCard.tsx
+│   │   │   │   │   │   └── OfficerDetails.tsx
+│   │   │   │   │   └── hangar/
+│   │   │   │   │   │   └── HangarModule.tsx
+│   │   │   │   │   │   └── ShipHangar.tsx
+│   │   │   │   │   └── MiningHub/
+│   │   │   │   │   │   └── AutomationMonitor.tsx
+│   │   │   │   │   │   └── MineralProcessingCentre.tsx
+│   │   │   │   │   │   └── MiningControls.tsx
+│   │   │   │   │   │   └── MiningMap.tsx
+│   │   │   │   │   │   └── MiningTutorial.tsx
+│   │   │   │   │   │   └── MiningWindow.tsx
+│   │   │   │   │   │   └── ResourceNode.tsx
+│   │   │   │   │   │   └── ResourceStorage.tsx
+│   │   │   │   │   │   └── ResourceTransfer.tsx
+│   │   │   │   │   │   └── ResourceTransferManager.tsx
+│   │   │   │   │   │   └── TechBonus.tsx
+│   │   │   │   │   │   └── ThresholdManager.tsx
+│   │   │   │   │   │   └── ThresholdPresetsPanel.tsx
+│   │   │   │   │   │   └── ThresholdStatusIndicator.tsx
+│   │   │   │   │   └── ExplorationHub/
+│   │   │   │   │   │   └── ExplorationControls.tsx
+│   │   │   │   │   │   └── ExplorationHub.tsx
+│   │   │   │   │   │   └── ExplorationTutorial.tsx
+│   │   │   │   │   │   └── ExplorationWindow.tsx
+│   │   │   │   │   │   └── MissionLog.tsx
+│   │   │   │   │   │   └── ReconShipStatus.tsx
+│   │   │   │   │   └── radar/
+│   │   │   │   │   │   └── RadarModule.tsx
+│   │   │   │   │   └── trading/
+│   │   │   │   └── mothership/
+│   │   │   │   │   └── MothershipCore.tsx
 │   │   │   └── combat/
 │   │   │   │   └── BattleEnvironment.tsx
 │   │   │   │   └── SalvageSystem.tsx
 │   │   │   └── trade/
 │   │   │   │   └── TradeRouteVisualizer.tsx
-│   │   │   └── officers/
-│   │   │   │   └── HiringPanel.tsx
-│   │   │   │   └── OfficerCard.tsx
-│   │   │   │   └── OfficerDetails.tsx
-│   │   │   │   └── OfficersAcademy.tsx
-│   │   │   └── colony/
-│   │   │   │   └── AutomatedExpansion.tsx
-│   │   │   │   └── BiodomeModule.tsx
-│   │   │   │   └── CulturalCenter.tsx
-│   │   │   │   └── EconomicHub.tsx
-│   │   │   │   └── HabitableWorld.tsx
-│   │   │   │   └── ResourceTransferAnimation.tsx
-│   │   │   └── mining/
-│   │   │   │   └── AutomationMonitor.tsx
-│   │   │   │   └── MineralProcessingCentre.tsx
-│   │   │   │   └── MiningControls.tsx
-│   │   │   │   └── MiningMap.tsx
-│   │   │   │   └── MiningTutorial.tsx
-│   │   │   │   └── MiningWindow.tsx
-│   │   │   │   └── ResourceNode.tsx
-│   │   │   │   └── ResourceStorage.tsx
-│   │   │   │   └── ResourceTransfer.tsx
-│   │   │   │   └── ResourceTransferManager.tsx
-│   │   │   │   └── TechBonus.tsx
-│   │   │   │   └── ThresholdManager.tsx
-│   │   │   │   └── ThresholdPresetsPanel.tsx
-│   │   │   │   └── ThresholdStatusIndicator.tsx
-│   │   │   │   └── VoidDredger.tsx
-│   │   │   └── exploration/
-│   │   │   │   └── ExplorationControls.tsx
-│   │   │   │   └── ExplorationHub.tsx
-│   │   │   │   └── ExplorationTutorial.tsx
-│   │   │   │   └── ExplorationWindow.tsx
-│   │   │   │   └── MissionLog.tsx
-│   │   │   │   └── ReconShipStatus.tsx
+│   │   │   └── weapons/
+│   │   │   │   └── WeaponComponents.tsx
+│   │   │   │   └── WeaponControl.tsx
+│   │   │   │   └── WeaponLoadout.tsx
+│   │   │   │   └── WeaponSystem.tsx
+│   │   │   │   └── WeaponUpgradeSystem.tsx
 │   │   │   └── visual/
 │   │   │   │   └── BackgroundEffect.tsx
 │   │   │   │   └── BuildingUpgradeEffect.tsx
@@ -190,82 +259,8 @@ Galactic_Sprawl/
 │   │   │   │   └── ProgressionEffects.tsx
 │   │   │   │   └── StarSystemBackdrop.tsx
 │   │   │   │   └── TradeRouteEffect.tsx
-│   │   │   └── playerShips/
-│   │   │   │   └── ReconShipControl.tsx
-│   │   │   │   └── ReconShipStatus.tsx
-│   │   │   │   └── ShipCustomization.tsx
-│   │   │   │   └── ShipHangar.tsx
-│   │   │   │   └── ShipStats.tsx
-│   │   │   │   └── ShipUpgrade.tsx
-│   │   │   │   └── ShipUpgradeSystem.tsx
-│   │   │   │   └── WarShip.tsx
-│   │   │   │   └── WarShipCombat.tsx
-│   │   │   │   └── WeaponControl.tsx
-│   │   │   │   └── WeaponLoadout.tsx
-│   │   │   │   └── WeaponSystem.tsx
-│   │   │   │   └── WeaponUpgradeSystem.tsx
-│   │   │   │   └── prefabs/
-│   │   │   │   │   └── HarbringerGalleon.tsx
-│   │   │   │   │   └── MidwayCarrier.tsx
-│   │   │   │   │   └── MotherEarthRevenge.tsx
-│   │   │   │   │   └── OrionFrigate.tsx
-│   │   │   │   │   └── Spitflare.tsx
-│   │   │   │   │   └── StarSchooner.tsx
 │   │   │   └── factions/
-│   │   │   │   └── DiplomacyPanel.tsx
-│   │   │   │   └── EquatorHorizonShip.tsx
-│   │   │   │   └── FactionAI.tsx
-│   │   │   │   └── FactionFleet.tsx
 │   │   │   │   └── FactionManager.tsx
-│   │   │   │   └── LostNovaShip.tsx
-│   │   │   │   └── SpaceRatShip.tsx
-│   │   │   │   └── ui/
-│   │   │   │   └── ships/
-│   │   │   │   │   └── lostNova/
-│   │   │   │   │   │   └── DarkMatterReaper.tsx
-│   │   │   │   │   │   └── EclipseScythe.tsx
-│   │   │   │   │   │   └── NullHunter.tsx
-│   │   │   │   │   └── components/
-│   │   │   │   │   │   └── ShipBase.tsx
-│   │   │   │   │   │   └── WeaponMount.tsx
-│   │   │   │   │   └── equatorHorizon/
-│   │   │   │   │   │   └── CelestialArbiter.tsx
-│   │   │   │   │   │   └── EtherealGalleon.tsx
-│   │   │   │   │   │   └── StellarEquinox.tsx
-│   │   │   │   │   └── spaceRats/
-│   │   │   │   │   │   └── AsteroidMarauder.tsx
-│   │   │   │   │   │   └── RatKing.tsx
-│   │   │   │   │   │   └── RogueNebula.tsx
-│   │   │   │   └── types/
-│   │   │   │   │   └── CombatTypes.ts
-│   │   │   │   │   └── FactionTypes.ts
-│   │   │   │   │   └── ShipTypes.ts
-│   │   │   │   │   └── index.ts
-│   │   │   │   └── config/
-│   │   │   │   │   └── factionConfig.ts
-│   │   │   │   │   └── factionShipStats.ts
-│   │   │   │   │   └── factions.ts
-│   │   │   │   │   └── shipStats.ts
-│   │   │   │   │   └── weaponConfig.ts
-│   │   │   │   └── factionLib/
-│   │   │   │   │   └── factionManager.ts
-│   │   │   │   └── factionHooks/
-│   │   │   │   │   └── useEnemyAI.ts
-│   │   │   │   │   └── useFactionAI.ts
-│   │   │   │   │   └── useFactionBehavior.ts
-│   │   │   │   └── hooks/
-│   │   │   │   └── lib/
-│   │   │   │   └── factionShips/
-│   │   │   │   │   └── FactionShip.tsx
-│   │   │   │   │   └── lostNova/
-│   │   │   │   │   └── equatorHorizon/
-│   │   │   │   │   └── spaceRats/
-│   │   │   │   │   │   └── AsteroidMarauder.tsx
-│   │   │   │   │   │   └── RatKing.tsx
-│   │   │   │   │   │   └── RogueNebula.tsx
-│   │   │   │   │   │   └── SpaceRatFleet.tsx
-│   │   │   │   └── factionTypes/
-│   │   │   │   │   └── ship.ts
 │   │   │   └── effects/
 │   │   │   │   └── ExplosionEffect.tsx
 │   │   │   │   └── ShieldEffect.tsx
@@ -275,11 +270,9 @@ Galactic_Sprawl/
 │   │   │   └── debug/
 │   │   │   │   └── AIDebugOverlay.tsx
 │   │   └── hooks/
-│   │   │   └── useAdaptiveAI.ts
 │   │   │   └── useCombatSystem.ts
 │   │   │   └── useDebugOverlay.ts
 │   │   │   └── useDiplomacy.ts
-│   │   │   └── useFleetAI.ts
 │   │   │   └── useGlobalEvents.ts
 │   │   │   └── useScalingSystem.ts
 │   │   │   └── useTooltip.ts
@@ -293,17 +286,26 @@ Galactic_Sprawl/
 │   │   │   └── game/
 │   │   │   │   └── useGameState.ts
 │   │   │   └── factions/
+│   │   │   │   └── useAdaptiveAI.ts
 │   │   │   │   └── useEnemyAI.ts
 │   │   │   │   └── useFactionAI.ts
 │   │   │   │   └── useFactionBehavior.ts
+│   │   │   │   └── useFleetAI.ts
+│   │   │   └── debug/
 │   │   └── lib/
 │   │   │   └── combatManager.ts
 │   │   │   └── combat/
 │   │   │   │   └── combatManager.ts
+│   │   │   │   └── salvageManager.ts
+│   │   │   └── utils/
+│   │   │   │   └── EventEmitter.ts
 │   │   │   └── game/
 │   │   │   │   └── gameManager.ts
+│   │   │   │   └── techTreeManager.ts
 │   │   │   └── ai/
 │   │   │   │   └── behaviorTree.ts
+│   │   │   │   └── shipBehavior.ts
+│   │   │   │   └── shipMovement.ts
 │   │   │   └── factions/
 │   │   │   │   └── factionManager.ts
 │   │   └── effects/

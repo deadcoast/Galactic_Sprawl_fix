@@ -1,6 +1,6 @@
-import { useRef, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
 
 interface SmokeTrailProps {
   position: { x: number; y: number };
@@ -9,7 +9,11 @@ interface SmokeTrailProps {
   color: string;
 }
 
-function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, 'position'>) {
+function SmokeParticles({
+  direction,
+  intensity,
+  color,
+}: Omit<SmokeTrailProps, "position">) {
   const particlesRef = useRef<THREE.Points>(null);
   const particleCount = 1000;
   const particlePositions = useRef<Float32Array>();
@@ -35,7 +39,8 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
       positions[i3 + 1] = 0;
       positions[i3 + 2] = 0;
 
-      const angle = direction * (Math.PI / 180) + (Math.random() - 0.5) * Math.PI * 0.5;
+      const angle =
+        direction * (Math.PI / 180) + (Math.random() - 0.5) * Math.PI * 0.5;
       const speed = (0.5 + Math.random() * 0.5) * intensity;
       velocities[i3] = Math.cos(angle) * speed;
       velocities[i3 + 1] = Math.sin(angle) * speed;
@@ -45,12 +50,20 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
     }
 
     const geometry = particlesRef.current.geometry as THREE.BufferGeometry;
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('startTime', new THREE.BufferAttribute(startTimes, 1));
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute(
+      "startTime",
+      new THREE.BufferAttribute(startTimes, 1),
+    );
   }, [direction, intensity]);
 
   useFrame((state) => {
-    if (!particlesRef.current || !particlePositions.current || !particleVelocities.current || !particleStartTimes.current) {
+    if (
+      !particlesRef.current ||
+      !particlePositions.current ||
+      !particleVelocities.current ||
+      !particleStartTimes.current
+    ) {
       return;
     }
 
@@ -59,7 +72,7 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
     const velocities = particleVelocities.current;
     const startTimes = particleStartTimes.current;
     const geometry = particlesRef.current.geometry as THREE.BufferGeometry;
-    const positionAttribute = geometry.getAttribute('position');
+    const positionAttribute = geometry.getAttribute("position");
 
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
@@ -76,7 +89,7 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
         positions[i3] += velocities[i3] * 0.016;
         positions[i3 + 1] += velocities[i3 + 1] * 0.016;
         positions[i3 + 2] += velocities[i3 + 2] * 0.016;
-        
+
         // Add turbulence
         positions[i3] += Math.sin(particleTime * 5 + i) * 0.02;
         positions[i3 + 1] += Math.cos(particleTime * 3 + i) * 0.02;
@@ -90,7 +103,7 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
     uniforms: {
       time: { value: 0 },
       color: { value: new THREE.Color(color) },
-      intensity: { value: intensity }
+      intensity: { value: intensity },
     },
     vertexShader: `
       attribute float startTime;
@@ -129,7 +142,7 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
         
         gl_FragColor = vec4(glowColor, vAlpha * intensity * softness);
       }
-    `
+    `,
   };
 
   return (
@@ -161,21 +174,26 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
   );
 }
 
-export function SmokeTrailEffect({ position, direction, intensity, color }: SmokeTrailProps) {
+export function SmokeTrailEffect({
+  position,
+  direction,
+  intensity,
+  color,
+}: SmokeTrailProps) {
   return (
     <div
       className="absolute pointer-events-none"
       style={{
         left: position.x,
         top: position.y,
-        width: '400px',
-        height: '400px',
-        transform: 'translate(-50%, -50%)'
+        width: "400px",
+        height: "400px",
+        transform: "translate(-50%, -50%)",
       }}
     >
       <Canvas
         camera={{ position: [0, 0, 50], fov: 50 }}
-        style={{ background: 'transparent' }}
+        style={{ background: "transparent" }}
       >
         <SmokeParticles
           direction={direction}
@@ -188,7 +206,7 @@ export function SmokeTrailEffect({ position, direction, intensity, color }: Smok
 }
 
 // Add to global styles
-const style = document.createElement('style');
+const style = document.createElement("style");
 style.textContent = `
   @keyframes smoke {
     0% { transform: scale(1); opacity: 0.8; }

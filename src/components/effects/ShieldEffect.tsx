@@ -1,10 +1,10 @@
 // src/components/effects/ShieldEffect.tsx
-import { useRef, useEffect } from 'react';
-import { Canvas, useFrame, extend as extendThree } from '@react-three/fiber';
-import { Sphere, shaderMaterial } from '@react-three/drei';
-import * as THREE from 'three';
-import { useSpring } from '@react-spring/three';
-import gsap from 'gsap';
+import { useSpring } from "@react-spring/three";
+import { Sphere, shaderMaterial } from "@react-three/drei";
+import { Canvas, extend as extendThree, useFrame } from "@react-three/fiber";
+import gsap from "gsap";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
 
 interface ShieldEffectProps {
   active: boolean;
@@ -26,7 +26,7 @@ const ShieldMaterial = shaderMaterial(
     opacity: 0,
     health: 1,
     impactPosition: new THREE.Vector2(0, 0),
-    impactIntensity: 0
+    impactIntensity: 0,
   },
   // Enhanced vertex shader with wave motion
   `
@@ -143,7 +143,7 @@ const ShieldMaterial = shaderMaterial(
 
       gl_FragColor = vec4(finalColor, finalOpacity);
     }
-  `
+  `,
 );
 
 // Extend Three.js with our custom material
@@ -162,9 +162,9 @@ type ShieldMaterialType = THREE.ShaderMaterial & {
 };
 
 // Update type definition for the material
-declare module '@react-three/fiber' {
+declare module "@react-three/fiber" {
   interface ThreeElements {
-    shieldMaterial: Omit<JSX.IntrinsicElements['shaderMaterial'], 'args'> & {
+    shieldMaterial: Omit<JSX.IntrinsicElements["shaderMaterial"], "args"> & {
       ref?: React.RefObject<ShieldMaterialType>;
       color?: THREE.ColorRepresentation;
       uniforms?: {
@@ -179,13 +179,18 @@ declare module '@react-three/fiber' {
   }
 }
 
-function Shield({ active, health, color, impact }: Omit<ShieldEffectProps, 'size'>) {
+function Shield({
+  active,
+  health,
+  color,
+  impact,
+}: Omit<ShieldEffectProps, "size">) {
   const materialRef = useRef<ShieldMaterialType>(null);
   const timeRef = useRef(0);
 
   const { opacity } = useSpring({
     opacity: active ? 1 : 0,
-    config: { tension: 280, friction: 60 }
+    config: { tension: 280, friction: 60 },
   });
 
   useEffect(() => {
@@ -195,7 +200,7 @@ function Shield({ active, health, color, impact }: Omit<ShieldEffectProps, 'size
         duration: 0.3,
         ease: "expo.out",
         yoyo: true,
-        repeat: 1
+        repeat: 1,
       });
     }
   }, [impact]);
@@ -204,11 +209,15 @@ function Shield({ active, health, color, impact }: Omit<ShieldEffectProps, 'size
     if (materialRef.current) {
       // Use state.clock for smooth continuous time and delta for increments
       timeRef.current = state.clock.elapsedTime;
-      materialRef.current.uniforms.time.value = timeRef.current * (1 + Math.sin(state.clock.elapsedTime * 0.1) * 0.2);
+      materialRef.current.uniforms.time.value =
+        timeRef.current * (1 + Math.sin(state.clock.elapsedTime * 0.1) * 0.2);
       materialRef.current.uniforms.health.value = health;
       materialRef.current.uniforms.opacity.value = opacity.get();
       if (impact) {
-        materialRef.current.uniforms.impactPosition.value.set(impact.x / 100, impact.y / 100);
+        materialRef.current.uniforms.impactPosition.value.set(
+          impact.x / 100,
+          impact.y / 100,
+        );
       }
     }
   });
@@ -227,26 +236,27 @@ function Shield({ active, health, color, impact }: Omit<ShieldEffectProps, 'size
   );
 }
 
-export function ShieldEffect({ active, health, color, size, impact }: ShieldEffectProps) {
+export function ShieldEffect({
+  active,
+  health,
+  color,
+  size,
+  impact,
+}: ShieldEffectProps) {
   return (
     <div
       className="absolute inset-0 pointer-events-none"
       style={{
         width: `${size}px`,
-        height: `${size}px`
+        height: `${size}px`,
       }}
     >
       <Canvas
         camera={{ position: [0, 0, 2], fov: 75 }}
-        style={{ background: 'transparent' }}
+        style={{ background: "transparent" }}
       >
         <ambientLight intensity={0.5} />
-        <Shield
-          active={active}
-          health={health}
-          color={color}
-          impact={impact}
-        />
+        <Shield active={active} health={health} color={color} impact={impact} />
       </Canvas>
     </div>
   );

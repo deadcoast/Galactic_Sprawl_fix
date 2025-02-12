@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { factionManager } from '../factionLib/factionManager';
+import { factionManager } from "../../lib/factions/factionManager";
+import { useEffect, useState } from "react";
 
 export function useFactionAI(factionId: string) {
   const [aiState, setAIState] = useState({
@@ -8,9 +8,9 @@ export function useFactionAI(factionId: string) {
       isHostile: false,
       willAttack: false,
       expansionPriority: 0,
-      reinforcementNeeded: false
+      reinforcementNeeded: false,
     },
-    lastUpdate: Date.now()
+    lastUpdate: Date.now(),
   });
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function useFactionAI(factionId: string) {
         setAIState({
           isActive: state.isActive,
           behavior,
-          lastUpdate: Date.now()
+          lastUpdate: Date.now(),
         });
       }
     }, 1000);
@@ -38,9 +38,10 @@ export function useActiveFactions() {
 
   useEffect(() => {
     const updateInterval = setInterval(() => {
-      const active = Object.keys(factionManager.getFactionState)
-        .filter(id => factionManager.getFactionState(id)?.isActive);
-      
+      const active = Object.keys(factionManager.getFactionState).filter(
+        (id) => factionManager.getFactionState(id)?.isActive,
+      );
+
       setActiveFactions(active);
     }, 1000);
 

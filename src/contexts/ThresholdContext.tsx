@@ -1,11 +1,16 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { ThresholdState, ThresholdAction, initialState, thresholdEvents } from './ThresholdTypes';
+import {
+  ThresholdAction,
+  ThresholdState,
+  initialState,
+  thresholdEvents,
+} from "./ThresholdTypes";
+import React, { ReactNode, createContext, useContext, useReducer } from "react";
 
 // Types
 export interface Resource {
   id: string;
   name: string;
-  type: 'mineral' | 'gas' | 'exotic';
+  type: "mineral" | "gas" | "exotic";
   currentAmount: number;
   maxCapacity: number;
   thresholds: {
@@ -31,7 +36,7 @@ export interface ThresholdHistoryEntry {
     min: number;
     max: number;
   };
-  event: 'threshold_change' | 'amount_update' | 'auto_mine_toggle';
+  event: "threshold_change" | "amount_update" | "auto_mine_toggle";
 }
 
 interface ThresholdContextType {
@@ -40,18 +45,21 @@ interface ThresholdContextType {
 }
 
 // Reducer
-function thresholdReducer(state: ThresholdState, action: ThresholdAction): ThresholdState {
+function thresholdReducer(
+  state: ThresholdState,
+  action: ThresholdAction,
+): ThresholdState {
   switch (action.type) {
-    case 'SET_THRESHOLD': {
+    case "SET_THRESHOLD": {
       const historyEntry = {
         timestamp: Date.now(),
         resourceId: action.payload.resourceId,
         amount: state.resources[action.payload.resourceId]?.currentAmount || 0,
         thresholds: {
           min: action.payload.min,
-          max: action.payload.max
+          max: action.payload.max,
         },
-        event: 'threshold_change' as const
+        event: "threshold_change" as const,
       };
 
       return {
@@ -62,21 +70,23 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
             ...state.resources[action.payload.resourceId],
             thresholds: {
               min: action.payload.min,
-              max: action.payload.max
-            }
-          }
+              max: action.payload.max,
+            },
+          },
         },
-        history: [...state.history, historyEntry].slice(-100)
+        history: [...state.history, historyEntry].slice(-100),
       };
     }
-    
-    case 'UPDATE_AMOUNT': {
+
+    case "UPDATE_AMOUNT": {
       const resource = state.resources[action.payload.resourceId];
-      if (!resource) return state;
+      if (!resource) {
+        return state;
+      }
 
       const updatedResource = {
         ...resource,
-        currentAmount: action.payload.amount
+        currentAmount: action.payload.amount,
       };
 
       const historyEntry = {
@@ -84,22 +94,32 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
         resourceId: action.payload.resourceId,
         amount: action.payload.amount,
         thresholds: resource.thresholds,
-        event: 'amount_update' as const
+        event: "amount_update" as const,
       };
 
       // Check for threshold violations
       if (updatedResource.autoMine) {
         if (updatedResource.currentAmount < updatedResource.thresholds.min) {
           thresholdEvents.next({
-            type: 'THRESHOLD_VIOLATED',
+            type: "THRESHOLD_VIOLATED",
             resourceId: action.payload.resourceId,
-            details: { type: 'below_minimum', current: updatedResource.currentAmount, min: updatedResource.thresholds.min }
+            details: {
+              type: "below_minimum",
+              current: updatedResource.currentAmount,
+              min: updatedResource.thresholds.min,
+            },
           });
-        } else if (updatedResource.currentAmount > updatedResource.thresholds.max) {
+        } else if (
+          updatedResource.currentAmount > updatedResource.thresholds.max
+        ) {
           thresholdEvents.next({
-            type: 'STORAGE_FULL',
+            type: "STORAGE_FULL",
             resourceId: action.payload.resourceId,
-            details: { type: 'above_maximum', current: updatedResource.currentAmount, max: updatedResource.thresholds.max }
+            details: {
+              type: "above_maximum",
+              current: updatedResource.currentAmount,
+              max: updatedResource.thresholds.max,
+            },
           });
         }
       }
@@ -108,31 +128,33 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
         ...state,
         resources: {
           ...state.resources,
-          [action.payload.resourceId]: updatedResource
+          [action.payload.resourceId]: updatedResource,
         },
-        history: [...state.history, historyEntry].slice(-100)
+        history: [...state.history, historyEntry].slice(-100),
       };
     }
-    
-    case 'TOGGLE_AUTO_MINE': {
+
+    case "TOGGLE_AUTO_MINE": {
       const resource = state.resources[action.payload.resourceId];
-      if (!resource) return state;
+      if (!resource) {
+        return state;
+      }
 
       const newAutoMine = !resource.autoMine;
-      
+
       const historyEntry = {
         timestamp: Date.now(),
         resourceId: action.payload.resourceId,
         amount: resource.currentAmount,
         thresholds: resource.thresholds,
-        event: 'auto_mine_toggle' as const
+        event: "auto_mine_toggle" as const,
       };
-      
+
       if (newAutoMine) {
         thresholdEvents.next({
-          type: 'AUTO_MINE_TRIGGERED',
+          type: "AUTO_MINE_TRIGGERED",
           resourceId: action.payload.resourceId,
-          details: { type: 'below_minimum', current: resource.currentAmount }
+          details: { type: "below_minimum", current: resource.currentAmount },
         });
       }
 
@@ -142,29 +164,38 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
           ...state.resources,
           [action.payload.resourceId]: {
             ...resource,
-            autoMine: newAutoMine
-          }
+            autoMine: newAutoMine,
+          },
         },
-        history: [...state.history, historyEntry].slice(-100)
+        history: [...state.history, historyEntry].slice(-100),
       };
     }
 
-    case 'ADD_PRESET':
+    case "ADD_PRESET":
       return {
         ...state,
-        presets: [...state.presets, action.payload]
+        presets: [...state.presets, action.payload],
       };
 
-    case 'REMOVE_PRESET':
+    case "REMOVE_PRESET":
       return {
         ...state,
-        presets: state.presets.filter(preset => preset.id !== action.payload.presetId),
-        activePresetId: state.activePresetId === action.payload.presetId ? null : state.activePresetId
+        presets: state.presets.filter(
+          (preset) => preset.id !== action.payload.presetId,
+        ),
+        activePresetId:
+          state.activePresetId === action.payload.presetId
+            ? null
+            : state.activePresetId,
       };
 
-    case 'APPLY_PRESET': {
-      const preset = state.presets.find(p => p.id === action.payload.presetId);
-      if (!preset) return state;
+    case "APPLY_PRESET": {
+      const preset = state.presets.find(
+        (p) => p.id === action.payload.presetId,
+      );
+      if (!preset) {
+        return state;
+      }
 
       const updatedResources = { ...state.resources };
       Object.entries(preset.thresholds).forEach(([resourceId, thresholds]) => {
@@ -172,7 +203,7 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
           updatedResources[resourceId] = {
             ...updatedResources[resourceId],
             thresholds,
-            autoMine: preset.autoMineStates[resourceId] || false
+            autoMine: preset.autoMineStates[resourceId] || false,
           };
         }
       });
@@ -180,69 +211,73 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
       return {
         ...state,
         resources: updatedResources,
-        activePresetId: action.payload.presetId
+        activePresetId: action.payload.presetId,
       };
     }
-    
-    case 'SET_GLOBAL_AUTO_MINE': {
+
+    case "SET_GLOBAL_AUTO_MINE": {
       const updatedResources = Object.entries(state.resources).reduce(
         (acc, [id, resource]) => ({
           ...acc,
-          [id]: { ...resource, autoMine: action.payload }
+          [id]: { ...resource, autoMine: action.payload },
         }),
-        {}
+        {},
       );
 
       return {
         ...state,
         globalAutoMine: action.payload,
-        resources: updatedResources
+        resources: updatedResources,
       };
     }
-    
-    case 'ADD_NOTIFICATION':
+
+    case "ADD_NOTIFICATION":
       return {
         ...state,
-        notifications: [...state.notifications, action.payload]
+        notifications: [...state.notifications, action.payload],
       };
-    
-    case 'CLEAR_NOTIFICATION':
+
+    case "CLEAR_NOTIFICATION":
       return {
         ...state,
-        notifications: state.notifications.filter((_, index) => index !== action.payload)
+        notifications: state.notifications.filter(
+          (_, index) => index !== action.payload,
+        ),
       };
-    
-    case 'ADD_RESOURCE':
+
+    case "ADD_RESOURCE":
       return {
         ...state,
         resources: {
           ...state.resources,
-          [action.payload.id]: action.payload
-        }
+          [action.payload.id]: action.payload,
+        },
       };
-    
-    case 'REMOVE_RESOURCE': {
+
+    case "REMOVE_RESOURCE": {
       const remainingResources = { ...state.resources };
       delete remainingResources[action.payload.resourceId];
       return {
         ...state,
-        resources: remainingResources
+        resources: remainingResources,
       };
     }
-    
-    case 'ADD_HISTORY_ENTRY':
+
+    case "ADD_HISTORY_ENTRY":
       return {
         ...state,
-        history: [...state.history, action.payload].slice(-100)
+        history: [...state.history, action.payload].slice(-100),
       };
-    
+
     default:
       return state;
   }
 }
 
 // Context
-const ThresholdContext = createContext<ThresholdContextType | undefined>(undefined);
+const ThresholdContext = createContext<ThresholdContextType | undefined>(
+  undefined,
+);
 
 // Provider
 export function ThresholdProvider({ children }: { children: ReactNode }) {
@@ -259,7 +294,7 @@ export function ThresholdProvider({ children }: { children: ReactNode }) {
 export function useThreshold() {
   const context = useContext(ThresholdContext);
   if (context === undefined) {
-    throw new Error('useThreshold must be used within a ThresholdProvider');
+    throw new Error("useThreshold must be used within a ThresholdProvider");
   }
   return context;
-} 
+}

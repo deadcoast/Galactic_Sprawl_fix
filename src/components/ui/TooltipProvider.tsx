@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
-import { useTooltip } from '../../hooks/useTooltip';
-import { TooltipContext } from './tooltip-context';
+import { TooltipContext } from "@/components/ui/tooltip-context";
+import { useTooltip } from "@/hooks/ui/useTooltip";
+import { ReactNode } from "react";
 
 interface TooltipProviderProps {
   children: ReactNode;
@@ -18,7 +18,7 @@ export function TooltipProvider({ children }: TooltipProviderProps) {
           style={{
             left: tooltipState.tooltip.position.x,
             top: tooltipState.tooltip.position.y,
-            transform: 'translate(-50%, -100%) translateY(-8px)'
+            transform: "translate(-50%, -100%) translateY(-8px)",
           }}
         >
           {tooltipState.tooltip.content}
@@ -26,4 +26,4 @@ export function TooltipProvider({ children }: TooltipProviderProps) {
       )}
     </TooltipContext.Provider>
   );
-} 
+}

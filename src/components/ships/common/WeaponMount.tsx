@@ -1,6 +1,5 @@
-import React from 'react';
-import { WeaponType } from '../../../types/CombatTypes';
-import { WeaponEffect } from '../../../../effects/WeaponEffect';
+import { WeaponEffect } from "../../effects/WeaponEffect";
+import { WeaponType } from "../../../types/ships/CommonShipTypes";
 
 export interface WeaponMountProps {
   weapon: WeaponType;
@@ -17,29 +16,35 @@ export function WeaponMount({
   rotation,
   isFiring,
   onFire,
-  className = ''
+  className = "",
 }: WeaponMountProps) {
-  const getWeaponColor = (category: WeaponType['category']) => {
+  const getWeaponColor = (category: WeaponType["category"]) => {
     switch (category) {
-      case 'machineGun': return '#FF4444';
-      case 'gaussCannon': return '#44AAFF';
-      case 'railGun': return '#AA44FF';
-      case 'mgss': return '#FF8844';
-      case 'rockets': return '#FF4488';
-      default: return '#FFFFFF';
+      case "machineGun":
+        return "#FF4444";
+      case "gaussCannon":
+        return "#44AAFF";
+      case "railGun":
+        return "#AA44FF";
+      case "mgss":
+        return "#FF8844";
+      case "rockets":
+        return "#FF4488";
+      default:
+        return "#FFFFFF";
     }
   };
 
   return (
-    <div 
+    <div
       className={`relative ${className}`}
       style={{
-        transform: `rotate(${rotation}deg)`
+        transform: `rotate(${rotation}deg)`,
       }}
     >
       {/* Weapon Model */}
       <div className="w-8 h-8 relative">
-        <img 
+        <img
           src={weapon.visualAsset}
           alt={`${weapon.category} - ${weapon.variant}`}
           className="w-full h-full object-contain"
@@ -59,7 +64,9 @@ export function WeaponMount({
 
       {/* Weapon Stats Tooltip */}
       <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 rounded text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="font-medium">{weapon.category} - {weapon.variant}</div>
+        <div className="font-medium">
+          {weapon.category} - {weapon.variant}
+        </div>
         <div className="text-gray-400">
           <div>Damage: {weapon.stats.damage}</div>
           <div>Range: {weapon.stats.range}</div>
@@ -77,4 +84,4 @@ export function WeaponMount({
       )}
     </div>
   );
-} 
+}

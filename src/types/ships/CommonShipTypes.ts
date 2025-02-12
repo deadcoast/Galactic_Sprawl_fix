@@ -1,0 +1,144 @@
+import { BaseStats, Effect } from "../core/GameTypes";
+import { WeaponMount, WeaponCategory, WeaponStats } from "../weapons/WeaponTypes";
+
+// Ship Type Interface
+export interface ShipType {
+  type: string;
+}
+
+// Common Ship Categories
+export type ShipCategory = "war" | "recon" | "mining";
+
+// Weapon Type Interface
+export interface WeaponType {
+  category: WeaponCategory;
+  variant: string;
+  visualAsset: string;
+  stats: WeaponStats;
+}
+
+// Common Ship Status
+export type ShipStatus =
+  | "ready"
+  | "engaging"
+  | "patrolling"
+  | "retreating"
+  | "disabled";
+
+// Common Ship Stats Interface
+export interface CommonShipStats extends BaseStats {
+  energy: number;
+  maxEnergy: number;
+  speed: number;
+  turnRate: number;
+  cargo: number;
+  weapons: WeaponMount[];
+}
+
+// Common Weapon Stats
+export interface CommonWeaponStats {
+  damage: number;
+  range: number;
+  accuracy: number;
+  rateOfFire: number;
+  energyCost: number;
+  cooldown: number;
+  effects: Effect[];
+}
+
+// Common Ship Ability Interface
+export interface CommonShipAbility {
+  name: string;
+  description: string;
+  cooldown: number;
+  duration: number;
+  active: boolean;
+  effect: Effect;
+}
+
+// Common Display Stats Interface (for UI components)
+export interface CommonShipDisplayStats {
+  weapons: {
+    damage: number;
+    range: number;
+    accuracy: number;
+  };
+  defense: {
+    hull: number;
+    shield: number;
+    armor: number;
+  };
+  mobility: {
+    speed: number;
+    agility: number;
+    jumpRange: number;
+  };
+  systems: {
+    power: number;
+    radar: number;
+    efficiency: number;
+  };
+}
+
+// Base Ship Interface
+export interface CommonShip {
+  id: string;
+  name: string;
+  category: ShipCategory;
+  status: ShipStatus;
+  stats: CommonShipStats;
+  abilities: CommonShipAbility[];
+}
+
+// Common Ship Capabilities
+export interface CommonShipCapabilities {
+  canSalvage: boolean;
+  canScan: boolean;
+  canMine: boolean;
+  canJump: boolean;
+}
+
+// Common utility functions
+export function getShipCategory(type: string): ShipCategory {
+  if (
+    type.toLowerCase().includes("war") ||
+    type.toLowerCase().includes("combat")
+  ) {
+    return "war";
+  }
+  if (
+    type.toLowerCase().includes("recon") ||
+    type.toLowerCase().includes("scout")
+  ) {
+    return "recon";
+  }
+  return "mining";
+}
+
+export function getDefaultCapabilities(
+  category: ShipCategory,
+): CommonShipCapabilities {
+  switch (category) {
+    case "war":
+      return {
+        canSalvage: false,
+        canScan: false,
+        canMine: false,
+        canJump: true,
+      };
+    case "recon":
+      return {
+        canSalvage: true,
+        canScan: true,
+        canMine: false,
+        canJump: true,
+      };
+    case "mining":
+      return {
+        canSalvage: true,
+        canScan: false,
+        canMine: true,
+        canJump: false,
+      };
+  }
+}
