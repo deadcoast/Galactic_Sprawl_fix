@@ -1,0 +1,45 @@
+/* VPR System View Styles */
+.vpr-system {
+  --system-scale: 1;
+  --animation-speed: 1;
+}
+
+/* Module Positioning */
+.module-orbit {
+  --orbit-radius: 300px;
+  --orbit-speed: 60s;
+}
+
+/* Interactive Elements */
+.module-interactive {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.module-interactive:hover {
+  transform: scale(1.1);
+}
+
+/* System Background */
+.system-background {
+  background: radial-gradient(
+    circle at center,
+    rgba(17, 24, 39, 0.8) 0%,
+    rgba(17, 24, 39, 0.95) 100%
+  );
+}
+
+/* Performance Scaling */
+.performance-high {
+  --particle-multiplier: 1;
+  --effect-quality: high;
+}
+
+.performance-medium {
+  --particle-multiplier: 0.6;
+  --effect-quality: medium;
+}
+
+.performance-low {
+  --particle-multiplier: 0.3;
+  --effect-quality: low;
+}

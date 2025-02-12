@@ -1,0 +1,81 @@
+/* Animation Keyframes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes flow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 20;
+  }
+}
+
+/* Effect Quality Classes */
+.effect-quality-high {
+  --particle-count: 200;
+  --blur-quality: 8px;
+  --animation-smoothness: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.effect-quality-medium {
+  --particle-count: 100;
+  --blur-quality: 4px;
+  --animation-smoothness: ease;
+}
+
+.effect-quality-low {
+  --particle-count: 50;
+  --blur-quality: 2px;
+  --animation-smoothness: linear;
+}
+
+/* Particle System */
+.particle {
+  position: absolute;
+  pointer-events: none;
+  transition: all 0.3s var(--animation-smoothness);
+}
+
+.particle-glow {
+  filter: blur(var(--blur-quality));
+}
+
+/* Trade Route Effects */
+.trade-route {
+  stroke-dasharray: 10;
+  animation: flow 2s linear infinite;
+}
+
+.trade-route-glow {
+  filter: blur(var(--blur-quality));
+}
+
+/* Progression Effects */
+.progression-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.progression-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}

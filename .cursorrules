@@ -94,6 +94,7 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - You have a Knowledge on the Project. Use it before you start the task.
   - KNOWLEDGE_BASE_PATH="/Users/deadcoast/CursorProjects/Galactic_Sprawl/GalaxySprawlDocs"
 - Include info useful for debugging in the program output.
+- When correcting errors, do NOT delete unused code. Instead generate its implementation.
 - Read the file before you try to edit it.
 - Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
 
@@ -118,96 +119,142 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 
 ## Current Project State: Galactic Sprawl
 
-### Current Implementation Task: Mining Threshold System
+### Current Implementation Task: Faction System Restructuring
 
-3. Next Steps
-   [ ] Create threshold presets system
-   [ ] Add threshold history tracking
+### Directory Structure:
+```
+src/
+├── types/                              # Centralized type definitions
+│   ├── common.ts                       # Shared types
+│   ├── factions/
+│   │   ├── FactionTypes.ts            # Core faction interfaces
+│   │   ├── ShipTypes.ts               # Ship-related types
+│   │   └── CombatTypes.ts             # Combat-related types
+│   ├── ships/
+│   │   ├── ShipTypes.ts               # Ship interfaces
+│   │   └── WeaponTypes.ts             # Weapon interfaces
+│   ├── combat/
+│   │   └── CombatTypes.ts             # Combat system types
+│   └── ui/
+│       └── UITypes.ts                  # UI-specific types
 
-### Current Implementation Focus:
+├── config/                             # Configuration files
+│   ├── factions/
+│   │   ├── factionConfig.ts           # Core faction configuration
+│   │   ├── shipStats.ts               # Ship statistics
+│   │   └── weaponConfig.ts            # Weapon configurations
+│   ├── ships/
+│   │   └── playerShipStats.ts         # Player ship configurations
+│   ├── combat/
+│   │   └── combatConfig.ts            # Combat system settings
+│   └── game/
+│       └── gameConfig.ts              # Global game settings
 
-1. Automation Systems
-   [X] Mining automation with threshold-based logic
-      - Resource node management
-      - Auto-dispatch mining ships
-      - Threshold monitoring
-      - Resource collection & storage
-      - Automated resource transfers
-      - Visual threshold indicators
-   [ ] Exploration automation with recon ships
-      - Sector mapping
-      - Anomaly detection
-      - Data collection
-      - XP system integration
-   [ ] Colony growth and trade automation
-      - Population management
-      - Resource exchange
-      - Trade route optimization
-   [ ] Combat and defense automation
-      - Threat detection
-      - Ship deployment
-      - Combat resolution
+├── components/
+│   ├── ships/                         # Ship-related components
+│   │   ├── common/                    # Shared ship components
+│   │   │   ├── ShipBase.tsx
+│   │   │   ├── WeaponMount.tsx
+│   │   │   └── ShipStats.tsx
+│   │   ├── player/                    # Player ship components
+│   │   │   ├── prefabs/
+│   │   │   └── controls/
+│   │   └── factions/                  # Faction ship components
+│   │       ├── spaceRats/
+│   │       ├── lostNova/
+│   │       └── equatorHorizon/
+│   ├── combat/
+│   ├── ui/
+│   ├── colony/
+│   ├── mining/
+│   ├── exploration/
+│   └── visual/
 
-2. UI Enhancement
-   [X] Real-time resource tracking
-   [X] Resource transfer visualization
-   [X] Visual threshold indicators
-   [ ] Interactive galaxy map
-   [ ] Advanced visual feedback
-   [ ] Performance optimization
+├── effects/                           # Visual effects
+│   ├── combat/
+│   │   ├── WeaponEffect.tsx
+│   │   ├── ExplosionEffect.tsx
+│   │   └── ShieldEffect.tsx
+│   ├── visual/
+│   │   ├── ThrusterEffect.tsx
+│   │   └── SmokeTrailEffect.tsx
+│   └── particles/
 
-### Technical Stack & Libraries:
+├── hooks/                             # Custom hooks
+│   ├── factions/
+│   │   ├── useFactionBehavior.ts
+│   │   ├── useFactionAI.ts
+│   │   └── useEnemyAI.ts
+│   ├── combat/
+│   │   └── useCombatSystem.ts
+│   ├── ui/
+│   │   └── useTooltip.ts
+│   └── game/
+│       └── useGameState.ts
 
-1. Core Framework:
-   - TypeScript & React (.tsx)
-   - React Context/Redux for state management
-   - RxJS for event streams
+├── lib/                               # Core game logic
+│   ├── factions/
+│   │   └── factionManager.ts
+│   ├── combat/
+│   │   └── combatManager.ts
+│   ├── ai/
+│   │   └── behaviorTree.ts
+│   └── game/
+│       └── gameManager.ts
 
-2. UI/Visual Libraries:
-   - react-three-fiber for 3D
-   - react-spring/Framer Motion for animations
-   - d3.js for maps and layouts
-   - Material-UI for styling
-   - GSAP for complex animations
-   - react-konva for 2D canvas
+├── utils/                             # Utility functions
+│   ├── math.ts
+│   ├── idGenerator.ts
+│   └── helpers.ts
 
-3. Performance Optimizations:
-   - React.memo for component memoization
-   - useMemo for complex calculations
-   - Proper cleanup in useEffect
-   - Optimized rendering cycles
+├── contexts/                          # React contexts
+│   ├── GameContext.tsx
+│   └── ThresholdContext.tsx
+
+└── styles/                            # CSS styles
+    ├── components/
+    ├── effects/
+    └── ui/
+```
+
+### Implementation Steps:
+
+1. **Phase 1: Type System & Configuration** [IN PROGRESS]
+   [X] Create basic type structure under `src/types/`
+   [ ] Move and consolidate faction types from components
+   [ ] Create proper type hierarchies
+   [ ] Move configuration files to `src/config/`
+
+2. **Phase 2: Component Reorganization** [NEXT]
+   [ ] Create `src/components/ships/common/` structure
+   [ ] Move shared components (ShipBase, WeaponMount)
+   [ ] Reorganize faction ships under `components/ships/factions/`
+   [ ] Set up player ship component structure
+
+3. **Phase 3: Effects System**
+   [ ] Move effects to dedicated `src/effects/` directory
+   [ ] Organize by combat/visual/particles
+   [ ] Update effect imports in components
+
+4. **Phase 4: Logic & State**
+   [ ] Set up hooks directory structure
+   [ ] Move faction AI logic to proper hooks
+   [ ] Implement core game logic in lib/
+   [ ] Create context structure
+
+5. **Phase 5: Cleanup & Integration**
+   [ ] Update all import paths
+   [ ] Implement proper style organization
+   [ ] Add utility functions
+   [ ] Test full system integration
 
 ### Next Steps:
+1. Complete type consolidation in `src/types/`
+2. Move configuration files to `src/config/`
+3. Begin component reorganization
 
-1. Performance Optimization
-   [ ] Add memoization for filtered sectors
-   [ ] Optimize rendering with React.memo
-   [ ] Add proper cleanup in useEffect
-   [ ] Implement React.memo for sector and ship components
-   [ ] Add useMemo for complex calculations
-   [ ] Optimize real-time update intervals
-
-2. Feature Implementation
-   [ ] Complete automation systems
-      - Mining threshold system
-      - Exploration mapping
-      - Colony trade routes
-      - Combat response
-   [ ] Enhance visual feedback
-      - Trade route particles
-      - Ship movement trails
-      - Resource flow indicators
-   [ ] Implement advanced game mechanics
-      - Tech tree progression
-      - Officer training
-      - Ship upgrades
-   [ ] Add notification system for discoveries
-
-### Tech Stack Notes:
-
-- Using react-spring for animations
-- D3.js recommended for map visualizations
-- Consider using react-tooltip for tooltips
-- Use React Context for real-time data management
-- GSAP for complex animation sequences
-- RxJS for event stream management
+### Tech Stack Decisions:
+- Use XState for complex state machines in AI behavior
+- Implement behavior trees using custom implementation
+- Use React Context for global state management
+- RxJS for handling complex event streams in combat

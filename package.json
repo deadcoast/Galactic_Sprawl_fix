@@ -24,7 +24,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rxjs": "^7.8.1",
-    "three": "^0.173.0"
+    "three": "^0.173.0",
+    "xstate": "^5.19.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
@@ -45,5 +46,18 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2"
-  }
+  },
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deadcoast/Galactic_Sprawl_fix.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/deadcoast/Galactic_Sprawl_fix/issues"
+  },
+  "homepage": "https://github.com/deadcoast/Galactic_Sprawl_fix#readme",
+  "description": ""
 }
