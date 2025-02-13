@@ -6,7 +6,7 @@ import {
   StatusEffect,
   CombatEffect,
   AreaEffect,
-} from "../../types/effects/EffectTypes";
+} from "../types_effects/EffectTypes";
 
 // Effect Creation
 // ------------------------------------------------------------

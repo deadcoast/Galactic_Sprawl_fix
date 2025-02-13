@@ -1,5 +1,5 @@
 import { AIDebugOverlay } from "../../../components/debug/AIDebugOverlay";
-import { DiplomacyPanel } from "../../../components/DiplomacyPanel";
+import { DiplomacyPanel } from "../../ui/DiplomacyPanel";
 import { FactionAI } from "../../../components/factions/FactionAI";
 import { factionConfigs, factionIds } from "../../../config/factions/factionConfig";
 import { getShipStats } from "../../../config/ships/shipStats";

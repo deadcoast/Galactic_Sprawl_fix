@@ -98,19 +98,6 @@ export interface AreaEffect extends BaseEffect {
 }
 
 /**
- * Weapon Effect Interface
- * For effects caused by weapons
- */
-export interface WeaponEffect extends BaseEffect {
-  /** Base damage of the effect */
-  damage: number;
-  /** Area of effect radius (optional) */
-  radius?: number;
-  /** Source weapon ID */
-  sourceWeaponId: string;
-}
-
-/**
  * Status Effect Interface
  * For UI representation of effects
  */
@@ -159,5 +146,5 @@ export interface EffectStack {
 }
 
 // Re-export from core types for backward compatibility
-export type { Effect } from "../core/GameTypes";
-export type { WeaponEffectType } from "../weapons/WeaponEffectTypes"; 
+export type { Effect } from "../../types/core/GameTypes";
+export type { WeaponEffect, WeaponEffectType } from "./WeaponEffects"; 

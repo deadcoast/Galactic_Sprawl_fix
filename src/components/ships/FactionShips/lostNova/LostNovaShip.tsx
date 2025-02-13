@@ -8,7 +8,7 @@ import {
   CombatWeaponStats 
 } from "../../../../types/weapons/WeaponTypes";
 import { useShipEffects } from "../../../../hooks/ships/useShipEffects";
-import { BaseEffect } from "../../../../types/effects/EffectTypes";
+import { BaseEffect } from "../../../../effects/types_effects/EffectTypes";
 import { Effect } from "../../../../types/core/GameTypes";
 import { Zap, Eye, Shield } from "lucide-react";
 import { StatusEffect } from "../../../ui/status/StatusEffect";

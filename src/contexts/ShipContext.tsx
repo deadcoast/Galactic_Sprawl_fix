@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, ReactNode } from "react";
-import { BaseEffect, EffectStack } from "../types/effects/EffectTypes";
+import { BaseEffect, EffectStack } from "../effects/types_effects/EffectTypes";
 import { CommonShipStats } from "../types/ships/CommonShipTypes";
 import { WeaponMount, WeaponInstance, WeaponState } from "../types/weapons/WeaponTypes";
 

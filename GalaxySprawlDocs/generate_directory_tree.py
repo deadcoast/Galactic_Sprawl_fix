@@ -17,28 +17,33 @@ def generate_tree(startpath, output_file, ignore_patterns=None):
             'assets',
             'tools',
             '.DS_Store',
-            '.src_backup'
+            '.src_backup',
+            'GalaxySprawlDocs'
         ]
 
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write('# Galaxy Sprawl Project Directory Structure\n\n')
         f.write('```\n')
-        
+
         for root, dirs, files in os.walk(startpath):
             # Skip ignored directories
-            dirs[:] = [d for d in dirs if not any(pattern in d for pattern in ignore_patterns)]
-            
+            dirs[:] = [
+                d
+                for d in dirs
+                if all(pattern not in d for pattern in ignore_patterns)
+            ]
+
             level = root.replace(startpath, '').count(os.sep)
             indent = '│   ' * (level)
-            
+
             # Print directory name
             f.write(f'{indent}{"└── " if level else ""}{os.path.basename(root)}/\n')
-            
+
             subindent = '│   ' * (level + 1)
             for file in sorted(files):
-                if not any(pattern in file for pattern in ignore_patterns):
+                if all(pattern not in file for pattern in ignore_patterns):
                     f.write(f'{subindent}└── {file}\n')
-        
+
         f.write('```\n')
 
 if __name__ == "__main__":

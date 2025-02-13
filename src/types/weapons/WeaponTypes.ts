@@ -1,28 +1,10 @@
+/**
+ * Core weapon types and interfaces
+ * @module WeaponTypes
+ */
+
 import { Effect } from "../core/GameTypes";
-
-// Effect Types
-// ------------------------------------------------------------
-
-/**
- * Base weapon damage effect
- */
-export interface WeaponDamageEffect extends Effect {
-  damage: number;
-  active: boolean;
-  cooldown: number;
-}
-
-/**
- * Area of effect weapon damage
- */
-export interface WeaponAreaEffect extends Effect {
-  damage: number;
-  radius: number;
-  active: boolean;
-  cooldown: number;
-}
-
-export type WeaponEffectType = WeaponDamageEffect | WeaponAreaEffect;
+import { WeaponEffect, WeaponEffectType } from "../../effects/types_effects/WeaponEffects";
 
 // Base Types
 // ------------------------------------------------------------
@@ -63,11 +45,19 @@ export type WeaponVariant =
   | "swarmRockets"
   | "bigBangRockets";
 
-// Mount Configuration
-// ------------------------------------------------------------
-
+/**
+ * Weapon mount sizes
+ */
 export type WeaponMountSize = "small" | "medium" | "large";
+
+/**
+ * Weapon mount positions
+ */
 export type WeaponMountPosition = "front" | "side" | "turret";
+
+/**
+ * Weapon operational status
+ */
 export type WeaponStatus = "ready" | "charging" | "cooling" | "disabled";
 
 // Upgrade Types
@@ -87,16 +77,6 @@ export type WeaponUpgradeType =
 // ------------------------------------------------------------
 
 /**
- * Base weapon type interface
- */
-export interface WeaponType {
-  category: WeaponCategory;
-  variant: WeaponVariant;
-  visualAsset: string;
-  stats: CombatWeaponStats;
-}
-
-/**
  * Base weapon stats common to all weapons
  */
 export interface BaseWeaponStats {
@@ -106,7 +86,16 @@ export interface BaseWeaponStats {
   rateOfFire: number;
   energyCost: number;
   cooldown: number;
-  effects: WeaponEffectType[];
+}
+
+/**
+ * Base weapon type interface
+ */
+export interface WeaponType {
+  category: WeaponCategory;
+  variant: WeaponVariant;
+  visualAsset: string;
+  baseStats: BaseWeaponStats;
 }
 
 /**
@@ -121,17 +110,6 @@ export interface CombatWeaponStats extends BaseWeaponStats {
   };
 }
 
-/**
- * Weapon effect interface
- */
-export interface WeaponEffect extends Effect {
-  active: boolean;
-  cooldown: number;
-  damage?: number;
-  radius?: number;
-  sourceWeaponId?: string;  // Added from EffectTypes.ts
-}
-
 // Mount and Configuration
 // ------------------------------------------------------------
 
@@ -140,12 +118,10 @@ export interface WeaponEffect extends Effect {
  */
 export interface WeaponMount {
   id: string;
-  type?: WeaponCategory;
   size: WeaponMountSize;
   position: WeaponMountPosition;
   rotation: number;
   allowedCategories: WeaponCategory[];
-  currentWeapon?: WeaponInstance;
 }
 
 /**
@@ -178,7 +154,7 @@ export interface WeaponConfig {
 export interface WeaponState {
   status: WeaponStatus;
   currentStats: CombatWeaponStats;
-  effects: Effect[];
+  effects: WeaponEffect[];
   currentAmmo?: number;
   maxAmmo?: number;
 }

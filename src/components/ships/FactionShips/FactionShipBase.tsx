@@ -7,7 +7,7 @@ import { ShipStatus } from "../../../types/ships/ShipTypes";
 import { useShipState } from "../../../contexts/ShipContext";
 import { useShipActions } from "../../../hooks/ships/useShipActions";
 import { useShipEffects } from "../../../hooks/ships/useShipEffects";
-import { BaseEffect } from "../../../types/effects/EffectTypes";
+import { BaseEffect } from "../../../effects/types_effects/EffectTypes";
 
 const FACTION_COLORS = {
   "space-rats": "red",

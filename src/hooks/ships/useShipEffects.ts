@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { BaseEffect } from "../../types/effects/EffectTypes";
+import { BaseEffect } from "../../effects/types_effects/EffectTypes";
 import { useShipState } from "../../contexts/ShipContext";
 import { shipActions } from "../../contexts/ShipContext";
 

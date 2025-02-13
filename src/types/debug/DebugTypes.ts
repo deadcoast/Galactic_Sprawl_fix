@@ -16,7 +16,7 @@ export interface Formation {
   leaderUnit?: string;
 }
 
-export interface WeaponEffect {
+export interface DebugWeaponEffect {
   type: "machineGun" | "railGun" | "gaussCannon" | "rockets";
   status: string;
   damage: number;
@@ -41,7 +41,7 @@ export interface CombatStats {
   evasion: number;
   killCount: number;
   assistCount: number;
-  weaponEffects: WeaponEffect[];
+  weaponEffects: DebugWeaponEffect[];
   shieldStatus: ShieldStatus;
   thrusterIntensity: number;
 }

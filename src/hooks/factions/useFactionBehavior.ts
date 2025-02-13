@@ -788,10 +788,10 @@ interface WeaponMount {
   range: number;
   cooldown: number;
   accuracy: number;
-  effects: WeaponEffect[];
+  effects: FactionWeaponEffect[];
 }
 
-interface WeaponEffect {
+interface FactionWeaponEffect {
   type: "plasma" | "spark" | "gauss" | "explosive";
   damage: number;
   duration: number;

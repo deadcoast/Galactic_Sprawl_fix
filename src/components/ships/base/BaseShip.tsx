@@ -11,7 +11,7 @@ import {
 import { ShipProvider, useShipState } from "../../../contexts/ShipContext";
 import { useShipActions } from "../../../hooks/ships/useShipActions";
 import { useShipEffects } from "../../../hooks/ships/useShipEffects";
-import { BaseEffect } from "../../../types/effects/EffectTypes";
+import { BaseEffect } from "../../../effects/types_effects/EffectTypes";
 import { Crosshair } from "lucide-react";
 
 interface BaseShipProps {

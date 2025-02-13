@@ -9,7 +9,7 @@ import {
   SPEED_BOOST_EFFECT,
   STEALTH_EFFECT,
   SPEED_REDUCTION_EFFECT,
-} from "./shipEffects";
+} from "../../effects/types_effects/shipEffects";
 
 export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
   ratKing: {

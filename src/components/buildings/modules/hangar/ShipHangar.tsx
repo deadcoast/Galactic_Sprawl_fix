@@ -1,9 +1,14 @@
+import { useEffect, useState } from "react";
+import { Rocket, Search, Grid2X2, List } from "lucide-react";
+import { ShipHangarManager } from "../../../../managers/ShipHangarManager";
+import { CommonShip } from "../../../../types/ships/CommonShipTypes";
+import { PlayerShipCategory } from "../../../../types/ships/PlayerShipTypes";
+import { useScalingSystem } from "../../../../hooks/game/useScalingSystem";
+import { WarShip } from "../../../ships/player/variants/warships/WarShip";
+import { ShipBuildQueueItem } from "../../../../types/buildings/ShipHangarTypes";
 import { PlayerShipCustomization } from "../../../ships/player/customization/PlayerShipCustomization";
 import { PlayerShipUpgradeSystem } from "../../../ships/player/customization/PlayerShipUpgradeSystem";
-import { WarShip } from "../../../ships/player/variants/warships/WarShip";
-import { useScalingSystem } from "../../../../hooks/game/useScalingSystem";
-import { AlertTriangle, Grid2X2, List, Rocket, Search } from "lucide-react";
-import { useState } from "react";
+import { Effect } from "../../../../types/core/GameTypes";
 
 interface WeaponSystem {
   id: string;
@@ -97,14 +102,18 @@ const mockShips: Ship[] = [
   },
 ];
 
-export function ShipHangar() {
-  const [filter, setFilter] = useState<"all" | "idle" | "active" | "damaged">(
-    "all",
-  );
+interface ShipHangarProps {
+  manager: ShipHangarManager;
+}
+
+export function ShipHangar({ manager }: ShipHangarProps) {
+  const [filter, setFilter] = useState<"all" | "idle" | "active" | "damaged">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedShip, setSelectedShip] = useState<Ship | null>(null);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [showCustomization, setShowCustomization] = useState(false);
+  const [ships, setShips] = useState<Ship[]>([]);
+  const [buildQueue, setBuildQueue] = useState<ShipBuildQueueItem[]>([]);
 
   const scaling = useScalingSystem();
   const quality =
@@ -114,20 +123,85 @@ export function ShipHangar() {
         ? "medium"
         : "low";
 
-  const filteredShips = mockShips.filter((ship) => {
-    if (
-      searchQuery &&
-      !ship.name.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
+  useEffect(() => {
+    // Initial load
+    const dockedShips = manager.getDockedShips();
+    const convertedShips = dockedShips.map(convertCommonShipToShip);
+    setShips(convertedShips);
+    setBuildQueue(manager.getBuildQueue());
+
+    // Subscribe to events
+    const handleShipDocked = ({ ship }: { ship: CommonShip }) => {
+      setShips(prev => [...prev, convertCommonShipToShip(ship)]);
+    };
+
+    const handleShipLaunched = ({ ship }: { ship: CommonShip }) => {
+      setShips(prev => prev.filter(s => s.id !== ship.id));
+      if (selectedShip?.id === ship.id) {
+        setSelectedShip(null);
+      }
+    };
+
+    const handleBuildStarted = ({ queueItem }: { queueItem: ShipBuildQueueItem }) => {
+      setBuildQueue(manager.getBuildQueue());
+    };
+
+    const handleBuildCompleted = ({ ship }: { ship: CommonShip }) => {
+      setBuildQueue(manager.getBuildQueue());
+      setShips(prev => [...prev, convertCommonShipToShip(ship)]);
+    };
+
+    const handleBuildProgressed = () => {
+      setBuildQueue(manager.getBuildQueue());
+    };
+
+    manager.on("shipDocked", handleShipDocked);
+    manager.on("shipLaunched", handleShipLaunched);
+    manager.on("buildStarted", handleBuildStarted);
+    manager.on("buildCompleted", handleBuildCompleted);
+    manager.on("buildProgressed", handleBuildProgressed);
+
+    return () => {
+      manager.off("shipDocked", handleShipDocked);
+      manager.off("shipLaunched", handleShipLaunched);
+      manager.off("buildStarted", handleBuildStarted);
+      manager.off("buildCompleted", handleBuildCompleted);
+      manager.off("buildProgressed", handleBuildProgressed);
+    };
+  }, [manager]);
+
+  // Convert CommonShip to Ship interface
+  const convertCommonShipToShip = (commonShip: CommonShip): Ship => {
+    return {
+      id: commonShip.id,
+      name: commonShip.name,
+      type: commonShip.name.toLowerCase().split("-")[0] as Ship["type"],
+      tier: 1,
+      status: commonShip.status === "ready" ? "idle" : "damaged",
+      hull: commonShip.stats.defense.armor,
+      maxHull: commonShip.stats.defense.armor,
+      shield: commonShip.stats.defense.shield,
+      maxShield: commonShip.stats.defense.shield,
+      weapons: commonShip.abilities.map(ability => ({
+        id: crypto.randomUUID(),
+        name: ability.name,
+        type: "machineGun",
+        damage: 10,
+        range: 100,
+        cooldown: ability.cooldown,
+        status: "ready"
+      }))
+    };
+  };
+
+  const filteredShips = ships.filter((ship) => {
+    if (searchQuery && !ship.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
     if (filter === "idle" && ship.status !== "idle") {
       return false;
     }
-    if (
-      filter === "active" &&
-      !["patrolling", "engaging"].includes(ship.status)
-    ) {
+    if (filter === "active" && !["patrolling", "engaging"].includes(ship.status)) {
       return false;
     }
     if (filter === "damaged" && ship.status !== "damaged") {
@@ -137,16 +211,65 @@ export function ShipHangar() {
   });
 
   const handleDeploy = (shipId: string) => {
-    const ship = mockShips.find((s) => s.id === shipId);
-    if (ship) {
-      setSelectedShip(ship);
+    try {
+      manager.launchShip(shipId);
+    } catch (error) {
+      console.error("Failed to launch ship:", error);
     }
-    console.log("Deploying ship:", shipId);
   };
 
   const handleRecall = (shipId: string) => {
-    // Handle ship recall
-    console.log("Recalling ship:", shipId);
+    const ship = ships.find(s => s.id === shipId);
+    if (ship) {
+      try {
+        const commonShip: CommonShip = {
+          id: ship.id,
+          name: ship.name,
+          category: ship.type.includes("void-dredger") ? "mining" : 
+                   ship.type.includes("schooner") ? "recon" : "war",
+          status: ship.status === "idle" ? "ready" : "damaged",
+          stats: {
+            health: ship.hull,
+            maxHealth: ship.maxHull,
+            shield: ship.shield,
+            maxShield: ship.maxShield,
+            energy: 100,
+            maxEnergy: 100,
+            speed: 10,
+            turnRate: 5,
+            cargo: 0,
+            weapons: [],
+            abilities: [],
+            defense: {
+              armor: ship.hull,
+              shield: ship.shield,
+              evasion: 0,
+            },
+            mobility: {
+              speed: 10,
+              turnRate: 5,
+              acceleration: 5
+            }
+          },
+          abilities: ship.weapons.map(w => ({
+            name: w.name,
+            description: "Standard weapon system",
+            cooldown: w.cooldown,
+            duration: 10,
+            active: false,
+            effect: {
+              name: w.name,
+              description: `Deals ${w.damage} damage`,
+              type: "damage",
+              magnitude: w.damage
+            } as Effect
+          }))
+        };
+        manager.dockShip(commonShip);
+      } catch (error) {
+        console.error("Failed to dock ship:", error);
+      }
+    }
   };
 
   return (
@@ -207,9 +330,7 @@ export function ShipHangar() {
           ].map(({ id, label }) => (
             <button
               key={id}
-              onClick={() =>
-                setFilter(id as "all" | "idle" | "active" | "damaged")
-              }
+              onClick={() => setFilter(id as "all" | "idle" | "active" | "damaged")}
               className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
                 filter === id
                   ? "bg-indigo-600 text-white"
@@ -259,7 +380,7 @@ export function ShipHangar() {
                 ship={{
                   id: selectedShip.id,
                   name: selectedShip.name,
-                  type: selectedShip.type,
+                  type: selectedShip.type === "motherEarthRevenge" ? "midwayCarrier" : selectedShip.type,
                   tier: selectedShip.tier,
                   customization: {
                     colors: [],
@@ -280,12 +401,7 @@ export function ShipHangar() {
                 ship={{
                   id: selectedShip.id,
                   name: selectedShip.name,
-                  type: selectedShip.type as
-                    | "spitflare"
-                    | "starSchooner"
-                    | "orionFrigate"
-                    | "harbringerGalleon"
-                    | "midwayCarrier",
+                  type: selectedShip.type === "motherEarthRevenge" ? "midwayCarrier" : selectedShip.type,
                   tier: selectedShip.tier,
                   upgradeAvailable: true,
                   requirements: [],
@@ -319,24 +435,54 @@ export function ShipHangar() {
         )}
       </div>
 
+      {/* Build Queue Panel */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gray-800/90 border-t border-gray-700 p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-sm font-medium text-white">Build Queue</h4>
+          <span className="text-xs text-gray-400">
+            {buildQueue.length} / {manager.getState().maxQueueSize}
+          </span>
+        </div>
+        <div className="flex space-x-4 overflow-x-auto">
+          {buildQueue.map((item) => (
+            <div
+              key={item.id}
+              className="flex-shrink-0 bg-gray-700 rounded-lg p-3 w-48"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-white">{item.shipClass}</span>
+                <button
+                  onClick={() => manager.cancelBuild(item.id)}
+                  className="text-gray-400 hover:text-white text-xs"
+                >
+                  Cancel
+                </button>
+              </div>
+              <div className="w-full bg-gray-600 rounded-full h-2">
+                <div
+                  className="bg-indigo-500 h-2 rounded-full"
+                  style={{ width: `${item.progress * 100}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Docking Bay Status */}
       <div className="absolute bottom-6 left-6 px-4 py-2 bg-indigo-900/50 border border-indigo-700/30 rounded-lg flex items-center space-x-2">
         <Rocket className="w-4 h-4 text-indigo-400" />
         <span className="text-sm text-indigo-200">
-          {mockShips.length} Ships Docked •{" "}
-          {
-            mockShips.filter((s) =>
-              ["engaging", "patrolling"].includes(s.status),
-            ).length
-          }{" "}
+          {ships.length} Ships Docked •{" "}
+          {ships.filter((s) => ["engaging", "patrolling"].includes(s.status)).length}{" "}
           Active
         </span>
       </div>
 
       {/* Warnings */}
-      {mockShips.some((s) => s.status === "damaged") && (
+      {ships.some((s) => s.status === "damaged") && (
         <div className="absolute bottom-6 right-6 px-4 py-2 bg-red-900/50 border border-red-700/30 rounded-lg flex items-center space-x-2">
-          <AlertTriangle className="w-4 h-4 text-red-400" />
+          <Rocket className="w-4 h-4 text-red-400" />
           <span className="text-sm text-red-200">
             Ships requiring repairs detected
           </span>

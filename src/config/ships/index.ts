@@ -1,4 +1,4 @@
-export * from "./shipEffects";
+export * from "../../effects/types_effects/shipEffects";
 export * from "./spaceRatsShips";
 export * from "./lostNovaShips";
 export * from "./equatorHorizonShips";

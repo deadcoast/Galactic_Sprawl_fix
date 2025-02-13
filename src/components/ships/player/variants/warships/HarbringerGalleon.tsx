@@ -1,4 +1,4 @@
-import { ThrusterEffect } from "../../../../../components/effects/ThrusterEffect";
+import { ThrusterEffect } from "../../../../../effects/component_effects/ThrusterEffect";
 import { AlertTriangle } from "lucide-react";
 import * as PIXI from "pixi.js";
 import { useEffect, useRef } from "react";

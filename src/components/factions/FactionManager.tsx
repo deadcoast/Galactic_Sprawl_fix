@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Crown, AlertTriangle, Shield } from 'lucide-react';
 import { FactionAI } from './FactionAI';
-import { DiplomacyPanel } from '../DiplomacyPanel';
+import { DiplomacyPanel } from '../ui/DiplomacyPanel';
 import { useFactionBehavior } from '../../hooks/factions/useFactionBehavior';
 import { useDebugOverlay } from '../../hooks/ui/useDebugOverlay';
 import { AIDebugOverlay } from '../debug/AIDebugOverlay';

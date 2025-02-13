@@ -9,7 +9,7 @@ import {
   STEALTH_EFFECT,
   SPEED_REDUCTION_EFFECT,
   SHIELD_FIELD_EFFECT,
-} from "./shipEffects";
+} from "../../effects/types_effects/shipEffects";
 
 export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipStats> = {
   celestialArbiter: {

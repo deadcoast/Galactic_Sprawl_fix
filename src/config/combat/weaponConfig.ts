@@ -3,8 +3,9 @@ import {
   WeaponStats,
   WeaponType,
   WeaponVariant,
-} from "../../types/combat/CombatTypes";
-import { WeaponDamageEffect, WeaponAreaEffect } from "../../types/weapons/WeaponEffectTypes";
+  CombatWeaponStats
+} from "../../types/weapons/WeaponTypes";
+import { WeaponDamageEffect, WeaponAreaEffect } from "../../effects/types_effects/WeaponEffects";
 
 // Base stats for each weapon category
 const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {

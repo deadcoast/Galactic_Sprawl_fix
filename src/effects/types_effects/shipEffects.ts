@@ -1,4 +1,4 @@
-import { WeaponDamageEffect, WeaponAreaEffect } from "../../types/weapons/WeaponEffectTypes";
+import { WeaponDamageEffect, WeaponAreaEffect } from "./EffectTypes";
 import { Effect, AreaEffect } from "../../types/core/GameTypes";
 
 // Weapon Effects

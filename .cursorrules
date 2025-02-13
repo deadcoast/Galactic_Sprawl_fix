@@ -10,332 +10,185 @@ Also update the progress of the task in the Scratchpad when you finish a subtask
 Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan.
 The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
 
-## Tools
+Your `.cursorrules` workflow is **MANDATORY** as follows.
 
-Note all the tools are in python. So in the case you need to do batch processing, you can always consult the python files and write your own script.
+1. Review the Scratchpad
+2. Review the task
+3. Plan the steps
+4. Search codebase for existing implementations
+5. Take action
+6. Update the `Scratchpad` and `Lessons` sections
 
-## Screenshot Verification
-
-The screenshot verification workflow allows you to capture screenshots of web pages and verify their appearance using LLMs. The following tools are available:
-
-- Screenshot Capture:
-
-```bash
-venv/bin/python tools/screenshot_utils.py URL [--output OUTPUT] [--width WIDTH] [--height HEIGHT]
-```
-
-- LLM Verification with Images:
-
-```bash
-venv/bin/python tools/llm_api.py --prompt "Your verification question" --provider {openai|anthropic} --image path/to/screenshot.png
-```
-
-Example workflow:
-
-```python
-from screenshot_utils import take_screenshot_sync
-from llm_api import query_llm
-
-# Take a screenshot
-
-screenshot_path = take_screenshot_sync('https://example.com', 'screenshot.png')
-
-# Verify with LLM
-
-response = query_llm(
-    "What is the background color and title of this webpage?",
-    provider="openai",  # or "anthropic"
-    image_path=screenshot_path
-)
-print(response)
-```
-
-## LLM
-
-You always have an LLM at your side to help you with the task. For simple tasks, you could invoke the LLM by running the following command:
-
-```bash
-venv/bin/python ./tools/llm_api.py --prompt "What is the capital of France?" --provider "anthropic"
-```
-
-The LLM API supports multiple providers:
-
-- OpenAI (default, model: gpt-4o)
-- Azure OpenAI (model: configured via AZURE_OPENAI_MODEL_DEPLOYMENT in .env file, defaults to gpt-4o-ms)
-- DeepSeek (model: deepseek-chat)
-- Anthropic (model: claude-3-sonnet-20240229)
-- Gemini (model: gemini-pro)
-- Local LLM (model: Qwen/Qwen2.5-32B-Instruct-AWQ)
-
-But usually it's a better idea to check the content of the file and use the APIs in the `tools/llm_api.py` file to invoke the LLM if needed.
-
-## Web browser
-
-You could use the `tools/web_scraper.py` file to scrape the web.
-
-```bash
-venv/bin/python ./tools/web_scraper.py --max-concurrent 3 URL1 URL2 URL3
-```
-
-This will output the content of the web pages.
-
-## Search engine
-
-You could use the `tools/search_engine.py` file to search the web.
-
-```bash
-venv/bin/python ./tools/search_engine.py "your search keywords"
-```
-
-This will output the search results in the following format:
-
-```plaintext
-URL: https://example.com
-Title: This is the title of the search result
-Snippet: This is a snippet of the search result
-```
-
-If needed, you can further use the `web_scraper.py` file to scrape the web page content.
+**YOU MUST ALWAYS SEARCH THE CODE BASE TO AVOID CREATING DUPLICATE IMPLEMENTATIONS.**
 
 ## Lessons
 
-## User Specified Lessons
-
-- You have a Knowledge on the Project. Use it before you start the task.
-  - KNOWLEDGE_BASE_PATH="/Users/deadcoast/CursorProjects/Galactic_Sprawl/GalaxySprawlDocs"
 - Include info useful for debugging in the program output.
 - When correcting errors, do NOT delete unused code. Instead generate its implementation.
 - Read the file before you try to edit it.
+- Always check the exact type names in the codebase - e.g. "minerals" vs "mineral" in ResourceType.
+- When implementing automation systems, ensure proper integration with existing event systems and contexts.
+- Pay attention to module types - use the correct ModuleType from ModuleTypes.ts.
+- When working with resource types, use the proper ResourceType from ResourceTypes.ts.
+- Maintain type safety across the entire system - don't use string literals when proper types exist.
+- Ensure event emissions are consistent with the module event bus system.
+- When implementing managers, ensure proper cleanup in unregister/complete methods.
+- Use proper event typing with generic EventEmitter for type safety.
+- Implement proper cleanup in training and squad systems.
+- Calculate bonuses and multipliers based on traits and specializations.
+- Keep state updates and event emissions consistent.
 
-## Cursor learned
+## Cursor Learned
 
-- CRITICAL: ALWAYS SEARCH FOR EXISTING IMPLEMENTATIONS BEFORE CREATING NEW CODE
-  1. Use file_search and codebase_search BEFORE writing any new component
-  2. Check all similar file names and paths thoroughly
-  3. Review existing implementations completely
-  4. NEVER create new files without verifying duplicates
-  5. If duplicate work is discovered, IMMEDIATELY fix it yourself - don't leave it for others
-  6. Take responsibility for your own mistakes and fix them immediately
-  7. Don't just identify problems - SOLVE them
+### CRITICAL: Code Organization and Development
 
-- CRITICAL: Type System Organization
-  1. Found duplicate weapon type definitions:
-     - src/types/ships/WeaponTypes.ts
-     - src/types/weapons/WeaponTypes.ts
-  2. These have incompatible structures:
-     - ships/WeaponTypes uses Position from core/GameTypes
-     - weapons/WeaponTypes uses WeaponMountPosition enum
-  3. Need to consolidate these into a single source of truth
-  4. Current fix: Use the types from weapons/WeaponTypes.ts as it has more specific weapon positioning
+1. **ALWAYS SEARCH FOR EXISTING IMPLEMENTATIONS BEFORE CREATING NEW CODE**
+   - Use file_search and codebase_search BEFORE writing any new component
+   - Check all similar file names and paths thoroughly
+   - Review existing implementations completely
+   - NEVER create new files without verifying duplicates
+   - If duplicate work is discovered, IMMEDIATELY fix it yourself
+   - Take responsibility for your own mistakes and fix them immediately
+   - Don't just identify problems - SOLVE them
 
-- For search results, ensure proper handling of different character encodings (UTF-8) for international queries
-- Add debug information to stderr while keeping the main output clean in stdout for better pipeline integration
-- When using seaborn styles in matplotlib, use 'seaborn-v0_8' instead of 'seaborn' as the style name due to recent seaborn version changes
-- Use 'gpt-4o' as the model name for OpenAI's GPT-4 with vision capabilities
-- When implementing threshold-based systems, use proper TypeScript types and React Context for global state management
-- Handle lexical declarations in switch-case blocks by using block scoping with curly braces
+2. **Type System Organization**
+   - Keep core/base types in a central location (e.g., GameTypes.ts)
+   - Use inheritance for shared properties (e.g., extending BaseStats)
+   - Maintain clear type hierarchies (base -> specific -> component props)
+   - Group related types together with clear section comments
+   - Re-export types that are commonly used together
+   - Use proper type imports from their source files
+   - Pay attention to exact type names and values
+
+3. **Similar Interface Management**
+   - Keep interfaces separate if they truly serve different purposes
+   - Use specific naming to indicate purpose (e.g., FactionWeaponEffect vs DebugWeaponEffect)
+   - Document the purpose and differences between similar interfaces
+   - Each interface should:
+     - Have a clear, specific purpose
+     - Live in the appropriate module
+     - Use types relevant to its purpose
+     - Be imported from a single source of truth
+
+### Development Best Practices
+
+- Add debug information to stderr while keeping stdout clean
+- Handle lexical declarations in switch-case blocks using block scoping
 - Remove unused imports to avoid TypeScript linter warnings
-- Use 'as const' assertions to properly type string literals in TypeScript
-- Properly handle cleanup in useEffect to prevent memory leaks with intervals
-- When organizing TypeScript types in a game project:
-  1. Keep core/base types in a central location (e.g., GameTypes.ts)
-  2. Use inheritance for shared properties (e.g., extending BaseStats)
-  3. Maintain clear type hierarchies (base -> specific -> component props)
-  4. Group related types together with clear section comments
-  5. Re-export types that are commonly used together
+- Use 'as const' assertions to properly type string literals
+- Properly handle cleanup in useEffect to prevent memory leaks
+- When implementing threshold-based systems, use proper TypeScript types and React Context
+- For search results, ensure proper handling of different character encodings (UTF-8)
+- Ensure proper event emission and handling across the system
+- Maintain consistent type usage across related components
+
+### API and Tool Usage
+
+- Use 'seaborn-v0_8' instead of 'seaborn' for matplotlib styles
+- Use 'gpt-4o' as the model name for OpenAI's GPT-4 with vision capabilities
+
+### Testing (Last Step)
+
+1. **React Component Testing Setup**
+   - Create test wrapper component for context providers
+   - Use async/await with userEvent for interactions
+   - Handle multiple instances with specific queries
+
+2. **Button and UI Element Testing**
+   - Use `getAllByRole` instead of `getByText` for multiple instances
+   - Select last instance for action buttons
+   - Use role-based queries for accessibility
+   - Check attributes like 'disabled' instead of toBeDisabled()
+
+3. **Data Display Testing**
+   - Look for actual displayed format (e.g., '+15' vs '15')
+   - Consider context of value display
+   - Use regex for flexible text matching
 
 # Scratchpad
 
-### Current Task: Testing Setup
-1. [X] Add testing dependencies (Vitest, Testing Library)
-2. [X] Create test setup file
-3. [X] Create Vitest configuration
-4. [X] Create weapon system test file
-5. [X] Fix linter errors in test files
-6. [X] Run initial tests
-7. [X] Add test cases for weapon effects
-8. [ ] Add test cases for weapon upgrades
-9. [ ] Add test cases for UI components
+### Current Task: Ship Hangar Integration
 
-### Next Steps
+1. **Analysis of Requirements**
+   [X] Review UI menu documentation
+   [X] Identify integration points
+   [X] Map out component structure
+   [X] Review existing ship type implementations
 
-1. **Test Coverage**
-   - [X] Test weapon mounting functionality
-   - [X] Test weapon effects system
-   - [ ] Test weapon upgrade system
-   - [ ] Test UI component interactions
+2. **Ship Hangar Core**
+   [X] Ship Production System
+     [X] Build queue management
+     [X] Resource cost calculation
+     [X] Build time tracking
+     [X] Tier-based unlocks
+   [X] Docking Bay System
+     [X] Bay capacity management
+     [X] Expansion tracking
+     [X] Ship storage/retrieval
 
-2. **Documentation**
-   - [ ] Update component documentation
-   - [ ] Document breaking changes
-   - [ ] Update examples
-   - [ ] Add migration guide
+3. **Integration Points**
+   [X] Resource System
+     [X] Cost verification
+     [X] Resource consumption
+     [X] Refund handling
+   [X] Tech Tree Integration
+     [X] Tier unlocks
+     [X] Upgrade paths
+     [X] Prerequisite checking
+   [X] Officer System
+     [X] Captain assignment
+     [X] Skill bonuses
+     [X] Training integration
 
-### Implementation Progress
-
-1. **Component Cleanup**
-   - [X] Remove duplicate WeaponMount component
-   - [X] Move weapon mount functionality to WeaponSystem
-   - [X] Update BaseShip to use consolidated weapon system
-   - [X] Update faction ships to use new weapon system
-
-2. **Update Dependencies**
-   - [X] Fix imports in BaseShip.tsx
-   - [X] Update weapon mount references
-   - [X] Verify type compatibility
-   - [X] Set up testing environment
-
-3. **Integration Testing**
-   - [X] Create test setup and configuration
-   - [X] Create weapon system test file
-   - [X] Test weapon mounting
-   - [X] Test weapon effects
-   - [ ] Test weapon upgrades
-   - [ ] Test UI components
-
-4. **Update Faction Ships**
-   - [X] Update SpaceRatShip
-   - [X] Update LostNovaShip
-   - [X] Update EquatorHorizonShip
-   - [X] Test all variants
-
-### Current Focus
-We have successfully set up the testing environment and implemented tests for weapon mounting and effects. Next, we need to:
-1. Add tests for the weapon upgrade system
-2. Add tests for UI component interactions
-3. Update documentation to reflect the changes
-4. Create a migration guide for the consolidated weapon system
-
-### Lessons Learned
-1. When testing React components that use context providers, make sure to:
-   - Create a test wrapper component that provides necessary context
-   - Use async/await with userEvent for handling user interactions
-   - Handle multiple instances of elements with the same text by using more specific queries
-2. For components with multiple instances of the same button (e.g., in status effects and action buttons):
-   - Use `getAllByRole` instead of `getByText` to find all instances
-   - Select the last instance (in action buttons) for interaction testing
-3. When using Testing Library with React:
-   - Prefer `userEvent` over `fireEvent` for better simulation of real user interactions
-   - Use async/await with `userEvent` to ensure events are properly handled
-We have successfully set up the testing environment and created initial test cases. Now we need to:
-1. Run the initial tests to verify our setup
-2. Add more comprehensive test cases for weapon effects and upgrades
-3. Test UI component interactions
-4. Document the changes and update examples
-
-### Weapon System Consolidation Plan
-
-1. **Component Cleanup**
-   - [X] Remove duplicate WeaponMount component
-   - [X] Move weapon mount functionality to WeaponSystem
-   - [X] Update BaseShip to use consolidated weapon system
-   - [X] Update faction ships to use new weapon system
-
-2. **Update Dependencies**
-   - [X] Fix imports in BaseShip.tsx
-   - [X] Update weapon mount references
-   - [X] Verify type compatibility
-   - [X] Set up testing environment
-
-3. **Integration Testing**
-   - [X] Create test setup and configuration
-   - [X] Create weapon system test file
-   - [ ] Test weapon mounting
-   - [ ] Test weapon effects
-   - [ ] Test weapon upgrades
-   - [ ] Test UI components
-
-### Next Steps
-
-1. **Update Faction Ships**
-   - [X] Update SpaceRatShip
-   - [X] Update LostNovaShip
-   - [X] Update EquatorHorizonShip
-   - [ ] Test all variants
-
-2. **Documentation**
-   - [ ] Update component documentation
-   - [ ] Document breaking changes
-   - [ ] Update examples
-   - [ ] Add migration guide
-
-### Current Task: Testing Setup
-1. [X] Add testing dependencies (Vitest, Testing Library)
-2. [X] Create test setup file
-3. [X] Create Vitest configuration
-4. [X] Create weapon system test file
-5. [ ] Fix linter errors in test files
-6. [ ] Run initial tests
-
-We've completed updating all the faction ship components to use the consolidated weapon system. Would you like to proceed with testing the components to ensure everything works correctly?
+4. **UI Components**
+   [ ] Ship Category Navigation
+     [ ] War ships tab
+     [ ] Recon ships tab
+     [ ] Mining ships tab
+   [ ] Ship Build Interface
+     [ ] Ship cards/grid
+     [ ] Resource cost display
+     [ ] Build time estimation
+     [ ] Tier requirements
+   [ ] Build Queue Management
+     [ ] Queue display
+     [ ] Progress tracking
+     [ ] Cancel/modify options
+   [ ] Docking Bay Visualization
+     [ ] Bay layout
+     [ ] Expansion animations
+     [ ] Ship placement
 
 ### Implementation Steps
+1. [X] Create Ship Hangar Manager
+   - [X] Define core interfaces
+   - [X] Implement queue system
+   - [X] Handle resource management
+   - [X] Track build progress
 
-1. **Consolidate Weapon Types**
-   - [ ] Move all types to `WeaponTypes.ts`
-   - [ ] Merge overlapping interfaces
-   - [ ] Keep advanced features
-   - [ ] Add proper type exports
+2. [ ] Implement UI Components
+   - [ ] Build ship category navigation
+   - [ ] Create ship cards with stats
+   - [ ] Design build queue interface
+   - [ ] Develop docking bay visualization
 
-2. **Update References**
-   - [ ] Update all import statements
-   - [ ] Fix any type mismatches
-   - [ ] Verify type compatibility
-   - [ ] Test all components
+3. [ ] Integrate Systems
+   - [X] Connect to resource system
+   - [X] Link with tech tree
+   - [X] Integrate officer assignments
+   - [ ] Add visual progression
 
-3. **Documentation**
-   - [ ] Add clear type hierarchy docs
-   - [ ] Document breaking changes
-   - [ ] Update examples
-   - [ ] Add migration guide
+### Notes
+- Need to maintain consistent UI theme with Officers Academy
+- Use same animation system as other modules
+- Ensure proper cleanup on queue changes
+- Handle edge cases (resource shortages, cancellations)
+- Consider performance with multiple ships in production
+- Plan for future expansion (new ship types, upgrades)
 
-3. **Ship Types (`types/ships/`)**
-   - [ ] `ShipTypes.ts` - Base ship interfaces
-   - [ ] `FactionTypes.ts` - Faction-specific types
-   - [ ] `PlayerTypes.ts` - Player ship types
-
-### Config System Reorganization
-
-1. **Core Config (`config/core/`)**
-   - [ ] `gameConfig.ts` - Core game settings
-   - [ ] `balanceConfig.ts` - Game balance parameters
-
-2. **Ship Config (`config/ships/`)**
-   - [ ] `shipStats.ts` - Single source for ship stats
-   - [ ] `weaponStats.ts` - Weapon configurations
-   - [ ] `factionConfig.ts` - Faction configurations
-
-3. **Combat Config (`config/combat/`)**
-   - [ ] `combatConfig.ts` - Combat system settings
-   - [ ] `effectConfig.ts` - Effect configurations
-
-### Library Reorganization
-
-1. **Core Services (`lib/core/`)**
-   - [ ] `GameManager.ts` - Core game state
-   - [ ] `EventManager.ts` - Event system
-   - [ ] `AssetManager.ts` - Resource management
-
-2. **Combat Services (`lib/combat/`)**
-   - [ ] `CombatManager.ts` - Combat system
-   - [ ] `WeaponManager.ts` - Weapon handling
-   - [ ] `EffectManager.ts` - Effect system
-
-3. **Faction Services (`lib/factions/`)**
-   - [ ] `FactionManager.ts` - Faction management
-   - [ ] `AIManager.ts` - AI behavior system
-   - [ ] `FleetManager.ts` - Fleet management
-
-### Next Steps
-
-1. **Type System**
-   - [ ] Audit all type definitions
-   - [ ] Create type migration plan
-   - [ ] Update component type imports
-   - [ ] Document type hierarchy
-
-2. **Config System**
-   - [ ] Audit all config files
-   - [ ] Create config migration plan
-   - [ ] Update component configs
-   - [ ] Document config structure
+### Next Actions
+1. [X] Search for existing ship production code
+2. [X] Review ship type definitions
+3. [X] Start Ship Hangar Manager implementation
+4. [ ] Update Ship Hangar UI component
+5. [ ] Implement visual progression system
