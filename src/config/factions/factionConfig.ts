@@ -130,8 +130,10 @@ export const shipClassConfigs = {
   },
 };
 
-export const factionConfigs: Record<string, FactionConfig> = {
-  spaceRats: spaceRatsConfig,
-  lostNova: lostNovaConfig,
-  equatorHorizon: equatorHorizonConfig,
+export const factionIds = ["space-rats", "lost-nova", "equator-horizon"] as const;
+
+export const factionConfigs: Record<typeof factionIds[number], FactionConfig> = {
+  "space-rats": spaceRatsConfig,
+  "lost-nova": lostNovaConfig,
+  "equator-horizon": equatorHorizonConfig,
 };

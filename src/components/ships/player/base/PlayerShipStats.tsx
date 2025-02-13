@@ -1,8 +1,8 @@
-import { ShipDisplayStats } from "@/types/ships/CommonShipTypes";
+import type { CommonShipDisplayStats } from "../../../../types/ships/CommonShipTypes";
 import { Activity, Crosshair, Shield, Zap } from "lucide-react";
 
 interface ShipStatsProps {
-  stats: ShipDisplayStats;
+  stats: CommonShipDisplayStats;
 }
 
 export function ShipStats({ stats }: ShipStatsProps) {

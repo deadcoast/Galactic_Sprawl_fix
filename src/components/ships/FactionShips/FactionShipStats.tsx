@@ -1,6 +1,5 @@
 import { SHIP_STATS } from "../../../config/factions/factionShipStats";
-import type { FactionShipProps } from "../../../types/ships/FactionShipTypes";
-import type { WeaponMount } from "../../../types/weapons/WeaponTypes";
+import type { FactionShipProps, ShipStatsWithWeapons } from "../../../types/ships/FactionShipTypes";
 import { AlertTriangle, Shield, Sword } from "lucide-react";
 
 type FactionColorKey = "spaceRats" | "lostNova" | "equatorHorizon";
@@ -11,13 +10,6 @@ const FACTION_COLORS = {
   equatorHorizon: "amber",
 } as const;
 
-// Add type for ship stats to properly type the weapons array
-interface ShipStatsWithWeapons {
-  weapons: WeaponMount[];
-  abilities: any[];
-  // ... other stats properties
-}
-
 export function FactionShip({
   ship,
   onEngage,
@@ -26,7 +18,7 @@ export function FactionShip({
   className = "",
 }: FactionShipProps) {
   const color = FACTION_COLORS[ship.faction.replace(/-/g, "") as FactionColorKey];
-  const stats = SHIP_STATS[ship.class];
+  const stats = SHIP_STATS[ship.class] as ShipStatsWithWeapons;
 
   if (!stats) {
     return null;

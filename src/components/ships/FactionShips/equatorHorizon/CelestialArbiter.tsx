@@ -133,6 +133,7 @@ export function CelestialArbiter({
           shield,
           maxShield,
           stats,
+          tactics: "defensive",
           specialAbility: {
             name: "Balance Restoration",
             description: "Restore balance to nearby ships, enhancing their capabilities",

@@ -1,9 +1,9 @@
 import { AIDebugOverlay } from "../../../components/debug/AIDebugOverlay";
 import { DiplomacyPanel } from "../../../components/DiplomacyPanel";
 import { FactionAI } from "../../../components/ships/FactionShips/FactionAI";
-import { factionConfigs } from "../../../config/factions/factionConfig";
+import { factionConfigs, factionIds } from "../../../config/factions/factionConfig";
 import { getShipStats } from "../../../config/factions/factionShipStats";
-import { useFactionBehavior, type FactionId, type FactionShip } from "../../../hooks/factions/useFactionBehavior";
+import { useFactionBehavior, type FactionShip } from "../../../hooks/factions/useFactionBehavior";
 import { useDebugOverlay } from "../../../hooks/ui/useDebugOverlay";
 import type { DebugState } from "../../../types/debug/DebugTypes";
 import type { CommonShipAbility } from "../../../types/ships/CommonShipTypes";
@@ -15,13 +15,20 @@ interface FactionManagerProps {
   onFactionUpdate?: (factionId: string, state: FactionState) => void;
 }
 
+type FactionIdType = typeof factionIds[number];
+
 export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
   const debugOverlay = useDebugOverlay();
-  const [selectedFaction, setSelectedFaction] = useState<FactionId | null>(null);
+  const [selectedFaction, setSelectedFaction] = useState<FactionIdType | null>(null);
 
   // Get behavior states for all factions
-  const factionIds = ["space-rats", "lost-nova", "equator-horizon"] as const;
-  const factionBehaviors = factionIds.map((factionId) => useFactionBehavior(factionId));
+  const spaceRatsBehavior = useFactionBehavior("space-rats");
+  const lostNovaBehavior = useFactionBehavior("lost-nova");
+  const equatorHorizonBehavior = useFactionBehavior("equator-horizon");
+  const factionBehaviors = React.useMemo(
+    () => [spaceRatsBehavior, lostNovaBehavior, equatorHorizonBehavior],
+    [spaceRatsBehavior, lostNovaBehavior, equatorHorizonBehavior]
+  );
 
   // Update faction states
   useEffect(() => {
@@ -31,11 +38,11 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
           activeShips: behavior.stats.totalShips,
           territory: behavior.territory,
           fleetStrength: behavior.fleets.reduce((total, fleet) => total + fleet.strength, 0),
-          relationshipWithPlayer: behavior.relationships[behavior.id],
+          relationshipWithPlayer: behavior.relationships[behavior.id as FactionIdType],
           lastActivity: Date.now(),
           isActive: true,
         };
-        onFactionUpdate(behavior.id, state);
+        onFactionUpdate(behavior.id as FactionIdType, state);
       }
     });
   }, [factionBehaviors, onFactionUpdate]);
@@ -47,7 +54,8 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
       if (!behavior) {
         return;
       }
-      states[behavior.id] = {
+      const factionId = behavior.id as FactionIdType;
+      states[factionId] = {
         aiState: {
           behaviorState: behavior.stateMachine.current,
           fleetStrength: behavior.fleets.reduce((total, fleet) => total + fleet.strength, 0),
@@ -55,7 +63,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
           cooldowns: behavior.fleets.reduce((cooldowns: Record<string, number>, fleet) => {
             fleet.ships.forEach((ship: FactionShip) => {
               // Get ship stats from the ship's class
-              const shipStats = getShipStats(ship.class);
+              const shipStats = getShipStats(ship.class as keyof typeof factionConfigs);
               if (shipStats.abilities?.length > 0) {
                 shipStats.abilities.forEach((ability: CommonShipAbility) => {
                   cooldowns[`${ship.id}_${ability.name}`] = ability.cooldown;
@@ -107,7 +115,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
             return null;
           }
 
-          const config = factionConfigs[behavior.id.replace(/-/g, "")];
+          const config = factionConfigs[behavior.id as FactionIdType];
           if (!config) {
             return null;
           }
@@ -126,7 +134,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
                   ? "bg-gray-800 border-blue-500"
                   : "bg-gray-900 border-gray-700"
               }`}
-              onClick={() => setSelectedFaction(behavior.id)}
+              onClick={() => setSelectedFaction(behavior.id as FactionIdType)}
             >
               {/* Faction Header */}
               <div className="flex items-center justify-between mb-4">
@@ -285,9 +293,9 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
         <DiplomacyPanel
           faction={{
             id: selectedFaction,
-            name: factionConfigs[selectedFaction.replace(/-/g, "")]?.name || "",
-            type: selectedFaction.replace(/-/g, "") as "spaceRats" | "lostNova" | "equatorHorizon",
-            relationship: factionBehaviors.find((b) => b?.id === selectedFaction)?.relationships[selectedFaction as FactionId] || 0,
+            name: factionConfigs[selectedFaction]?.name || "",
+            type: selectedFaction.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) as "spaceRats" | "lostNova" | "equatorHorizon",
+            relationship: factionBehaviors.find((b) => b?.id === selectedFaction)?.relationships[selectedFaction] || 0,
             status: "neutral",
             tradingEnabled: true,
             lastInteraction: Date.now(),

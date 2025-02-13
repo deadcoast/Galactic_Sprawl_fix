@@ -48,6 +48,7 @@ interface WeaponHeaderProps {
   tier: number;
   type: string;
   status: string;
+  color: string;
 }
 
 export function WeaponHeader({ name, tier, type, status }: WeaponHeaderProps) {
@@ -220,25 +221,31 @@ export function WeaponUpgradeDisplay({
 
       {/* Stat Changes */}
       <div className="grid grid-cols-2 gap-3 mb-3">
-        {Object.entries(upgrade.stats).map(([stat, value]) => (
-          <div key={stat} className="flex items-center justify-between text-sm">
-            <span className="text-gray-400 capitalize">
-              {stat.replace(/([A-Z])/g, " $1").trim()}
-            </span>
-            <span
-              className={
-                value > currentStats[stat as keyof WeaponStats]
-                  ? "text-green-400"
-                  : "text-red-400"
-              }
-            >
-              {getStatDifference(
-                currentStats[stat as keyof WeaponStats],
-                value,
-              )}
-            </span>
-          </div>
-        ))}
+        {Object.entries(upgrade.stats).map(([stat, value]) => {
+          if (stat === 'effects') {
+            return null;
+          }
+          const currentValue = currentStats[stat as keyof WeaponStats];
+          if (typeof currentValue !== 'number' || typeof value !== 'number') {
+            return null;
+          }
+          return (
+            <div key={stat} className="flex items-center justify-between text-sm">
+              <span className="text-gray-400 capitalize">
+                {stat.replace(/([A-Z])/g, " $1").trim()}
+              </span>
+              <span
+                className={
+                  value > currentValue
+                    ? "text-green-400"
+                    : "text-red-400"
+                }
+              >
+                {getStatDifference(currentValue, value)}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Resource Costs */}
@@ -280,6 +287,13 @@ export function WeaponUpgradeDisplay({
           </span>
         </div>
       )}
+
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-400">Effects</span>
+        <span className="text-sm text-gray-300">
+          {Array.isArray(currentStats.effects) ? currentStats.effects.length : 0}
+        </span>
+      </div>
     </div>
   );
 }

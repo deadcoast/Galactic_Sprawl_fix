@@ -1,5 +1,5 @@
-import { PlayerShipProps } from "@/types/ships/PlayerShipTypes";
-import { canFireWeapon } from "@/utils/shipUtils";
+import { PlayerShipProps } from "../../../../types/ships/PlayerShipTypes";
+import { canFireWeapon } from "../../../../utils/shipUtils";
 import { AlertTriangle, Crosshair, Shield } from "lucide-react";
 
 interface PlayerShipBaseProps extends PlayerShipProps {

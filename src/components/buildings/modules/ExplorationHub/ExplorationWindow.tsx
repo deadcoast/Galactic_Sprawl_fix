@@ -1,8 +1,8 @@
-import { ExplorationControls } from "@/components/buildings/modules/ExplorationHub/ExplorationControls";
-import { ExplorationTutorial } from "@/components/buildings/modules/ExplorationHub/ExplorationTutorial";
-import { MissionLog } from "@/components/buildings/modules/ExplorationHub/MissionLog";
-import { ReconShipStatus } from "@/components/buildings/modules/ExplorationHub/ReconShipStatus";
-import { ResourceTransfer } from "@/components/buildings/modules/MiningHub/ResourceTransfer";
+import { ExplorationControls } from "./ExplorationControls";
+import { ExplorationTutorial } from "./ExplorationTutorial";
+import { MissionLog } from "./MissionLog";
+import { ReconShipStatus } from "./ReconShipStatus";
+import { ResourceTransfer } from "../MiningHub/ResourceTransfer";
 import {
   AlertTriangle,
   Filter,

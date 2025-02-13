@@ -1,6 +1,8 @@
 import { WeaponStats as BaseWeaponStats } from '../weapons/WeaponTypes';
 import { Effect } from '../core/GameTypes';
 
+export type { BaseWeaponStats as WeaponStats };
+
 export type WeaponCategory = 
   | 'machineGun'
   | 'gaussCannon'
@@ -33,6 +35,20 @@ export interface CombatWeaponStats extends BaseWeaponStats {
     shieldDamageBonus?: number;
     areaOfEffect?: number;
     disableChance?: number;
+  };
+}
+
+export interface WeaponConfig {
+  id: string;
+  name: string;
+  category: WeaponCategory;
+  variant: WeaponVariant;
+  baseStats: CombatWeaponStats;
+  visualAsset: string;
+  requirements?: {
+    power: number;
+    crew?: number;
+    tech?: string[];
   };
 }
 

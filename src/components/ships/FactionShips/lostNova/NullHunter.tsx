@@ -55,6 +55,7 @@ export function NullHunter({
           shield,
           maxShield,
           stats,
+          tactics: "defensive",
           specialAbility: {
             name: "Void Shield",
             description: "Generate a powerful shield that absorbs incoming damage",

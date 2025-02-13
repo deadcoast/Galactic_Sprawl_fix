@@ -131,6 +131,7 @@ export function DarkMatterReaper({
           shield,
           maxShield,
           stats,
+          tactics: "aggressive",
           specialAbility: {
             name: "Dark Matter Surge",
             description: "Temporarily increases damage output by channeling dark matter energy",

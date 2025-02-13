@@ -1,5 +1,5 @@
-import { ExplorationHub } from "@/components/buildings/modules/ExplorationHub/ExplorationHub";
-import { TooltipProvider } from "@/components/ui/TooltipProvider";
+import { ExplorationHub } from "./components/buildings/modules/ExplorationHub/ExplorationHub";
+import { TooltipProvider } from "./components/ui/TooltipProvider";
 
 export function App() {
   return (

@@ -1,12 +1,12 @@
-import { CentralMothership } from "@/components/visual/CentralMothership";
-import { ColonyStarStation } from "@/components/visual/ColonyStarStation";
-import { ExplorationHub } from "@/components/visual/ExplorationHub";
-import { HabitableWorld } from "@/components/visual/HabitableWorld";
-import { MineralProcessing } from "@/components/visual/MineralProcessing";
-import { ModuleUpgradeTransition } from "@/components/visual/ModuleUpgradeTransition";
-import { PopulationIndicator } from "@/components/visual/PopulationIndicator";
-import { StarSystemBackdrop } from "@/components/visual/StarSystemBackdrop";
-import { useScalingSystem } from "@/hooks/game/useScalingSystem";
+import { CentralMothership } from "./visual/CentralMothership";
+import { ColonyStarStation } from "./visual/ColonyStarStation";
+import { ExplorationHub } from "./visual/ExplorationHub";
+import { HabitableWorld } from "./visual/HabitableWorld";
+import { MineralProcessing } from "./visual/MineralProcessing";
+import { ModuleUpgradeTransition } from "./visual/ModuleUpgradeTransition";
+import { PopulationIndicator } from "./visual/PopulationIndicator";
+import { StarSystemBackdrop } from "./visual/StarSystemBackdrop";
+import { useScalingSystem } from "../hooks/game/useScalingSystem";
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 

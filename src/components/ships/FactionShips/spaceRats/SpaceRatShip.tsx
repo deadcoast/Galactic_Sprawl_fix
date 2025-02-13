@@ -45,7 +45,10 @@ export function SpaceRatShip({
       {/* Ship Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h3 className="text-lg font-medium text-white">{name}</h3>
+          <h3 className="text-lg font-medium text-white">
+            {name}
+            <span className="ml-2 text-sm text-red-400/70">#{id}</span>
+          </h3>
           <div className="flex items-center text-sm text-gray-400">
             <span className="capitalize">
               {type.replace(/([A-Z])/g, " $1").trim()}

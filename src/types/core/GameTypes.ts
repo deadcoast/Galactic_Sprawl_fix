@@ -54,19 +54,13 @@ export interface BaseStats {
 
 // Effect Types
 export interface Effect {
-  type:
-    | "stealth"
-    | "shield"
-    | "speed"
-    | "damage"
-    | "plasma"
-    | "spark"
-    | "gauss"
-    | "explosive";
+  name: string;
+  description: string;
+  type: string;
   magnitude: number;
-  duration: number;
-  radius?: number;
-  damage?: number;
+  duration?: number;
+  active?: boolean;
+  cooldown?: number;
 }
 
 // Ability Types

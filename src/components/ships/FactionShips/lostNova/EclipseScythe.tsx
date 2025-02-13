@@ -55,6 +55,7 @@ export function EclipseScythe({
           shield,
           maxShield,
           stats,
+          tactics: "hit-and-run",
           specialAbility: {
             name: "Eclipse Field",
             description: "Creates a field of dark energy that disrupts enemy systems",

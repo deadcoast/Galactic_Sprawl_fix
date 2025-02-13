@@ -89,7 +89,7 @@ export function WeaponLoadout({
                     Select a weapon
                   </option>
                   {availableWeapons
-                    .filter((w) => w.requirements.mountSize === mount.size)
+                    .filter((w) => w.mountRequirements.size === mount.size)
                     .map((weapon) => (
                       <option key={weapon.id} value={weapon.id}>
                         {weapon.name} (DMG: {weapon.baseStats.damage})

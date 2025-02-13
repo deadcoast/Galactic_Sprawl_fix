@@ -1,8 +1,8 @@
-import { ShipBase } from "@/components/ships/common/CommonShipStats";
-import { WeaponMount } from "@/components/ships/common/WeaponMount";
-import { WarShipCombat } from "@/components/ships/player/variants/warships/PlayerWarShipCombat";
-import { WeaponCategory, WeaponType } from "@/types/combat/CombatTypes";
-import { ShipStats } from "@/types/ships/CommonShipTypes";
+import { SpaceRatShip } from "./SpaceRatShip";
+import { WeaponMount } from "../../common/WeaponMount";
+import { WeaponType } from "../../../../types/combat/CombatTypes";
+import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
+import { AlertTriangle } from "lucide-react";
 
 type ShipStatus =
   | "idle"
@@ -11,14 +11,6 @@ type ShipStatus =
   | "retreating"
   | "disabled"
   | "damaged";
-type WarShipType =
-  | "spitflare"
-  | "starSchooner"
-  | "orionFrigate"
-  | "harbringerGalleon"
-  | "midwayCarrier";
-type WarShipStatus = "idle" | "engaging" | "retreating" | "damaged";
-type WarShipWeaponType = "machineGun" | "gaussCannon" | "railGun" | "rockets";
 
 interface AsteroidMarauderProps {
   id: string;
@@ -28,7 +20,7 @@ interface AsteroidMarauderProps {
   shield: number;
   maxShield: number;
   weapons: WeaponType[];
-  stats: ShipStats;
+  stats: FactionShipStats;
   onFire: (weaponId: string) => void;
   onEngage?: () => void;
   onRetreat: () => void;
@@ -49,87 +41,51 @@ export function AsteroidMarauder({
   onRetreat,
   onSpecialAbility,
 }: AsteroidMarauderProps) {
-  // Convert status for WarShipCombat compatibility
-  const getWarShipStatus = (status: ShipStatus): WarShipStatus => {
-    switch (status) {
-      case "patrolling":
-      case "disabled":
-        return "idle";
-      case "engaging":
-      case "retreating":
-      case "damaged":
-        return status;
-      default:
-        return "idle";
-    }
-  };
-
-  // Convert weapon type for WarShipCombat compatibility
-  const getWarShipWeaponType = (
-    category: WeaponCategory,
-  ): WarShipWeaponType => {
-    return category === "mgss" ? "machineGun" : category;
-  };
-
-  // For compatibility with WarShipCombat
-  const warShipProps = {
-    id,
-    name: "Asteroid Marauder",
-    type: "spitflare" as WarShipType,
-    tier: 1 as const,
-    status: getWarShipStatus(status),
-    hull: health,
-    maxHull: maxHealth,
-    shield,
-    maxShield,
-    weapons: weapons.map((w) => ({
-      id: w.id,
-      name: w.category,
-      type: getWarShipWeaponType(w.category),
-      damage: w.stats.damage,
-      range: w.stats.range,
-      cooldown: 1 / w.stats.rateOfFire,
-      status: "ready" as const,
-    })),
-    specialAbilities: [
-      {
-        name: "Asteroid Cover",
-        description: "Temporarily increases shield regeneration",
-        cooldown: 20,
-        active: false,
-      },
-    ],
-  };
-
-  // Filter status for ShipBase compatibility
-  const baseStatus = status === "damaged" ? "disabled" : status;
-
   return (
     <div className="relative">
-      {/* New ShipBase Component */}
-      <ShipBase
+      {/* Ship Base Component */}
+      <SpaceRatShip
         id={id}
         name="Asteroid Marauder"
-        faction="spaceRats"
-        status={baseStatus}
+        type="asteroidMarauder"
+        status={status === "damaged" ? "disabled" : status === "idle" ? "patrolling" : status}
         health={health}
         maxHealth={maxHealth}
         shield={shield}
         maxShield={maxShield}
-        stats={stats}
+        tactics="aggressive"
         specialAbility={{
-          name: "Asteroid Cover",
-          cooldown: 20,
-          duration: 8,
-          effect: {
-            type: "shield",
-            magnitude: 1.5,
-          },
+          name: "Scavenger Boost",
+          description: "Temporarily increases ship speed and maneuverability",
+          cooldown: 15,
+          active: stats.energy > stats.maxEnergy * 0.5
         }}
-        onEngage={onEngage}
-        onRetreat={onRetreat}
-        onSpecialAbility={onSpecialAbility}
       />
+
+      {/* Action Buttons */}
+      <div className="absolute bottom-4 left-4 right-4 flex gap-2">
+        <button
+          onClick={onEngage}
+          disabled={status === "disabled"}
+          className="flex-1 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg"
+        >
+          Engage
+        </button>
+        <button
+          onClick={onRetreat}
+          disabled={status === "disabled"}
+          className="flex-1 px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 rounded-lg"
+        >
+          Retreat
+        </button>
+        <button
+          onClick={() => onSpecialAbility?.()}
+          disabled={status === "disabled" || stats.energy <= stats.maxEnergy * 0.5}
+          className="flex-1 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg disabled:opacity-50"
+        >
+          Boost
+        </button>
+      </div>
 
       {/* Weapon Mounts */}
       <div className="absolute inset-0 pointer-events-none">
@@ -149,15 +105,12 @@ export function AsteroidMarauder({
         ))}
       </div>
 
-      {/* Legacy WarShipCombat for compatibility */}
-      <div className="hidden">
-        <WarShipCombat
-          ship={warShipProps}
-          onFireWeapon={onFire}
-          onActivateAbility={() => onSpecialAbility?.()}
-          onRetreat={onRetreat}
-        />
-      </div>
+      {/* Warning indicator for damaged state */}
+      {status === "damaged" && (
+        <div className="absolute top-0 right-0 p-2">
+          <AlertTriangle className="w-6 h-6 text-yellow-500 animate-pulse" />
+        </div>
+      )}
     </div>
   );
 }

@@ -5,19 +5,29 @@ import { useEffect, useRef } from "react";
 import { useAssets } from "../../../../../hooks/game/useAssets";
 import { useAnimation } from "../../../../../hooks/game/useAnimation";
 
-// Custom interfaces for our asset types
-interface AssetManifest {
-  bundles: Array<{
-    name: string;
-    assets: Array<{
-      name: string;
-      srcs: string;
-    }>;
-  }>;
-}
+// Type augmentation for PIXI.js
+declare module "pixi.js" {
+  export interface ApplicationOptions {
+    backgroundAlpha?: number;
+  }
 
-interface AssetInit {
-  manifest: AssetManifest;
+  export interface AssetsInit {
+    manifest: {
+      bundles: Array<{
+        name: string;
+        assets: Array<{
+          name: string;
+          srcs: string;
+        }>;
+      }>;
+    };
+  }
+
+  export interface AssetsClass {
+    init(options: AssetsInit): Promise<void>;
+    loadBundle<T>(name: string): Promise<Record<string, T>>;
+    spritesheet: SpriteAtlas;
+  }
 }
 
 interface HarbringerGalleonProps {
@@ -31,7 +41,7 @@ interface HarbringerGalleonProps {
   onStatusChange?: (status: string) => void;
 }
 
-interface SpriteAtlas {
+export interface SpriteAtlas {
   frames: {
     [key: string]: {
       frame: { x: number; y: number; w: number; h: number };

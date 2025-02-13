@@ -36,11 +36,15 @@ export interface WeaponStats {
   energyCost: number;
   cooldown: number;
   effects: Effect[];
+  special?: {
+    armorPenetration?: number;
+    shieldDamageBonus?: number;
+    areaOfEffect?: number;
+    disableChance?: number;
+  };
 }
 
-export interface WeaponEffect {
-  name: string;
-  description: string;
+export interface WeaponEffect extends Effect {
   active: boolean;
   cooldown: number;
 }
@@ -67,6 +71,10 @@ export interface WeaponConfig {
   mountRequirements: {
     size: WeaponMountSize;
     power: number;
+  };
+  requirements?: {
+    tech: string[];
+    resources: { type: string; amount: number }[];
   };
 }
 

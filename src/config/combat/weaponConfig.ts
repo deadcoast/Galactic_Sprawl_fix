@@ -13,6 +13,8 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     range: 300,
     accuracy: 0.8,
     energyCost: 5,
+    cooldown: 0.1,
+    effects: []
   },
   gaussCannon: {
     damage: 30,
@@ -20,6 +22,8 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     range: 500,
     accuracy: 0.9,
     energyCost: 15,
+    cooldown: 0.3,
+    effects: [],
     special: {
       armorPenetration: 0.3,
     },
@@ -30,6 +34,8 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     range: 800,
     accuracy: 0.95,
     energyCost: 30,
+    cooldown: 1.0,
+    effects: [],
     special: {
       armorPenetration: 0.5,
     },
@@ -40,6 +46,8 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     range: 400,
     accuracy: 0.7,
     energyCost: 8,
+    cooldown: 0.1,
+    effects: []
   },
   rockets: {
     damage: 50,
@@ -47,6 +55,8 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     range: 600,
     accuracy: 0.85,
     energyCost: 20,
+    cooldown: 0.5,
+    effects: [],
     special: {
       areaOfEffect: 50,
     },

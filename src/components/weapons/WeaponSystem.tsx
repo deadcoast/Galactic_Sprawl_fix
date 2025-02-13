@@ -3,8 +3,8 @@ import {
   WeaponHeader,
   WeaponStatsDisplay,
   WeaponUpgradeDisplay,
-} from "@/components/weapons/WeaponComponents";
-import { WEAPON_COLORS, WeaponSystemProps } from "@/types/weapons/WeaponTypes";
+} from "../../components/weapons/WeaponComponents";
+import { WEAPON_COLORS, WeaponSystemProps } from "../../types/weapons/WeaponTypes";
 import { Crosshair } from "lucide-react";
 
 export function WeaponSystem({
@@ -16,6 +16,12 @@ export function WeaponSystem({
   onToggleEffect,
 }: WeaponSystemProps) {
   const color = WEAPON_COLORS[weapon.config.category];
+
+  const handleUpgrade = (upgradeId: string) => {
+    if (onUpgrade) {
+      onUpgrade(upgradeId);
+    }
+  };
 
   return (
     <div
@@ -60,7 +66,15 @@ export function WeaponSystem({
       />
 
       <WeaponEffectsDisplay
-        effects={weapon.state.effects}
+        effects={weapon.state.effects.map(effect => ({
+          name: effect.name,
+          description: effect.description,
+          type: effect.type,
+          magnitude: effect.magnitude,
+          duration: effect.duration,
+          active: effect.active ?? true,
+          cooldown: effect.cooldown ?? 0
+        }))}
         color={color}
         onToggle={onToggleEffect}
       />
@@ -77,7 +91,7 @@ export function WeaponSystem({
               upgrade={upgrade}
               currentStats={weapon.state.currentStats}
               resources={resources}
-              onUpgrade={onUpgrade!}
+              onUpgrade={handleUpgrade}
             />
           ))}
         </div>
