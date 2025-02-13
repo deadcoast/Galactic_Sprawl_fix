@@ -1,15 +1,9 @@
-import { FactionShipBase } from "../FactionShipBase";
-import { WeaponMount } from "../../common/WeaponMount";
-import { WeaponType } from "../../../../types/combat/CombatTypes";
-import { CommonShipStats } from "../../../../types/ships/CommonShipTypes";
-
-type ShipStatus =
-  | "idle"
-  | "engaging"
-  | "patrolling"
-  | "retreating"
-  | "disabled"
-  | "damaged";
+import { LostNovaShip } from "./LostNovaShip";
+import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
+import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
+import { ShipStatus } from "../../../../types/ships/ShipTypes";
+import { AlertTriangle, Target } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface NullHunterProps {
   id: string;
@@ -18,12 +12,12 @@ interface NullHunterProps {
   maxHealth: number;
   shield: number;
   maxShield: number;
-  weapons: WeaponType[];
-  stats: CommonShipStats;
+  weapons: WeaponMount[];
+  stats: FactionShipStats;
   onFire: (weaponId: string) => void;
   onEngage?: () => void;
   onRetreat: () => void;
-  onSpecialAbility?: (abilityName: string) => void;
+  onSpecialAbility?: () => void;
 }
 
 export function NullHunter({
@@ -40,51 +34,71 @@ export function NullHunter({
   onRetreat,
   onSpecialAbility,
 }: NullHunterProps) {
+  const [voidTrackingActive, setVoidTrackingActive] = useState(false);
+
+  useEffect(() => {
+    if (status === "disabled") {
+      setVoidTrackingActive(false);
+    }
+  }, [status]);
+
+  const mapStatus = (status: ShipStatus) => {
+    switch (status) {
+      case "engaging":
+        return "engaging";
+      case "patrolling":
+        return "patrolling";
+      case "retreating":
+        return "retreating";
+      case "disabled":
+        return "disabled";
+      default:
+        return "patrolling";
+    }
+  };
+
   return (
     <div className="relative">
-      {/* Ship Base Component */}
-      <FactionShipBase
-        ship={{
-          id,
-          name: "Null Hunter",
-          faction: "lost-nova",
-          class: "null-hunter",
-          status: status === "damaged" ? "disabled" : status,
-          health,
-          maxHealth,
-          shield,
-          maxShield,
-          stats,
-          tactics: "defensive",
-          specialAbility: {
-            name: "Void Shield",
-            description: "Generate a powerful shield that absorbs incoming damage",
-            cooldown: 30,
-            active: false
-          }
-        }}
+      <LostNovaShip
+        id={id}
+        name="Null Hunter"
+        type="nullsRevenge"
+        status={mapStatus(status)}
+        health={health}
+        maxHealth={maxHealth}
+        shield={shield}
+        maxShield={maxShield}
+        weapons={weapons}
+        tactics="stealth"
         onEngage={onEngage}
         onRetreat={onRetreat}
-        onSpecialAbility={() => onSpecialAbility?.("Void Shield")}
-      />
-
-      {/* Weapon Mounts */}
-      <div className="absolute inset-0 pointer-events-none">
-        {weapons.map((weapon, index) => (
-          <WeaponMount
-            key={weapon.id}
-            weapon={weapon}
-            position={{
-              x: 45 + index * 28,
-              y: 45,
+        onSpecialAbility={() => {
+          setVoidTrackingActive(!voidTrackingActive);
+          onSpecialAbility?.();
+        }}
+      >
+        <div className="status-effects">
+          {voidTrackingActive && (
+            <div className="status-effect">
+              <Target className="icon" />
+              <span>Void Tracking Active</span>
+            </div>
+          )}
+        </div>
+        <div className="action-buttons">
+          <button
+            className={`ability-button ${voidTrackingActive ? 'active' : ''}`}
+            onClick={() => {
+              setVoidTrackingActive(!voidTrackingActive);
+              onSpecialAbility?.();
             }}
-            rotation={0}
-            isFiring={status === "engaging"}
-            onFire={() => onFire?.(weapon.id)}
-            className="absolute"
-          />
-        ))}
-      </div>
+            disabled={status === "disabled"}
+          >
+            <Target className="icon" />
+            <span>Void Tracking</span>
+          </button>
+        </div>
+      </LostNovaShip>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 ```
 Galactic_Sprawl/
 │   └── .cursorrules
+│   └── .eslintignore
 │   └── README.md
 │   └── eslint.config.js
 │   └── future_update
@@ -13,9 +14,13 @@ Galactic_Sprawl/
 │   └── requirements.txt
 │   └── tailwind.config.js
 │   └── tsconfig.app.json
+│   └── tsconfig.app.tsbuildinfo
 │   └── tsconfig.json
 │   └── tsconfig.node.json
+│   └── tsconfig.node.tsbuildinfo
 │   └── vite.config.ts
+│   └── dist/
+│   │   └── index.html
 │   └── GalaxySprawlDocs/
 │   │   └── (index)-GalaxySprawlDocs.md
 │   │   └── GS-ProjectDevPlan.md
@@ -52,119 +57,118 @@ Galactic_Sprawl/
 │   │   │   │   └── GS_UIM-HabitableWorlds.md
 │   │   │   │   └── GS_UIM-MothershipAndColonyUIMenu.md
 │   │   │   │   └── GS_UIM-OfficersAcademyAndShipHanger.md
-│   └── src/
-│   │   └── App.tsx
-│   │   └── index.css
-│   │   └── main.tsx
-│   │   └── vite-env.d.ts
-│   │   └── types/
-│   │   │   └── common.ts
-│   │   │   └── index.ts
-│   │   │   └── ui/
-│   │   │   │   └── UITypes.ts
-│   │   │   └── ships/
-│   │   │   │   └── CommonShipTypes.ts
-│   │   │   │   └── FactionShipTypes.ts
-│   │   │   │   └── PlayerShipTypes.ts
-│   │   │   │   └── WeaponTypes.ts
-│   │   │   └── buildings/
-│   │   │   │   └── ModuleTypes.ts
-│   │   │   └── core/
-│   │   │   │   └── GameTypes.ts
-│   │   │   └── combat/
-│   │   │   │   └── CombatTypes.ts
-│   │   │   │   └── SalvageTypes.ts
-│   │   │   └── weapons/
-│   │   │   │   └── WeaponTypes.ts
-│   │   │   └── factions/
-│   │   │   │   └── CombatTypes.ts
-│   │   │   │   └── FactionTypes.ts
-│   │   │   │   └── ShipTypes.ts
-│   │   └── contexts/
-│   │   │   └── GameContext.tsx
-│   │   │   └── ThresholdContext.tsx
-│   │   │   └── ThresholdTypes.ts
-│   │   └── config/
-│   │   │   └── ships/
-│   │   │   │   └── playerShipStats.ts
-│   │   │   └── combat/
-│   │   │   │   └── combatConfig.ts
-│   │   │   │   └── weaponConfig.ts
-│   │   │   └── game/
-│   │   │   │   └── gameConfig.ts
-│   │   │   └── factions/
-│   │   │   │   └── factionConfig.ts
-│   │   │   │   └── factionShipStats.ts
-│   │   │   │   └── factions.ts
-│   │   │   │   └── shipStats.ts
-│   │   │   │   └── weaponConfig.ts
-│   │   └── utils/
-│   │   │   └── helpers.ts
-│   │   │   └── idGenerator.ts
-│   │   │   └── math.ts
-│   │   │   └── shipUtils.ts
-│   │   │   └── types/
-│   │   │   └── math/
+│   │   │   └── src/
+│   │   │   │   └── App.tsx
+│   │   │   │   └── index.css
+│   │   │   │   └── main.tsx
+│   │   │   │   └── vite-env.d.ts
+│   │   │   │   └── types/
+│   │   │   │   │   └── common.ts
+│   │   │   │   │   └── index.ts
+│   │   │   │   │   └── ui/
+│   │   │   │   │   │   └── UITypes.ts
+│   │   │   │   │   │   └── ships/
+│   │   │   │   │   │   │   └── CommonShipTypes.ts
+│   │   │   │   │   │   │   └── FactionShipTypes.ts
+│   │   │   │   │   │   │   └── FactionTypes.ts
+│   │   │   │   │   │   │   └── PlayerShipTypes.ts
+│   │   │   │   │   │   │   └── ShipTypes.ts
+│   │   │   │   │   │   └── buildings/
+│   │   │   │   │   │   │   └── ModuleTypes.ts
+│   │   │   │   │   │   └── core/
+│   │   │   │   │   │   │   └── GameTypes.ts
+│   │   │   │   │   │   └── combat/
+│   │   │   │   │   │   │   └── CombatTypes.ts
+│   │   │   │   │   │   │   └── SalvageTypes.ts
+│   │   │   │   │   │   └── weapons/
+│   │   │   │   │   │   │   └── WeaponEffectTypes.ts
+│   │   │   │   │   │   │   └── WeaponTypes.ts
+│   │   │   │   │   │   └── debug/
+│   │   │   │   │   │   │   └── DebugTypes.ts
+│   │   │   │   │   │   └── contexts/
+│   │   │   │   │   │   │   └── GameContext.tsx
+│   │   │   │   │   │   │   └── ThresholdContext.tsx
+│   │   │   │   │   │   │   └── ThresholdTypes.ts
+│   │   │   │   │   │   └── config/
+│   │   │   │   │   │   │   └── ships/
+│   │   │   │   │   │   │   │   └── equatorHorizonShips.ts
+│   │   │   │   │   │   │   │   └── index.ts
+│   │   │   │   │   │   │   │   └── lostNovaShips.ts
+│   │   │   │   │   │   │   │   └── shipEffects.ts
+│   │   │   │   │   │   │   │   └── shipStats.ts
+│   │   │   │   │   │   │   │   └── spaceRatsShips.ts
+│   │   │   │   │   │   │   └── combat/
+│   │   │   │   │   │   │   │   └── combatConfig.ts
+│   │   │   │   │   │   │   │   └── weaponConfig.ts
+│   │   │   │   │   │   │   └── game/
+│   │   │   │   │   │   │   │   └── gameConfig.ts
+│   │   │   │   │   │   │   └── factions/
+│   │   │   │   │   │   │   │   └── factionConfig.ts
+│   │   │   │   │   │   │   │   └── factions.ts
+│   │   │   │   │   │   └── utils/
+│   │   │   │   │   │   │   └── helpers.ts
+│   │   │   │   │   │   │   └── idGenerator.ts
+│   │   │   │   │   │   │   └── math.ts
+│   │   │   │   │   │   │   └── shipUtils.ts
+│   │   │   │   │   │   │   └── types/
+│   │   │   │   │   │   │   └── math/
 │   │   └── styles/
-│   │   │   └── ui/
-│   │   │   │   └── vpr-system.css
-│   │   │   └── components/
-│   │   │   │   └── capital-ships.css
-│   │   │   │   └── colony.css
-│   │   │   │   └── exploration.css
-│   │   │   │   └── habitable-world.css
-│   │   │   │   └── mineral-processing.css
-│   │   │   │   └── mothership.css
-│   │   │   └── effects/
-│   │   │   │   └── effects.css
-│   │   │   │   └── vpr-effects.css
+│   │   │   │   └── ui/
+│   │   │   │   │   └── vpr-system.css
+│   │   │   │   └── components/
+│   │   │   │   │   └── capital-ships.css
+│   │   │   │   │   └── colony.css
+│   │   │   │   │   └── exploration.css
+│   │   │   │   │   └── habitable-world.css
+│   │   │   │   │   └── mineral-processing.css
+│   │   │   │   │   └── mothership.css
+│   │   │   │   └── effects/
+│   │   │   │   │   └── effects.css
+│   │   │   │   │   └── vpr-effects.css
 │   │   └── components/
-│   │   │   └── DiplomacyPanel.tsx
-│   │   │   └── GalaxyMap.tsx
-│   │   │   └── GameHUD.tsx
-│   │   │   └── GameLayout.tsx
-│   │   │   └── SprawlView.tsx
-│   │   │   └── TechTree.tsx
-│   │   │   └── VPRErrorBoundary.tsx
-│   │   │   └── VPRLoadingFallback.tsx
-│   │   │   └── VPRStarSystemView.tsx
-│   │   │   └── ui/
-│   │   │   │   └── NotificationSystem.tsx
-│   │   │   │   └── TooltipProvider.tsx
-│   │   │   │   └── tooltip-context.ts
-│   │   │   └── ships/
-│   │   │   │   └── ShipHangar.tsx
-│   │   │   │   └── reconships/
-│   │   │   │   └── common/
-│   │   │   │   │   └── CommonShipMovement.tsx
-│   │   │   │   │   └── CommonShipStats.tsx
-│   │   │   │   │   └── WeaponMount.tsx
-│   │   │   │   └── factions/
-│   │   │   │   │   └── FactionAI.tsx
-│   │   │   │   │   └── FactionFleet.tsx
-│   │   │   │   │   └── FactionManager.tsx
-│   │   │   │   │   └── FactionShipBase.tsx
-│   │   │   │   │   └── FactionShipStats.tsx
-│   │   │   │   │   └── lostNova/
-│   │   │   │   │   │   └── DarkMatterReaper.tsx
-│   │   │   │   │   │   └── EclipseScythe.tsx
-│   │   │   │   │   │   └── LostNovaShip.tsx
-│   │   │   │   │   │   └── NullHunter.tsx
-│   │   │   │   │   └── equatorHorizon/
-│   │   │   │   │   │   └── CelestialArbiter.tsx
-│   │   │   │   │   │   └── EquatorHorizonShip.tsx
-│   │   │   │   │   │   └── EtherealGalleon.tsx
-│   │   │   │   │   │   └── StellarEquinox.tsx
-│   │   │   │   │   └── spaceRats/
-│   │   │   │   │   │   └── AsteroidMarauder.tsx
-│   │   │   │   │   │   └── RatKing.tsx
-│   │   │   │   │   │   └── RogueNebula.tsx
-│   │   │   │   │   │   └── SpaceRatShip.tsx
-│   │   │   │   └── miningships/
-│   │   │   │   └── player/
-│   │   │   │   │   └── PlayerShipStats.tsx
-│   │   │   │   │   └── types/
-│   │   │   │   │   │   └── reconships/
+│   │   │   │   └── DiplomacyPanel.tsx
+│   │   │   │   └── GalaxyMap.tsx
+│   │   │   │   └── GameHUD.tsx
+│   │   │   │   └── GameLayout.tsx
+│   │   │   │   └── SprawlView.tsx
+│   │   │   │   └── TechTree.tsx
+│   │   │   │   └── VPRErrorBoundary.tsx
+│   │   │   │   └── VPRLoadingFallback.tsx
+│   │   │   │   └── VPRStarSystemView.tsx
+│   │   │   │   └── ui/
+│   │   │   │   │   └── NotificationSystem.tsx
+│   │   │   │   │   └── TooltipProvider.tsx
+│   │   │   │   │   └── tooltip-context.ts
+│   │   │   │   └── ships/
+│   │   │   │   │   └── common/
+│   │   │   │   │   │   └── CommonShipMovement.tsx
+│   │   │   │   │   │   └── CommonShipStats.tsx
+│   │   │   │   │   │   └── WeaponMount.tsx
+│   │   │   │   │   └── FactionShips/
+│   │   │   │   │   │   └── FactionAI.tsx
+│   │   │   │   │   │   └── FactionFleet.tsx
+│   │   │   │   │   │   └── FactionManager.tsx
+│   │   │   │   │   │   └── FactionShipBase.tsx
+│   │   │   │   │   │   └── FactionShipStats.tsx
+│   │   │   │   │   │   └── lostNova/
+│   │   │   │   │   │   │   └── DarkMatterReaper.tsx
+│   │   │   │   │   │   │   └── EclipseScythe.tsx
+│   │   │   │   │   │   │   └── LostNovaShip.tsx
+│   │   │   │   │   │   │   └── NullHunter.tsx
+│   │   │   │   │   │   └── equatorHorizon/
+│   │   │   │   │   │   │   └── CelestialArbiter.tsx
+│   │   │   │   │   │   │   └── EquatorHorizonShip.tsx
+│   │   │   │   │   │   │   └── EtherealGalleon.tsx
+│   │   │   │   │   │   │   └── StellarEquinox.tsx
+│   │   │   │   │   │   └── spaceRats/
+│   │   │   │   │   │   │   └── AsteroidMarauder.tsx
+│   │   │   │   │   │   │   └── RatKing.tsx
+│   │   │   │   │   │   │   └── RogueNebula.tsx
+│   │   │   │   │   │   │   └── SpaceRatShip.tsx
+│   │   │   │   │   └── MiningShips/
+│   │   │   │   │   └── player/
+│   │   │   │   │   │   └── variants/
+│   │   │   │   │   │   │   └── reconships/
 │   │   │   │   │   │   │   └── ReconShipControl.tsx
 │   │   │   │   │   │   │   └── ReconShipStatus.tsx
 │   │   │   │   │   │   └── miningships/
@@ -185,12 +189,8 @@ Galactic_Sprawl/
 │   │   │   │   │   └── base/
 │   │   │   │   │   │   └── PlayerShipBase.tsx
 │   │   │   │   │   │   └── PlayerShipStats.tsx
-│   │   │   │   └── warships/
-│   │   │   │   │   └── tier1/
-│   │   │   │   │   └── tier3/
-│   │   │   │   │   └── tier2/
-│   │   │   └── buildings/
-│   │   │   │   └── colony/
+│   │   │   │   │   └── buildings/
+│   │   │   │   │   └── colony/
 │   │   │   │   │   └── AutomatedExpansion.tsx
 │   │   │   │   │   └── BiodomeModule.tsx
 │   │   │   │   │   └── ColonyCore.tsx
@@ -232,20 +232,21 @@ Galactic_Sprawl/
 │   │   │   │   │   └── radar/
 │   │   │   │   │   │   └── RadarModule.tsx
 │   │   │   │   │   └── trading/
+│   │   │   │   │   │   └── TradingHub.tsx
 │   │   │   │   └── mothership/
 │   │   │   │   │   └── MothershipCore.tsx
-│   │   │   └── combat/
+│   │   │   │   └── combat/
 │   │   │   │   └── BattleEnvironment.tsx
 │   │   │   │   └── SalvageSystem.tsx
-│   │   │   └── trade/
+│   │   │   │   └── trade/
 │   │   │   │   └── TradeRouteVisualizer.tsx
-│   │   │   └── weapons/
+│   │   │   │   └── weapons/
 │   │   │   │   └── WeaponComponents.tsx
 │   │   │   │   └── WeaponControl.tsx
 │   │   │   │   └── WeaponLoadout.tsx
 │   │   │   │   └── WeaponSystem.tsx
 │   │   │   │   └── WeaponUpgradeSystem.tsx
-│   │   │   └── visual/
+│   │   │   │   └── visual/
 │   │   │   │   └── BackgroundEffect.tsx
 │   │   │   │   └── BuildingUpgradeEffect.tsx
 │   │   │   │   └── CapitalShipEffect.tsx
@@ -259,62 +260,64 @@ Galactic_Sprawl/
 │   │   │   │   └── ProgressionEffects.tsx
 │   │   │   │   └── StarSystemBackdrop.tsx
 │   │   │   │   └── TradeRouteEffect.tsx
-│   │   │   └── factions/
-│   │   │   │   └── FactionManager.tsx
-│   │   │   └── effects/
-│   │   │   │   └── ExplosionEffect.tsx
-│   │   │   │   └── ShieldEffect.tsx
-│   │   │   │   └── SmokeTrailEffect.tsx
-│   │   │   │   └── ThrusterEffect.tsx
-│   │   │   │   └── WeaponEffect.tsx
-│   │   │   └── debug/
-│   │   │   │   └── AIDebugOverlay.tsx
+│   │   │   │   └── factions/
+│   │   │   │   │   └── FactionManager.tsx
+│   │   │   │   └── effects/
+│   │   │   │   │   └── ExplosionEffect.tsx
+│   │   │   │   │   └── ShieldEffect.tsx
+│   │   │   │   │   └── SmokeTrailEffect.tsx
+│   │   │   │   │   └── ThrusterEffect.tsx
+│   │   │   │   │   └── WeaponEffect.tsx
+│   │   │   │   └── debug/
+│   │   │   │   │   └── AIDebugOverlay.tsx
 │   │   └── hooks/
-│   │   │   └── useCombatSystem.ts
-│   │   │   └── useDebugOverlay.ts
-│   │   │   └── useDiplomacy.ts
-│   │   │   └── useGlobalEvents.ts
-│   │   │   └── useScalingSystem.ts
-│   │   │   └── useTooltip.ts
-│   │   │   └── useVPR.ts
-│   │   │   └── useVPRInteractivity.ts
-│   │   │   └── useVPRSystem.ts
-│   │   │   └── ui/
-│   │   │   │   └── useTooltip.ts
-│   │   │   └── combat/
-│   │   │   │   └── useCombatSystem.ts
-│   │   │   └── game/
-│   │   │   │   └── useGameState.ts
-│   │   │   └── factions/
-│   │   │   │   └── useAdaptiveAI.ts
-│   │   │   │   └── useEnemyAI.ts
-│   │   │   │   └── useFactionAI.ts
-│   │   │   │   └── useFactionBehavior.ts
-│   │   │   │   └── useFleetAI.ts
-│   │   │   └── debug/
+│   │   │   │   └── ui/
+│   │   │   │   │   └── useDebugOverlay.ts
+│   │   │   │   │   └── useTooltip.ts
+│   │   │   │   │   └── useVPR.ts
+│   │   │   │   │   └── useVPRInteractivity.ts
+│   │   │   │   │   └── useVPRSystem.ts
+│   │   │   │   └── combat/
+│   │   │   │   │   └── useCombatSystem.ts
+│   │   │   │   └── game/
+│   │   │   │   │   └── useAnimation.ts
+│   │   │   │   │   └── useAssets.ts
+│   │   │   │   │   └── useGameState.ts
+│   │   │   │   │   └── useGlobalEvents.ts
+│   │   │   │   │   └── useScalingSystem.ts
+│   │   │   │   └── factions/
+│   │   │   │   │   └── useAdaptiveAI.ts
+│   │   │   │   │   └── useDiplomacy.ts
+│   │   │   │   │   └── useEnemyAI.ts
+│   │   │   │   │   └── useFactionAI.ts
+│   │   │   │   │   └── useFactionBehavior.ts
+│   │   │   │   │   └── useFleetAI.ts
+│   │   │   │   └── debug/
 │   │   └── lib/
-│   │   │   └── combatManager.ts
-│   │   │   └── combat/
-│   │   │   │   └── combatManager.ts
-│   │   │   │   └── salvageManager.ts
-│   │   │   └── utils/
-│   │   │   │   └── EventEmitter.ts
-│   │   │   └── game/
-│   │   │   │   └── gameManager.ts
-│   │   │   │   └── techTreeManager.ts
-│   │   │   └── ai/
-│   │   │   │   └── behaviorTree.ts
-│   │   │   │   └── shipBehavior.ts
-│   │   │   │   └── shipMovement.ts
-│   │   │   └── factions/
-│   │   │   │   └── factionManager.ts
+│   │   │   │   └── combat/
+│   │   │   │   │   └── combatManager.ts
+│   │   │   │   │   └── salvageManager.ts
+│   │   │   │   └── utils/
+│   │   │   │   │   └── EventEmitter.ts
+│   │   │   │   └── game/
+│   │   │   │   │   └── animationManager.ts
+│   │   │   │   │   └── assetManager.ts
+│   │   │   │   │   └── gameManager.ts
+│   │   │   │   │   └── techTreeManager.ts
+│   │   │   │   └── ai/
+│   │   │   │   │   └── behaviorTree.ts
+│   │   │   │   │   └── shipBehavior.ts
+│   │   │   │   │   └── shipMovement.ts
+│   │   │   │   └── factions/
+│   │   │   │   │   └── factionManager.ts
 │   │   └── effects/
-│   │   │   └── combat/
-│   │   │   │   └── ExplosionEffect.tsx
-│   │   │   │   └── ShieldEffect.tsx
-│   │   │   │   └── WeaponEffect.tsx
-│   │   │   └── particles/
-│   │   │   └── visual/
-│   │   │   │   └── SmokeTrailEffect.tsx
-│   │   │   │   └── ThrusterEffect.tsx
+│   │   │   │   └── combat/
+│   │   │   │   │   └── ExplosionEffect.tsx
+│   │   │   │   │   └── ShieldEffect.tsx
+│   │   │   │   │   └── WeaponEffect.tsx
+│   │   │   │   └── particles/
+│   │   │   │   └── visual/
+│   │   │   │   │   └── SmokeTrailEffect.tsx
+│   │   │   │   │   └── ThrusterEffect.tsx
+│   │   │   │   └── FactionDashboard.tsx
 ```

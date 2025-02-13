@@ -63,13 +63,17 @@ export interface Effect {
   cooldown?: number;
 }
 
+export interface AreaEffect extends Effect {
+  radius?: number;
+}
+
 // Ability Types
 export interface Ability {
   name: string;
   description: string;
   cooldown: number;
   duration: number;
-  effect: Effect;
+  effect: Effect | AreaEffect;
   active: boolean;
 }
 

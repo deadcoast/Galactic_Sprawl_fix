@@ -1,5 +1,10 @@
 import { BaseStats, Effect } from "../core/GameTypes";
-import { WeaponMount, WeaponCategory, WeaponStats } from "../weapons/WeaponTypes";
+import { 
+  WeaponMount, 
+  WeaponCategory, 
+  CombatWeaponStats,
+  WeaponType as WeaponTypeBase
+} from "../weapons/WeaponTypes";
 
 // Ship Type Interface
 export interface ShipType {
@@ -9,13 +14,8 @@ export interface ShipType {
 // Ship Categories
 export type ShipCategory = "war" | "recon" | "mining";
 
-// Weapon Type Interface
-export interface WeaponType {
-  category: WeaponCategory;
-  variant: string;
-  visualAsset: string;
-  stats: WeaponStats;
-}
+// Re-export weapon type for backward compatibility
+export type WeaponType = WeaponTypeBase;
 
 // Ship Status
 export type ShipStatus =

@@ -1,15 +1,9 @@
 import { EquatorHorizonShip } from "./EquatorHorizonShip";
-import { WeaponMount } from "../../common/WeaponMount";
-import { WeaponType } from "../../../../types/combat/CombatTypes";
+import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
 import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
-
-type ShipStatus =
-  | "idle"
-  | "engaging"
-  | "patrolling"
-  | "retreating"
-  | "disabled"
-  | "damaged";
+import { ShipStatus } from "../../../../types/ships/ShipTypes";
+import { AlertTriangle, Star } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface StellarEquinoxProps {
   id: string;
@@ -18,29 +12,13 @@ interface StellarEquinoxProps {
   maxHealth: number;
   shield: number;
   maxShield: number;
-  weapons: WeaponType[];
+  weapons: WeaponMount[];
   stats: FactionShipStats;
   onFire: (weaponId: string) => void;
   onEngage?: () => void;
   onRetreat: () => void;
+  onSpecialAbility?: () => void;
 }
-
-// Default weapon configuration from shipConfig.ts
-const DEFAULT_WEAPON: WeaponType = {
-  id: "gauss-standard",
-  category: "gaussCannon",
-  variant: "gaussPlaner",
-  stats: {
-    damage: 200,
-    range: 1300,
-    accuracy: 0.93,
-    rateOfFire: 1/3, // From cooldown: 3
-    energyCost: 30,
-    cooldown: 3,
-    effects: []
-  },
-  visualAsset: "weapons/equator-horizon/gaussCannon/standard"
-};
 
 export function StellarEquinox({
   id,
@@ -49,64 +27,78 @@ export function StellarEquinox({
   maxHealth,
   shield,
   maxShield,
-  weapons = [DEFAULT_WEAPON],
+  weapons,
   stats,
   onFire,
   onEngage,
   onRetreat,
+  onSpecialAbility,
 }: StellarEquinoxProps) {
-  // Filter status for base component compatibility
-  const baseStatus = status === "damaged" ? "disabled" : 
-    status === "idle" ? "patrolling" : status as "engaging" | "patrolling" | "retreating" | "disabled";
+  const [stellarConvergenceActive, setStellarConvergenceActive] = useState(false);
+
+  useEffect(() => {
+    if (status === "disabled") {
+      setStellarConvergenceActive(false);
+    }
+  }, [status]);
+
+  const mapStatus = (status: ShipStatus) => {
+    switch (status) {
+      case "engaging":
+        return "engaging";
+      case "patrolling":
+        return "patrolling";
+      case "retreating":
+        return "retreating";
+      case "disabled":
+        return "disabled";
+      default:
+        return "patrolling";
+    }
+  };
 
   return (
     <div className="relative">
-      {/* Ship Base Component */}
       <EquatorHorizonShip
         id={id}
         name="Stellar Equinox"
         type="stellarEquinox"
-        status={baseStatus}
+        status={mapStatus(status)}
         health={health}
         maxHealth={maxHealth}
         shield={shield}
         maxShield={maxShield}
-        tactics={stats.energy > stats.maxEnergy * 0.7 ? "aggressive" : "defensive"}
-        specialAbility={{
-          name: "Perfect Harmony",
-          description: "Create a harmonious field that enhances nearby allies",
-          cooldown: 35,
-          active: false
-        }}
+        weapons={weapons}
+        tactics="defensive"
         onEngage={onEngage}
         onRetreat={onRetreat}
-      />
-
-      {/* Weapon Mounts */}
-      <div className="absolute inset-0 pointer-events-none">
-        {weapons.map((weapon, index) => (
-          <WeaponMount
-            key={weapon.id}
-            weapon={{
-              category: weapon.category,
-              variant: weapon.variant,
-              visualAsset: `weapons/equator-horizon/${weapon.category}/standard`,
-              stats: {
-                ...weapon.stats,
-                energyCost: weapon.stats.energyCost * (stats.energy / stats.maxEnergy)
-              }
+        onSpecialAbility={() => {
+          setStellarConvergenceActive(!stellarConvergenceActive);
+          onSpecialAbility?.();
+        }}
+      >
+        <div className="status-effects">
+          {stellarConvergenceActive && (
+            <div className="status-effect">
+              <Star className="icon" />
+              <span>Stellar Convergence Active</span>
+            </div>
+          )}
+        </div>
+        <div className="action-buttons">
+          <button
+            className={`ability-button ${stellarConvergenceActive ? 'active' : ''}`}
+            onClick={() => {
+              setStellarConvergenceActive(!stellarConvergenceActive);
+              onSpecialAbility?.();
             }}
-            position={{
-              x: 45 + index * 30,
-              y: 45,
-            }}
-            rotation={0}
-            isFiring={status === "engaging"}
-            onFire={() => onFire?.(weapon.id)}
-            className="absolute"
-          />
-        ))}
-      </div>
+            disabled={status === "disabled"}
+          >
+            <Star className="icon" />
+            <span>Stellar Convergence</span>
+          </button>
+        </div>
+      </EquatorHorizonShip>
     </div>
   );
 }

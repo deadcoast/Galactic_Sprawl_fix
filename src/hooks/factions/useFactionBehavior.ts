@@ -1,6 +1,8 @@
 import { CommonShipStats } from '../../types/ships/CommonShipTypes';
-import { getShipStats } from '../../config/factions/factionShipStats';
 import { useEffect, useState } from "react";
+import { FactionShipClass, FactionShipStats } from "../../types/ships/FactionShipTypes";
+import { SHIP_STATS as CONFIG_SHIP_STATS } from "../../config/ships";
+import { Effect } from "../../types/core/GameTypes";
 
 // Faction Types
 export type FactionId = "space-rats" | "lost-nova" | "equator-horizon";
@@ -655,7 +657,7 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
       const fleet: FactionFleet = {
         ships: nearbyUnits.map((u) => {
           const shipClass = determineShipClass(u);
-          const stats = getShipStats(shipClass);
+          const stats = getShipBehaviorStats(shipClass);
           return {
             id: u.id,
             class: shipClass,
@@ -819,6 +821,57 @@ const DEFAULT_SHIP_STATS: ShipStats = {
   weapons: [],
   abilities: [],
 };
+
+// Map kebab-case ship classes to camelCase
+function mapShipClass(shipClass: ShipClass): FactionShipClass {
+  return shipClass.replace(/-([a-z])/g, g => g[1].toUpperCase()) as FactionShipClass;
+}
+
+// Get ship stats for behavior
+function getShipBehaviorStats(shipClass: ShipClass): CommonShipStats {
+  const configStats = CONFIG_SHIP_STATS[mapShipClass(shipClass)];
+  if (!configStats) {
+    return {
+      health: DEFAULT_SHIP_STATS.health,
+      maxHealth: DEFAULT_SHIP_STATS.health,
+      shield: DEFAULT_SHIP_STATS.shield,
+      maxShield: DEFAULT_SHIP_STATS.shield,
+      energy: 100,
+      maxEnergy: 100,
+      cargo: 100,
+      speed: DEFAULT_SHIP_STATS.speed,
+      turnRate: DEFAULT_SHIP_STATS.turnRate,
+      defense: {
+        armor: DEFAULT_SHIP_STATS.armor,
+        shield: DEFAULT_SHIP_STATS.shield,
+        evasion: 0.3,
+        regeneration: 1,
+      },
+      mobility: {
+        speed: DEFAULT_SHIP_STATS.speed,
+        turnRate: DEFAULT_SHIP_STATS.turnRate,
+        acceleration: 50,
+      },
+      weapons: [],
+      abilities: [],
+    };
+  }
+  return {
+    health: configStats.health,
+    maxHealth: configStats.maxHealth,
+    shield: configStats.shield,
+    maxShield: configStats.maxShield,
+    energy: configStats.energy,
+    maxEnergy: configStats.maxEnergy,
+    cargo: configStats.cargo,
+    speed: configStats.speed,
+    turnRate: configStats.turnRate,
+    defense: configStats.defense,
+    mobility: configStats.mobility,
+    weapons: configStats.weapons,
+    abilities: configStats.abilities,
+  };
+}
 
 // Ship class configurations
 const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {

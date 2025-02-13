@@ -1,6 +1,35 @@
-import { Effect, Tier } from "../core/GameTypes";
+import { Effect } from "../core/GameTypes";
 
-// Weapon Categories
+// Effect Types
+// ------------------------------------------------------------
+
+/**
+ * Base weapon damage effect
+ */
+export interface WeaponDamageEffect extends Effect {
+  damage: number;
+  active: boolean;
+  cooldown: number;
+}
+
+/**
+ * Area of effect weapon damage
+ */
+export interface WeaponAreaEffect extends Effect {
+  damage: number;
+  radius: number;
+  active: boolean;
+  cooldown: number;
+}
+
+export type WeaponEffectType = WeaponDamageEffect | WeaponAreaEffect;
+
+// Base Types
+// ------------------------------------------------------------
+
+/**
+ * All available weapon categories
+ */
 export type WeaponCategory =
   | "machineGun"
   | "gaussCannon"
@@ -12,9 +41,36 @@ export type WeaponCategory =
   | "capitalLaser"
   | "torpedoes";
 
+/**
+ * Specific weapon variants within each category
+ */
+export type WeaponVariant =
+  // Machine Gun variants
+  | "basic"
+  | "plasmaRounds"
+  | "sparkRounds"
+  // Gauss Cannon variants
+  | "gaussPlaner"
+  | "recirculatingGauss"
+  // Rail Gun variants
+  | "lightShot"
+  | "maurader"
+  // MGSS variants
+  | "engineAssistedSpool"
+  | "slugMGSS"
+  // Rocket variants
+  | "emprRockets"
+  | "swarmRockets"
+  | "bigBangRockets";
+
+// Mount Configuration
+// ------------------------------------------------------------
+
 export type WeaponMountSize = "small" | "medium" | "large";
 export type WeaponMountPosition = "front" | "side" | "turret";
 export type WeaponStatus = "ready" | "charging" | "cooling" | "disabled";
+
+// Upgrade Types
 export type WeaponUpgradeType =
   | "plasma"
   | "spark"
@@ -27,15 +83,36 @@ export type WeaponUpgradeType =
   | "swarm"
   | "bigBang";
 
-// Weapon Stats
-export interface WeaponStats {
+// Core Interfaces
+// ------------------------------------------------------------
+
+/**
+ * Base weapon type interface
+ */
+export interface WeaponType {
+  category: WeaponCategory;
+  variant: WeaponVariant;
+  visualAsset: string;
+  stats: CombatWeaponStats;
+}
+
+/**
+ * Base weapon stats common to all weapons
+ */
+export interface BaseWeaponStats {
   damage: number;
   range: number;
   accuracy: number;
   rateOfFire: number;
   energyCost: number;
   cooldown: number;
-  effects: Effect[];
+  effects: WeaponEffectType[];
+}
+
+/**
+ * Extended weapon stats for combat
+ */
+export interface CombatWeaponStats extends BaseWeaponStats {
   special?: {
     armorPenetration?: number;
     shieldDamageBonus?: number;
@@ -44,12 +121,23 @@ export interface WeaponStats {
   };
 }
 
+/**
+ * Weapon effect interface
+ */
 export interface WeaponEffect extends Effect {
   active: boolean;
   cooldown: number;
+  damage?: number;
+  radius?: number;
+  sourceWeaponId?: string;  // Added from EffectTypes.ts
 }
 
-// Weapon Mount Configuration
+// Mount and Configuration
+// ------------------------------------------------------------
+
+/**
+ * Weapon mount configuration
+ */
 export interface WeaponMount {
   id: string;
   type?: WeaponCategory;
@@ -60,13 +148,16 @@ export interface WeaponMount {
   currentWeapon?: WeaponInstance;
 }
 
-// Weapon Configuration
+/**
+ * Weapon configuration
+ */
 export interface WeaponConfig {
   id: string;
   name: string;
   category: WeaponCategory;
-  tier: Tier;
-  baseStats: WeaponStats;
+  variant?: WeaponVariant;
+  tier: number;
+  baseStats: CombatWeaponStats;
   visualAsset: string;
   mountRequirements: {
     size: WeaponMountSize;
@@ -78,25 +169,40 @@ export interface WeaponConfig {
   };
 }
 
+// State and Instance
+// ------------------------------------------------------------
+
+/**
+ * Weapon state
+ */
 export interface WeaponState {
   status: WeaponStatus;
-  currentStats: WeaponStats;
+  currentStats: CombatWeaponStats;
   effects: Effect[];
   currentAmmo?: number;
   maxAmmo?: number;
 }
 
+/**
+ * Runtime weapon instance
+ */
 export interface WeaponInstance {
   config: WeaponConfig;
   state: WeaponState;
 }
 
+// Upgrade System
+// ------------------------------------------------------------
+
+/**
+ * Weapon upgrade configuration
+ */
 export interface WeaponUpgrade {
   id: string;
   name: string;
   type: WeaponUpgradeType;
   description: string;
-  stats: Partial<WeaponStats>;
+  stats: Partial<CombatWeaponStats>;
   specialEffect?: {
     name: string;
     description: string;
@@ -108,6 +214,12 @@ export interface WeaponUpgrade {
   unlocked: boolean;
 }
 
+// Component Props
+// ------------------------------------------------------------
+
+/**
+ * Props for weapon system components
+ */
 export interface WeaponSystemProps {
   weapon: WeaponInstance;
   availableUpgrades?: WeaponUpgrade[];
@@ -117,7 +229,12 @@ export interface WeaponSystemProps {
   onToggleEffect?: (effectName: string) => void;
 }
 
-// Weapon Colors for UI
+// UI Constants
+// ------------------------------------------------------------
+
+/**
+ * Color mapping for weapon categories in UI
+ */
 export const WEAPON_COLORS: Record<WeaponCategory, string> = {
   machineGun: "cyan",
   gaussCannon: "violet",

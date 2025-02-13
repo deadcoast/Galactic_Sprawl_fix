@@ -1,13 +1,18 @@
 import { AlertTriangle, Crosshair, Shield } from "lucide-react";
+import { 
+  WeaponCategory,
+  WeaponStatus,
+  CombatWeaponStats
+} from "../../../../../types/weapons/WeaponTypes";
 
 interface WeaponSystem {
   id: string;
   name: string;
-  type: "machineGun" | "railGun" | "gaussCannon" | "rockets";
+  type: WeaponCategory;
   damage: number;
   range: number;
   cooldown: number;
-  status: "ready" | "charging" | "cooling";
+  status: WeaponStatus;
 }
 
 interface WarShipCombatProps {

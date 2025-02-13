@@ -1,20 +1,13 @@
-import { WeaponType } from '../combat/CombatTypes';
-import { FactionId } from './FactionTypes';
-import { Tier } from "../../types/core/GameTypes";
+import { Tier } from "../core/GameTypes";
 import {
   CommonShip,
   CommonShipAbility,
   CommonShipDisplayStats,
-  CommonShipStats,
-} from "../../types/ships/CommonShipTypes";
-import { ShipStatus } from "../../components/ships/FactionShips/FactionShipBase";
+  CommonShipStats
+} from "./CommonShipTypes";
+import { FactionId, FactionBehaviorType } from "./FactionTypes";
+import { ShipType, ShipStatus, ShipStats, ShipLoadout } from "./ShipTypes";
 import { WeaponMount } from "../weapons/WeaponTypes";
-import { ShipType } from './ShipTypes';
-import { WeaponType } from '../combat/CombatTypes';
-
-export type FactionId = "space-rats" | "lost-nova" | "equator-horizon";
-
-export type FactionBehaviorType = 'aggressive' | 'defensive' | 'hit-and-run' | 'stealth' | 'balance';
 
 export interface FactionConfig {
   id: FactionId;
@@ -86,46 +79,44 @@ export interface EquatorHorizonConfig extends FactionConfig {
     resourceControl: number;
     techLevel: number;
   };
-} 
-// Faction IDs
-export type FactionId = "space-rats" | "lost-nova" | "equator-horizon";
+}
 
-// Faction Ship Classes
-export type SpaceRatsShipClass =
-  | "rat-king"
-  | "asteroid-marauder"
-  | "rogue-nebula"
-  | "rats-revenge"
-  | "dark-sector-corsair"
-  | "wailing-wreck"
-  | "galactic-scourge"
-  | "plasma-fang"
-  | "vermin-vanguard"
-  | "black-void-buccaneer";
+// Faction Ship Classes - Using camelCase for consistency
+export type SpaceRatsShipClass = 
+  | "ratKing"
+  | "asteroidMarauder"
+  | "rogueNebula"
+  | "ratsRevenge"
+  | "darkSectorCorsair"
+  | "wailingWreck"
+  | "galacticScourge"
+  | "plasmaFang"
+  | "verminVanguard"
+  | "blackVoidBuccaneer";
 
-export type LostNovaShipClass =
-  | "eclipse-scythe"
-  | "nulls-revenge"
-  | "dark-matter-reaper"
-  | "quantum-pariah"
-  | "entropy-scale"
-  | "void-revenant"
-  | "scythe-of-andromeda"
-  | "nebular-persistence"
-  | "oblivions-wake"
-  | "forbidden-vanguard";
+export type LostNovaShipClass = 
+  | "eclipseScythe"
+  | "nullsRevenge"
+  | "darkMatterReaper"
+  | "quantumPariah"
+  | "entropyScale"
+  | "voidRevenant"
+  | "scytheOfAndromeda"
+  | "nebularPersistence"
+  | "oblivionsWake"
+  | "forbiddenVanguard";
 
-export type EquatorHorizonShipClass =
-  | "celestial-arbiter"
-  | "ethereal-galleon"
-  | "stellar-equinox"
-  | "chronos-sentinel"
-  | "nebulas-judgement"
-  | "aetherial-horizon"
-  | "cosmic-crusader"
-  | "balancekeepers-wrath"
-  | "ecliptic-watcher"
-  | "harmonys-vanguard";
+export type EquatorHorizonShipClass = 
+  | "celestialArbiter"
+  | "etherealGalleon"
+  | "stellarEquinox"
+  | "chronosSentinel"
+  | "nebulasJudgement"
+  | "aetherialHorizon"
+  | "cosmicCrusader"
+  | "balancekeepersWrath"
+  | "eclipticWatcher"
+  | "harmonysVanguard";
 
 export type FactionShipClass =
   | SpaceRatsShipClass
@@ -148,18 +139,14 @@ export interface FactionShipAbility extends CommonShipAbility {
 export type FactionShipDisplayStats = CommonShipDisplayStats;
 
 // Faction Ship Interface
-export interface FactionShip {
-  id: string;
-  name: string;
-  faction: string;
-  class: string;
-  status: ShipStatus;
+export interface FactionShip extends CommonShip {
+  faction: FactionId;
+  class: FactionShipClass;
   health: number;
   maxHealth: number;
   shield: number;
   maxShield: number;
-  stats: any;
-  tactics: "aggressive" | "defensive" | "hit-and-run";
+  tactics: FactionBehaviorType;
   specialAbility?: {
     name: string;
     description: string;
@@ -188,69 +175,7 @@ export interface FactionShipProps {
   className?: string;
 }
 
-export interface ShipStatsWithWeapons {
+export interface ShipStatsWithWeapons extends ShipStats {
   weapons: WeaponMount[];
-  abilities: any[];
-  [key: string]: any; // Allow for other stats properties
-}
-
-export interface ShipStats {
-  health: number;
-  shields: number;
-  speed: number;
-  maneuverability: number;
-  cargo: number;
-}
-
-export interface ShipLoadout {
-  weapons: WeaponType[];
-  upgrades: string[];
-}
-
-export interface ShipType {
-  id: string;
-  name: string;
-  faction: FactionId;
-  class: string;
-  tier: 1 | 2 | 3;
-  stats: ShipStats;
-  loadout: ShipLoadout;
-  visualAsset: string;
-}
-
-// Ship class types for each faction
-export type SpaceRatsShipClass = 
-  | 'ratKing'
-  | 'asteroidMarauder'
-  | 'rogueNebula'
-  | 'ratsRevenge'
-  | 'darkSectorCorsair'
-  | 'wailingWreck'
-  | 'galacticScourge'
-  | 'plasmaFang'
-  | 'verminVanguard'
-  | 'blackVoidBuccaneer';
-
-export type LostNovaShipClass = 
-  | 'eclipseScythe'
-  | 'nullsRevenge'
-  | 'darkMatterReaper'
-  | 'quantumPariah'
-  | 'entropyScale'
-  | 'voidRevenant'
-  | 'scytheOfAndromeda'
-  | 'nebularPersistence'
-  | 'oblivionsWake'
-  | 'forbiddenVanguard';
-
-export type EquatorHorizonShipClass = 
-  | 'celestialArbiter'
-  | 'etherealGalleon'
-  | 'stellarEquinox'
-  | 'chronosSentinel'
-  | 'nebulasJudgement'
-  | 'aetherialHorizon'
-  | 'cosmicCrusader'
-  | 'balancekeepersWrath'
-  | 'eclipticWatcher'
-  | 'harmonysVanguard'; 
+  abilities: FactionShipAbility[];
+} 

@@ -1,36 +1,13 @@
-import { FactionShipProps } from "../../../types/ships/FactionShipTypes";
-import { Shield, Sword } from "lucide-react";
-
-export type ShipStatus = 
-  | "idle"
-  | "engaging"
-  | "patrolling"
-  | "retreating"
-  | "disabled"
-  | "damaged";
-
-interface FactionShipBaseProps extends FactionShipProps {
-  className?: string;
-  ship: {
-    id: string;
-    name: string;
-    faction: string;
-    class: string;
-    status: ShipStatus;
-    health: number;
-    maxHealth: number;
-    shield: number;
-    maxShield: number;
-    stats: any;
-    tactics: "aggressive" | "defensive" | "hit-and-run";
-    specialAbility?: {
-      name: string;
-      description: string;
-      cooldown: number;
-      active: boolean;
-    };
-  };
-}
+import { FactionShipProps, FactionShip } from "../../../types/ships/FactionShipTypes";
+import { BaseShip } from "../base/BaseShip";
+import { StatusEffectContainer } from "../../ui/status/StatusEffect";
+import { AbilityButtonContainer } from "../../ui/buttons/AbilityButton";
+import { ReactNode, useEffect } from "react";
+import { ShipStatus } from "../../../types/ships/ShipTypes";
+import { useShipState } from "../../../contexts/ShipContext";
+import { useShipActions } from "../../../hooks/ships/useShipActions";
+import { useShipEffects } from "../../../hooks/ships/useShipEffects";
+import { BaseEffect } from "../../../types/effects/EffectTypes";
 
 const FACTION_COLORS = {
   "space-rats": "red",
@@ -38,119 +15,145 @@ const FACTION_COLORS = {
   "equator-horizon": "amber",
 } as const;
 
-export function FactionShipBase({
+interface FactionShipBaseProps {
+  className?: string;
+  ship: FactionShip;
+  onEngage?: () => void;
+  onRetreat?: () => void;
+  onSpecialAbility?: () => void;
+  children?: ReactNode;
+}
+
+/**
+ * Maps the full ShipStatus to the limited status type used by BaseShip
+ */
+function mapShipStatus(status: ShipStatus): "engaging" | "patrolling" | "retreating" | "disabled" {
+  switch (status) {
+    case "engaging":
+      return "engaging";
+    case "patrolling":
+      return "patrolling";
+    case "retreating":
+      return "retreating";
+    case "disabled":
+      return "disabled";
+    case "damaged":
+      return "disabled";
+    case "ready":
+    case "idle":
+    default:
+      return "patrolling";
+  }
+}
+
+/**
+ * FactionShipContent Component
+ * 
+ * Internal component that uses ship state hooks
+ */
+function FactionShipContent({
   ship,
   onEngage,
   onRetreat,
   onSpecialAbility,
   className = "",
+  children,
 }: FactionShipBaseProps) {
-  const color = FACTION_COLORS[ship.faction as keyof typeof FACTION_COLORS];
+  const { state } = useShipState();
+  const { updateStatus } = useShipActions();
+  const { activeEffects, clearExpiredEffects } = useShipEffects();
+
+  // Clear expired effects periodically
+  useEffect(() => {
+    const interval = setInterval(clearExpiredEffects, 1000);
+    return () => clearInterval(interval);
+  }, [clearExpiredEffects]);
+
+  // Update ship status when faction status changes
+  useEffect(() => {
+    updateStatus(mapShipStatus(ship.status));
+  }, [ship.status, updateStatus]);
+
+  const color = FACTION_COLORS[ship.faction];
 
   return (
-    <div
-      className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6 ${className}`}
-    >
-      {/* Ship Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-medium text-white">{ship.name}</h3>
-          <div className="flex items-center text-sm text-gray-400">
-            <span className="capitalize">
-              {ship.faction.replace(/-/g, " ")}
-            </span>
-            <span className="mx-2">•</span>
-            <span>{ship.class.replace(/-/g, " ")}</span>
-          </div>
-        </div>
-        <div
-          className={`px-3 py-1 rounded-full text-sm ${
-            ship.status === "engaging"
-              ? "bg-red-900/50 text-red-400"
-              : ship.status === "patrolling"
-                ? "bg-green-900/50 text-green-400"
-                : ship.status === "retreating"
-                  ? "bg-yellow-900/50 text-yellow-400"
-                  : "bg-gray-700 text-gray-400"
-          }`}
-        >
-          {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
-        </div>
+    <div className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6 ${className}`}>
+      {/* Faction Info */}
+      <div className="flex items-center text-sm text-gray-400 mb-4">
+        <span className="capitalize">
+          {ship.faction.replace(/-/g, " ")}
+        </span>
+        <span className="mx-2">•</span>
+        <span>{ship.class.replace(/([A-Z])/g, ' $1').trim()}</span>
       </div>
 
-      {/* Health & Shield Bars */}
-      <div className="flex flex-col gap-2 mb-6">
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-blue-400" />
-          <div className="flex-1 h-2 bg-gray-700 rounded-full">
-            <div
-              className="h-full bg-blue-500 rounded-full"
-              style={{ width: `${(ship.shield / ship.maxShield) * 100}%` }}
-            />
+      {/* Status Effects */}
+      <StatusEffectContainer className="mb-4">
+        {activeEffects.map((effect: BaseEffect) => (
+          <div
+            key={effect.id}
+            className={`px-3 py-2 bg-${color}-900/30 rounded-lg text-sm mb-2 last:mb-0`}
+          >
+            <div className="font-medium text-gray-300">{effect.name}</div>
+            <div className="text-xs text-gray-400">{effect.description}</div>
           </div>
-          <span className="text-sm text-gray-400">
-            {Math.round(ship.shield)}/{ship.maxShield}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Sword className="w-4 h-4 text-red-400" />
-          <div className="flex-1 h-2 bg-gray-700 rounded-full">
-            <div
-              className="h-full bg-red-500 rounded-full"
-              style={{ width: `${(ship.health / ship.maxHealth) * 100}%` }}
-            />
-          </div>
-          <span className="text-sm text-gray-400">
-            {Math.round(ship.health)}/{ship.maxHealth}
-          </span>
-        </div>
-      </div>
+        ))}
+        {children}
+      </StatusEffectContainer>
 
-      {/* Special Ability */}
-      {ship.specialAbility && (
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-300">
-              {ship.specialAbility.name}
-            </span>
-            <span className="text-sm text-gray-400">
-              {ship.specialAbility.cooldown}s
-            </span>
-          </div>
-          <p className="text-sm text-gray-400">
-            {ship.specialAbility.description}
-          </p>
+      {/* Ship Stats */}
+      {ship.stats.abilities.length > 0 && (
+        <div className="mb-4">
+          {ship.stats.abilities.map((ability, index) => (
+            <div key={index} className="mb-2 last:mb-0">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-gray-300">
+                  {ability.name}
+                </span>
+                <span className="text-sm text-gray-400">
+                  {ability.cooldown}s
+                </span>
+              </div>
+              <p className="text-sm text-gray-400">
+                {ability.description}
+              </p>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Action Buttons */}
-      <div className="flex gap-2">
-        <button
-          onClick={onEngage}
-          className="flex-1 px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg text-sm font-medium transition-colors"
-        >
-          Engage
-        </button>
-        <button
-          onClick={onRetreat}
-          className="flex-1 px-4 py-2 bg-yellow-900/30 hover:bg-yellow-900/50 text-yellow-400 rounded-lg text-sm font-medium transition-colors"
-        >
-          Retreat
-        </button>
-        {ship.specialAbility && (
-          <button
-            onClick={onSpecialAbility}
-            disabled={!ship.specialAbility.active}
-            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              ship.specialAbility.active
-                ? "bg-indigo-900/30 hover:bg-indigo-900/50 text-indigo-400"
-                : "bg-gray-800 text-gray-600 cursor-not-allowed"
-            }`}
-          >
-            Special
-          </button>
-        )}
-      </div>
+      {/* Ability Buttons */}
+      <AbilityButtonContainer>
+        {children}
+      </AbilityButtonContainer>
     </div>
+  );
+}
+
+/**
+ * FactionShipBase Component
+ * 
+ * Base component for all faction ships that provides:
+ * - Faction-specific styling and colors
+ * - Integration with BaseShip functionality
+ * - Status effect and ability button containers
+ */
+export function FactionShipBase(props: FactionShipBaseProps) {
+  const { ship, ...rest } = props;
+
+  return (
+    <BaseShip
+      id={ship.id}
+      name={ship.name}
+      status={mapShipStatus(ship.status)}
+      health={ship.health}
+      maxHealth={ship.maxHealth}
+      shield={ship.shield}
+      maxShield={ship.maxShield}
+      weapons={ship.stats.weapons}
+      stats={ship.stats}
+    >
+      <FactionShipContent ship={ship} {...rest} />
+    </BaseShip>
   );
 }

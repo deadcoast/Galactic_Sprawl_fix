@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Crown, AlertTriangle, Shield } from 'lucide-react';
-import { FactionAI } from '../ships/FactionShips/FactionAI';
+import { FactionAI } from './FactionAI';
 import { DiplomacyPanel } from '../DiplomacyPanel';
 import { useFactionBehavior } from '../../hooks/factions/useFactionBehavior';
 import { useDebugOverlay } from '../../hooks/ui/useDebugOverlay';
 import { AIDebugOverlay } from '../debug/AIDebugOverlay';
 import { factionConfigs } from '../../config/factions/factions';
 import { factionManager, type FactionState } from '../../lib/factions/factionManager';
-import type { FactionId } from '../../types/factions/FactionTypes';
+import type { FactionId } from '../../types/ships/FactionTypes';
 
 interface FactionManagerProps {
   onFactionUpdate?: (factionId: string, state: FactionState) => void;

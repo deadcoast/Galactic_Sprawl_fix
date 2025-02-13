@@ -1,21 +1,23 @@
 import {
-  EquatorHorizonConfig,
+  EquatorHorizonShipClass,
   FactionConfig,
   LostNovaConfig,
-  SpaceRatsConfig,
-} from "../../types/factions/FactionTypes";
-import {
-  EquatorHorizonShipClass,
   LostNovaShipClass,
+  SpaceRatsConfig,
   SpaceRatsShipClass,
-} from "../../types/ships/CommonShipTypes";
+  EquatorHorizonConfig,
+} from "../../types/ships/FactionShipTypes";
+import {
+  FactionBehaviorType,
+  FactionId,
+} from "../../types/ships/FactionTypes";
 
 export const spaceRatsConfig: SpaceRatsConfig = {
-  id: "spaceRats",
+  id: "space-rats",
   name: "Space Rats",
   banner: {
-    primaryColor: "#FF0000", // Red
-    secondaryColor: "#000000", // Black
+    primaryColor: "red",
+    secondaryColor: "gray",
     sigil: "rat-skull",
   },
   defaultBehavior: "aggressive",
@@ -33,14 +35,14 @@ export const spaceRatsConfig: SpaceRatsConfig = {
       "wailingWreck",
     ],
   },
-};
+} as const;
 
 export const lostNovaConfig: LostNovaConfig = {
-  id: "lostNova",
+  id: "lost-nova",
   name: "Lost Nova",
   banner: {
-    primaryColor: "#00FFFF", // Teal
-    secondaryColor: "#800080", // Purple
+    primaryColor: "violet",
+    secondaryColor: "indigo",
     sigil: "broken-star",
   },
   defaultBehavior: "stealth",
@@ -57,14 +59,14 @@ export const lostNovaConfig: LostNovaConfig = {
       "temporal-shifting",
     ],
   },
-};
+} as const;
 
 export const equatorHorizonConfig: EquatorHorizonConfig = {
-  id: "equatorHorizon",
+  id: "equator-horizon",
   name: "Equator Horizon",
   banner: {
-    primaryColor: "#FFD700", // Gold
-    secondaryColor: "#4B0082", // Indigo
+    primaryColor: "amber",
+    secondaryColor: "violet",
     sigil: "ancient-wheel",
   },
   defaultBehavior: "balance",
@@ -82,7 +84,7 @@ export const equatorHorizonConfig: EquatorHorizonConfig = {
     resourceControl: 0.6, // 60% of total resources
     techLevel: 3, // Tier 3 technology
   },
-};
+} as const;
 
 // Ship class configurations
 export const shipClassConfigs = {
@@ -128,12 +130,20 @@ export const shipClassConfigs = {
       "harmonysVanguard",
     ] as EquatorHorizonShipClass[],
   },
-};
+} as const;
 
 export const factionIds = ["space-rats", "lost-nova", "equator-horizon"] as const;
 
-export const factionConfigs: Record<typeof factionIds[number], FactionConfig> = {
+export const factionBehaviors: FactionBehaviorType[] = [
+  "aggressive",
+  "defensive",
+  "hit-and-run",
+  "stealth",
+  "balance",
+] as const;
+
+export const factionConfigs: Record<FactionId, FactionConfig> = {
   "space-rats": spaceRatsConfig,
   "lost-nova": lostNovaConfig,
   "equator-horizon": equatorHorizonConfig,
-};
+} as const;

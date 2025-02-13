@@ -1,27 +1,22 @@
 import { Crosshair } from "lucide-react";
-
-interface WeaponStats {
-  damage: number;
-  range: number;
-  accuracy: number;
-  rateOfFire: number;
-  energyCost: number;
-}
+import { 
+  WeaponCategory, 
+  WeaponType,
+  WeaponStatus,
+  CombatWeaponStats,
+  WEAPON_COLORS,
+  WeaponEffect
+} from "../../types/weapons/WeaponTypes";
 
 interface WeaponControlProps {
   weapon: {
     id: string;
     name: string;
-    type: "machineGun" | "gaussCannon" | "railGun" | "rockets";
+    type: WeaponCategory;
     tier: 1 | 2 | 3;
-    status: "ready" | "charging" | "cooling" | "disabled";
-    stats: WeaponStats;
-    specialEffects?: {
-      name: string;
-      description: string;
-      active: boolean;
-      cooldown: number;
-    }[];
+    status: WeaponStatus;
+    stats: CombatWeaponStats;
+    specialEffects?: WeaponEffect[];
   };
   onFire: () => void;
   onToggleEffect: (effectName: string) => void;
@@ -32,22 +27,7 @@ export function WeaponControl({
   onFire,
   onToggleEffect,
 }: WeaponControlProps) {
-  const getWeaponColor = (type: string) => {
-    switch (type) {
-      case "machineGun":
-        return "cyan";
-      case "gaussCannon":
-        return "violet";
-      case "railGun":
-        return "indigo";
-      case "rockets":
-        return "rose";
-      default:
-        return "blue";
-    }
-  };
-
-  const color = getWeaponColor(weapon.type);
+  const color = WEAPON_COLORS[weapon.type];
 
   return (
     <div

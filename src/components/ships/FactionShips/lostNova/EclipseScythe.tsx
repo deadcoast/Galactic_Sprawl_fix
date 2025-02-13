@@ -1,15 +1,9 @@
-import { FactionShipBase } from "../FactionShipBase";
-import { WeaponMount } from "../../common/WeaponMount";
-import { WeaponType } from "../../../../types/combat/CombatTypes";
-import { CommonShipStats } from "../../../../types/ships/CommonShipTypes";
-
-type ShipStatus =
-  | "idle"
-  | "engaging"
-  | "patrolling"
-  | "retreating"
-  | "disabled"
-  | "damaged";
+import { LostNovaShip } from "./LostNovaShip";
+import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
+import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
+import { ShipStatus } from "../../../../types/ships/ShipTypes";
+import { AlertTriangle, Moon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface EclipseScytheProps {
   id: string;
@@ -18,12 +12,12 @@ interface EclipseScytheProps {
   maxHealth: number;
   shield: number;
   maxShield: number;
-  weapons: WeaponType[];
-  stats: CommonShipStats;
+  weapons: WeaponMount[];
+  stats: FactionShipStats;
   onFire: (weaponId: string) => void;
   onEngage?: () => void;
   onRetreat: () => void;
-  onSpecialAbility?: (abilityName: string) => void;
+  onSpecialAbility?: () => void;
 }
 
 export function EclipseScythe({
@@ -40,51 +34,71 @@ export function EclipseScythe({
   onRetreat,
   onSpecialAbility,
 }: EclipseScytheProps) {
+  const [shadowVeilActive, setShadowVeilActive] = useState(false);
+
+  useEffect(() => {
+    if (status === "disabled") {
+      setShadowVeilActive(false);
+    }
+  }, [status]);
+
+  const mapStatus = (status: ShipStatus) => {
+    switch (status) {
+      case "engaging":
+        return "engaging";
+      case "patrolling":
+        return "patrolling";
+      case "retreating":
+        return "retreating";
+      case "disabled":
+        return "disabled";
+      default:
+        return "patrolling";
+    }
+  };
+
   return (
     <div className="relative">
-      {/* Ship Base Component */}
-      <FactionShipBase
-        ship={{
-          id,
-          name: "Eclipse Scythe",
-          faction: "lost-nova",
-          class: "eclipse-scythe",
-          status: status === "damaged" ? "disabled" : status,
-          health,
-          maxHealth,
-          shield,
-          maxShield,
-          stats,
-          tactics: "hit-and-run",
-          specialAbility: {
-            name: "Eclipse Field",
-            description: "Creates a field of dark energy that disrupts enemy systems",
-            cooldown: 45,
-            active: false
-          }
-        }}
+      <LostNovaShip
+        id={id}
+        name="Eclipse Scythe"
+        type="eclipseScythe"
+        status={mapStatus(status)}
+        health={health}
+        maxHealth={maxHealth}
+        shield={shield}
+        maxShield={maxShield}
+        weapons={weapons}
+        tactics="hit-and-run"
         onEngage={onEngage}
         onRetreat={onRetreat}
-        onSpecialAbility={() => onSpecialAbility?.("Eclipse Field")}
-      />
-
-      {/* Weapon Mounts */}
-      <div className="absolute inset-0 pointer-events-none">
-        {weapons.map((weapon, index) => (
-          <WeaponMount
-            key={weapon.id}
-            weapon={weapon}
-            position={{
-              x: 50 + index * 30,
-              y: 50,
+        onSpecialAbility={() => {
+          setShadowVeilActive(!shadowVeilActive);
+          onSpecialAbility?.();
+        }}
+      >
+        <div className="status-effects">
+          {shadowVeilActive && (
+            <div className="status-effect">
+              <Moon className="icon" />
+              <span>Shadow Veil Active</span>
+            </div>
+          )}
+        </div>
+        <div className="action-buttons">
+          <button
+            className={`ability-button ${shadowVeilActive ? 'active' : ''}`}
+            onClick={() => {
+              setShadowVeilActive(!shadowVeilActive);
+              onSpecialAbility?.();
             }}
-            rotation={0}
-            isFiring={status === "engaging"}
-            onFire={() => onFire?.(weapon.id)}
-            className="absolute"
-          />
-        ))}
-      </div>
+            disabled={status === "disabled"}
+          >
+            <Moon className="icon" />
+            <span>Shadow Veil</span>
+          </button>
+        </div>
+      </LostNovaShip>
     </div>
   );
 }

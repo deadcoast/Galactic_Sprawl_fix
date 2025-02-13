@@ -4,6 +4,7 @@ import {
   WeaponType,
   WeaponVariant,
 } from "../../types/combat/CombatTypes";
+import { WeaponDamageEffect, WeaponAreaEffect } from "../../types/weapons/WeaponEffectTypes";
 
 // Base stats for each weapon category
 const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
@@ -14,7 +15,16 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     accuracy: 0.8,
     energyCost: 5,
     cooldown: 0.1,
-    effects: []
+    effects: [{
+      type: "physical",
+      name: "Kinetic Impact",
+      description: "Basic kinetic damage",
+      magnitude: 10,
+      duration: 0,
+      active: true,
+      cooldown: 0.1,
+      damage: 10
+    } as WeaponDamageEffect]
   },
   gaussCannon: {
     damage: 30,
@@ -23,7 +33,16 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     accuracy: 0.9,
     energyCost: 15,
     cooldown: 0.3,
-    effects: [],
+    effects: [{
+      type: "gauss",
+      name: "Gauss Impact",
+      description: "Electromagnetic acceleration damage",
+      magnitude: 30,
+      duration: 0,
+      active: true,
+      cooldown: 0.3,
+      damage: 30
+    } as WeaponDamageEffect],
     special: {
       armorPenetration: 0.3,
     },
@@ -35,7 +54,16 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     accuracy: 0.95,
     energyCost: 30,
     cooldown: 1.0,
-    effects: [],
+    effects: [{
+      type: "kinetic",
+      name: "Hypervelocity Impact",
+      description: "High-velocity projectile damage",
+      magnitude: 100,
+      duration: 0,
+      active: true,
+      cooldown: 1.0,
+      damage: 100
+    } as WeaponDamageEffect],
     special: {
       armorPenetration: 0.5,
     },
@@ -47,7 +75,16 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     accuracy: 0.7,
     energyCost: 8,
     cooldown: 0.1,
-    effects: []
+    effects: [{
+      type: "mgss",
+      name: "MGSS Impact",
+      description: "Multi-gun system damage",
+      magnitude: 15,
+      duration: 0,
+      active: true,
+      cooldown: 0.1,
+      damage: 15
+    } as WeaponDamageEffect]
   },
   rockets: {
     damage: 50,
@@ -56,7 +93,17 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     accuracy: 0.85,
     energyCost: 20,
     cooldown: 0.5,
-    effects: [],
+    effects: [{
+      type: "explosive",
+      name: "Rocket Explosion",
+      description: "Area explosive damage",
+      magnitude: 50,
+      duration: 0,
+      active: true,
+      cooldown: 0.5,
+      damage: 50,
+      radius: 50
+    } as WeaponAreaEffect],
     special: {
       areaOfEffect: 50,
     },
@@ -69,12 +116,32 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
   basic: {},
   plasmaRounds: {
     damage: 15,
+    effects: [{
+      type: "plasma",
+      name: "Plasma Burn",
+      description: "Plasma damage over time",
+      magnitude: 15,
+      duration: 3,
+      active: true,
+      cooldown: 0.1,
+      damage: 15
+    } as WeaponDamageEffect],
     special: {
       armorPenetration: 0.2,
     },
   },
   sparkRounds: {
     damage: 8,
+    effects: [{
+      type: "spark",
+      name: "Shield Disruption",
+      description: "Enhanced shield damage",
+      magnitude: 8,
+      duration: 2,
+      active: true,
+      cooldown: 0.1,
+      damage: 8
+    } as WeaponDamageEffect],
     special: {
       shieldDamageBonus: 0.5,
     },
@@ -84,6 +151,17 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
   gaussPlaner: {
     damage: 25,
     accuracy: 0.85,
+    effects: [{
+      type: "gauss",
+      name: "Area Gauss",
+      description: "Area electromagnetic damage",
+      magnitude: 25,
+      duration: 0,
+      active: true,
+      cooldown: 0.3,
+      damage: 25,
+      radius: 30
+    } as WeaponAreaEffect],
     special: {
       areaOfEffect: 30,
     },
@@ -92,6 +170,16 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
     damage: 20,
     rateOfFire: 5,
     energyCost: 20,
+    effects: [{
+      type: "gauss",
+      name: "Rapid Gauss",
+      description: "Rapid electromagnetic damage",
+      magnitude: 20,
+      duration: 0,
+      active: true,
+      cooldown: 0.2,
+      damage: 20
+    } as WeaponDamageEffect],
   },
 
   // Rail Gun variants

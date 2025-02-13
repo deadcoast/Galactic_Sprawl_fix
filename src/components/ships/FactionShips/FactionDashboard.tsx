@@ -1,8 +1,9 @@
 import { AIDebugOverlay } from "../../../components/debug/AIDebugOverlay";
 import { DiplomacyPanel } from "../../../components/DiplomacyPanel";
-import { FactionAI } from "../../../components/ships/FactionShips/FactionAI";
+import { FactionAI } from "../../../components/factions/FactionAI";
 import { factionConfigs, factionIds } from "../../../config/factions/factionConfig";
-import { getShipStats } from "../../../config/factions/factionShipStats";
+import { getShipStats } from "../../../config/ships/shipStats";
+import { getFactionDefaultShipClass } from "../../../utils/ships/shipClassUtils";
 import { useFactionBehavior, type FactionShip } from "../../../hooks/factions/useFactionBehavior";
 import { useDebugOverlay } from "../../../hooks/ui/useDebugOverlay";
 import type { DebugState } from "../../../types/debug/DebugTypes";
@@ -11,13 +12,13 @@ import type { FactionState } from "../../../lib/factions/factionManager";
 import { AlertTriangle, Crown, Shield } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
-interface FactionManagerProps {
+interface FactionDashboardProps {
   onFactionUpdate?: (factionId: string, state: FactionState) => void;
 }
 
 type FactionIdType = typeof factionIds[number];
 
-export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
+export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
   const debugOverlay = useDebugOverlay();
   const [selectedFaction, setSelectedFaction] = useState<FactionIdType | null>(null);
 
@@ -55,6 +56,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
         return;
       }
       const factionId = behavior.id as FactionIdType;
+      const shipStats = getShipStats(getFactionDefaultShipClass(factionId));
       states[factionId] = {
         aiState: {
           behaviorState: behavior.stateMachine.current,
@@ -62,8 +64,6 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
           threatLevel: behavior.territory.threatLevel,
           cooldowns: behavior.fleets.reduce((cooldowns: Record<string, number>, fleet) => {
             fleet.ships.forEach((ship: FactionShip) => {
-              // Get ship stats from the ship's class
-              const shipStats = getShipStats(ship.class as keyof typeof factionConfigs);
               if (shipStats.abilities?.length > 0) {
                 shipStats.abilities.forEach((ability: CommonShipAbility) => {
                   cooldowns[`${ship.id}_${ability.name}`] = ability.cooldown;

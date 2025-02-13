@@ -1,33 +1,43 @@
-import { AlertTriangle } from "lucide-react";
+import { FactionShipBase } from "../FactionShipBase";
+import { LostNovaShipClass } from "../../../../types/ships/FactionShipTypes";
+import { ReactNode } from "react";
+import { 
+  WeaponMount, 
+  WeaponInstance,
+  WeaponEffect,
+  CombatWeaponStats 
+} from "../../../../types/weapons/WeaponTypes";
+import { useShipEffects } from "../../../../hooks/ships/useShipEffects";
+import { BaseEffect } from "../../../../types/effects/EffectTypes";
+import { Effect } from "../../../../types/core/GameTypes";
+import { Zap, Eye, Shield } from "lucide-react";
+import { StatusEffect } from "../../../ui/status/StatusEffect";
+import { AbilityButton } from "../../../ui/buttons/AbilityButton";
 
 interface LostNovaShipProps {
   id: string;
   name: string;
-  type:
-    | "eclipseScythe"
-    | "nullsRevenge"
-    | "darkMatterReaper"
-    | "quantumPariah"
-    | "entropyScale"
-    | "voidRevenant"
-    | "scytheOfAndromeda"
-    | "nebularPersistence"
-    | "oblivionsWake"
-    | "forbiddenVanguard";
+  type: LostNovaShipClass;
   status: "engaging" | "patrolling" | "retreating" | "disabled";
   health: number;
   maxHealth: number;
   shield: number;
   maxShield: number;
-  tactics: "aggressive" | "defensive" | "hit-and-run";
-  specialAbility?: {
-    name: string;
-    description: string;
-    cooldown: number;
-    active: boolean;
-  };
+  weapons: WeaponMount[];
+  tactics: "aggressive" | "defensive" | "hit-and-run" | "stealth";
+  onEngage?: () => void;
+  onRetreat?: () => void;
+  onSpecialAbility?: () => void;
+  onFire?: (weaponId: string) => void;
+  children?: ReactNode;
 }
 
+/**
+ * LostNovaShip Component
+ * 
+ * Base component for Lost Nova faction ships.
+ * Provides faction-specific styling and behavior.
+ */
 export function LostNovaShip({
   id,
   name,
@@ -37,132 +47,181 @@ export function LostNovaShip({
   maxHealth,
   shield,
   maxShield,
+  weapons,
   tactics,
-  specialAbility,
+  onEngage,
+  onRetreat,
+  onSpecialAbility,
+  onFire,
+  children,
 }: LostNovaShipProps) {
+  const { addEffect, removeEffect, hasEffect } = useShipEffects();
+
+  // Faction-specific effects
+  const handleVoidPulse = () => {
+    if (hasEffect("void-pulse")) {
+      removeEffect("void-pulse");
+      // Remove void pulse effect from weapons
+      weapons.forEach(mount => {
+        if (mount.currentWeapon) {
+          mount.currentWeapon.state.effects = mount.currentWeapon.state.effects.filter(
+            effect => effect.name !== "Void Pulse"
+          );
+        }
+      });
+    } else {
+      const baseEffect: BaseEffect = {
+        id: "void-pulse",
+        name: "Void Pulse",
+        description: "Disrupts enemy shields and cloaking",
+        type: "jamming",
+        magnitude: 1.0,
+        duration: 8,
+        active: true,
+      };
+      addEffect(baseEffect);
+
+      // Apply void pulse effect to all weapons
+      weapons.forEach(mount => {
+        if (mount.currentWeapon) {
+          const weaponEffect: Effect = {
+            name: "Void Pulse",
+            description: "Disrupts enemy shields and cloaking",
+            type: "jamming",
+            magnitude: 1.0,
+            duration: 8,
+            active: true,
+            cooldown: 0,
+          };
+          
+          mount.currentWeapon.state.effects.push(weaponEffect);
+        }
+      });
+    }
+    onSpecialAbility?.();
+  };
+
+  const handleStealthField = () => {
+    if (hasEffect("stealth-field")) {
+      removeEffect("stealth-field");
+    } else {
+      const stealthEffect: BaseEffect = {
+        id: "stealth-field",
+        name: "Stealth Field",
+        description: "Reduces detection range and increases evasion",
+        type: "stealth",
+        magnitude: 1.0,
+        duration: 12,
+        active: true,
+      };
+      addEffect(stealthEffect);
+    }
+  };
+
   return (
-    <div 
-      className="bg-violet-900/20 border border-violet-700/30 rounded-lg p-6"
-      data-ship-id={id}
-      data-ship-type={type}
+    <FactionShipBase
+      ship={{
+        id,
+        name,
+        class: type,
+        faction: "lost-nova",
+        status,
+        tactics,
+        category: "recon",
+        health,
+        maxHealth,
+        shield,
+        maxShield,
+        abilities: [
+          {
+            name: "Void Pulse",
+            description: "Disrupts enemy shields and cloaking",
+            cooldown: 12,
+            duration: 8,
+            active: hasEffect("void-pulse"),
+            effect: {
+              type: "jamming",
+              name: "Void Pulse",
+              description: "Disrupts enemy shields and cloaking",
+              magnitude: 1.0,
+              duration: 8,
+            },
+          },
+          {
+            name: "Stealth Field",
+            description: "Reduces detection range and increases evasion",
+            cooldown: 15,
+            duration: 12,
+            active: hasEffect("stealth-field"),
+            effect: {
+              type: "stealth",
+              name: "Stealth Field",
+              description: "Reduces detection range and increases evasion",
+              magnitude: 1.0,
+              duration: 12,
+            },
+          },
+        ],
+        stats: {
+          health,
+          maxHealth,
+          shield,
+          maxShield,
+          energy: 100,
+          maxEnergy: 100,
+          speed: 120,
+          turnRate: 3,
+          cargo: 150,
+          weapons,
+          abilities: [],
+          defense: {
+            armor: 150,
+            shield,
+            evasion: 0.4,
+            regeneration: 2,
+          },
+          mobility: {
+            speed: 120,
+            turnRate: 3,
+            acceleration: 60,
+          },
+        },
+      }}
+      onEngage={onEngage}
+      onRetreat={onRetreat}
+      onSpecialAbility={onSpecialAbility}
     >
-      {/* Ship Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-medium text-white">{name}</h3>
-          <div className="flex items-center text-sm text-gray-400">
-            <span className="capitalize">
-              {type.replace(/([A-Z])/g, " $1").trim()}
-            </span>
-            <span className="mx-2">•</span>
-            <span>Lost Nova</span>
-          </div>
-        </div>
-        <div
-          className={`px-3 py-1 rounded-full text-sm ${
-            status === "engaging"
-              ? "bg-red-900/50 text-red-400"
-              : status === "patrolling"
-                ? "bg-green-900/50 text-green-400"
-                : status === "retreating"
-                  ? "bg-yellow-900/50 text-yellow-400"
-                  : "bg-gray-700 text-gray-400"
-          }`}
-        >
-          {status.charAt(0).toUpperCase() + status.slice(1)}
-        </div>
-      </div>
+      {/* Status Effects */}
+      <StatusEffect
+        active={hasEffect("void-pulse")}
+        icon={Zap}
+        label="Void Pulse"
+        color="purple"
+      />
+      <StatusEffect
+        active={hasEffect("stealth-field")}
+        icon={Eye}
+        label="Stealth Field"
+        color="indigo"
+      />
 
-      {/* Health & Shield Bars */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-400">Hull Integrity</span>
-            <span
-              className={
-                health < maxHealth * 0.3 ? "text-red-400" : "text-gray-300"
-              }
-            >
-              {Math.round((health / maxHealth) * 100)}%
-            </span>
-          </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${
-                health < maxHealth * 0.3 ? "bg-red-500" : "bg-green-500"
-              }`}
-              style={{ width: `${(health / maxHealth) * 100}%` }}
-            />
-          </div>
-        </div>
+      {/* Ability Buttons */}
+      <AbilityButton
+        active={hasEffect("void-pulse")}
+        icon={Zap}
+        label="Void Pulse"
+        color="purple"
+        onClick={handleVoidPulse}
+      />
+      <AbilityButton
+        active={hasEffect("stealth-field")}
+        icon={Eye}
+        label="Stealth Field"
+        color="indigo"
+        onClick={handleStealthField}
+      />
 
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-400">Shield Power</span>
-            <span className="text-gray-300">
-              {Math.round((shield / maxShield) * 100)}%
-            </span>
-          </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-500 rounded-full transition-all"
-              style={{ width: `${(shield / maxShield) * 100}%` }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Tactics & Special Ability */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-sm font-medium text-gray-300">
-            Combat Tactics
-          </div>
-          <div
-            className={`px-2 py-1 rounded text-xs ${
-              tactics === "aggressive"
-                ? "bg-red-900/50 text-red-400"
-                : tactics === "defensive"
-                  ? "bg-blue-900/50 text-blue-400"
-                  : "bg-yellow-900/50 text-yellow-400"
-            }`}
-          >
-            {tactics.charAt(0).toUpperCase() + tactics.slice(1)}
-          </div>
-        </div>
-
-        {specialAbility && (
-          <div
-            className={`p-3 rounded-lg ${
-              specialAbility.active
-                ? "bg-violet-500/20 border border-violet-500/30"
-                : "bg-gray-700/50"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium text-white">
-                {specialAbility.name}
-              </span>
-              <span className="text-xs text-gray-400">
-                {specialAbility.cooldown}s
-              </span>
-            </div>
-            <p className="text-xs text-gray-400">
-              {specialAbility.description}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Status Warnings */}
-      {status === "disabled" && (
-        <div className="mt-4 p-3 bg-red-900/20 border border-red-700/30 rounded-lg flex items-start space-x-2">
-          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-          <span className="text-sm text-red-200">
-            Ship systems critically damaged
-          </span>
-        </div>
-      )}
-    </div>
+      {children}
+    </FactionShipBase>
   );
 }

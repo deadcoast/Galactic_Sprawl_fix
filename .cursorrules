@@ -109,31 +109,6 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 
 ## Cursor learned
 
-- CRITICAL: MANDATORY CHECKLIST BEFORE ANY ACTION:
-  1. BEFORE TOUCHING ANY FILE:
-     - Search ENTIRE codebase for similar files/components
-     - Check directory structure to confirm correct location
-     - Verify no duplicates exist
-     - Document what I found in my response
-
-  2. BEFORE CREATING ANY FILE:
-     - Prove I searched and found no existing implementation
-     - Show the exact directory where it belongs
-     - Explain why it belongs there
-     - Get explicit confirmation before creating
-
-  3. BEFORE EDITING ANY FILE:
-     - Show I read the full file
-     - Show I understand where it lives in the structure
-     - Prove I'm editing the RIGHT file
-     - Explain what depends on this file
-
-  4. IF I FIND A MISTAKE:
-     - Stop IMMEDIATELY
-     - Show where the mistake is
-     - Explain how it breaks the structure
-     - Fix it COMPLETELY before moving on
-
 - CRITICAL: ALWAYS SEARCH FOR EXISTING IMPLEMENTATIONS BEFORE CREATING NEW CODE
   1. Use file_search and codebase_search BEFORE writing any new component
   2. Check all similar file names and paths thoroughly
@@ -171,80 +146,196 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 
 # Scratchpad
 
-### Galactic Sprawl: Ship & Weapon System Reorganization Plan
+### Current Task: Testing Setup
+1. [X] Add testing dependencies (Vitest, Testing Library)
+2. [X] Create test setup file
+3. [X] Create Vitest configuration
+4. [X] Create weapon system test file
+5. [X] Fix linter errors in test files
+6. [X] Run initial tests
+7. [X] Add test cases for weapon effects
+8. [ ] Add test cases for weapon upgrades
+9. [ ] Add test cases for UI components
 
-1. COMPLETE.
+### Next Steps
 
-2. **Weapon Mount System Refactoring**
-   - [ ] Update all weapon mounts to use the `WeaponMountPosition` enum (e.g., "front", "side", "turret")
-   - [ ] Remove legacy x/y positioning references
-   - [ ] Remove deprecated crew requirements from mount configurations
-   - [ ] Implement `WeaponMountSize` assertions
+1. **Test Coverage**
+   - [X] Test weapon mounting functionality
+   - [X] Test weapon effects system
+   - [ ] Test weapon upgrade system
+   - [ ] Test UI component interactions
 
-3. **Effects System Refactoring**
-   - [ ] Migrate all weapon effects to use the `GameTypes Effect` type
-   - [ ] Add required magnitude properties to all effects
-   - [ ] Implement effects arrays in every `WeaponState` instance
-   - [ ] Remove any custom effect types that do not match the core `Effect` type
+2. **Documentation**
+   - [ ] Update component documentation
+   - [ ] Document breaking changes
+   - [ ] Update examples
+   - [ ] Add migration guide
 
-4. **Ship Stats Update**
-   - [ ] Add the missing evasion property to all defense stats
-   - [ ] Update all weapon definitions to use the updated `WeaponMount` interface
-   - [ ] Standardize MGSS references to use lowercase `mgss`
-   - [ ] Add all missing required properties to ship stats
+### Implementation Progress
 
-5. **File Updates (In Order)**
-   - **a. `src/config/factions/factionShipStats.ts`**
-     - [ ] Update all weapon positions to use `WeaponMountPosition` enum
-     - [ ] Add evasion to defense stats
-     - [ ] Update weapon effects to include the magnitude property
-     - [ ] Remove crew requirements
-     - [ ] Fix MGSS references (convert to `mgss`)
-     - [ ] Add missing effects arrays
-   - **b. `src/components/ships/FactionShips/FactionShipStats.tsx`**
-     - [ ] Update weapon type imports
-     - [ ] Fix weapon mapping logic
-     - [ ] Add proper type assertions
-   - **c. `src/components/weapons/WeaponLoadout.tsx`**
-     - [ ] Update to use the new `mountRequirements` structure (crew requirements removed)
-     - [ ] Fix weapon filtering logic
-   - **d. `src/utils/shipUtils.ts`**
-     - [ ] Update type imports to use the consolidated types
-     - [ ] Fix type assertions in functions
-   - **e. All Faction Ship Components**
-     - [ ] Update components to use new types
-     - [ ] Fix mount positions
-     - [ ] Add any missing properties
-     - [ ] Verify overall type consistency
+1. **Component Cleanup**
+   - [X] Remove duplicate WeaponMount component
+   - [X] Move weapon mount functionality to WeaponSystem
+   - [X] Update BaseShip to use consolidated weapon system
+   - [X] Update faction ships to use new weapon system
 
-6. **Testing & Verification**
-   - [ ] Verify that all weapon mounts render correctly
-   - [ ] Test the weapon effects system thoroughly
-   - [ ] Validate ship stats calculations
-   - [ ] Test the weapon loadout UI functionality
-   - [ ] Confirm correct rendering of faction ship components
+2. **Update Dependencies**
+   - [X] Fix imports in BaseShip.tsx
+   - [X] Update weapon mount references
+   - [X] Verify type compatibility
+   - [X] Set up testing environment
 
-7. **Documentation Updates**
-   - [ ] Update type documentation
-   - [ ] Create a migration guide outlining the changes
-   - [ ] Document the new weapon system structure
+3. **Integration Testing**
+   - [X] Create test setup and configuration
+   - [X] Create weapon system test file
+   - [X] Test weapon mounting
+   - [X] Test weapon effects
+   - [ ] Test weapon upgrades
+   - [ ] Test UI components
 
-8. **UI/UX Implementation & Integration**
-   - [ ] Update remaining ship components to use `AssetManager` and `AnimationManager`
-   - [ ] Update remaining weapon components with the new mount system
-   - [ ] Update remaining effect components
-   - [ ] Implement the UI component system
-   - [ ] Create and connect the effect system with the game state
+4. **Update Faction Ships**
+   - [X] Update SpaceRatShip
+   - [X] Update LostNovaShip
+   - [X] Update EquatorHorizonShip
+   - [X] Test all variants
 
-9. **Animation System Integration**
-   - [x] Create `AnimationManager` (Completed)
-   - [x] Create `useAnimation` hook (Completed)
-   - [ ] Update remaining components to integrate animation functionality
+### Current Focus
+We have successfully set up the testing environment and implemented tests for weapon mounting and effects. Next, we need to:
+1. Add tests for the weapon upgrade system
+2. Add tests for UI component interactions
+3. Update documentation to reflect the changes
+4. Create a migration guide for the consolidated weapon system
 
-10. **Final Steps & Milestones**
-    - [ ] Complete any remaining type system import updates
-    - [ ] Begin weapon mount conversion in `factionShipStats.ts`
-    - [ ] Update the first component file (`FactionShipStats.tsx`)
-    - [ ] Ensure backward compatibility and adherence to TypeScript best practices
-    - [ ] Run existing tests and add new tests as necessary
-    - [ ] Add debug information to stderr for troubleshooting
+### Lessons Learned
+1. When testing React components that use context providers, make sure to:
+   - Create a test wrapper component that provides necessary context
+   - Use async/await with userEvent for handling user interactions
+   - Handle multiple instances of elements with the same text by using more specific queries
+2. For components with multiple instances of the same button (e.g., in status effects and action buttons):
+   - Use `getAllByRole` instead of `getByText` to find all instances
+   - Select the last instance (in action buttons) for interaction testing
+3. When using Testing Library with React:
+   - Prefer `userEvent` over `fireEvent` for better simulation of real user interactions
+   - Use async/await with `userEvent` to ensure events are properly handled
+We have successfully set up the testing environment and created initial test cases. Now we need to:
+1. Run the initial tests to verify our setup
+2. Add more comprehensive test cases for weapon effects and upgrades
+3. Test UI component interactions
+4. Document the changes and update examples
+
+### Weapon System Consolidation Plan
+
+1. **Component Cleanup**
+   - [X] Remove duplicate WeaponMount component
+   - [X] Move weapon mount functionality to WeaponSystem
+   - [X] Update BaseShip to use consolidated weapon system
+   - [X] Update faction ships to use new weapon system
+
+2. **Update Dependencies**
+   - [X] Fix imports in BaseShip.tsx
+   - [X] Update weapon mount references
+   - [X] Verify type compatibility
+   - [X] Set up testing environment
+
+3. **Integration Testing**
+   - [X] Create test setup and configuration
+   - [X] Create weapon system test file
+   - [ ] Test weapon mounting
+   - [ ] Test weapon effects
+   - [ ] Test weapon upgrades
+   - [ ] Test UI components
+
+### Next Steps
+
+1. **Update Faction Ships**
+   - [X] Update SpaceRatShip
+   - [X] Update LostNovaShip
+   - [X] Update EquatorHorizonShip
+   - [ ] Test all variants
+
+2. **Documentation**
+   - [ ] Update component documentation
+   - [ ] Document breaking changes
+   - [ ] Update examples
+   - [ ] Add migration guide
+
+### Current Task: Testing Setup
+1. [X] Add testing dependencies (Vitest, Testing Library)
+2. [X] Create test setup file
+3. [X] Create Vitest configuration
+4. [X] Create weapon system test file
+5. [ ] Fix linter errors in test files
+6. [ ] Run initial tests
+
+We've completed updating all the faction ship components to use the consolidated weapon system. Would you like to proceed with testing the components to ensure everything works correctly?
+
+### Implementation Steps
+
+1. **Consolidate Weapon Types**
+   - [ ] Move all types to `WeaponTypes.ts`
+   - [ ] Merge overlapping interfaces
+   - [ ] Keep advanced features
+   - [ ] Add proper type exports
+
+2. **Update References**
+   - [ ] Update all import statements
+   - [ ] Fix any type mismatches
+   - [ ] Verify type compatibility
+   - [ ] Test all components
+
+3. **Documentation**
+   - [ ] Add clear type hierarchy docs
+   - [ ] Document breaking changes
+   - [ ] Update examples
+   - [ ] Add migration guide
+
+3. **Ship Types (`types/ships/`)**
+   - [ ] `ShipTypes.ts` - Base ship interfaces
+   - [ ] `FactionTypes.ts` - Faction-specific types
+   - [ ] `PlayerTypes.ts` - Player ship types
+
+### Config System Reorganization
+
+1. **Core Config (`config/core/`)**
+   - [ ] `gameConfig.ts` - Core game settings
+   - [ ] `balanceConfig.ts` - Game balance parameters
+
+2. **Ship Config (`config/ships/`)**
+   - [ ] `shipStats.ts` - Single source for ship stats
+   - [ ] `weaponStats.ts` - Weapon configurations
+   - [ ] `factionConfig.ts` - Faction configurations
+
+3. **Combat Config (`config/combat/`)**
+   - [ ] `combatConfig.ts` - Combat system settings
+   - [ ] `effectConfig.ts` - Effect configurations
+
+### Library Reorganization
+
+1. **Core Services (`lib/core/`)**
+   - [ ] `GameManager.ts` - Core game state
+   - [ ] `EventManager.ts` - Event system
+   - [ ] `AssetManager.ts` - Resource management
+
+2. **Combat Services (`lib/combat/`)**
+   - [ ] `CombatManager.ts` - Combat system
+   - [ ] `WeaponManager.ts` - Weapon handling
+   - [ ] `EffectManager.ts` - Effect system
+
+3. **Faction Services (`lib/factions/`)**
+   - [ ] `FactionManager.ts` - Faction management
+   - [ ] `AIManager.ts` - AI behavior system
+   - [ ] `FleetManager.ts` - Fleet management
+
+### Next Steps
+
+1. **Type System**
+   - [ ] Audit all type definitions
+   - [ ] Create type migration plan
+   - [ ] Update component type imports
+   - [ ] Document type hierarchy
+
+2. **Config System**
+   - [ ] Audit all config files
+   - [ ] Create config migration plan
+   - [ ] Update component configs
+   - [ ] Document config structure

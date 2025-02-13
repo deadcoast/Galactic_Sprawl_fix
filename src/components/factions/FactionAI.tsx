@@ -1,5 +1,5 @@
 import { AlertTriangle, Shield, Sword, Zap } from "lucide-react";
-import type { FactionId } from "../../../types/ships/FactionShipTypes";
+import type { FactionId } from "../../types/ships/FactionTypes";
 
 interface AIBehavior {
   id: string;

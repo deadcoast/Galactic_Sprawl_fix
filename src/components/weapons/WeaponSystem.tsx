@@ -3,8 +3,14 @@ import {
   WeaponHeader,
   WeaponStatsDisplay,
   WeaponUpgradeDisplay,
-} from "../../components/weapons/WeaponComponents";
-import { WEAPON_COLORS, WeaponSystemProps } from "../../types/weapons/WeaponTypes";
+} from "./WeaponComponents";
+import { 
+  WEAPON_COLORS, 
+  WeaponSystemProps,
+  WeaponUpgrade,
+  WeaponEffect,
+  CombatWeaponStats
+} from "../../types/weapons/WeaponTypes";
 import { Crosshair } from "lucide-react";
 
 export function WeaponSystem({

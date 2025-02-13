@@ -1,94 +1,70 @@
-import { WeaponStats as BaseWeaponStats } from '../weapons/WeaponTypes';
+import {
+  WeaponCategory,
+  WeaponVariant,
+  CombatWeaponStats,
+  WeaponConfig,
+  WeaponInstance,
+  WeaponType,
+  WeaponMount,
+  WeaponEffect
+} from '../weapons/WeaponTypes';
 import { Effect } from '../core/GameTypes';
 
-export type { BaseWeaponStats as WeaponStats };
+// Re-export weapon types for backward compatibility
+export type {
+  WeaponCategory,
+  WeaponVariant,
+  CombatWeaponStats as WeaponStats,
+  WeaponConfig,
+  WeaponInstance,
+  WeaponType,
+  WeaponMount,
+  WeaponEffect
+};
 
-export type WeaponCategory = 
-  | 'machineGun'
-  | 'gaussCannon'
-  | 'railGun'
-  | 'mgss'
-  | 'rockets';
-
-export type WeaponVariant = 
-  // Machine Gun variants
-  | 'basic'
-  | 'plasmaRounds'
-  | 'sparkRounds'
-  // Gauss Cannon variants
-  | 'gaussPlaner'
-  | 'recirculatingGauss'
-  // Rail Gun variants
-  | 'lightShot'
-  | 'maurader'
-  // MGSS variants
-  | 'engineAssistedSpool'
-  | 'slugMGSS'
-  // Rocket variants
-  | 'emprRockets'
-  | 'swarmRockets'
-  | 'bigBangRockets';
-
-export interface CombatWeaponStats extends BaseWeaponStats {
-  special?: {
-    armorPenetration?: number;
-    shieldDamageBonus?: number;
-    areaOfEffect?: number;
-    disableChance?: number;
-  };
-}
-
-export interface WeaponConfig {
+// Combat-specific types
+export interface CombatUnit {
   id: string;
-  name: string;
-  category: WeaponCategory;
-  variant: WeaponVariant;
-  baseStats: CombatWeaponStats;
-  visualAsset: string;
-  requirements?: {
-    power: number;
-    crew?: number;
-    tech?: string[];
-  };
-}
-
-export interface WeaponType {
-  id: string;
-  category: WeaponCategory;
-  variant: WeaponVariant;
-  stats: CombatWeaponStats;
-  visualAsset: string;
+  position: { x: number; y: number };
+  rotation: number;
+  health: number;
+  maxHealth: number;
+  shield: number;
+  maxShield: number;
+  currentWeapon?: WeaponInstance;
+  effects: Effect[];
 }
 
 export interface CombatState {
-  inCombat: boolean;
-  targetId?: string;
-  currentWeapon?: WeaponType;
-  combatMetrics: {
-    damageDealt: number;
-    damageReceived: number;
-    shieldsRemaining: number;
-    hitAccuracy: number;
-  };
+  units: CombatUnit[];
+  projectiles: Projectile[];
+  effects: CombatEffect[];
 }
 
-export interface CombatAction {
-  type: 'attack' | 'defend' | 'evade' | 'support';
+export interface Projectile {
+  id: string;
+  position: { x: number; y: number };
+  velocity: { x: number; y: number };
+  damage: number;
+  effects: Effect[];
   sourceId: string;
   targetId?: string;
-  weapon?: WeaponType;
-  timestamp: number;
+}
+
+export interface CombatEffect {
+  id: string;
+  type: string;
+  position: { x: number; y: number };
+  radius: number;
+  duration: number;
+  remainingTime: number;
+  effects: Effect[];
 }
 
 export interface CombatResult {
-  success: boolean;
-  damage?: number;
-  effects?: {
-    disabled?: boolean;
-    shieldDamage?: number;
-    areaEffect?: {
-      radius: number;
-      damage: number;
-    };
-  };
+  winner?: string;
+  duration: number;
+  damageDone: Record<string, number>;
+  unitsLost: Record<string, number>;
+  effectsTriggered: Record<string, number>;
 } 
