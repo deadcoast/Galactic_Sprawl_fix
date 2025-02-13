@@ -4,7 +4,7 @@ import {
   ShipDisplayStats,
   ShipStats,
 } from "../types/ships/CommonShipTypes";
-import { WeaponCategory, WeaponInstance } from "../types/ships/WeaponTypes";
+import { WeaponCategory, WeaponInstance } from "../types/weapons/WeaponTypes";
 
 // Status Conversions
 export function normalizeShipStatus(status: string): BaseStatus {

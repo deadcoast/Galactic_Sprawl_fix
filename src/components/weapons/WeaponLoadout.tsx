@@ -1,4 +1,4 @@
-import { WeaponConfig, WeaponMount } from "../../types/ships/WeaponTypes";
+import { WeaponConfig, WeaponMount } from "../../types/weapons/WeaponTypes";
 import { AlertTriangle, Crosshair } from "lucide-react";
 
 interface WeaponLoadoutProps {

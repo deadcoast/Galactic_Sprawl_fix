@@ -1,4 +1,4 @@
-import { GameLayout } from "@/components/GameLayout";
+import { GameLayout } from "./GameLayout";
 import {
   AlertTriangle,
   Bell,

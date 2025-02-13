@@ -115,7 +115,7 @@ class SalvageManagerImpl implements SalvageManager {
     return drops;
   }
 
-  collectSalvage(salvageId: string, shipId: string): void {
+  collectSalvage(salvageId: string, _shipId: string): void {
     const salvageIndex = this.activeSalvage.findIndex(
       (s) => s.id === salvageId,
     );

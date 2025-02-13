@@ -1,4 +1,4 @@
-import { Salvage } from "@/types/combat/SalvageTypes";
+import { Salvage } from "../../types/combat/SalvageTypes";
 import { AlertTriangle, Package, X } from "lucide-react";
 import { useEffect, useState } from "react";
 

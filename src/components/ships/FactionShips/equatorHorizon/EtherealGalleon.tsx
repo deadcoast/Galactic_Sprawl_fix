@@ -1,6 +1,7 @@
 import { EquatorHorizonShip } from "./EquatorHorizonShip";
 import { WeaponMount } from "../../common/WeaponMount";
-import { WeaponType } from "../../../../types/combat/CombatTypes";
+import { WeaponStats } from "../../../../types/weapons/WeaponTypes";
+import { WeaponType, CombatWeaponStats } from "../../../../types/combat/CombatTypes";
 import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
 
 type ShipStatus =
@@ -37,6 +38,12 @@ const DEFAULT_WEAPON: WeaponType = {
     accuracy: 0.9,
     rateOfFire: 1/3, // From cooldown: 3
     energyCost: 30,
+    cooldown: 3,
+    effects: [], // No default effects
+    special: {
+      armorPenetration: 0.1,
+      shieldDamageBonus: 0.2,
+    }
   },
   visualAsset: "weapons/equator-horizon/mgss/ancient-mgss"
 };
@@ -60,14 +67,27 @@ export function EtherealGalleon({
     status === "idle" ? "patrolling" : status as "engaging" | "patrolling" | "retreating" | "disabled";
 
   // Calculate weapon stats based on ancient energy levels
-  const calculateWeaponStats = (weapon: WeaponType) => {
+  const calculateWeaponStats = (weapon: WeaponType): CombatWeaponStats => {
     const energyEfficiency = stats.energy / stats.maxEnergy;
     
-    return {
-      ...weapon.stats,
+    // Start with the base weapon stats
+    const baseStats: WeaponStats = {
       damage: weapon.stats.damage * (1 + energyEfficiency * 0.5),
+      range: weapon.stats.range,
       accuracy: weapon.stats.accuracy * (0.9 + energyEfficiency * 0.1),
-      energyCost: weapon.stats.energyCost * (1 - energyEfficiency * 0.3)
+      rateOfFire: weapon.stats.rateOfFire,
+      energyCost: weapon.stats.energyCost * (1 - energyEfficiency * 0.3),
+      cooldown: weapon.stats.cooldown || 2,
+      effects: weapon.stats.effects || [],
+    };
+
+    // Add combat-specific stats
+    return {
+      ...baseStats,
+      special: {
+        armorPenetration: 0.1,
+        shieldDamageBonus: 0.2,
+      }
     };
   };
 

@@ -1,36 +1,23 @@
-import { ThrusterEffect } from "@/components/effects/ThrusterEffect";
+import { ThrusterEffect } from "../../../../../components/effects/ThrusterEffect";
 import { AlertTriangle } from "lucide-react";
 import * as PIXI from "pixi.js";
 import { useEffect, useRef } from "react";
+import { useAssets } from "../../../../../hooks/game/useAssets";
+import { useAnimation } from "../../../../../hooks/game/useAnimation";
 
-// Type augmentation for PIXI.js
-declare module "pixi.js" {
-  export interface ApplicationOptions {
-    backgroundAlpha?: number;
-  }
+// Custom interfaces for our asset types
+interface AssetManifest {
+  bundles: Array<{
+    name: string;
+    assets: Array<{
+      name: string;
+      srcs: string;
+    }>;
+  }>;
+}
 
-  export interface AssetsBundle<T> {
-    [key: string]: T;
-  }
-
-  export interface AssetsInit {
-    manifest: {
-      bundles: Array<{
-        name: string;
-        assets: Array<{
-          name: string;
-          srcs: string;
-        }>;
-      }>;
-    };
-  }
-
-  export interface AssetsClass {
-    init(options: AssetsInit): Promise<void>;
-    loadBundle<T>(name: string): Promise<AssetsBundle<T>>;
-  }
-
-  export const Assets: AssetsClass;
+interface AssetInit {
+  manifest: AssetManifest;
 }
 
 interface HarbringerGalleonProps {
@@ -69,13 +56,13 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<PIXI.Application>();
-  const spriteRef = useRef<PIXI.Container | null>(null);
+  const spriteRef = useRef<PIXI.Sprite | null>(null);
   const texturesRef = useRef<PIXI.Texture[]>([]);
-  const currentStatus = useRef(status);
-  const animationFrameRef = useRef<number>(0);
+
+  const { isLoading, getTextureFromSpritesheet } = useAssets(['ships']);
 
   useEffect(() => {
-    if (!containerRef.current) {
+    if (!containerRef.current || isLoading) {
       return;
     }
 
@@ -94,33 +81,14 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
 
     const loadSprites = async () => {
       try {
-        // Initialize asset loader
-        const manifest: PIXI.AssetsInit = {
-          manifest: {
-            bundles: [
-              {
-                name: "spike-ship",
-                assets: [
-                  {
-                    name: "spike_spritesheet",
-                    srcs: "/assets/ships/spike_spritesheet.json",
-                  },
-                ],
-              },
-            ],
-          },
-        };
-
-        await PIXI.Assets.init(manifest);
-
-        // Load the sprite atlas
-        const atlas = await PIXI.Assets.loadBundle<SpriteAtlas>("spike-ship");
-        const spritesheet = atlas["spike_spritesheet"];
-
         // Create textures from the frames
-        texturesRef.current = Object.keys(spritesheet.frames).map((frame) =>
-          PIXI.Texture.from(`spike_${frame}.png`),
-        );
+        texturesRef.current = Array.from({ length: 16 }, (_, i) => {
+          const texture = getTextureFromSpritesheet('spike_spritesheet', `spike_${i}.png`);
+          if (!texture) {
+            throw new Error(`Failed to load texture spike_${i}.png`);
+          }
+          return texture;
+        });
 
         // Create sprite container
         const container = new PIXI.Container();
@@ -132,149 +100,65 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
         const sprite = new PIXI.Sprite(texturesRef.current[0]);
         sprite.anchor.set(0.5);
         container.addChild(sprite);
+        spriteRef.current = sprite;
 
-        spriteRef.current = container;
         app.stage.addChild(container);
-
-        // Update animation based on status
-        updateAnimation(status);
       } catch (error) {
-        console.error("Error loading Spike ship sprites:", error);
+        console.error("Error loading Harbringer Galleon sprites:", error);
       }
     };
 
     loadSprites();
 
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
       app.destroy(true);
-      if (spriteRef.current) {
-        spriteRef.current.destroy();
-      }
     };
-  }, [status, x, y]);
+  }, [x, y, isLoading, getTextureFromSpritesheet]);
 
   useEffect(() => {
-    if (status !== currentStatus.current) {
-      currentStatus.current = status;
-      updateAnimation(status);
-      onStatusChange?.(status);
-    }
+    onStatusChange?.(status);
   }, [status, onStatusChange]);
 
-  const updateAnimation = (newStatus: string) => {
-    if (!spriteRef.current || texturesRef.current.length === 0) {
-      return;
-    }
-
-    const container = spriteRef.current;
-    let frameStart = 0;
-    const frameCount = 4;
-    let frameDelay = 100;
-
-    switch (newStatus) {
-      case "idle":
-        frameStart = 0;
-        frameDelay = 150;
-        break;
-      case "engaging":
-        frameStart = 4;
-        frameDelay = 100;
-        break;
-      case "retreating":
-        frameStart = 8;
-        frameDelay = 120;
-        break;
-      case "damaged":
-        frameStart = 12;
-        frameDelay = 200;
-        break;
-    }
-
-    let currentFrame = 0;
-    const animate = () => {
-      if (!container.children[0]) return;
-
-      const spriteIndex = frameStart + (currentFrame % frameCount);
-      (container.children[0] as PIXI.Sprite).texture =
-        texturesRef.current[spriteIndex];
-
-      currentFrame++;
-      animationFrameRef.current = requestAnimationFrame(() => {
-        setTimeout(animate, frameDelay);
-      });
-    };
-
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    animate();
-  };
+  // Use the animation hook
+  useAnimation({
+    id: 'harbringer-galleon',
+    sprite: spriteRef.current,
+    textures: texturesRef.current,
+    state: status,
+  });
 
   return (
     <div className="relative">
-      {/* Ship Container */}
-      <div ref={containerRef} className="relative w-[400px] h-[400px]" />
-
-      {/* Status Indicators */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
-        {/* Health Bar */}
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-400">Hull Integrity</span>
-            <span
-              className={
-                health < maxHealth * 0.3 ? "text-red-400" : "text-gray-300"
-              }
-            >
-              {Math.round((health / maxHealth) * 100)}%
-            </span>
-          </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+      <div ref={containerRef} className="w-[400px] h-[400px]" />
+      {/* Health and shield bars */}
+      <div className="absolute bottom-0 left-0 w-full px-4 py-2">
+        <div className="flex flex-col gap-1">
+          <div className="h-2 bg-gray-700 rounded-full">
             <div
-              className={`h-full rounded-full transition-all ${
-                health < maxHealth * 0.3 ? "bg-red-500" : "bg-green-500"
-              }`}
+              className="h-full bg-red-500 rounded-full"
               style={{ width: `${(health / maxHealth) * 100}%` }}
             />
           </div>
-        </div>
-
-        {/* Shield Bar */}
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-400">Shield Power</span>
-            <span className="text-gray-300">
-              {Math.round((shield / maxShield) * 100)}%
-            </span>
-          </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 bg-gray-700 rounded-full">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
+              className="h-full bg-blue-500 rounded-full"
               style={{ width: `${(shield / maxShield) * 100}%` }}
             />
           </div>
         </div>
       </div>
-
-      {/* Thruster Effects */}
-      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
-        <ThrusterEffect
-          size="large"
-          color="#4f46e5"
-          intensity={status === "retreating" ? 1.5 : 1}
-        />
-      </div>
-
-      {/* Status Warning */}
+      {/* Warning indicator for damaged state */}
       {status === "damaged" && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-red-900/80 border border-red-700 rounded-full flex items-center space-x-2">
-          <AlertTriangle className="w-4 h-4 text-red-400" />
-          <span className="text-sm text-red-200">Critical Damage</span>
+        <div className="absolute top-0 right-0 p-2">
+          <AlertTriangle className="w-6 h-6 text-yellow-500 animate-pulse" />
         </div>
       )}
+      {/* Thruster effects */}
+      <ThrusterEffect
+        size="large"
+        color="#4f46e5"
+        intensity={status === "engaging" || status === "retreating" ? 1.0 : 0.0}
+      />
     </div>
   );
 };

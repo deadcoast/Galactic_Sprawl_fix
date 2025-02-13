@@ -1,5 +1,5 @@
-import { GalaxyMap } from "@/components/GalaxyMap";
-import { GameHUD } from "@/components/GameHUD";
+import { GalaxyMap } from "./GalaxyMap";
+import { GameHUD } from "./GameHUD";
 import { Database, Map, Menu, Radar, Ship, Users } from "lucide-react";
 import React from "react";
 

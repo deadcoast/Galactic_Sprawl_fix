@@ -785,7 +785,9 @@ export function TechTree() {
   };
 
   const getNodeColor = (node: TechNode) => {
-    if (node.unlocked) return "bg-cyan-500 border-cyan-400";
+    if (node.unlocked) {
+      return "bg-cyan-500 border-cyan-400";
+    }
     if (
       node.requirements.every(
         (req) => techNodes.find((n) => n.id === req)?.unlocked,

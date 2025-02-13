@@ -5,6 +5,7 @@ import {
   CommonShipDisplayStats,
   CommonShipStats,
 } from "../../types/ships/CommonShipTypes";
+import { ShipStatus } from "../../components/ships/FactionShips/FactionShipBase";
 
 // Faction IDs
 export type FactionId = "space-rats" | "lost-nova" | "equator-horizon";
@@ -67,12 +68,24 @@ export interface FactionShipAbility extends CommonShipAbility {
 export type FactionShipDisplayStats = CommonShipDisplayStats;
 
 // Faction Ship Interface
-export interface FactionShip extends CommonShip {
-  faction: FactionId;
-  class: FactionShipClass;
-  stats: FactionShipStats;
-  abilities: FactionShipAbility[];
+export interface FactionShip {
+  id: string;
+  name: string;
+  faction: string;
+  class: string;
+  status: ShipStatus;
+  health: number;
+  maxHealth: number;
+  shield: number;
+  maxShield: number;
+  stats: any;
   tactics: "aggressive" | "defensive" | "hit-and-run";
+  specialAbility?: {
+    name: string;
+    description: string;
+    cooldown: number;
+    active: boolean;
+  };
 }
 
 // Faction Ship Config

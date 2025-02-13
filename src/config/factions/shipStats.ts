@@ -1,6 +1,10 @@
 import { shipClassConfigs } from "../../config/factions/factionConfig";
 import { WeaponType } from "../../types/combat/CombatTypes";
-import { ShipStats, ShipType } from "../../types/ships/CommonShipTypes";
+import { ShipStats } from "../../types/factions/ShipTypes";
+import { FactionId } from "../../types/factions/FactionTypes";
+import { FactionShipStats, FactionShip } from "../../types/ships/FactionShipTypes";
+import { Tier } from "../../types/core/GameTypes";
+import { ShipStatus } from "../../components/ships/FactionShips/FactionShipBase";
 
 // Base stats for different ship tiers
 const tierBaseStats: Record<number, ShipStats> = {
@@ -28,9 +32,10 @@ const tierBaseStats: Record<number, ShipStats> = {
 };
 
 // Space Rats ship stats
-export const spaceRatsShipStats: Record<string, Partial<ShipType>> = {
+export const spaceRatsShipStats: Record<string, Partial<FactionShip>> = {
   ratKing: {
-    tier: 3,
+    class: "ratKing",
+    faction: "space-rats",
     stats: {
       health: 500,
       shields: 250,
@@ -40,7 +45,8 @@ export const spaceRatsShipStats: Record<string, Partial<ShipType>> = {
     },
   },
   asteroidMarauder: {
-    tier: 1,
+    class: "asteroidMarauder",
+    faction: "space-rats",
     stats: {
       ...tierBaseStats[1],
       speed: 120, // Faster than base
@@ -50,9 +56,10 @@ export const spaceRatsShipStats: Record<string, Partial<ShipType>> = {
 };
 
 // Lost Nova ship stats
-export const lostNovaShipStats: Record<string, Partial<ShipType>> = {
+export const lostNovaShipStats: Record<string, Partial<FactionShip>> = {
   eclipseScythe: {
-    tier: 3,
+    class: "eclipseScythe",
+    faction: "lost-nova",
     stats: {
       health: 450,
       shields: 300,
@@ -62,7 +69,8 @@ export const lostNovaShipStats: Record<string, Partial<ShipType>> = {
     },
   },
   nullsRevenge: {
-    tier: 2,
+    class: "nullsRevenge",
+    faction: "lost-nova",
     stats: {
       ...tierBaseStats[2],
       shields: 150, // Better shields than base
@@ -72,9 +80,10 @@ export const lostNovaShipStats: Record<string, Partial<ShipType>> = {
 };
 
 // Equator Horizon ship stats
-export const equatorHorizonShipStats: Record<string, Partial<ShipType>> = {
+export const equatorHorizonShipStats: Record<string, Partial<FactionShip>> = {
   celestialArbiter: {
-    tier: 3,
+    class: "celestialArbiter",
+    faction: "equator-horizon",
     stats: {
       health: 600,
       shields: 400,
@@ -84,7 +93,8 @@ export const equatorHorizonShipStats: Record<string, Partial<ShipType>> = {
     },
   },
   etherealGalleon: {
-    tier: 2,
+    class: "etherealGalleon",
+    faction: "equator-horizon",
     stats: {
       ...tierBaseStats[2],
       maneuverability: 80, // Better maneuverability than base
@@ -97,24 +107,26 @@ export const equatorHorizonShipStats: Record<string, Partial<ShipType>> = {
 export function createShipType(
   id: string,
   name: string,
-  faction: keyof typeof shipClassConfigs,
-  baseStats: Partial<ShipType>,
+  faction: FactionId,
+  baseStats: Partial<FactionShip>,
   weapons: WeaponType[],
-): ShipType {
+): FactionShip {
+  const stats = {
+    ...tierBaseStats[1], // Default to tier 1 if not specified
+    ...baseStats.stats,
+  };
+
   return {
     id,
     name,
     faction,
     class: id,
-    tier: baseStats.tier || 1,
-    stats: {
-      ...tierBaseStats[baseStats.tier || 1],
-      ...baseStats.stats,
-    },
-    loadout: {
-      weapons,
-      upgrades: [],
-    },
-    visualAsset: `ships/${faction}/${id}`,
+    status: "ready" as ShipStatus,
+    health: stats.health,
+    maxHealth: stats.health,
+    shield: stats.shields,
+    maxShield: stats.shields,
+    stats,
+    tactics: "aggressive",
   };
 }

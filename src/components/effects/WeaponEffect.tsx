@@ -5,7 +5,7 @@ import { useRef } from "react";
 import * as THREE from "three";
 
 interface WeaponEffectProps {
-  type: "machineGun" | "railGun" | "gaussCannon" | "rockets" | "mgss";
+  type: "machineGun" | "railGun" | "gaussCannon" | "rockets" | "mgss" | "pointDefense";
   color: string;
   position: { x: number; y: number };
   rotation: number;
@@ -140,6 +140,7 @@ function WeaponBeam({
     gaussCannon: 2,
     rockets: 3,
     mgss: 4,
+    pointDefense: 5,
   };
 
   return (

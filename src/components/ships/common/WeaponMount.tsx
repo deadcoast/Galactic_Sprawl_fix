@@ -1,6 +1,29 @@
 import { WeaponEffect } from "../../effects/WeaponEffect";
 import { WeaponType } from "../../../types/ships/CommonShipTypes";
 
+// Map weapon categories to supported effect types
+type SupportedEffectType = "machineGun" | "railGun" | "gaussCannon" | "rockets" | "mgss" | "pointDefense";
+
+const mapToSupportedEffect = (category: WeaponType["category"]): SupportedEffectType => {
+  switch (category) {
+    case "machineGun":
+    case "railGun":
+    case "gaussCannon":
+    case "rockets":
+    case "mgss":
+    case "pointDefense":
+      return category;
+    case "flakCannon":
+      return "pointDefense"; // Map flak to point defense effect
+    case "capitalLaser":
+      return "railGun"; // Map capital laser to rail gun effect
+    case "torpedoes":
+      return "rockets"; // Map torpedoes to rocket effect
+    default:
+      return "machineGun"; // Fallback effect
+  }
+};
+
 export interface WeaponMountProps {
   weapon: WeaponType;
   position: { x: number; y: number };
@@ -30,6 +53,13 @@ export function WeaponMount({
         return "#FF8844";
       case "rockets":
         return "#FF4488";
+      case "flakCannon":
+        return "#44FF88";
+      case "capitalLaser":
+        return "#FF44FF";
+      case "torpedoes":
+        return "#FF8800";
+      case "pointDefense":
       default:
         return "#FFFFFF";
     }
@@ -54,7 +84,7 @@ export function WeaponMount({
       {/* Weapon Effect */}
       {isFiring && (
         <WeaponEffect
-          type={weapon.category}
+          type={mapToSupportedEffect(weapon.category)}
           color={getWeaponColor(weapon.category)}
           position={position}
           rotation={rotation}

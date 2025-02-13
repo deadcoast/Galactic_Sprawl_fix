@@ -36,6 +36,8 @@ const DEFAULT_WEAPON: WeaponType = {
     accuracy: 0.93,
     rateOfFire: 1/3, // From cooldown: 3
     energyCost: 30,
+    cooldown: 3,
+    effects: []
   },
   visualAsset: "weapons/equator-horizon/gaussCannon/standard"
 };

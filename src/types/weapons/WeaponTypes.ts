@@ -1,9 +1,17 @@
+import { Effect, Tier } from "../core/GameTypes";
+
+// Weapon Categories
 export type WeaponCategory =
   | "machineGun"
   | "gaussCannon"
   | "railGun"
   | "mgss"
-  | "rockets";
+  | "rockets"
+  | "pointDefense"
+  | "flakCannon"
+  | "capitalLaser"
+  | "torpedoes";
+
 export type WeaponMountSize = "small" | "medium" | "large";
 export type WeaponMountPosition = "front" | "side" | "turret";
 export type WeaponStatus = "ready" | "charging" | "cooling" | "disabled";
@@ -19,12 +27,15 @@ export type WeaponUpgradeType =
   | "swarm"
   | "bigBang";
 
+// Weapon Stats
 export interface WeaponStats {
   damage: number;
   range: number;
   accuracy: number;
   rateOfFire: number;
   energyCost: number;
+  cooldown: number;
+  effects: Effect[];
 }
 
 export interface WeaponEffect {
@@ -34,31 +45,35 @@ export interface WeaponEffect {
   cooldown: number;
 }
 
+// Weapon Mount Configuration
 export interface WeaponMount {
   id: string;
+  type?: WeaponCategory;
   size: WeaponMountSize;
   position: WeaponMountPosition;
+  rotation: number;
+  allowedCategories: WeaponCategory[];
   currentWeapon?: WeaponInstance;
 }
 
+// Weapon Configuration
 export interface WeaponConfig {
   id: string;
   name: string;
   category: WeaponCategory;
-  tier: 1 | 2 | 3;
+  tier: Tier;
   baseStats: WeaponStats;
-  requirements: {
+  visualAsset: string;
+  mountRequirements: {
+    size: WeaponMountSize;
     power: number;
-    crew: number;
-    mountSize: WeaponMountSize;
   };
-  visualAsset?: string;
 }
 
 export interface WeaponState {
   status: WeaponStatus;
   currentStats: WeaponStats;
-  effects: WeaponEffect[];
+  effects: Effect[];
   currentAmmo?: number;
   maxAmmo?: number;
 }
@@ -94,12 +109,17 @@ export interface WeaponSystemProps {
   onToggleEffect?: (effectName: string) => void;
 }
 
+// Weapon Colors for UI
 export const WEAPON_COLORS: Record<WeaponCategory, string> = {
   machineGun: "cyan",
   gaussCannon: "violet",
   railGun: "indigo",
   mgss: "fuchsia",
   rockets: "rose",
+  pointDefense: "lime",
+  flakCannon: "yellow",
+  capitalLaser: "orange",
+  torpedoes: "red",
 } as const;
 
 export const UPGRADE_COLORS: Record<WeaponUpgradeType, string> = {

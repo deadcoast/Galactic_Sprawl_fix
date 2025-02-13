@@ -41,7 +41,11 @@ export function LostNovaShip({
   specialAbility,
 }: LostNovaShipProps) {
   return (
-    <div className="bg-violet-900/20 border border-violet-700/30 rounded-lg p-6">
+    <div 
+      className="bg-violet-900/20 border border-violet-700/30 rounded-lg p-6"
+      data-ship-id={id}
+      data-ship-type={type}
+    >
       {/* Ship Header */}
       <div className="flex items-start justify-between mb-6">
         <div>

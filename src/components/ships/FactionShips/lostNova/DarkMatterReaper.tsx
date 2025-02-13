@@ -1,8 +1,12 @@
-import { ShipBase } from "@/components/ships/common/CommonShipStats";
-import { WeaponMount } from "@/components/ships/common/WeaponMount";
-import { WarShipCombat } from "@/components/ships/player/variants/warships/PlayerWarShipCombat";
-import { WeaponCategory, WeaponType } from "@/types/combat/CombatTypes";
-import { ShipStats } from "@/types/ships/CommonShipTypes";
+import { FactionShipBase } from "../FactionShipBase";
+import { WeaponMount } from "../../common/WeaponMount";
+import { WeaponType } from "../../../../types/combat/CombatTypes";
+import { CommonShipStats } from "../../../../types/ships/CommonShipTypes";
+import * as PIXI from "pixi.js";
+import { useEffect, useRef } from "react";
+import { useAssets } from "../../../../hooks/game/useAssets";
+import { useAnimation } from "../../../../hooks/game/useAnimation";
+import { AlertTriangle } from "lucide-react";
 
 type ShipStatus =
   | "idle"
@@ -11,14 +15,6 @@ type ShipStatus =
   | "retreating"
   | "disabled"
   | "damaged";
-type WarShipType =
-  | "spitflare"
-  | "starSchooner"
-  | "orionFrigate"
-  | "harbringerGalleon"
-  | "midwayCarrier";
-type WarShipStatus = "idle" | "engaging" | "retreating" | "damaged";
-type WarShipWeaponType = "machineGun" | "gaussCannon" | "railGun" | "rockets";
 
 interface DarkMatterReaperProps {
   id: string;
@@ -28,11 +24,11 @@ interface DarkMatterReaperProps {
   shield: number;
   maxShield: number;
   weapons: WeaponType[];
-  stats: ShipStats;
-  onFire: (weaponId: string) => void;
+  stats: CommonShipStats;
+  onFire?: (weaponId: string) => void;
   onEngage?: () => void;
-  onRetreat: () => void;
-  onSpecialAbility?: () => void;
+  onRetreat?: () => void;
+  onSpecialAbility?: (abilityName?: string) => void;
 }
 
 export function DarkMatterReaper({
@@ -49,86 +45,102 @@ export function DarkMatterReaper({
   onRetreat,
   onSpecialAbility,
 }: DarkMatterReaperProps) {
-  // Convert status for WarShipCombat compatibility
-  const getWarShipStatus = (status: ShipStatus): WarShipStatus => {
-    switch (status) {
-      case "patrolling":
-      case "disabled":
-        return "idle";
-      case "engaging":
-      case "retreating":
-      case "damaged":
-        return status;
-      default:
-        return "idle";
+  const containerRef = useRef<HTMLDivElement>(null);
+  const appRef = useRef<PIXI.Application>();
+  const spriteRef = useRef<PIXI.Sprite | null>(null);
+  const texturesRef = useRef<PIXI.Texture[]>([]);
+
+  const { isLoading, getTextureFromSpritesheet } = useAssets(['ships']);
+
+  useEffect(() => {
+    if (!containerRef.current || isLoading) {
+      return;
     }
-  };
 
-  // Convert weapon type for WarShipCombat compatibility
-  const getWarShipWeaponType = (
-    category: WeaponCategory,
-  ): WarShipWeaponType => {
-    return category === "mgss" ? "machineGun" : category;
-  };
+    // Initialize PixiJS Application
+    const app = new PIXI.Application({
+      width: 400,
+      height: 400,
+      backgroundColor: 0x000000,
+      backgroundAlpha: 0,
+      antialias: true,
+      resolution: window.devicePixelRatio || 1,
+    });
 
-  // For compatibility with WarShipCombat
-  const warShipProps = {
-    id,
-    name: "Dark Matter Reaper",
-    type: "orionFrigate" as WarShipType,
-    tier: 2 as const,
-    status: getWarShipStatus(status),
-    hull: health,
-    maxHull: maxHealth,
-    shield,
-    maxShield,
-    weapons: weapons.map((w) => ({
-      id: w.id,
-      name: w.category,
-      type: getWarShipWeaponType(w.category),
-      damage: w.stats.damage,
-      range: w.stats.range,
-      cooldown: 1 / w.stats.rateOfFire,
-      status: "ready" as const,
-    })),
-    specialAbilities: [
-      {
-        name: "Dark Matter Surge",
-        description: "Channel dark matter to enhance weapon damage",
-        cooldown: 40,
-        active: false,
-      },
-    ],
-  };
+    containerRef.current.appendChild(app.view as unknown as Node);
+    appRef.current = app;
 
-  // Filter status for ShipBase compatibility
-  const baseStatus = status === "damaged" ? "disabled" : status;
+    const loadSprites = async () => {
+      try {
+        // Create textures from the frames
+        texturesRef.current = Array.from({ length: 16 }, (_, i) => {
+          const texture = getTextureFromSpritesheet('dark_matter_reaper_spritesheet', `dark_matter_reaper_${i}.png`);
+          if (!texture) {
+            throw new Error(`Failed to load texture dark_matter_reaper_${i}.png`);
+          }
+          return texture;
+        });
+
+        // Create sprite container
+        const container = new PIXI.Container();
+        container.x = 200;
+        container.y = 200;
+        container.scale.set(1);
+
+        // Create initial sprite
+        const sprite = new PIXI.Sprite(texturesRef.current[0]);
+        sprite.anchor.set(0.5);
+        container.addChild(sprite);
+        spriteRef.current = sprite;
+
+        app.stage.addChild(container);
+      } catch (error) {
+        console.error("Error loading Dark Matter Reaper sprites:", error);
+      }
+    };
+
+    loadSprites();
+
+    return () => {
+      app.destroy(true);
+    };
+  }, [isLoading, getTextureFromSpritesheet]);
+
+  // Use the animation hook
+  useAnimation({
+    id: `dark-matter-reaper-${id}`,
+    sprite: spriteRef.current,
+    textures: texturesRef.current,
+    state: status,
+  });
 
   return (
     <div className="relative">
-      {/* New ShipBase Component */}
-      <ShipBase
-        id={id}
-        name="Dark Matter Reaper"
-        faction="lostNova"
-        status={baseStatus}
-        health={health}
-        maxHealth={maxHealth}
-        shield={shield}
-        maxShield={maxShield}
-        stats={stats}
-        specialAbility={{
-          name: "Dark Matter Surge",
-          cooldown: 40,
-          duration: 12,
-          effect: {
-            type: "damage",
-            magnitude: 1.5,
-          },
+      <div ref={containerRef} className="w-[400px] h-[400px]" />
+
+      {/* Ship Base Component */}
+      <FactionShipBase
+        ship={{
+          id,
+          name: "Dark Matter Reaper",
+          faction: "lost-nova",
+          class: "dark-matter-reaper",
+          status: status === "damaged" ? "disabled" : status,
+          health,
+          maxHealth,
+          shield,
+          maxShield,
+          stats,
+          specialAbility: {
+            name: "Dark Matter Surge",
+            description: "Temporarily increases damage output by channeling dark matter energy",
+            cooldown: 40,
+            active: false
+          }
         }}
         onEngage={onEngage}
         onRetreat={onRetreat}
-        onSpecialAbility={onSpecialAbility}
+        onSpecialAbility={() => onSpecialAbility?.("Dark Matter Surge")}
       />
 
       {/* Weapon Mounts */}
@@ -149,15 +161,12 @@ export function DarkMatterReaper({
         ))}
       </div>
 
-      {/* Legacy WarShipCombat for compatibility */}
-      <div className="hidden">
-        <WarShipCombat
-          ship={warShipProps}
-          onFireWeapon={onFire}
-          onActivateAbility={() => onSpecialAbility?.()}
-          onRetreat={onRetreat}
-        />
-      </div>
+      {/* Warning indicator for damaged state */}
+      {status === "damaged" && (
+        <div className="absolute top-0 right-0 p-2">
+          <AlertTriangle className="w-6 h-6 text-yellow-500 animate-pulse" />
+        </div>
+      )}
     </div>
   );
 }

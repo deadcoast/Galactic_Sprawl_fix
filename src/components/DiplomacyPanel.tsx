@@ -6,6 +6,7 @@ import {
   Handshake,
   Scale,
   Swords,
+  X,
 } from "lucide-react";
 
 interface DiplomacyAction {
@@ -77,16 +78,25 @@ export function DiplomacyPanel({
               <div className="text-sm text-gray-400">Diplomatic Relations</div>
             </div>
           </div>
-          <div
-            className={`px-3 py-1 rounded-full text-sm ${
-              faction.status === "hostile"
-                ? "bg-red-900/50 text-red-400"
-                : faction.status === "friendly"
-                  ? "bg-green-900/50 text-green-400"
-                  : "bg-gray-700 text-gray-400"
-            }`}
-          >
-            {faction.status.charAt(0).toUpperCase() + faction.status.slice(1)}
+          <div className="flex items-center space-x-4">
+            <div
+              className={`px-3 py-1 rounded-full text-sm ${
+                faction.status === "hostile"
+                  ? "bg-red-900/50 text-red-400"
+                  : faction.status === "friendly"
+                    ? "bg-green-900/50 text-green-400"
+                    : "bg-gray-700 text-gray-400"
+              }`}
+            >
+              {faction.status.charAt(0).toUpperCase() + faction.status.slice(1)}
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              aria-label="Close panel"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
           </div>
         </div>
 

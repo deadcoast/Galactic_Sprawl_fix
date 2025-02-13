@@ -1,5 +1,5 @@
-import { TooltipContext } from "@/components/ui/tooltip-context";
-import { useTooltip } from "@/hooks/ui/useTooltip";
+import { TooltipContext } from "./tooltip-context";
+import { useTooltip } from "../../hooks/ui/useTooltip";
 import { ReactNode } from "react";
 
 interface TooltipProviderProps {

@@ -1,3 +1,6 @@
+import { WeaponStats as BaseWeaponStats } from '../weapons/WeaponTypes';
+import { Effect } from '../core/GameTypes';
+
 export type WeaponCategory = 
   | 'machineGun'
   | 'gaussCannon'
@@ -24,12 +27,7 @@ export type WeaponVariant =
   | 'swarmRockets'
   | 'bigBangRockets';
 
-export interface WeaponStats {
-  damage: number;
-  rateOfFire: number;
-  range: number;
-  accuracy: number;
-  energyCost: number;
+export interface CombatWeaponStats extends BaseWeaponStats {
   special?: {
     armorPenetration?: number;
     shieldDamageBonus?: number;
@@ -42,7 +40,7 @@ export interface WeaponType {
   id: string;
   category: WeaponCategory;
   variant: WeaponVariant;
-  stats: WeaponStats;
+  stats: CombatWeaponStats;
   visualAsset: string;
 }
 

@@ -1,9 +1,12 @@
 import { FactionShipBase } from "../FactionShipBase";
 import { WeaponMount } from "../../common/WeaponMount";
-import { WeaponCategory, WeaponMountPosition, WeaponInstance, WeaponStats } from "../../../../types/weapons/WeaponTypes";
-import { CommonShipDisplayStats as ShipStats } from "../../../../types/ships/CommonShipTypes";
-import { FactionId, EquatorHorizonShipClass, FactionShipAbility, FactionShipStats } from "../../../../types/ships/FactionShipTypes";
-import { BaseStatus, Effect } from "../../../../types/core/GameTypes";
+import { WeaponCategory, WeaponInstance } from "../../../../types/weapons/WeaponTypes";
+import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
+import * as PIXI from "pixi.js";
+import { useEffect, useRef } from "react";
+import { useAssets } from "../../../../hooks/game/useAssets";
+import { useAnimation } from "../../../../hooks/game/useAnimation";
+import { AlertTriangle } from "lucide-react";
 
 type ShipStatus =
   | "idle"
@@ -21,12 +24,11 @@ interface CelestialArbiterProps {
   shield: number;
   maxShield: number;
   weapons: WeaponInstance[];
-  stats: ShipStats;
-  onFire: (weaponId: string) => void;
+  stats: FactionShipStats;
+  onFire?: (weaponId: string) => void;
   onEngage?: () => void;
-  onRetreat: () => void;
-  onSpecialAbility?: (abilityName: string) => void;
-  playerPowerLevel?: number;
+  onRetreat?: () => void;
+  onSpecialAbility?: (abilityName?: string) => void;
   systemBalance?: number;
 }
 
@@ -43,81 +45,100 @@ export function CelestialArbiter({
   onEngage,
   onRetreat,
   onSpecialAbility,
-  playerPowerLevel = 0,
   systemBalance = 0,
 }: CelestialArbiterProps) {
-  // Convert weapon stats based on system balance and player power
-  const convertWeaponStats = (currentStats: WeaponStats, balanceMultiplier: number): WeaponStats => {
-    const powerScaling = Math.max(0.5, Math.min(2, playerPowerLevel / 100));
-    return {
-      ...currentStats,
-      damage: currentStats.damage * (1 + Math.abs(systemBalance) * balanceMultiplier) * powerScaling,
-      accuracy: currentStats.accuracy * (1 - Math.abs(systemBalance) * 0.1), // Balance affects accuracy
-      energyCost: currentStats.energyCost * (1 + Math.abs(systemBalance) * 0.2), // Higher energy cost with imbalance
-    };
-  };
+  const containerRef = useRef<HTMLDivElement>(null);
+  const appRef = useRef<PIXI.Application>();
+  const spriteRef = useRef<PIXI.Sprite | null>(null);
+  const texturesRef = useRef<PIXI.Texture[]>([]);
 
-  // Calculate enhanced ship stats
-  const enhancedStats: FactionShipStats = {
-    health,
-    maxHealth,
-    shield,
-    maxShield,
-    energy: stats.systems.power,
-    maxEnergy: stats.systems.efficiency,
-    speed: stats.mobility.speed,
-    turnRate: stats.mobility.agility,
-    cargo: stats.systems.efficiency,
-    weapons: weapons.map(w => ({
-      id: `mount-${w.config.id}`,
-      size: "medium",
-      position: "front" as WeaponMountPosition,
-      currentWeapon: {
-        ...w,
-        state: {
-          ...w.state,
-          currentStats: convertWeaponStats(w.state.currentStats, 0.2)
-        }
+  const { isLoading, getTextureFromSpritesheet } = useAssets(['ships']);
+
+  useEffect(() => {
+    if (!containerRef.current || isLoading) {
+      return;
+    }
+
+    // Initialize PixiJS Application
+    const app = new PIXI.Application({
+      width: 400,
+      height: 400,
+      backgroundColor: 0x000000,
+      backgroundAlpha: 0,
+      antialias: true,
+      resolution: window.devicePixelRatio || 1,
+    });
+
+    containerRef.current.appendChild(app.view as unknown as Node);
+    appRef.current = app;
+
+    const loadSprites = async () => {
+      try {
+        // Create textures from the frames
+        texturesRef.current = Array.from({ length: 16 }, (_, i) => {
+          const texture = getTextureFromSpritesheet('celestial_arbiter_spritesheet', `celestial_arbiter_${i}.png`);
+          if (!texture) {
+            throw new Error(`Failed to load texture celestial_arbiter_${i}.png`);
+          }
+          return texture;
+        });
+
+        // Create sprite container
+        const container = new PIXI.Container();
+        container.x = 200;
+        container.y = 200;
+        container.scale.set(1);
+
+        // Create initial sprite
+        const sprite = new PIXI.Sprite(texturesRef.current[0]);
+        sprite.anchor.set(0.5);
+        container.addChild(sprite);
+        spriteRef.current = sprite;
+
+        app.stage.addChild(container);
+      } catch (error) {
+        console.error("Error loading Celestial Arbiter sprites:", error);
       }
-    })),
-    tier: 3,
-    faction: "equator-horizon" as FactionId
-  };
+    };
 
-  // Filter status for ShipBase compatibility
-  const baseStatus: BaseStatus = status === "damaged" ? "disabled" : status;
+    loadSprites();
 
-  // Enhanced abilities based on system balance and player power
-  const abilities: FactionShipAbility[] = [{
-    name: "Balance Restoration",
-    description: "Create a field that restores balance to nearby ships",
-    cooldown: 45,
-    duration: 15,
-    active: false,
-    tier: 3,
-    factionRequirement: "equator-horizon",
-    effect: {
-      type: "shield",
-      magnitude: 2 + Math.abs(systemBalance) + (playerPowerLevel / 100),
-      duration: 15,
-      radius: 500
-    } as Effect
-  }];
+    return () => {
+      app.destroy(true);
+    };
+  }, [isLoading, getTextureFromSpritesheet]);
+
+  // Use the animation hook
+  useAnimation({
+    id: `celestial-arbiter-${id}`,
+    sprite: spriteRef.current,
+    textures: texturesRef.current,
+    state: status,
+  });
 
   return (
     <div className="relative">
-      {/* Faction Ship Base Component */}
+      <div ref={containerRef} className="w-[400px] h-[400px]" />
+      
+      {/* Ship Base Component */}
       <FactionShipBase
         ship={{
           id,
           name: "Celestial Arbiter",
-          category: "war",
-          status: baseStatus as "ready" | "engaging" | "patrolling" | "retreating" | "disabled",
-          faction: "equator-horizon" as FactionId,
-          class: "celestial-arbiter" as EquatorHorizonShipClass,
-          stats: enhancedStats,
-          tactics: systemBalance > 0.5 ? "aggressive" : systemBalance < -0.5 ? "defensive" : "hit-and-run",
-          abilities
+          faction: "equator-horizon",
+          class: "celestial-arbiter",
+          status: status === "damaged" ? "disabled" : status,
+          health,
+          maxHealth,
+          shield,
+          maxShield,
+          stats,
+          specialAbility: {
+            name: "Balance Restoration",
+            description: "Restore balance to nearby ships, enhancing their capabilities",
+            cooldown: 45,
+            active: false
+          }
         }}
         onEngage={onEngage}
         onRetreat={onRetreat}
@@ -128,7 +149,11 @@ export function CelestialArbiter({
       <div className="absolute inset-0 pointer-events-none">
         {weapons.map((weapon, index) => {
           const weaponCategory: WeaponCategory = weapon.config.category;
-          const enhancedStats = convertWeaponStats(weapon.state.currentStats, 0.2);
+          const enhancedStats = {
+            ...weapon.state.currentStats,
+            damage: weapon.state.currentStats.damage * (1 + systemBalance * 0.1),
+            accuracy: weapon.state.currentStats.accuracy * (1 + systemBalance * 0.05),
+          };
           
           return (
             <WeaponMount
@@ -151,6 +176,13 @@ export function CelestialArbiter({
           );
         })}
       </div>
+
+      {/* Warning indicator for damaged state */}
+      {status === "damaged" && (
+        <div className="absolute top-0 right-0 p-2">
+          <AlertTriangle className="w-6 h-6 text-yellow-500 animate-pulse" />
+        </div>
+      )}
     </div>
   );
 }

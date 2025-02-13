@@ -1,12 +1,22 @@
 import { SHIP_STATS } from "../../../config/factions/factionShipStats";
-import { FactionShipProps } from "../../../types/ships/CommonShipTypes";
+import type { FactionShipProps } from "../../../types/ships/FactionShipTypes";
+import type { WeaponMount } from "../../../types/weapons/WeaponTypes";
 import { AlertTriangle, Shield, Sword } from "lucide-react";
+
+type FactionColorKey = "spaceRats" | "lostNova" | "equatorHorizon";
 
 const FACTION_COLORS = {
   spaceRats: "red",
   lostNova: "violet",
   equatorHorizon: "amber",
 } as const;
+
+// Add type for ship stats to properly type the weapons array
+interface ShipStatsWithWeapons {
+  weapons: WeaponMount[];
+  abilities: any[];
+  // ... other stats properties
+}
 
 export function FactionShip({
   ship,
@@ -15,8 +25,12 @@ export function FactionShip({
   onSpecialAbility,
   className = "",
 }: FactionShipProps) {
-  const color = FACTION_COLORS[ship.faction];
+  const color = FACTION_COLORS[ship.faction.replace(/-/g, "") as FactionColorKey];
   const stats = SHIP_STATS[ship.class];
+
+  if (!stats) {
+    return null;
+  }
 
   return (
     <div
@@ -101,8 +115,8 @@ export function FactionShip({
               key={index}
               className="text-xs text-gray-300 flex justify-between"
             >
-              <span>{weapon.type}</span>
-              <span>DMG: {weapon.damage}</span>
+              <span>{weapon.currentWeapon?.config.name || weapon.id}</span>
+              <span>DMG: {weapon.currentWeapon?.state.currentStats.damage || 0}</span>
             </div>
           ))}
         </div>

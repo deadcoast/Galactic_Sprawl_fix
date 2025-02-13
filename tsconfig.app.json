@@ -25,7 +25,10 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
 
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "./*": ["src/*"]
+    }
   },
   "include": [
     "src/**/*.d.ts",

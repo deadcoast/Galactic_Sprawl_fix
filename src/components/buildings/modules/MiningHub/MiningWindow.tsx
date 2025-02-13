@@ -1,10 +1,10 @@
-import { MiningControls } from "@/components/buildings/modules/MiningHub/MiningControls";
-import { MiningMap } from "@/components/buildings/modules/MiningHub/MiningMap";
-import { MiningTutorial } from "@/components/buildings/modules/MiningHub/MiningTutorial";
-import { ResourceNode } from "@/components/buildings/modules/MiningHub/ResourceNode";
-import { ResourceStorage } from "@/components/buildings/modules/MiningHub/ResourceStorage";
-import { ResourceTransfer } from "@/components/buildings/modules/MiningHub/ResourceTransfer";
-import { TechBonus } from "@/components/buildings/modules/MiningHub/TechBonus";
+import { MiningControls } from "./MiningControls";
+import { MiningMap } from "./MiningMap";
+import { MiningTutorial } from "./MiningTutorial";
+import { ResourceNode } from "./ResourceNode";
+import { ResourceStorage } from "./ResourceStorage";
+import { ResourceTransfer } from "./ResourceTransfer";
+import { TechBonus } from "./TechBonus";
 import {
   AlertTriangle,
   ArrowDown,

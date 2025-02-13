@@ -1,13 +1,13 @@
-import { AIDebugOverlay } from "@/components/debug/AIDebugOverlay";
-import { DiplomacyPanel } from "@/components/DiplomacyPanel";
-import { FactionAI } from "@/components/ships/FactionShips/FactionAI";
-import { factionConfigs } from "@/config/factions/factionConfig";
-import { useFactionBehavior } from "@/hooks/factions/useFactionBehavior";
-import { useDebugOverlay } from "@/hooks/ui/useDebugOverlay";
-import {
-  factionManager,
-  type FactionState,
-} from "@/lib/factions/factionManager";
+import { AIDebugOverlay } from "../../../components/debug/AIDebugOverlay";
+import { DiplomacyPanel } from "../../../components/DiplomacyPanel";
+import { FactionAI } from "../../../components/ships/FactionShips/FactionAI";
+import { factionConfigs } from "../../../config/factions/factionConfig";
+import { getShipStats } from "../../../config/factions/factionShipStats";
+import { useFactionBehavior, type FactionId, type FactionShip } from "../../../hooks/factions/useFactionBehavior";
+import { useDebugOverlay } from "../../../hooks/ui/useDebugOverlay";
+import type { DebugState } from "../../../types/debug/DebugTypes";
+import type { CommonShipAbility } from "../../../types/ships/CommonShipTypes";
+import type { FactionState } from "../../../lib/factions/factionManager";
 import { AlertTriangle, Crown, Shield } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
@@ -15,196 +15,279 @@ interface FactionManagerProps {
   onFactionUpdate?: (factionId: string, state: FactionState) => void;
 }
 
-type FactionId = "spaceRats" | "lostNova" | "equatorHorizon";
-
 export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
-  const [activeFactions, setActiveFactions] = useState<FactionId[]>([]);
-  const [selectedFaction, setSelectedFactor] = useState<FactionId | null>(null);
-  const [showDiplomacy, setShowDiplomacy] = useState(false);
-
   const debugOverlay = useDebugOverlay();
+  const [selectedFaction, setSelectedFaction] = useState<FactionId | null>(null);
 
-  // Get behavior for each active faction
-  const behaviors: ReturnType<typeof useFactionBehavior>[] =
-    activeFactions.map(useFactionBehavior);
-  const factionBehaviors: Partial<
-    Record<FactionId, ReturnType<typeof useFactionBehavior>>
-  > = React.useMemo(
-    () =>
-      Object.fromEntries(
-        activeFactions.map((id, index) => [id, behaviors[index]]),
-      ),
-    [activeFactions, behaviors],
-  );
+  // Get behavior states for all factions
+  const factionIds = ["space-rats", "lost-nova", "equator-horizon"] as const;
+  const factionBehaviors = factionIds.map((factionId) => useFactionBehavior(factionId));
 
+  // Update faction states
   useEffect(() => {
-    // Initialize factions based on player state
-    const updateFactions = () => {
-      const newActive = Object.keys(factionConfigs).filter((id) => {
-        const config = factionConfigs[id];
-        // Check spawn conditions
-        return config.spawnConditions.minTier > 0; // Basic spawn check
-      });
-      setActiveFactions(newActive as FactionId[]);
-      newActive.forEach((id) => {
-        const state = factionManager.getFactionState(id);
-        if (state) {
-          onFactionUpdate?.(id, state);
-        }
-      });
-    };
+    factionBehaviors.forEach((behavior) => {
+      if (onFactionUpdate && behavior) {
+        const state: FactionState = {
+          activeShips: behavior.stats.totalShips,
+          territory: behavior.territory,
+          fleetStrength: behavior.fleets.reduce((total, fleet) => total + fleet.strength, 0),
+          relationshipWithPlayer: behavior.relationships[behavior.id],
+          lastActivity: Date.now(),
+          isActive: true,
+        };
+        onFactionUpdate(behavior.id, state);
+      }
+    });
+  }, [factionBehaviors, onFactionUpdate]);
 
-    updateFactions();
-    const interval = setInterval(updateFactions, 5000);
-    return () => clearInterval(interval);
-  }, [onFactionUpdate]);
-
-  const handleFactionSelect = (factionId: string) => {
-    setSelectedFactor(factionId as FactionId);
-    setShowDiplomacy(true);
-  };
+  // Convert faction behaviors to debug states
+  const debugStates = React.useMemo(() => {
+    const states: Record<string, DebugState> = {};
+    factionBehaviors.forEach((behavior) => {
+      if (!behavior) {
+        return;
+      }
+      states[behavior.id] = {
+        aiState: {
+          behaviorState: behavior.stateMachine.current,
+          fleetStrength: behavior.fleets.reduce((total, fleet) => total + fleet.strength, 0),
+          threatLevel: behavior.territory.threatLevel,
+          cooldowns: behavior.fleets.reduce((cooldowns: Record<string, number>, fleet) => {
+            fleet.ships.forEach((ship: FactionShip) => {
+              // Get ship stats from the ship's class
+              const shipStats = getShipStats(ship.class);
+              if (shipStats.abilities?.length > 0) {
+                shipStats.abilities.forEach((ability: CommonShipAbility) => {
+                  cooldowns[`${ship.id}_${ability.name}`] = ability.cooldown;
+                });
+              }
+            });
+            return cooldowns;
+          }, {})
+        },
+        position: behavior.territory.center,
+        performance: {
+          fps: 60,
+          updateTime: 0,
+          renderTime: 0,
+          activeEffects: 0,
+        },
+        combatStats: {
+          damageDealt: 0,
+          damageReceived: 0,
+          accuracy: 0,
+          evasion: 0,
+          killCount: 0,
+          assistCount: 0,
+          weaponEffects: [],
+          shieldStatus: {
+            active: false,
+            health: 0,
+          },
+          thrusterIntensity: 0,
+        },
+        systemState: {
+          memory: 0,
+          activeUnits: 0,
+          activeProjectiles: 0,
+          activeCombatZones: 0,
+        },
+        warnings: [],
+      };
+    });
+    return states;
+  }, [factionBehaviors]);
 
   return (
-    <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">
-      {/* Faction List */}
-      <div className="w-1/3 border-r border-gray-700 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Active Factions</h2>
-          <button
-            onClick={debugOverlay.toggleVisibility}
-            className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg"
-          >
-            <Shield className="w-5 h-5 text-cyan-400" />
-          </button>
-        </div>
+    <div className="space-y-4">
+      {/* Faction Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {factionBehaviors.map((behavior) => {
+          if (!behavior) {
+            return null;
+          }
 
-        <div className="space-y-4">
-          {activeFactions.map((factionId) => {
-            const config = factionConfigs[factionId];
-            const behavior = factionBehaviors[factionId];
+          const config = factionConfigs[behavior.id.replace(/-/g, "")];
+          if (!config) {
+            return null;
+          }
 
-            if (!config || !behavior) {
-              return null;
-            }
+          const {totalShips} = behavior.stats;
+          const maxShips = config.spawnConditions.maxShipsPerFleet * 3; // Assuming 3 fleets max
+          const fleetStrength = behavior.fleets.reduce((total, fleet) => total + fleet.strength, 0);
+          const isAggressive = behavior.behaviorState.aggression > 0.7;
+          const isExpanding = behavior.behaviorState.expansion > 0.5;
 
-            return (
-              <button
-                key={factionId}
-                onClick={() => handleFactionSelect(factionId)}
-                className="w-full p-4 bg-gray-800/50 hover:bg-gray-800 rounded-lg text-left transition-all"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`p-2 bg-${config.banner.primaryColor}/20 rounded-lg`}
+          return (
+            <div
+              key={behavior.id}
+              className={`p-6 rounded-lg border ${
+                selectedFaction === behavior.id
+                  ? "bg-gray-800 border-blue-500"
+                  : "bg-gray-900 border-gray-700"
+              }`}
+              onClick={() => setSelectedFaction(behavior.id)}
+            >
+              {/* Faction Header */}
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-medium text-white">
+                    {config.name}
+                  </h3>
+                  <div className="text-sm text-gray-400">
+                    {behavior.stateMachine.current}
+                  </div>
+                </div>
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: config.banner.primaryColor }}
+                >
+                  {config.banner.sigil === "rat-skull" && <Crown className="w-6 h-6" />}
+                  {config.banner.sigil === "broken-star" && <AlertTriangle className="w-6 h-6" />}
+                  {config.banner.sigil === "ancient-wheel" && <Shield className="w-6 h-6" />}
+                </div>
+              </div>
+
+              {/* Status Indicators */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Ships</div>
+                  <div className="flex items-baseline space-x-1">
+                    <span className="text-2xl font-bold text-white">
+                      {totalShips}
+                    </span>
+                    <span className="text-sm text-gray-400">/ {maxShips}</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Fleet Power</div>
+                  <div className="text-2xl font-bold text-white">
+                    {Math.round(fleetStrength * 100)}%
+                  </div>
+                </div>
+              </div>
+
+              {/* Behavior Indicators */}
+              <div className="space-y-2">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-400">Aggression</span>
+                    <span
+                      className={
+                        isAggressive ? "text-red-400" : "text-green-400"
+                      }
                     >
-                      <config.banner.icon
-                        className={`w-5 h-5 text-${config.banner.primaryColor}-400`}
-                      />
+                      {Math.round(behavior.behaviorState.aggression * 100)}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${
+                        isAggressive ? "bg-red-500" : "bg-green-500"
+                      } rounded-full`}
+                      style={{ width: `${behavior.behaviorState.aggression * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-400">Expansion</span>
+                    <span
+                      className={
+                        isExpanding ? "text-yellow-400" : "text-blue-400"
+                      }
+                    >
+                      {Math.round(behavior.behaviorState.expansion * 100)}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${
+                        isExpanding ? "bg-yellow-500" : "bg-blue-500"
+                      } rounded-full`}
+                      style={{ width: `${behavior.behaviorState.expansion * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Fleets */}
+              <div className="mt-4">
+                <div className="text-sm text-gray-400 mb-2">Active Fleets</div>
+                <div className="space-y-2">
+                  {behavior.fleets.map((fleet, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-gray-800 rounded"
+                    >
+                      <span className="text-sm">
+                        Fleet {index + 1} ({fleet.ships.length} ships)
+                      </span>
+                      <span
+                        className={`text-sm ${
+                          fleet.formation.type === "offensive"
+                            ? "text-red-400"
+                            : fleet.formation.type === "defensive"
+                            ? "text-blue-400"
+                            : "text-purple-400"
+                        }`}
+                      >
+                        {fleet.formation.type}
+                      </span>
                     </div>
-                    <span className="text-white font-medium">
-                      {config.name}
-                    </span>
-                  </div>
-                  <div
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      behavior.threatResponse === "aggressive"
-                        ? "bg-red-900/50 text-red-400"
-                        : behavior.threatResponse === "defensive"
-                          ? "bg-yellow-900/50 text-yellow-400"
-                          : "bg-blue-900/50 text-blue-400"
-                    }`}
-                  >
-                    {behavior.threatResponse}
-                  </div>
+                  ))}
                 </div>
-
-                {/* Behavior Metrics */}
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                  <div className="text-sm">
-                    <span className="text-gray-400">Aggression: </span>
-                    <span className="text-gray-200">
-                      {Math.round(behavior.aggressionLevel * 100)}%
-                    </span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-gray-400">Expansion: </span>
-                    <span className="text-gray-200">
-                      {Math.round(behavior.expansionPriority * 100)}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Fleet Status */}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Active Fleets</span>
-                  <span className="text-gray-200">
-                    {behavior.activeFleets}/{behavior.maxFleets}
-                  </span>
-                </div>
-
-                {/* Special Rules Warning */}
-                {behavior.specialRules.alwaysHostile && (
-                  <div className="mt-2 flex items-center space-x-2 text-xs text-red-400">
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>Always Hostile</span>
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Faction Details */}
-      <div className="flex-1 p-6">
-        {selectedFaction ? (
+      {/* Selected Faction Details */}
+      {selectedFaction && (
+        <div className="mt-6">
           <FactionAI
-            faction={selectedFaction as FactionId}
+            faction={selectedFaction}
             behavior={{
               id: selectedFaction,
               type: "aggressive",
               priority: "attack",
               conditions: {
-                healthThreshold: 30,
+                healthThreshold: 75,
                 shieldThreshold: 50,
                 targetDistance: 1000,
                 allySupport: true,
               },
             }}
             fleetStrength={
-              factionBehaviors[selectedFaction]?.fleetStrength || 0
+              factionBehaviors
+                .find((b) => b?.id === selectedFaction)
+                ?.fleets.reduce((total, fleet) => total + fleet.strength, 0) || 0
             }
             threatLevel={0.5}
             onUpdateBehavior={() => {}}
           />
-        ) : (
-          <div className="h-full flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <Crown className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Select a faction to view details and manage relations</p>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Debug Overlay */}
       {debugOverlay.visible && (
         <AIDebugOverlay
-          debugStates={debugOverlay.debugStates}
+          debugStates={debugStates}
           visible={debugOverlay.visible}
           onToggleVisibility={debugOverlay.toggleVisibility}
         />
       )}
 
       {/* Diplomacy Panel */}
-      {showDiplomacy && selectedFaction && (
+      {selectedFaction && (
         <DiplomacyPanel
           faction={{
             id: selectedFaction,
-            name: factionConfigs[selectedFaction].name,
-            type: selectedFaction as FactionId,
-            relationship: 0,
+            name: factionConfigs[selectedFaction.replace(/-/g, "")]?.name || "",
+            type: selectedFaction.replace(/-/g, "") as "spaceRats" | "lostNova" | "equatorHorizon",
+            relationship: factionBehaviors.find((b) => b?.id === selectedFaction)?.relationships[selectedFaction as FactionId] || 0,
             status: "neutral",
             tradingEnabled: true,
             lastInteraction: Date.now(),
@@ -219,7 +302,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
             },
           ]}
           onAction={() => {}}
-          onClose={() => setShowDiplomacy(false)}
+          onClose={() => setSelectedFaction(null)}
         />
       )}
     </div>

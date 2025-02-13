@@ -6,7 +6,7 @@ export interface ShipType {
   type: string;
 }
 
-// Common Ship Categories
+// Ship Categories
 export type ShipCategory = "war" | "recon" | "mining";
 
 // Weapon Type Interface
@@ -17,13 +17,14 @@ export interface WeaponType {
   stats: WeaponStats;
 }
 
-// Common Ship Status
+// Ship Status
 export type ShipStatus =
   | "ready"
   | "engaging"
   | "patrolling"
   | "retreating"
-  | "disabled";
+  | "disabled"
+  | "damaged";
 
 // Common Ship Stats Interface
 export interface CommonShipStats extends BaseStats {
@@ -33,6 +34,18 @@ export interface CommonShipStats extends BaseStats {
   turnRate: number;
   cargo: number;
   weapons: WeaponMount[];
+  abilities: CommonShipAbility[];
+  defense: {
+    armor: number;
+    shield: number;
+    evasion: number;
+    regeneration?: number;
+  };
+  mobility: {
+    speed: number;
+    turnRate: number;
+    acceleration: number;
+  };
 }
 
 // Common Weapon Stats
@@ -100,24 +113,16 @@ export interface CommonShipCapabilities {
 
 // Common utility functions
 export function getShipCategory(type: string): ShipCategory {
-  if (
-    type.toLowerCase().includes("war") ||
-    type.toLowerCase().includes("combat")
-  ) {
+  if (type.toLowerCase().includes("war") || type.toLowerCase().includes("combat")) {
     return "war";
   }
-  if (
-    type.toLowerCase().includes("recon") ||
-    type.toLowerCase().includes("scout")
-  ) {
+  if (type.toLowerCase().includes("recon") || type.toLowerCase().includes("scout")) {
     return "recon";
   }
   return "mining";
 }
 
-export function getDefaultCapabilities(
-  category: ShipCategory,
-): CommonShipCapabilities {
+export function getDefaultCapabilities(category: ShipCategory): CommonShipCapabilities {
   switch (category) {
     case "war":
       return {

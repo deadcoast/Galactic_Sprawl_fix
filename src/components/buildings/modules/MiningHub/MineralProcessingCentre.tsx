@@ -7,7 +7,7 @@ import { ThresholdManager } from "./ThresholdManager";
 import { ThresholdProvider, useThreshold } from "../../../../contexts/ThresholdContext";
 import { useScalingSystem } from "../../../../hooks/game/useScalingSystem";
 import { AlertTriangle, Database, Grid2X2, Map, Truck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 interface Resource {
   id: string;
@@ -55,7 +55,7 @@ function MineralProcessingCentreContent({
         : "low";
 
   // Mock data for demonstration
-  const mockResources: Resource[] = [
+  const mockResources = useMemo<Resource[]>(() => [
     {
       id: "iron-belt-1",
       name: "Iron Belt Alpha",
@@ -89,7 +89,7 @@ function MineralProcessingCentreContent({
       priority: 3,
       thresholds: { min: 100, max: 1000 },
     },
-  ];
+  ], []); // Empty dependency array since this data is static
 
   // Initialize resources in threshold state
   useEffect(() => {
@@ -109,7 +109,7 @@ function MineralProcessingCentreContent({
         });
       }
     });
-  }, []);
+  }, [dispatch, mockResources, state.resources]);
 
   // Handle mine all toggle
   useEffect(() => {
@@ -117,7 +117,7 @@ function MineralProcessingCentreContent({
       type: "SET_GLOBAL_AUTO_MINE",
       payload: mineAll,
     });
-  }, [mineAll]);
+  }, [mineAll, dispatch]);
 
   // Mock storage data
   const mockStorageData = [

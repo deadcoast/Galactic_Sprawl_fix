@@ -1,4 +1,4 @@
-import { useTooltip } from "@/hooks/ui/useTooltip";
+import { useTooltip } from "../../hooks/ui/useTooltip";
 import { createContext, useContext } from "react";
 
 const TooltipContext = createContext<ReturnType<typeof useTooltip> | null>(

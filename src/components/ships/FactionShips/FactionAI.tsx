@@ -1,5 +1,5 @@
 import { AlertTriangle, Shield, Sword, Zap } from "lucide-react";
-import type { FactionId } from "../../../types/ships/ship";
+import type { FactionId } from "../../../types/ships/FactionShipTypes";
 
 interface AIBehavior {
   id: string;
@@ -53,7 +53,7 @@ export function FactionAI({
           <h3 className="text-lg font-medium text-white">
             {faction
               .split("-")
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
               .join(" ")}{" "}
             AI
           </h3>

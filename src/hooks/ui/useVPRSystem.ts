@@ -98,7 +98,7 @@ export function useVPRSystem() {
             return {
               ...mod,
               tier: completedUpgrade.toTier,
-              status: "active",
+              status: "active" as const,
             };
           }
           return mod;

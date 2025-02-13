@@ -1,5 +1,5 @@
-import { useAdaptiveAI } from "@/hooks/factions/useAdaptiveAI";
-import { useFleetAI } from "@/hooks/factions/useFleetAI";
+import { useAdaptiveAI } from "../../../hooks/factions/useAdaptiveAI";
+import { useFleetAI } from "../../../hooks/factions/useFleetAI";
 import { AlertTriangle, Rocket, Shield, Sword } from "lucide-react";
 
 interface FactionFleetProps {

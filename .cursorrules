@@ -106,9 +106,52 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Include info useful for debugging in the program output.
 - When correcting errors, do NOT delete unused code. Instead generate its implementation.
 - Read the file before you try to edit it.
-- Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
 
 ## Cursor learned
+
+- CRITICAL: MANDATORY CHECKLIST BEFORE ANY ACTION:
+  1. BEFORE TOUCHING ANY FILE:
+     - Search ENTIRE codebase for similar files/components
+     - Check directory structure to confirm correct location
+     - Verify no duplicates exist
+     - Document what I found in my response
+
+  2. BEFORE CREATING ANY FILE:
+     - Prove I searched and found no existing implementation
+     - Show the exact directory where it belongs
+     - Explain why it belongs there
+     - Get explicit confirmation before creating
+
+  3. BEFORE EDITING ANY FILE:
+     - Show I read the full file
+     - Show I understand where it lives in the structure
+     - Prove I'm editing the RIGHT file
+     - Explain what depends on this file
+
+  4. IF I FIND A MISTAKE:
+     - Stop IMMEDIATELY
+     - Show where the mistake is
+     - Explain how it breaks the structure
+     - Fix it COMPLETELY before moving on
+
+- CRITICAL: ALWAYS SEARCH FOR EXISTING IMPLEMENTATIONS BEFORE CREATING NEW CODE
+  1. Use file_search and codebase_search BEFORE writing any new component
+  2. Check all similar file names and paths thoroughly
+  3. Review existing implementations completely
+  4. NEVER create new files without verifying duplicates
+  5. If duplicate work is discovered, IMMEDIATELY fix it yourself - don't leave it for others
+  6. Take responsibility for your own mistakes and fix them immediately
+  7. Don't just identify problems - SOLVE them
+
+- CRITICAL: Type System Organization
+  1. Found duplicate weapon type definitions:
+     - src/types/ships/WeaponTypes.ts
+     - src/types/weapons/WeaponTypes.ts
+  2. These have incompatible structures:
+     - ships/WeaponTypes uses Position from core/GameTypes
+     - weapons/WeaponTypes uses WeaponMountPosition enum
+  3. Need to consolidate these into a single source of truth
+  4. Current fix: Use the types from weapons/WeaponTypes.ts as it has more specific weapon positioning
 
 - For search results, ensure proper handling of different character encodings (UTF-8) for international queries
 - Add debug information to stderr while keeping the main output clean in stdout for better pipeline integration
@@ -119,267 +162,89 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Remove unused imports to avoid TypeScript linter warnings
 - Use 'as const' assertions to properly type string literals in TypeScript
 - Properly handle cleanup in useEffect to prevent memory leaks with intervals
-- When fixing linter errors about unused variables in React components:
-  1. First remove unused imports
-  2. Then remove unused props from both interface and component parameters
-  3. Finally remove unused local variables
-  4. Keep props in the interface if they might be used by other components even if not used in the current component
 - When organizing TypeScript types in a game project:
   1. Keep core/base types in a central location (e.g., GameTypes.ts)
   2. Use inheritance for shared properties (e.g., extending BaseStats)
   3. Maintain clear type hierarchies (base -> specific -> component props)
   4. Group related types together with clear section comments
   5. Re-export types that are commonly used together
-- When managing Pixi.js dependencies:
-  1. Use compatible versions between pixi.js and its plugins
-  2. Prefer using the main pixi.js package (v7.x) as it includes most previously separate packages
-  3. Remove @types/pixi.js when using Pixi.js v7+ as types are included in the main package
-  4. Be careful with pixi-spine and particle-emitter versions to ensure compatibility
-- When fixing TypeScript import paths:
-  1. For files in the same directory, use `./` prefix (e.g., `import { Component } from "./Component"`)
-  2. For files in parent directories, use the correct number of `../` segments
-  3. Double-check the actual file location when changing from alias imports (e.g., `@/`) to relative paths
-  4. Keep imports organized by type (React, local components, utilities, types, etc.)
 
-## Scratchpad
-
-## Current Project State: Galactic Sprawl
-
-### Project Overview
-
-Galactic Sprawl is a space-themed strategy game built with React/TypeScript and Vite. The project follows a well-organized structure with clear separation of concerns and modular architecture.
-
-### Directory Structure Analysis
-
-[X] Root Level Organization
-
-- Project uses Vite as build tool with TypeScript configuration
-- Standard config files present (eslint, postcss, tailwind, tsconfig)
-- Documentation in GalaxySprawlDocs directory
-- Source code in src directory
-
-[X] Documentation Structure (GalaxySprawlDocs/)
-
-- Well-organized documentation covering all major aspects:
-  - Factions and AI (FAI)
-  - Gameplay Logic (GL)
-  - Ships and Combat (SC)
-  - Tech Tree (TTR)
-  - UI and Map Views (UI-MV)
-  - Project Development Plan
-  - Directory Structure
-
-[X] Source Code Organization (src/)
-
-1. Core Application Files:
-   - App.tsx, main.tsx as entry points
-   - Vite environment setup
-
-2. Type Definitions (types/):
-   - Common types
-   - Domain-specific types (UI, ships, combat, etc.)
-   - Faction-related types
-
-3. React Components (components/):
-   - UI components (notifications, tooltips)
-   - Ship-related components
-   - Combat system components
-   - Colony and resource management
-   - Visual effects and debug overlays
-   - Organized by feature domains:
-     - Ships (player, factions, common)
-     - Combat
-     - Trade
-     - Officers
-     - Colony
-     - Mining
-     - Exploration
-     - Visual effects
-
-4. Game Logic:
-   - Contexts for state management
-   - Configuration files
-   - Utility functions
-   - Custom hooks
-   - Core game libraries
-
-5. Styling:
-   - Component-specific styles
-   - UI system styles
-   - Effect styles
-
-### Key Features and Systems
-
-[X] Identified Core Game Systems:
-
-- Ship Management and Combat
-- Resource Management and Mining
-- Colony Development
-- Exploration System
-- Tech Tree Progression
-- Faction AI and Diplomacy
-- Visual Effects and UI
-
-[X] Technical Stack:
-
-- React/TypeScript for frontend
-- Vite for build system
-- Tailwind CSS for styling
-- Various React libraries for specific features
-
-### Development Progress Tracking
-
-Current Implementation Tasks:
-
-1. **Phase 1: Project Structure Cleanup** [IN PROGRESS]
-   [X] Review current project structure
-   [X] Document existing components and their relationships
-   [X] Identify core game mechanics and required components
-   [ ] Plan proper type system based on actual game mechanics
-
-2. **Phase 2: Core Game Systems** [PENDING]
-   [ ] Document faction system requirements
-   [ ] Define core game mechanics interfaces
-   [ ] Implement basic game loop
-   [ ] Set up state management
-
-3. **Phase 3: Asset Integration** [PENDING]
-   [ ] Organize pixel art assets
-   [ ] Create asset loading system
-   [ ] Implement sprite management
-   [ ] Set up animation system
-
-4. **Phase 4: UI/UX Implementation** [PENDING]
-   [ ] Design core game UI
-   [ ] Implement component system
-   [ ] Create effect system
-   [ ] Set up debug overlays
-
-### Next Steps
-
-1. Complete type system planning
-2. Begin implementing core game mechanics
-3. Set up proper state management system
-4. Start asset integration
-
-### Tech Stack Decisions
-
-- React + TypeScript + Vite as core stack
-- Tailwind CSS for styling
-- Need to evaluate additional libraries for:
-  - State management (Redux vs Context)
-  - Animation systems
-  - Game loop management
-  - Asset handling
-
-## Current Task: Ship System Reorganization
-
-### Task Overview
-
-Need to properly separate and organize player ships and faction ships to eliminate duplicates and confusion. This includes proper file naming, type definitions, and component organization.
-
-### Current Issues Identified
-
-1. File naming inconsistency between player and faction ships
-2. Duplicate type definitions
-3. Mixed up ship stats and configurations
-4. Unclear separation between player and faction ship components
-
-### Required Changes
-
-[ ] Type System Organization
-
-- [ ] Create clear ship type hierarchy
-- [ ] Separate player and faction specific types
-- [ ] Define shared/common types
-
-[ ] File Structure Cleanup
-
-- [ ] Reorganize ship-related files with clear naming
-- [ ] Ensure proper imports and exports
-- [ ] Remove duplicates
-
-[ ] Component Separation
-
-- [ ] Clean up player ship components
-- [ ] Clean up faction ship components
-- [ ] Extract common functionality
-
-[ ] Configuration Files
-
-- [ ] Separate player and faction ship stats
-- [ ] Clean up weapon configurations
-- [ ] Organize ship abilities
-
-### Files to Review/Modify
-
-1. Types:
-   - src/types/ships/ship.ts
-   - src/types/ships/ShipTypes.ts
-   - src/types/ships/WeaponTypes.ts
-
-2. Stats/Config:
-   - src/config/ships/playerShipStats.ts
-   - src/config/factions/factionShipStats.ts
-
-3. Components:
-   - src/components/ships/player/PlayerShipStats.tsx
-   - src/components/ships/factions/FactionShipStats.tsx
-   - src/components/ships/common/*.tsx
-
-### Correction Steps
-
-1. Review and analyze current type definitions
-2. Create proper type hierarchy
-3. Clean up configuration files
-4. Update components to use new structure
-
-## Current Task: Building Module Organization
-
-### Building Modules Structure
-
-[ ] Core Modules (Both Mothership & Colony):
-
-- Radar
-- Ship Hangar
-- Officer Academy
-
-[ ] Colony-Only Modules:
-
-- Exploration Hub
-- Mineral Processing Centre
-- Trading Hub
-
-[ ] Implementation Tasks:
-
-1. [ ] Create base module interfaces
-2. [ ] Implement core modules
-3. [ ] Implement colony-specific modules
-4. [ ] Create module attachment system
-5. [ ] Implement module UI menus
-
-### Files to Create/Update
-
-1. Core Module Types:
-   - src/types/buildings/ModuleTypes.ts
-   - src/types/buildings/CoreModuleTypes.ts
-   - src/types/buildings/ColonyModuleTypes.ts
-
-2. Module Components:
-   - src/components/buildings/modules/radar/
-   - src/components/buildings/modules/hangar/
-   - src/components/buildings/modules/academy/
-   - src/components/buildings/modules/exploration/
-   - src/components/buildings/modules/mineral/
-   - src/components/buildings/modules/trading/
-
-3. Building Core Components:
-   - src/components/buildings/mothership/MothershipCore.tsx
-   - src/components/buildings/colony/ColonyCore.tsx
-
-### Future Steps
-
-1. Create type definitions for modules
-2. Implement core module components
-3. Create module attachment system
-4. Implement colony-specific modules
+# Scratchpad
+
+### Galactic Sprawl: Ship & Weapon System Reorganization Plan
+
+1. COMPLETE.
+
+2. **Weapon Mount System Refactoring**
+   - [ ] Update all weapon mounts to use the `WeaponMountPosition` enum (e.g., "front", "side", "turret")
+   - [ ] Remove legacy x/y positioning references
+   - [ ] Remove deprecated crew requirements from mount configurations
+   - [ ] Implement `WeaponMountSize` assertions
+
+3. **Effects System Refactoring**
+   - [ ] Migrate all weapon effects to use the `GameTypes Effect` type
+   - [ ] Add required magnitude properties to all effects
+   - [ ] Implement effects arrays in every `WeaponState` instance
+   - [ ] Remove any custom effect types that do not match the core `Effect` type
+
+4. **Ship Stats Update**
+   - [ ] Add the missing evasion property to all defense stats
+   - [ ] Update all weapon definitions to use the updated `WeaponMount` interface
+   - [ ] Standardize MGSS references to use lowercase `mgss`
+   - [ ] Add all missing required properties to ship stats
+
+5. **File Updates (In Order)**
+   - **a. `src/config/factions/factionShipStats.ts`**
+     - [ ] Update all weapon positions to use `WeaponMountPosition` enum
+     - [ ] Add evasion to defense stats
+     - [ ] Update weapon effects to include the magnitude property
+     - [ ] Remove crew requirements
+     - [ ] Fix MGSS references (convert to `mgss`)
+     - [ ] Add missing effects arrays
+   - **b. `src/components/ships/FactionShips/FactionShipStats.tsx`**
+     - [ ] Update weapon type imports
+     - [ ] Fix weapon mapping logic
+     - [ ] Add proper type assertions
+   - **c. `src/components/weapons/WeaponLoadout.tsx`**
+     - [ ] Update to use the new `mountRequirements` structure (crew requirements removed)
+     - [ ] Fix weapon filtering logic
+   - **d. `src/utils/shipUtils.ts`**
+     - [ ] Update type imports to use the consolidated types
+     - [ ] Fix type assertions in functions
+   - **e. All Faction Ship Components**
+     - [ ] Update components to use new types
+     - [ ] Fix mount positions
+     - [ ] Add any missing properties
+     - [ ] Verify overall type consistency
+
+6. **Testing & Verification**
+   - [ ] Verify that all weapon mounts render correctly
+   - [ ] Test the weapon effects system thoroughly
+   - [ ] Validate ship stats calculations
+   - [ ] Test the weapon loadout UI functionality
+   - [ ] Confirm correct rendering of faction ship components
+
+7. **Documentation Updates**
+   - [ ] Update type documentation
+   - [ ] Create a migration guide outlining the changes
+   - [ ] Document the new weapon system structure
+
+8. **UI/UX Implementation & Integration**
+   - [ ] Update remaining ship components to use `AssetManager` and `AnimationManager`
+   - [ ] Update remaining weapon components with the new mount system
+   - [ ] Update remaining effect components
+   - [ ] Implement the UI component system
+   - [ ] Create and connect the effect system with the game state
+
+9. **Animation System Integration**
+   - [x] Create `AnimationManager` (Completed)
+   - [x] Create `useAnimation` hook (Completed)
+   - [ ] Update remaining components to integrate animation functionality
+
+10. **Final Steps & Milestones**
+    - [ ] Complete any remaining type system import updates
+    - [ ] Begin weapon mount conversion in `factionShipStats.ts`
+    - [ ] Update the first component file (`FactionShipStats.tsx`)
+    - [ ] Ensure backward compatibility and adherence to TypeScript best practices
+    - [ ] Run existing tests and add new tests as necessary
+    - [ ] Add debug information to stderr for troubleshooting

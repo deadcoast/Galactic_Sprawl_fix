@@ -1,9 +1,9 @@
-import { ExplorationControls } from "@/components/buildings/modules/ExplorationHub/ExplorationControls";
-import { ExplorationTutorial } from "@/components/buildings/modules/ExplorationHub/ExplorationTutorial";
-import { MissionLog } from "@/components/buildings/modules/ExplorationHub/MissionLog";
-import { ReconShipStatus } from "@/components/buildings/modules/ExplorationHub/ReconShipStatus";
-import { ResourceTransfer } from "@/components/buildings/modules/MiningHub/ResourceTransfer";
-import { useTooltipContext } from "@/components/ui/tooltip-context";
+import { ExplorationControls } from "./ExplorationControls";
+import { ExplorationTutorial } from "./ExplorationTutorial";
+import { MissionLog } from "./MissionLog";
+import { ReconShipStatus } from "./ReconShipStatus";
+import { ResourceTransfer } from "../MiningHub/ResourceTransfer";
+import { useTooltipContext } from "../../../../components/ui/tooltip-context";
 import {
   AlertTriangle,
   ChevronDown,
@@ -53,6 +53,11 @@ interface ReconShip {
   specialization: "mapping" | "anomaly" | "resource";
   efficiency: number;
   lastUpdate?: number;
+}
+
+interface MapOffset {
+  x: number;
+  y: number;
 }
 
 // Mock data for demonstration
@@ -130,13 +135,6 @@ const mockExplorationTransfers = [
 ];
 
 type FilterType = "all" | "unmapped" | "anomalies";
-
-interface AdvancedFilters {
-  resourceThreshold: number;
-  habitabilityThreshold: number;
-  hasAnomalies: boolean;
-  recentlyScanned: boolean;
-}
 
 // Memoized Sector Component
 const SectorComponent = memo(
@@ -340,15 +338,15 @@ export function ExplorationHub() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [zoom, setZoom] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [showHeatMap, setShowHeatMap] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
-    resourceThreshold: 0.5,
-    habitabilityThreshold: 0.3,
+  const [advancedFilters, setAdvancedFilters] = useState({
+    minResourcePotential: 0,
+    minHabitabilityScore: 0,
     hasAnomalies: false,
-    recentlyScanned: false,
   });
+  const [mapOffset, setMapOffset] = useState<MapOffset>({ x: 0, y: 0 });
 
   const isDragging = useRef(false);
   const lastPosition = useRef({ x: 0, y: 0 });
@@ -485,18 +483,15 @@ export function ExplorationHub() {
       // Only apply advanced filters to mapped sectors
       if (sector.status !== "unmapped") {
         const {
-          resourceThreshold,
-          habitabilityThreshold,
+          minResourcePotential,
+          minHabitabilityScore,
           hasAnomalies,
-          recentlyScanned,
         } = advancedFilters;
 
         if (
-          sector.resourcePotential < resourceThreshold ||
-          sector.habitabilityScore < habitabilityThreshold ||
-          (hasAnomalies && sector.anomalies.length === 0) ||
-          (recentlyScanned &&
-            (!sector.lastScanned || Date.now() - sector.lastScanned > 3600000))
+          sector.resourcePotential < minResourcePotential ||
+          sector.habitabilityScore < minHabitabilityScore ||
+          (hasAnomalies && sector.anomalies.length === 0)
         ) {
           return false;
         }
@@ -514,26 +509,28 @@ export function ExplorationHub() {
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true;
     lastPosition.current = { x: e.clientX, y: e.clientY };
+    const startX = e.clientX;
+    const startY = e.clientY;
+    setPosition({ x: startX, y: startY });
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging.current) {
-      return;
+    // Implementation for map panning
+    if (position && isDragging.current) {
+      const dx = e.clientX - position.x;
+      const dy = e.clientY - position.y;
+      setPosition({ x: e.clientX, y: e.clientY });
+      // Update map position based on dx and dy
+      setMapOffset((prev: MapOffset) => ({
+        x: prev.x + dx,
+        y: prev.y + dy
+      }));
     }
-
-    const deltaX = e.clientX - lastPosition.current.x;
-    const deltaY = e.clientY - lastPosition.current.y;
-
-    setPosition((prev) => ({
-      x: prev.x + deltaX,
-      y: prev.y + deltaY,
-    }));
-
-    lastPosition.current = { x: e.clientX, y: e.clientY };
-  }, []);
+  }, [position]);
 
   const handleMouseUp = useCallback(() => {
     isDragging.current = false;
+    setPosition(null);
   }, []);
 
   const handleZoom = useCallback((delta: number) => {
@@ -736,6 +733,17 @@ export function ExplorationHub() {
                 <AlertTriangle className="w-4 h-4" />
                 <span>Anomalies</span>
               </button>
+              <button
+                onClick={() => setShowHeatMap(!showHeatMap)}
+                className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
+                  showHeatMap
+                    ? "bg-teal-600 text-white"
+                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                }`}
+              >
+                <Map className="w-4 h-4" />
+                <span>Heat Map</span>
+              </button>
             </div>
 
             <button
@@ -749,138 +757,98 @@ export function ExplorationHub() {
               <Filter className="w-4 h-4" />
               <span>Advanced Filters</span>
               <ChevronDown
-                className={`w-4 h-4 transition-transform ${showFilters ? "rotate-180" : ""}`}
+                className={`w-4 h-4 transition-transform ${
+                  showFilters ? "rotate-180" : ""
+                }`}
               />
             </button>
           </div>
 
           {/* Advanced Filters Panel */}
           {showFilters && (
-            <div className="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-700">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Resource Threshold */}
+            <div className="mt-4 p-4 bg-gray-800/90 rounded-lg">
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">
+                  <label className="text-sm text-gray-400 mb-2 block">
                     Minimum Resource Potential
                   </label>
                   <input
                     type="range"
                     min="0"
-                    max="1"
-                    step="0.1"
-                    value={advancedFilters.resourceThreshold}
+                    max="100"
+                    value={advancedFilters.minResourcePotential * 100}
                     onChange={(e) =>
                       setAdvancedFilters((prev) => ({
                         ...prev,
-                        resourceThreshold: parseFloat(e.target.value),
+                        minResourcePotential: Number(e.target.value) / 100,
                       }))
                     }
                     className="w-full"
                   />
                   <div className="text-xs text-gray-500 mt-1">
-                    {Math.round(advancedFilters.resourceThreshold * 100)}%
+                    {Math.round(advancedFilters.minResourcePotential * 100)}%
                   </div>
                 </div>
 
-                {/* Habitability Threshold */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">
+                  <label className="text-sm text-gray-400 mb-2 block">
                     Minimum Habitability Score
                   </label>
                   <input
                     type="range"
                     min="0"
-                    max="1"
-                    step="0.1"
-                    value={advancedFilters.habitabilityThreshold}
+                    max="100"
+                    value={advancedFilters.minHabitabilityScore * 100}
                     onChange={(e) =>
                       setAdvancedFilters((prev) => ({
                         ...prev,
-                        habitabilityThreshold: parseFloat(e.target.value),
+                        minHabitabilityScore: Number(e.target.value) / 100,
                       }))
                     }
                     className="w-full"
                   />
                   <div className="text-xs text-gray-500 mt-1">
-                    {Math.round(advancedFilters.habitabilityThreshold * 100)}%
+                    {Math.round(advancedFilters.minHabitabilityScore * 100)}%
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={advancedFilters.hasAnomalies}
-                    onChange={(e) =>
-                      setAdvancedFilters((prev) => ({
-                        ...prev,
-                        hasAnomalies: e.target.checked,
-                      }))
-                    }
-                    className="rounded border-gray-600 text-teal-600 focus:ring-teal-500"
-                  />
-                  <span className="text-sm text-gray-400">Has Anomalies</span>
-                </label>
-
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={advancedFilters.recentlyScanned}
-                    onChange={(e) =>
-                      setAdvancedFilters((prev) => ({
-                        ...prev,
-                        recentlyScanned: e.target.checked,
-                      }))
-                    }
-                    className="rounded border-gray-600 text-teal-600 focus:ring-teal-500"
-                  />
-                  <span className="text-sm text-gray-400">
-                    Recently Scanned
-                  </span>
-                </label>
+                <div>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={advancedFilters.hasAnomalies}
+                      onChange={(e) =>
+                        setAdvancedFilters((prev) => ({
+                          ...prev,
+                          hasAnomalies: e.target.checked,
+                        }))
+                      }
+                      className="form-checkbox text-teal-500"
+                    />
+                    <span className="text-sm text-gray-400">Has Anomalies</span>
+                  </label>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Heat Map Toggle */}
-        <div className="flex space-x-2 mb-6">
-          <button
-            onClick={() => setShowHeatMap(!showHeatMap)}
-            className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
-              showHeatMap
-                ? "bg-amber-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-            }`}
-          >
-            <Map className="w-4 h-4" />
-            <span>Heat Map</span>
-          </button>
-        </div>
-
-        {/* Exploration Map */}
-        <div
-          className="relative flex-1 bg-gray-900 rounded-lg overflow-hidden cursor-move"
+        {/* Map Content */}
+        <div 
+          className="relative flex-1 overflow-hidden"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {/* Starfield Background */}
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=3000')] bg-cover opacity-10" />
-
-          {/* Map Content */}
-          <div
-            className="absolute inset-0 transition-transform duration-300 ease-out"
+          <div 
+            className="absolute inset-0"
             style={{
-              transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+              transform: `translate(${mapOffset.x}px, ${mapOffset.y}px) scale(${zoom})`,
+              transformOrigin: 'center',
+              transition: isDragging.current ? 'none' : 'transform 0.3s ease-out'
             }}
           >
-            {/* Resource Transfer Animations */}
-            <ResourceTransfer transfers={transfers} />
-
-            {/* Sectors */}
             {filteredSectors.map((sector) => (
               <SectorComponent
                 key={sector.id}
@@ -893,51 +861,50 @@ export function ExplorationHub() {
                 ships={ships}
               />
             ))}
+
+            {/* Ship Markers */}
+            {activeShips.map((ship) => {
+              const targetSector = sectors.find((s) => s.id === ship.targetSector);
+              if (!targetSector) {
+                return null;
+              }
+              return (
+                <ShipMarker key={ship.id} ship={ship} targetSector={targetSector} />
+              );
+            })}
+
+            {/* Resource Transfers */}
+            <ResourceTransfer transfers={transfers} />
           </div>
         </div>
-
-        {/* Recon Fleet Status */}
-        <ReconShipStatus ships={ships} />
       </div>
 
-      {/* Right Panel - Controls & Details */}
-      <div className="w-1/3 p-6">
+      {/* Right Panel */}
+      <div className="w-1/3 p-6 flex flex-col">
         {selectedSector ? (
-          <ExplorationControls
-            sector={selectedSector}
-            onClose={() => setSelectedSector(null)}
-          />
-        ) : (
-          <div className="h-full flex items-center justify-center text-gray-400 text-center">
-            <div>
-              <Radar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Select a sector to view details and manage exploration</p>
+          <>
+            <ExplorationControls
+              sector={selectedSector}
+              onClose={() => setSelectedSector(null)}
+            />
+            <div className="mt-6">
+              <ReconShipStatus ships={activeShips} />
             </div>
+          </>
+        ) : (
+          <div className="flex items-center justify-center h-full text-gray-400">
+            Select a sector to view details
           </div>
         )}
       </div>
 
-      {/* Mission Log Modal */}
+      {/* Modals */}
       {showMissionLog && (
         <MissionLog onClose={() => setShowMissionLog(false)} />
       )}
-
-      {/* Tutorial Overlay */}
       {showTutorial && (
         <ExplorationTutorial onClose={() => setShowTutorial(false)} />
       )}
-
-      {/* Optimized ship markers */}
-      {activeShips.map((ship) => {
-        const targetSector = sectors.find((s) => s.id === ship.targetSector);
-        if (!targetSector) {
-          return null;
-        }
-
-        return (
-          <ShipMarker key={ship.id} ship={ship} targetSector={targetSector} />
-        );
-      })}
     </div>
   );
 }
