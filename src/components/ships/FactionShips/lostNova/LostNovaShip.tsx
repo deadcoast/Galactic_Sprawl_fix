@@ -4,9 +4,9 @@ import { ReactNode } from "react";
 import { 
   WeaponMount, 
   WeaponInstance,
-  WeaponEffect,
   CombatWeaponStats 
 } from "../../../../types/weapons/WeaponTypes";
+import { WeaponEffect } from "../../../../effects/types_effects/WeaponEffects";
 import { useShipEffects } from "../../../../hooks/ships/useShipEffects";
 import { BaseEffect } from "../../../../effects/types_effects/EffectTypes";
 import { Effect } from "../../../../types/core/GameTypes";
@@ -84,14 +84,15 @@ export function LostNovaShip({
       // Apply void pulse effect to all weapons
       weapons.forEach(mount => {
         if (mount.currentWeapon) {
-          const weaponEffect: Effect = {
+          const weaponEffect: WeaponEffect = {
+            type: "damage",
             name: "Void Pulse",
             description: "Disrupts enemy shields and cloaking",
-            type: "jamming",
-            magnitude: 1.0,
             duration: 8,
+            strength: 1.0,
+            magnitude: 1.0,
             active: true,
-            cooldown: 0,
+            cooldown: 0
           };
           
           mount.currentWeapon.state.effects.push(weaponEffect);

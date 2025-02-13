@@ -37,6 +37,13 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 - Implement proper cleanup in training and squad systems.
 - Calculate bonuses and multipliers based on traits and specializations.
 - Keep state updates and event emissions consistent.
+- Add debug logging for efficiency changes and state transitions.
+- Use toFixed(2) for formatting decimal numbers in debug logs.
+- Store old values before state changes to show the difference in logs.
+- Use consistent debug log formatting with module name prefix.
+- Properly handle module activation/deactivation state changes.
+- When working with weapon effects, use (DamageEffect | AreaEffect)[] for BaseWeaponStats compatibility, not WeaponEffectType[] which includes StatusEffect.
+- For ship stats with weapons, use WeaponInstance (not WeaponMount) and include primary, secondary, and stats properties.
 
 ## Cursor Learned
 
@@ -107,88 +114,94 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 
 # Scratchpad
 
-### Current Task: Ship Hangar Integration
+## Current State Analysis
 
-1. **Analysis of Requirements**
-   [X] Review UI menu documentation
-   [X] Identify integration points
-   [X] Map out component structure
-   [X] Review existing ship type implementations
+### Missing Critical Components
+1. Event System
+   - [ ] Combat events
+   - [ ] Resource events
+   - [ ] Ship events
+   - [ ] Module events
 
-2. **Ship Hangar Core**
-   [X] Ship Production System
-     [X] Build queue management
-     [X] Resource cost calculation
-     [X] Build time tracking
-     [X] Tier-based unlocks
-   [X] Docking Bay System
-     [X] Bay capacity management
-     [X] Expansion tracking
-     [X] Ship storage/retrieval
+2. Core Game Systems
+   - [ ] Ship movement
+   - [ ] Combat mechanics
+   - [ ] Resource management
+   - [ ] Module system
 
-3. **Integration Points**
-   [X] Resource System
-     [X] Cost verification
-     [X] Resource consumption
-     [X] Refund handling
-   [X] Tech Tree Integration
-     [X] Tier unlocks
-     [X] Upgrade paths
-     [X] Prerequisite checking
-   [X] Officer System
-     [X] Captain assignment
-     [X] Skill bonuses
-     [X] Training integration
+3. State Management
+   - [ ] Global game state
+   - [ ] Ship state
+   - [ ] Resource state
+   - [ ] Combat state
 
-4. **UI Components**
-   [ ] Ship Category Navigation
-     [ ] War ships tab
-     [ ] Recon ships tab
-     [ ] Mining ships tab
-   [ ] Ship Build Interface
-     [ ] Ship cards/grid
-     [ ] Resource cost display
-     [ ] Build time estimation
-     [ ] Tier requirements
-   [ ] Build Queue Management
-     [ ] Queue display
-     [ ] Progress tracking
-     [ ] Cancel/modify options
-   [ ] Docking Bay Visualization
-     [ ] Bay layout
-     [ ] Expansion animations
-     [ ] Ship placement
+### Current Development Plan
 
-### Implementation Steps
-1. [X] Create Ship Hangar Manager
-   - [X] Define core interfaces
-   - [X] Implement queue system
-   - [X] Handle resource management
-   - [X] Track build progress
+### Phase 1: Core Systems [Priority: CRITICAL]
+[ ] 1. Event System
+    - Expand moduleEventBus.ts to handle:
+      - Combat events
+      - Resource events
+      - Ship events
+      - Module events
+    - Add proper event typing
+    - Implement event handlers
 
-2. [ ] Implement UI Components
-   - [ ] Build ship category navigation
-   - [ ] Create ship cards with stats
-   - [ ] Design build queue interface
-   - [ ] Develop docking bay visualization
+[ ] 2. State Management
+    - Implement GameContext
+    - Create ShipContext
+    - Add ResourceContext
+    - Set up CombatContext
 
-3. [ ] Integrate Systems
-   - [X] Connect to resource system
-   - [X] Link with tech tree
-   - [X] Integrate officer assignments
-   - [ ] Add visual progression
+[ ] 3. Core Game Loop
+    - Create game tick system
+    - Add update cycle
+    - Implement state synchronization
+    - Set up cleanup handlers
 
-### Notes
-- Need to maintain consistent UI theme with Officers Academy
-- Use same animation system as other modules
-- Ensure proper cleanup on queue changes
-- Handle edge cases (resource shortages, cancellations)
-- Consider performance with multiple ships in production
-- Plan for future expansion (new ship types, upgrades)
+### Phase 2: Game Systems [Priority: HIGH]
+[ ] 1. Ship System
+    - Movement mechanics
+    - Combat system
+    - Ship states
+    - Ship interactions
 
-### Next Actions
-1. [X] Search for existing ship production code
-2. [X] Review ship type definitions
-3. [X] Start Ship Hangar Manager implementation
-4. [ ] Update Ship Hangar UI component
-5. [ ] Implement visual progression system
+[ ] 2. Module System
+    - Module base class
+    - Module activation
+    - Module upgrades
+    - Module interactions
+
+[ ] 3. Resource System
+    - Resource types
+    - Collection
+    - Storage
+    - Transfer
+
+### Phase 3: UI & Effects [Priority: MEDIUM]
+[ ] 1. UI Integration
+    - Connect GameHUD
+    - Implement controls
+    - Add feedback systems
+    - Create tooltips
+
+[ ] 2. Visual Effects
+    - Combat effects
+    - Movement effects
+    - Resource effects
+    - UI animations
+
+## Current Focus
+1. Expand event system
+2. Implement core state management
+3. Set up game loop
+
+## Next Steps
+1. Review and expand moduleEventBus.ts
+2. Create core contexts
+3. Implement game tick system
+
+## Progress Tracking
+- Core Systems: 20% complete
+- Game Systems: 10% complete
+- UI & Effects: 40% complete

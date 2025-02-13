@@ -218,3 +218,346 @@ export function WeaponEffect({
     </div>
   );
 }
+
+import { VisualEffect, VisualEffectConfig } from "./VisualEffect";
+import { RenderBatcher } from "../optimization/RenderBatcher";
+import { Position } from "../../types/core/Position";
+import { WeaponCategory } from "../../types/weapons/WeaponTypes";
+
+interface WeaponEffectConfig extends VisualEffectConfig {
+  type: WeaponCategory;
+  target?: Position;
+  damage?: number;
+  impactSize?: number;
+}
+
+/**
+ * Visual effect for weapon firing and impacts
+ */
+export class WeaponEffect extends VisualEffect {
+  protected override config: WeaponEffectConfig;
+  private trailPoints: Position[] = [];
+  private impactParticles: Position[] = [];
+  private impactStartTime: number = 0;
+
+  constructor(config: WeaponEffectConfig) {
+    super(config);
+    this.config = config;
+  }
+
+  protected getEffectType(): string {
+    return `weapon-${this.config.type}`;
+  }
+
+  protected onStart(): void {
+    // Initialize trail points
+    this.trailPoints = [this.config.position];
+    
+    // Debug logging
+    console.debug(`[WeaponEffect] Started ${this.config.type} effect`);
+  }
+
+  protected onUpdate(progress: number): void {
+    // Update trail points
+    if (this.config.target) {
+      const currentPoint = {
+        x: this.config.position.x + (this.config.target.x - this.config.position.x) * progress,
+        y: this.config.position.y + (this.config.target.y - this.config.position.y) * progress
+      };
+
+      this.trailPoints.push(currentPoint);
+
+      // Keep only recent points
+      while (this.trailPoints.length > 10) {
+        this.trailPoints.shift();
+      }
+
+      // Create impact when projectile reaches target
+      if (progress >= 1 && !this.impactStartTime) {
+        this.impactStartTime = Date.now();
+        this.createImpactParticles();
+      }
+    }
+  }
+
+  protected onComplete(): void {
+    this.trailPoints = [];
+    this.impactParticles = [];
+    this.impactStartTime = 0;
+
+    console.debug(`[WeaponEffect] Completed ${this.config.type} effect`);
+  }
+
+  protected onReset(): void {
+    this.trailPoints = [];
+    this.impactParticles = [];
+    this.impactStartTime = 0;
+  }
+
+  protected updateRendering(batcher: RenderBatcher): void {
+    if (!this.batchId) {
+      return;
+    }
+
+    // Render trail
+    this.renderTrail(batcher);
+
+    // Render impact
+    if (this.impactStartTime) {
+      this.renderImpact(batcher);
+    }
+  }
+
+  private renderTrail(batcher: RenderBatcher): void {
+    // Different trail rendering based on weapon type
+    switch (this.config.type) {
+      case "machineGun":
+        this.renderProjectileTrail(batcher);
+        break;
+      case "gaussCannon":
+      case "railGun":
+        this.renderBeamTrail(batcher);
+        break;
+      case "mgss":
+        this.renderEnergyTrail(batcher);
+        break;
+      case "rockets":
+        this.renderRocketTrail(batcher);
+        break;
+      case "harmonicCannon":
+        this.renderHarmonicTrail(batcher);
+        break;
+      case "temporalCannon":
+        this.renderTemporalTrail(batcher);
+        break;
+      case "quantumCannon":
+        this.renderQuantumTrail(batcher);
+        break;
+    }
+  }
+
+  private renderProjectileTrail(batcher: RenderBatcher): void {
+    // Simple projectile with small trail
+    this.trailPoints.forEach((point, index) => {
+      const opacity = index / this.trailPoints.length;
+      batcher.addItem(this.batchId!, {
+        id: `${this.id}-trail-${index}`,
+        position: point,
+        size: { width: 4, height: 4 },
+        rotation: 0,
+        opacity,
+        color: this.config.color || "#ffff00",
+        shader: "additive"
+      });
+    });
+  }
+
+  private renderBeamTrail(batcher: RenderBatcher): void {
+    // Solid beam with glow
+    if (this.trailPoints.length < 2) {
+      return;
+    }
+
+    const start = this.trailPoints[0];
+    const end = this.trailPoints[this.trailPoints.length - 1];
+    const angle = Math.atan2(end.y - start.y, end.x - start.x);
+    const length = Math.sqrt(
+      Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
+    );
+
+    // Core beam
+    batcher.addItem(this.batchId!, {
+      id: `${this.id}-beam`,
+      position: {
+        x: (start.x + end.x) / 2,
+        y: (start.y + end.y) / 2
+      },
+      size: { width: length, height: 4 },
+      rotation: angle,
+      opacity: this.config.opacity || 1,
+      color: this.config.color || "#00ffff",
+      shader: "additive"
+    });
+
+    // Glow effect
+    batcher.addItem(this.batchId!, {
+      id: `${this.id}-glow`,
+      position: {
+        x: (start.x + end.x) / 2,
+        y: (start.y + end.y) / 2
+      },
+      size: { width: length, height: 12 },
+      rotation: angle,
+      opacity: (this.config.opacity || 1) * 0.5,
+      color: this.config.color || "#00ffff",
+      shader: "additive"
+    });
+  }
+
+  private renderEnergyTrail(batcher: RenderBatcher): void {
+    // Pulsing energy trail
+    this.trailPoints.forEach((point, index) => {
+      const opacity = index / this.trailPoints.length;
+      const pulse = Math.sin(Date.now() / 100 + index) * 0.3 + 0.7;
+      
+      batcher.addItem(this.batchId!, {
+        id: `${this.id}-trail-${index}`,
+        position: point,
+        size: { width: 6, height: 6 },
+        rotation: 0,
+        opacity: opacity * pulse,
+        color: this.config.color || "#ff00ff",
+        shader: "additive"
+      });
+    });
+  }
+
+  private renderRocketTrail(batcher: RenderBatcher): void {
+    // Rocket with smoke trail
+    this.trailPoints.forEach((point, index) => {
+      const opacity = index / this.trailPoints.length;
+      
+      // Smoke
+      batcher.addItem(this.batchId!, {
+        id: `${this.id}-smoke-${index}`,
+        position: point,
+        size: { width: 8, height: 8 },
+        rotation: Math.random() * Math.PI * 2,
+        opacity: opacity * 0.3,
+        color: "#888888",
+        shader: "normal"
+      });
+
+      // Fire
+      batcher.addItem(this.batchId!, {
+        id: `${this.id}-fire-${index}`,
+        position: point,
+        size: { width: 6, height: 6 },
+        rotation: 0,
+        opacity: opacity,
+        color: this.config.color || "#ff4400",
+        shader: "additive"
+      });
+    });
+  }
+
+  private renderHarmonicTrail(batcher: RenderBatcher): void {
+    // Harmonic wave pattern
+    this.trailPoints.forEach((point, index) => {
+      const opacity = index / this.trailPoints.length;
+      const wave = Math.sin(Date.now() / 200 + index);
+      const offset = wave * 10;
+      
+      batcher.addItem(this.batchId!, {
+        id: `${this.id}-trail-${index}`,
+        position: {
+          x: point.x + offset,
+          y: point.y + offset
+        },
+        size: { width: 8, height: 8 },
+        rotation: wave * Math.PI,
+        opacity: opacity,
+        color: this.config.color || "#00ff88",
+        shader: "additive"
+      });
+    });
+  }
+
+  private renderTemporalTrail(batcher: RenderBatcher): void {
+    // Time distortion effect
+    this.trailPoints.forEach((point, index) => {
+      const opacity = index / this.trailPoints.length;
+      const time = Date.now() / 1000;
+      const distortion = Math.sin(time * 2 + index);
+      
+      for (let i = 0; i < 3; i++) {
+        const offset = distortion * (i + 1) * 5;
+        batcher.addItem(this.batchId!, {
+          id: `${this.id}-trail-${index}-${i}`,
+          position: {
+            x: point.x + offset,
+            y: point.y + offset
+          },
+          size: { width: 6 - i * 2, height: 6 - i * 2 },
+          rotation: time + i * Math.PI / 3,
+          opacity: opacity * (1 - i * 0.2),
+          color: this.config.color || "#8800ff",
+          shader: "additive"
+        });
+      }
+    });
+  }
+
+  private renderQuantumTrail(batcher: RenderBatcher): void {
+    // Quantum tunneling effect
+    this.trailPoints.forEach((point, index) => {
+      const opacity = index / this.trailPoints.length;
+      const time = Date.now() / 1000;
+      
+      // Phase shift effect
+      for (let i = 0; i < 4; i++) {
+        const phase = (time + i * Math.PI / 2) % (Math.PI * 2);
+        const shift = Math.sin(phase) * 10;
+        
+        batcher.addItem(this.batchId!, {
+          id: `${this.id}-trail-${index}-${i}`,
+          position: {
+            x: point.x + Math.cos(phase) * shift,
+            y: point.y + Math.sin(phase) * shift
+          },
+          size: { width: 5, height: 5 },
+          rotation: phase,
+          opacity: opacity * Math.abs(Math.sin(phase)),
+          color: this.config.color || "#0088ff",
+          shader: "additive"
+        });
+      }
+    });
+  }
+
+  private renderImpact(batcher: RenderBatcher): void {
+    const impactProgress = Math.min(
+      1,
+      (Date.now() - this.impactStartTime) / (this.config.duration || 1000)
+    );
+
+    // Update impact particles
+    this.impactParticles.forEach((particle, index) => {
+      const particleProgress = impactProgress * (1 + index * 0.1);
+      if (particleProgress >= 1) {
+        return;
+      }
+
+      batcher.addItem(this.batchId!, {
+        id: `${this.id}-impact-${index}`,
+        position: particle,
+        size: {
+          width: (this.config.impactSize || 20) * (1 - particleProgress),
+          height: (this.config.impactSize || 20) * (1 - particleProgress)
+        },
+        rotation: index * Math.PI / 4,
+        opacity: 1 - particleProgress,
+        color: this.config.color || "#ffffff",
+        shader: "additive"
+      });
+    });
+  }
+
+  private createImpactParticles(): void {
+    if (!this.config.target) {
+      return;
+    }
+
+    // Create particles in a circular pattern
+    const particleCount = 8;
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (i / particleCount) * Math.PI * 2;
+      const distance = (this.config.impactSize || 20) / 2;
+      
+      this.impactParticles.push({
+        x: this.config.target.x + Math.cos(angle) * distance,
+        y: this.config.target.y + Math.sin(angle) * distance
+      });
+    }
+  }
+} 

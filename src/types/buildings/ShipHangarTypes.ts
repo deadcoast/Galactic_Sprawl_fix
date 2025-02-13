@@ -1,4 +1,4 @@
-import { Tier } from "../core/GameTypes";
+import { Tier, Effect } from "../core/GameTypes";
 import { ResourceCost } from "../resources/ResourceTypes";
 import { PlayerShipClass, PlayerShipCategory } from "../ships/PlayerShipTypes";
 import { CommonShip } from "../ships/CommonShipTypes";
@@ -14,6 +14,9 @@ export interface ShipBuildQueueItem {
   duration: number;
   resourceCost: ResourceCost[];
   tier: Tier;
+  status: 'building' | 'paused' | 'completed';
+  pausedAt?: number;
+  totalPausedTime?: number;
 }
 
 /**
@@ -25,6 +28,9 @@ export interface ShipHangarBay {
   capacity: number;
   ships: CommonShip[];
   status: "available" | "full" | "upgrading";
+  efficiency: number;
+  lastMaintenance: number;
+  maintenanceCost: ResourceCost[];
 }
 
 /**
@@ -37,6 +43,59 @@ export interface ShipHangarState {
   maxQueueSize: number;
   buildSpeedMultiplier: number;
   resourceEfficiency: number;
+}
+
+/**
+ * Ship upgrade requirements
+ */
+export interface ShipUpgradeRequirement {
+  type: "tech" | "resource" | "facility";
+  name: string;
+  met: boolean;
+}
+
+/**
+ * Ship upgrade stats
+ */
+export interface ShipUpgradeStats {
+  hull: {
+    current: number;
+    upgraded: number;
+  };
+  shield: {
+    current: number;
+    upgraded: number;
+  };
+  weapons: {
+    current: number;
+    upgraded: number;
+  };
+  speed: {
+    current: number;
+    upgraded: number;
+  };
+}
+
+/**
+ * Ship visual upgrade
+ */
+export interface ShipVisualUpgrade {
+  name: string;
+  description: string;
+  preview: string;
+}
+
+/**
+ * Ship upgrade info
+ */
+export interface ShipUpgradeInfo {
+  shipId: string;
+  tier: Tier;
+  upgradeAvailable: boolean;
+  requirements: ShipUpgradeRequirement[];
+  stats: ShipUpgradeStats;
+  resourceCost: ResourceCost[];
+  visualUpgrades: ShipVisualUpgrade[];
 }
 
 /**
@@ -58,10 +117,27 @@ export interface ShipHangarEvents {
     queueItemId: string;
     progress: number;
   };
+  buildPaused: {
+    queueItemId: string;
+  };
+  buildResumed: {
+    queueItemId: string;
+  };
   bayUpgraded: {
     bayId: string;
     newTier: Tier;
     newCapacity: number;
+    newEfficiency: number;
+  };
+  bayMaintained: {
+    bayId: string;
+    newEfficiency: number;
+    maintenanceCost: ResourceCost[];
+  };
+  bayMaintenanceFailed: {
+    bayId: string;
+    newEfficiency: number;
+    requiredResources: ResourceCost[];
   };
   shipDocked: {
     ship: CommonShip;
@@ -74,6 +150,65 @@ export interface ShipHangarEvents {
   tierUpgraded: {
     tier: Tier;
     unlockedShips: PlayerShipClass[];
+  };
+  repairStarted: {
+    shipId: string;
+    resourceCost: ResourceCost[];
+    estimatedTime: number;
+  };
+  repairCompleted: {
+    shipId: string;
+  };
+  repairCancelled: {
+    shipId: string;
+    refundedResources: ResourceCost[];
+  };
+  upgradeStarted: {
+    shipId: string;
+    resourceCost: ResourceCost[];
+    estimatedTime: number;
+  };
+  upgradeCompleted: {
+    shipId: string;
+    newTier: Tier;
+    stats: ShipUpgradeStats;
+  };
+  upgradeCancelled: {
+    shipId: string;
+    refundedResources: ResourceCost[];
+  };
+  abilityActivated: {
+    shipId: string;
+    abilityName: string;
+    duration: number;
+    effect: Effect;
+  };
+  abilityDeactivated: {
+    shipId: string;
+    abilityName: string;
+  };
+  weaponEquipped: {
+    shipId: string;
+    mountId: string;
+    weaponId: string;
+  };
+  weaponUnequipped: {
+    shipId: string;
+    mountId: string;
+    weaponId: string;
+  };
+  officerAssigned: {
+    shipId: string;
+    officerId: string;
+    bonuses: {
+      buildSpeed?: number;
+      resourceEfficiency?: number;
+      combatEffectiveness?: number;
+    };
+  };
+  officerUnassigned: {
+    shipId: string;
+    officerId: string;
   };
 }
 

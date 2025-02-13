@@ -359,9 +359,9 @@ export function ExplorationHub() {
 
   // Optimize update intervals with useRef
   const updateIntervals = useRef({
-    ships: null as number | null,
-    sectors: null as number | null,
-    transfers: null as number | null,
+    ships: null as NodeJS.Timeout | null,
+    sectors: null as NodeJS.Timeout | null,
+    transfers: null as NodeJS.Timeout | null,
   });
 
   // Memoize complex calculations

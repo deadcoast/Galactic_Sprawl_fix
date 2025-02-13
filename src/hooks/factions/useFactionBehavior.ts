@@ -3,10 +3,18 @@ import { useEffect, useState } from "react";
 import { FactionShipClass, FactionShipStats } from "../../types/ships/FactionShipTypes";
 import { SHIP_STATS as CONFIG_SHIP_STATS } from "../../config/ships";
 import { Effect } from "../../types/core/GameTypes";
+import { moduleEventBus } from "../../lib/events/moduleEventBus";
+import { ResourceType } from "../../types/resources/ResourceTypes";
+import { CombatUnit } from "../../types/combat/CombatTypes";
+import { FactionFleet } from "../../types/ships/FactionShipTypes";
+import { EventEmitter } from "../../lib/events/EventEmitter";
+import { ModuleEventType } from "../../types/modules/ModuleEvents";
+import { ModuleType } from "../../types/modules/ModuleTypes";
+import { FactionId, FactionState } from "../../types/ships/FactionTypes";
+import { Ship } from "../../types/ships/ShipTypes";
+import { Position } from "../../types/core/Position";
 
 // Faction Types
-export type FactionId = "space-rats" | "lost-nova" | "equator-horizon";
-
 export type ShipClass =
   // Space Rats Ships
   | "rat-king"
@@ -157,14 +165,41 @@ interface FactionBehaviorState {
     territorySystems: number;
     resourceIncome: {
       minerals: number;
-      gas: number;
+      energy: number;
+      plasma: number;
       exotic: number;
+      gas: number;
+      population: number;
+      research: number;
     };
   };
   stateMachine: {
     current: FactionStateType;
     history: FactionStateType[];
     triggers: Set<FactionEvent>;
+  };
+  combatTactics: {
+    preferredRange: "close" | "medium" | "long";
+    formationStyle: "aggressive" | "defensive" | "balanced";
+    targetPriority: "ships" | "stations" | "resources";
+    retreatThreshold: number;
+    reinforcementThreshold: number;
+  };
+  resourceManagement: {
+    gatheringPriority: ResourceType[];
+    stockpileThresholds: Record<ResourceType, number>;
+    tradePreferences: {
+      resourceType: ResourceType;
+      minPrice: number;
+      maxQuantity: number;
+    }[];
+  };
+  expansionStrategy: {
+    expansionDirection: { x: number; y: number };
+    systemPriority: "resources" | "strategic" | "population";
+    colonizationThreshold: number;
+    maxTerritory: number;
+    consolidationThreshold: number;
   };
 }
 
@@ -558,14 +593,37 @@ export function useFactionBehavior(factionId: FactionId) {
       territorySystems: 0,
       resourceIncome: {
         minerals: 0,
-        gas: 0,
+        energy: 0,
+        plasma: 0,
         exotic: 0,
+        gas: 0,
+        population: 0,
+        research: 0,
       },
     },
     stateMachine: {
       current: getInitialState(factionId),
       history: [],
       triggers: new Set(),
+    },
+    combatTactics: {
+      preferredRange: "close",
+      formationStyle: "balanced",
+      targetPriority: "ships",
+      retreatThreshold: 0.3,
+      reinforcementThreshold: 0.7,
+    },
+    resourceManagement: {
+      gatheringPriority: [],
+      stockpileThresholds: {},
+      tradePreferences: [],
+    },
+    expansionStrategy: {
+      expansionDirection: { x: 0, y: 0 },
+      systemPriority: "resources",
+      colonizationThreshold: 0,
+      maxTerritory: 0,
+      consolidationThreshold: 0,
     },
   });
 
@@ -1140,6 +1198,15 @@ function executeFactionDecisions(state: FactionBehaviorState): void {
   // Handle state machine triggers
   handleStateMachineTriggers(state);
 
+  // Update combat tactics based on current situation
+  updateCombatTactics(state);
+
+  // Manage resources and trade
+  manageResources(state);
+
+  // Plan expansion
+  planExpansion(state);
+
   // Execute faction-specific behavior based on current state
   switch (state.id) {
     case "space-rats":
@@ -1158,6 +1225,115 @@ function executeFactionDecisions(state: FactionBehaviorState): void {
     const spawnPoint = selectSpawnPoint(state.territory);
     factionManager.spawnShip(state.id, spawnPoint);
   }
+}
+
+function updateCombatTactics(state: FactionBehaviorState): void {
+  const fleetStrength = calculateFleetStrength(state.fleets);
+  const threatLevel = assessThreatLevel(state);
+  
+  // Adjust combat tactics based on situation
+  if (fleetStrength < state.combatTactics.retreatThreshold) {
+    state.combatTactics.formationStyle = "defensive";
+    state.combatTactics.preferredRange = "long";
+  } else if (fleetStrength > 0.8) {
+    state.combatTactics.formationStyle = "aggressive";
+    state.combatTactics.preferredRange = "close";
+  }
+
+  // Update target priorities based on needs
+  if (state.stats.resourceIncome.minerals < 100) {
+    state.combatTactics.targetPriority = "resources";
+  } else if (threatLevel > 0.7) {
+    state.combatTactics.targetPriority = "ships";
+  }
+
+  // Emit combat tactic updates
+  moduleEventBus.emit({
+    type: "STATUS_CHANGED",
+    moduleId: `faction-${state.id}`,
+    moduleType: "combat",
+    timestamp: Date.now(),
+    data: {
+      type: "tactics",
+      formation: state.combatTactics.formationStyle,
+      range: state.combatTactics.preferredRange,
+      priority: state.combatTactics.targetPriority
+    }
+  });
+}
+
+function manageResources(state: FactionBehaviorState): void {
+  // Update resource priorities based on current needs
+  const resourceLevels = Object.entries(state.stats.resourceIncome);
+  state.resourceManagement.gatheringPriority = resourceLevels
+    .sort(([, a], [, b]) => (a < b ? -1 : 1))
+    .map(([type]) => type as ResourceType);
+
+  // Adjust stockpile thresholds based on expansion plans
+  if (state.expansionStrategy.systemPriority === "resources") {
+    state.resourceManagement.stockpileThresholds = {
+      minerals: 2000,
+      energy: 1500,
+      plasma: 1000,
+      exotic: 500
+    };
+  }
+
+  // Update trade preferences
+  state.resourceManagement.tradePreferences = state.resourceManagement.gatheringPriority
+    .map(resourceType => ({
+      resourceType,
+      minPrice: calculateMinPrice(resourceType, state),
+      maxQuantity: calculateMaxQuantity(resourceType, state)
+    }));
+
+  // Emit resource management updates
+  moduleEventBus.emit({
+    type: "STATUS_CHANGED",
+    moduleId: `faction-${state.id}`,
+    moduleType: "trading",
+    timestamp: Date.now(),
+    data: {
+      type: "resource_management",
+      priorities: state.resourceManagement.gatheringPriority,
+      thresholds: state.resourceManagement.stockpileThresholds
+    }
+  });
+}
+
+function planExpansion(state: FactionBehaviorState): void {
+  // Calculate optimal expansion direction
+  const newDirection = calculateOptimalExpansionDirection(state);
+  state.expansionStrategy.expansionDirection = newDirection;
+
+  // Adjust system priority based on needs
+  if (state.stats.resourceIncome.minerals < 100 || state.stats.resourceIncome.energy < 100) {
+    state.expansionStrategy.systemPriority = "resources";
+  } else if (state.stats.territorySystems < 5) {
+    state.expansionStrategy.systemPriority = "strategic";
+  }
+
+  // Check if territory should be consolidated
+  if (state.stats.activeFleets < state.stats.territorySystems * 0.5) {
+    state.expansionStrategy.consolidationThreshold = Math.max(
+      state.expansionStrategy.consolidationThreshold,
+      state.stats.territorySystems * 0.8
+    );
+  }
+
+  // Emit expansion strategy updates
+  moduleEventBus.emit({
+    type: "STATUS_CHANGED",
+    moduleId: `faction-${state.id}`,
+    moduleType: "expansion",
+    timestamp: Date.now(),
+    data: {
+      type: "strategy",
+      direction: state.expansionStrategy.expansionDirection,
+      priority: state.expansionStrategy.systemPriority,
+      consolidating: state.stats.territorySystems > state.expansionStrategy.consolidationThreshold
+    }
+  });
 }
 
 function findNearbyEnemies(state: FactionBehaviorState): CombatUnit[] {
@@ -1448,7 +1624,7 @@ function findHighValueTarget(
     combatManager.getUnitsInRange(
       state.territory.center,
       state.territory.radius,
-    ),
+    )
   )
     .filter((unit) => unit.faction !== state.id)
     .sort((a, b) => b.maxHealth - b.health - (a.maxHealth - a.health));
@@ -1467,4 +1643,66 @@ function selectSpawnPoint(territory: FactionTerritory): {
     x: territory.center.x + Math.cos(angle) * distance,
     y: territory.center.y + Math.sin(angle) * distance,
   };
+}
+
+function assessThreatLevel(state: FactionBehaviorState): number {
+  const nearbyEnemies = findNearbyEnemies(state);
+  const enemyStrength = nearbyEnemies.reduce((total, enemy) => total + enemy.strength, 0);
+  const ownStrength = calculateFleetStrength(state.fleets);
+  return Math.min(1, enemyStrength / (ownStrength || 1));
+}
+
+function calculateMinPrice(resourceType: ResourceType, state: FactionBehaviorState): number {
+  const basePrices: Record<ResourceType, number> = {
+    minerals: 10,
+    energy: 15,
+    plasma: 25,
+    exotic: 50,
+    gas: 20,
+    population: 100,
+    research: 200
+  };
+
+  const scarcityMultiplier = 1 + Math.max(0, 1 - (state.stats.resourceIncome[resourceType] || 0) / 100);
+  return Math.round((basePrices[resourceType] || 10) * scarcityMultiplier);
+}
+
+function calculateMaxQuantity(resourceType: ResourceType, state: FactionBehaviorState): number {
+  const currentIncome = state.stats.resourceIncome[resourceType] || 0;
+  const stockpileThreshold = state.resourceManagement.stockpileThresholds[resourceType] || 1000;
+  return Math.max(0, stockpileThreshold - currentIncome);
+}
+
+function calculateOptimalExpansionDirection(state: FactionBehaviorState): { x: number; y: number } {
+  // Find direction with most resources or strategic value based on priority
+  const nearbyResources = findNearbyResources(state);
+  if (nearbyResources.length === 0) {
+    return state.expansionStrategy.expansionDirection; // Keep current direction if no resources found
+  }
+
+  // Calculate weighted center of resources
+  const center = nearbyResources.reduce(
+    (acc, resource) => ({
+      x: acc.x + resource.position.x * resource.value,
+      y: acc.y + resource.position.y * resource.value
+    }),
+    { x: 0, y: 0 }
+  );
+
+  const totalValue = nearbyResources.reduce((sum, resource) => sum + resource.value, 0);
+  return {
+    x: center.x / (totalValue || 1),
+    y: center.y / (totalValue || 1)
+  };
+}
+
+function findNearbyResources(state: FactionBehaviorState): ResourceNode[] {
+  // Implementation would come from the resource management system
+  return [];
+}
+
+function updateFleetFormation(ships: Ship[], formation: string, spacing: number): void {
+  ships.forEach((ship: Ship, index: number) => {
+    // Formation logic implementation
+  });
 }

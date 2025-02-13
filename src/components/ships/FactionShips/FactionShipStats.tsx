@@ -1,4 +1,4 @@
-import { SHIP_STATS } from "../../../config/factions/factionShipStats";
+import { SHIP_STATS } from "../../../config/ships/shipStats";
 import type { FactionShipProps, ShipStatsWithWeapons } from "../../../types/ships/FactionShipTypes";
 import { AlertTriangle, Shield, Sword } from "lucide-react";
 
@@ -18,7 +18,7 @@ export function FactionShip({
   className = "",
 }: FactionShipProps) {
   const color = FACTION_COLORS[ship.faction.replace(/-/g, "") as FactionColorKey];
-  const stats = SHIP_STATS[ship.class] as ShipStatsWithWeapons;
+  const stats = SHIP_STATS[ship.class] as unknown as ShipStatsWithWeapons;
 
   if (!stats) {
     return null;

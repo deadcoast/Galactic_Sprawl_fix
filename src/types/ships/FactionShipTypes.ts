@@ -7,7 +7,7 @@ import {
 } from "./CommonShipTypes";
 import { FactionId, FactionBehaviorType } from "./FactionTypes";
 import { ShipType, ShipStatus, ShipStats, ShipLoadout } from "./ShipTypes";
-import { WeaponMount } from "../weapons/WeaponTypes";
+import { WeaponMount, WeaponInstance, CombatWeaponStats } from "../weapons/WeaponTypes";
 
 export interface FactionConfig {
   id: FactionId;
@@ -176,6 +176,10 @@ export interface FactionShipProps {
 }
 
 export interface ShipStatsWithWeapons extends ShipStats {
-  weapons: WeaponMount[];
+  weapons: {
+    primary: WeaponInstance;
+    secondary?: WeaponInstance[];
+    stats: CombatWeaponStats;
+  };
   abilities: FactionShipAbility[];
 } 

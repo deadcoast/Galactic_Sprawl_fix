@@ -62,6 +62,7 @@ export function AsteroidMarauder({
         maxHealth={maxHealth}
         shield={shield}
         maxShield={maxShield}
+        weapons={weapons}
         tactics="aggressive"
         onEngage={onEngage}
         onRetreat={onRetreat}

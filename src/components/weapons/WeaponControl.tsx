@@ -1,12 +1,11 @@
 import { Crosshair } from "lucide-react";
 import { 
   WeaponCategory, 
-  WeaponType,
   WeaponStatus,
   CombatWeaponStats,
-  WEAPON_COLORS,
-  WeaponEffect
+  WEAPON_COLORS
 } from "../../types/weapons/WeaponTypes";
+import { WeaponEffect } from "../../effects/types_effects/WeaponEffects";
 
 interface WeaponControlProps {
   weapon: {

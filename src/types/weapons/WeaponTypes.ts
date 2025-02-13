@@ -3,8 +3,10 @@
  * @module WeaponTypes
  */
 
-import { Effect } from "../core/GameTypes";
-import { WeaponEffect, WeaponEffectType } from "../../effects/types_effects/WeaponEffects";
+import { Effect as BaseEffect } from "../core/GameTypes";
+import { WeaponEffect, WeaponEffectType, DamageEffect, AreaEffect } from "../../effects/types_effects/WeaponEffects";
+
+export type { WeaponEffect, WeaponEffectType, DamageEffect, AreaEffect };
 
 // Base Types
 // ------------------------------------------------------------
@@ -21,7 +23,10 @@ export type WeaponCategory =
   | "pointDefense"
   | "flakCannon"
   | "capitalLaser"
-  | "torpedoes";
+  | "torpedoes"
+  | "harmonicCannon"
+  | "temporalCannon"
+  | "quantumCannon";
 
 /**
  * Specific weapon variants within each category
@@ -86,12 +91,33 @@ export interface BaseWeaponStats {
   rateOfFire: number;
   energyCost: number;
   cooldown: number;
+  effects: (DamageEffect | AreaEffect)[];
+  special?: {
+    armorPenetration?: number;
+    shieldDamageBonus?: number;
+    areaOfEffect?: number;
+    disableChance?: number;
+  };
+}
+
+/**
+ * Extended weapon stats with effects
+ */
+export interface WeaponStats extends BaseWeaponStats {
+  effects: (DamageEffect | AreaEffect)[];
+  special?: {
+    armorPenetration?: number;
+    shieldDamageBonus?: number;
+    areaOfEffect?: number;
+    disableChance?: number;
+  };
 }
 
 /**
  * Base weapon type interface
  */
 export interface WeaponType {
+  id: string;
   category: WeaponCategory;
   variant: WeaponVariant;
   visualAsset: string;
@@ -122,6 +148,7 @@ export interface WeaponMount {
   position: WeaponMountPosition;
   rotation: number;
   allowedCategories: WeaponCategory[];
+  currentWeapon?: WeaponInstance;
 }
 
 /**
@@ -221,6 +248,9 @@ export const WEAPON_COLORS: Record<WeaponCategory, string> = {
   flakCannon: "yellow",
   capitalLaser: "orange",
   torpedoes: "red",
+  harmonicCannon: "teal",
+  temporalCannon: "purple",
+  quantumCannon: "blue"
 } as const;
 
 export const UPGRADE_COLORS: Record<WeaponUpgradeType, string> = {
@@ -235,3 +265,7 @@ export const UPGRADE_COLORS: Record<WeaponUpgradeType, string> = {
   swarm: "rose",
   bigBang: "rose",
 } as const;
+
+export interface Effect extends BaseEffect {
+  radius?: number;  // Add radius for area effects
+}

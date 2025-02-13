@@ -1,5 +1,7 @@
 import { factionManager } from "../../lib/factions/factionManager";
 import { useEffect, useState } from "react";
+import { FactionId } from "../../types/ships/FactionTypes";
+import { factionRelationshipManager } from "../../lib/factions/FactionRelationshipManager";
 
 interface DiplomacyAction {
   type: "ceasefire" | "tradeRoute" | "alliance" | "tribute";
@@ -12,7 +14,7 @@ interface DiplomacyAction {
   available: boolean;
 }
 
-export function useDiplomacy(factionId: string) {
+export function useDiplomacy(factionId: FactionId) {
   const [diplomacyState, setDiplomacyState] = useState({
     relationship: 0,
     status: "neutral" as "hostile" | "neutral" | "friendly",
@@ -25,74 +27,23 @@ export function useDiplomacy(factionId: string) {
     const updateInterval = setInterval(() => {
       const state = factionManager.getFactionState(factionId);
       if (state) {
-        // Update available actions based on faction state
-        const actions: DiplomacyAction[] = [];
-
-        // Ceasefire
-        if (state.relationshipWithPlayer < 0) {
-          actions.push({
-            type: "ceasefire",
-            name: "Negotiate Ceasefire",
-            description: "Attempt to establish a temporary peace",
-            requirements: [
-              { type: "Credits", value: 5000 },
-              { type: "Reputation", value: -50 },
-            ],
-            available: true,
-          });
-        }
-
-        // Trade Route
-        if (state.relationshipWithPlayer > -0.3) {
-          actions.push({
-            type: "tradeRoute",
-            name: "Establish Trade Route",
-            description: "Create a trade route for resource exchange",
-            requirements: [
-              { type: "Credits", value: 10000 },
-              { type: "Reputation", value: 0 },
-            ],
-            available: state.relationshipWithPlayer >= 0,
-          });
-        }
-
-        // Alliance
-        if (state.relationshipWithPlayer > 0.3) {
-          actions.push({
-            type: "alliance",
-            name: "Form Alliance",
-            description: "Establish a formal alliance for mutual benefit",
-            requirements: [
-              { type: "Credits", value: 25000 },
-              { type: "Reputation", value: 50 },
-            ],
-            available: state.relationshipWithPlayer >= 0.5,
-          });
-        }
-
-        // Tribute
-        actions.push({
-          type: "tribute",
-          name: "Offer Tribute",
-          description: "Improve relations through resource offerings",
-          requirements: [
-            { type: "Credits", value: 2500 },
-            { type: "Resources", value: 1000 },
-          ],
-          available: true,
-        });
+        const relationship = state.relationshipWithPlayer;
+        const availableActions = factionRelationshipManager.getAvailableDiplomaticActions(
+          factionId,
+          "player" as FactionId
+        );
 
         setDiplomacyState({
-          relationship: state.relationshipWithPlayer,
+          relationship,
           status:
-            state.relationshipWithPlayer > 0.3
+            relationship > 0.3
               ? "friendly"
-              : state.relationshipWithPlayer < -0.3
+              : relationship < -0.3
                 ? "hostile"
                 : "neutral",
-          tradingEnabled: state.relationshipWithPlayer >= 0,
+          tradingEnabled: relationship >= 0,
           lastInteraction: state.lastActivity,
-          availableActions: actions,
+          availableActions,
         });
       }
     }, 1000);
@@ -100,5 +51,20 @@ export function useDiplomacy(factionId: string) {
     return () => clearInterval(updateInterval);
   }, [factionId]);
 
-  return diplomacyState;
+  const handleDiplomaticAction = (
+    action: DiplomacyAction,
+    resources?: { type: string; amount: number }[]
+  ) => {
+    return factionRelationshipManager.handleDiplomaticAction(
+      factionId,
+      "player" as FactionId,
+      action.type,
+      resources
+    );
+  };
+
+  return {
+    ...diplomacyState,
+    handleDiplomaticAction,
+  };
 }

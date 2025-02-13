@@ -1,18 +1,15 @@
 import { FactionShipBase } from "../FactionShipBase";
 import { EquatorHorizonShipClass } from "../../../../types/ships/FactionShipTypes";
 import { ReactNode } from "react";
-import { 
-  WeaponMount, 
-  WeaponInstance,
-  WeaponEffect,
-  CombatWeaponStats 
-} from "../../../../types/weapons/WeaponTypes";
+import { WeaponMount,} from "../../../../types/weapons/WeaponTypes";
+import { WeaponEffect, DamageEffect } from "../../../../effects/types_effects/WeaponEffects";
 import { useShipEffects } from "../../../../hooks/ships/useShipEffects";
 import { BaseEffect } from "../../../../effects/types_effects/EffectTypes";
 import { Effect } from "../../../../types/core/GameTypes";
 import { Zap, Shield, Target } from "lucide-react";
 import { StatusEffect } from "../../../ui/status/StatusEffect";
 import { AbilityButton } from "../../../ui/buttons/AbilityButton";
+import { useCallback } from "react";
 
 interface EquatorHorizonShipProps {
   id: string;
@@ -57,8 +54,35 @@ export function EquatorHorizonShip({
 }: EquatorHorizonShipProps) {
   const { addEffect, removeEffect, hasEffect } = useShipEffects();
 
+  // Handle weapon firing
+  const handleWeaponFire = useCallback((weaponId: string) => {
+    const weapon = weapons.find(mount => 
+      mount.currentWeapon?.config.id === weaponId
+    )?.currentWeapon;
+
+    if (weapon && weapon.state.status === "ready") {
+      // Apply weapon effects
+      weapon.state.effects.forEach(effect => {
+        if (effect.type === "damage") {
+          console.debug(`[EquatorHorizonShip] Firing weapon ${weaponId} with strength ${effect.strength}`);
+        }
+      });
+
+      // Update weapon state
+      weapon.state.status = "cooling";
+      setTimeout(() => {
+        if (weapon) {
+          weapon.state.status = "ready";
+        }
+      }, weapon.config.baseStats.cooldown * 1000);
+
+      // Call the onFire callback if provided
+      onFire?.(weaponId);
+    }
+  }, [weapons, onFire]);
+
   // Faction-specific effects
-  const handleOvercharge = () => {
+  const handleOvercharge = useCallback(() => {
     if (hasEffect("overcharge")) {
       removeEffect("overcharge");
       // Remove overcharge effect from weapons
@@ -67,6 +91,11 @@ export function EquatorHorizonShip({
           mount.currentWeapon.state.effects = mount.currentWeapon.state.effects.filter(
             effect => effect.name !== "Overcharge"
           );
+          
+          // Reset weapon stats
+          mount.currentWeapon.state.currentStats = {
+            ...mount.currentWeapon.config.baseStats
+          };
         }
       });
     } else {
@@ -84,24 +113,35 @@ export function EquatorHorizonShip({
       // Apply overcharge effect to all weapons
       weapons.forEach(mount => {
         if (mount.currentWeapon) {
-          const weaponEffect: Effect = {
+          const weaponEffect: DamageEffect = {
+            type: "damage",
             name: "Overcharge",
             description: "Increases weapon damage and accuracy",
-            type: "accuracy",
-            magnitude: 1.4,
             duration: 10,
+            strength: 1.4,
+            magnitude: 1.4,
+            damageType: "energy",
+            penetration: 0.2,
             active: true,
-            cooldown: 0,
+            cooldown: 0
           };
           
           mount.currentWeapon.state.effects.push(weaponEffect);
+          
+          // Update weapon stats with overcharge
+          const {currentStats} = mount.currentWeapon.state;
+          mount.currentWeapon.state.currentStats = {
+            ...currentStats,
+            damage: currentStats.damage * 1.4,
+            accuracy: Math.min(1, currentStats.accuracy * 1.4)
+          };
         }
       });
     }
     onSpecialAbility?.();
-  };
+  }, [addEffect, removeEffect, hasEffect, weapons, onSpecialAbility]);
 
-  const handleReinforcedShields = () => {
+  const handleReinforcedShields = useCallback(() => {
     if (hasEffect("reinforced-shields")) {
       removeEffect("reinforced-shields");
     } else {
@@ -116,7 +156,7 @@ export function EquatorHorizonShip({
       };
       addEffect(shieldEffect);
     }
-  };
+  }, [addEffect, removeEffect, hasEffect]);
 
   return (
     <FactionShipBase
@@ -190,6 +230,7 @@ export function EquatorHorizonShip({
       onEngage={onEngage}
       onRetreat={onRetreat}
       onSpecialAbility={onSpecialAbility}
+      onFire={handleWeaponFire}
     >
       {/* Status Effects */}
       <StatusEffect

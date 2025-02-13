@@ -3,7 +3,7 @@ import { BaseShip } from "../base/BaseShip";
 import { StatusEffectContainer } from "../../ui/status/StatusEffect";
 import { AbilityButtonContainer } from "../../ui/buttons/AbilityButton";
 import { ReactNode, useEffect } from "react";
-import { ShipStatus } from "../../../types/ships/ShipTypes";
+import { ShipStatus } from "../../../types/ships/CommonShipTypes";
 import { useShipState } from "../../../contexts/ShipContext";
 import { useShipActions } from "../../../hooks/ships/useShipActions";
 import { useShipEffects } from "../../../hooks/ships/useShipEffects";
@@ -21,6 +21,7 @@ interface FactionShipBaseProps {
   onEngage?: () => void;
   onRetreat?: () => void;
   onSpecialAbility?: () => void;
+  onFire?: (weaponId: string) => void;
   children?: ReactNode;
 }
 
@@ -38,9 +39,10 @@ function mapShipStatus(status: ShipStatus): "engaging" | "patrolling" | "retreat
     case "disabled":
       return "disabled";
     case "damaged":
+    case "repairing":
+    case "upgrading":
       return "disabled";
     case "ready":
-    case "idle":
     default:
       return "patrolling";
   }
@@ -56,6 +58,7 @@ function FactionShipContent({
   onEngage,
   onRetreat,
   onSpecialAbility,
+  onFire,
   className = "",
   children,
 }: FactionShipBaseProps) {
@@ -152,6 +155,7 @@ export function FactionShipBase(props: FactionShipBaseProps) {
       maxShield={ship.maxShield}
       weapons={ship.stats.weapons}
       stats={ship.stats}
+      onFire={props.onFire}
     >
       <FactionShipContent ship={ship} {...rest} />
     </BaseShip>

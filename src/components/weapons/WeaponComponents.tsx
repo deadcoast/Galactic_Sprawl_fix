@@ -4,9 +4,9 @@ import {
   WeaponStatus,
   CombatWeaponStats,
   WeaponUpgrade,
-  WeaponEffect,
   WEAPON_COLORS
 } from "../../types/weapons/WeaponTypes";
+import { WeaponEffect } from "../../effects/types_effects/WeaponEffects";
 
 interface StatBarProps {
   label: string;
@@ -137,7 +137,9 @@ export function WeaponEffectsDisplay({
   color,
   onToggle,
 }: WeaponEffectsDisplayProps) {
-  if (!effects || effects.length === 0) return null;
+  if (!effects || effects.length === 0) {
+    return null;
+  }
 
   return (
     <div className="mb-6">
@@ -214,9 +216,13 @@ export function WeaponUpgradeDisplay({
       {/* Stat Changes */}
       <div className="grid grid-cols-2 gap-2 mb-3">
         {Object.entries(upgrade.stats).map(([key, value]) => {
-          if (typeof value !== 'number') return null;
+          if (typeof value !== 'number') {
+            return null;
+          }
           const currentValue = currentStats[key as keyof CombatWeaponStats];
-          if (typeof currentValue !== 'number') return null;
+          if (typeof currentValue !== 'number') {
+            return null;
+          }
           const diff = value - currentValue;
           return (
             <div key={key} className="flex items-center justify-between text-xs">

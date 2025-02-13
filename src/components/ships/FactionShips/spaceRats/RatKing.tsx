@@ -74,7 +74,6 @@ export const RatKing: React.FC<RatKingProps> = ({
       shield={shield}
       maxShield={maxShield}
       weapons={weapons}
-      stats={stats}
       onFire={onFire}
       onEngage={onEngage}
       onRetreat={onRetreat}

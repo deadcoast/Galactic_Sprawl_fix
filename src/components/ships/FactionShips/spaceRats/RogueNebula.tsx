@@ -73,6 +73,7 @@ export function RogueNebula({
         maxHealth={maxHealth}
         shield={shield}
         maxShield={maxShield}
+        weapons={weapons}
         tactics="hit-and-run"
         onEngage={onEngage}
         onRetreat={onRetreat}

@@ -1,9 +1,18 @@
 import { useTooltip } from "../../hooks/ui/useTooltip";
-import { createContext, useContext } from "react";
+import { createContext, useContext, ReactNode } from "react";
 
-const TooltipContext = createContext<ReturnType<typeof useTooltip> | null>(
-  null,
-);
+interface TooltipContextValue {
+  tooltip: {
+    content: ReactNode | null;
+    position: { x: number; y: number };
+    visible: boolean;
+  };
+  showTooltip: (content: ReactNode, position?: { x: number; y: number }) => void;
+  hideTooltip: () => void;
+  updatePosition: (position: { x: number; y: number }) => void;
+}
+
+const TooltipContext = createContext<TooltipContextValue | null>(null);
 
 export function useTooltipContext() {
   const context = useContext(TooltipContext);

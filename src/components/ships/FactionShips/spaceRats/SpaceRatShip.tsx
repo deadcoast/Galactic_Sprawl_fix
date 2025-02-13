@@ -4,9 +4,9 @@ import { ReactNode } from "react";
 import { 
   WeaponMount, 
   WeaponInstance,
-  WeaponEffect,
   CombatWeaponStats 
 } from "../../../../types/weapons/WeaponTypes";
+import { WeaponEffect } from "../../../../effects/types_effects/WeaponEffects";
 import { useShipEffects } from "../../../../hooks/ships/useShipEffects";
 import { BaseEffect } from "../../../../effects/types_effects/EffectTypes";
 import { Effect } from "../../../../types/core/GameTypes";
@@ -84,14 +84,15 @@ export function SpaceRatShip({
       // Apply rage mode effect to all weapons
       weapons.forEach(mount => {
         if (mount.currentWeapon) {
-          const weaponEffect: Effect = {
+          const weaponEffect: WeaponEffect = {
+            type: "damage",
             name: "Rage Mode",
             description: "Increased weapon damage",
-            type: "damage",
-            magnitude: 1.5,
             duration: 10,
+            strength: 1.5,
+            magnitude: 1.5,
             active: true,
-            cooldown: 0,
+            cooldown: 0
           };
           
           mount.currentWeapon.state.effects.push(weaponEffect);

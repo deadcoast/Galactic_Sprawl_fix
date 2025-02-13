@@ -23,11 +23,22 @@ export function WeaponSystem({
 }: WeaponSystemProps) {
   const color = WEAPON_COLORS[weapon.config.category];
 
-  const handleUpgrade = (upgradeId: string) => {
+  const handleUpgrade = (upgradeId: string, upgrade: WeaponUpgrade) => {
     if (onUpgrade) {
+      const updatedStats: CombatWeaponStats = {
+        ...weapon.state.currentStats,
+        ...upgrade.stats
+      };
+      console.debug(`[WeaponSystem] Applying upgrade ${upgradeId}, new stats:`, updatedStats);
       onUpgrade(upgradeId);
     }
   };
+
+  const mapToWeaponEffect = (effect: WeaponEffect): WeaponEffect => ({
+    ...effect,
+    active: effect.active ?? true,
+    cooldown: effect.cooldown ?? 0
+  });
 
   return (
     <div
@@ -72,15 +83,7 @@ export function WeaponSystem({
       />
 
       <WeaponEffectsDisplay
-        effects={weapon.state.effects.map(effect => ({
-          name: effect.name,
-          description: effect.description,
-          type: effect.type,
-          magnitude: effect.magnitude,
-          duration: effect.duration,
-          active: effect.active ?? true,
-          cooldown: effect.cooldown ?? 0
-        }))}
+        effects={weapon.state.effects.map(mapToWeaponEffect)}
         color={color}
         onToggle={onToggleEffect}
       />
@@ -91,13 +94,13 @@ export function WeaponSystem({
           <h4 className="text-sm font-medium text-gray-300">
             Available Upgrades
           </h4>
-          {availableUpgrades.map((upgrade) => (
+          {availableUpgrades.map((upgrade: WeaponUpgrade) => (
             <WeaponUpgradeDisplay
               key={upgrade.id}
               upgrade={upgrade}
               currentStats={weapon.state.currentStats}
               resources={resources}
-              onUpgrade={handleUpgrade}
+              onUpgrade={(id) => handleUpgrade(id, upgrade)}
             />
           ))}
         </div>

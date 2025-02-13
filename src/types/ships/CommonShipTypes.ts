@@ -5,6 +5,8 @@ import {
   CombatWeaponStats,
   WeaponType as WeaponTypeBase
 } from "../weapons/WeaponTypes";
+import { Tier } from "../core/GameTypes";
+import { ResourceCost } from "../resources/ResourceTypes";
 
 // Ship Type Interface
 export interface ShipType {
@@ -24,7 +26,9 @@ export type ShipStatus =
   | "patrolling"
   | "retreating"
   | "disabled"
-  | "damaged";
+  | "damaged"
+  | "repairing"
+  | "upgrading";
 
 // Common Ship Stats Interface
 export interface CommonShipStats extends BaseStats {
@@ -101,6 +105,11 @@ export interface CommonShip {
   status: ShipStatus;
   stats: CommonShipStats;
   abilities: CommonShipAbility[];
+  officerBonuses?: {
+    buildSpeed?: number;
+    resourceEfficiency?: number;
+    combatEffectiveness?: number;
+  };
 }
 
 // Common Ship Capabilities
@@ -146,4 +155,45 @@ export function getDefaultCapabilities(category: ShipCategory): CommonShipCapabi
         canJump: false,
       };
   }
+}
+
+export interface ShipUpgradeStats {
+  hull: {
+    current: number;
+    upgraded: number;
+  };
+  shield: {
+    current: number;
+    upgraded: number;
+  };
+  weapons: {
+    current: number;
+    upgraded: number;
+  };
+  speed: {
+    current: number;
+    upgraded: number;
+  };
+}
+
+export interface ShipUpgradeRequirement {
+  type: "tech" | "resource" | "facility";
+  name: string;
+  met: boolean;
+}
+
+export interface ShipVisualUpgrade {
+  name: string;
+  description: string;
+  preview: string;
+}
+
+export interface ShipUpgradeInfo {
+  shipId: string;
+  tier: Tier;
+  upgradeAvailable: boolean;
+  requirements: ShipUpgradeRequirement[];
+  stats: ShipUpgradeStats;
+  resourceCost: ResourceCost[];
+  visualUpgrades: ShipVisualUpgrade[];
 }
