@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { moduleEventBus, ModuleEvent } from '../../lib/modules/ModuleEvents';
 import { techTreeManager } from '../game/techTreeManager';
-import { ResourceManager } from '../resource/ResourceManager';
+import { ResourceManager } from '../game/ResourceManager';
 import { Tier, Effect } from '../../types/core/GameTypes';
 import { ResourceCost } from '../../types/resources/ResourceTypes';
 import { PlayerShipClass, PlayerShipCategory } from '../../types/ships/PlayerShipTypes';

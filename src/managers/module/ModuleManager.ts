@@ -6,7 +6,7 @@ import {
 } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { resourceManager } from '../../managers/resource/ResourceManager';
+import { resourceManager } from '../game/ResourceManager';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 
 /**

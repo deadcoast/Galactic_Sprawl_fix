@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Rocket, Search, Grid2X2, List } from 'lucide-react';
-import { ShipHangarManager } from '../../../../managers/player/ShipHangarManager';
+import { ShipHangarManager } from '../../../../managers/module/ShipHangarManager';
 import { CommonShip } from '../../../../types/ships/CommonShipTypes';
 import { PlayerShipCategory } from '../../../../types/ships/PlayerShipTypes';
 import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';

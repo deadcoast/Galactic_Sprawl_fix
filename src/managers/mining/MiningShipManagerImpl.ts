@@ -2,7 +2,7 @@ import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
 import { Position } from '../../types/core/GameTypes';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { resourceManager } from '../../managers/resource/ResourceManager';
+import { resourceManager } from '../game/ResourceManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 

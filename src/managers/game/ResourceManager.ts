@@ -19,6 +19,14 @@ import {
   STORAGE_EFFICIENCY,
   RESOURCE_PRIORITIES,
 } from '../../config/resource/ResourceConfig';
+import { resourcePerformanceMonitor } from '../resource/ResourcePerformanceMonitor';
+import type { PerformanceMetrics, ResourcePerformanceSnapshot } from '../resource/ResourcePerformanceMonitor';
+
+// Update TRANSFER_CONFIG type to include MIN_INTERVAL
+const TRANSFER_CONFIG_WITH_MIN = {
+  ...TRANSFER_CONFIG,
+  MIN_INTERVAL: 500, // Minimum 500ms between transfers
+};
 
 /**
  * Resource operation error types
@@ -28,6 +36,17 @@ type ResourceError = {
   message: string;
   details?: any;
 };
+
+/**
+ * Resource optimization strategies
+ */
+interface OptimizationStrategy {
+  id: string;
+  type: 'production' | 'consumption' | 'transfer';
+  priority: number;
+  condition: () => boolean;
+  apply: () => void;
+}
 
 /**
  * Manages game resources
@@ -43,6 +62,13 @@ export class ResourceManager {
   private config: ResourceManagerConfig;
   private productionIntervals: Map<string, NodeJS.Timeout>;
   private errors: Map<string, ResourceError>;
+  private optimizationStrategies: Map<string, OptimizationStrategy>;
+  private optimizationMetrics: {
+    productionEfficiency: number;
+    consumptionEfficiency: number;
+    transferEfficiency: number;
+    lastOptimizationTime: number;
+  };
 
   constructor(maxTransferHistory = 1000, config: ResourceManagerConfig = RESOURCE_MANAGER_CONFIG) {
     this.resources = new Map();
@@ -55,11 +81,21 @@ export class ResourceManager {
     this.config = config;
     this.productionIntervals = new Map();
     this.errors = new Map();
+    this.optimizationStrategies = new Map();
+    this.optimizationMetrics = {
+      productionEfficiency: 1.0,
+      consumptionEfficiency: 1.0,
+      transferEfficiency: 1.0,
+      lastOptimizationTime: Date.now(),
+    };
 
     // Initialize resources with config limits
     Object.entries(config.defaultResourceLimits).forEach(([type, limits]) => {
       this.initializeResource(type as ResourceType, limits.min, limits.max);
     });
+
+    // Initialize optimization strategies
+    this.initializeOptimizationStrategies();
 
     console.debug('[ResourceManager] Initialized with config:', config);
   }
@@ -263,12 +299,12 @@ export class ResourceManager {
     try {
       // Apply transfer configuration limits
       amount = Math.max(
-        TRANSFER_CONFIG.MIN_AMOUNT,
-        Math.min(amount, TRANSFER_CONFIG.MAX_BATCH_SIZE)
+        TRANSFER_CONFIG_WITH_MIN.MIN_AMOUNT,
+        Math.min(amount, TRANSFER_CONFIG_WITH_MIN.MAX_BATCH_SIZE)
       );
 
       // Apply transfer rate multiplier for efficiency
-      const transferAmount = amount * TRANSFER_CONFIG.TRANSFER_RATE_MULTIPLIER;
+      const transferAmount = amount * TRANSFER_CONFIG_WITH_MIN.TRANSFER_RATE_MULTIPLIER;
 
       // Record transfer with configured history limit
       const transfer: ResourceTransfer = {
@@ -469,9 +505,222 @@ export class ResourceManager {
   }
 
   /**
+   * Initializes resource optimization strategies
+   */
+  private initializeOptimizationStrategies(): void {
+    // Production optimization - balance production rates based on demand
+    this.optimizationStrategies.set('balance-production', {
+      id: 'balance-production',
+      type: 'production',
+      priority: 1,
+      condition: () => {
+        const now = Date.now();
+        return now - this.optimizationMetrics.lastOptimizationTime > 60000; // Run every minute
+      },
+      apply: () => {
+        for (const [type, state] of this.resources) {
+          const usage = this.calculateResourceUsage(type);
+          const currentProduction = state.production;
+          const targetProduction = usage * 1.2; // 20% buffer
+
+          if (Math.abs(currentProduction - targetProduction) > 0.1) {
+            const oldProduction = state.production;
+            state.production = targetProduction;
+            console.debug(
+              `[ResourceManager] Optimized production for ${type}: ${oldProduction.toFixed(2)} -> ${targetProduction.toFixed(2)}`
+            );
+          }
+        }
+        this.optimizationMetrics.productionEfficiency = this.calculateProductionEfficiency();
+      },
+    });
+
+    // Consumption optimization - reduce waste and optimize resource usage
+    this.optimizationStrategies.set('optimize-consumption', {
+      id: 'optimize-consumption',
+      type: 'consumption',
+      priority: 2,
+      condition: () => {
+        return Array.from(this.resources.values()).some(
+          state => state.current / state.max > RESOURCE_THRESHOLDS.HIGH
+        );
+      },
+      apply: () => {
+        for (const [type, state] of this.resources) {
+          if (state.current / state.max > RESOURCE_THRESHOLDS.HIGH) {
+            const consumers = Array.from(this.consumptions.values())
+              .filter(c => c.type === type)
+              .sort((a, b) => (b.required ? 1 : -1));
+
+            for (const consumer of consumers) {
+              if (!consumer.required) {
+                const oldRate = consumer.amount;
+                consumer.amount *= 1.5; // Increase consumption to reduce excess
+                console.debug(
+                  `[ResourceManager] Increased consumption rate for ${type}: ${oldRate.toFixed(2)} -> ${consumer.amount.toFixed(2)}`
+                );
+              }
+            }
+          }
+        }
+        this.optimizationMetrics.consumptionEfficiency = this.calculateConsumptionEfficiency();
+      },
+    });
+
+    // Transfer optimization - optimize resource distribution
+    this.optimizationStrategies.set('optimize-transfers', {
+      id: 'optimize-transfers',
+      type: 'transfer',
+      priority: 3,
+      condition: () => this.flows.size > 0,
+      apply: () => {
+        for (const flow of this.flows.values()) {
+          const sourceStates = flow.resources.map(r => ({
+            resource: r,
+            state: this.resources.get(r.type),
+          }));
+
+          for (const { resource, state } of sourceStates) {
+            if (!state) {
+              continue;
+            }
+
+            const utilization = state.current / state.max;
+            if (utilization < RESOURCE_THRESHOLDS.LOW) {
+              const oldInterval = resource.interval;
+              resource.interval = Math.max(
+                resource.interval * 1.5,
+                TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL
+              );
+              console.debug(
+                `[ResourceManager] Adjusted transfer interval for ${resource.type}: ${oldInterval}ms -> ${resource.interval}ms`
+              );
+            } else if (utilization > RESOURCE_THRESHOLDS.HIGH) {
+              const oldInterval = resource.interval;
+              resource.interval = Math.max(
+                resource.interval * 0.75,
+                TRANSFER_CONFIG_WITH_MIN.MIN_INTERVAL
+              );
+              console.debug(
+                `[ResourceManager] Adjusted transfer interval for ${resource.type}: ${oldInterval}ms -> ${resource.interval}ms`
+              );
+            }
+          }
+        }
+        this.optimizationMetrics.transferEfficiency = this.calculateTransferEfficiency();
+      },
+    });
+  }
+
+  /**
+   * Calculates resource usage rate
+   */
+  private calculateResourceUsage(type: ResourceType): number {
+    const consumers = Array.from(this.consumptions.values())
+      .filter(c => c.type === type)
+      .reduce((total, c) => total + c.amount, 0);
+
+    const transfers = Array.from(this.flows.values())
+      .flatMap(f => f.resources)
+      .filter(r => r.type === type)
+      .reduce((total, r) => total + r.amount, 0);
+
+    return consumers + transfers;
+  }
+
+  /**
+   * Calculates production efficiency
+   */
+  private calculateProductionEfficiency(): number {
+    const efficiencies = Array.from(this.resources.entries()).map(([type, state]) => {
+      const usage = this.calculateResourceUsage(type);
+      const {production} = state;
+      return usage > 0 ? Math.min(production / usage, 1.5) : 1.0;
+    });
+
+    return efficiencies.reduce((sum, e) => sum + e, 0) / efficiencies.length;
+  }
+
+  /**
+   * Calculates consumption efficiency
+   */
+  private calculateConsumptionEfficiency(): number {
+    const efficiencies = Array.from(this.resources.entries()).map(([type, state]) => {
+      const usage = this.calculateResourceUsage(type);
+      return usage > 0 ? Math.min(state.current / (usage * 10), 1.0) : 1.0;
+    });
+
+    return efficiencies.reduce((sum, e) => sum + e, 0) / efficiencies.length;
+  }
+
+  /**
+   * Calculates transfer efficiency
+   */
+  private calculateTransferEfficiency(): number {
+    if (this.transfers.length === 0) {
+      return 1.0;
+    }
+
+    const recentTransfers = this.transfers.filter(t => Date.now() - t.timestamp < 60000).length; // Last minute
+
+    const successRate = recentTransfers / Math.max(this.errors.size, 1);
+    return Math.min(successRate, 1.0);
+  }
+
+  /**
+   * Runs optimization strategies
+   */
+  private runOptimizations(): void {
+    const strategies = Array.from(this.optimizationStrategies.values())
+      .sort((a, b) => b.priority - a.priority)
+      .filter(s => s.condition());
+
+    for (const strategy of strategies) {
+      try {
+        strategy.apply();
+        console.debug(`[ResourceManager] Applied optimization strategy: ${strategy.id}`);
+      } catch (err) {
+        console.error(
+          `[ResourceManager] Failed to apply optimization strategy ${strategy.id}:`,
+          err
+        );
+      }
+    }
+
+    this.optimizationMetrics.lastOptimizationTime = Date.now();
+
+    // Emit optimization metrics
+    moduleEventBus.emit({
+      type: 'STATUS_CHANGED',
+      moduleId: 'resource-manager',
+      moduleType: 'resource-manager',
+      timestamp: Date.now(),
+      data: {
+        type: 'optimization',
+        metrics: this.optimizationMetrics,
+      },
+    });
+  }
+
+  /**
    * Updates resource production and consumption with configured intervals
    */
   update(deltaTime: number): void {
+    // Run optimizations first
+    this.runOptimizations();
+
+    // Update performance metrics for each resource
+    for (const [type, state] of this.resources) {
+      const usage = this.calculateResourceUsage(type);
+      resourcePerformanceMonitor.recordMetrics(
+        type,
+        state.production,
+        usage,
+        this.calculateTransferRate(type),
+        state.current / state.max
+      );
+    }
+
     // Handle production with configured rates
     for (const [id, production] of this.productions) {
       if (!this.checkThresholds(production.conditions)) {
@@ -527,7 +776,8 @@ export class ResourceManager {
 
       for (const resource of flow.resources) {
         const amount =
-          (resource.amount * deltaTime) / (resource.interval || TRANSFER_CONFIG.DEFAULT_INTERVAL);
+          (resource.amount * deltaTime) /
+          (resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL);
         this.transferResources(resource.type, amount, flow.source, flow.target);
         console.debug(
           `[ResourceManager] Flow ${id} transferred ${amount.toFixed(2)} ${resource.type}`
@@ -639,14 +889,14 @@ export class ResourceManager {
             const { amount } = resource;
             this.transferResources(resource.type, amount, flow.source, flow.target);
           }
-        }, resource.interval || TRANSFER_CONFIG.DEFAULT_INTERVAL);
+        }, resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL);
 
         this.productionIntervals.set(`${id}-${resource.type}`, interval);
 
         console.debug(
           `[ResourceManager] Scheduled flow for ${resource.type} from ${flow.source} to ${
             flow.target
-          } every ${resource.interval || TRANSFER_CONFIG.DEFAULT_INTERVAL}ms`
+          } every ${resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL}ms`
         );
       });
 
@@ -708,6 +958,7 @@ export class ResourceManager {
     this.consumptions.clear();
 
     console.debug('[ResourceManager] Cleaned up all schedules and registrations');
+    resourcePerformanceMonitor.cleanup();
   }
 
   /**
@@ -722,6 +973,38 @@ export class ResourceManager {
    */
   clearError(id: string): void {
     this.errors.delete(id);
+  }
+
+  /**
+   * Gets current optimization metrics
+   */
+  getOptimizationMetrics() {
+    return { ...this.optimizationMetrics };
+  }
+
+  /**
+   * Calculates transfer rate for a resource
+   */
+  private calculateTransferRate(type: ResourceType): number {
+    const recentTransfers = this.transfers
+      .filter(t => t.type === type && Date.now() - t.timestamp < 60000)
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    return recentTransfers / 60; // Transfers per second
+  }
+
+  /**
+   * Gets performance metrics
+   */
+  getPerformanceMetrics(type: ResourceType): PerformanceMetrics[] {
+    return resourcePerformanceMonitor.getResourceHistory(type);
+  }
+
+  /**
+   * Gets latest performance snapshot
+   */
+  getPerformanceSnapshot(): ResourcePerformanceSnapshot {
+    return resourcePerformanceMonitor.getLatestSnapshot();
   }
 }
 
