@@ -3,7 +3,12 @@ import { Trail } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
+import { VisualEffect, VisualEffectConfig } from "./VisualEffect";
+import { RenderBatcher } from "../../lib/optimization/RenderBatcher";
+import { Position } from "../../types/core/Position";
+import { WeaponCategory } from "../../types/weapons/WeaponTypes";
 
+// Props and Config Types
 interface WeaponEffectProps {
   type: "machineGun" | "railGun" | "gaussCannon" | "rockets" | "mgss" | "pointDefense";
   color: string;
@@ -12,6 +17,17 @@ interface WeaponEffectProps {
   firing: boolean;
 }
 
+interface WeaponEffectConfig extends VisualEffectConfig {
+  type: WeaponCategory;
+  target?: Position;
+  damage?: number;
+  impactSize?: number;
+  opacity?: number;
+  color?: string;
+  duration?: number;
+}
+
+// React Components
 function WeaponBeam({
   type,
   color,
@@ -167,7 +183,7 @@ function WeaponBeam({
   );
 }
 
-export function WeaponEffect({
+export function WeaponEffectComponent({
   type,
   color,
   position,
@@ -219,22 +235,8 @@ export function WeaponEffect({
   );
 }
 
-import { VisualEffect, VisualEffectConfig } from "./VisualEffect";
-import { RenderBatcher } from "../optimization/RenderBatcher";
-import { Position } from "../../types/core/Position";
-import { WeaponCategory } from "../../types/weapons/WeaponTypes";
-
-interface WeaponEffectConfig extends VisualEffectConfig {
-  type: WeaponCategory;
-  target?: Position;
-  damage?: number;
-  impactSize?: number;
-}
-
-/**
- * Visual effect for weapon firing and impacts
- */
-export class WeaponEffect extends VisualEffect {
+// Visual Effect Class
+export class WeaponEffectVisual extends VisualEffect {
   protected override config: WeaponEffectConfig;
   private trailPoints: Position[] = [];
   private impactParticles: Position[] = [];

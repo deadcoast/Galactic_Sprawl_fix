@@ -140,12 +140,16 @@ export type FactionShipDisplayStats = CommonShipDisplayStats;
 
 // Faction Ship Interface
 export interface FactionShip extends CommonShip {
+  id: string;
   faction: FactionId;
   class: FactionShipClass;
   health: number;
   maxHealth: number;
   shield: number;
   maxShield: number;
+  position: { x: number; y: number };
+  rotation: number;
+  target?: string;
   tactics: FactionBehaviorType;
   specialAbility?: {
     name: string;
@@ -182,4 +186,14 @@ export interface ShipStatsWithWeapons extends ShipStats {
     stats: CombatWeaponStats;
   };
   abilities: FactionShipAbility[];
+}
+
+export interface FactionFleet {
+  ships: FactionShip[];
+  formation: {
+    type: "offensive" | "defensive" | "stealth";
+    spacing: number;
+    facing: number;
+  };
+  strength: number;
 } 

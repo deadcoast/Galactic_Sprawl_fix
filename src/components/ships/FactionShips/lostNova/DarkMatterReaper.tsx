@@ -1,8 +1,8 @@
-import { LostNovaShip } from "./LostNovaShip";
+import { LostNovaShip } from "../../common/LostNovaShip";
 import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
 import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
 import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { AlertTriangle, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface DarkMatterReaperProps {
@@ -18,6 +18,8 @@ interface DarkMatterReaperProps {
   onEngage?: () => void;
   onRetreat: () => void;
   onSpecialAbility?: () => void;
+  position: { x: number; y: number };
+  rotation: number;
 }
 
 export function DarkMatterReaper({
@@ -33,6 +35,8 @@ export function DarkMatterReaper({
   onEngage,
   onRetreat,
   onSpecialAbility,
+  position,
+  rotation,
 }: DarkMatterReaperProps) {
   const [voidPulseActive, setVoidPulseActive] = useState(false);
 
@@ -69,9 +73,13 @@ export function DarkMatterReaper({
         shield={shield}
         maxShield={maxShield}
         weapons={weapons}
-        tactics="aggressive"
+        stats={stats}
+        tactics="stealth"
+        position={position}
+        rotation={rotation}
         onEngage={onEngage}
         onRetreat={onRetreat}
+        onFire={onFire}
         onSpecialAbility={() => {
           setVoidPulseActive(!voidPulseActive);
           onSpecialAbility?.();

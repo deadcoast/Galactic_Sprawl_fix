@@ -1,8 +1,8 @@
-import { LostNovaShip } from "./LostNovaShip";
+import { LostNovaShip } from "../../common/LostNovaShip";
 import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
 import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
 import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { AlertTriangle, Moon } from "lucide-react";
+import { Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface EclipseScytheProps {
@@ -18,6 +18,8 @@ interface EclipseScytheProps {
   onEngage?: () => void;
   onRetreat: () => void;
   onSpecialAbility?: () => void;
+  position: { x: number; y: number };
+  rotation: number;
 }
 
 export function EclipseScythe({
@@ -33,6 +35,8 @@ export function EclipseScythe({
   onEngage,
   onRetreat,
   onSpecialAbility,
+  position,
+  rotation,
 }: EclipseScytheProps) {
   const [shadowVeilActive, setShadowVeilActive] = useState(false);
 
@@ -69,9 +73,13 @@ export function EclipseScythe({
         shield={shield}
         maxShield={maxShield}
         weapons={weapons}
+        stats={stats}
+        position={position}
+        rotation={rotation}
         tactics="hit-and-run"
         onEngage={onEngage}
         onRetreat={onRetreat}
+        onFire={onFire}
         onSpecialAbility={() => {
           setShadowVeilActive(!shadowVeilActive);
           onSpecialAbility?.();

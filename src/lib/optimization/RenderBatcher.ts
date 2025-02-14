@@ -1,14 +1,14 @@
 import { EventEmitter } from "../utils/EventEmitter";
 import { Position } from "../../types/core/Position";
 
-interface RenderBatch {
+export interface RenderBatch {
   id: string;
   type: string;
   zIndex: number;
   items: RenderItem[];
 }
 
-interface RenderItem {
+export interface RenderItem {
   id: string;
   position: Position;
   size: { width: number; height: number };
@@ -20,7 +20,7 @@ interface RenderItem {
   uniforms?: Record<string, any>;
 }
 
-interface RenderBatcherEvents {
+export interface RenderBatcherEvents {
   batchCreated: { batch: RenderBatch };
   batchUpdated: { batch: RenderBatch };
   batchRemoved: { batchId: string };

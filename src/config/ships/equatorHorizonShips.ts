@@ -1,6 +1,6 @@
 import { EquatorHorizonShipClass, FactionShipStats } from "../../types/ships/FactionShipTypes";
 import { WeaponMount, WeaponMountSize, WeaponMountPosition, WeaponStatus, WeaponInstance } from "../../types/weapons/WeaponTypes";
-import { DamageEffect } from "../../effects/types_effects/WeaponEffects";
+import { DamageEffect, AreaEffect } from "../../effects/types_effects/WeaponEffects";
 import {
   PLASMA_EFFECT,
   GAUSS_EFFECT,
@@ -297,7 +297,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
           strength: 2,
           falloff: 0.5,
           radius: 400
-        },
+        } as AreaEffect,
       },
     ],
   },
@@ -386,7 +386,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
           strength: 2.5,
           falloff: 0.5,
           radius: 600
-        },
+        } as AreaEffect,
       },
     ],
   },
@@ -475,7 +475,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
           strength: 1.8,
           falloff: 0.5,
           radius: 300
-        },
+        } as AreaEffect,
       },
     ],
   },

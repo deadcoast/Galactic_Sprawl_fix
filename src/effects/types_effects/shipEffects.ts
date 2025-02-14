@@ -1,39 +1,44 @@
-import { WeaponDamageEffect, WeaponAreaEffect } from "./EffectTypes";
+import { DamageEffect, AreaEffect as WeaponAreaEffect } from "./WeaponEffects";
 import { Effect, AreaEffect } from "../../types/core/GameTypes";
 
 // Weapon Effects
-export const PLASMA_EFFECT: WeaponDamageEffect = {
-  type: "plasma",
+export const PLASMA_EFFECT: DamageEffect = {
+  type: "damage",
   name: "Plasma Burn",
   description: "Deals plasma damage over time",
   magnitude: 20,
   duration: 4,
   active: true,
   cooldown: 0,
-  damage: 20
+  strength: 20,
+  damageType: "energy",
+  penetration: 10
 };
 
-export const GAUSS_EFFECT: WeaponDamageEffect = {
-  type: "gauss",
+export const GAUSS_EFFECT: DamageEffect = {
+  type: "damage",
   name: "Gauss Impact",
   description: "Electromagnetic acceleration damage",
   magnitude: 50,
   duration: 2,
   active: true,
   cooldown: 0,
-  damage: 50
+  strength: 50,
+  damageType: "physical",
+  penetration: 30
 };
 
 export const EXPLOSIVE_EFFECT: WeaponAreaEffect = {
-  type: "explosive",
+  type: "area",
   name: "Explosive Impact",
   description: "Area explosive damage",
   magnitude: 60,
   duration: 2,
   active: true,
   cooldown: 0,
-  damage: 60,
-  radius: 60
+  strength: 60,
+  radius: 60,
+  falloff: 0.5
 };
 
 // Ability Effects

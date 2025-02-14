@@ -1,8 +1,8 @@
-import { EquatorHorizonShip } from "./EquatorHorizonShip";
+import { EquatorHorizonShip } from "../../common/EquatorHorizonShip";
 import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
 import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
 import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { AlertTriangle, Wind } from "lucide-react";
+import { Wind } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface EtherealGalleonProps {
@@ -14,6 +14,8 @@ interface EtherealGalleonProps {
   maxShield: number;
   weapons: WeaponMount[];
   stats: FactionShipStats;
+  position: { x: number; y: number };
+  rotation: number;
   onFire: (weaponId: string) => void;
   onEngage?: () => void;
   onRetreat: () => void;
@@ -29,6 +31,8 @@ export function EtherealGalleon({
   maxShield,
   weapons,
   stats,
+  position,
+  rotation,
   onFire,
   onEngage,
   onRetreat,
@@ -70,8 +74,12 @@ export function EtherealGalleon({
         maxShield={maxShield}
         weapons={weapons}
         tactics="hit-and-run"
+        position={position}
+        rotation={rotation}
         onEngage={onEngage}
         onRetreat={onRetreat}
+        onFire={onFire}
+        stats={stats}
         onSpecialAbility={() => {
           setEtherealWindsActive(!etherealWindsActive);
           onSpecialAbility?.();

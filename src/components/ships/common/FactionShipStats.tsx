@@ -102,13 +102,17 @@ export function FactionShip({
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="p-3 bg-gray-800/50 rounded-lg">
           <div className="text-sm text-gray-400 mb-1">Weapons</div>
-          {stats.weapons.map((weapon, index) => (
+          <div className="text-xs text-gray-300 flex justify-between">
+            <span>{stats.weapons.primary.config.name}</span>
+            <span>DMG: {stats.weapons.primary.state.currentStats.damage}</span>
+          </div>
+          {stats.weapons.secondary?.map((weapon, index) => (
             <div
               key={index}
               className="text-xs text-gray-300 flex justify-between"
             >
-              <span>{weapon.currentWeapon?.config.name || weapon.id}</span>
-              <span>DMG: {weapon.currentWeapon?.state.currentStats.damage || 0}</span>
+              <span>{weapon.config.name}</span>
+              <span>DMG: {weapon.state.currentStats.damage}</span>
             </div>
           ))}
         </div>

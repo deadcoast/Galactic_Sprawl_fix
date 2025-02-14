@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SpaceRatShip } from '../../../components/ships/FactionShips/spaceRats/SpaceRatShip';
-import { LostNovaShip } from '../../../components/ships/FactionShips/lostNova/LostNovaShip';
-import { EquatorHorizonShip } from '../../../components/ships/FactionShips/equatorHorizon/EquatorHorizonShip';
+import { SpaceRatShip } from '../../../components/ships/common/SpaceRatShip';
+import { LostNovaShip } from '../../../components/ships/common/LostNovaShip';
+import { EquatorHorizonShip } from '../../../components/ships/common/EquatorHorizonShip';
 import { WeaponSystem } from '../../../components/weapons/WeaponSystem';
 import { WeaponInstance, WeaponConfig, WeaponState, CombatWeaponStats, WeaponCategory, WeaponMount, WeaponMountSize, WeaponMountPosition } from '../../../types/weapons/WeaponTypes';
 import { TestWrapper } from '../../utils/testUtils';

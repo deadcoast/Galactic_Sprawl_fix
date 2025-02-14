@@ -1,9 +1,8 @@
-import { SpaceRatShip } from "./SpaceRatShip";
+import { SpaceRatShip } from "../../common/SpaceRatShip";
 import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
 import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
 import { ShipStatus } from "../../../../types/ships/ShipTypes";
 import { AlertTriangle } from "lucide-react";
-import { useEffect } from "react";
 
 interface AsteroidMarauderProps {
   id: string;
@@ -18,6 +17,8 @@ interface AsteroidMarauderProps {
   onEngage?: () => void;
   onRetreat: () => void;
   onSpecialAbility?: () => void;
+  position: { x: number; y: number };
+  rotation: number;
 }
 
 export function AsteroidMarauder({
@@ -29,6 +30,8 @@ export function AsteroidMarauder({
   maxShield,
   weapons,
   stats,
+  position,
+  rotation,
   onFire,
   onEngage,
   onRetreat,
@@ -63,10 +66,14 @@ export function AsteroidMarauder({
         shield={shield}
         maxShield={maxShield}
         weapons={weapons}
+        onFire={onFire}
+        stats={stats}
         tactics="aggressive"
         onEngage={onEngage}
         onRetreat={onRetreat}
         onSpecialAbility={onSpecialAbility}
+        position={position}
+        rotation={rotation}
       />
 
       {/* Warning indicator for damaged state */}

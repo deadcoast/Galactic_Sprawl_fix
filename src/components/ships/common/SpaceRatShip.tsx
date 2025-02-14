@@ -1,18 +1,18 @@
-import { FactionShipBase } from "../FactionShipBase";
-import { SpaceRatsShipClass } from "../../../../types/ships/FactionShipTypes";
+import { FactionShipBase } from "./FactionShipBase";
+import { SpaceRatsShipClass } from "../../../types/ships/FactionShipTypes";
 import { ReactNode } from "react";
 import { 
   WeaponMount, 
   WeaponInstance,
   CombatWeaponStats 
-} from "../../../../types/weapons/WeaponTypes";
-import { WeaponEffect } from "../../../../effects/types_effects/WeaponEffects";
-import { useShipEffects } from "../../../../hooks/ships/useShipEffects";
-import { BaseEffect } from "../../../../effects/types_effects/EffectTypes";
-import { Effect } from "../../../../types/core/GameTypes";
-import { Zap, Shield, Crosshair } from "lucide-react";
-import { StatusEffect } from "../../../ui/status/StatusEffect";
-import { AbilityButton } from "../../../ui/buttons/AbilityButton";
+} from "../../../types/weapons/WeaponTypes";
+import { WeaponEffect } from "../../../effects/types_effects/WeaponEffects";
+import { useShipEffects } from "../../../hooks/ships/useShipEffects";
+import { BaseEffect } from "../../../effects/types_effects/EffectTypes";
+import { Zap, Shield } from "lucide-react";
+import { StatusEffect } from "../../ui/status/StatusEffect";
+import { AbilityButton } from "../../ui/buttons/AbilityButton";
+import { FactionShipStats } from "../../../types/ships/FactionShipTypes";
 
 interface SpaceRatShipProps {
   id: string;
@@ -24,7 +24,10 @@ interface SpaceRatShipProps {
   shield: number;
   maxShield: number;
   weapons: WeaponMount[];
+  stats: FactionShipStats;
   tactics: "aggressive" | "defensive" | "hit-and-run" | "stealth";
+  position: { x: number; y: number };
+  rotation: number;
   onEngage?: () => void;
   onRetreat?: () => void;
   onSpecialAbility?: () => void;
@@ -48,7 +51,10 @@ export function SpaceRatShip({
   shield,
   maxShield,
   weapons,
+  stats,
   tactics,
+  position,
+  rotation,
   onEngage,
   onRetreat,
   onSpecialAbility,
@@ -133,6 +139,8 @@ export function SpaceRatShip({
         maxHealth,
         shield,
         maxShield,
+        position,
+        rotation,
         abilities: [
           {
             name: "Rage Mode",
@@ -191,6 +199,7 @@ export function SpaceRatShip({
       onEngage={onEngage}
       onRetreat={onRetreat}
       onSpecialAbility={onSpecialAbility}
+      onFire={onFire}
     >
       {/* Status Effects */}
       <StatusEffect

@@ -1,8 +1,8 @@
-import { SpaceRatShip } from "./SpaceRatShip";
+import { SpaceRatShip } from "../../common/SpaceRatShip";
 import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
 import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
 import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { AlertTriangle, Sword, Shield, Target, SkullIcon } from "lucide-react";
+import { SkullIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface RatKingProps {
@@ -21,6 +21,8 @@ interface RatKingProps {
   onRetreat?: () => void;
   onSpecialAbility?: () => void;
   tactics: "aggressive";
+  position: { x: number; y: number };
+  rotation: number;
 }
 
 export const RatKing: React.FC<RatKingProps> = ({
@@ -39,6 +41,8 @@ export const RatKing: React.FC<RatKingProps> = ({
   onRetreat,
   onSpecialAbility,
   tactics,
+  position,
+  rotation,
 }) => {
   const [plagueRatsActive, setPlagueRatsActive] = useState(false);
 
@@ -74,6 +78,9 @@ export const RatKing: React.FC<RatKingProps> = ({
       shield={shield}
       maxShield={maxShield}
       weapons={weapons}
+      stats={stats}
+      position={position}
+      rotation={rotation}
       onFire={onFire}
       onEngage={onEngage}
       onRetreat={onRetreat}

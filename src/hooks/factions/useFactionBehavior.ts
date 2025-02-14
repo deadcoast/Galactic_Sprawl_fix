@@ -1,20 +1,51 @@
 import { CommonShipStats } from '../../types/ships/CommonShipTypes';
 import { useEffect, useState } from "react";
-import { FactionShipClass, FactionShipStats } from "../../types/ships/FactionShipTypes";
+import { FactionShipClass, FactionShipStats, FactionFleet, FactionShip } from "../../types/ships/FactionShipTypes";
 import { SHIP_STATS as CONFIG_SHIP_STATS } from "../../config/ships";
 import { Effect } from "../../types/core/GameTypes";
-import { moduleEventBus } from "../../lib/events/moduleEventBus";
+import { moduleEventBus, ModuleEventType } from "../../lib/modules/ModuleEvents";
 import { ResourceType } from "../../types/resources/ResourceTypes";
 import { CombatUnit } from "../../types/combat/CombatTypes";
-import { FactionFleet } from "../../types/ships/FactionShipTypes";
-import { EventEmitter } from "../../lib/events/EventEmitter";
-import { ModuleEventType } from "../../types/modules/ModuleEvents";
-import { ModuleType } from "../../types/modules/ModuleTypes";
-import { FactionId, FactionState } from "../../types/ships/FactionTypes";
-import { Ship } from "../../types/ships/ShipTypes";
+import { EventEmitter } from "../../lib/utils/EventEmitter";
+import { ModuleType } from "../../types/buildings/ModuleTypes";
+import { FactionId, FactionState, FactionBehaviorType } from "../../types/ships/FactionTypes";
 import { Position } from "../../types/core/Position";
+import { AsteroidFieldManager } from "../../managers/AsteroidFieldManager";
+import { 
+  WeaponConfig, 
+  WeaponInstance, 
+  WeaponMount,
+  WeaponMountSize,
+  WeaponMountPosition,
+  WeaponCategory,
+  WeaponStatus,
+  WeaponType
+} from "../../types/weapons/WeaponTypes";
 
-// Faction Types
+// At the top of the file, after imports
+declare module "../../types/combat/CombatTypes" {
+  interface CombatUnit {
+    faction: string;
+    type: string;
+    tier: number;
+    status: "idle" | "engaging" | "patrolling";
+    weapons: FactionCombatWeapon[];
+    target?: string;
+  }
+}
+
+// Keep only the necessary interfaces
+interface ResourceNode {
+  position: { x: number; y: number };
+  value: number;
+}
+
+interface AsteroidFieldNode {
+  fieldId: string;
+  type: ResourceType;
+  amount: number;
+}
+
 export type ShipClass =
   // Space Rats Ships
   | "rat-king"
@@ -49,28 +80,6 @@ export type ShipClass =
   | "balancekeepers-wrath"
   | "ecliptic-watcher"
   | "harmonys-vanguard";
-
-export interface FactionShip {
-  id: string;
-  class: ShipClass;
-  status: "idle" | "patrolling" | "engaging" | "retreating";
-  position: { x: number; y: number };
-  health: number;
-  maxHealth: number;
-  experience: number;
-  target?: string;
-  stats: CommonShipStats;
-}
-
-export interface FactionFleet {
-  ships: FactionShip[];
-  formation: {
-    type: "offensive" | "defensive" | "stealth";
-    spacing: number;
-    facing: number;
-  };
-  strength: number;
-}
 
 export interface FactionTerritory {
   center: { x: number; y: number };
@@ -266,16 +275,6 @@ export const FACTION_CONFIGS: Record<
   },
 };
 
-interface CombatUnit {
-  id: string;
-  faction: string;
-  position: { x: number; y: number };
-  health: number;
-  maxHealth: number;
-  status: string;
-  target?: string;
-}
-
 interface CombatManager {
   getUnitsInRange: (
     position: { x: number; y: number },
@@ -295,19 +294,6 @@ interface Threat {
 }
 
 declare const combatManager: CombatManager;
-
-interface FactionState {
-  id: string;
-  activeShips: number;
-  territory: {
-    center: { x: number; y: number };
-    radius: number;
-  };
-  fleetStrength: number;
-  relationshipWithPlayer: number;
-  lastActivity: number;
-  isActive: boolean;
-}
 
 interface FactionConfig {
   id: string;
@@ -615,7 +601,15 @@ export function useFactionBehavior(factionId: FactionId) {
     },
     resourceManagement: {
       gatheringPriority: [],
-      stockpileThresholds: {},
+      stockpileThresholds: {
+        minerals: 0,
+        energy: 0,
+        plasma: 0,
+        exotic: 0,
+        gas: 0,
+        population: 0,
+        research: 0
+      },
       tradePreferences: [],
     },
     expansionStrategy: {
@@ -696,6 +690,121 @@ export function useFactionBehavior(factionId: FactionId) {
   return behavior;
 }
 
+// Type guard to check if an array is CombatUnit[]
+function isCombatUnitArray(units: CombatUnit[] | FactionShip[]): units is CombatUnit[] {
+  return units.length > 0 && 'type' in units[0];
+}
+
+// Map ship class to combat unit type
+function mapShipClassToType(shipClass: string): CombatUnit["type"] {
+  // Map the ship class to a valid combat unit type
+  switch (shipClass) {
+    case "rat-king":
+    case "asteroid-marauder":
+    case "rogue-nebula":
+      return "spitflare";
+    case "dark-sector-corsair":
+    case "wailing-wreck":
+      return "starSchooner";
+    case "galactic-scourge":
+    case "plasma-fang":
+      return "orionFrigate";
+    case "vermin-vanguard":
+    case "black-void-buccaneer":
+      return "harbringerGalleon";
+    default:
+      return "spitflare";
+  }
+}
+
+interface FactionCombatUnit {
+  id: string;
+  faction: string;
+  type: string;
+  tier: number;
+  position: Position;
+  status: "idle" | "engaging" | "patrolling";
+  health: number;
+  maxHealth: number;
+  shield: number;
+  maxShield: number;
+  weapons: FactionCombatWeapon[];
+}
+
+function calculateFleetStrength(units: FactionCombatUnit[]): number {
+  return units.reduce((total, unit) => {
+    const healthPercent = unit.health / unit.maxHealth;
+    const baseStrength = unit.maxHealth + unit.maxShield;
+    const weaponStrength = unit.weapons.reduce(
+      (sum, w) => sum + w.damage,
+      0
+    );
+    return total + (baseStrength + weaponStrength) * healthPercent;
+  }, 0);
+}
+
+interface FactionCombatWeapon {
+  id: string;
+  type: WeaponCategory;
+  damage: number;
+  range: number;
+  cooldown: number;
+  status: WeaponStatus;
+}
+
+function createDefaultWeaponConfig(): WeaponConfig {
+  return {
+    id: crypto.randomUUID(),
+    name: "Basic Machine Gun",
+    category: "machineGun",
+    tier: 1,
+    baseStats: {
+      damage: 10,
+      range: 500,
+      accuracy: 0.8,
+      rateOfFire: 1,
+      energyCost: 5,
+      cooldown: 1,
+      effects: []
+    },
+    visualAsset: "weapons/machinegun/basic",
+    mountRequirements: {
+      size: "medium" as WeaponMountSize,
+      power: 10
+    }
+  };
+}
+
+function createDefaultWeaponInstance(): WeaponInstance {
+  return {
+    config: createDefaultWeaponConfig(),
+    state: {
+      status: "ready",
+      currentStats: {
+        damage: 10,
+        range: 500,
+        accuracy: 0.8,
+        rateOfFire: 1,
+        energyCost: 5,
+        cooldown: 1,
+        effects: []
+      },
+      effects: []
+    }
+  };
+}
+
+function createDefaultWeaponMount(): WeaponMount {
+  return {
+    id: crypto.randomUUID(),
+    size: "medium" as WeaponMountSize,
+    position: "front" as WeaponMountPosition,
+    rotation: 0,
+    allowedCategories: ["machineGun"],
+    currentWeapon: createDefaultWeaponInstance()
+  };
+}
+
 function updateFleets(units: CombatUnit[]): FactionFleet[] {
   const fleets: FactionFleet[] = [];
   const assignedUnits = new Set<string>();
@@ -712,26 +821,42 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
     );
 
     if (nearbyUnits.length >= 3) {
-      const fleet: FactionFleet = {
-        ships: nearbyUnits.map((u) => {
-          const shipClass = determineShipClass(u);
-          const stats = getShipBehaviorStats(shipClass);
-          return {
-            id: u.id,
-            class: shipClass,
-            status: determineShipStatus(u),
-            position: u.position,
-            health: u.health,
-            maxHealth: stats.health,
-            experience: 0,
-            stats,
-          };
-        }),
-        formation: determineFormation(nearbyUnits),
-        strength: calculateFleetStrength(nearbyUnits),
-      };
+      const ships = nearbyUnits.map(u => {
+        const shipClass = determineShipClass(u);
+        const stats = getShipBehaviorStats(shipClass);
+        const ship: FactionShip = {
+          id: u.id,
+          name: `${u.faction} ${shipClass}`,
+          category: "war",
+          status: u.status === "idle" ? "ready" : u.status === "engaging" ? "engaging" : "patrolling",
+          faction: u.faction as FactionId,
+          class: normalizeShipClass(shipClass),
+          health: u.health,
+          maxHealth: u.maxHealth,
+          shield: u.shield,
+          maxShield: u.maxShield,
+          position: u.position,
+          rotation: 0,
+          tactics: "defensive",
+          stats: {
+            ...stats,
+            weapons: [createDefaultWeaponMount()]
+          },
+          abilities: []
+        };
+        return ship;
+      });
 
-      fleets.push(fleet);
+      fleets.push({
+        ships,
+        formation: {
+          type: "defensive",
+          spacing: 50,
+          facing: Math.atan2(nearbyUnits[0].position.y, nearbyUnits[0].position.x)
+        },
+        strength: calculateFleetStrength(nearbyUnits)
+      });
+
       nearbyUnits.forEach((u) => assignedUnits.add(u.id));
     }
   });
@@ -830,23 +955,24 @@ function calculateDistance(
 }
 
 // Ship class configurations
-interface ShipStats {
-  health: number;
-  shield: number;
-  armor: number;
-  speed: number;
-  turnRate: number;
-  weapons: WeaponMount[];
-  abilities: SpecialAbility[];
-}
-
-interface WeaponMount {
+interface FactionWeaponMount {
+  id: string;
   type: "machineGun" | "gaussCannon" | "railGun" | "MGSS" | "rockets";
   damage: number;
   range: number;
   cooldown: number;
   accuracy: number;
   effects: FactionWeaponEffect[];
+}
+
+interface ShipStats {
+  health: number;
+  shield: number;
+  armor: number;
+  speed: number;
+  turnRate: number;
+  weapons: FactionWeaponMount[];
+  abilities: SpecialAbility[];
 }
 
 interface FactionWeaponEffect {
@@ -882,7 +1008,8 @@ const DEFAULT_SHIP_STATS: ShipStats = {
 
 // Map kebab-case ship classes to camelCase
 function mapShipClass(shipClass: ShipClass): FactionShipClass {
-  return shipClass.replace(/-([a-z])/g, g => g[1].toUpperCase()) as FactionShipClass;
+  const camelCase = shipClass.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+  return camelCase as FactionShipClass;
 }
 
 // Get ship stats for behavior
@@ -942,6 +1069,7 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
     turnRate: 2,
     weapons: [
       {
+        id: "mgss",
         type: "MGSS",
         damage: 50,
         range: 800,
@@ -950,6 +1078,7 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
         effects: [{ type: "plasma", damage: 10, duration: 3 }],
       },
       {
+        id: "rockets",
         type: "rockets",
         damage: 200,
         range: 1200,
@@ -978,6 +1107,7 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
     turnRate: 3,
     weapons: [
       {
+        id: "gaussCannon",
         type: "gaussCannon",
         damage: 150,
         range: 1000,
@@ -1006,6 +1136,7 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
     turnRate: 1,
     weapons: [
       {
+        id: "railGun",
         type: "railGun",
         damage: 300,
         range: 1500,
@@ -1086,31 +1217,6 @@ function determineShipClass(unit: CombatUnit): ShipClass {
   return factionShips[0];
 }
 
-// Update fleet strength calculation to use stats
-function calculateFleetStrength(units: CombatUnit[]): number {
-  return units.reduce((total, unit) => {
-    const shipClass = determineShipClass(unit);
-    const stats = SHIP_STATS[shipClass] || DEFAULT_SHIP_STATS;
-    const healthPercent = unit.health / unit.maxHealth;
-
-    const baseStrength = stats.health + stats.shield + stats.armor;
-    const weaponStrength = stats.weapons.reduce(
-      (sum, w) => sum + w.damage * w.accuracy,
-      0,
-    );
-    const abilityStrength = stats.abilities.reduce((sum, a) => {
-      if (a.effect.type === "damage") {
-        return sum + a.effect.magnitude * 100;
-      }
-      return sum + 50; // Base value for utility abilities
-    }, 0);
-
-    return (
-      total + (baseStrength + weaponStrength + abilityStrength) * healthPercent
-    );
-  }, 0);
-}
-
 function determineShipStatus(unit: CombatUnit): FactionShip["status"] {
   // Determine ship status based on unit state
   if (unit.target) {
@@ -1164,14 +1270,21 @@ function calculateTerritorySystems(territory: FactionTerritory): number {
 
 function calculateResourceIncome(territory: FactionTerritory): {
   minerals: number;
-  gas: number;
+  energy: number;
+  plasma: number;
   exotic: number;
+  gas: number;
+  population: number;
+  research: number;
 } {
-  // Placeholder - implement actual resource calculation logic
   return {
     minerals: territory.resources.minerals * 0.1,
-    gas: territory.resources.gas * 0.1,
+    energy: 0,
+    plasma: 0,
     exotic: territory.resources.exotic * 0.1,
+    gas: territory.resources.gas * 0.1,
+    population: 0,
+    research: 0
   };
 }
 
@@ -1190,6 +1303,19 @@ function determineNextAction(
     default:
       return "patrol";
   }
+}
+
+function selectSpawnPoint(territory: FactionTerritory): {
+  x: number;
+  y: number;
+} {
+  const angle = Math.random() * Math.PI * 2;
+  const distance = Math.random() * territory.radius * 0.8;
+
+  return {
+    x: territory.center.x + Math.cos(angle) * distance,
+    y: territory.center.y + Math.sin(angle) * distance,
+  };
 }
 
 function executeFactionDecisions(state: FactionBehaviorState): void {
@@ -1228,7 +1354,11 @@ function executeFactionDecisions(state: FactionBehaviorState): void {
 }
 
 function updateCombatTactics(state: FactionBehaviorState): void {
-  const fleetStrength = calculateFleetStrength(state.fleets);
+  // Calculate fleet strength directly from combat units
+  const fleetStrength = state.fleets.reduce((total, fleet) => {
+    return total + fleet.strength;
+  }, 0);
+
   const threatLevel = assessThreatLevel(state);
   
   // Adjust combat tactics based on situation
@@ -1251,7 +1381,7 @@ function updateCombatTactics(state: FactionBehaviorState): void {
   moduleEventBus.emit({
     type: "STATUS_CHANGED",
     moduleId: `faction-${state.id}`,
-    moduleType: "combat",
+    moduleType: "radar" as ModuleType,
     timestamp: Date.now(),
     data: {
       type: "tactics",
@@ -1275,7 +1405,10 @@ function manageResources(state: FactionBehaviorState): void {
       minerals: 2000,
       energy: 1500,
       plasma: 1000,
-      exotic: 500
+      exotic: 500,
+      gas: 1000,
+      population: 500,
+      research: 1000
     };
   }
 
@@ -1291,7 +1424,7 @@ function manageResources(state: FactionBehaviorState): void {
   moduleEventBus.emit({
     type: "STATUS_CHANGED",
     moduleId: `faction-${state.id}`,
-    moduleType: "trading",
+    moduleType: "radar" as ModuleType,
     timestamp: Date.now(),
     data: {
       type: "resource_management",
@@ -1325,7 +1458,7 @@ function planExpansion(state: FactionBehaviorState): void {
   moduleEventBus.emit({
     type: "STATUS_CHANGED",
     moduleId: `faction-${state.id}`,
-    moduleType: "expansion",
+    moduleType: "radar" as ModuleType,
     timestamp: Date.now(),
     data: {
       type: "strategy",
@@ -1356,7 +1489,8 @@ function isAmbushOpportunity(state: FactionBehaviorState): boolean {
     .flatMap((fleet) => fleet.ships)
     .filter(
       (ship) =>
-        ship.class === "quantum-pariah" || ship.class === "rogue-nebula",
+        ship.class === normalizeShipClass("quantum-pariah") || 
+        ship.class === normalizeShipClass("rogue-nebula")
     ).length;
 
   const hasEnoughStealthForces = stealthShips >= 3;
@@ -1436,8 +1570,12 @@ function executePatrolPattern(state: FactionBehaviorState): void {
   }
 
   state.fleets.forEach((fleet) => {
+    // Update formation first
+    updateFleetFormation(fleet.ships, fleet.formation.type, fleet.formation.spacing);
+    
+    // Then move to patrol points
     const patrolPoints = generatePatrolPoints(state.territory);
-    fleet.ships.forEach((ship, index) => {
+    fleet.ships.forEach((ship: FactionShip, index: number) => {
       const targetPoint = patrolPoints[index % patrolPoints.length];
       combatManager.moveUnit(ship.id, targetPoint);
     });
@@ -1449,7 +1587,7 @@ function executeAggressiveRaids(state: FactionBehaviorState): void {
     const nearbyEnemies = findNearbyEnemies(state);
     if (nearbyEnemies.length > 0) {
       const target = nearbyEnemies[0];
-      fleet.ships.forEach((ship) => {
+      fleet.ships.forEach((ship: FactionShip) => {
         combatManager.engageTarget(ship.id, target.id);
       });
     }
@@ -1464,7 +1602,7 @@ function executePursuit(state: FactionBehaviorState): void {
         combatManager.getUnitsInRange(leadShip.position, 1000),
       ).find((unit) => unit.id === leadShip.target);
       if (targetUnit) {
-        fleet.ships.forEach((ship) => {
+        fleet.ships.forEach((ship: FactionShip) => {
           combatManager.moveUnit(ship.id, targetUnit.position);
         });
       }
@@ -1475,7 +1613,7 @@ function executePursuit(state: FactionBehaviorState): void {
 function executeStealthMode(state: FactionBehaviorState): void {
   state.fleets.forEach((fleet) => {
     const safePoints = findStealthPoints(state.territory);
-    fleet.ships.forEach((ship, index) => {
+    fleet.ships.forEach((ship: FactionShip, index: number) => {
       const targetPoint = safePoints[index % safePoints.length];
       combatManager.moveUnit(ship.id, targetPoint);
     });
@@ -1485,7 +1623,7 @@ function executeStealthMode(state: FactionBehaviorState): void {
 function prepareAmbush(state: FactionBehaviorState): void {
   state.fleets.forEach((fleet) => {
     const ambushPoints = calculateAmbushPoints(state.territory);
-    fleet.ships.forEach((ship, index) => {
+    fleet.ships.forEach((ship: FactionShip, index: number) => {
       const targetPoint = ambushPoints[index % ambushPoints.length];
       combatManager.moveUnit(ship.id, targetPoint);
     });
@@ -1496,7 +1634,7 @@ function executeAmbush(state: FactionBehaviorState): void {
   state.fleets.forEach((fleet) => {
     const nearbyTargets = findNearbyEnemies(state);
     if (nearbyTargets.length > 0) {
-      fleet.ships.forEach((ship) => {
+      fleet.ships.forEach((ship: FactionShip) => {
         const target =
           nearbyTargets[Math.floor(Math.random() * nearbyTargets.length)];
         combatManager.engageTarget(ship.id, target.id);
@@ -1513,7 +1651,7 @@ function executeBalanceEnforcement(state: FactionBehaviorState): void {
         combatManager.getUnitsInRange(fleet.ships[0].position, 1000),
       ).filter((unit) => unit.faction === dominantFaction);
       if (targets.length > 0) {
-        fleet.ships.forEach((ship) => {
+        fleet.ships.forEach((ship: FactionShip) => {
           const target = targets[Math.floor(Math.random() * targets.length)];
           combatManager.engageTarget(ship.id, target.id);
         });
@@ -1526,7 +1664,7 @@ function executeOverwhelmingForce(state: FactionBehaviorState): void {
   state.fleets.forEach((fleet) => {
     const target = findHighValueTarget(state);
     if (target) {
-      fleet.ships.forEach((ship) => {
+      fleet.ships.forEach((ship: FactionShip) => {
         combatManager.engageTarget(ship.id, target.id);
       });
     }
@@ -1536,7 +1674,7 @@ function executeOverwhelmingForce(state: FactionBehaviorState): void {
 function executeStrategicWithdrawal(state: FactionBehaviorState): void {
   state.fleets.forEach((fleet) => {
     const retreatPoints = findRetreatPoints(state.territory);
-    fleet.ships.forEach((ship, index) => {
+    fleet.ships.forEach((ship: FactionShip, index: number) => {
       const targetPoint = retreatPoints[index % retreatPoints.length];
       combatManager.moveUnit(ship.id, targetPoint);
     });
@@ -1632,23 +1770,10 @@ function findHighValueTarget(
   return targets[0];
 }
 
-function selectSpawnPoint(territory: FactionTerritory): {
-  x: number;
-  y: number;
-} {
-  const angle = Math.random() * Math.PI * 2;
-  const distance = Math.random() * territory.radius * 0.8;
-
-  return {
-    x: territory.center.x + Math.cos(angle) * distance,
-    y: territory.center.y + Math.sin(angle) * distance,
-  };
-}
-
 function assessThreatLevel(state: FactionBehaviorState): number {
   const nearbyEnemies = findNearbyEnemies(state);
-  const enemyStrength = nearbyEnemies.reduce((total, enemy) => total + enemy.strength, 0);
-  const ownStrength = calculateFleetStrength(state.fleets);
+  const enemyStrength = calculateFleetStrength(nearbyEnemies);
+  const ownStrength = calculateFleetStrength(shipsToUnits(state.fleets.flatMap(f => f.ships)));
   return Math.min(1, enemyStrength / (ownStrength || 1));
 }
 
@@ -1696,13 +1821,178 @@ function calculateOptimalExpansionDirection(state: FactionBehaviorState): { x: n
   };
 }
 
+// Create a singleton instance of AsteroidFieldManager
+const asteroidFieldManager = new AsteroidFieldManager();
+
 function findNearbyResources(state: FactionBehaviorState): ResourceNode[] {
-  // Implementation would come from the resource management system
-  return [];
+  // Get all resource nodes from asteroid fields with proper typing
+  const allNodes = Array.from(asteroidFieldManager.getResourceNodes().entries()) as Array<[string, AsteroidFieldNode]>;
+  
+  // Filter nodes within territory radius
+  const nearbyNodes = allNodes.filter(([_, node]) => {
+    const field = asteroidFieldManager.getField(node.fieldId);
+    if (!field) return false;
+    
+    // Calculate distance from territory center to field
+    const dx = field.position.x - state.territory.center.x;
+    const dy = field.position.y - state.territory.center.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    return distance <= state.territory.radius;
+  });
+
+  // Convert to ResourceNode format
+  return nearbyNodes.map(([_, node]) => {
+    const field = asteroidFieldManager.getField(node.fieldId);
+    if (!field) return null;
+
+    return {
+      position: field.position,
+      value: node.amount * getResourceValueMultiplier(node.type)
+    };
+  }).filter((node): node is ResourceNode => node !== null);
 }
 
-function updateFleetFormation(ships: Ship[], formation: string, spacing: number): void {
-  ships.forEach((ship: Ship, index: number) => {
-    // Formation logic implementation
+function getResourceValueMultiplier(type: ResourceType): number {
+  switch (type) {
+    case "exotic":
+      return 3.0; // Highest value
+    case "gas":
+      return 2.0; // Medium value
+    case "minerals":
+      return 1.0; // Base value
+    default:
+      return 1.0;
+  }
+}
+
+function updateFleetFormation(ships: FactionShip[], formation: string, spacing: number): void {
+  ships.forEach((ship: FactionShip, index: number) => {
+    const angle = (index / ships.length) * Math.PI * 2;
+    const offset = {
+      x: Math.cos(angle) * spacing,
+      y: Math.sin(angle) * spacing
+    };
+
+    // Adjust formation based on type
+    switch (formation) {
+      case "defensive":
+        // Tight circular formation
+        combatManager.moveUnit(ship.id, offset);
+        break;
+      case "offensive":
+        // V-shaped formation
+        const row = Math.floor(index / 3);
+        const col = index % 3;
+        combatManager.moveUnit(ship.id, {
+          x: col * spacing - row * spacing / 2,
+          y: row * spacing
+        });
+        break;
+      case "stealth":
+        // Scattered formation
+        combatManager.moveUnit(ship.id, {
+          x: offset.x + (Math.random() - 0.5) * spacing,
+          y: offset.y + (Math.random() - 0.5) * spacing
+        });
+        break;
+    }
   });
+}
+
+// Convert kebab-case to camelCase for ship class names
+function normalizeShipClass(shipClass: string): FactionShipClass {
+  const camelCase = shipClass.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+  return camelCase as FactionShipClass;
+}
+
+// Convert CombatUnit to FactionShip
+function convertCombatUnitToFactionShip(unit: CombatUnit, factionId: FactionId, shipClass: ShipClass): FactionShip {
+  const stats = getShipBehaviorStats(shipClass);
+  return {
+    id: unit.id,
+    name: `${factionId} ${shipClass}`,
+    category: "war",
+    status: "ready",
+    faction: factionId,
+    class: normalizeShipClass(shipClass),
+    health: unit.health,
+    maxHealth: unit.maxHealth,
+    shield: unit.shield,
+    maxShield: unit.maxShield,
+    position: unit.position,
+    rotation: 0,
+    target: unit.target,
+    tactics: "defensive",
+    stats: {
+      ...stats,
+      weapons: [createDefaultWeaponMount()]
+    },
+    abilities: [],
+    specialAbility: undefined
+  };
+}
+
+// Convert FactionShip to CombatUnit
+function _convertFactionShipToCombatUnit(ship: FactionShip): CombatUnit {
+  return {
+    id: ship.id,
+    position: ship.position,
+    rotation: ship.rotation,
+    health: ship.health,
+    maxHealth: ship.maxHealth,
+    shield: ship.shield,
+    maxShield: ship.maxShield,
+    effects: [],
+    faction: ship.faction,
+    type: ship.category,
+    tier: 1,
+    status: ship.status === "ready" ? "idle" : ship.status === "engaging" ? "engaging" : "patrolling",
+    weapons: ship.stats.weapons.map(convertWeaponMount),
+    target: ship.target
+  };
+}
+
+// Helper function to convert FactionShip array to CombatUnit array for strength calculation
+function shipsToUnits(ships: FactionShip[]): CombatUnit[] {
+  return ships.map(ship => ({
+    id: ship.id,
+    faction: ship.faction,
+    type: mapShipClassToType(ship.class) as CombatUnit["type"],
+    tier: 1,
+    position: ship.position,
+    rotation: ship.rotation,
+    status: ship.status === "ready" ? "idle" : ship.status === "engaging" ? "engaging" : "patrolling",
+    health: ship.health,
+    maxHealth: ship.maxHealth,
+    shield: ship.shield,
+    maxShield: ship.maxShield,
+    weapons: ship.stats.weapons.map(convertWeaponMount),
+    effects: [],
+    target: ship.target
+  }));
+}
+
+// Convert WeaponMount to FactionCombatWeapon
+function convertWeaponMount(mount: WeaponMount): CombatUnit["weapons"][0] {
+  if (!mount.currentWeapon) {
+    return {
+      id: mount.id,
+      type: mount.allowedCategories[0] || "machineGun",
+      range: 500,
+      damage: 10,
+      cooldown: 1,
+      status: "ready"
+    };
+  }
+
+  const { currentStats } = mount.currentWeapon.state;
+  return {
+    id: mount.id,
+    type: mount.currentWeapon.config.category,
+    range: currentStats.range,
+    damage: currentStats.damage,
+    cooldown: currentStats.cooldown,
+    status: mount.currentWeapon.state.status
+  };
 }

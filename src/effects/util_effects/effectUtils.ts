@@ -38,15 +38,15 @@ export function createEffect(
  */
 export function createWeaponEffect(
   baseEffect: BaseEffect,
-  damage: number,
-  sourceWeaponId: string,
-  radius?: number
+  strength: number,
+  type: "damage" | "area" | "status" = "damage",
+  duration: number = 0
 ): WeaponEffect {
   return {
     ...baseEffect,
-    damage,
-    sourceWeaponId,
-    radius,
+    type,
+    strength,
+    duration
   };
 }
 
@@ -125,8 +125,8 @@ export function removeEffect(stack: EffectStack, effectId: string): EffectStack 
 /**
  * Type guard for weapon effects
  */
-export function isWeaponEffect(effect: BaseEffect): effect is WeaponEffect {
-  return "damage" in effect && "sourceWeaponId" in effect;
+export function isWeaponEffect(effect: BaseEffect): effect is BaseEffect & WeaponEffect {
+  return "strength" in effect && typeof effect.strength === "number";
 }
 
 /**
@@ -186,7 +186,7 @@ export function modifyEffect(
     ...effect,
     ...modifiers,
     magnitude:
-      effect.magnitude * (modifiers.magnitude ? modifiers.magnitude : 1),
+      effect.magnitude * (modifiers.magnitude || 1),
   };
 }
 

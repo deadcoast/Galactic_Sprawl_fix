@@ -1,14 +1,13 @@
-import { FactionShipBase } from "../FactionShipBase";
-import { EquatorHorizonShipClass } from "../../../../types/ships/FactionShipTypes";
+import { FactionShipBase } from "./FactionShipBase";
+import { EquatorHorizonShipClass, FactionShipStats } from "../../../types/ships/FactionShipTypes";
 import { ReactNode } from "react";
-import { WeaponMount,} from "../../../../types/weapons/WeaponTypes";
-import { WeaponEffect, DamageEffect } from "../../../../effects/types_effects/WeaponEffects";
-import { useShipEffects } from "../../../../hooks/ships/useShipEffects";
-import { BaseEffect } from "../../../../effects/types_effects/EffectTypes";
-import { Effect } from "../../../../types/core/GameTypes";
-import { Zap, Shield, Target } from "lucide-react";
-import { StatusEffect } from "../../../ui/status/StatusEffect";
-import { AbilityButton } from "../../../ui/buttons/AbilityButton";
+import { WeaponMount } from "../../../types/weapons/WeaponTypes";
+import { DamageEffect } from "../../../effects/types_effects/WeaponEffects";
+import { useShipEffects } from "../../../hooks/ships/useShipEffects";
+import { BaseEffect } from "../../../effects/types_effects/EffectTypes";
+import { Shield, Target } from "lucide-react";
+import { StatusEffect } from "../../ui/status/StatusEffect";
+import { AbilityButton } from "../../ui/buttons/AbilityButton";
 import { useCallback } from "react";
 
 interface EquatorHorizonShipProps {
@@ -21,7 +20,10 @@ interface EquatorHorizonShipProps {
   shield: number;
   maxShield: number;
   weapons: WeaponMount[];
+  stats: FactionShipStats;
   tactics: "aggressive" | "defensive" | "hit-and-run" | "stealth";
+  position: { x: number; y: number };
+  rotation: number;
   onEngage?: () => void;
   onRetreat?: () => void;
   onSpecialAbility?: () => void;
@@ -45,7 +47,10 @@ export function EquatorHorizonShip({
   shield,
   maxShield,
   weapons,
+  stats,
   tactics,
+  position,
+  rotation,
   onEngage,
   onRetreat,
   onSpecialAbility,
@@ -172,6 +177,8 @@ export function EquatorHorizonShip({
         maxHealth,
         shield,
         maxShield,
+        position,
+        rotation,
         abilities: [
           {
             name: "Overcharge",
@@ -202,30 +209,7 @@ export function EquatorHorizonShip({
             },
           },
         ],
-        stats: {
-          health,
-          maxHealth,
-          shield,
-          maxShield,
-          energy: 100,
-          maxEnergy: 100,
-          speed: 80,
-          turnRate: 2,
-          cargo: 200,
-          weapons,
-          abilities: [],
-          defense: {
-            armor: 200,
-            shield,
-            evasion: 0.3,
-            regeneration: 3,
-          },
-          mobility: {
-            speed: 80,
-            turnRate: 2,
-            acceleration: 40,
-          },
-        },
+        stats,
       }}
       onEngage={onEngage}
       onRetreat={onRetreat}

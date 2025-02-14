@@ -1,6 +1,7 @@
 import { factionManager } from "../../lib/factions/factionManager";
 import { useEffect, useState } from "react";
-import type { FactionId, FactionShip } from "../../types/ships/FactionShipTypes";
+import type { FactionShip } from "../../types/ships/FactionShipTypes";
+import type { FactionId } from "../../types/ships/FactionTypes";
 import type { AIState } from "../../types/debug/DebugTypes";
 
 interface FactionBehavior {

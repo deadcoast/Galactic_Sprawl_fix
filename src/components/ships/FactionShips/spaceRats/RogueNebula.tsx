@@ -1,4 +1,4 @@
-import { SpaceRatShip } from "./SpaceRatShip";
+import { SpaceRatShip } from "../../common/SpaceRatShip";
 import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
 import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
 import { ShipStatus } from "../../../../types/ships/ShipTypes";
@@ -18,6 +18,8 @@ interface RogueNebulaProps {
   onEngage?: () => void;
   onRetreat: () => void;
   onSpecialAbility?: (abilityName: string) => void;
+  position: { x: number; y: number };
+  rotation: number;
 }
 
 export function RogueNebula({
@@ -29,6 +31,8 @@ export function RogueNebula({
   maxShield,
   weapons,
   stats,
+  position,
+  rotation,
   onFire,
   onEngage,
   onRetreat,
@@ -78,6 +82,10 @@ export function RogueNebula({
         onEngage={onEngage}
         onRetreat={onRetreat}
         onSpecialAbility={() => onSpecialAbility?.(stealthActive ? "stealth" : "scan")}
+        onFire={onFire}
+        position={position}
+        rotation={rotation}
+        stats={stats}
       />
 
       {/* Status Effects */}

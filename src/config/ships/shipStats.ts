@@ -1,5 +1,6 @@
 import { FactionShipClass, FactionShipStats } from "../../types/ships/FactionShipTypes";
 import { WeaponMount, WeaponMountSize, WeaponMountPosition, WeaponStatus, WeaponInstance } from "../../types/weapons/WeaponTypes";
+import { FactionId } from "../../types/ships/FactionTypes";
 import {
   PLASMA_EFFECT,
   GAUSS_EFFECT,
@@ -10,8 +11,62 @@ import {
   STEALTH_EFFECT,
   SPEED_REDUCTION_EFFECT,
 } from "../../effects/types_effects/shipEffects";
+import { EQUATOR_HORIZON_SHIPS } from "./equatorHorizonShips";
+
+// Base template for unimplemented ships
+const BASE_SHIP_TEMPLATE: FactionShipStats = {
+  health: 1000,
+  maxHealth: 1000,
+  shield: 500,
+  maxShield: 500,
+  energy: 500,
+  maxEnergy: 500,
+  speed: 100,
+  turnRate: 2,
+  cargo: 200,
+  tier: 1,
+  faction: "space-rats" as FactionId,
+  weapons: [],
+  defense: {
+    armor: 300,
+    shield: 500,
+    evasion: 0.3,
+    regeneration: 5,
+  },
+  mobility: {
+    speed: 100,
+    turnRate: 2,
+    acceleration: 50,
+  },
+  abilities: []
+};
+
+// Create temporary implementations for missing ships
+const SPACE_RATS_REMAINING = {
+  ratsRevenge: { ...BASE_SHIP_TEMPLATE },
+  darkSectorCorsair: { ...BASE_SHIP_TEMPLATE },
+  wailingWreck: { ...BASE_SHIP_TEMPLATE },
+  galacticScourge: { ...BASE_SHIP_TEMPLATE },
+  plasmaFang: { ...BASE_SHIP_TEMPLATE },
+  verminVanguard: { ...BASE_SHIP_TEMPLATE },
+  blackVoidBuccaneer: { ...BASE_SHIP_TEMPLATE },
+};
+
+const LOST_NOVA_SHIPS = {
+  eclipseScythe: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+  nullsRevenge: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+  darkMatterReaper: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+  quantumPariah: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+  entropyScale: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+  voidRevenant: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+  scytheOfAndromeda: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+  nebularPersistence: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+  oblivionsWake: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+  forbiddenVanguard: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+};
 
 export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
+  // Space Rats ships
   ratKing: {
     health: 1000,
     maxHealth: 1000,
@@ -23,7 +78,7 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
     turnRate: 2,
     cargo: 200,
     tier: 3,
-    faction: "space-rats",
+    faction: "space-rats" as FactionId,
     weapons: [
       {
         id: "mgss-1",
@@ -101,7 +156,7 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 150,
     tier: 2,
-    faction: "space-rats",
+    faction: "space-rats" as FactionId,
     weapons: [
       {
         id: "mg-1",
@@ -179,7 +234,7 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
     turnRate: 3.5,
     cargo: 150,
     tier: 2,
-    faction: "space-rats",
+    faction: "space-rats" as FactionId,
     weapons: [
       {
         id: "railgun-1",
@@ -246,8 +301,10 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
       },
     ],
   },
-  // ... add more ships with similar structure ...
-} as const;
+  ...SPACE_RATS_REMAINING,
+  ...LOST_NOVA_SHIPS,
+  ...EQUATOR_HORIZON_SHIPS
+};
 
 export function getShipStats(shipClass: FactionShipClass): FactionShipStats {
   const stats = SHIP_STATS[shipClass];

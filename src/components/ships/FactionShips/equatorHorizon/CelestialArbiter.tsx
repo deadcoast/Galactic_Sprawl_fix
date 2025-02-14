@@ -1,8 +1,8 @@
-import { EquatorHorizonShip } from "./EquatorHorizonShip";
+import { EquatorHorizonShip } from "../../common/EquatorHorizonShip";
 import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
 import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
 import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { AlertTriangle, Sun } from "lucide-react";
+import { Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface CelestialArbiterProps {
@@ -14,6 +14,8 @@ interface CelestialArbiterProps {
   maxShield: number;
   weapons: WeaponMount[];
   stats: FactionShipStats;
+  position: { x: number; y: number };
+  rotation: number;
   onFire: (weaponId: string) => void;
   onEngage?: () => void;
   onRetreat: () => void;
@@ -29,6 +31,8 @@ export function CelestialArbiter({
   maxShield,
   weapons,
   stats,
+  position,
+  rotation,
   onFire,
   onEngage,
   onRetreat,
@@ -69,9 +73,13 @@ export function CelestialArbiter({
         shield={shield}
         maxShield={maxShield}
         weapons={weapons}
+        stats={stats}
         tactics="aggressive"
+        position={position}
+        rotation={rotation}
         onEngage={onEngage}
         onRetreat={onRetreat}
+        onFire={onFire}
         onSpecialAbility={() => {
           setCelestialJudgementActive(!celestialJudgementActive);
           onSpecialAbility?.();

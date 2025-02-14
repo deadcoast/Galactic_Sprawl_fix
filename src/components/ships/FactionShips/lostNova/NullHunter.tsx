@@ -1,8 +1,8 @@
-import { LostNovaShip } from "./LostNovaShip";
+import { LostNovaShip } from "../../common/LostNovaShip";
 import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
 import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
 import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { AlertTriangle, Target } from "lucide-react";
+import { Target } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface NullHunterProps {
@@ -18,6 +18,8 @@ interface NullHunterProps {
   onEngage?: () => void;
   onRetreat: () => void;
   onSpecialAbility?: () => void;
+  position: { x: number; y: number };
+  rotation: number;
 }
 
 export function NullHunter({
@@ -33,12 +35,16 @@ export function NullHunter({
   onEngage,
   onRetreat,
   onSpecialAbility,
+  position,
+  rotation,
 }: NullHunterProps) {
   const [voidTrackingActive, setVoidTrackingActive] = useState(false);
+  const [nullFieldActive, setNullFieldActive] = useState(false);
 
   useEffect(() => {
     if (status === "disabled") {
       setVoidTrackingActive(false);
+      setNullFieldActive(false);
     }
   }, [status]);
 
@@ -69,11 +75,15 @@ export function NullHunter({
         shield={shield}
         maxShield={maxShield}
         weapons={weapons}
-        tactics="stealth"
+        stats={stats}
+        position={position}
+        rotation={rotation}
+        tactics="aggressive"
         onEngage={onEngage}
         onRetreat={onRetreat}
+        onFire={onFire}
         onSpecialAbility={() => {
-          setVoidTrackingActive(!voidTrackingActive);
+          setNullFieldActive(!nullFieldActive);
           onSpecialAbility?.();
         }}
       >
@@ -82,6 +92,12 @@ export function NullHunter({
             <div className="status-effect">
               <Target className="icon" />
               <span>Void Tracking Active</span>
+            </div>
+          )}
+          {nullFieldActive && (
+            <div className="status-effect">
+              <Target className="icon" />
+              <span>Null Field Active</span>
             </div>
           )}
         </div>
@@ -96,6 +112,17 @@ export function NullHunter({
           >
             <Target className="icon" />
             <span>Void Tracking</span>
+          </button>
+          <button
+            className={`ability-button ${nullFieldActive ? 'active' : ''}`}
+            onClick={() => {
+              setNullFieldActive(!nullFieldActive);
+              onSpecialAbility?.();
+            }}
+            disabled={status === "disabled"}
+          >
+            <Target className="icon" />
+            <span>Null Field</span>
           </button>
         </div>
       </LostNovaShip>
