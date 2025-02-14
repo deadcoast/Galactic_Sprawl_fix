@@ -3,6 +3,7 @@ import { useGlobalEvents } from '../../hooks/game/useGlobalEvents';
 import { useVPR } from '../../hooks/ui/useVPR';
 import { AlertTriangle, Shield, Zap } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FactionId } from '../../types/ships/FactionTypes';
 
 interface HazardVPR {
   type: Hazard['type'];
@@ -82,7 +83,7 @@ interface BattleEnvironmentProps {
   hazards: Hazard[];
   units: CombatUnit[];
   fleetId: string;
-  factionId: string;
+  factionId: FactionId;
   onHazardEffect: (hazardId: string, shipId: string, effect: Hazard['effect']) => void;
   onWeaponFire: (weaponId: string, targetId: string) => void;
   onUnitMove: (unitId: string, position: { x: number; y: number }) => void;

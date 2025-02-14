@@ -1,6 +1,6 @@
 import { shipBehaviorManager } from '../../../lib/ai/shipBehavior';
 import { shipMovementManager } from '../../../lib/ai/shipMovement';
-import { techTreeManager } from '../../../lib/game/techTreeManager';
+import { techTreeManager } from '../../../managers/game/techTreeManager';
 import { getDefaultCapabilities, getShipCategory } from '../../../types/ships/CommonShipTypes';
 import React, { useEffect, useRef } from 'react';
 

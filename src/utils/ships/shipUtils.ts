@@ -1,6 +1,10 @@
-import { BaseStatus, Position, Velocity } from '../types/core/GameTypes';
-import { Ship, ShipDisplayStats, ShipStats } from '../types/ships/CommonShipTypes';
-import { WeaponCategory, WeaponInstance } from '../types/weapons/WeaponTypes';
+import { BaseStatus, Position, Velocity } from '../../types/core/GameTypes';
+import {
+  CommonShip as Ship,
+  CommonShipStats as ShipStats,
+  CommonShipDisplayStats as ShipDisplayStats,
+} from '../../types/ships/CommonShipTypes';
+import { WeaponCategory, WeaponInstance } from '../../types/weapons/WeaponTypes';
 
 // Status Conversions
 export function normalizeShipStatus(status: string): BaseStatus {
@@ -78,22 +82,43 @@ export function normalizeWeaponCategory(category: string): WeaponCategory {
 
 // Display Stats Conversion
 export function getDisplayStats(ship: Ship): ShipDisplayStats {
-  const { currentStats } = ship.state;
+  const { stats } = ship;
 
   return {
-    hull: {
-      current: currentStats.health,
-      max: currentStats.maxHealth,
+    weapons: {
+      damage: stats.weapons.reduce(
+        (total, mount) => total + (mount.currentWeapon?.config.baseStats.damage ?? 0),
+        0
+      ),
+      range:
+        stats.weapons.filter(mount => mount.currentWeapon).length > 0
+          ? stats.weapons.reduce(
+              (total, mount) => total + (mount.currentWeapon?.config.baseStats.range ?? 0),
+              0
+            ) / stats.weapons.filter(mount => mount.currentWeapon).length
+          : 0,
+      accuracy:
+        stats.weapons.filter(mount => mount.currentWeapon).length > 0
+          ? stats.weapons.reduce(
+              (total, mount) => total + (mount.currentWeapon?.config.baseStats.accuracy ?? 0),
+              0
+            ) / stats.weapons.filter(mount => mount.currentWeapon).length
+          : 0,
     },
-    shield: {
-      current: currentStats.shield,
-      max: currentStats.maxShield,
+    defense: {
+      hull: stats.health,
+      shield: stats.defense.shield,
+      armor: stats.defense.armor,
     },
-    armor: currentStats.armor,
-    speed: currentStats.speed,
-    energy: {
-      current: currentStats.energy,
-      max: currentStats.maxEnergy,
+    mobility: {
+      speed: stats.mobility.speed,
+      agility: stats.mobility.turnRate,
+      jumpRange: 0, // TODO: Implement jump range calculation
+    },
+    systems: {
+      power: stats.energy,
+      radar: 0, // TODO: Implement radar system
+      efficiency: 0, // TODO: Implement efficiency calculation
     },
   };
 }

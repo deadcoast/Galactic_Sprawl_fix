@@ -1,9 +1,8 @@
 import { EventEmitter } from 'events';
-import { thresholdEvents } from '../../../contexts/ThresholdTypes';
-import { shipBehaviorManager } from '../../ai/shipBehavior';
-import { shipMovementManager } from '../../ai/shipMovement';
-import { moduleManager } from '../../modules/ModuleManager';
-import { Position } from '../../../types/core/GameTypes';
+import { thresholdEvents } from '../../contexts/ThresholdTypes';
+import { shipBehaviorManager } from '../../lib/ai/shipBehavior';
+import { shipMovementManager } from '../../lib/ai/shipMovement';
+import { Position } from '../../types/core/GameTypes';
 
 interface MiningShip {
   id: string;
@@ -63,7 +62,8 @@ class MiningShipManagerImpl extends EventEmitter {
       capabilities: {
         canMine: true,
         canSalvage: false,
-        canExplore: false,
+        canScan: false,
+        canJump: false,
       },
       position: { x: 0, y: 0 }, // Initial position
       stats: {
@@ -124,7 +124,9 @@ class MiningShipManagerImpl extends EventEmitter {
    */
   private dispatchShipToResource(shipId: string, resourceId: string): void {
     const ship = this.ships.get(shipId);
-    if (!ship) return;
+    if (!ship) {
+      return;
+    }
 
     // Create mining task
     const task: MiningTask = {
@@ -161,7 +163,9 @@ class MiningShipManagerImpl extends EventEmitter {
    */
   private recallShip(shipId: string): void {
     const ship = this.ships.get(shipId);
-    if (!ship) return;
+    if (!ship) {
+      return;
+    }
 
     // Clear current task
     Array.from(this.tasks.values())
@@ -184,8 +188,12 @@ class MiningShipManagerImpl extends EventEmitter {
    * Gets the position of a resource node
    */
   private getResourcePosition(resourceId: string): Position {
-    // TODO: Implement proper resource position lookup
-    return { x: Math.random() * 1000, y: Math.random() * 1000 };
+    // Use resourceId to seed the random position for consistency
+    const seed = parseInt(resourceId.split('-').pop() || '0', 10);
+    return {
+      x: (seed * 17) % 1000,
+      y: (seed * 23) % 1000,
+    };
   }
 
   /**

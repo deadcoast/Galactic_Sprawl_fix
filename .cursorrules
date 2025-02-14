@@ -53,6 +53,25 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 - Use 'import type' for imports that are only used as types to avoid TypeScript linter warnings.
 - Don't import types that are already included through other type imports - avoid redundant imports.
 - When refactoring types, check ALL usages - removing a type import can break type annotations that depend on it.
+- NEVER remove type imports that are used in TODO implementations - they are needed for future code.
+- ALWAYS analyze existing implementations thoroughly before suggesting changes - the functionality may already be complete
+- When fixing linter errors, first check if they're about missing functionality or just code organization
+- Be direct and clear about whether an issue requires actual implementation or just cleanup
+- When fixing errors, CLEARLY explain if it's:
+  1. A mistake to remove
+  2. Missing functionality to implement
+  3. Code to fix but preserve
+- Don't just make changes without explaining the reasoning
+- When implementing new functionality, FIRST check if the types/interfaces already exist
+- Always review all related type definition files before starting implementation
+- Assume type definitions might exist in a centralized location (e.g., ResourceTypes.ts for all resource-related types)
+- When implementing resource management:
+  - Use debug logging to track resource flows and state changes
+  - Include IDs in debug messages for better traceability
+  - Apply consistent formatting for numeric values (toFixed(2))
+  - Handle edge cases with proper thresholds and limits
+  - Clean up intervals and registrations properly
+  - Use destructuring for cleaner code (e.g., const { amount } = resource)
 
 ## Cursor Learned
 
@@ -144,6 +163,11 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
    - [ ] Combat mechanics
    - [ ] Resource management
    - [ ] Module system
+     - [x] Implement module requirements checking in ModuleManager.upgradeModule()
+       - Use ModuleRequirements interface to validate:
+         - [x] minLevel requirements
+         - [x] buildingType compatibility
+         - [x] resourceCosts availability
 
 3. State Management
    - [ ] Global game state
@@ -165,7 +189,7 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 
 [ ] 1. Ship System - Movement mechanics - Combat system - Ship states - Ship interactions
 
-[ ] 2. Module System - Module base class - Module activation - Module upgrades - Module interactions
+[X] 2. Module System - Module base class - Module activation - Module upgrades - Module interactions
 
 [ ] 3. Resource System - Resource types - Collection - Storage - Transfer
 
@@ -189,6 +213,49 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 
 ## Progress Tracking
 
-- Core Systems: 20% complete
-- Game Systems: 10% complete
+- Core Systems: 25% complete
+- Game Systems: 15% complete
 - UI & Effects: 40% complete
+
+## Current Task: Resource Management Implementation
+
+### Task Description
+
+Implementing and refining resource management system with proper configuration, scheduling, and monitoring.
+
+### Implementation Plan
+
+[X] 1. Review existing resource management code
+[X] 2. Implement resource production functions
+[X] 3. Implement resource consumption functions
+[X] 4. Implement resource flow management
+[X] 5. Update ResourceManager with new functionality
+[X] 6. Add proper event emission for resource changes
+[X] 7. Add debug logging for resource operations
+[X] 8. Implement production and flow scheduling
+[X] 9. Add cleanup and monitoring capabilities
+[X] 10. Add error handling for edge cases
+
+### Progress
+
+- Completed implementation of resource management system
+- Added production, consumption, and flow management functions
+- Added proper event types and module types
+- Implemented debug logging for all operations
+- Added scheduling system for productions and flows
+- Implemented proper cleanup mechanisms
+- Added monitoring and debug capabilities
+- Added comprehensive error handling and validation
+
+### Current Focus
+
+- Implementing resource optimization strategies
+- Adding performance monitoring
+- Creating usage documentation
+
+### Next Steps
+
+1. Implement resource optimization strategies
+2. Add performance monitoring
+3. Create usage documentation
+4. Add unit tests

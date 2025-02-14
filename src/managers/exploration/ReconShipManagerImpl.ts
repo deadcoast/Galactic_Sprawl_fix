@@ -1,9 +1,26 @@
-import { EventEmitter } from '../utils/EventEmitter';
+import { EventEmitter } from '../../utils/EventEmitter';
 import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
 import { Position } from '../../types/core/GameTypes';
-import { moduleEventBus } from '../modules/ModuleEvents';
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { combatManager } from '../combat/combatManager';
+
+interface ReconShipEvents {
+  shipRegistered: { shipId: string };
+  shipUnregistered: { shipId: string };
+  taskAssigned: { shipId: string; task: ExplorationTask };
+  taskCompleted: { shipId: string; task: ExplorationTask };
+  techBonusesUpdated: {
+    shipId: string;
+    bonuses: {
+      scanSpeed: number;
+      stealthEfficiency: number;
+      detectionRange: number;
+    };
+  };
+  stealthToggled: { shipId: string; active: boolean };
+  shipStatusUpdated: { shipId: string; status: ReconShip['status'] };
+}
 
 interface ReconShip {
   id: string;
@@ -51,7 +68,7 @@ interface ExplorationTask {
   status: 'queued' | 'in-progress' | 'completed' | 'failed';
 }
 
-export class ReconShipManagerImpl extends EventEmitter {
+export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
   private ships: Map<string, ReconShip> = new Map();
   private tasks: Map<string, ExplorationTask> = new Map();
   private sectors: Map<
@@ -237,7 +254,9 @@ export class ReconShipManagerImpl extends EventEmitter {
   // Add method to get ship efficiency with tech bonuses
   public getShipEfficiency(shipId: string): number {
     const ship = this.ships.get(shipId);
-    if (!ship) return 0;
+    if (!ship) {
+      return 0;
+    }
 
     const baseEfficiency = ship.efficiency;
     const techBonus = ship.techBonuses?.scanSpeed || 1;
@@ -255,7 +274,7 @@ export class ReconShipManagerImpl extends EventEmitter {
 
       // Apply tech bonuses to sensor range
       if (ship.techBonuses) {
-        ship.sensors.range = ship.sensors.range * ship.techBonuses.detectionRange;
+        ship.sensors.range *= ship.techBonuses.detectionRange;
       }
 
       // Handle automatic stealth activation near threats

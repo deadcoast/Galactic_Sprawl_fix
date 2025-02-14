@@ -1,4 +1,4 @@
-import { techTreeManager } from '../../lib/game/techTreeManager';
+import { techTreeManager } from '../../managers/game/techTreeManager';
 import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { Salvage } from '../../types/combat/SalvageTypes';
 import {
@@ -95,6 +95,15 @@ class ShipBehaviorManagerImpl extends EventEmitter {
         this.salvageTargets.set(salvage.id, ship.id!);
       }
     });
+  }
+
+  public assignTask(task: ShipTask): void {
+    if (!task.target) {
+      return;
+    }
+
+    this.tasks.set(task.id, task);
+    this.emit('taskAssigned', { shipId: task.id, task });
   }
 
   public assignSalvageTask(shipId: string, salvageId: string, position: Position): void {

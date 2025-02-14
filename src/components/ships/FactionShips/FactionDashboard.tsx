@@ -9,7 +9,7 @@ import { FactionShip } from '../../../types/ships/FactionShipTypes';
 import { useDebugOverlay } from '../../../hooks/ui/useDebugOverlay';
 import type { DebugState } from '../../../types/debug/DebugTypes';
 import type { CommonShipAbility } from '../../../types/ships/CommonShipTypes';
-import type { FactionState } from '../../../lib/factions/factionManager';
+import type { FactionState } from '../../../managers/factions/factionManager';
 import { AlertTriangle, Crown, Shield } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 

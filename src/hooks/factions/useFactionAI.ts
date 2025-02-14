@@ -1,4 +1,4 @@
-import { factionManager } from '../../lib/factions/factionManager';
+import { factionManager } from '../../managers/factions/factionManager';
 import { useEffect, useState } from 'react';
 import type { FactionShip } from '../../types/ships/FactionShipTypes';
 import type { FactionId } from '../../types/ships/FactionTypes';

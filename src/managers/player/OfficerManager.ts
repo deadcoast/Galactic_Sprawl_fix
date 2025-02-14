@@ -1,25 +1,28 @@
 import { v4 as uuidv4 } from 'uuid';
-import { EventEmitter } from '../lib/utils/EventEmitter';
-import { moduleEventBus } from '../events/moduleEventBus';
-import { techTreeManager, TechNode } from '../managers/TechTreeManager';
-import {
-  Officer,
+import { EventEmitter } from '../../utils/EventEmitter';
+import { moduleEventBus, ModuleEvent, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { techTreeManager } from '../../managers/game/techTreeManager';
+import type {
+  OfficerEvents,
   OfficerManager as IOfficerManager,
+  Officer,
   OfficerRole,
   OfficerSpecialization,
-  OfficerStatus,
   Squad,
   TrainingProgram,
   OfficerTier,
   OfficerSkills,
-  OfficerEvents,
-} from '../types/officers/OfficerTypes';
-import { OFFICER_TRAITS, TRAINING_CONFIG, SQUAD_CONFIG } from '../config/OfficerConfig';
+} from '../../types/officers/OfficerTypes';
+import { OFFICER_TRAITS, TRAINING_CONFIG, SQUAD_CONFIG } from '../../config/OfficerConfig';
+import type { ModuleType } from '../../types/buildings/ModuleTypes';
 
-interface TechNodeUnlockedEvent {
+type TechNodeUnlockedEvent = {
   nodeId: string;
-  node: TechNode;
-}
+  node: {
+    type: string;
+    tier: number;
+  };
+};
 
 /**
  * Implementation of the Officer Manager
@@ -30,6 +33,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
   private squads: Map<string, Squad> = new Map();
   private trainingPrograms: Map<string, TrainingProgram> = new Map();
   private currentTier: OfficerTier = 1;
+  private moduleId: string = 'academy'; // Default module ID for academy
 
   constructor() {
     super();
@@ -46,8 +50,9 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
       }
     });
 
-    moduleEventBus.on('MODULE_ACTIVATED', (event: { moduleType: string; moduleId: string }) => {
+    moduleEventBus.subscribe('MODULE_ACTIVATED', (event: ModuleEvent) => {
       if (event.moduleType === 'academy') {
+        this.moduleId = event.moduleId;
         this.emit('academyActivated', { moduleId: event.moduleId });
       }
     });
@@ -60,7 +65,13 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     if (tier > this.currentTier) {
       this.currentTier = tier;
       this.emit('tierUpgraded', { tier });
-      moduleEventBus.emit('tierUpgraded', { tier });
+      moduleEventBus.emit({
+        type: 'MODULE_UPGRADED',
+        moduleId: this.moduleId,
+        moduleType: 'academy',
+        timestamp: Date.now(),
+        data: { tier },
+      });
     }
   }
 
@@ -260,6 +271,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     this.applyTraitEffects(officer);
     this.officers.set(id, officer);
     this.emit('officerHired', { officer });
+    this.emitModuleEvent('MODULE_CREATED', { officer });
     return officer;
   }
 
@@ -295,6 +307,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
       officerId,
       program,
     });
+    this.emitModuleEvent('AUTOMATION_STARTED', { officerId, program });
   }
 
   /**
@@ -314,6 +327,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
       officerId,
       assignmentId,
     });
+    this.emitModuleEvent('STATUS_CHANGED', { officerId, assignmentId, status: 'assigned' });
   }
 
   /**
@@ -334,6 +348,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
 
     this.squads.set(squad.id, squad);
     this.emit('squadCreated', { squad });
+    this.emitModuleEvent('MODULE_CREATED', { squad });
     return squad;
   }
 
@@ -364,6 +379,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
 
     this.updateSquadBonuses(squad);
     this.emit('squadUpdated', { squadId, officer: officerId });
+    this.emitModuleEvent('STATUS_CHANGED', { squadId, officer: officerId });
   }
 
   /**
@@ -403,6 +419,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
 
     // Update squad in storage
     this.squads.set(squad.id, squad);
+    this.emitModuleEvent('STATUS_CHANGED', { squadId: squad.id, bonuses: squad.bonuses });
   }
 
   /**
@@ -457,7 +474,9 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
    */
   public addExperience(officerId: string, amount: number, activity?: string): void {
     const officer = this.officers.get(officerId);
-    if (!officer) return;
+    if (!officer) {
+      return;
+    }
 
     const multiplier = this.calculateXpMultiplier(officer, activity);
     const adjustedAmount = Math.floor(amount * multiplier);
@@ -484,6 +503,12 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
 
     // Emit experience gained event
     this.emit('experienceGained', {
+      officerId,
+      amount: adjustedAmount,
+      newTotal: officer.xp,
+      nextLevel: officer.nextLevelXp,
+    });
+    this.emitModuleEvent('STATUS_CHANGED', {
       officerId,
       amount: adjustedAmount,
       newTotal: officer.xp,
@@ -524,7 +549,9 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
    */
   private completeTraining(programId: string): void {
     const program = this.trainingPrograms.get(programId);
-    if (!program) return;
+    if (!program) {
+      return;
+    }
 
     const officer = this.officers.get(program.officerId);
     if (!officer) {
@@ -570,6 +597,11 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
       specialization: program.specialization,
       skills: officer.skills,
     });
+    this.emitModuleEvent('AUTOMATION_CYCLE_COMPLETE', {
+      officerId: officer.id,
+      specialization: program.specialization,
+      skills: officer.skills,
+    });
   }
 
   /**
@@ -607,5 +639,15 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
    */
   public getCurrentTier(): OfficerTier {
     return this.currentTier;
+  }
+
+  private emitModuleEvent(type: ModuleEventType, data: any): void {
+    moduleEventBus.emit({
+      type,
+      moduleId: 'officer-manager',
+      moduleType: 'academy' as ModuleType,
+      timestamp: Date.now(),
+      data,
+    });
   }
 }

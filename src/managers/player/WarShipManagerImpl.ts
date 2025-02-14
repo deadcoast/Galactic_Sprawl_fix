@@ -1,10 +1,10 @@
-import { EventEmitter } from '../utils/EventEmitter';
+import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
 import { Position } from '../../types/core/GameTypes';
-import { moduleEventBus } from '../modules/ModuleEvents';
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { combatManager } from '../combat/combatManager';
-import { canFireWeapon } from '../../utils/shipUtils';
+import { combatManager } from '../../managers/combat/combatManager';
+import { canFireWeapon } from '../../utils/ships/shipUtils';
 import {
   WeaponInstance,
   WeaponConfig,

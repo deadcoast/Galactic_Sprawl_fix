@@ -1,18 +1,22 @@
 import { useCallback, useEffect } from 'react';
 
 interface InteractivityOptions {
-  onModuleSelect?: (moduleId: string) => void;
+  onModuleSelect?: (moduleId: string | null) => void;
   onUpgradeStart?: (moduleId: string) => void;
   onUpgradeComplete?: (moduleId: string) => void;
 }
 
-export function useVPRInteractivity(options: InteractivityOptions) {
+export function useVPRInteractivity({
+  onModuleSelect,
+  onUpgradeStart,
+  onUpgradeComplete,
+}: InteractivityOptions) {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       // ESC to deselect
       if (e.key === 'Escape') {
-        options.onModuleSelect?.(null);
+        onModuleSelect?.(null);
       }
 
       // Number keys 1-5 for quick module selection
@@ -23,14 +27,14 @@ export function useVPRInteractivity(options: InteractivityOptions) {
           '3': 'planet',
           '4': 'exploration',
           '5': 'mining',
-        };
-        options.onModuleSelect?.(moduleMap[e.key]);
+        } as const;
+        onModuleSelect?.(moduleMap[e.key as keyof typeof moduleMap]);
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [options.onModuleSelect]);
+  }, [onModuleSelect]);
 
   // Mouse interaction handlers
   const handleModuleHover = useCallback((moduleId: string, position: { x: number; y: number }) => {
@@ -47,20 +51,20 @@ export function useVPRInteractivity(options: InteractivityOptions) {
 
   const handleModuleClick = useCallback(
     (moduleId: string) => {
-      options.onModuleSelect?.(moduleId);
+      onModuleSelect?.(moduleId);
     },
-    [options.onModuleSelect]
+    [onModuleSelect]
   );
 
   const handleUpgradeInteraction = useCallback(
     (moduleId: string, progress: number) => {
       if (progress === 0) {
-        options.onUpgradeStart?.(moduleId);
+        onUpgradeStart?.(moduleId);
       } else if (progress >= 1) {
-        options.onUpgradeComplete?.(moduleId);
+        onUpgradeComplete?.(moduleId);
       }
     },
-    [options.onUpgradeStart, options.onUpgradeComplete]
+    [onUpgradeStart, onUpgradeComplete]
   );
 
   return {

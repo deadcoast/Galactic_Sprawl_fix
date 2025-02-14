@@ -2,7 +2,7 @@ import { AutomationMonitor } from './AutomationMonitor';
 import { MiningControls } from './MiningControls';
 import { MiningMap } from './MiningMap';
 import { ResourceStorage } from './ResourceStorage';
-import { ResourceTransferManager } from './ResourceTransferManager';
+import { ResourceTransferManager } from '../../../../managers/resource/ResourceTransferManager';
 import { ThresholdManager } from './ThresholdManager';
 import { ThresholdProvider, useThreshold } from '../../../../contexts/ThresholdContext';
 import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';

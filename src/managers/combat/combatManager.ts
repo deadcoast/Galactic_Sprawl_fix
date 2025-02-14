@@ -1,4 +1,4 @@
-import { factionManager } from '../../lib/factions/factionManager';
+import { factionManager } from '../../managers/factions/factionManager';
 
 export interface Fleet {
   units: CombatUnit[];

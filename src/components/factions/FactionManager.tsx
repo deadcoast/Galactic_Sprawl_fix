@@ -6,7 +6,7 @@ import { useFactionBehavior } from '../../hooks/factions/useFactionBehavior';
 import { useDebugOverlay } from '../../hooks/ui/useDebugOverlay';
 import { AIDebugOverlay } from '../debug/AIDebugOverlay';
 import { factionConfigs } from '../../config/factions/factions';
-import { factionManager, type FactionState } from '../../lib/factions/factionManager';
+import { factionManager, type FactionState } from '../../managers/factions/factionManager';
 import type { FactionId } from '../../types/ships/FactionTypes';
 
 interface FactionManagerProps {

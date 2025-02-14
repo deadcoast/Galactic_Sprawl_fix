@@ -1,13 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
-import { EventEmitter } from '../lib/utils/EventEmitter';
-import { moduleEventBus } from '../events/moduleEventBus';
-import { techTreeManager } from './TechTreeManager';
-import { ResourceManager } from '../lib/resources/ResourceManager';
-import { Tier, Effect } from '../types/core/GameTypes';
-import { ResourceCost } from '../types/resources/ResourceTypes';
-import { PlayerShipClass, PlayerShipCategory } from '../types/ships/PlayerShipTypes';
-import { CommonShip, CommonShipStats, CommonShipAbility } from '../types/ships/CommonShipTypes';
-import { SHIP_BLUEPRINTS, ShipBlueprint } from '../config/ShipBlueprints';
+import { EventEmitter } from '../../lib/utils/EventEmitter';
+import { moduleEventBus, ModuleEvent } from '../../lib/modules/ModuleEvents';
+import { techTreeManager } from '../game/techTreeManager';
+import { ResourceManager } from '../resource/ResourceManager';
+import { Tier, Effect } from '../../types/core/GameTypes';
+import { ResourceCost } from '../../types/resources/ResourceTypes';
+import { PlayerShipClass, PlayerShipCategory } from '../../types/ships/PlayerShipTypes';
+import { CommonShip, CommonShipStats, CommonShipAbility } from '../../types/ships/CommonShipTypes';
+import { SHIP_BLUEPRINTS, ShipBlueprint } from '../../config/ShipBlueprints';
 import {
   WeaponMount,
   WeaponCategory,
@@ -15,9 +15,8 @@ import {
   WeaponMountPosition,
   WeaponStatus,
   WeaponConfig,
-  WeaponInstance,
-} from '../types/weapons/WeaponTypes';
-import { Officer } from '../types/officers/OfficerTypes';
+} from '../../types/weapons/WeaponTypes';
+import { Officer } from '../../types/officers/OfficerTypes';
 import {
   ShipHangarManager as IShipHangarManager,
   ShipHangarState,
@@ -29,8 +28,37 @@ import {
   ShipUpgradeInfo,
   ShipUpgradeRequirement,
   ShipVisualUpgrade,
-} from '../types/buildings/ShipHangarTypes';
+} from '../../types/buildings/ShipHangarTypes';
 import { OfficerManager } from './OfficerManager';
+
+// Extend CommonShip to include state
+interface ShipWithState extends CommonShip {
+  state: ShipState;
+}
+
+interface ShipEffect extends Effect {
+  name: string;
+  description: string;
+  type: 'buff' | 'debuff' | 'status';
+  magnitude: number;
+  duration: number;
+  active: boolean;
+  cooldown: number;
+  source?: {
+    type: 'ability' | 'weapon' | 'module';
+    id: string;
+  };
+}
+
+// Add effect management to ship state
+interface ShipState {
+  activeEffects: ShipEffect[];
+  effectHistory: {
+    effect: ShipEffect;
+    appliedAt: number;
+    removedAt?: number;
+  }[];
+}
 
 /**
  * Implementation of the Ship Hangar Manager
@@ -95,26 +123,23 @@ export class ShipHangarManager
     this.setupEventListeners();
 
     // Subscribe to module events
-    moduleEventBus.on('MODULE_ACTIVATED', (event: { moduleType: string; moduleId: string }) => {
+    moduleEventBus.subscribe('MODULE_ACTIVATED', (event: ModuleEvent) => {
       if (event.moduleType === 'hangar') {
         this.handleModuleActivation(event.moduleId);
       }
     });
 
-    moduleEventBus.on('MODULE_DEACTIVATED', (event: { moduleType: string; moduleId: string }) => {
+    moduleEventBus.subscribe('MODULE_DEACTIVATED', (event: ModuleEvent) => {
       if (event.moduleType === 'hangar') {
         this.handleModuleDeactivation(event.moduleId);
       }
     });
 
-    moduleEventBus.on(
-      'STATUS_CHANGED',
-      (event: { moduleType: string; moduleId: string; data: { status: string } }) => {
-        if (event.moduleType === 'hangar') {
-          this.handleModuleStatusChange(event.moduleId, event.data.status);
-        }
+    moduleEventBus.subscribe('STATUS_CHANGED', (event: ModuleEvent) => {
+      if (event.moduleType === 'hangar') {
+        this.handleModuleStatusChange(event.moduleId, event.data.status);
       }
-    );
+    });
   }
 
   /**
@@ -307,7 +332,14 @@ export class ShipHangarManager
       let hasQualifiedOfficer = false;
       for (const [shipId, officerId] of this.assignedOfficers) {
         const officer = this.officerManager.getOfficer(officerId);
-        if (officer && officer.level >= minLevel && officer.specialization === specialization) {
+        const ship = this.getDockedShips().find(s => s.id === shipId);
+        if (
+          officer &&
+          ship &&
+          officer.level >= minLevel &&
+          officer.specialization === specialization &&
+          ship.status === 'ready'
+        ) {
           hasQualifiedOfficer = true;
           break;
         }
@@ -354,7 +386,9 @@ export class ShipHangarManager
    */
   public cancelBuild(queueItemId: string): void {
     const index = this.state.buildQueue.findIndex(item => item.id === queueItemId);
-    if (index === -1) return;
+    if (index === -1) {
+      return;
+    }
 
     const item = this.state.buildQueue[index];
 
@@ -612,7 +646,7 @@ export class ShipHangarManager
   /**
    * Update build progress
    */
-  public update(deltaTime: number): void {
+  public update(): void {
     const now = Date.now();
     let completedItems: ShipBuildQueueItem[] = [];
 
@@ -1746,7 +1780,9 @@ export class ShipHangarManager
    */
   private performBayMaintenance(bayId: string): void {
     const bay = this.state.bays.find(b => b.id === bayId);
-    if (!bay) return;
+    if (!bay) {
+      return;
+    }
 
     // Calculate maintenance cost based on bay tier and ship count
     const baseCosts = bay.maintenanceCost;
@@ -2003,24 +2039,59 @@ export class ShipHangarManager
     // Clear all repair timers
     this.activeRepairs.forEach((repair, shipId) => {
       clearTimeout(repair.timer);
+      // Update ship status
+      const ship = this.getDockedShips().find(s => s.id === shipId);
+      if (ship) {
+        ship.status = 'damaged'; // Revert to damaged state if repair was interrupted
+      }
     });
     this.activeRepairs.clear();
 
     // Clear all upgrade timers
     this.activeUpgrades.forEach((upgrade, shipId) => {
       clearTimeout(upgrade.timer);
+      // Revert ship status and refund resources for interrupted upgrades
+      const ship = this.getDockedShips().find(s => s.id === shipId);
+      if (ship) {
+        ship.status = 'ready';
+        // Refund 75% of remaining upgrade costs
+        const remainingProgress = 1 - (Date.now() - upgrade.startTime) / upgrade.duration;
+        upgrade.resourceCost.forEach(cost => {
+          const refundAmount = Math.floor(cost.amount * remainingProgress * 0.75);
+          this.resourceManager.addResource(cost.type, refundAmount);
+        });
+      }
     });
     this.activeUpgrades.clear();
 
     // Clear all ability timers
     this.activeAbilities.forEach((active, key) => {
       clearTimeout(active.timer);
+      // Parse shipId and ability name from compound key
+      const [shipId, abilityName] = key.split('-');
+      const ship = this.getDockedShips().find(s => s.id === shipId);
+      if (ship) {
+        const ability = ship.abilities.find(a => a.name === abilityName);
+        if (ability) {
+          ability.active = false;
+          ability.effect.active = false;
+        }
+      }
     });
     this.activeAbilities.clear();
 
     // Clear all cooldown timers
     this.abilityCooldowns.forEach((cooldown, key) => {
       clearTimeout(cooldown.timer);
+      // Parse shipId and ability name from compound key
+      const [shipId, abilityName] = key.split('-');
+      const ship = this.getDockedShips().find(s => s.id === shipId);
+      if (ship) {
+        const ability = ship.abilities.find(a => a.name === abilityName);
+        if (ability) {
+          ability.effect.cooldown = 0; // Reset cooldown
+        }
+      }
     });
     this.abilityCooldowns.clear();
 
@@ -2039,13 +2110,117 @@ export class ShipHangarManager
     // Clear all bay maintenance timers
     this.bayMaintenanceTimers.forEach((info, bayId) => {
       clearTimeout(info.timer);
+      // Update bay maintenance state
+      const bay = this.state.bays.find(b => b.id === bayId);
+      if (bay) {
+        bay.lastMaintenance = info.lastMaintenance;
+        bay.efficiency = info.efficiency;
+        // Emit maintenance failed event since cleanup interrupts maintenance
+        this.emit('bayMaintenanceFailed', {
+          bayId,
+          newEfficiency: bay.efficiency,
+          requiredResources: bay.maintenanceCost,
+        });
+      }
     });
     this.bayMaintenanceTimers.clear();
 
-    // Clean up officer assignments
+    // Clean up officer assignments and remove bonuses
     for (const [shipId, officerId] of this.assignedOfficers) {
+      const ship = this.getDockedShips().find(s => s.id === shipId);
+      if (ship) {
+        this.removeOfficerBonuses(ship); // Remove any active bonuses
+        this.officerManager.assignOfficer(officerId, null as unknown as string); // Free up the officer
+      }
       this.unassignOfficer(shipId);
     }
     this.assignedOfficers.clear();
+  }
+
+  // Add effect handling methods
+  private applyShipEffect(ship: ShipWithState, effect: ShipEffect): void {
+    // Initialize ship state if needed
+    if (!ship.state) {
+      ship.state = { activeEffects: [], effectHistory: [] };
+    }
+
+    // Apply effect modifiers
+    switch (effect.type) {
+      case 'buff':
+        if (effect.name.includes('damage')) {
+          ship.stats.weapons?.forEach(mount => {
+            if (mount.currentWeapon) {
+              mount.currentWeapon.state.currentStats.damage *= 1 + effect.magnitude;
+            }
+          });
+        }
+        break;
+      case 'debuff':
+        if (effect.name.includes('shield')) {
+          ship.stats.shield *= 1 - effect.magnitude;
+        }
+        break;
+      case 'status':
+        // Just track status effects
+        break;
+    }
+
+    // Add to active effects
+    ship.state.activeEffects.push(effect);
+    ship.state.effectHistory.push({
+      effect,
+      appliedAt: Date.now(),
+    });
+
+    // Set up effect expiration
+    if (effect.duration > 0) {
+      setTimeout(() => {
+        this.removeShipEffect(ship, effect);
+      }, effect.duration * 1000);
+    }
+  }
+
+  private removeShipEffect(ship: ShipWithState, effect: ShipEffect): void {
+    if (!ship.state) {
+      return;
+    }
+
+    // Remove effect modifiers
+    switch (effect.type) {
+      case 'buff':
+        if (effect.name.includes('damage')) {
+          ship.stats.weapons?.forEach(mount => {
+            if (mount.currentWeapon) {
+              mount.currentWeapon.state.currentStats.damage /= 1 + effect.magnitude;
+            }
+          });
+        }
+        break;
+      case 'debuff':
+        if (effect.name.includes('shield')) {
+          ship.stats.shield /= 1 - effect.magnitude;
+        }
+        break;
+    }
+
+    // Remove from active effects
+    ship.state.activeEffects = ship.state.activeEffects.filter(e => e !== effect);
+
+    // Update history
+    const historyEntry = ship.state.effectHistory.find(h => h.effect === effect && !h.removedAt);
+    if (historyEntry) {
+      historyEntry.removedAt = Date.now();
+    }
+  }
+
+  public hasOfficerMeetingRequirements(minLevel: number, specialization: string): boolean {
+    // Check all assigned officers for one that meets requirements
+    for (const [_, officerId] of this.assignedOfficers) {
+      const officer = this.officerManager.getOfficer(officerId);
+      if (officer && officer.level >= minLevel && officer.specialization === specialization) {
+        return true;
+      }
+    }
+    return false;
   }
 }

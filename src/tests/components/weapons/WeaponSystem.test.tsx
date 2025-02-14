@@ -15,6 +15,7 @@ import {
   WeaponMountSize,
   WeaponMountPosition,
 } from '../../../types/weapons/WeaponTypes';
+import { FactionShipStats } from '../../../types/ships/FactionShipTypes';
 import { TestWrapper } from '../../utils/testUtils';
 
 // Mock weapon data
@@ -89,6 +90,8 @@ describe('Faction Ship Weapon Systems', () => {
               cargo: 100,
               weapons: mockWeapons,
               abilities: [],
+              tier: 1,
+              faction: 'space-rats',
               defense: {
                 armor: 100,
                 shield: 50,
@@ -100,7 +103,7 @@ describe('Faction Ship Weapon Systems', () => {
                 turnRate: 2,
                 acceleration: 200,
               },
-            },
+            } as FactionShipStats,
           }}
         >
           <SpaceRatShip
@@ -114,6 +117,36 @@ describe('Faction Ship Weapon Systems', () => {
             maxShield={50}
             weapons={mockWeapons}
             tactics="aggressive"
+            position={{ x: 0, y: 0 }}
+            rotation={0}
+            stats={
+              {
+                health: 100,
+                maxHealth: 100,
+                shield: 50,
+                maxShield: 50,
+                energy: 100,
+                maxEnergy: 100,
+                speed: 100,
+                turnRate: 2,
+                cargo: 100,
+                weapons: mockWeapons,
+                abilities: [],
+                tier: 1,
+                faction: 'space-rats',
+                defense: {
+                  armor: 100,
+                  shield: 50,
+                  evasion: 0.3,
+                  regeneration: 1,
+                },
+                mobility: {
+                  speed: 100,
+                  turnRate: 2,
+                  acceleration: 200,
+                },
+              } as FactionShipStats
+            }
           />
         </TestWrapper>
       );
@@ -147,6 +180,8 @@ describe('Faction Ship Weapon Systems', () => {
               cargo: 100,
               weapons: mockWeapons,
               abilities: [],
+              tier: 1,
+              faction: 'space-rats',
               defense: {
                 armor: 100,
                 shield: 50,
@@ -158,7 +193,7 @@ describe('Faction Ship Weapon Systems', () => {
                 turnRate: 2,
                 acceleration: 200,
               },
-            },
+            } as FactionShipStats,
           }}
         >
           <SpaceRatShip
@@ -172,6 +207,36 @@ describe('Faction Ship Weapon Systems', () => {
             maxShield={50}
             weapons={mockWeapons}
             tactics="aggressive"
+            position={{ x: 0, y: 0 }}
+            rotation={0}
+            stats={
+              {
+                health: 100,
+                maxHealth: 100,
+                shield: 50,
+                maxShield: 50,
+                energy: 100,
+                maxEnergy: 100,
+                speed: 100,
+                turnRate: 2,
+                cargo: 100,
+                weapons: mockWeapons,
+                abilities: [],
+                tier: 1,
+                faction: 'space-rats',
+                defense: {
+                  armor: 100,
+                  shield: 50,
+                  evasion: 0.3,
+                  regeneration: 1,
+                },
+                mobility: {
+                  speed: 100,
+                  turnRate: 2,
+                  acceleration: 200,
+                },
+              } as FactionShipStats
+            }
             onSpecialAbility={onSpecialAbility}
           />
         </TestWrapper>
@@ -210,6 +275,8 @@ describe('Faction Ship Weapon Systems', () => {
               cargo: 100,
               weapons: mockWeapons,
               abilities: [],
+              tier: 2,
+              faction: 'lost-nova',
               defense: {
                 armor: 100,
                 shield: 50,
@@ -221,7 +288,7 @@ describe('Faction Ship Weapon Systems', () => {
                 turnRate: 2,
                 acceleration: 200,
               },
-            },
+            } as FactionShipStats,
           }}
         >
           <LostNovaShip
@@ -235,6 +302,36 @@ describe('Faction Ship Weapon Systems', () => {
             maxShield={50}
             weapons={mockWeapons}
             tactics="stealth"
+            position={{ x: 0, y: 0 }}
+            rotation={0}
+            stats={
+              {
+                health: 100,
+                maxHealth: 100,
+                shield: 50,
+                maxShield: 50,
+                energy: 100,
+                maxEnergy: 100,
+                speed: 100,
+                turnRate: 2,
+                cargo: 100,
+                weapons: mockWeapons,
+                abilities: [],
+                tier: 2,
+                faction: 'lost-nova',
+                defense: {
+                  armor: 100,
+                  shield: 50,
+                  evasion: 0.3,
+                  regeneration: 1,
+                },
+                mobility: {
+                  speed: 100,
+                  turnRate: 2,
+                  acceleration: 200,
+                },
+              } as FactionShipStats
+            }
           />
         </TestWrapper>
       );
@@ -268,6 +365,8 @@ describe('Faction Ship Weapon Systems', () => {
               cargo: 100,
               weapons: mockWeapons,
               abilities: [],
+              tier: 2,
+              faction: 'lost-nova',
               defense: {
                 armor: 100,
                 shield: 50,
@@ -279,7 +378,7 @@ describe('Faction Ship Weapon Systems', () => {
                 turnRate: 2,
                 acceleration: 200,
               },
-            },
+            } as FactionShipStats,
           }}
         >
           <LostNovaShip
@@ -293,6 +392,36 @@ describe('Faction Ship Weapon Systems', () => {
             maxShield={50}
             weapons={mockWeapons}
             tactics="stealth"
+            position={{ x: 0, y: 0 }}
+            rotation={0}
+            stats={
+              {
+                health: 100,
+                maxHealth: 100,
+                shield: 50,
+                maxShield: 50,
+                energy: 100,
+                maxEnergy: 100,
+                speed: 100,
+                turnRate: 2,
+                cargo: 100,
+                weapons: mockWeapons,
+                abilities: [],
+                tier: 2,
+                faction: 'lost-nova',
+                defense: {
+                  armor: 100,
+                  shield: 50,
+                  evasion: 0.3,
+                  regeneration: 1,
+                },
+                mobility: {
+                  speed: 100,
+                  turnRate: 2,
+                  acceleration: 200,
+                },
+              } as FactionShipStats
+            }
             onSpecialAbility={onSpecialAbility}
           />
         </TestWrapper>
@@ -331,6 +460,8 @@ describe('Faction Ship Weapon Systems', () => {
               cargo: 100,
               weapons: mockWeapons,
               abilities: [],
+              tier: 3,
+              faction: 'equator-horizon',
               defense: {
                 armor: 100,
                 shield: 50,
@@ -342,7 +473,7 @@ describe('Faction Ship Weapon Systems', () => {
                 turnRate: 2,
                 acceleration: 200,
               },
-            },
+            } as FactionShipStats,
           }}
         >
           <EquatorHorizonShip
@@ -356,6 +487,36 @@ describe('Faction Ship Weapon Systems', () => {
             maxShield={50}
             weapons={mockWeapons}
             tactics="defensive"
+            position={{ x: 0, y: 0 }}
+            rotation={0}
+            stats={
+              {
+                health: 100,
+                maxHealth: 100,
+                shield: 50,
+                maxShield: 50,
+                energy: 100,
+                maxEnergy: 100,
+                speed: 100,
+                turnRate: 2,
+                cargo: 100,
+                weapons: mockWeapons,
+                abilities: [],
+                tier: 3,
+                faction: 'equator-horizon',
+                defense: {
+                  armor: 100,
+                  shield: 50,
+                  evasion: 0.3,
+                  regeneration: 1,
+                },
+                mobility: {
+                  speed: 100,
+                  turnRate: 2,
+                  acceleration: 200,
+                },
+              } as FactionShipStats
+            }
           />
         </TestWrapper>
       );
@@ -389,6 +550,8 @@ describe('Faction Ship Weapon Systems', () => {
               cargo: 100,
               weapons: mockWeapons,
               abilities: [],
+              tier: 3,
+              faction: 'equator-horizon',
               defense: {
                 armor: 100,
                 shield: 50,
@@ -400,7 +563,7 @@ describe('Faction Ship Weapon Systems', () => {
                 turnRate: 2,
                 acceleration: 200,
               },
-            },
+            } as FactionShipStats,
           }}
         >
           <EquatorHorizonShip
@@ -414,6 +577,36 @@ describe('Faction Ship Weapon Systems', () => {
             maxShield={50}
             weapons={mockWeapons}
             tactics="defensive"
+            position={{ x: 0, y: 0 }}
+            rotation={0}
+            stats={
+              {
+                health: 100,
+                maxHealth: 100,
+                shield: 50,
+                maxShield: 50,
+                energy: 100,
+                maxEnergy: 100,
+                speed: 100,
+                turnRate: 2,
+                cargo: 100,
+                weapons: mockWeapons,
+                abilities: [],
+                tier: 3,
+                faction: 'equator-horizon',
+                defense: {
+                  armor: 100,
+                  shield: 50,
+                  evasion: 0.3,
+                  regeneration: 1,
+                },
+                mobility: {
+                  speed: 100,
+                  turnRate: 2,
+                  acceleration: 200,
+                },
+              } as FactionShipStats
+            }
             onSpecialAbility={onSpecialAbility}
           />
         </TestWrapper>

@@ -4,7 +4,7 @@ import {
   AutomationRule,
   AutomationCondition,
   AutomationAction,
-} from '../../lib/automation/AutomationManager';
+} from '../../managers/game/AutomationManager';
 import { useModuleEvents } from '../modules/useModuleEvents';
 
 /**

@@ -1,5 +1,5 @@
-import { AutomationCondition } from './AutomationManager';
-import { MiningShipManagerImpl } from './MiningShipManagerImpl';
+import { AutomationCondition } from '../../managers/game/AutomationManager';
+import { MiningShipManagerImpl } from '../../managers/mining/MiningShipManagerImpl';
 
 export class ConditionChecker {
   private lastCheckedTimes: Map<string, number> = new Map();

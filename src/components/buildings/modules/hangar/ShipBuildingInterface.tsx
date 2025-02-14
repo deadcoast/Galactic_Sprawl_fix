@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { PlayerShipClass, PlayerShipCategory } from '../../../../types/ships/PlayerShipTypes';
-import { ShipHangarManager } from '../../../../managers/ShipHangarManager';
+import { ShipHangarManager } from '../../../../managers/player/ShipHangarManager';
 import { ResourceCost } from '../../../../types/resources/ResourceTypes';
-import { Tier } from '../../../../types/core/GameTypes';
-import { ShipBuildRequirements } from '../../../../types/buildings/ShipHangarTypes';
 import { ShipBlueprint, getAvailableShips } from '../../../../config/ShipBlueprints';
-import { techTreeManager } from '../../../../managers/TechTreeManager';
-import { AlertTriangle, Rocket, Shield } from 'lucide-react';
+import { techTreeManager } from '../../../../managers/game/techTreeManager';
+import { AlertTriangle } from 'lucide-react';
 
 interface ShipBuildingInterfaceProps {
   manager: ShipHangarManager;
@@ -19,6 +17,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
   const [availableShips, setAvailableShips] = useState<ShipBlueprint[]>([]);
   const [buildableShips, setBuildableShips] = useState<Set<PlayerShipClass>>(new Set());
   const [errors, setErrors] = useState<Map<PlayerShipClass, string[]>>(new Map());
+  const [resourceRequirements, setResourceRequirements] = useState<ResourceCost[]>([]);
 
   // Load available ships based on tech level and other requirements
   useEffect(() => {
@@ -55,8 +54,13 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
       // Check officer requirements
       if (ship.requirements.prerequisites?.officers) {
         const req = ship.requirements.prerequisites.officers;
-        // TODO: Add officer requirement checking
-        // errors.push(`Requires level ${req.minLevel} ${req.specialization} officer`);
+        const hasQualifiedOfficer = manager.hasOfficerMeetingRequirements(
+          req.minLevel,
+          req.specialization
+        );
+        if (!hasQualifiedOfficer) {
+          errors.push(`Requires level ${req.minLevel} ${req.specialization} officer`);
+        }
       }
 
       if (errors.length === 0) {
@@ -70,8 +74,20 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
     setErrors(newErrors);
   }, [manager]);
 
+  // Update resource requirements when ship is selected
+  useEffect(() => {
+    if (selectedShip) {
+      const requirements = manager.getBuildRequirements(selectedShip.shipClass);
+      setResourceRequirements(requirements.resourceCost);
+    } else {
+      setResourceRequirements([]);
+    }
+  }, [selectedShip, manager]);
+
   const handleStartBuild = () => {
-    if (!selectedShip || !buildableShips.has(selectedShip.shipClass)) return;
+    if (!selectedShip || !buildableShips.has(selectedShip.shipClass)) {
+      return;
+    }
     onStartBuild(selectedShip.shipClass);
     setSelectedShip(null);
   };
@@ -200,9 +216,16 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-medium text-white">{selectedShip.name}</h3>
-              <p className="text-sm text-gray-400">
-                Build Time: {selectedShip.requirements.buildTime / 1000}s
-              </p>
+              <div className="text-sm text-gray-400">
+                <p>Build Time: {selectedShip.requirements.buildTime / 1000}s</p>
+                <div className="flex gap-2 mt-1">
+                  {resourceRequirements.map(cost => (
+                    <span key={cost.type} className="text-gray-300">
+                      {cost.type}: {cost.amount}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
             <button
               onClick={handleStartBuild}

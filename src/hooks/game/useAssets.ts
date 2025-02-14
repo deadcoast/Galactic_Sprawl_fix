@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as PIXI from 'pixi.js';
-import { assetManager, AssetType } from '../../lib/game/assetManager';
+import { assetManager, AssetType } from '../../managers/game/assetManager';
 
 interface UseAssetsResult {
   isLoading: boolean;

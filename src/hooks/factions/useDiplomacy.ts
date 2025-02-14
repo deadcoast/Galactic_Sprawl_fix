@@ -1,7 +1,7 @@
-import { factionManager } from '../../lib/factions/factionManager';
+import { factionManager } from '../../managers/factions/factionManager';
 import { useEffect, useState } from 'react';
 import { FactionId } from '../../types/ships/FactionTypes';
-import { factionRelationshipManager } from '../../lib/factions/FactionRelationshipManager';
+import { factionRelationshipManager } from '../../managers/factions/FactionRelationshipManager';
 
 interface DiplomacyAction {
   type: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute';

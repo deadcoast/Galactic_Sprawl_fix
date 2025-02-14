@@ -1,4 +1,4 @@
-import { useThreshold } from '../../../../contexts/ThresholdContext';
+import { useThreshold } from '../../contexts/ThresholdContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';

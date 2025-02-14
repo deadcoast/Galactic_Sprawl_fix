@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WeaponUpgradeSystem } from '../../../components/weapons/WeaponUpgradeSystem';
@@ -34,23 +34,16 @@ const mockWeapon = {
 
 const mockUpgrade: WeaponUpgrade = {
   id: 'test-upgrade',
-  name: 'Enhanced Damage',
-  type: 'damage',
-  description: 'Increases weapon damage',
+  name: 'Test Upgrade',
+  type: 'plasma',
+  description: 'A test upgrade',
   stats: {
-    damage: 15,
-    energyCost: 7,
-  },
-  specialEffect: {
-    name: 'Damage Boost',
-    description: 'Increases base damage',
+    damage: 100,
+    range: 50,
   },
   requirements: {
-    tech: ['Advanced Weaponry'],
-    resources: [
-      { type: 'plasma', amount: 100 },
-      { type: 'energy', amount: 50 },
-    ],
+    tech: [],
+    resources: [],
   },
   unlocked: true,
 };

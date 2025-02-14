@@ -19,7 +19,9 @@ export type ModuleType =
   // Colony-only modules
   | 'exploration'
   | 'mineral'
-  | 'trading';
+  | 'trading'
+  // System modules
+  | 'resource-manager';
 
 // Building types that can have modules
 export type BuildingType = 'mothership' | 'colony';

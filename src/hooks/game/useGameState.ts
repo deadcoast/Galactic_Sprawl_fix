@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
-import { gameManager } from '../../lib/game/gameManager';
+import { gameManager } from '../../managers/game/gameManager';
 import { GameEvent } from '../../types/core/GameTypes';
 
 export function useGameState() {

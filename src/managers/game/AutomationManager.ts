@@ -1,6 +1,6 @@
-import { moduleEventBus } from '../modules/ModuleEvents';
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
-import { moduleManager } from '../modules/ModuleManager';
+import { moduleManager } from '../module/ModuleManager';
 
 /**
  * Automation condition types

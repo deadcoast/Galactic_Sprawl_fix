@@ -1,4 +1,4 @@
-import { salvageManager } from '../../lib/combat/salvageManager';
+import { salvageManager } from '../../managers/game/salvageManager';
 import { Salvage } from '../../types/combat/SalvageTypes';
 import { ShipType } from '../../types/ships/CommonShipTypes';
 import { ArrowRight, Database, Package } from 'lucide-react';

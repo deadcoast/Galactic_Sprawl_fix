@@ -1,8 +1,8 @@
-import { EventEmitter } from '../utils/EventEmitter';
-import { CommonShipCapabilities, ShipCategory } from '../../types/ships/CommonShipTypes';
+import { EventEmitter } from '../../lib/utils/EventEmitter';
+import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
 import { Position } from '../../types/core/GameTypes';
-import { moduleEventBus } from '../modules/ModuleEvents';
-import { resourceManager } from '../resources/ResourceManager';
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { resourceManager } from '../../managers/resource/ResourceManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 
@@ -201,7 +201,9 @@ export class MiningShipManagerImpl extends EventEmitter {
   // Add method to get ship efficiency with tech bonuses
   public getShipEfficiency(shipId: string): number {
     const ship = this.ships.get(shipId);
-    if (!ship) return 0;
+    if (!ship) {
+      return 0;
+    }
 
     const baseEfficiency = ship.efficiency;
     const techBonus = ship.techBonuses?.efficiency || 1;

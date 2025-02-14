@@ -1,5 +1,5 @@
-import { combatManager } from '../../lib/combat/combatManager';
-import { factionManager } from '../../lib/factions/factionManager';
+import { combatManager } from '../../managers/combat/combatManager';
+import { factionManager } from '../../managers/factions/factionManager';
 import { useCallback, useEffect, useState } from 'react';
 import {
   DebugWeaponEffect,

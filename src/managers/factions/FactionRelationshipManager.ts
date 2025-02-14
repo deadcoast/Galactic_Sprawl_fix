@@ -1,6 +1,6 @@
-import { EventEmitter } from '../utils/EventEmitter';
-import { FactionId, FactionBehaviorType } from '../../types/ships/FactionTypes';
-import { moduleEventBus, ModuleEventType } from '../modules/ModuleEvents';
+import { EventEmitter } from '../../utils/EventEmitter';
+import { FactionId } from '../../types/ships/FactionTypes';
+import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { factionConfigs } from '../../config/factions/factions';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 

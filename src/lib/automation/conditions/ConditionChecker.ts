@@ -1,5 +1,5 @@
-import { AutomationCondition } from '../AutomationManager';
-import { moduleManager } from '../../modules/ModuleManager';
+import { AutomationCondition } from '../../../managers/game/AutomationManager';
+import { moduleManager } from '../../../managers/module/ModuleManager';
 import { thresholdEvents } from '../../../contexts/ThresholdTypes';
 import { Subject } from 'rxjs';
 

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { BaseModule, ModuleType, ModularBuilding } from '../types/buildings/ModuleTypes';
-import { moduleManager } from '../lib/modules/ModuleManager';
+import { moduleManager } from '../managers/module/ModuleManager';
 import { Position } from '../types/core/GameTypes';
 
 // State interface

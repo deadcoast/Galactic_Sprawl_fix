@@ -14,7 +14,7 @@ import { CombatUnit } from '../../types/combat/CombatTypes';
 import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { FactionId, FactionBehaviorType, FactionState } from '../../types/ships/FactionTypes';
-import { AsteroidFieldManager } from '../../managers/AsteroidFieldManager';
+import { AsteroidFieldManager } from '../../managers/game/AsteroidFieldManager';
 import {
   WeaponConfig,
   WeaponInstance,

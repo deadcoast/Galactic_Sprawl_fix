@@ -1,4 +1,4 @@
-import { combatManager } from '../../lib/combat/combatManager';
+import { combatManager } from '../../managers/combat/combatManager';
 import { useEffect, useState } from 'react';
 
 export function useCombatSystem(zoneId: string) {

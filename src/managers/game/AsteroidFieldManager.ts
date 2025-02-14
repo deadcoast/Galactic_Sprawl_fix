@@ -1,11 +1,11 @@
-import { EventEmitter } from '../lib/utils/EventEmitter';
-import { moduleEventBus } from '../lib/modules/ModuleEvents';
-import { ModuleType } from '../types/buildings/ModuleTypes';
-import { Position } from '../types/core/GameTypes';
-import { ResourceType } from '../types/resources/ResourceTypes';
-import { miningShipManager } from '../lib/automation/mining/MiningShipManager';
-import { shipMovementManager } from '../lib/ai/shipMovement';
-import { shipBehaviorManager } from '../lib/ai/shipBehavior';
+import { EventEmitter } from '../../lib/utils/EventEmitter';
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { Position } from '../../types/core/GameTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
+import { miningShipManager } from '../mining/MiningShipManager';
+import { shipMovementManager } from '../../lib/ai/shipMovement';
+import { shipBehaviorManager } from '../../lib/ai/shipBehavior';
 
 interface Hazard {
   id: string;

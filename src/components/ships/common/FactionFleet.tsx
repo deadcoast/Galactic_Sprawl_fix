@@ -1,10 +1,11 @@
 import { useAdaptiveAI } from '../../../hooks/factions/useAdaptiveAI';
 import { useFleetAI } from '../../../hooks/factions/useFleetAI';
 import { AlertTriangle, Rocket, Shield, Sword } from 'lucide-react';
+import { FactionId } from '../../../types/ships/FactionTypes';
 
 interface FactionFleetProps {
   fleetId: string;
-  factionId: string;
+  factionId: FactionId;
   onFleetCommand?: (command: string, targetId?: string) => void;
 }
 

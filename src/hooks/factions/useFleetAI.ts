@@ -1,7 +1,7 @@
 import { useAdaptiveAI } from './useAdaptiveAI';
 import { useFactionBehavior } from './useFactionBehavior';
-import { combatManager } from '../../lib/combat/combatManager';
-import { factionManager } from '../../lib/factions/factionManager';
+import { combatManager } from '../../managers/combat/combatManager';
+import { factionManager } from '../../managers/factions/factionManager';
 import { useEffect, useMemo, useState } from 'react';
 import { FactionId } from '../../types/ships/FactionTypes';
 
@@ -50,7 +50,7 @@ export interface Fleet {
   direction: number;
 }
 
-declare module '../../lib/combat/combatManager' {
+declare module '../../managers/combat/CombatManager' {
   export interface CombatManager {
     getFleetStatus: (fleetId: string) => Fleet | undefined;
     getUnitsInRange: (position: { x: number; y: number }, range: number) => CombatUnit[];
