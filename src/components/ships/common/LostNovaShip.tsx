@@ -1,33 +1,28 @@
-import { FactionShipBase } from "./FactionShipBase";
-import { LostNovaShipClass } from "../../../types/ships/FactionShipTypes";
-import { ReactNode } from "react";
-import { 
-  WeaponMount, 
-  WeaponInstance,
-  CombatWeaponStats 
-} from "../../../types/weapons/WeaponTypes";
-import { WeaponEffect } from "../../../effects/types_effects/WeaponEffects";
-import { useShipEffects } from "../../../hooks/ships/useShipEffects";
-import { BaseEffect } from "../../../effects/types_effects/EffectTypes";
-import { Effect } from "../../../types/core/GameTypes";
-import { Zap, Eye, Shield } from "lucide-react";
-import { StatusEffect } from "../../ui/status/StatusEffect";
-import { AbilityButton } from "../../ui/buttons/AbilityButton";
-import { FactionShip } from "./FactionShipStats";
-import { FactionShipStats } from "../../../types/ships/FactionShipTypes";
+import { FactionShipBase } from './FactionShipBase';
+import { LostNovaShipClass } from '../../../types/ships/FactionShipTypes';
+import { ReactNode } from 'react';
+import { WeaponMount } from '../../../types/weapons/WeaponTypes';
+import { WeaponEffect } from '../../../effects/types_effects/WeaponEffects';
+import { useShipEffects } from '../../../hooks/ships/useShipEffects';
+import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
+import { Zap, Eye } from 'lucide-react';
+import { StatusEffect } from '../../ui/status/StatusEffect';
+import { AbilityButton } from '../../ui/buttons/AbilityButton';
+import { FactionShip } from './FactionShipStats';
+import { FactionShipStats } from '../../../types/ships/FactionShipTypes';
 
 interface LostNovaShipProps {
   id: string;
   name: string;
   type: LostNovaShipClass;
-  status: "engaging" | "patrolling" | "retreating" | "disabled";
+  status: 'engaging' | 'patrolling' | 'retreating' | 'disabled';
   health: number;
   maxHealth: number;
   shield: number;
   maxShield: number;
   weapons: WeaponMount[];
   stats: FactionShipStats;
-  tactics: "aggressive" | "defensive" | "hit-and-run" | "stealth";
+  tactics: 'aggressive' | 'defensive' | 'hit-and-run' | 'stealth';
   position: { x: number; y: number };
   rotation: number;
   onEngage?: () => void;
@@ -39,7 +34,7 @@ interface LostNovaShipProps {
 
 /**
  * LostNovaShip Component
- * 
+ *
  * Base component for Lost Nova faction ships.
  * Provides faction-specific styling and behavior.
  */
@@ -67,22 +62,22 @@ export function LostNovaShip({
 
   // Faction-specific effects
   const handleVoidPulse = () => {
-    if (hasEffect("void-pulse")) {
-      removeEffect("void-pulse");
+    if (hasEffect('void-pulse')) {
+      removeEffect('void-pulse');
       // Remove void pulse effect from weapons
       weapons.forEach(mount => {
         if (mount.currentWeapon) {
           mount.currentWeapon.state.effects = mount.currentWeapon.state.effects.filter(
-            effect => effect.name !== "Void Pulse"
+            effect => effect.name !== 'Void Pulse'
           );
         }
       });
     } else {
       const baseEffect: BaseEffect = {
-        id: "void-pulse",
-        name: "Void Pulse",
-        description: "Disrupts enemy shields and cloaking",
-        type: "jamming",
+        id: 'void-pulse',
+        name: 'Void Pulse',
+        description: 'Disrupts enemy shields and cloaking',
+        type: 'jamming',
         magnitude: 1.0,
         duration: 8,
         active: true,
@@ -93,14 +88,14 @@ export function LostNovaShip({
       weapons.forEach(mount => {
         if (mount.currentWeapon) {
           const weaponEffect: WeaponEffect = {
-            type: "damage",
-            name: "Void Pulse",
-            description: "Disrupts enemy shields and cloaking",
+            type: 'damage',
+            name: 'Void Pulse',
+            description: 'Disrupts enemy shields and cloaking',
             duration: 8,
             strength: 1.0,
             magnitude: 1.0,
             active: true,
-            cooldown: 0
+            cooldown: 0,
           };
           mount.currentWeapon.state.effects.push(weaponEffect);
         }
@@ -110,14 +105,14 @@ export function LostNovaShip({
   };
 
   const handleStealthField = () => {
-    if (hasEffect("stealth-field")) {
-      removeEffect("stealth-field");
+    if (hasEffect('stealth-field')) {
+      removeEffect('stealth-field');
     } else {
       const stealthEffect: BaseEffect = {
-        id: "stealth-field",
-        name: "Stealth Field",
-        description: "Reduces detection range and increases evasion",
-        type: "stealth",
+        id: 'stealth-field',
+        name: 'Stealth Field',
+        description: 'Reduces detection range and increases evasion',
+        type: 'stealth',
         magnitude: 1.0,
         duration: 12,
         active: true,
@@ -133,10 +128,10 @@ export function LostNovaShip({
           id,
           name,
           class: type,
-          faction: "lost-nova",
+          faction: 'lost-nova',
           status,
           tactics,
-          category: "recon",
+          category: 'recon',
           health,
           maxHealth,
           shield,
@@ -145,29 +140,29 @@ export function LostNovaShip({
           rotation,
           abilities: [
             {
-              name: "Void Pulse",
-              description: "Disrupts enemy shields and cloaking",
+              name: 'Void Pulse',
+              description: 'Disrupts enemy shields and cloaking',
               cooldown: 12,
               duration: 8,
-              active: hasEffect("void-pulse"),
+              active: hasEffect('void-pulse'),
               effect: {
-                type: "jamming",
-                name: "Void Pulse",
-                description: "Disrupts enemy shields and cloaking",
+                type: 'jamming',
+                name: 'Void Pulse',
+                description: 'Disrupts enemy shields and cloaking',
                 magnitude: 1.0,
                 duration: 8,
               },
             },
             {
-              name: "Stealth Field",
-              description: "Reduces detection range and increases evasion",
+              name: 'Stealth Field',
+              description: 'Reduces detection range and increases evasion',
               cooldown: 15,
               duration: 12,
-              active: hasEffect("stealth-field"),
+              active: hasEffect('stealth-field'),
               effect: {
-                type: "stealth",
-                name: "Stealth Field",
-                description: "Reduces detection range and increases evasion",
+                type: 'stealth',
+                name: 'Stealth Field',
+                description: 'Reduces detection range and increases evasion',
                 magnitude: 1.0,
                 duration: 12,
               },
@@ -178,16 +173,17 @@ export function LostNovaShip({
         onEngage={onEngage}
         onRetreat={onRetreat}
         onSpecialAbility={onSpecialAbility}
+        onFire={onFire}
       >
         {/* Status Effects */}
         <StatusEffect
-          active={hasEffect("void-pulse")}
+          active={hasEffect('void-pulse')}
           icon={Zap}
           label="Void Pulse"
           color="purple"
         />
         <StatusEffect
-          active={hasEffect("stealth-field")}
+          active={hasEffect('stealth-field')}
           icon={Eye}
           label="Stealth Field"
           color="indigo"
@@ -195,14 +191,14 @@ export function LostNovaShip({
 
         {/* Ability Buttons */}
         <AbilityButton
-          active={hasEffect("void-pulse")}
+          active={hasEffect('void-pulse')}
           icon={Zap}
           label="Void Pulse"
           color="purple"
           onClick={handleVoidPulse}
         />
         <AbilityButton
-          active={hasEffect("stealth-field")}
+          active={hasEffect('stealth-field')}
           icon={Eye}
           label="Stealth Field"
           color="indigo"
@@ -218,10 +214,10 @@ export function LostNovaShip({
           id,
           name,
           class: type,
-          faction: "lost-nova",
+          faction: 'lost-nova',
           status,
           tactics,
-          category: "recon",
+          category: 'recon',
           health,
           maxHealth,
           shield,
@@ -231,29 +227,29 @@ export function LostNovaShip({
           stats,
           abilities: [
             {
-              name: "Void Pulse",
-              description: "Disrupts enemy shields and cloaking",
+              name: 'Void Pulse',
+              description: 'Disrupts enemy shields and cloaking',
               cooldown: 12,
               duration: 8,
-              active: hasEffect("void-pulse"),
+              active: hasEffect('void-pulse'),
               effect: {
-                type: "jamming",
-                name: "Void Pulse",
-                description: "Disrupts enemy shields and cloaking",
+                type: 'jamming',
+                name: 'Void Pulse',
+                description: 'Disrupts enemy shields and cloaking',
                 magnitude: 1.0,
                 duration: 8,
               },
             },
             {
-              name: "Stealth Field",
-              description: "Reduces detection range and increases evasion",
+              name: 'Stealth Field',
+              description: 'Reduces detection range and increases evasion',
               cooldown: 15,
               duration: 12,
-              active: hasEffect("stealth-field"),
+              active: hasEffect('stealth-field'),
               effect: {
-                type: "stealth",
-                name: "Stealth Field",
-                description: "Reduces detection range and increases evasion",
+                type: 'stealth',
+                name: 'Stealth Field',
+                description: 'Reduces detection range and increases evasion',
                 magnitude: 1.0,
                 duration: 12,
               },

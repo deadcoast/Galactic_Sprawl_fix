@@ -1,16 +1,16 @@
-import { AlertTriangle, Database } from "lucide-react";
-import { useState } from "react";
+import { AlertTriangle, Database } from 'lucide-react';
+import { useState } from 'react';
 
 interface HabitableWorldProps {
   name: string;
-  type: "terran" | "oceanic" | "desert" | "arctic";
+  type: 'terran' | 'oceanic' | 'desert' | 'arctic';
   population: number;
   maxPopulation: number;
   resources: string[];
   developmentLevel: number;
   cityLightIntensity: number;
-  anomalies?: { type: "warning" | "info"; message: string }[];
-  quality: "low" | "medium" | "high";
+  anomalies?: { type: 'warning' | 'info'; message: string }[];
+  quality: 'low' | 'medium' | 'high';
   onClick?: () => void;
 }
 
@@ -30,21 +30,21 @@ export function HabitableWorld({
 
   const getPlanetColor = () => {
     switch (type) {
-      case "terran":
-        return "emerald";
-      case "oceanic":
-        return "cyan";
-      case "desert":
-        return "amber";
-      case "arctic":
-        return "blue";
+      case 'terran':
+        return 'emerald';
+      case 'oceanic':
+        return 'cyan';
+      case 'desert':
+        return 'amber';
+      case 'arctic':
+        return 'blue';
       default:
-        return "indigo";
+        return 'indigo';
     }
   };
 
   const color = getPlanetColor();
-  const particleCount = quality === "high" ? 16 : quality === "medium" ? 8 : 4;
+  const particleCount = quality === 'high' ? 16 : quality === 'medium' ? 8 : 4;
 
   return (
     <div
@@ -68,7 +68,7 @@ export function HabitableWorld({
             />
 
             {/* Surface Features */}
-            {quality !== "low" && (
+            {quality !== 'low' && (
               <div className="absolute inset-0">
                 {/* Terrain Patterns */}
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -104,7 +104,7 @@ export function HabitableWorld({
             {/* Development Ring */}
             <div
               className={`absolute inset-0 border-2 rounded-full transition-all duration-500 ${
-                isHovered ? "scale-110" : "scale-100"
+                isHovered ? 'scale-110' : 'scale-100'
               }`}
               style={{
                 borderColor: `rgb(var(--color-${color}-500))`,
@@ -126,14 +126,12 @@ export function HabitableWorld({
               key={resource}
               className="absolute"
               style={{
-                left: "50%",
-                top: "50%",
+                left: '50%',
+                top: '50%',
                 transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
               }}
             >
-              <div
-                className={`p-1 rounded-full bg-${color}-900/80 backdrop-blur-sm`}
-              >
+              <div className={`p-1 rounded-full bg-${color}-900/80 backdrop-blur-sm`}>
                 <Database className={`w-4 h-4 text-${color}-400`} />
               </div>
             </div>
@@ -145,18 +143,14 @@ export function HabitableWorld({
       <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 space-y-2 w-48">
         <div className="text-center">
           <div className={`text-${color}-200 font-medium`}>{name}</div>
-          <div className={`text-${color}-300/70 text-sm capitalize`}>
-            {type} World
-          </div>
+          <div className={`text-${color}-300/70 text-sm capitalize`}>{type} World</div>
         </div>
 
         {/* Population Bar */}
         <div>
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-400">Population</span>
-            <span className="text-gray-300">
-              {Math.round((population / maxPopulation) * 100)}%
-            </span>
+            <span className="text-gray-300">{Math.round((population / maxPopulation) * 100)}%</span>
           </div>
           <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
             <div
@@ -174,19 +168,19 @@ export function HabitableWorld({
             <div
               key={index}
               className={`px-3 py-1 rounded-full flex items-center space-x-1 mb-1 ${
-                anomaly.type === "warning"
-                  ? "bg-red-900/80 border border-red-700"
-                  : "bg-blue-900/80 border border-blue-700"
+                anomaly.type === 'warning'
+                  ? 'bg-red-900/80 border border-red-700'
+                  : 'bg-blue-900/80 border border-blue-700'
               }`}
             >
               <AlertTriangle
                 className={`w-3 h-3 ${
-                  anomaly.type === "warning" ? "text-red-400" : "text-blue-400"
+                  anomaly.type === 'warning' ? 'text-red-400' : 'text-blue-400'
                 }`}
               />
               <span
                 className={`text-xs ${
-                  anomaly.type === "warning" ? "text-red-200" : "text-blue-200"
+                  anomaly.type === 'warning' ? 'text-red-200' : 'text-blue-200'
                 }`}
               >
                 {anomaly.message}

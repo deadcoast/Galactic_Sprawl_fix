@@ -1,5 +1,5 @@
-import { EventEmitter } from "../utils/EventEmitter";
-import { Position } from "../../types/core/Position";
+import { EventEmitter } from '../utils/EventEmitter';
+import { Position } from '../../types/core/Position';
 
 export interface RenderBatch {
   id: string;
@@ -39,7 +39,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
 
   constructor() {
     super();
-    console.debug("[RenderBatcher] Initialized");
+    console.debug('[RenderBatcher] Initialized');
   }
 
   /**
@@ -51,12 +51,12 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
       id,
       type,
       zIndex,
-      items: []
+      items: [],
     };
 
     this.batches.set(id, batch);
     this.needsSort = true;
-    this.emit("batchCreated", { batch });
+    this.emit('batchCreated', { batch });
 
     return id;
   }
@@ -68,7 +68,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
     const batch = this.batches.get(batchId);
     if (batch) {
       batch.items.push(item);
-      this.emit("batchUpdated", { batch });
+      this.emit('batchUpdated', { batch });
     }
   }
 
@@ -81,7 +81,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
       const index = batch.items.findIndex(item => item.id === itemId);
       if (index !== -1) {
         batch.items.splice(index, 1);
-        this.emit("batchUpdated", { batch });
+        this.emit('batchUpdated', { batch });
       }
     }
   }
@@ -92,7 +92,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
   public removeBatch(batchId: string): void {
     if (this.batches.delete(batchId)) {
       this.needsSort = true;
-      this.emit("batchRemoved", { batchId });
+      this.emit('batchRemoved', { batchId });
     }
   }
 
@@ -104,8 +104,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
       return;
     }
 
-    this.sortedBatches = Array.from(this.batches.values())
-      .sort((a, b) => a.zIndex - b.zIndex);
+    this.sortedBatches = Array.from(this.batches.values()).sort((a, b) => a.zIndex - b.zIndex);
     this.needsSort = false;
   }
 
@@ -114,7 +113,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
    */
   public beginFrame(timestamp: number): void {
     this.drawCalls = 0;
-    this.emit("frameStarted", { timestamp });
+    this.emit('frameStarted', { timestamp });
   }
 
   /**
@@ -126,9 +125,9 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
     // Group items by shader and texture to minimize state changes
     this.sortedBatches.forEach(batch => {
       const byShader = new Map<string, RenderItem[]>();
-      
+
       batch.items.forEach(item => {
-        const key = `${item.shader || "default"}-${item.texture || "none"}`;
+        const key = `${item.shader || 'default'}-${item.texture || 'none'}`;
         if (!byShader.has(key)) {
           byShader.set(key, []);
         }
@@ -157,10 +156,10 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
     ctx.globalAlpha = item.opacity;
 
     // Set blend mode based on shader
-    if (item.shader === "additive") {
-      ctx.globalCompositeOperation = "lighter";
+    if (item.shader === 'additive') {
+      ctx.globalCompositeOperation = 'lighter';
     } else {
-      ctx.globalCompositeOperation = "source-over";
+      ctx.globalCompositeOperation = 'source-over';
     }
 
     // Set color
@@ -194,9 +193,9 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
    * End frame
    */
   public endFrame(timestamp: number): void {
-    this.emit("frameEnded", {
+    this.emit('frameEnded', {
       timestamp,
-      drawCalls: this.drawCalls
+      drawCalls: this.drawCalls,
     });
   }
 
@@ -209,4 +208,4 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
     this.needsSort = false;
     this.drawCalls = 0;
   }
-} 
+}

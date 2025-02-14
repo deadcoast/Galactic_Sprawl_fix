@@ -32,7 +32,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
 
     ships.forEach(ship => {
       const errors: string[] = [];
-      
+
       // Check tech requirements
       if (ship.requirements.prerequisites?.technology) {
         const missingTech = ship.requirements.prerequisites.technology.filter(
@@ -84,7 +84,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
     <div className="h-full flex flex-col">
       {/* Category Selection */}
       <div className="flex space-x-2 mb-4">
-        {['all', 'war', 'recon', 'mining'].map((category) => (
+        {['all', 'war', 'recon', 'mining'].map(category => (
           <button
             key={category}
             onClick={() => setSelectedCategory(category as PlayerShipCategory | 'all')}
@@ -101,7 +101,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
 
       {/* Ship List */}
       <div className="grid grid-cols-2 gap-4 flex-1 overflow-y-auto">
-        {filteredShips.map((ship) => (
+        {filteredShips.map(ship => (
           <div
             key={ship.shipClass}
             onClick={() => setSelectedShip(ship)}
@@ -126,23 +126,37 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
                 <AlertTriangle className="w-5 h-5 text-amber-500" />
               )}
             </div>
-            
+
             <p className="text-sm text-gray-400 mb-4">{ship.description}</p>
-            
+
             {/* Ship Stats */}
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="text-gray-400">Hull: <span className="text-white">{ship.baseStats.hull}</span></div>
-              <div className="text-gray-400">Shield: <span className="text-white">{ship.baseStats.shield}</span></div>
-              <div className="text-gray-400">Energy: <span className="text-white">{ship.baseStats.energy}</span></div>
-              <div className="text-gray-400">Speed: <span className="text-white">{ship.baseStats.speed}</span></div>
+              <div className="text-gray-400">
+                Hull: <span className="text-white">{ship.baseStats.hull}</span>
+              </div>
+              <div className="text-gray-400">
+                Shield: <span className="text-white">{ship.baseStats.shield}</span>
+              </div>
+              <div className="text-gray-400">
+                Energy: <span className="text-white">{ship.baseStats.energy}</span>
+              </div>
+              <div className="text-gray-400">
+                Speed: <span className="text-white">{ship.baseStats.speed}</span>
+              </div>
               {ship.baseStats.cargo && (
-                <div className="text-gray-400">Cargo: <span className="text-white">{ship.baseStats.cargo}</span></div>
+                <div className="text-gray-400">
+                  Cargo: <span className="text-white">{ship.baseStats.cargo}</span>
+                </div>
               )}
               {ship.baseStats.scanRange && (
-                <div className="text-gray-400">Scan Range: <span className="text-white">{ship.baseStats.scanRange}</span></div>
+                <div className="text-gray-400">
+                  Scan Range: <span className="text-white">{ship.baseStats.scanRange}</span>
+                </div>
               )}
               {ship.baseStats.miningRate && (
-                <div className="text-gray-400">Mining Rate: <span className="text-white">{ship.baseStats.miningRate}</span></div>
+                <div className="text-gray-400">
+                  Mining Rate: <span className="text-white">{ship.baseStats.miningRate}</span>
+                </div>
               )}
             </div>
 
@@ -150,9 +164,10 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
             <div className="mt-4 pt-4 border-t border-gray-700">
               <h4 className="text-sm font-medium text-gray-300 mb-2">Requirements</h4>
               <div className="flex flex-wrap gap-2">
-                {ship.requirements.resourceCost.map((cost) => {
+                {ship.requirements.resourceCost.map(cost => {
                   const requirements = manager.getBuildRequirements(ship.shipClass);
-                  const available = requirements.resourceCost.find(r => r.type === cost.type)?.amount || 0;
+                  const available =
+                    requirements.resourceCost.find(r => r.type === cost.type)?.amount || 0;
                   return (
                     <div
                       key={cost.type}
@@ -172,9 +187,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
             {/* Build Errors */}
             {errors.get(ship.shipClass) && (
               <div className="mt-2 text-xs text-amber-500">
-                {errors.get(ship.shipClass)?.map((error, i) => (
-                  <div key={i}>{error}</div>
-                ))}
+                {errors.get(ship.shipClass)?.map((error, i) => <div key={i}>{error}</div>)}
               </div>
             )}
           </div>
@@ -187,7 +200,9 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-medium text-white">{selectedShip.name}</h3>
-              <p className="text-sm text-gray-400">Build Time: {selectedShip.requirements.buildTime / 1000}s</p>
+              <p className="text-sm text-gray-400">
+                Build Time: {selectedShip.requirements.buildTime / 1000}s
+              </p>
             </div>
             <button
               onClick={handleStartBuild}
@@ -205,4 +220,4 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
       )}
     </div>
   );
-} 
+}

@@ -44,12 +44,22 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 - Properly handle module activation/deactivation state changes.
 - When working with weapon effects, use (DamageEffect | AreaEffect)[] for BaseWeaponStats compatibility, not WeaponEffectType[] which includes StatusEffect.
 - For ship stats with weapons, use WeaponInstance (not WeaponMount) and include primary, secondary, and stats properties.
+- Be careful when removing type imports - they may be used indirectly in type definitions even if not explicitly referenced in the code.
+- TypeScript linter may show false positives for unused imports when they are used only as types - these warnings can be safely ignored.
+- Be extremely careful when removing state-related code - state management often has implicit dependencies and side effects.
+- For props and state that are part of the component's interface but not currently used, use eslint-disable comments rather than removing them.
+- When TypeScript complains about missing properties, check the interface definition first - it might need to be updated to match the implementation.
+- Don't redefine interfaces locally when they're already imported - extend the imported interface if needed.
+- Use 'import type' for imports that are only used as types to avoid TypeScript linter warnings.
+- Don't import types that are already included through other type imports - avoid redundant imports.
+- When refactoring types, check ALL usages - removing a type import can break type annotations that depend on it.
 
 ## Cursor Learned
 
 ### CRITICAL: Code Organization and Development
 
 1. **ALWAYS SEARCH FOR EXISTING IMPLEMENTATIONS BEFORE CREATING NEW CODE**
+
    - Use file_search and codebase_search BEFORE writing any new component
    - Check all similar file names and paths thoroughly
    - Review existing implementations completely
@@ -59,6 +69,7 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
    - Don't just identify problems - SOLVE them
 
 2. **Type System Organization**
+
    - Keep core/base types in a central location (e.g., GameTypes.ts)
    - Use inheritance for shared properties (e.g., extending BaseStats)
    - Maintain clear type hierarchies (base -> specific -> component props)
@@ -97,11 +108,13 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 ### Testing (Last Step)
 
 1. **React Component Testing Setup**
+
    - Create test wrapper component for context providers
    - Use async/await with userEvent for interactions
    - Handle multiple instances with specific queries
 
 2. **Button and UI Element Testing**
+
    - Use `getAllByRole` instead of `getByText` for multiple instances
    - Select last instance for action buttons
    - Use role-based queries for accessibility
@@ -117,13 +130,16 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 ## Current State Analysis
 
 ### Missing Critical Components
+
 1. Event System
+
    - [ ] Combat events
    - [ ] Resource events
    - [ ] Ship events
    - [ ] Module events
 
 2. Core Game Systems
+
    - [ ] Ship movement
    - [ ] Combat mechanics
    - [ ] Resource management
@@ -138,70 +154,41 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 ### Current Development Plan
 
 ### Phase 1: Core Systems [Priority: CRITICAL]
-[ ] 1. Event System
-    - Expand moduleEventBus.ts to handle:
-      - Combat events
-      - Resource events
-      - Ship events
-      - Module events
-    - Add proper event typing
-    - Implement event handlers
 
-[ ] 2. State Management
-    - Implement GameContext
-    - Create ShipContext
-    - Add ResourceContext
-    - Set up CombatContext
+[ ] 1. Event System - Expand moduleEventBus.ts to handle: - Combat events - Resource events - Ship events - Module events - Add proper event typing - Implement event handlers
 
-[ ] 3. Core Game Loop
-    - Create game tick system
-    - Add update cycle
-    - Implement state synchronization
-    - Set up cleanup handlers
+[ ] 2. State Management - Implement GameContext - Create ShipContext - Add ResourceContext - Set up CombatContext
+
+[ ] 3. Core Game Loop - Create game tick system - Add update cycle - Implement state synchronization - Set up cleanup handlers
 
 ### Phase 2: Game Systems [Priority: HIGH]
-[ ] 1. Ship System
-    - Movement mechanics
-    - Combat system
-    - Ship states
-    - Ship interactions
 
-[ ] 2. Module System
-    - Module base class
-    - Module activation
-    - Module upgrades
-    - Module interactions
+[ ] 1. Ship System - Movement mechanics - Combat system - Ship states - Ship interactions
 
-[ ] 3. Resource System
-    - Resource types
-    - Collection
-    - Storage
-    - Transfer
+[ ] 2. Module System - Module base class - Module activation - Module upgrades - Module interactions
+
+[ ] 3. Resource System - Resource types - Collection - Storage - Transfer
 
 ### Phase 3: UI & Effects [Priority: MEDIUM]
-[ ] 1. UI Integration
-    - Connect GameHUD
-    - Implement controls
-    - Add feedback systems
-    - Create tooltips
 
-[ ] 2. Visual Effects
-    - Combat effects
-    - Movement effects
-    - Resource effects
-    - UI animations
+[ ] 1. UI Integration - Connect GameHUD - Implement controls - Add feedback systems - Create tooltips
+
+[ ] 2. Visual Effects - Combat effects - Movement effects - Resource effects - UI animations
 
 ## Current Focus
+
 1. Expand event system
 2. Implement core state management
 3. Set up game loop
 
 ## Next Steps
+
 1. Review and expand moduleEventBus.ts
 2. Create core contexts
 3. Implement game tick system
 
 ## Progress Tracking
+
 - Core Systems: 20% complete
 - Game Systems: 10% complete
 - UI & Effects: 40% complete

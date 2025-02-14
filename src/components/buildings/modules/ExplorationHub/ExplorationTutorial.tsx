@@ -1,12 +1,5 @@
-import {
-  AlertTriangle,
-  ChevronRight,
-  History,
-  Map,
-  Rocket,
-  X,
-} from "lucide-react";
-import React from "react";
+import { AlertTriangle, ChevronRight, History, Map, Rocket, X } from 'lucide-react';
+import React from 'react';
 
 interface TutorialStep {
   title: string;
@@ -16,27 +9,27 @@ interface TutorialStep {
 
 const tutorialSteps: TutorialStep[] = [
   {
-    title: "Sector Navigation",
+    title: 'Sector Navigation',
     description:
-      "Explore the galaxy map to discover new sectors. Unmapped sectors appear dimmed until scanned by recon ships.",
+      'Explore the galaxy map to discover new sectors. Unmapped sectors appear dimmed until scanned by recon ships.',
     icon: Map,
   },
   {
-    title: "Anomaly Detection",
+    title: 'Anomaly Detection',
     description:
-      "Watch for anomaly indicators that may signal valuable discoveries or potential threats.",
+      'Watch for anomaly indicators that may signal valuable discoveries or potential threats.',
     icon: AlertTriangle,
   },
   {
-    title: "Recon Fleet",
+    title: 'Recon Fleet',
     description:
-      "Manage your recon ships to scan sectors and investigate anomalies. Ships gain experience over time.",
+      'Manage your recon ships to scan sectors and investigate anomalies. Ships gain experience over time.',
     icon: Rocket,
   },
   {
-    title: "Mission Logs",
+    title: 'Mission Logs',
     description:
-      "Track your exploration progress and discoveries in the mission log. High-priority findings are highlighted.",
+      'Track your exploration progress and discoveries in the mission log. High-priority findings are highlighted.',
     icon: History,
   },
 ];
@@ -50,7 +43,7 @@ export function ExplorationTutorial({ onClose }: ExplorationTutorialProps) {
 
   const nextStep = () => {
     if (currentStep < tutorialSteps.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+      setCurrentStep(prev => prev + 1);
     } else {
       onClose();
     }
@@ -85,7 +78,7 @@ export function ExplorationTutorial({ onClose }: ExplorationTutorialProps) {
               <div
                 key={index}
                 className={`w-2 h-2 rounded-full ${
-                  index === currentStep ? "bg-teal-500" : "bg-gray-600"
+                  index === currentStep ? 'bg-teal-500' : 'bg-gray-600'
                 }`}
               />
             ))}
@@ -95,11 +88,7 @@ export function ExplorationTutorial({ onClose }: ExplorationTutorialProps) {
             onClick={nextStep}
             className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg flex items-center space-x-2 transition-colors"
           >
-            <span>
-              {currentStep === tutorialSteps.length - 1
-                ? "Get Started"
-                : "Next"}
-            </span>
+            <span>{currentStep === tutorialSteps.length - 1 ? 'Get Started' : 'Next'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

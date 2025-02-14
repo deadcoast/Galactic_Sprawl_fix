@@ -3,8 +3,13 @@
  * @module WeaponTypes
  */
 
-import { Effect as BaseEffect } from "../core/GameTypes";
-import { WeaponEffect, WeaponEffectType, DamageEffect, AreaEffect } from "../../effects/types_effects/WeaponEffects";
+import { Effect as BaseEffect } from '../core/GameTypes';
+import {
+  WeaponEffect,
+  WeaponEffectType,
+  DamageEffect,
+  AreaEffect,
+} from '../../effects/types_effects/WeaponEffects';
 
 export type { WeaponEffect, WeaponEffectType, DamageEffect, AreaEffect };
 
@@ -15,68 +20,68 @@ export type { WeaponEffect, WeaponEffectType, DamageEffect, AreaEffect };
  * All available weapon categories
  */
 export type WeaponCategory =
-  | "machineGun"
-  | "gaussCannon"
-  | "railGun"
-  | "mgss"
-  | "rockets"
-  | "pointDefense"
-  | "flakCannon"
-  | "capitalLaser"
-  | "torpedoes"
-  | "harmonicCannon"
-  | "temporalCannon"
-  | "quantumCannon";
+  | 'machineGun'
+  | 'gaussCannon'
+  | 'railGun'
+  | 'mgss'
+  | 'rockets'
+  | 'pointDefense'
+  | 'flakCannon'
+  | 'capitalLaser'
+  | 'torpedoes'
+  | 'harmonicCannon'
+  | 'temporalCannon'
+  | 'quantumCannon';
 
 /**
  * Specific weapon variants within each category
  */
 export type WeaponVariant =
   // Machine Gun variants
-  | "basic"
-  | "plasmaRounds"
-  | "sparkRounds"
+  | 'basic'
+  | 'plasmaRounds'
+  | 'sparkRounds'
   // Gauss Cannon variants
-  | "gaussPlaner"
-  | "recirculatingGauss"
+  | 'gaussPlaner'
+  | 'recirculatingGauss'
   // Rail Gun variants
-  | "lightShot"
-  | "maurader"
+  | 'lightShot'
+  | 'maurader'
   // MGSS variants
-  | "engineAssistedSpool"
-  | "slugMGSS"
+  | 'engineAssistedSpool'
+  | 'slugMGSS'
   // Rocket variants
-  | "emprRockets"
-  | "swarmRockets"
-  | "bigBangRockets";
+  | 'emprRockets'
+  | 'swarmRockets'
+  | 'bigBangRockets';
 
 /**
  * Weapon mount sizes
  */
-export type WeaponMountSize = "small" | "medium" | "large";
+export type WeaponMountSize = 'small' | 'medium' | 'large';
 
 /**
  * Weapon mount positions
  */
-export type WeaponMountPosition = "front" | "side" | "turret";
+export type WeaponMountPosition = 'front' | 'side' | 'turret';
 
 /**
  * Weapon operational status
  */
-export type WeaponStatus = "ready" | "charging" | "cooling" | "disabled";
+export type WeaponStatus = 'ready' | 'charging' | 'cooling' | 'disabled';
 
 // Upgrade Types
 export type WeaponUpgradeType =
-  | "plasma"
-  | "spark"
-  | "gauss"
-  | "light"
-  | "maurader"
-  | "engine"
-  | "slug"
-  | "empr"
-  | "swarm"
-  | "bigBang";
+  | 'plasma'
+  | 'spark'
+  | 'gauss'
+  | 'light'
+  | 'maurader'
+  | 'engine'
+  | 'slug'
+  | 'empr'
+  | 'swarm'
+  | 'bigBang';
 
 // Core Interfaces
 // ------------------------------------------------------------
@@ -239,33 +244,33 @@ export interface WeaponSystemProps {
  * Color mapping for weapon categories in UI
  */
 export const WEAPON_COLORS: Record<WeaponCategory, string> = {
-  machineGun: "cyan",
-  gaussCannon: "violet",
-  railGun: "indigo",
-  mgss: "fuchsia",
-  rockets: "rose",
-  pointDefense: "lime",
-  flakCannon: "yellow",
-  capitalLaser: "orange",
-  torpedoes: "red",
-  harmonicCannon: "teal",
-  temporalCannon: "purple",
-  quantumCannon: "blue"
+  machineGun: 'cyan',
+  gaussCannon: 'violet',
+  railGun: 'indigo',
+  mgss: 'fuchsia',
+  rockets: 'rose',
+  pointDefense: 'lime',
+  flakCannon: 'yellow',
+  capitalLaser: 'orange',
+  torpedoes: 'red',
+  harmonicCannon: 'teal',
+  temporalCannon: 'purple',
+  quantumCannon: 'blue',
 } as const;
 
 export const UPGRADE_COLORS: Record<WeaponUpgradeType, string> = {
-  plasma: "cyan",
-  spark: "cyan",
-  gauss: "violet",
-  light: "violet",
-  maurader: "indigo",
-  engine: "indigo",
-  slug: "fuchsia",
-  empr: "rose",
-  swarm: "rose",
-  bigBang: "rose",
+  plasma: 'cyan',
+  spark: 'cyan',
+  gauss: 'violet',
+  light: 'violet',
+  maurader: 'indigo',
+  engine: 'indigo',
+  slug: 'fuchsia',
+  empr: 'rose',
+  swarm: 'rose',
+  bigBang: 'rose',
 } as const;
 
 export interface Effect extends BaseEffect {
-  radius?: number;  // Add radius for area effects
+  radius?: number; // Add radius for area effects
 }

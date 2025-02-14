@@ -1,4 +1,4 @@
-import { factionConfigs, type FactionConfig } from "../../config/factions/factions";
+import { factionConfigs, type FactionConfig } from '../../config/factions/factions';
 
 interface FactionState {
   activeShips: number;
@@ -43,7 +43,7 @@ class FactionManager {
   }
 
   private checkFactionActivation() {
-    Object.values(factionConfigs).forEach((config) => {
+    Object.values(factionConfigs).forEach(config => {
       const state = this.factionStates.get(config.id);
       if (!state) {
         return;
@@ -107,8 +107,7 @@ class FactionManager {
       isHostile: this.isHostileToPlayer(factionId),
       willAttack: this.willInitiateAttack(factionId),
       expansionPriority: this.calculateExpansionPriority(factionId),
-      reinforcementNeeded:
-        state.fleetStrength < config.behavior.reinforcementThreshold,
+      reinforcementNeeded: state.fleetStrength < config.behavior.reinforcementThreshold,
     };
   }
 
@@ -136,12 +135,9 @@ class FactionManager {
     }
 
     const aggressionCheck = Math.random() < config.behavior.baseAggression;
-    const strengthCheck =
-      state.fleetStrength > config.behavior.retreatThreshold;
+    const strengthCheck = state.fleetStrength > config.behavior.retreatThreshold;
 
-    return (
-      aggressionCheck && strengthCheck && this.isHostileToPlayer(factionId)
-    );
+    return aggressionCheck && strengthCheck && this.isHostileToPlayer(factionId);
   }
 
   private calculateExpansionPriority(factionId: string): number {
@@ -154,11 +150,7 @@ class FactionManager {
     const territoryFactor = state.activeShips / config.spawnConditions.maxShips;
     const timeFactor = (Date.now() - state.lastActivity) / 60000; // minutes since last activity
 
-    return (
-      config.behavior.expansionRate *
-      (1 - territoryFactor) *
-      Math.min(timeFactor, 1)
-    );
+    return config.behavior.expansionRate * (1 - territoryFactor) * Math.min(timeFactor, 1);
   }
 
   public update() {

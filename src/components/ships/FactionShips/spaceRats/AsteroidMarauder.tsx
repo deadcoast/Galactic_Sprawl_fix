@@ -1,8 +1,8 @@
-import { SpaceRatShip } from "../../common/SpaceRatShip";
-import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
-import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
-import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { AlertTriangle } from "lucide-react";
+import { SpaceRatShip } from '../../common/SpaceRatShip';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { AlertTriangle } from 'lucide-react';
 
 interface AsteroidMarauderProps {
   id: string;
@@ -38,17 +38,17 @@ export function AsteroidMarauder({
   onSpecialAbility,
 }: AsteroidMarauderProps) {
   // Map the full ShipStatus to SpaceRatShip's more limited status type
-  const mapStatus = (status: ShipStatus): "engaging" | "patrolling" | "retreating" | "disabled" => {
+  const mapStatus = (status: ShipStatus): 'engaging' | 'patrolling' | 'retreating' | 'disabled' => {
     switch (status) {
-      case "damaged":
-        return "disabled";
-      case "idle":
-      case "ready":
-        return "patrolling";
-      case "engaging":
-      case "patrolling":
-      case "retreating":
-      case "disabled":
+      case 'damaged':
+        return 'disabled';
+      case 'idle':
+      case 'ready':
+        return 'patrolling';
+      case 'engaging':
+      case 'patrolling':
+      case 'retreating':
+      case 'disabled':
         return status;
     }
   };
@@ -77,7 +77,7 @@ export function AsteroidMarauder({
       />
 
       {/* Warning indicator for damaged state */}
-      {status === "damaged" && (
+      {status === 'damaged' && (
         <div className="absolute top-0 right-0 p-2">
           <AlertTriangle className="w-6 h-6 text-yellow-500 animate-pulse" />
         </div>
@@ -87,7 +87,9 @@ export function AsteroidMarauder({
       <div className="absolute bottom-4 left-4 right-4 flex gap-2">
         <button
           onClick={onSpecialAbility}
-          disabled={status === "disabled" || status === "damaged" || stats.energy <= stats.maxEnergy * 0.5}
+          disabled={
+            status === 'disabled' || status === 'damaged' || stats.energy <= stats.maxEnergy * 0.5
+          }
           className="flex-1 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg disabled:opacity-50"
         >
           Boost

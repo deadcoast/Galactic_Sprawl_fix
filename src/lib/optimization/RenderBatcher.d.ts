@@ -1,5 +1,5 @@
-import { EventEmitter } from "../utils/EventEmitter";
-import { Position } from "../../types/core/Position";
+import { EventEmitter } from '../utils/EventEmitter';
+import { Position } from '../../types/core/Position';
 
 interface RenderBatch {
   id: string;
@@ -37,4 +37,4 @@ export declare class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
   render(ctx: CanvasRenderingContext2D): void;
   endFrame(timestamp: number): void;
   cleanup(): void;
-} 
+}

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { EventEmitter } from "../utils/EventEmitter";
-import { EntityPool } from "./EntityPool";
-import { Position } from "../../types/core/Position";
+import { EventEmitter } from '../utils/EventEmitter';
+import { EntityPool } from './EntityPool';
+import { Position } from '../../types/core/Position';
 
 interface Particle {
   id: string;
@@ -34,10 +34,7 @@ export class ParticleSystemManager extends EventEmitter<ParticleSystemEvents> {
 
   constructor(initialPoolSize: number = 1000) {
     super();
-    this.particlePool = new EntityPool<Particle>(
-      () => this.createParticle(),
-      initialPoolSize
-    );
+    this.particlePool = new EntityPool<Particle>(() => this.createParticle(), initialPoolSize);
 
     // Debug logging
     console.debug(`[ParticleSystemManager] Initialized with pool size ${initialPoolSize}`);
@@ -54,7 +51,7 @@ export class ParticleSystemManager extends EventEmitter<ParticleSystemEvents> {
       velocity: { x: 0, y: 0 },
       acceleration: { x: 0, y: 0 },
       size: 1,
-      color: "#ffffff",
+      color: '#ffffff',
       opacity: 1,
       life: 1,
       maxLife: 1,
@@ -64,11 +61,11 @@ export class ParticleSystemManager extends EventEmitter<ParticleSystemEvents> {
         this.velocity = { x: 0, y: 0 };
         this.acceleration = { x: 0, y: 0 };
         this.size = 1;
-        this.color = "#ffffff";
+        this.color = '#ffffff';
         this.opacity = 1;
         this.life = 1;
         this.maxLife = 1;
-      }
+      },
     };
   }
 
@@ -106,7 +103,7 @@ export class ParticleSystemManager extends EventEmitter<ParticleSystemEvents> {
       totalActiveParticles += system.getActiveParticleCount();
     });
 
-    this.emit("systemUpdated", { activeCount: totalActiveParticles });
+    this.emit('systemUpdated', { activeCount: totalActiveParticles });
   }
 
   /**
@@ -138,7 +135,7 @@ interface ParticleSystemConfig {
     max: number;
   };
   color: string | string[];
-  blendMode?: "normal" | "additive";
+  blendMode?: 'normal' | 'additive';
 }
 
 /**
@@ -171,29 +168,27 @@ class ParticleSystem {
     // Initialize particle properties
     const angle = Math.random() * Math.PI * 2;
     const distance = Math.random() * this.config.spread;
-    
+
     particle.position = {
       x: this.config.position.x + Math.cos(angle) * distance,
-      y: this.config.position.y + Math.sin(angle) * distance
+      y: this.config.position.y + Math.sin(angle) * distance,
     };
 
     particle.velocity = {
-      x: this.config.initialVelocity.min.x + Math.random() * (
-        this.config.initialVelocity.max.x - this.config.initialVelocity.min.x
-      ),
-      y: this.config.initialVelocity.min.y + Math.random() * (
-        this.config.initialVelocity.max.y - this.config.initialVelocity.min.y
-      )
+      x:
+        this.config.initialVelocity.min.x +
+        Math.random() * (this.config.initialVelocity.max.x - this.config.initialVelocity.min.x),
+      y:
+        this.config.initialVelocity.min.y +
+        Math.random() * (this.config.initialVelocity.max.y - this.config.initialVelocity.min.y),
     };
 
     particle.acceleration = { ...this.config.acceleration };
-    particle.size = this.config.size.min + Math.random() * (
-      this.config.size.max - this.config.size.min
-    );
+    particle.size =
+      this.config.size.min + Math.random() * (this.config.size.max - this.config.size.min);
 
-    particle.life = this.config.life.min + Math.random() * (
-      this.config.life.max - this.config.life.min
-    );
+    particle.life =
+      this.config.life.min + Math.random() * (this.config.life.max - this.config.life.min);
     particle.maxLife = particle.life;
 
     if (Array.isArray(this.config.color)) {
@@ -213,7 +208,7 @@ class ParticleSystem {
     // Spawn new particles
     this.timeSinceLastSpawn += deltaTime;
     const spawnInterval = 1 / this.config.spawnRate;
-    
+
     while (this.timeSinceLastSpawn >= spawnInterval) {
       this.spawnParticle();
       this.timeSinceLastSpawn -= spawnInterval;
@@ -256,4 +251,4 @@ class ParticleSystem {
     });
     this.particles.clear();
   }
-} 
+}

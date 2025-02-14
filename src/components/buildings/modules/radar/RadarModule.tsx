@@ -1,5 +1,5 @@
-import { BaseModule } from "../../../../types/buildings/ModuleTypes";
-import { Radar } from "lucide-react";
+import { BaseModule } from '../../../../types/buildings/ModuleTypes';
+import { Radar } from 'lucide-react';
 
 interface RadarModuleProps {
   module: BaseModule;
@@ -7,11 +7,7 @@ interface RadarModuleProps {
   onDeactivate?: () => void;
 }
 
-export function RadarModule({
-  module,
-  onActivate,
-  onDeactivate,
-}: RadarModuleProps) {
+export function RadarModule({ module, onActivate, onDeactivate }: RadarModuleProps) {
   return (
     <div className="bg-gray-800 rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
@@ -28,11 +24,11 @@ export function RadarModule({
           onClick={module.isActive ? onDeactivate : onActivate}
           className={`px-4 py-2 rounded-lg text-sm ${
             module.isActive
-              ? "bg-red-900/50 text-red-400 hover:bg-red-900/70"
-              : "bg-blue-900/50 text-blue-400 hover:bg-blue-900/70"
+              ? 'bg-red-900/50 text-red-400 hover:bg-red-900/70'
+              : 'bg-blue-900/50 text-blue-400 hover:bg-blue-900/70'
           }`}
         >
-          {module.isActive ? "Deactivate" : "Activate"}
+          {module.isActive ? 'Deactivate' : 'Activate'}
         </button>
       </div>
 
@@ -40,23 +36,17 @@ export function RadarModule({
       <div className="space-y-4">
         <div className="p-4 bg-gray-900/50 rounded-lg">
           <div className="text-sm text-gray-400 mb-2">Scan Range</div>
-          <div className="text-2xl font-bold text-white">
-            {1000 * module.level} units
-          </div>
+          <div className="text-2xl font-bold text-white">{1000 * module.level} units</div>
         </div>
 
         <div className="p-4 bg-gray-900/50 rounded-lg">
           <div className="text-sm text-gray-400 mb-2">Power Usage</div>
-          <div className="text-2xl font-bold text-white">
-            {50 * module.level} units/s
-          </div>
+          <div className="text-2xl font-bold text-white">{50 * module.level} units/s</div>
         </div>
 
         <div className="p-4 bg-gray-900/50 rounded-lg">
           <div className="text-sm text-gray-400 mb-2">Detection Accuracy</div>
-          <div className="text-2xl font-bold text-white">
-            {85 + module.level * 5}%
-          </div>
+          <div className="text-2xl font-bold text-white">{85 + module.level * 5}%</div>
         </div>
       </div>
     </div>

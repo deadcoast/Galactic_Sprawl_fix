@@ -1,5 +1,5 @@
-import { AlertTriangle, Database } from "lucide-react";
-import { useState } from "react";
+import { AlertTriangle, Database } from 'lucide-react';
+import { useState } from 'react';
 
 interface MineralNode {
   id: string;
@@ -8,7 +8,7 @@ interface MineralNode {
   maxAmount: number;
   extractionRate: number;
   priority: number;
-  status: "active" | "depleted" | "paused";
+  status: 'active' | 'depleted' | 'paused';
 }
 
 interface MineralProcessingProps {
@@ -16,7 +16,7 @@ interface MineralProcessingProps {
   nodes: MineralNode[];
   totalOutput: number;
   efficiency: number;
-  quality: "low" | "medium" | "high";
+  quality: 'low' | 'medium' | 'high';
   onNodeClick?: (nodeId: string) => void;
   onPriorityChange?: (nodeId: string, priority: number) => void;
 }
@@ -31,7 +31,7 @@ export function MineralProcessing({
   onPriorityChange,
 }: MineralProcessingProps) {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const particleCount = quality === "high" ? 12 : quality === "medium" ? 8 : 4;
+  const particleCount = quality === 'high' ? 12 : quality === 'medium' ? 8 : 4;
 
   return (
     <div className="relative w-96 h-96">
@@ -50,7 +50,7 @@ export function MineralProcessing({
             className="absolute inset-0 rounded-full border-2 border-amber-500/20"
             style={{
               transform: `scale(${2 + tier * 0.5})`,
-              animation: "pulse 4s infinite",
+              animation: 'pulse 4s infinite',
             }}
           />
 
@@ -66,8 +66,8 @@ export function MineralProcessing({
                 key={node.id}
                 className="absolute"
                 style={{
-                  left: "50%",
-                  top: "50%",
+                  left: '50%',
+                  top: '50%',
                   transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
                 }}
                 onMouseEnter={() => setHoveredNode(node.id)}
@@ -76,25 +76,25 @@ export function MineralProcessing({
               >
                 <div
                   className={`p-4 rounded-lg transition-all duration-300 ${
-                    node.status === "active"
-                      ? "bg-amber-500/20"
-                      : node.status === "depleted"
-                        ? "bg-red-500/20"
-                        : "bg-gray-500/20"
-                  } ${hoveredNode === node.id ? "scale-110" : "scale-100"}`}
+                    node.status === 'active'
+                      ? 'bg-amber-500/20'
+                      : node.status === 'depleted'
+                        ? 'bg-red-500/20'
+                        : 'bg-gray-500/20'
+                  } ${hoveredNode === node.id ? 'scale-110' : 'scale-100'}`}
                 >
                   <Database
                     className={`w-6 h-6 ${
-                      node.status === "active"
-                        ? "text-amber-400"
-                        : node.status === "depleted"
-                          ? "text-red-400"
-                          : "text-gray-400"
+                      node.status === 'active'
+                        ? 'text-amber-400'
+                        : node.status === 'depleted'
+                          ? 'text-red-400'
+                          : 'text-gray-400'
                     }`}
                   />
 
                   {/* Resource Flow */}
-                  {node.status === "active" && quality !== "low" && (
+                  {node.status === 'active' && quality !== 'low' && (
                     <svg className="absolute inset-0 pointer-events-none">
                       <line
                         x1="50%"
@@ -118,30 +118,23 @@ export function MineralProcessing({
                   {/* Priority Indicator */}
                   <div
                     className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gray-800 border-2 border-amber-500 flex items-center justify-center cursor-pointer"
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       onPriorityChange?.(node.id, (node.priority % 3) + 1);
                     }}
                   >
-                    <span className="text-xs text-amber-400">
-                      {node.priority}
-                    </span>
+                    <span className="text-xs text-amber-400">{node.priority}</span>
                   </div>
 
                   {/* Node Info Tooltip */}
                   {hoveredNode === node.id && (
                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-800/90 rounded-lg border border-gray-700 whitespace-nowrap z-10">
-                      <div className="text-sm font-medium text-white">
-                        {node.type}
-                      </div>
+                      <div className="text-sm font-medium text-white">{node.type}</div>
                       <div className="text-xs text-gray-400">
-                        Amount:{" "}
-                        {Math.round((node.amount / node.maxAmount) * 100)}%
+                        Amount: {Math.round((node.amount / node.maxAmount) * 100)}%
                       </div>
-                      <div className="text-xs text-gray-400">
-                        Rate: {node.extractionRate}/s
-                      </div>
-                      {node.status === "depleted" && (
+                      <div className="text-xs text-gray-400">Rate: {node.extractionRate}/s</div>
+                      {node.status === 'depleted' && (
                         <div className="text-xs text-red-400">Depleted</div>
                       )}
                     </div>
@@ -184,8 +177,7 @@ export function MineralProcessing({
         <div className="text-center">
           <div className="text-amber-200 font-medium">Mineral Processing</div>
           <div className="text-amber-300/70 text-sm">
-            Tier {tier} • {nodes.filter((n) => n.status === "active").length}{" "}
-            Active Nodes
+            Tier {tier} • {nodes.filter(n => n.status === 'active').length} Active Nodes
           </div>
         </div>
 
@@ -193,9 +185,7 @@ export function MineralProcessing({
         <div>
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-400">Processing Efficiency</span>
-            <span className="text-gray-300">
-              {Math.round(efficiency * 100)}%
-            </span>
+            <span className="text-gray-300">{Math.round(efficiency * 100)}%</span>
           </div>
           <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
             <div
@@ -212,7 +202,7 @@ export function MineralProcessing({
       </div>
 
       {/* Warnings */}
-      {nodes.some((n) => n.status === "depleted") && (
+      {nodes.some(n => n.status === 'depleted') && (
         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-red-900/80 border border-red-700 rounded-full flex items-center space-x-1">
           <AlertTriangle className="w-3 h-3 text-red-400" />
           <span className="text-xs text-red-200">Depleted Nodes Detected</span>

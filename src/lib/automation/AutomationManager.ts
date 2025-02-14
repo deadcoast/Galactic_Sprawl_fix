@@ -211,8 +211,7 @@ export class AutomationManager {
    * Handles module activation
    */
   private handleModuleActivation = (event: any): void => {
-    const rules = Array.from(this.rules.values())
-      .filter(rule => rule.moduleId === event.moduleId);
+    const rules = Array.from(this.rules.values()).filter(rule => rule.moduleId === event.moduleId);
 
     rules.forEach(rule => {
       if (rule.enabled) {
@@ -225,8 +224,7 @@ export class AutomationManager {
    * Handles module deactivation
    */
   private handleModuleDeactivation = (event: any): void => {
-    const rules = Array.from(this.rules.values())
-      .filter(rule => rule.moduleId === event.moduleId);
+    const rules = Array.from(this.rules.values()).filter(rule => rule.moduleId === event.moduleId);
 
     rules.forEach(rule => {
       this.stopRule(rule.id);
@@ -237,8 +235,7 @@ export class AutomationManager {
    * Gets all rules for a module
    */
   getRulesForModule(moduleId: string): AutomationRule[] {
-    return Array.from(this.rules.values())
-      .filter(rule => rule.moduleId === moduleId);
+    return Array.from(this.rules.values()).filter(rule => rule.moduleId === moduleId);
   }
 
   /**
@@ -280,4 +277,4 @@ export class AutomationManager {
 }
 
 // Export singleton instance
-export const automationManager = new AutomationManager(); 
+export const automationManager = new AutomationManager();

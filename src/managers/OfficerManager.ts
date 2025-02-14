@@ -12,7 +12,7 @@ import {
   TrainingProgram,
   OfficerTier,
   OfficerSkills,
-  OfficerEvents
+  OfficerEvents,
 } from '../types/officers/OfficerTypes';
 import { OFFICER_TRAITS, TRAINING_CONFIG, SQUAD_CONFIG } from '../config/OfficerConfig';
 
@@ -40,15 +40,15 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
    * Set up event listeners for tech tree unlocks and other relevant events
    */
   private setupEventListeners(): void {
-    techTreeManager.on("nodeUnlocked", (event: TechNodeUnlockedEvent) => {
-      if (event.node.type === "academy") {
+    techTreeManager.on('nodeUnlocked', (event: TechNodeUnlockedEvent) => {
+      if (event.node.type === 'academy') {
         this.handleAcademyUpgrade(event.node.tier as OfficerTier);
       }
     });
 
-    moduleEventBus.on("MODULE_ACTIVATED", (event: { moduleType: string; moduleId: string }) => {
-      if (event.moduleType === "academy") {
-        this.emit("academyActivated", { moduleId: event.moduleId });
+    moduleEventBus.on('MODULE_ACTIVATED', (event: { moduleType: string; moduleId: string }) => {
+      if (event.moduleType === 'academy') {
+        this.emit('academyActivated', { moduleId: event.moduleId });
       }
     });
   }
@@ -59,36 +59,39 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
   private handleAcademyUpgrade(tier: OfficerTier): void {
     if (tier > this.currentTier) {
       this.currentTier = tier;
-      this.emit("tierUpgraded", { tier });
-      moduleEventBus.emit("tierUpgraded", { tier });
+      this.emit('tierUpgraded', { tier });
+      moduleEventBus.emit('tierUpgraded', { tier });
     }
   }
 
   /**
    * Generate base stats for a new officer based on role and specialization
    */
-  private generateBaseStats(role: OfficerRole, specialization: OfficerSpecialization): OfficerSkills {
+  private generateBaseStats(
+    role: OfficerRole,
+    specialization: OfficerSpecialization
+  ): OfficerSkills {
     const baseStats: OfficerSkills = {
       combat: 1,
       leadership: 1,
-      technical: 1
+      technical: 1,
     };
 
     // Adjust based on role
-    if (role === "Squad Leader") {
+    if (role === 'Squad Leader') {
       baseStats.leadership += 2;
     }
 
     // Adjust based on specialization
     switch (specialization) {
-      case "War":
+      case 'War':
         baseStats.combat += 2;
         break;
-      case "Recon":
+      case 'Recon':
         baseStats.technical += 1;
         baseStats.combat += 1;
         break;
-      case "Mining":
+      case 'Mining':
         baseStats.technical += 2;
         break;
     }
@@ -133,22 +136,25 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
   /**
    * Calculate training duration based on officer and program
    */
-  private calculateTrainingDuration(officer: Officer, specialization: OfficerSpecialization): number {
+  private calculateTrainingDuration(
+    officer: Officer,
+    specialization: OfficerSpecialization
+  ): number {
     let duration = TRAINING_CONFIG.baseTime;
 
     // Apply level modifier
-    duration *= (1 - (officer.level - 1) * TRAINING_CONFIG.levelModifier);
+    duration *= 1 - (officer.level - 1) * TRAINING_CONFIG.levelModifier;
 
     // Apply specialization modifier
     if (officer.specialization === specialization) {
-      duration *= (1 - TRAINING_CONFIG.specializationModifier);
+      duration *= 1 - TRAINING_CONFIG.specializationModifier;
     }
 
     // Apply trait modifiers
     officer.traits.forEach(traitId => {
       const trait = OFFICER_TRAITS.find(t => t.id === traitId);
       if (trait?.effects.bonuses?.trainingSpeed) {
-        duration *= (1 - trait.effects.bonuses.trainingSpeed);
+        duration *= 1 - trait.effects.bonuses.trainingSpeed;
       }
     });
 
@@ -165,7 +171,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     officer.traits.forEach(traitId => {
       const trait = OFFICER_TRAITS.find(t => t.id === traitId);
       if (trait?.effects.bonuses?.xpGain) {
-        multiplier *= (1 + trait.effects.bonuses.xpGain);
+        multiplier *= 1 + trait.effects.bonuses.xpGain;
       }
     });
 
@@ -194,28 +200,28 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     const improvements: OfficerSkills = {
       combat: 0,
       leadership: 0,
-      technical: 0
+      technical: 0,
     };
 
     // Specialization-based improvements
     switch (officer.specialization) {
-      case "War":
+      case 'War':
         improvements.combat += 2;
         improvements.leadership += 1;
         break;
-      case "Recon":
+      case 'Recon':
         improvements.technical += 1;
         improvements.combat += 1;
         improvements.leadership += 1;
         break;
-      case "Mining":
+      case 'Mining':
         improvements.technical += 2;
         improvements.leadership += 1;
         break;
     }
 
     // Role-based improvements
-    if (officer.role === "Squad Leader") {
+    if (officer.role === 'Squad Leader') {
       improvements.leadership += 1;
     }
 
@@ -235,25 +241,25 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     const id = uuidv4();
     const baseStats = this.generateBaseStats(role, specialization);
     const traits = this.generateTraits();
-    
+
     const officer: Officer = {
       id,
       name: `Officer-${id.substring(0, 4)}`, // Temporary name generation
-      portrait: "", // TODO: Implement portrait generation
+      portrait: '', // TODO: Implement portrait generation
       level: 1,
       xp: 0,
       nextLevelXp: 100,
       role,
-      status: "available",
+      status: 'available',
       specialization,
       skills: { ...baseStats },
       traits,
-      stats: { ...baseStats }
+      stats: { ...baseStats },
     };
 
     this.applyTraitEffects(officer);
     this.officers.set(id, officer);
-    this.emit("officerHired", { officer });
+    this.emit('officerHired', { officer });
     return officer;
   }
 
@@ -262,7 +268,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
    */
   public startTraining(officerId: string, specialization: OfficerSpecialization): void {
     const officer = this.officers.get(officerId);
-    if (!officer || officer.status !== "available") {
+    if (!officer || officer.status !== 'available') {
       return;
     }
 
@@ -275,19 +281,19 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
       startTime: Date.now(),
       duration,
       bonuses: {
-        xpMultiplier: this.calculateXpMultiplier(officer, "training"),
-        skillGainRate: TRAINING_CONFIG.skillGainRate
-      }
+        xpMultiplier: this.calculateXpMultiplier(officer, 'training'),
+        skillGainRate: TRAINING_CONFIG.skillGainRate,
+      },
     };
 
-    officer.status = "training";
+    officer.status = 'training';
     officer.trainingProgress = 0;
     this.trainingPrograms.set(program.id, program);
     this.officers.set(officerId, officer);
 
-    this.emit("trainingStarted", { 
+    this.emit('trainingStarted', {
       officerId,
-      program
+      program,
     });
   }
 
@@ -296,17 +302,17 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
    */
   public assignOfficer(officerId: string, assignmentId: string): void {
     const officer = this.officers.get(officerId);
-    if (!officer || officer.status !== "available") {
+    if (!officer || officer.status !== 'available') {
       return;
     }
 
-    officer.status = "assigned";
+    officer.status = 'assigned';
     officer.assignedTo = assignmentId;
     this.officers.set(officerId, officer);
 
-    this.emit("officerAssigned", { 
+    this.emit('officerAssigned', {
       officerId,
-      assignmentId 
+      assignmentId,
     });
   }
 
@@ -322,12 +328,12 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
       bonuses: {
         combat: 0,
         efficiency: 0,
-        survival: 0
-      }
+        survival: 0,
+      },
     };
 
     this.squads.set(squad.id, squad);
-    this.emit("squadCreated", { squad });
+    this.emit('squadCreated', { squad });
     return squad;
   }
 
@@ -338,7 +344,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     const officer = this.officers.get(officerId);
     const squad = this.squads.get(squadId);
 
-    if (!officer || !squad || officer.status !== "available") {
+    if (!officer || !squad || officer.status !== 'available') {
       return;
     }
 
@@ -348,16 +354,16 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     }
 
     // If officer is Squad Leader and squad has no leader
-    if (officer.role === "Squad Leader" && !squad.leader) {
+    if (officer.role === 'Squad Leader' && !squad.leader) {
       squad.leader = officer;
     }
 
     squad.members.push(officer);
-    officer.status = "assigned";
+    officer.status = 'assigned';
     officer.assignedTo = squadId;
 
     this.updateSquadBonuses(squad);
-    this.emit("squadUpdated", { squadId, officer: officerId });
+    this.emit('squadUpdated', { squadId, officer: officerId });
   }
 
   /**
@@ -367,7 +373,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     const baseBonuses = {
       combat: 0,
       efficiency: 0,
-      survival: 0
+      survival: 0,
     };
 
     // Add leader bonuses if present
@@ -392,7 +398,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     squad.bonuses = {
       combat: baseBonuses.combat * SQUAD_CONFIG.bonusMultipliers.combat,
       efficiency: baseBonuses.efficiency * SQUAD_CONFIG.bonusMultipliers.efficiency,
-      survival: baseBonuses.survival * SQUAD_CONFIG.bonusMultipliers.survival
+      survival: baseBonuses.survival * SQUAD_CONFIG.bonusMultipliers.survival,
     };
 
     // Update squad in storage
@@ -409,7 +415,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     officer.traits.forEach(traitId => {
       const trait = OFFICER_TRAITS.find(t => t.id === traitId);
       if (trait?.effects.bonuses?.squadBonus) {
-        bonus *= (1 + trait.effects.bonuses.squadBonus);
+        bonus *= 1 + trait.effects.bonuses.squadBonus;
       }
     });
 
@@ -424,13 +430,13 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
 
     // Add skill contributions
     switch (officer.specialization) {
-      case "War":
+      case 'War':
         bonus += officer.skills.combat * 0.5;
         break;
-      case "Recon":
+      case 'Recon':
         bonus += (officer.skills.combat + officer.skills.technical) * 0.25;
         break;
-      case "Mining":
+      case 'Mining':
         bonus += officer.skills.technical * 0.5;
         break;
     }
@@ -439,7 +445,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     officer.traits.forEach(traitId => {
       const trait = OFFICER_TRAITS.find(t => t.id === traitId);
       if (trait?.effects.bonuses?.squadBonus) {
-        bonus *= (1 + trait.effects.bonuses.squadBonus);
+        bonus *= 1 + trait.effects.bonuses.squadBonus;
       }
     });
 
@@ -457,7 +463,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     const adjustedAmount = Math.floor(amount * multiplier);
 
     officer.xp += adjustedAmount;
-    
+
     // Handle level ups
     while (officer.xp >= officer.nextLevelXp) {
       officer.xp -= officer.nextLevelXp;
@@ -466,10 +472,10 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
       this.improveSkills(officer);
 
       // Emit level up event
-      this.emit("officerLeveledUp", {
+      this.emit('officerLeveledUp', {
         officerId,
         newLevel: officer.level,
-        skills: officer.skills
+        skills: officer.skills,
       });
     }
 
@@ -477,11 +483,11 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     this.officers.set(officerId, officer);
 
     // Emit experience gained event
-    this.emit("experienceGained", {
+    this.emit('experienceGained', {
       officerId,
       amount: adjustedAmount,
       newTotal: officer.xp,
-      nextLevel: officer.nextLevelXp
+      nextLevel: officer.nextLevelXp,
     });
   }
 
@@ -527,21 +533,23 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     }
 
     // Apply training results
-    officer.status = "available";
+    officer.status = 'available';
     officer.trainingProgress = undefined;
 
     // Improve skills based on training
-    const skillImprovement = Math.floor(program.duration * program.bonuses.skillGainRate / TRAINING_CONFIG.baseTime);
-    
+    const skillImprovement = Math.floor(
+      (program.duration * program.bonuses.skillGainRate) / TRAINING_CONFIG.baseTime
+    );
+
     switch (program.specialization) {
-      case "War":
+      case 'War':
         officer.skills.combat += skillImprovement;
         break;
-      case "Recon":
+      case 'Recon':
         officer.skills.combat += Math.floor(skillImprovement / 2);
         officer.skills.technical += Math.floor(skillImprovement / 2);
         break;
-      case "Mining":
+      case 'Mining':
         officer.skills.technical += skillImprovement;
         break;
     }
@@ -550,17 +558,17 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     officer.stats = { ...officer.skills };
 
     // Add experience
-    this.addExperience(officer.id, 100, "training");
+    this.addExperience(officer.id, 100, 'training');
 
     // Update storage
     this.officers.set(officer.id, officer);
     this.trainingPrograms.delete(programId);
 
     // Emit completion event
-    this.emit("trainingCompleted", {
+    this.emit('trainingCompleted', {
       officerId: officer.id,
       specialization: program.specialization,
-      skills: officer.skills
+      skills: officer.skills,
     });
   }
 
@@ -582,14 +590,16 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
    * Get all available officers
    */
   public getAvailableOfficers(): Officer[] {
-    return Array.from(this.officers.values()).filter(officer => officer.status === "available");
+    return Array.from(this.officers.values()).filter(officer => officer.status === 'available');
   }
 
   /**
    * Get all squads of a specific specialization
    */
   public getSquadsBySpecialization(specialization: OfficerSpecialization): Squad[] {
-    return Array.from(this.squads.values()).filter(squad => squad.specialization === specialization);
+    return Array.from(this.squads.values()).filter(
+      squad => squad.specialization === specialization
+    );
   }
 
   /**
@@ -598,4 +608,4 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
   public getCurrentTier(): OfficerTier {
     return this.currentTier;
   }
-} 
+}

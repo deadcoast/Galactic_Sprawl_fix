@@ -1,4 +1,4 @@
-import { Crown, Zap } from "lucide-react";
+import { Crown, Zap } from 'lucide-react';
 
 interface CentralMothershipProps {
   tier: 1 | 2 | 3;
@@ -8,7 +8,7 @@ interface CentralMothershipProps {
   maxShield: number;
   power: number;
   maxPower: number;
-  quality: "low" | "medium" | "high";
+  quality: 'low' | 'medium' | 'high';
   onHover?: () => void;
   onClick?: () => void;
 }
@@ -25,15 +25,11 @@ export function CentralMothership({
   onHover,
   onClick,
 }: CentralMothershipProps) {
-  const particleCount = quality === "high" ? 16 : quality === "medium" ? 8 : 4;
-  const glowIntensity = quality === "low" ? 4 : quality === "medium" ? 8 : 12;
+  const particleCount = quality === 'high' ? 16 : quality === 'medium' ? 8 : 4;
+  const glowIntensity = quality === 'low' ? 4 : quality === 'medium' ? 8 : 12;
 
   return (
-    <div
-      className="relative w-96 h-96 cursor-pointer"
-      onMouseEnter={onHover}
-      onClick={onClick}
-    >
+    <div className="relative w-96 h-96 cursor-pointer" onMouseEnter={onHover} onClick={onClick}>
       {/* Base Structure */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative">
@@ -74,8 +70,8 @@ export function CentralMothership({
               key={i}
               className="absolute"
               style={{
-                top: "50%",
-                left: "50%",
+                top: '50%',
+                left: '50%',
                 transform: `rotate(${i * 90}deg) translateY(-80px)`,
                 opacity: power / maxPower,
               }}
@@ -106,18 +102,14 @@ export function CentralMothership({
         <div className="w-48">
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-400">Hull Integrity</span>
-            <span
-              className={
-                health < maxHealth * 0.3 ? "text-red-400" : "text-gray-300"
-              }
-            >
+            <span className={health < maxHealth * 0.3 ? 'text-red-400' : 'text-gray-300'}>
               {Math.round((health / maxHealth) * 100)}%
             </span>
           </div>
           <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                health < maxHealth * 0.3 ? "bg-red-500" : "bg-green-500"
+                health < maxHealth * 0.3 ? 'bg-red-500' : 'bg-green-500'
               }`}
               style={{ width: `${(health / maxHealth) * 100}%` }}
             />
@@ -128,9 +120,7 @@ export function CentralMothership({
         <div className="w-48">
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-400">Shield Power</span>
-            <span className="text-gray-300">
-              {Math.round((shield / maxShield) * 100)}%
-            </span>
+            <span className="text-gray-300">{Math.round((shield / maxShield) * 100)}%</span>
           </div>
           <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
             <div

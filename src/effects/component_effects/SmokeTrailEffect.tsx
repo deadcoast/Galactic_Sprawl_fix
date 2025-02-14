@@ -1,6 +1,6 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
-import * as THREE from "three";
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
 
 interface SmokeTrailProps {
   position: { x: number; y: number };
@@ -9,11 +9,7 @@ interface SmokeTrailProps {
   color: string;
 }
 
-function SmokeParticles({
-  direction,
-  intensity,
-  color,
-}: Omit<SmokeTrailProps, "position">) {
+function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, 'position'>) {
   const particlesRef = useRef<THREE.Points>(null);
   const particleCount = 1000;
   const particlePositions = useRef<Float32Array>();
@@ -39,8 +35,7 @@ function SmokeParticles({
       positions[i3 + 1] = 0;
       positions[i3 + 2] = 0;
 
-      const angle =
-        direction * (Math.PI / 180) + (Math.random() - 0.5) * Math.PI * 0.5;
+      const angle = direction * (Math.PI / 180) + (Math.random() - 0.5) * Math.PI * 0.5;
       const speed = (0.5 + Math.random() * 0.5) * intensity;
       velocities[i3] = Math.cos(angle) * speed;
       velocities[i3 + 1] = Math.sin(angle) * speed;
@@ -50,14 +45,11 @@ function SmokeParticles({
     }
 
     const geometry = particlesRef.current.geometry as THREE.BufferGeometry;
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute(
-      "startTime",
-      new THREE.BufferAttribute(startTimes, 1),
-    );
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('startTime', new THREE.BufferAttribute(startTimes, 1));
   }, [direction, intensity]);
 
-  useFrame((state) => {
+  useFrame(state => {
     if (
       !particlesRef.current ||
       !particlePositions.current ||
@@ -72,7 +64,7 @@ function SmokeParticles({
     const velocities = particleVelocities.current;
     const startTimes = particleStartTimes.current;
     const geometry = particlesRef.current.geometry as THREE.BufferGeometry;
-    const positionAttribute = geometry.getAttribute("position");
+    const positionAttribute = geometry.getAttribute('position');
 
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
@@ -174,39 +166,27 @@ function SmokeParticles({
   );
 }
 
-export function SmokeTrailEffect({
-  position,
-  direction,
-  intensity,
-  color,
-}: SmokeTrailProps) {
+export function SmokeTrailEffect({ position, direction, intensity, color }: SmokeTrailProps) {
   return (
     <div
       className="absolute pointer-events-none"
       style={{
         left: position.x,
         top: position.y,
-        width: "400px",
-        height: "400px",
-        transform: "translate(-50%, -50%)",
+        width: '400px',
+        height: '400px',
+        transform: 'translate(-50%, -50%)',
       }}
     >
-      <Canvas
-        camera={{ position: [0, 0, 50], fov: 50 }}
-        style={{ background: "transparent" }}
-      >
-        <SmokeParticles
-          direction={direction}
-          intensity={intensity}
-          color={color}
-        />
+      <Canvas camera={{ position: [0, 0, 50], fov: 50 }} style={{ background: 'transparent' }}>
+        <SmokeParticles direction={direction} intensity={intensity} color={color} />
       </Canvas>
     </div>
   );
 }
 
 // Add to global styles
-const style = document.createElement("style");
+const style = document.createElement('style');
 style.textContent = `
   @keyframes smoke {
     0% { transform: scale(1); opacity: 0.8; }

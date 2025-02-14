@@ -1,13 +1,13 @@
-import { Tier } from "../core/GameTypes";
+import { Tier } from '../core/GameTypes';
 import {
   CommonShip,
   CommonShipAbility,
   CommonShipDisplayStats,
-  CommonShipStats
-} from "./CommonShipTypes";
-import { FactionId, FactionBehaviorType } from "./FactionTypes";
-import { ShipType, ShipStatus, ShipStats, ShipLoadout } from "./ShipTypes";
-import { WeaponMount, WeaponInstance, CombatWeaponStats } from "../weapons/WeaponTypes";
+  CommonShipStats,
+} from './CommonShipTypes';
+import { FactionId, FactionBehaviorType } from './FactionTypes';
+import { ShipType, ShipStatus, ShipStats, ShipLoadout } from './ShipTypes';
+import { WeaponMount, WeaponInstance, CombatWeaponStats } from '../weapons/WeaponTypes';
 
 export interface FactionConfig {
   id: FactionId;
@@ -57,7 +57,7 @@ export interface FactionManager {
 
 // Faction-specific configurations
 export interface SpaceRatsConfig extends FactionConfig {
-  id: "space-rats";
+  id: 'space-rats';
   pirateFleetComposition: {
     flagshipType: 'ratKing';
     supportShips: string[];
@@ -65,7 +65,7 @@ export interface SpaceRatsConfig extends FactionConfig {
 }
 
 export interface LostNovaConfig extends FactionConfig {
-  id: "lost-nova";
+  id: 'lost-nova';
   forbiddenTech: {
     darkMatterLevel: number;
     geneticModifications: string[];
@@ -73,7 +73,7 @@ export interface LostNovaConfig extends FactionConfig {
 }
 
 export interface EquatorHorizonConfig extends FactionConfig {
-  id: "equator-horizon";
+  id: 'equator-horizon';
   balanceThresholds: {
     playerExpansion: number;
     resourceControl: number;
@@ -82,46 +82,43 @@ export interface EquatorHorizonConfig extends FactionConfig {
 }
 
 // Faction Ship Classes - Using camelCase for consistency
-export type SpaceRatsShipClass = 
-  | "ratKing"
-  | "asteroidMarauder"
-  | "rogueNebula"
-  | "ratsRevenge"
-  | "darkSectorCorsair"
-  | "wailingWreck"
-  | "galacticScourge"
-  | "plasmaFang"
-  | "verminVanguard"
-  | "blackVoidBuccaneer";
+export type SpaceRatsShipClass =
+  | 'ratKing'
+  | 'asteroidMarauder'
+  | 'rogueNebula'
+  | 'ratsRevenge'
+  | 'darkSectorCorsair'
+  | 'wailingWreck'
+  | 'galacticScourge'
+  | 'plasmaFang'
+  | 'verminVanguard'
+  | 'blackVoidBuccaneer';
 
-export type LostNovaShipClass = 
-  | "eclipseScythe"
-  | "nullsRevenge"
-  | "darkMatterReaper"
-  | "quantumPariah"
-  | "entropyScale"
-  | "voidRevenant"
-  | "scytheOfAndromeda"
-  | "nebularPersistence"
-  | "oblivionsWake"
-  | "forbiddenVanguard";
+export type LostNovaShipClass =
+  | 'eclipseScythe'
+  | 'nullsRevenge'
+  | 'darkMatterReaper'
+  | 'quantumPariah'
+  | 'entropyScale'
+  | 'voidRevenant'
+  | 'scytheOfAndromeda'
+  | 'nebularPersistence'
+  | 'oblivionsWake'
+  | 'forbiddenVanguard';
 
-export type EquatorHorizonShipClass = 
-  | "celestialArbiter"
-  | "etherealGalleon"
-  | "stellarEquinox"
-  | "chronosSentinel"
-  | "nebulasJudgement"
-  | "aetherialHorizon"
-  | "cosmicCrusader"
-  | "balancekeepersWrath"
-  | "eclipticWatcher"
-  | "harmonysVanguard";
+export type EquatorHorizonShipClass =
+  | 'celestialArbiter'
+  | 'etherealGalleon'
+  | 'stellarEquinox'
+  | 'chronosSentinel'
+  | 'nebulasJudgement'
+  | 'aetherialHorizon'
+  | 'cosmicCrusader'
+  | 'balancekeepersWrath'
+  | 'eclipticWatcher'
+  | 'harmonysVanguard';
 
-export type FactionShipClass =
-  | SpaceRatsShipClass
-  | LostNovaShipClass
-  | EquatorHorizonShipClass;
+export type FactionShipClass = SpaceRatsShipClass | LostNovaShipClass | EquatorHorizonShipClass;
 
 // Faction Ship Stats
 export interface FactionShipStats extends CommonShipStats {
@@ -176,6 +173,7 @@ export interface FactionShipProps {
   onEngage?: () => void;
   onRetreat?: () => void;
   onSpecialAbility?: () => void;
+  onFire?: (weaponId: string) => void;
   className?: string;
 }
 
@@ -191,9 +189,9 @@ export interface ShipStatsWithWeapons extends ShipStats {
 export interface FactionFleet {
   ships: FactionShip[];
   formation: {
-    type: "offensive" | "defensive" | "stealth";
+    type: 'offensive' | 'defensive' | 'stealth';
     spacing: number;
     facing: number;
   };
   strength: number;
-} 
+}

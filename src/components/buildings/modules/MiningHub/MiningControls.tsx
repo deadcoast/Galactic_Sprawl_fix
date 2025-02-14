@@ -1,10 +1,10 @@
-import { ChevronRight, Database, Pickaxe, Settings, Star } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronRight, Database, Pickaxe, Settings, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Resource {
   id: string;
   name: string;
-  type: "mineral" | "gas" | "exotic";
+  type: 'mineral' | 'gas' | 'exotic';
   abundance: number;
   distance: number;
   extractionRate: number;
@@ -41,18 +41,13 @@ interface MiningControlsProps {
   onExperienceGained: (experience: MiningExperience) => void;
 }
 
-export function MiningControls({
-  resource,
-  techBonuses,
-  onExperienceGained,
-}: MiningControlsProps) {
+export function MiningControls({ resource, techBonuses, onExperienceGained }: MiningControlsProps) {
   const [autoMine, setAutoMine] = useState(false);
   const [miningProgress, setMiningProgress] = useState(0);
   const [totalResourcesMined, setTotalResourcesMined] = useState(0);
 
   // Calculate mining efficiency with tech bonuses
-  const effectiveExtractionRate =
-    resource.extractionRate * techBonuses.extractionRate;
+  const effectiveExtractionRate = resource.extractionRate * techBonuses.extractionRate;
   const effectiveEfficiency = Math.min(1, techBonuses.efficiency);
 
   // Calculate experience gains
@@ -63,28 +58,21 @@ export function MiningControls({
 
     const miningInterval = setInterval(() => {
       // Update mining progress
-      setMiningProgress((prev) => {
-        const newProgress =
-          prev + effectiveExtractionRate * effectiveEfficiency;
+      setMiningProgress(prev => {
+        const newProgress = prev + effectiveExtractionRate * effectiveEfficiency;
         if (newProgress >= 100) {
           // Resource batch completed
-          setTotalResourcesMined((total) => total + 1);
+          setTotalResourcesMined(total => total + 1);
 
           // Calculate and award experience
           const experience: MiningExperience = {
             baseAmount: 10,
             bonusFactors: {
-              resourceRarity:
-                resource.type === "exotic"
-                  ? 3
-                  : resource.type === "gas"
-                    ? 2
-                    : 1,
+              resourceRarity: resource.type === 'exotic' ? 3 : resource.type === 'gas' ? 2 : 1,
               extractionEfficiency: effectiveEfficiency,
               resourceQuality: resource.abundance,
               distanceModifier: Math.min(2, resource.distance / 500),
-              techBonus:
-                (techBonuses.extractionRate + techBonuses.efficiency) / 2,
+              techBonus: (techBonuses.extractionRate + techBonuses.efficiency) / 2,
             },
             totalXP: 0,
             unlockedTech: [], // Initialize as empty array
@@ -93,20 +81,17 @@ export function MiningControls({
           // Calculate total XP with all bonuses
           experience.totalXP =
             experience.baseAmount *
-            Object.values(experience.bonusFactors).reduce(
-              (acc, factor) => acc * factor,
-              1,
-            );
+            Object.values(experience.bonusFactors).reduce((acc, factor) => acc * factor, 1);
 
           // Check for tech tree unlocks based on total XP
           if (experience.totalXP >= 100) {
-            experience.unlockedTech = ["improved-extraction"];
+            experience.unlockedTech = ['improved-extraction'];
           }
           if (experience.totalXP >= 250) {
-            experience.unlockedTech.push("processing-algorithms");
+            experience.unlockedTech.push('processing-algorithms');
           }
           if (experience.totalXP >= 500) {
-            experience.unlockedTech.push("exotic-mining");
+            experience.unlockedTech.push('exotic-mining');
           }
 
           onExperienceGained(experience);
@@ -134,16 +119,16 @@ export function MiningControls({
           <div className="flex items-center space-x-3">
             <div
               className={`p-2 rounded-lg ${
-                resource.type === "mineral"
-                  ? "bg-cyan-500/20"
-                  : resource.type === "gas"
-                    ? "bg-purple-500/20"
-                    : "bg-amber-500/20"
+                resource.type === 'mineral'
+                  ? 'bg-cyan-500/20'
+                  : resource.type === 'gas'
+                    ? 'bg-purple-500/20'
+                    : 'bg-amber-500/20'
               }`}
             >
-              {resource.type === "mineral" ? (
+              {resource.type === 'mineral' ? (
                 <Pickaxe className="w-5 h-5 text-cyan-400" />
-              ) : resource.type === "gas" ? (
+              ) : resource.type === 'gas' ? (
                 <Database className="w-5 h-5 text-purple-400" />
               ) : (
                 <Star className="w-5 h-5 text-amber-400" />
@@ -152,8 +137,8 @@ export function MiningControls({
             <div>
               <h3 className="font-medium text-white">{resource.name}</h3>
               <div className="text-sm text-gray-400">
-                {resource.type.charAt(0).toUpperCase() + resource.type.slice(1)}{" "}
-                • {resource.distance}ly
+                {resource.type.charAt(0).toUpperCase() + resource.type.slice(1)} •{' '}
+                {resource.distance}ly
               </div>
             </div>
           </div>
@@ -169,11 +154,11 @@ export function MiningControls({
           <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                resource.type === "mineral"
-                  ? "bg-cyan-500"
-                  : resource.type === "gas"
-                    ? "bg-purple-500"
-                    : "bg-amber-500"
+                resource.type === 'mineral'
+                  ? 'bg-cyan-500'
+                  : resource.type === 'gas'
+                    ? 'bg-purple-500'
+                    : 'bg-amber-500'
               }`}
               style={{ width: `${miningProgress}%` }}
             />
@@ -203,27 +188,21 @@ export function MiningControls({
         <button
           onClick={() => setAutoMine(!autoMine)}
           className={`mt-4 w-full px-4 py-2 rounded-lg flex items-center justify-center space-x-2 ${
-            autoMine
-              ? "bg-green-600 text-white"
-              : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            autoMine ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
           }`}
         >
-          <span>{autoMine ? "Stop Mining" : "Start Mining"}</span>
+          <span>{autoMine ? 'Stop Mining' : 'Start Mining'}</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
       {/* Mining Stats */}
       <div className="bg-gray-800/50 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">
-          Mining Statistics
-        </h4>
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Mining Statistics</h4>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="text-sm text-gray-400">Resources Mined</div>
-            <div className="text-lg font-medium text-white">
-              {totalResourcesMined}
-            </div>
+            <div className="text-lg font-medium text-white">{totalResourcesMined}</div>
           </div>
           <div>
             <div className="text-sm text-gray-400">Efficiency</div>

@@ -1,155 +1,117 @@
 import { CommonShipStats } from '../../types/ships/CommonShipTypes';
-import { useEffect, useState } from "react";
-import { FactionShipClass, FactionShipStats, FactionFleet, FactionShip } from "../../types/ships/FactionShipTypes";
-import { SHIP_STATS as CONFIG_SHIP_STATS } from "../../config/ships";
-import { Effect } from "../../types/core/GameTypes";
-import { moduleEventBus, ModuleEventType } from "../../lib/modules/ModuleEvents";
-import { ResourceType } from "../../types/resources/ResourceTypes";
-import { CombatUnit } from "../../types/combat/CombatTypes";
-import { EventEmitter } from "../../lib/utils/EventEmitter";
-import { ModuleType } from "../../types/buildings/ModuleTypes";
-import { FactionId, FactionState, FactionBehaviorType } from "../../types/ships/FactionTypes";
-import { Position } from "../../types/core/Position";
-import { AsteroidFieldManager } from "../../managers/AsteroidFieldManager";
-import { 
-  WeaponConfig, 
-  WeaponInstance, 
+import { useEffect, useState, useCallback } from 'react';
+import {
+  FactionShipClass,
+  FactionShipStats,
+  FactionFleet,
+  FactionShip,
+} from '../../types/ships/FactionShipTypes';
+import { SHIP_STATS as CONFIG_SHIP_STATS } from '../../config/ships';
+import { Effect, Position } from '../../types/core/GameTypes';
+import { moduleEventBus, ModuleEventType, ModuleEvent } from '../../lib/modules/ModuleEvents';
+import { ResourceType } from '../../types/resources/ResourceTypes';
+import { CombatUnit } from '../../types/combat/CombatTypes';
+import { EventEmitter } from '../../lib/utils/EventEmitter';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { FactionId, FactionBehaviorType, FactionState } from '../../types/ships/FactionTypes';
+import { AsteroidFieldManager } from '../../managers/AsteroidFieldManager';
+import {
+  WeaponConfig,
+  WeaponInstance,
   WeaponMount,
   WeaponMountSize,
   WeaponMountPosition,
   WeaponCategory,
   WeaponStatus,
-  WeaponType
-} from "../../types/weapons/WeaponTypes";
+  WeaponType,
+} from '../../types/weapons/WeaponTypes';
+import { ShipStatus } from '../../types/ships/ShipTypes';
+import { ShipStatus as CommonShipStatus } from '../../types/ships/CommonShipTypes';
 
 // At the top of the file, after imports
-declare module "../../types/combat/CombatTypes" {
+declare module '../../types/combat/CombatTypes' {
   interface CombatUnit {
     faction: string;
     type: string;
     tier: number;
-    status: "idle" | "engaging" | "patrolling";
+    status: 'idle' | 'engaging' | 'patrolling';
     weapons: FactionCombatWeapon[];
     target?: string;
   }
 }
 
-// Keep only the necessary interfaces
-interface ResourceNode {
-  position: { x: number; y: number };
+// Define faction behavior events
+export interface FactionBehaviorEvents {
+  behaviorChanged: {
+    factionId: FactionId;
+    oldBehavior: FactionBehaviorType;
+    newBehavior: FactionBehaviorType;
+  };
+  fleetUpdated: {
+    factionId: FactionId;
+    fleets: FactionFleet[];
+  };
+  territoryChanged: {
+    factionId: FactionId;
+    territory: FactionTerritory;
+  };
+  relationshipChanged: {
+    factionId: FactionId;
+    targetFaction: FactionId;
+    oldValue: number;
+    newValue: number;
+  };
+  resourcesUpdated: {
+    factionId: FactionId;
+    resourceType: ResourceType;
+    oldAmount: number;
+    newAmount: number;
+  };
+  combatTacticsChanged: {
+    factionId: FactionId;
+    oldTactics: FactionBehaviorState['combatTactics'];
+    newTactics: FactionBehaviorState['combatTactics'];
+  };
+}
+
+// Define faction combat weapon interface
+export interface FactionCombatWeapon {
+  id: string;
+  type: WeaponCategory;
+  damage: number;
+  range: number;
+  cooldown: number;
+  status: WeaponStatus;
+}
+
+// Define resource node interfaces
+export interface ResourceNode {
+  position: Position;
   value: number;
 }
 
-interface AsteroidFieldNode {
+export interface AsteroidFieldNode {
   fieldId: string;
   type: ResourceType;
   amount: number;
 }
 
-export type ShipClass =
-  // Space Rats Ships
-  | "rat-king"
-  | "asteroid-marauder"
-  | "rogue-nebula"
-  | "rats-revenge"
-  | "dark-sector-corsair"
-  | "wailing-wreck"
-  | "galactic-scourge"
-  | "plasma-fang"
-  | "vermin-vanguard"
-  | "black-void-buccaneer"
-  // Lost Nova Ships
-  | "eclipse-scythe"
-  | "nulls-revenge"
-  | "dark-matter-reaper"
-  | "quantum-pariah"
-  | "entropy-scale"
-  | "void-revenant"
-  | "scythe-of-andromeda"
-  | "nebular-persistence"
-  | "oblivions-wake"
-  | "forbidden-vanguard"
-  // Equator Horizon Ships
-  | "celestial-arbiter"
-  | "ethereal-galleon"
-  | "stellar-equinox"
-  | "chronos-sentinel"
-  | "nebulas-judgement"
-  | "aetherial-horizon"
-  | "cosmic-crusader"
-  | "balancekeepers-wrath"
-  | "ecliptic-watcher"
-  | "harmonys-vanguard";
-
+// Define faction territory interface
 export interface FactionTerritory {
-  center: { x: number; y: number };
+  center: Position;
   radius: number;
-  controlPoints: { x: number; y: number }[];
+  controlPoints: Position[];
   resources: {
     minerals: number;
     gas: number;
     exotic: number;
   };
   threatLevel: number;
+  factionId: FactionId;
 }
 
-// Define state machine types
-type FactionStateType =
-  // Space Rats States
-  | "patrolling"
-  | "pursuing"
-  | "attacking"
-  | "aggressive"
-  | "retreating"
-  // Lost Nova States
-  | "hiding"
-  | "preparing"
-  | "ambushing"
-  | "retaliating"
-  | "withdrawing"
-  // Equator Horizon States
-  | "dormant"
-  | "awakening"
-  | "enforcing"
-  | "overwhelming"
-  | "withdrawing";
-
-type FactionEvent =
-  | "DETECT_TARGET"
-  | "TAKE_DAMAGE"
-  | "ENGAGE_RANGE"
-  | "LOSE_TARGET"
-  | "TARGET_DESTROYED"
-  | "HEAVY_DAMAGE"
-  | "SAFE_DISTANCE"
-  | "REINFORCEMENTS_ARRIVED"
-  | "DETECT_OPPORTUNITY"
-  | "PROVOKED"
-  | "AMBUSH_READY"
-  | "DETECTED"
-  | "AMBUSH_SUCCESS"
-  | "AMBUSH_FAILED"
-  | "THREAT_ELIMINATED"
-  | "OVERWHELMING_FORCE"
-  | "POWER_THRESHOLD_EXCEEDED"
-  | "BALANCE_DISRUPTED"
-  | "FLEET_READY"
-  | "THREAT_DISAPPEARED"
-  | "BALANCE_RESTORED"
-  | "RESISTANCE_ENCOUNTERED"
-  | "DOMINANCE_ACHIEVED"
-  | "OBJECTIVE_COMPLETE"
-  | "WITHDRAWAL_COMPLETE"
-  | "NO_TARGETS";
-
-interface StateMachineTransition {
-  currentState: FactionStateType;
-  event: FactionEvent;
-  nextState: FactionStateType;
-}
-
-// Update FactionBehaviorState interface
-interface FactionBehaviorState {
+// Define faction behavior state interface
+export interface FactionBehaviorState {
   id: FactionId;
   name: string;
   fleets: FactionFleet[];
@@ -164,7 +126,7 @@ interface FactionBehaviorState {
     aggression: number;
     expansion: number;
     trading: number;
-    currentTactic: "raid" | "defend" | "expand" | "trade";
+    currentTactic: 'raid' | 'defend' | 'expand' | 'trade';
     lastAction: string;
     nextAction: string;
   };
@@ -188,9 +150,9 @@ interface FactionBehaviorState {
     triggers: Set<FactionEvent>;
   };
   combatTactics: {
-    preferredRange: "close" | "medium" | "long";
-    formationStyle: "aggressive" | "defensive" | "balanced";
-    targetPriority: "ships" | "stations" | "resources";
+    preferredRange: 'close' | 'medium' | 'long';
+    formationStyle: 'aggressive' | 'defensive' | 'balanced';
+    targetPriority: 'ships' | 'stations' | 'resources';
     retreatThreshold: number;
     reinforcementThreshold: number;
   };
@@ -204,12 +166,106 @@ interface FactionBehaviorState {
     }[];
   };
   expansionStrategy: {
-    expansionDirection: { x: number; y: number };
-    systemPriority: "resources" | "strategic" | "population";
+    expansionDirection: Position;
+    systemPriority: 'resources' | 'strategic' | 'population';
     colonizationThreshold: number;
     maxTerritory: number;
     consolidationThreshold: number;
   };
+}
+
+// Create faction behavior event emitter
+class FactionBehaviorEventEmitter extends EventEmitter<FactionBehaviorEvents> {}
+const factionBehaviorEvents = new FactionBehaviorEventEmitter();
+
+export type ShipClass =
+  // Space Rats Ships
+  | 'rat-king'
+  | 'asteroid-marauder'
+  | 'rogue-nebula'
+  | 'rats-revenge'
+  | 'dark-sector-corsair'
+  | 'wailing-wreck'
+  | 'galactic-scourge'
+  | 'plasma-fang'
+  | 'vermin-vanguard'
+  | 'black-void-buccaneer'
+  // Lost Nova Ships
+  | 'eclipse-scythe'
+  | 'nulls-revenge'
+  | 'dark-matter-reaper'
+  | 'quantum-pariah'
+  | 'entropy-scale'
+  | 'void-revenant'
+  | 'scythe-of-andromeda'
+  | 'nebular-persistence'
+  | 'oblivions-wake'
+  | 'forbidden-vanguard'
+  // Equator Horizon Ships
+  | 'celestial-arbiter'
+  | 'ethereal-galleon'
+  | 'stellar-equinox'
+  | 'chronos-sentinel'
+  | 'nebulas-judgement'
+  | 'aetherial-horizon'
+  | 'cosmic-crusader'
+  | 'balancekeepers-wrath'
+  | 'ecliptic-watcher'
+  | 'harmonys-vanguard';
+
+// Define state machine types
+export type FactionStateType =
+  // Space Rats States
+  | 'patrolling'
+  | 'pursuing'
+  | 'attacking'
+  | 'aggressive'
+  | 'retreating'
+  // Lost Nova States
+  | 'hiding'
+  | 'preparing'
+  | 'ambushing'
+  | 'retaliating'
+  | 'withdrawing'
+  // Equator Horizon States
+  | 'dormant'
+  | 'awakening'
+  | 'enforcing'
+  | 'overwhelming'
+  | 'withdrawing';
+
+export type FactionEvent =
+  | 'DETECT_TARGET'
+  | 'TAKE_DAMAGE'
+  | 'ENGAGE_RANGE'
+  | 'LOSE_TARGET'
+  | 'TARGET_DESTROYED'
+  | 'HEAVY_DAMAGE'
+  | 'SAFE_DISTANCE'
+  | 'REINFORCEMENTS_ARRIVED'
+  | 'DETECT_OPPORTUNITY'
+  | 'PROVOKED'
+  | 'AMBUSH_READY'
+  | 'DETECTED'
+  | 'AMBUSH_SUCCESS'
+  | 'AMBUSH_FAILED'
+  | 'THREAT_ELIMINATED'
+  | 'OVERWHELMING_FORCE'
+  | 'POWER_THRESHOLD_EXCEEDED'
+  | 'BALANCE_DISRUPTED'
+  | 'FLEET_READY'
+  | 'THREAT_DISAPPEARED'
+  | 'BALANCE_RESTORED'
+  | 'RESISTANCE_ENCOUNTERED'
+  | 'DOMINANCE_ACHIEVED'
+  | 'OBJECTIVE_COMPLETE'
+  | 'WITHDRAWAL_COMPLETE'
+  | 'NO_TARGETS';
+
+export interface StateMachineTransition {
+  currentState: FactionStateType;
+  event: FactionEvent;
+  nextState: FactionStateType;
 }
 
 // Faction-specific behavior configurations
@@ -232,7 +288,7 @@ export const FACTION_CONFIGS: Record<
     };
   }
 > = {
-  "space-rats": {
+  'space-rats': {
     baseAggression: 0.8,
     expansionRate: 0.6,
     tradingPreference: 0.2,
@@ -245,28 +301,28 @@ export const FACTION_CONFIGS: Record<
       alwaysHostile: true,
     },
   },
-  "lost-nova": {
+  'lost-nova': {
     baseAggression: 0.4,
     expansionRate: 0.3,
     tradingPreference: 0.5,
     maxShips: 25,
     spawnRules: {
       minTier: 2,
-      requiresCondition: "player-expansion",
+      requiresCondition: 'player-expansion',
       spawnInterval: 600, // 10 minutes
     },
     specialRules: {
       requiresProvocation: true,
     },
   },
-  "equator-horizon": {
+  'equator-horizon': {
     baseAggression: 0.6,
     expansionRate: 0.4,
     tradingPreference: 0.3,
     maxShips: 20,
     spawnRules: {
       minTier: 3,
-      requiresCondition: "power-threshold",
+      requiresCondition: 'power-threshold',
       spawnInterval: 900, // 15 minutes
     },
     specialRules: {
@@ -276,10 +332,7 @@ export const FACTION_CONFIGS: Record<
 };
 
 interface CombatManager {
-  getUnitsInRange: (
-    position: { x: number; y: number },
-    range: number,
-  ) => CombatUnit[];
+  getUnitsInRange: (position: { x: number; y: number }, range: number) => CombatUnit[];
   getThreatsInTerritory: (territory: {
     center: { x: number; y: number };
     radius: number;
@@ -316,155 +369,152 @@ interface FactionManager {
   getFactionState: (factionId: string) => FactionState | undefined;
   getFactionConfig: (factionId: string) => FactionConfig | undefined;
   spawnShip: (factionId: string, position: { x: number; y: number }) => void;
-  expandTerritory: (
-    factionId: string,
-    position: { x: number; y: number },
-  ) => void;
+  expandTerritory: (factionId: string, position: { x: number; y: number }) => void;
 }
 
 declare const factionManager: FactionManager;
 
 // Define initial states for each faction
 const INITIAL_STATES: Record<FactionId, FactionStateType> = {
-  "space-rats": "patrolling",
-  "lost-nova": "hiding",
-  "equator-horizon": "dormant",
+  'space-rats': 'patrolling',
+  'lost-nova': 'hiding',
+  'equator-horizon': 'dormant',
 };
 
 // Define state transitions for each faction
 const STATE_TRANSITIONS: Record<FactionId, StateMachineTransition[]> = {
-  "space-rats": [
+  'space-rats': [
     {
-      currentState: "patrolling",
-      event: "DETECT_TARGET",
-      nextState: "pursuing",
+      currentState: 'patrolling',
+      event: 'DETECT_TARGET',
+      nextState: 'pursuing',
     },
     {
-      currentState: "patrolling",
-      event: "TAKE_DAMAGE",
-      nextState: "aggressive",
+      currentState: 'patrolling',
+      event: 'TAKE_DAMAGE',
+      nextState: 'aggressive',
     },
-    { currentState: "pursuing", event: "ENGAGE_RANGE", nextState: "attacking" },
-    { currentState: "pursuing", event: "LOSE_TARGET", nextState: "patrolling" },
-    { currentState: "pursuing", event: "TAKE_DAMAGE", nextState: "aggressive" },
+    { currentState: 'pursuing', event: 'ENGAGE_RANGE', nextState: 'attacking' },
+    { currentState: 'pursuing', event: 'LOSE_TARGET', nextState: 'patrolling' },
+    { currentState: 'pursuing', event: 'TAKE_DAMAGE', nextState: 'aggressive' },
     {
-      currentState: "attacking",
-      event: "TARGET_DESTROYED",
-      nextState: "patrolling",
-    },
-    {
-      currentState: "attacking",
-      event: "HEAVY_DAMAGE",
-      nextState: "retreating",
-    },
-    { currentState: "attacking", event: "LOSE_TARGET", nextState: "pursuing" },
-    {
-      currentState: "aggressive",
-      event: "NO_TARGETS",
-      nextState: "patrolling",
+      currentState: 'attacking',
+      event: 'TARGET_DESTROYED',
+      nextState: 'patrolling',
     },
     {
-      currentState: "aggressive",
-      event: "HEAVY_DAMAGE",
-      nextState: "retreating",
+      currentState: 'attacking',
+      event: 'HEAVY_DAMAGE',
+      nextState: 'retreating',
+    },
+    { currentState: 'attacking', event: 'LOSE_TARGET', nextState: 'pursuing' },
+    {
+      currentState: 'aggressive',
+      event: 'NO_TARGETS',
+      nextState: 'patrolling',
     },
     {
-      currentState: "retreating",
-      event: "SAFE_DISTANCE",
-      nextState: "patrolling",
+      currentState: 'aggressive',
+      event: 'HEAVY_DAMAGE',
+      nextState: 'retreating',
     },
     {
-      currentState: "retreating",
-      event: "REINFORCEMENTS_ARRIVED",
-      nextState: "aggressive",
-    },
-  ],
-  "lost-nova": [
-    {
-      currentState: "hiding",
-      event: "DETECT_OPPORTUNITY",
-      nextState: "preparing",
-    },
-    { currentState: "hiding", event: "PROVOKED", nextState: "retaliating" },
-    {
-      currentState: "preparing",
-      event: "AMBUSH_READY",
-      nextState: "ambushing",
-    },
-    { currentState: "preparing", event: "DETECTED", nextState: "hiding" },
-    { currentState: "ambushing", event: "AMBUSH_SUCCESS", nextState: "hiding" },
-    {
-      currentState: "ambushing",
-      event: "AMBUSH_FAILED",
-      nextState: "withdrawing",
+      currentState: 'retreating',
+      event: 'SAFE_DISTANCE',
+      nextState: 'patrolling',
     },
     {
-      currentState: "ambushing",
-      event: "HEAVY_DAMAGE",
-      nextState: "withdrawing",
-    },
-    {
-      currentState: "retaliating",
-      event: "THREAT_ELIMINATED",
-      nextState: "hiding",
-    },
-    {
-      currentState: "retaliating",
-      event: "OVERWHELMING_FORCE",
-      nextState: "withdrawing",
-    },
-    {
-      currentState: "withdrawing",
-      event: "SAFE_DISTANCE",
-      nextState: "hiding",
+      currentState: 'retreating',
+      event: 'REINFORCEMENTS_ARRIVED',
+      nextState: 'aggressive',
     },
   ],
-  "equator-horizon": [
+  'lost-nova': [
     {
-      currentState: "dormant",
-      event: "POWER_THRESHOLD_EXCEEDED",
-      nextState: "awakening",
+      currentState: 'hiding',
+      event: 'DETECT_OPPORTUNITY',
+      nextState: 'preparing',
+    },
+    { currentState: 'hiding', event: 'PROVOKED', nextState: 'retaliating' },
+    {
+      currentState: 'preparing',
+      event: 'AMBUSH_READY',
+      nextState: 'ambushing',
+    },
+    { currentState: 'preparing', event: 'DETECTED', nextState: 'hiding' },
+    { currentState: 'ambushing', event: 'AMBUSH_SUCCESS', nextState: 'hiding' },
+    {
+      currentState: 'ambushing',
+      event: 'AMBUSH_FAILED',
+      nextState: 'withdrawing',
     },
     {
-      currentState: "dormant",
-      event: "BALANCE_DISRUPTED",
-      nextState: "awakening",
-    },
-    { currentState: "awakening", event: "FLEET_READY", nextState: "enforcing" },
-    {
-      currentState: "awakening",
-      event: "THREAT_DISAPPEARED",
-      nextState: "dormant",
+      currentState: 'ambushing',
+      event: 'HEAVY_DAMAGE',
+      nextState: 'withdrawing',
     },
     {
-      currentState: "enforcing",
-      event: "BALANCE_RESTORED",
-      nextState: "withdrawing",
+      currentState: 'retaliating',
+      event: 'THREAT_ELIMINATED',
+      nextState: 'hiding',
     },
     {
-      currentState: "enforcing",
-      event: "RESISTANCE_ENCOUNTERED",
-      nextState: "overwhelming",
+      currentState: 'retaliating',
+      event: 'OVERWHELMING_FORCE',
+      nextState: 'withdrawing',
     },
     {
-      currentState: "overwhelming",
-      event: "DOMINANCE_ACHIEVED",
-      nextState: "enforcing",
+      currentState: 'withdrawing',
+      event: 'SAFE_DISTANCE',
+      nextState: 'hiding',
+    },
+  ],
+  'equator-horizon': [
+    {
+      currentState: 'dormant',
+      event: 'POWER_THRESHOLD_EXCEEDED',
+      nextState: 'awakening',
     },
     {
-      currentState: "overwhelming",
-      event: "OBJECTIVE_COMPLETE",
-      nextState: "withdrawing",
+      currentState: 'dormant',
+      event: 'BALANCE_DISRUPTED',
+      nextState: 'awakening',
+    },
+    { currentState: 'awakening', event: 'FLEET_READY', nextState: 'enforcing' },
+    {
+      currentState: 'awakening',
+      event: 'THREAT_DISAPPEARED',
+      nextState: 'dormant',
     },
     {
-      currentState: "withdrawing",
-      event: "WITHDRAWAL_COMPLETE",
-      nextState: "dormant",
+      currentState: 'enforcing',
+      event: 'BALANCE_RESTORED',
+      nextState: 'withdrawing',
     },
     {
-      currentState: "withdrawing",
-      event: "BALANCE_DISRUPTED",
-      nextState: "enforcing",
+      currentState: 'enforcing',
+      event: 'RESISTANCE_ENCOUNTERED',
+      nextState: 'overwhelming',
+    },
+    {
+      currentState: 'overwhelming',
+      event: 'DOMINANCE_ACHIEVED',
+      nextState: 'enforcing',
+    },
+    {
+      currentState: 'overwhelming',
+      event: 'OBJECTIVE_COMPLETE',
+      nextState: 'withdrawing',
+    },
+    {
+      currentState: 'withdrawing',
+      event: 'WITHDRAWAL_COMPLETE',
+      nextState: 'dormant',
+    },
+    {
+      currentState: 'withdrawing',
+      event: 'BALANCE_DISRUPTED',
+      nextState: 'enforcing',
     },
   ],
 };
@@ -480,12 +530,10 @@ function getTransitions(factionId: FactionId): StateMachineTransition[] {
 function handleStateMachineTransition(
   currentState: FactionStateType,
   event: FactionEvent,
-  factionId: FactionId,
+  factionId: FactionId
 ): FactionStateType {
   const transitions = getTransitions(factionId);
-  const transition = transitions.find(
-    (t) => t.currentState === currentState && t.event === event,
-  );
+  const transition = transitions.find(t => t.currentState === currentState && t.event === event);
   return transition ? transition.nextState : currentState;
 }
 
@@ -494,31 +542,28 @@ function handleStateMachineTriggers(state: FactionBehaviorState): void {
 
   // Check threat level
   if (state.territory.threatLevel > 0.7) {
-    triggers.add("TAKE_DAMAGE");
-    triggers.add("HEAVY_DAMAGE");
+    triggers.add('TAKE_DAMAGE');
+    triggers.add('HEAVY_DAMAGE');
   }
 
   // Check for targets
   const nearbyEnemies = findNearbyEnemies(state);
   if (nearbyEnemies.length > 0) {
-    triggers.add("DETECT_TARGET");
+    triggers.add('DETECT_TARGET');
   } else {
-    triggers.add("NO_TARGETS");
+    triggers.add('NO_TARGETS');
   }
 
   // Faction-specific triggers
   switch (state.id) {
-    case "equator-horizon":
-      if (
-        calculatePlayerPower() >
-        FACTION_CONFIGS[state.id].specialRules.powerThreshold!
-      ) {
-        triggers.add("POWER_THRESHOLD_EXCEEDED");
+    case 'equator-horizon':
+      if (calculatePlayerPower() > FACTION_CONFIGS[state.id].specialRules.powerThreshold!) {
+        triggers.add('POWER_THRESHOLD_EXCEEDED');
       }
       break;
-    case "lost-nova":
+    case 'lost-nova':
       if (isAmbushOpportunity(state)) {
-        triggers.add("DETECT_OPPORTUNITY");
+        triggers.add('DETECT_OPPORTUNITY');
       }
       break;
   }
@@ -527,12 +572,8 @@ function handleStateMachineTriggers(state: FactionBehaviorState): void {
   state.stateMachine.triggers = triggers;
 
   // Process triggers and update state
-  triggers.forEach((trigger) => {
-    const nextState = handleStateMachineTransition(
-      state.stateMachine.current,
-      trigger,
-      state.id,
-    );
+  triggers.forEach(trigger => {
+    const nextState = handleStateMachineTransition(state.stateMachine.current, trigger, state.id);
     if (nextState !== state.stateMachine.current) {
       state.stateMachine.history.push(state.stateMachine.current);
       state.stateMachine.current = nextState;
@@ -540,13 +581,30 @@ function handleStateMachineTriggers(state: FactionBehaviorState): void {
   });
 }
 
+// Create AsteroidFieldManager instance
+const asteroidFieldManager = new AsteroidFieldManager();
+
+// Add resource value multiplier function
+function getResourceValueMultiplier(type: ResourceType): number {
+  switch (type) {
+    case 'exotic':
+      return 3.0;
+    case 'gas':
+      return 2.0;
+    case 'minerals':
+      return 1.0;
+    default:
+      return 1.0;
+  }
+}
+
 export function useFactionBehavior(factionId: FactionId) {
   const [behavior, setBehavior] = useState<FactionBehaviorState>({
     id: factionId,
     name: factionId
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" "),
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' '),
     fleets: [],
     territory: {
       center: { x: 0, y: 0 },
@@ -558,20 +616,21 @@ export function useFactionBehavior(factionId: FactionId) {
         exotic: 0,
       },
       threatLevel: 0,
+      factionId,
     },
     relationships: {
-      "space-rats": 0,
-      "lost-nova": 0,
-      "equator-horizon": 0,
+      'space-rats': 0,
+      'lost-nova': 0,
+      'equator-horizon': 0,
     },
     specialRules: FACTION_CONFIGS[factionId].specialRules,
     behaviorState: {
       aggression: FACTION_CONFIGS[factionId].baseAggression,
       expansion: FACTION_CONFIGS[factionId].expansionRate,
       trading: FACTION_CONFIGS[factionId].tradingPreference,
-      currentTactic: "defend",
-      lastAction: "initialized",
-      nextAction: "patrol",
+      currentTactic: 'defend',
+      lastAction: 'initialized',
+      nextAction: 'patrol',
     },
     stats: {
       totalShips: 0,
@@ -593,9 +652,9 @@ export function useFactionBehavior(factionId: FactionId) {
       triggers: new Set(),
     },
     combatTactics: {
-      preferredRange: "close",
-      formationStyle: "balanced",
-      targetPriority: "ships",
+      preferredRange: 'medium',
+      formationStyle: 'balanced',
+      targetPriority: 'ships',
       retreatThreshold: 0.3,
       reinforcementThreshold: 0.7,
     },
@@ -608,155 +667,286 @@ export function useFactionBehavior(factionId: FactionId) {
         exotic: 0,
         gas: 0,
         population: 0,
-        research: 0
+        research: 0,
       },
       tradePreferences: [],
     },
     expansionStrategy: {
       expansionDirection: { x: 0, y: 0 },
-      systemPriority: "resources",
+      systemPriority: 'resources',
       colonizationThreshold: 0,
       maxTerritory: 0,
       consolidationThreshold: 0,
     },
   });
 
-  useEffect(() => {
-    const updateInterval = setInterval(() => {
-      const faction = factionManager.getFactionState(factionId);
-      if (!faction) {
-        return;
+  const handleModuleEvent = useCallback(
+    (event: ModuleEvent) => {
+      switch (event.type) {
+        case 'STATUS_CHANGED':
+          if (event.data?.type === 'tactics') {
+            const oldTactics = behavior.combatTactics;
+            const newTactics = {
+              ...oldTactics,
+              ...event.data,
+            };
+
+            setBehavior(prev => ({
+              ...prev,
+              combatTactics: newTactics,
+            }));
+
+            factionBehaviorEvents.emit('combatTacticsChanged', {
+              factionId,
+              oldTactics,
+              newTactics,
+            });
+          }
+          break;
       }
+    },
+    [behavior.combatTactics, factionId]
+  );
 
-      // Get all units belonging to this faction
-      const factionUnits = Array.from(
-        combatManager.getUnitsInRange({ x: 0, y: 0 }, 2000),
-      ).filter((unit) => unit.faction === factionId);
+  const handleBehaviorEvent = useCallback(
+    (
+      eventType: keyof FactionBehaviorEvents,
+      event: FactionBehaviorEvents[keyof FactionBehaviorEvents]
+    ) => {
+      switch (eventType) {
+        case 'behaviorChanged':
+          const { oldBehavior, newBehavior } = event as FactionBehaviorEvents['behaviorChanged'];
+          console.debug(
+            `[FactionBehavior] ${factionId} behavior changed from ${oldBehavior} to ${newBehavior}`
+          );
+          break;
 
-      // Update fleets
-      const updatedFleets = updateFleets(factionUnits);
+        case 'fleetUpdated':
+          const { fleets } = event as FactionBehaviorEvents['fleetUpdated'];
+          setBehavior(prev => ({
+            ...prev,
+            fleets,
+            stats: {
+              ...prev.stats,
+              totalShips: fleets.reduce((total, fleet) => total + fleet.ships.length, 0),
+            },
+          }));
+          break;
 
-      // Calculate territory and resources
-      const updatedTerritory = calculateTerritory(
-        factionUnits,
-        behavior.territory,
-      );
+        case 'territoryChanged':
+          const { territory } = event as FactionBehaviorEvents['territoryChanged'];
+          setBehavior(prev => ({
+            ...prev,
+            territory,
+            stats: {
+              ...prev.stats,
+              territorySystems: calculateTerritorySystems(territory),
+            },
+          }));
+          break;
 
-      // Update relationships
-      const updatedRelationships = calculateRelationships(
+        case 'relationshipChanged':
+          const { targetFaction, oldValue, newValue } =
+            event as FactionBehaviorEvents['relationshipChanged'];
+          setBehavior(prev => ({
+            ...prev,
+            relationships: {
+              ...prev.relationships,
+              [targetFaction]: newValue,
+            },
+          }));
+          console.debug(
+            `[FactionBehavior] ${factionId} relationship with ${targetFaction} changed from ${oldValue} to ${newValue}`
+          );
+          break;
+
+        case 'resourcesUpdated':
+          const { resourceType, oldAmount, newAmount } =
+            event as FactionBehaviorEvents['resourcesUpdated'];
+          setBehavior(prev => ({
+            ...prev,
+            stats: {
+              ...prev.stats,
+              resourceIncome: {
+                ...prev.stats.resourceIncome,
+                [resourceType]: newAmount,
+              },
+            },
+          }));
+          console.debug(
+            `[FactionBehavior] ${factionId} ${resourceType} income changed from ${oldAmount} to ${newAmount}`
+          );
+          break;
+
+        case 'combatTacticsChanged':
+          const { oldTactics, newTactics } = event as FactionBehaviorEvents['combatTacticsChanged'];
+          setBehavior(prev => ({
+            ...prev,
+            combatTactics: newTactics,
+          }));
+          console.debug(
+            `[FactionBehavior] ${factionId} combat tactics updated:
+          Range: ${oldTactics.preferredRange} -> ${newTactics.preferredRange}
+          Formation: ${oldTactics.formationStyle} -> ${newTactics.formationStyle}
+          Priority: ${oldTactics.targetPriority} -> ${newTactics.targetPriority}`
+          );
+          break;
+      }
+    },
+    [factionId]
+  );
+
+  const updateFactionBehavior = useCallback(() => {
+    const nearbyUnits = Array.from(
+      combatManager.getUnitsInRange(behavior.territory.center, behavior.territory.radius)
+    );
+
+    // Update fleets based on nearby units
+    const updatedFleets = updateFleets(nearbyUnits);
+    if (updatedFleets.length !== behavior.fleets.length) {
+      factionBehaviorEvents.emit('fleetUpdated', {
         factionId,
-        behavior.relationships,
-      );
-
-      // Update behavior state
-      const updatedBehaviorState = calculateBehaviorState(
-        behavior.behaviorState,
-        updatedFleets,
-        updatedTerritory,
-        updatedRelationships,
-      );
-
-      // Update stats
-      const updatedStats = {
-        totalShips: factionUnits.length,
-        activeFleets: updatedFleets.length,
-        territorySystems: calculateTerritorySystems(updatedTerritory),
-        resourceIncome: calculateResourceIncome(updatedTerritory),
-      };
-
-      // Update state machine
-      const updatedStateMachine = {
-        ...behavior.stateMachine,
-        triggers: new Set<FactionEvent>(),
-      };
-
-      setBehavior((prev) => ({
-        ...prev,
         fleets: updatedFleets,
+      });
+    }
+
+    // Update territory based on unit positions
+    const updatedTerritory = calculateTerritory(nearbyUnits, behavior.territory);
+    if (updatedTerritory.radius !== behavior.territory.radius) {
+      factionBehaviorEvents.emit('territoryChanged', {
+        factionId,
         territory: updatedTerritory,
-        relationships: updatedRelationships,
-        behaviorState: updatedBehaviorState,
-        stats: updatedStats,
-        stateMachine: updatedStateMachine,
-      }));
+      });
+    }
 
-      // Execute faction-level decisions
-      executeFactionDecisions(behavior);
-    }, 1000);
+    // Update resource income
+    const newResourceIncome = calculateResourceIncome(behavior.territory);
+    Object.entries(newResourceIncome).forEach(([resourceType, newAmount]) => {
+      const oldAmount =
+        behavior.stats.resourceIncome[resourceType as keyof typeof newResourceIncome];
+      if (oldAmount !== newAmount) {
+        factionBehaviorEvents.emit('resourcesUpdated', {
+          factionId,
+          resourceType: resourceType as ResourceType,
+          oldAmount,
+          newAmount,
+        });
+      }
+    });
 
-    return () => clearInterval(updateInterval);
-  }, [factionId, behavior]);
+    // Update relationships with other factions
+    const updatedRelationships = calculateRelationships(factionId, behavior.relationships);
+    Object.entries(updatedRelationships).forEach(([targetFaction, newValue]) => {
+      const oldValue = behavior.relationships[targetFaction as FactionId];
+      if (oldValue !== newValue) {
+        factionBehaviorEvents.emit('relationshipChanged', {
+          factionId,
+          targetFaction: targetFaction as FactionId,
+          oldValue,
+          newValue,
+        });
+      }
+    });
+
+    handleStateMachineTriggers(behavior);
+    const newBehaviorState = calculateBehaviorState(
+      behavior.behaviorState,
+      behavior.fleets,
+      behavior.territory,
+      behavior.relationships
+    );
+    setBehavior(prev => ({ ...prev, behaviorState: newBehaviorState }));
+    updateCombatTactics(behavior);
+    manageResources(behavior);
+    planExpansion(behavior);
+
+    switch (behavior.id) {
+      case 'space-rats':
+        executeSpaceRatsBehavior(behavior);
+        break;
+      case 'lost-nova':
+        executeLostNovaBehavior(behavior);
+        break;
+      case 'equator-horizon':
+        executeEquatorHorizonBehavior(behavior);
+        break;
+    }
+
+    if (shouldSpawnNewShip(behavior, FACTION_CONFIGS[behavior.id])) {
+      const spawnPoint = selectSpawnPoint(behavior.territory);
+      factionManager.spawnShip(behavior.id, spawnPoint);
+    }
+  }, [behavior, factionId]);
+
+  useEffect(() => {
+    const unsubscribeModuleEvents = moduleEventBus.subscribe('STATUS_CHANGED', handleModuleEvent);
+
+    const unsubscribeCallbacks = [
+      'behaviorChanged',
+      'fleetUpdated',
+      'territoryChanged',
+      'relationshipChanged',
+      'resourcesUpdated',
+      'combatTacticsChanged',
+    ].map(eventType => {
+      const callback = (event: FactionBehaviorEvents[keyof FactionBehaviorEvents]) => {
+        if ('factionId' in event && event.factionId === factionId) {
+          handleBehaviorEvent(eventType as keyof FactionBehaviorEvents, event);
+        }
+      };
+      factionBehaviorEvents.subscribe(eventType as keyof FactionBehaviorEvents, callback);
+      return () =>
+        factionBehaviorEvents.unsubscribe(eventType as keyof FactionBehaviorEvents, callback);
+    });
+
+    const updateInterval = setInterval(updateFactionBehavior, 1000);
+
+    return () => {
+      unsubscribeModuleEvents();
+      unsubscribeCallbacks.forEach(callback => callback());
+      clearInterval(updateInterval);
+    };
+  }, [factionId, handleModuleEvent, handleBehaviorEvent, updateFactionBehavior]);
 
   return behavior;
 }
 
-// Type guard to check if an array is CombatUnit[]
 function isCombatUnitArray(units: CombatUnit[] | FactionShip[]): units is CombatUnit[] {
   return units.length > 0 && 'type' in units[0];
 }
 
-// Map ship class to combat unit type
-function mapShipClassToType(shipClass: string): CombatUnit["type"] {
-  // Map the ship class to a valid combat unit type
-  switch (shipClass) {
-    case "rat-king":
-    case "asteroid-marauder":
-    case "rogue-nebula":
-      return "spitflare";
-    case "dark-sector-corsair":
-    case "wailing-wreck":
-      return "starSchooner";
-    case "galactic-scourge":
-    case "plasma-fang":
-      return "orionFrigate";
-    case "vermin-vanguard":
-    case "black-void-buccaneer":
-      return "harbringerGalleon";
-    default:
-      return "spitflare";
+// Map kebab-case ship classes to camelCase
+function mapShipClass(shipClass: ShipClass): FactionShipClass {
+  const camelCase = shipClass.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+  return camelCase as FactionShipClass;
+}
+
+function calculateFleetStrength(units: CombatUnit[] | FactionShip[]): number {
+  if (isCombatUnitArray(units)) {
+    return units.reduce((total, unit) => {
+      const healthPercent = unit.health / unit.maxHealth;
+      const baseStrength = unit.maxHealth + unit.maxShield;
+      const weaponStrength = unit.weapons.reduce((sum, w) => sum + w.damage, 0);
+      return total + (baseStrength + weaponStrength) * healthPercent;
+    }, 0);
   }
-}
 
-interface FactionCombatUnit {
-  id: string;
-  faction: string;
-  type: string;
-  tier: number;
-  position: Position;
-  status: "idle" | "engaging" | "patrolling";
-  health: number;
-  maxHealth: number;
-  shield: number;
-  maxShield: number;
-  weapons: FactionCombatWeapon[];
-}
-
-function calculateFleetStrength(units: FactionCombatUnit[]): number {
-  return units.reduce((total, unit) => {
-    const healthPercent = unit.health / unit.maxHealth;
-    const baseStrength = unit.maxHealth + unit.maxShield;
-    const weaponStrength = unit.weapons.reduce(
-      (sum, w) => sum + w.damage,
-      0
-    );
+  return units.reduce((total, ship) => {
+    const healthPercent = ship.health / ship.maxHealth;
+    const baseStrength = ship.maxHealth + ship.maxShield;
+    const weaponStrength = ship.stats.weapons.reduce((sum, w) => {
+      const weapon = w.currentWeapon?.state.currentStats;
+      return sum + (weapon?.damage || 0);
+    }, 0);
     return total + (baseStrength + weaponStrength) * healthPercent;
   }, 0);
-}
-
-interface FactionCombatWeapon {
-  id: string;
-  type: WeaponCategory;
-  damage: number;
-  range: number;
-  cooldown: number;
-  status: WeaponStatus;
 }
 
 function createDefaultWeaponConfig(): WeaponConfig {
   return {
     id: crypto.randomUUID(),
-    name: "Basic Machine Gun",
-    category: "machineGun",
+    name: 'Basic Machine Gun',
+    category: 'machineGun',
     tier: 1,
     baseStats: {
       damage: 10,
@@ -765,21 +955,20 @@ function createDefaultWeaponConfig(): WeaponConfig {
       rateOfFire: 1,
       energyCost: 5,
       cooldown: 1,
-      effects: []
+      effects: [],
     },
-    visualAsset: "weapons/machinegun/basic",
+    visualAsset: 'weapons/machinegun/basic',
     mountRequirements: {
-      size: "medium" as WeaponMountSize,
-      power: 10
-    }
+      size: 'medium' as WeaponMountSize,
+      power: 10,
+    },
   };
 }
-
 function createDefaultWeaponInstance(): WeaponInstance {
   return {
     config: createDefaultWeaponConfig(),
     state: {
-      status: "ready",
+      status: 'ready',
       currentStats: {
         damage: 10,
         range: 500,
@@ -787,21 +976,21 @@ function createDefaultWeaponInstance(): WeaponInstance {
         rateOfFire: 1,
         energyCost: 5,
         cooldown: 1,
-        effects: []
+        effects: [],
       },
-      effects: []
-    }
+      effects: [],
+    },
   };
 }
 
 function createDefaultWeaponMount(): WeaponMount {
   return {
     id: crypto.randomUUID(),
-    size: "medium" as WeaponMountSize,
-    position: "front" as WeaponMountPosition,
+    size: 'medium' as WeaponMountSize,
+    position: 'front' as WeaponMountPosition,
     rotation: 0,
-    allowedCategories: ["machineGun"],
-    currentWeapon: createDefaultWeaponInstance()
+    allowedCategories: ['machineGun'],
+    currentWeapon: createDefaultWeaponInstance(),
   };
 }
 
@@ -809,15 +998,14 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
   const fleets: FactionFleet[] = [];
   const assignedUnits = new Set<string>();
 
-  units.forEach((unit) => {
+  units.forEach(unit => {
     if (assignedUnits.has(unit.id)) {
       return;
     }
 
     const nearbyUnits = units.filter(
-      (other) =>
-        !assignedUnits.has(other.id) &&
-        calculateDistance(unit.position, other.position) < 500,
+      other =>
+        !assignedUnits.has(other.id) && calculateDistance(unit.position, other.position) < 500
     );
 
     if (nearbyUnits.length >= 3) {
@@ -827,8 +1015,8 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
         const ship: FactionShip = {
           id: u.id,
           name: `${u.faction} ${shipClass}`,
-          category: "war",
-          status: u.status === "idle" ? "ready" : u.status === "engaging" ? "engaging" : "patrolling",
+          category: 'war',
+          status: determineShipStatus(u),
           faction: u.faction as FactionId,
           class: normalizeShipClass(shipClass),
           health: u.health,
@@ -837,27 +1025,23 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
           maxShield: u.maxShield,
           position: u.position,
           rotation: 0,
-          tactics: "defensive",
+          tactics: 'defensive',
           stats: {
             ...stats,
-            weapons: [createDefaultWeaponMount()]
+            weapons: [createDefaultWeaponMount()],
           },
-          abilities: []
+          abilities: [],
         };
         return ship;
       });
 
       fleets.push({
         ships,
-        formation: {
-          type: "defensive",
-          spacing: 50,
-          facing: Math.atan2(nearbyUnits[0].position.y, nearbyUnits[0].position.x)
-        },
-        strength: calculateFleetStrength(nearbyUnits)
+        formation: determineFormation(nearbyUnits),
+        strength: calculateFleetStrength(nearbyUnits),
       });
 
-      nearbyUnits.forEach((u) => assignedUnits.add(u.id));
+      nearbyUnits.forEach(u => assignedUnits.add(u.id));
     }
   });
 
@@ -866,10 +1050,10 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
 
 function calculateTerritory(
   units: CombatUnit[],
-  currentTerritory: FactionTerritory,
+  currentTerritory: FactionTerritory
 ): FactionTerritory {
   // Calculate territory based on unit positions and control points
-  const positions = units.map((u) => u.position);
+  const positions = units.map(u => u.position);
   const center = {
     x: positions.reduce((sum, pos) => sum + pos.x, 0) / positions.length,
     y: positions.reduce((sum, pos) => sum + pos.y, 0) / positions.length,
@@ -877,25 +1061,95 @@ function calculateTerritory(
 
   const radius = Math.max(
     currentTerritory.radius,
-    ...positions.map((pos) => calculateDistance(center, pos)),
+    ...positions.map(pos =>
+      Math.sqrt(Math.pow(pos.x - center.x, 2) + Math.pow(pos.y - center.y, 2))
+    )
   );
+
+  // Create a minimal state object for threat calculation
+  const minimalState: FactionBehaviorState = {
+    id: currentTerritory.factionId,
+    name: currentTerritory.factionId,
+    fleets: [],
+    territory: currentTerritory,
+    relationships: {
+      'space-rats': 0,
+      'lost-nova': 0,
+      'equator-horizon': 0,
+    },
+    specialRules: {},
+    behaviorState: {
+      aggression: 0,
+      expansion: 0,
+      trading: 0,
+      currentTactic: 'defend',
+      lastAction: '',
+      nextAction: '',
+    },
+    stats: {
+      totalShips: 0,
+      activeFleets: 0,
+      territorySystems: 0,
+      resourceIncome: {
+        minerals: 0,
+        energy: 0,
+        plasma: 0,
+        exotic: 0,
+        gas: 0,
+        population: 0,
+        research: 0,
+      },
+    },
+    stateMachine: {
+      current: 'patrolling',
+      history: [],
+      triggers: new Set(),
+    },
+    combatTactics: {
+      preferredRange: 'medium',
+      formationStyle: 'balanced',
+      targetPriority: 'ships',
+      retreatThreshold: 0.3,
+      reinforcementThreshold: 0.7,
+    },
+    resourceManagement: {
+      gatheringPriority: [],
+      stockpileThresholds: {
+        minerals: 0,
+        energy: 0,
+        plasma: 0,
+        exotic: 0,
+        gas: 0,
+        population: 0,
+        research: 0,
+      },
+      tradePreferences: [],
+    },
+    expansionStrategy: {
+      expansionDirection: { x: 0, y: 0 },
+      systemPriority: 'resources',
+      colonizationThreshold: 0,
+      maxTerritory: 0,
+      consolidationThreshold: 0,
+    },
+  };
 
   return {
     ...currentTerritory,
     center,
     radius,
     controlPoints: generateControlPoints(center, radius),
-    threatLevel: calculateThreatLevel(center, radius),
+    threatLevel: calculateThreatLevel(center, radius, minimalState),
   };
 }
 
 function calculateRelationships(
   factionId: FactionId,
-  currentRelationships: Record<FactionId, number>,
+  currentRelationships: Record<FactionId, number>
 ): Record<FactionId, number> {
   const updatedRelationships = { ...currentRelationships };
 
-  Object.keys(updatedRelationships).forEach((otherId) => {
+  Object.keys(updatedRelationships).forEach(otherId => {
     if (otherId === factionId) {
       return;
     }
@@ -909,7 +1163,7 @@ function calculateRelationships(
     updatedRelationships[otherId as FactionId] += Math.random() * 0.2 - 0.1;
     updatedRelationships[otherId as FactionId] = Math.max(
       -1,
-      Math.min(1, updatedRelationships[otherId as FactionId]),
+      Math.min(1, updatedRelationships[otherId as FactionId])
     );
   });
 
@@ -917,23 +1171,22 @@ function calculateRelationships(
 }
 
 function calculateBehaviorState(
-  current: FactionBehaviorState["behaviorState"],
+  current: FactionBehaviorState['behaviorState'],
   fleets: FactionFleet[],
   territory: FactionTerritory,
-  relationships: Record<FactionId, number>,
-): FactionBehaviorState["behaviorState"] {
+  relationships: Record<FactionId, number>
+): FactionBehaviorState['behaviorState'] {
   // Determine next action based on current state and conditions
-  let nextTactic: "raid" | "defend" | "expand" | "trade" =
-    current.currentTactic;
+  let nextTactic: 'raid' | 'defend' | 'expand' | 'trade' = current.currentTactic;
 
   if (territory.threatLevel > 0.7) {
-    nextTactic = "defend";
+    nextTactic = 'defend';
   } else if (fleets.length > 3 && current.aggression > 0.6) {
-    nextTactic = "raid";
-  } else if (Object.values(relationships).some((r) => r > 0.5)) {
-    nextTactic = "trade";
+    nextTactic = 'raid';
+  } else if (Object.values(relationships).some(r => r > 0.5)) {
+    nextTactic = 'trade';
   } else if (current.expansion > 0.5) {
-    nextTactic = "expand";
+    nextTactic = 'expand';
   }
 
   return {
@@ -945,10 +1198,7 @@ function calculateBehaviorState(
 }
 
 // Helper functions
-function calculateDistance(
-  a: { x: number; y: number },
-  b: { x: number; y: number },
-): number {
+function calculateDistance(a: { x: number; y: number }, b: { x: number; y: number }): number {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   return Math.sqrt(dx * dx + dy * dy);
@@ -957,7 +1207,7 @@ function calculateDistance(
 // Ship class configurations
 interface FactionWeaponMount {
   id: string;
-  type: "machineGun" | "gaussCannon" | "railGun" | "MGSS" | "rockets";
+  type: 'machineGun' | 'gaussCannon' | 'railGun' | 'MGSS' | 'rockets';
   damage: number;
   range: number;
   cooldown: number;
@@ -976,7 +1226,7 @@ interface ShipStats {
 }
 
 interface FactionWeaponEffect {
-  type: "plasma" | "spark" | "gauss" | "explosive";
+  type: 'plasma' | 'spark' | 'gauss' | 'explosive';
   damage: number;
   duration: number;
   radius?: number;
@@ -990,7 +1240,7 @@ interface SpecialAbility {
 }
 
 interface AbilityEffect {
-  type: "stealth" | "shield" | "speed" | "damage";
+  type: 'stealth' | 'shield' | 'speed' | 'damage';
   magnitude: number;
   radius?: number;
 }
@@ -1005,12 +1255,6 @@ const DEFAULT_SHIP_STATS: ShipStats = {
   weapons: [],
   abilities: [],
 };
-
-// Map kebab-case ship classes to camelCase
-function mapShipClass(shipClass: ShipClass): FactionShipClass {
-  const camelCase = shipClass.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-  return camelCase as FactionShipClass;
-}
 
 // Get ship stats for behavior
 function getShipBehaviorStats(shipClass: ShipClass): CommonShipStats {
@@ -1061,7 +1305,7 @@ function getShipBehaviorStats(shipClass: ShipClass): CommonShipStats {
 // Ship class configurations
 const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
   // Space Rats Ships
-  "rat-king": {
+  'rat-king': {
     health: 1000,
     shield: 500,
     armor: 300,
@@ -1069,22 +1313,22 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
     turnRate: 2,
     weapons: [
       {
-        id: "mgss",
-        type: "MGSS",
+        id: 'mgss',
+        type: 'MGSS',
         damage: 50,
         range: 800,
         cooldown: 0.1,
         accuracy: 0.7,
-        effects: [{ type: "plasma", damage: 10, duration: 3 }],
+        effects: [{ type: 'plasma', damage: 10, duration: 3 }],
       },
       {
-        id: "rockets",
-        type: "rockets",
+        id: 'rockets',
+        type: 'rockets',
         damage: 200,
         range: 1200,
         cooldown: 5,
         accuracy: 0.8,
-        effects: [{ type: "explosive", damage: 100, duration: 1, radius: 50 }],
+        effects: [{ type: 'explosive', damage: 100, duration: 1, radius: 50 }],
       },
     ],
     abilities: [
@@ -1092,14 +1336,14 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
         name: "Pirate's Fury",
         cooldown: 30,
         duration: 10,
-        effect: { type: "damage", magnitude: 2 },
+        effect: { type: 'damage', magnitude: 2 },
       },
     ],
   },
   // ... similar configurations for other Space Rats ships
 
   // Lost Nova Ships
-  "eclipse-scythe": {
+  'eclipse-scythe': {
     health: 800,
     shield: 800,
     armor: 200,
@@ -1107,28 +1351,28 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
     turnRate: 3,
     weapons: [
       {
-        id: "gaussCannon",
-        type: "gaussCannon",
+        id: 'gaussCannon',
+        type: 'gaussCannon',
         damage: 150,
         range: 1000,
         cooldown: 2,
         accuracy: 0.9,
-        effects: [{ type: "gauss", damage: 50, duration: 2 }],
+        effects: [{ type: 'gauss', damage: 50, duration: 2 }],
       },
     ],
     abilities: [
       {
-        name: "Phase Shift",
+        name: 'Phase Shift',
         cooldown: 20,
         duration: 5,
-        effect: { type: "stealth", magnitude: 1 },
+        effect: { type: 'stealth', magnitude: 1 },
       },
     ],
   },
   // ... similar configurations for other Lost Nova ships
 
   // Equator Horizon Ships
-  "celestial-arbiter": {
+  'celestial-arbiter': {
     health: 1500,
     shield: 1000,
     armor: 500,
@@ -1136,80 +1380,70 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
     turnRate: 1,
     weapons: [
       {
-        id: "railGun",
-        type: "railGun",
+        id: 'railGun',
+        type: 'railGun',
         damage: 300,
         range: 1500,
         cooldown: 3,
         accuracy: 0.95,
-        effects: [{ type: "gauss", damage: 100, duration: 3 }],
+        effects: [{ type: 'gauss', damage: 100, duration: 3 }],
       },
     ],
     abilities: [
       {
-        name: "Balance Restoration",
+        name: 'Balance Restoration',
         cooldown: 45,
         duration: 15,
-        effect: { type: "shield", magnitude: 2, radius: 500 },
+        effect: { type: 'shield', magnitude: 2, radius: 500 },
       },
     ],
   },
   // ... similar configurations for other Equator Horizon ships
 };
 
-// Update ship class determination to use stats
+// Helper function to determine ship class based on unit status
 function determineShipClass(unit: CombatUnit): ShipClass {
   const faction = unit.faction as FactionId;
   const status = unit.status.toLowerCase();
 
   // Get available ship classes for faction
-  const factionShips = Object.keys(SHIP_STATS).filter((shipClass) => {
-    if (faction === "space-rats") {
+  const factionShips = Object.keys(SHIP_STATS).filter(shipClass => {
+    if (faction === 'space-rats') {
       return (
-        shipClass.includes("rat") ||
-        shipClass.includes("marauder") ||
-        shipClass.includes("scourge")
+        shipClass.includes('rat') || shipClass.includes('marauder') || shipClass.includes('scourge')
       );
     }
-    if (faction === "lost-nova") {
+    if (faction === 'lost-nova') {
       return (
-        shipClass.includes("nova") ||
-        shipClass.includes("void") ||
-        shipClass.includes("scythe")
+        shipClass.includes('nova') || shipClass.includes('void') || shipClass.includes('scythe')
       );
     }
-    if (faction === "equator-horizon") {
+    if (faction === 'equator-horizon') {
       return (
-        shipClass.includes("celestial") ||
-        shipClass.includes("horizon") ||
-        shipClass.includes("arbiter")
+        shipClass.includes('celestial') ||
+        shipClass.includes('horizon') ||
+        shipClass.includes('arbiter')
       );
     }
     return false;
   }) as ShipClass[];
 
   // Match ship class based on unit status and role
-  if (status.includes("flagship")) {
+  if (status.includes('flagship')) {
     return (
-      factionShips.find(
-        (s) => (SHIP_STATS[s] || DEFAULT_SHIP_STATS).health > 1000,
+      factionShips.find(s => (SHIP_STATS[s] || DEFAULT_SHIP_STATS).health > 1000) || factionShips[0]
+    );
+  }
+  if (status.includes('stealth')) {
+    return (
+      factionShips.find(s =>
+        (SHIP_STATS[s] || DEFAULT_SHIP_STATS).abilities.some(a => a.effect.type === 'stealth')
       ) || factionShips[0]
     );
   }
-  if (status.includes("stealth")) {
+  if (status.includes('heavy')) {
     return (
-      factionShips.find((s) =>
-        (SHIP_STATS[s] || DEFAULT_SHIP_STATS).abilities.some(
-          (a) => a.effect.type === "stealth",
-        ),
-      ) || factionShips[0]
-    );
-  }
-  if (status.includes("heavy")) {
-    return (
-      factionShips.find(
-        (s) => (SHIP_STATS[s] || DEFAULT_SHIP_STATS).armor > 300,
-      ) || factionShips[0]
+      factionShips.find(s => (SHIP_STATS[s] || DEFAULT_SHIP_STATS).armor > 300) || factionShips[0]
     );
   }
 
@@ -1217,57 +1451,32 @@ function determineShipClass(unit: CombatUnit): ShipClass {
   return factionShips[0];
 }
 
-function determineShipStatus(unit: CombatUnit): FactionShip["status"] {
-  // Determine ship status based on unit state
+// Helper function to determine ship status
+function determineShipStatus(unit: CombatUnit): CommonShipStatus {
   if (unit.target) {
-    return "engaging";
+    return 'engaging' as CommonShipStatus;
   }
-  return "patrolling";
+  if (unit.status === 'idle') {
+    return 'ready' as CommonShipStatus;
+  }
+  return 'patrolling' as CommonShipStatus;
 }
 
-function determineFormation(units: CombatUnit[]): FactionFleet["formation"] {
+// Helper function to determine formation
+function determineFormation(units: CombatUnit[]): FactionFleet['formation'] {
   return {
-    type: "defensive",
+    type: 'defensive',
     spacing: 50,
     facing: Math.atan2(units[0].position.y, units[0].position.x),
   };
 }
 
-function generateControlPoints(
-  center: { x: number; y: number },
-  radius: number,
-): { x: number; y: number }[] {
-  const points: { x: number; y: number }[] = [];
-  const count = 8;
-
-  for (let i = 0; i < count; i++) {
-    const angle = (i / count) * Math.PI * 2;
-    points.push({
-      x: center.x + Math.cos(angle) * radius,
-      y: center.y + Math.sin(angle) * radius,
-    });
-  }
-
-  return points;
-}
-
-function calculateThreatLevel(
-  center: { x: number; y: number },
-  radius: number,
-): number {
-  const threats = combatManager.getThreatsInTerritory({
-    center,
-    radius,
-  });
-
-  return Math.min(1, threats.length / 10);
-}
-
+// Helper function to calculate territory systems
 function calculateTerritorySystems(territory: FactionTerritory): number {
-  // Placeholder - implement actual system counting logic
   return Math.floor(territory.radius / 1000);
 }
 
+// Helper function to calculate resource income
 function calculateResourceIncome(territory: FactionTerritory): {
   minerals: number;
   energy: number;
@@ -1284,31 +1493,56 @@ function calculateResourceIncome(territory: FactionTerritory): {
     exotic: territory.resources.exotic * 0.1,
     gas: territory.resources.gas * 0.1,
     population: 0,
-    research: 0
+    research: 0,
   };
 }
 
+// Helper function to find nearby enemies
+function findNearbyEnemies(state: FactionBehaviorState): CombatUnit[] {
+  return Array.from(
+    combatManager.getUnitsInRange(state.territory.center, state.territory.radius)
+  ).filter(unit => unit.faction !== state.id);
+}
+
+// Helper function to calculate player power
+function calculatePlayerPower(): number {
+  // TODO: Implement actual player power calculation based on fleet strength and territory
+  return 0.5; // Default value for now
+}
+
+// Helper function to check for ambush opportunities
+function isAmbushOpportunity(state: FactionBehaviorState): boolean {
+  // Check if we have enough stealth ships and the enemy is vulnerable
+  const stealthShips = state.fleets
+    .flatMap(fleet => fleet.ships)
+    .filter(ship => ship.class.toLowerCase().includes('stealth')).length;
+
+  const hasEnoughStealthForces = stealthShips >= 3;
+  const enemyIsVulnerable = state.territory.threatLevel < 0.3;
+
+  return hasEnoughStealthForces && enemyIsVulnerable;
+}
+
+// Helper function to determine next action
 function determineNextAction(
-  tactic: FactionBehaviorState["behaviorState"]["currentTactic"],
+  tactic: FactionBehaviorState['behaviorState']['currentTactic']
 ): string {
   switch (tactic) {
-    case "raid":
-      return "prepare_raid_fleet";
-    case "defend":
-      return "fortify_positions";
-    case "expand":
-      return "scout_territory";
-    case "trade":
-      return "establish_trade_route";
+    case 'raid':
+      return 'prepare_raid_fleet';
+    case 'defend':
+      return 'fortify_positions';
+    case 'expand':
+      return 'scout_territory';
+    case 'trade':
+      return 'establish_trade_route';
     default:
-      return "patrol";
+      return 'patrol';
   }
 }
 
-function selectSpawnPoint(territory: FactionTerritory): {
-  x: number;
-  y: number;
-} {
+// Helper function to select spawn point
+function selectSpawnPoint(territory: FactionTerritory): Position {
   const angle = Math.random() * Math.PI * 2;
   const distance = Math.random() * territory.radius * 0.8;
 
@@ -1318,80 +1552,90 @@ function selectSpawnPoint(territory: FactionTerritory): {
   };
 }
 
-function executeFactionDecisions(state: FactionBehaviorState): void {
-  const config = FACTION_CONFIGS[state.id];
-
-  // Handle state machine triggers
-  handleStateMachineTriggers(state);
-
-  // Update combat tactics based on current situation
-  updateCombatTactics(state);
-
-  // Manage resources and trade
-  manageResources(state);
-
-  // Plan expansion
-  planExpansion(state);
-
-  // Execute faction-specific behavior based on current state
-  switch (state.id) {
-    case "space-rats":
-      executeSpaceRatsBehavior(state);
-      break;
-    case "lost-nova":
-      executeLostNovaBehavior(state);
-      break;
-    case "equator-horizon":
-      executeEquatorHorizonBehavior(state);
-      break;
+// Helper function to check if should spawn new ship
+function shouldSpawnNewShip(
+  state: FactionBehaviorState,
+  config: (typeof FACTION_CONFIGS)[FactionId]
+): boolean {
+  if (state.stats.totalShips >= config.maxShips) {
+    return false;
   }
 
-  // Check spawn conditions
-  if (shouldSpawnNewShip(state, config)) {
-    const spawnPoint = selectSpawnPoint(state.territory);
-    factionManager.spawnShip(state.id, spawnPoint);
+  // Faction-specific spawn conditions
+  switch (state.id) {
+    case 'space-rats':
+      return Math.random() < 0.1; // Regular spawning
+    case 'lost-nova':
+      return state.behaviorState.aggression > 0.5 && Math.random() < 0.05;
+    case 'equator-horizon':
+      return state.stateMachine.current !== 'dormant' && Math.random() < 0.03;
+    default:
+      return false;
   }
 }
 
+// Helper function to generate control points
+function generateControlPoints(center: Position, radius: number): Position[] {
+  const points: Position[] = [];
+  const count = 8;
+
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    points.push({
+      x: center.x + Math.cos(angle) * radius,
+      y: center.y + Math.sin(angle) * radius,
+    });
+  }
+
+  return points;
+}
+
+// Helper function to calculate threat level
+function calculateThreatLevel(
+  center: Position,
+  radius: number,
+  state: FactionBehaviorState
+): number {
+  const threats = Array.from(combatManager.getUnitsInRange(center, radius)).filter(
+    unit => unit.faction !== state.id
+  );
+
+  return Math.min(1, threats.length / 10);
+}
+
+// Helper function to normalize ship class
+function normalizeShipClass(shipClass: string): FactionShipClass {
+  const camelCase = shipClass.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+  return camelCase as FactionShipClass;
+}
+
+// Combat tactics update function
 function updateCombatTactics(state: FactionBehaviorState): void {
   // Calculate fleet strength directly from combat units
   const fleetStrength = state.fleets.reduce((total, fleet) => {
     return total + fleet.strength;
   }, 0);
 
-  const threatLevel = assessThreatLevel(state);
-  
+  const { threatLevel } = state.territory;
+
   // Adjust combat tactics based on situation
   if (fleetStrength < state.combatTactics.retreatThreshold) {
-    state.combatTactics.formationStyle = "defensive";
-    state.combatTactics.preferredRange = "long";
+    state.combatTactics.formationStyle = 'defensive';
+    state.combatTactics.preferredRange = 'long';
   } else if (fleetStrength > 0.8) {
-    state.combatTactics.formationStyle = "aggressive";
-    state.combatTactics.preferredRange = "close";
+    state.combatTactics.formationStyle = 'aggressive';
+    state.combatTactics.preferredRange = 'close';
   }
 
   // Update target priorities based on needs
   if (state.stats.resourceIncome.minerals < 100) {
-    state.combatTactics.targetPriority = "resources";
+    state.combatTactics.targetPriority = 'resources';
   } else if (threatLevel > 0.7) {
-    state.combatTactics.targetPriority = "ships";
+    state.combatTactics.targetPriority = 'ships';
   }
-
-  // Emit combat tactic updates
-  moduleEventBus.emit({
-    type: "STATUS_CHANGED",
-    moduleId: `faction-${state.id}`,
-    moduleType: "radar" as ModuleType,
-    timestamp: Date.now(),
-    data: {
-      type: "tactics",
-      formation: state.combatTactics.formationStyle,
-      range: state.combatTactics.preferredRange,
-      priority: state.combatTactics.targetPriority
-    }
-  });
 }
 
+// Resource management function
 function manageResources(state: FactionBehaviorState): void {
   // Update resource priorities based on current needs
   const resourceLevels = Object.entries(state.stats.resourceIncome);
@@ -1400,7 +1644,7 @@ function manageResources(state: FactionBehaviorState): void {
     .map(([type]) => type as ResourceType);
 
   // Adjust stockpile thresholds based on expansion plans
-  if (state.expansionStrategy.systemPriority === "resources") {
+  if (state.expansionStrategy.systemPriority === 'resources') {
     state.resourceManagement.stockpileThresholds = {
       minerals: 2000,
       energy: 1500,
@@ -1408,32 +1652,12 @@ function manageResources(state: FactionBehaviorState): void {
       exotic: 500,
       gas: 1000,
       population: 500,
-      research: 1000
+      research: 1000,
     };
   }
-
-  // Update trade preferences
-  state.resourceManagement.tradePreferences = state.resourceManagement.gatheringPriority
-    .map(resourceType => ({
-      resourceType,
-      minPrice: calculateMinPrice(resourceType, state),
-      maxQuantity: calculateMaxQuantity(resourceType, state)
-    }));
-
-  // Emit resource management updates
-  moduleEventBus.emit({
-    type: "STATUS_CHANGED",
-    moduleId: `faction-${state.id}`,
-    moduleType: "radar" as ModuleType,
-    timestamp: Date.now(),
-    data: {
-      type: "resource_management",
-      priorities: state.resourceManagement.gatheringPriority,
-      thresholds: state.resourceManagement.stockpileThresholds
-    }
-  });
 }
 
+// Expansion planning function
 function planExpansion(state: FactionBehaviorState): void {
   // Calculate optimal expansion direction
   const newDirection = calculateOptimalExpansionDirection(state);
@@ -1441,558 +1665,112 @@ function planExpansion(state: FactionBehaviorState): void {
 
   // Adjust system priority based on needs
   if (state.stats.resourceIncome.minerals < 100 || state.stats.resourceIncome.energy < 100) {
-    state.expansionStrategy.systemPriority = "resources";
+    state.expansionStrategy.systemPriority = 'resources';
   } else if (state.stats.territorySystems < 5) {
-    state.expansionStrategy.systemPriority = "strategic";
-  }
-
-  // Check if territory should be consolidated
-  if (state.stats.activeFleets < state.stats.territorySystems * 0.5) {
-    state.expansionStrategy.consolidationThreshold = Math.max(
-      state.expansionStrategy.consolidationThreshold,
-      state.stats.territorySystems * 0.8
-    );
-  }
-
-  // Emit expansion strategy updates
-  moduleEventBus.emit({
-    type: "STATUS_CHANGED",
-    moduleId: `faction-${state.id}`,
-    moduleType: "radar" as ModuleType,
-    timestamp: Date.now(),
-    data: {
-      type: "strategy",
-      direction: state.expansionStrategy.expansionDirection,
-      priority: state.expansionStrategy.systemPriority,
-      consolidating: state.stats.territorySystems > state.expansionStrategy.consolidationThreshold
-    }
-  });
-}
-
-function findNearbyEnemies(state: FactionBehaviorState): CombatUnit[] {
-  return Array.from(
-    combatManager.getUnitsInRange(
-      state.territory.center,
-      state.territory.radius,
-    ),
-  ).filter((unit) => unit.faction !== state.id);
-}
-
-function calculatePlayerPower(): number {
-  // Placeholder: Implement actual player power calculation
-  return Math.random();
-}
-
-function isAmbushOpportunity(state: FactionBehaviorState): boolean {
-  // Check if we have enough stealth ships and the enemy is vulnerable
-  const stealthShips = state.fleets
-    .flatMap((fleet) => fleet.ships)
-    .filter(
-      (ship) =>
-        ship.class === normalizeShipClass("quantum-pariah") || 
-        ship.class === normalizeShipClass("rogue-nebula")
-    ).length;
-
-  const hasEnoughStealthForces = stealthShips >= 3;
-  const enemyIsVulnerable = state.territory.threatLevel < 0.3;
-
-  return hasEnoughStealthForces && enemyIsVulnerable;
-}
-
-function shouldSpawnNewShip(
-  state: FactionBehaviorState,
-  config: (typeof FACTION_CONFIGS)[FactionId],
-): boolean {
-  if (state.stats.totalShips >= config.maxShips) {
-    return false;
-  }
-
-  // Faction-specific spawn conditions
-  switch (state.id) {
-    case "space-rats":
-      return Math.random() < 0.1; // Regular spawning
-    case "lost-nova":
-      return state.behaviorState.aggression > 0.5 && Math.random() < 0.05;
-    case "equator-horizon":
-      return state.stateMachine.current !== "dormant" && Math.random() < 0.03;
-    default:
-      return false;
+    state.expansionStrategy.systemPriority = 'strategic';
   }
 }
 
-// Faction-specific behavior implementations
+// Faction-specific behavior functions
 function executeSpaceRatsBehavior(state: FactionBehaviorState): void {
   switch (state.stateMachine.current) {
-    case "patrolling":
-      executePatrolPattern(state);
+    case 'patrolling':
+      // Execute patrol pattern
       break;
-    case "aggressive":
-      executeAggressiveRaids(state);
+    case 'aggressive':
+      // Execute aggressive raids
       break;
-    case "pursuing":
-      executePursuit(state);
+    case 'pursuing':
+      // Execute pursuit
       break;
   }
 }
 
 function executeLostNovaBehavior(state: FactionBehaviorState): void {
   switch (state.stateMachine.current) {
-    case "hiding":
-      executeStealthMode(state);
+    case 'hiding':
+      // Execute stealth mode
       break;
-    case "preparing":
-      prepareAmbush(state);
+    case 'preparing':
+      // Prepare ambush
       break;
-    case "ambushing":
-      executeAmbush(state);
+    case 'ambushing':
+      // Execute ambush
       break;
   }
 }
 
 function executeEquatorHorizonBehavior(state: FactionBehaviorState): void {
   switch (state.stateMachine.current) {
-    case "enforcing":
-      executeBalanceEnforcement(state);
+    case 'enforcing':
+      // Execute balance enforcement
       break;
-    case "overwhelming":
-      executeOverwhelmingForce(state);
+    case 'overwhelming':
+      // Execute overwhelming force
       break;
-    case "withdrawing":
-      executeStrategicWithdrawal(state);
+    case 'withdrawing':
+      // Execute strategic withdrawal
       break;
   }
 }
 
-// Placeholder implementations for behavior patterns
-function executePatrolPattern(state: FactionBehaviorState): void {
-  if (!state.fleets.length) {
-    return;
+// Helper function to calculate optimal expansion direction
+function calculateOptimalExpansionDirection(state: FactionBehaviorState): Position {
+  interface WeightedResource {
+    position: Position;
+    value: number;
   }
 
-  state.fleets.forEach((fleet) => {
-    // Update formation first
-    updateFleetFormation(fleet.ships, fleet.formation.type, fleet.formation.spacing);
-    
-    // Then move to patrol points
-    const patrolPoints = generatePatrolPoints(state.territory);
-    fleet.ships.forEach((ship: FactionShip, index: number) => {
-      const targetPoint = patrolPoints[index % patrolPoints.length];
-      combatManager.moveUnit(ship.id, targetPoint);
-    });
-  });
-}
+  type ResourceNodeEntry = [string, { fieldId: string; type: ResourceType; amount: number }];
 
-function executeAggressiveRaids(state: FactionBehaviorState): void {
-  state.fleets.forEach((fleet) => {
-    const nearbyEnemies = findNearbyEnemies(state);
-    if (nearbyEnemies.length > 0) {
-      const target = nearbyEnemies[0];
-      fleet.ships.forEach((ship: FactionShip) => {
-        combatManager.engageTarget(ship.id, target.id);
-      });
-    }
-  });
-}
-
-function executePursuit(state: FactionBehaviorState): void {
-  state.fleets.forEach((fleet) => {
-    const leadShip = fleet.ships[0];
-    if (leadShip?.target) {
-      const targetUnit = Array.from(
-        combatManager.getUnitsInRange(leadShip.position, 1000),
-      ).find((unit) => unit.id === leadShip.target);
-      if (targetUnit) {
-        fleet.ships.forEach((ship: FactionShip) => {
-          combatManager.moveUnit(ship.id, targetUnit.position);
-        });
-      }
-    }
-  });
-}
-
-function executeStealthMode(state: FactionBehaviorState): void {
-  state.fleets.forEach((fleet) => {
-    const safePoints = findStealthPoints(state.territory);
-    fleet.ships.forEach((ship: FactionShip, index: number) => {
-      const targetPoint = safePoints[index % safePoints.length];
-      combatManager.moveUnit(ship.id, targetPoint);
-    });
-  });
-}
-
-function prepareAmbush(state: FactionBehaviorState): void {
-  state.fleets.forEach((fleet) => {
-    const ambushPoints = calculateAmbushPoints(state.territory);
-    fleet.ships.forEach((ship: FactionShip, index: number) => {
-      const targetPoint = ambushPoints[index % ambushPoints.length];
-      combatManager.moveUnit(ship.id, targetPoint);
-    });
-  });
-}
-
-function executeAmbush(state: FactionBehaviorState): void {
-  state.fleets.forEach((fleet) => {
-    const nearbyTargets = findNearbyEnemies(state);
-    if (nearbyTargets.length > 0) {
-      fleet.ships.forEach((ship: FactionShip) => {
-        const target =
-          nearbyTargets[Math.floor(Math.random() * nearbyTargets.length)];
-        combatManager.engageTarget(ship.id, target.id);
-      });
-    }
-  });
-}
-
-function executeBalanceEnforcement(state: FactionBehaviorState): void {
-  state.fleets.forEach((fleet) => {
-    const dominantFaction = findDominantFaction(state);
-    if (dominantFaction) {
-      const targets = Array.from(
-        combatManager.getUnitsInRange(fleet.ships[0].position, 1000),
-      ).filter((unit) => unit.faction === dominantFaction);
-      if (targets.length > 0) {
-        fleet.ships.forEach((ship: FactionShip) => {
-          const target = targets[Math.floor(Math.random() * targets.length)];
-          combatManager.engageTarget(ship.id, target.id);
-        });
-      }
-    }
-  });
-}
-
-function executeOverwhelmingForce(state: FactionBehaviorState): void {
-  state.fleets.forEach((fleet) => {
-    const target = findHighValueTarget(state);
-    if (target) {
-      fleet.ships.forEach((ship: FactionShip) => {
-        combatManager.engageTarget(ship.id, target.id);
-      });
-    }
-  });
-}
-
-function executeStrategicWithdrawal(state: FactionBehaviorState): void {
-  state.fleets.forEach((fleet) => {
-    const retreatPoints = findRetreatPoints(state.territory);
-    fleet.ships.forEach((ship: FactionShip, index: number) => {
-      const targetPoint = retreatPoints[index % retreatPoints.length];
-      combatManager.moveUnit(ship.id, targetPoint);
-    });
-  });
-}
-
-// Additional helper functions for behavior implementations
-function generatePatrolPoints(
-  territory: FactionTerritory,
-): Array<{ x: number; y: number }> {
-  const points: Array<{ x: number; y: number }> = [];
-  const count = 8;
-  for (let i = 0; i < count; i++) {
-    const angle = (i / count) * Math.PI * 2;
-    points.push({
-      x: territory.center.x + Math.cos(angle) * territory.radius * 0.8,
-      y: territory.center.y + Math.sin(angle) * territory.radius * 0.8,
-    });
-  }
-  return points;
-}
-
-function findStealthPoints(
-  territory: FactionTerritory,
-): Array<{ x: number; y: number }> {
-  // Find points with good cover or minimal enemy presence
-  return generatePatrolPoints(territory).map((point) => ({
-    x: point.x + (Math.random() - 0.5) * 100,
-    y: point.y + (Math.random() - 0.5) * 100,
-  }));
-}
-
-function calculateAmbushPoints(
-  territory: FactionTerritory,
-): Array<{ x: number; y: number }> {
-  // Calculate strategic points for ambush
-  return generatePatrolPoints(territory).map((point) => ({
-    x: point.x + (Math.random() - 0.5) * 200,
-    y: point.y + (Math.random() - 0.5) * 200,
-  }));
-}
-
-function findRetreatPoints(
-  territory: FactionTerritory,
-): Array<{ x: number; y: number }> {
-  // Find safe points away from combat
-  return generatePatrolPoints(territory).map((point) => ({
-    x: point.x + (Math.random() - 0.5) * 300,
-    y: point.y + (Math.random() - 0.5) * 300,
-  }));
-}
-
-function findDominantFaction(state: FactionBehaviorState): string | undefined {
-  const factionStrengths = new Map<string, number>();
-
-  // Calculate strength for each faction
-  Array.from(
-    combatManager.getUnitsInRange(
-      state.territory.center,
-      state.territory.radius,
-    ),
-  ).forEach((unit) => {
-    const strength = factionStrengths.get(unit.faction) || 0;
-    factionStrengths.set(unit.faction, strength + 1);
-  });
-
-  // Find faction with highest strength
-  let maxStrength = 0;
-  let dominantFaction: string | undefined;
-
-  factionStrengths.forEach((strength, faction) => {
-    if (strength > maxStrength && faction !== state.id) {
-      maxStrength = strength;
-      dominantFaction = faction;
-    }
-  });
-
-  return dominantFaction;
-}
-
-function findHighValueTarget(
-  state: FactionBehaviorState,
-): CombatUnit | undefined {
-  const targets = Array.from(
-    combatManager.getUnitsInRange(
-      state.territory.center,
-      state.territory.radius,
-    )
-  )
-    .filter((unit) => unit.faction !== state.id)
-    .sort((a, b) => b.maxHealth - b.health - (a.maxHealth - a.health));
-
-  return targets[0];
-}
-
-function assessThreatLevel(state: FactionBehaviorState): number {
-  const nearbyEnemies = findNearbyEnemies(state);
-  const enemyStrength = calculateFleetStrength(nearbyEnemies);
-  const ownStrength = calculateFleetStrength(shipsToUnits(state.fleets.flatMap(f => f.ships)));
-  return Math.min(1, enemyStrength / (ownStrength || 1));
-}
-
-function calculateMinPrice(resourceType: ResourceType, state: FactionBehaviorState): number {
-  const basePrices: Record<ResourceType, number> = {
-    minerals: 10,
-    energy: 15,
-    plasma: 25,
-    exotic: 50,
-    gas: 20,
-    population: 100,
-    research: 200
-  };
-
-  const scarcityMultiplier = 1 + Math.max(0, 1 - (state.stats.resourceIncome[resourceType] || 0) / 100);
-  return Math.round((basePrices[resourceType] || 10) * scarcityMultiplier);
-}
-
-function calculateMaxQuantity(resourceType: ResourceType, state: FactionBehaviorState): number {
-  const currentIncome = state.stats.resourceIncome[resourceType] || 0;
-  const stockpileThreshold = state.resourceManagement.stockpileThresholds[resourceType] || 1000;
-  return Math.max(0, stockpileThreshold - currentIncome);
-}
-
-function calculateOptimalExpansionDirection(state: FactionBehaviorState): { x: number; y: number } {
   // Find direction with most resources or strategic value based on priority
-  const nearbyResources = findNearbyResources(state);
+  const nearbyResources = Array.from(asteroidFieldManager.getResourceNodes().entries())
+    .filter((entry: ResourceNodeEntry) => {
+      const [_, node] = entry;
+      const field = asteroidFieldManager.getField(node.fieldId);
+      if (!field) {
+        return false;
+      }
+
+      const dx = field.position.x - state.territory.center.x;
+      const dy = field.position.y - state.territory.center.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      return distance <= state.territory.radius;
+    })
+    .map((entry: ResourceNodeEntry): WeightedResource | null => {
+      const [_, node] = entry;
+      const field = asteroidFieldManager.getField(node.fieldId);
+      if (!field) {
+        return null;
+      }
+
+      return {
+        position: field.position,
+        value: node.amount * getResourceValueMultiplier(node.type),
+      };
+    })
+    .filter((resource): resource is WeightedResource => resource !== null);
+
   if (nearbyResources.length === 0) {
-    return state.expansionStrategy.expansionDirection; // Keep current direction if no resources found
+    return state.expansionStrategy.expansionDirection;
   }
 
   // Calculate weighted center of resources
   const center = nearbyResources.reduce(
-    (acc, resource) => ({
+    (acc: Position, resource: WeightedResource) => ({
       x: acc.x + resource.position.x * resource.value,
-      y: acc.y + resource.position.y * resource.value
+      y: acc.y + resource.position.y * resource.value,
     }),
     { x: 0, y: 0 }
   );
 
-  const totalValue = nearbyResources.reduce((sum, resource) => sum + resource.value, 0);
+  const totalValue = nearbyResources.reduce(
+    (sum: number, resource: WeightedResource) => sum + resource.value,
+    0
+  );
   return {
     x: center.x / (totalValue || 1),
-    y: center.y / (totalValue || 1)
-  };
-}
-
-// Create a singleton instance of AsteroidFieldManager
-const asteroidFieldManager = new AsteroidFieldManager();
-
-function findNearbyResources(state: FactionBehaviorState): ResourceNode[] {
-  // Get all resource nodes from asteroid fields with proper typing
-  const allNodes = Array.from(asteroidFieldManager.getResourceNodes().entries()) as Array<[string, AsteroidFieldNode]>;
-  
-  // Filter nodes within territory radius
-  const nearbyNodes = allNodes.filter(([_, node]) => {
-    const field = asteroidFieldManager.getField(node.fieldId);
-    if (!field) return false;
-    
-    // Calculate distance from territory center to field
-    const dx = field.position.x - state.territory.center.x;
-    const dy = field.position.y - state.territory.center.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    return distance <= state.territory.radius;
-  });
-
-  // Convert to ResourceNode format
-  return nearbyNodes.map(([_, node]) => {
-    const field = asteroidFieldManager.getField(node.fieldId);
-    if (!field) return null;
-
-    return {
-      position: field.position,
-      value: node.amount * getResourceValueMultiplier(node.type)
-    };
-  }).filter((node): node is ResourceNode => node !== null);
-}
-
-function getResourceValueMultiplier(type: ResourceType): number {
-  switch (type) {
-    case "exotic":
-      return 3.0; // Highest value
-    case "gas":
-      return 2.0; // Medium value
-    case "minerals":
-      return 1.0; // Base value
-    default:
-      return 1.0;
-  }
-}
-
-function updateFleetFormation(ships: FactionShip[], formation: string, spacing: number): void {
-  ships.forEach((ship: FactionShip, index: number) => {
-    const angle = (index / ships.length) * Math.PI * 2;
-    const offset = {
-      x: Math.cos(angle) * spacing,
-      y: Math.sin(angle) * spacing
-    };
-
-    // Adjust formation based on type
-    switch (formation) {
-      case "defensive":
-        // Tight circular formation
-        combatManager.moveUnit(ship.id, offset);
-        break;
-      case "offensive":
-        // V-shaped formation
-        const row = Math.floor(index / 3);
-        const col = index % 3;
-        combatManager.moveUnit(ship.id, {
-          x: col * spacing - row * spacing / 2,
-          y: row * spacing
-        });
-        break;
-      case "stealth":
-        // Scattered formation
-        combatManager.moveUnit(ship.id, {
-          x: offset.x + (Math.random() - 0.5) * spacing,
-          y: offset.y + (Math.random() - 0.5) * spacing
-        });
-        break;
-    }
-  });
-}
-
-// Convert kebab-case to camelCase for ship class names
-function normalizeShipClass(shipClass: string): FactionShipClass {
-  const camelCase = shipClass.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-  return camelCase as FactionShipClass;
-}
-
-// Convert CombatUnit to FactionShip
-function convertCombatUnitToFactionShip(unit: CombatUnit, factionId: FactionId, shipClass: ShipClass): FactionShip {
-  const stats = getShipBehaviorStats(shipClass);
-  return {
-    id: unit.id,
-    name: `${factionId} ${shipClass}`,
-    category: "war",
-    status: "ready",
-    faction: factionId,
-    class: normalizeShipClass(shipClass),
-    health: unit.health,
-    maxHealth: unit.maxHealth,
-    shield: unit.shield,
-    maxShield: unit.maxShield,
-    position: unit.position,
-    rotation: 0,
-    target: unit.target,
-    tactics: "defensive",
-    stats: {
-      ...stats,
-      weapons: [createDefaultWeaponMount()]
-    },
-    abilities: [],
-    specialAbility: undefined
-  };
-}
-
-// Convert FactionShip to CombatUnit
-function _convertFactionShipToCombatUnit(ship: FactionShip): CombatUnit {
-  return {
-    id: ship.id,
-    position: ship.position,
-    rotation: ship.rotation,
-    health: ship.health,
-    maxHealth: ship.maxHealth,
-    shield: ship.shield,
-    maxShield: ship.maxShield,
-    effects: [],
-    faction: ship.faction,
-    type: ship.category,
-    tier: 1,
-    status: ship.status === "ready" ? "idle" : ship.status === "engaging" ? "engaging" : "patrolling",
-    weapons: ship.stats.weapons.map(convertWeaponMount),
-    target: ship.target
-  };
-}
-
-// Helper function to convert FactionShip array to CombatUnit array for strength calculation
-function shipsToUnits(ships: FactionShip[]): CombatUnit[] {
-  return ships.map(ship => ({
-    id: ship.id,
-    faction: ship.faction,
-    type: mapShipClassToType(ship.class) as CombatUnit["type"],
-    tier: 1,
-    position: ship.position,
-    rotation: ship.rotation,
-    status: ship.status === "ready" ? "idle" : ship.status === "engaging" ? "engaging" : "patrolling",
-    health: ship.health,
-    maxHealth: ship.maxHealth,
-    shield: ship.shield,
-    maxShield: ship.maxShield,
-    weapons: ship.stats.weapons.map(convertWeaponMount),
-    effects: [],
-    target: ship.target
-  }));
-}
-
-// Convert WeaponMount to FactionCombatWeapon
-function convertWeaponMount(mount: WeaponMount): CombatUnit["weapons"][0] {
-  if (!mount.currentWeapon) {
-    return {
-      id: mount.id,
-      type: mount.allowedCategories[0] || "machineGun",
-      range: 500,
-      damage: 10,
-      cooldown: 1,
-      status: "ready"
-    };
-  }
-
-  const { currentStats } = mount.currentWeapon.state;
-  return {
-    id: mount.id,
-    type: mount.currentWeapon.config.category,
-    range: currentStats.range,
-    damage: currentStats.damage,
-    cooldown: currentStats.cooldown,
-    status: mount.currentWeapon.state.status
+    y: center.y / (totalValue || 1),
   };
 }

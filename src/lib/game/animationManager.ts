@@ -1,6 +1,12 @@
 import * as PIXI from 'pixi.js';
 
-export type AnimationState = 'idle' | 'engaging' | 'retreating' | 'damaged' | 'patrolling' | 'disabled';
+export type AnimationState =
+  | 'idle'
+  | 'engaging'
+  | 'retreating'
+  | 'damaged'
+  | 'patrolling'
+  | 'disabled';
 
 interface AnimationConfig {
   frameStart: number;
@@ -55,7 +61,7 @@ export class AnimationManager {
     const animate = () => {
       const { sprite, textures, config } = animation;
       const frameIndex = config.frameStart + (animation.currentFrame % config.frameCount);
-      
+
       if (sprite && textures[frameIndex]) {
         sprite.texture = textures[frameIndex];
       }
@@ -135,4 +141,4 @@ export class AnimationManager {
 }
 
 // Export singleton instance
-export const animationManager = AnimationManager.getInstance(); 
+export const animationManager = AnimationManager.getInstance();

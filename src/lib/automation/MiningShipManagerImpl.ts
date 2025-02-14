@@ -1,16 +1,16 @@
-import { EventEmitter } from "../utils/EventEmitter";
-import { CommonShipCapabilities, ShipCategory } from "../../types/ships/CommonShipTypes";
-import { Position } from "../../types/core/GameTypes";
-import { moduleEventBus } from "../modules/ModuleEvents";
-import { resourceManager } from "../resources/ResourceManager";
-import { ModuleType } from "../../types/buildings/ModuleTypes";
-import { ResourceType } from "../../types/resources/ResourceTypes";
+import { EventEmitter } from '../utils/EventEmitter';
+import { CommonShipCapabilities, ShipCategory } from '../../types/ships/CommonShipTypes';
+import { Position } from '../../types/core/GameTypes';
+import { moduleEventBus } from '../modules/ModuleEvents';
+import { resourceManager } from '../resources/ResourceManager';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 
 interface MiningShip {
   id: string;
   name: string;
-  type: "rockBreaker" | "voidDredger";
-  status: "idle" | "mining" | "returning" | "maintenance";
+  type: 'rockBreaker' | 'voidDredger';
+  status: 'idle' | 'mining' | 'returning' | 'maintenance';
   capacity: number;
   currentLoad: number;
   targetNode?: string;
@@ -25,7 +25,7 @@ interface MiningShip {
 
 interface MiningTask {
   id: string;
-  type: "mine";
+  type: 'mine';
   target: {
     id: string;
     position: Position;
@@ -42,25 +42,28 @@ interface MiningTask {
 export class MiningShipManagerImpl extends EventEmitter {
   private ships: Map<string, MiningShip> = new Map();
   private tasks: Map<string, MiningTask> = new Map();
-  private resourceNodes: Map<string, {
-    id: string;
-    type: ResourceType;
-    position: Position;
-    thresholds: { min: number; max: number };
-  }> = new Map();
+  private resourceNodes: Map<
+    string,
+    {
+      id: string;
+      type: ResourceType;
+      position: Position;
+      thresholds: { min: number; max: number };
+    }
+  > = new Map();
 
   public registerShip(ship: MiningShip): void {
     if (ship.capabilities.canMine) {
       this.ships.set(ship.id, ship);
-      
+
       // Emit both internal and module events
-      this.emit("shipRegistered", { shipId: ship.id });
+      this.emit('shipRegistered', { shipId: ship.id });
       moduleEventBus.emit({
-        type: "MODULE_ACTIVATED",
+        type: 'MODULE_ACTIVATED',
         moduleId: ship.id,
-        moduleType: "mineral" as ModuleType,
+        moduleType: 'mineral' as ModuleType,
         timestamp: Date.now(),
-        data: { ship }
+        data: { ship },
       });
     }
   }
@@ -69,14 +72,14 @@ export class MiningShipManagerImpl extends EventEmitter {
     if (this.ships.has(shipId)) {
       this.ships.delete(shipId);
       this.tasks.delete(shipId);
-      
+
       // Emit both internal and module events
-      this.emit("shipUnregistered", { shipId });
+      this.emit('shipUnregistered', { shipId });
       moduleEventBus.emit({
-        type: "MODULE_DEACTIVATED",
+        type: 'MODULE_DEACTIVATED',
         moduleId: shipId,
-        moduleType: "mineral" as ModuleType,
-        timestamp: Date.now()
+        moduleType: 'mineral' as ModuleType,
+        timestamp: Date.now(),
       });
     }
   }
@@ -95,7 +98,7 @@ export class MiningShipManagerImpl extends EventEmitter {
 
     const task: MiningTask = {
       id: `mine-${resourceId}`,
-      type: "mine",
+      type: 'mine',
       target: {
         id: resourceId,
         position,
@@ -107,23 +110,23 @@ export class MiningShipManagerImpl extends EventEmitter {
     };
 
     this.tasks.set(shipId, task);
-    this.updateShipStatus(shipId, "mining");
+    this.updateShipStatus(shipId, 'mining');
 
     // Emit task events
-    this.emit("taskAssigned", { shipId, task });
+    this.emit('taskAssigned', { shipId, task });
     moduleEventBus.emit({
-      type: "AUTOMATION_STARTED",
+      type: 'AUTOMATION_STARTED',
       moduleId: shipId,
-      moduleType: "mineral" as ModuleType,
+      moduleType: 'mineral' as ModuleType,
       timestamp: Date.now(),
-      data: { task }
+      data: { task },
     });
   }
 
   public completeTask(shipId: string): void {
     const task = this.tasks.get(shipId);
     const ship = this.ships.get(shipId);
-    
+
     if (task && ship) {
       // Transfer resources
       if (ship.currentLoad > 0) {
@@ -131,22 +134,22 @@ export class MiningShipManagerImpl extends EventEmitter {
           task.resourceType,
           ship.currentLoad,
           shipId,
-          "mineral-processing-centre"
+          'mineral-processing-centre'
         );
         ship.currentLoad = 0;
       }
 
       this.tasks.delete(shipId);
-      this.updateShipStatus(shipId, "returning");
+      this.updateShipStatus(shipId, 'returning');
 
       // Emit completion events
-      this.emit("taskCompleted", { shipId, task });
+      this.emit('taskCompleted', { shipId, task });
       moduleEventBus.emit({
-        type: "AUTOMATION_CYCLE_COMPLETE",
+        type: 'AUTOMATION_CYCLE_COMPLETE',
         moduleId: shipId,
-        moduleType: "mineral" as ModuleType,
+        moduleType: 'mineral' as ModuleType,
         timestamp: Date.now(),
-        data: { task }
+        data: { task },
       });
     }
   }
@@ -158,37 +161,37 @@ export class MiningShipManagerImpl extends EventEmitter {
     const ship = this.ships.get(shipId);
     if (ship) {
       ship.techBonuses = bonuses;
-      this.emit("techBonusesUpdated", { shipId, bonuses });
+      this.emit('techBonusesUpdated', { shipId, bonuses });
     }
   }
 
   private updateShipStatus(
     shipId: string,
-    status: "idle" | "mining" | "returning" | "maintenance"
+    status: 'idle' | 'mining' | 'returning' | 'maintenance'
   ): void {
     const ship = this.ships.get(shipId);
     if (ship) {
       ship.status = status;
-      
+
       // Emit status events
-      this.emit("shipStatusUpdated", { shipId, status });
+      this.emit('shipStatusUpdated', { shipId, status });
       moduleEventBus.emit({
-        type: "STATUS_CHANGED",
+        type: 'STATUS_CHANGED',
         moduleId: shipId,
-        moduleType: "mineral" as ModuleType,
+        moduleType: 'mineral' as ModuleType,
         timestamp: Date.now(),
-        data: { status }
+        data: { status },
       });
     }
   }
 
   private getPriorityForResourceType(type: ResourceType): number {
     switch (type) {
-      case "exotic":
+      case 'exotic':
         return 3;
-      case "gas":
+      case 'gas':
         return 2;
-      case "minerals":
+      case 'minerals':
         return 1;
       default:
         return 0;
@@ -202,7 +205,7 @@ export class MiningShipManagerImpl extends EventEmitter {
 
     const baseEfficiency = ship.efficiency;
     const techBonus = ship.techBonuses?.efficiency || 1;
-    
+
     return baseEfficiency * techBonus;
   }
-} 
+}

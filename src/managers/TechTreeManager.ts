@@ -27,7 +27,7 @@ class TechTreeManager extends EventEmitter {
     const node = this.nodes.get(nodeId);
     if (node && !node.unlocked) {
       node.unlocked = true;
-      this.emit("nodeUnlocked", { nodeId, node });
+      this.emit('nodeUnlocked', { nodeId, node });
     }
   }
 
@@ -46,4 +46,4 @@ class TechTreeManager extends EventEmitter {
   }
 }
 
-export const techTreeManager = new TechTreeManager(); 
+export const techTreeManager = new TechTreeManager();

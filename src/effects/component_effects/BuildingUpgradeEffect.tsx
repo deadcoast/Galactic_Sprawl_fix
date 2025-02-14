@@ -1,10 +1,10 @@
-import { Crown, Star, Zap } from "lucide-react";
+import { Crown, Star, Zap } from 'lucide-react';
 
 interface BuildingUpgradeEffectProps {
   tier: 1 | 2 | 3;
-  type: "radar" | "mining" | "research" | "defense";
+  type: 'radar' | 'mining' | 'research' | 'defense';
   upgradeProgress: number;
-  quality: "low" | "medium" | "high";
+  quality: 'low' | 'medium' | 'high';
 }
 
 export function BuildingUpgradeEffect({
@@ -15,21 +15,21 @@ export function BuildingUpgradeEffect({
 }: BuildingUpgradeEffectProps) {
   const getTypeColor = () => {
     switch (type) {
-      case "radar":
-        return "cyan";
-      case "mining":
-        return "amber";
-      case "research":
-        return "violet";
-      case "defense":
-        return "rose";
+      case 'radar':
+        return 'cyan';
+      case 'mining':
+        return 'amber';
+      case 'research':
+        return 'violet';
+      case 'defense':
+        return 'rose';
       default:
-        return "blue";
+        return 'blue';
     }
   };
 
   const color = getTypeColor();
-  const particleCount = quality === "high" ? 12 : quality === "medium" ? 8 : 4;
+  const particleCount = quality === 'high' ? 12 : quality === 'medium' ? 8 : 4;
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -72,7 +72,7 @@ export function BuildingUpgradeEffect({
         ))}
 
         {/* Energy Arcs */}
-        {quality !== "low" && (
+        {quality !== 'low' && (
           <svg className="absolute inset-0" viewBox="0 0 100 100">
             {Array.from({ length: tier * 2 }).map((_, i) => (
               <path
@@ -104,15 +104,15 @@ export function BuildingUpgradeEffect({
         </svg>
 
         {/* Type-specific Effects */}
-        {type === "radar" && (
+        {type === 'radar' && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               className={`w-1/2 h-1/2 rounded-full border-2 border-${color}-500/30 animate-ping`}
-              style={{ animationDuration: "3s" }}
+              style={{ animationDuration: '3s' }}
             />
           </div>
         )}
-        {type === "mining" && (
+        {type === 'mining' && (
           <div className="absolute inset-0 flex items-center justify-center">
             <Zap className={`w-12 h-12 text-${color}-400 animate-pulse`} />
           </div>
@@ -125,11 +125,11 @@ export function BuildingUpgradeEffect({
           {/* Ambient Glow */}
           <div
             className={`absolute inset-0 bg-${color}-500/10 animate-pulse`}
-            style={{ filter: `blur(${quality === "high" ? 20 : 10}px)` }}
+            style={{ filter: `blur(${quality === 'high' ? 20 : 10}px)` }}
           />
 
           {/* Power Lines */}
-          {quality !== "low" && (
+          {quality !== 'low' && (
             <svg className="absolute inset-0" viewBox="0 0 100 100">
               {Array.from({ length: 6 }).map((_, i) => (
                 <line
@@ -143,7 +143,7 @@ export function BuildingUpgradeEffect({
                   className="animate-pulse"
                   style={{
                     opacity: 0.3 + Math.random() * 0.4,
-                    strokeDasharray: "4 4",
+                    strokeDasharray: '4 4',
                   }}
                 />
               ))}

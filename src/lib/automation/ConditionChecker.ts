@@ -1,5 +1,5 @@
-import { AutomationCondition } from "./AutomationManager";
-import { MiningShipManagerImpl } from "./MiningShipManagerImpl";
+import { AutomationCondition } from './AutomationManager';
+import { MiningShipManagerImpl } from './MiningShipManagerImpl';
 
 export class ConditionChecker {
   private lastCheckedTimes: Map<string, number> = new Map();
@@ -22,15 +22,15 @@ export class ConditionChecker {
     this.lastCheckedTimes.set(key, now);
 
     // Time-based conditions
-    if (condition.type === "TIME_ELAPSED") {
+    if (condition.type === 'TIME_ELAPSED') {
       const elapsed = now - lastChecked;
-      return condition.operator === "greater" 
-        ? elapsed > condition.value 
+      return condition.operator === 'greater'
+        ? elapsed > condition.value
         : elapsed < condition.value;
     }
 
     // Resource-based conditions
-    if (condition.type === "RESOURCE_ABOVE" || condition.type === "RESOURCE_BELOW") {
+    if (condition.type === 'RESOURCE_ABOVE' || condition.type === 'RESOURCE_BELOW') {
       // These conditions are now handled by the ThresholdContext
       // This just acts as a pass-through to maintain compatibility
       return true;
@@ -43,4 +43,4 @@ export class ConditionChecker {
     const key = this.getConditionKey(condition);
     this.lastCheckedTimes.delete(key);
   }
-} 
+}

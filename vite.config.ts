@@ -6,10 +6,16 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': '/src'
-    }
+      '@': '/src',
+    },
   },
   optimizeDeps: {
-    exclude: ['lucide-react']
-  }
+    exclude: ['lucide-react'],
+  },
+  server: {
+    port: 3000,
+    host: true,
+    open: true,
+    strictPort: true,
+  },
 });

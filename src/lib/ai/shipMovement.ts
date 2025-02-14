@@ -1,5 +1,5 @@
-import { shipBehaviorManager } from "./shipBehavior";
-import { EventEmitter } from "../utils/EventEmitter";
+import { shipBehaviorManager } from './shipBehavior';
+import { EventEmitter } from '../utils/EventEmitter';
 
 interface Position {
   x: number;
@@ -24,9 +24,9 @@ class ShipMovementManagerImpl extends EventEmitter {
   }
 
   private setupEventListeners(): void {
-    window.addEventListener("taskAssigned", ((event: CustomEvent) => {
+    window.addEventListener('taskAssigned', ((event: CustomEvent) => {
       const { shipId, task } = event.detail;
-      if (task.type === "salvage" && task.target) {
+      if (task.type === 'salvage' && task.target) {
         this.moveToPosition(shipId, task.target.position);
       }
     }) as EventListener);
@@ -39,7 +39,7 @@ class ShipMovementManagerImpl extends EventEmitter {
       maxSpeed: number;
       acceleration: number;
       rotationSpeed: number;
-    },
+    }
   ): void {
     this.movementStates.set(shipId, {
       currentSpeed: 0,
@@ -61,7 +61,7 @@ class ShipMovementManagerImpl extends EventEmitter {
     }
 
     state.targetPosition = targetPosition;
-    this.emit("movementStarted", { shipId, targetPosition });
+    this.emit('movementStarted', { shipId, targetPosition });
   }
 
   public update(deltaTime: number, shipPositions: Map<string, Position>): void {
@@ -86,10 +86,10 @@ class ShipMovementManagerImpl extends EventEmitter {
         state.currentSpeed = 0;
         state.targetPosition = undefined;
         const task = shipBehaviorManager.getShipTask(shipId);
-        if (task?.type === "salvage") {
+        if (task?.type === 'salvage') {
           shipBehaviorManager.completeTask(shipId);
         }
-        this.emit("movementCompleted", { shipId });
+        this.emit('movementCompleted', { shipId });
         return;
       }
 
@@ -106,34 +106,26 @@ class ShipMovementManagerImpl extends EventEmitter {
       }
 
       state.currentRotation +=
-        Math.sign(rotationDiff) *
-        Math.min(Math.abs(rotationDiff), state.rotationSpeed * deltaTime);
+        Math.sign(rotationDiff) * Math.min(Math.abs(rotationDiff), state.rotationSpeed * deltaTime);
 
       // Accelerate if pointing roughly towards target
       if (Math.abs(rotationDiff) < Math.PI / 4) {
         state.currentSpeed = Math.min(
           state.maxSpeed,
-          state.currentSpeed + state.acceleration * deltaTime,
+          state.currentSpeed + state.acceleration * deltaTime
         );
       } else {
-        state.currentSpeed = Math.max(
-          0,
-          state.currentSpeed - state.acceleration * deltaTime,
-        );
+        state.currentSpeed = Math.max(0, state.currentSpeed - state.acceleration * deltaTime);
       }
 
       // Update position
       const newPosition: Position = {
-        x:
-          currentPosition.x +
-          Math.cos(state.currentRotation) * state.currentSpeed * deltaTime,
-        y:
-          currentPosition.y +
-          Math.sin(state.currentRotation) * state.currentSpeed * deltaTime,
+        x: currentPosition.x + Math.cos(state.currentRotation) * state.currentSpeed * deltaTime,
+        y: currentPosition.y + Math.sin(state.currentRotation) * state.currentSpeed * deltaTime,
       };
 
       // Emit position update
-      this.emit("positionUpdated", {
+      this.emit('positionUpdated', {
         shipId,
         position: newPosition,
         rotation: state.currentRotation,
@@ -146,7 +138,7 @@ class ShipMovementManagerImpl extends EventEmitter {
     if (state) {
       state.targetPosition = undefined;
       state.currentSpeed = 0;
-      this.emit("movementStopped", { shipId });
+      this.emit('movementStopped', { shipId });
     }
   }
 }

@@ -6,7 +6,10 @@ interface UseAssetsResult {
   isLoading: boolean;
   progress: number;
   getAsset: (name: string) => PIXI.Texture | PIXI.Spritesheet | undefined;
-  getTextureFromSpritesheet: (spritesheetName: string, frameName: string) => PIXI.Texture | undefined;
+  getTextureFromSpritesheet: (
+    spritesheetName: string,
+    frameName: string
+  ) => PIXI.Texture | undefined;
 }
 
 export function useAssets(bundleNames?: string[]): UseAssetsResult {
@@ -49,4 +52,4 @@ export function useAssets(bundleNames?: string[]): UseAssetsResult {
     getAsset: assetManager.getAsset.bind(assetManager),
     getTextureFromSpritesheet: assetManager.getTextureFromSpritesheet.bind(assetManager),
   };
-} 
+}

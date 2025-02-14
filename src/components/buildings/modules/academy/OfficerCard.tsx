@@ -1,11 +1,4 @@
-import {
-  ChevronRight,
-  Database,
-  Radar,
-  Star,
-  Sword,
-  Users,
-} from "lucide-react";
+import { ChevronRight, Database, Radar, Star, Sword, Users } from 'lucide-react';
 
 interface Officer {
   id: string;
@@ -14,9 +7,9 @@ interface Officer {
   level: number;
   xp: number;
   nextLevelXp: number;
-  role: "Squad Leader" | "Captain";
-  status: "training" | "assigned" | "available";
-  specialization: "War" | "Recon" | "Mining";
+  role: 'Squad Leader' | 'Captain';
+  status: 'training' | 'assigned' | 'available';
+  specialization: 'War' | 'Recon' | 'Mining';
   skills: {
     combat: number;
     leadership: number;
@@ -34,43 +27,37 @@ interface Officer {
 
 interface OfficerCardProps {
   officer: Officer;
-  view: "grid" | "list";
-  quality: "low" | "medium" | "high";
+  view: 'grid' | 'list';
+  quality: 'low' | 'medium' | 'high';
   selected: boolean;
   onClick: () => void;
 }
 
-export function OfficerCard({
-  officer,
-  view,
-  quality,
-  selected,
-  onClick,
-}: OfficerCardProps) {
+export function OfficerCard({ officer, view, quality, selected, onClick }: OfficerCardProps) {
   const getSpecializationColor = () => {
     switch (officer.specialization) {
-      case "War":
-        return "red";
-      case "Recon":
-        return "cyan";
-      case "Mining":
-        return "amber";
+      case 'War':
+        return 'red';
+      case 'Recon':
+        return 'cyan';
+      case 'Mining':
+        return 'amber';
       default:
-        return "blue";
+        return 'blue';
     }
   };
 
   const color = getSpecializationColor();
-  const particleCount = quality === "high" ? 8 : quality === "medium" ? 4 : 2;
+  const particleCount = quality === 'high' ? 8 : quality === 'medium' ? 4 : 2;
 
-  if (view === "list") {
+  if (view === 'list') {
     return (
       <button
         onClick={onClick}
         className={`w-full p-4 rounded-lg transition-all ${
           selected
             ? `bg-${color}-900/30 border-2 border-${color}-500`
-            : "bg-gray-800/50 border border-gray-700 hover:bg-gray-800"
+            : 'bg-gray-800/50 border border-gray-700 hover:bg-gray-800'
         }`}
       >
         <div className="flex items-center space-x-4">
@@ -78,10 +65,8 @@ export function OfficerCard({
           <div
             className={`relative w-12 h-12 rounded-lg bg-${color}-900/50 flex items-center justify-center overflow-hidden`}
           >
-            <div className={`text-${color}-400 font-bold text-xl`}>
-              {officer.name.charAt(0)}
-            </div>
-            {officer.status === "training" && (
+            <div className={`text-${color}-400 font-bold text-xl`}>{officer.name.charAt(0)}</div>
+            {officer.status === 'training' && (
               <div className="absolute inset-0 bg-gradient-to-t from-violet-500/20 animate-pulse" />
             )}
           </div>
@@ -128,24 +113,20 @@ export function OfficerCard({
               <Users className="w-3 h-3 mr-1" />
               Leadership
             </div>
-            <div className="text-sm text-gray-300">
-              {officer.stats.leadership}
-            </div>
+            <div className="text-sm text-gray-300">{officer.stats.leadership}</div>
           </div>
           <div title={`Technical affects ship systems`}>
             <div className="text-xs text-gray-500 mb-1 flex items-center">
               <Database className="w-3 h-3 mr-1" />
               Technical
             </div>
-            <div className="text-sm text-gray-300">
-              {officer.stats.technical}
-            </div>
+            <div className="text-sm text-gray-300">{officer.stats.technical}</div>
           </div>
         </div>
 
         {/* Status Indicators */}
         <div className="flex items-center space-x-2">
-          {officer.status === "training" && (
+          {officer.status === 'training' && (
             <div className="flex items-center text-violet-400 text-xs">
               <Star className="w-3 h-3 mr-1" />
               In Training
@@ -168,7 +149,7 @@ export function OfficerCard({
       className={`relative p-4 rounded-lg transition-all ${
         selected
           ? `bg-${color}-900/30 border-2 border-${color}-500`
-          : "bg-gray-800/50 border border-gray-700 hover:bg-gray-800"
+          : 'bg-gray-800/50 border border-gray-700 hover:bg-gray-800'
       }`}
     >
       {/* Portrait */}
@@ -182,7 +163,7 @@ export function OfficerCard({
         </div>
 
         {/* Status Effects */}
-        {officer.status === "training" && (
+        {officer.status === 'training' && (
           <>
             <div className="absolute inset-0 bg-gradient-to-t from-violet-500/20 animate-pulse" />
             {Array.from({ length: particleCount }).map((_, i) => (
@@ -199,7 +180,7 @@ export function OfficerCard({
           </>
         )}
 
-        {officer.status === "assigned" && (
+        {officer.status === 'assigned' && (
           <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-green-500 animate-pulse" />
         )}
       </div>
@@ -230,34 +211,27 @@ export function OfficerCard({
       <div className="grid grid-cols-3 gap-2">
         <div className="text-center">
           <div className="text-xs text-gray-400 mb-1">Combat</div>
-          <div className={`text-${color}-400 font-medium`}>
-            {officer.skills.combat}
-          </div>
+          <div className={`text-${color}-400 font-medium`}>{officer.skills.combat}</div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-400 mb-1">Leadership</div>
-          <div className={`text-${color}-400 font-medium`}>
-            {officer.skills.leadership}
-          </div>
+          <div className={`text-${color}-400 font-medium`}>{officer.skills.leadership}</div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-400 mb-1">Technical</div>
-          <div className={`text-${color}-400 font-medium`}>
-            {officer.skills.technical}
-          </div>
+          <div className={`text-${color}-400 font-medium`}>{officer.skills.technical}</div>
         </div>
       </div>
 
       {/* Training Progress */}
-      {officer.status === "training" &&
-        officer.trainingProgress !== undefined && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
-            <div
-              className="h-full bg-violet-500 transition-all"
-              style={{ width: `${officer.trainingProgress * 100}%` }}
-            />
-          </div>
-        )}
+      {officer.status === 'training' && officer.trainingProgress !== undefined && (
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+          <div
+            className="h-full bg-violet-500 transition-all"
+            style={{ width: `${officer.trainingProgress * 100}%` }}
+          />
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2 mb-4">
@@ -273,9 +247,7 @@ export function OfficerCard({
             <Users className="w-3 h-3 mr-1" />
             Leadership
           </div>
-          <div className="text-sm text-gray-300">
-            {officer.stats.leadership}
-          </div>
+          <div className="text-sm text-gray-300">{officer.stats.leadership}</div>
         </div>
         <div title={`Technical affects ship systems`}>
           <div className="text-xs text-gray-500 mb-1 flex items-center">
@@ -288,7 +260,7 @@ export function OfficerCard({
 
       {/* Status Indicators */}
       <div className="flex items-center space-x-2">
-        {officer.status === "training" && (
+        {officer.status === 'training' && (
           <div className="flex items-center text-violet-400 text-xs">
             <Star className="w-3 h-3 mr-1" />
             In Training

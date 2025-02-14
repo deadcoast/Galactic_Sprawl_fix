@@ -1,14 +1,6 @@
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  AlertTriangle,
-  ChevronRight,
-  Filter,
-  Search,
-  Star,
-  Users,
-  X,
-} from "lucide-react";
-import { useState } from "react";
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertTriangle, ChevronRight, Filter, Search, Star, Users, X } from 'lucide-react';
+import { useState } from 'react';
 
 interface HiringPanelProps {
   tier: 1 | 2 | 3;
@@ -34,80 +26,77 @@ interface OfficerRole {
     recon: number;
     mining: number;
   };
-  origin: "native" | "refugee" | "captured";
+  origin: 'native' | 'refugee' | 'captured';
 }
 
 export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [filter, setFilter] = useState<
-    "all" | "native" | "refugee" | "captured"
-  >("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState<'all' | 'native' | 'refugee' | 'captured'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const roles: OfficerRole[] = [
     {
-      id: "squadLeader",
-      name: "Squad Leader",
-      description: "Leads small combat units and reconnaissance teams",
+      id: 'squadLeader',
+      name: 'Squad Leader',
+      description: 'Leads small combat units and reconnaissance teams',
       requirements: {
         credits: 5000,
         tier: 1 as const,
       },
       stats: {
-        combat: "5-8",
-        leadership: "3-6",
-        technical: "2-4",
+        combat: '5-8',
+        leadership: '3-6',
+        technical: '2-4',
       },
       xpGrowth: {
         war: 1.2,
         recon: 1.0,
         mining: 0.8,
       },
-      origin: "native",
+      origin: 'native',
     },
     {
-      id: "captain",
-      name: "Captain",
-      description: "Commands capital ships and large fleet operations",
+      id: 'captain',
+      name: 'Captain',
+      description: 'Commands capital ships and large fleet operations',
       requirements: {
         credits: 10000,
         tier: 2 as const,
       },
       stats: {
-        combat: "7-10",
-        leadership: "6-9",
-        technical: "4-7",
+        combat: '7-10',
+        leadership: '6-9',
+        technical: '4-7',
       },
       xpGrowth: {
         war: 1.5,
         recon: 1.2,
         mining: 1.0,
       },
-      origin: "native",
+      origin: 'native',
     },
     // Tier 2 Refugee Market roles
     ...(tier >= 2
       ? [
           {
-            id: "refugeeCaptain",
-            name: "Refugee Captain",
-            description:
-              "Experienced captain from another faction with unique abilities",
+            id: 'refugeeCaptain',
+            name: 'Refugee Captain',
+            description: 'Experienced captain from another faction with unique abilities',
             requirements: {
               credits: 15000,
               tier: 2 as const,
             },
             stats: {
-              combat: "8-11",
-              leadership: "7-10",
-              technical: "5-8",
+              combat: '8-11',
+              leadership: '7-10',
+              technical: '5-8',
             },
             xpGrowth: {
               war: 1.6,
               recon: 1.3,
               mining: 1.1,
             },
-            origin: "refugee" as const,
+            origin: 'refugee' as const,
           },
         ]
       : []),
@@ -115,37 +104,34 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
     ...(tier >= 3
       ? [
           {
-            id: "capturedLeader",
-            name: "Captured Leader",
-            description: "Former enemy leader converted to your cause",
+            id: 'capturedLeader',
+            name: 'Captured Leader',
+            description: 'Former enemy leader converted to your cause',
             requirements: {
               credits: 20000,
               tier: 3 as const,
             },
             stats: {
-              combat: "9-12",
-              leadership: "8-11",
-              technical: "6-9",
+              combat: '9-12',
+              leadership: '8-11',
+              technical: '6-9',
             },
             xpGrowth: {
               war: 1.8,
               recon: 1.4,
               mining: 1.2,
             },
-            origin: "captured" as const,
+            origin: 'captured' as const,
           },
         ]
       : []),
   ];
 
-  const filteredRoles = roles.filter((role) => {
-    if (filter !== "all" && role.origin !== filter) {
+  const filteredRoles = roles.filter(role => {
+    if (filter !== 'all' && role.origin !== filter) {
       return false;
     }
-    if (
-      searchQuery &&
-      !role.name.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
+    if (searchQuery && !role.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
     return true;
@@ -187,7 +173,7 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search officers..."
               className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400"
             />
@@ -196,7 +182,7 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
             <Filter className="w-4 h-4 text-gray-400" />
             <select
               value={filter}
-              onChange={(e) => setFilter(e.target.value as typeof filter)}
+              onChange={e => setFilter(e.target.value as typeof filter)}
               className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
             >
               <option value="all">All Origins</option>
@@ -210,7 +196,7 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
         {/* Available Roles */}
         <div className="grid grid-cols-2 gap-4 mb-6 max-h-[50vh] overflow-y-auto">
           <AnimatePresence>
-            {filteredRoles.map((role) => (
+            {filteredRoles.map(role => (
               <motion.button
                 key={role.id}
                 layout
@@ -221,16 +207,14 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
                 disabled={role.requirements.tier > tier}
                 className={`p-4 rounded-lg text-left transition-all ${
                   selectedRole === role.id
-                    ? "bg-violet-500/20 border-2 border-violet-500"
+                    ? 'bg-violet-500/20 border-2 border-violet-500'
                     : role.requirements.tier > tier
-                      ? "bg-gray-800/30 border border-gray-700 opacity-50 cursor-not-allowed"
-                      : "bg-gray-800/50 border border-gray-700 hover:bg-gray-800"
+                      ? 'bg-gray-800/30 border border-gray-700 opacity-50 cursor-not-allowed'
+                      : 'bg-gray-800/50 border border-gray-700 hover:bg-gray-800'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-medium text-white">
-                    {role.name}
-                  </h3>
+                  <h3 className="text-lg font-medium text-white">{role.name}</h3>
                   {role.requirements.tier > tier ? (
                     <div className="px-2 py-1 rounded-full bg-gray-700 text-xs text-gray-400">
                       Tier {role.requirements.tier}
@@ -243,37 +227,23 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
 
                 {/* Stats with Tooltips */}
                 <div className="grid grid-cols-3 gap-2 mb-4">
-                  <div
-                    title={`Combat rating affects battle performance and tactical decisions`}
-                  >
+                  <div title={`Combat rating affects battle performance and tactical decisions`}>
                     <div className="text-xs text-gray-500 mb-1">Combat</div>
-                    <div className="text-sm text-gray-300">
-                      {role.stats.combat}
-                    </div>
+                    <div className="text-sm text-gray-300">{role.stats.combat}</div>
                   </div>
-                  <div
-                    title={`Leadership affects squad morale and command efficiency`}
-                  >
+                  <div title={`Leadership affects squad morale and command efficiency`}>
                     <div className="text-xs text-gray-500 mb-1">Leadership</div>
-                    <div className="text-sm text-gray-300">
-                      {role.stats.leadership}
-                    </div>
+                    <div className="text-sm text-gray-300">{role.stats.leadership}</div>
                   </div>
-                  <div
-                    title={`Technical skill affects ship maintenance and resource gathering`}
-                  >
+                  <div title={`Technical skill affects ship maintenance and resource gathering`}>
                     <div className="text-xs text-gray-500 mb-1">Technical</div>
-                    <div className="text-sm text-gray-300">
-                      {role.stats.technical}
-                    </div>
+                    <div className="text-sm text-gray-300">{role.stats.technical}</div>
                   </div>
                 </div>
 
                 {/* XP Growth Rates */}
                 <div className="mb-4">
-                  <div className="text-xs text-gray-500 mb-2">
-                    XP Growth Rates
-                  </div>
+                  <div className="text-xs text-gray-500 mb-2">XP Growth Rates</div>
                   <div className="grid grid-cols-3 gap-1">
                     <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                       <div
@@ -308,12 +278,12 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
                 </div>
 
                 {/* Origin Badge */}
-                {role.origin !== "native" && (
+                {role.origin !== 'native' && (
                   <div
                     className={`mt-2 px-2 py-1 rounded-full text-xs inline-block ${
-                      role.origin === "refugee"
-                        ? "bg-blue-900/50 text-blue-400"
-                        : "bg-red-900/50 text-red-400"
+                      role.origin === 'refugee'
+                        ? 'bg-blue-900/50 text-blue-400'
+                        : 'bg-red-900/50 text-red-400'
                     }`}
                   >
                     {role.origin.charAt(0).toUpperCase() + role.origin.slice(1)}
@@ -334,15 +304,13 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
             <div className="flex items-center space-x-2 mb-2">
               <Star className="w-5 h-5 text-violet-400" />
               <h3 className="text-white font-medium">
-                {tier === 3
-                  ? "Advanced Recruitment Options"
-                  : "Refugee Market Access"}
+                {tier === 3 ? 'Advanced Recruitment Options' : 'Refugee Market Access'}
               </h3>
             </div>
             <p className="text-sm text-gray-400">
               {tier === 3
-                ? "Full access to refugee market and captured officer conversion program."
-                : "Officers from other factions are available for recruitment with unique traits and bonuses."}
+                ? 'Full access to refugee market and captured officer conversion program.'
+                : 'Officers from other factions are available for recruitment with unique traits and bonuses.'}
             </p>
           </motion.div>
         )}
@@ -351,8 +319,8 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-400">
             {selectedRole
-              ? "Click hire to begin the recruitment process"
-              : "Select a role to continue"}
+              ? 'Click hire to begin the recruitment process'
+              : 'Select a role to continue'}
           </div>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -361,8 +329,8 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
             disabled={!selectedRole}
             className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
               selectedRole
-                ? "bg-violet-600 hover:bg-violet-700 text-white"
-                : "bg-gray-700 text-gray-500 cursor-not-allowed"
+                ? 'bg-violet-600 hover:bg-violet-700 text-white'
+                : 'bg-gray-700 text-gray-500 cursor-not-allowed'
             }`}
           >
             <Users className="w-4 h-4" />
@@ -374,8 +342,7 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
         {/* Warnings */}
         <AnimatePresence>
           {selectedRole &&
-            (filteredRoles.find((r) => r.id === selectedRole)?.requirements
-              ?.tier ?? 0) > tier && (
+            (filteredRoles.find(r => r.id === selectedRole)?.requirements?.tier ?? 0) > tier && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -384,8 +351,7 @@ export function HiringPanel({ tier, onHire, onClose }: HiringPanelProps) {
               >
                 <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
                 <div className="text-sm text-yellow-200">
-                  This role requires a higher academy tier. Upgrade your
-                  facility to unlock.
+                  This role requires a higher academy tier. Upgrade your facility to unlock.
                 </div>
               </motion.div>
             )}

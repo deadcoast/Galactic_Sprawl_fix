@@ -1,26 +1,18 @@
-import {
-  AlertTriangle,
-  Leaf,
-  Ship,
-  Star,
-  Users,
-  Wheat,
-  Zap,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { AlertTriangle, Leaf, Ship, Star, Users, Wheat, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface HabitableWorldProps {
   planetData: {
     id: string;
     name: string;
-    type: "standard" | "resource-rich" | "agricultural";
+    type: 'standard' | 'resource-rich' | 'agricultural';
     population: number;
     maxPopulation: number;
     growthRate: number;
     resources: string[];
     developmentLevel: number;
     cityLightIntensity: number;
-    alerts?: { type: "warning" | "info"; message: string }[];
+    alerts?: { type: 'warning' | 'info'; message: string }[];
     biodomeLevel?: number;
     agriculturalBonus?: number;
     activeFestivals?: { name: string; remainingTime: number }[];
@@ -30,14 +22,9 @@ interface HabitableWorldProps {
   onUpgradeBiodome?: () => void;
 }
 
-export function HabitableWorld({
-  planetData,
-  onUpgradeBiodome,
-}: HabitableWorldProps) {
+export function HabitableWorld({ planetData, onUpgradeBiodome }: HabitableWorldProps) {
   const [showTradeShip, setShowTradeShip] = useState(false);
-  const [satellitePositions, setSatellitePositions] = useState<
-    Array<{ angle: number }>
-  >([]);
+  const [satellitePositions, setSatellitePositions] = useState<Array<{ angle: number }>>([]);
 
   useEffect(() => {
     const satCount = planetData.satellites || 0;
@@ -45,17 +32,17 @@ export function HabitableWorld({
       setSatellitePositions(
         Array.from({ length: satCount }, (_, i) => ({
           angle: (i * 360) / satCount,
-        })),
+        }))
       );
     }
   }, [planetData.satellites]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setSatellitePositions((prev) =>
-        prev.map((sat) => ({
+      setSatellitePositions(prev =>
+        prev.map(sat => ({
           angle: (sat.angle + 1) % 360,
-        })),
+        }))
       );
     }, 100);
 
@@ -66,7 +53,7 @@ export function HabitableWorld({
     const routes = planetData.tradeRoutes || [];
     if (routes.length > 0) {
       const interval = setInterval(() => {
-        setShowTradeShip((prev) => !prev);
+        setShowTradeShip(prev => !prev);
       }, 5000);
 
       return () => clearInterval(interval);
@@ -75,14 +62,14 @@ export function HabitableWorld({
 
   const getPlanetTypeColor = (type: string) => {
     switch (type) {
-      case "standard":
-        return "cyan";
-      case "resource-rich":
-        return "amber";
-      case "agricultural":
-        return "emerald";
+      case 'standard':
+        return 'cyan';
+      case 'resource-rich':
+        return 'amber';
+      case 'agricultural':
+        return 'emerald';
       default:
-        return "blue";
+        return 'blue';
     }
   };
 
@@ -92,13 +79,9 @@ export function HabitableWorld({
     <div className="bg-gray-800 rounded-lg p-6">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">
-            {planetData.name}
-          </h2>
+          <h2 className="text-xl font-bold text-white mb-1">{planetData.name}</h2>
           <div className="flex items-center text-sm text-gray-400">
-            <span className="capitalize">
-              {planetData.type.replace("-", " ")}
-            </span>
+            <span className="capitalize">{planetData.type.replace('-', ' ')}</span>
             <span className="mx-2">•</span>
             <span>{planetData.population.toLocaleString()} Citizens</span>
           </div>
@@ -113,8 +96,7 @@ export function HabitableWorld({
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-400">Population Capacity</span>
             <span className="text-gray-300">
-              {planetData.population.toLocaleString()} /{" "}
-              {planetData.maxPopulation.toLocaleString()}
+              {planetData.population.toLocaleString()} / {planetData.maxPopulation.toLocaleString()}
             </span>
           </div>
           <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -130,9 +112,7 @@ export function HabitableWorld({
         <div>
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-400">Growth Rate</span>
-            <span className={`text-${color}-400`}>
-              +{planetData.growthRate}%/cycle
-            </span>
+            <span className={`text-${color}-400`}>+{planetData.growthRate}%/cycle</span>
           </div>
           <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
             <div
@@ -148,11 +128,11 @@ export function HabitableWorld({
           className={`absolute inset-0 bg-${color}-900/50 backdrop-blur-sm`}
           style={{
             backgroundImage: `radial-gradient(circle at 50% 120%, ${
-              color === "cyan"
-                ? "rgb(34, 211, 238)"
-                : color === "amber"
-                  ? "rgb(245, 158, 11)"
-                  : "rgb(16, 185, 129)"
+              color === 'cyan'
+                ? 'rgb(34, 211, 238)'
+                : color === 'amber'
+                  ? 'rgb(245, 158, 11)'
+                  : 'rgb(16, 185, 129)'
             }, transparent)`,
           }}
         />
@@ -161,7 +141,7 @@ export function HabitableWorld({
           className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070')] bg-cover"
           style={{
             opacity: planetData.cityLightIntensity * 0.7,
-            animation: "pulse 4s infinite",
+            animation: 'pulse 4s infinite',
           }}
         />
 
@@ -172,7 +152,7 @@ export function HabitableWorld({
             style={{
               left: `calc(50% + ${Math.cos((sat.angle * Math.PI) / 180) * 60}px)`,
               top: `calc(50% + ${Math.sin((sat.angle * Math.PI) / 180) * 60}px)`,
-              boxShadow: "0 0 4px rgba(96, 165, 250, 0.5)",
+              boxShadow: '0 0 4px rgba(96, 165, 250, 0.5)',
             }}
           />
         ))}
@@ -183,8 +163,8 @@ export function HabitableWorld({
               key={index}
               className="absolute"
               style={{
-                left: "50%",
-                top: "50%",
+                left: '50%',
+                top: '50%',
                 transform: `translate(-50%, -50%) rotate(${index * (360 / (planetData.tradeRoutes || []).length)}deg) translateX(80px)`,
                 animation: `tradeShip ${10 + route.resourceFlow}s linear infinite`,
               }}
@@ -217,11 +197,9 @@ export function HabitableWorld({
 
       {planetData.resources.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-400 mb-2">
-            Available Resources
-          </h3>
+          <h3 className="text-sm font-medium text-gray-400 mb-2">Available Resources</h3>
           <div className="flex flex-wrap gap-2">
-            {planetData.resources.map((resource) => (
+            {planetData.resources.map(resource => (
               <span
                 key={resource}
                 className={`px-2 py-1 bg-${color}-900/30 border border-${color}-500/30 rounded text-${color}-300 text-sm`}
@@ -239,19 +217,19 @@ export function HabitableWorld({
             <div
               key={index}
               className={`p-3 rounded-lg flex items-start space-x-2 ${
-                alert.type === "warning"
-                  ? "bg-yellow-900/20 border border-yellow-700/30"
-                  : "bg-blue-900/20 border border-blue-700/30"
+                alert.type === 'warning'
+                  ? 'bg-yellow-900/20 border border-yellow-700/30'
+                  : 'bg-blue-900/20 border border-blue-700/30'
               }`}
             >
               <AlertTriangle
                 className={`w-5 h-5 ${
-                  alert.type === "warning" ? "text-yellow-500" : "text-blue-500"
+                  alert.type === 'warning' ? 'text-yellow-500' : 'text-blue-500'
                 }`}
               />
               <span
                 className={`text-sm ${
-                  alert.type === "warning" ? "text-yellow-200" : "text-blue-200"
+                  alert.type === 'warning' ? 'text-yellow-200' : 'text-blue-200'
                 }`}
               >
                 {alert.message}
@@ -261,12 +239,10 @@ export function HabitableWorld({
         </div>
       )}
 
-      {(planetData.type === "agricultural" || planetData.biodomeLevel) && (
+      {(planetData.type === 'agricultural' || planetData.biodomeLevel) && (
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-emerald-400">
-              Agricultural Systems
-            </h3>
+            <h3 className="text-sm font-medium text-emerald-400">Agricultural Systems</h3>
             {onUpgradeBiodome && (
               <button
                 onClick={onUpgradeBiodome}
@@ -305,11 +281,9 @@ export function HabitableWorld({
 
       {(planetData.activeFestivals || []).length > 0 && (
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-400 mb-2">
-            Active Events
-          </h3>
+          <h3 className="text-sm font-medium text-gray-400 mb-2">Active Events</h3>
           <div className="space-y-2">
-            {(planetData.activeFestivals || []).map((festival) => (
+            {(planetData.activeFestivals || []).map(festival => (
               <div
                 key={festival.name}
                 className="p-3 bg-indigo-900/20 border border-indigo-700/30 rounded-lg"
@@ -329,7 +303,7 @@ export function HabitableWorld({
   );
 }
 
-const style = document.createElement("style");
+const style = document.createElement('style');
 style.textContent = `
   @keyframes tradeShip {
     0% { transform: translate(-50%, -50%) rotate(0deg) translateX(80px); }

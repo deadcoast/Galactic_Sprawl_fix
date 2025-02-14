@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import { LucideIcon } from "lucide-react";
+import { ReactNode } from 'react';
+import { LucideIcon } from 'lucide-react';
 
 interface AbilityButtonProps {
   /**
@@ -26,7 +26,7 @@ interface AbilityButtonProps {
    * Optional color theme for the button
    * @default "blue"
    */
-  color?: "blue" | "red" | "yellow" | "green" | "purple" | "cyan" | "amber" | "indigo" | "teal";
+  color?: 'blue' | 'red' | 'yellow' | 'green' | 'purple' | 'cyan' | 'amber' | 'indigo' | 'teal';
 
   /**
    * Click handler for the button
@@ -46,7 +46,7 @@ interface AbilityButtonProps {
 
 /**
  * AbilityButton Component
- * 
+ *
  * Button component for ship abilities with consistent styling and behavior.
  * Handles active/inactive states, disabled state, and color themes.
  */
@@ -55,10 +55,10 @@ export function AbilityButton({
   disabled = false,
   icon: Icon,
   label,
-  color = "blue",
+  color = 'blue',
   onClick,
   children,
-  className = "",
+  className = '',
 }: AbilityButtonProps) {
   return (
     <button
@@ -87,20 +87,16 @@ export function AbilityButton({
 
 /**
  * AbilityButtonContainer Component
- * 
+ *
  * Container for grouping multiple ability buttons.
  * Handles layout and spacing of buttons.
  */
 export function AbilityButtonContainer({
   children,
-  className = "",
+  className = '',
 }: {
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={`action-buttons flex gap-2 ${className}`}>
-      {children}
-    </div>
-  );
-} 
+  return <div className={`action-buttons flex gap-2 ${className}`}>{children}</div>;
+}

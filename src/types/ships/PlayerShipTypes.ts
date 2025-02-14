@@ -1,32 +1,27 @@
-import { Tier } from "../core/GameTypes";
+import { Tier } from '../core/GameTypes';
 import {
   CommonShip,
   CommonShipAbility,
   CommonShipDisplayStats,
   CommonShipStats,
-} from "./CommonShipTypes";
+} from './CommonShipTypes';
 
 // Player Ship Classes
 export type PlayerShipClass =
-  | "harbringer-galleon"
-  | "midway-carrier"
-  | "mother-earth-revenge"
-  | "orion-frigate"
-  | "spitflare"
-  | "star-schooner"
-  | "void-dredger-miner"
-  | "andromeda-cutter";
+  | 'harbringer-galleon'
+  | 'midway-carrier'
+  | 'mother-earth-revenge'
+  | 'orion-frigate'
+  | 'spitflare'
+  | 'star-schooner'
+  | 'void-dredger-miner'
+  | 'andromeda-cutter';
 
 // Player Ship Categories
-export type PlayerShipCategory = "war" | "recon" | "mining";
+export type PlayerShipCategory = 'war' | 'recon' | 'mining';
 
 // Player Ship Status
-export type PlayerShipStatus =
-  | "ready"
-  | "engaging"
-  | "patrolling"
-  | "retreating"
-  | "disabled";
+export type PlayerShipStatus = 'ready' | 'engaging' | 'patrolling' | 'retreating' | 'disabled';
 
 // Player Ship Stats
 export interface PlayerShipStats extends CommonShipStats {

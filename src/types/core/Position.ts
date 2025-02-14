@@ -49,7 +49,7 @@ export const PositionUtils = {
   midpoint(a: Position, b: Position): Position {
     return {
       x: (a.x + b.x) / 2,
-      y: (a.y + b.y) / 2
+      y: (a.y + b.y) / 2,
     };
   },
 
@@ -60,7 +60,7 @@ export const PositionUtils = {
     return {
       x: (a.x + b.x) / 2,
       y: (a.y + b.y) / 2,
-      z: (a.z + b.z) / 2
+      z: (a.z + b.z) / 2,
     };
   },
 
@@ -70,7 +70,7 @@ export const PositionUtils = {
   lerp(a: Position, b: Position, t: number): Position {
     return {
       x: a.x + (b.x - a.x) * t,
-      y: a.y + (b.y - a.y) * t
+      y: a.y + (b.y - a.y) * t,
     };
   },
 
@@ -81,7 +81,7 @@ export const PositionUtils = {
     return {
       x: a.x + (b.x - a.x) * t,
       y: a.y + (b.y - a.y) * t,
-      z: a.z + (b.z - a.z) * t
+      z: a.z + (b.z - a.z) * t,
     };
-  }
-}; 
+  },
+};

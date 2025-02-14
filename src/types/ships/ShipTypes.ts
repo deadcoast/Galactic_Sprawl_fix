@@ -1,10 +1,5 @@
-import { BaseStats } from "../core/GameTypes";
-import { 
-  WeaponMount, 
-  WeaponType,
-  WeaponInstance,
-  CombatWeaponStats
-} from "../weapons/WeaponTypes";
+import { BaseStats } from '../core/GameTypes';
+import { WeaponMount, WeaponType, WeaponInstance, CombatWeaponStats } from '../weapons/WeaponTypes';
 
 /**
  * Base ship type interface
@@ -48,11 +43,11 @@ export interface ShipLoadout {
 /**
  * All possible ship status states
  */
-export type ShipStatus = 
-  | "idle"
-  | "ready"
-  | "engaging"
-  | "patrolling"
-  | "retreating"
-  | "disabled"
-  | "damaged"; 
+export type ShipStatus =
+  | 'idle'
+  | 'ready'
+  | 'engaging'
+  | 'patrolling'
+  | 'retreating'
+  | 'disabled'
+  | 'damaged';

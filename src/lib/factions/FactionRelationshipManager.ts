@@ -1,15 +1,15 @@
-import { EventEmitter } from "../utils/EventEmitter";
-import { FactionId, FactionBehaviorType } from "../../types/ships/FactionTypes";
-import { moduleEventBus, ModuleEventType } from "../modules/ModuleEvents";
-import { factionConfigs } from "../../config/factions/factions";
-import { ModuleType } from "../../types/buildings/ModuleTypes";
+import { EventEmitter } from '../utils/EventEmitter';
+import { FactionId, FactionBehaviorType } from '../../types/ships/FactionTypes';
+import { moduleEventBus, ModuleEventType } from '../modules/ModuleEvents';
+import { factionConfigs } from '../../config/factions/factions';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 
 interface RelationshipState {
   value: number; // -1 to 1
   lastUpdate: number;
   tradeCount: number;
   conflictCount: number;
-  treatyStatus: "none" | "ceasefire" | "trade" | "alliance";
+  treatyStatus: 'none' | 'ceasefire' | 'trade' | 'alliance';
 }
 
 interface RelationshipEvents {
@@ -23,8 +23,8 @@ interface RelationshipEvents {
   treatyStatusChanged: {
     factionId: FactionId;
     targetFactionId: FactionId;
-    oldStatus: RelationshipState["treatyStatus"];
-    newStatus: RelationshipState["treatyStatus"];
+    oldStatus: RelationshipState['treatyStatus'];
+    newStatus: RelationshipState['treatyStatus'];
   };
   tradeEstablished: {
     factionId: FactionId;
@@ -35,7 +35,7 @@ interface RelationshipEvents {
   conflictRecorded: {
     factionId: FactionId;
     targetFactionId: FactionId;
-    type: "attack" | "territory" | "trade";
+    type: 'attack' | 'territory' | 'trade';
     severity: number;
   };
 }
@@ -52,7 +52,7 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   private initializeRelationships(): void {
     // Initialize relationships between all factions
     const factionIds = Object.keys(factionConfigs);
-    
+
     factionIds.forEach(factionId => {
       factionIds.forEach(targetId => {
         if (factionId !== targetId) {
@@ -62,7 +62,7 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
             lastUpdate: Date.now(),
             tradeCount: 0,
             conflictCount: 0,
-            treatyStatus: "none"
+            treatyStatus: 'none',
           });
         }
       });
@@ -70,7 +70,7 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   }
 
   private setupEventListeners(): void {
-    moduleEventBus.subscribe("RESOURCE_TRANSFERRED" as ModuleEventType, (event) => {
+    moduleEventBus.subscribe('RESOURCE_TRANSFERRED' as ModuleEventType, event => {
       if (event.data.sourceFaction && event.data.targetFaction) {
         this.recordTrade(
           event.data.sourceFaction as FactionId,
@@ -81,12 +81,16 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
       }
     });
 
-    moduleEventBus.subscribe("STATUS_CHANGED" as ModuleEventType, (event) => {
-      if (event.data.type === "combat" && event.data.attackerFaction && event.data.defenderFaction) {
+    moduleEventBus.subscribe('STATUS_CHANGED' as ModuleEventType, event => {
+      if (
+        event.data.type === 'combat' &&
+        event.data.attackerFaction &&
+        event.data.defenderFaction
+      ) {
         this.recordConflict(
           event.data.attackerFaction as FactionId,
           event.data.defenderFaction as FactionId,
-          "attack",
+          'attack',
           event.data.damage || 1
         );
       }
@@ -94,7 +98,7 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   }
 
   private getRelationshipKey(factionId: FactionId, targetId: FactionId): string {
-    return [factionId, targetId].sort().join("-");
+    return [factionId, targetId].sort().join('-');
   }
 
   private getInitialRelationshipValue(factionId: FactionId, targetId: FactionId): number {
@@ -106,9 +110,13 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
     }
 
     // Calculate initial relationship based on behavior compatibility
-    const aggressionDiff = Math.abs(faction.behavior.baseAggression - target.behavior.baseAggression);
-    const tradingDiff = Math.abs(faction.behavior.tradingPreference - target.behavior.tradingPreference);
-    
+    const aggressionDiff = Math.abs(
+      faction.behavior.baseAggression - target.behavior.baseAggression
+    );
+    const tradingDiff = Math.abs(
+      faction.behavior.tradingPreference - target.behavior.tradingPreference
+    );
+
     return 0.5 - (aggressionDiff + tradingDiff) / 4; // Results in range -0.5 to 0.5
   }
 
@@ -117,9 +125,12 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
     return this.relationships.get(key)?.value || 0;
   }
 
-  public getTreatyStatus(factionId: FactionId, targetId: FactionId): RelationshipState["treatyStatus"] {
+  public getTreatyStatus(
+    factionId: FactionId,
+    targetId: FactionId
+  ): RelationshipState['treatyStatus'] {
     const key = this.getRelationshipKey(factionId, targetId);
-    return this.relationships.get(key)?.treatyStatus || "none";
+    return this.relationships.get(key)?.treatyStatus || 'none';
   }
 
   public modifyRelationship(
@@ -130,18 +141,18 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   ): void {
     const key = this.getRelationshipKey(factionId, targetId);
     const state = this.relationships.get(key);
-    
+
     if (state) {
       const oldValue = state.value;
       state.value = Math.max(-1, Math.min(1, state.value + change));
       state.lastUpdate = Date.now();
 
-      this.emit("relationshipChanged", {
+      this.emit('relationshipChanged', {
         factionId,
         targetFactionId: targetId,
         oldValue,
         newValue: state.value,
-        reason
+        reason,
       });
 
       // Update treaty status based on new relationship value
@@ -149,17 +160,17 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
 
       // Emit module event for status change
       moduleEventBus.emit({
-        type: "STATUS_CHANGED" as ModuleEventType,
+        type: 'STATUS_CHANGED' as ModuleEventType,
         moduleId: `faction-${factionId}`,
-        moduleType: "trading" as ModuleType,
+        moduleType: 'trading' as ModuleType,
         timestamp: Date.now(),
         data: {
-          type: "relationship",
+          type: 'relationship',
           targetFaction: targetId,
           oldValue,
           newValue: state.value,
-          reason
-        }
+          reason,
+        },
       });
     }
   }
@@ -167,44 +178,44 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   private updateTreatyStatus(factionId: FactionId, targetId: FactionId): void {
     const key = this.getRelationshipKey(factionId, targetId);
     const state = this.relationships.get(key);
-    
+
     if (!state) {
       return;
     }
 
     const oldStatus = state.treatyStatus;
-    let newStatus: RelationshipState["treatyStatus"] = "none";
+    let newStatus: RelationshipState['treatyStatus'] = 'none';
 
     // Determine new status based on relationship value
     if (state.value >= 0.8) {
-      newStatus = "alliance";
+      newStatus = 'alliance';
     } else if (state.value >= 0.5) {
-      newStatus = "trade";
+      newStatus = 'trade';
     } else if (state.value >= 0) {
-      newStatus = "ceasefire";
+      newStatus = 'ceasefire';
     }
 
     if (newStatus !== oldStatus) {
       state.treatyStatus = newStatus;
-      this.emit("treatyStatusChanged", {
+      this.emit('treatyStatusChanged', {
         factionId,
         targetFactionId: targetId,
         oldStatus,
-        newStatus
+        newStatus,
       });
 
       // Emit module event for treaty change
       moduleEventBus.emit({
-        type: "STATUS_CHANGED" as ModuleEventType,
+        type: 'STATUS_CHANGED' as ModuleEventType,
         moduleId: `faction-${factionId}`,
-        moduleType: "trading" as ModuleType,
+        moduleType: 'trading' as ModuleType,
         timestamp: Date.now(),
         data: {
-          type: "treaty",
+          type: 'treaty',
           targetFaction: targetId,
           oldStatus,
-          newStatus
-        }
+          newStatus,
+        },
       });
     }
   }
@@ -217,22 +228,24 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   ): void {
     const key = this.getRelationshipKey(factionId, targetId);
     const state = this.relationships.get(key);
-    
+
     if (state) {
       state.tradeCount++;
-      
+
       // Improve relationship based on trade
-      const relationshipChange = Math.min(0.1, amount / 1000) * 
-        (factionConfigs[factionId].behavior.tradingPreference + 
-         factionConfigs[targetId].behavior.tradingPreference) / 2;
+      const relationshipChange =
+        (Math.min(0.1, amount / 1000) *
+          (factionConfigs[factionId].behavior.tradingPreference +
+            factionConfigs[targetId].behavior.tradingPreference)) /
+        2;
 
-      this.modifyRelationship(factionId, targetId, relationshipChange, "trade");
+      this.modifyRelationship(factionId, targetId, relationshipChange, 'trade');
 
-      this.emit("tradeEstablished", {
+      this.emit('tradeEstablished', {
         factionId,
         targetFactionId: targetId,
         resourceType,
-        amount
+        amount,
       });
     }
   }
@@ -240,27 +253,29 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   public recordConflict(
     factionId: FactionId,
     targetId: FactionId,
-    type: "attack" | "territory" | "trade",
+    type: 'attack' | 'territory' | 'trade',
     severity: number
   ): void {
     const key = this.getRelationshipKey(factionId, targetId);
     const state = this.relationships.get(key);
-    
+
     if (state) {
       state.conflictCount++;
-      
+
       // Worsen relationship based on conflict
-      const relationshipChange = -Math.min(0.2, severity / 100) *
-        (factionConfigs[factionId].behavior.baseAggression + 
-         factionConfigs[targetId].behavior.baseAggression) / 2;
+      const relationshipChange =
+        (-Math.min(0.2, severity / 100) *
+          (factionConfigs[factionId].behavior.baseAggression +
+            factionConfigs[targetId].behavior.baseAggression)) /
+        2;
 
       this.modifyRelationship(factionId, targetId, relationshipChange, `conflict_${type}`);
 
-      this.emit("conflictRecorded", {
+      this.emit('conflictRecorded', {
         factionId,
         targetFactionId: targetId,
         type,
-        severity
+        severity,
       });
     }
   }
@@ -268,7 +283,7 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   public canEstablishTreaty(
     factionId: FactionId,
     targetId: FactionId,
-    type: RelationshipState["treatyStatus"]
+    type: RelationshipState['treatyStatus']
   ): boolean {
     const relationship = this.getRelationship(factionId, targetId);
     const faction = factionConfigs[factionId];
@@ -281,11 +296,11 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
 
     // Check relationship requirements for different treaty types
     switch (type) {
-      case "alliance":
+      case 'alliance':
         return relationship >= 0.8;
-      case "trade":
+      case 'trade':
         return relationship >= 0.5;
-      case "ceasefire":
+      case 'ceasefire':
         return relationship >= 0;
       default:
         return true;
@@ -302,12 +317,12 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   public handleDiplomaticAction(
     factionId: FactionId,
     targetId: FactionId,
-    action: "ceasefire" | "tradeRoute" | "alliance" | "tribute",
+    action: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute',
     resources?: { type: string; amount: number }[]
   ): boolean {
     const key = this.getRelationshipKey(factionId, targetId);
     const state = this.relationships.get(key);
-    
+
     if (!state) {
       return false;
     }
@@ -316,43 +331,49 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
     const target = factionConfigs[targetId];
 
     // Check if action is allowed based on special rules
-    if ((faction.specialRules.alwaysHostile || target.specialRules.alwaysHostile) && action !== "tribute") {
-          return false;
+    if (
+      (faction.specialRules.alwaysHostile || target.specialRules.alwaysHostile) &&
+      action !== 'tribute'
+    ) {
+      return false;
     }
 
     let success = false;
     let relationshipChange = 0;
 
     switch (action) {
-      case "ceasefire":
+      case 'ceasefire':
         if (state.value < 0 && !state.treatyStatus) {
           success = true;
           relationshipChange = 0.2;
-          state.treatyStatus = "ceasefire";
+          state.treatyStatus = 'ceasefire';
         }
         break;
 
-      case "tradeRoute":
-        if (state.value >= 0 && state.treatyStatus !== "alliance") {
+      case 'tradeRoute':
+        if (state.value >= 0 && state.treatyStatus !== 'alliance') {
           success = true;
           relationshipChange = 0.3;
-          state.treatyStatus = "trade";
+          state.treatyStatus = 'trade';
         }
         break;
 
-      case "alliance":
-        if (state.value >= 0.5 && state.treatyStatus === "trade") {
+      case 'alliance':
+        if (state.value >= 0.5 && state.treatyStatus === 'trade') {
           success = true;
           relationshipChange = 0.4;
-          state.treatyStatus = "alliance";
+          state.treatyStatus = 'alliance';
         }
         break;
 
-      case "tribute":
+      case 'tribute':
         if (resources && resources.length > 0) {
           success = true;
           // Calculate relationship improvement based on tribute value
-          relationshipChange = Math.min(0.2, resources.reduce((total, r) => total + r.amount, 0) / 5000);
+          relationshipChange = Math.min(
+            0.2,
+            resources.reduce((total, r) => total + r.amount, 0) / 5000
+          );
         }
         break;
     }
@@ -362,17 +383,17 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
 
       // Emit module event for diplomatic action
       moduleEventBus.emit({
-        type: "STATUS_CHANGED" as ModuleEventType,
+        type: 'STATUS_CHANGED' as ModuleEventType,
         moduleId: `faction-${factionId}`,
-        moduleType: "trading" as ModuleType,
+        moduleType: 'trading' as ModuleType,
         timestamp: Date.now(),
         data: {
-          type: "diplomatic_action",
+          type: 'diplomatic_action',
           action,
           targetFaction: targetId,
           success: true,
-          resources
-        }
+          resources,
+        },
       });
     }
 
@@ -386,7 +407,7 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
     factionId: FactionId,
     targetId: FactionId
   ): {
-    type: "ceasefire" | "tradeRoute" | "alliance" | "tribute";
+    type: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute';
     name: string;
     description: string;
     requirements: { type: string; value: number }[];
@@ -398,7 +419,7 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
     const target = factionConfigs[targetId];
 
     const actions: {
-      type: "ceasefire" | "tradeRoute" | "alliance" | "tribute";
+      type: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute';
       name: string;
       description: string;
       requirements: { type: string; value: number }[];
@@ -407,14 +428,14 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
 
     // Always allow tribute
     actions.push({
-      type: "tribute",
-      name: "Offer Tribute",
-      description: "Improve relations through resource offerings",
+      type: 'tribute',
+      name: 'Offer Tribute',
+      description: 'Improve relations through resource offerings',
       requirements: [
-        { type: "Credits", value: 2500 },
-        { type: "Resources", value: 1000 }
+        { type: 'Credits', value: 2500 },
+        { type: 'Resources', value: 1000 },
       ],
-      available: true
+      available: true,
     });
 
     // Don't allow other diplomatic actions with always hostile factions
@@ -423,44 +444,44 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
     }
 
     // Ceasefire
-    if (relationship < 0 && treatyStatus === "none") {
+    if (relationship < 0 && treatyStatus === 'none') {
       actions.push({
-        type: "ceasefire",
-        name: "Negotiate Ceasefire",
-        description: "Attempt to establish temporary peace",
+        type: 'ceasefire',
+        name: 'Negotiate Ceasefire',
+        description: 'Attempt to establish temporary peace',
         requirements: [
-          { type: "Credits", value: 5000 },
-          { type: "Reputation", value: -50 }
+          { type: 'Credits', value: 5000 },
+          { type: 'Reputation', value: -50 },
         ],
-        available: true
+        available: true,
       });
     }
 
     // Trade Route
-    if (relationship >= 0 && treatyStatus !== "alliance") {
+    if (relationship >= 0 && treatyStatus !== 'alliance') {
       actions.push({
-        type: "tradeRoute",
-        name: "Establish Trade Route",
-        description: "Create a trade route for resource exchange",
+        type: 'tradeRoute',
+        name: 'Establish Trade Route',
+        description: 'Create a trade route for resource exchange',
         requirements: [
-          { type: "Credits", value: 10000 },
-          { type: "Reputation", value: 0 }
+          { type: 'Credits', value: 10000 },
+          { type: 'Reputation', value: 0 },
         ],
-        available: relationship >= 0
+        available: relationship >= 0,
       });
     }
 
     // Alliance
-    if (relationship >= 0.5 && treatyStatus === "trade") {
+    if (relationship >= 0.5 && treatyStatus === 'trade') {
       actions.push({
-        type: "alliance",
-        name: "Form Alliance",
-        description: "Establish a formal alliance for mutual benefit",
+        type: 'alliance',
+        name: 'Form Alliance',
+        description: 'Establish a formal alliance for mutual benefit',
         requirements: [
-          { type: "Credits", value: 25000 },
-          { type: "Reputation", value: 50 }
+          { type: 'Credits', value: 25000 },
+          { type: 'Reputation', value: 50 },
         ],
-        available: relationship >= 0.5
+        available: relationship >= 0.5,
       });
     }
 
@@ -469,4 +490,4 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
 }
 
 // Export singleton instance
-export const factionRelationshipManager = new FactionRelationshipManager(); 
+export const factionRelationshipManager = new FactionRelationshipManager();

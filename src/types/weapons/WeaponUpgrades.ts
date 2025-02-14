@@ -3,8 +3,16 @@
  * @module WeaponUpgrades
  */
 
-import { BaseWeaponStats, WeaponCategory, WeaponVariant, WeaponUpgrade, WeaponUpgradeType, DamageEffect, AreaEffect } from "./WeaponTypes";
-import { WeaponEffectType } from "../../effects/types_effects/WeaponEffects";
+import {
+  BaseWeaponStats,
+  WeaponCategory,
+  WeaponVariant,
+  WeaponUpgrade,
+  WeaponUpgradeType,
+  DamageEffect,
+  AreaEffect,
+} from './WeaponTypes';
+import { WeaponEffectType } from '../../effects/types_effects/WeaponEffects';
 
 // Upgrade Types
 // ------------------------------------------------------------
@@ -49,4 +57,4 @@ export interface WeaponUpgradeState {
   appliedUpgrades: WeaponUpgrade[];
   availableUpgrades: AvailableUpgrades;
   currentTier: UpgradeTier;
-} 
+}

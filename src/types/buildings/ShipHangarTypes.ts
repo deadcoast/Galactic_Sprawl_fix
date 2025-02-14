@@ -1,7 +1,7 @@
-import { Tier, Effect } from "../core/GameTypes";
-import { ResourceCost } from "../resources/ResourceTypes";
-import { PlayerShipClass, PlayerShipCategory } from "../ships/PlayerShipTypes";
-import { CommonShip } from "../ships/CommonShipTypes";
+import { Tier, Effect } from '../core/GameTypes';
+import { ResourceCost } from '../resources/ResourceTypes';
+import { PlayerShipClass, PlayerShipCategory } from '../ships/PlayerShipTypes';
+import { CommonShip } from '../ships/CommonShipTypes';
 
 /**
  * Ship build queue item
@@ -27,7 +27,7 @@ export interface ShipHangarBay {
   tier: Tier;
   capacity: number;
   ships: CommonShip[];
-  status: "available" | "full" | "upgrading";
+  status: 'available' | 'full' | 'upgrading';
   efficiency: number;
   lastMaintenance: number;
   maintenanceCost: ResourceCost[];
@@ -49,7 +49,7 @@ export interface ShipHangarState {
  * Ship upgrade requirements
  */
 export interface ShipUpgradeRequirement {
-  type: "tech" | "resource" | "facility";
+  type: 'tech' | 'resource' | 'facility';
   name: string;
   met: boolean;
 }
@@ -257,4 +257,4 @@ export interface ShipHangarManager {
   getAvailableShips(category?: PlayerShipCategory): CommonShip[];
   getDockedShips(): CommonShip[];
   getShipsByCategory(category: PlayerShipCategory): CommonShip[];
-} 
+}

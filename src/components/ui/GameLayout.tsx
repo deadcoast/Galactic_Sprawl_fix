@@ -1,7 +1,7 @@
-import { GalaxyMap } from "./GalaxyMap";
-import { GameHUD } from "./GameHUD";
-import { Database, Map, Menu, Radar, Ship, Users } from "lucide-react";
-import React from "react";
+import { GalaxyMap } from './GalaxyMap';
+import { GameHUD } from './GameHUD';
+import { Database, Map, Menu, Radar, Ship, Users } from 'lucide-react';
+import React from 'react';
 
 interface GameLayoutProps {
   empireName: string;
@@ -9,24 +9,20 @@ interface GameLayoutProps {
   children: React.ReactNode;
 }
 
-export function GameLayout({
-  empireName,
-  bannerColor,
-  children,
-}: GameLayoutProps) {
+export function GameLayout({ empireName, bannerColor, children }: GameLayoutProps) {
   const [showSprawlView, setShowSprawlView] = React.useState(false);
   const [showVPRView, setShowVPRView] = React.useState(false);
   const [showGalaxyMap, setShowGalaxyMap] = React.useState(false);
 
   React.useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "m" || e.key === "M") {
-        setShowGalaxyMap((prev) => !prev);
+      if (e.key === 'm' || e.key === 'M') {
+        setShowGalaxyMap(prev => !prev);
       }
     };
 
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
   return (
@@ -34,13 +30,10 @@ export function GameLayout({
       {/* Sidebar Navigation */}
       <div className="w-16 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 space-y-6">
         <Menu className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer" />
-        <div
-          className="w-8 h-8 rounded-full"
-          style={{ backgroundColor: bannerColor }}
-        />
+        <div className="w-8 h-8 rounded-full" style={{ backgroundColor: bannerColor }} />
         <div className="flex-1 flex flex-col space-y-6">
           <button
-            onClick={() => setShowGalaxyMap((prev) => !prev)}
+            onClick={() => setShowGalaxyMap(prev => !prev)}
             className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
           >
             <Map className="w-6 h-6" />
@@ -92,9 +85,7 @@ export function GameLayout({
           />
           <div
             className={`absolute inset-0 transition-opacity duration-300 ${
-              showSprawlView
-                ? "opacity-100 pointer-events-auto"
-                : "opacity-0 pointer-events-none"
+              showSprawlView ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
             }`}
           >
             {children}
@@ -103,9 +94,7 @@ export function GameLayout({
           {/* Galaxy Map */}
           <div
             className={`absolute inset-0 transition-opacity duration-300 ${
-              showGalaxyMap
-                ? "opacity-100 pointer-events-auto"
-                : "opacity-0 pointer-events-none"
+              showGalaxyMap ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
             }`}
           >
             <GalaxyMap />

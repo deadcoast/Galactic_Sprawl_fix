@@ -1,4 +1,4 @@
-import { ChevronRight, Shield, Star, Sword, Users, X, Zap } from "lucide-react";
+import { ChevronRight, Shield, Star, Sword, Users, X, Zap } from 'lucide-react';
 
 interface Officer {
   id: string;
@@ -7,9 +7,9 @@ interface Officer {
   level: number;
   xp: number;
   nextLevelXp: number;
-  role: "Squad Leader" | "Captain";
-  status: "training" | "assigned" | "available";
-  specialization: "War" | "Recon" | "Mining";
+  role: 'Squad Leader' | 'Captain';
+  status: 'training' | 'assigned' | 'available';
+  specialization: 'War' | 'Recon' | 'Mining';
   skills: {
     combat: number;
     leadership: number;
@@ -22,7 +22,7 @@ interface Officer {
 
 interface OfficerDetailsProps {
   officer: Officer;
-  quality: "low" | "medium" | "high";
+  quality: 'low' | 'medium' | 'high';
   onAssign: (officerId: string, assignmentId: string) => void;
   onStartTraining: (officerId: string, specialization: string) => void;
   onClose: () => void;
@@ -37,19 +37,19 @@ export function OfficerDetails({
 }: OfficerDetailsProps) {
   const getSpecializationColor = () => {
     switch (officer.specialization) {
-      case "War":
-        return "red";
-      case "Recon":
-        return "cyan";
-      case "Mining":
-        return "amber";
+      case 'War':
+        return 'red';
+      case 'Recon':
+        return 'cyan';
+      case 'Mining':
+        return 'amber';
       default:
-        return "blue";
+        return 'blue';
     }
   };
 
   const color = getSpecializationColor();
-  const particleCount = quality === "high" ? 12 : quality === "medium" ? 8 : 4;
+  const particleCount = quality === 'high' ? 12 : quality === 'medium' ? 8 : 4;
 
   return (
     <div className="h-full flex flex-col">
@@ -59,10 +59,8 @@ export function OfficerDetails({
           <div
             className={`relative w-16 h-16 rounded-lg bg-${color}-900/50 flex items-center justify-center overflow-hidden`}
           >
-            <div className={`text-${color}-400 font-bold text-2xl`}>
-              {officer.name.charAt(0)}
-            </div>
-            {officer.status === "training" && (
+            <div className={`text-${color}-400 font-bold text-2xl`}>{officer.name.charAt(0)}</div>
+            {officer.status === 'training' && (
               <>
                 <div className="absolute inset-0 bg-gradient-to-t from-violet-500/20 animate-pulse" />
                 {Array.from({ length: particleCount }).map((_, i) => (
@@ -86,10 +84,7 @@ export function OfficerDetails({
             </div>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-gray-700 rounded-full transition-colors"
-        >
+        <button onClick={onClose} className="p-1 hover:bg-gray-700 rounded-full transition-colors">
           <X className="w-5 h-5 text-gray-400" />
         </button>
       </div>
@@ -99,8 +94,7 @@ export function OfficerDetails({
         <div className="flex justify-between text-sm mb-2">
           <span className="text-gray-400">Experience</span>
           <span className="text-gray-300">
-            {officer.xp.toLocaleString()}/{officer.nextLevelXp.toLocaleString()}{" "}
-            XP
+            {officer.xp.toLocaleString()}/{officer.nextLevelXp.toLocaleString()} XP
           </span>
         </div>
         <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -118,27 +112,21 @@ export function OfficerDetails({
             <Sword className="w-4 h-4 text-gray-400" />
             <span className="text-sm text-gray-300">Combat</span>
           </div>
-          <div className="text-lg font-medium text-white">
-            {officer.skills.combat}
-          </div>
+          <div className="text-lg font-medium text-white">{officer.skills.combat}</div>
         </div>
         <div className="p-3 bg-gray-800/50 rounded-lg">
           <div className="flex items-center space-x-2 mb-2">
             <Users className="w-4 h-4 text-gray-400" />
             <span className="text-sm text-gray-300">Leadership</span>
           </div>
-          <div className="text-lg font-medium text-white">
-            {officer.skills.leadership}
-          </div>
+          <div className="text-lg font-medium text-white">{officer.skills.leadership}</div>
         </div>
         <div className="p-3 bg-gray-800/50 rounded-lg">
           <div className="flex items-center space-x-2 mb-2">
             <Shield className="w-4 h-4 text-gray-400" />
             <span className="text-sm text-gray-300">Technical</span>
           </div>
-          <div className="text-lg font-medium text-white">
-            {officer.skills.technical}
-          </div>
+          <div className="text-lg font-medium text-white">{officer.skills.technical}</div>
         </div>
       </div>
 
@@ -146,7 +134,7 @@ export function OfficerDetails({
       <div className="mb-6">
         <h4 className="text-sm font-medium text-gray-300 mb-3">Traits</h4>
         <div className="flex flex-wrap gap-2">
-          {officer.traits.map((trait) => (
+          {officer.traits.map(trait => (
             <div
               key={trait}
               className={`px-2 py-1 rounded bg-${color}-900/20 border border-${color}-500/30 text-${color}-200 text-sm`}
@@ -158,27 +146,25 @@ export function OfficerDetails({
       </div>
 
       {/* Training Options */}
-      {officer.status === "available" && (
+      {officer.status === 'available' && (
         <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-300 mb-3">
-            Training Programs
-          </h4>
+          <h4 className="text-sm font-medium text-gray-300 mb-3">Training Programs</h4>
           <div className="space-y-2">
-            {["War", "Recon", "Mining"].map((spec) => (
+            {['War', 'Recon', 'Mining'].map(spec => (
               <button
                 key={spec}
                 onClick={() => onStartTraining(officer.id, spec)}
                 className={`w-full p-3 rounded-lg text-left transition-colors ${
                   officer.specialization === spec
                     ? `bg-${color}-500/20 border border-${color}-500/30`
-                    : "bg-gray-800/50 hover:bg-gray-700/50"
+                    : 'bg-gray-800/50 hover:bg-gray-700/50'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    {spec === "War" && <Sword className="w-4 h-4" />}
-                    {spec === "Recon" && <Star className="w-4 h-4" />}
-                    {spec === "Mining" && <Zap className="w-4 h-4" />}
+                    {spec === 'War' && <Sword className="w-4 h-4" />}
+                    {spec === 'Recon' && <Star className="w-4 h-4" />}
+                    {spec === 'Mining' && <Zap className="w-4 h-4" />}
                     <span className="text-white">{spec} Specialization</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-500" />
@@ -190,19 +176,17 @@ export function OfficerDetails({
       )}
 
       {/* Current Assignment/Training */}
-      {officer.status !== "available" && (
+      {officer.status !== 'available' && (
         <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-300 mb-3">
-            Current Status
-          </h4>
+          <h4 className="text-sm font-medium text-gray-300 mb-3">Current Status</h4>
           <div
             className={`p-4 rounded-lg ${
-              officer.status === "training"
-                ? "bg-violet-900/20 border border-violet-700/30"
-                : "bg-green-900/20 border border-green-700/30"
+              officer.status === 'training'
+                ? 'bg-violet-900/20 border border-violet-700/30'
+                : 'bg-green-900/20 border border-green-700/30'
             }`}
           >
-            {officer.status === "training" ? (
+            {officer.status === 'training' ? (
               <>
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-violet-200">Training in Progress</div>
@@ -221,11 +205,9 @@ export function OfficerDetails({
               </>
             ) : (
               <div className="flex items-center justify-between">
-                <div className="text-green-200">
-                  Assigned to {officer.assignedTo}
-                </div>
+                <div className="text-green-200">Assigned to {officer.assignedTo}</div>
                 <button
-                  onClick={() => onAssign(officer.id, "")}
+                  onClick={() => onAssign(officer.id, '')}
                   className="text-xs text-green-400 hover:text-green-300"
                 >
                   Reassign
@@ -237,14 +219,12 @@ export function OfficerDetails({
       )}
 
       {/* Assignment Options */}
-      {officer.status === "available" && (
+      {officer.status === 'available' && (
         <div>
-          <h4 className="text-sm font-medium text-gray-300 mb-3">
-            Available Assignments
-          </h4>
+          <h4 className="text-sm font-medium text-gray-300 mb-3">Available Assignments</h4>
           <div className="space-y-2">
             <button
-              onClick={() => onAssign(officer.id, "warFleet")}
+              onClick={() => onAssign(officer.id, 'warFleet')}
               className="w-full p-3 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg flex items-center justify-between"
             >
               <div className="flex items-center space-x-2">
@@ -254,7 +234,7 @@ export function OfficerDetails({
               <ChevronRight className="w-4 h-4 text-gray-500" />
             </button>
             <button
-              onClick={() => onAssign(officer.id, "reconFleet")}
+              onClick={() => onAssign(officer.id, 'reconFleet')}
               className="w-full p-3 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg flex items-center justify-between"
             >
               <div className="flex items-center space-x-2">
@@ -264,7 +244,7 @@ export function OfficerDetails({
               <ChevronRight className="w-4 h-4 text-gray-500" />
             </button>
             <button
-              onClick={() => onAssign(officer.id, "miningFleet")}
+              onClick={() => onAssign(officer.id, 'miningFleet')}
               className="w-full p-3 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg flex items-center justify-between"
             >
               <div className="flex items-center space-x-2">

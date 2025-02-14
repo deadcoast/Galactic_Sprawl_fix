@@ -1,14 +1,14 @@
-import { SpaceRatShip } from "../../common/SpaceRatShip";
-import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
-import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
-import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { SkullIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { SpaceRatShip } from '../../common/SpaceRatShip';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { SkullIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface RatKingProps {
   id: string;
   name: string;
-  type: "ratKing";
+  type: 'ratKing';
   status: ShipStatus;
   health: number;
   maxHealth: number;
@@ -20,7 +20,7 @@ interface RatKingProps {
   onEngage?: () => void;
   onRetreat?: () => void;
   onSpecialAbility?: () => void;
-  tactics: "aggressive";
+  tactics: 'aggressive';
   position: { x: number; y: number };
   rotation: number;
 }
@@ -47,23 +47,23 @@ export const RatKing: React.FC<RatKingProps> = ({
   const [plagueRatsActive, setPlagueRatsActive] = useState(false);
 
   useEffect(() => {
-    if (status === "disabled") {
+    if (status === 'disabled') {
       setPlagueRatsActive(false);
     }
   }, [status]);
 
   const mapStatus = (status: ShipStatus) => {
     switch (status) {
-      case "engaging":
-        return "engaging";
-      case "patrolling":
-        return "patrolling";
-      case "retreating":
-        return "retreating";
-      case "disabled":
-        return "disabled";
+      case 'engaging':
+        return 'engaging';
+      case 'patrolling':
+        return 'patrolling';
+      case 'retreating':
+        return 'retreating';
+      case 'disabled':
+        return 'disabled';
       default:
-        return "patrolling";
+        return 'patrolling';
     }
   };
 
@@ -102,7 +102,7 @@ export const RatKing: React.FC<RatKingProps> = ({
             setPlagueRatsActive(!plagueRatsActive);
             onSpecialAbility?.();
           }}
-          disabled={status === "disabled"}
+          disabled={status === 'disabled'}
         >
           <SkullIcon className="icon" />
           <span>Release Plague Rats</span>

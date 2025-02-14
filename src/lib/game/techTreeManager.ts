@@ -1,4 +1,4 @@
-import { EventEmitter } from "../utils/EventEmitter";
+import { EventEmitter } from '../utils/EventEmitter';
 
 interface TechNode {
   id: string;
@@ -8,14 +8,14 @@ interface TechNode {
   requirements: string[];
   unlocked: boolean;
   category:
-    | "infrastructure"
-    | "warFleet"
-    | "reconFleet"
-    | "miningFleet"
-    | "weapons"
-    | "defense"
-    | "special"
-    | "synergy";
+    | 'infrastructure'
+    | 'warFleet'
+    | 'reconFleet'
+    | 'miningFleet'
+    | 'weapons'
+    | 'defense'
+    | 'special'
+    | 'synergy';
 }
 
 class TechTreeManagerImpl extends EventEmitter {
@@ -43,7 +43,7 @@ class TechTreeManagerImpl extends EventEmitter {
     this.unlockedNodes.add(nodeId);
     node.unlocked = true;
 
-    this.emit("nodeUnlocked", { nodeId, node });
+    this.emit('nodeUnlocked', { nodeId, node });
     return true;
   }
 
@@ -56,7 +56,7 @@ class TechTreeManagerImpl extends EventEmitter {
     if (!node) return false;
 
     // Check if all requirements are met
-    return node.requirements.every((reqId) => this.isUnlocked(reqId));
+    return node.requirements.every(reqId => this.isUnlocked(reqId));
   }
 
   public getUnlockedNodes(): Set<string> {
@@ -69,13 +69,13 @@ class TechTreeManagerImpl extends EventEmitter {
 
   public getAvailableNodes(): TechNode[] {
     return Array.from(this.techNodes.values()).filter(
-      (node) => !node.unlocked && this.canUnlock(node.id),
+      node => !node.unlocked && this.canUnlock(node.id)
     );
   }
 
   // Special checks for specific tech capabilities
   public hasWarShipSalvage(): boolean {
-    return this.isUnlocked("cutting-laser");
+    return this.isUnlocked('cutting-laser');
   }
 }
 

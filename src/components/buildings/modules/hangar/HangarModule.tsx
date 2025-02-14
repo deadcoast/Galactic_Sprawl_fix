@@ -1,5 +1,5 @@
-import { BaseModule } from "../../../../types/buildings/ModuleTypes";
-import { Rocket, ShieldAlert, Wrench } from "lucide-react";
+import { BaseModule } from '../../../../types/buildings/ModuleTypes';
+import { Rocket, ShieldAlert, Wrench } from 'lucide-react';
 
 interface HangarModuleProps {
   module: BaseModule;
@@ -44,11 +44,11 @@ export function HangarModule({
           onClick={module.isActive ? onDeactivate : onActivate}
           className={`px-4 py-2 rounded-lg text-sm ${
             module.isActive
-              ? "bg-red-900/50 text-red-400 hover:bg-red-900/70"
-              : "bg-indigo-900/50 text-indigo-400 hover:bg-indigo-900/70"
+              ? 'bg-red-900/50 text-red-400 hover:bg-red-900/70'
+              : 'bg-indigo-900/50 text-indigo-400 hover:bg-indigo-900/70'
           }`}
         >
-          {module.isActive ? "Deactivate" : "Activate"}
+          {module.isActive ? 'Deactivate' : 'Activate'}
         </button>
       </div>
 
@@ -104,9 +104,7 @@ export function HangarModule({
         {/* Production Stats */}
         <div className="p-4 bg-gray-900/50 rounded-lg">
           <div className="text-sm text-gray-400 mb-2">Production Speed</div>
-          <div className="text-2xl font-bold text-white">
-            {100 + module.level * 25}%
-          </div>
+          <div className="text-2xl font-bold text-white">{100 + module.level * 25}%</div>
         </div>
       </div>
     </div>

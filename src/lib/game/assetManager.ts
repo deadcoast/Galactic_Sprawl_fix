@@ -94,7 +94,9 @@ export class AssetManager {
         // Load all bundles
         await Promise.all(
           this.bundles.map(async bundle => {
-            const loadedBundle = await PIXI.Assets.loadBundle<Record<string, PIXI.Texture | PIXI.Spritesheet>>(bundle.name);
+            const loadedBundle = await PIXI.Assets.loadBundle<
+              Record<string, PIXI.Texture | PIXI.Spritesheet>
+            >(bundle.name);
             bundle.assets.forEach(asset => {
               const loadedAsset = loadedBundle[asset.name];
               if (loadedAsset instanceof PIXI.Texture || loadedAsset instanceof PIXI.Spritesheet) {
@@ -166,4 +168,4 @@ export class AssetManager {
 }
 
 // Export singleton instance
-export const assetManager = AssetManager.getInstance(); 
+export const assetManager = AssetManager.getInstance();

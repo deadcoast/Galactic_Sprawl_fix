@@ -1,9 +1,9 @@
-import { AlertTriangle, Database } from "lucide-react";
+import { AlertTriangle, Database } from 'lucide-react';
 
 interface Resource {
   id: string;
   name: string;
-  type: "mineral" | "gas" | "exotic";
+  type: 'mineral' | 'gas' | 'exotic';
   abundance: number;
   distance: number;
   extractionRate: number;
@@ -26,21 +26,17 @@ interface ResourceNodeProps {
   };
 }
 
-export function ResourceNode({
-  resource,
-  isSelected,
-  onClick,
-}: ResourceNodeProps) {
-  const getTypeColor = (type: Resource["type"]) => {
+export function ResourceNode({ resource, isSelected, onClick }: ResourceNodeProps) {
+  const getTypeColor = (type: Resource['type']) => {
     switch (type) {
-      case "mineral":
-        return "cyan";
-      case "gas":
-        return "purple";
-      case "exotic":
-        return "amber";
+      case 'mineral':
+        return 'cyan';
+      case 'gas':
+        return 'purple';
+      case 'exotic':
+        return 'amber';
       default:
-        return "blue";
+        return 'blue';
     }
   };
 
@@ -57,9 +53,7 @@ export function ResourceNode({
     >
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="text-sm font-medium text-white mb-1">
-            {resource.name}
-          </h3>
+          <h3 className="text-sm font-medium text-white mb-1">{resource.name}</h3>
           <div className="flex items-center text-xs text-gray-400">
             <Database className="w-3 h-3 mr-1" />
             <span className="capitalize">{resource.type}</span>
@@ -67,9 +61,7 @@ export function ResourceNode({
             <span>{resource.distance}ly</span>
           </div>
         </div>
-        {resource.depletion > 0.5 && (
-          <AlertTriangle className="w-5 h-5 text-yellow-500" />
-        )}
+        {resource.depletion > 0.5 && <AlertTriangle className="w-5 h-5 text-yellow-500" />}
       </div>
 
       {/* Resource Bars */}
@@ -77,9 +69,7 @@ export function ResourceNode({
         <div>
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-400">Abundance</span>
-            <span className="text-gray-300">
-              {Math.round(resource.abundance * 100)}%
-            </span>
+            <span className="text-gray-300">{Math.round(resource.abundance * 100)}%</span>
           </div>
           <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
             <div

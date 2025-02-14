@@ -1,12 +1,12 @@
-import { useScalingSystem } from "../game/useScalingSystem";
-import { useCallback, useEffect, useState } from "react";
+import { useScalingSystem } from '../game/useScalingSystem';
+import { useCallback, useEffect, useState } from 'react';
 
 interface VPRSystemState {
   modules: {
     id: string;
-    type: "mothership" | "colony" | "planet" | "exploration" | "mining";
+    type: 'mothership' | 'colony' | 'planet' | 'exploration' | 'mining';
     tier: 1 | 2 | 3;
-    status: "active" | "upgrading" | "disabled";
+    status: 'active' | 'upgrading' | 'disabled';
     progress?: number;
   }[];
   upgrades: {
@@ -17,7 +17,7 @@ interface VPRSystemState {
   }[];
   alerts: {
     moduleId: string;
-    type: "warning" | "info";
+    type: 'warning' | 'info';
     message: string;
   }[];
 }
@@ -33,41 +33,33 @@ export function useVPRSystem() {
 
   // Memoized update handlers
   const handleModuleUpdate = useCallback((moduleId: string, data: any) => {
-    setSystemState((prev) => ({
+    setSystemState(prev => ({
       ...prev,
-      modules: prev.modules.map((mod) =>
-        mod.id === moduleId ? { ...mod, ...data } : mod,
+      modules: prev.modules.map(mod => (mod.id === moduleId ? { ...mod, ...data } : mod)),
+    }));
+  }, []);
+
+  const handleUpgradeProgress = useCallback((moduleId: string, progress: number) => {
+    setSystemState(prev => ({
+      ...prev,
+      upgrades: prev.upgrades.map(upgrade =>
+        upgrade.moduleId === moduleId ? { ...upgrade, progress } : upgrade
       ),
     }));
   }, []);
 
-  const handleUpgradeProgress = useCallback(
-    (moduleId: string, progress: number) => {
-      setSystemState((prev) => ({
-        ...prev,
-        upgrades: prev.upgrades.map((upgrade) =>
-          upgrade.moduleId === moduleId ? { ...upgrade, progress } : upgrade,
-        ),
-      }));
-    },
-    [],
-  );
-
   // Alert management
-  const addAlert = useCallback(
-    (moduleId: string, type: "warning" | "info", message: string) => {
-      setSystemState((prev) => ({
-        ...prev,
-        alerts: [...prev.alerts, { moduleId, type, message }],
-      }));
-    },
-    [],
-  );
+  const addAlert = useCallback((moduleId: string, type: 'warning' | 'info', message: string) => {
+    setSystemState(prev => ({
+      ...prev,
+      alerts: [...prev.alerts, { moduleId, type, message }],
+    }));
+  }, []);
 
   const clearAlert = useCallback((moduleId: string) => {
-    setSystemState((prev) => ({
+    setSystemState(prev => ({
       ...prev,
-      alerts: prev.alerts.filter((alert) => alert.moduleId !== moduleId),
+      alerts: prev.alerts.filter(alert => alert.moduleId !== moduleId),
     }));
   }, []);
 
@@ -76,29 +68,25 @@ export function useVPRSystem() {
     const updateInterval = scaling.performance.fps > 30 ? 16 : 32;
 
     const interval = setInterval(() => {
-      setSystemState((prev) => {
+      setSystemState(prev => {
         // Update upgrade progress
-        const updatedUpgrades = prev.upgrades.map((upgrade) => ({
+        const updatedUpgrades = prev.upgrades.map(upgrade => ({
           ...upgrade,
           progress: Math.min(1, upgrade.progress + 0.01),
         }));
 
         // Remove completed upgrades
-        const completedUpgrades = updatedUpgrades.filter(
-          (u) => u.progress >= 1,
-        );
-        const activeUpgrades = updatedUpgrades.filter((u) => u.progress < 1);
+        const completedUpgrades = updatedUpgrades.filter(u => u.progress >= 1);
+        const activeUpgrades = updatedUpgrades.filter(u => u.progress < 1);
 
         // Update module tiers for completed upgrades
-        const updatedModules = prev.modules.map((mod) => {
-          const completedUpgrade = completedUpgrades.find(
-            (u) => u.moduleId === mod.id,
-          );
+        const updatedModules = prev.modules.map(mod => {
+          const completedUpgrade = completedUpgrades.find(u => u.moduleId === mod.id);
           if (completedUpgrade) {
             return {
               ...mod,
               tier: completedUpgrade.toTier,
-              status: "active" as const,
+              status: 'active' as const,
             };
           }
           return mod;
@@ -119,17 +107,17 @@ export function useVPRSystem() {
   const handleError = useCallback((error: Error, moduleId: string) => {
     console.error(`VPR System Error in module ${moduleId}:`, error);
 
-    setSystemState((prev) => ({
+    setSystemState(prev => ({
       ...prev,
-      modules: prev.modules.map((mod) =>
-        mod.id === moduleId ? { ...mod, status: "disabled" } : mod,
+      modules: prev.modules.map(mod =>
+        mod.id === moduleId ? { ...mod, status: 'disabled' } : mod
       ),
       alerts: [
         ...prev.alerts,
         {
           moduleId,
-          type: "warning",
-          message: "Module encountered an error and has been disabled",
+          type: 'warning',
+          message: 'Module encountered an error and has been disabled',
         },
       ],
     }));

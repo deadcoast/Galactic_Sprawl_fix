@@ -1,14 +1,14 @@
-import { ThresholdPresetsPanel } from "./ThresholdPresetsPanel";
-import { ThresholdStatusIndicator } from "./ThresholdStatusIndicator";
-import { useThreshold } from "../../../../contexts/ThresholdContext";
-import { AnimatePresence, motion } from "framer-motion";
-import { Bookmark, Database, Settings } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ThresholdPresetsPanel } from './ThresholdPresetsPanel';
+import { ThresholdStatusIndicator } from './ThresholdStatusIndicator';
+import { useThreshold } from '../../../../contexts/ThresholdContext';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Bookmark, Database, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ThresholdManagerProps {
   resourceId: string;
   resourceName: string;
-  resourceType: "mineral" | "gas" | "exotic";
+  resourceType: 'mineral' | 'gas' | 'exotic';
   currentAmount: number;
   maxCapacity: number;
 }
@@ -25,18 +25,14 @@ export function ThresholdManager({
 
   const [isEditing, setIsEditing] = useState(false);
   const [showPresetsPanel, setShowPresetsPanel] = useState(false);
-  const [minThreshold, setMinThreshold] = useState(
-    resource?.thresholds.min || 0,
-  );
-  const [maxThreshold, setMaxThreshold] = useState(
-    resource?.thresholds.max || maxCapacity,
-  );
+  const [minThreshold, setMinThreshold] = useState(resource?.thresholds.min || 0);
+  const [maxThreshold, setMaxThreshold] = useState(resource?.thresholds.max || maxCapacity);
 
   // Initialize threshold if not exists
   useEffect(() => {
     if (!resource) {
       dispatch({
-        type: "ADD_RESOURCE",
+        type: 'ADD_RESOURCE',
         payload: {
           id: resourceId,
           name: resourceName,
@@ -64,7 +60,7 @@ export function ThresholdManager({
 
   const handleSaveThresholds = () => {
     dispatch({
-      type: "SET_THRESHOLD",
+      type: 'SET_THRESHOLD',
       payload: {
         resourceId,
         min: minThreshold,
@@ -76,7 +72,7 @@ export function ThresholdManager({
 
   const toggleAutoMine = () => {
     dispatch({
-      type: "TOGGLE_AUTO_MINE",
+      type: 'TOGGLE_AUTO_MINE',
       payload: { resourceId },
     });
   };
@@ -88,21 +84,17 @@ export function ThresholdManager({
           <Database className="text-indigo-400" size={20} />
           <h3 className="text-lg font-semibold text-white">{resourceName}</h3>
           {resource?.autoMine && (
-            <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
-              Auto
-            </span>
+            <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">Auto</span>
           )}
         </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={toggleAutoMine}
             className={`px-3 py-1 rounded text-sm ${
-              resource?.autoMine
-                ? "bg-blue-500 text-white"
-                : "bg-gray-600 text-gray-300"
+              resource?.autoMine ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-300'
             }`}
           >
-            {resource?.autoMine ? "Auto On" : "Auto Off"}
+            {resource?.autoMine ? 'Auto On' : 'Auto Off'}
           </button>
           <button
             onClick={() => setShowPresetsPanel(true)}
@@ -134,30 +126,26 @@ export function ThresholdManager({
         {isEditing && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
+            animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             className="space-y-4 mt-4"
           >
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Minimum Threshold
-                </label>
+                <label className="block text-sm text-gray-400 mb-1">Minimum Threshold</label>
                 <input
                   type="number"
                   value={minThreshold}
-                  onChange={(e) => setMinThreshold(Number(e.target.value))}
+                  onChange={e => setMinThreshold(Number(e.target.value))}
                   className="w-full bg-gray-700 text-white px-3 py-2 rounded"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Maximum Threshold
-                </label>
+                <label className="block text-sm text-gray-400 mb-1">Maximum Threshold</label>
                 <input
                   type="number"
                   value={maxThreshold}
-                  onChange={(e) => setMaxThreshold(Number(e.target.value))}
+                  onChange={e => setMaxThreshold(Number(e.target.value))}
                   className="w-full bg-gray-700 text-white px-3 py-2 rounded"
                 />
               </div>
@@ -182,9 +170,7 @@ export function ThresholdManager({
       </AnimatePresence>
 
       <AnimatePresence>
-        {showPresetsPanel && (
-          <ThresholdPresetsPanel onClose={() => setShowPresetsPanel(false)} />
-        )}
+        {showPresetsPanel && <ThresholdPresetsPanel onClose={() => setShowPresetsPanel(false)} />}
       </AnimatePresence>
     </div>
   );

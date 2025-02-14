@@ -1,33 +1,28 @@
-import { Star, Zap } from "lucide-react";
+import { Star, Zap } from 'lucide-react';
 
 interface ProgressionEffectsProps {
   tier: 1 | 2 | 3;
-  type: "building" | "ship" | "technology";
+  type: 'building' | 'ship' | 'technology';
   progress: number;
-  quality: "low" | "medium" | "high";
+  quality: 'low' | 'medium' | 'high';
 }
 
-export function ProgressionEffects({
-  tier,
-  type,
-  progress,
-  quality,
-}: ProgressionEffectsProps) {
+export function ProgressionEffects({ tier, type, progress, quality }: ProgressionEffectsProps) {
   const getEffectColor = () => {
     switch (tier) {
       case 1:
-        return "cyan";
+        return 'cyan';
       case 2:
-        return "violet";
+        return 'violet';
       case 3:
-        return "amber";
+        return 'amber';
       default:
-        return "blue";
+        return 'blue';
     }
   };
 
   const color = getEffectColor();
-  const particleCount = quality === "high" ? 8 : quality === "medium" ? 5 : 3;
+  const particleCount = quality === 'high' ? 8 : quality === 'medium' ? 5 : 3;
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -68,17 +63,13 @@ export function ProgressionEffects({
         ))}
 
         {/* Type-specific Effects */}
-        {type === "building" && (
-          <div
-            className={`absolute inset-0 border-2 border-${color}-500/30 rounded-lg`}
-          />
+        {type === 'building' && (
+          <div className={`absolute inset-0 border-2 border-${color}-500/30 rounded-lg`} />
         )}
-        {type === "ship" && (
-          <div
-            className={`absolute inset-0 bg-${color}-500/10 backdrop-blur-sm rounded-lg`}
-          />
+        {type === 'ship' && (
+          <div className={`absolute inset-0 bg-${color}-500/10 backdrop-blur-sm rounded-lg`} />
         )}
-        {type === "technology" && (
+        {type === 'technology' && (
           <div className="absolute inset-0 flex items-center justify-center">
             <Zap className={`w-8 h-8 text-${color}-400 animate-pulse`} />
           </div>

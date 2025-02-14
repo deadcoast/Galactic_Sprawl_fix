@@ -17,7 +17,7 @@ export interface Formation {
 }
 
 export interface DebugWeaponEffect {
-  type: "machineGun" | "railGun" | "gaussCannon" | "rockets";
+  type: 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets';
   status: string;
   damage: number;
   accuracy: number;
@@ -65,4 +65,4 @@ export interface DebugState {
     activeCombatZones: number;
   };
   warnings: string[];
-} 
+}

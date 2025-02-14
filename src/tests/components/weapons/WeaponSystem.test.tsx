@@ -5,91 +5,104 @@ import { SpaceRatShip } from '../../../components/ships/common/SpaceRatShip';
 import { LostNovaShip } from '../../../components/ships/common/LostNovaShip';
 import { EquatorHorizonShip } from '../../../components/ships/common/EquatorHorizonShip';
 import { WeaponSystem } from '../../../components/weapons/WeaponSystem';
-import { WeaponInstance, WeaponConfig, WeaponState, CombatWeaponStats, WeaponCategory, WeaponMount, WeaponMountSize, WeaponMountPosition } from '../../../types/weapons/WeaponTypes';
+import {
+  WeaponInstance,
+  WeaponConfig,
+  WeaponState,
+  CombatWeaponStats,
+  WeaponCategory,
+  WeaponMount,
+  WeaponMountSize,
+  WeaponMountPosition,
+} from '../../../types/weapons/WeaponTypes';
 import { TestWrapper } from '../../utils/testUtils';
 
 // Mock weapon data
-const mockWeapons: WeaponMount[] = [{
-  id: 'weapon-1',
-  size: 'medium' as WeaponMountSize,
-  position: 'front' as WeaponMountPosition,
-  rotation: 0,
-  allowedCategories: ['machineGun' as WeaponCategory],
-  currentWeapon: {
-    config: {
-      id: 'mg-1',
-      name: 'Machine Gun',
-      category: 'machineGun' as WeaponCategory,
-      tier: 1,
-      baseStats: {
-        damage: 10,
-        range: 300,
-        accuracy: 0.8,
-        rateOfFire: 10,
-        energyCost: 5,
-        cooldown: 0.1,
-        effects: []
+const mockWeapons: WeaponMount[] = [
+  {
+    id: 'weapon-1',
+    size: 'medium' as WeaponMountSize,
+    position: 'front' as WeaponMountPosition,
+    rotation: 0,
+    allowedCategories: ['machineGun' as WeaponCategory],
+    currentWeapon: {
+      config: {
+        id: 'mg-1',
+        name: 'Machine Gun',
+        category: 'machineGun' as WeaponCategory,
+        tier: 1,
+        baseStats: {
+          damage: 10,
+          range: 300,
+          accuracy: 0.8,
+          rateOfFire: 10,
+          energyCost: 5,
+          cooldown: 0.1,
+          effects: [],
+        },
+        visualAsset: 'weapons/machinegun/basic',
+        mountRequirements: {
+          size: 'medium' as WeaponMountSize,
+          power: 10,
+        },
       },
-      visualAsset: 'weapons/machinegun/basic',
-      mountRequirements: {
-        size: 'medium' as WeaponMountSize,
-        power: 10
-      }
+      state: {
+        status: 'ready',
+        currentStats: {
+          damage: 10,
+          range: 300,
+          accuracy: 0.8,
+          rateOfFire: 10,
+          energyCost: 5,
+          cooldown: 0.1,
+          effects: [],
+        },
+        effects: [],
+      },
     },
-    state: {
-      status: 'ready',
-      currentStats: {
-        damage: 10,
-        range: 300,
-        accuracy: 0.8,
-        rateOfFire: 10,
-        energyCost: 5,
-        cooldown: 0.1,
-        effects: []
-      },
-      effects: []
-    }
-  }
-}];
+  },
+];
 
 describe('Faction Ship Weapon Systems', () => {
   describe('SpaceRatShip', () => {
     it('should render weapon mounts correctly', () => {
       render(
-        <TestWrapper initialShipState={{
-          id: 'test-ship',
-          name: 'Test Ship',
-          status: 'patrolling',
-          health: 100,
-          maxHealth: 100,
-          shield: 50,
-          maxShield: 50,
-          weapons: mockWeapons,
-          stats: {
+        <TestWrapper
+          initialShipState={{
+            id: 'test-ship',
+            name: 'Test Ship',
+            status: 'patrolling',
             health: 100,
             maxHealth: 100,
             shield: 50,
             maxShield: 50,
-            energy: 100,
-            maxEnergy: 100,
-            speed: 100,
-            turnRate: 2,
-            cargo: 100,
             weapons: mockWeapons,
-            abilities: [],
-            defense: {
-              armor: 100,
+            stats: {
+              health: 100,
+              maxHealth: 100,
               shield: 50,
-              evasion: 0.3,
-              regeneration: 1,
-            },
-            mobility: {
+              maxShield: 50,
+              energy: 100,
+              maxEnergy: 100,
               speed: 100,
               turnRate: 2,
-              acceleration: 200,
+              cargo: 100,
+              weapons: mockWeapons,
+              abilities: [],
+              defense: {
+                armor: 100,
+                shield: 50,
+                evasion: 0.3,
+                regeneration: 1,
+              },
+              mobility: {
+                speed: 100,
+                turnRate: 2,
+                acceleration: 200,
+              },
             },
-          },
-        }}>
+          }}
+        >
           <SpaceRatShip
             id="test-ship"
             name="Test Ship"
@@ -112,40 +125,42 @@ describe('Faction Ship Weapon Systems', () => {
       const user = userEvent.setup();
       const onSpecialAbility = vi.fn();
       render(
-        <TestWrapper initialShipState={{
-          id: 'test-ship',
-          name: 'Test Ship',
-          status: 'patrolling',
-          health: 100,
-          maxHealth: 100,
-          shield: 50,
-          maxShield: 50,
-          weapons: mockWeapons,
-          stats: {
+        <TestWrapper
+          initialShipState={{
+            id: 'test-ship',
+            name: 'Test Ship',
+            status: 'patrolling',
             health: 100,
             maxHealth: 100,
             shield: 50,
             maxShield: 50,
-            energy: 100,
-            maxEnergy: 100,
-            speed: 100,
-            turnRate: 2,
-            cargo: 100,
             weapons: mockWeapons,
-            abilities: [],
-            defense: {
-              armor: 100,
+            stats: {
+              health: 100,
+              maxHealth: 100,
               shield: 50,
-              evasion: 0.3,
-              regeneration: 1,
-            },
-            mobility: {
+              maxShield: 50,
+              energy: 100,
+              maxEnergy: 100,
               speed: 100,
               turnRate: 2,
-              acceleration: 200,
+              cargo: 100,
+              weapons: mockWeapons,
+              abilities: [],
+              defense: {
+                armor: 100,
+                shield: 50,
+                evasion: 0.3,
+                regeneration: 1,
+              },
+              mobility: {
+                speed: 100,
+                turnRate: 2,
+                acceleration: 200,
+              },
             },
-          },
-        }}>
+          }}
+        >
           <SpaceRatShip
             id="test-ship"
             name="Test Ship"
@@ -173,40 +188,42 @@ describe('Faction Ship Weapon Systems', () => {
   describe('LostNovaShip', () => {
     it('should render weapon mounts correctly', () => {
       render(
-        <TestWrapper initialShipState={{
-          id: 'test-ship',
-          name: 'Test Ship',
-          status: 'patrolling',
-          health: 100,
-          maxHealth: 100,
-          shield: 50,
-          maxShield: 50,
-          weapons: mockWeapons,
-          stats: {
+        <TestWrapper
+          initialShipState={{
+            id: 'test-ship',
+            name: 'Test Ship',
+            status: 'patrolling',
             health: 100,
             maxHealth: 100,
             shield: 50,
             maxShield: 50,
-            energy: 100,
-            maxEnergy: 100,
-            speed: 100,
-            turnRate: 2,
-            cargo: 100,
             weapons: mockWeapons,
-            abilities: [],
-            defense: {
-              armor: 100,
+            stats: {
+              health: 100,
+              maxHealth: 100,
               shield: 50,
-              evasion: 0.3,
-              regeneration: 1,
-            },
-            mobility: {
+              maxShield: 50,
+              energy: 100,
+              maxEnergy: 100,
               speed: 100,
               turnRate: 2,
-              acceleration: 200,
+              cargo: 100,
+              weapons: mockWeapons,
+              abilities: [],
+              defense: {
+                armor: 100,
+                shield: 50,
+                evasion: 0.3,
+                regeneration: 1,
+              },
+              mobility: {
+                speed: 100,
+                turnRate: 2,
+                acceleration: 200,
+              },
             },
-          },
-        }}>
+          }}
+        >
           <LostNovaShip
             id="test-ship"
             name="Test Ship"
@@ -229,40 +246,42 @@ describe('Faction Ship Weapon Systems', () => {
       const user = userEvent.setup();
       const onSpecialAbility = vi.fn();
       render(
-        <TestWrapper initialShipState={{
-          id: 'test-ship',
-          name: 'Test Ship',
-          status: 'patrolling',
-          health: 100,
-          maxHealth: 100,
-          shield: 50,
-          maxShield: 50,
-          weapons: mockWeapons,
-          stats: {
+        <TestWrapper
+          initialShipState={{
+            id: 'test-ship',
+            name: 'Test Ship',
+            status: 'patrolling',
             health: 100,
             maxHealth: 100,
             shield: 50,
             maxShield: 50,
-            energy: 100,
-            maxEnergy: 100,
-            speed: 100,
-            turnRate: 2,
-            cargo: 100,
             weapons: mockWeapons,
-            abilities: [],
-            defense: {
-              armor: 100,
+            stats: {
+              health: 100,
+              maxHealth: 100,
               shield: 50,
-              evasion: 0.3,
-              regeneration: 1,
-            },
-            mobility: {
+              maxShield: 50,
+              energy: 100,
+              maxEnergy: 100,
               speed: 100,
               turnRate: 2,
-              acceleration: 200,
+              cargo: 100,
+              weapons: mockWeapons,
+              abilities: [],
+              defense: {
+                armor: 100,
+                shield: 50,
+                evasion: 0.3,
+                regeneration: 1,
+              },
+              mobility: {
+                speed: 100,
+                turnRate: 2,
+                acceleration: 200,
+              },
             },
-          },
-        }}>
+          }}
+        >
           <LostNovaShip
             id="test-ship"
             name="Test Ship"
@@ -290,40 +309,42 @@ describe('Faction Ship Weapon Systems', () => {
   describe('EquatorHorizonShip', () => {
     it('should render weapon mounts correctly', () => {
       render(
-        <TestWrapper initialShipState={{
-          id: 'test-ship',
-          name: 'Test Ship',
-          status: 'patrolling',
-          health: 100,
-          maxHealth: 100,
-          shield: 50,
-          maxShield: 50,
-          weapons: mockWeapons,
-          stats: {
+        <TestWrapper
+          initialShipState={{
+            id: 'test-ship',
+            name: 'Test Ship',
+            status: 'patrolling',
             health: 100,
             maxHealth: 100,
             shield: 50,
             maxShield: 50,
-            energy: 100,
-            maxEnergy: 100,
-            speed: 100,
-            turnRate: 2,
-            cargo: 100,
             weapons: mockWeapons,
-            abilities: [],
-            defense: {
-              armor: 100,
+            stats: {
+              health: 100,
+              maxHealth: 100,
               shield: 50,
-              evasion: 0.3,
-              regeneration: 1,
-            },
-            mobility: {
+              maxShield: 50,
+              energy: 100,
+              maxEnergy: 100,
               speed: 100,
               turnRate: 2,
-              acceleration: 200,
+              cargo: 100,
+              weapons: mockWeapons,
+              abilities: [],
+              defense: {
+                armor: 100,
+                shield: 50,
+                evasion: 0.3,
+                regeneration: 1,
+              },
+              mobility: {
+                speed: 100,
+                turnRate: 2,
+                acceleration: 200,
+              },
             },
-          },
-        }}>
+          }}
+        >
           <EquatorHorizonShip
             id="test-ship"
             name="Test Ship"
@@ -346,40 +367,42 @@ describe('Faction Ship Weapon Systems', () => {
       const user = userEvent.setup();
       const onSpecialAbility = vi.fn();
       render(
-        <TestWrapper initialShipState={{
-          id: 'test-ship',
-          name: 'Test Ship',
-          status: 'patrolling',
-          health: 100,
-          maxHealth: 100,
-          shield: 50,
-          maxShield: 50,
-          weapons: mockWeapons,
-          stats: {
+        <TestWrapper
+          initialShipState={{
+            id: 'test-ship',
+            name: 'Test Ship',
+            status: 'patrolling',
             health: 100,
             maxHealth: 100,
             shield: 50,
             maxShield: 50,
-            energy: 100,
-            maxEnergy: 100,
-            speed: 100,
-            turnRate: 2,
-            cargo: 100,
             weapons: mockWeapons,
-            abilities: [],
-            defense: {
-              armor: 100,
+            stats: {
+              health: 100,
+              maxHealth: 100,
               shield: 50,
-              evasion: 0.3,
-              regeneration: 1,
-            },
-            mobility: {
+              maxShield: 50,
+              energy: 100,
+              maxEnergy: 100,
               speed: 100,
               turnRate: 2,
-              acceleration: 200,
+              cargo: 100,
+              weapons: mockWeapons,
+              abilities: [],
+              defense: {
+                armor: 100,
+                shield: 50,
+                evasion: 0.3,
+                regeneration: 1,
+              },
+              mobility: {
+                speed: 100,
+                turnRate: 2,
+                acceleration: 200,
+              },
             },
-          },
-        }}>
+          }}
+        >
           <EquatorHorizonShip
             id="test-ship"
             name="Test Ship"
@@ -413,7 +436,7 @@ describe('WeaponSystem', () => {
     rateOfFire: 1,
     energyCost: 5,
     cooldown: 1000,
-    effects: []
+    effects: [],
   };
 
   const mockConfig: WeaponConfig = {
@@ -425,29 +448,23 @@ describe('WeaponSystem', () => {
     visualAsset: 'laser.png',
     mountRequirements: {
       size: 'small',
-      power: 10
-    }
+      power: 10,
+    },
   };
 
   const mockState: WeaponState = {
     status: 'ready',
     currentStats: mockStats,
-    effects: []
+    effects: [],
   };
 
   const mockWeapon: WeaponInstance = {
     config: mockConfig,
-    state: mockState
+    state: mockState,
   };
 
   it('renders weapon name correctly', () => {
-    render(
-      <WeaponSystem
-        weapon={mockWeapon}
-        onFire={vi.fn()}
-        onToggleEffect={vi.fn()}
-      />
-    );
+    render(<WeaponSystem weapon={mockWeapon} onFire={vi.fn()} onToggleEffect={vi.fn()} />);
 
     expect(screen.getByText('Test Weapon')).toBeInTheDocument();
   });
@@ -456,13 +473,7 @@ describe('WeaponSystem', () => {
     const onFire = vi.fn();
     const user = userEvent.setup();
 
-    render(
-      <WeaponSystem
-        weapon={mockWeapon}
-        onFire={onFire}
-        onToggleEffect={vi.fn()}
-      />
-    );
+    render(<WeaponSystem weapon={mockWeapon} onFire={onFire} onToggleEffect={vi.fn()} />);
 
     const fireButton = screen.getByRole('button', { name: /fire/i });
     await user.click(fireButton);
@@ -471,15 +482,9 @@ describe('WeaponSystem', () => {
   });
 
   it('displays weapon stats correctly', () => {
-    render(
-      <WeaponSystem
-        weapon={mockWeapon}
-        onFire={vi.fn()}
-        onToggleEffect={vi.fn()}
-      />
-    );
+    render(<WeaponSystem weapon={mockWeapon} onFire={vi.fn()} onToggleEffect={vi.fn()} />);
 
     expect(screen.getByText('10')).toBeInTheDocument(); // Damage
     expect(screen.getByText('100')).toBeInTheDocument(); // Range
   });
-}); 
+});

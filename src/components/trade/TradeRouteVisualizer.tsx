@@ -1,4 +1,4 @@
-import { Database } from "lucide-react";
+import { Database } from 'lucide-react';
 
 interface TradeRoute {
   id: string;
@@ -17,7 +17,7 @@ interface TradeRoute {
     type: string;
     amount: number;
   }[];
-  status: "active" | "disrupted" | "establishing";
+  status: 'active' | 'disrupted' | 'establishing';
 }
 
 interface TradeRouteVisualizerProps {
@@ -25,10 +25,7 @@ interface TradeRouteVisualizerProps {
   onRouteClick?: (routeId: string) => void;
 }
 
-export function TradeRouteVisualizer({
-  routes,
-  onRouteClick,
-}: TradeRouteVisualizerProps) {
+export function TradeRouteVisualizer({ routes, onRouteClick }: TradeRouteVisualizerProps) {
   return (
     <div className="absolute inset-0 pointer-events-none">
       <svg className="absolute inset-0">
@@ -39,25 +36,15 @@ export function TradeRouteVisualizer({
           </linearGradient>
 
           {/* Flow Animation */}
-          <pattern
-            id="flow-pattern"
-            width="20"
-            height="20"
-            patternUnits="userSpaceOnUse"
-          >
+          <pattern id="flow-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
             <circle cx="10" cy="10" r="2" fill="rgba(99, 102, 241, 0.5)">
-              <animate
-                attributeName="opacity"
-                values="0;1;0"
-                dur="2s"
-                repeatCount="indefinite"
-              />
+              <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" />
             </circle>
           </pattern>
         </defs>
 
         {/* Trade Routes */}
-        {routes.map((route) => {
+        {routes.map(route => {
           const startX = route.source.position.x;
           const startY = route.source.position.y;
           const endX = route.target.position.x;
@@ -80,13 +67,11 @@ export function TradeRouteVisualizer({
               <path
                 d={path}
                 stroke={
-                  route.status === "disrupted"
-                    ? "rgba(239, 68, 68, 0.3)"
-                    : "url(#route-gradient)"
+                  route.status === 'disrupted' ? 'rgba(239, 68, 68, 0.3)' : 'url(#route-gradient)'
                 }
                 strokeWidth={2 + route.volume * 2}
                 fill="none"
-                strokeDasharray={route.status === "disrupted" ? "5,5" : "none"}
+                strokeDasharray={route.status === 'disrupted' ? '5,5' : 'none'}
                 className="transition-all duration-300"
               />
 
@@ -96,12 +81,9 @@ export function TradeRouteVisualizer({
                 stroke="url(#flow-pattern)"
                 strokeWidth={4 + route.volume * 2}
                 fill="none"
-                className={route.status === "active" ? "animate-flow" : ""}
+                className={route.status === 'active' ? 'animate-flow' : ''}
                 style={{
-                  animation:
-                    route.status === "active"
-                      ? "flow 2s linear infinite"
-                      : "none",
+                  animation: route.status === 'active' ? 'flow 2s linear infinite' : 'none',
                 }}
               />
 
@@ -110,11 +92,11 @@ export function TradeRouteVisualizer({
                 <circle
                   r={10 + route.volume * 5}
                   fill={
-                    route.status === "active"
-                      ? "rgba(99, 102, 241, 0.2)"
-                      : route.status === "disrupted"
-                        ? "rgba(239, 68, 68, 0.2)"
-                        : "rgba(234, 179, 8, 0.2)"
+                    route.status === 'active'
+                      ? 'rgba(99, 102, 241, 0.2)'
+                      : route.status === 'disrupted'
+                        ? 'rgba(239, 68, 68, 0.2)'
+                        : 'rgba(234, 179, 8, 0.2)'
                   }
                   className="animate-pulse"
                 />
@@ -126,7 +108,7 @@ export function TradeRouteVisualizer({
       </svg>
 
       {/* Route Labels */}
-      {routes.map((route) => {
+      {routes.map(route => {
         const midX = (route.source.position.x + route.target.position.x) / 2;
         const midY = (route.source.position.y + route.target.position.y) / 2;
 
@@ -137,20 +119,20 @@ export function TradeRouteVisualizer({
             style={{
               left: midX,
               top: midY - 40,
-              transform: "translate(-50%, -50%)",
+              transform: 'translate(-50%, -50%)',
             }}
             onClick={() => onRouteClick?.(route.id)}
           >
             <div
               className={`px-3 py-1 rounded-full text-xs backdrop-blur-sm ${
-                route.status === "active"
-                  ? "bg-indigo-900/80 text-indigo-200"
-                  : route.status === "disrupted"
-                    ? "bg-red-900/80 text-red-200"
-                    : "bg-yellow-900/80 text-yellow-200"
+                route.status === 'active'
+                  ? 'bg-indigo-900/80 text-indigo-200'
+                  : route.status === 'disrupted'
+                    ? 'bg-red-900/80 text-red-200'
+                    : 'bg-yellow-900/80 text-yellow-200'
               }`}
             >
-              {route.resources.map((r) => `${r.amount} ${r.type}`).join(", ")}
+              {route.resources.map(r => `${r.amount} ${r.type}`).join(', ')}
             </div>
           </div>
         );

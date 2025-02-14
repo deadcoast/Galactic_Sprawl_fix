@@ -1,4 +1,4 @@
-import { Heart, Star, Users, Zap } from "lucide-react";
+import { Heart, Star, Users, Zap } from 'lucide-react';
 
 interface CulturalCenterProps {
   centerData: {
@@ -37,9 +37,7 @@ export function CulturalCenter({ centerData }: CulturalCenterProps) {
       <div className="mb-6">
         <div className="flex justify-between text-sm mb-2">
           <span className="text-gray-400">Colony Happiness</span>
-          <span className="text-purple-400">
-            {Math.round(centerData.happiness * 100)}%
-          </span>
+          <span className="text-purple-400">{Math.round(centerData.happiness * 100)}%</span>
         </div>
         <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
           <div
@@ -51,16 +49,12 @@ export function CulturalCenter({ centerData }: CulturalCenterProps) {
 
       {/* Active Events */}
       <div className="space-y-4 mb-6">
-        <h4 className="text-sm font-medium text-gray-300">
-          Active Cultural Events
-        </h4>
-        {centerData.events.map((event) => (
+        <h4 className="text-sm font-medium text-gray-300">Active Cultural Events</h4>
+        {centerData.events.map(event => (
           <div key={event.id} className="p-3 bg-gray-700/50 rounded-lg">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <div className="text-sm font-medium text-white">
-                  {event.name}
-                </div>
+                <div className="text-sm font-medium text-white">{event.name}</div>
                 <div className="text-xs text-purple-400">{event.effect}</div>
               </div>
               <div className="text-xs text-gray-400">
@@ -82,18 +76,16 @@ export function CulturalCenter({ centerData }: CulturalCenterProps) {
         {centerData.bonuses.map((bonus, index) => (
           <div key={index} className="p-3 bg-gray-700/50 rounded-lg">
             <div className="flex items-center space-x-2 mb-1">
-              {bonus.type.includes("Growth") ? (
+              {bonus.type.includes('Growth') ? (
                 <Users className="w-4 h-4 text-purple-400" />
-              ) : bonus.type.includes("Production") ? (
+              ) : bonus.type.includes('Production') ? (
                 <Zap className="w-4 h-4 text-purple-400" />
               ) : (
                 <Star className="w-4 h-4 text-purple-400" />
               )}
               <span className="text-sm text-gray-300">{bonus.type}</span>
             </div>
-            <div className="text-lg font-medium text-white">
-              +{bonus.value}%
-            </div>
+            <div className="text-lg font-medium text-white">+{bonus.value}%</div>
           </div>
         ))}
       </div>

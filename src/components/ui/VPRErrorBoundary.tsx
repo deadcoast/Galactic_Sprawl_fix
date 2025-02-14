@@ -1,5 +1,5 @@
-import { AlertTriangle } from "lucide-react";
-import React, { Component, ErrorInfo } from "react";
+import { AlertTriangle } from 'lucide-react';
+import React, { Component, ErrorInfo } from 'react';
 
 interface Props {
   moduleId: string;
@@ -23,7 +23,7 @@ export class VPRErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.props.onError(error, this.props.moduleId);
-    console.error("VPR Module Error:", error, errorInfo);
+    console.error('VPR Module Error:', error, errorInfo);
   }
 
   render() {

@@ -1,4 +1,4 @@
-import { AlertTriangle, Database } from "lucide-react";
+import { AlertTriangle, Database } from 'lucide-react';
 
 interface StorageData {
   id: string;
@@ -19,9 +19,8 @@ export function ResourceStorage({ storageData }: ResourceStorageProps) {
     <div className="bg-gray-800 rounded-lg p-4">
       <h3 className="text-sm font-medium text-white mb-4">Resource Storage</h3>
       <div className="space-y-4">
-        {storageData.map((resource) => {
-          const usagePercentage =
-            (resource.currentAmount / resource.maxCapacity) * 100;
+        {storageData.map(resource => {
+          const usagePercentage = (resource.currentAmount / resource.maxCapacity) * 100;
           const isNearCapacity = usagePercentage > 90;
 
           return (
@@ -29,13 +28,11 @@ export function ResourceStorage({ storageData }: ResourceStorageProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Database className="w-4 h-4 text-indigo-400" />
-                  <span className="text-sm text-gray-200">
-                    {resource.resourceType}
-                  </span>
+                  <span className="text-sm text-gray-200">{resource.resourceType}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-400">
-                    {resource.currentAmount.toLocaleString()} /{" "}
+                    {resource.currentAmount.toLocaleString()} /{' '}
                     {resource.maxCapacity.toLocaleString()}
                   </span>
                   {isNearCapacity && (
@@ -48,7 +45,7 @@ export function ResourceStorage({ storageData }: ResourceStorageProps) {
               <div className="relative h-2 bg-gray-700 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    isNearCapacity ? "bg-yellow-500" : "bg-indigo-500"
+                    isNearCapacity ? 'bg-yellow-500' : 'bg-indigo-500'
                   }`}
                   style={{ width: `${usagePercentage}%` }}
                 />
@@ -60,9 +57,7 @@ export function ResourceStorage({ storageData }: ResourceStorageProps) {
                   <div className="flex-1">
                     <div className="flex justify-between text-gray-400 mb-1">
                       <span>Refining</span>
-                      <span>
-                        {Math.round(resource.refiningProgress * 100)}%
-                      </span>
+                      <span>{Math.round(resource.refiningProgress * 100)}%</span>
                     </div>
                     <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
                       <div
@@ -71,9 +66,7 @@ export function ResourceStorage({ storageData }: ResourceStorageProps) {
                       />
                     </div>
                   </div>
-                  <span className="text-teal-400">
-                    +{resource.refiningAmount}
-                  </span>
+                  <span className="text-teal-400">+{resource.refiningAmount}</span>
                 </div>
               )}
 

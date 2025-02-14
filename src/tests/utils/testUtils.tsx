@@ -8,7 +8,7 @@ interface TestWrapperProps {
   initialShipState?: {
     id: string;
     name: string;
-    status: "engaging" | "patrolling" | "retreating" | "disabled";
+    status: 'engaging' | 'patrolling' | 'retreating' | 'disabled';
     health: number;
     maxHealth: number;
     shield: number;
@@ -55,8 +55,6 @@ export function TestWrapper({ children, initialShipState }: TestWrapperProps) {
   };
 
   return (
-    <ShipProvider initialState={initialShipState || defaultShipState}>
-      {children}
-    </ShipProvider>
+    <ShipProvider initialState={initialShipState || defaultShipState}>{children}</ShipProvider>
   );
-} 
+}

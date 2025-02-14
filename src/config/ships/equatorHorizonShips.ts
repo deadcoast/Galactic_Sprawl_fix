@@ -1,6 +1,12 @@
-import { EquatorHorizonShipClass, FactionShipStats } from "../../types/ships/FactionShipTypes";
-import { WeaponMount, WeaponMountSize, WeaponMountPosition, WeaponStatus, WeaponInstance } from "../../types/weapons/WeaponTypes";
-import { DamageEffect, AreaEffect } from "../../effects/types_effects/WeaponEffects";
+import { EquatorHorizonShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
+import {
+  WeaponMount,
+  WeaponMountSize,
+  WeaponMountPosition,
+  WeaponStatus,
+  WeaponInstance,
+} from '../../types/weapons/WeaponTypes';
+import { DamageEffect, AreaEffect } from '../../effects/types_effects/WeaponEffects';
 import {
   PLASMA_EFFECT,
   GAUSS_EFFECT,
@@ -10,49 +16,49 @@ import {
   STEALTH_EFFECT,
   SPEED_REDUCTION_EFFECT,
   SHIELD_FIELD_EFFECT,
-} from "../../effects/types_effects/shipEffects";
+} from '../../effects/types_effects/shipEffects';
 
 // Special weapon effects for Equator Horizon
 const TEMPORAL_EFFECT = {
-  type: "damage",
-  name: "Temporal Disruption",
-  description: "Time-warping energy damage",
+  type: 'damage',
+  name: 'Temporal Disruption',
+  description: 'Time-warping energy damage',
   magnitude: 80,
   duration: 3,
   active: true,
   cooldown: 3.0,
   damage: 80,
-  damageType: "energy",
+  damageType: 'energy',
   penetration: 0.3,
-  strength: 80
+  strength: 80,
 } as DamageEffect;
 
 const QUANTUM_EFFECT = {
-  type: "damage",
-  name: "Quantum Collapse",
-  description: "Reality-warping energy damage",
+  type: 'damage',
+  name: 'Quantum Collapse',
+  description: 'Reality-warping energy damage',
   magnitude: 100,
   duration: 2,
   active: true,
   cooldown: 4.0,
   damage: 100,
-  damageType: "energy",
+  damageType: 'energy',
   penetration: 0.4,
-  strength: 100
+  strength: 100,
 } as DamageEffect;
 
 const HARMONIC_EFFECT = {
-  type: "damage",
-  name: "Harmonic Resonance",
-  description: "Shield-penetrating harmonic damage",
+  type: 'damage',
+  name: 'Harmonic Resonance',
+  description: 'Shield-penetrating harmonic damage',
   magnitude: 60,
   duration: 4,
   active: true,
   cooldown: 2.5,
   damage: 60,
-  damageType: "energy",
+  damageType: 'energy',
   penetration: 0.25,
-  strength: 60
+  strength: 60,
 } as DamageEffect;
 
 export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipStats> = {
@@ -67,19 +73,19 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     turnRate: 3,
     cargo: 300,
     tier: 3,
-    faction: "equator-horizon",
+    faction: 'equator-horizon',
     weapons: [
       {
-        id: "rail-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'rail-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["railGun"],
+        allowedCategories: ['railGun'],
         currentWeapon: {
           config: {
-            id: "heavy-railgun",
-            name: "Heavy Railgun",
-            category: "railGun",
+            id: 'heavy-railgun',
+            name: 'Heavy Railgun',
+            category: 'railGun',
             tier: 3,
             baseStats: {
               damage: 300,
@@ -90,14 +96,14 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               cooldown: 3,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/railgun/heavy",
+            visualAsset: 'weapons/railgun/heavy',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 40,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 300,
               range: 1500,
@@ -125,8 +131,8 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
-        name: "Balance Restoration",
-        description: "Creates a powerful shield around nearby allies",
+        name: 'Balance Restoration',
+        description: 'Creates a powerful shield around nearby allies',
         cooldown: 45,
         duration: 15,
         active: false,
@@ -145,19 +151,19 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     turnRate: 3,
     cargo: 300,
     tier: 3,
-    faction: "equator-horizon",
+    faction: 'equator-horizon',
     weapons: [
       {
-        id: "mgss-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'mgss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["mgss"],
+        allowedCategories: ['mgss'],
         currentWeapon: {
           config: {
-            id: "mgss-cannon",
-            name: "MGSS Cannon",
-            category: "mgss",
+            id: 'mgss-cannon',
+            name: 'MGSS Cannon',
+            category: 'mgss',
             tier: 3,
             baseStats: {
               damage: 80,
@@ -168,14 +174,14 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               cooldown: 3,
               effects: [PLASMA_EFFECT],
             },
-            visualAsset: "weapons/mgss/advanced",
+            visualAsset: 'weapons/mgss/advanced',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 30,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 80,
               range: 1200,
@@ -203,8 +209,8 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
-        name: "Ancient Energy",
-        description: "Temporarily increases damage output",
+        name: 'Ancient Energy',
+        description: 'Temporarily increases damage output',
         cooldown: 40,
         duration: 12,
         active: false,
@@ -223,19 +229,19 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     turnRate: 2.5,
     cargo: 250,
     tier: 3,
-    faction: "equator-horizon",
+    faction: 'equator-horizon',
     weapons: [
       {
-        id: "harmonic-1",
-        size: "large" as WeaponMountSize,
-        position: "turret" as WeaponMountPosition,
+        id: 'harmonic-1',
+        size: 'large' as WeaponMountSize,
+        position: 'turret' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["harmonicCannon"],
+        allowedCategories: ['harmonicCannon'],
         currentWeapon: {
           config: {
-            id: "harmonic-resonator",
-            name: "Harmonic Resonator",
-            category: "harmonicCannon",
+            id: 'harmonic-resonator',
+            name: 'Harmonic Resonator',
+            category: 'harmonicCannon',
             tier: 3,
             baseStats: {
               damage: 180,
@@ -246,14 +252,14 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               cooldown: 2.5,
               effects: [HARMONIC_EFFECT],
             },
-            visualAsset: "weapons/harmonic/resonator",
+            visualAsset: 'weapons/harmonic/resonator',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 35,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 180,
               range: 1000,
@@ -281,22 +287,22 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
-        name: "Harmonic Convergence",
-        description: "Creates a field of resonating energy that damages and weakens enemy armor",
+        name: 'Harmonic Convergence',
+        description: 'Creates a field of resonating energy that damages and weakens enemy armor',
         cooldown: 35,
         duration: 12,
         active: false,
         effect: {
-          type: "area",
-          name: "Harmonic Convergence",
-          description: "Resonating energy field",
+          type: 'area',
+          name: 'Harmonic Convergence',
+          description: 'Resonating energy field',
           magnitude: 2,
           duration: 12,
           active: false,
           cooldown: 35,
           strength: 2,
           falloff: 0.5,
-          radius: 400
+          radius: 400,
         } as AreaEffect,
       },
     ],
@@ -312,19 +318,19 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     turnRate: 2,
     cargo: 200,
     tier: 3,
-    faction: "equator-horizon",
+    faction: 'equator-horizon',
     weapons: [
       {
-        id: "temporal-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'temporal-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["temporalCannon"],
+        allowedCategories: ['temporalCannon'],
         currentWeapon: {
           config: {
-            id: "temporal-disruptor",
-            name: "Temporal Disruptor",
-            category: "temporalCannon",
+            id: 'temporal-disruptor',
+            name: 'Temporal Disruptor',
+            category: 'temporalCannon',
             tier: 3,
             baseStats: {
               damage: 150,
@@ -335,14 +341,14 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               cooldown: 4,
               effects: [TEMPORAL_EFFECT],
             },
-            visualAsset: "weapons/temporal/disruptor",
+            visualAsset: 'weapons/temporal/disruptor',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 45,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 150,
               range: 1300,
@@ -370,22 +376,22 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
-        name: "Time Dilation",
-        description: "Creates a field that slows down time for enemies",
+        name: 'Time Dilation',
+        description: 'Creates a field that slows down time for enemies',
         cooldown: 40,
         duration: 10,
         active: false,
         effect: {
-          type: "area",
-          name: "Time Dilation",
-          description: "Time dilation field",
+          type: 'area',
+          name: 'Time Dilation',
+          description: 'Time dilation field',
           magnitude: 2.5,
           duration: 10,
           active: false,
           cooldown: 40,
           strength: 2.5,
           falloff: 0.5,
-          radius: 600
+          radius: 600,
         } as AreaEffect,
       },
     ],
@@ -401,19 +407,19 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     turnRate: 3,
     cargo: 180,
     tier: 2,
-    faction: "equator-horizon",
+    faction: 'equator-horizon',
     weapons: [
       {
-        id: "quantum-1",
-        size: "medium" as WeaponMountSize,
-        position: "turret" as WeaponMountPosition,
+        id: 'quantum-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'turret' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["quantumCannon"],
+        allowedCategories: ['quantumCannon'],
         currentWeapon: {
           config: {
-            id: "quantum-lance",
-            name: "Quantum Lance",
-            category: "quantumCannon",
+            id: 'quantum-lance',
+            name: 'Quantum Lance',
+            category: 'quantumCannon',
             tier: 2,
             baseStats: {
               damage: 120,
@@ -424,14 +430,14 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               cooldown: 3,
               effects: [QUANTUM_EFFECT],
             },
-            visualAsset: "weapons/quantum/lance",
+            visualAsset: 'weapons/quantum/lance',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 35,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 120,
               range: 900,
@@ -459,22 +465,22 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
-        name: "Quantum Entanglement",
-        description: "Creates quantum distortions that bypass enemy shields",
+        name: 'Quantum Entanglement',
+        description: 'Creates quantum distortions that bypass enemy shields',
         cooldown: 30,
         duration: 8,
         active: false,
         effect: {
-          type: "area",
-          name: "Quantum Entanglement",
-          description: "Quantum distortion field",
+          type: 'area',
+          name: 'Quantum Entanglement',
+          description: 'Quantum distortion field',
           magnitude: 1.8,
           duration: 8,
           active: false,
           cooldown: 30,
           strength: 1.8,
           falloff: 0.5,
-          radius: 300
+          radius: 300,
         } as AreaEffect,
       },
     ],
@@ -490,19 +496,19 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     turnRate: 3,
     cargo: 300,
     tier: 3,
-    faction: "equator-horizon",
+    faction: 'equator-horizon',
     weapons: [
       {
-        id: "rocket-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'rocket-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["rockets"],
+        allowedCategories: ['rockets'],
         currentWeapon: {
           config: {
-            id: "heavy-rockets",
-            name: "Heavy Rockets",
-            category: "rockets",
+            id: 'heavy-rockets',
+            name: 'Heavy Rockets',
+            category: 'rockets',
             tier: 3,
             baseStats: {
               damage: 280,
@@ -513,14 +519,14 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               cooldown: 4,
               effects: [EXPLOSIVE_EFFECT],
             },
-            visualAsset: "weapons/rockets/heavy",
+            visualAsset: 'weapons/rockets/heavy',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 45,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 280,
               range: 1600,
@@ -548,8 +554,8 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
-        name: "First Contact",
-        description: "Creates a massive protective shield",
+        name: 'First Contact',
+        description: 'Creates a massive protective shield',
         cooldown: 55,
         duration: 18,
         active: false,
@@ -568,19 +574,19 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     turnRate: 3,
     cargo: 280,
     tier: 3,
-    faction: "equator-horizon",
+    faction: 'equator-horizon',
     weapons: [
       {
-        id: "gauss-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'gauss-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["gaussCannon"],
+        allowedCategories: ['gaussCannon'],
         currentWeapon: {
           config: {
-            id: "gauss-cannon",
-            name: "Gauss Cannon",
-            category: "gaussCannon",
+            id: 'gauss-cannon',
+            name: 'Gauss Cannon',
+            category: 'gaussCannon',
             tier: 3,
             baseStats: {
               damage: 220,
@@ -591,14 +597,14 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               cooldown: 3,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/gauss/heavy",
+            visualAsset: 'weapons/gauss/heavy',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 40,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 220,
               range: 1400,
@@ -626,8 +632,8 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
-        name: "Threat Neutralization",
-        description: "Unleashes a devastating attack",
+        name: 'Threat Neutralization',
+        description: 'Unleashes a devastating attack',
         cooldown: 42,
         duration: 12,
         active: false,
@@ -646,19 +652,19 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     turnRate: 3,
     cargo: 400,
     tier: 3,
-    faction: "equator-horizon",
+    faction: 'equator-horizon',
     weapons: [
       {
-        id: "rail-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'rail-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["railGun"],
+        allowedCategories: ['railGun'],
         currentWeapon: {
           config: {
-            id: "heavy-railgun",
-            name: "Heavy Railgun",
-            category: "railGun",
+            id: 'heavy-railgun',
+            name: 'Heavy Railgun',
+            category: 'railGun',
             tier: 3,
             baseStats: {
               damage: 350,
@@ -669,14 +675,14 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               cooldown: 4,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/railgun/heavy",
+            visualAsset: 'weapons/railgun/heavy',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 50,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 350,
               range: 1800,
@@ -704,8 +710,8 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
-        name: "Wrath of Balance",
-        description: "Unleashes devastating area damage",
+        name: 'Wrath of Balance',
+        description: 'Unleashes devastating area damage',
         cooldown: 60,
         duration: 20,
         active: false,
@@ -724,19 +730,19 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     turnRate: 3,
     cargo: 200,
     tier: 3,
-    faction: "equator-horizon",
+    faction: 'equator-horizon',
     weapons: [
       {
-        id: "mgss-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'mgss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["mgss"],
+        allowedCategories: ['mgss'],
         currentWeapon: {
           config: {
-            id: "mgss-cannon",
-            name: "MGSS Cannon",
-            category: "mgss",
+            id: 'mgss-cannon',
+            name: 'MGSS Cannon',
+            category: 'mgss',
             tier: 3,
             baseStats: {
               damage: 100,
@@ -747,14 +753,14 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               cooldown: 3,
               effects: [PLASMA_EFFECT],
             },
-            visualAsset: "weapons/mgss/advanced",
+            visualAsset: 'weapons/mgss/advanced',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 25,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 100,
               range: 1000,
@@ -782,8 +788,8 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
-        name: "Perfect Stealth",
-        description: "Activates perfect stealth technology",
+        name: 'Perfect Stealth',
+        description: 'Activates perfect stealth technology',
         cooldown: 38,
         duration: 10,
         active: false,
@@ -802,19 +808,19 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     turnRate: 3,
     cargo: 300,
     tier: 3,
-    faction: "equator-horizon",
+    faction: 'equator-horizon',
     weapons: [
       {
-        id: "gauss-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'gauss-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["gaussCannon"],
+        allowedCategories: ['gaussCannon'],
         currentWeapon: {
           config: {
-            id: "gauss-cannon",
-            name: "Gauss Cannon",
-            category: "gaussCannon",
+            id: 'gauss-cannon',
+            name: 'Gauss Cannon',
+            category: 'gaussCannon',
             tier: 3,
             baseStats: {
               damage: 240,
@@ -825,14 +831,14 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               cooldown: 3,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/gauss/heavy",
+            visualAsset: 'weapons/gauss/heavy',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 45,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 240,
               range: 1500,
@@ -860,8 +866,8 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
-        name: "Order from Chaos",
-        description: "Creates a powerful shield field",
+        name: 'Order from Chaos',
+        description: 'Creates a powerful shield field',
         cooldown: 48,
         duration: 15,
         active: false,
@@ -869,4 +875,4 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
       },
     ],
   },
-} as const; 
+} as const;

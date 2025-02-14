@@ -12,7 +12,7 @@ export function useModuleEvents(types: ModuleEventType[] = [], moduleId?: string
 
     // Subscribe to each event type
     types.forEach(type => {
-      const unsubscribe = moduleEventBus.subscribe(type, (event) => {
+      const unsubscribe = moduleEventBus.subscribe(type, event => {
         // Filter by moduleId if provided
         if (!moduleId || event.moduleId === moduleId) {
           setEvents(prev => [...prev, event]);
@@ -42,46 +42,44 @@ export function useLastModuleEvent(types: ModuleEventType[], moduleId?: string) 
  * Hook to subscribe to module lifecycle events
  */
 export function useModuleLifecycle(moduleId: string) {
-  return useModuleEvents([
-    'MODULE_CREATED',
-    'MODULE_ATTACHED',
-    'MODULE_DETACHED',
-    'MODULE_UPGRADED',
-    'MODULE_ACTIVATED',
-    'MODULE_DEACTIVATED'
-  ], moduleId);
+  return useModuleEvents(
+    [
+      'MODULE_CREATED',
+      'MODULE_ATTACHED',
+      'MODULE_DETACHED',
+      'MODULE_UPGRADED',
+      'MODULE_ACTIVATED',
+      'MODULE_DEACTIVATED',
+    ],
+    moduleId
+  );
 }
 
 /**
  * Hook to subscribe to module resource events
  */
 export function useModuleResources(moduleId: string) {
-  return useModuleEvents([
-    'RESOURCE_PRODUCED',
-    'RESOURCE_CONSUMED',
-    'RESOURCE_TRANSFERRED'
-  ], moduleId);
+  return useModuleEvents(
+    ['RESOURCE_PRODUCED', 'RESOURCE_CONSUMED', 'RESOURCE_TRANSFERRED'],
+    moduleId
+  );
 }
 
 /**
  * Hook to subscribe to module automation events
  */
 export function useModuleAutomation(moduleId: string) {
-  return useModuleEvents([
-    'AUTOMATION_STARTED',
-    'AUTOMATION_STOPPED',
-    'AUTOMATION_CYCLE_COMPLETE'
-  ], moduleId);
+  return useModuleEvents(
+    ['AUTOMATION_STARTED', 'AUTOMATION_STOPPED', 'AUTOMATION_CYCLE_COMPLETE'],
+    moduleId
+  );
 }
 
 /**
  * Hook to subscribe to module status events
  */
 export function useModuleStatus(moduleId: string) {
-  return useModuleEvents([
-    'STATUS_CHANGED',
-    'ERROR_OCCURRED'
-  ], moduleId);
+  return useModuleEvents(['STATUS_CHANGED', 'ERROR_OCCURRED'], moduleId);
 }
 
 /**
@@ -99,4 +97,4 @@ export function useModuleHistory(moduleId?: string) {
   }, [moduleId]);
 
   return history;
-} 
+}

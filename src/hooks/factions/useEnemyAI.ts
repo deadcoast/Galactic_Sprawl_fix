@@ -1,20 +1,17 @@
-import { factionManager } from "../../lib/factions/factionManager";
-import { useEffect, useState } from "react";
+import { factionManager } from '../../lib/factions/factionManager';
+import { useEffect, useState } from 'react';
 
 interface CombatManager {
   getUnitStatus: (unitId: string) => CombatUnit | undefined;
   engageTarget: (unitId: string, targetId: string) => void;
   moveUnit: (unitId: string, position: { x: number; y: number }) => void;
-  getUnitsInRange: (
-    position: { x: number; y: number },
-    range: number,
-  ) => CombatUnit[];
+  getUnitsInRange: (position: { x: number; y: number }, range: number) => CombatUnit[];
 }
 
 declare const combatManager: CombatManager;
 
 interface AIState {
-  behaviorState: "idle" | "patrolling" | "engaging" | "retreating";
+  behaviorState: 'idle' | 'patrolling' | 'engaging' | 'retreating';
   targetId?: string;
   lastDecision: number;
   currentPath?: { x: number; y: number }[];
@@ -45,7 +42,7 @@ interface FactionState {
 
 export function useEnemyAI(unitId: string, factionId: string) {
   const [aiState, setAIState] = useState<AIState>({
-    behaviorState: "idle",
+    behaviorState: 'idle',
     lastDecision: Date.now(),
     fleetStrength: 1,
     threatLevel: 0,
@@ -77,7 +74,7 @@ export function useEnemyAI(unitId: string, factionId: string) {
 function evaluateBehaviorTree(
   unit: CombatUnit,
   faction: FactionState,
-  currentState: AIState,
+  currentState: AIState
 ): AIState {
   const newState = { ...currentState };
   const now = Date.now();
@@ -89,32 +86,31 @@ function evaluateBehaviorTree(
 
   // Update metrics
   newState.fleetStrength = unit.health / unit.maxHealth;
-  newState.threatLevel =
-    calculateThreatLevel(unit) * (faction.fleetStrength > 0.5 ? 0.8 : 1.2); // Adjust threat based on faction strength
+  newState.threatLevel = calculateThreatLevel(unit) * (faction.fleetStrength > 0.5 ? 0.8 : 1.2); // Adjust threat based on faction strength
   newState.lastDecision = now;
 
   // Behavior Tree Logic
   if (shouldRetreat(unit, newState.threatLevel)) {
-    newState.behaviorState = "retreating";
+    newState.behaviorState = 'retreating';
     newState.targetId = undefined;
     return newState;
   }
 
-  if (unit.status === "disabled") {
-    newState.behaviorState = "idle";
+  if (unit.status === 'disabled') {
+    newState.behaviorState = 'idle';
     newState.targetId = undefined;
     return newState;
   }
 
   const nearbyTarget = findNearbyTarget(unit);
   if (nearbyTarget) {
-    newState.behaviorState = "engaging";
+    newState.behaviorState = 'engaging';
     newState.targetId = nearbyTarget.id;
     return newState;
   }
 
-  if (currentState.behaviorState !== "patrolling") {
-    newState.behaviorState = "patrolling";
+  if (currentState.behaviorState !== 'patrolling') {
+    newState.behaviorState = 'patrolling';
     newState.currentPath = generatePatrolPath(unit);
   }
 
@@ -123,19 +119,19 @@ function evaluateBehaviorTree(
 
 function executeAIActions(state: AIState, unit: CombatUnit) {
   switch (state.behaviorState) {
-    case "engaging":
+    case 'engaging':
       if (state.targetId) {
         combatManager.engageTarget(unit.id, state.targetId);
       }
       break;
 
-    case "retreating": {
+    case 'retreating': {
       const retreatPoint = findRetreatPoint(unit);
       combatManager.moveUnit(unit.id, retreatPoint);
       break;
     }
 
-    case "patrolling": {
+    case 'patrolling': {
       if (state.currentPath && state.currentPath.length > 0) {
         const nextPoint = state.currentPath[0];
         combatManager.moveUnit(unit.id, nextPoint);
@@ -155,7 +151,7 @@ function calculateThreatLevel(unit: CombatUnit): number {
   const nearbyEnemies = findNearbyEnemies(unit);
   let threat = 0;
 
-  nearbyEnemies.forEach((enemy) => {
+  nearbyEnemies.forEach(enemy => {
     const distance = getDistance(unit.position, enemy.position);
     const healthFactor = enemy.health / enemy.maxHealth;
     threat += healthFactor * (1 - distance / 1000);
@@ -181,7 +177,7 @@ function findNearbyEnemies(unit: CombatUnit) {
   // Get all units within detection range
   return combatManager
     .getUnitsInRange(unit.position, 1000)
-    .filter((other) => other.faction !== unit.faction);
+    .filter(other => other.faction !== unit.faction);
 }
 
 function generatePatrolPath(unit: CombatUnit) {
@@ -217,7 +213,7 @@ function findRetreatPoint(unit: CombatUnit) {
       x: acc.x + threat.position.x / threats.length,
       y: acc.y + threat.position.y / threats.length,
     }),
-    { x: 0, y: 0 },
+    { x: 0, y: 0 }
   );
 
   // Retreat in opposite direction
@@ -231,10 +227,7 @@ function findRetreatPoint(unit: CombatUnit) {
   };
 }
 
-function getDistance(
-  pos1: { x: number; y: number },
-  pos2: { x: number; y: number },
-) {
+function getDistance(pos1: { x: number; y: number }, pos2: { x: number; y: number }) {
   const dx = pos1.x - pos2.x;
   const dy = pos1.y - pos2.y;
   return Math.sqrt(dx * dx + dy * dy);

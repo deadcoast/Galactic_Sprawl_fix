@@ -1,5 +1,5 @@
-import { ChevronRight, Database, Settings, Truck, X } from "lucide-react";
-import React from "react";
+import { ChevronRight, Database, Settings, Truck, X } from 'lucide-react';
+import React from 'react';
 
 interface TutorialStep {
   title: string;
@@ -10,32 +10,31 @@ interface TutorialStep {
 
 const tutorialSteps: TutorialStep[] = [
   {
-    title: "Resource Management",
+    title: 'Resource Management',
     description:
-      "View and manage your resource nodes. Each node shows its type, abundance, and extraction rate.",
+      'View and manage your resource nodes. Each node shows its type, abundance, and extraction rate.',
     icon: Database,
-    target: "resource-nodes",
+    target: 'resource-nodes',
   },
   {
-    title: "Mining Fleet",
+    title: 'Mining Fleet',
     description:
-      "Monitor your mining ships and their current activities. Ships automatically transport resources back to storage.",
+      'Monitor your mining ships and their current activities. Ships automatically transport resources back to storage.',
     icon: Truck,
-    target: "mining-fleet",
+    target: 'mining-fleet',
   },
   {
-    title: "Priority System",
-    description:
-      "Set mining priorities to determine which resources should be extracted first.",
+    title: 'Priority System',
+    description: 'Set mining priorities to determine which resources should be extracted first.',
     icon: ChevronRight,
-    target: "priority-controls",
+    target: 'priority-controls',
   },
   {
-    title: "Storage Thresholds",
+    title: 'Storage Thresholds',
     description:
-      "Configure minimum and maximum storage levels to maintain optimal resource levels.",
+      'Configure minimum and maximum storage levels to maintain optimal resource levels.',
     icon: Settings,
-    target: "threshold-controls",
+    target: 'threshold-controls',
   },
 ];
 
@@ -48,7 +47,7 @@ export function MiningTutorial({ onClose }: MiningTutorialProps) {
 
   const nextStep = () => {
     if (currentStep < tutorialSteps.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+      setCurrentStep(prev => prev + 1);
     } else {
       onClose();
     }
@@ -83,7 +82,7 @@ export function MiningTutorial({ onClose }: MiningTutorialProps) {
               <div
                 key={index}
                 className={`w-2 h-2 rounded-full ${
-                  index === currentStep ? "bg-indigo-500" : "bg-gray-600"
+                  index === currentStep ? 'bg-indigo-500' : 'bg-gray-600'
                 }`}
               />
             ))}
@@ -93,11 +92,7 @@ export function MiningTutorial({ onClose }: MiningTutorialProps) {
             onClick={nextStep}
             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center space-x-2 transition-colors"
           >
-            <span>
-              {currentStep === tutorialSteps.length - 1
-                ? "Get Started"
-                : "Next"}
-            </span>
+            <span>{currentStep === tutorialSteps.length - 1 ? 'Get Started' : 'Next'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

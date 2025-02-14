@@ -128,4 +128,4 @@ export class ModuleEventBus {
 }
 
 // Export singleton instance
-export const moduleEventBus = new ModuleEventBus(); 
+export const moduleEventBus = new ModuleEventBus();

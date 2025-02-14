@@ -1,33 +1,21 @@
 // Base Types
-export type Quality = "low" | "medium" | "high";
+export type Quality = 'low' | 'medium' | 'high';
 export type Tier = 1 | 2 | 3;
 
 // Faction Types
-export type FactionId = "spaceRats" | "lostNova" | "equatorHorizon";
+export type FactionId = 'spaceRats' | 'lostNova' | 'equatorHorizon';
 
 // Core Status Types
-export type BaseStatus =
-  | "idle"
-  | "engaging"
-  | "patrolling"
-  | "retreating"
-  | "disabled"
-  | "damaged";
-export type CombatStatus = Extract<
-  BaseStatus,
-  "engaging" | "retreating" | "damaged"
->;
-export type PatrolStatus = Extract<
-  BaseStatus,
-  "idle" | "patrolling" | "disabled"
->;
+export type BaseStatus = 'idle' | 'engaging' | 'patrolling' | 'retreating' | 'disabled' | 'damaged';
+export type CombatStatus = Extract<BaseStatus, 'engaging' | 'retreating' | 'damaged'>;
+export type PatrolStatus = Extract<BaseStatus, 'idle' | 'patrolling' | 'disabled'>;
 
 // Behavior Types
-export type AIBehavior = "aggressive" | "defensive" | "hit-and-run" | "support";
-export type CombatTactic = "flank" | "charge" | "kite" | "hold";
+export type AIBehavior = 'aggressive' | 'defensive' | 'hit-and-run' | 'support';
+export type CombatTactic = 'flank' | 'charge' | 'kite' | 'hold';
 
 // Resource Types
-export type ResourceType = "minerals" | "energy" | "population" | "research";
+export type ResourceType = 'minerals' | 'energy' | 'population' | 'research';
 export type ResourceAmount = {
   type: ResourceType;
   amount: number;
@@ -78,7 +66,7 @@ export interface Ability {
 }
 
 // Event Types
-export type GameEventType = "combat" | "exploration" | "trade" | "diplomacy";
+export type GameEventType = 'combat' | 'exploration' | 'trade' | 'diplomacy';
 export interface GameEvent {
   type: GameEventType;
   timestamp: number;

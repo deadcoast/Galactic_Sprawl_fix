@@ -1,7 +1,7 @@
-import { useThreshold } from "../../../../contexts/ThresholdContext";
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Truck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useThreshold } from '../../../../contexts/ThresholdContext';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRight, Truck } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Transfer {
   id: string;
@@ -11,7 +11,7 @@ interface Transfer {
   amount: number;
   progress: number;
   priority: number;
-  status: "queued" | "in-progress" | "completed" | "failed";
+  status: 'queued' | 'in-progress' | 'completed' | 'failed';
 }
 
 interface ResourceTransferManagerProps {
@@ -24,9 +24,7 @@ interface ResourceTransferManagerProps {
   }>;
 }
 
-export function ResourceTransferManager({
-  storageNodes,
-}: ResourceTransferManagerProps) {
+export function ResourceTransferManager({ storageNodes }: ResourceTransferManagerProps) {
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [activeTransfers, setActiveTransfers] = useState<Transfer[]>([]);
   const { state } = useThreshold();
@@ -39,7 +37,7 @@ export function ResourceTransferManager({
       // Check each resource against storage nodes
       Object.entries(state.resources).forEach(([resourceId, resource]) => {
         const matchingStorage = storageNodes.find(
-          (node) => node.resourceType === resource.name.split(" ")[0],
+          node => node.resourceType === resource.name.split(' ')[0]
         );
 
         if (!matchingStorage) {
@@ -49,8 +47,7 @@ export function ResourceTransferManager({
         // Check if we need to transfer resources
         if (resource.currentAmount > resource.thresholds.max) {
           // Transfer excess to storage
-          const transferAmount =
-            resource.currentAmount - resource.thresholds.max;
+          const transferAmount = resource.currentAmount - resource.thresholds.max;
           newTransfers.push({
             id: `transfer-${resourceId}-${Date.now()}`,
             sourceId: resourceId,
@@ -59,30 +56,26 @@ export function ResourceTransferManager({
             amount: transferAmount,
             progress: 0,
             priority: 1,
-            status: "queued" as const,
+            status: 'queued' as const,
           });
-        } else if (
-          matchingStorage.currentAmount >
-          matchingStorage.maxCapacity * 0.9
-        ) {
+        } else if (matchingStorage.currentAmount > matchingStorage.maxCapacity * 0.9) {
           // Storage is nearly full, transfer to other systems
-          const excessAmount =
-            matchingStorage.currentAmount - matchingStorage.maxCapacity * 0.8;
+          const excessAmount = matchingStorage.currentAmount - matchingStorage.maxCapacity * 0.8;
           newTransfers.push({
             id: `transfer-${matchingStorage.id}-${Date.now()}`,
             sourceId: matchingStorage.id,
-            targetId: "mothership",
+            targetId: 'mothership',
             resourceType: resource.name,
             amount: excessAmount,
             progress: 0,
             priority: 1,
-            status: "queued" as const,
+            status: 'queued' as const,
           });
         }
       });
 
       if (newTransfers.length > 0) {
-        setTransfers((prev) => [...prev, ...newTransfers]);
+        setTransfers(prev => [...prev, ...newTransfers]);
       }
     };
 
@@ -93,12 +86,12 @@ export function ResourceTransferManager({
   // Process transfers
   useEffect(() => {
     const processTransfers = () => {
-      setTransfers((currentTransfers) => {
-        const updatedTransfers = currentTransfers.map((transfer) => {
-          if (transfer.status === "in-progress") {
+      setTransfers(currentTransfers => {
+        const updatedTransfers = currentTransfers.map(transfer => {
+          if (transfer.status === 'in-progress') {
             const progress = transfer.progress + 0.1; // 10% progress per tick
             if (progress >= 1) {
-              return { ...transfer, status: "completed" as const, progress: 1 };
+              return { ...transfer, status: 'completed' as const, progress: 1 };
             }
             return { ...transfer, progress };
           }
@@ -106,23 +99,19 @@ export function ResourceTransferManager({
         });
 
         // Start new transfers if we have capacity
-        const inProgress = updatedTransfers.filter(
-          (t) => t.status === "in-progress",
-        );
+        const inProgress = updatedTransfers.filter(t => t.status === 'in-progress');
         if (inProgress.length < 3) {
           // Max 3 concurrent transfers
           const queued = updatedTransfers
-            .filter((t) => t.status === "queued")
+            .filter(t => t.status === 'queued')
             .sort((a, b) => b.priority - a.priority);
 
-          queued.slice(0, 3 - inProgress.length).forEach((transfer) => {
-            const index = updatedTransfers.findIndex(
-              (t) => t.id === transfer.id,
-            );
+          queued.slice(0, 3 - inProgress.length).forEach(transfer => {
+            const index = updatedTransfers.findIndex(t => t.id === transfer.id);
             if (index !== -1) {
               updatedTransfers[index] = {
                 ...transfer,
-                status: "in-progress" as const,
+                status: 'in-progress' as const,
               };
             }
           });
@@ -130,9 +119,7 @@ export function ResourceTransferManager({
 
         // Clean up completed transfers after 2 seconds
         return updatedTransfers.filter(
-          (t) =>
-            t.status !== "completed" ||
-            Date.now() - parseInt(t.id.split("-")[2]) < 2000,
+          t => t.status !== 'completed' || Date.now() - parseInt(t.id.split('-')[2]) < 2000
         );
       });
     };
@@ -143,13 +130,13 @@ export function ResourceTransferManager({
 
   // Update active transfers for visualization
   useEffect(() => {
-    setActiveTransfers(transfers.filter((t) => t.status === "in-progress"));
+    setActiveTransfers(transfers.filter(t => t.status === 'in-progress'));
   }, [transfers]);
 
   return (
     <div className="absolute inset-0 pointer-events-none">
       <AnimatePresence>
-        {activeTransfers.map((transfer) => (
+        {activeTransfers.map(transfer => (
           <motion.div
             key={transfer.id}
             className="absolute inset-0"
@@ -166,7 +153,7 @@ export function ResourceTransferManager({
                 fill="none"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: transfer.progress }}
-                transition={{ duration: 0.1, ease: "linear" }}
+                transition={{ duration: 0.1, ease: 'linear' }}
               />
             </svg>
 
@@ -174,16 +161,16 @@ export function ResourceTransferManager({
             <motion.div
               className="absolute bg-indigo-500 rounded-full w-3 h-3 shadow-lg shadow-indigo-500/50"
               style={{
-                left: "100px",
-                top: "100px",
+                left: '100px',
+                top: '100px',
               }}
               animate={{
-                left: ["100px", "400px"],
-                top: ["100px", "200px"],
+                left: ['100px', '400px'],
+                top: ['100px', '200px'],
               }}
               transition={{
                 duration: 1,
-                ease: "linear",
+                ease: 'linear',
                 repeat: Infinity,
               }}
             />
@@ -194,9 +181,9 @@ export function ResourceTransferManager({
       {/* Transfer Queue Display */}
       <div className="absolute bottom-4 right-4 space-y-2">
         {transfers
-          .filter((t) => t.status === "queued")
+          .filter(t => t.status === 'queued')
           .slice(0, 3)
-          .map((transfer) => (
+          .map(transfer => (
             <motion.div
               key={transfer.id}
               initial={{ opacity: 0, y: 20 }}
@@ -206,8 +193,7 @@ export function ResourceTransferManager({
             >
               <Truck className="w-4 h-4 text-indigo-400" />
               <span className="text-gray-300">
-                Transferring {transfer.amount.toFixed(0)}{" "}
-                {transfer.resourceType}
+                Transferring {transfer.amount.toFixed(0)} {transfer.resourceType}
               </span>
               <ArrowRight className="w-4 h-4 text-gray-500" />
             </motion.div>

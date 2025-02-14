@@ -1,9 +1,9 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef } from "react";
-import * as THREE from "three";
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import * as THREE from 'three';
 
 interface ThrusterEffectProps {
-  size: "small" | "medium" | "large";
+  size: 'small' | 'medium' | 'large';
   color: string;
   intensity: number;
 }
@@ -20,7 +20,7 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
 
   const particleCount = Math.floor(1000 * sizeScale[size]);
 
-  useFrame((state) => {
+  useFrame(state => {
     if (!particlesRef.current) {
       return;
     }
@@ -30,8 +30,7 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
 
     const material = particlesRef.current.material as THREE.ShaderMaterial;
     material.uniforms.time.value = time;
-    material.uniforms.intensity.value =
-      intensity * (0.8 + Math.sin(time * 2) * 0.2); // Pulsing intensity
+    material.uniforms.intensity.value = intensity * (0.8 + Math.sin(time * 2) * 0.2); // Pulsing intensity
   });
 
   const thrusterShader = {
@@ -171,11 +170,7 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
   );
 }
 
-export function ThrusterEffect({
-  size,
-  color,
-  intensity,
-}: ThrusterEffectProps) {
+export function ThrusterEffect({ size, color, intensity }: ThrusterEffectProps) {
   const sizeMap = {
     small: 40,
     medium: 60,
@@ -190,10 +185,7 @@ export function ThrusterEffect({
         height: sizeMap[size] * 2,
       }}
     >
-      <Canvas
-        camera={{ position: [0, 0, 2], fov: 75 }}
-        style={{ background: "transparent" }}
-      >
+      <Canvas camera={{ position: [0, 0, 2], fov: 75 }} style={{ background: 'transparent' }}>
         <ThrusterParticles size={size} color={color} intensity={intensity} />
       </Canvas>
 
@@ -204,7 +196,7 @@ export function ThrusterEffect({
           background: `radial-gradient(circle at 50% 0%, ${color}66 0%, ${color}00 70%)`,
           filter: `blur(${intensity * 8}px)`,
           opacity: intensity * 0.8,
-          animation: "pulse 2s ease-in-out infinite",
+          animation: 'pulse 2s ease-in-out infinite',
         }}
       />
     </div>
@@ -212,7 +204,7 @@ export function ThrusterEffect({
 }
 
 // Add to global styles
-const style = document.createElement("style");
+const style = document.createElement('style');
 style.textContent = `
   @keyframes pulse {
     0%, 100% { opacity: 0.8; transform: scale(1); }

@@ -6,6 +6,6 @@
  * const dredgerId = generateVoidDredgerId(); // Returns "vd-x7f3g2p1m"
  * const customDredgerId = generateVoidDredgerId('custom'); // Returns "custom-x7f3g2p1m"
  */
-export function generateVoidDredgerId(prefix: string = "vd"): string {
+export function generateVoidDredgerId(prefix: string = 'vd'): string {
   return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
 }

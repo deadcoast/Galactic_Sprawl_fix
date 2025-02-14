@@ -1,9 +1,9 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 
 export interface EventPayload {
   hazardId?: string;
   position?: { x: number; y: number };
-  severity?: "low" | "medium" | "high";
+  severity?: 'low' | 'medium' | 'high';
   type?: string;
   data?: Record<string, unknown>;
 }
@@ -26,7 +26,7 @@ const eventBus = {
   },
 
   emit(event: string, payload: EventPayload) {
-    this.listeners.get(event)?.forEach((callback) => callback(payload));
+    this.listeners.get(event)?.forEach(callback => callback(payload));
   },
 };
 
@@ -35,12 +35,9 @@ export function useGlobalEvents() {
     eventBus.emit(event, payload);
   }, []);
 
-  const subscribeToEvent = useCallback(
-    (event: string, callback: EventCallback) => {
-      return eventBus.subscribe(event, callback);
-    },
-    [],
-  );
+  const subscribeToEvent = useCallback((event: string, callback: EventCallback) => {
+    return eventBus.subscribe(event, callback);
+  }, []);
 
   return {
     emitEvent,

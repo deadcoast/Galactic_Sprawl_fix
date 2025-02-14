@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useState } from "react";
+import { ReactNode, useCallback, useState } from 'react';
 
 interface TooltipState {
   content: ReactNode | null;
@@ -13,26 +13,23 @@ export function useTooltip() {
     visible: false,
   });
 
-  const showTooltip = useCallback(
-    (content: ReactNode, position?: { x: number; y: number }) => {
-      setTooltip({
-        content,
-        position: position || { x: 0, y: 0 },
-        visible: true,
-      });
-    },
-    [],
-  );
+  const showTooltip = useCallback((content: ReactNode, position?: { x: number; y: number }) => {
+    setTooltip({
+      content,
+      position: position || { x: 0, y: 0 },
+      visible: true,
+    });
+  }, []);
 
   const hideTooltip = useCallback(() => {
-    setTooltip((prev) => ({
+    setTooltip(prev => ({
       ...prev,
       visible: false,
     }));
   }, []);
 
   const updatePosition = useCallback((position: { x: number; y: number }) => {
-    setTooltip((prev) => ({
+    setTooltip(prev => ({
       ...prev,
       position,
     }));

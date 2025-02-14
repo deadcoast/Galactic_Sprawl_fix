@@ -17,17 +17,16 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
   const [activeFactions, setActiveFactions] = useState<FactionId[]>([]);
   const [selectedFaction, setSelectedFactor] = useState<FactionId | null>(null);
   const [showDiplomacy, setShowDiplomacy] = useState(false);
-  
+
   const debugOverlay = useDebugOverlay();
-  
+
   // Get behavior for each active faction
   const behaviors: ReturnType<typeof useFactionBehavior>[] = activeFactions.map(useFactionBehavior);
-  const factionBehaviors: Partial<Record<FactionId, ReturnType<typeof useFactionBehavior>>> = React.useMemo(() => 
-    Object.fromEntries(
-      activeFactions.map((id, index) => [id, behaviors[index]])
-    ),
-    [activeFactions, behaviors]
-  );
+  const factionBehaviors: Partial<Record<FactionId, ReturnType<typeof useFactionBehavior>>> =
+    React.useMemo(
+      () => Object.fromEntries(activeFactions.map((id, index) => [id, behaviors[index]])),
+      [activeFactions, behaviors]
+    );
 
   useEffect(() => {
     // Initialize factions based on player state
@@ -74,7 +73,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
           {activeFactions.map(factionId => {
             const config = factionConfigs[factionId];
             const behavior = factionBehaviors[factionId];
-            
+
             if (!config || !behavior) {
               return null;
             }
@@ -88,15 +87,21 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
                     <div className={`p-2 bg-${config.banner.primaryColor}/20 rounded-lg`}>
-                      <config.banner.icon className={`w-5 h-5 text-${config.banner.primaryColor}-400`} />
+                      <config.banner.icon
+                        className={`w-5 h-5 text-${config.banner.primaryColor}-400`}
+                      />
                     </div>
                     <span className="text-white font-medium">{config.name}</span>
                   </div>
-                  <div className={`px-2 py-1 rounded-full text-xs ${
-                    behavior.behaviorState.currentTactic === 'raid' ? 'bg-red-900/50 text-red-400' :
-                    behavior.behaviorState.currentTactic === 'defend' ? 'bg-yellow-900/50 text-yellow-400' :
-                    'bg-blue-900/50 text-blue-400'
-                  }`}>
+                  <div
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      behavior.behaviorState.currentTactic === 'raid'
+                        ? 'bg-red-900/50 text-red-400'
+                        : behavior.behaviorState.currentTactic === 'defend'
+                          ? 'bg-yellow-900/50 text-yellow-400'
+                          : 'bg-blue-900/50 text-blue-400'
+                    }`}
+                  >
                     {behavior.behaviorState.currentTactic}
                   </div>
                 </div>
@@ -151,10 +156,12 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
                 healthThreshold: 30,
                 shieldThreshold: 50,
                 targetDistance: 1000,
-                allySupport: true
-              }
+                allySupport: true,
+              },
             }}
-            fleetStrength={Number((factionBehaviors[selectedFaction]?.stats?.totalShips || 0) / 100)}
+            fleetStrength={Number(
+              (factionBehaviors[selectedFaction]?.stats?.totalShips || 0) / 100
+            )}
             threatLevel={0.5}
             onUpdateBehavior={() => {}}
           />
@@ -187,18 +194,16 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
             relationship: 0,
             status: 'neutral',
             tradingEnabled: true,
-            lastInteraction: Date.now()
+            lastInteraction: Date.now(),
           }}
           availableActions={[
             {
               type: 'ceasefire',
               name: 'Negotiate Ceasefire',
               description: 'Attempt to establish temporary peace',
-              requirements: [
-                { type: 'Credits', value: 5000 }
-              ],
-              available: true
-            }
+              requirements: [{ type: 'Credits', value: 5000 }],
+              available: true,
+            },
           ]}
           onAction={() => {}}
           onClose={() => setShowDiplomacy(false)}

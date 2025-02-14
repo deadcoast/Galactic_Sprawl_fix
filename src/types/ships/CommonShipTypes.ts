@@ -1,12 +1,12 @@
-import { BaseStats, Effect } from "../core/GameTypes";
-import { 
-  WeaponMount, 
-  WeaponCategory, 
+import { BaseStats, Effect } from '../core/GameTypes';
+import {
+  WeaponMount,
+  WeaponCategory,
   CombatWeaponStats,
-  WeaponType as WeaponTypeBase
-} from "../weapons/WeaponTypes";
-import { Tier } from "../core/GameTypes";
-import { ResourceCost } from "../resources/ResourceTypes";
+  WeaponType as WeaponTypeBase,
+} from '../weapons/WeaponTypes';
+import { Tier } from '../core/GameTypes';
+import { ResourceCost } from '../resources/ResourceTypes';
 
 // Ship Type Interface
 export interface ShipType {
@@ -14,21 +14,21 @@ export interface ShipType {
 }
 
 // Ship Categories
-export type ShipCategory = "war" | "recon" | "mining";
+export type ShipCategory = 'war' | 'recon' | 'mining';
 
 // Re-export weapon type for backward compatibility
 export type WeaponType = WeaponTypeBase;
 
 // Ship Status
 export type ShipStatus =
-  | "ready"
-  | "engaging"
-  | "patrolling"
-  | "retreating"
-  | "disabled"
-  | "damaged"
-  | "repairing"
-  | "upgrading";
+  | 'ready'
+  | 'engaging'
+  | 'patrolling'
+  | 'retreating'
+  | 'disabled'
+  | 'damaged'
+  | 'repairing'
+  | 'upgrading';
 
 // Common Ship Stats Interface
 export interface CommonShipStats extends BaseStats {
@@ -122,32 +122,32 @@ export interface CommonShipCapabilities {
 
 // Common utility functions
 export function getShipCategory(type: string): ShipCategory {
-  if (type.toLowerCase().includes("war") || type.toLowerCase().includes("combat")) {
-    return "war";
+  if (type.toLowerCase().includes('war') || type.toLowerCase().includes('combat')) {
+    return 'war';
   }
-  if (type.toLowerCase().includes("recon") || type.toLowerCase().includes("scout")) {
-    return "recon";
+  if (type.toLowerCase().includes('recon') || type.toLowerCase().includes('scout')) {
+    return 'recon';
   }
-  return "mining";
+  return 'mining';
 }
 
 export function getDefaultCapabilities(category: ShipCategory): CommonShipCapabilities {
   switch (category) {
-    case "war":
+    case 'war':
       return {
         canSalvage: false,
         canScan: false,
         canMine: false,
         canJump: true,
       };
-    case "recon":
+    case 'recon':
       return {
         canSalvage: true,
         canScan: true,
         canMine: false,
         canJump: true,
       };
-    case "mining":
+    case 'mining':
       return {
         canSalvage: true,
         canScan: false,
@@ -177,7 +177,7 @@ export interface ShipUpgradeStats {
 }
 
 export interface ShipUpgradeRequirement {
-  type: "tech" | "resource" | "facility";
+  type: 'tech' | 'resource' | 'facility';
   name: string;
   met: boolean;
 }

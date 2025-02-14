@@ -112,11 +112,7 @@ interface ModuleProviderProps {
 export function ModuleProvider({ children }: ModuleProviderProps) {
   const [state, dispatch] = useReducer(moduleReducer, initialState);
 
-  return (
-    <ModuleContext.Provider value={{ state, dispatch }}>
-      {children}
-    </ModuleContext.Provider>
-  );
+  return <ModuleContext.Provider value={{ state, dispatch }}>{children}</ModuleContext.Provider>;
 }
 
 // Hook
@@ -145,4 +141,4 @@ export function useModulesByType(type: ModuleType) {
 
 export function useBuildingModules(buildingId: string) {
   return moduleManager.getBuildingModules(buildingId);
-} 
+}

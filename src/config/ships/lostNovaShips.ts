@@ -1,5 +1,11 @@
-import { LostNovaShipClass, FactionShipStats } from "../../types/ships/FactionShipTypes";
-import { WeaponMount, WeaponMountSize, WeaponMountPosition, WeaponStatus, WeaponInstance } from "../../types/weapons/WeaponTypes";
+import { LostNovaShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
+import {
+  WeaponMount,
+  WeaponMountSize,
+  WeaponMountPosition,
+  WeaponStatus,
+  WeaponInstance,
+} from '../../types/weapons/WeaponTypes';
 import {
   PLASMA_EFFECT,
   GAUSS_EFFECT,
@@ -9,7 +15,7 @@ import {
   STEALTH_EFFECT,
   SPEED_REDUCTION_EFFECT,
   SHIELD_FIELD_EFFECT,
-} from "../../effects/types_effects/shipEffects";
+} from '../../effects/types_effects/shipEffects';
 
 export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
   eclipseScythe: {
@@ -23,19 +29,19 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 250,
     tier: 3,
-    faction: "lost-nova",
+    faction: 'lost-nova',
     weapons: [
       {
-        id: "gauss-1",
-        size: "medium" as WeaponMountSize,
-        position: "turret" as WeaponMountPosition,
+        id: 'gauss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'turret' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["gaussCannon"],
+        allowedCategories: ['gaussCannon'],
         currentWeapon: {
           config: {
-            id: "gauss-cannon",
-            name: "Gauss Cannon",
-            category: "gaussCannon",
+            id: 'gauss-cannon',
+            name: 'Gauss Cannon',
+            category: 'gaussCannon',
             tier: 2,
             baseStats: {
               damage: 150,
@@ -46,14 +52,14 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
               cooldown: 2,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/gauss/basic",
+            visualAsset: 'weapons/gauss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 35,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 150,
               range: 1000,
@@ -81,8 +87,8 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Phase Shift",
-        description: "Temporarily becomes untargetable",
+        name: 'Phase Shift',
+        description: 'Temporarily becomes untargetable',
         cooldown: 20,
         duration: 5,
         active: false,
@@ -101,19 +107,19 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 250,
     tier: 3,
-    faction: "lost-nova",
+    faction: 'lost-nova',
     weapons: [
       {
-        id: "rail-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'rail-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["railGun"],
+        allowedCategories: ['railGun'],
         currentWeapon: {
           config: {
-            id: "heavy-railgun",
-            name: "Heavy Railgun",
-            category: "railGun",
+            id: 'heavy-railgun',
+            name: 'Heavy Railgun',
+            category: 'railGun',
             tier: 3,
             baseStats: {
               damage: 180,
@@ -124,14 +130,14 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
               cooldown: 3,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/railgun/heavy",
+            visualAsset: 'weapons/railgun/heavy',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 35,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 180,
               range: 1200,
@@ -159,8 +165,8 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Null Field",
-        description: "Creates a powerful shield field",
+        name: 'Null Field',
+        description: 'Creates a powerful shield field',
         cooldown: 35,
         duration: 8,
         active: false,
@@ -179,19 +185,19 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 300,
     tier: 3,
-    faction: "lost-nova",
+    faction: 'lost-nova',
     weapons: [
       {
-        id: "mgss-1",
-        size: "medium" as WeaponMountSize,
-        position: "turret" as WeaponMountPosition,
+        id: 'mgss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'turret' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["mgss"],
+        allowedCategories: ['mgss'],
         currentWeapon: {
           config: {
-            id: "mgss-cannon",
-            name: "MGSS Cannon",
-            category: "mgss",
+            id: 'mgss-cannon',
+            name: 'MGSS Cannon',
+            category: 'mgss',
             tier: 2,
             baseStats: {
               damage: 60,
@@ -202,14 +208,14 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
               cooldown: 3,
               effects: [PLASMA_EFFECT],
             },
-            visualAsset: "weapons/mgss/basic",
+            visualAsset: 'weapons/mgss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 25,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 60,
               range: 900,
@@ -237,8 +243,8 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Dark Matter Burst",
-        description: "Unleashes a burst of dark matter energy",
+        name: 'Dark Matter Burst',
+        description: 'Unleashes a burst of dark matter energy',
         cooldown: 30,
         duration: 6,
         active: false,
@@ -257,19 +263,19 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 150,
     tier: 2,
-    faction: "lost-nova",
+    faction: 'lost-nova',
     weapons: [
       {
-        id: "gauss-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'gauss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["gaussCannon"],
+        allowedCategories: ['gaussCannon'],
         currentWeapon: {
           config: {
-            id: "gauss-cannon",
-            name: "Gauss Cannon",
-            category: "gaussCannon",
+            id: 'gauss-cannon',
+            name: 'Gauss Cannon',
+            category: 'gaussCannon',
             tier: 2,
             baseStats: {
               damage: 100,
@@ -280,14 +286,14 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
               cooldown: 2,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/gauss/basic",
+            visualAsset: 'weapons/gauss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 25,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 100,
               range: 800,
@@ -315,8 +321,8 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Quantum Cloak",
-        description: "Activates advanced stealth technology",
+        name: 'Quantum Cloak',
+        description: 'Activates advanced stealth technology',
         cooldown: 25,
         duration: 7,
         active: false,
@@ -335,19 +341,19 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 200,
     tier: 3,
-    faction: "lost-nova",
+    faction: 'lost-nova',
     weapons: [
       {
-        id: "rail-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'rail-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["railGun"],
+        allowedCategories: ['railGun'],
         currentWeapon: {
           config: {
-            id: "railgun",
-            name: "Railgun",
-            category: "railGun",
+            id: 'railgun',
+            name: 'Railgun',
+            category: 'railGun',
             tier: 2,
             baseStats: {
               damage: 160,
@@ -358,14 +364,14 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
               cooldown: 2,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/railgun/basic",
+            visualAsset: 'weapons/railgun/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 30,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 160,
               range: 1100,
@@ -393,8 +399,8 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Entropy Field",
-        description: "Creates a field that slows enemies",
+        name: 'Entropy Field',
+        description: 'Creates a field that slows enemies',
         cooldown: 28,
         duration: 9,
         active: false,
@@ -413,19 +419,19 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 180,
     tier: 2,
-    faction: "lost-nova",
+    faction: 'lost-nova',
     weapons: [
       {
-        id: "mgss-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'mgss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["mgss"],
+        allowedCategories: ['mgss'],
         currentWeapon: {
           config: {
-            id: "mgss-cannon",
-            name: "MGSS Cannon",
-            category: "mgss",
+            id: 'mgss-cannon',
+            name: 'MGSS Cannon',
+            category: 'mgss',
             tier: 2,
             baseStats: {
               damage: 45,
@@ -436,14 +442,14 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
               cooldown: 2,
               effects: [PLASMA_EFFECT],
             },
-            visualAsset: "weapons/mgss/basic",
+            visualAsset: 'weapons/mgss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 20,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 45,
               range: 850,
@@ -471,8 +477,8 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Void Jump",
-        description: "Enables short-range teleportation",
+        name: 'Void Jump',
+        description: 'Enables short-range teleportation',
         cooldown: 22,
         duration: 4,
         active: false,
@@ -491,19 +497,19 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 250,
     tier: 3,
-    faction: "lost-nova",
+    faction: 'lost-nova',
     weapons: [
       {
-        id: "rail-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'rail-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["railGun"],
+        allowedCategories: ['railGun'],
         currentWeapon: {
           config: {
-            id: "heavy-railgun",
-            name: "Heavy Railgun",
-            category: "railGun",
+            id: 'heavy-railgun',
+            name: 'Heavy Railgun',
+            category: 'railGun',
             tier: 3,
             baseStats: {
               damage: 200,
@@ -514,14 +520,14 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
               cooldown: 3,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/railgun/heavy",
+            visualAsset: 'weapons/railgun/heavy',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 40,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 200,
               range: 1300,
@@ -549,8 +555,8 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Star Tear",
-        description: "Unleashes a devastating area attack",
+        name: 'Star Tear',
+        description: 'Unleashes a devastating area attack',
         cooldown: 45,
         duration: 10,
         active: false,
@@ -569,19 +575,19 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 200,
     tier: 3,
-    faction: "lost-nova",
+    faction: 'lost-nova',
     weapons: [
       {
-        id: "rocket-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'rocket-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["rockets"],
+        allowedCategories: ['rockets'],
         currentWeapon: {
           config: {
-            id: "heavy-rockets",
-            name: "Heavy Rockets",
-            category: "rockets",
+            id: 'heavy-rockets',
+            name: 'Heavy Rockets',
+            category: 'rockets',
             tier: 3,
             baseStats: {
               damage: 180,
@@ -592,14 +598,14 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
               cooldown: 4,
               effects: [EXPLOSIVE_EFFECT],
             },
-            visualAsset: "weapons/rockets/heavy",
+            visualAsset: 'weapons/rockets/heavy',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 35,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 180,
               range: 1000,
@@ -627,8 +633,8 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Nebula Shield",
-        description: "Creates a powerful shield field",
+        name: 'Nebula Shield',
+        description: 'Creates a powerful shield field',
         cooldown: 32,
         duration: 12,
         active: false,
@@ -647,19 +653,19 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 180,
     tier: 3,
-    faction: "lost-nova",
+    faction: 'lost-nova',
     weapons: [
       {
-        id: "gauss-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'gauss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["gaussCannon"],
+        allowedCategories: ['gaussCannon'],
         currentWeapon: {
           config: {
-            id: "gauss-cannon",
-            name: "Gauss Cannon",
-            category: "gaussCannon",
+            id: 'gauss-cannon',
+            name: 'Gauss Cannon',
+            category: 'gaussCannon',
             tier: 3,
             baseStats: {
               damage: 140,
@@ -670,14 +676,14 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
               cooldown: 3,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/gauss/basic",
+            visualAsset: 'weapons/gauss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 30,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 140,
               range: 950,
@@ -705,8 +711,8 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Wake of Destruction",
-        description: "Creates a destructive field",
+        name: 'Wake of Destruction',
+        description: 'Creates a destructive field',
         cooldown: 38,
         duration: 8,
         active: false,
@@ -725,19 +731,19 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 280,
     tier: 3,
-    faction: "lost-nova",
+    faction: 'lost-nova',
     weapons: [
       {
-        id: "mgss-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'mgss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["mgss"],
+        allowedCategories: ['mgss'],
         currentWeapon: {
           config: {
-            id: "mgss-cannon",
-            name: "MGSS Cannon",
-            category: "mgss",
+            id: 'mgss-cannon',
+            name: 'MGSS Cannon',
+            category: 'mgss',
             tier: 3,
             baseStats: {
               damage: 70,
@@ -748,14 +754,14 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
               cooldown: 3,
               effects: [PLASMA_EFFECT],
             },
-            visualAsset: "weapons/mgss/advanced",
+            visualAsset: 'weapons/mgss/advanced',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 25,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 70,
               range: 1100,
@@ -783,8 +789,8 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Forbidden Technology",
-        description: "Unleashes devastating area damage",
+        name: 'Forbidden Technology',
+        description: 'Unleashes devastating area damage',
         cooldown: 50,
         duration: 15,
         active: false,
@@ -792,4 +798,4 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
       },
     ],
   },
-} as const; 
+} as const;

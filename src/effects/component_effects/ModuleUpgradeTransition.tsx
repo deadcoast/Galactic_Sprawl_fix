@@ -1,12 +1,12 @@
-import { ArrowUp, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowUp, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ModuleUpgradeTransitionProps {
   fromTier: 1 | 2;
   toTier: 2 | 3;
-  moduleType: "radar" | "dockingBay" | "processor";
+  moduleType: 'radar' | 'dockingBay' | 'processor';
   duration?: number;
-  quality: "low" | "medium" | "high";
+  quality: 'low' | 'medium' | 'high';
   onComplete?: () => void;
 }
 
@@ -19,7 +19,7 @@ export function ModuleUpgradeTransition({
   onComplete,
 }: ModuleUpgradeTransitionProps) {
   const [progress, setProgress] = useState(0);
-  const particleCount = quality === "high" ? 16 : quality === "medium" ? 8 : 4;
+  const particleCount = quality === 'high' ? 16 : quality === 'medium' ? 8 : 4;
 
   useEffect(() => {
     const startTime = Date.now();
@@ -39,14 +39,14 @@ export function ModuleUpgradeTransition({
 
   const getModuleColor = () => {
     switch (moduleType) {
-      case "radar":
-        return "cyan";
-      case "dockingBay":
-        return "violet";
-      case "processor":
-        return "amber";
+      case 'radar':
+        return 'cyan';
+      case 'dockingBay':
+        return 'violet';
+      case 'processor':
+        return 'amber';
       default:
-        return "blue";
+        return 'blue';
     }
   };
 
@@ -78,20 +78,18 @@ export function ModuleUpgradeTransition({
       </div>
 
       {/* Upgrade Particles */}
-      {Array.from({ length: Math.ceil(particleCount * progress) }).map(
-        (_, i) => (
-          <div
-            key={i}
-            className={`absolute w-1 h-4 bg-${color}-400 rounded-full`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              transform: `rotate(${Math.random() * 360}deg) scale(${1 + progress})`,
-              opacity: 0.5 + progress * 0.5,
-            }}
-          />
-        ),
-      )}
+      {Array.from({ length: Math.ceil(particleCount * progress) }).map((_, i) => (
+        <div
+          key={i}
+          className={`absolute w-1 h-4 bg-${color}-400 rounded-full`}
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            transform: `rotate(${Math.random() * 360}deg) scale(${1 + progress})`,
+            opacity: 0.5 + progress * 0.5,
+          }}
+        />
+      ))}
 
       {/* Tier Indicator */}
       <div className="absolute top-4 right-4 flex items-center space-x-2">
@@ -116,19 +114,19 @@ export function ModuleUpgradeTransition({
       </svg>
 
       {/* Module-specific Effects */}
-      {moduleType === "radar" && quality !== "low" && (
+      {moduleType === 'radar' && quality !== 'low' && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div
             className={`w-1/2 h-1/2 rounded-full border-2 border-${color}-500/30`}
             style={{
-              animation: "ping 2s cubic-bezier(0, 0, 0.2, 1) infinite",
+              animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
               animationDelay: `${progress * 0.5}s`,
             }}
           />
         </div>
       )}
 
-      {moduleType === "dockingBay" && (
+      {moduleType === 'dockingBay' && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div
             className={`w-3/4 h-3/4 border-2 border-${color}-500/30`}

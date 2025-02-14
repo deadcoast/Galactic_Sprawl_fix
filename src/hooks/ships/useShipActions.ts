@@ -1,9 +1,9 @@
-import { useCallback } from "react";
-import { useShipState } from "../../contexts/ShipContext";
-import { shipActions } from "../../contexts/ShipContext";
-import { ShipStatus } from "../../contexts/ShipContext";
-import { CommonShipStats } from "../../types/ships/CommonShipTypes";
-import { WeaponMount } from "../../types/weapons/WeaponTypes";
+import { useCallback } from 'react';
+import { useShipState } from '../../contexts/ShipContext';
+import { shipActions } from '../../contexts/ShipContext';
+import { ShipStatus } from '../../contexts/ShipContext';
+import { CommonShipStats } from '../../types/ships/CommonShipTypes';
+import { WeaponMount } from '../../types/weapons/WeaponTypes';
 
 export function useShipActions() {
   const { state, dispatch } = useShipState();
@@ -38,7 +38,7 @@ export function useShipActions() {
 
   const fireWeapon = useCallback(
     (weaponId: string) => {
-      const weapon = state.weapons.find((w) => w.id === weaponId);
+      const weapon = state.weapons.find(w => w.id === weaponId);
       if (!weapon?.currentWeapon) return;
 
       // Fire weapon (sets status to cooling)
@@ -48,7 +48,7 @@ export function useShipActions() {
       setTimeout(() => {
         dispatch(
           shipActions.updateWeaponState(weaponId, {
-            status: "ready",
+            status: 'ready',
           })
         );
       }, weapon.currentWeapon.config.baseStats.cooldown * 1000);
@@ -68,22 +68,22 @@ export function useShipActions() {
   }, [dispatch]);
 
   const engage = useCallback(() => {
-    if (state.status === "disabled") return;
-    updateStatus("engaging");
+    if (state.status === 'disabled') return;
+    updateStatus('engaging');
   }, [state.status, updateStatus]);
 
   const retreat = useCallback(() => {
-    if (state.status === "disabled") return;
-    updateStatus("retreating");
+    if (state.status === 'disabled') return;
+    updateStatus('retreating');
   }, [state.status, updateStatus]);
 
   const patrol = useCallback(() => {
-    if (state.status === "disabled") return;
-    updateStatus("patrolling");
+    if (state.status === 'disabled') return;
+    updateStatus('patrolling');
   }, [state.status, updateStatus]);
 
   const disable = useCallback(() => {
-    updateStatus("disabled");
+    updateStatus('disabled');
   }, [updateStatus]);
 
   const damage = useCallback(
@@ -102,7 +102,7 @@ export function useShipActions() {
 
         // Update status if heavily damaged
         if (newHealth <= state.maxHealth * 0.25) {
-          updateStatus("damaged");
+          updateStatus('damaged');
         }
       }
     },
@@ -139,4 +139,4 @@ export function useShipActions() {
     heal,
     rechargeShield,
   };
-} 
+}

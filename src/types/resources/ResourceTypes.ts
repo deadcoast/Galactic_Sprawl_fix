@@ -96,4 +96,4 @@ export interface ResourceManagerConfig {
       max: number;
     };
   };
-} 
+}

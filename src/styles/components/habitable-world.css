@@ -1,6 +1,7 @@
 /* Habitable World Animations */
 @keyframes atmosphere-flow {
-  0%, 100% {
+  0%,
+  100% {
     transform: rotate(0deg) scale(1.1);
   }
   50% {
@@ -9,7 +10,8 @@
 }
 
 @keyframes city-lights {
-  0%, 100% {
+  0%,
+  100% {
     opacity: var(--base-opacity);
   }
   50% {

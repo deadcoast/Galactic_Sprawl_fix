@@ -5,68 +5,68 @@ import { OfficerTrait, TrainingConfig, SquadConfig } from '../types/officers/Off
  */
 export const OFFICER_TRAITS: OfficerTrait[] = [
   {
-    id: "natural_leader",
-    name: "Natural Leader",
-    description: "Born with exceptional leadership qualities",
+    id: 'natural_leader',
+    name: 'Natural Leader',
+    description: 'Born with exceptional leadership qualities',
     effects: {
       skills: {
-        leadership: 2
+        leadership: 2,
       },
       bonuses: {
-        squadBonus: 0.1
-      }
-    }
+        squadBonus: 0.1,
+      },
+    },
   },
   {
-    id: "combat_expert",
-    name: "Combat Expert",
-    description: "Highly skilled in combat tactics",
+    id: 'combat_expert',
+    name: 'Combat Expert',
+    description: 'Highly skilled in combat tactics',
     effects: {
       skills: {
-        combat: 2
+        combat: 2,
       },
       bonuses: {
-        xpGain: 0.1
-      }
-    }
+        xpGain: 0.1,
+      },
+    },
   },
   {
-    id: "tech_savvy",
-    name: "Tech Savvy",
-    description: "Natural affinity for technical systems",
+    id: 'tech_savvy',
+    name: 'Tech Savvy',
+    description: 'Natural affinity for technical systems',
     effects: {
       skills: {
-        technical: 2
+        technical: 2,
       },
       bonuses: {
-        trainingSpeed: 0.1
-      }
-    }
+        trainingSpeed: 0.1,
+      },
+    },
   },
   {
-    id: "quick_learner",
-    name: "Quick Learner",
-    description: "Absorbs new knowledge rapidly",
+    id: 'quick_learner',
+    name: 'Quick Learner',
+    description: 'Absorbs new knowledge rapidly',
     effects: {
       bonuses: {
         xpGain: 0.2,
-        trainingSpeed: 0.1
-      }
-    }
+        trainingSpeed: 0.1,
+      },
+    },
   },
   {
-    id: "inspiring",
-    name: "Inspiring",
-    description: "Naturally inspires those around them",
+    id: 'inspiring',
+    name: 'Inspiring',
+    description: 'Naturally inspires those around them',
     effects: {
       skills: {
-        leadership: 1
+        leadership: 1,
       },
       bonuses: {
-        squadBonus: 0.15
-      }
-    }
-  }
+        squadBonus: 0.15,
+      },
+    },
+  },
 ];
 
 /**
@@ -77,7 +77,7 @@ export const TRAINING_CONFIG: TrainingConfig = {
   levelModifier: 0.1, // 10% faster per level
   specializationModifier: 0.2, // 20% faster for matching specialization
   xpMultiplier: 1.0,
-  skillGainRate: 1.0
+  skillGainRate: 1.0,
 };
 
 /**
@@ -88,7 +88,7 @@ export const SQUAD_CONFIG: SquadConfig = {
   bonusMultipliers: {
     combat: 0.05, // 5% per point
     efficiency: 0.05,
-    survival: 0.025
+    survival: 0.025,
   },
-  leadershipBonus: 0.1 // 10% per leadership point
-}; 
+  leadershipBonus: 0.1, // 10% per leadership point
+};

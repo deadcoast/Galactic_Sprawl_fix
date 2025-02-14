@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import { LucideIcon } from "lucide-react";
+import { ReactNode } from 'react';
+import { LucideIcon } from 'lucide-react';
 
 interface StatusEffectProps {
   /**
@@ -21,7 +21,7 @@ interface StatusEffectProps {
    * Optional color theme for the status effect
    * @default "blue"
    */
-  color?: "blue" | "red" | "yellow" | "green" | "purple" | "cyan" | "amber" | "indigo" | "teal";
+  color?: 'blue' | 'red' | 'yellow' | 'green' | 'purple' | 'cyan' | 'amber' | 'indigo' | 'teal';
 
   /**
    * Optional additional content to render
@@ -36,7 +36,7 @@ interface StatusEffectProps {
 
 /**
  * StatusEffect Component
- * 
+ *
  * Displays a status effect with an icon, label, and optional additional content.
  * Used for showing active abilities, buffs, debuffs, etc.
  */
@@ -44,9 +44,9 @@ export function StatusEffect({
   active,
   icon: Icon,
   label,
-  color = "blue",
+  color = 'blue',
   children,
-  className = "",
+  className = '',
 }: StatusEffectProps) {
   if (!active) {
     return null;
@@ -54,7 +54,9 @@ export function StatusEffect({
 
   return (
     <div className={`status-effect ${className}`}>
-      <div className={`px-2 py-1 bg-${color}-500/20 text-${color}-300 rounded-lg text-sm flex items-center gap-2`}>
+      <div
+        className={`px-2 py-1 bg-${color}-500/20 text-${color}-300 rounded-lg text-sm flex items-center gap-2`}
+      >
         <Icon className="icon w-4 h-4" />
         <span>{label}</span>
         {children}
@@ -65,20 +67,16 @@ export function StatusEffect({
 
 /**
  * StatusEffectContainer Component
- * 
+ *
  * Container for grouping multiple status effects.
  * Handles layout and spacing of effects.
  */
 export function StatusEffectContainer({
   children,
-  className = "",
+  className = '',
 }: {
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={`status-effects flex flex-col gap-2 ${className}`}>
-      {children}
-    </div>
-  );
-} 
+  return <div className={`status-effects flex flex-col gap-2 ${className}`}>{children}</div>;
+}

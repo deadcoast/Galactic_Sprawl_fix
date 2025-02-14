@@ -138,12 +138,7 @@ export class ResourceManager {
   /**
    * Transfers resources between modules
    */
-  transferResources(
-    type: ResourceType,
-    amount: number,
-    source: string,
-    target: string,
-  ): void {
+  transferResources(type: ResourceType, amount: number, source: string, target: string): void {
     // Record transfer
     const transfer: ResourceTransfer = {
       type,
@@ -179,9 +174,7 @@ export class ResourceManager {
    * Gets transfer history for a specific module
    */
   getModuleTransferHistory(moduleId: string): ResourceTransfer[] {
-    return this.transfers.filter(
-      t => t.source === moduleId || t.target === moduleId,
-    );
+    return this.transfers.filter(t => t.source === moduleId || t.target === moduleId);
   }
 
   /**
@@ -209,4 +202,4 @@ export class ResourceManager {
 }
 
 // Export singleton instance
-export const resourceManager = new ResourceManager(); 
+export const resourceManager = new ResourceManager();

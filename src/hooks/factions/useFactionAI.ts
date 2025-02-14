@@ -1,8 +1,8 @@
-import { factionManager } from "../../lib/factions/factionManager";
-import { useEffect, useState } from "react";
-import type { FactionShip } from "../../types/ships/FactionShipTypes";
-import type { FactionId } from "../../types/ships/FactionTypes";
-import type { AIState } from "../../types/debug/DebugTypes";
+import { factionManager } from '../../lib/factions/factionManager';
+import { useEffect, useState } from 'react';
+import type { FactionShip } from '../../types/ships/FactionShipTypes';
+import type { FactionId } from '../../types/ships/FactionTypes';
+import type { AIState } from '../../types/debug/DebugTypes';
 
 interface FactionBehavior {
   isHostile: boolean;
@@ -11,7 +11,7 @@ interface FactionBehavior {
   reinforcementNeeded: boolean;
   ships: FactionShip[];
   currentFormation: {
-    type: "offensive" | "defensive" | "stealth";
+    type: 'offensive' | 'defensive' | 'stealth';
     spacing: number;
     facing: number;
   };
@@ -28,11 +28,11 @@ export function useFactionAI(factionId: FactionId) {
   const [aiState, setAIState] = useState<FactionAIState>({
     isActive: false,
     behavior: {
-      behaviorState: "idle",
+      behaviorState: 'idle',
       fleetStrength: 0,
       threatLevel: 0,
-      lastAction: "initialized",
-      nextAction: "patrol",
+      lastAction: 'initialized',
+      nextAction: 'patrol',
       cooldowns: {},
     },
     lastUpdate: Date.now(),
@@ -50,22 +50,34 @@ export function useFactionAI(factionId: FactionId) {
           ...rawBehavior,
           ships: [], // Will be populated from fleet data
           currentFormation: {
-            type: rawBehavior.willAttack ? "offensive" : rawBehavior.isHostile ? "defensive" : "stealth",
+            type: rawBehavior.willAttack
+              ? 'offensive'
+              : rawBehavior.isHostile
+                ? 'defensive'
+                : 'stealth',
             spacing: 100,
             facing: 0,
           },
-          cooldowns: {} // Track ability cooldowns
+          cooldowns: {}, // Track ability cooldowns
         };
 
         // Update AI state with behavior data
         setAIState({
           isActive: state.isActive,
           behavior: {
-            behaviorState: behavior.willAttack ? "attacking" : behavior.isHostile ? "hostile" : "neutral",
+            behaviorState: behavior.willAttack
+              ? 'attacking'
+              : behavior.isHostile
+                ? 'hostile'
+                : 'neutral',
             fleetStrength: state.fleetStrength,
             threatLevel: behavior.isHostile ? 1 : 0,
-            lastAction: behavior.willAttack ? "preparing attack" : "patrolling",
-            nextAction: behavior.reinforcementNeeded ? "reinforcing" : behavior.willAttack ? "attack" : "patrol",
+            lastAction: behavior.willAttack ? 'preparing attack' : 'patrolling',
+            nextAction: behavior.reinforcementNeeded
+              ? 'reinforcing'
+              : behavior.willAttack
+                ? 'attack'
+                : 'patrol',
             cooldowns: behavior.cooldowns,
           },
           lastUpdate: Date.now(),
@@ -85,7 +97,7 @@ export function useActiveFactions() {
   useEffect(() => {
     const updateInterval = setInterval(() => {
       const active = Object.keys(factionManager.getFactionState).filter(
-        (id) => factionManager.getFactionState(id)?.isActive,
+        id => factionManager.getFactionState(id)?.isActive
       ) as FactionId[];
 
       setActiveFactions(active);

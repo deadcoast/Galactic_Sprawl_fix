@@ -1,6 +1,6 @@
-import { VisualEffect, VisualEffectConfig } from "./VisualEffect";
-import { RenderBatcher } from "../../lib/optimization/RenderBatcher";
-import { Position } from "../../types/core/Position";
+import { VisualEffect, VisualEffectConfig } from './VisualEffect';
+import { RenderBatcher } from '../../lib/optimization/RenderBatcher';
+import { Position } from '../../types/core/Position';
 
 interface ShieldImpactConfig extends VisualEffectConfig {
   radius: number;
@@ -23,7 +23,7 @@ export class ShieldImpactEffect extends VisualEffect {
   }
 
   protected getEffectType(): string {
-    return "shield-impact";
+    return 'shield-impact';
   }
 
   protected onStart(): void {
@@ -45,7 +45,7 @@ export class ShieldImpactEffect extends VisualEffect {
     this.hexagonPoints = [];
     this.crackPoints = [];
 
-    console.debug("[ShieldImpactEffect] Completed effect");
+    console.debug('[ShieldImpactEffect] Completed effect');
   }
 
   protected onReset(): void {
@@ -71,7 +71,7 @@ export class ShieldImpactEffect extends VisualEffect {
       const angle = (i / segments) * Math.PI * 2;
       this.ripplePoints.push({
         x: Math.cos(angle) * this.config.radius,
-        y: Math.sin(angle) * this.config.radius
+        y: Math.sin(angle) * this.config.radius,
       });
     }
   }
@@ -86,7 +86,7 @@ export class ShieldImpactEffect extends VisualEffect {
       for (let col = -cols; col <= cols; col++) {
         const x = col * hexRadius * Math.sqrt(3);
         const y = row * hexRadius * 1.5 + (col % 2) * hexRadius * 0.75;
-        
+
         // Only add points within shield radius
         if (Math.sqrt(x * x + y * y) <= this.config.radius) {
           this.hexagonPoints.push({ x, y });
@@ -101,24 +101,24 @@ export class ShieldImpactEffect extends VisualEffect {
     }
 
     // Create crack pattern based on damage
-    const crackCount = Math.ceil(this.config.damage / this.config.shieldStrength * 5);
-    const angleStep = Math.PI * 2 / crackCount;
+    const crackCount = Math.ceil((this.config.damage / this.config.shieldStrength) * 5);
+    const angleStep = (Math.PI * 2) / crackCount;
 
     for (let i = 0; i < crackCount; i++) {
       const baseAngle = angleStep * i;
       let currentPoint = {
         x: Math.cos(baseAngle) * this.config.radius * 0.2,
-        y: Math.sin(baseAngle) * this.config.radius * 0.2
+        y: Math.sin(baseAngle) * this.config.radius * 0.2,
       };
 
       // Create branching cracks
       for (let j = 0; j < 5; j++) {
-        const angle = baseAngle + (Math.random() - 0.5) * Math.PI / 4;
+        const angle = baseAngle + ((Math.random() - 0.5) * Math.PI) / 4;
         const length = Math.random() * this.config.radius * 0.3;
-        
+
         const endPoint = {
           x: currentPoint.x + Math.cos(angle) * length,
-          y: currentPoint.y + Math.sin(angle) * length
+          y: currentPoint.y + Math.sin(angle) * length,
         };
 
         this.crackPoints.push(currentPoint, endPoint);
@@ -140,7 +140,7 @@ export class ShieldImpactEffect extends VisualEffect {
 
       const position = {
         x: this.config.position.x + Math.cos(angle) * radius,
-        y: this.config.position.y + Math.sin(angle) * radius
+        y: this.config.position.y + Math.sin(angle) * radius,
       };
 
       batcher.addItem(this.batchId!, {
@@ -149,8 +149,8 @@ export class ShieldImpactEffect extends VisualEffect {
         size: { width: 4, height: 4 },
         rotation: angle,
         opacity: rippleStrength * 0.5,
-        color: this.config.color || "#00ffff",
-        shader: "additive"
+        color: this.config.color || '#00ffff',
+        shader: 'additive',
       });
     });
   }
@@ -168,13 +168,13 @@ export class ShieldImpactEffect extends VisualEffect {
         id: `${this.id}-hex-${index}`,
         position: {
           x: this.config.position.x + point.x,
-          y: this.config.position.y + point.y
+          y: this.config.position.y + point.y,
         },
         size: { width: 30, height: 30 },
         rotation: time + index,
         opacity: hexOpacity * pulse * (1 - distanceRatio),
-        color: this.config.color || "#00ffff",
-        shader: "additive"
+        color: this.config.color || '#00ffff',
+        shader: 'additive',
       });
     });
   }
@@ -193,9 +193,7 @@ export class ShieldImpactEffect extends VisualEffect {
 
       const centerX = (start.x + end.x) / 2;
       const centerY = (start.y + end.y) / 2;
-      const length = Math.sqrt(
-        Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
-      );
+      const length = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
       const angle = Math.atan2(end.y - start.y, end.x - start.x);
 
       // Render crack line
@@ -203,13 +201,13 @@ export class ShieldImpactEffect extends VisualEffect {
         id: `${this.id}-crack-${i}`,
         position: {
           x: this.config.position.x + centerX,
-          y: this.config.position.y + centerY
+          y: this.config.position.y + centerY,
         },
         size: { width: length, height: 2 },
         rotation: angle,
         opacity: crackOpacity * (0.8 + Math.sin(time * 10 + i) * 0.2),
-        color: this.config.color || "#00ffff",
-        shader: "additive"
+        color: this.config.color || '#00ffff',
+        shader: 'additive',
       });
 
       // Render glow
@@ -217,14 +215,14 @@ export class ShieldImpactEffect extends VisualEffect {
         id: `${this.id}-crack-glow-${i}`,
         position: {
           x: this.config.position.x + centerX,
-          y: this.config.position.y + centerY
+          y: this.config.position.y + centerY,
         },
         size: { width: length, height: 6 },
         rotation: angle,
         opacity: crackOpacity * 0.5 * (0.8 + Math.sin(time * 10 + i) * 0.2),
-        color: this.config.color || "#00ffff",
-        shader: "additive"
+        color: this.config.color || '#00ffff',
+        shader: 'additive',
       });
     }
   }
-} 
+}

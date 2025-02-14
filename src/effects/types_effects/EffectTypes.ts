@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+import { LucideIcon } from 'lucide-react';
 
 // Base Effect Types
 // ------------------------------------------------------------
@@ -42,46 +42,35 @@ export type EffectType =
  * Combat-related effect types
  */
 export type CombatEffectType =
-  | "damage"
-  | "heal"
-  | "shield"
-  | "armor"
-  | "accuracy"
-  | "evasion"
-  | "critical"
-  | "resistance";
+  | 'damage'
+  | 'heal'
+  | 'shield'
+  | 'armor'
+  | 'accuracy'
+  | 'evasion'
+  | 'critical'
+  | 'resistance';
 
 /**
  * Status-related effect types
  */
 export type StatusEffectType =
-  | "stealth"
-  | "speed"
-  | "detection"
-  | "cloaking"
-  | "jamming"
-  | "scanning";
+  | 'stealth'
+  | 'speed'
+  | 'detection'
+  | 'cloaking'
+  | 'jamming'
+  | 'scanning';
 
 /**
  * Visual effect types
  */
-export type VisualEffectType =
-  | "plasma"
-  | "spark"
-  | "gauss"
-  | "explosive"
-  | "beam"
-  | "particle";
+export type VisualEffectType = 'plasma' | 'spark' | 'gauss' | 'explosive' | 'beam' | 'particle';
 
 /**
  * Environmental effect types
  */
-export type EnvironmentalEffectType =
-  | "radiation"
-  | "emp"
-  | "gravity"
-  | "magnetic"
-  | "thermal";
+export type EnvironmentalEffectType = 'radiation' | 'emp' | 'gravity' | 'magnetic' | 'thermal';
 
 // Specialized Effect Interfaces
 // ------------------------------------------------------------
@@ -105,7 +94,7 @@ export interface StatusEffect extends BaseEffect {
   /** Icon to display */
   icon: LucideIcon;
   /** Color theme */
-  color: "blue" | "red" | "yellow" | "green" | "purple" | "cyan" | "amber" | "indigo" | "teal";
+  color: 'blue' | 'red' | 'yellow' | 'green' | 'purple' | 'cyan' | 'amber' | 'indigo' | 'teal';
   /** Additional content */
   content?: React.ReactNode;
 }
@@ -141,10 +130,10 @@ export interface EffectStack {
   history: {
     effectId: string;
     timestamp: number;
-    action: "applied" | "removed" | "expired";
+    action: 'applied' | 'removed' | 'expired';
   }[];
 }
 
 // Re-export from core types for backward compatibility
-export type { Effect } from "../../types/core/GameTypes";
-export type { WeaponEffect, WeaponEffectType } from "./WeaponEffects"; 
+export type { Effect } from '../../types/core/GameTypes';
+export type { WeaponEffect, WeaponEffectType } from './WeaponEffects';

@@ -1,9 +1,9 @@
-import { LostNovaShip } from "../../common/LostNovaShip";
-import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
-import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
-import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { Moon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { LostNovaShip } from '../../common/LostNovaShip';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { Moon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface EclipseScytheProps {
   id: string;
@@ -41,23 +41,23 @@ export function EclipseScythe({
   const [shadowVeilActive, setShadowVeilActive] = useState(false);
 
   useEffect(() => {
-    if (status === "disabled") {
+    if (status === 'disabled') {
       setShadowVeilActive(false);
     }
   }, [status]);
 
   const mapStatus = (status: ShipStatus) => {
     switch (status) {
-      case "engaging":
-        return "engaging";
-      case "patrolling":
-        return "patrolling";
-      case "retreating":
-        return "retreating";
-      case "disabled":
-        return "disabled";
+      case 'engaging':
+        return 'engaging';
+      case 'patrolling':
+        return 'patrolling';
+      case 'retreating':
+        return 'retreating';
+      case 'disabled':
+        return 'disabled';
       default:
-        return "patrolling";
+        return 'patrolling';
     }
   };
 
@@ -100,7 +100,7 @@ export function EclipseScythe({
               setShadowVeilActive(!shadowVeilActive);
               onSpecialAbility?.();
             }}
-            disabled={status === "disabled"}
+            disabled={status === 'disabled'}
           >
             <Moon className="icon" />
             <span>Shadow Veil</span>

@@ -1,6 +1,7 @@
 /* Exploration Hub Animations */
 @keyframes scan-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
@@ -34,7 +35,8 @@
 
 /* Anomaly Effects */
 @keyframes anomaly-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.8;
   }

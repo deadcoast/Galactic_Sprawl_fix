@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
-import { automationManager, AutomationRule, AutomationCondition, AutomationAction } from '../../lib/automation/AutomationManager';
+import {
+  automationManager,
+  AutomationRule,
+  AutomationCondition,
+  AutomationAction,
+} from '../../lib/automation/AutomationManager';
 import { useModuleEvents } from '../modules/useModuleEvents';
 
 /**
@@ -9,12 +14,10 @@ export function useAutomation(moduleId: string) {
   const [rules, setRules] = useState<AutomationRule[]>([]);
 
   // Listen for automation events
-  const events = useModuleEvents([
-    'AUTOMATION_STARTED',
-    'AUTOMATION_STOPPED',
-    'AUTOMATION_CYCLE_COMPLETE',
-    'ERROR_OCCURRED'
-  ], moduleId);
+  const events = useModuleEvents(
+    ['AUTOMATION_STARTED', 'AUTOMATION_STOPPED', 'AUTOMATION_CYCLE_COMPLETE', 'ERROR_OCCURRED'],
+    moduleId
+  );
 
   // Update rules when events occur
   useEffect(() => {
@@ -28,7 +31,7 @@ export function useAutomation(moduleId: string) {
     name: string,
     conditions: AutomationCondition[],
     actions: AutomationAction[],
-    interval: number = 5000,
+    interval: number = 5000
   ): string => {
     const rule: AutomationRule = {
       id: `${moduleId}-${Date.now()}`,
@@ -102,7 +105,7 @@ export function useCommonAutomationRules(moduleId: string) {
     maxThreshold: number,
     produceAction: AutomationAction,
     consumeAction: AutomationAction,
-    interval: number = 5000,
+    interval: number = 5000
   ): string => {
     return createRule(
       `${resourceType} Threshold`,
@@ -121,7 +124,7 @@ export function useCommonAutomationRules(moduleId: string) {
         },
       ],
       [produceAction, consumeAction],
-      interval,
+      interval
     );
   };
 
@@ -131,7 +134,7 @@ export function useCommonAutomationRules(moduleId: string) {
   const createCyclicProductionRule = (
     resourceType: string,
     amount: number,
-    interval: number = 5000,
+    interval: number = 5000
   ): string => {
     return createRule(
       `${resourceType} Production`,
@@ -148,17 +151,14 @@ export function useCommonAutomationRules(moduleId: string) {
           value: amount,
         },
       ],
-      interval,
+      interval
     );
   };
 
   /**
    * Creates a module activation rule
    */
-  const createModuleActivationRule = (
-    triggerModuleId: string,
-    interval: number = 5000,
-  ): string => {
+  const createModuleActivationRule = (triggerModuleId: string, interval: number = 5000): string => {
     return createRule(
       'Module Activation',
       [
@@ -173,7 +173,7 @@ export function useCommonAutomationRules(moduleId: string) {
           target: moduleId,
         },
       ],
-      interval,
+      interval
     );
   };
 
@@ -182,4 +182,4 @@ export function useCommonAutomationRules(moduleId: string) {
     createCyclicProductionRule,
     createModuleActivationRule,
   };
-} 
+}

@@ -8,7 +8,15 @@ import { ResourceCost } from '../types/resources/ResourceTypes';
 import { PlayerShipClass, PlayerShipCategory } from '../types/ships/PlayerShipTypes';
 import { CommonShip, CommonShipStats, CommonShipAbility } from '../types/ships/CommonShipTypes';
 import { SHIP_BLUEPRINTS, ShipBlueprint } from '../config/ShipBlueprints';
-import { WeaponMount, WeaponCategory, WeaponMountSize, WeaponMountPosition, WeaponStatus, WeaponConfig, WeaponInstance } from '../types/weapons/WeaponTypes';
+import {
+  WeaponMount,
+  WeaponCategory,
+  WeaponMountSize,
+  WeaponMountPosition,
+  WeaponStatus,
+  WeaponConfig,
+  WeaponInstance,
+} from '../types/weapons/WeaponTypes';
 import { Officer } from '../types/officers/OfficerTypes';
 import {
   ShipHangarManager as IShipHangarManager,
@@ -20,7 +28,7 @@ import {
   ShipUpgradeStats,
   ShipUpgradeInfo,
   ShipUpgradeRequirement,
-  ShipVisualUpgrade
+  ShipVisualUpgrade,
 } from '../types/buildings/ShipHangarTypes';
 import { OfficerManager } from './OfficerManager';
 
@@ -28,37 +36,55 @@ import { OfficerManager } from './OfficerManager';
  * Implementation of the Ship Hangar Manager
  * Handles ship production, docking, and hangar bay management
  */
-export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements IShipHangarManager {
+export class ShipHangarManager
+  extends EventEmitter<ShipHangarEvents>
+  implements IShipHangarManager
+{
   private state: ShipHangarState;
   private resourceManager: ResourceManager;
   private officerManager: OfficerManager;
-  private activeRepairs: Map<string, {
-    timer: NodeJS.Timeout;
-    resourceCost: ResourceCost[];
-    startTime: number;
-    duration: number;
-  }> = new Map();
-  private activeUpgrades: Map<string, {
-    timer: NodeJS.Timeout;
-    resourceCost: ResourceCost[];
-    startTime: number;
-    duration: number;
-    targetStats: ShipUpgradeStats;
-  }> = new Map();
-  private activeAbilities: Map<string, {
-    timer: NodeJS.Timeout;
-    ability: CommonShipAbility;
-    startTime: number;
-  }> = new Map();
-  private abilityCooldowns: Map<string, {
-    timer: NodeJS.Timeout;
-    endTime: number;
-  }> = new Map();
-  private bayMaintenanceTimers: Map<string, {
-    timer: NodeJS.Timeout;
-    lastMaintenance: number;
-    efficiency: number;
-  }> = new Map();
+  private activeRepairs: Map<
+    string,
+    {
+      timer: NodeJS.Timeout;
+      resourceCost: ResourceCost[];
+      startTime: number;
+      duration: number;
+    }
+  > = new Map();
+  private activeUpgrades: Map<
+    string,
+    {
+      timer: NodeJS.Timeout;
+      resourceCost: ResourceCost[];
+      startTime: number;
+      duration: number;
+      targetStats: ShipUpgradeStats;
+    }
+  > = new Map();
+  private activeAbilities: Map<
+    string,
+    {
+      timer: NodeJS.Timeout;
+      ability: CommonShipAbility;
+      startTime: number;
+    }
+  > = new Map();
+  private abilityCooldowns: Map<
+    string,
+    {
+      timer: NodeJS.Timeout;
+      endTime: number;
+    }
+  > = new Map();
+  private bayMaintenanceTimers: Map<
+    string,
+    {
+      timer: NodeJS.Timeout;
+      lastMaintenance: number;
+      efficiency: number;
+    }
+  > = new Map();
   private assignedOfficers: Map<string, string> = new Map(); // shipId -> officerId
 
   constructor(resourceManager: ResourceManager, officerManager: OfficerManager) {
@@ -69,23 +95,26 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     this.setupEventListeners();
 
     // Subscribe to module events
-    moduleEventBus.on("MODULE_ACTIVATED", (event: { moduleType: string; moduleId: string }) => {
-      if (event.moduleType === "hangar") {
+    moduleEventBus.on('MODULE_ACTIVATED', (event: { moduleType: string; moduleId: string }) => {
+      if (event.moduleType === 'hangar') {
         this.handleModuleActivation(event.moduleId);
       }
     });
 
-    moduleEventBus.on("MODULE_DEACTIVATED", (event: { moduleType: string; moduleId: string }) => {
-      if (event.moduleType === "hangar") {
+    moduleEventBus.on('MODULE_DEACTIVATED', (event: { moduleType: string; moduleId: string }) => {
+      if (event.moduleType === 'hangar') {
         this.handleModuleDeactivation(event.moduleId);
       }
     });
 
-    moduleEventBus.on("STATUS_CHANGED", (event: { moduleType: string; moduleId: string; data: { status: string } }) => {
-      if (event.moduleType === "hangar") {
-        this.handleModuleStatusChange(event.moduleId, event.data.status);
+    moduleEventBus.on(
+      'STATUS_CHANGED',
+      (event: { moduleType: string; moduleId: string; data: { status: string } }) => {
+        if (event.moduleType === 'hangar') {
+          this.handleModuleStatusChange(event.moduleId, event.data.status);
+        }
       }
-    });
+    );
   }
 
   /**
@@ -101,18 +130,18 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
           tier: 1,
           capacity: 3,
           ships: [],
-          status: "available",
+          status: 'available',
           efficiency: 1.0,
           lastMaintenance: Date.now(),
           maintenanceCost: [
             { type: 'energy', amount: 10 },
-            { type: 'minerals', amount: 5 }
-          ]
-        }
+            { type: 'minerals', amount: 5 },
+          ],
+        },
       ],
       maxQueueSize: 3,
       buildSpeedMultiplier: 1.0,
-      resourceEfficiency: 1.0
+      resourceEfficiency: 1.0,
     };
   }
 
@@ -120,8 +149,8 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
    * Set up event listeners
    */
   private setupEventListeners(): void {
-    techTreeManager.on("nodeUnlocked", (event: { nodeId: string; node: any }) => {
-      if (event.node.type === "hangar") {
+    techTreeManager.on('nodeUnlocked', (event: { nodeId: string; node: any }) => {
+      if (event.node.type === 'hangar') {
         this.handleTierUpgrade(event.node.tier as Tier);
       }
     });
@@ -143,20 +172,20 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
         tier,
         capacity: 3 + (tier - 1) * 2,
         ships: [],
-        status: "available",
+        status: 'available',
         efficiency: 1.0,
         lastMaintenance: Date.now(),
         maintenanceCost: [
           { type: 'energy', amount: 10 * tier },
-          { type: 'minerals', amount: 5 * tier }
-        ]
+          { type: 'minerals', amount: 5 * tier },
+        ],
       };
       this.state.bays.push(newBay);
       this.setupBayMaintenance(newBay);
 
-      this.emit("tierUpgraded", {
+      this.emit('tierUpgraded', {
         tier,
-        unlockedShips: this.getUnlockedShipsForTier(tier)
+        unlockedShips: this.getUnlockedShipsForTier(tier),
       });
     }
   }
@@ -204,12 +233,12 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     const oldSpeed = this.state.buildSpeedMultiplier;
 
     switch (status) {
-      case "optimized":
+      case 'optimized':
         // Additional efficiency bonus for optimized state
         this.state.resourceEfficiency *= 0.85; // 15% reduction in resource costs
         this.state.buildSpeedMultiplier *= 1.15; // 15% increase in build speed
         break;
-      case "degraded":
+      case 'degraded':
         // Penalty for degraded state
         this.state.resourceEfficiency /= 0.85; // Remove optimization bonus
         this.state.buildSpeedMultiplier /= 1.15; // Remove speed bonus
@@ -233,11 +262,11 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     // This should be moved to a configuration file
     switch (tier) {
       case 1:
-        return ["spitflare", "void-dredger-miner", "andromeda-cutter"];
+        return ['spitflare', 'void-dredger-miner', 'andromeda-cutter'];
       case 2:
-        return ["star-schooner", "orion-frigate"];
+        return ['star-schooner', 'orion-frigate'];
       case 3:
-        return ["harbringer-galleon", "midway-carrier", "mother-earth-revenge"];
+        return ['harbringer-galleon', 'midway-carrier', 'mother-earth-revenge'];
       default:
         return [];
     }
@@ -248,14 +277,16 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
    */
   public startBuild(shipClass: PlayerShipClass): void {
     if (this.state.buildQueue.length >= this.state.maxQueueSize) {
-      throw new Error("Build queue is full");
+      throw new Error('Build queue is full');
     }
 
     const requirements = this.getBuildRequirements(shipClass);
-    
+
     // Check tier requirement
     if (requirements.tier > this.state.tier) {
-      throw new Error(`Insufficient hangar tier. Required: ${requirements.tier}, Current: ${this.state.tier}`);
+      throw new Error(
+        `Insufficient hangar tier. Required: ${requirements.tier}, Current: ${this.state.tier}`
+      );
     }
 
     // Check tech requirements
@@ -271,14 +302,12 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     // Check officer requirements
     if (requirements.prerequisites?.officers) {
       const { minLevel, specialization } = requirements.prerequisites.officers;
-      
+
       // Find an assigned officer that meets the requirements
       let hasQualifiedOfficer = false;
       for (const [shipId, officerId] of this.assignedOfficers) {
         const officer = this.officerManager.getOfficer(officerId);
-        if (officer && 
-            officer.level >= minLevel && 
-            officer.specialization === specialization) {
+        if (officer && officer.level >= minLevel && officer.specialization === specialization) {
           hasQualifiedOfficer = true;
           break;
         }
@@ -290,11 +319,11 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     // Check resources
-    const canAfford = requirements.resourceCost.every(cost => 
-      this.resourceManager.getResourceAmount(cost.type) >= cost.amount
+    const canAfford = requirements.resourceCost.every(
+      cost => this.resourceManager.getResourceAmount(cost.type) >= cost.amount
     );
     if (!canAfford) {
-      throw new Error("Insufficient resources");
+      throw new Error('Insufficient resources');
     }
 
     // Consume resources with efficiency bonus
@@ -313,11 +342,11 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
       resourceCost: requirements.resourceCost,
       tier: requirements.tier,
       status: 'building',
-      totalPausedTime: 0
+      totalPausedTime: 0,
     };
 
     this.state.buildQueue.push(queueItem);
-    this.emit("buildStarted", { queueItem });
+    this.emit('buildStarted', { queueItem });
   }
 
   /**
@@ -328,11 +357,11 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     if (index === -1) return;
 
     const item = this.state.buildQueue[index];
-    
+
     // Calculate refund based on progress
     const refundedResources = item.resourceCost.map(cost => ({
       type: cost.type,
-      amount: Math.floor(cost.amount * (1 - item.progress) * 0.75) // 75% refund of remaining resources
+      amount: Math.floor(cost.amount * (1 - item.progress) * 0.75), // 75% refund of remaining resources
     }));
 
     // Return resources
@@ -341,7 +370,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     });
 
     this.state.buildQueue.splice(index, 1);
-    this.emit("buildCancelled", { queueItemId, refundedResources });
+    this.emit('buildCancelled', { queueItemId, refundedResources });
   }
 
   /**
@@ -350,12 +379,12 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
   public pauseBuild(queueItemId: string): void {
     const item = this.state.buildQueue.find(item => item.id === queueItemId);
     if (!item || item.status !== 'building') {
-      throw new Error("Cannot pause: Invalid build or already paused");
+      throw new Error('Cannot pause: Invalid build or already paused');
     }
 
     item.status = 'paused';
     item.pausedAt = Date.now();
-    this.emit("buildPaused", { queueItemId });
+    this.emit('buildPaused', { queueItemId });
   }
 
   /**
@@ -364,17 +393,17 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
   public resumeBuild(queueItemId: string): void {
     const item = this.state.buildQueue.find(item => item.id === queueItemId);
     if (!item || item.status !== 'paused') {
-      throw new Error("Cannot resume: Invalid build or not paused");
+      throw new Error('Cannot resume: Invalid build or not paused');
     }
 
     // Calculate total paused time
     if (item.pausedAt) {
       item.totalPausedTime = (item.totalPausedTime || 0) + (Date.now() - item.pausedAt);
     }
-    
+
     item.status = 'building';
     item.pausedAt = undefined;
-    this.emit("buildResumed", { queueItemId });
+    this.emit('buildResumed', { queueItemId });
   }
 
   /**
@@ -399,7 +428,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
       tier: blueprint.requirements.tier,
       resourceCost: blueprint.requirements.resourceCost,
       buildTime: blueprint.requirements.buildTime,
-      prerequisites: blueprint.requirements.prerequisites
+      prerequisites: blueprint.requirements.prerequisites,
     };
 
     // Add tech tree requirements based on tier and category
@@ -428,23 +457,29 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     switch (blueprint.category) {
       case 'war':
         requirements.prerequisites.technology.push(
-          blueprint.tier === 3 ? 'advanced-weapons' :
-          blueprint.tier === 2 ? 'enhanced-weapons' :
-          'basic-weapons'
+          blueprint.tier === 3
+            ? 'advanced-weapons'
+            : blueprint.tier === 2
+              ? 'enhanced-weapons'
+              : 'basic-weapons'
         );
         break;
       case 'recon':
         requirements.prerequisites.technology.push(
-          blueprint.tier === 3 ? 'quantum-recon' :
-          blueprint.tier === 2 ? 'enhanced-sensors' :
-          'basic-sensors'
+          blueprint.tier === 3
+            ? 'quantum-recon'
+            : blueprint.tier === 2
+              ? 'enhanced-sensors'
+              : 'basic-sensors'
         );
         break;
       case 'mining':
         requirements.prerequisites.technology.push(
-          blueprint.tier === 3 ? 'exotic-mining' :
-          blueprint.tier === 2 ? 'improved-extraction' :
-          'mining-lasers'
+          blueprint.tier === 3
+            ? 'exotic-mining'
+            : blueprint.tier === 2
+              ? 'improved-extraction'
+              : 'mining-lasers'
         );
         break;
     }
@@ -456,20 +491,20 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
    * Dock a ship in an available bay
    */
   public dockShip(ship: CommonShip): void {
-    const availableBay = this.state.bays.find(bay => 
-      bay.status === "available" && bay.ships.length < bay.capacity
+    const availableBay = this.state.bays.find(
+      bay => bay.status === 'available' && bay.ships.length < bay.capacity
     );
 
     if (!availableBay) {
-      throw new Error("No available docking bays");
+      throw new Error('No available docking bays');
     }
 
     availableBay.ships.push(ship);
     if (availableBay.ships.length === availableBay.capacity) {
-      availableBay.status = "full";
+      availableBay.status = 'full';
     }
 
-    this.emit("shipDocked", { ship, bay: availableBay });
+    this.emit('shipDocked', { ship, bay: availableBay });
   }
 
   /**
@@ -481,8 +516,8 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
       if (index !== -1) {
         const ship = bay.ships[index];
         bay.ships.splice(index, 1);
-        bay.status = "available";
-        this.emit("shipLaunched", { ship, bay });
+        bay.status = 'available';
+        this.emit('shipLaunched', { ship, bay });
         return;
       }
     }
@@ -500,7 +535,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     // Calculate upgrade costs
     const upgradeCosts: ResourceCost[] = [
       { type: 'minerals', amount: 100 * bay.tier },
-      { type: 'energy', amount: 50 * bay.tier }
+      { type: 'energy', amount: 50 * bay.tier },
     ];
 
     // Add plasma cost for higher tiers
@@ -509,12 +544,12 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     // Check if we can afford upgrade
-    const canAfford = upgradeCosts.every(cost => 
-      this.resourceManager.getResourceAmount(cost.type) >= cost.amount
+    const canAfford = upgradeCosts.every(
+      cost => this.resourceManager.getResourceAmount(cost.type) >= cost.amount
     );
 
     if (!canAfford) {
-      throw new Error("Insufficient resources for bay upgrade");
+      throw new Error('Insufficient resources for bay upgrade');
     }
 
     // Consume resources
@@ -528,21 +563,21 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     // Update bay
     bay.tier = newTier;
     bay.capacity = newCapacity;
-    bay.status = bay.ships.length >= newCapacity ? "full" : "available";
+    bay.status = bay.ships.length >= newCapacity ? 'full' : 'available';
     bay.efficiency = Math.min(1.0, bay.efficiency + 0.2); // Bonus efficiency from upgrade
     bay.maintenanceCost = [
       { type: 'energy', amount: 10 * newTier },
-      { type: 'minerals', amount: 5 * newTier }
+      { type: 'minerals', amount: 5 * newTier },
     ];
 
     // Reset maintenance timer with new values
     this.setupBayMaintenance(bay);
 
-    this.emit("bayUpgraded", {
+    this.emit('bayUpgraded', {
       bayId,
       newTier,
       newCapacity,
-      newEfficiency: bay.efficiency
+      newEfficiency: bay.efficiency,
     });
   }
 
@@ -557,7 +592,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
    * Get available hangar bays
    */
   public getAvailableBays(): ShipHangarBay[] {
-    return this.state.bays.filter(bay => bay.status === "available");
+    return this.state.bays.filter(bay => bay.status === 'available');
   }
 
   /**
@@ -593,7 +628,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
 
       if (newProgress !== item.progress) {
         item.progress = newProgress;
-        this.emit("buildProgressed", { queueItemId: item.id, progress: newProgress });
+        this.emit('buildProgressed', { queueItemId: item.id, progress: newProgress });
       }
 
       // Check for completion
@@ -624,11 +659,11 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     // Find an available bay
-    const availableBay = this.state.bays.find(bay => 
-      bay.status === "available" && bay.ships.length < bay.capacity
+    const availableBay = this.state.bays.find(
+      bay => bay.status === 'available' && bay.ships.length < bay.capacity
     );
     if (!availableBay) {
-      throw new Error("No available bay to dock the completed ship");
+      throw new Error('No available bay to dock the completed ship');
     }
 
     // Create the ship instance
@@ -636,7 +671,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
       id: uuidv4(),
       name: blueprint.name,
       category: blueprint.category,
-      status: "ready",
+      status: 'ready',
       stats: {
         health: blueprint.baseStats.hull,
         maxHealth: blueprint.baseStats.hull,
@@ -647,64 +682,66 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
         speed: blueprint.baseStats.speed,
         turnRate: 2, // Default value, can be adjusted based on ship type
         cargo: blueprint.baseStats.cargo || 0,
-        weapons: blueprint.weapons?.map(weapon => ({
-          id: uuidv4(),
-          size: "medium" as WeaponMountSize,
-          position: "front" as WeaponMountPosition,
-          rotation: 0,
-          allowedCategories: ["machineGun" as WeaponCategory],
-          currentWeapon: {
-            config: {
-              id: weapon.name.toLowerCase().replace(/\s+/g, '-'),
-              name: weapon.name,
-              category: "machineGun" as WeaponCategory,
-              tier: blueprint.tier,
-              baseStats: {
-                damage: weapon.damage,
-                range: weapon.range,
-                accuracy: 0.8, // Default value
-                rateOfFire: 1 / weapon.cooldown,
-                energyCost: 5, // Default value
-                cooldown: weapon.cooldown,
-                effects: [], // Can be configured in blueprint
+        weapons:
+          blueprint.weapons?.map(weapon => ({
+            id: uuidv4(),
+            size: 'medium' as WeaponMountSize,
+            position: 'front' as WeaponMountPosition,
+            rotation: 0,
+            allowedCategories: ['machineGun' as WeaponCategory],
+            currentWeapon: {
+              config: {
+                id: weapon.name.toLowerCase().replace(/\s+/g, '-'),
+                name: weapon.name,
+                category: 'machineGun' as WeaponCategory,
+                tier: blueprint.tier,
+                baseStats: {
+                  damage: weapon.damage,
+                  range: weapon.range,
+                  accuracy: 0.8, // Default value
+                  rateOfFire: 1 / weapon.cooldown,
+                  energyCost: 5, // Default value
+                  cooldown: weapon.cooldown,
+                  effects: [], // Can be configured in blueprint
+                },
+                visualAsset: `weapons/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`,
+                mountRequirements: {
+                  size: 'medium' as WeaponMountSize,
+                  power: 20,
+                },
               },
-              visualAsset: `weapons/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`,
-              mountRequirements: {
-                size: "medium" as WeaponMountSize,
-                power: 20,
-              },
-            },
-            state: {
-              status: "ready" as WeaponStatus,
-              currentStats: {
-                damage: weapon.damage,
-                range: weapon.range,
-                accuracy: 0.8,
-                rateOfFire: 1 / weapon.cooldown,
-                energyCost: 5,
-                cooldown: weapon.cooldown,
+              state: {
+                status: 'ready' as WeaponStatus,
+                currentStats: {
+                  damage: weapon.damage,
+                  range: weapon.range,
+                  accuracy: 0.8,
+                  rateOfFire: 1 / weapon.cooldown,
+                  energyCost: 5,
+                  cooldown: weapon.cooldown,
+                  effects: [],
+                },
                 effects: [],
               },
-              effects: [],
-            }
-          }
-        })) || [],
-        abilities: blueprint.abilities?.map(ability => ({
-          name: ability.name,
-          description: ability.description,
-          cooldown: ability.cooldown,
-          duration: ability.duration,
-          active: false,
-          effect: {
+            },
+          })) || [],
+        abilities:
+          blueprint.abilities?.map(ability => ({
             name: ability.name,
             description: ability.description,
-            type: "ability",
-            magnitude: 1,
+            cooldown: ability.cooldown,
             duration: ability.duration,
             active: false,
-            cooldown: ability.cooldown
-          }
-        })) || [],
+            effect: {
+              name: ability.name,
+              description: ability.description,
+              type: 'ability',
+              magnitude: 1,
+              duration: ability.duration,
+              active: false,
+              cooldown: ability.cooldown,
+            },
+          })) || [],
         defense: {
           armor: Math.floor(blueprint.baseStats.hull * 0.3), // 30% of hull as armor
           shield: blueprint.baseStats.shield,
@@ -715,34 +752,35 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
           speed: blueprint.baseStats.speed,
           turnRate: 2, // Default value
           acceleration: blueprint.baseStats.speed * 0.5, // 50% of speed as acceleration
-        }
+        },
       },
-      abilities: blueprint.abilities?.map(ability => ({
-        name: ability.name,
-        description: ability.description,
-        cooldown: ability.cooldown,
-        duration: ability.duration,
-        active: false,
-        effect: {
+      abilities:
+        blueprint.abilities?.map(ability => ({
           name: ability.name,
           description: ability.description,
-          type: "ability",
-          magnitude: 1,
+          cooldown: ability.cooldown,
           duration: ability.duration,
           active: false,
-          cooldown: ability.cooldown
-        }
-      })) || []
+          effect: {
+            name: ability.name,
+            description: ability.description,
+            type: 'ability',
+            magnitude: 1,
+            duration: ability.duration,
+            active: false,
+            cooldown: ability.cooldown,
+          },
+        })) || [],
     };
 
     // Add ship to bay
     availableBay.ships.push(ship);
     if (availableBay.ships.length >= availableBay.capacity) {
-      availableBay.status = "full";
+      availableBay.status = 'full';
     }
 
     // Emit completion event
-    this.emit("buildCompleted", { ship, bay: availableBay });
+    this.emit('buildCompleted', { ship, bay: availableBay });
   }
 
   /**
@@ -751,30 +789,30 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
   private getShipClass(ship: CommonShip): PlayerShipClass {
     // Map ship names to their corresponding class
     const classMap: Record<string, PlayerShipClass> = {
-      "Harbringer Galleon": "harbringer-galleon",
-      "Midway Carrier": "midway-carrier",
-      "Mother Earth's Revenge": "mother-earth-revenge",
-      "Orion Frigate": "orion-frigate",
-      "Spitflare": "spitflare",
-      "Star Schooner": "star-schooner",
-      "Void Dredger Miner": "void-dredger-miner",
-      "Andromeda Cutter": "andromeda-cutter"
+      'Harbringer Galleon': 'harbringer-galleon',
+      'Midway Carrier': 'midway-carrier',
+      "Mother Earth's Revenge": 'mother-earth-revenge',
+      'Orion Frigate': 'orion-frigate',
+      Spitflare: 'spitflare',
+      'Star Schooner': 'star-schooner',
+      'Void Dredger Miner': 'void-dredger-miner',
+      'Andromeda Cutter': 'andromeda-cutter',
     };
 
-    return classMap[ship.name] || "spitflare"; // Default to spitflare if name not found
+    return classMap[ship.name] || 'spitflare'; // Default to spitflare if name not found
   }
 
   /**
    * Get ship category from class
    */
   private getShipCategory(shipClass: PlayerShipClass): PlayerShipCategory {
-    if (shipClass.includes("void-dredger")) {
-      return "mining";
+    if (shipClass.includes('void-dredger')) {
+      return 'mining';
     }
-    if (shipClass.includes("andromeda") || shipClass.includes("schooner")) {
-      return "recon";
+    if (shipClass.includes('andromeda') || shipClass.includes('schooner')) {
+      return 'recon';
     }
-    return "war";
+    return 'war';
   }
 
   /**
@@ -806,7 +844,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
           speed: 10,
           turnRate: 2,
           acceleration: 5,
-        }
+        },
       };
     }
 
@@ -821,64 +859,66 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
       speed: blueprint.baseStats.speed,
       turnRate: 2, // Default value, can be adjusted based on ship type
       cargo: blueprint.baseStats.cargo || 0,
-      weapons: blueprint.weapons?.map(weapon => ({
-        id: uuidv4(),
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
-        rotation: 0,
-        allowedCategories: ["machineGun" as WeaponCategory],
-        currentWeapon: {
-          config: {
-            id: weapon.name.toLowerCase().replace(/\s+/g, '-'),
-            name: weapon.name,
-            category: "machineGun" as WeaponCategory,
-            tier: blueprint.tier,
-            baseStats: {
-              damage: weapon.damage,
-              range: weapon.range,
-              accuracy: 0.8, // Default value
-              rateOfFire: 1 / weapon.cooldown,
-              energyCost: 5, // Default value
-              cooldown: weapon.cooldown,
-              effects: [], // Can be configured in blueprint
+      weapons:
+        blueprint.weapons?.map(weapon => ({
+          id: uuidv4(),
+          size: 'medium' as WeaponMountSize,
+          position: 'front' as WeaponMountPosition,
+          rotation: 0,
+          allowedCategories: ['machineGun' as WeaponCategory],
+          currentWeapon: {
+            config: {
+              id: weapon.name.toLowerCase().replace(/\s+/g, '-'),
+              name: weapon.name,
+              category: 'machineGun' as WeaponCategory,
+              tier: blueprint.tier,
+              baseStats: {
+                damage: weapon.damage,
+                range: weapon.range,
+                accuracy: 0.8, // Default value
+                rateOfFire: 1 / weapon.cooldown,
+                energyCost: 5, // Default value
+                cooldown: weapon.cooldown,
+                effects: [], // Can be configured in blueprint
+              },
+              visualAsset: `weapons/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`,
+              mountRequirements: {
+                size: 'medium' as WeaponMountSize,
+                power: 20,
+              },
             },
-            visualAsset: `weapons/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`,
-            mountRequirements: {
-              size: "medium" as WeaponMountSize,
-              power: 20,
-            },
-          },
-          state: {
-            status: "ready" as WeaponStatus,
-            currentStats: {
-              damage: weapon.damage,
-              range: weapon.range,
-              accuracy: 0.8,
-              rateOfFire: 1 / weapon.cooldown,
-              energyCost: 5,
-              cooldown: weapon.cooldown,
+            state: {
+              status: 'ready' as WeaponStatus,
+              currentStats: {
+                damage: weapon.damage,
+                range: weapon.range,
+                accuracy: 0.8,
+                rateOfFire: 1 / weapon.cooldown,
+                energyCost: 5,
+                cooldown: weapon.cooldown,
+                effects: [],
+              },
               effects: [],
             },
-            effects: [],
-          }
-        }
-      })) || [],
-      abilities: blueprint.abilities?.map(ability => ({
-        name: ability.name,
-        description: ability.description,
-        cooldown: ability.cooldown,
-        duration: ability.duration,
-        active: false,
-        effect: {
+          },
+        })) || [],
+      abilities:
+        blueprint.abilities?.map(ability => ({
           name: ability.name,
           description: ability.description,
-          type: "ability",
-          magnitude: 1,
+          cooldown: ability.cooldown,
           duration: ability.duration,
           active: false,
-          cooldown: ability.cooldown
-        }
-      })) || [],
+          effect: {
+            name: ability.name,
+            description: ability.description,
+            type: 'ability',
+            magnitude: 1,
+            duration: ability.duration,
+            active: false,
+            cooldown: ability.cooldown,
+          },
+        })) || [],
       defense: {
         armor: Math.floor(blueprint.baseStats.hull * 0.3), // 30% of hull as armor
         shield: blueprint.baseStats.shield,
@@ -889,7 +929,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
         speed: blueprint.baseStats.speed,
         turnRate: 2, // Default value
         acceleration: blueprint.baseStats.speed * 0.5, // 50% of speed as acceleration
-      }
+      },
     };
   }
 
@@ -936,11 +976,11 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!targetShip || !targetBay) {
-      throw new Error("Ship not found in any bay");
+      throw new Error('Ship not found in any bay');
     }
 
-    if (targetShip.status !== "damaged") {
-      throw new Error("Ship does not need repairs");
+    if (targetShip.status !== 'damaged') {
+      throw new Error('Ship does not need repairs');
     }
 
     // Calculate repair costs based on damage
@@ -950,20 +990,21 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
 
     const resourceCost: ResourceCost[] = [
       { type: 'minerals', amount: Math.ceil(totalDamage * 0.5) }, // Base mineral cost
-      { type: 'energy', amount: Math.ceil(totalDamage * 0.3) }    // Base energy cost
+      { type: 'energy', amount: Math.ceil(totalDamage * 0.3) }, // Base energy cost
     ];
 
     // Add plasma cost for higher tier ships
-    if (targetShip.stats.maxHealth >= 200) { // Higher tier ships have more health
+    if (targetShip.stats.maxHealth >= 200) {
+      // Higher tier ships have more health
       resourceCost.push({ type: 'plasma', amount: Math.ceil(totalDamage * 0.2) });
     }
 
     // Check if we have enough resources
-    const canAfford = resourceCost.every(cost => 
-      this.resourceManager.getResourceAmount(cost.type) >= cost.amount
+    const canAfford = resourceCost.every(
+      cost => this.resourceManager.getResourceAmount(cost.type) >= cost.amount
     );
     if (!canAfford) {
-      throw new Error("Insufficient resources for repairs");
+      throw new Error('Insufficient resources for repairs');
     }
 
     // Consume resources
@@ -977,7 +1018,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     const estimatedTime = Math.ceil(baseRepairTime * damageMultiplier);
 
     // Update ship status
-    targetShip.status = "repairing";
+    targetShip.status = 'repairing';
 
     // Start repair timer
     const repairTimer = setTimeout(() => {
@@ -989,14 +1030,14 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
       timer: repairTimer,
       resourceCost,
       startTime: Date.now(),
-      duration: estimatedTime
+      duration: estimatedTime,
     });
 
     // Emit event
-    this.emit("repairStarted", {
+    this.emit('repairStarted', {
       shipId,
       resourceCost,
-      estimatedTime
+      estimatedTime,
     });
   }
 
@@ -1006,7 +1047,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
   public cancelRepair(shipId: string): void {
     const repairInfo = this.activeRepairs.get(shipId);
     if (!repairInfo) {
-      throw new Error("No active repair found for ship");
+      throw new Error('No active repair found for ship');
     }
 
     // Clear the timer
@@ -1016,7 +1057,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     const progress = Math.min(1, (Date.now() - repairInfo.startTime) / repairInfo.duration);
     const refundedResources = repairInfo.resourceCost.map(cost => ({
       type: cost.type,
-      amount: Math.floor(cost.amount * (1 - progress) * 0.75) // 75% refund of remaining resources
+      amount: Math.floor(cost.amount * (1 - progress) * 0.75), // 75% refund of remaining resources
     }));
 
     // Return resources
@@ -1028,7 +1069,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     for (const bay of this.state.bays) {
       const ship = bay.ships.find(s => s.id === shipId);
       if (ship) {
-        ship.status = "damaged";
+        ship.status = 'damaged';
         break;
       }
     }
@@ -1037,9 +1078,9 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     this.activeRepairs.delete(shipId);
 
     // Emit event
-    this.emit("repairCancelled", {
+    this.emit('repairCancelled', {
       shipId,
-      refundedResources
+      refundedResources,
     });
   }
 
@@ -1059,20 +1100,20 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!repairedShip) {
-      console.error("Ship not found for repair completion");
+      console.error('Ship not found for repair completion');
       return;
     }
 
     // Restore ship to full health
     repairedShip.stats.health = repairedShip.stats.maxHealth;
     repairedShip.stats.shield = repairedShip.stats.maxShield;
-    repairedShip.status = "ready";
+    repairedShip.status = 'ready';
 
     // Clean up
     this.activeRepairs.delete(shipId);
 
     // Emit event
-    this.emit("repairCompleted", { shipId });
+    this.emit('repairCompleted', { shipId });
   }
 
   /**
@@ -1109,43 +1150,46 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     const stats: ShipUpgradeStats = {
       hull: {
         current: targetShip.stats.health,
-        upgraded: Math.floor(targetShip.stats.health * 1.5)
+        upgraded: Math.floor(targetShip.stats.health * 1.5),
       },
       shield: {
         current: targetShip.stats.shield,
-        upgraded: Math.floor(targetShip.stats.shield * 1.5)
+        upgraded: Math.floor(targetShip.stats.shield * 1.5),
       },
       weapons: {
         current: 100,
-        upgraded: 150
+        upgraded: 150,
       },
       speed: {
         current: targetShip.stats.speed,
-        upgraded: Math.floor(targetShip.stats.speed * 1.2)
-      }
+        upgraded: Math.floor(targetShip.stats.speed * 1.2),
+      },
     };
 
     // Calculate resource costs
     const resourceCost: ResourceCost[] = [
       { type: 'minerals', amount: Math.floor(targetShip.stats.health * 0.5) },
-      { type: 'energy', amount: Math.floor(targetShip.stats.shield * 0.5) }
+      { type: 'energy', amount: Math.floor(targetShip.stats.shield * 0.5) },
     ];
 
     // Add plasma cost for higher tier upgrades
     if (targetBay.tier >= 2) {
-      resourceCost.push({ type: 'plasma', amount: Math.floor((targetShip.stats.health + targetShip.stats.shield) * 0.2) });
+      resourceCost.push({
+        type: 'plasma',
+        amount: Math.floor((targetShip.stats.health + targetShip.stats.shield) * 0.2),
+      });
     }
 
     // Check tech requirements
     const requirements: ShipUpgradeRequirement[] = [];
-    
+
     // Tech tree requirements
     if (blueprint.requirements.prerequisites?.technology) {
       blueprint.requirements.prerequisites.technology.forEach(tech => {
         requirements.push({
-          type: "tech",
+          type: 'tech',
           name: tech,
-          met: techTreeManager.getNode(tech)?.unlocked || false
+          met: techTreeManager.getNode(tech)?.unlocked || false,
         });
       });
     }
@@ -1153,31 +1197,31 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     // Resource requirements
     resourceCost.forEach(cost => {
       requirements.push({
-        type: "resource",
+        type: 'resource',
         name: `${cost.type}: ${cost.amount}`,
-        met: this.resourceManager.getResourceAmount(cost.type) >= cost.amount
+        met: this.resourceManager.getResourceAmount(cost.type) >= cost.amount,
       });
     });
 
     // Facility requirements
     requirements.push({
-      type: "facility",
+      type: 'facility',
       name: `Tier ${targetBay.tier + 1} Hangar Bay`,
-      met: this.state.tier > targetBay.tier
+      met: this.state.tier > targetBay.tier,
     });
 
     // Visual upgrades
     const visualUpgrades: ShipVisualUpgrade[] = [
       {
-        name: "Enhanced Hull Plating",
-        description: "Reinforced armor panels with improved damage resistance",
-        preview: `ships/${targetShip.category}/tier${targetBay.tier + 1}/hull`
+        name: 'Enhanced Hull Plating',
+        description: 'Reinforced armor panels with improved damage resistance',
+        preview: `ships/${targetShip.category}/tier${targetBay.tier + 1}/hull`,
       },
       {
-        name: "Advanced Shield Matrix",
-        description: "Upgraded shield emitters with better regeneration",
-        preview: `ships/${targetShip.category}/tier${targetBay.tier + 1}/shield`
-      }
+        name: 'Advanced Shield Matrix',
+        description: 'Upgraded shield emitters with better regeneration',
+        preview: `ships/${targetShip.category}/tier${targetBay.tier + 1}/shield`,
+      },
     ];
 
     return {
@@ -1187,7 +1231,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
       requirements,
       stats,
       resourceCost,
-      visualUpgrades
+      visualUpgrades,
     };
   }
 
@@ -1197,16 +1241,16 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
   public startUpgrade(shipId: string): void {
     const upgradeInfo = this.getUpgradeInfo(shipId);
     if (!upgradeInfo) {
-      throw new Error("Ship not found or upgrade info not available");
+      throw new Error('Ship not found or upgrade info not available');
     }
 
     if (!upgradeInfo.upgradeAvailable) {
-      throw new Error("Ship is not eligible for upgrade");
+      throw new Error('Ship is not eligible for upgrade');
     }
 
     // Check requirements
     if (!upgradeInfo.requirements.every(req => req.met)) {
-      throw new Error("Not all upgrade requirements are met");
+      throw new Error('Not all upgrade requirements are met');
     }
 
     // Find the ship
@@ -1223,7 +1267,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!targetShip || !targetBay) {
-      throw new Error("Ship not found in any bay");
+      throw new Error('Ship not found in any bay');
     }
 
     // Consume resources
@@ -1237,7 +1281,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     const estimatedTime = baseUpgradeTime * tierMultiplier;
 
     // Update ship status
-    targetShip.status = "upgrading";
+    targetShip.status = 'upgrading';
 
     // Start upgrade timer
     const upgradeTimer = setTimeout(() => {
@@ -1250,14 +1294,14 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
       resourceCost: upgradeInfo.resourceCost,
       startTime: Date.now(),
       duration: estimatedTime,
-      targetStats: upgradeInfo.stats
+      targetStats: upgradeInfo.stats,
     });
 
     // Emit event
-    this.emit("upgradeStarted", {
+    this.emit('upgradeStarted', {
       shipId,
       resourceCost: upgradeInfo.resourceCost,
-      estimatedTime
+      estimatedTime,
     });
   }
 
@@ -1267,7 +1311,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
   public cancelUpgrade(shipId: string): void {
     const upgradeInfo = this.activeUpgrades.get(shipId);
     if (!upgradeInfo) {
-      throw new Error("No active upgrade found for ship");
+      throw new Error('No active upgrade found for ship');
     }
 
     // Clear the timer
@@ -1277,7 +1321,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     const progress = Math.min(1, (Date.now() - upgradeInfo.startTime) / upgradeInfo.duration);
     const refundedResources = upgradeInfo.resourceCost.map(cost => ({
       type: cost.type,
-      amount: Math.floor(cost.amount * (1 - progress) * 0.75) // 75% refund of remaining resources
+      amount: Math.floor(cost.amount * (1 - progress) * 0.75), // 75% refund of remaining resources
     }));
 
     // Return resources
@@ -1289,7 +1333,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     for (const bay of this.state.bays) {
       const ship = bay.ships.find(s => s.id === shipId);
       if (ship) {
-        ship.status = "ready";
+        ship.status = 'ready';
         break;
       }
     }
@@ -1298,9 +1342,9 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     this.activeUpgrades.delete(shipId);
 
     // Emit event
-    this.emit("upgradeCancelled", {
+    this.emit('upgradeCancelled', {
       shipId,
-      refundedResources
+      refundedResources,
     });
   }
 
@@ -1322,7 +1366,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!upgradedShip || !upgradedBay) {
-      console.error("Ship not found for upgrade completion");
+      console.error('Ship not found for upgrade completion');
       return;
     }
 
@@ -1332,7 +1376,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     upgradedShip.stats.shield = targetStats.shield.upgraded;
     upgradedShip.stats.maxShield = targetStats.shield.upgraded;
     upgradedShip.stats.speed = targetStats.speed.upgraded;
-    upgradedShip.status = "ready";
+    upgradedShip.status = 'ready';
 
     // Update bay tier
     upgradedBay.tier = (upgradedBay.tier + 1) as Tier;
@@ -1341,10 +1385,10 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     this.activeUpgrades.delete(shipId);
 
     // Emit event
-    this.emit("upgradeCompleted", {
+    this.emit('upgradeCompleted', {
       shipId,
       newTier: upgradedBay.tier,
-      stats: targetStats
+      stats: targetStats,
     });
   }
 
@@ -1364,24 +1408,24 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!targetShip) {
-      throw new Error("Ship not found");
+      throw new Error('Ship not found');
     }
 
     // Find the ability
     const ability = targetShip.abilities.find(a => a.name === abilityName);
     if (!ability) {
-      throw new Error("Ability not found");
+      throw new Error('Ability not found');
     }
 
     // Check if ability is on cooldown
     const cooldownInfo = this.abilityCooldowns.get(`${shipId}-${abilityName}`);
     if (cooldownInfo && Date.now() < cooldownInfo.endTime) {
-      throw new Error("Ability is on cooldown");
+      throw new Error('Ability is on cooldown');
     }
 
     // Check if ability is already active
     if (ability.active) {
-      throw new Error("Ability is already active");
+      throw new Error('Ability is already active');
     }
 
     // Activate ability
@@ -1397,7 +1441,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     this.activeAbilities.set(`${shipId}-${abilityName}`, {
       timer: abilityTimer,
       ability,
-      startTime: Date.now()
+      startTime: Date.now(),
     });
 
     // Start cooldown timer
@@ -1408,15 +1452,15 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     // Store cooldown info
     this.abilityCooldowns.set(`${shipId}-${abilityName}`, {
       timer: cooldownTimer,
-      endTime: Date.now() + (ability.cooldown * 1000)
+      endTime: Date.now() + ability.cooldown * 1000,
     });
 
     // Emit event
-    this.emit("abilityActivated", {
+    this.emit('abilityActivated', {
       shipId,
       abilityName,
       duration: ability.duration,
-      effect: ability.effect
+      effect: ability.effect,
     });
   }
 
@@ -1436,7 +1480,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!targetShip) {
-      console.error("Ship not found for ability deactivation");
+      console.error('Ship not found for ability deactivation');
       return;
     }
 
@@ -1456,9 +1500,9 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     // Emit event
-    this.emit("abilityDeactivated", {
+    this.emit('abilityDeactivated', {
       shipId,
-      abilityName
+      abilityName,
     });
   }
 
@@ -1489,8 +1533,9 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
    */
   public cancelShipAbilities(shipId: string): void {
     // Find all active abilities for this ship
-    const shipAbilities = Array.from(this.activeAbilities.entries())
-      .filter(([key]) => key.startsWith(`${shipId}-`));
+    const shipAbilities = Array.from(this.activeAbilities.entries()).filter(([key]) =>
+      key.startsWith(`${shipId}-`)
+    );
 
     // Deactivate each ability
     shipAbilities.forEach(([key]) => {
@@ -1515,7 +1560,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!targetShip) {
-      throw new Error("Ship not found");
+      throw new Error('Ship not found');
     }
 
     // Get ship blueprint
@@ -1525,26 +1570,28 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     // Return available weapons based on ship tier and requirements
-    return blueprint.weapons?.map(weapon => ({
-      id: weapon.name.toLowerCase().replace(/\s+/g, '-'),
-      name: weapon.name,
-      category: "machineGun" as WeaponCategory,
-      tier: blueprint.tier,
-      baseStats: {
-        damage: weapon.damage,
-        range: weapon.range,
-        accuracy: 0.8,
-        rateOfFire: 1 / weapon.cooldown,
-        energyCost: 5,
-        cooldown: weapon.cooldown,
-        effects: [],
-      },
-      visualAsset: `weapons/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`,
-      mountRequirements: {
-        size: "medium" as WeaponMountSize,
-        power: 20,
-      }
-    })) || [];
+    return (
+      blueprint.weapons?.map(weapon => ({
+        id: weapon.name.toLowerCase().replace(/\s+/g, '-'),
+        name: weapon.name,
+        category: 'machineGun' as WeaponCategory,
+        tier: blueprint.tier,
+        baseStats: {
+          damage: weapon.damage,
+          range: weapon.range,
+          accuracy: 0.8,
+          rateOfFire: 1 / weapon.cooldown,
+          energyCost: 5,
+          cooldown: weapon.cooldown,
+          effects: [],
+        },
+        visualAsset: `weapons/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`,
+        mountRequirements: {
+          size: 'medium' as WeaponMountSize,
+          power: 20,
+        },
+      })) || []
+    );
   }
 
   /**
@@ -1563,46 +1610,46 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!targetShip) {
-      throw new Error("Ship not found");
+      throw new Error('Ship not found');
     }
 
     // Find the mount
     const mount = targetShip.stats.weapons.find(m => m.id === mountId);
     if (!mount) {
-      throw new Error("Mount not found");
+      throw new Error('Mount not found');
     }
 
     // Find the weapon config
     const availableWeapons = this.getAvailableWeapons(shipId);
     const weaponConfig = availableWeapons.find(w => w.id === weaponId);
     if (!weaponConfig) {
-      throw new Error("Weapon not found");
+      throw new Error('Weapon not found');
     }
 
     // Check mount compatibility
     if (mount.size !== weaponConfig.mountRequirements.size) {
-      throw new Error("Incompatible mount size");
+      throw new Error('Incompatible mount size');
     }
 
     if (!mount.allowedCategories.includes(weaponConfig.category)) {
-      throw new Error("Incompatible weapon category");
+      throw new Error('Incompatible weapon category');
     }
 
     // Create weapon instance
     mount.currentWeapon = {
       config: weaponConfig,
       state: {
-        status: "ready",
+        status: 'ready',
         currentStats: { ...weaponConfig.baseStats },
-        effects: []
-      }
+        effects: [],
+      },
     };
 
     // Emit event
-    this.emit("weaponEquipped", {
+    this.emit('weaponEquipped', {
       shipId,
       mountId,
-      weaponId
+      weaponId,
     });
   }
 
@@ -1622,17 +1669,17 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!targetShip) {
-      throw new Error("Ship not found");
+      throw new Error('Ship not found');
     }
 
     // Find the mount
     const mount = targetShip.stats.weapons.find(m => m.id === mountId);
     if (!mount) {
-      throw new Error("Mount not found");
+      throw new Error('Mount not found');
     }
 
     if (!mount.currentWeapon) {
-      throw new Error("No weapon equipped");
+      throw new Error('No weapon equipped');
     }
 
     // Store weapon info for event
@@ -1642,10 +1689,10 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     mount.currentWeapon = undefined;
 
     // Emit event
-    this.emit("weaponUnequipped", {
+    this.emit('weaponUnequipped', {
       shipId,
       mountId,
-      weaponId
+      weaponId,
     });
   }
 
@@ -1665,7 +1712,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!targetShip) {
-      throw new Error("Ship not found");
+      throw new Error('Ship not found');
     }
 
     return targetShip.stats.weapons;
@@ -1690,7 +1737,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     this.bayMaintenanceTimers.set(bay.id, {
       timer,
       lastMaintenance: bay.lastMaintenance,
-      efficiency: bay.efficiency
+      efficiency: bay.efficiency,
     });
   }
 
@@ -1706,12 +1753,12 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     const shipCount = bay.ships.length;
     const actualCosts = baseCosts.map(cost => ({
       type: cost.type,
-      amount: Math.ceil(cost.amount * (1 + (shipCount / bay.capacity) * 0.5))
+      amount: Math.ceil(cost.amount * (1 + (shipCount / bay.capacity) * 0.5)),
     }));
 
     // Check if we can afford maintenance
-    const canAfford = actualCosts.every(cost => 
-      this.resourceManager.getResourceAmount(cost.type) >= cost.amount
+    const canAfford = actualCosts.every(
+      cost => this.resourceManager.getResourceAmount(cost.type) >= cost.amount
     );
 
     if (canAfford) {
@@ -1731,25 +1778,25 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
         timerInfo.efficiency = bay.efficiency;
       }
 
-      this.emit("bayMaintained", {
+      this.emit('bayMaintained', {
         bayId,
         newEfficiency: bay.efficiency,
-        maintenanceCost: actualCosts
+        maintenanceCost: actualCosts,
       });
     } else {
       // Decrease efficiency due to missed maintenance
       bay.efficiency = Math.max(0.5, bay.efficiency - 0.1);
-      
+
       // Update timer info
       const timerInfo = this.bayMaintenanceTimers.get(bayId);
       if (timerInfo) {
         timerInfo.efficiency = bay.efficiency;
       }
 
-      this.emit("bayMaintenanceFailed", {
+      this.emit('bayMaintenanceFailed', {
         bayId,
         newEfficiency: bay.efficiency,
-        requiredResources: actualCosts
+        requiredResources: actualCosts,
       });
     }
   }
@@ -1765,8 +1812,8 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     const efficiencyFactor = bay.efficiency;
 
     // Capacity utilization bonus
-    const utilizationBonus = bay.ships.length > 0 ? 
-      Math.min(1.2, 1 + (bay.ships.length / bay.capacity) * 0.2) : 1.0;
+    const utilizationBonus =
+      bay.ships.length > 0 ? Math.min(1.2, 1 + (bay.ships.length / bay.capacity) * 0.2) : 1.0;
 
     return tierMultiplier * efficiencyFactor * utilizationBonus;
   }
@@ -1787,18 +1834,18 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
 
     if (!targetShip) {
-      throw new Error("Ship not found");
+      throw new Error('Ship not found');
     }
 
     // Get the officer
     const officer = this.officerManager.getOfficer(officerId);
     if (!officer) {
-      throw new Error("Officer not found");
+      throw new Error('Officer not found');
     }
 
     // Check if officer is available
-    if (officer.status !== "available") {
-      throw new Error("Officer is not available");
+    if (officer.status !== 'available') {
+      throw new Error('Officer is not available');
     }
 
     // Calculate bonuses based on officer skills and specialization
@@ -1812,10 +1859,10 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     this.applyOfficerBonuses(targetShip, bonuses);
 
     // Emit event
-    this.emit("officerAssigned", {
+    this.emit('officerAssigned', {
       shipId,
       officerId,
-      bonuses
+      bonuses,
     });
   }
 
@@ -1851,16 +1898,19 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     this.officerManager.assignOfficer(officerId, null as unknown as string);
 
     // Emit event
-    this.emit("officerUnassigned", {
+    this.emit('officerUnassigned', {
       shipId,
-      officerId
+      officerId,
     });
   }
 
   /**
    * Calculate bonuses provided by an officer
    */
-  private calculateOfficerBonuses(officer: Officer, ship: CommonShip): {
+  private calculateOfficerBonuses(
+    officer: Officer,
+    ship: CommonShip
+  ): {
     buildSpeed?: number;
     resourceEfficiency?: number;
     combatEffectiveness?: number;
@@ -1868,7 +1918,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     const bonuses = {
       buildSpeed: 0,
       resourceEfficiency: 0,
-      combatEffectiveness: 0
+      combatEffectiveness: 0,
     };
 
     // Base bonuses from level
@@ -1876,16 +1926,16 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
 
     // Specialization bonuses
     switch (officer.specialization) {
-      case "War":
-        if (ship.category === "war") {
+      case 'War':
+        if (ship.category === 'war') {
           bonuses.combatEffectiveness = 0.2 + levelBonus; // 20% base + level bonus
           bonuses.buildSpeed = 0.1 + levelBonus; // 10% base + level bonus
         }
         break;
-      case "Mining":
+      case 'Mining':
         bonuses.resourceEfficiency = 0.2 + levelBonus; // 20% base + level bonus
         break;
-      case "Recon":
+      case 'Recon':
         bonuses.buildSpeed = 0.15 + levelBonus; // 15% base + level bonus
         bonuses.resourceEfficiency = 0.1 + levelBonus; // 10% base + level bonus
         break;
@@ -1902,18 +1952,21 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
   /**
    * Apply officer bonuses to a ship
    */
-  private applyOfficerBonuses(ship: CommonShip, bonuses: {
-    buildSpeed?: number;
-    resourceEfficiency?: number;
-    combatEffectiveness?: number;
-  }): void {
+  private applyOfficerBonuses(
+    ship: CommonShip,
+    bonuses: {
+      buildSpeed?: number;
+      resourceEfficiency?: number;
+      combatEffectiveness?: number;
+    }
+  ): void {
     if (bonuses.combatEffectiveness) {
       // Apply combat bonuses
       ship.stats.weapons?.forEach(mount => {
         if (mount.currentWeapon) {
           const stats = mount.currentWeapon.state.currentStats;
-          stats.damage *= (1 + bonuses.combatEffectiveness!);
-          stats.accuracy *= (1 + bonuses.combatEffectiveness! * 0.5);
+          stats.damage *= 1 + bonuses.combatEffectiveness!;
+          stats.accuracy *= 1 + bonuses.combatEffectiveness! * 0.5;
         }
       });
     }
@@ -1935,8 +1988,8 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
       ship.stats.weapons?.forEach(mount => {
         if (mount.currentWeapon) {
           const stats = mount.currentWeapon.state.currentStats;
-          stats.damage /= (1 + ship.officerBonuses!.combatEffectiveness!);
-          stats.accuracy /= (1 + ship.officerBonuses!.combatEffectiveness! * 0.5);
+          stats.damage /= 1 + ship.officerBonuses!.combatEffectiveness!;
+          stats.accuracy /= 1 + ship.officerBonuses!.combatEffectiveness! * 0.5;
         }
       });
     }
@@ -1976,7 +2029,7 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
       bay.ships.forEach(ship => {
         ship.stats.weapons.forEach(mount => {
           if (mount.currentWeapon) {
-            mount.currentWeapon.state.status = "ready";
+            mount.currentWeapon.state.status = 'ready';
             mount.currentWeapon.state.effects = [];
           }
         });
@@ -1995,4 +2048,4 @@ export class ShipHangarManager extends EventEmitter<ShipHangarEvents> implements
     }
     this.assignedOfficers.clear();
   }
-} 
+}

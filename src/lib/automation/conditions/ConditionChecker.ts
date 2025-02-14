@@ -19,15 +19,15 @@ function getConditionKey(condition: AutomationCondition): string {
 }
 
 // Subscribe to threshold events
-thresholdEvents.subscribe((event) => {
+thresholdEvents.subscribe(event => {
   if (event.type === 'THRESHOLD_VIOLATED' || event.type === 'STORAGE_FULL') {
     conditionState.next({
       resourceId: event.resourceId,
       currentAmount: event.details.current,
       thresholds: {
         min: event.details.min || 0,
-        max: event.details.max || Infinity
-      }
+        max: event.details.max || Infinity,
+      },
     });
   }
 });
@@ -46,18 +46,19 @@ export async function checkCondition(condition: AutomationCondition): Promise<bo
   switch (condition.type) {
     case 'RESOURCE_ABOVE':
     case 'RESOURCE_BELOW':
-      return new Promise((resolve) => {
-        const subscription = conditionState.subscribe((state) => {
+      return new Promise(resolve => {
+        const subscription = conditionState.subscribe(state => {
           if (state.resourceId === condition.target) {
             const threshold = Number(condition.value);
-            const result = condition.type === 'RESOURCE_ABOVE' 
-              ? state.currentAmount > threshold
-              : state.currentAmount < threshold;
+            const result =
+              condition.type === 'RESOURCE_ABOVE'
+                ? state.currentAmount > threshold
+                : state.currentAmount < threshold;
             subscription.unsubscribe();
             resolve(result);
           }
         });
-        
+
         // Timeout after 1 second
         setTimeout(() => {
           subscription.unsubscribe();
@@ -173,4 +174,4 @@ export async function checkConditions(conditions: AutomationCondition[]): Promis
     console.error('Error checking conditions:', error);
     return false;
   }
-} 
+}

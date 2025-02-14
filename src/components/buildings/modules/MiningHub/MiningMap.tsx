@@ -1,10 +1,10 @@
-import { AlertTriangle, Database, Truck, ZoomIn, ZoomOut } from "lucide-react";
-import React, { useRef, useState } from "react";
+import { AlertTriangle, Database, Truck, ZoomIn, ZoomOut } from 'lucide-react';
+import React, { useRef, useState } from 'react';
 
 interface Resource {
   id: string;
   name: string;
-  type: "mineral" | "gas" | "exotic";
+  type: 'mineral' | 'gas' | 'exotic';
   abundance: number;
   distance: number;
   extractionRate: number;
@@ -19,8 +19,8 @@ interface Resource {
 interface MiningShip {
   id: string;
   name: string;
-  type: "rockBreaker" | "voidDredger";
-  status: "idle" | "mining" | "returning" | "maintenance";
+  type: 'rockBreaker' | 'voidDredger';
+  status: 'idle' | 'mining' | 'returning' | 'maintenance';
   capacity: number;
   currentLoad: number;
   targetNode?: string;
@@ -38,7 +38,7 @@ interface MiningMapProps {
   };
   ships: MiningShip[];
   children?: React.ReactNode;
-  quality: "low" | "medium" | "high";
+  quality: 'low' | 'medium' | 'high';
 }
 
 export function MiningMap({
@@ -68,7 +68,7 @@ export function MiningMap({
     const deltaX = e.clientX - lastPosition.current.x;
     const deltaY = e.clientY - lastPosition.current.y;
 
-    setPosition((prev) => ({
+    setPosition(prev => ({
       x: prev.x + deltaX,
       y: prev.y + deltaY,
     }));
@@ -81,19 +81,19 @@ export function MiningMap({
   };
 
   const handleZoom = (delta: number) => {
-    setZoom((prev) => Math.max(0.5, Math.min(2, prev + delta)));
+    setZoom(prev => Math.max(0.5, Math.min(2, prev + delta)));
   };
 
-  const getTypeColor = (type: Resource["type"]) => {
+  const getTypeColor = (type: Resource['type']) => {
     switch (type) {
-      case "mineral":
-        return "cyan";
-      case "gas":
-        return "purple";
-      case "exotic":
-        return "amber";
+      case 'mineral':
+        return 'cyan';
+      case 'gas':
+        return 'purple';
+      case 'exotic':
+        return 'amber';
       default:
-        return "blue";
+        return 'blue';
     }
   };
 
@@ -125,11 +125,7 @@ export function MiningMap({
         {/* Starfield Background */}
         <div
           className={`absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=3000')] bg-cover ${
-            quality === "high"
-              ? "opacity-15"
-              : quality === "medium"
-                ? "opacity-10"
-                : "opacity-5"
+            quality === 'high' ? 'opacity-15' : quality === 'medium' ? 'opacity-10' : 'opacity-5'
           }`}
         />
 
@@ -141,7 +137,7 @@ export function MiningMap({
           }}
         >
           {/* Resource Nodes */}
-          {resources.map((resource) => {
+          {resources.map(resource => {
             const color = getTypeColor(resource.type);
             const isSelected = selectedNode?.id === resource.id;
             const angle = Math.random() * Math.PI * 2; // Random angle for position
@@ -155,19 +151,16 @@ export function MiningMap({
                 style={{
                   left: `calc(50% + ${x}px)`,
                   top: `calc(50% + ${y}px)`,
-                  transform: "translate(-50%, -50%)",
+                  transform: 'translate(-50%, -50%)',
                 }}
               >
-                <button
-                  onClick={() => onSelectNode(resource)}
-                  className="group relative"
-                >
+                <button onClick={() => onSelectNode(resource)} className="group relative">
                   {/* Resource Node Visualization */}
                   <div
                     className={`w-16 h-16 rounded-full bg-${color}-500/20 animate-pulse relative ${
                       isSelected
                         ? `ring-2 ring-${color}-400 ring-offset-2 ring-offset-gray-900`
-                        : ""
+                        : ''
                     }`}
                   >
                     <div
@@ -188,12 +181,9 @@ export function MiningMap({
 
                   {/* Resource Label */}
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-center">
-                    <div className={`text-${color}-200 text-sm font-medium`}>
-                      {resource.name}
-                    </div>
+                    <div className={`text-${color}-200 text-sm font-medium`}>{resource.name}</div>
                     <div className={`text-${color}-300/70 text-xs`}>
-                      {Math.round(resource.abundance * 100)}% •{" "}
-                      {resource.distance}ly
+                      {Math.round(resource.abundance * 100)}% • {resource.distance}ly
                     </div>
                   </div>
                 </button>
@@ -202,10 +192,8 @@ export function MiningMap({
           })}
 
           {/* Mining Ships */}
-          {ships.map((ship) => {
-            const targetResource = resources.find(
-              (r) => r.id === ship.targetNode,
-            );
+          {ships.map(ship => {
+            const targetResource = resources.find(r => r.id === ship.targetNode);
             if (!targetResource) {
               return null;
             }
@@ -221,35 +209,28 @@ export function MiningMap({
                 style={{
                   left: `calc(50% + ${x}px)`,
                   top: `calc(50% + ${y}px)`,
-                  transform: "translate(-50%, -50%)",
+                  transform: 'translate(-50%, -50%)',
                 }}
               >
                 <div className="relative group">
                   <Truck
                     className={`w-5 h-5 ${
-                      ship.status === "mining"
-                        ? "text-green-400"
-                        : ship.status === "returning"
-                          ? "text-yellow-400"
-                          : "text-gray-400"
+                      ship.status === 'mining'
+                        ? 'text-green-400'
+                        : ship.status === 'returning'
+                          ? 'text-yellow-400'
+                          : 'text-gray-400'
                     }`}
                   />
 
                   {/* Ship Info Tooltip */}
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                     <div className="bg-gray-800/95 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">
-                        {ship.name}
-                      </div>
+                      <div className="text-sm font-medium text-white">{ship.name}</div>
                       <div className="text-xs text-gray-400">
-                        {ship.status.charAt(0).toUpperCase() +
-                          ship.status.slice(1)}{" "}
-                        • {Math.round((ship.currentLoad / ship.capacity) * 100)}
-                        % Full • Efficiency:{" "}
-                        {Math.round(
-                          (ship.efficiency + techBonuses.efficiency) * 100,
-                        )}
-                        %
+                        {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)} •{' '}
+                        {Math.round((ship.currentLoad / ship.capacity) * 100)}% Full • Efficiency:{' '}
+                        {Math.round((ship.efficiency + techBonuses.efficiency) * 100)}%
                       </div>
                     </div>
                   </div>

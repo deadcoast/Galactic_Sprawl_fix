@@ -1,6 +1,6 @@
-import { BaseEffect } from "../types_effects/EffectTypes";
-import { RenderBatcher } from "../../lib/optimization/RenderBatcher";
-import { Position } from "../../types/core/Position";
+import { BaseEffect } from '../types_effects/EffectTypes';
+import { RenderBatcher } from '../../lib/optimization/RenderBatcher';
+import { Position } from '../../types/core/Position';
 
 export interface VisualEffectConfig {
   id?: string;
@@ -73,4 +73,4 @@ export abstract class VisualEffect {
   protected abstract updateRendering(batcher: RenderBatcher): void;
   protected abstract onComplete(): void;
   protected abstract onReset(): void;
-} 
+}

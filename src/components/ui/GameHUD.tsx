@@ -1,4 +1,4 @@
-import { TechTree } from "./TechTree";
+import { TechTree } from './TechTree';
 import {
   ChevronDown,
   ChevronRight,
@@ -10,8 +10,8 @@ import {
   Settings,
   X,
   Zap,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface GameHUDProps {
   empireName: string;
@@ -19,7 +19,7 @@ interface GameHUDProps {
   onToggleVPRView: () => void;
 }
 
-type MenuCategory = "mining" | "exploration" | "mothership" | "colony";
+type MenuCategory = 'mining' | 'exploration' | 'mothership' | 'colony';
 
 interface MenuItem {
   id: string;
@@ -31,109 +31,106 @@ interface MenuItem {
 const menuItems: Record<MenuCategory, MenuItem[]> = {
   mining: [
     {
-      id: "mineral-processing",
-      name: "Mineral Processing",
-      description: "Process raw minerals and manage resource extraction",
+      id: 'mineral-processing',
+      name: 'Mineral Processing',
+      description: 'Process raw minerals and manage resource extraction',
       action: () => {},
     },
     {
-      id: "mining-fleet",
-      name: "Mining Fleet",
-      description: "Manage mining ships and automated resource collection",
+      id: 'mining-fleet',
+      name: 'Mining Fleet',
+      description: 'Manage mining ships and automated resource collection',
       action: () => {},
     },
     {
-      id: "resource-storage",
-      name: "Resource Storage",
-      description: "Monitor and manage resource stockpiles",
+      id: 'resource-storage',
+      name: 'Resource Storage',
+      description: 'Monitor and manage resource stockpiles',
       action: () => {},
     },
   ],
   exploration: [
     {
-      id: "recon-hub",
-      name: "Recon Hub",
-      description: "Coordinate exploration missions and scout ships",
+      id: 'recon-hub',
+      name: 'Recon Hub',
+      description: 'Coordinate exploration missions and scout ships',
       action: () => {},
     },
     {
-      id: "galaxy-map",
-      name: "Galaxy Map",
-      description: "View and analyze discovered star systems",
+      id: 'galaxy-map',
+      name: 'Galaxy Map',
+      description: 'View and analyze discovered star systems',
       action: () => {},
     },
     {
-      id: "anomaly-scanner",
-      name: "Anomaly Scanner",
-      description: "Track and investigate spatial anomalies",
+      id: 'anomaly-scanner',
+      name: 'Anomaly Scanner',
+      description: 'Track and investigate spatial anomalies',
       action: () => {},
     },
   ],
   mothership: [
     {
-      id: "ship-hanger",
-      name: "Ship Hangar",
-      description: "Build and manage your fleet of ships",
+      id: 'ship-hanger',
+      name: 'Ship Hangar',
+      description: 'Build and manage your fleet of ships',
       action: () => {},
     },
     {
-      id: "radar-system",
-      name: "Radar System",
-      description: "Monitor system-wide activity and threats",
+      id: 'radar-system',
+      name: 'Radar System',
+      description: 'Monitor system-wide activity and threats',
       action: () => {},
     },
     {
-      id: "defense-grid",
-      name: "Defense Grid",
-      description: "Manage defensive systems and fortifications",
+      id: 'defense-grid',
+      name: 'Defense Grid',
+      description: 'Manage defensive systems and fortifications',
       action: () => {},
     },
   ],
   colony: [
     {
-      id: "population",
-      name: "Population",
-      description: "Manage colonists and population growth",
+      id: 'population',
+      name: 'Population',
+      description: 'Manage colonists and population growth',
       action: () => {},
     },
     {
-      id: "infrastructure",
-      name: "Infrastructure",
-      description: "Build and upgrade colony facilities",
+      id: 'infrastructure',
+      name: 'Infrastructure',
+      description: 'Build and upgrade colony facilities',
       action: () => {},
     },
     {
-      id: "trade-hub",
-      name: "Trade Hub",
-      description: "Establish and monitor trade routes",
+      id: 'trade-hub',
+      name: 'Trade Hub',
+      description: 'Establish and monitor trade routes',
       action: () => {},
     },
   ],
 };
 
-const categoryColors: Record<
-  MenuCategory,
-  { bg: string; border: string; hover: string }
-> = {
+const categoryColors: Record<MenuCategory, { bg: string; border: string; hover: string }> = {
   mining: {
-    bg: "from-amber-950/80 to-amber-900/80",
-    border: "border-amber-700/50",
-    hover: "hover:bg-amber-800/30",
+    bg: 'from-amber-950/80 to-amber-900/80',
+    border: 'border-amber-700/50',
+    hover: 'hover:bg-amber-800/30',
   },
   exploration: {
-    bg: "from-teal-950/80 to-teal-900/80",
-    border: "border-teal-700/50",
-    hover: "hover:bg-teal-800/30",
+    bg: 'from-teal-950/80 to-teal-900/80',
+    border: 'border-teal-700/50',
+    hover: 'hover:bg-teal-800/30',
   },
   mothership: {
-    bg: "from-cyan-950/80 to-cyan-900/80",
-    border: "border-cyan-700/50",
-    hover: "hover:bg-cyan-800/30",
+    bg: 'from-cyan-950/80 to-cyan-900/80',
+    border: 'border-cyan-700/50',
+    hover: 'hover:bg-cyan-800/30',
   },
   colony: {
-    bg: "from-purple-950/80 to-purple-900/80",
-    border: "border-purple-700/50",
-    hover: "hover:bg-purple-800/30",
+    bg: 'from-purple-950/80 to-purple-900/80',
+    border: 'border-purple-700/50',
+    hover: 'hover:bg-purple-800/30',
   },
 };
 
@@ -144,48 +141,40 @@ const categoryIcons = {
   colony: Map,
 };
 
-export function GameHUD({
-  empireName,
-  onToggleSprawlView,
-  onToggleVPRView,
-}: GameHUDProps) {
-  const [activeCategory, setActiveCategory] = useState<MenuCategory | null>(
-    null,
-  );
+export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: GameHUDProps) {
+  const [activeCategory, setActiveCategory] = useState<MenuCategory | null>(null);
   const [showTechTree, setShowTechTree] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       // Sprawl View toggle
-      if ((e.key === "s" || e.key === "S") && !e.ctrlKey && !e.metaKey) {
+      if ((e.key === 's' || e.key === 'S') && !e.ctrlKey && !e.metaKey) {
         onToggleSprawlView();
         return;
       }
 
-      if ((e.key === "v" || e.key === "V") && !e.ctrlKey && !e.metaKey) {
+      if ((e.key === 'v' || e.key === 'V') && !e.ctrlKey && !e.metaKey) {
         onToggleVPRView();
         return;
       }
 
       // Category shortcuts
       const categoryKeys: Record<string, MenuCategory> = {
-        m: "mining",
-        e: "exploration",
-        h: "mothership",
-        c: "colony",
+        m: 'mining',
+        e: 'exploration',
+        h: 'mothership',
+        c: 'colony',
       };
 
       const key = e.key.toLowerCase();
       if (categoryKeys[key]) {
-        setActiveCategory((prev) =>
-          prev === categoryKeys[key] ? null : categoryKeys[key],
-        );
+        setActiveCategory(prev => (prev === categoryKeys[key] ? null : categoryKeys[key]));
       }
     };
 
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, [onToggleSprawlView, onToggleVPRView]);
 
   return (
@@ -198,9 +187,7 @@ export function GameHUD({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Map className="w-5 h-5 text-indigo-400" />
-            <span className="text-indigo-100 font-medium">
-              {empireName} Map
-            </span>
+            <span className="text-indigo-100 font-medium">{empireName} Map</span>
           </div>
           <span className="text-indigo-400 text-sm opacity-60 group-hover:opacity-100 transition-opacity">
             Press S
@@ -242,7 +229,7 @@ export function GameHUD({
 
       {/* Menu Categories */}
       <div className="space-y-2 overflow-y-auto custom-scrollbar">
-        {(Object.keys(menuItems) as MenuCategory[]).map((category) => {
+        {(Object.keys(menuItems) as MenuCategory[]).map(category => {
           const Icon = categoryIcons[category];
           const colors = categoryColors[category];
           const isActive = activeCategory === category;
@@ -262,13 +249,13 @@ export function GameHUD({
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="text-gray-400 text-sm opacity-60 group-hover:opacity-100">
-                      {category === "mining"
-                        ? "M"
-                        : category === "exploration"
-                          ? "E"
-                          : category === "mothership"
-                            ? "H"
-                            : "C"}
+                      {category === 'mining'
+                        ? 'M'
+                        : category === 'exploration'
+                          ? 'E'
+                          : category === 'mothership'
+                            ? 'H'
+                            : 'C'}
                     </span>
                     {isActive ? (
                       <ChevronDown className="w-5 h-5 text-gray-400" />
@@ -282,15 +269,13 @@ export function GameHUD({
               {/* Submenu Items */}
               {isActive && (
                 <div className="pl-4 space-y-1">
-                  {menuItems[category].map((item) => (
+                  {menuItems[category].map(item => (
                     <button
                       key={item.id}
                       onClick={item.action}
                       className={`w-full px-4 py-3 rounded-lg text-left group ${colors.hover} transition-colors`}
                     >
-                      <div className="text-gray-200 font-medium mb-0.5">
-                        {item.name}
-                      </div>
+                      <div className="text-gray-200 font-medium mb-0.5">{item.name}</div>
                       <div className="text-gray-400 text-sm group-hover:text-gray-300">
                         {item.description}
                       </div>

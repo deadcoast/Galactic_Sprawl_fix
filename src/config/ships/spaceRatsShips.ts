@@ -1,5 +1,11 @@
-import { SpaceRatsShipClass, FactionShipStats } from "../../types/ships/FactionShipTypes";
-import { WeaponMount, WeaponMountSize, WeaponMountPosition, WeaponStatus, WeaponInstance } from "../../types/weapons/WeaponTypes";
+import { SpaceRatsShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
+import {
+  WeaponMount,
+  WeaponMountSize,
+  WeaponMountPosition,
+  WeaponStatus,
+  WeaponInstance,
+} from '../../types/weapons/WeaponTypes';
 import {
   PLASMA_EFFECT,
   GAUSS_EFFECT,
@@ -8,7 +14,7 @@ import {
   SPEED_BOOST_EFFECT,
   STEALTH_EFFECT,
   SPEED_REDUCTION_EFFECT,
-} from "../../effects/types_effects/shipEffects";
+} from '../../effects/types_effects/shipEffects';
 
 export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
   ratKing: {
@@ -22,19 +28,19 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     turnRate: 2,
     cargo: 200,
     tier: 3,
-    faction: "space-rats",
+    faction: 'space-rats',
     weapons: [
       {
-        id: "mgss-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'mgss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["mgss"],
+        allowedCategories: ['mgss'],
         currentWeapon: {
           config: {
-            id: "mgss-cannon",
-            name: "MGSS Cannon",
-            category: "mgss",
+            id: 'mgss-cannon',
+            name: 'MGSS Cannon',
+            category: 'mgss',
             tier: 2,
             baseStats: {
               damage: 35,
@@ -45,14 +51,14 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 0.2,
               effects: [PLASMA_EFFECT],
             },
-            visualAsset: "weapons/mgss/basic",
+            visualAsset: 'weapons/mgss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 20,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 35,
               range: 600,
@@ -81,7 +87,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     abilities: [
       {
         name: "Pirate's Fury",
-        description: "Increases weapon damage for a short duration",
+        description: 'Increases weapon damage for a short duration',
         cooldown: 30,
         duration: 10,
         active: false,
@@ -100,19 +106,19 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 150,
     tier: 2,
-    faction: "space-rats",
+    faction: 'space-rats',
     weapons: [
       {
-        id: "mg-1",
-        size: "small" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'mg-1',
+        size: 'small' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["machineGun"],
+        allowedCategories: ['machineGun'],
         currentWeapon: {
           config: {
-            id: "basic-mg",
-            name: "Basic Machine Gun",
-            category: "machineGun",
+            id: 'basic-mg',
+            name: 'Basic Machine Gun',
+            category: 'machineGun',
             tier: 1,
             baseStats: {
               damage: 30,
@@ -123,14 +129,14 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 0.2,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/machinegun/basic",
+            visualAsset: 'weapons/machinegun/basic',
             mountRequirements: {
-              size: "small" as WeaponMountSize,
+              size: 'small' as WeaponMountSize,
               power: 10,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 30,
               range: 600,
@@ -158,8 +164,8 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Scavenger Boost",
-        description: "Temporarily increases movement speed",
+        name: 'Scavenger Boost',
+        description: 'Temporarily increases movement speed',
         cooldown: 15,
         duration: 5,
         active: false,
@@ -178,19 +184,19 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     turnRate: 3.5,
     cargo: 150,
     tier: 2,
-    faction: "space-rats",
+    faction: 'space-rats',
     weapons: [
       {
-        id: "railgun-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'railgun-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["railGun"],
+        allowedCategories: ['railGun'],
         currentWeapon: {
           config: {
-            id: "advanced-railgun",
-            name: "Advanced Railgun",
-            category: "railGun",
+            id: 'advanced-railgun',
+            name: 'Advanced Railgun',
+            category: 'railGun',
             tier: 2,
             baseStats: {
               damage: 200,
@@ -201,14 +207,14 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 0.3,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/railgun/advanced",
+            visualAsset: 'weapons/railgun/advanced',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 25,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 200,
               range: 1100,
@@ -236,8 +242,8 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Stealth Drive",
-        description: "Temporarily becomes stealthier",
+        name: 'Stealth Drive',
+        description: 'Temporarily becomes stealthier',
         cooldown: 25,
         duration: 8,
         active: false,
@@ -256,19 +262,19 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 200,
     tier: 2,
-    faction: "space-rats",
+    faction: 'space-rats',
     weapons: [
       {
-        id: "mgss-1",
-        size: "medium" as WeaponMountSize,
-        position: "turret" as WeaponMountPosition,
+        id: 'mgss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'turret' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["mgss"],
+        allowedCategories: ['mgss'],
         currentWeapon: {
           config: {
-            id: "mgss-cannon",
-            name: "MGSS Cannon",
-            category: "mgss",
+            id: 'mgss-cannon',
+            name: 'MGSS Cannon',
+            category: 'mgss',
             tier: 2,
             baseStats: {
               damage: 40,
@@ -279,14 +285,14 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 2,
               effects: [PLASMA_EFFECT],
             },
-            visualAsset: "weapons/mgss/basic",
+            visualAsset: 'weapons/mgss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 20,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 40,
               range: 700,
@@ -314,8 +320,8 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Vengeful Strike",
-        description: "Increases damage output temporarily",
+        name: 'Vengeful Strike',
+        description: 'Increases damage output temporarily',
         cooldown: 20,
         duration: 5,
         active: false,
@@ -334,19 +340,19 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 150,
     tier: 2,
-    faction: "space-rats",
+    faction: 'space-rats',
     weapons: [
       {
-        id: "gauss-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'gauss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["gaussCannon"],
+        allowedCategories: ['gaussCannon'],
         currentWeapon: {
           config: {
-            id: "gauss-cannon",
-            name: "Gauss Cannon",
-            category: "gaussCannon",
+            id: 'gauss-cannon',
+            name: 'Gauss Cannon',
+            category: 'gaussCannon',
             tier: 2,
             baseStats: {
               damage: 90,
@@ -357,14 +363,14 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 2,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/gauss/basic",
+            visualAsset: 'weapons/gauss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 25,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 90,
               range: 850,
@@ -392,8 +398,8 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Shadow Strike",
-        description: "Temporarily becomes harder to detect",
+        name: 'Shadow Strike',
+        description: 'Temporarily becomes harder to detect',
         cooldown: 18,
         duration: 4,
         active: false,
@@ -412,19 +418,19 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     turnRate: 2,
     cargo: 180,
     tier: 2,
-    faction: "space-rats",
+    faction: 'space-rats',
     weapons: [
       {
-        id: "rocket-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'rocket-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["rockets"],
+        allowedCategories: ['rockets'],
         currentWeapon: {
           config: {
-            id: "heavy-rockets",
-            name: "Heavy Rockets",
-            category: "rockets",
+            id: 'heavy-rockets',
+            name: 'Heavy Rockets',
+            category: 'rockets',
             tier: 2,
             baseStats: {
               damage: 150,
@@ -435,14 +441,14 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 4,
               effects: [EXPLOSIVE_EFFECT],
             },
-            visualAsset: "weapons/rockets/heavy",
+            visualAsset: 'weapons/rockets/heavy',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 35,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 150,
               range: 1000,
@@ -470,8 +476,8 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Sonic Disruption",
-        description: "Slows down nearby enemies",
+        name: 'Sonic Disruption',
+        description: 'Slows down nearby enemies',
         cooldown: 35,
         duration: 8,
         active: false,
@@ -490,19 +496,19 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 250,
     tier: 3,
-    faction: "space-rats",
+    faction: 'space-rats',
     weapons: [
       {
-        id: "rail-1",
-        size: "large" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'rail-1',
+        size: 'large' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["railGun"],
+        allowedCategories: ['railGun'],
         currentWeapon: {
           config: {
-            id: "heavy-railgun",
-            name: "Heavy Railgun",
-            category: "railGun",
+            id: 'heavy-railgun',
+            name: 'Heavy Railgun',
+            category: 'railGun',
             tier: 3,
             baseStats: {
               damage: 200,
@@ -513,14 +519,14 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 3,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/railgun/heavy",
+            visualAsset: 'weapons/railgun/heavy',
             mountRequirements: {
-              size: "large" as WeaponMountSize,
+              size: 'large' as WeaponMountSize,
               power: 35,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 200,
               range: 1100,
@@ -548,8 +554,8 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Chaos Wave",
-        description: "Unleashes a devastating wave of energy",
+        name: 'Chaos Wave',
+        description: 'Unleashes a devastating wave of energy',
         cooldown: 40,
         duration: 12,
         active: false,
@@ -568,19 +574,19 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 150,
     tier: 2,
-    faction: "space-rats",
+    faction: 'space-rats',
     weapons: [
       {
-        id: "mgss-1",
-        size: "medium" as WeaponMountSize,
-        position: "turret" as WeaponMountPosition,
+        id: 'mgss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'turret' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["mgss"],
+        allowedCategories: ['mgss'],
         currentWeapon: {
           config: {
-            id: "mgss-cannon",
-            name: "MGSS Cannon",
-            category: "mgss",
+            id: 'mgss-cannon',
+            name: 'MGSS Cannon',
+            category: 'mgss',
             tier: 2,
             baseStats: {
               damage: 35,
@@ -591,14 +597,14 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 2,
               effects: [PLASMA_EFFECT],
             },
-            visualAsset: "weapons/mgss/basic",
+            visualAsset: 'weapons/mgss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 20,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 35,
               range: 600,
@@ -626,8 +632,8 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Plasma Burst",
-        description: "Releases a concentrated burst of plasma energy",
+        name: 'Plasma Burst',
+        description: 'Releases a concentrated burst of plasma energy',
         cooldown: 22,
         duration: 6,
         active: false,
@@ -646,19 +652,19 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 200,
     tier: 2,
-    faction: "space-rats",
+    faction: 'space-rats',
     weapons: [
       {
-        id: "gauss-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'gauss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["gaussCannon"],
+        allowedCategories: ['gaussCannon'],
         currentWeapon: {
           config: {
-            id: "gauss-cannon",
-            name: "Gauss Cannon",
-            category: "gaussCannon",
+            id: 'gauss-cannon',
+            name: 'Gauss Cannon',
+            category: 'gaussCannon',
             tier: 2,
             baseStats: {
               damage: 100,
@@ -669,14 +675,14 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 2,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/gauss/basic",
+            visualAsset: 'weapons/gauss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 30,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 100,
               range: 950,
@@ -704,8 +710,8 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Rally Vermin",
-        description: "Increases speed of nearby allies",
+        name: 'Rally Vermin',
+        description: 'Increases speed of nearby allies',
         cooldown: 28,
         duration: 10,
         active: false,
@@ -724,19 +730,19 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 180,
     tier: 2,
-    faction: "space-rats",
+    faction: 'space-rats',
     weapons: [
       {
-        id: "rail-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'rail-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["railGun"],
+        allowedCategories: ['railGun'],
         currentWeapon: {
           config: {
-            id: "railgun",
-            name: "Railgun",
-            category: "railGun",
+            id: 'railgun',
+            name: 'Railgun',
+            category: 'railGun',
             tier: 2,
             baseStats: {
               damage: 140,
@@ -747,14 +753,14 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
               cooldown: 3,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/railgun/basic",
+            visualAsset: 'weapons/railgun/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 30,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 140,
               range: 1000,
@@ -782,8 +788,8 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Void Cloak",
-        description: "Activates stealth capabilities",
+        name: 'Void Cloak',
+        description: 'Activates stealth capabilities',
         cooldown: 32,
         duration: 7,
         active: false,
@@ -791,4 +797,4 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
       },
     ],
   },
-} as const; 
+} as const;

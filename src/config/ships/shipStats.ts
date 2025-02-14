@@ -1,6 +1,12 @@
-import { FactionShipClass, FactionShipStats } from "../../types/ships/FactionShipTypes";
-import { WeaponMount, WeaponMountSize, WeaponMountPosition, WeaponStatus, WeaponInstance } from "../../types/weapons/WeaponTypes";
-import { FactionId } from "../../types/ships/FactionTypes";
+import { FactionShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
+import {
+  WeaponMount,
+  WeaponMountSize,
+  WeaponMountPosition,
+  WeaponStatus,
+  WeaponInstance,
+} from '../../types/weapons/WeaponTypes';
+import { FactionId } from '../../types/ships/FactionTypes';
 import {
   PLASMA_EFFECT,
   GAUSS_EFFECT,
@@ -10,8 +16,8 @@ import {
   SPEED_BOOST_EFFECT,
   STEALTH_EFFECT,
   SPEED_REDUCTION_EFFECT,
-} from "../../effects/types_effects/shipEffects";
-import { EQUATOR_HORIZON_SHIPS } from "./equatorHorizonShips";
+} from '../../effects/types_effects/shipEffects';
+import { EQUATOR_HORIZON_SHIPS } from './equatorHorizonShips';
 
 // Base template for unimplemented ships
 const BASE_SHIP_TEMPLATE: FactionShipStats = {
@@ -25,7 +31,7 @@ const BASE_SHIP_TEMPLATE: FactionShipStats = {
   turnRate: 2,
   cargo: 200,
   tier: 1,
-  faction: "space-rats" as FactionId,
+  faction: 'space-rats' as FactionId,
   weapons: [],
   defense: {
     armor: 300,
@@ -38,7 +44,7 @@ const BASE_SHIP_TEMPLATE: FactionShipStats = {
     turnRate: 2,
     acceleration: 50,
   },
-  abilities: []
+  abilities: [],
 };
 
 // Create temporary implementations for missing ships
@@ -53,16 +59,16 @@ const SPACE_RATS_REMAINING = {
 };
 
 const LOST_NOVA_SHIPS = {
-  eclipseScythe: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
-  nullsRevenge: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
-  darkMatterReaper: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
-  quantumPariah: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
-  entropyScale: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
-  voidRevenant: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
-  scytheOfAndromeda: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
-  nebularPersistence: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
-  oblivionsWake: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
-  forbiddenVanguard: { ...BASE_SHIP_TEMPLATE, faction: "lost-nova" as FactionId },
+  eclipseScythe: { ...BASE_SHIP_TEMPLATE, faction: 'lost-nova' as FactionId },
+  nullsRevenge: { ...BASE_SHIP_TEMPLATE, faction: 'lost-nova' as FactionId },
+  darkMatterReaper: { ...BASE_SHIP_TEMPLATE, faction: 'lost-nova' as FactionId },
+  quantumPariah: { ...BASE_SHIP_TEMPLATE, faction: 'lost-nova' as FactionId },
+  entropyScale: { ...BASE_SHIP_TEMPLATE, faction: 'lost-nova' as FactionId },
+  voidRevenant: { ...BASE_SHIP_TEMPLATE, faction: 'lost-nova' as FactionId },
+  scytheOfAndromeda: { ...BASE_SHIP_TEMPLATE, faction: 'lost-nova' as FactionId },
+  nebularPersistence: { ...BASE_SHIP_TEMPLATE, faction: 'lost-nova' as FactionId },
+  oblivionsWake: { ...BASE_SHIP_TEMPLATE, faction: 'lost-nova' as FactionId },
+  forbiddenVanguard: { ...BASE_SHIP_TEMPLATE, faction: 'lost-nova' as FactionId },
 };
 
 export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
@@ -78,19 +84,19 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
     turnRate: 2,
     cargo: 200,
     tier: 3,
-    faction: "space-rats" as FactionId,
+    faction: 'space-rats' as FactionId,
     weapons: [
       {
-        id: "mgss-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'mgss-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["mgss"],
+        allowedCategories: ['mgss'],
         currentWeapon: {
           config: {
-            id: "mgss-cannon",
-            name: "MGSS Cannon",
-            category: "mgss",
+            id: 'mgss-cannon',
+            name: 'MGSS Cannon',
+            category: 'mgss',
             tier: 2,
             baseStats: {
               damage: 35,
@@ -101,14 +107,14 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
               cooldown: 0.2,
               effects: [PLASMA_EFFECT],
             },
-            visualAsset: "weapons/mgss/basic",
+            visualAsset: 'weapons/mgss/basic',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 20,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 35,
               range: 600,
@@ -137,7 +143,7 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
     abilities: [
       {
         name: "Pirate's Fury",
-        description: "Increases weapon damage for a short duration",
+        description: 'Increases weapon damage for a short duration',
         cooldown: 30,
         duration: 10,
         active: false,
@@ -156,19 +162,19 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
     turnRate: 3,
     cargo: 150,
     tier: 2,
-    faction: "space-rats" as FactionId,
+    faction: 'space-rats' as FactionId,
     weapons: [
       {
-        id: "mg-1",
-        size: "small" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'mg-1',
+        size: 'small' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["machineGun"],
+        allowedCategories: ['machineGun'],
         currentWeapon: {
           config: {
-            id: "basic-mg",
-            name: "Basic Machine Gun",
-            category: "machineGun",
+            id: 'basic-mg',
+            name: 'Basic Machine Gun',
+            category: 'machineGun',
             tier: 1,
             baseStats: {
               damage: 30,
@@ -179,14 +185,14 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
               cooldown: 0.2,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/machinegun/basic",
+            visualAsset: 'weapons/machinegun/basic',
             mountRequirements: {
-              size: "small" as WeaponMountSize,
+              size: 'small' as WeaponMountSize,
               power: 10,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 30,
               range: 600,
@@ -214,8 +220,8 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Scavenger Boost",
-        description: "Temporarily increases movement speed",
+        name: 'Scavenger Boost',
+        description: 'Temporarily increases movement speed',
         cooldown: 15,
         duration: 5,
         active: false,
@@ -234,19 +240,19 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
     turnRate: 3.5,
     cargo: 150,
     tier: 2,
-    faction: "space-rats" as FactionId,
+    faction: 'space-rats' as FactionId,
     weapons: [
       {
-        id: "railgun-1",
-        size: "medium" as WeaponMountSize,
-        position: "front" as WeaponMountPosition,
+        id: 'railgun-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'front' as WeaponMountPosition,
         rotation: 0,
-        allowedCategories: ["railGun"],
+        allowedCategories: ['railGun'],
         currentWeapon: {
           config: {
-            id: "advanced-railgun",
-            name: "Advanced Railgun",
-            category: "railGun",
+            id: 'advanced-railgun',
+            name: 'Advanced Railgun',
+            category: 'railGun',
             tier: 2,
             baseStats: {
               damage: 200,
@@ -257,14 +263,14 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
               cooldown: 0.3,
               effects: [GAUSS_EFFECT],
             },
-            visualAsset: "weapons/railgun/advanced",
+            visualAsset: 'weapons/railgun/advanced',
             mountRequirements: {
-              size: "medium" as WeaponMountSize,
+              size: 'medium' as WeaponMountSize,
               power: 25,
             },
           },
           state: {
-            status: "ready" as WeaponStatus,
+            status: 'ready' as WeaponStatus,
             currentStats: {
               damage: 200,
               range: 1100,
@@ -292,8 +298,8 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
     },
     abilities: [
       {
-        name: "Stealth Drive",
-        description: "Temporarily becomes stealthier",
+        name: 'Stealth Drive',
+        description: 'Temporarily becomes stealthier',
         cooldown: 25,
         duration: 8,
         active: false,
@@ -303,7 +309,7 @@ export const SHIP_STATS: Record<FactionShipClass, FactionShipStats> = {
   },
   ...SPACE_RATS_REMAINING,
   ...LOST_NOVA_SHIPS,
-  ...EQUATOR_HORIZON_SHIPS
+  ...EQUATOR_HORIZON_SHIPS,
 };
 
 export function getShipStats(shipClass: FactionShipClass): FactionShipStats {
@@ -312,4 +318,4 @@ export function getShipStats(shipClass: FactionShipClass): FactionShipStats {
     throw new Error(`No stats found for ship class: ${shipClass}`);
   }
   return stats;
-} 
+}

@@ -1,5 +1,5 @@
-import { useTooltip } from "../../hooks/ui/useTooltip";
-import { createContext, useContext, ReactNode } from "react";
+import { useTooltip } from '../../hooks/ui/useTooltip';
+import { createContext, useContext, ReactNode } from 'react';
 
 interface TooltipContextValue {
   tooltip: {
@@ -17,7 +17,7 @@ const TooltipContext = createContext<TooltipContextValue | null>(null);
 export function useTooltipContext() {
   const context = useContext(TooltipContext);
   if (!context) {
-    throw new Error("useTooltipContext must be used within a TooltipProvider");
+    throw new Error('useTooltipContext must be used within a TooltipProvider');
   }
   return context;
 }

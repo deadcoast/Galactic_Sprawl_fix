@@ -71,7 +71,7 @@ export class GameManager {
     if (!this.isPaused) {
       const deltaTime = timestamp - this.lastUpdate;
       this.gameTime += deltaTime;
-      
+
       // Notify subscribers
       this.subscribers.forEach(callback => {
         callback(this.gameTime);

@@ -1,4 +1,4 @@
-import { EventEmitter } from "../utils/EventEmitter";
+import { EventEmitter } from '../utils/EventEmitter';
 
 interface PooledEntity {
   id: string;
@@ -54,33 +54,30 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
   public acquire(): T | null {
     // Try to find an inactive entity
     const entity = this.entities.find(e => !e.active);
-    
+
     if (entity) {
       entity.active = true;
-      this.emit("entityActivated", { entity });
+      this.emit('entityActivated', { entity });
       return entity;
     }
 
     // If no inactive entities and below max size, expand pool
     if (this.entities.length < this.maxSize) {
-      const expandAmount = Math.min(
-        this.expandSize,
-        this.maxSize - this.entities.length
-      );
-      
+      const expandAmount = Math.min(this.expandSize, this.maxSize - this.entities.length);
+
       console.debug(`[EntityPool] Expanding pool by ${expandAmount} entities`);
-      
+
       this.initialize(expandAmount);
-      this.emit("poolExpanded", { newSize: this.entities.length });
-      
+      this.emit('poolExpanded', { newSize: this.entities.length });
+
       // Return first entity from expansion
       const newEntity = this.entities[this.entities.length - expandAmount];
       newEntity.active = true;
-      this.emit("entityActivated", { entity: newEntity });
+      this.emit('entityActivated', { entity: newEntity });
       return newEntity;
     }
 
-    console.warn("[EntityPool] Pool exhausted, no entities available");
+    console.warn('[EntityPool] Pool exhausted, no entities available');
     return null;
   }
 
@@ -92,7 +89,7 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
     if (pooledEntity && pooledEntity.active) {
       pooledEntity.active = false;
       pooledEntity.reset();
-      this.emit("entityDeactivated", { entity: pooledEntity });
+      this.emit('entityDeactivated', { entity: pooledEntity });
     }
   }
 
@@ -134,6 +131,6 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
       }
     });
     this.entities = [];
-    console.debug("[EntityPool] Pool cleared");
+    console.debug('[EntityPool] Pool cleared');
   }
-} 
+}

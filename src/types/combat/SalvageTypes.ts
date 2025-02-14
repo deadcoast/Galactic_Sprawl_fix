@@ -37,4 +37,4 @@ export interface SalvageManager {
   generateSalvageDrops: (position: { x: number; y: number }, tier: number) => Salvage[];
   collectSalvage: (salvageId: string, shipId: string) => void;
   getActiveSalvage: () => Salvage[];
-} 
+}

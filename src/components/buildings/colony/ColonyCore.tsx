@@ -2,63 +2,57 @@ import {
   ModularBuilding,
   ModuleAttachmentPoint,
   ModuleType,
-} from "../../../types/buildings/ModuleTypes";
+} from '../../../types/buildings/ModuleTypes';
 
 const COLONY_ATTACHMENT_POINTS: ModuleAttachmentPoint[] = [
   // Core module points (same as mothership)
   {
-    id: "top",
+    id: 'top',
     position: { x: 0, y: -100 },
-    allowedTypes: ["radar", "hangar", "academy"],
+    allowedTypes: ['radar', 'hangar', 'academy'],
   },
   {
-    id: "right",
+    id: 'right',
     position: { x: 100, y: 0 },
-    allowedTypes: ["radar", "hangar", "academy"],
+    allowedTypes: ['radar', 'hangar', 'academy'],
   },
   {
-    id: "bottom",
+    id: 'bottom',
     position: { x: 0, y: 100 },
-    allowedTypes: ["radar", "hangar", "academy"],
+    allowedTypes: ['radar', 'hangar', 'academy'],
   },
   {
-    id: "left",
+    id: 'left',
     position: { x: -100, y: 0 },
-    allowedTypes: ["radar", "hangar", "academy"],
+    allowedTypes: ['radar', 'hangar', 'academy'],
   },
   // Colony-specific module points
   {
-    id: "exploration",
+    id: 'exploration',
     position: { x: 50, y: -50 },
-    allowedTypes: ["exploration"],
+    allowedTypes: ['exploration'],
   },
   {
-    id: "mineral",
+    id: 'mineral',
     position: { x: 50, y: 50 },
-    allowedTypes: ["mineral"],
+    allowedTypes: ['mineral'],
   },
   {
-    id: "trading",
+    id: 'trading',
     position: { x: -50, y: 50 },
-    allowedTypes: ["trading"],
+    allowedTypes: ['trading'],
   },
 ];
 
 interface ColonyProps {
   id: string;
   level: number;
-  modules: ModularBuilding["modules"];
+  modules: ModularBuilding['modules'];
   onModuleAttach?: (moduleType: ModuleType, attachmentPointId: string) => void;
   onModuleDetach?: (moduleId: string) => void;
 }
 
-export function ColonyCore({
-  id,
-  level,
-  modules,
-  onModuleAttach,
-  onModuleDetach,
-}: ColonyProps) {
+export function ColonyCore({ id, level, modules, onModuleAttach, onModuleDetach }: ColonyProps) {
   return (
     <div className="relative w-full h-full" data-colony-id={id}>
       {/* Core Colony Structure */}
@@ -69,11 +63,10 @@ export function ColonyCore({
 
           {/* Module Attachment Points */}
           <div className="grid grid-cols-2 gap-4">
-            {COLONY_ATTACHMENT_POINTS.map((point) => {
+            {COLONY_ATTACHMENT_POINTS.map(point => {
               const attachedModule = modules.find(
-                (m: ModularBuilding["modules"][0]) =>
-                  m.position.x === point.position.x &&
-                  m.position.y === point.position.y,
+                (m: ModularBuilding['modules'][0]) =>
+                  m.position.x === point.position.x && m.position.y === point.position.y
               );
 
               return (
@@ -81,14 +74,13 @@ export function ColonyCore({
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-sm font-medium text-gray-300">
-                        {point.id.charAt(0).toUpperCase() + point.id.slice(1)}{" "}
-                        Attachment Point
+                        {point.id.charAt(0).toUpperCase() + point.id.slice(1)} Attachment Point
                       </div>
                       <div className="text-xs text-gray-500">
-                        {attachedModule ? attachedModule.name : "Empty"}
+                        {attachedModule ? attachedModule.name : 'Empty'}
                       </div>
                       <div className="text-xs text-gray-400 mt-1">
-                        Allowed: {point.allowedTypes.join(", ")}
+                        Allowed: {point.allowedTypes.join(', ')}
                       </div>
                     </div>
                     {attachedModule ? (
@@ -100,9 +92,7 @@ export function ColonyCore({
                       </button>
                     ) : (
                       <button
-                        onClick={() =>
-                          onModuleAttach?.(point.allowedTypes[0], point.id)
-                        }
+                        onClick={() => onModuleAttach?.(point.allowedTypes[0], point.id)}
                         className="px-3 py-1 text-xs text-blue-400 hover:text-blue-300"
                       >
                         Attach Module

@@ -1,4 +1,4 @@
-import { Position } from "../core/GameTypes";
+import { Position } from '../core/GameTypes';
 
 // Base module interface that all modules share
 export interface BaseModule {
@@ -13,16 +13,16 @@ export interface BaseModule {
 // All possible module types
 export type ModuleType =
   // Core modules (available to both Mothership and Colony)
-  | "radar"
-  | "hangar"
-  | "academy"
+  | 'radar'
+  | 'hangar'
+  | 'academy'
   // Colony-only modules
-  | "exploration"
-  | "mineral"
-  | "trading";
+  | 'exploration'
+  | 'mineral'
+  | 'trading';
 
 // Building types that can have modules
-export type BuildingType = "mothership" | "colony";
+export type BuildingType = 'mothership' | 'colony';
 
 // Module requirements for attachment
 export interface ModuleRequirements {

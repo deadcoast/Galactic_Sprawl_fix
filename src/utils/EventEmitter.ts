@@ -61,4 +61,4 @@ export class EventEmitter<T extends Record<string, any>> {
       this.listeners.clear();
     }
   }
-} 
+}

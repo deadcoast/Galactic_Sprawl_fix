@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from 'lucide-react';
 
 interface TransferAnimation {
   id: string;
@@ -16,14 +16,14 @@ interface ResourceTransferProps {
 export function ResourceTransfer({ transfers }: ResourceTransferProps) {
   return (
     <div className="absolute inset-0 pointer-events-none">
-      {transfers.map((transfer) => (
+      {transfers.map(transfer => (
         <div
           key={transfer.id}
           className="absolute"
           style={{
             left: `${transfer.progress * 100}%`,
-            top: "50%",
-            transform: "translate(-50%, -50%)",
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
           }}
         >
           <div className="flex items-center space-x-1 bg-indigo-900/80 backdrop-blur-sm px-2 py-1 rounded-full border border-indigo-500/50">

@@ -1,11 +1,11 @@
-import { AlertTriangle, Radar, Rocket } from "lucide-react";
-import { useState } from "react";
+import { AlertTriangle, Radar, Rocket } from 'lucide-react';
+import { useState } from 'react';
 
 interface ReconShip {
   id: string;
   name: string;
   position: { x: number; y: number };
-  status: "idle" | "scanning" | "investigating" | "returning";
+  status: 'idle' | 'scanning' | 'investigating' | 'returning';
   targetArea?: { x: number; y: number };
   discoveredAnomalies: number;
 }
@@ -18,11 +18,11 @@ interface ExplorationHubProps {
   anomalies: {
     id: string;
     position: { x: number; y: number };
-    type: "artifact" | "signal" | "phenomenon";
-    severity: "low" | "medium" | "high";
+    type: 'artifact' | 'signal' | 'phenomenon';
+    severity: 'low' | 'medium' | 'high';
     investigated: boolean;
   }[];
-  quality: "low" | "medium" | "high";
+  quality: 'low' | 'medium' | 'high';
   onShipSelect?: (shipId: string) => void;
   onAnomalyClick?: (anomalyId: string) => void;
 }
@@ -40,7 +40,7 @@ export function ExplorationHub({
   const [hoveredShip, setHoveredShip] = useState<string | null>(null);
   const [hoveredAnomaly, setHoveredAnomaly] = useState<string | null>(null);
 
-  const particleCount = quality === "high" ? 12 : quality === "medium" ? 8 : 4;
+  const particleCount = quality === 'high' ? 12 : quality === 'medium' ? 8 : 4;
 
   return (
     <div className="relative w-96 h-96">
@@ -59,7 +59,7 @@ export function ExplorationHub({
             className="absolute inset-0 rounded-full border-2 border-teal-500/20"
             style={{
               transform: `scale(${2 + tier * 0.5})`,
-              animation: "pulse 4s infinite",
+              animation: 'pulse 4s infinite',
             }}
           />
 
@@ -93,14 +93,14 @@ export function ExplorationHub({
           </svg>
 
           {/* Recon Ships */}
-          {ships.map((ship) => (
+          {ships.map(ship => (
             <div
               key={ship.id}
               className="absolute"
               style={{
                 left: `${ship.position.x}%`,
                 top: `${ship.position.y}%`,
-                transform: "translate(-50%, -50%)",
+                transform: 'translate(-50%, -50%)',
               }}
               onMouseEnter={() => setHoveredShip(ship.id)}
               onMouseLeave={() => setHoveredShip(null)}
@@ -108,26 +108,26 @@ export function ExplorationHub({
             >
               <div
                 className={`p-2 rounded-full transition-all duration-300 ${
-                  ship.status === "scanning"
-                    ? "bg-teal-500/20"
-                    : ship.status === "investigating"
-                      ? "bg-yellow-500/20"
-                      : "bg-blue-500/20"
-                } ${hoveredShip === ship.id ? "scale-125" : "scale-100"}`}
+                  ship.status === 'scanning'
+                    ? 'bg-teal-500/20'
+                    : ship.status === 'investigating'
+                      ? 'bg-yellow-500/20'
+                      : 'bg-blue-500/20'
+                } ${hoveredShip === ship.id ? 'scale-125' : 'scale-100'}`}
               >
                 <Rocket
                   className={`w-4 h-4 ${
-                    ship.status === "scanning"
-                      ? "text-teal-400"
-                      : ship.status === "investigating"
-                        ? "text-yellow-400"
-                        : "text-blue-400"
+                    ship.status === 'scanning'
+                      ? 'text-teal-400'
+                      : ship.status === 'investigating'
+                        ? 'text-yellow-400'
+                        : 'text-blue-400'
                   }`}
                 />
               </div>
 
               {/* Ship Path */}
-              {ship.targetArea && quality !== "low" && (
+              {ship.targetArea && quality !== 'low' && (
                 <svg className="absolute inset-0 pointer-events-none">
                   <line
                     x1="0"
@@ -144,12 +144,9 @@ export function ExplorationHub({
               {/* Ship Info Tooltip */}
               {hoveredShip === ship.id && (
                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-800/90 rounded-lg border border-gray-700 whitespace-nowrap z-10">
-                  <div className="text-sm font-medium text-white">
-                    {ship.name}
-                  </div>
+                  <div className="text-sm font-medium text-white">{ship.name}</div>
                   <div className="text-xs text-gray-400">
-                    Status:{" "}
-                    {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
+                    Status: {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
                   </div>
                   <div className="text-xs text-gray-400">
                     Discoveries: {ship.discoveredAnomalies}
@@ -160,14 +157,14 @@ export function ExplorationHub({
           ))}
 
           {/* Anomalies */}
-          {anomalies.map((anomaly) => (
+          {anomalies.map(anomaly => (
             <div
               key={anomaly.id}
               className="absolute"
               style={{
                 left: `${anomaly.position.x}%`,
                 top: `${anomaly.position.y}%`,
-                transform: "translate(-50%, -50%)",
+                transform: 'translate(-50%, -50%)',
               }}
               onMouseEnter={() => setHoveredAnomaly(anomaly.id)}
               onMouseLeave={() => setHoveredAnomaly(null)}
@@ -175,20 +172,20 @@ export function ExplorationHub({
             >
               <div
                 className={`p-2 rounded-full transition-all duration-300 ${
-                  anomaly.severity === "high"
-                    ? "bg-red-500/20"
-                    : anomaly.severity === "medium"
-                      ? "bg-yellow-500/20"
-                      : "bg-blue-500/20"
-                } ${hoveredAnomaly === anomaly.id ? "scale-125" : "scale-100"}`}
+                  anomaly.severity === 'high'
+                    ? 'bg-red-500/20'
+                    : anomaly.severity === 'medium'
+                      ? 'bg-yellow-500/20'
+                      : 'bg-blue-500/20'
+                } ${hoveredAnomaly === anomaly.id ? 'scale-125' : 'scale-100'}`}
               >
                 <AlertTriangle
                   className={`w-4 h-4 ${
-                    anomaly.severity === "high"
-                      ? "text-red-400"
-                      : anomaly.severity === "medium"
-                        ? "text-yellow-400"
-                        : "text-blue-400"
+                    anomaly.severity === 'high'
+                      ? 'text-red-400'
+                      : anomaly.severity === 'medium'
+                        ? 'text-yellow-400'
+                        : 'text-blue-400'
                   }`}
                 />
               </div>
@@ -200,12 +197,10 @@ export function ExplorationHub({
                     {anomaly.type} Anomaly
                   </div>
                   <div className="text-xs text-gray-400">
-                    Severity:{" "}
-                    {anomaly.severity.charAt(0).toUpperCase() +
-                      anomaly.severity.slice(1)}
+                    Severity: {anomaly.severity.charAt(0).toUpperCase() + anomaly.severity.slice(1)}
                   </div>
                   <div className="text-xs text-gray-400">
-                    Status: {anomaly.investigated ? "Investigated" : "Pending"}
+                    Status: {anomaly.investigated ? 'Investigated' : 'Pending'}
                   </div>
                 </div>
               )}
@@ -241,9 +236,7 @@ export function ExplorationHub({
         <div>
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-400">Area Mapped</span>
-            <span className="text-gray-300">
-              {Math.round((mappedArea / totalArea) * 100)}%
-            </span>
+            <span className="text-gray-300">{Math.round((mappedArea / totalArea) * 100)}%</span>
           </div>
           <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
             <div

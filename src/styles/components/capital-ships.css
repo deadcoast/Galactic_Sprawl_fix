@@ -1,6 +1,7 @@
 /* Capital Ship Animations */
 @keyframes spark {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0;
     transform: scale(0) rotate(0deg);
   }
@@ -11,7 +12,8 @@
 }
 
 @keyframes shield-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
@@ -37,7 +39,8 @@
 }
 
 @keyframes bay-indicator {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     width: 2rem;
   }

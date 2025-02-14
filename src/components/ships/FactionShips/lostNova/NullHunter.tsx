@@ -1,9 +1,9 @@
-import { LostNovaShip } from "../../common/LostNovaShip";
-import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
-import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
-import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { Target } from "lucide-react";
-import { useEffect, useState } from "react";
+import { LostNovaShip } from '../../common/LostNovaShip';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { Target } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface NullHunterProps {
   id: string;
@@ -42,7 +42,7 @@ export function NullHunter({
   const [nullFieldActive, setNullFieldActive] = useState(false);
 
   useEffect(() => {
-    if (status === "disabled") {
+    if (status === 'disabled') {
       setVoidTrackingActive(false);
       setNullFieldActive(false);
     }
@@ -50,16 +50,16 @@ export function NullHunter({
 
   const mapStatus = (status: ShipStatus) => {
     switch (status) {
-      case "engaging":
-        return "engaging";
-      case "patrolling":
-        return "patrolling";
-      case "retreating":
-        return "retreating";
-      case "disabled":
-        return "disabled";
+      case 'engaging':
+        return 'engaging';
+      case 'patrolling':
+        return 'patrolling';
+      case 'retreating':
+        return 'retreating';
+      case 'disabled':
+        return 'disabled';
       default:
-        return "patrolling";
+        return 'patrolling';
     }
   };
 
@@ -108,7 +108,7 @@ export function NullHunter({
               setVoidTrackingActive(!voidTrackingActive);
               onSpecialAbility?.();
             }}
-            disabled={status === "disabled"}
+            disabled={status === 'disabled'}
           >
             <Target className="icon" />
             <span>Void Tracking</span>
@@ -119,7 +119,7 @@ export function NullHunter({
               setNullFieldActive(!nullFieldActive);
               onSpecialAbility?.();
             }}
-            disabled={status === "disabled"}
+            disabled={status === 'disabled'}
           >
             <Target className="icon" />
             <span>Null Field</span>

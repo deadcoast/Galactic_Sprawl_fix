@@ -3,15 +3,15 @@ import {
   WeaponHeader,
   WeaponStatsDisplay,
   WeaponUpgradeDisplay,
-} from "./WeaponComponents";
-import { 
-  WEAPON_COLORS, 
+} from './WeaponComponents';
+import {
+  WEAPON_COLORS,
   WeaponSystemProps,
   WeaponUpgrade,
   WeaponEffect,
-  CombatWeaponStats
-} from "../../types/weapons/WeaponTypes";
-import { Crosshair } from "lucide-react";
+  CombatWeaponStats,
+} from '../../types/weapons/WeaponTypes';
+import { Crosshair } from 'lucide-react';
 
 export function WeaponSystem({
   weapon,
@@ -27,7 +27,7 @@ export function WeaponSystem({
     if (onUpgrade) {
       const updatedStats: CombatWeaponStats = {
         ...weapon.state.currentStats,
-        ...upgrade.stats
+        ...upgrade.stats,
       };
       console.debug(`[WeaponSystem] Applying upgrade ${upgradeId}, new stats:`, updatedStats);
       onUpgrade(upgradeId);
@@ -37,13 +37,11 @@ export function WeaponSystem({
   const mapToWeaponEffect = (effect: WeaponEffect): WeaponEffect => ({
     ...effect,
     active: effect.active ?? true,
-    cooldown: effect.cooldown ?? 0
+    cooldown: effect.cooldown ?? 0,
   });
 
   return (
-    <div
-      className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6`}
-    >
+    <div className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6`}>
       <WeaponHeader
         name={weapon.config.name}
         tier={weapon.config.tier}
@@ -66,9 +64,7 @@ export function WeaponSystem({
         <div>
           <div className="text-sm text-gray-400 mb-1">Range</div>
           <div className="flex items-baseline space-x-1">
-            <span className="text-2xl font-bold text-white">
-              {weapon.state.currentStats.range}
-            </span>
+            <span className="text-2xl font-bold text-white">{weapon.state.currentStats.range}</span>
             <span className="text-sm text-gray-400">ly</span>
           </div>
         </div>
@@ -91,16 +87,14 @@ export function WeaponSystem({
       {/* Available Upgrades */}
       {availableUpgrades && availableUpgrades.length > 0 && resources && (
         <div className="space-y-3 mb-6">
-          <h4 className="text-sm font-medium text-gray-300">
-            Available Upgrades
-          </h4>
+          <h4 className="text-sm font-medium text-gray-300">Available Upgrades</h4>
           {availableUpgrades.map((upgrade: WeaponUpgrade) => (
             <WeaponUpgradeDisplay
               key={upgrade.id}
               upgrade={upgrade}
               currentStats={weapon.state.currentStats}
               resources={resources}
-              onUpgrade={(id) => handleUpgrade(id, upgrade)}
+              onUpgrade={id => handleUpgrade(id, upgrade)}
             />
           ))}
         </div>
@@ -109,11 +103,11 @@ export function WeaponSystem({
       {/* Fire Control */}
       <button
         onClick={() => onFire?.(weapon.config.id)}
-        disabled={weapon.state.status !== "ready"}
+        disabled={weapon.state.status !== 'ready'}
         className={`w-full px-4 py-3 rounded-lg flex items-center justify-center space-x-2 ${
-          weapon.state.status === "ready"
+          weapon.state.status === 'ready'
             ? `bg-${color}-600 hover:bg-${color}-700 text-white`
-            : "bg-gray-700 text-gray-500 cursor-not-allowed"
+            : 'bg-gray-700 text-gray-500 cursor-not-allowed'
         }`}
       >
         <Crosshair className="w-5 h-5" />

@@ -12,7 +12,13 @@
     "fix-imports-v2": "node tools/fix-imports-v2.js",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
+    "type-check": "tsc --noEmit",
+    "lint:fix": "eslint --fix \"src/**/*.{ts,tsx}\"",
+    "format:all": "prettier --write \"src/**/*.{ts,tsx,css,scss}\" && npm run lint:fix",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@pixi/particle-emitter": "^5.0.8",
@@ -67,7 +73,16 @@
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^1.3.1"
+    "vitest": "^1.3.1",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "typescript-plugin-css-modules": "^5.0.1",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0"
   },
   "main": "eslint.config.js",
   "repository": {
@@ -81,5 +96,14 @@
     "url": "https://github.com/deadcoast/Galactic_Sprawl_fix/issues"
   },
   "homepage": "https://github.com/deadcoast/Galactic_Sprawl_fix#readme",
-  "description": ""
+  "description": "",
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,css,scss,md}": [
+      "prettier --write"
+    ]
+  }
 }

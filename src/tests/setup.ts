@@ -12,4 +12,4 @@ expect.extend(matchers);
 // Cleanup after each test case
 afterEach(() => {
   cleanup();
-}); 
+});

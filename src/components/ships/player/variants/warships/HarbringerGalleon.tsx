@@ -1,12 +1,12 @@
-import { ThrusterEffect } from "../../../../../effects/component_effects/ThrusterEffect";
-import { AlertTriangle } from "lucide-react";
-import * as PIXI from "pixi.js";
-import { useEffect, useRef } from "react";
-import { useAssets } from "../../../../../hooks/game/useAssets";
-import { useAnimation } from "../../../../../hooks/game/useAnimation";
+import { ThrusterEffect } from '../../../../../effects/component_effects/ThrusterEffect';
+import { AlertTriangle } from 'lucide-react';
+import * as PIXI from 'pixi.js';
+import { useEffect, useRef } from 'react';
+import { useAssets } from '../../../../../hooks/game/useAssets';
+import { useAnimation } from '../../../../../hooks/game/useAnimation';
 
 // Type augmentation for PIXI.js
-declare module "pixi.js" {
+declare module 'pixi.js' {
   export interface ApplicationOptions {
     backgroundAlpha?: number;
   }
@@ -33,7 +33,7 @@ declare module "pixi.js" {
 interface HarbringerGalleonProps {
   x: number;
   y: number;
-  status: "idle" | "engaging" | "retreating" | "damaged";
+  status: 'idle' | 'engaging' | 'retreating' | 'damaged';
   health: number;
   maxHealth: number;
   shield: number;
@@ -114,7 +114,7 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
 
         app.stage.addChild(container);
       } catch (error) {
-        console.error("Error loading Harbringer Galleon sprites:", error);
+        console.error('Error loading Harbringer Galleon sprites:', error);
       }
     };
 
@@ -158,7 +158,7 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
         </div>
       </div>
       {/* Warning indicator for damaged state */}
-      {status === "damaged" && (
+      {status === 'damaged' && (
         <div className="absolute top-0 right-0 p-2">
           <AlertTriangle className="w-6 h-6 text-yellow-500 animate-pulse" />
         </div>
@@ -167,7 +167,7 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
       <ThrusterEffect
         size="large"
         color="#4f46e5"
-        intensity={status === "engaging" || status === "retreating" ? 1.0 : 0.0}
+        intensity={status === 'engaging' || status === 'retreating' ? 1.0 : 0.0}
       />
     </div>
   );

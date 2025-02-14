@@ -3,7 +3,7 @@
  * @module WeaponEffects
  */
 
-import { Effect } from "../../types/core/GameTypes";
+import { Effect } from '../../types/core/GameTypes';
 
 // Effect Types
 // ------------------------------------------------------------
@@ -12,7 +12,7 @@ import { Effect } from "../../types/core/GameTypes";
  * Base weapon effect interface
  */
 export interface WeaponEffect extends Effect {
-  type: "damage" | "area" | "status";
+  type: 'damage' | 'area' | 'status';
   duration: number;
   strength: number;
 }
@@ -21,8 +21,8 @@ export interface WeaponEffect extends Effect {
  * Damage-based weapon effect
  */
 export interface DamageEffect extends WeaponEffect {
-  type: "damage";
-  damageType: "physical" | "energy" | "explosive";
+  type: 'damage';
+  damageType: 'physical' | 'energy' | 'explosive';
   penetration: number;
 }
 
@@ -30,7 +30,7 @@ export interface DamageEffect extends WeaponEffect {
  * Area-based weapon effect
  */
 export interface AreaEffect extends WeaponEffect {
-  type: "area";
+  type: 'area';
   radius: number;
   falloff: number;
 }
@@ -39,8 +39,8 @@ export interface AreaEffect extends WeaponEffect {
  * Status-based weapon effect
  */
 export interface StatusEffect extends WeaponEffect {
-  type: "status";
-  statusType: "burn" | "emp" | "slow" | "stun";
+  type: 'status';
+  statusType: 'burn' | 'emp' | 'slow' | 'stun';
 }
 
 // Effect Collections
@@ -57,4 +57,4 @@ export type WeaponEffectType = DamageEffect | AreaEffect | StatusEffect;
 export interface WeaponEffects {
   primary: WeaponEffectType;
   secondary?: WeaponEffectType[];
-} 
+}

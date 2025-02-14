@@ -1,5 +1,5 @@
-import { AlertTriangle, BarChart2, RefreshCw, Ship, TrendingUp } from "lucide-react";
-import { BaseModule } from "../../../../types/buildings/ModuleTypes";
+import { AlertTriangle, BarChart2, RefreshCw, Ship, TrendingUp } from 'lucide-react';
+import { BaseModule } from '../../../../types/buildings/ModuleTypes';
 
 interface TradeRoute {
   id: string;
@@ -9,7 +9,7 @@ interface TradeRoute {
   amount: number;
   frequency: number; // in minutes
   profit: number;
-  status: "active" | "paused" | "failed";
+  status: 'active' | 'paused' | 'failed';
   lastDelivery?: Date;
   ships: string[]; // IDs of assigned trade ships
 }
@@ -18,7 +18,7 @@ interface MarketPrice {
   resource: string;
   buyPrice: number;
   sellPrice: number;
-  trend: "up" | "down" | "stable";
+  trend: 'up' | 'down' | 'stable';
   volume: number;
 }
 
@@ -45,8 +45,8 @@ export function TradingHub({
   onAssignShip,
   onUnassignShip,
 }: TradingHubProps) {
-  const activeRoutes = module.tradeRoutes.filter(r => r.status === "active");
-  
+  const activeRoutes = module.tradeRoutes.filter(r => r.status === 'active');
+
   return (
     <div className="p-4 bg-gray-900 rounded-lg">
       <div className="flex items-center justify-between mb-6">
@@ -74,15 +74,17 @@ export function TradingHub({
           {module.marketPrices.map(price => (
             <div key={price.resource} className="bg-gray-800 p-3 rounded-lg">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-medium text-gray-300">
-                  {price.resource}
-                </div>
-                <div className={`text-xs ${
-                  price.trend === "up" ? "text-green-400" :
-                  price.trend === "down" ? "text-red-400" :
-                  "text-gray-400"
-                }`}>
-                  {price.trend === "up" ? "↑" : price.trend === "down" ? "↓" : "→"}
+                <div className="text-sm font-medium text-gray-300">{price.resource}</div>
+                <div
+                  className={`text-xs ${
+                    price.trend === 'up'
+                      ? 'text-green-400'
+                      : price.trend === 'down'
+                        ? 'text-red-400'
+                        : 'text-gray-400'
+                  }`}
+                >
+                  {price.trend === 'up' ? '↑' : price.trend === 'down' ? '↓' : '→'}
                 </div>
               </div>
               <div className="flex justify-between text-xs text-gray-500">
@@ -106,9 +108,7 @@ export function TradingHub({
             <div key={route.id} className="bg-gray-800 p-3 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  {route.status === "failed" && (
-                    <AlertTriangle className="w-4 h-4 text-red-400" />
-                  )}
+                  {route.status === 'failed' && <AlertTriangle className="w-4 h-4 text-red-400" />}
                   <div>
                     <div className="text-sm font-medium text-gray-300">
                       {route.source} → {route.destination}
@@ -122,14 +122,18 @@ export function TradingHub({
                   <button
                     onClick={() => onToggleRoute(route.id)}
                     className={`px-3 py-1 text-xs ${
-                      route.status === "active"
-                        ? "text-green-400 hover:text-green-300"
-                        : route.status === "failed"
-                          ? "text-red-400 hover:text-red-300"
-                          : "text-gray-400 hover:text-gray-300"
+                      route.status === 'active'
+                        ? 'text-green-400 hover:text-green-300'
+                        : route.status === 'failed'
+                          ? 'text-red-400 hover:text-red-300'
+                          : 'text-gray-400 hover:text-gray-300'
                     }`}
                   >
-                    {route.status === "active" ? "Active" : route.status === "failed" ? "Failed" : "Paused"}
+                    {route.status === 'active'
+                      ? 'Active'
+                      : route.status === 'failed'
+                        ? 'Failed'
+                        : 'Paused'}
                   </button>
                   <button
                     onClick={() => onDeleteRoute(route.id)}
@@ -139,7 +143,7 @@ export function TradingHub({
                   </button>
                 </div>
               </div>
-              
+
               {/* Assigned Ships */}
               <div className="mt-2">
                 <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
@@ -162,7 +166,7 @@ export function TradingHub({
                     </div>
                   ))}
                   <button
-                    onClick={() => onAssignShip(route.id, "new-ship-id")}
+                    onClick={() => onAssignShip(route.id, 'new-ship-id')}
                     className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-blue-400"
                   >
                     + Assign Ship
@@ -185,16 +189,14 @@ export function TradingHub({
 
       {/* Create New Route */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-300 mb-3">
-          Create New Route
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-300 mb-3">Create New Route</h3>
         <button
-          onClick={() => onCreateRoute("", "", "", 0)}
+          onClick={() => onCreateRoute('', '', '', 0)}
           disabled={activeRoutes.length >= module.maxRoutes}
           className={`w-full p-3 rounded-lg text-sm ${
             activeRoutes.length >= module.maxRoutes
-              ? "bg-gray-800 text-gray-500 cursor-not-allowed"
-              : "bg-blue-500/20 hover:bg-blue-500/30 text-blue-300"
+              ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-300'
           }`}
         >
           + New Trade Route
@@ -202,4 +204,4 @@ export function TradingHub({
       </div>
     </div>
   );
-} 
+}

@@ -6,7 +6,7 @@ import {
   WeaponInstance,
   WeaponType,
   WeaponMount,
-  WeaponEffect
+  WeaponEffect,
 } from '../weapons/WeaponTypes';
 import { Effect } from '../core/GameTypes';
 
@@ -19,7 +19,7 @@ export type {
   WeaponInstance,
   WeaponType,
   WeaponMount,
-  WeaponEffect
+  WeaponEffect,
 };
 
 // Combat-specific types
@@ -67,4 +67,4 @@ export interface CombatResult {
   damageDone: Record<string, number>;
   unitsLost: Record<string, number>;
   effectsTriggered: Record<string, number>;
-} 
+}

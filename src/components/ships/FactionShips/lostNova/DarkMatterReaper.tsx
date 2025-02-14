@@ -1,9 +1,9 @@
-import { LostNovaShip } from "../../common/LostNovaShip";
-import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
-import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
-import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import { LostNovaShip } from '../../common/LostNovaShip';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface DarkMatterReaperProps {
   id: string;
@@ -41,23 +41,23 @@ export function DarkMatterReaper({
   const [voidPulseActive, setVoidPulseActive] = useState(false);
 
   useEffect(() => {
-    if (status === "disabled") {
+    if (status === 'disabled') {
       setVoidPulseActive(false);
     }
   }, [status]);
 
   const mapStatus = (status: ShipStatus) => {
     switch (status) {
-      case "engaging":
-        return "engaging";
-      case "patrolling":
-        return "patrolling";
-      case "retreating":
-        return "retreating";
-      case "disabled":
-        return "disabled";
+      case 'engaging':
+        return 'engaging';
+      case 'patrolling':
+        return 'patrolling';
+      case 'retreating':
+        return 'retreating';
+      case 'disabled':
+        return 'disabled';
       default:
-        return "patrolling";
+        return 'patrolling';
     }
   };
 
@@ -100,7 +100,7 @@ export function DarkMatterReaper({
               setVoidPulseActive(!voidPulseActive);
               onSpecialAbility?.();
             }}
-            disabled={status === "disabled"}
+            disabled={status === 'disabled'}
           >
             <Zap className="icon" />
             <span>Void Pulse</span>

@@ -11,17 +11,17 @@ import { ModuleType } from '../buildings/ModuleTypes';
 /**
  * Officer roles
  */
-export type OfficerRole = "Squad Leader" | "Captain";
+export type OfficerRole = 'Squad Leader' | 'Captain';
 
 /**
  * Officer specializations
  */
-export type OfficerSpecialization = "War" | "Recon" | "Mining";
+export type OfficerSpecialization = 'War' | 'Recon' | 'Mining';
 
 /**
  * Officer status
  */
-export type OfficerStatus = "available" | "training" | "assigned";
+export type OfficerStatus = 'available' | 'training' | 'assigned';
 
 /**
  * Officer tier
@@ -99,17 +99,17 @@ export interface TrainingProgram {
  * Officer event types
  */
 export type OfficerEventType =
-  | "officerHired"
-  | "officerAssigned"
-  | "trainingStarted"
-  | "trainingCompleted"
-  | "experienceGained"
-  | "officerLeveledUp"
-  | "squadCreated"
-  | "squadUpdated"
-  | "squadBonusesUpdated"
-  | "tierUpgraded"
-  | "academyActivated";
+  | 'officerHired'
+  | 'officerAssigned'
+  | 'trainingStarted'
+  | 'trainingCompleted'
+  | 'experienceGained'
+  | 'officerLeveledUp'
+  | 'squadCreated'
+  | 'squadUpdated'
+  | 'squadBonusesUpdated'
+  | 'tierUpgraded'
+  | 'academyActivated';
 
 /**
  * Officer event interface
@@ -228,4 +228,4 @@ export interface OfficerEvents {
   academyActivated: {
     moduleId: string;
   };
-} 
+}

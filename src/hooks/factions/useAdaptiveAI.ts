@@ -1,14 +1,14 @@
-import { combatManager } from "../../lib/combat/combatManager";
-import { factionManager } from "../../lib/factions/factionManager";
-import { useEffect, useState } from "react";
+import { combatManager } from '../../lib/combat/combatManager';
+import { factionManager } from '../../lib/factions/factionManager';
+import { useEffect, useState } from 'react';
 
 interface AdaptiveAIState {
   learningRate: number;
   experienceLevel: number;
   adaptations: {
-    combatStyle: "aggressive" | "defensive" | "balanced";
-    preferredRange: "close" | "medium" | "long";
-    formationPreference: "tight" | "loose" | "flexible";
+    combatStyle: 'aggressive' | 'defensive' | 'balanced';
+    preferredRange: 'close' | 'medium' | 'long';
+    formationPreference: 'tight' | 'loose' | 'flexible';
     retreatThreshold: number;
   };
   performance: {
@@ -28,7 +28,7 @@ interface UnitStatus {
 interface CombatUnit extends UnitStatus {
   inCombat: boolean;
   successfulHits: number;
-  combatHistory: { outcome: "victory" | "defeat" | "retreat" }[];
+  combatHistory: { outcome: 'victory' | 'defeat' | 'retreat' }[];
   missionHistory: { survived: boolean }[];
   totalDamageDealt: number;
   totalDamageTaken: number;
@@ -46,9 +46,9 @@ export function useAdaptiveAI(unitId: string, factionId: string) {
     learningRate: 0.1,
     experienceLevel: 0,
     adaptations: {
-      combatStyle: "balanced",
-      preferredRange: "medium",
-      formationPreference: "flexible",
+      combatStyle: 'balanced',
+      preferredRange: 'medium',
+      formationPreference: 'flexible',
       retreatThreshold: 0.3,
     },
     performance: {
@@ -62,9 +62,7 @@ export function useAdaptiveAI(unitId: string, factionId: string) {
   useEffect(() => {
     const updateInterval = setInterval(() => {
       const unit = combatManager.getUnitStatus(unitId) as unknown as CombatUnit;
-      const faction = factionManager.getFactionState(
-        factionId,
-      ) as unknown as FactionUnit;
+      const faction = factionManager.getFactionState(factionId) as unknown as FactionUnit;
 
       if (!unit || !faction) {
         return;
@@ -84,15 +82,12 @@ export function useAdaptiveAI(unitId: string, factionId: string) {
 function updateAdaptations(
   unit: CombatUnit,
   faction: FactionUnit,
-  currentState: AdaptiveAIState,
+  currentState: AdaptiveAIState
 ): AdaptiveAIState {
   const newState = { ...currentState };
 
   // Update experience level
-  newState.experienceLevel = calculateExperience(
-    unit,
-    currentState.experienceLevel,
-  );
+  newState.experienceLevel = calculateExperience(unit, currentState.experienceLevel);
 
   // Update performance metrics
   newState.performance = calculatePerformance(unit, faction);
@@ -124,16 +119,13 @@ function calculatePerformance(unit: CombatUnit, faction: FactionUnit) {
 
 function calculateWinRate(unit: CombatUnit): number {
   const totalEngagements = unit.combatHistory?.length || 1;
-  const wins =
-    unit.combatHistory?.filter((combat) => combat.outcome === "victory")
-      .length || 0;
+  const wins = unit.combatHistory?.filter(combat => combat.outcome === 'victory').length || 0;
   return wins / totalEngagements;
 }
 
 function calculateSurvivalRate(unit: CombatUnit): number {
   const totalMissions = unit.missionHistory?.length || 1;
-  const survivals =
-    unit.missionHistory?.filter((mission) => mission.survived).length || 0;
+  const survivals = unit.missionHistory?.filter(mission => mission.survived).length || 0;
   return survivals / totalMissions;
 }
 
@@ -143,13 +135,9 @@ function calculateDamageEfficiency(unit: CombatUnit): number {
   return Math.min(1, damageDealt / (damageDealt + damageTaken));
 }
 
-function calculateObjectiveCompletion(
-  unit: CombatUnit,
-  faction: FactionUnit,
-): number {
+function calculateObjectiveCompletion(unit: CombatUnit, faction: FactionUnit): number {
   const totalObjectives = unit.objectives?.length || 1;
-  const completedObjectives =
-    unit.objectives?.filter((obj) => obj.completed).length || 0;
+  const completedObjectives = unit.objectives?.filter(obj => obj.completed).length || 0;
   const factionBonus = faction.power > 0 ? 0.1 : 0; // Faction power influences completion rate
   return Math.min(1, completedObjectives / totalObjectives + factionBonus);
 }
@@ -159,11 +147,11 @@ function adaptCombatStyle(state: AdaptiveAIState) {
 
   // Adjust combat style based on performance metrics
   if (performance.damageEfficiency > 0.7 && performance.survivalRate > 0.8) {
-    state.adaptations.combatStyle = "aggressive";
+    state.adaptations.combatStyle = 'aggressive';
   } else if (performance.survivalRate < 0.4) {
-    state.adaptations.combatStyle = "defensive";
+    state.adaptations.combatStyle = 'defensive';
   } else {
-    state.adaptations.combatStyle = "balanced";
+    state.adaptations.combatStyle = 'balanced';
   }
 }
 
@@ -171,15 +159,12 @@ function adaptRangePreference(state: AdaptiveAIState) {
   const { performance } = state;
 
   // Adjust preferred engagement range based on performance
-  if (
-    performance.damageEfficiency > 0.6 &&
-    state.adaptations.combatStyle === "aggressive"
-  ) {
-    state.adaptations.preferredRange = "close";
+  if (performance.damageEfficiency > 0.6 && state.adaptations.combatStyle === 'aggressive') {
+    state.adaptations.preferredRange = 'close';
   } else if (performance.survivalRate < 0.5) {
-    state.adaptations.preferredRange = "long";
+    state.adaptations.preferredRange = 'long';
   } else {
-    state.adaptations.preferredRange = "medium";
+    state.adaptations.preferredRange = 'medium';
   }
 }
 
@@ -188,11 +173,11 @@ function adaptFormation(state: AdaptiveAIState) {
 
   // Adjust formation preferences based on combat performance
   if (performance.survivalRate < 0.5) {
-    state.adaptations.formationPreference = "tight";
+    state.adaptations.formationPreference = 'tight';
   } else if (performance.damageEfficiency > 0.7) {
-    state.adaptations.formationPreference = "loose";
+    state.adaptations.formationPreference = 'loose';
   } else {
-    state.adaptations.formationPreference = "flexible";
+    state.adaptations.formationPreference = 'flexible';
   }
 }
 
@@ -201,17 +186,8 @@ function adaptRetreatThreshold(state: AdaptiveAIState) {
 
   // Adjust retreat threshold based on survival rate and damage efficiency
   if (performance.survivalRate < 0.3) {
-    state.adaptations.retreatThreshold = Math.min(
-      0.5,
-      state.adaptations.retreatThreshold + 0.1,
-    );
-  } else if (
-    performance.damageEfficiency > 0.8 &&
-    performance.survivalRate > 0.7
-  ) {
-    state.adaptations.retreatThreshold = Math.max(
-      0.2,
-      state.adaptations.retreatThreshold - 0.1,
-    );
+    state.adaptations.retreatThreshold = Math.min(0.5, state.adaptations.retreatThreshold + 0.1);
+  } else if (performance.damageEfficiency > 0.8 && performance.survivalRate > 0.7) {
+    state.adaptations.retreatThreshold = Math.max(0.2, state.adaptations.retreatThreshold - 0.1);
   }
 }

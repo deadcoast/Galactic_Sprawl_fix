@@ -1,6 +1,6 @@
-import { VisualEffect, VisualEffectConfig } from "./VisualEffect";
-import { RenderBatcher } from "../../lib/optimization/RenderBatcher";
-import { Position } from "../../types/core/Position";
+import { VisualEffect, VisualEffectConfig } from './VisualEffect';
+import { RenderBatcher } from '../../lib/optimization/RenderBatcher';
+import { Position } from '../../types/core/Position';
 
 interface EngineTrailConfig extends VisualEffectConfig {
   engineSize: number;
@@ -29,7 +29,7 @@ export class EngineTrailEffect extends VisualEffect {
   }
 
   protected getEffectType(): string {
-    return "engine-trail";
+    return 'engine-trail';
   }
 
   protected onStart(): void {
@@ -52,7 +52,7 @@ export class EngineTrailEffect extends VisualEffect {
 
   protected onComplete(): void {
     this.trailPoints = [];
-    console.debug("[EngineTrailEffect] Completed");
+    console.debug('[EngineTrailEffect] Completed');
   }
 
   protected onReset(): void {
@@ -81,18 +81,18 @@ export class EngineTrailEffect extends VisualEffect {
       const spread = this.config.engineSize * 0.3;
       const offset = {
         x: Math.cos(angle) * spread,
-        y: Math.sin(angle) * spread
+        y: Math.sin(angle) * spread,
       };
 
       this.trailPoints.push({
         position: {
           x: this.config.position.x + offset.x,
-          y: this.config.position.y + offset.y
+          y: this.config.position.y + offset.y,
         },
         size: baseSize * (0.5 + Math.random() * 0.5),
         opacity: 0.8 + Math.random() * 0.2,
         rotation: angle,
-        time: Date.now()
+        time: Date.now(),
       });
     }
 
@@ -137,8 +137,8 @@ export class EngineTrailEffect extends VisualEffect {
       size: { width: coreSize * 2, height: coreSize * 2 },
       rotation: 0,
       opacity: 0.8 * pulse,
-      color: this.config.color || "#00ffff",
-      shader: "additive"
+      color: this.config.color || '#00ffff',
+      shader: 'additive',
     });
 
     // Inner core
@@ -148,8 +148,8 @@ export class EngineTrailEffect extends VisualEffect {
       size: { width: coreSize, height: coreSize },
       rotation: time * 2,
       opacity: 1,
-      color: "#ffffff",
-      shader: "additive"
+      color: '#ffffff',
+      shader: 'additive',
     });
   }
 
@@ -165,8 +165,8 @@ export class EngineTrailEffect extends VisualEffect {
         size: { width: point.size, height: point.size },
         rotation: point.rotation + time,
         opacity: point.opacity * flicker,
-        color: this.config.color || "#00ffff",
-        shader: "additive"
+        color: this.config.color || '#00ffff',
+        shader: 'additive',
       });
 
       // Particle glow
@@ -176,9 +176,9 @@ export class EngineTrailEffect extends VisualEffect {
         size: { width: point.size * 2, height: point.size * 2 },
         rotation: -point.rotation + time,
         opacity: point.opacity * 0.5 * flicker,
-        color: this.config.color || "#00ffff",
-        shader: "additive"
+        color: this.config.color || '#00ffff',
+        shader: 'additive',
       });
     });
   }
-} 
+}

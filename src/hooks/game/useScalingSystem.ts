@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 interface ScalingState {
   systemCount: number;
@@ -39,7 +39,7 @@ export function useScalingSystem() {
         const fps = Math.round((frameCount * 1000) / frameTime);
         const renderTime = frameTime / frameCount;
 
-        setScalingState((prev) => ({
+        setScalingState(prev => ({
           ...prev,
           performance: {
             fps,

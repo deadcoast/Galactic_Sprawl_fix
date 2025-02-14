@@ -1,4 +1,10 @@
-import { BaseModule, ModuleType, ModuleConfig, ModuleRequirements, ModularBuilding } from '../../types/buildings/ModuleTypes';
+import {
+  BaseModule,
+  ModuleType,
+  ModuleConfig,
+  ModuleRequirements,
+  ModularBuilding,
+} from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { moduleEventBus } from './ModuleEvents';
 
@@ -186,4 +192,4 @@ export class ModuleManager {
 }
 
 // Export a singleton instance
-export const moduleManager = new ModuleManager(); 
+export const moduleManager = new ModuleManager();

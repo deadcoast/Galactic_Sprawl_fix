@@ -1,4 +1,4 @@
-import { ArrowRight, Package } from "lucide-react";
+import { ArrowRight, Package } from 'lucide-react';
 
 interface CargoShipProps {
   id: string;
@@ -9,26 +9,20 @@ interface CargoShipProps {
   amount: number;
 }
 
-export function ResourceTransferAnimation({
-  ships,
-}: {
-  ships: CargoShipProps[];
-}) {
+export function ResourceTransferAnimation({ ships }: { ships: CargoShipProps[] }) {
   return (
     <div className="absolute inset-0 pointer-events-none">
-      {ships.map((ship) => {
+      {ships.map(ship => {
         const x =
-          ship.sourcePosition.x +
-          (ship.targetPosition.x - ship.sourcePosition.x) * ship.progress;
+          ship.sourcePosition.x + (ship.targetPosition.x - ship.sourcePosition.x) * ship.progress;
         const y =
-          ship.sourcePosition.y +
-          (ship.targetPosition.y - ship.sourcePosition.y) * ship.progress;
+          ship.sourcePosition.y + (ship.targetPosition.y - ship.sourcePosition.y) * ship.progress;
 
         // Calculate angle for arrow rotation
         const angle =
           Math.atan2(
             ship.targetPosition.y - ship.sourcePosition.y,
-            ship.targetPosition.x - ship.sourcePosition.x,
+            ship.targetPosition.x - ship.sourcePosition.x
           ) *
           (180 / Math.PI);
 
@@ -39,7 +33,7 @@ export function ResourceTransferAnimation({
             style={{
               left: x,
               top: y,
-              transform: "translate(-50%, -50%)",
+              transform: 'translate(-50%, -50%)',
             }}
           >
             {/* Cargo Ship */}
@@ -65,7 +59,7 @@ export function ResourceTransferAnimation({
             <div
               className="absolute h-0.5 bg-gradient-to-r from-amber-500/50 to-transparent"
               style={{
-                width: "50px",
+                width: '50px',
                 transform: `translateX(-100%) rotate(${angle}deg)`,
                 opacity: ship.progress,
               }}

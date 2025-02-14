@@ -18,21 +18,21 @@ export function AutomationMonitor() {
     // Monitor thresholds and generate alerts
     const checkThresholds = () => {
       const newAlerts: Alert[] = [];
-      
+
       Object.entries(state.resources).forEach(([resourceId, resource]) => {
         if (resource.currentAmount < resource.thresholds.min) {
           newAlerts.push({
             id: `${resourceId}-low-${Date.now()}`,
             type: 'warning',
             message: `${resource.name} below minimum threshold (${resource.currentAmount}/${resource.thresholds.min})`,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         } else if (resource.currentAmount > resource.thresholds.max) {
           newAlerts.push({
             id: `${resourceId}-high-${Date.now()}`,
             type: 'warning',
             message: `${resource.name} above maximum threshold (${resource.currentAmount}/${resource.thresholds.max})`,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         }
       });
@@ -84,8 +84,8 @@ export function AutomationMonitor() {
                   alert.type === 'warning'
                     ? 'bg-yellow-900/20'
                     : alert.type === 'error'
-                    ? 'bg-red-900/20'
-                    : 'bg-blue-900/20'
+                      ? 'bg-red-900/20'
+                      : 'bg-blue-900/20'
                 }`}
               >
                 {getAlertIcon(alert.type)}
@@ -107,4 +107,4 @@ export function AutomationMonitor() {
       )}
     </div>
   );
-} 
+}

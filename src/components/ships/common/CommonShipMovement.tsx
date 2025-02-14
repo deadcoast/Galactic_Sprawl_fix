@@ -1,11 +1,8 @@
-import { shipBehaviorManager } from "../../../lib/ai/shipBehavior";
-import { shipMovementManager } from "../../../lib/ai/shipMovement";
-import { techTreeManager } from "../../../lib/game/techTreeManager";
-import {
-  getDefaultCapabilities,
-  getShipCategory,
-} from "../../../types/ships/CommonShipTypes";
-import React, { useEffect, useRef } from "react";
+import { shipBehaviorManager } from '../../../lib/ai/shipBehavior';
+import { shipMovementManager } from '../../../lib/ai/shipMovement';
+import { techTreeManager } from '../../../lib/game/techTreeManager';
+import { getDefaultCapabilities, getShipCategory } from '../../../types/ships/CommonShipTypes';
+import React, { useEffect, useRef } from 'react';
 
 interface Position {
   x: number;
@@ -42,7 +39,7 @@ export const CommonShipMovement: React.FC<CommonShipMovementProps> = ({
     const capabilities = getDefaultCapabilities(category);
 
     // Enable salvage for war ships if they have the cutting laser
-    if (category === "war" && techTreeManager.hasWarShipSalvage()) {
+    if (category === 'war' && techTreeManager.hasWarShipSalvage()) {
       capabilities.canSalvage = true;
     }
 
@@ -65,11 +62,7 @@ export const CommonShipMovement: React.FC<CommonShipMovementProps> = ({
 
     // Set up movement update listener
     const handlePositionUpdate = (event: CustomEvent) => {
-      const {
-        shipId,
-        position: newPosition,
-        rotation: newRotation,
-      } = event.detail;
+      const { shipId, position: newPosition, rotation: newRotation } = event.detail;
       if (shipId === id) {
         positionRef.current = newPosition;
         rotationRef.current = newRotation;
@@ -77,19 +70,13 @@ export const CommonShipMovement: React.FC<CommonShipMovementProps> = ({
       }
     };
 
-    window.addEventListener(
-      "positionUpdated",
-      handlePositionUpdate as EventListener,
-    );
+    window.addEventListener('positionUpdated', handlePositionUpdate as EventListener);
 
     // Clean up
     return () => {
       shipBehaviorManager.unregisterShip(id);
       shipMovementManager.unregisterShip(id);
-      window.removeEventListener(
-        "positionUpdated",
-        handlePositionUpdate as EventListener,
-      );
+      window.removeEventListener('positionUpdated', handlePositionUpdate as EventListener);
     };
   }, [id, type, stats, onPositionUpdate]);
 

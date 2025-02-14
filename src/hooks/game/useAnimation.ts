@@ -50,4 +50,4 @@ export function useAnimation({
       animationManager.updateAnimationState(id, state);
     }
   }, [id, state]);
-} 
+}

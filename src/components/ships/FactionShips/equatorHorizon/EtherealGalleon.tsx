@@ -1,9 +1,9 @@
-import { EquatorHorizonShip } from "../../common/EquatorHorizonShip";
-import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
-import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
-import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { Wind } from "lucide-react";
-import { useEffect, useState } from "react";
+import { EquatorHorizonShip } from '../../common/EquatorHorizonShip';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { Wind } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface EtherealGalleonProps {
   id: string;
@@ -41,23 +41,23 @@ export function EtherealGalleon({
   const [etherealWindsActive, setEtherealWindsActive] = useState(false);
 
   useEffect(() => {
-    if (status === "disabled") {
+    if (status === 'disabled') {
       setEtherealWindsActive(false);
     }
   }, [status]);
 
   const mapStatus = (status: ShipStatus) => {
     switch (status) {
-      case "engaging":
-        return "engaging";
-      case "patrolling":
-        return "patrolling";
-      case "retreating":
-        return "retreating";
-      case "disabled":
-        return "disabled";
+      case 'engaging':
+        return 'engaging';
+      case 'patrolling':
+        return 'patrolling';
+      case 'retreating':
+        return 'retreating';
+      case 'disabled':
+        return 'disabled';
       default:
-        return "patrolling";
+        return 'patrolling';
     }
   };
 
@@ -100,7 +100,7 @@ export function EtherealGalleon({
               setEtherealWindsActive(!etherealWindsActive);
               onSpecialAbility?.();
             }}
-            disabled={status === "disabled"}
+            disabled={status === 'disabled'}
           >
             <Wind className="icon" />
             <span>Ethereal Winds</span>

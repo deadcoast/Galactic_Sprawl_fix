@@ -1,9 +1,9 @@
-import { SpaceRatShip } from "../../common/SpaceRatShip";
-import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
-import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
-import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { AlertTriangle, Eye, EyeOff, Radar } from "lucide-react";
-import { useEffect, useState } from "react";
+import { SpaceRatShip } from '../../common/SpaceRatShip';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { AlertTriangle, Eye, EyeOff, Radar } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface RogueNebulaProps {
   id: string;
@@ -43,24 +43,24 @@ export function RogueNebula({
 
   useEffect(() => {
     // Reset abilities when ship is disabled or damaged
-    if (status === "disabled" || status === "damaged") {
+    if (status === 'disabled' || status === 'damaged') {
       setStealthActive(false);
       setScanActive(false);
     }
   }, [status]);
 
   // Map the full ShipStatus to SpaceRatShip's more limited status type
-  const mapStatus = (status: ShipStatus): "engaging" | "patrolling" | "retreating" | "disabled" => {
+  const mapStatus = (status: ShipStatus): 'engaging' | 'patrolling' | 'retreating' | 'disabled' => {
     switch (status) {
-      case "damaged":
-        return "disabled";
-      case "idle":
-      case "ready":
-        return "patrolling";
-      case "engaging":
-      case "patrolling":
-      case "retreating":
-      case "disabled":
+      case 'damaged':
+        return 'disabled';
+      case 'idle':
+      case 'ready':
+        return 'patrolling';
+      case 'engaging':
+      case 'patrolling':
+      case 'retreating':
+      case 'disabled':
         return status;
     }
   };
@@ -81,7 +81,7 @@ export function RogueNebula({
         tactics="hit-and-run"
         onEngage={onEngage}
         onRetreat={onRetreat}
-        onSpecialAbility={() => onSpecialAbility?.(stealthActive ? "stealth" : "scan")}
+        onSpecialAbility={() => onSpecialAbility?.(stealthActive ? 'stealth' : 'scan')}
         onFire={onFire}
         position={position}
         rotation={rotation}
@@ -105,7 +105,7 @@ export function RogueNebula({
       </div>
 
       {/* Warning indicator for damaged state */}
-      {status === "damaged" && (
+      {status === 'damaged' && (
         <div className="absolute top-0 right-0 p-2">
           <AlertTriangle className="w-6 h-6 text-yellow-500 animate-pulse" />
         </div>
@@ -117,9 +117,9 @@ export function RogueNebula({
           onClick={() => {
             setStealthActive(!stealthActive);
             setScanActive(false);
-            onSpecialAbility?.("stealth");
+            onSpecialAbility?.('stealth');
           }}
-          disabled={status === "disabled" || status === "damaged"}
+          disabled={status === 'disabled' || status === 'damaged'}
           className="flex-1 px-4 py-2 bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 rounded-lg flex items-center justify-center gap-2"
         >
           {stealthActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -129,9 +129,9 @@ export function RogueNebula({
           onClick={() => {
             setScanActive(!scanActive);
             setStealthActive(false);
-            onSpecialAbility?.("scan");
+            onSpecialAbility?.('scan');
           }}
-          disabled={status === "disabled" || status === "damaged"}
+          disabled={status === 'disabled' || status === 'damaged'}
           className="flex-1 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 rounded-lg flex items-center justify-center gap-2"
         >
           <Radar className="w-4 h-4" />

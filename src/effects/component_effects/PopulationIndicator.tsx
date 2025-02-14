@@ -1,10 +1,10 @@
-import { TrendingUp, Users } from "lucide-react";
+import { TrendingUp, Users } from 'lucide-react';
 
 interface PopulationIndicatorProps {
   population: number;
   maxPopulation: number;
   growthRate: number;
-  quality: "low" | "medium" | "high";
+  quality: 'low' | 'medium' | 'high';
 }
 
 export function PopulationIndicator({
@@ -13,7 +13,7 @@ export function PopulationIndicator({
   growthRate,
   quality,
 }: PopulationIndicatorProps) {
-  const particleCount = quality === "high" ? 12 : quality === "medium" ? 8 : 4;
+  const particleCount = quality === 'high' ? 12 : quality === 'medium' ? 8 : 4;
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -54,9 +54,7 @@ export function PopulationIndicator({
           <div className="text-xs">
             <span className="text-cyan-200">{population.toLocaleString()}</span>
             <span className="text-gray-400"> / </span>
-            <span className="text-gray-300">
-              {maxPopulation.toLocaleString()}
-            </span>
+            <span className="text-gray-300">{maxPopulation.toLocaleString()}</span>
           </div>
           {growthRate > 0 && (
             <div className="flex items-center text-green-400 text-xs">

@@ -1,4 +1,4 @@
-import { Crown, Skull, Star } from "lucide-react";
+import { Crown, Skull, Star } from 'lucide-react';
 
 export interface FactionConfig {
   id: string;
@@ -31,12 +31,12 @@ export interface FactionConfig {
 
 export const factionConfigs: Record<string, FactionConfig> = {
   spaceRats: {
-    id: "spaceRats",
-    name: "Space Rats",
-    description: "Ruthless pirates thriving on chaos and plunder",
+    id: 'spaceRats',
+    name: 'Space Rats',
+    description: 'Ruthless pirates thriving on chaos and plunder',
     banner: {
-      primaryColor: "#991b1b", // red-800
-      secondaryColor: "#1c1917", // stone-900
+      primaryColor: '#991b1b', // red-800
+      secondaryColor: '#1c1917', // stone-900
       icon: Skull,
     },
     behavior: {
@@ -57,12 +57,12 @@ export const factionConfigs: Record<string, FactionConfig> = {
     },
   },
   lostNova: {
-    id: "lostNova",
-    name: "Lost Nova",
-    description: "Exiled scientists wielding forbidden technologies",
+    id: 'lostNova',
+    name: 'Lost Nova',
+    description: 'Exiled scientists wielding forbidden technologies',
     banner: {
-      primaryColor: "#7c3aed", // violet-600
-      secondaryColor: "#1e1b4b", // indigo-950
+      primaryColor: '#7c3aed', // violet-600
+      secondaryColor: '#1e1b4b', // indigo-950
       icon: Star,
     },
     behavior: {
@@ -83,12 +83,12 @@ export const factionConfigs: Record<string, FactionConfig> = {
     },
   },
   equatorHorizon: {
-    id: "equatorHorizon",
-    name: "Equator Horizon",
-    description: "Ancient civilization maintaining cosmic balance",
+    id: 'equatorHorizon',
+    name: 'Equator Horizon',
+    description: 'Ancient civilization maintaining cosmic balance',
     banner: {
-      primaryColor: "#d97706", // amber-600
-      secondaryColor: "#78350f", // amber-900
+      primaryColor: '#d97706', // amber-600
+      secondaryColor: '#78350f', // amber-900
       icon: Crown,
     },
     behavior: {

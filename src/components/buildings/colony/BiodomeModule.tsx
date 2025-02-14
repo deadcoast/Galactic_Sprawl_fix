@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowUp, Leaf, Zap } from "lucide-react";
+import { AlertTriangle, ArrowUp, Leaf, Zap } from 'lucide-react';
 
 interface BiodomeModuleProps {
   moduleData: {
@@ -8,7 +8,7 @@ interface BiodomeModuleProps {
     efficiency: number;
     growthBonus: number;
     resourceConversion: number;
-    status: "active" | "upgrading" | "maintenance";
+    status: 'active' | 'upgrading' | 'maintenance';
     nextCycle: number;
     alerts?: string[];
   };
@@ -18,22 +18,20 @@ export function BiodomeModule({ moduleData }: BiodomeModuleProps) {
   const getTierColor = (tier: number) => {
     switch (tier) {
       case 1:
-        return "emerald";
+        return 'emerald';
       case 2:
-        return "teal";
+        return 'teal';
       case 3:
-        return "cyan";
+        return 'cyan';
       default:
-        return "green";
+        return 'green';
     }
   };
 
   const color = getTierColor(moduleData.tier);
 
   return (
-    <div
-      className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6`}
-    >
+    <div className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <div className={`p-2 bg-${color}-500/20 rounded-lg`}>
@@ -44,11 +42,8 @@ export function BiodomeModule({ moduleData }: BiodomeModuleProps) {
             <div className="text-sm text-gray-400">Tier {moduleData.tier}</div>
           </div>
         </div>
-        <div
-          className={`px-3 py-1 rounded-full bg-${color}-500/20 text-${color}-300 text-sm`}
-        >
-          {moduleData.status.charAt(0).toUpperCase() +
-            moduleData.status.slice(1)}
+        <div className={`px-3 py-1 rounded-full bg-${color}-500/20 text-${color}-300 text-sm`}>
+          {moduleData.status.charAt(0).toUpperCase() + moduleData.status.slice(1)}
         </div>
       </div>
 
@@ -57,9 +52,7 @@ export function BiodomeModule({ moduleData }: BiodomeModuleProps) {
         <div>
           <div className="text-sm text-gray-400 mb-1">Food Production</div>
           <div className="flex items-baseline space-x-1">
-            <span className="text-2xl font-bold text-white">
-              {moduleData.foodProduction}
-            </span>
+            <span className="text-2xl font-bold text-white">{moduleData.foodProduction}</span>
             <span className="text-sm text-gray-400">units/cycle</span>
           </div>
         </div>
@@ -79,9 +72,7 @@ export function BiodomeModule({ moduleData }: BiodomeModuleProps) {
         <div>
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-400">Growth Bonus</span>
-            <span className={`text-${color}-400`}>
-              +{moduleData.growthBonus}%
-            </span>
+            <span className={`text-${color}-400`}>+{moduleData.growthBonus}%</span>
           </div>
           <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
             <div
@@ -138,10 +129,7 @@ export function BiodomeModule({ moduleData }: BiodomeModuleProps) {
       {moduleData.alerts && moduleData.alerts.length > 0 && (
         <div className="mt-6 space-y-2">
           {moduleData.alerts.map((alert, index) => (
-            <div
-              key={index}
-              className="flex items-center space-x-2 text-sm text-yellow-300"
-            >
+            <div key={index} className="flex items-center space-x-2 text-sm text-yellow-300">
               <AlertTriangle className="w-4 h-4" />
               <span>{alert}</span>
             </div>

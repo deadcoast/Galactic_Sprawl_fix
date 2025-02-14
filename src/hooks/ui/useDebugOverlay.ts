@@ -1,7 +1,14 @@
-import { combatManager } from "../../lib/combat/combatManager";
-import { factionManager } from "../../lib/factions/factionManager";
-import { useCallback, useEffect, useState } from "react";
-import { DebugWeaponEffect, ShieldStatus, CombatStats, AIState, Formation, DebugState } from "../../types/debug/DebugTypes";
+import { combatManager } from '../../lib/combat/combatManager';
+import { factionManager } from '../../lib/factions/factionManager';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  DebugWeaponEffect,
+  ShieldStatus,
+  CombatStats,
+  AIState,
+  Formation,
+  DebugState,
+} from '../../types/debug/DebugTypes';
 
 interface PerformanceMetrics {
   usedJSHeapSize: number;
@@ -12,7 +19,7 @@ interface PerformanceMetrics {
 
 interface CombatZoneMetrics {
   id: string;
-  type: "skirmish" | "battle" | "siege";
+  type: 'skirmish' | 'battle' | 'siege';
   participants: number;
   intensity: number;
   duration: number;
@@ -20,7 +27,7 @@ interface CombatZoneMetrics {
 
 interface ProjectileMetrics {
   id: string;
-  type: "bullet" | "laser" | "missile" | "torpedo";
+  type: 'bullet' | 'laser' | 'missile' | 'torpedo';
   source: string;
   damage: number;
   accuracy: number;
@@ -53,11 +60,11 @@ interface Unit {
   target?: string;
   weapons: Array<{
     id: string;
-    type: "machineGun" | "railGun" | "gaussCannon" | "rockets";
+    type: 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets';
     range: number;
     damage: number;
     cooldown: number;
-    status: "ready" | "charging" | "cooling" | "firing";
+    status: 'ready' | 'charging' | 'cooling' | 'firing';
     lastFired?: number;
     stats?: WeaponStats;
   }>;
@@ -81,7 +88,7 @@ interface Unit {
 interface ExtendedCombatManager {
   getActiveProjectiles: () => Array<{
     id: string;
-    type: "bullet" | "laser" | "missile" | "torpedo";
+    type: 'bullet' | 'laser' | 'missile' | 'torpedo';
     sourceId: string;
     damage: number;
     accuracy: number;
@@ -89,7 +96,7 @@ interface ExtendedCombatManager {
   }>;
   getActiveCombatZones: () => Array<{
     id: string;
-    type: "skirmish" | "battle" | "siege";
+    type: 'skirmish' | 'battle' | 'siege';
     participants: number;
     intensity: number;
     duration: number;
@@ -98,16 +105,12 @@ interface ExtendedCombatManager {
 
 export function useDebugOverlay() {
   const [visible, setVisible] = useState(false);
-  const [debugStates, setDebugStates] = useState<Record<string, DebugState>>(
-    {},
-  );
+  const [debugStates, setDebugStates] = useState<Record<string, DebugState>>({});
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [showPerformanceMetrics, setShowPerformanceMetrics] = useState(true);
   const [showCombatMetrics, setShowCombatMetrics] = useState(true);
   const [showSystemMetrics, setShowSystemMetrics] = useState(true);
-  const [logLevel, setLogLevel] = useState<"error" | "warn" | "info" | "debug">(
-    "warn",
-  );
+  const [logLevel, setLogLevel] = useState<'error' | 'warn' | 'info' | 'debug'>('warn');
   const [networkStats, setNetworkStats] = useState<{
     latency: number;
     drops: number;
@@ -152,9 +155,7 @@ export function useDebugOverlay() {
     projectiles: ProjectileMetrics[];
     combatZones: CombatZoneMetrics[];
   } => {
-    const activeUnits = Array.from(
-      combatManager.getUnitsInRange({ x: 0, y: 0 }, 2000),
-    ).length;
+    const activeUnits = Array.from(combatManager.getUnitsInRange({ x: 0, y: 0 }, 2000)).length;
     const extendedManager = combatManager as unknown as ExtendedCombatManager;
 
     // Get active projectiles with null check
@@ -169,17 +170,16 @@ export function useDebugOverlay() {
     const memory = performance.memory
       ? Math.round(performance.memory.usedJSHeapSize / (1024 * 1024))
       : 0;
-    const networkLatency =
-      window.performance.getEntriesByType("navigation")[0]?.duration || 0;
+    const networkLatency = window.performance.getEntriesByType('navigation')[0]?.duration || 0;
     const frameDrops = window.performance
-      .getEntriesByType("frame")
-      .filter((entry) => entry.duration > 16.67).length;
+      .getEntriesByType('frame')
+      .filter(entry => entry.duration > 16.67).length;
     const gcTime = window.performance
-      .getEntriesByType("gc")
+      .getEntriesByType('gc')
       .reduce((total, entry) => total + entry.duration, 0);
 
     // Projectile metrics
-    const projectileMetrics = projectiles.map((p) => ({
+    const projectileMetrics = projectiles.map(p => ({
       id: p.id,
       type: p.type,
       source: p.sourceId,
@@ -228,28 +228,25 @@ export function useDebugOverlay() {
 
   // GC monitoring (if available)
   useEffect(() => {
-    if ("gc" in window) {
-      const gcObserver = new PerformanceObserver((list) => {
+    if ('gc' in window) {
+      const gcObserver = new PerformanceObserver(list => {
         const gcEntries = list.getEntries();
-        const totalTime = gcEntries.reduce(
-          (sum, entry) => sum + entry.duration,
-          0,
-        );
-        setGCStats((prev) => ({
+        const totalTime = gcEntries.reduce((sum, entry) => sum + entry.duration, 0);
+        setGCStats(prev => ({
           time: totalTime,
           count: prev.count + gcEntries.length,
         }));
       });
 
-      gcObserver.observe({ entryTypes: ["gc"] });
+      gcObserver.observe({ entryTypes: ['gc'] });
       return () => gcObserver.disconnect();
     }
   }, []);
 
   // Combat metrics collection
   const collectCombatMetrics = useCallback((unit: Unit): CombatStats => {
-    const weaponEffects = unit.weapons.map((weapon) => ({
-      type: weapon.type as "machineGun" | "railGun" | "gaussCannon" | "rockets",
+    const weaponEffects = unit.weapons.map(weapon => ({
+      type: weapon.type as 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets',
       status: weapon.status,
       damage: weapon.damage,
       accuracy: weapon.stats
@@ -257,7 +254,7 @@ export function useDebugOverlay() {
           ? weapon.stats.hits / (weapon.stats.hits + weapon.stats.misses)
           : 0
         : 0,
-      firing: weapon.status === "firing",
+      firing: weapon.status === 'firing',
     }));
 
     const shieldStatus = {
@@ -267,26 +264,16 @@ export function useDebugOverlay() {
         ? {
             x: unit.lastHitPosition.x,
             y: unit.lastHitPosition.y,
-            intensity: unit.lastHitDamage
-              ? unit.lastHitDamage / unit.maxShield
-              : 0,
+            intensity: unit.lastHitDamage ? unit.lastHitDamage / unit.maxShield : 0,
           }
         : undefined,
     };
 
     return {
-      damageDealt: weaponEffects.reduce(
-        (total, w) => total + (w.firing ? w.damage : 0),
-        0,
-      ),
-      damageReceived:
-        unit.maxHealth - unit.health + (unit.maxShield - unit.shield),
-      accuracy:
-        weaponEffects.reduce((sum, w) => sum + w.accuracy, 0) /
-        weaponEffects.length,
-      evasion:
-        unit.specialAbilities?.find((a) => a.name === "evasion")
-          ?.effectiveness || 0,
+      damageDealt: weaponEffects.reduce((total, w) => total + (w.firing ? w.damage : 0), 0),
+      damageReceived: unit.maxHealth - unit.health + (unit.maxShield - unit.shield),
+      accuracy: weaponEffects.reduce((sum, w) => sum + w.accuracy, 0) / weaponEffects.length,
+      evasion: unit.specialAbilities?.find(a => a.name === 'evasion')?.effectiveness || 0,
       killCount: unit.combatStats?.kills || 0,
       assistCount: unit.combatStats?.assists || 0,
       weaponEffects,
@@ -305,10 +292,8 @@ export function useDebugOverlay() {
       const states: Record<string, DebugState> = {};
 
       // Get all active units
-      const units = Array.from(
-        combatManager.getUnitsInRange({ x: 0, y: 0 }, 1000),
-      );
-      units.forEach((combatUnit) => {
+      const units = Array.from(combatManager.getUnitsInRange({ x: 0, y: 0 }, 1000));
+      units.forEach(combatUnit => {
         const unit = combatUnit as unknown as Unit;
         // Get unit's faction information
         const factionState = factionManager.getFactionState(unit.faction);
@@ -334,21 +319,19 @@ export function useDebugOverlay() {
               targetId: unit.target,
               fleetStrength: factionState?.fleetStrength || 0,
               threatLevel,
-              lastAction: unitStatus.status || "none",
-              nextAction: unit.target ? "engage" : "patrol",
+              lastAction: unitStatus.status || 'none',
+              nextAction: unit.target ? 'engage' : 'patrol',
               cooldowns: unit.weapons.reduce(
                 (acc, w) => ({
                   ...acc,
                   [w.id]: w.cooldown,
                 }),
-                {},
+                {}
               ),
             },
-            formation: unit.specialAbilities?.find(
-              (a) => a.name === "formation",
-            )?.active
+            formation: unit.specialAbilities?.find(a => a.name === 'formation')?.active
               ? {
-                  type: "standard",
+                  type: 'standard',
                   spacing: 50,
                   facing: 0,
                   cohesion: 1,
@@ -362,7 +345,7 @@ export function useDebugOverlay() {
               updateTime,
               renderTime: performance.now() - perfStart,
               activeEffects: [
-                unit.weapons.filter((w) => w.status === "firing").length,
+                unit.weapons.filter(w => w.status === 'firing').length,
                 unit.shield > 0 ? 1 : 0,
                 unit.speed > 0 ? 1 : 0,
                 unit.smokeTrail ? 1 : 0,
@@ -377,15 +360,11 @@ export function useDebugOverlay() {
               activeCombatZones: systemMetrics.activeCombatZones,
             },
             warnings: [
-              ...(unit.health < unit.maxHealth * 0.3 ? ["Low Health"] : []),
-              ...(unit.shield < unit.maxShield * 0.2
-                ? ["Shield Critical"]
-                : []),
-              ...unit.weapons
-                .filter((w) => w.status === "cooling")
-                .map((w) => `${w.type} Cooling`),
-              ...(unit.smokeTrail ? ["Engine Damage"] : []),
-              ...(unit.explosions?.length ? ["Hull Breach"] : []),
+              ...(unit.health < unit.maxHealth * 0.3 ? ['Low Health'] : []),
+              ...(unit.shield < unit.maxShield * 0.2 ? ['Shield Critical'] : []),
+              ...unit.weapons.filter(w => w.status === 'cooling').map(w => `${w.type} Cooling`),
+              ...(unit.smokeTrail ? ['Engine Damage'] : []),
+              ...(unit.explosions?.length ? ['Hull Breach'] : []),
             ],
           };
         }
@@ -397,14 +376,12 @@ export function useDebugOverlay() {
     return () => clearInterval(updateInterval);
   }, [visible, measurePerformance, collectSystemMetrics, collectCombatMetrics]);
 
-  const toggleVisibility = () => setVisible((prev) => !prev);
+  const toggleVisibility = () => setVisible(prev => !prev);
   const selectUnit = (unitId: string) => setSelectedUnitId(unitId);
-  const togglePerformanceMetrics = () =>
-    setShowPerformanceMetrics((prev) => !prev);
-  const toggleCombatMetrics = () => setShowCombatMetrics((prev) => !prev);
-  const toggleSystemMetrics = () => setShowSystemMetrics((prev) => !prev);
-  const setDebugLogLevel = (level: "error" | "warn" | "info" | "debug") =>
-    setLogLevel(level);
+  const togglePerformanceMetrics = () => setShowPerformanceMetrics(prev => !prev);
+  const toggleCombatMetrics = () => setShowCombatMetrics(prev => !prev);
+  const toggleSystemMetrics = () => setShowSystemMetrics(prev => !prev);
+  const setDebugLogLevel = (level: 'error' | 'warn' | 'info' | 'debug') => setLogLevel(level);
 
   return {
     visible,

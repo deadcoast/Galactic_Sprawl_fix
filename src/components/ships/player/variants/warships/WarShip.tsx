@@ -1,9 +1,9 @@
-import { AlertTriangle, Rocket, Shield } from "lucide-react";
-import { 
+import { AlertTriangle, Rocket, Shield } from 'lucide-react';
+import {
   WeaponCategory,
   WeaponStatus,
-  CombatWeaponStats
-} from "../../../../../types/weapons/WeaponTypes";
+  CombatWeaponStats,
+} from '../../../../../types/weapons/WeaponTypes';
 
 interface WeaponSystem {
   id: string;
@@ -20,14 +20,14 @@ interface WarShipProps {
     id: string;
     name: string;
     type:
-      | "spitflare"
-      | "starSchooner"
-      | "orionFrigate"
-      | "harbringerGalleon"
-      | "midwayCarrier"
-      | "motherEarthRevenge";
+      | 'spitflare'
+      | 'starSchooner'
+      | 'orionFrigate'
+      | 'harbringerGalleon'
+      | 'midwayCarrier'
+      | 'motherEarthRevenge';
     tier: 1 | 2 | 3;
-    status: "idle" | "patrolling" | "engaging" | "returning" | "damaged";
+    status: 'idle' | 'patrolling' | 'engaging' | 'returning' | 'damaged';
     hull: number;
     maxHull: number;
     shield: number;
@@ -41,7 +41,7 @@ interface WarShipProps {
     }[];
     alerts?: string[];
   };
-  quality: "high" | "medium" | "low";
+  quality: 'high' | 'medium' | 'low';
   onDeploy: () => void;
   onRecall: () => void;
 }
@@ -49,20 +49,20 @@ interface WarShipProps {
 export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
   const getShipColor = (type: string) => {
     switch (type) {
-      case "spitflare":
-        return "cyan";
-      case "starSchooner":
-        return "indigo";
-      case "orionFrigate":
-        return "violet";
-      case "harbringerGalleon":
-        return "purple";
-      case "midwayCarrier":
-        return "fuchsia";
-      case "motherEarthRevenge":
-        return "rose";
+      case 'spitflare':
+        return 'cyan';
+      case 'starSchooner':
+        return 'indigo';
+      case 'orionFrigate':
+        return 'violet';
+      case 'harbringerGalleon':
+        return 'purple';
+      case 'midwayCarrier':
+        return 'fuchsia';
+      case 'motherEarthRevenge':
+        return 'rose';
       default:
-        return "blue";
+        return 'blue';
     }
   };
 
@@ -70,12 +70,9 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
 
   // Apply quality-based effects
   const visualEffects = {
-    backgroundOpacity:
-      quality === "high" ? "0.2" : quality === "medium" ? "0.15" : "0.1",
-    borderOpacity:
-      quality === "high" ? "0.3" : quality === "medium" ? "0.25" : "0.2",
-    transitionDuration:
-      quality === "high" ? "300ms" : quality === "medium" ? "200ms" : "0ms",
+    backgroundOpacity: quality === 'high' ? '0.2' : quality === 'medium' ? '0.15' : '0.1',
+    borderOpacity: quality === 'high' ? '0.3' : quality === 'medium' ? '0.25' : '0.2',
+    transitionDuration: quality === 'high' ? '300ms' : quality === 'medium' ? '200ms' : '0ms',
   };
 
   return (
@@ -99,13 +96,13 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
         </div>
         <div
           className={`px-3 py-1 rounded-full text-sm ${
-            ship.status === "engaging"
-              ? "bg-red-900/50 text-red-400"
-              : ship.status === "patrolling"
-                ? "bg-green-900/50 text-green-400"
-                : ship.status === "damaged"
-                  ? "bg-yellow-900/50 text-yellow-400"
-                  : "bg-gray-700 text-gray-400"
+            ship.status === 'engaging'
+              ? 'bg-red-900/50 text-red-400'
+              : ship.status === 'patrolling'
+                ? 'bg-green-900/50 text-green-400'
+                : ship.status === 'damaged'
+                  ? 'bg-yellow-900/50 text-yellow-400'
+                  : 'bg-gray-700 text-gray-400'
           }`}
         >
           {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
@@ -117,20 +114,14 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
         <div>
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-400">Hull Integrity</span>
-            <span
-              className={
-                ship.hull < ship.maxHull * 0.3
-                  ? "text-red-400"
-                  : "text-gray-300"
-              }
-            >
+            <span className={ship.hull < ship.maxHull * 0.3 ? 'text-red-400' : 'text-gray-300'}>
               {Math.round((ship.hull / ship.maxHull) * 100)}%
             </span>
           </div>
           <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                ship.hull < ship.maxHull * 0.3 ? "bg-red-500" : "bg-green-500"
+                ship.hull < ship.maxHull * 0.3 ? 'bg-red-500' : 'bg-green-500'
               }`}
               style={{ width: `${(ship.hull / ship.maxHull) * 100}%` }}
             />
@@ -157,23 +148,20 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
       <div className="space-y-4 mb-6">
         <h4 className="text-sm font-medium text-gray-300">Weapon Systems</h4>
         <div className="grid grid-cols-2 gap-3">
-          {ship.weapons.map((weapon) => (
+          {ship.weapons.map(weapon => (
             <div key={weapon.id} className="p-3 bg-gray-700/50 rounded-lg">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-medium text-white">
-                  {weapon.name}
-                </div>
+                <div className="text-sm font-medium text-white">{weapon.name}</div>
                 <div
                   className={`text-xs ${
-                    weapon.status === "ready"
-                      ? "text-green-400"
-                      : weapon.status === "charging"
-                        ? "text-yellow-400"
-                        : "text-red-400"
+                    weapon.status === 'ready'
+                      ? 'text-green-400'
+                      : weapon.status === 'charging'
+                        ? 'text-yellow-400'
+                        : 'text-red-400'
                   }`}
                 >
-                  {weapon.status.charAt(0).toUpperCase() +
-                    weapon.status.slice(1)}
+                  {weapon.status.charAt(0).toUpperCase() + weapon.status.slice(1)}
                 </div>
               </div>
               <div className="flex items-center justify-between text-xs text-gray-400">
@@ -188,26 +176,20 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
       {/* Special Abilities */}
       {ship.specialAbilities && ship.specialAbilities.length > 0 && (
         <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-300 mb-3">
-            Special Abilities
-          </h4>
+          <h4 className="text-sm font-medium text-gray-300 mb-3">Special Abilities</h4>
           <div className="space-y-2">
-            {ship.specialAbilities.map((ability) => (
+            {ship.specialAbilities.map(ability => (
               <div
                 key={ability.name}
                 className={`p-3 rounded-lg ${
                   ability.active
                     ? `bg-${color}-500/20 border border-${color}-500/30`
-                    : "bg-gray-700/50"
+                    : 'bg-gray-700/50'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-white">
-                    {ability.name}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {ability.cooldown}s
-                  </span>
+                  <span className="text-sm font-medium text-white">{ability.name}</span>
+                  <span className="text-xs text-gray-400">{ability.cooldown}s</span>
                 </div>
                 <p className="text-xs text-gray-400">{ability.description}</p>
               </div>
@@ -220,10 +202,10 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={onDeploy}
-          disabled={ship.status === "damaged"}
+          disabled={ship.status === 'damaged'}
           className={`px-4 py-2 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            ship.status === "damaged"
-              ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+            ship.status === 'damaged'
+              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
               : `bg-${color}-500/20 hover:bg-${color}-500/30 text-${color}-200`
           }`}
         >
@@ -232,9 +214,9 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
         </button>
         <button
           onClick={onRecall}
-          disabled={ship.status === "idle"}
+          disabled={ship.status === 'idle'}
           className={`px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            ship.status === "idle" ? "opacity-50 cursor-not-allowed" : ""
+            ship.status === 'idle' ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
           <Shield className="w-4 h-4" />

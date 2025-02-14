@@ -1,11 +1,11 @@
-import { Database } from "lucide-react";
+import { Database } from 'lucide-react';
 
 interface TradeRouteEffectProps {
   source: { x: number; y: number };
   target: { x: number; y: number };
   volume: number;
   active: boolean;
-  quality: "low" | "medium" | "high";
+  quality: 'low' | 'medium' | 'high';
 }
 
 export function TradeRouteEffect({
@@ -15,8 +15,8 @@ export function TradeRouteEffect({
   active,
   quality,
 }: TradeRouteEffectProps) {
-  const particleCount = quality === "high" ? 8 : quality === "medium" ? 5 : 3;
-  const glowIntensity = quality === "low" ? 2 : quality === "medium" ? 4 : 8;
+  const particleCount = quality === 'high' ? 8 : quality === 'medium' ? 5 : 3;
+  const glowIntensity = quality === 'low' ? 2 : quality === 'medium' ? 4 : 8;
 
   // Calculate path
   const dx = target.x - source.x;
@@ -60,11 +60,7 @@ export function TradeRouteEffect({
             const point = getPointOnPath(path, progress);
 
             return (
-              <g
-                key={i}
-                transform={`translate(${point.x}, ${point.y})`}
-                className="animate-pulse"
-              >
+              <g key={i} transform={`translate(${point.x}, ${point.y})`} className="animate-pulse">
                 <circle
                   r={2 + volume}
                   fill="rgba(99, 102, 241, 0.5)"
@@ -78,26 +74,17 @@ export function TradeRouteEffect({
 
       {/* Route Indicator */}
       <g transform={`translate(${midX}, ${midY - curvature})`}>
-        <circle
-          r={8 + volume * 4}
-          fill="rgba(99, 102, 241, 0.2)"
-          className="animate-pulse"
-        />
+        <circle r={8 + volume * 4} fill="rgba(99, 102, 241, 0.2)" className="animate-pulse" />
         <Database className="w-4 h-4 text-indigo-400 transform -translate-x-2 -translate-y-2" />
       </g>
     </g>
   );
 }
 
-function getPointOnPath(
-  path: string,
-  progress: number,
-): { x: number; y: number } {
+function getPointOnPath(path: string, progress: number): { x: number; y: number } {
   // Simple linear interpolation for demo
   // In production, use proper path interpolation
-  const match = path.match(
-    /M ([\d.-]+) ([\d.-]+) Q ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+)/,
-  );
+  const match = path.match(/M ([\d.-]+) ([\d.-]+) Q ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+)/);
   if (!match) {
     return { x: 0, y: 0 };
   }

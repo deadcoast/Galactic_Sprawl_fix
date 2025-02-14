@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WeaponUpgradeSystem } from '../../../components/weapons/WeaponUpgradeSystem';
-import { WeaponCategory, WeaponUpgrade, CombatWeaponStats } from '../../../types/weapons/WeaponTypes';
+import {
+  WeaponCategory,
+  WeaponUpgrade,
+  CombatWeaponStats,
+} from '../../../types/weapons/WeaponTypes';
 
 // Mock data
 const mockStats: CombatWeaponStats = {
@@ -12,7 +16,7 @@ const mockStats: CombatWeaponStats = {
   rateOfFire: 10,
   energyCost: 5,
   cooldown: 1,
-  effects: []
+  effects: [],
 };
 
 const mockWeapon = {
@@ -24,8 +28,8 @@ const mockWeapon = {
   availableUpgrades: [],
   resources: {
     plasma: 150,
-    energy: 50
-  }
+    energy: 50,
+  },
 };
 
 const mockUpgrade: WeaponUpgrade = {
@@ -35,20 +39,20 @@ const mockUpgrade: WeaponUpgrade = {
   description: 'Increases weapon damage',
   stats: {
     damage: 15,
-    energyCost: 7
+    energyCost: 7,
   },
   specialEffect: {
     name: 'Damage Boost',
-    description: 'Increases base damage'
+    description: 'Increases base damage',
   },
   requirements: {
     tech: ['Advanced Weaponry'],
     resources: [
       { type: 'plasma', amount: 100 },
-      { type: 'energy', amount: 50 }
-    ]
+      { type: 'energy', amount: 50 },
+    ],
   },
-  unlocked: true
+  unlocked: true,
 };
 
 describe('WeaponUpgradeSystem', () => {
@@ -58,12 +62,7 @@ describe('WeaponUpgradeSystem', () => {
 
   it('renders available upgrades', () => {
     const weapon = { ...mockWeapon, availableUpgrades: [mockUpgrade] };
-    render(
-      <WeaponUpgradeSystem
-        weapon={weapon}
-        onUpgrade={vi.fn()}
-      />
-    );
+    render(<WeaponUpgradeSystem weapon={weapon} onUpgrade={vi.fn()} />);
 
     expect(screen.getByText('Enhanced Damage')).toBeInTheDocument();
     expect(screen.getByText('Increases weapon damage')).toBeInTheDocument();
@@ -71,12 +70,7 @@ describe('WeaponUpgradeSystem', () => {
 
   it('shows upgrade requirements', () => {
     const weapon = { ...mockWeapon, availableUpgrades: [mockUpgrade] };
-    render(
-      <WeaponUpgradeSystem
-        weapon={weapon}
-        onUpgrade={vi.fn()}
-      />
-    );
+    render(<WeaponUpgradeSystem weapon={weapon} onUpgrade={vi.fn()} />);
 
     expect(screen.getByText('Advanced Weaponry')).toBeInTheDocument();
     expect(screen.getByText('plasma: 150/100')).toBeInTheDocument();
@@ -85,12 +79,7 @@ describe('WeaponUpgradeSystem', () => {
 
   it('shows stat changes correctly', () => {
     const weapon = { ...mockWeapon, availableUpgrades: [mockUpgrade] };
-    render(
-      <WeaponUpgradeSystem
-        weapon={weapon}
-        onUpgrade={vi.fn()}
-      />
-    );
+    render(<WeaponUpgradeSystem weapon={weapon} onUpgrade={vi.fn()} />);
 
     expect(screen.getByText('+15')).toBeInTheDocument();
     expect(screen.getByText('+7')).toBeInTheDocument();
@@ -99,12 +88,7 @@ describe('WeaponUpgradeSystem', () => {
   it('disables upgrade button for locked upgrades', () => {
     const lockedUpgrade = { ...mockUpgrade, unlocked: false };
     const weapon = { ...mockWeapon, availableUpgrades: [lockedUpgrade] };
-    render(
-      <WeaponUpgradeSystem
-        weapon={weapon}
-        onUpgrade={vi.fn()}
-      />
-    );
+    render(<WeaponUpgradeSystem weapon={weapon} onUpgrade={vi.fn()} />);
 
     const upgradeButtons = screen.getAllByRole('button');
     expect(upgradeButtons[upgradeButtons.length - 1]).toHaveAttribute('disabled');
@@ -116,16 +100,11 @@ describe('WeaponUpgradeSystem', () => {
       availableUpgrades: [mockUpgrade],
       resources: {
         plasma: 50, // Less than required 100
-        energy: 25  // Less than required 50
-      }
+        energy: 25, // Less than required 50
+      },
     };
 
-    render(
-      <WeaponUpgradeSystem
-        weapon={weapon}
-        onUpgrade={vi.fn()}
-      />
-    );
+    render(<WeaponUpgradeSystem weapon={weapon} onUpgrade={vi.fn()} />);
 
     const upgradeButtons = screen.getAllByRole('button');
     expect(upgradeButtons[upgradeButtons.length - 1]).toHaveAttribute('disabled');
@@ -137,16 +116,11 @@ describe('WeaponUpgradeSystem', () => {
       availableUpgrades: [mockUpgrade],
       resources: {
         plasma: 50, // Less than required 100
-        energy: 25  // Less than required 50
-      }
+        energy: 25, // Less than required 50
+      },
     };
 
-    render(
-      <WeaponUpgradeSystem
-        weapon={weapon}
-        onUpgrade={vi.fn()}
-      />
-    );
+    render(<WeaponUpgradeSystem weapon={weapon} onUpgrade={vi.fn()} />);
 
     expect(screen.getByText('Locked')).toBeInTheDocument();
     expect(screen.getByText('plasma: 50/100')).toBeInTheDocument();
@@ -157,16 +131,11 @@ describe('WeaponUpgradeSystem', () => {
     const weapon = { ...mockWeapon, availableUpgrades: [mockUpgrade] };
     const user = userEvent.setup();
 
-    render(
-      <WeaponUpgradeSystem
-        weapon={weapon}
-        onUpgrade={onUpgrade}
-      />
-    );
+    render(<WeaponUpgradeSystem weapon={weapon} onUpgrade={onUpgrade} />);
 
     const upgradeButtons = screen.getAllByRole('button');
     await user.click(upgradeButtons[upgradeButtons.length - 1]);
 
     expect(onUpgrade).toHaveBeenCalledWith(mockUpgrade.id);
   });
-}); 
+});

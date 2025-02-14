@@ -1,9 +1,9 @@
-import { EquatorHorizonShip } from "../../common/EquatorHorizonShip";
-import { WeaponMount } from "../../../../types/weapons/WeaponTypes";
-import { FactionShipStats } from "../../../../types/ships/FactionShipTypes";
-import { ShipStatus } from "../../../../types/ships/ShipTypes";
-import { Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { EquatorHorizonShip } from '../../common/EquatorHorizonShip';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { Sun } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface CelestialArbiterProps {
   id: string;
@@ -41,23 +41,23 @@ export function CelestialArbiter({
   const [celestialJudgementActive, setCelestialJudgementActive] = useState(false);
 
   useEffect(() => {
-    if (status === "disabled") {
+    if (status === 'disabled') {
       setCelestialJudgementActive(false);
     }
   }, [status]);
 
   const mapStatus = (status: ShipStatus) => {
     switch (status) {
-      case "engaging":
-        return "engaging";
-      case "patrolling":
-        return "patrolling";
-      case "retreating":
-        return "retreating";
-      case "disabled":
-        return "disabled";
+      case 'engaging':
+        return 'engaging';
+      case 'patrolling':
+        return 'patrolling';
+      case 'retreating':
+        return 'retreating';
+      case 'disabled':
+        return 'disabled';
       default:
-        return "patrolling";
+        return 'patrolling';
     }
   };
 
@@ -100,7 +100,7 @@ export function CelestialArbiter({
               setCelestialJudgementActive(!celestialJudgementActive);
               onSpecialAbility?.();
             }}
-            disabled={status === "disabled"}
+            disabled={status === 'disabled'}
           >
             <Sun className="icon" />
             <span>Celestial Judgement</span>

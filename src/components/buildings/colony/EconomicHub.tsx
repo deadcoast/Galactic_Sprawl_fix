@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowUpRight, TrendingUp } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, TrendingUp } from 'lucide-react';
 
 interface EconomicHubProps {
   hubData: {
@@ -10,7 +10,7 @@ interface EconomicHubProps {
       efficiency: number;
       volume: number;
       profit: number;
-      status: "active" | "disrupted" | "optimizing";
+      status: 'active' | 'disrupted' | 'optimizing';
     }[];
     bonuses: {
       type: string;
@@ -40,27 +40,23 @@ export function EconomicHub({ hubData }: EconomicHubProps) {
 
       {/* Trade Routes */}
       <div className="space-y-4 mb-6">
-        <h4 className="text-sm font-medium text-gray-300">
-          Active Trade Routes
-        </h4>
-        {hubData.tradeRoutes.map((route) => (
+        <h4 className="text-sm font-medium text-gray-300">Active Trade Routes</h4>
+        {hubData.tradeRoutes.map(route => (
           <div key={route.id} className="p-4 bg-gray-700/50 rounded-lg">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <div className="text-sm font-medium text-white">
-                  {route.destination}
-                </div>
+                <div className="text-sm font-medium text-white">{route.destination}</div>
                 <div className="text-xs text-gray-400">
                   Volume: {route.volume.toLocaleString()} units/cycle
                 </div>
               </div>
               <div
                 className={`px-2 py-1 rounded-full text-xs ${
-                  route.status === "active"
-                    ? "bg-emerald-900/50 text-emerald-400"
-                    : route.status === "disrupted"
-                      ? "bg-red-900/50 text-red-400"
-                      : "bg-blue-900/50 text-blue-400"
+                  route.status === 'active'
+                    ? 'bg-emerald-900/50 text-emerald-400'
+                    : route.status === 'disrupted'
+                      ? 'bg-red-900/50 text-red-400'
+                      : 'bg-blue-900/50 text-blue-400'
                 }`}
               >
                 {route.status.charAt(0).toUpperCase() + route.status.slice(1)}
@@ -71,9 +67,7 @@ export function EconomicHub({ hubData }: EconomicHubProps) {
             <div className="space-y-1 mb-2">
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Route Efficiency</span>
-                <span className="text-emerald-400">
-                  {Math.round(route.efficiency * 100)}%
-                </span>
+                <span className="text-emerald-400">{Math.round(route.efficiency * 100)}%</span>
               </div>
               <div className="h-1.5 bg-gray-600 rounded-full overflow-hidden">
                 <div
@@ -100,31 +94,23 @@ export function EconomicHub({ hubData }: EconomicHubProps) {
         {hubData.bonuses.map((bonus, index) => (
           <div key={index} className="p-3 bg-gray-700/50 rounded-lg">
             <div className="text-sm text-gray-300 mb-1">{bonus.type}</div>
-            <div className="text-lg font-medium text-emerald-400">
-              +{bonus.value}%
-            </div>
+            <div className="text-lg font-medium text-emerald-400">+{bonus.value}%</div>
           </div>
         ))}
       </div>
 
       {/* Innovations */}
       <div className="space-y-3">
-        <h4 className="text-sm font-medium text-gray-300">
-          Economic Innovations
-        </h4>
-        {hubData.innovations.map((innovation) => (
+        <h4 className="text-sm font-medium text-gray-300">Economic Innovations</h4>
+        {hubData.innovations.map(innovation => (
           <div key={innovation.id} className="p-3 bg-gray-700/50 rounded-lg">
             <div className="flex justify-between mb-2">
-              <div className="text-sm font-medium text-white">
-                {innovation.name}
-              </div>
+              <div className="text-sm font-medium text-white">{innovation.name}</div>
               <div className="text-xs text-emerald-400">
                 {Math.round(innovation.progress * 100)}%
               </div>
             </div>
-            <div className="text-xs text-gray-400 mb-2">
-              {innovation.effect}
-            </div>
+            <div className="text-xs text-gray-400 mb-2">{innovation.effect}</div>
             <div className="h-1.5 bg-gray-600 rounded-full overflow-hidden">
               <div
                 className="h-full bg-emerald-500 rounded-full transition-all"
@@ -136,12 +122,12 @@ export function EconomicHub({ hubData }: EconomicHubProps) {
       </div>
 
       {/* Warnings for Disrupted Routes */}
-      {hubData.tradeRoutes.some((route) => route.status === "disrupted") && (
+      {hubData.tradeRoutes.some(route => route.status === 'disrupted') && (
         <div className="mt-4 p-3 bg-red-900/20 border border-red-700/30 rounded-lg flex items-start space-x-2">
           <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
           <div className="text-sm text-red-200">
-            One or more trade routes are currently disrupted. Check route
-            conditions and adjust accordingly.
+            One or more trade routes are currently disrupted. Check route conditions and adjust
+            accordingly.
           </div>
         </div>
       )}

@@ -8,9 +8,9 @@ export function useVPR() {
   const getVPRAnimationSet = (type: string, tier: number): AnimationSet => {
     // Base animations
     const baseSet: AnimationSet = {
-      idle: "animate-pulse",
-      active: "animate-float",
-      impact: "animate-impact",
+      idle: 'animate-pulse',
+      active: 'animate-float',
+      impact: 'animate-impact',
     };
 
     // Enhance animations based on tier
@@ -34,7 +34,7 @@ export function useVPR() {
 
   const updateVPR = (elementId: string, newState: any) => {
     // This would be used to update VPR state in a real implementation
-    console.log("Updating VPR for:", elementId, newState);
+    console.log('Updating VPR for:', elementId, newState);
   };
 
   return {

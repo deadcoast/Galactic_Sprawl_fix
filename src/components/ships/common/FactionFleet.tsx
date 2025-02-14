@@ -1,6 +1,6 @@
-import { useAdaptiveAI } from "../../../hooks/factions/useAdaptiveAI";
-import { useFleetAI } from "../../../hooks/factions/useFleetAI";
-import { AlertTriangle, Rocket, Shield, Sword } from "lucide-react";
+import { useAdaptiveAI } from '../../../hooks/factions/useAdaptiveAI';
+import { useFleetAI } from '../../../hooks/factions/useFleetAI';
+import { AlertTriangle, Rocket, Shield, Sword } from 'lucide-react';
 
 interface FactionFleetProps {
   fleetId: string;
@@ -8,11 +8,7 @@ interface FactionFleetProps {
   onFleetCommand?: (command: string, targetId?: string) => void;
 }
 
-export function FactionFleet({
-  fleetId,
-  factionId,
-  onFleetCommand,
-}: FactionFleetProps) {
+export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFleetProps) {
   const fleetAI = useFleetAI(fleetId, factionId);
   const adaptiveAI = useAdaptiveAI(fleetId, factionId);
 
@@ -27,8 +23,7 @@ export function FactionFleet({
           <div>
             <h3 className="text-lg font-medium text-white">Fleet Control</h3>
             <div className="text-sm text-gray-400">
-              AI Adaptation Level:{" "}
-              {Math.round(adaptiveAI.experienceLevel * 100)}%
+              AI Adaptation Level: {Math.round(adaptiveAI.experienceLevel * 100)}%
             </div>
           </div>
         </div>
@@ -37,12 +32,8 @@ export function FactionFleet({
       {/* Formation Display */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-300">
-            Current Formation
-          </span>
-          <span className="text-sm text-gray-400">
-            {fleetAI.formation.type}
-          </span>
+          <span className="text-sm font-medium text-gray-300">Current Formation</span>
+          <span className="text-sm text-gray-400">{fleetAI.formation.type}</span>
         </div>
         <div className="p-4 bg-gray-700/50 rounded-lg">
           <div className="aspect-square relative">
@@ -76,11 +67,11 @@ export function FactionFleet({
             <span className="text-gray-400">Combat Style</span>
             <span
               className={
-                adaptiveAI.adaptations.combatStyle === "aggressive"
-                  ? "text-red-400"
-                  : adaptiveAI.adaptations.combatStyle === "defensive"
-                    ? "text-blue-400"
-                    : "text-green-400"
+                adaptiveAI.adaptations.combatStyle === 'aggressive'
+                  ? 'text-red-400'
+                  : adaptiveAI.adaptations.combatStyle === 'defensive'
+                    ? 'text-blue-400'
+                    : 'text-green-400'
               }
             >
               {adaptiveAI.adaptations.combatStyle}
@@ -89,11 +80,11 @@ export function FactionFleet({
           <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full ${
-                adaptiveAI.adaptations.combatStyle === "aggressive"
-                  ? "bg-red-500"
-                  : adaptiveAI.adaptations.combatStyle === "defensive"
-                    ? "bg-blue-500"
-                    : "bg-green-500"
+                adaptiveAI.adaptations.combatStyle === 'aggressive'
+                  ? 'bg-red-500'
+                  : adaptiveAI.adaptations.combatStyle === 'defensive'
+                    ? 'bg-blue-500'
+                    : 'bg-green-500'
               }`}
               style={{
                 width: `${adaptiveAI.performance.damageEfficiency * 100}%`,
@@ -105,18 +96,16 @@ export function FactionFleet({
         <div>
           <div className="flex justify-between text-sm mb-1">
             <span className="text-gray-400">Engagement Range</span>
-            <span className="text-cyan-400">
-              {adaptiveAI.adaptations.preferredRange}
-            </span>
+            <span className="text-cyan-400">{adaptiveAI.adaptations.preferredRange}</span>
           </div>
           <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-cyan-500 rounded-full"
               style={{
                 width: `${
-                  adaptiveAI.adaptations.preferredRange === "long"
+                  adaptiveAI.adaptations.preferredRange === 'long'
                     ? 100
-                    : adaptiveAI.adaptations.preferredRange === "medium"
+                    : adaptiveAI.adaptations.preferredRange === 'medium'
                       ? 66
                       : 33
                 }%`,
@@ -145,14 +134,14 @@ export function FactionFleet({
       {/* Command Buttons */}
       <div className="grid grid-cols-2 gap-3">
         <button
-          onClick={() => onFleetCommand?.("engage")}
+          onClick={() => onFleetCommand?.('engage')}
           className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-lg text-sm text-red-200 flex items-center justify-center space-x-2"
         >
           <Sword className="w-4 h-4" />
           <span>Engage Target</span>
         </button>
         <button
-          onClick={() => onFleetCommand?.("defend")}
+          onClick={() => onFleetCommand?.('defend')}
           className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-sm text-blue-200 flex items-center justify-center space-x-2"
         >
           <Shield className="w-4 h-4" />

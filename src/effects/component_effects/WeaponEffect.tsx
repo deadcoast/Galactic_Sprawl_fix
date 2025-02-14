@@ -1,16 +1,16 @@
-import { useSpring } from "@react-spring/three";
-import { Trail } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef } from "react";
-import * as THREE from "three";
-import { VisualEffect, VisualEffectConfig } from "./VisualEffect";
-import { RenderBatcher } from "../../lib/optimization/RenderBatcher";
-import { Position } from "../../types/core/Position";
-import { WeaponCategory } from "../../types/weapons/WeaponTypes";
+import { useSpring } from '@react-spring/three';
+import { Trail } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import * as THREE from 'three';
+import { VisualEffect, VisualEffectConfig } from './VisualEffect';
+import { RenderBatcher } from '../../lib/optimization/RenderBatcher';
+import { Position } from '../../types/core/Position';
+import { WeaponCategory } from '../../types/weapons/WeaponTypes';
 
 // Props and Config Types
 interface WeaponEffectProps {
-  type: "machineGun" | "railGun" | "gaussCannon" | "rockets" | "mgss" | "pointDefense";
+  type: 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets' | 'mgss' | 'pointDefense';
   color: string;
   position: { x: number; y: number };
   rotation: number;
@@ -28,11 +28,7 @@ interface WeaponEffectConfig extends VisualEffectConfig {
 }
 
 // React Components
-function WeaponBeam({
-  type,
-  color,
-  firing,
-}: Omit<WeaponEffectProps, "position" | "rotation">) {
+function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' | 'rotation'>) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const timeRef = useRef(0);
 
@@ -171,13 +167,8 @@ function WeaponBeam({
         vertexShader={shader.vertexShader}
         fragmentShader={shader.fragmentShader}
       />
-      {type !== "machineGun" && (
-        <Trail
-          width={0.2}
-          length={5}
-          color={color}
-          attenuation={(t: number) => t * t}
-        />
+      {type !== 'machineGun' && (
+        <Trail width={0.2} length={5} color={color} attenuation={(t: number) => t * t} />
       )}
     </mesh>
   );
@@ -196,15 +187,12 @@ export function WeaponEffectComponent({
       style={{
         left: position.x,
         top: position.y,
-        width: "100px",
-        height: "200px",
+        width: '100px',
+        height: '200px',
         transform: `rotate(${rotation}deg)`,
       }}
     >
-      <Canvas
-        camera={{ position: [0, 0, 2], fov: 75 }}
-        style={{ background: "transparent" }}
-      >
+      <Canvas camera={{ position: [0, 0, 2], fov: 75 }} style={{ background: 'transparent' }}>
         <WeaponBeam type={type} color={color} firing={firing} />
       </Canvas>
 
@@ -215,18 +203,18 @@ export function WeaponEffectComponent({
             className="absolute inset-0 pointer-events-none"
             style={{
               background: `radial-gradient(circle at 50% 0%, ${color}66 0%, ${color}00 70%)`,
-              filter: "blur(8px)",
+              filter: 'blur(8px)',
               opacity: 0.8,
-              animation: "pulse 1.5s ease-in-out infinite",
+              animation: 'pulse 1.5s ease-in-out infinite',
             }}
           />
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background: `radial-gradient(circle at 50% 0%, ${color}33 0%, ${color}00 100%)`,
-              filter: "blur(16px)",
+              filter: 'blur(16px)',
               opacity: 0.6,
-              animation: "pulse 2s ease-in-out infinite reverse",
+              animation: 'pulse 2s ease-in-out infinite reverse',
             }}
           />
         </>
@@ -254,7 +242,7 @@ export class WeaponEffectVisual extends VisualEffect {
   protected onStart(): void {
     // Initialize trail points
     this.trailPoints = [this.config.position];
-    
+
     // Debug logging
     console.debug(`[WeaponEffect] Started ${this.config.type} effect`);
   }
@@ -264,7 +252,7 @@ export class WeaponEffectVisual extends VisualEffect {
     if (this.config.target) {
       const currentPoint = {
         x: this.config.position.x + (this.config.target.x - this.config.position.x) * progress,
-        y: this.config.position.y + (this.config.target.y - this.config.position.y) * progress
+        y: this.config.position.y + (this.config.target.y - this.config.position.y) * progress,
       };
 
       this.trailPoints.push(currentPoint);
@@ -313,26 +301,26 @@ export class WeaponEffectVisual extends VisualEffect {
   private renderTrail(batcher: RenderBatcher): void {
     // Different trail rendering based on weapon type
     switch (this.config.type) {
-      case "machineGun":
+      case 'machineGun':
         this.renderProjectileTrail(batcher);
         break;
-      case "gaussCannon":
-      case "railGun":
+      case 'gaussCannon':
+      case 'railGun':
         this.renderBeamTrail(batcher);
         break;
-      case "mgss":
+      case 'mgss':
         this.renderEnergyTrail(batcher);
         break;
-      case "rockets":
+      case 'rockets':
         this.renderRocketTrail(batcher);
         break;
-      case "harmonicCannon":
+      case 'harmonicCannon':
         this.renderHarmonicTrail(batcher);
         break;
-      case "temporalCannon":
+      case 'temporalCannon':
         this.renderTemporalTrail(batcher);
         break;
-      case "quantumCannon":
+      case 'quantumCannon':
         this.renderQuantumTrail(batcher);
         break;
     }
@@ -348,8 +336,8 @@ export class WeaponEffectVisual extends VisualEffect {
         size: { width: 4, height: 4 },
         rotation: 0,
         opacity,
-        color: this.config.color || "#ffff00",
-        shader: "additive"
+        color: this.config.color || '#ffff00',
+        shader: 'additive',
       });
     });
   }
@@ -363,22 +351,20 @@ export class WeaponEffectVisual extends VisualEffect {
     const start = this.trailPoints[0];
     const end = this.trailPoints[this.trailPoints.length - 1];
     const angle = Math.atan2(end.y - start.y, end.x - start.x);
-    const length = Math.sqrt(
-      Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
-    );
+    const length = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
 
     // Core beam
     batcher.addItem(this.batchId!, {
       id: `${this.id}-beam`,
       position: {
         x: (start.x + end.x) / 2,
-        y: (start.y + end.y) / 2
+        y: (start.y + end.y) / 2,
       },
       size: { width: length, height: 4 },
       rotation: angle,
       opacity: this.config.opacity || 1,
-      color: this.config.color || "#00ffff",
-      shader: "additive"
+      color: this.config.color || '#00ffff',
+      shader: 'additive',
     });
 
     // Glow effect
@@ -386,13 +372,13 @@ export class WeaponEffectVisual extends VisualEffect {
       id: `${this.id}-glow`,
       position: {
         x: (start.x + end.x) / 2,
-        y: (start.y + end.y) / 2
+        y: (start.y + end.y) / 2,
       },
       size: { width: length, height: 12 },
       rotation: angle,
       opacity: (this.config.opacity || 1) * 0.5,
-      color: this.config.color || "#00ffff",
-      shader: "additive"
+      color: this.config.color || '#00ffff',
+      shader: 'additive',
     });
   }
 
@@ -401,15 +387,15 @@ export class WeaponEffectVisual extends VisualEffect {
     this.trailPoints.forEach((point, index) => {
       const opacity = index / this.trailPoints.length;
       const pulse = Math.sin(Date.now() / 100 + index) * 0.3 + 0.7;
-      
+
       batcher.addItem(this.batchId!, {
         id: `${this.id}-trail-${index}`,
         position: point,
         size: { width: 6, height: 6 },
         rotation: 0,
         opacity: opacity * pulse,
-        color: this.config.color || "#ff00ff",
-        shader: "additive"
+        color: this.config.color || '#ff00ff',
+        shader: 'additive',
       });
     });
   }
@@ -418,7 +404,7 @@ export class WeaponEffectVisual extends VisualEffect {
     // Rocket with smoke trail
     this.trailPoints.forEach((point, index) => {
       const opacity = index / this.trailPoints.length;
-      
+
       // Smoke
       batcher.addItem(this.batchId!, {
         id: `${this.id}-smoke-${index}`,
@@ -426,8 +412,8 @@ export class WeaponEffectVisual extends VisualEffect {
         size: { width: 8, height: 8 },
         rotation: Math.random() * Math.PI * 2,
         opacity: opacity * 0.3,
-        color: "#888888",
-        shader: "normal"
+        color: '#888888',
+        shader: 'normal',
       });
 
       // Fire
@@ -437,8 +423,8 @@ export class WeaponEffectVisual extends VisualEffect {
         size: { width: 6, height: 6 },
         rotation: 0,
         opacity: opacity,
-        color: this.config.color || "#ff4400",
-        shader: "additive"
+        color: this.config.color || '#ff4400',
+        shader: 'additive',
       });
     });
   }
@@ -449,18 +435,18 @@ export class WeaponEffectVisual extends VisualEffect {
       const opacity = index / this.trailPoints.length;
       const wave = Math.sin(Date.now() / 200 + index);
       const offset = wave * 10;
-      
+
       batcher.addItem(this.batchId!, {
         id: `${this.id}-trail-${index}`,
         position: {
           x: point.x + offset,
-          y: point.y + offset
+          y: point.y + offset,
         },
         size: { width: 8, height: 8 },
         rotation: wave * Math.PI,
         opacity: opacity,
-        color: this.config.color || "#00ff88",
-        shader: "additive"
+        color: this.config.color || '#00ff88',
+        shader: 'additive',
       });
     });
   }
@@ -471,20 +457,20 @@ export class WeaponEffectVisual extends VisualEffect {
       const opacity = index / this.trailPoints.length;
       const time = Date.now() / 1000;
       const distortion = Math.sin(time * 2 + index);
-      
+
       for (let i = 0; i < 3; i++) {
         const offset = distortion * (i + 1) * 5;
         batcher.addItem(this.batchId!, {
           id: `${this.id}-trail-${index}-${i}`,
           position: {
             x: point.x + offset,
-            y: point.y + offset
+            y: point.y + offset,
           },
           size: { width: 6 - i * 2, height: 6 - i * 2 },
-          rotation: time + i * Math.PI / 3,
+          rotation: time + (i * Math.PI) / 3,
           opacity: opacity * (1 - i * 0.2),
-          color: this.config.color || "#8800ff",
-          shader: "additive"
+          color: this.config.color || '#8800ff',
+          shader: 'additive',
         });
       }
     });
@@ -495,23 +481,23 @@ export class WeaponEffectVisual extends VisualEffect {
     this.trailPoints.forEach((point, index) => {
       const opacity = index / this.trailPoints.length;
       const time = Date.now() / 1000;
-      
+
       // Phase shift effect
       for (let i = 0; i < 4; i++) {
-        const phase = (time + i * Math.PI / 2) % (Math.PI * 2);
+        const phase = (time + (i * Math.PI) / 2) % (Math.PI * 2);
         const shift = Math.sin(phase) * 10;
-        
+
         batcher.addItem(this.batchId!, {
           id: `${this.id}-trail-${index}-${i}`,
           position: {
             x: point.x + Math.cos(phase) * shift,
-            y: point.y + Math.sin(phase) * shift
+            y: point.y + Math.sin(phase) * shift,
           },
           size: { width: 5, height: 5 },
           rotation: phase,
           opacity: opacity * Math.abs(Math.sin(phase)),
-          color: this.config.color || "#0088ff",
-          shader: "additive"
+          color: this.config.color || '#0088ff',
+          shader: 'additive',
         });
       }
     });
@@ -535,12 +521,12 @@ export class WeaponEffectVisual extends VisualEffect {
         position: particle,
         size: {
           width: (this.config.impactSize || 20) * (1 - particleProgress),
-          height: (this.config.impactSize || 20) * (1 - particleProgress)
+          height: (this.config.impactSize || 20) * (1 - particleProgress),
         },
-        rotation: index * Math.PI / 4,
+        rotation: (index * Math.PI) / 4,
         opacity: 1 - particleProgress,
-        color: this.config.color || "#ffffff",
-        shader: "additive"
+        color: this.config.color || '#ffffff',
+        shader: 'additive',
       });
     });
   }
@@ -555,11 +541,11 @@ export class WeaponEffectVisual extends VisualEffect {
     for (let i = 0; i < particleCount; i++) {
       const angle = (i / particleCount) * Math.PI * 2;
       const distance = (this.config.impactSize || 20) / 2;
-      
+
       this.impactParticles.push({
         x: this.config.target.x + Math.cos(angle) * distance,
-        y: this.config.target.y + Math.sin(angle) * distance
+        y: this.config.target.y + Math.sin(angle) * distance,
       });
     }
   }
-} 
+}

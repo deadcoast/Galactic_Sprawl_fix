@@ -1,12 +1,12 @@
-import { AlertTriangle, Crosshair, Shield, Zap } from "lucide-react";
+import { AlertTriangle, Crosshair, Shield, Zap } from 'lucide-react';
 import {
   WeaponCategory,
   WeaponStatus,
   CombatWeaponStats,
   WeaponUpgrade,
-  WEAPON_COLORS
-} from "../../types/weapons/WeaponTypes";
-import { WeaponEffect } from "../../effects/types_effects/WeaponEffects";
+  WEAPON_COLORS,
+} from '../../types/weapons/WeaponTypes';
+import { WeaponEffect } from '../../effects/types_effects/WeaponEffects';
 
 interface StatBarProps {
   label: string;
@@ -16,14 +16,8 @@ interface StatBarProps {
   suffix?: string;
 }
 
-export function StatBar({
-  label,
-  value,
-  maxValue = 100,
-  color,
-  suffix,
-}: StatBarProps) {
-  const percentage = typeof value === "number" ? (value / maxValue) * 100 : 0;
+export function StatBar({ label, value, maxValue = 100, color, suffix }: StatBarProps) {
+  const percentage = typeof value === 'number' ? (value / maxValue) * 100 : 0;
 
   return (
     <div>
@@ -60,20 +54,18 @@ export function WeaponHeader({ name, tier, type, status, color }: WeaponHeaderPr
         <div className="flex items-center text-sm text-gray-400">
           <span>Tier {tier}</span>
           <span className="mx-2">•</span>
-          <span className="capitalize">
-            {type.replace(/([A-Z])/g, " $1").trim()}
-          </span>
+          <span className="capitalize">{type.replace(/([A-Z])/g, ' $1').trim()}</span>
         </div>
       </div>
       <div
         className={`px-3 py-1 rounded-full text-sm ${
-          status === "ready"
-            ? "bg-green-900/50 text-green-400"
-            : status === "charging"
-              ? "bg-yellow-900/50 text-yellow-400"
-              : status === "cooling"
-                ? "bg-blue-900/50 text-blue-400"
-                : "bg-red-900/50 text-red-400"
+          status === 'ready'
+            ? 'bg-green-900/50 text-green-400'
+            : status === 'charging'
+              ? 'bg-yellow-900/50 text-yellow-400'
+              : status === 'cooling'
+                ? 'bg-blue-900/50 text-blue-400'
+                : 'bg-red-900/50 text-red-400'
         }`}
       >
         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -108,12 +100,7 @@ export function WeaponStatsDisplay({
         color={color}
       />
       {showAmmo && currentAmmo !== undefined && maxAmmo !== undefined && (
-        <StatBar
-          label="Ammo"
-          value={currentAmmo}
-          maxValue={maxAmmo}
-          color={color}
-        />
+        <StatBar label="Ammo" value={currentAmmo} maxValue={maxAmmo} color={color} />
       )}
       <StatBar
         label="Energy Cost"
@@ -132,11 +119,7 @@ interface WeaponEffectsDisplayProps {
   onToggle?: (effectName: string) => void;
 }
 
-export function WeaponEffectsDisplay({
-  effects,
-  color,
-  onToggle,
-}: WeaponEffectsDisplayProps) {
+export function WeaponEffectsDisplay({ effects, color, onToggle }: WeaponEffectsDisplayProps) {
   if (!effects || effects.length === 0) {
     return null;
   }
@@ -145,7 +128,7 @@ export function WeaponEffectsDisplay({
     <div className="mb-6">
       <h4 className="text-sm font-medium text-gray-300 mb-3">Active Effects</h4>
       <div className="space-y-2">
-        {effects.map((effect) => (
+        {effects.map(effect => (
           <button
             key={effect.name}
             onClick={() => onToggle?.(effect.name)}
@@ -153,19 +136,15 @@ export function WeaponEffectsDisplay({
             className={`w-full p-3 rounded-lg text-left transition-colors ${
               effect.active
                 ? `bg-${color}-500/20 border border-${color}-500/30`
-                : "bg-gray-700/50 hover:bg-gray-600/50"
+                : 'bg-gray-700/50 hover:bg-gray-600/50'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium text-white">
-                {effect.name}
-              </span>
+              <span className="text-sm font-medium text-white">{effect.name}</span>
               {effect.active ? (
                 <span className="text-xs text-green-400">Active</span>
               ) : (
-                <span className="text-xs text-gray-400">
-                  {effect.cooldown}s
-                </span>
+                <span className="text-xs text-gray-400">{effect.cooldown}s</span>
               )}
             </div>
             <p className="text-xs text-gray-400">{effect.description}</p>
@@ -190,7 +169,7 @@ export function WeaponUpgradeDisplay({
   onUpgrade,
 }: WeaponUpgradeDisplayProps) {
   const canAfford = upgrade.requirements.resources.every(
-    (req) => (resources[req.type] || 0) >= req.amount
+    req => (resources[req.type] || 0) >= req.amount
   );
 
   return (
@@ -198,9 +177,9 @@ export function WeaponUpgradeDisplay({
       className={`p-4 rounded-lg ${
         upgrade.unlocked
           ? canAfford
-            ? "bg-gray-800/50 hover:bg-gray-700/50"
-            : "bg-gray-800/30"
-          : "bg-gray-800/20 opacity-50"
+            ? 'bg-gray-800/50 hover:bg-gray-700/50'
+            : 'bg-gray-800/30'
+          : 'bg-gray-800/20 opacity-50'
       }`}
     >
       <div className="flex items-center justify-between mb-2">
@@ -208,9 +187,7 @@ export function WeaponUpgradeDisplay({
           <h5 className="text-sm font-medium text-white">{upgrade.name}</h5>
           <p className="text-xs text-gray-400">{upgrade.description}</p>
         </div>
-        {!upgrade.unlocked && (
-          <Shield className="w-4 h-4 text-gray-500" />
-        )}
+        {!upgrade.unlocked && <Shield className="w-4 h-4 text-gray-500" />}
       </div>
 
       {/* Stat Changes */}
@@ -227,10 +204,10 @@ export function WeaponUpgradeDisplay({
           return (
             <div key={key} className="flex items-center justify-between text-xs">
               <span className="text-gray-400 capitalize">
-                {key.replace(/([A-Z])/g, " $1").trim()}
+                {key.replace(/([A-Z])/g, ' $1').trim()}
               </span>
-              <span className={diff >= 0 ? "text-green-400" : "text-red-400"}>
-                {diff >= 0 ? "+" : ""}
+              <span className={diff >= 0 ? 'text-green-400' : 'text-red-400'}>
+                {diff >= 0 ? '+' : ''}
                 {diff}
               </span>
             </div>
@@ -241,22 +218,15 @@ export function WeaponUpgradeDisplay({
       {/* Special Effect */}
       {upgrade.specialEffect && (
         <div className="mb-3 p-2 bg-gray-700/50 rounded">
-          <div className="text-xs font-medium text-gray-300">
-            {upgrade.specialEffect.name}
-          </div>
-          <div className="text-xs text-gray-400">
-            {upgrade.specialEffect.description}
-          </div>
+          <div className="text-xs font-medium text-gray-300">{upgrade.specialEffect.name}</div>
+          <div className="text-xs text-gray-400">{upgrade.specialEffect.description}</div>
         </div>
       )}
 
       {/* Requirements */}
       <div className="space-y-2 mb-3">
-        {upgrade.requirements.tech.map((tech) => (
-          <div
-            key={tech}
-            className="flex items-center text-xs text-gray-400"
-          >
+        {upgrade.requirements.tech.map(tech => (
+          <div key={tech} className="flex items-center text-xs text-gray-400">
             <Zap className="w-3 h-3 mr-1" />
             <span>{tech}</span>
           </div>
@@ -265,13 +235,13 @@ export function WeaponUpgradeDisplay({
 
       {/* Resource Costs */}
       <div className="flex flex-wrap gap-2 mb-3">
-        {upgrade.requirements.resources.map((resource) => (
+        {upgrade.requirements.resources.map(resource => (
           <div
             key={resource.type}
             className={`px-2 py-1 rounded text-xs ${
               (resources[resource.type] || 0) >= resource.amount
-                ? "bg-green-900/20 text-green-400"
-                : "bg-red-900/20 text-red-400"
+                ? 'bg-green-900/20 text-green-400'
+                : 'bg-red-900/20 text-red-400'
             }`}
           >
             {resource.type}: {resources[resource.type] || 0}/{resource.amount}
@@ -284,8 +254,8 @@ export function WeaponUpgradeDisplay({
         disabled={!upgrade.unlocked || !canAfford}
         className={`w-full px-3 py-1.5 rounded text-sm flex items-center justify-center space-x-2 ${
           upgrade.unlocked && canAfford
-            ? "bg-gray-700 hover:bg-gray-600 text-white"
-            : "bg-gray-800 text-gray-500 cursor-not-allowed"
+            ? 'bg-gray-700 hover:bg-gray-600 text-white'
+            : 'bg-gray-800 text-gray-500 cursor-not-allowed'
         }`}
       >
         <Crosshair className="w-4 h-4" />
@@ -297,8 +267,8 @@ export function WeaponUpgradeDisplay({
           <AlertTriangle className="w-3 h-3" />
           <span>
             {!upgrade.unlocked
-              ? "Research required technologies first"
-              : "Insufficient resources for upgrade"}
+              ? 'Research required technologies first'
+              : 'Insufficient resources for upgrade'}
           </span>
         </div>
       )}

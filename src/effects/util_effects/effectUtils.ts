@@ -6,7 +6,7 @@ import {
   StatusEffect,
   CombatEffect,
   AreaEffect,
-} from "../types_effects/EffectTypes";
+} from '../types_effects/EffectTypes';
 
 // Effect Creation
 // ------------------------------------------------------------
@@ -39,14 +39,14 @@ export function createEffect(
 export function createWeaponEffect(
   baseEffect: BaseEffect,
   strength: number,
-  type: "damage" | "area" | "status" = "damage",
+  type: 'damage' | 'area' | 'status' = 'damage',
   duration: number = 0
 ): WeaponEffect {
   return {
     ...baseEffect,
     type,
     strength,
-    duration
+    duration,
   };
 }
 
@@ -95,7 +95,7 @@ export function addEffect(stack: EffectStack, effect: BaseEffect): EffectStack {
       {
         effectId: effect.id,
         timestamp: Date.now(),
-        action: "applied",
+        action: 'applied',
       },
     ],
   };
@@ -107,13 +107,13 @@ export function addEffect(stack: EffectStack, effect: BaseEffect): EffectStack {
 export function removeEffect(stack: EffectStack, effectId: string): EffectStack {
   return {
     ...stack,
-    effects: stack.effects.filter((e) => e.id !== effectId),
+    effects: stack.effects.filter(e => e.id !== effectId),
     history: [
       ...stack.history,
       {
         effectId,
         timestamp: Date.now(),
-        action: "removed",
+        action: 'removed',
       },
     ],
   };
@@ -126,28 +126,28 @@ export function removeEffect(stack: EffectStack, effectId: string): EffectStack 
  * Type guard for weapon effects
  */
 export function isWeaponEffect(effect: BaseEffect): effect is BaseEffect & WeaponEffect {
-  return "strength" in effect && typeof effect.strength === "number";
+  return 'strength' in effect && typeof effect.strength === 'number';
 }
 
 /**
  * Type guard for area effects
  */
 export function isAreaEffect(effect: BaseEffect): effect is AreaEffect {
-  return "radius" in effect && "position" in effect;
+  return 'radius' in effect && 'position' in effect;
 }
 
 /**
  * Type guard for status effects
  */
 export function isStatusEffect(effect: BaseEffect): effect is StatusEffect {
-  return "icon" in effect && "color" in effect;
+  return 'icon' in effect && 'color' in effect;
 }
 
 /**
  * Type guard for combat effects
  */
 export function isCombatEffect(effect: BaseEffect): effect is CombatEffect {
-  return "remainingTime" in effect && "sourceId" in effect && "targetId" in effect;
+  return 'remainingTime' in effect && 'sourceId' in effect && 'targetId' in effect;
 }
 
 // Effect Composition
@@ -158,7 +158,7 @@ export function isCombatEffect(effect: BaseEffect): effect is CombatEffect {
  */
 export function composeEffects(effects: BaseEffect[]): BaseEffect {
   if (effects.length === 0) {
-    throw new Error("Cannot compose empty effects array");
+    throw new Error('Cannot compose empty effects array');
   }
 
   const base = effects[0];
@@ -166,10 +166,7 @@ export function composeEffects(effects: BaseEffect[]): BaseEffect {
     (combined, effect) => ({
       ...combined,
       magnitude: combined.magnitude + effect.magnitude,
-      duration: Math.min(
-        combined.duration || Infinity,
-        effect.duration || Infinity
-      ),
+      duration: Math.min(combined.duration || Infinity, effect.duration || Infinity),
     }),
     { ...base }
   );
@@ -178,15 +175,11 @@ export function composeEffects(effects: BaseEffect[]): BaseEffect {
 /**
  * Applies modifiers to an effect
  */
-export function modifyEffect(
-  effect: BaseEffect,
-  modifiers: Partial<BaseEffect>
-): BaseEffect {
+export function modifyEffect(effect: BaseEffect, modifiers: Partial<BaseEffect>): BaseEffect {
   return {
     ...effect,
     ...modifiers,
-    magnitude:
-      effect.magnitude * (modifiers.magnitude || 1),
+    magnitude: effect.magnitude * (modifiers.magnitude || 1),
   };
 }
 
@@ -198,8 +191,8 @@ export function modifyEffect(
  */
 export function formatEffectDebug(effect: BaseEffect): string {
   return `[${effect.type}] ${effect.name} (${effect.magnitude}) - ${
-    effect.active ? "Active" : "Inactive"
-  }${effect.duration ? ` for ${effect.duration}s` : ""}`;
+    effect.active ? 'Active' : 'Inactive'
+  }${effect.duration ? ` for ${effect.duration}s` : ''}`;
 }
 
 /**
@@ -213,7 +206,7 @@ export function validateEffectStack(stack: EffectStack): {
 
   // Check for duplicate effects
   const effectIds = new Set<string>();
-  stack.effects.forEach((effect) => {
+  stack.effects.forEach(effect => {
     if (effectIds.has(effect.id)) {
       errors.push(`Duplicate effect ID: ${effect.id}`);
     }
@@ -221,7 +214,7 @@ export function validateEffectStack(stack: EffectStack): {
   });
 
   // Check for expired effects
-  stack.effects.forEach((effect) => {
+  stack.effects.forEach(effect => {
     if (
       effect.duration &&
       effect.active &&
@@ -242,7 +235,7 @@ export function validateEffectStack(stack: EffectStack): {
  */
 function getEffectStartTime(stack: EffectStack, effectId: string): number {
   const appliedEntry = stack.history
-    .filter((entry) => entry.effectId === effectId && entry.action === "applied")
+    .filter(entry => entry.effectId === effectId && entry.action === 'applied')
     .pop();
   return appliedEntry?.timestamp || 0;
-} 
+}

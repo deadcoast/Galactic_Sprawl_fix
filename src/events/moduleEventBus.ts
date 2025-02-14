@@ -9,4 +9,4 @@ class ModuleEventBus extends EventEmitter {
   }
 }
 
-export const moduleEventBus = new ModuleEventBus(); 
+export const moduleEventBus = new ModuleEventBus();

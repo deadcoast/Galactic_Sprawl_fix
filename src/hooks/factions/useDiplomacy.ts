@@ -1,10 +1,10 @@
-import { factionManager } from "../../lib/factions/factionManager";
-import { useEffect, useState } from "react";
-import { FactionId } from "../../types/ships/FactionTypes";
-import { factionRelationshipManager } from "../../lib/factions/FactionRelationshipManager";
+import { factionManager } from '../../lib/factions/factionManager';
+import { useEffect, useState } from 'react';
+import { FactionId } from '../../types/ships/FactionTypes';
+import { factionRelationshipManager } from '../../lib/factions/FactionRelationshipManager';
 
 interface DiplomacyAction {
-  type: "ceasefire" | "tradeRoute" | "alliance" | "tribute";
+  type: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute';
   name: string;
   description: string;
   requirements: {
@@ -17,7 +17,7 @@ interface DiplomacyAction {
 export function useDiplomacy(factionId: FactionId) {
   const [diplomacyState, setDiplomacyState] = useState({
     relationship: 0,
-    status: "neutral" as "hostile" | "neutral" | "friendly",
+    status: 'neutral' as 'hostile' | 'neutral' | 'friendly',
     tradingEnabled: false,
     lastInteraction: Date.now(),
     availableActions: [] as DiplomacyAction[],
@@ -30,17 +30,12 @@ export function useDiplomacy(factionId: FactionId) {
         const relationship = state.relationshipWithPlayer;
         const availableActions = factionRelationshipManager.getAvailableDiplomaticActions(
           factionId,
-          "player" as FactionId
+          'player' as FactionId
         );
 
         setDiplomacyState({
           relationship,
-          status:
-            relationship > 0.3
-              ? "friendly"
-              : relationship < -0.3
-                ? "hostile"
-                : "neutral",
+          status: relationship > 0.3 ? 'friendly' : relationship < -0.3 ? 'hostile' : 'neutral',
           tradingEnabled: relationship >= 0,
           lastInteraction: state.lastActivity,
           availableActions,
@@ -57,7 +52,7 @@ export function useDiplomacy(factionId: FactionId) {
   ) => {
     return factionRelationshipManager.handleDiplomaticAction(
       factionId,
-      "player" as FactionId,
+      'player' as FactionId,
       action.type,
       resources
     );

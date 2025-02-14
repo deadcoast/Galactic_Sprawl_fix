@@ -8,8 +8,8 @@ import { Position } from '../../../types/core/GameTypes';
 interface MiningShip {
   id: string;
   name: string;
-  type: "rockBreaker" | "voidDredger";
-  status: "idle" | "mining" | "returning" | "maintenance";
+  type: 'rockBreaker' | 'voidDredger';
+  status: 'idle' | 'mining' | 'returning' | 'maintenance';
   capacity: number;
   currentLoad: number;
   targetNode?: string;
@@ -22,7 +22,7 @@ interface MiningTask {
   nodeId: string;
   resourceType: string;
   priority: number;
-  status: "queued" | "in-progress" | "completed" | "failed";
+  status: 'queued' | 'in-progress' | 'completed' | 'failed';
   startTime?: number;
   endTime?: number;
 }
@@ -42,7 +42,7 @@ class MiningShipManagerImpl extends EventEmitter {
     this.nodeAssignments = new Map();
 
     // Listen for threshold events
-    thresholdEvents.subscribe((event) => {
+    thresholdEvents.subscribe(event => {
       if (event.type === 'THRESHOLD_VIOLATED') {
         this.handleThresholdViolation(event.resourceId, event.details);
       }
@@ -97,11 +97,15 @@ class MiningShipManagerImpl extends EventEmitter {
   /**
    * Handles threshold violations by dispatching mining ships
    */
-  private handleThresholdViolation(resourceId: string, details: { type: 'below_minimum' | 'above_maximum', current: number }): void {
+  private handleThresholdViolation(
+    resourceId: string,
+    details: { type: 'below_minimum' | 'above_maximum'; current: number }
+  ): void {
     if (details.type === 'below_minimum') {
       // Find available mining ship
-      const availableShip = Array.from(this.ships.values())
-        .find(ship => ship.status === 'idle' && ship.currentLoad === 0);
+      const availableShip = Array.from(this.ships.values()).find(
+        ship => ship.status === 'idle' && ship.currentLoad === 0
+      );
 
       if (availableShip) {
         this.dispatchShipToResource(availableShip.id, resourceId);
@@ -191,8 +195,9 @@ class MiningShipManagerImpl extends EventEmitter {
     this.ships.forEach(ship => {
       if (ship.status === 'mining' && ship.targetNode) {
         // Update mining progress
-        const task = Array.from(this.tasks.values())
-          .find(t => t.shipId === ship.id && t.status === 'in-progress');
+        const task = Array.from(this.tasks.values()).find(
+          t => t.shipId === ship.id && t.status === 'in-progress'
+        );
 
         if (task) {
           // Simulate resource collection
@@ -209,4 +214,4 @@ class MiningShipManagerImpl extends EventEmitter {
 }
 
 // Export singleton instance
-export const miningShipManager = new MiningShipManagerImpl(); 
+export const miningShipManager = new MiningShipManagerImpl();

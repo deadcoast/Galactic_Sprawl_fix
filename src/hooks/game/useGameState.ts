@@ -8,7 +8,7 @@ export function useGameState() {
 
   useEffect(() => {
     // Sync game manager state with context
-    const unsubscribe = gameManager.subscribe((gameTime) => {
+    const unsubscribe = gameManager.subscribe(gameTime => {
       // Update game time in context
       dispatch({
         type: 'UPDATE_GAME_TIME',

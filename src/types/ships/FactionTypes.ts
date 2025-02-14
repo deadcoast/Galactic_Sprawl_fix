@@ -1,13 +1,13 @@
-import { ShipType } from "./ShipTypes";
+import { ShipType } from './ShipTypes';
 
-export type FactionId = "space-rats" | "lost-nova" | "equator-horizon";
+export type FactionId = 'space-rats' | 'lost-nova' | 'equator-horizon';
 
-export type FactionBehaviorType = 
-  | "aggressive" 
-  | "defensive" 
-  | "hit-and-run" 
-  | "stealth" 
-  | "balance";
+export type FactionBehaviorType =
+  | 'aggressive'
+  | 'defensive'
+  | 'hit-and-run'
+  | 'stealth'
+  | 'balance';
 
 export interface FactionConfig {
   id: FactionId;
@@ -37,7 +37,7 @@ export interface FactionState {
 
 // Faction-specific configurations
 export interface SpaceRatsConfig extends FactionConfig {
-  id: "space-rats";
+  id: 'space-rats';
   pirateFleetComposition: {
     flagshipType: string;
     supportShips: string[];
@@ -45,7 +45,7 @@ export interface SpaceRatsConfig extends FactionConfig {
 }
 
 export interface LostNovaConfig extends FactionConfig {
-  id: "lost-nova";
+  id: 'lost-nova';
   forbiddenTech: {
     darkMatterLevel: number;
     geneticModifications: string[];
@@ -53,10 +53,10 @@ export interface LostNovaConfig extends FactionConfig {
 }
 
 export interface EquatorHorizonConfig extends FactionConfig {
-  id: "equator-horizon";
+  id: 'equator-horizon';
   balanceThresholds: {
     playerExpansion: number;
     resourceControl: number;
     techLevel: number;
   };
-} 
+}

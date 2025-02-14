@@ -1,14 +1,7 @@
-import {
-  AlertTriangle,
-  ArrowRight,
-  Crosshair,
-  Lock,
-  Rocket,
-  Shield,
-} from "lucide-react";
+import { AlertTriangle, ArrowRight, Crosshair, Lock, Rocket, Shield } from 'lucide-react';
 
 interface UpgradeRequirement {
-  type: "tech" | "resource" | "facility";
+  type: 'tech' | 'resource' | 'facility';
   name: string;
   met: boolean;
 }
@@ -23,12 +16,7 @@ interface ShipUpgradeSystemProps {
   ship: {
     id: string;
     name: string;
-    type:
-      | "spitflare"
-      | "starSchooner"
-      | "orionFrigate"
-      | "harbringerGalleon"
-      | "midwayCarrier";
+    type: 'spitflare' | 'starSchooner' | 'orionFrigate' | 'harbringerGalleon' | 'midwayCarrier';
     tier: 1 | 2 | 3;
     upgradeAvailable: boolean;
     requirements: UpgradeRequirement[];
@@ -60,28 +48,25 @@ export function PlayerShipUpgradeSystem({
 }: ShipUpgradeSystemProps) {
   const getShipTypeColor = (type: string) => {
     switch (type) {
-      case "spitflare":
-        return "cyan";
-      case "starSchooner":
-        return "indigo";
-      case "orionFrigate":
-        return "violet";
-      case "harbringerGalleon":
-        return "purple";
-      case "midwayCarrier":
-        return "fuchsia";
+      case 'spitflare':
+        return 'cyan';
+      case 'starSchooner':
+        return 'indigo';
+      case 'orionFrigate':
+        return 'violet';
+      case 'harbringerGalleon':
+        return 'purple';
+      case 'midwayCarrier':
+        return 'fuchsia';
       default:
-        return "blue";
+        return 'blue';
     }
   };
 
   const color = getShipTypeColor(ship.type);
-  const allRequirementsMet = ship.requirements.every((req) => req.met);
-  const sufficientResources = ship.resourceCost.every(
-    (cost) => cost.available >= cost.amount,
-  );
-  const canUpgrade =
-    ship.upgradeAvailable && allRequirementsMet && sufficientResources;
+  const allRequirementsMet = ship.requirements.every(req => req.met);
+  const sufficientResources = ship.resourceCost.every(cost => cost.available >= cost.amount);
+  const canUpgrade = ship.upgradeAvailable && allRequirementsMet && sufficientResources;
 
   const getStatDifference = (current: number, upgraded: number) => {
     const diff = upgraded - current;
@@ -89,9 +74,7 @@ export function PlayerShipUpgradeSystem({
   };
 
   return (
-    <div
-      className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6`}
-    >
+    <div className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -113,21 +96,13 @@ export function PlayerShipUpgradeSystem({
             <div
               key={index}
               className={`flex items-center justify-between p-3 rounded-lg ${
-                req.met
-                  ? "bg-green-900/20 border border-green-700/30"
-                  : "bg-gray-700/50"
+                req.met ? 'bg-green-900/20 border border-green-700/30' : 'bg-gray-700/50'
               }`}
             >
               <div className="flex items-center space-x-2">
-                {req.type === "tech" && (
-                  <Crosshair className="w-4 h-4 text-gray-400" />
-                )}
-                {req.type === "resource" && (
-                  <Shield className="w-4 h-4 text-gray-400" />
-                )}
-                {req.type === "facility" && (
-                  <Rocket className="w-4 h-4 text-gray-400" />
-                )}
+                {req.type === 'tech' && <Crosshair className="w-4 h-4 text-gray-400" />}
+                {req.type === 'resource' && <Shield className="w-4 h-4 text-gray-400" />}
+                {req.type === 'facility' && <Rocket className="w-4 h-4 text-gray-400" />}
                 <span className="text-sm text-gray-300">{req.name}</span>
               </div>
               {req.met ? (
@@ -146,9 +121,7 @@ export function PlayerShipUpgradeSystem({
         <div className="grid grid-cols-2 gap-3">
           {Object.entries(ship.stats).map(([stat, values]) => (
             <div key={stat} className="p-3 bg-gray-700/50 rounded-lg">
-              <div className="text-sm text-gray-400 capitalize mb-2">
-                {stat}
-              </div>
+              <div className="text-sm text-gray-400 capitalize mb-2">{stat}</div>
               <div className="flex items-center justify-between">
                 <div className="text-white">
                   {values.current}
@@ -158,8 +131,7 @@ export function PlayerShipUpgradeSystem({
                   <ArrowRight className="w-4 h-4 text-indigo-400 mx-2" />
                   <span className="text-indigo-400">
                     {values.upgraded}
-                    {values.unit} (
-                    {getStatDifference(values.current, values.upgraded)})
+                    {values.unit} ({getStatDifference(values.current, values.upgraded)})
                   </span>
                 </div>
               </div>
@@ -170,9 +142,7 @@ export function PlayerShipUpgradeSystem({
 
       {/* Visual Upgrades */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">
-          Visual Enhancements
-        </h4>
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Visual Enhancements</h4>
         <div className="grid grid-cols-2 gap-3">
           {ship.visualUpgrades.map((upgrade, index) => (
             <div
@@ -180,9 +150,7 @@ export function PlayerShipUpgradeSystem({
               className="p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors"
               onClick={onPreviewUpgrade}
             >
-              <div className="text-sm font-medium text-white mb-1">
-                {upgrade.name}
-              </div>
+              <div className="text-sm font-medium text-white mb-1">{upgrade.name}</div>
               <p className="text-xs text-gray-400">{upgrade.description}</p>
             </div>
           ))}
@@ -191,9 +159,7 @@ export function PlayerShipUpgradeSystem({
 
       {/* Resource Costs */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">
-          Resource Requirements
-        </h4>
+        <h4 className="text-sm font-medium text-gray-300 mb-3">Resource Requirements</h4>
         <div className="space-y-2">
           {ship.resourceCost.map((resource, index) => (
             <div
@@ -203,9 +169,7 @@ export function PlayerShipUpgradeSystem({
               <span className="text-sm text-gray-300">{resource.type}</span>
               <div
                 className={`text-sm ${
-                  resource.available >= resource.amount
-                    ? "text-green-400"
-                    : "text-red-400"
+                  resource.available >= resource.amount ? 'text-green-400' : 'text-red-400'
                 }`}
               >
                 {resource.available} / {resource.amount}
@@ -221,8 +185,8 @@ export function PlayerShipUpgradeSystem({
         disabled={!canUpgrade}
         className={`w-full px-4 py-3 rounded-lg flex items-center justify-center space-x-2 ${
           canUpgrade
-            ? "bg-indigo-600 hover:bg-indigo-700 text-white"
-            : "bg-gray-700 text-gray-500 cursor-not-allowed"
+            ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+            : 'bg-gray-700 text-gray-500 cursor-not-allowed'
         }`}
       >
         <Rocket className="w-5 h-5" />
@@ -234,9 +198,9 @@ export function PlayerShipUpgradeSystem({
         <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-700/30 rounded-lg flex items-start space-x-2">
           <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
           <div className="text-sm text-yellow-200">
-            {!ship.upgradeAvailable && "Ship is not eligible for upgrade."}
-            {!allRequirementsMet && "Not all upgrade requirements are met."}
-            {!sufficientResources && "Insufficient resources for upgrade."}
+            {!ship.upgradeAvailable && 'Ship is not eligible for upgrade.'}
+            {!allRequirementsMet && 'Not all upgrade requirements are met.'}
+            {!sufficientResources && 'Insufficient resources for upgrade.'}
           </div>
         </div>
       )}
