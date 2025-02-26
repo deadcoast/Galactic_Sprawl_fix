@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PlayerShipClass, PlayerShipCategory } from '../../../../types/ships/PlayerShipTypes';
-import { ShipHangarManager } from '../../../../managers/player/ShipHangarManager';
+import { ShipHangarManager } from '../../../../managers/module/ShipHangarManager';
 import { ResourceCost } from '../../../../types/resources/ResourceTypes';
 import { ShipBlueprint, getAvailableShips } from '../../../../config/ShipBlueprints';
 import { techTreeManager } from '../../../../managers/game/techTreeManager';
@@ -45,7 +45,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
       // Check resource requirements
       ship.requirements.resourceCost.forEach(cost => {
         const requirements = manager.getBuildRequirements(ship.shipClass);
-        const available = requirements.resourceCost.find(r => r.type === cost.type)?.amount || 0;
+        const available = requirements.resourceCost.find((r: { type: string }) => r.type === cost.type)?.amount || 0;
         if (available < cost.amount) {
           errors.push(`Insufficient ${cost.type}: ${available}/${cost.amount}`);
         }
@@ -183,7 +183,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
                 {ship.requirements.resourceCost.map(cost => {
                   const requirements = manager.getBuildRequirements(ship.shipClass);
                   const available =
-                    requirements.resourceCost.find(r => r.type === cost.type)?.amount || 0;
+                    requirements.resourceCost.find((r: { type: string }) => r.type === cost.type)?.amount || 0;
                   return (
                     <div
                       key={cost.type}

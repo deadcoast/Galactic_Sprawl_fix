@@ -23,56 +23,6 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 
 ## Lessons
 
-- Include info useful for debugging in the program output.
-- When correcting errors, do NOT delete unused code. Instead generate its implementation.
-- Read the file before you try to edit it.
-- Always check the exact type names in the codebase - e.g. "minerals" vs "mineral" in ResourceType.
-- When implementing automation systems, ensure proper integration with existing event systems and contexts.
-- Pay attention to module types - use the correct ModuleType from ModuleTypes.ts.
-- When working with resource types, use the proper ResourceType from ResourceTypes.ts.
-- Maintain type safety across the entire system - don't use string literals when proper types exist.
-- Ensure event emissions are consistent with the module event bus system.
-- When implementing managers, ensure proper cleanup in unregister/complete methods.
-- Use proper event typing with generic EventEmitter for type safety.
-- Implement proper cleanup in training and squad systems.
-- Calculate bonuses and multipliers based on traits and specializations.
-- Keep state updates and event emissions consistent.
-- Add debug logging for efficiency changes and state transitions.
-- Use toFixed(2) for formatting decimal numbers in debug logs.
-- Store old values before state changes to show the difference in logs.
-- Use consistent debug log formatting with module name prefix.
-- Properly handle module activation/deactivation state changes.
-- When working with weapon effects, use (DamageEffect | AreaEffect)[] for BaseWeaponStats compatibility, not WeaponEffectType[] which includes StatusEffect.
-- For ship stats with weapons, use WeaponInstance (not WeaponMount) and include primary, secondary, and stats properties.
-- Be careful when removing type imports - they may be used indirectly in type definitions even if not explicitly referenced in the code.
-- TypeScript linter may show false positives for unused imports when they are used only as types - these warnings can be safely ignored.
-- Be extremely careful when removing state-related code - state management often has implicit dependencies and side effects.
-- For props and state that are part of the component's interface but not currently used, use eslint-disable comments rather than removing them.
-- When TypeScript complains about missing properties, check the interface definition first - it might need to be updated to match the implementation.
-- Don't redefine interfaces locally when they're already imported - extend the imported interface if needed.
-- Use 'import type' for imports that are only used as types to avoid TypeScript linter warnings.
-- Don't import types that are already included through other type imports - avoid redundant imports.
-- When refactoring types, check ALL usages - removing a type import can break type annotations that depend on it.
-- NEVER remove type imports that are used in TODO implementations - they are needed for future code.
-- ALWAYS analyze existing implementations thoroughly before suggesting changes - the functionality may already be complete
-- When fixing linter errors, first check if they're about missing functionality or just code organization
-- Be direct and clear about whether an issue requires actual implementation or just cleanup
-- When fixing errors, CLEARLY explain if it's:
-  1. A mistake to remove
-  2. Missing functionality to implement
-  3. Code to fix but preserve
-- Don't just make changes without explaining the reasoning
-- When implementing new functionality, FIRST check if the types/interfaces already exist
-- Always review all related type definition files before starting implementation
-- Assume type definitions might exist in a centralized location (e.g., ResourceTypes.ts for all resource-related types)
-- When implementing resource management:
-  - Use debug logging to track resource flows and state changes
-  - Include IDs in debug messages for better traceability
-  - Apply consistent formatting for numeric values (toFixed(2))
-  - Handle edge cases with proper thresholds and limits
-  - Clean up intervals and registrations properly
-  - Use destructuring for cleaner code (e.g., const { amount } = resource)
-
 ## Cursor Learned
 
 ### CRITICAL: Code Organization and Development
@@ -119,150 +69,1169 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 - Ensure proper event emission and handling across the system
 - Maintain consistent type usage across related components
 
-### API and Tool Usage
-
-- Use 'seaborn-v0_8' instead of 'seaborn' for matplotlib styles
-- Use 'gpt-4o' as the model name for OpenAI's GPT-4 with vision capabilities
-
-### Testing (Last Step)
-
-1. **React Component Testing Setup**
-
-   - Create test wrapper component for context providers
-   - Use async/await with userEvent for interactions
-   - Handle multiple instances with specific queries
-
-2. **Button and UI Element Testing**
-
-   - Use `getAllByRole` instead of `getByText` for multiple instances
-   - Select last instance for action buttons
-   - Use role-based queries for accessibility
-   - Check attributes like 'disabled' instead of toBeDisabled()
-
-3. **Data Display Testing**
-   - Look for actual displayed format (e.g., '+15' vs '15')
-   - Consider context of value display
-   - Use regex for flexible text matching
-
 # Scratchpad
 
-## Current State Analysis
+## Current Task: Mapping Phase 1 of Roadmap to Codebase
 
-### Missing Critical Components
+### Phase 1: Project Skeleton & Core Setup [Q1]
 
-1. Event System
+1. Review project requirements and architecture [✓]
+   - Found in: `GalaxySprawlDocs/GameplayLogic(GL)/GS_GL-CoreGameplayLogic.md`
+   - Contains comprehensive architecture and requirements
 
-   - [ ] Combat events
-   - [ ] Resource events
-   - [ ] Ship events
-   - [ ] Module events
+2. Create detailed implementation plan [✓]
+   - Found in: `GalaxySprawlDocs/GameplayLogic(GL)/.roadmap`
+   - Contains comprehensive implementation details
 
-2. Core Game Systems
+3. Set up initial project structure [In Progress]
+   Current structure in `/src`:
+   - `App.tsx` - Main application component
+   - `main.tsx` - Entry point
+   - `config/` - Configuration files
+   - `managers/` - Game system managers
+   - `utils/` - Utility functions
+   - `lib/` - Core libraries
+   - `types/` - TypeScript type definitions
+   - `hooks/` - React hooks
+   - `contexts/` - React contexts
+   - `components/` - React components
+   - `effects/` - Game effects
+   - `styles/` - Styling files
 
-   - [ ] Ship movement
-   - [ ] Combat mechanics
-   - [ ] Resource management
-   - [ ] Module system
-     - [x] Implement module requirements checking in ModuleManager.upgradeModule()
-       - Use ModuleRequirements interface to validate:
-         - [x] minLevel requirements
-         - [x] buildingType compatibility
-         - [x] resourceCosts availability
+4. Implement core game systems [In Progress]
+   Found implementations:
+   - `src/contexts/GameContext.tsx` - Core game state management
+   - `src/managers/game/gameManager.ts` - Game loop and core systems
+   - `src/managers/game/ResourceManager.ts` - Resource management system
+   - `src/managers/module/ModuleManager.ts` - Module management system
+   - `src/hooks/game/useGameState.ts` - Game state hook
 
-3. State Management
-   - [ ] Global game state
-   - [ ] Ship state
-   - [ ] Resource state
-   - [ ] Combat state
+5. Complete basic UI framework [In Progress]
+   Found implementations:
+   - `src/components/ui/GameLayout.tsx` - Main game layout component with:
+     - Sidebar navigation
+     - Empire name display
+     - Population and system counters
+     - Module-specific views
+   - `src/components/ui/GameHUD.tsx` - Game HUD with:
+     - Category-based menu system (mining, exploration, mothership, colony)
+     - Tech tree integration
+     - Settings management
+     - Keyboard shortcuts
+   - `src/components/ui/TechTree.tsx` - Tech tree visualization
+   - `src/components/combat/BattleEnvironment.tsx` - Combat HUD with:
+     - Unit status display
+     - Health/shield visualization
+     - Combat feedback system
+   - `src/components/ships/player/base/PlayerShipBase.tsx` - Ship UI components with:
+     - Hull integrity display
+     - Shield power monitoring
+     - Weapon mount visualization
 
-### Current Development Plan
+6. Tech Tree System [~45% Complete]
+   - Core Components:
+     - Tech Tree UI: src/components/ui/TechTree.tsx
+     - Tech Tree Manager: src/managers/game/techTreeManager.ts
+     - Ship Hangar Integration: src/managers/module/ShipHangarManager.ts
+   - Features implemented:
+     - Comprehensive tech node system with 8 categories:
+       - Infrastructure
+       - War Fleet
+       - Recon Fleet
+       - Mining Fleet
+       - Weapons
+       - Defense
+       - Special Projects
+       - Cross-Domain Synergies
+     - 3-tier progression system
+     - Tech requirements validation
+     - Resource cost management
+     - Visual upgrade system
+     - Ship tier upgrades
+   - Features needed:
+     - Enhanced visual feedback
+     - Real-time progress tracking
+     - Advanced synergy visualization
+     - Detailed tech path planning
 
-### Phase 1: Core Systems [Priority: CRITICAL]
+### Next Steps:
+[ ] Continue mapping Phase 2: HUD & UI Framework
+[ ] Search for existing HUD implementations
+[ ] Document any gaps in implementation
+[ ] Plan necessary components to complete Phase 1
 
-[ ] 1. Event System - Expand moduleEventBus.ts to handle: - Combat events - Resource events - Ship events - Module events - Add proper event typing - Implement event handlers
+### Progress:
+- Phase 1 Core Systems: ~40% complete
+- Phase 1 UI Framework: ~35% complete (updated)
+- Overall Phase 1: ~37% complete
 
-[ ] 2. State Management - Implement GameContext - Create ShipContext - Add ResourceContext - Set up CombatContext
+# Current Task
 
-[ ] 3. Core Game Loop - Create game tick system - Add update cycle - Implement state synchronization - Set up cleanup handlers
+Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 
-### Phase 2: Game Systems [Priority: HIGH]
+## Project Timeline & Milestones
 
-[ ] 1. Ship System - Movement mechanics - Combat system - Ship states - Ship interactions
+### Phase 1: Project Skeleton & Core Setup [Q1]
+[X] Review project requirements and architecture
+[X] Create detailed implementation plan
+[ ] Set up initial project structure
+[ ] Implement core game systems
+[ ] Complete basic UI framework
 
-[X] 2. Module System - Module base class - Module activation - Module upgrades - Module interactions
+### Phase 2: HUD & UI Framework [~35% Complete]
 
-[ ] 3. Resource System - Resource types - Collection - Storage - Transfer
+#### Core HUD System [~45% Complete]
+- Main components:
+  - `src/components/ui/GameHUD.tsx`
+  - `src/components/ui/GameLayout.tsx`
+- Features implemented:
+  - Category-based menu system (mining, exploration, mothership, colony)
+  - Empire name and stats display
+  - Population and system counters
+  - Keyboard shortcuts for various views
+  - Tech tree integration
+  - Settings management
+- Features needed:
+  - Enhanced resource visualization
+  - Advanced notification system
+  - Context menu system
+  - Drag-and-drop support
 
-### Phase 3: UI & Effects [Priority: MEDIUM]
+#### Menu Categories [~40% Complete]
+1. Mining
+   - Mineral Processing interface
+   - Mining Fleet management
+   - Resource Storage monitoring
+   - Automated resource collection
 
-[ ] 1. UI Integration - Connect GameHUD - Implement controls - Add feedback systems - Create tooltips
+2. Exploration
+   - Recon Hub coordination
+   - Galaxy Map integration
+   - Anomaly Scanner system
+   - Mission tracking
 
-[ ] 2. Visual Effects - Combat effects - Movement effects - Resource effects - UI animations
+3. Mothership
+   - Ship Hangar interface
+   - Radar System monitoring
+   - Defense Grid management
+   - Module status display
+
+4. Colony
+   - Population management
+   - Infrastructure development
+   - Trade Hub system
+   - Growth tracking
+
+#### View System Implementation [~30% Complete]
+
+#### Core View Components [~35% Complete]
+1. VPR (Visual Progress Representation) View
+   - Main components:
+     - `src/components/ui/VPRStarSystemView.tsx`
+     - `src/components/ui/GameLayout.tsx`
+   - Features implemented:
+     - Star system backdrop with parallax effects
+     - Central mothership visualization
+     - Colony station representation
+     - Module status indicators
+   - Features needed:
+     - Enhanced visual feedback
+     - Real-time updates
+     - Advanced animations
+     - Performance optimization
+
+2. Civilization Sprawl View [~40% Complete]
+   - Main components:
+     - `src/components/ui/SprawlView.tsx`
+     - `src/components/ui/GameLayout.tsx`
+   - Features implemented:
+     - 2D map representation
+     - Dynamic node labels
+     - Trade route visualization
+     - Asset status indicators
+   - Features needed:
+     - Enhanced filtering system
+     - Advanced search functionality
+     - Performance optimization
+     - Real-time updates
+
+#### Visual Framework [~30% Complete]
+1. Star System Backdrop
+   - Multi-layer parallax background
+   - Depth effect implementation
+   - Scroll speed variation
+   - Performance optimization
+
+2. Core Module Visuals
+   - Central structure rendering
+   - Evolution animations
+   - Upgrade transitions
+   - Interactive elements
+
+3. Environmental Effects
+   - Cosmic weather effects
+   - Day/night cycle
+   - Aurora animations
+   - Solar wind effects
+
+#### Interactive Features [~25% Complete]
+1. Navigation Controls
+   - Zoom functionality
+   - Pan controls
+   - Camera transitions
+   - Quick return options
+
+2. Information Display
+   - System tooltips
+   - Status indicators
+   - Resource information
+   - Faction presence markers
+
+3. Asset Management
+   - System unlock logic
+   - Tech requirement checks
+   - Resource validation
+   - Status tracking
+
+#### Required Libraries
+1. Core Rendering
+   - React-konva for canvas
+   - React-three-fiber for 3D
+   - D3.js for layouts
+   - SVG.js for vectors
+
+2. Animation
+   - Framer Motion for components
+   - GSAP for sequences
+   - React-spring for physics
+   - react-particles-js for effects
+
+3. Interaction
+   - React-zoom-pan-pinch
+   - React-tooltip for info
+   - Custom event system
+   - Scene transition manager
+
+#### Next Implementation Priorities
+[ ] Complete VPR view core components
+[ ] Enhance Sprawl view filtering system
+[ ] Implement advanced animations
+[ ] Optimize performance for large systems
+[ ] Add real-time update system
+
+#### Notes
+- Implement efficient canvas rendering
+- Optimize animation performance
+- Maintain consistent visual hierarchy
+- Handle component lifecycle properly
+- Test on various device capabilities
+
+### Phase 3: Core Systems Development [Q2]
+[ ] Implement resource management
+[ ] Develop module framework
+[ ] Create event system
+[ ] Build automation core
+[ ] Test core mechanics
+
+### Phase 4: Advanced Features [Q3]
+[ ] Implement galaxy navigation
+[ ] Develop combat systems
+[ ] Create faction framework
+[ ] Build AI systems
+[ ] Test advanced features
+
+### Phase 5: Polish & Optimization [Q4]
+[ ] Optimize performance
+[ ] Enhance visuals
+[ ] Balance gameplay
+[ ] Fix bugs
+[ ] Prepare for release
+
+***********************************
+PHASE 1
+***********************************
+### Core Systems [~40% Complete]
+
+1. Resource Management [~60% Complete]
+   - Implemented in: src/managers/game/ResourceManager.ts
+   - Performance monitoring: src/managers/resource/ResourcePerformanceMonitor.ts
+   - Resource events: src/hooks/modules/useModuleEvents.ts
+   - Mining implementation: src/managers/mining/MiningShipManagerImpl.ts
+
+2. Module Framework [~50% Complete]
+   - Core types: src/types/buildings/ModuleTypes.ts
+   - Module manager: src/managers/module/ModuleManager.ts
+   - Module events: src/lib/modules/ModuleEvents.ts
+   - Ship hangar: src/managers/module/ShipHangarManager.ts
+
+3. Event System [~30% Complete]
+   - Event emitter: src/utils/EventEmitter.ts
+   - Module events: src/lib/modules/ModuleEvents.ts
+   - Combat events: src/managers/combat/combatManager.ts
+   - Faction events: src/managers/factions/FactionRelationshipManager.ts
+
+4. State Management [~40% Complete]
+   - Game context: src/contexts/GameContext.tsx
+   - Combat state: src/managers/combat/combatManager.ts
+   - Fleet AI state: src/hooks/factions/useFleetAI.ts
+   - Faction behavior: src/hooks/factions/useFactionBehavior.ts
+
+5. UI Framework [~30% Complete]
+   - Main layout: src/components/ui/GameLayout.tsx
+   - Star system view: src/components/ui/VPRStarSystemView.tsx
+   - Tech tree: src/components/ui/TechTree.tsx
+   - Game HUD: src/components/ui/GameHUD.tsx
+
+### Game Modules [~25% Complete]
+
+1. Mothership [~40% Complete]
+   - Core component: src/components/buildings/colony/ColonyCore.tsx
+   - VPR effects: src/effects/component_effects/CentralMothership.tsx
+   - Module attachment system implemented
+   - Resource management integration needed
+
+2. Colony System [~30% Complete]
+   - Core component: src/components/buildings/colony/ColonyCore.tsx
+   - Automated expansion: src/components/buildings/colony/AutomatedExpansion.tsx
+   - Population management needed
+   - Resource distribution system needed
+
+3. Combat System [~20% Complete]
+   - Combat manager: src/managers/combat/combatManager.ts
+   - War ship manager: src/managers/combat/WarShipManagerImpl.ts
+   - Fleet AI hooks: src/hooks/factions/useFleetAI.ts
+   - Faction behavior: src/hooks/factions/useFactionBehavior.ts
+
+4. Exploration System [~35% Complete]
+   - Exploration Hub: src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx
+   - Exploration Window: src/components/buildings/modules/ExplorationHub/ExplorationWindow.tsx
+   - Recon Ship Manager: src/managers/exploration/ReconShipManagerImpl.ts
+   - Features implemented:
+     - Sector mapping system with unmapped/mapped/scanning states
+     - Recon ship tracking and task management
+     - Experience and discovery tracking
+     - Anomaly detection system
+   - Features needed:
+     - Real-time map updates
+     - Advanced filtering system
+     - Detailed anomaly analysis
+     - Resource potential visualization
+
+5. Mining System [~40% Complete]
+   - Mining Controls: src/components/buildings/modules/MiningHub/MiningControls.tsx
+   - Mining Ship Manager: src/managers/mining/MiningShipManager.ts
+   - Features implemented:
+     - Automated mining dispatch system
+     - Resource threshold management
+     - Mining experience system with bonuses
+     - Tech tree integration
+   - Features needed:
+     - Enhanced visualization of mining operations
+     - Advanced priority management
+     - Resource flow optimization
+     - Storage management system
+
+6. Tech Tree System [~45% Complete]
+   - Core Components:
+     - Tech Tree UI: src/components/ui/TechTree.tsx
+     - Tech Tree Manager: src/managers/game/techTreeManager.ts
+     - Ship Hangar Integration: src/managers/module/ShipHangarManager.ts
+   - Features implemented:
+     - Comprehensive tech node system with 8 categories:
+       - Infrastructure
+       - War Fleet
+       - Recon Fleet
+       - Mining Fleet
+       - Weapons
+       - Defense
+       - Special Projects
+       - Cross-Domain Synergies
+     - 3-tier progression system
+     - Tech requirements validation
+     - Resource cost management
+     - Visual upgrade system
+     - Ship tier upgrades
+   - Features needed:
+     - Enhanced visual feedback
+     - Real-time progress tracking
+     - Advanced synergy visualization
+     - Detailed tech path planning
+
+### Next Implementation Priorities:
+[ ] Complete resource management system integration
+[ ] Implement population management for colonies
+[ ] Develop combat system core mechanics
+[ ] Enhance exploration map with real-time updates
+[ ] Implement advanced mining visualization and controls
+[ ] Complete tech tree visualization and feedback system
+
+### Notes:
+- Existing implementations found for most core systems
+- Need to focus on completing partially implemented features
+- Several key systems require integration work
+- UI framework needs expansion for new features
+- Mining and Exploration systems show good progress but need enhanced visualization
+- Tech Tree system has strong foundation but needs visual improvements
 
 ## Current Focus
-
-1. Expand event system
-2. Implement core state management
-3. Set up game loop
+[X] Review GS-ProjectDevPlan.md
+[X] Update implementation timeline
+[X] Organize development phases
+[ ] Begin core systems implementation
+[ ] Set up testing framework
 
 ## Next Steps
+1. Complete core system architecture
+2. Implement basic UI framework
+3. Develop resource management
+4. Create module system
+5. Build event handling
 
-1. Review and expand moduleEventBus.ts
-2. Create core contexts
-3. Implement game tick system
+## Notes & Considerations
+- Follow modular architecture pattern
+- Maintain strict type safety
+- Implement comprehensive testing
+- Focus on performance from start
+- Document all systems thoroughly
 
-## Progress Tracking
+## Dependencies & Requirements
+1. Core Technologies
+   - TypeScript/React
+   - Redux/Context
+   - WebGL/Three.js
+   - RxJS/Redux-Observable
 
-- Core Systems: 25% complete
-- Game Systems: 15% complete
-- UI & Effects: 40% complete
+2. Development Tools
+   - Webpack/Vite
+   - Jest/Testing Library
+   - ESLint/Prettier
+   - Storybook
 
-## Current Task: Resource Management Implementation
+3. Production Requirements
+   - Browser compatibility
+   - Mobile responsiveness
+   - Performance optimization
+   - State persistence
 
-### Task Description
+## Risk Management
+1. Technical Risks
+   - Performance bottlenecks
+   - State management complexity
+   - Browser compatibility
+   - Memory management
 
-Implementing and refining resource management system with proper configuration, scheduling, and monitoring.
+2. Mitigation Strategies
+   - Early performance testing
+   - Comprehensive type system
+   - Browser testing suite
+   - Memory profiling tools
 
-### Implementation Plan
+## Quality Assurance
+1. Testing Strategy
+   - Unit tests for core systems
+   - Integration tests for modules
+   - Performance benchmarks
+   - Browser compatibility tests
 
-[X] 1. Review existing resource management code
-[X] 2. Implement resource production functions
-[X] 3. Implement resource consumption functions
-[X] 4. Implement resource flow management
-[X] 5. Update ResourceManager with new functionality
-[X] 6. Add proper event emission for resource changes
-[X] 7. Add debug logging for resource operations
-[X] 8. Implement production and flow scheduling
-[X] 9. Add cleanup and monitoring capabilities
-[X] 10. Add error handling for edge cases
-[X] 11. Implement resource optimization strategies
-[X] 12. Add performance monitoring
-[X] 13. Create usage documentation
-[X] 14. Add unit tests
+2. Code Quality
+   - TypeScript strict mode
+   - ESLint configuration
+   - Code review process
+   - Documentation standards
 
-### Progress
+## Core Gameplay Implementation Details
 
-- Completed implementation of resource management system
-- Added production, consumption, and flow management functions
-- Added proper event types and module types
-- Implemented debug logging for all operations
-- Added scheduling system for productions and flows
-- Implemented proper cleanup mechanisms
-- Added monitoring and debug capabilities
-- Added comprehensive error handling and validation
-- Implemented resource optimization strategies
-- Added performance monitoring system
-- Created comprehensive documentation
-- Added unit test suite
+### Global Architecture
+1. State Management System
+   [ ] Redux/Context implementation
+   [ ] Global variable tracking (resources, population, fleet status)
+   [ ] TypeScript interfaces for all asset types
+   [ ] Centralized event bus system
 
-### Current Focus
+2. Event System & Automation
+   [ ] Custom event dispatcher (React Context-based)
+   [ ] RxJS integration for event streams
+   [ ] Centralized timer/game loop
+   [ ] Global automation routines
 
-- All tasks completed
-- System ready for integration testing
+### Module-Specific Implementation
 
-### Next Steps
+#### 1. Mothership Core
+1. Core Functionality
+   [ ] Global resource tracking system
+   [ ] Module attachment framework
+   [ ] Dynamic HUD implementation
+   [ ] Automation hooks for global events
 
-1. Integration testing with other systems
-2. Performance testing under load
-3. User acceptance testing
-4. Production deployment
+2. Visual Components
+   [ ] Animated superstructure expansion
+   [ ] Resource flow visualizations
+   [ ] Module status indicators
+   [ ] Upgrade visual effects
+
+#### 2. Colony Star Station
+1. Base Systems
+   [ ] Population growth mechanics
+   [ ] Resource pool management
+   [ ] Trade cycle automation (5-second intervals)
+   [ ] Sub-module support framework
+
+2. Automation Features
+   [ ] Automated population increase
+   [ ] Trade route visualization
+   [ ] Resource exchange calculations
+   [ ] Growth rate modifiers
+
+#### 3. Radar Module
+1. Core Features
+   [ ] Object detection system
+   [ ] Scan radius calculation
+   [ ] Event communication system
+   [ ] Threat assessment logic
+
+2. Visual Elements
+   [ ] Animated radar sweep
+   [ ] Detection visualization
+   [ ] Range indicators
+   [ ] Alert system UI
+
+#### 4. Ship Hanger
+1. Production System
+   [ ] Build queue management
+   [ ] Ship type definitions
+   [ ] Resource cost calculation
+   [ ] Production timer system
+
+2. Automation Features
+   [ ] Automated ship production
+   [ ] Threat response system
+   [ ] Resource threshold monitoring
+   [ ] Fleet composition optimization
+
+#### 5. Officer Academy
+1. Core Systems
+   [ ] Officer data management
+   [ ] Training progression system
+   [ ] Experience calculation
+   [ ] Skill enhancement logic
+
+2. Automation Features
+   [ ] Automated training cycles
+   [ ] Experience accumulation
+   [ ] Performance bonus calculation
+   [ ] Fleet integration system
+
+#### 6. Mineral Processing
+1. Resource Management
+   [ ] Resource type definitions
+   [ ] Threshold management system
+   [ ] Priority queue implementation
+   [ ] Extraction rate calculation
+
+2. Automation Features
+   [ ] Mining ship dispatch logic
+   [ ] Resource level monitoring
+   [ ] Threshold-based automation
+   [ ] Resource flow optimization
+
+#### 7. Exploration Hub
+1. Core Systems
+   [ ] Galaxy mapping system
+   [ ] Anomaly detection
+   [ ] Resource discovery
+   [ ] Exploration data management
+
+2. Automation Features
+   [ ] Automated sector scanning
+   [ ] Discovery classification
+   [ ] Recon ship coordination
+   [ ] Data analysis system
+
+***********************************
+PHASE 2
+***********************************
+### View System Implementation [~30% Complete]
+
+#### Core View Components [~35% Complete]
+1. VPR (Visual Progress Representation) View
+   - Main components:
+     - `src/components/ui/VPRStarSystemView.tsx`
+     - `src/components/ui/GameLayout.tsx`
+   - Features implemented:
+     - Star system backdrop with parallax effects
+     - Central mothership visualization
+     - Colony station representation
+     - Module status indicators
+   - Features needed:
+     - Enhanced visual feedback
+     - Real-time updates
+     - Advanced animations
+     - Performance optimization
+
+2. Civilization Sprawl View [~40% Complete]
+   - Main components:
+     - `src/components/ui/SprawlView.tsx`
+     - `src/components/ui/GameLayout.tsx`
+   - Features implemented:
+     - 2D map representation
+     - Dynamic node labels
+     - Trade route visualization
+     - Asset status indicators
+   - Features needed:
+     - Enhanced filtering system
+     - Advanced search functionality
+     - Performance optimization
+     - Real-time updates
+
+#### Visual Framework [~30% Complete]
+1. Star System Backdrop
+   - Multi-layer parallax background
+   - Depth effect implementation
+   - Scroll speed variation
+   - Performance optimization
+
+2. Core Module Visuals
+   - Central structure rendering
+   - Evolution animations
+   - Upgrade transitions
+   - Interactive elements
+
+3. Environmental Effects
+   - Cosmic weather effects
+   - Day/night cycle
+   - Aurora animations
+   - Solar wind effects
+
+#### Interactive Features [~25% Complete]
+1. Navigation Controls
+   - Zoom functionality
+   - Pan controls
+   - Camera transitions
+   - Quick return options
+
+2. Information Display
+   - System tooltips
+   - Status indicators
+   - Resource information
+   - Faction presence markers
+
+3. Asset Management
+   - System unlock logic
+   - Tech requirement checks
+   - Resource validation
+   - Status tracking
+
+#### Required Libraries
+1. Core Rendering
+   - React-konva for canvas
+   - React-three-fiber for 3D
+   - D3.js for layouts
+   - SVG.js for vectors
+
+2. Animation
+   - Framer Motion for components
+   - GSAP for sequences
+   - React-spring for physics
+   - react-particles-js for effects
+
+3. Interaction
+   - React-zoom-pan-pinch
+   - React-tooltip for info
+   - Custom event system
+   - Scene transition manager
+
+#### Next Implementation Priorities
+[ ] Complete VPR view core components
+[ ] Enhance Sprawl view filtering system
+[ ] Implement advanced animations
+[ ] Optimize performance for large systems
+[ ] Add real-time update system
+
+#### Notes
+- Implement efficient canvas rendering
+- Optimize animation performance
+- Maintain consistent visual hierarchy
+- Handle component lifecycle properly
+- Test on various device capabilities
+
+## Progress Tracking (Core Gameplay)
+- Global Architecture: 0%
+- Module Implementation: 0%
+- Tech Tree Integration: 0%
+- Experience System: 0%
+- Visual Systems: 0%
+
+## Automation Systems Implementation
+
+### Core Automation Framework
+1. Automation Purpose (AP) System
+   [ ] War automation behavior system
+   [ ] Recon automation behavior system
+   [ ] Mining automation behavior system
+   [ ] AP event handling framework
+
+2. Per-System Progress Management
+   [ ] Independent state tracking
+   [ ] Background resource generation
+   [ ] Return persistence system
+   [ ] System state serialization
+
+### Automated Development Systems
+1. Auto-Colonization
+   [ ] Population threshold monitoring
+   [ ] Resource level tracking
+   [ ] Tech tier requirements
+   [ ] Colonization ship dispatch
+
+2. Growth & Expansion
+   [ ] Food synthesis system
+   [ ] Biodome crop mechanics
+   [ ] Trade route formation
+   [ ] Resource distribution
+
+***********************************
+PHASE 3
+***********************************
+### Component-Specific Automation
+
+#### 1. Mothership Automation
+1. Resource Management
+   [ ] Automated resource sharing
+   [ ] Hub-to-colony distribution
+   [ ] Upgrade notification system
+   [ ] Module status monitoring
+
+2. Fleet Control
+   [ ] War ship dispatch system
+   [ ] Recon mission automation
+   [ ] Mining operation coordination
+   [ ] Fleet status tracking
+
+#### 2. Ship Systems Automation
+1. War Ships
+   [ ] Spitflare interception logic
+   [ ] Star Schooner support system
+   [ ] Orion's Frigate combat AI
+   [ ] Capital ship command logic
+
+2. Recon Ships
+   [ ] SC4 Comet exploration system
+   [ ] AC27G mapping automation
+   [ ] Anomaly detection logic
+   [ ] Resource identification
+
+3. Mining Ships
+   [ ] Rock Breaker extraction AI
+   [ ] Void Dredger operation system
+   [ ] Automated refining process
+   [ ] Resource delivery routing
+
+### Integration Architecture
+1. Component Structure
+   [ ] VPRStarSystemView container
+   [ ] Module-specific VPR components
+   [ ] Automation state handlers
+   [ ] Event emission system
+
+2. State Management
+   [ ] Global automation state
+   [ ] Local component state
+   [ ] XState machine integration
+   [ ] State persistence system
+
+3. Performance Optimization
+   [ ] Lazy loading implementation
+   [ ] Component memoization
+   [ ] Background process management
+   [ ] Resource cleanup system
+
+### Scheduling & Updates
+1. Core Systems
+   [ ] Custom scheduling middleware
+   [ ] Background update manager
+   [ ] Fleet dispatch coordinator
+   [ ] Resource generation timer
+
+2. Visual Feedback
+   [ ] Trade route particle effects
+   [ ] Module upgrade animations
+   [ ] Ship movement visualization
+   [ ] Status change indicators
+
+## Progress Tracking (Automation)
+- Core Framework: 0%
+- Development Systems: 0%
+- Ship Automation: 0%
+- Integration: 0%
+- Scheduling: 0%
+
+## Required Libraries (Automation-Specific)
+1. State Management
+   - XState for complex flows
+   - Redux-Saga/Thunk for scheduling
+   - RxJS for event streams
+   - WebSocket for real-time updates
+
+2. Visual Effects
+   - GSAP for complex animations
+   - react-particles-js for trade routes
+   - Framer Motion for state transitions
+   - D3.js for data visualization
+
+## Notes (Automation-Specific)
+- Implement proper cleanup for all automated processes
+- Use WebSocket for potential multiplayer expansion
+- Ensure proper state persistence
+- Optimize background processes
+- Maintain visual feedback for all automated actions
+
+## Progression System Implementation
+
+### Core Progression Framework
+1. Visual Progression Representation (VPR)
+   [ ] Asset evolution system
+   [ ] Dynamic visual feedback
+   [ ] Tier-based appearance changes
+   [ ] Animation framework integration
+
+2. Tech Tree Research (TTR)
+   [ ] Tier progression system
+   [ ] Research point tracking
+   [ ] Unlock requirements management
+   [ ] Tech dependency validation
+
+3. Experience & Leveling
+   [ ] XP calculation system
+   [ ] Level progression tracking
+   [ ] Performance bonus system
+   [ ] Visual rank indicators
+
+### Module Progression Implementation
+
+#### 1. Mothership Evolution
+1. Core Systems
+   [ ] Visual evolution stages
+   [ ] Module upgrade tracking
+   [ ] Resource efficiency scaling
+   [ ] Tier-based functionality unlocks
+
+2. Visual Components
+   [ ] Progressive structure changes
+   [ ] Module appearance updates
+   [ ] Animation state management
+   [ ] Effect system integration
+
+#### 2. Colony Development
+1. Growth Systems
+   [ ] Population scaling mechanics
+   [ ] Module unlock progression
+   [ ] Resource production scaling
+   [ ] Trade route evolution
+
+2. Visual Feedback
+   [ ] Colony size representation
+   [ ] Population density indicators
+   [ ] Module state visualization
+   [ ] Trade route intensification
+
+#### 3. Ship Progression
+1. War Ships
+   [ ] Tier-based upgrades
+   [ ] Combat efficiency scaling
+   [ ] Visual enhancement system
+   [ ] Rank progression display
+
+2. Support Ships
+   [ ] Recon efficiency scaling
+   [ ] Mining yield progression
+   [ ] Visual tier indicators
+   [ ] Automation enhancement
+
+### State Management & Persistence
+
+1. Core Systems
+   [ ] Global progression state
+   [ ] Per-module state tracking
+   [ ] Achievement system
+   [ ] Milestone management
+
+2. Data Persistence
+   [ ] Save state serialization
+   [ ] Progress recovery system
+   [ ] Cross-system synchronization
+   [ ] Backup management
+
+***********************************
+PHASE 4
+***********************************
+### UI Integration
+
+1. Progress Visualization
+   [ ] Tech tree UI updates
+   [ ] Resource efficiency displays
+   [ ] Level progress bars
+   [ ] Achievement notifications
+
+2. Interactive Elements
+   [ ] Upgrade option displays
+   [ ] Research point allocation
+   [ ] Milestone tracking
+   [ ] Reward collection system
+
+## Progress Tracking (Progression)
+- Core Framework: 0%
+- Module Evolution: 0%
+- Ship Progression: 0%
+- State Management: 0%
+- UI Integration: 0%
+
+## Required Libraries (Progression-Specific)
+1. State Management
+   - Redux-Persist for state saving
+   - Immer for immutable updates
+   - TypeScript for type safety
+   - LocalForage for storage
+
+2. Visual Effects
+   - Three.js for 3D evolution
+   - GSAP for smooth transitions
+   - Lottie for complex animations
+   - React-Spring for UI effects
+
+## Notes (Progression-Specific)
+- Implement proper state persistence
+- Ensure smooth visual transitions
+- Maintain performance with complex animations
+- Handle cross-module dependencies
+- Track progression milestones accurately
+
+## Factions & AI Implementation
+
+### Core Faction Framework
+1. Faction Assets & Ship Classes
+   [ ] Space Rats (Pirates) - 10 ship classes
+   [ ] Lost Nova (Exiles) - 10 ship classes
+   [ ] Equator Horizon (Ancient) - 10 ship classes
+   [ ] Banner & visual assets
+   [ ] Faction-specific behaviors
+
+2. AI Group Management
+   [ ] Independent AI state systems
+   [ ] Faction-specific event handlers
+   [ ] Behavior configuration system
+   [ ] Fleet management logic
+
+### Ship Class Implementation
+
+#### 1. Space Rats Fleet
+1. Core Ships
+   [ ] The Rat King (Flagship)
+   [ ] Asteroid Marauder
+   [ ] Rogue Nebula
+   [ ] The Rat's Revenge
+   [ ] Dark Sector Corsair
+
+2. Support Ships
+   [ ] The Wailing Wreck
+   [ ] Galactic Scourge
+   [ ] Plasma Fang
+   [ ] Vermin Vanguard
+   [ ] Black Void Buccaneer
+
+#### 2. Lost Nova Fleet
+1. Primary Ships
+   [ ] Eclipse Scythe
+   [ ] Null's Revenge
+   [ ] Dark Matter Reaper
+   [ ] Quantum Pariah
+   [ ] Entropy's Scale
+
+2. Advanced Ships
+   [ ] Void Revenant
+   [ ] Scythe of Andromeda
+   [ ] Nebular Persistence
+   [ ] Oblivion's Wake
+   [ ] Forbidden Vanguard
+
+#### 3. Equator Horizon Fleet
+1. Ancient Vessels
+   [ ] Celestial Arbiter
+   [ ] Ethereal Galleon
+   [ ] Stellar Equinox
+   [ ] Chronos Sentinel
+   [ ] Nebula's Judgement
+
+2. Balance Keepers
+   [ ] Aetherial Horizon
+   [ ] Cosmic Crusader
+   [ ] Balancekeeper's Wrath
+   [ ] Ecliptic Watcher
+   [ ] Harmony's Vanguard
+
+### AI Behavior Systems
+
+1. Core AI Framework
+   [ ] Behavior tree implementation
+   [ ] State machine integration
+   [ ] Pathfinding system
+   [ ] Fleet coordination logic
+
+2. Faction-Specific AI
+   [ ] Space Rats aggressive behavior
+   [ ] Lost Nova stealth tactics
+   [ ] Equator Horizon intervention logic
+   [ ] Dynamic difficulty scaling
+
+### Territory & Spawning
+
+1. Map Integration
+   [ ] Faction territory visualization
+   [ ] Spawn zone management
+   [ ] Random encounter system
+   [ ] Territory control mechanics
+
+2. Encounter System
+   [ ] Triggered spawning logic
+   [ ] Random patrol generation
+   [ ] Fleet composition rules
+   [ ] Difficulty scaling
+
+### Diplomacy System (Optional)
+
+1. Core Features
+   [ ] Negotiation interface
+   [ ] Diplomatic state tracking
+   [ ] Resource trading system
+   [ ] Alliance management
+
+2. Faction Relations
+   [ ] Reputation system
+   [ ] Trade route establishment
+   [ ] Diplomatic action effects
+   [ ] Alliance benefits/penalties
+
+## Progress Tracking (Factions & AI)
+- Core Framework: 0%
+- Ship Implementation: 0%
+- AI Behaviors: 0%
+- Territory System: 0%
+- Diplomacy: 0%
+
+## Required Libraries (Factions & AI)
+1. AI & Behavior
+   - Behavior3JS for behavior trees
+   - XState for state machines
+   - PathFinding.js for movement
+   - RxJS for event streams
+
+2. UI & Visualization
+   - D3.js for territory mapping
+   - React-Vis for data visualization
+   - Material-UI for diplomacy UI
+   - i18next for localization
+
+## Notes (Factions & AI)
+- Implement proper faction state persistence
+- Ensure balanced difficulty scaling
+- Maintain clear visual feedback for AI states
+- Handle cross-faction interactions
+- Track reputation and diplomatic relations
+
+## Scaling & Visual Enhancements Implementation
+
+### Auto-Scaling Systems
+1. Large-Scale Data Management
+   [ ] Resource counter virtualization
+   [ ] Star system data caching
+   [ ] Optimized selector implementation
+   [ ] Memory usage optimization
+
+2. System Performance
+   [ ] Async data loading system
+   [ ] Component code splitting
+   [ ] Lazy loading implementation
+   [ ] Cache management system
+
+3. Data Persistence
+   [ ] IndexedDB integration
+   [ ] Async save/load system
+   [ ] Data serialization optimization
+   [ ] Error recovery system
+
+***********************************
+PHASE 5
+***********************************
+### Visual Enhancement Framework
+
+#### 1. Background Systems
+1. Core Features
+   [ ] Multi-layer parallax implementation
+   [ ] Dynamic star field generation
+   [ ] Nebula effect system
+   [ ] Background scaling system
+
+2. Performance Features
+   [ ] GPU acceleration integration
+   [ ] Render optimization system
+   [ ] Memory management
+   [ ] Visual state caching
+
+#### 2. Trade & Navigation
+1. Star Lanes
+   [ ] SVG overlay system
+   [ ] Real-time path updates
+   [ ] Interactive route display
+   [ ] Traffic visualization
+
+2. Trade Routes
+   [ ] Dynamic line rendering
+   [ ] Resource flow animation
+   [ ] Volume visualization
+   [ ] Route optimization display
+
+#### 3. Colony Visualization
+1. Growth Indicators
+   [ ] Population density display
+   [ ] City light simulation
+   [ ] Trade ship visualization
+   [ ] Growth animation system
+
+2. Interactive Elements
+   [ ] Zoom level adaptation
+   [ ] Responsive layout system
+   [ ] Interactive overlay system
+   [ ] Detail view transitions
+
+### Asset Integration
+
+1. Building Upgrades
+   [ ] Tier-based visual states
+   [ ] Upgrade animation system
+   [ ] Status effect display
+   [ ] Progress visualization
+
+2. Late-Game Assets
+   [ ] High-res asset loading
+   [ ] Dynamic effect system
+   [ ] Texture animation
+   [ ] Visual theme consistency
+
+### Performance Optimization
+
+1. Core Systems
+   [ ] Component profiling
+   [ ] Render optimization
+   [ ] Memory management
+   [ ] Cache implementation
+
+2. Visual Systems
+   [ ] GPU acceleration
+   [ ] Animation optimization
+   [ ] Asset preloading
+   [ ] Batch rendering
+
+## Progress Tracking (Scaling & Visuals)
+- Auto-Scaling: 0%
+- Visual Enhancements: 0%
+- Asset Integration: 0%
+- Performance: 0%

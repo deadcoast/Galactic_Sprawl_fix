@@ -5,6 +5,7 @@ This document outlines the type hierarchy and relationships between different ty
 ## Core Types (`core/GameTypes.ts`)
 
 Base types used throughout the project:
+
 - `BaseStats`: Core stats shared by ships and other entities
 - `Effect`: Base effect type for all game effects
 - `Position`, `Velocity`: Core geometry types
@@ -13,6 +14,7 @@ Base types used throughout the project:
 ## Weapon System (`weapons/`)
 
 ### Base Types (`WeaponTypes.ts`)
+
 ```typescript
 // Core weapon categories and variants
 WeaponCategory
@@ -35,6 +37,7 @@ WeaponUpgrade
 ```
 
 ### Effects (`WeaponEffectTypes.ts`)
+
 ```typescript
 Effect (from core)
 ├── WeaponDamageEffect
@@ -44,6 +47,7 @@ Effect (from core)
 ## Ship System (`ships/`)
 
 ### Common Types (`CommonShipTypes.ts`)
+
 ```typescript
 // Base ship interfaces
 ShipType
@@ -62,6 +66,7 @@ CommonShipCapabilities
 ```
 
 ### Faction Types (`FactionShipTypes.ts`)
+
 ```typescript
 // Ship class hierarchies by faction
 FactionShipClass
@@ -78,6 +83,7 @@ FactionManager
 ## Combat System (`combat/`)
 
 ### Combat Types (`CombatTypes.ts`)
+
 ```typescript
 // Core combat entities
 CombatUnit
@@ -136,6 +142,7 @@ WeaponInstance
 ## Common Patterns
 
 1. **Stats Pattern**
+
    ```typescript
    interface BaseStats {
      health: number;
@@ -151,6 +158,7 @@ WeaponInstance
    ```
 
 2. **Config/State Pattern**
+
    ```typescript
    interface Config {
      id: string;
@@ -169,10 +177,11 @@ WeaponInstance
    ```
 
 3. **Effect Pattern**
+
    ```typescript
    interface Effect {
      type: string;
      duration: number;
      magnitude: number;
    }
-   ``` 
+   ```
