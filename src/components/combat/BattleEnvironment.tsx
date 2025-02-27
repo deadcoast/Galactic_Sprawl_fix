@@ -4,6 +4,10 @@ import { useVPR } from '../../hooks/ui/useVPR';
 import { AlertTriangle, Shield, Zap } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FactionId } from '../../types/ships/FactionTypes';
+import { Position } from '../../types/core/GameTypes';
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { CombatAutomationEffect } from '../../effects/component_effects/CombatAutomationEffect';
+import { ModuleEvent } from '../../lib/modules/ModuleEvents';
 
 interface HazardVPR {
   type: Hazard['type'];
@@ -168,6 +172,12 @@ export function BattleEnvironment({
   const [weaponEffects, setWeaponEffects] = useState<
     Record<string, { active: boolean; type: string }>
   >({});
+  const [automationEffects, setAutomationEffects] = useState<Array<{
+    id: string;
+    type: 'formation' | 'engagement' | 'repair' | 'shield' | 'attack' | 'retreat';
+    position: Position;
+    timestamp: number;
+  }>>([]);
 
   const { emitEvent } = useGlobalEvents();
   const { getVPRAnimationSet } = useVPR();
@@ -456,8 +466,40 @@ export function BattleEnvironment({
     return () => clearInterval(moveInterval);
   }, [units, activeHazards, onUnitMove]);
 
+  // Handle automation events
+  useEffect(() => {
+    const subscription = moduleEventBus.subscribe('AUTOMATION_STARTED', (event: ModuleEvent) => {
+      if (
+        event.type === 'AUTOMATION_STARTED' &&
+        event.moduleType === 'hangar' &&
+        event.data?.type
+      ) {
+        setAutomationEffects(prev => [
+          ...prev,
+          {
+            id: `${event.moduleId}-${Date.now()}`,
+            type: event.data.type,
+            position: event.data.position || { x: 50, y: 50 },
+            timestamp: Date.now(),
+          },
+        ]);
+
+        // Cleanup old effects
+        setTimeout(() => {
+          setAutomationEffects(prev =>
+            prev.filter(effect => Date.now() - effect.timestamp < 2000)
+          );
+        }, 2000);
+      }
+    });
+
+    return () => {
+      subscription();
+    };
+  }, []);
+
   return (
-    <div className="absolute inset-0 pointer-events-none">
+    <div className="relative w-full h-full overflow-hidden">
       {/* Combat HUD */}
       <div className="absolute top-4 left-4 space-y-2">
         {units.map(unit => (
@@ -646,6 +688,17 @@ export function BattleEnvironment({
               circle.type === 'engagement' ? 'rgba(239, 68, 68, 0.5)' : 'rgba(59, 130, 246, 0.5)',
             opacity: circle.opacity,
           }}
+        />
+      ))}
+
+      {/* Combat Automation Effects */}
+      {automationEffects.map(effect => (
+        <CombatAutomationEffect
+          key={effect.id}
+          type={effect.type}
+          position={effect.position}
+          quality={quality}
+          intensity={techBonuses.effectPotency}
         />
       ))}
     </div>

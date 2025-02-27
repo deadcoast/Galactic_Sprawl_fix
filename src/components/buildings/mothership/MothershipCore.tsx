@@ -3,6 +3,10 @@ import {
   ModuleAttachmentPoint,
   ModuleType,
 } from '../../../types/buildings/ModuleTypes';
+import { useContextMenu, ContextMenuItem } from '../../../components/ui/ContextMenu';
+import { Draggable, DropTarget, DragItem } from '../../../components/ui/DragAndDrop';
+import { defaultModuleConfigs } from '../../../config/modules/defaultModuleConfigs';
+import { Rocket, Radar, GraduationCap, X } from 'lucide-react';
 
 const MOTHERSHIP_ATTACHMENT_POINTS: ModuleAttachmentPoint[] = [
   {
@@ -27,6 +31,12 @@ const MOTHERSHIP_ATTACHMENT_POINTS: ModuleAttachmentPoint[] = [
   },
 ];
 
+const MODULE_ICONS = {
+  radar: Radar,
+  hangar: Rocket,
+  academy: GraduationCap,
+};
+
 interface MothershipProps {
   id: string;
   level: number;
@@ -42,6 +52,42 @@ export function MothershipCore({
   onModuleAttach,
   onModuleDetach,
 }: MothershipProps) {
+  // Context menu for attachment points
+  const getAttachmentPointMenuItems = (point: ModuleAttachmentPoint): ContextMenuItem[] => {
+    const attachedModule = modules.find(
+      (m: ModularBuilding['modules'][0]) =>
+        m.position.x === point.position.x && m.position.y === point.position.y
+    );
+
+    if (attachedModule) {
+      return [
+        {
+          id: 'detach',
+          label: 'Detach Module',
+          icon: <X className="w-4 h-4" />,
+          action: () => onModuleDetach?.(attachedModule.id),
+        },
+      ];
+    }
+
+    return point.allowedTypes.map(type => {
+      const config = defaultModuleConfigs[type];
+      const Icon = MODULE_ICONS[type as keyof typeof MODULE_ICONS];
+      return {
+        id: type,
+        label: config.name,
+        icon: Icon ? <Icon className="w-4 h-4" /> : undefined,
+        action: () => onModuleAttach?.(type, point.id),
+      };
+    });
+  };
+
+  const handleModuleDrop = (item: DragItem, point: ModuleAttachmentPoint) => {
+    if (item.type === 'module' && point.allowedTypes.includes(item.data.type)) {
+      onModuleAttach?.(item.data.type, point.id);
+    }
+  };
+
   return (
     <div className="relative w-full h-full" data-mothership-id={id}>
       {/* Core Mothership Structure */}
@@ -58,33 +104,53 @@ export function MothershipCore({
                   m.position.x === point.position.x && m.position.y === point.position.y
               );
 
+              const { handleContextMenu, ContextMenuComponent } = useContextMenu({
+                items: getAttachmentPointMenuItems(point),
+              });
+
               return (
-                <div key={point.id} className="p-4 bg-gray-800 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-medium text-gray-300">
-                        {point.id.charAt(0).toUpperCase() + point.id.slice(1)} Attachment Point
+                <div key={point.id}>
+                  <DropTarget
+                    accept={['module']}
+                    onDrop={(item) => handleModuleDrop(item, point)}
+                    className="p-4 bg-gray-800 rounded-lg hover:bg-gray-800/80 transition-colors"
+                  >
+                    <div
+                      className="flex items-center justify-between"
+                      onContextMenu={handleContextMenu}
+                    >
+                      <div>
+                        <div className="text-sm font-medium text-gray-300">
+                          {point.id.charAt(0).toUpperCase() + point.id.slice(1)} Attachment Point
+                        </div>
+                        {attachedModule ? (
+                          <Draggable
+                            item={{
+                              id: attachedModule.id,
+                              type: 'module',
+                              data: attachedModule,
+                            }}
+                            className="text-xs text-gray-500 hover:text-gray-400 cursor-grab"
+                          >
+                            {attachedModule.name}
+                          </Draggable>
+                        ) : (
+                          <div className="text-xs text-gray-500">
+                            Empty (Accepts: {point.allowedTypes.join(', ')})
+                          </div>
+                        )}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {attachedModule ? attachedModule.name : 'Empty'}
-                      </div>
+                      {attachedModule && (
+                        <button
+                          onClick={() => onModuleDetach?.(attachedModule.id)}
+                          className="px-3 py-1 text-xs text-red-400 hover:text-red-300"
+                        >
+                          Detach
+                        </button>
+                      )}
                     </div>
-                    {attachedModule ? (
-                      <button
-                        onClick={() => onModuleDetach?.(attachedModule.id)}
-                        className="px-3 py-1 text-xs text-red-400 hover:text-red-300"
-                      >
-                        Detach
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => onModuleAttach?.('hangar', point.id)}
-                        className="px-3 py-1 text-xs text-blue-400 hover:text-blue-300"
-                      >
-                        Attach Module
-                      </button>
-                    )}
-                  </div>
+                  </DropTarget>
+                  {ContextMenuComponent}
                 </div>
               );
             })}

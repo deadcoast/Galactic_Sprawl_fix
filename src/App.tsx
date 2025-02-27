@@ -4,6 +4,15 @@ import { techTreeManager, TechNode } from './managers/game/techTreeManager';
 import { OfficerManager } from './managers/module/OfficerManager';
 import { ShipHangarManager } from './managers/module/ShipHangarManager';
 import { useEffect, useState } from 'react';
+import { GameProvider, useGame } from './contexts/GameContext';
+import { ThresholdProvider } from './contexts/ThresholdContext';
+import { ModuleProvider } from './contexts/ModuleContext';
+import { GameLayout } from './components/ui/GameLayout';
+import { assetManager } from './managers/game/assetManager';
+import { gameManager } from './managers/game/gameManager';
+import { moduleManager } from './managers/module/ModuleManager';
+import { defaultModuleConfigs } from './config/modules/defaultModuleConfigs';
+import { defaultMothership, defaultColony } from './config/buildings/defaultBuildings';
 
 // Initial tech tree setup
 const initialTechs: TechNode[] = [
@@ -39,76 +48,170 @@ const initialTechs: TechNode[] = [
   },
 ];
 
-export function App() {
+function GameInitializer({ children }: { children: React.ReactNode }) {
+  const { dispatch } = useGame();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [loadingError, setLoadingError] = useState<string | null>(null);
   const [resourceManager] = useState(() => new ResourceManager());
   const [officerManager] = useState(() => new OfficerManager());
   const [shipHangarManager] = useState(() => new ShipHangarManager(resourceManager, officerManager));
 
   useEffect(() => {
-    // Initialize game state
-    const initGame = async () => {
+    async function initializeGame() {
       try {
+        console.log('Initializing game systems...');
+
+        // Register module configurations
+        console.log('Registering module configurations...');
+        Object.values(defaultModuleConfigs).forEach(config => {
+          moduleManager.registerModuleConfig(config);
+        });
+
+        // Register default buildings
+        console.log('Registering default buildings...');
+        moduleManager.registerBuilding(defaultMothership);
+        moduleManager.registerBuilding(defaultColony);
+
+        // Initialize asset manager
+        console.log('Initializing asset manager...');
+        await assetManager.initialize();
+
         // Register initial technologies
+        console.log('Registering initial technologies...');
         initialTechs.forEach(tech => {
           techTreeManager.registerNode(tech);
         });
         
-        // Add some initial resources
-        resourceManager.addResource('minerals', 1000);
-        resourceManager.addResource('energy', 1000);
-        resourceManager.addResource('plasma', 500);
+        // Add initial resources
+        console.log('Adding initial resources...');
+        dispatch({
+          type: 'UPDATE_RESOURCES',
+          resources: {
+            minerals: 2000, // Increased initial resources to allow for early module building
+            energy: 2000,
+            research: 0,
+            population: 100,
+          },
+        });
+
+        // Update systems count
+        console.log('Updating system counts...');
+        dispatch({
+          type: 'UPDATE_SYSTEMS',
+          systems: {
+            total: 1,
+            colonized: 1,
+            explored: 1,
+          },
+        });
+
+        // Start the game
+        console.log('Starting game loop...');
+        dispatch({ type: 'START_GAME' });
+        gameManager.start();
         
+        console.log('Game initialization complete');
         setIsInitialized(true);
       } catch (error) {
         console.error('Failed to initialize game:', error);
+        setLoadingError(error instanceof Error ? error.message : 'Failed to initialize game');
       }
+    }
+
+    initializeGame();
+
+    // Cleanup function
+    return () => {
+      gameManager.stop();
+      assetManager.destroy();
     };
+  }, [dispatch]);
 
-    initGame();
-  }, [resourceManager]);
-
-  if (!isInitialized) {
+  if (loadingError) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-teal-500 text-xl">Initializing game...</div>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center',
+        height: '100vh',
+        color: '#ff4444',
+        padding: '20px',
+        textAlign: 'center'
+      }}>
+        <h2>Failed to Initialize Game</h2>
+        <p>{loadingError}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          style={{
+            padding: '10px 20px',
+            marginTop: '20px',
+            background: '#444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Retry
+        </button>
       </div>
     );
   }
 
-  return (
-    <TooltipProvider>
-      <div className="min-h-screen bg-gray-900">
-        <div className="flex flex-col items-center justify-center h-full">
-          <h1 className="text-2xl text-teal-500 mb-4">Mothership Control</h1>
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-            <div className="text-teal-400 mb-4">
-              Resources:
-              <div className="grid grid-cols-3 gap-4">
-                <div>Minerals: 1000</div>
-                <div>Energy: 1000</div>
-                <div>Plasma: 500</div>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <button className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">
-                Build Ship Hangar
-              </button>
-              <button className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">
-                Build Colony Star Station
-              </button>
-              <button className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">
-                Build Radar
-              </button>
-              <button className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">
-                Build Officer Academy
-              </button>
-            </div>
-          </div>
-        </div>
+  if (!isInitialized) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center',
+        height: '100vh',
+        color: '#fff',
+        background: '#111',
+        padding: '20px',
+        textAlign: 'center'
+      }}>
+        <h2>Initializing game...</h2>
+        <p>Loading assets and preparing game systems</p>
       </div>
-    </TooltipProvider>
-  );
+    );
+  }
+
+  return children;
 }
 
-export default App;
+export default function App() {
+  return (
+    <GameProvider>
+      <ThresholdProvider>
+        <ModuleProvider>
+          <TooltipProvider>
+            <GameInitializer>
+              <GameLayout
+                empireName="Stellar Dominion"
+                bannerColor="#4FD1C5"
+              >
+                <div className="min-h-screen bg-gray-900">
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <h1 className="text-2xl text-blue-500 mb-4">Mothership Control</h1>
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+                      <div className="text-blue-400 mb-4">
+                        Resources:
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>Minerals: 2000</div>
+                          <div>Energy: 2000</div>
+                          <div>Population: 100</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </GameLayout>
+            </GameInitializer>
+          </TooltipProvider>
+        </ModuleProvider>
+      </ThresholdProvider>
+    </GameProvider>
+  );
+}

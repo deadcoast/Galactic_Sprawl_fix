@@ -5,6 +5,21 @@ import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { combatManager } from '../combat/combatManager';
 
+interface Anomaly {
+  id: string;
+  type: 'artifact' | 'signal' | 'phenomenon';
+  severity: 'low' | 'medium' | 'high';
+  description: string;
+  investigated: boolean;
+}
+
+interface Threat {
+  id: string;
+  position: Position;
+  severity: number;
+  type: string;
+}
+
 interface ReconShipEvents {
   shipRegistered: { shipId: string };
   shipUnregistered: { shipId: string };
@@ -20,6 +35,8 @@ interface ReconShipEvents {
   };
   stealthToggled: { shipId: string; active: boolean };
   shipStatusUpdated: { shipId: string; status: ReconShip['status'] };
+  threatDetected: { shipId: string; threatLevel: number; position: Position };
+  anomalyDiscovered: { shipId: string; anomaly: Anomaly; position: Position };
 }
 
 interface ReconShip {
@@ -57,7 +74,7 @@ interface ReconShip {
 
 interface ExplorationTask {
   id: string;
-  type: 'explore';
+  type: 'explore' | 'investigate' | 'evade';
   target: {
     id: string;
     position: Position;
@@ -66,6 +83,8 @@ interface ExplorationTask {
   assignedAt: number;
   specialization: 'mapping' | 'anomaly' | 'resource';
   status: 'queued' | 'in-progress' | 'completed' | 'failed';
+  progress?: number;
+  threatLevel?: number;
 }
 
 export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
@@ -77,7 +96,7 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
       id: string;
       position: Position;
       explored: boolean;
-      anomalies: number;
+      anomalies: Anomaly[];
       resources: number;
     }
   > = new Map();
@@ -125,9 +144,19 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
       return;
     }
 
+    // Check for threats before assigning task
+    const threats = this.getNearbyThreats(position, ship.sensors.range);
+    const threatLevel = this.calculateThreatLevel(threats, ship);
+
+    if (threatLevel > 0.7) {
+      // High threat - initiate evasion
+      this.assignEvasionTask(shipId, position, threats);
+      return;
+    }
+
     const task: ExplorationTask = {
       id: `explore-${sectorId}`,
-      type: 'explore',
+      type: threatLevel > 0.3 ? 'investigate' : 'explore',
       target: {
         id: sectorId,
         position,
@@ -136,6 +165,7 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
       assignedAt: Date.now(),
       specialization,
       status: 'queued',
+      threatLevel,
     };
 
     this.tasks.set(shipId, task);
@@ -152,6 +182,59 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     });
   }
 
+  private assignEvasionTask(shipId: string, position: Position, threats: Threat[]): void {
+    const ship = this.ships.get(shipId);
+    if (!ship) return;
+
+    // Calculate safe position away from threats
+    const safePosition = this.calculateSafePosition(position, threats);
+
+    const task: ExplorationTask = {
+      id: `evade-${Date.now()}`,
+      type: 'evade',
+      target: {
+        id: 'safe-zone',
+        position: safePosition,
+      },
+      priority: 10, // Highest priority for evasion
+      assignedAt: Date.now(),
+      specialization: 'mapping',
+      status: 'queued',
+      threatLevel: 1,
+    };
+
+    this.tasks.set(shipId, task);
+    this.updateShipStatus(shipId, 'returning');
+    this.toggleShipStealth(shipId, true);
+
+    this.emit('taskAssigned', { shipId, task });
+  }
+
+  private calculateSafePosition(position: Position, threats: Threat[]): Position {
+    // Calculate vector away from threats
+    const escapeVector = threats.reduce(
+      (vec, threat) => {
+        const dx = position.x - threat.position.x;
+        const dy = position.y - threat.position.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        return {
+          x: vec.x + (dx / distance) * threat.severity,
+          y: vec.y + (dy / distance) * threat.severity,
+        };
+      },
+      { x: 0, y: 0 }
+    );
+
+    // Normalize and scale
+    const magnitude = Math.sqrt(escapeVector.x * escapeVector.x + escapeVector.y * escapeVector.y);
+    const safeDistance = 500; // Base safe distance
+
+    return {
+      x: position.x + (escapeVector.x / magnitude) * safeDistance,
+      y: position.y + (escapeVector.y / magnitude) * safeDistance,
+    };
+  }
+
   public completeTask(shipId: string): void {
     const task = this.tasks.get(shipId);
     const ship = this.ships.get(shipId);
@@ -163,18 +246,70 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
         sector.explored = true;
         ship.discoveries.mappedSectors++;
 
-        // Update based on specialization
+        // Enhanced specialization handling
         if (task.specialization === 'anomaly') {
-          sector.anomalies = Math.floor(Math.random() * 3) + 1; // 1-3 anomalies
-          ship.discoveries.anomaliesFound += sector.anomalies;
+          const anomalies = this.generateAnomalies(ship.sensors.anomalyDetection);
+          sector.anomalies = anomalies;
+          ship.discoveries.anomaliesFound += anomalies.length;
+
+          // Emit anomaly discoveries
+          anomalies.forEach(anomaly => {
+            this.emit('anomalyDiscovered', {
+              shipId,
+              anomaly,
+              position: task.target.position,
+            });
+          });
+
+          // Emit mission event
+          moduleEventBus.emit({
+            type: 'MISSION_COMPLETED',
+            moduleId: shipId,
+            moduleType: 'radar' as ModuleType,
+            timestamp: Date.now(),
+            data: {
+              type: 'anomaly',
+              sector: task.target.id,
+              importance: anomalies.some(a => a.severity === 'high') ? 'high' : 
+                         anomalies.some(a => a.severity === 'medium') ? 'medium' : 'low',
+              description: `Discovered ${anomalies.length} anomalies in ${task.target.id}`,
+              xpGained: this.calculateExperienceGain(task, ship),
+              anomalyDetails: anomalies.map(a => ({
+                type: a.type,
+                severity: a.severity,
+                investigated: a.investigated,
+              })),
+            },
+          });
         } else if (task.specialization === 'resource') {
-          sector.resources = Math.floor(Math.random() * 5) + 1; // 1-5 resources
+          sector.resources = Math.floor(Math.random() * 5) + 1;
           ship.discoveries.resourcesLocated += sector.resources;
+
+          // Emit mission event
+          moduleEventBus.emit({
+            type: 'MISSION_COMPLETED',
+            moduleId: shipId,
+            moduleType: 'radar' as ModuleType,
+            timestamp: Date.now(),
+            data: {
+              type: 'discovery',
+              sector: task.target.id,
+              importance: sector.resources > 3 ? 'high' : 
+                         sector.resources > 1 ? 'medium' : 'low',
+              description: `Located ${sector.resources} resource deposits in ${task.target.id}`,
+              xpGained: this.calculateExperienceGain(task, ship),
+              resourcesFound: [{ type: 'Unknown', amount: sector.resources }],
+            },
+          });
         }
       }
 
-      // Grant experience
-      ship.experience += this.calculateExperienceGain(task);
+      // Enhanced experience calculation
+      const experienceGained = this.calculateExperienceGain(task, ship);
+      ship.experience += experienceGained;
+
+      // Apply tech bonuses based on experience
+      this.updateTechBonuses(ship);
 
       this.tasks.delete(shipId);
       this.updateShipStatus(shipId, 'returning');
@@ -186,9 +321,128 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
         moduleId: shipId,
         moduleType: 'radar' as ModuleType,
         timestamp: Date.now(),
-        data: { task, discoveries: ship.discoveries },
+        data: { 
+          task, 
+          discoveries: ship.discoveries, 
+          experienceGained,
+          heatMapValue: this.calculateHeatMapValue(sector),
+        },
       });
     }
+  }
+
+  private calculateHeatMapValue(sector: any): number {
+    if (!sector) return 0;
+
+    let heatValue = 0;
+
+    // Resource potential contribution (40%)
+    heatValue += (sector.resources || 0) * 0.4;
+
+    // Anomaly contribution (30%)
+    if (sector.anomalies) {
+      const anomalyHeat = sector.anomalies.reduce((sum: number, anomaly: Anomaly) => {
+        return sum + (anomaly.severity === 'high' ? 0.3 : 
+                     anomaly.severity === 'medium' ? 0.2 : 0.1);
+      }, 0);
+      heatValue += anomalyHeat;
+    }
+
+    // Habitability contribution (30%)
+    if (sector.habitabilityScore) {
+      heatValue += sector.habitabilityScore * 0.3;
+    }
+
+    // Age decay
+    if (sector.lastScanned) {
+      const hoursSinceLastScan = (Date.now() - sector.lastScanned) / (1000 * 60 * 60);
+      const ageFactor = Math.max(0, 1 - hoursSinceLastScan / 168); // 168 hours = 1 week
+      heatValue *= ageFactor;
+    }
+
+    return Math.min(1, heatValue);
+  }
+
+  private generateAnomalies(detectionSkill: number): Anomaly[] {
+    const count = Math.floor(Math.random() * 3 * detectionSkill) + 1;
+    const anomalies: Anomaly[] = [];
+    const anomalyTypes = ['artifact', 'signal', 'phenomenon'] as const;
+    const severityLevels = ['high', 'medium', 'low'] as const;
+
+    for (let i = 0; i < count; i++) {
+      const type = anomalyTypes[Math.floor(Math.random() * anomalyTypes.length)];
+      const severity = Math.random() < 0.2 ? 'high' : Math.random() < 0.5 ? 'medium' : 'low';
+
+      anomalies.push({
+        id: `anomaly-${Date.now()}-${i}`,
+        type,
+        severity,
+        description: this.generateAnomalyDescription(type, severity),
+        investigated: false,
+      });
+    }
+
+    return anomalies;
+  }
+
+  private generateAnomalyDescription(type: 'artifact' | 'signal' | 'phenomenon', severity: 'low' | 'medium' | 'high'): string {
+    const descriptions = {
+      artifact: {
+        high: 'Ancient technological marvel of immense power',
+        medium: 'Mysterious alien artifacts with unknown purpose',
+        low: 'Scattered remnants of past civilizations',
+      },
+      signal: {
+        high: 'Powerful energy signature of unknown origin',
+        medium: 'Recurring patterns in subspace frequencies',
+        low: 'Faint echoes of distant transmissions',
+      },
+      phenomenon: {
+        high: 'Dangerous spatial anomaly requiring immediate attention',
+        medium: 'Unusual gravitational fluctuations detected',
+        low: 'Minor disturbances in local space-time',
+      },
+    } as const;
+
+    return descriptions[type][severity];
+  }
+
+  private calculateExperienceGain(task: ExplorationTask, ship: ReconShip): number {
+    const baseXP = 100;
+    const timeFactor = (Date.now() - task.assignedAt) / 1000 / 60; // Minutes
+    
+    // Specialization bonus
+    const specializationBonus = task.specialization === ship.specialization ? 1.5 : 1.2;
+    
+    // Threat bonus
+    const threatBonus = task.threatLevel ? 1 + task.threatLevel : 1;
+    
+    // Efficiency bonus
+    const efficiencyBonus = ship.efficiency;
+    
+    // Discovery bonus
+    const discoveryBonus = ship.discoveries.anomaliesFound * 0.1 + 
+                          ship.discoveries.resourcesLocated * 0.05;
+
+    return Math.floor(
+      baseXP * 
+      timeFactor * 
+      specializationBonus * 
+      threatBonus * 
+      efficiencyBonus * 
+      (1 + discoveryBonus)
+    );
+  }
+
+  private updateTechBonuses(ship: ReconShip): void {
+    const experienceLevel = Math.floor(ship.experience / 1000);
+    const bonuses = {
+      scanSpeed: 1 + experienceLevel * 0.1,
+      stealthEfficiency: 1 + experienceLevel * 0.15,
+      detectionRange: 1 + experienceLevel * 0.05,
+    };
+
+    this.emit('techBonusesUpdated', { shipId: ship.id, bonuses });
   }
 
   public updateShipTechBonuses(
@@ -202,10 +456,10 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     }
   }
 
-  public toggleShipStealth(shipId: string): void {
+  public toggleShipStealth(shipId: string, active: boolean): void {
     const ship = this.ships.get(shipId);
     if (ship && ship.stealth.cooldown <= 0) {
-      ship.stealth.active = !ship.stealth.active;
+      ship.stealth.active = active;
       this.emit('stealthToggled', { shipId, active: ship.stealth.active });
     }
   }
@@ -243,14 +497,6 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     }
   }
 
-  private calculateExperienceGain(task: ExplorationTask): number {
-    const baseXP = 100;
-    const timeFactor = (Date.now() - task.assignedAt) / 1000 / 60; // Minutes
-    const specializationBonus = task.specialization === 'anomaly' ? 1.5 : 1.2;
-
-    return Math.floor(baseXP * timeFactor * specializationBonus);
-  }
-
   // Add method to get ship efficiency with tech bonuses
   public getShipEfficiency(shipId: string): number {
     const ship = this.ships.get(shipId);
@@ -279,7 +525,7 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
 
       // Handle automatic stealth activation near threats
       if (this.isNearThreat(ship) && !ship.stealth.active && ship.stealth.cooldown <= 0) {
-        this.toggleShipStealth(ship.id);
+        this.toggleShipStealth(ship.id, true);
       }
     });
   }
@@ -316,5 +562,30 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     const baseThreshold = 0.3; // Base threshold for threat response
 
     return threatLevel > baseThreshold * (1 + stealthFactor);
+  }
+
+  private getNearbyThreats(position: Position, range: number): Threat[] {
+    return combatManager.getThreatsInRange(position, range).map(threat => ({
+      id: threat.id,
+      position: threat.position,
+      severity: threat.severity === 'high' ? 1 : threat.severity === 'medium' ? 0.6 : 0.3,
+      type: threat.type,
+    }));
+  }
+
+  private calculateThreatLevel(threats: Threat[], ship: ReconShip): number {
+    if (threats.length === 0) return 0;
+
+    return threats.reduce((total, threat) => {
+      const distance = Math.sqrt(
+        Math.pow(threat.position.x - ship.position.x, 2) +
+          Math.pow(threat.position.y - ship.position.y, 2)
+      );
+
+      const distanceFactor = 1 - Math.min(distance / ship.sensors.range, 1);
+      const detectionChance = ship.sensors.accuracy * (ship.techBonuses?.detectionRange || 1);
+
+      return total + distanceFactor * threat.severity * detectionChance;
+    }, 0);
   }
 }

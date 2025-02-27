@@ -8,6 +8,8 @@ export interface BaseModule {
   position: Position;
   isActive: boolean;
   level: number;
+  status: 'active' | 'constructing' | 'inactive';
+  progress?: number;
 }
 
 // All possible module types
@@ -20,6 +22,11 @@ export type ModuleType =
   | 'exploration'
   | 'mineral'
   | 'trading'
+  | 'population'
+  | 'infrastructure'
+  | 'research'
+  | 'food'
+  | 'defense'
   // System modules
   | 'resource-manager';
 
@@ -57,11 +64,12 @@ export interface ModuleAttachmentPoint {
   currentModule?: BaseModule;
 }
 
-// Building base that can have modules
+// Building that can have modules
 export interface ModularBuilding {
   id: string;
   type: BuildingType;
   level: number;
-  attachmentPoints: ModuleAttachmentPoint[];
   modules: BaseModule[];
+  status: 'active' | 'constructing' | 'inactive';
+  attachmentPoints: ModuleAttachmentPoint[];
 }

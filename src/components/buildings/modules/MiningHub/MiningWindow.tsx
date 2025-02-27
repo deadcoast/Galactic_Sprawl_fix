@@ -5,6 +5,8 @@ import { ResourceNode } from './ResourceNode';
 import { ResourceStorage } from './ResourceStorage';
 import { ResourceTransfer } from './ResourceTransfer';
 import { TechBonus } from './TechBonus';
+import { useContextMenu, ContextMenuItem } from '../../../../components/ui/ContextMenu';
+import { Draggable, DropTarget, DragItem } from '../../../../components/ui/DragAndDrop';
 import {
   AlertTriangle,
   ArrowDown,
@@ -18,6 +20,8 @@ import {
   Settings,
   Truck,
   X,
+  Ship,
+  Rocket,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -62,6 +66,7 @@ const mockTransfers = [
     progress: 0.7,
   },
 ];
+
 interface Resource {
   id: string;
   name: string;
@@ -87,8 +92,6 @@ interface MiningShip {
   targetNode?: string;
   efficiency: number;
 }
-
-type SortOption = 'name' | 'type' | 'abundance' | 'distance' | 'priority';
 
 const mockResources: Resource[] = [
   {
@@ -149,248 +152,269 @@ const mockShips: MiningShip[] = [
   },
 ];
 
+type ViewMode = 'map' | 'grid';
+type SortOption = 'priority' | 'name' | 'type' | 'abundance' | 'distance';
+type FilterOption = 'all' | 'mineral' | 'gas' | 'exotic';
+
 export function MiningWindow() {
   const [selectedNode, setSelectedNode] = useState<Resource | null>(null);
-  const [filter, setFilter] = useState<'all' | 'mineral' | 'gas' | 'exotic'>('all');
-  const [showSettings, setShowSettings] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>('map');
   const [sortBy, setSortBy] = useState<SortOption>('priority');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [viewMode, setViewMode] = useState<'map' | 'grid'>('map');
+  const [filter, setFilter] = useState<FilterOption>('all');
+  const [showTutorial, setShowTutorial] = useState(false);
 
-  // Tech bonuses (in a real app, these would come from the tech tree state)
+  // Mock tech bonuses
   const techBonuses = {
-    extractionRate: 1.2, // 20% bonus from tech
-    storageCapacity: 1.5, // 50% bonus from tech
-    efficiency: 1.1, // 10% bonus from tech
+    extractionRate: 1.2,
+    efficiency: 1.1,
+    range: 1.15,
+    storageCapacity: 1.5,
   };
 
+  // Filter and sort resources
   const filteredResources = mockResources
     .filter(resource => filter === 'all' || resource.type === filter)
     .sort((a, b) => {
-      const order = sortOrder === 'asc' ? 1 : -1;
+      let comparison = 0;
       switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name) * order;
-        case 'type':
-          return a.type.localeCompare(b.type) * order;
-        case 'abundance':
-          return (a.abundance - b.abundance) * order;
-        case 'distance':
-          return (a.distance - b.distance) * order;
         case 'priority':
-          return (a.priority - b.priority) * order;
-        default:
-          return 0;
+          comparison = a.priority - b.priority;
+          break;
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'type':
+          comparison = a.type.localeCompare(b.type);
+          break;
+        case 'abundance':
+          comparison = b.abundance - a.abundance;
+          break;
+        case 'distance':
+          comparison = a.distance - b.distance;
+          break;
       }
+      return sortOrder === 'asc' ? comparison : -comparison;
     });
 
+  // Context menu for resources
+  const getResourceMenuItems = (resource: Resource): ContextMenuItem[] => {
+    const assignedShip = mockShips.find(ship => ship.targetNode === resource.id);
+    return [
+      {
+        id: 'info',
+        label: 'Resource Info',
+        icon: <Database className="w-4 h-4" />,
+        action: () => setSelectedNode(resource),
+      },
+      {
+        id: 'assign-ship',
+        label: assignedShip ? 'Reassign Ship' : 'Assign Ship',
+        icon: <Ship className="w-4 h-4" />,
+        action: () => {}, // No-op action for parent menu
+        children: mockShips
+          .filter(ship => ship.status === 'idle' || ship.targetNode === resource.id)
+          .map(ship => ({
+            id: ship.id,
+            label: ship.name,
+            icon: <Rocket className="w-4 h-4" />,
+            action: () => {
+              // Handle ship assignment
+              console.log(`Assigning ${ship.name} to ${resource.name}`);
+            },
+          })),
+      },
+      {
+        id: 'set-priority',
+        label: 'Set Priority',
+        icon: <ChevronRight className="w-4 h-4" />,
+        action: () => {}, // No-op action for parent menu
+        children: [1, 2, 3, 4, 5].map(priority => ({
+          id: `priority-${priority}`,
+          label: `Priority ${priority}`,
+          action: () => {
+            // Handle priority change
+            console.log(`Setting ${resource.name} priority to ${priority}`);
+          },
+        })),
+      },
+    ];
+  };
+
+  // Handle resource drop on storage
+  const handleResourceDrop = (item: DragItem, storage: typeof mockStorageData[0]) => {
+    if (item.type === 'resource') {
+      // Handle resource transfer
+      console.log(`Transferring ${item.data.type} to ${storage.resourceType} storage`);
+    }
+  };
+
   return (
-    <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">
-      {/* Left Panel - Resource Map */}
-      <div className="w-2/3 border-r border-gray-700 p-6 flex flex-col">
-        {/* Resource Storage Overview */}
-        <ResourceStorage storageData={mockStorageData} />
-
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <Database className="w-6 h-6 text-indigo-400" />
-            <h2 className="text-xl font-bold text-white">Mineral Processing Centre</h2>
-          </div>
-          <div className="flex items-center space-x-3">
-            {/* View Mode Toggle */}
-            <div className="flex bg-gray-800 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('map')}
-                className={`p-1.5 rounded ${
-                  viewMode === 'map'
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                <Map className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded ${
-                  viewMode === 'grid'
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                <Grid2X2 className="w-5 h-5" />
-              </button>
-            </div>
-            <button
-              onClick={() => setShowTutorial(true)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-            >
-              <HelpCircle className="w-5 h-5 text-gray-400" />
-            </button>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-            >
-              <Settings className="w-5 h-5 text-gray-400" />
-            </button>
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
-              <X className="w-5 h-5 text-gray-400" />
-            </button>
-          </div>
-        </div>
-
-        {/* Resource Type Filters */}
-        <div className="flex space-x-2 mb-6">
-          {[
-            { id: 'all' as const, label: 'All Resources', icon: Database },
-            { id: 'mineral' as const, label: 'Minerals', icon: Pickaxe },
-            { id: 'gas' as const, label: 'Gas', icon: Database },
-            { id: 'exotic' as const, label: 'Exotic', icon: AlertTriangle },
-          ].map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setFilter(id)}
-              className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
-                filter === id
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Sort Controls */}
-        <div className="flex items-center space-x-4 mb-4">
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value as SortOption)}
-            className="bg-gray-800 text-gray-300 rounded-lg px-3 py-1.5 text-sm border border-gray-700"
-          >
-            <option value="priority">Sort by Priority</option>
-            <option value="name">Sort by Name</option>
-            <option value="type">Sort by Type</option>
-            <option value="abundance">Sort by Abundance</option>
-            <option value="distance">Sort by Distance</option>
-          </select>
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <h2 className="text-xl font-bold text-white">Mineral Processing</h2>
           <button
-            onClick={() => setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))}
-            className="p-1.5 bg-gray-800 rounded-lg text-gray-400 hover:text-gray-300"
+            onClick={() => setShowTutorial(true)}
+            className="p-2 text-gray-400 hover:text-gray-300"
           >
-            {sortOrder === 'asc' ? (
-              <ArrowUp className="w-4 h-4" />
-            ) : (
-              <ArrowDown className="w-4 h-4" />
-            )}
+            <HelpCircle className="w-5 h-5" />
           </button>
         </div>
-
-        {/* Resource View (Map or Grid) */}
-        {viewMode === 'map' ? (
-          <MiningMap
-            resources={filteredResources}
-            selectedNode={selectedNode}
-            onSelectNode={setSelectedNode}
-            techBonuses={techBonuses}
-            ships={mockShips}
-            quality="high"
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => setViewMode(prev => (prev === 'map' ? 'grid' : 'map'))}
+            className="p-2 text-gray-400 hover:text-gray-300"
           >
-            <ResourceTransfer transfers={mockTransfers} />
-          </MiningMap>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1">
-            {filteredResources.map(resource => (
-              <ResourceNode
-                key={resource.id}
-                resource={resource}
-                isSelected={selectedNode?.id === resource.id}
-                techBonuses={techBonuses}
-                onClick={() => setSelectedNode(resource)}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Mining Fleet Status */}
-        <div className="mt-6 bg-gray-800/50 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-300 mb-3">Active Mining Ships</h3>
-          <div className="space-y-2">
-            {mockShips.map(ship => (
-              <div
-                key={ship.id}
-                className="flex items-center justify-between bg-gray-800 rounded-lg p-3"
-              >
-                <div className="flex items-center space-x-3">
-                  <Truck
-                    className={`w-5 h-5 ${
-                      ship.status === 'mining'
-                        ? 'text-green-400'
-                        : ship.status === 'returning'
-                          ? 'text-yellow-400'
-                          : 'text-gray-400'
-                    }`}
-                  />
-                  <div>
-                    <div className="text-sm font-medium text-gray-200">{ship.name}</div>
-                    <div className="text-xs text-gray-400">
-                      {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)} •{' '}
-                      {Math.round((ship.currentLoad / ship.capacity) * 100)}% Full
-                    </div>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-500" />
-              </div>
-            ))}
-          </div>
+            {viewMode === 'map' ? (
+              <Grid2X2 className="w-5 h-5" />
+            ) : (
+              <Map className="w-5 h-5" />
+            )}
+          </button>
+          <button className="p-2 text-gray-400 hover:text-gray-300">
+            <Settings className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
-      {/* Right Panel - Controls & Details */}
-      <div className="w-1/3 p-6">
-        {selectedNode ? (
-          <MiningControls
-            resource={selectedNode}
-            techBonuses={techBonuses}
-            onExperienceGained={amount => {
-              // Here we would update the tech tree progress
-              console.log(`Mining experience gained: ${amount}`);
-            }}
-          />
-        ) : (
-          <div className="h-full flex items-center justify-center text-gray-400 text-center">
-            <div>
-              <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Select a resource node to view details and adjust mining parameters</p>
-            </div>
-          </div>
-        )}
+      {/* Filters */}
+      <div className="flex items-center space-x-4 mb-4">
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as SortOption)}
+          className="bg-gray-800 text-gray-300 rounded-lg px-3 py-1.5 text-sm border border-gray-700"
+        >
+          <option value="priority">Sort by Priority</option>
+          <option value="name">Sort by Name</option>
+          <option value="type">Sort by Type</option>
+          <option value="abundance">Sort by Abundance</option>
+          <option value="distance">Sort by Distance</option>
+        </select>
+        <button
+          onClick={() => setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))}
+          className="p-1.5 bg-gray-800 rounded-lg text-gray-400 hover:text-gray-300"
+        >
+          {sortOrder === 'asc' ? (
+            <ArrowUp className="w-4 h-4" />
+          ) : (
+            <ArrowDown className="w-4 h-4" />
+          )}
+        </button>
       </div>
 
-      {/* Tech Bonuses Display */}
-      <TechBonus bonuses={techBonuses} />
+      {/* Resource View (Map or Grid) */}
+      {viewMode === 'map' ? (
+        <MiningMap
+          resources={filteredResources}
+          selectedNode={selectedNode}
+          onSelectNode={setSelectedNode}
+          techBonuses={techBonuses}
+          ships={mockShips}
+          quality="high"
+        >
+          <ResourceTransfer transfers={mockTransfers} />
+        </MiningMap>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1">
+          {filteredResources.map(resource => {
+            const { handleContextMenu, ContextMenuComponent } = useContextMenu({
+              items: getResourceMenuItems(resource),
+            });
 
-      {/* Settings Modal */}
-      {showSettings && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-gray-800 rounded-lg p-6 w-96">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-white">Mining Settings</h3>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            {/* Add settings controls here */}
-          </div>
+            return (
+              <div key={resource.id}>
+                <Draggable
+                  item={{
+                    id: resource.id,
+                    type: 'resource',
+                    data: resource,
+                  }}
+                >
+                  <div onContextMenu={handleContextMenu}>
+                    <ResourceNode
+                      resource={resource}
+                      isSelected={selectedNode?.id === resource.id}
+                      techBonuses={techBonuses}
+                      onClick={() => setSelectedNode(resource)}
+                    />
+                  </div>
+                </Draggable>
+                {ContextMenuComponent}
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Tutorial Overlay */}
-      {showTutorial && <MiningTutorial onClose={() => setShowTutorial(false)} />}
+      {/* Storage Section */}
+      <div className="mt-4 grid grid-cols-2 gap-4">
+        <DropTarget
+          accept={['resource']}
+          onDrop={(item) => handleResourceDrop(item, mockStorageData[0])}
+          className="p-4 bg-gray-800 rounded-lg hover:bg-gray-800/80 transition-colors"
+        >
+          <ResourceStorage storageData={mockStorageData} />
+        </DropTarget>
+      </div>
+
+      {/* Mining Fleet Status */}
+      <div className="mt-4">
+        <h3 className="text-lg font-medium text-white mb-3">Mining Fleet</h3>
+        <div className="grid grid-cols-2 gap-4">
+          {mockShips.map(ship => {
+            const assignedResource = mockResources.find(r => r.id === ship.targetNode);
+
+            return (
+              <Draggable
+                key={ship.id}
+                item={{
+                  id: ship.id,
+                  type: 'ship',
+                  data: ship,
+                }}
+              >
+                <div className="p-4 bg-gray-800 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <Ship className="w-4 h-4 text-cyan-400" />
+                      <span className="font-medium text-gray-200">{ship.name}</span>
+                    </div>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${
+                        ship.status === 'mining'
+                          ? 'bg-green-900/50 text-green-400'
+                          : ship.status === 'returning'
+                            ? 'bg-blue-900/50 text-blue-400'
+                            : 'bg-gray-900/50 text-gray-400'
+                      }`}
+                    >
+                      {ship.status}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    {assignedResource ? (
+                      <>Mining: {assignedResource.name}</>
+                    ) : (
+                      <>No assignment</>
+                    )}
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    Cargo: {ship.currentLoad}/{ship.capacity} • Efficiency:{' '}
+                    {Math.round(ship.efficiency * 100)}%
+                  </div>
+                </div>
+              </Draggable>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Tutorial Modal */}
+      {showTutorial && (
+        <MiningTutorial onClose={() => setShowTutorial(false)} />
+      )}
     </div>
   );
 }

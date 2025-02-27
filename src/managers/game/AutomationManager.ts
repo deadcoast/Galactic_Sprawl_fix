@@ -1,6 +1,9 @@
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
 import { moduleManager } from '../module/ModuleManager';
+import { resourceManager } from './ResourceManager';
+import { ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 
 /**
  * Automation condition types
@@ -196,7 +199,82 @@ export class AutomationManager {
    * Checks if all conditions are met
    */
   private async checkConditions(conditions: AutomationCondition[]): Promise<boolean> {
-    // TODO: Implement condition checking
+    if (!conditions.length) {
+      return true;
+    }
+
+    for (const condition of conditions) {
+      switch (condition.type) {
+        case 'RESOURCE_ABOVE':
+          if (!condition.target || !condition.value) {
+            continue;
+          }
+          const currentAmount = resourceManager.getResourceAmount(condition.target as ResourceType);
+          if (currentAmount <= condition.value) {
+            return false;
+          }
+          break;
+
+        case 'RESOURCE_BELOW':
+          if (!condition.target || !condition.value) {
+            continue;
+          }
+          const amount = resourceManager.getResourceAmount(condition.target as ResourceType);
+          if (amount >= condition.value) {
+            return false;
+          }
+          break;
+
+        case 'MODULE_ACTIVE':
+          if (!condition.target) {
+            continue;
+          }
+          const module = moduleManager.getModule(condition.target);
+          if (!module?.isActive) {
+            return false;
+          }
+          break;
+
+        case 'MODULE_INACTIVE':
+          if (!condition.target) {
+            continue;
+          }
+          const inactiveModule = moduleManager.getModule(condition.target);
+          if (inactiveModule?.isActive) {
+            return false;
+          }
+          break;
+
+        case 'TIME_ELAPSED':
+          if (!condition.value) {
+            continue;
+          }
+          const now = Date.now();
+          if (now - (condition.target ? parseInt(condition.target) : 0) < condition.value) {
+            return false;
+          }
+          break;
+
+        case 'EVENT_OCCURRED':
+          if (!condition.target || !condition.value) {
+            continue;
+          }
+          // Check event history (assuming we have an eventManager)
+          // Since we don't have eventManager yet, we'll skip this check
+          break;
+
+        case 'STATUS_EQUALS':
+          if (!condition.target || !condition.value) {
+            continue;
+          }
+          const targetModule = moduleManager.getModule(condition.target);
+          if (!targetModule || targetModule.status !== condition.value) {
+            return false;
+          }
+          break;
+      }
+    }
+
     return true;
   }
 
@@ -204,7 +282,75 @@ export class AutomationManager {
    * Executes automation actions
    */
   private async executeActions(actions: AutomationAction[]): Promise<void> {
-    // TODO: Implement action execution
+    for (const action of actions) {
+      try {
+        switch (action.type) {
+          case 'ACTIVATE_MODULE':
+            if (!action.target) {
+              continue;
+            }
+            moduleManager.setModuleActive(action.target, true);
+            break;
+
+          case 'DEACTIVATE_MODULE':
+            if (!action.target) {
+              continue;
+            }
+            moduleManager.setModuleActive(action.target, false);
+            break;
+
+          case 'TRANSFER_RESOURCES':
+            if (!action.target || !action.value) {
+              continue;
+            }
+            const { from, to, amount, type } = action.value;
+            resourceManager.transferResources(type as ResourceType, amount, from, to);
+            break;
+
+          case 'PRODUCE_RESOURCES':
+            if (!action.target || !action.value) {
+              continue;
+            }
+            resourceManager.addResource(action.target as ResourceType, action.value);
+            break;
+
+          case 'CONSUME_RESOURCES':
+            if (!action.target || !action.value) {
+              continue;
+            }
+            resourceManager.removeResource(action.target as ResourceType, action.value);
+            break;
+
+          case 'UPGRADE_MODULE':
+            if (!action.target) {
+              continue;
+            }
+            moduleManager.upgradeModule(action.target);
+            break;
+
+          case 'EMIT_EVENT':
+            if (!action.target || !action.value) {
+              continue;
+            }
+            moduleEventBus.emit({
+              type: action.target as ModuleEventType,
+              moduleId: action.value.moduleId,
+              moduleType: action.value.moduleType,
+              timestamp: Date.now(),
+              data: action.value.data,
+            });
+            break;
+        }
+
+        // Apply delay if specified
+        if (action.delay) {
+          await new Promise(resolve => setTimeout(resolve, action.delay));
+        }
+      } catch (error) {
+        console.error(`Error executing action ${action.type}:`, error);
+        // Continue with next action even if one fails
+      }
+    }
   }
 
   /**

@@ -2,6 +2,12 @@ import { useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { gameManager } from '../../managers/game/gameManager';
 import { GameEvent } from '../../types/core/GameTypes';
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+
+interface Resource {
+  type: string;
+  amount: number;
+}
 
 export function useGameState() {
   const { state, dispatch } = useGame();
@@ -24,6 +30,58 @@ export function useGameState() {
       });
     });
 
+    // Listen for mission events
+    const unsubscribeMissionEvents = moduleEventBus.subscribe('MISSION_COMPLETED', event => {
+      if (event.moduleType === 'radar') {
+        const missionData = event.data;
+        dispatch({
+          type: 'ADD_MISSION',
+          mission: {
+            id: `mission-${Date.now()}`,
+            type: missionData.type,
+            timestamp: event.timestamp,
+            description: missionData.description,
+            sector: missionData.sector,
+            importance: missionData.importance,
+            xpGained: missionData.xpGained,
+            resourcesFound: missionData.resourcesFound,
+            anomalyDetails: missionData.anomalyDetails,
+          },
+        });
+
+        // Update mission statistics
+        dispatch({
+          type: 'UPDATE_MISSION_STATS',
+          stats: {
+            totalXP: state.missions.statistics.totalXP + (missionData.xpGained || 0),
+            discoveries: state.missions.statistics.discoveries + (missionData.type === 'discovery' ? 1 : 0),
+            anomalies: state.missions.statistics.anomalies + (missionData.type === 'anomaly' ? 1 : 0),
+            resourcesFound: state.missions.statistics.resourcesFound + 
+              (missionData.resourcesFound?.reduce((sum: number, r: Resource) => sum + r.amount, 0) || 0),
+            highPriorityCompleted: state.missions.statistics.highPriorityCompleted + 
+              (missionData.importance === 'high' ? 1 : 0),
+          },
+        });
+      }
+    });
+
+    // Listen for sector updates
+    const unsubscribeSectorUpdates = moduleEventBus.subscribe('AUTOMATION_CYCLE_COMPLETE', event => {
+      if (event.moduleType === 'radar' && event.data.heatMapValue !== undefined) {
+        dispatch({
+          type: 'UPDATE_SECTOR',
+          sectorId: event.data.task.target.id,
+          data: {
+            status: 'mapped' as const,
+            resourcePotential: event.data.resourcePotential || 0,
+            habitabilityScore: event.data.habitabilityScore || 0,
+            lastScanned: event.timestamp,
+            heatMapValue: event.data.heatMapValue,
+          },
+        });
+      }
+    });
+
     // Sync running state
     if (state.isRunning && !gameManager.isGameRunning()) {
       gameManager.start();
@@ -41,8 +99,10 @@ export function useGameState() {
     return () => {
       unsubscribe();
       unsubscribeEvents();
+      unsubscribeMissionEvents();
+      unsubscribeSectorUpdates();
     };
-  }, [state.isRunning, state.isPaused, dispatch]);
+  }, [state.isRunning, state.isPaused, state.missions.statistics, dispatch]);
 
   return {
     ...state,

@@ -1,7 +1,7 @@
 import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
 import { Position } from '../../types/core/GameTypes';
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { moduleEventBus, ModuleEvent } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { combatManager } from '../../managers/combat/combatManager';
 import { canFireWeapon } from '../../utils/ships/shipUtils';
@@ -87,6 +87,112 @@ export class WarShipManagerImpl extends EventEmitter {
       facing: number;
     }
   > = new Map();
+
+  constructor() {
+    super();
+    this.initializeAutomationHandlers();
+  }
+
+  private initializeAutomationHandlers(): void {
+    moduleEventBus.subscribe('AUTOMATION_STARTED', (event: ModuleEvent) => {
+      if (event.moduleType === 'hangar' && event.data?.type) {
+        const ship = this.ships.get(event.moduleId);
+        if (ship) {
+          switch (event.data.type) {
+            case 'formation':
+              this.handleFormationChange(ship, event.data);
+              break;
+            case 'engagement':
+              this.handleEngagement(ship, event.data);
+              break;
+            case 'repair':
+              this.handleRepair(ship);
+              break;
+            case 'shield':
+              this.handleShieldBoost(ship);
+              break;
+            case 'attack':
+              this.handleAttack(ship, event.data);
+              break;
+            case 'retreat':
+              this.handleRetreat(ship);
+              break;
+          }
+        }
+      }
+    });
+  }
+
+  private handleFormationChange(ship: WarShip, data: any): void {
+    const { formation } = data;
+    if (formation) {
+      const formationId = `formation-${Date.now()}`;
+      this.formations.set(formationId, {
+        type: formation.type,
+        ships: [ship.id],
+        spacing: formation.spacing,
+        facing: formation.facing,
+      });
+    }
+  }
+
+  private handleEngagement(ship: WarShip, data: any): void {
+    const { targetId } = data;
+    if (targetId) {
+      const task: CombatTask = {
+        id: `combat-${targetId}`,
+        type: 'combat',
+        target: {
+          id: targetId,
+          position: { x: 0, y: 0 }, // Position will be updated in the update loop
+        },
+        priority: this.getPriorityForShipType(ship.type),
+        assignedAt: Date.now(),
+        status: 'in-progress',
+      };
+      this.tasks.set(ship.id, task);
+      this.updateShipStatus(ship.id, 'engaging');
+    }
+  }
+
+  private handleRepair(ship: WarShip): void {
+    if (ship.health < ship.maxHealth) {
+      ship.health = Math.min(ship.maxHealth, ship.health + ship.maxHealth * 0.2);
+      if (ship.health > ship.maxHealth * 0.3) {
+        this.updateShipStatus(ship.id, 'idle');
+      }
+    }
+  }
+
+  private handleShieldBoost(ship: WarShip): void {
+    if (ship.shield < ship.maxShield) {
+      ship.shield = Math.min(ship.maxShield, ship.shield + ship.maxShield * 0.3);
+    }
+  }
+
+  private handleAttack(ship: WarShip, data: any): void {
+    const { targetId } = data;
+    if (targetId) {
+      const readyWeapon = ship.weapons.find(w => w.state.status === 'ready');
+      if (readyWeapon) {
+        readyWeapon.state.status = 'cooling';
+        readyWeapon.state.currentStats.cooldown = Date.now();
+        ship.energy -= readyWeapon.config.baseStats.energyCost * (ship.techBonuses?.energyEfficiency || 1);
+
+        // Update combat stats
+        ship.combatStats.damageDealt += readyWeapon.config.baseStats.damage * (ship.techBonuses?.weaponEfficiency || 1);
+      }
+    }
+  }
+
+  private handleRetreat(ship: WarShip): void {
+    this.updateShipStatus(ship.id, 'retreating');
+    const task = this.tasks.get(ship.id);
+    if (task) {
+      task.status = 'failed';
+      this.tasks.delete(ship.id);
+    }
+  }
 
   public registerShip(ship: WarShip): void {
     if (ship.capabilities.canJump) {

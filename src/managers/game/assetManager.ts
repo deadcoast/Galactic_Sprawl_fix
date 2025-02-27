@@ -27,37 +27,51 @@ export class AssetManager {
       name: 'ships',
       assets: [
         {
-          name: 'spike_spritesheet',
+          name: 'klaed_fighter',
           type: 'ship',
-          category: 'spritesheet',
-          path: '/assets/ships/spike_spritesheet.json',
+          category: 'sprite',
+          path: '/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla\'ed/Base/PNGs/Kla\'ed - Fighter - Base.png',
         },
-        // Add more ship assets here
+        {
+          name: 'klaed_scout',
+          type: 'ship',
+          category: 'sprite',
+          path: '/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla\'ed/Base/PNGs/Kla\'ed - Scout - Base.png',
+        },
+        {
+          name: 'klaed_bomber',
+          type: 'ship',
+          category: 'sprite',
+          path: '/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla\'ed/Base/PNGs/Kla\'ed - Bomber - Base.png',
+        },
+        {
+          name: 'klaed_frigate',
+          type: 'ship',
+          category: 'sprite',
+          path: '/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla\'ed/Base/PNGs/Kla\'ed - Frigate - Base.png',
+        },
+        {
+          name: 'klaed_battlecruiser',
+          type: 'ship',
+          category: 'sprite',
+          path: '/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla\'ed/Base/PNGs/Kla\'ed - Battlecruiser - Base.png',
+        }
       ],
     },
     {
-      name: 'weapons',
+      name: 'ui',
       assets: [
         {
-          name: 'weapon1',
-          type: 'weapon',
+          name: 'gui_sheet',
+          type: 'ui',
           category: 'sprite',
-          path: '/assets/ships/weapon1.json',
-        },
-        // Add more weapon assets here
+          path: '/.pixelArtAssets/GUI_Assets/gui_sheet_64x64.aseprite',
+        }
       ],
     },
     {
       name: 'effects',
-      assets: [
-        {
-          name: 'explosion-1-b',
-          type: 'effect',
-          category: 'spritesheet',
-          path: '/assets/ships/explosion-1-b.json',
-        },
-        // Add more effect assets here
-      ],
+      assets: []  // We'll add effects later as needed
     },
   ];
 
@@ -74,7 +88,9 @@ export class AssetManager {
 
   // Initialize and load all assets
   public async initialize(): Promise<void> {
-    if (this.loadPromise) return this.loadPromise;
+    if (this.loadPromise) {
+      return this.loadPromise;
+    }
 
     this.loadPromise = new Promise(async (resolve, reject) => {
       try {

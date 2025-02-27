@@ -28,7 +28,13 @@ export type ModuleEventType =
   | 'AUTOMATION_CYCLE_COMPLETE'
   // Status events
   | 'STATUS_CHANGED'
-  | 'ERROR_OCCURRED';
+  | 'ERROR_OCCURRED'
+  // Mission events
+  | 'MISSION_STARTED'
+  | 'MISSION_COMPLETED'
+  | 'MISSION_FAILED'
+  | 'MISSION_PROGRESS_UPDATED'
+  | 'MISSION_REWARD_CLAIMED';
 
 /**
  * Module event interface

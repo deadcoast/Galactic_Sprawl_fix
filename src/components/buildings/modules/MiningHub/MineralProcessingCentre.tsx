@@ -8,6 +8,8 @@ import { ThresholdProvider, useThreshold } from '../../../../contexts/ThresholdC
 import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
 import { AlertTriangle, Database, Grid2X2, Map, Truck } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
+import { automationManager } from '../../../../managers/game/AutomationManager';
+import { miningRules } from '../../../../config/automation/miningRules';
 
 interface Resource {
   id: string;
@@ -155,6 +157,21 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
     };
     setTechBonuses(tierBonuses[tier]);
   }, [tier]);
+
+  // Register automation rules on mount
+  useEffect(() => {
+    // Register each mining rule
+    miningRules.forEach(rule => {
+      automationManager.registerRule(rule);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      miningRules.forEach(rule => {
+        automationManager.removeRule(rule.id);
+      });
+    };
+  }, []);
 
   return (
     <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">

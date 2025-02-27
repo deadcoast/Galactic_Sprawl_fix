@@ -4,6 +4,10 @@ import { MissionLog } from './MissionLog';
 import { ReconShipStatus } from './ReconShipStatus';
 import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
 import { useTooltipContext } from '../../../../components/ui/tooltip-context';
+import { automationManager } from '../../../../managers/game/AutomationManager';
+import { explorationRules } from '../../../../config/automation/explorationRules';
+import { useContextMenu, ContextMenuItem } from '../../../../components/ui/ContextMenu';
+import { Draggable, DropTarget, DragItem } from '../../../../components/ui/DragAndDrop';
 import {
   AlertTriangle,
   ChevronDown,
@@ -15,8 +19,12 @@ import {
   Search,
   ZoomIn,
   ZoomOut,
+  Target,
+  Flag,
+  X,
 } from 'lucide-react';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReconShipManagerImpl } from '../../../../managers/exploration/ReconShipManagerImpl';
 
 interface Sector {
   id: string;
@@ -27,6 +35,10 @@ interface Sector {
   habitabilityScore: number;
   anomalies: Anomaly[];
   lastScanned?: number;
+  resources?: Array<{
+    type: string;
+    amount: number;
+  }>;
 }
 
 interface Anomaly {
@@ -51,6 +63,15 @@ interface ReconShip {
 interface MapOffset {
   x: number;
   y: number;
+}
+
+interface AdvancedFilters {
+  minResourcePotential: number;
+  minHabitabilityScore: number;
+  hasAnomalies: boolean;
+  anomalySeverity: 'any' | 'low' | 'medium' | 'high';
+  lastScannedWithin: number; // hours
+  resourceTypes: string[];
 }
 
 // Mock data for demonstration
@@ -139,6 +160,7 @@ const SectorComponent = memo(
     onHover,
     getSectorHeat,
     ships,
+    onShipAssign,
   }: {
     sector: Sector;
     isSelected: boolean;
@@ -147,9 +169,50 @@ const SectorComponent = memo(
     onHover: (show: boolean, sector: Sector) => void;
     getSectorHeat: (sector: Sector) => number;
     ships: ReconShip[];
+    onShipAssign: (shipId: string, sectorId: string) => void;
   }) => {
     const scanningShip = ships.find(ship => ship.targetSector === sector.id);
     const heatValue = getSectorHeat(sector);
+
+    // Context menu for sector actions
+    const getSectorMenuItems = (): ContextMenuItem[] => {
+      const assignedShip = ships.find(ship => ship.targetSector === sector.id);
+      return [
+        {
+          id: 'info',
+          label: 'View Details',
+          icon: <Map className="w-4 h-4" />,
+          action: () => onSelect(sector),
+        },
+        {
+          id: 'assign-ship',
+          label: assignedShip ? 'Reassign Ship' : 'Assign Ship',
+          icon: <Rocket className="w-4 h-4" />,
+          action: () => {}, // No-op action for parent menu
+          children: ships
+            .filter(ship => ship.status === 'idle' || ship.targetSector === sector.id)
+            .map(ship => ({
+              id: ship.id,
+              label: ship.name,
+              icon: <Target className="w-4 h-4" />,
+              action: () => onShipAssign(ship.id, sector.id),
+            })),
+        },
+        {
+          id: 'mark-priority',
+          label: 'Mark as Priority',
+          icon: <Flag className="w-4 h-4" />,
+          action: () => {
+            // Handle priority marking
+            console.log(`Marking ${sector.name} as priority`);
+          },
+        },
+      ];
+    };
+
+    const { handleContextMenu, ContextMenuComponent } = useContextMenu({
+      items: getSectorMenuItems(),
+    });
 
     return (
       <div
@@ -160,95 +223,106 @@ const SectorComponent = memo(
           transform: 'translate(-50%, -50%)',
         }}
       >
-        <button
-          onClick={() => onSelect(sector)}
-          onMouseEnter={() => onHover(true, sector)}
-          onMouseLeave={() => onHover(false, sector)}
+        <DropTarget
+          accept={['ship']}
+          onDrop={(item: DragItem) => {
+            if (item.type === 'ship') {
+              onShipAssign(item.data.id, sector.id);
+            }
+          }}
           className="group relative"
         >
-          {/* Sector Visualization */}
           <div
-            className={`w-24 h-24 rounded-lg transition-all duration-300 ${
-              sector.status === 'unmapped'
-                ? 'bg-gray-800/50'
-                : sector.status === 'scanning'
-                  ? 'bg-teal-900/50 animate-pulse'
-                  : 'bg-teal-800/30'
-            } relative ${
-              isSelected ? 'ring-2 ring-teal-400 ring-offset-2 ring-offset-gray-900' : ''
-            }`}
+            onContextMenu={handleContextMenu}
+            onClick={() => onSelect(sector)}
+            onMouseEnter={() => onHover(true, sector)}
+            onMouseLeave={() => onHover(false, sector)}
           >
-            {/* Heat Map Overlay */}
-            {showHeatMap && sector.status !== 'unmapped' && (
-              <div
-                className="absolute inset-0 rounded-lg mix-blend-overlay"
-                style={{
-                  background: `rgba(${Math.round(heatValue * 255)}, ${Math.round(heatValue * 100)}, 0, ${heatValue * 0.8})`,
-                }}
-              />
-            )}
+            {/* Sector Visualization */}
+            <div
+              className={`w-24 h-24 rounded-lg transition-all duration-300 ${
+                sector.status === 'unmapped'
+                  ? 'bg-gray-800/50'
+                  : sector.status === 'scanning'
+                    ? 'bg-teal-900/50 animate-pulse'
+                    : 'bg-teal-800/30'
+              } relative ${
+                isSelected ? 'ring-2 ring-teal-400 ring-offset-2 ring-offset-gray-900' : ''
+              }`}
+            >
+              {/* Heat Map Overlay */}
+              {showHeatMap && sector.status !== 'unmapped' && (
+                <div
+                  className="absolute inset-0 rounded-lg mix-blend-overlay"
+                  style={{
+                    background: `rgba(${Math.round(heatValue * 255)}, ${Math.round(heatValue * 100)}, 0, ${heatValue * 0.8})`,
+                  }}
+                />
+              )}
 
-            {/* Resource Potential Indicator */}
-            {sector.status !== 'unmapped' && (
-              <div
-                className="absolute inset-2 border-2 border-teal-500/30 rounded transition-all"
-                style={{
-                  clipPath: `polygon(0 ${100 - sector.resourcePotential * 100}%, 100% ${100 - sector.resourcePotential * 100}%, 0%, 0 100%)`,
-                }}
-              />
-            )}
+              {/* Resource Potential Indicator */}
+              {sector.status !== 'unmapped' && (
+                <div
+                  className="absolute inset-2 border-2 border-teal-500/30 rounded transition-all"
+                  style={{
+                    clipPath: `polygon(0 ${100 - sector.resourcePotential * 100}%, 100% ${100 - sector.resourcePotential * 100}%, 0%, 0 100%)`,
+                  }}
+                />
+              )}
 
-            {/* Habitability Score Ring */}
-            {sector.status !== 'unmapped' && (
-              <div
-                className="absolute inset-0 border-4 border-teal-400/20 rounded-lg transition-all"
-                style={{
-                  clipPath: `polygon(0 0, ${sector.habitabilityScore * 100}% 0, ${sector.habitabilityScore * 100}% 100%, 0 100%)`,
-                }}
-              />
-            )}
+              {/* Habitability Score Ring */}
+              {sector.status !== 'unmapped' && (
+                <div
+                  className="absolute inset-0 border-4 border-teal-400/20 rounded-lg transition-all"
+                  style={{
+                    clipPath: `polygon(0 0, ${sector.habitabilityScore * 100}% 0, ${sector.habitabilityScore * 100}% 100%, 0 100%)`,
+                  }}
+                />
+              )}
 
-            {/* Anomaly Indicators */}
-            {sector.anomalies.length > 0 && (
-              <div className="mb-3">
-                <div className="text-xs font-medium text-gray-300 mb-2">Detected Anomalies</div>
-                <div className="space-y-1">
-                  {sector.anomalies.map(anomaly => (
-                    <div
-                      key={anomaly.id}
-                      className={`text-xs px-2 py-1 rounded ${
-                        anomaly.severity === 'high'
-                          ? 'bg-red-900/50 text-red-400'
-                          : anomaly.severity === 'medium'
-                            ? 'bg-yellow-900/50 text-yellow-400'
-                            : 'bg-blue-900/50 text-blue-400'
-                      }`}
-                    >
-                      {anomaly.type.charAt(0).toUpperCase() + anomaly.type.slice(1)}
-                    </div>
-                  ))}
+              {/* Anomaly Indicators */}
+              {sector.anomalies.length > 0 && (
+                <div className="mb-3">
+                  <div className="text-xs font-medium text-gray-300 mb-2">Detected Anomalies</div>
+                  <div className="space-y-1">
+                    {sector.anomalies.map(anomaly => (
+                      <div
+                        key={anomaly.id}
+                        className={`text-xs px-2 py-1 rounded ${
+                          anomaly.severity === 'high'
+                            ? 'bg-red-900/50 text-red-400'
+                            : anomaly.severity === 'medium'
+                              ? 'bg-yellow-900/50 text-yellow-400'
+                              : 'bg-blue-900/50 text-blue-400'
+                        }`}
+                      >
+                        {anomaly.type.charAt(0).toUpperCase() + anomaly.type.slice(1)}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Scanning Ship Indicator */}
-            {scanningShip && (
-              <div className="absolute -top-2 -right-2">
-                <Rocket className="w-5 h-5 text-teal-400 animate-pulse" />
-              </div>
-            )}
-          </div>
+              {/* Scanning Ship Indicator */}
+              {scanningShip && (
+                <div className="absolute -top-2 -right-2">
+                  <Rocket className="w-5 h-5 text-teal-400 animate-pulse" />
+                </div>
+              )}
+            </div>
 
-          {/* Sector Label */}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-center">
-            <div className="text-teal-200 font-medium">{sector.name}</div>
-            {sector.status !== 'unmapped' && (
-              <div className="text-teal-300/70 text-sm">
-                {sector.status === 'scanning' ? 'Scanning in Progress' : 'Mapped'}
-              </div>
-            )}
+            {/* Sector Label */}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-center">
+              <div className="text-teal-200 font-medium">{sector.name}</div>
+              {sector.status !== 'unmapped' && (
+                <div className="text-teal-300/70 text-sm">
+                  {sector.status === 'scanning' ? 'Scanning in Progress' : 'Mapped'}
+                </div>
+              )}
+            </div>
           </div>
-        </button>
+        </DropTarget>
+        {ContextMenuComponent}
       </div>
     );
   },
@@ -263,54 +337,37 @@ const SectorComponent = memo(
   }
 );
 
-// Memoized Ship Marker Component
+// Ship Marker Component with drag-and-drop
 const ShipMarker = memo(
   ({ ship, targetSector }: { ship: ReconShip; targetSector: Sector }) => {
     return (
       <div
-        className="absolute transition-all duration-1000 ease-in-out"
+        className="absolute transition-all duration-300"
         style={{
           left: `calc(50% + ${targetSector.coordinates.x}px)`,
           top: `calc(50% + ${targetSector.coordinates.y}px)`,
           transform: 'translate(-50%, -50%)',
         }}
       >
-        <div className="relative group">
-          <div
-            className={`p-2 rounded-full ${
-              ship.status === 'scanning'
-                ? 'bg-teal-500/20'
-                : ship.status === 'investigating'
-                  ? 'bg-yellow-500/20'
-                  : 'bg-blue-500/20'
-            } animate-pulse`}
-          >
-            <Rocket
-              className={`w-4 h-4 ${
-                ship.status === 'scanning'
-                  ? 'text-teal-400'
-                  : ship.status === 'investigating'
-                    ? 'text-yellow-400'
-                    : 'text-blue-400'
-              }`}
-            />
-          </div>
-
-          {/* Ship Info Tooltip */}
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="p-2 bg-gray-800/95 rounded border border-gray-700 whitespace-nowrap">
-              <div className="text-sm font-medium text-white">{ship.name}</div>
-              <div className="text-xs text-gray-400">
-                {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
-              </div>
+        <Draggable
+          item={{
+            id: ship.id,
+            type: 'ship',
+            data: ship,
+          }}
+        >
+          <div className="p-2 bg-teal-900/80 backdrop-blur-sm rounded-lg border border-teal-500/30">
+            <div className="flex items-center space-x-2">
+              <Rocket className="w-4 h-4 text-teal-400" />
+              <span className="text-xs font-medium text-teal-200">{ship.name}</span>
+            </div>
+            <div className="text-xs text-teal-400/70 mt-1">
+              {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
             </div>
           </div>
-        </div>
+        </Draggable>
       </div>
     );
-  },
-  (prevProps, nextProps) => {
-    return prevProps.ship === nextProps.ship && prevProps.targetSector === nextProps.targetSector;
   }
 );
 
@@ -324,10 +381,13 @@ export function ExplorationHub() {
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [showHeatMap, setShowHeatMap] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState({
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
     minResourcePotential: 0,
     minHabitabilityScore: 0,
     hasAnomalies: false,
+    anomalySeverity: 'any',
+    lastScannedWithin: 24,
+    resourceTypes: [],
   });
   const [mapOffset, setMapOffset] = useState<MapOffset>({ x: 0, y: 0 });
 
@@ -351,6 +411,24 @@ export function ExplorationHub() {
   const activeShips = useMemo(() => {
     return ships.filter(ship => ship.status !== 'idle');
   }, [ships]);
+
+  // Initialize ReconShipManager
+  const reconManager = useMemo(() => new ReconShipManagerImpl(), []);
+
+  // Register automation rules on mount
+  useEffect(() => {
+    // Register each exploration rule
+    explorationRules.forEach(rule => {
+      automationManager.registerRule(rule);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      explorationRules.forEach(rule => {
+        automationManager.removeRule(rule.id);
+      });
+    };
+  }, []);
 
   // Optimize real-time updates with separate intervals
   useEffect(() => {
@@ -441,41 +519,88 @@ export function ExplorationHub() {
     };
   }, [sectors, ships]);
 
-  // Memoize filtered sectors with optimized filtering
+  // Enhanced sector filtering
   const filteredSectors = useMemo(() => {
-    const searchLower = searchQuery.toLowerCase();
-    const filterFns = {
-      unmapped: (s: Sector) => s.status === 'unmapped',
-      anomalies: (s: Sector) => s.anomalies.length > 0,
-      all: () => true,
-    };
-
     return sectors.filter(sector => {
-      // Quick exit conditions
-      if (searchLower && !sector.name.toLowerCase().includes(searchLower)) {
+      // Basic text search
+      if (searchQuery && !sector.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
 
-      if (!filterFns[filter](sector)) {
+      // Basic type filter
+      if (filter === 'unmapped' && sector.status !== 'unmapped') {
+        return false;
+      }
+      if (filter === 'anomalies' && sector.anomalies.length === 0) {
         return false;
       }
 
-      // Only apply advanced filters to mapped sectors
-      if (sector.status !== 'unmapped') {
-        const { minResourcePotential, minHabitabilityScore, hasAnomalies } = advancedFilters;
-
-        if (
-          sector.resourcePotential < minResourcePotential ||
-          sector.habitabilityScore < minHabitabilityScore ||
-          (hasAnomalies && sector.anomalies.length === 0)
-        ) {
+      // Advanced filters
+      if (sector.resourcePotential < advancedFilters.minResourcePotential) {
+        return false;
+      }
+      if (sector.habitabilityScore < advancedFilters.minHabitabilityScore) {
+        return false;
+      }
+      if (advancedFilters.hasAnomalies && sector.anomalies.length === 0) {
+        return false;
+      }
+      if (advancedFilters.anomalySeverity !== 'any') {
+        const hasMatchingSeverity = sector.anomalies.some(
+          a => a.severity === advancedFilters.anomalySeverity
+        );
+        if (!hasMatchingSeverity) {
           return false;
         }
+      }
+      if (advancedFilters.lastScannedWithin > 0 && sector.lastScanned) {
+        const hoursSinceLastScan =
+          (Date.now() - sector.lastScanned) / (1000 * 60 * 60);
+        if (hoursSinceLastScan > advancedFilters.lastScannedWithin) {
+          return false;
+        }
+      }
+      if (
+        advancedFilters.resourceTypes.length > 0 &&
+        !sector.resources?.some(r => advancedFilters.resourceTypes.includes(r.type))
+      ) {
+        return false;
       }
 
       return true;
     });
-  }, [searchQuery, filter, sectors, advancedFilters]);
+  }, [sectors, searchQuery, filter, advancedFilters]);
+
+  // Enhanced heat map calculation
+  const getSectorHeat = useCallback(
+    (sector: Sector) => {
+      let heatValue = 0;
+
+      // Base heat from resource potential
+      heatValue += sector.resourcePotential * 0.4;
+
+      // Heat from habitability
+      heatValue += sector.habitabilityScore * 0.3;
+
+      // Heat from anomalies
+      const anomalyHeat = sector.anomalies.reduce((sum, anomaly) => {
+        const severityValue =
+          anomaly.severity === 'high' ? 0.3 : anomaly.severity === 'medium' ? 0.2 : 0.1;
+        return sum + severityValue;
+      }, 0);
+      heatValue += anomalyHeat;
+
+      // Reduce heat for older scans
+      if (sector.lastScanned) {
+        const hoursSinceLastScan = (Date.now() - sector.lastScanned) / (1000 * 60 * 60);
+        const ageFactor = Math.max(0, 1 - hoursSinceLastScan / 168); // 168 hours = 1 week
+        heatValue *= ageFactor;
+      }
+
+      return Math.min(1, heatValue);
+    },
+    []
+  );
 
   // Memoize handlers
   const handleSectorSelect = useCallback((sector: Sector) => {
@@ -514,18 +639,6 @@ export function ExplorationHub() {
 
   const handleZoom = useCallback((delta: number) => {
     setZoom(prev => Math.max(0.5, Math.min(2, prev + delta)));
-  }, []);
-
-  // Calculate sector heat values
-  const getSectorHeat = useCallback((sector: Sector) => {
-    if (sector.status === 'unmapped') {
-      return 0;
-    }
-
-    const baseHeat = sector.resourcePotential * 0.5 + sector.habitabilityScore * 0.3;
-    const anomalyBonus = sector.anomalies.length * 0.1;
-
-    return Math.min(1, baseHeat + anomalyBonus);
   }, []);
 
   // Enhanced sector hover tooltip
@@ -623,6 +736,113 @@ export function ExplorationHub() {
     },
     [showTooltip, hideTooltip]
   );
+
+  // Handle ship assignment
+  const handleShipAssign = useCallback((shipId: string, sectorId: string) => {
+    const sector = sectors.find(s => s.id === sectorId);
+    if (!sector) return;
+
+    reconManager.assignExplorationTask(
+      shipId,
+      sectorId,
+      sector.coordinates,
+      'mapping' // Default to mapping, can be updated based on sector type
+    );
+
+    setShips(prevShips =>
+      prevShips.map(ship =>
+        ship.id === shipId
+          ? {
+              ...ship,
+              status: 'scanning',
+              targetSector: sectorId,
+              lastUpdate: Date.now(),
+            }
+          : ship
+      )
+    );
+  }, [sectors, reconManager]);
+
+  // Register ships with ReconShipManager
+  useEffect(() => {
+    ships.forEach(ship => {
+      reconManager.registerShip({
+        ...ship,
+        type: 'AC27G',
+        position: { x: 0, y: 0 }, // Initial position
+        capabilities: {
+          canScan: true,
+          canSalvage: false,
+          canMine: false,
+          canJump: true,
+        },
+        stealth: {
+          active: false,
+          level: 1,
+          cooldown: 0,
+        },
+        sensors: {
+          range: 100,
+          accuracy: 0.8,
+          anomalyDetection: 0.7,
+        },
+        discoveries: {
+          mappedSectors: 0,
+          anomaliesFound: 0,
+          resourcesLocated: 0,
+        },
+      });
+    });
+
+    // Cleanup on unmount
+    return () => {
+      ships.forEach(ship => reconManager.unregisterShip(ship.id));
+    };
+  }, [ships, reconManager]);
+
+  // Listen for ReconShipManager events
+  useEffect(() => {
+    const handleTaskCompleted = ({ shipId, task }: { shipId: string; task: any }) => {
+      setShips(prevShips =>
+        prevShips.map(ship =>
+          ship.id === shipId
+            ? {
+                ...ship,
+                status: 'returning',
+                experience: ship.experience + 100, // Base XP gain
+              }
+            : ship
+        )
+      );
+
+      // Update sector status
+      setSectors(prevSectors =>
+        prevSectors.map(sector =>
+          sector.id === task.target.id
+            ? {
+                ...sector,
+                status: 'mapped',
+                lastScanned: Date.now(),
+              }
+            : sector
+        )
+      );
+    };
+
+    reconManager.on('taskCompleted', handleTaskCompleted);
+    return () => {
+      reconManager.off('taskCompleted', handleTaskCompleted);
+    };
+  }, [reconManager]);
+
+  // Update ReconShipManager
+  useEffect(() => {
+    const interval = setInterval(() => {
+      reconManager.update(1000 / 60); // Update at 60fps
+    }, 1000 / 60);
+
+    return () => clearInterval(interval);
+  }, [reconManager]);
 
   return (
     <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">
@@ -723,82 +943,152 @@ export function ExplorationHub() {
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
-                showFilters
+                Object.values(advancedFilters).some(v => 
+                  Array.isArray(v) ? v.length > 0 : v !== 0 && v !== false && v !== 'any'
+                )
                   ? 'bg-teal-600 text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
               <Filter className="w-4 h-4" />
               <span>Advanced Filters</span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`}
-              />
             </button>
           </div>
 
           {/* Advanced Filters Panel */}
           {showFilters && (
-            <div className="mt-4 p-4 bg-gray-800/90 rounded-lg">
-              <div className="space-y-4">
+            <div className="mt-4 bg-gray-800/50 rounded-lg p-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-gray-400 mb-2 block">
-                    Minimum Resource Potential
+                    Min Resource Potential
                   </label>
                   <input
                     type="range"
                     min="0"
-                    max="100"
-                    value={advancedFilters.minResourcePotential * 100}
+                    max="1"
+                    step="0.1"
+                    value={advancedFilters.minResourcePotential}
                     onChange={e =>
                       setAdvancedFilters(prev => ({
                         ...prev,
-                        minResourcePotential: Number(e.target.value) / 100,
+                        minResourcePotential: parseFloat(e.target.value),
                       }))
                     }
                     className="w-full"
                   />
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-sm text-teal-400 mt-1">
                     {Math.round(advancedFilters.minResourcePotential * 100)}%
                   </div>
                 </div>
-
                 <div>
                   <label className="text-sm text-gray-400 mb-2 block">
-                    Minimum Habitability Score
+                    Min Habitability Score
                   </label>
                   <input
                     type="range"
                     min="0"
-                    max="100"
-                    value={advancedFilters.minHabitabilityScore * 100}
+                    max="1"
+                    step="0.1"
+                    value={advancedFilters.minHabitabilityScore}
                     onChange={e =>
                       setAdvancedFilters(prev => ({
                         ...prev,
-                        minHabitabilityScore: Number(e.target.value) / 100,
+                        minHabitabilityScore: parseFloat(e.target.value),
                       }))
                     }
                     className="w-full"
                   />
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-sm text-teal-400 mt-1">
                     {Math.round(advancedFilters.minHabitabilityScore * 100)}%
                   </div>
                 </div>
+              </div>
 
+              <div className="grid grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={advancedFilters.hasAnomalies}
+                  <label className="text-sm text-gray-400 mb-2 block">
+                    Anomaly Settings
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={advancedFilters.hasAnomalies}
+                        onChange={e =>
+                          setAdvancedFilters(prev => ({
+                            ...prev,
+                            hasAnomalies: e.target.checked,
+                          }))
+                        }
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-300">Has Anomalies</span>
+                    </label>
+                    <select
+                      value={advancedFilters.anomalySeverity}
                       onChange={e =>
                         setAdvancedFilters(prev => ({
                           ...prev,
-                          hasAnomalies: e.target.checked,
+                          anomalySeverity: e.target.value as 'any' | 'low' | 'medium' | 'high',
                         }))
                       }
-                      className="form-checkbox text-teal-500"
-                    />
-                    <span className="text-sm text-gray-400">Has Anomalies</span>
+                      className="w-full px-2 py-1 bg-gray-700 rounded text-sm text-white"
+                    >
+                      <option value="any">Any Severity</option>
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 mb-2 block">
+                    Last Scanned Within
                   </label>
+                  <select
+                    value={advancedFilters.lastScannedWithin}
+                    onChange={e =>
+                      setAdvancedFilters(prev => ({
+                        ...prev,
+                        lastScannedWithin: parseInt(e.target.value),
+                      }))
+                    }
+                    className="w-full px-2 py-1 bg-gray-700 rounded text-sm text-white"
+                  >
+                    <option value={0}>Any Time</option>
+                    <option value={24}>24 Hours</option>
+                    <option value={72}>3 Days</option>
+                    <option value={168}>1 Week</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="text-sm text-gray-400 mb-2 block">
+                  Resource Types
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {['Dark Matter', 'Helium-3', 'Rare Metals', 'Common Ores'].map(type => (
+                    <button
+                      key={type}
+                      onClick={() =>
+                        setAdvancedFilters(prev => ({
+                          ...prev,
+                          resourceTypes: prev.resourceTypes.includes(type)
+                            ? prev.resourceTypes.filter(t => t !== type)
+                            : [...prev.resourceTypes, type],
+                        }))
+                      }
+                      className={`px-2 py-1 rounded text-sm ${
+                        advancedFilters.resourceTypes.includes(type)
+                          ? 'bg-teal-600 text-white'
+                          : 'bg-gray-700 text-gray-400'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -831,6 +1121,7 @@ export function ExplorationHub() {
                 onHover={handleSectorHover}
                 getSectorHeat={getSectorHeat}
                 ships={ships}
+                onShipAssign={handleShipAssign}
               />
             ))}
 

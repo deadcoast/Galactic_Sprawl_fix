@@ -1,4 +1,5 @@
 import { factionManager } from '../../managers/factions/factionManager';
+import { moduleEventBus, ModuleEvent } from '../../lib/modules/ModuleEvents';
 
 export interface Fleet {
   units: CombatUnit[];
@@ -76,6 +77,128 @@ class CombatManagerImpl implements CombatManager {
 
   constructor() {
     this.startCombatLoop();
+    this.initializeAutomationHandlers();
+  }
+
+  private initializeAutomationHandlers(): void {
+    moduleEventBus.subscribe('AUTOMATION_STARTED', (event: ModuleEvent) => {
+      if (event.moduleType === 'hangar') {
+        switch (event.data?.type) {
+          case 'formation':
+            this.handleFormationUpdate(event.data);
+            break;
+          case 'engagement':
+            this.handleEngagement(event.data);
+            break;
+          case 'repair':
+            this.handleDamageControl(event.data);
+            break;
+          case 'shield':
+            this.handleShieldBoost(event.data);
+            break;
+          case 'attack':
+            this.handleWeaponFire(event.data);
+            break;
+          case 'retreat':
+            this.handleRetreat(event.data);
+            break;
+        }
+      }
+    });
+  }
+
+  private handleFormationUpdate(data: any): void {
+    const { position, units } = data;
+    if (position && units) {
+      units.forEach((unitId: string) => {
+        const unit = this.units.get(unitId);
+        if (unit) {
+          // Update unit position in formation
+          this.moveUnit(unitId, {
+            x: position.x + (Math.random() - 0.5) * 50, // Add some variation
+            y: position.y + (Math.random() - 0.5) * 50,
+          });
+        }
+      });
+    }
+  }
+
+  private handleEngagement(data: any): void {
+    const { targetId, units } = data;
+    if (targetId && units) {
+      units.forEach((unitId: string) => {
+        const unit = this.units.get(unitId);
+        if (unit && unit.status !== 'disabled') {
+          unit.status = 'engaging';
+          unit.target = targetId;
+        }
+      });
+    }
+  }
+
+  private handleDamageControl(data: any): void {
+    const { unitId } = data;
+    if (unitId) {
+      const unit = this.units.get(unitId);
+      if (unit) {
+        // Apply repair effect
+        unit.health = Math.min(unit.maxHealth, unit.health + unit.maxHealth * 0.2);
+        if (unit.health > unit.maxHealth * this.RETREAT_HEALTH_THRESHOLD) {
+          unit.status = 'engaging';
+        }
+      }
+    }
+  }
+
+  private handleShieldBoost(data: any): void {
+    const { unitId } = data;
+    if (unitId) {
+      const unit = this.units.get(unitId);
+      if (unit) {
+        // Boost shields
+        unit.shield = Math.min(unit.maxShield, unit.shield + unit.maxShield * 0.3);
+      }
+    }
+  }
+
+  private handleWeaponFire(data: any): void {
+    const { unitId, targetId } = data;
+    if (unitId && targetId) {
+      const unit = this.units.get(unitId);
+      const target = this.units.get(targetId);
+      if (unit && target) {
+        // Find ready weapon
+        const weapon = unit.weapons.find(w => w.status === 'ready');
+        if (weapon) {
+          weapon.status = 'cooling';
+          weapon.lastFired = Date.now();
+          // Apply damage
+          if (target.shield > 0) {
+            const shieldDamage = Math.min(target.shield, weapon.damage * 0.7);
+            target.shield -= shieldDamage;
+            target.health -= (weapon.damage - shieldDamage) * 0.3;
+          } else {
+            target.health -= weapon.damage;
+          }
+          // Check for disabled state
+          if (target.health <= 0) {
+            target.status = 'disabled';
+            target.target = undefined;
+          }
+        }
+      }
+    }
+  }
+
+  private handleRetreat(data: any): void {
+    const { unitId } = data;
+    if (unitId) {
+      const unit = this.units.get(unitId);
+      if (unit) {
+        unit.status = 'retreating';
+        unit.target = undefined;
+      }
+    }
   }
 
   private startCombatLoop() {

@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { BaseModule, ModuleType, ModularBuilding } from '../types/buildings/ModuleTypes';
 import { moduleManager } from '../managers/module/ModuleManager';
 import { Position } from '../types/core/GameTypes';
+import { useGame } from '../contexts/GameContext';
 
 // State interface
 interface ModuleState {
@@ -112,6 +113,19 @@ interface ModuleProviderProps {
 export function ModuleProvider({ children }: ModuleProviderProps) {
   const [state, dispatch] = useReducer(moduleReducer, initialState);
 
+  // Initialize state with default buildings
+  useEffect(() => {
+    const buildings = moduleManager.getBuildings();
+    if (buildings.length > 0) {
+      buildings.forEach(building => {
+        dispatch({
+          type: 'REGISTER_BUILDING',
+          building,
+        });
+      });
+    }
+  }, []);
+
   return <ModuleContext.Provider value={{ state, dispatch }}>{children}</ModuleContext.Provider>;
 }
 
@@ -141,4 +155,85 @@ export function useModulesByType(type: ModuleType) {
 
 export function useBuildingModules(buildingId: string) {
   return moduleManager.getBuildingModules(buildingId);
+}
+
+// Helper functions
+export function canBuildModule(moduleType: ModuleType, cost: { minerals?: number; energy?: number }) {
+  const { state } = useGame();
+  const { state: moduleState } = useModules();
+
+  // Check resources
+  const hasResources =
+    (cost.minerals || 0) <= state.resources.minerals &&
+    (cost.energy || 0) <= state.resources.energy;
+
+  if (!hasResources) {
+    return false;
+  }
+
+  // Find a suitable building and attachment point
+  for (const building of moduleState.buildings) {
+    for (const point of building.attachmentPoints) {
+      if (point.allowedTypes.includes(moduleType) && !point.currentModule) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+export function buildModule(moduleType: ModuleType, cost: { minerals?: number; energy?: number }) {
+  const { dispatch, state } = useModules();
+
+  // Find a suitable building and attachment point
+  let targetBuilding: ModularBuilding | undefined;
+  let targetPoint: string | undefined;
+
+  for (const building of state.buildings) {
+    for (const point of building.attachmentPoints) {
+      if (point.allowedTypes.includes(moduleType) && !point.currentModule) {
+        targetBuilding = building;
+        targetPoint = point.id;
+        break;
+      }
+    }
+    if (targetBuilding) break;
+  }
+
+  if (!targetBuilding || !targetPoint) {
+    console.error('No suitable attachment point found for module:', moduleType);
+    return;
+  }
+
+  // Create and attach the module
+  const position = targetBuilding.attachmentPoints.find(p => p.id === targetPoint)?.position || { x: 0, y: 0 };
+  
+  dispatch({
+    type: 'CREATE_MODULE',
+    moduleType,
+    position,
+  });
+
+  // Get the newly created module's ID (it will be the last one created)
+  const newModule = moduleManager.getModulesByType(moduleType).pop();
+  if (!newModule) {
+    console.error('Failed to create module:', moduleType);
+    return;
+  }
+
+  // Attach the module
+  dispatch({
+    type: 'ATTACH_MODULE',
+    moduleId: newModule.id,
+    buildingId: targetBuilding.id,
+    attachmentPointId: targetPoint,
+  });
+
+  // Activate the module
+  dispatch({
+    type: 'SET_MODULE_ACTIVE',
+    moduleId: newModule.id,
+    active: true,
+  });
 }

@@ -1,5 +1,8 @@
+import { useEffect } from 'react';
 import { BaseModule } from '../../../../types/buildings/ModuleTypes';
 import { Rocket, ShieldAlert, Wrench } from 'lucide-react';
+import { automationManager } from '../../../../managers/game/AutomationManager';
+import { hangarRules } from '../../../../config/automation/hangarRules';
 
 interface HangarModuleProps {
   module: BaseModule;
@@ -28,6 +31,21 @@ export function HangarModule({
     currentCapacity: 0,
   },
 }: HangarModuleProps) {
+  // Register automation rules on mount
+  useEffect(() => {
+    // Register each automation rule
+    hangarRules.forEach(rule => {
+      automationManager.registerRule(rule);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      hangarRules.forEach(rule => {
+        automationManager.removeRule(rule.id);
+      });
+    };
+  }, []);
+
   return (
     <div className="bg-gray-800 rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">

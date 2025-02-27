@@ -224,6 +224,13 @@ export class ModuleManager {
   }
 
   /**
+   * Gets all buildings
+   */
+  getBuildings(): ModularBuilding[] {
+    return Array.from(this.buildings.values());
+  }
+
+  /**
    * Gets a building by ID
    */
   getBuilding(buildingId: string): ModularBuilding | undefined {
