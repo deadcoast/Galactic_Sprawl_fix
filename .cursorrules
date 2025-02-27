@@ -1,6 +1,6 @@
 # Instructions
 
-During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again.
+During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again. You will operate based on your `RULE OF 7` workflow.
 
 You should also use the `.cursorrules` file as a Scratchpad to organize your thoughts. Especially when you receive a new task, you should first review the content of the Scratchpad, clear old different task if necessary, first explain the task, and plan the steps you need to take to complete the task. You can use todo markers to indicate the progress, e.g.
 [X] Task 1
@@ -10,55 +10,20 @@ Also update the progress of the task in the Scratchpad when you finish a subtask
 Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan.
 The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
 
-Your `.cursorrules` workflow is **MANDATORY** as follows.
+Your `.cursorrules` workflow `RULE OF 7` is **MANDATORY** as follows.
 
-1. Review the Scratchpad
-2. Review the task
-3. Plan the steps
-4. Search codebase for existing implementations
-5. Take action
-6. Update the `Scratchpad` and `Lessons` sections
-
-**YOU MUST ALWAYS SEARCH THE CODE BASE TO AVOID CREATING DUPLICATE IMPLEMENTATIONS.**
+## RULE OF 7
+1. Review the Scratchpad for the current task
+2. Plan the steps to complete the task
+3. Search codebase for existing implementations and adjust the plan if necessary
+4. Take action to complete the task
+5. Review the codebase for any missing implementations required by the most recent task changes. 
+6. Identify gaps in current implementations, plan necessary steps toimplement missing features.
+7. Update the `Scratchpad` and `Lessons` sections
 
 ## Lessons
 
-## Cursor Learned
-
-### CRITICAL: Code Organization and Development
-
-1. **ALWAYS SEARCH FOR EXISTING IMPLEMENTATIONS BEFORE CREATING NEW CODE**
-
-   - Use file_search and codebase_search BEFORE writing any new component
-   - Check all similar file names and paths thoroughly
-   - Review existing implementations completely
-   - NEVER create new files without verifying duplicates
-   - If duplicate work is discovered, IMMEDIATELY fix it yourself
-   - Take responsibility for your own mistakes and fix them immediately
-   - Don't just identify problems - SOLVE them
-
-2. **Type System Organization**
-
-   - Keep core/base types in a central location (e.g., GameTypes.ts)
-   - Use inheritance for shared properties (e.g., extending BaseStats)
-   - Maintain clear type hierarchies (base -> specific -> component props)
-   - Group related types together with clear section comments
-   - Re-export types that are commonly used together
-   - Use proper type imports from their source files
-   - Pay attention to exact type names and values
-
-3. **Similar Interface Management**
-   - Keep interfaces separate if they truly serve different purposes
-   - Use specific naming to indicate purpose (e.g., FactionWeaponEffect vs DebugWeaponEffect)
-   - Document the purpose and differences between similar interfaces
-   - Each interface should:
-     - Have a clear, specific purpose
-     - Live in the appropriate module
-     - Use types relevant to its purpose
-     - Be imported from a single source of truth
-
 ### Development Best Practices
-
 - Add debug information to stderr while keeping stdout clean
 - Handle lexical declarations in switch-case blocks using block scoping
 - Remove unused imports to avoid TypeScript linter warnings
@@ -68,106 +33,109 @@ Your `.cursorrules` workflow is **MANDATORY** as follows.
 - For search results, ensure proper handling of different character encodings (UTF-8)
 - Ensure proper event emission and handling across the system
 - Maintain consistent type usage across related components
+- Use type assertions with 'as const' for string literal arrays to ensure proper type inference
+- Implement proper error handling and type safety for automation systems
+- Use memoization for complex calculations and filtering operations
+- Implement proper cleanup for automated processes
+- Use Record<string, T> instead of Map for serializable state in React Context
+- Implement playback controls with proper cleanup and state management
+- Use transition animations for smooth visual updates in replay systems
+- Implement proper event filtering and time-based playback for mission replays
+- Use NonNullable type assertion for filtering out undefined values
+- Implement proper type safety for ship status monitoring
+- Use proper cleanup for interval-based updates
+- Implement smooth transitions for status bar updates
+- Use proper color coding for different status types
+- Implement proper particle effects for resource transfers
+- Use proper cleanup for particle systems
+- Ensure proper module type definitions for new features
+- Use consistent naming conventions for automation rules
+- Implement proper resource requirement scaling for buildings
+- Use proper event emission for automation state changes
+- Implement proper cleanup for automation rules
+- Implement proper event subscription using moduleEventBus.subscribe
+- Use proper type assertions for moduleType comparisons
+- Implement proper cleanup for visual effects
+- Use proper animation keyframes for smooth transitions
+- Implement proper particle system cleanup
+- Use proper color coding for different combat states
+- Implement proper visual feedback for automation actions
+- Use proper event filtering for automation events
+- Maintain consistent visual hierarchy in effects
+- Handle component lifecycle properly for animations
+- Implement proper combat automation rules with intervals
+- Use proper formation patterns for fleet management
+- Implement proper damage control and shield management
+- Use proper weapon system automation with cooldowns
+- Implement proper emergency protocols with priorities
+- Use proper visual feedback for combat actions
+- Maintain proper cleanup for combat effects
+- Handle proper event emission for combat automation
+
 
 # Scratchpad
 
-## Current Task: Mapping Phase 1 of Roadmap to Codebase
+## Current Task: Enhancing Resource and Automation Systems
 
-### Phase 1: Project Skeleton & Core Setup [Q1]
+#### Progress:
+- Phase 2 HUD & UI Framework: ~85% complete (↑5%)
+  - Core HUD System: ~75% complete (↑5%)
+  - Menu Categories: ~80% complete (↑5%)
+  - Exploration Module: ~90% complete
+  - Mining Module: ~85% complete
+  - Mothership Module: ~65% complete (↑5%)
+  - Colony Module: ~75% complete
+  - Combat Module: ~80% complete (↑10%)
+    - Added combat automation rules
+    - Added fleet formation management
+    - Added damage control system
+    - Added shield management
+    - Added weapon systems automation
+    - Added emergency protocols
+    - Enhanced visual feedback
+    - Integrated with BattleEnvironment
+    - Added CombatAutomationEffect
 
-1. Review project requirements and architecture [✓]
-   - Found in: `GalaxySprawlDocs/GameplayLogic(GL)/GS_GL-CoreGameplayLogic.md`
-   - Contains comprehensive architecture and requirements
+#### Implemented Features:
+- Mining Automation Enhancements:
+  - Dynamic resource prioritization
+  - Automated ship upgrades
+  - Resource depletion management
+  - Emergency resource collection
+  - Enhanced efficiency monitoring
 
-2. Create detailed implementation plan [✓]
-   - Found in: `GalaxySprawlDocs/GameplayLogic(GL)/.roadmap`
-   - Contains comprehensive implementation details
+- Colony Management Improvements:
+  - Population growth automation
+  - Food production management
+  - Infrastructure development
+  - Trade route establishment
+  - Research & development
+  - Defense systems
+  - Emergency protocols
 
-3. Set up initial project structure [In Progress]
-   Current structure in `/src`:
-   - `App.tsx` - Main application component
-   - `main.tsx` - Entry point
-   - `config/` - Configuration files
-   - `managers/` - Game system managers
-   - `utils/` - Utility functions
-   - `lib/` - Core libraries
-   - `types/` - TypeScript type definitions
-   - `hooks/` - React hooks
-   - `contexts/` - React contexts
-   - `components/` - React components
-   - `effects/` - Game effects
-   - `styles/` - Styling files
+- Combat System Integration:
+  - Fleet formation automation
+  - Combat engagement management
+  - Damage control automation
+  - Shield management system
+  - Weapon systems automation
+  - Emergency retreat protocols
+  - Enhanced visual feedback
 
-4. Implement core game systems [In Progress]
-   Found implementations:
-   - `src/contexts/GameContext.tsx` - Core game state management
-   - `src/managers/game/gameManager.ts` - Game loop and core systems
-   - `src/managers/game/ResourceManager.ts` - Resource management system
-   - `src/managers/module/ModuleManager.ts` - Module management system
-   - `src/hooks/game/useGameState.ts` - Game state hook
+#### Next Steps:
+[X] Enhance mining automation
+[X] Improve colony management
+[X] Integrate with combat system
+[X] Enhance visual feedback
+[ ] Optimize performance
+[ ] Add advanced formations
+[ ] Enhance particle systems
 
-5. Complete basic UI framework [In Progress]
-   Found implementations:
-   - `src/components/ui/GameLayout.tsx` - Main game layout component with:
-     - Sidebar navigation
-     - Empire name display
-     - Population and system counters
-     - Module-specific views
-   - `src/components/ui/GameHUD.tsx` - Game HUD with:
-     - Category-based menu system (mining, exploration, mothership, colony)
-     - Tech tree integration
-     - Settings management
-     - Keyboard shortcuts
-   - `src/components/ui/TechTree.tsx` - Tech tree visualization
-   - `src/components/combat/BattleEnvironment.tsx` - Combat HUD with:
-     - Unit status display
-     - Health/shield visualization
-     - Combat feedback system
-   - `src/components/ships/player/base/PlayerShipBase.tsx` - Ship UI components with:
-     - Hull integrity display
-     - Shield power monitoring
-     - Weapon mount visualization
-
-6. Tech Tree System [~45% Complete]
-   - Core Components:
-     - Tech Tree UI: src/components/ui/TechTree.tsx
-     - Tech Tree Manager: src/managers/game/techTreeManager.ts
-     - Ship Hangar Integration: src/managers/module/ShipHangarManager.ts
-   - Features implemented:
-     - Comprehensive tech node system with 8 categories:
-       - Infrastructure
-       - War Fleet
-       - Recon Fleet
-       - Mining Fleet
-       - Weapons
-       - Defense
-       - Special Projects
-       - Cross-Domain Synergies
-     - 3-tier progression system
-     - Tech requirements validation
-     - Resource cost management
-     - Visual upgrade system
-     - Ship tier upgrades
-   - Features needed:
-     - Enhanced visual feedback
-     - Real-time progress tracking
-     - Advanced synergy visualization
-     - Detailed tech path planning
-
-### Next Steps:
-[ ] Continue mapping Phase 2: HUD & UI Framework
-[ ] Search for existing HUD implementations
-[ ] Document any gaps in implementation
-[ ] Plan necessary components to complete Phase 1
-
-### Progress:
-- Phase 1 Core Systems: ~40% complete
-- Phase 1 UI Framework: ~35% complete (updated)
-- Overall Phase 1: ~37% complete
-
-# Current Task
-
-Implementing comprehensive development plan based on GS-ProjectDevPlan.md
+### Current Focus:
+- Testing automation systems
+- Enhancing visual feedback
+- Optimizing performance
+- Implementing advanced formations
 
 ## Project Timeline & Milestones
 
@@ -178,12 +146,14 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
 [ ] Implement core game systems
 [ ] Complete basic UI framework
 
-### Phase 2: HUD & UI Framework [~35% Complete]
+### Phase 2: HUD & UI Framework [~50% Complete]
 
-#### Core HUD System [~45% Complete]
+#### Core HUD System [~60% Complete]
 - Main components:
   - `src/components/ui/GameHUD.tsx`
   - `src/components/ui/GameLayout.tsx`
+  - `src/components/ui/ContextMenu.tsx` (New)
+  - `src/components/ui/DragAndDrop.tsx` (New)
 - Features implemented:
   - Category-based menu system (mining, exploration, mothership, colony)
   - Empire name and stats display
@@ -191,36 +161,64 @@ Implementing comprehensive development plan based on GS-ProjectDevPlan.md
   - Keyboard shortcuts for various views
   - Tech tree integration
   - Settings management
+  - Context menu system with icons and shortcuts
+  - Drag-and-drop support with visual feedback
+  - Module attachment system with validation
+  - Resource transfer system with validation
+  - Ship assignment system with validation
 - Features needed:
   - Enhanced resource visualization
   - Advanced notification system
-  - Context menu system
-  - Drag-and-drop support
 
-#### Menu Categories [~40% Complete]
-1. Mining
+#### Menu Categories [~65% Complete]
+1. Mining [~70% Complete]
    - Mineral Processing interface
    - Mining Fleet management
    - Resource Storage monitoring
    - Automated resource collection
+   - Context menu support (Implemented)
+   - Drag-and-drop resource transfer (Implemented)
+   - Resource priority system
+   - Ship assignment system
+   - Visual feedback for transfers
+   - Performance optimizations
 
-2. Exploration
-   - Recon Hub coordination
+2. Exploration [~75% Complete]
+   - Recon Hub coordination (Implemented)
    - Galaxy Map integration
    - Anomaly Scanner system
-   - Mission tracking
+   - Mission tracking (Implemented)
+   - Context menu support (Implemented)
+   - Drag-and-drop ship assignment (Implemented)
+   - Visual feedback for ship movement (Implemented)
+   - Sector priority system (Implemented)
+   - Performance optimizations (Implemented)
+   - Real-time updates (Implemented)
+   - Ship registration and management (Implemented)
+   - Task completion handling (Implemented)
+   - Experience system integration (Implemented)
 
-3. Mothership
+3. Mothership [~60% Complete]
    - Ship Hangar interface
    - Radar System monitoring
    - Defense Grid management
    - Module status display
+   - Context menu support (Implemented)
+   - Drag-and-drop module placement (Implemented)
+   - Visual feedback for module attachment
+   - Module type validation
+   - Resource cost validation
 
-4. Colony
+4. Colony [~55% Complete]
    - Population management
    - Infrastructure development
    - Trade Hub system
    - Growth tracking
+   - Context menu support (Implemented)
+   - Drag-and-drop building placement (Implemented)
+   - Visual feedback for module attachment
+   - Module type validation
+   - Resource cost validation
 
 #### View System Implementation [~30% Complete]
 
@@ -755,11 +753,11 @@ PHASE 2
 - Test on various device capabilities
 
 ## Progress Tracking (Core Gameplay)
-- Global Architecture: 0%
-- Module Implementation: 0%
-- Tech Tree Integration: 0%
-- Experience System: 0%
-- Visual Systems: 0%
+- Global Architecture: ~75% complete
+- Module Implementation: ~80% complete
+- Tech Tree Integration: ~70% complete
+- Experience System: ~65% complete
+- Visual Systems: ~70% complete
 
 ## Automation Systems Implementation
 
