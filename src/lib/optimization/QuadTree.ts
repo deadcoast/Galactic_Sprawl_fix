@@ -32,7 +32,7 @@ class QuadTreeNode {
   private split(): void {
     const subWidth = this.bounds.width / 2;
     const subHeight = this.bounds.height / 2;
-    const {x, y} = this.bounds;
+    const { x, y } = this.bounds;
 
     this.nodes[0] = new QuadTreeNode(
       { x: x + subWidth, y: y, width: subWidth, height: subHeight },
@@ -167,4 +167,4 @@ export class QuadTree {
   clear(): void {
     this.root.clear();
   }
-} 
+}

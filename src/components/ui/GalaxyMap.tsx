@@ -262,25 +262,25 @@ export function GalaxyMap() {
   }, []);
 
   return (
-    <div className="absolute inset-0 bg-gray-900 overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden bg-gray-900">
       {/* Starfield Background */}
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=3000')] bg-cover opacity-20" />
 
       {/* Controls */}
-      <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-10">
+      <div className="absolute left-6 right-6 top-6 z-10 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <div className="relative">
             <input
               type="text"
               placeholder="Search systems..."
-              className="w-64 px-4 py-2 bg-gray-800/90 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
-            <Search className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+            <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
           <select
-            className="px-4 py-2 bg-gray-800/90 rounded-lg border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
             value={filter}
             onChange={e => setFilter(e.target.value)}
           >
@@ -302,13 +302,13 @@ export function GalaxyMap() {
                     : [...prev.activeOverlays, 'factions'],
                 }))
               }
-              className={`px-3 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
+              className={`flex items-center space-x-2 rounded-lg px-3 py-2 transition-colors ${
                 view.activeOverlays.includes('factions')
                   ? 'bg-indigo-600 text-white'
                   : 'bg-gray-800/90 text-gray-400 hover:bg-gray-700/90'
               }`}
             >
-              <Layers className="w-4 h-4" />
+              <Layers className="h-4 w-4" />
               <span>Factions</span>
             </button>
 
@@ -321,13 +321,13 @@ export function GalaxyMap() {
                     : [...prev.activeOverlays, 'trade'],
                 }))
               }
-              className={`px-3 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
+              className={`flex items-center space-x-2 rounded-lg px-3 py-2 transition-colors ${
                 view.activeOverlays.includes('trade')
                   ? 'bg-indigo-600 text-white'
                   : 'bg-gray-800/90 text-gray-400 hover:bg-gray-700/90'
               }`}
             >
-              <Rocket className="w-4 h-4" />
+              <Rocket className="h-4 w-4" />
               <span>Trade</span>
             </button>
           </div>
@@ -336,15 +336,15 @@ export function GalaxyMap() {
         <div className="flex space-x-2">
           <button
             onClick={() => handleZoom(0.1)}
-            className="p-2 bg-gray-800/90 hover:bg-gray-700/90 rounded-lg backdrop-blur-sm transition-colors"
+            className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
           >
-            <ZoomIn className="w-5 h-5 text-cyan-400" />
+            <ZoomIn className="h-5 w-5 text-cyan-400" />
           </button>
           <button
             onClick={() => handleZoom(-0.1)}
-            className="p-2 bg-gray-800/90 hover:bg-gray-700/90 rounded-lg backdrop-blur-sm transition-colors"
+            className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
           >
-            <ZoomOut className="w-5 h-5 text-cyan-400" />
+            <ZoomOut className="h-5 w-5 text-cyan-400" />
           </button>
         </div>
       </div>
@@ -366,7 +366,7 @@ export function GalaxyMap() {
         >
           {/* Trade Routes */}
           {view.activeOverlays.includes('trade') && (
-            <svg className="absolute inset-0 pointer-events-none">
+            <svg className="pointer-events-none absolute inset-0">
               {mockSystems.map(system =>
                 system.tradeRoutes?.map(targetId => {
                   const target = mockSystems.find(s => s.id === targetId);
@@ -416,7 +416,7 @@ export function GalaxyMap() {
               }}
             >
               <div
-                className={`rounded-full animate-pulse ${
+                className={`animate-pulse rounded-full ${
                   event.type === 'storm'
                     ? 'bg-purple-500/20'
                     : event.type === 'solarFlare'
@@ -429,12 +429,12 @@ export function GalaxyMap() {
                 }}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
-                  {event.type === 'storm' && <Zap className="w-8 h-8 text-purple-400" />}
+                  {event.type === 'storm' && <Zap className="h-8 w-8 text-purple-400" />}
                   {event.type === 'solarFlare' && (
-                    <AlertTriangle className="w-8 h-8 text-orange-400" />
+                    <AlertTriangle className="h-8 w-8 text-orange-400" />
                   )}
                   {event.type === 'anomaly' && (
-                    <div className="w-8 h-8 rounded-full bg-cyan-400/50" />
+                    <div className="h-8 w-8 rounded-full bg-cyan-400/50" />
                   )}
                 </div>
               </div>
@@ -454,21 +454,21 @@ export function GalaxyMap() {
             >
               <button onClick={() => selectSystem(system)} className="group relative">
                 <div
-                  className={`w-20 h-20 rounded-full bg-${getSystemColor(system.status)}-500/20 animate-pulse`}
+                  className={`h-20 w-20 rounded-full bg-${getSystemColor(system.status)}-500/20 animate-pulse`}
                 >
                   <div
-                    className={`w-12 h-12 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-400/30`}
+                    className={`absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-400/30`}
                   >
                     <div
-                      className={`w-6 h-6 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-300/40`}
+                      className={`absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-300/40`}
                     >
                       <div
-                        className={`w-3 h-3 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-200`}
+                        className={`absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${getSystemColor(system.status)}-200`}
                       />
                     </div>
                   </div>
                 </div>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-center">
+                <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-center">
                   <div className={`text-${getSystemColor(system.status)}-200 font-medium`}>
                     {system.name}
                   </div>
@@ -486,19 +486,19 @@ export function GalaxyMap() {
 
       {/* System Details Panel */}
       {view.selectedSystem && (
-        <div className="absolute right-6 top-20 w-96 bg-gray-800/95 backdrop-blur-sm rounded-lg border border-gray-700 p-6">
+        <div className="absolute right-6 top-20 w-96 rounded-lg border border-gray-700 bg-gray-800/95 p-6 backdrop-blur-sm">
           <button
             onClick={() => setView(prev => ({ ...prev, selectedSystem: null }))}
-            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+            className="absolute right-4 top-4 text-gray-400 transition-colors hover:text-white"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
 
-          <h2 className="text-xl font-bold text-white mb-4">{view.selectedSystem.name}</h2>
+          <h2 className="mb-4 text-xl font-bold text-white">{view.selectedSystem.name}</h2>
 
           <div className="space-y-4">
             <div>
-              <div className="text-sm text-gray-400 mb-1">Status</div>
+              <div className="mb-1 text-sm text-gray-400">Status</div>
               <div className={`text-${getSystemColor(view.selectedSystem.status)}-400 capitalize`}>
                 {view.selectedSystem.status}
               </div>
@@ -506,19 +506,19 @@ export function GalaxyMap() {
 
             {view.selectedSystem.faction && (
               <div>
-                <div className="text-sm text-gray-400 mb-1">Faction</div>
+                <div className="mb-1 text-sm text-gray-400">Faction</div>
                 <div className="text-white">{view.selectedSystem.faction}</div>
               </div>
             )}
 
             {view.selectedSystem.resources && (
               <div>
-                <div className="text-sm text-gray-400 mb-1">Resources</div>
+                <div className="mb-1 text-sm text-gray-400">Resources</div>
                 <div className="flex flex-wrap gap-2">
                   {view.selectedSystem.resources.map(resource => (
                     <span
                       key={resource}
-                      className="px-2 py-1 bg-gray-700 rounded-md text-sm text-gray-200"
+                      className="rounded-md bg-gray-700 px-2 py-1 text-sm text-gray-200"
                     >
                       {resource}
                     </span>
@@ -529,7 +529,7 @@ export function GalaxyMap() {
 
             {view.selectedSystem.population && (
               <div>
-                <div className="text-sm text-gray-400 mb-1">Population</div>
+                <div className="mb-1 text-sm text-gray-400">Population</div>
                 <div className="text-white">{view.selectedSystem.population.toLocaleString()}</div>
               </div>
             )}
@@ -539,22 +539,22 @@ export function GalaxyMap() {
           {view.selectedSystem.techRequirements &&
             view.selectedSystem.techRequirements.length > 0 && (
               <div className="mt-4">
-                <div className="text-sm text-gray-400 mb-2">Tech Requirements</div>
+                <div className="mb-2 text-sm text-gray-400">Tech Requirements</div>
                 <div className="space-y-2">
                   {view.selectedSystem.techRequirements.map(tech => (
                     <div
                       key={tech}
-                      className={`flex items-center justify-between px-3 py-2 rounded-md ${
+                      className={`flex items-center justify-between rounded-md px-3 py-2 ${
                         unlockedTech.includes(tech)
-                          ? 'bg-green-900/20 border border-green-700/30'
-                          : 'bg-gray-800 border border-gray-700'
+                          ? 'border border-green-700/30 bg-green-900/20'
+                          : 'border border-gray-700 bg-gray-800'
                       }`}
                     >
                       <span className="text-sm text-gray-300">{tech}</span>
                       {unlockedTech.includes(tech) ? (
-                        <div className="text-green-400 text-sm">Unlocked</div>
+                        <div className="text-sm text-green-400">Unlocked</div>
                       ) : (
-                        <Lock className="w-4 h-4 text-gray-500" />
+                        <Lock className="h-4 w-4 text-gray-500" />
                       )}
                     </div>
                   ))}
@@ -568,13 +568,13 @@ export function GalaxyMap() {
               <button
                 onClick={() => startColonization(view.selectedSystem!.id)}
                 disabled={!canColonize(view.selectedSystem) || view.colonizationInProgress !== null}
-                className={`w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-colors ${
+                className={`flex w-full items-center justify-center space-x-2 rounded-lg px-4 py-2.5 font-medium transition-colors ${
                   canColonize(view.selectedSystem)
-                    ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
-                    : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                    ? 'bg-cyan-600 text-white hover:bg-cyan-700'
+                    : 'cursor-not-allowed bg-gray-700 text-gray-400'
                 }`}
               >
-                <Rocket className="w-5 h-5" />
+                <Rocket className="h-5 w-5" />
                 <span>
                   {view.colonizationInProgress === view.selectedSystem.id
                     ? 'Colonizing...'
@@ -587,9 +587,9 @@ export function GalaxyMap() {
               <button
                 onClick={() => travelToSystem(view.selectedSystem!.id)}
                 disabled={view.travelingTo !== null}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                className="flex w-full items-center justify-center space-x-2 rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-indigo-700"
               >
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="h-5 w-5" />
                 <span>
                   {view.travelingTo === view.selectedSystem.id
                     ? 'Traveling...'
@@ -601,7 +601,7 @@ export function GalaxyMap() {
 
           {/* Requirements Notice */}
           {view.selectedSystem.status === 'unlocked' && !canColonize(view.selectedSystem) && (
-            <div className="mt-3 text-sm text-gray-400 text-center">
+            <div className="mt-3 text-center text-sm text-gray-400">
               Complete all tech requirements to colonize this system
             </div>
           )}
@@ -610,9 +610,9 @@ export function GalaxyMap() {
 
       {/* Tutorial Overlay */}
       {view.showTutorial && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="max-w-md bg-gray-800/95 backdrop-blur-sm p-6 rounded-lg border border-gray-700">
-            <h3 className="text-xl font-bold text-white mb-4">Welcome to the Galaxy Map</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="max-w-md rounded-lg border border-gray-700 bg-gray-800/95 p-6 backdrop-blur-sm">
+            <h3 className="mb-4 text-xl font-bold text-white">Welcome to the Galaxy Map</h3>
             <div className="space-y-4 text-gray-300">
               <p>• Click and drag to pan across the galaxy</p>
               <p>• Use the mouse wheel or buttons to zoom in/out</p>
@@ -622,7 +622,7 @@ export function GalaxyMap() {
             </div>
             <button
               onClick={() => setView(prev => ({ ...prev, showTutorial: false }))}
-              className="mt-6 w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+              className="mt-6 w-full rounded-lg bg-indigo-600 px-4 py-2 text-white transition-colors hover:bg-indigo-700"
             >
               Got it!
             </button>

@@ -1,11 +1,11 @@
 import { AlertTriangle, Crosshair, Shield, Zap } from 'lucide-react';
 import {
+  BaseWeaponStats,
+  CombatWeaponStats,
+  UPGRADE_COLORS,
   WeaponCategory,
   WeaponUpgrade,
   WeaponUpgradeType,
-  CombatWeaponStats,
-  UPGRADE_COLORS,
-  BaseWeaponStats,
 } from '../../types/weapons/WeaponTypes';
 
 interface WeaponUpgradeSystemProps {
@@ -51,32 +51,32 @@ export function WeaponUpgradeSystem({ weapon, onUpgrade }: WeaponUpgradeSystemPr
         return (
           <div
             key={upgrade.id}
-            className={`p-4 rounded-lg ${
+            className={`rounded-lg p-4 ${
               upgrade.unlocked
                 ? `bg-${color}-900/20 border border-${color}-500/30`
-                : 'bg-gray-800 border border-gray-700'
+                : 'border border-gray-700 bg-gray-800'
             }`}
           >
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <div>
                 <h4 className="text-sm font-medium text-white">{upgrade.name}</h4>
                 <p className="text-xs text-gray-400">{upgrade.description}</p>
               </div>
               {!upgrade.unlocked && (
                 <div className="flex items-center text-yellow-400">
-                  <AlertTriangle className="w-4 h-4 mr-1" />
+                  <AlertTriangle className="mr-1 h-4 w-4" />
                   <span className="text-xs">Locked</span>
                 </div>
               )}
             </div>
 
             {/* Stat Changes */}
-            <div className="space-y-2 mb-4">
+            <div className="mb-4 space-y-2">
               {Object.entries(upgrade.stats).map(([key, value]) => {
                 if (typeof value !== 'number') return null;
                 return (
                   <div key={key} className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400 capitalize">
+                    <span className="text-xs capitalize text-gray-400">
                       {key.replace(/([A-Z])/g, ' $1').trim()}
                     </span>
                     {renderStatValue(key as keyof BaseWeaponStats, value)}
@@ -87,7 +87,7 @@ export function WeaponUpgradeSystem({ weapon, onUpgrade }: WeaponUpgradeSystemPr
 
             {/* Special Effect */}
             {upgrade.specialEffect && (
-              <div className="mb-4 p-2 bg-gray-800 rounded">
+              <div className="mb-4 rounded bg-gray-800 p-2">
                 <div className="text-xs font-medium text-gray-300">
                   {upgrade.specialEffect.name}
                 </div>
@@ -96,11 +96,11 @@ export function WeaponUpgradeSystem({ weapon, onUpgrade }: WeaponUpgradeSystemPr
             )}
 
             {/* Requirements */}
-            <div className="space-y-2 mb-4">
+            <div className="mb-4 space-y-2">
               <div className="text-xs text-gray-400">Requirements:</div>
               {upgrade.requirements.tech.map(tech => (
                 <div key={tech} className="flex items-center text-xs text-blue-400">
-                  <Shield className="w-3 h-3 mr-1" />
+                  <Shield className="mr-1 h-3 w-3" />
                   <span>{tech}</span>
                 </div>
               ))}
@@ -113,7 +113,7 @@ export function WeaponUpgradeSystem({ weapon, onUpgrade }: WeaponUpgradeSystemPr
                       : 'text-red-400'
                   }`}
                 >
-                  <Zap className="w-3 h-3 mr-1" />
+                  <Zap className="mr-1 h-3 w-3" />
                   <span>
                     {resource.type}: {weapon.resources[resource.type] || 0}/{resource.amount}
                   </span>
@@ -124,13 +124,13 @@ export function WeaponUpgradeSystem({ weapon, onUpgrade }: WeaponUpgradeSystemPr
             <button
               onClick={() => onUpgrade(upgrade.id)}
               disabled={!upgrade.unlocked || !canAfford}
-              className={`w-full px-4 py-2 rounded flex items-center justify-center space-x-2 ${
+              className={`flex w-full items-center justify-center space-x-2 rounded px-4 py-2 ${
                 upgrade.unlocked && canAfford
                   ? `bg-${color}-600 hover:bg-${color}-700 text-white`
-                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  : 'cursor-not-allowed bg-gray-700 text-gray-500'
               }`}
             >
-              <Crosshair className="w-4 h-4" />
+              <Crosshair className="h-4 w-4" />
               <span>Apply Upgrade</span>
             </button>
           </div>

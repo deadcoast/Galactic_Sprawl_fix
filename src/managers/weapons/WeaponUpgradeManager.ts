@@ -1,12 +1,12 @@
-import { EventEmitter } from '../../utils/EventEmitter';
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
+  CombatWeaponStats,
+  WeaponCategory,
   WeaponInstance,
   WeaponUpgrade,
-  WeaponCategory,
-  CombatWeaponStats,
   WeaponUpgradeType,
 } from '../../types/weapons/WeaponTypes';
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { EventEmitter } from '../../utils/EventEmitter';
 
 interface WeaponUpgradeEvents {
   upgradeApplied: { weaponId: string; upgradeId: string };
@@ -95,9 +95,9 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
         name: 'Enhanced Damage',
         type: 'damage' as WeaponUpgradeType,
         description: 'Increases weapon damage output',
-        stats: { 
+        stats: {
           damage: 1.2,
-          effects: [] // Maintain the effects array
+          effects: [], // Maintain the effects array
         },
         requirements: { tech: [], resources: [] },
         unlocked: true,
@@ -107,9 +107,9 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
         name: 'Rapid Fire',
         type: 'rate' as WeaponUpgradeType,
         description: 'Increases rate of fire',
-        stats: { 
+        stats: {
           rateOfFire: 1.2,
-          effects: [] // Maintain the effects array
+          effects: [], // Maintain the effects array
         },
         requirements: { tech: [], resources: [] },
         unlocked: true,
@@ -119,9 +119,9 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
         name: 'Targeting Enhancement',
         type: 'accuracy' as WeaponUpgradeType,
         description: 'Improves weapon accuracy',
-        stats: { 
+        stats: {
           accuracy: 1.15,
-          effects: [] // Maintain the effects array
+          effects: [], // Maintain the effects array
         },
         requirements: { tech: [], resources: [] },
         unlocked: true,
@@ -215,9 +215,9 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
   }
 
   public applyUpgrade(weapon: WeaponInstance, upgradeId: string): boolean {
-    const {category} = weapon.config;
+    const { category } = weapon.config;
     const upgrade = this.upgradeTrees[category].upgrades.find(u => u.id === upgradeId);
-    
+
     if (!upgrade || !upgrade.unlocked) {
       return false;
     }
@@ -259,8 +259,8 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
       special: { ...weapon.config.baseStats.special },
     };
 
-    const {category} = weapon.config;
-    
+    const { category } = weapon.config;
+
     // Get all applied upgrades
     const appliedUpgrades = appliedUpgradeIds
       .map(id => this.upgradeTrees[category].upgrades.find(u => u.id === id))
@@ -301,7 +301,7 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
   }
 
   private checkSpecializationUnlocks(weapon: WeaponInstance): void {
-    const {category} = weapon.config;
+    const { category } = weapon.config;
     const weaponId = weapon.config.id;
     const experience = this.weaponExperience.get(weaponId) || 0;
     const appliedUpgrades = Array.from(this.appliedUpgrades.get(weaponId) || []);
@@ -329,12 +329,12 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
   }
 
   public getAvailableUpgrades(weapon: WeaponInstance): WeaponUpgrade[] {
-    const {category} = weapon.config;
+    const { category } = weapon.config;
     return this.upgradeTrees[category].upgrades.filter(upgrade => upgrade.unlocked);
   }
 
   public getSpecializations(weapon: WeaponInstance): WeaponSpecialization[] {
-    const {category} = weapon.config;
+    const { category } = weapon.config;
     return this.upgradeTrees[category].specializations;
   }
 
@@ -351,7 +351,7 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
     return {
       unsubscribe: () => {
         this.off(event, handler);
-      }
+      },
     };
   }
 
@@ -366,4 +366,4 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
   }
 }
 
-export const weaponUpgradeManager = WeaponUpgradeManager.getInstance(); 
+export const weaponUpgradeManager = WeaponUpgradeManager.getInstance();

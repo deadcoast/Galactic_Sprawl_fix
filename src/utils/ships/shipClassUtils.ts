@@ -1,5 +1,5 @@
-import { FactionId } from '../../types/ships/FactionTypes';
 import { FactionShipClass } from '../../types/ships/FactionShipTypes';
+import { FactionId } from '../../types/ships/FactionTypes';
 
 /**
  * Maps a faction ID to its default ship class

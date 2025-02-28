@@ -39,15 +39,15 @@ export function OrionFrigate({
   onRetreat,
 }: OrionFrigateProps) {
   return (
-    <div className="bg-violet-900/20 border border-violet-700/30 rounded-lg p-6">
+    <div className="rounded-lg border border-violet-700/30 bg-violet-900/20 p-6">
       {/* Ship Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <h3 className="text-lg font-medium text-white">Orion's Frigate</h3>
           <div className="text-sm text-gray-400">Tier 2 Combat Frigate</div>
         </div>
         <div
-          className={`px-3 py-1 rounded-full text-sm ${
+          className={`rounded-full px-3 py-1 text-sm ${
             status === 'engaging'
               ? 'bg-red-900/50 text-red-400'
               : status === 'retreating'
@@ -62,15 +62,15 @@ export function OrionFrigate({
       </div>
 
       {/* Combat Status */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-4">
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Hull Integrity</span>
             <span className={hull < maxHull * 0.3 ? 'text-red-400' : 'text-gray-300'}>
               {Math.round((hull / maxHull) * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full rounded-full transition-all ${
                 hull < maxHull * 0.3 ? 'bg-red-500' : 'bg-green-500'
@@ -81,13 +81,13 @@ export function OrionFrigate({
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Shield Power</span>
             <span className="text-gray-300">{Math.round((shield / maxShield) * 100)}%</span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
+              className="h-full rounded-full bg-blue-500 transition-all"
               style={{ width: `${(shield / maxShield) * 100}%` }}
             />
           </div>
@@ -95,7 +95,7 @@ export function OrionFrigate({
       </div>
 
       {/* Weapon Systems */}
-      <div className="space-y-4 mb-6">
+      <div className="mb-6 space-y-4">
         <h4 className="text-sm font-medium text-gray-300">Weapon Systems</h4>
         <div className="grid grid-cols-2 gap-3">
           {weapons.map(weapon => (
@@ -103,13 +103,13 @@ export function OrionFrigate({
               key={weapon.id}
               onClick={() => onFire(weapon.id)}
               disabled={weapon.status !== 'ready'}
-              className={`p-3 rounded-lg transition-colors ${
+              className={`rounded-lg p-3 transition-colors ${
                 weapon.status === 'ready'
-                  ? 'bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/30'
-                  : 'bg-gray-700/50 border border-gray-600/30 cursor-not-allowed'
+                  ? 'border border-violet-500/30 bg-violet-500/20 hover:bg-violet-500/30'
+                  : 'cursor-not-allowed border border-gray-600/30 bg-gray-700/50'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-medium text-white">{weapon.name}</div>
                 <div
                   className={`text-xs ${
@@ -134,13 +134,13 @@ export function OrionFrigate({
         <button
           onClick={onActivateAbility}
           disabled={specialAbility.active}
-          className={`w-full p-3 rounded-lg text-left transition-colors ${
+          className={`w-full rounded-lg p-3 text-left transition-colors ${
             specialAbility.active
-              ? 'bg-violet-500/20 border border-violet-500/30'
+              ? 'border border-violet-500/30 bg-violet-500/20'
               : 'bg-gray-700/50 hover:bg-gray-600/50'
           }`}
         >
-          <div className="flex items-center justify-between mb-1">
+          <div className="mb-1 flex items-center justify-between">
             <span className="text-sm font-medium text-white">{specialAbility.name}</span>
             {specialAbility.active ? (
               <span className="text-xs text-green-400">Active</span>
@@ -157,23 +157,23 @@ export function OrionFrigate({
         <button
           onClick={() => onFire(weapons[0].id)}
           disabled={!weapons.some(w => w.status === 'ready')}
-          className={`px-4 py-2 rounded-lg text-sm flex items-center justify-center space-x-2 ${
+          className={`flex items-center justify-center space-x-2 rounded-lg px-4 py-2 text-sm ${
             weapons.some(w => w.status === 'ready')
-              ? 'bg-violet-500/20 hover:bg-violet-500/30 text-violet-200'
-              : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              ? 'bg-violet-500/20 text-violet-200 hover:bg-violet-500/30'
+              : 'cursor-not-allowed bg-gray-700 text-gray-500'
           }`}
         >
-          <Crosshair className="w-4 h-4" />
+          <Crosshair className="h-4 w-4" />
           <span>Fire Weapons</span>
         </button>
         <button
           onClick={onRetreat}
           disabled={status === 'damaged'}
-          className={`px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            status === 'damaged' ? 'opacity-50 cursor-not-allowed' : ''
+          className={`flex items-center justify-center space-x-2 rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 ${
+            status === 'damaged' ? 'cursor-not-allowed opacity-50' : ''
           }`}
         >
-          <Shield className="w-4 h-4" />
+          <Shield className="h-4 w-4" />
           <span>Retreat</span>
         </button>
       </div>

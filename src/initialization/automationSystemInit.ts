@@ -1,7 +1,6 @@
 import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
-import { automationManager } from '../managers/game/AutomationManager';
 import { globalAutomationManager } from '../managers/automation/GlobalAutomationManager';
-import { getSystemCommunication } from '../utils/events/EventCommunication';
+import { automationManager } from '../managers/game/AutomationManager';
 import { MessagePriority } from '../utils/events/EventCommunication';
 
 /**
@@ -9,32 +8,32 @@ import { MessagePriority } from '../utils/events/EventCommunication';
  */
 export function initializeAutomationSystem(): () => void {
   console.log('Initializing Automation System...');
-  
+
   // Set the automation manager in the global automation manager
   (globalAutomationManager as any).automationManager = automationManager;
-  
+
   // Initialize the global automation manager
   globalAutomationManager.initialize();
-  
+
   // Register default routines
   registerDefaultRoutines();
-  
+
   // Emit initialization event
   moduleEventBus.emit({
     type: 'AUTOMATION_STARTED' as ModuleEventType,
     moduleId: 'automation-system',
     moduleType: 'resource-manager',
     timestamp: Date.now(),
-    data: { 
+    data: {
       status: 'initialized',
-      routineCount: globalAutomationManager.getAllRoutines().length
-    }
+      routineCount: globalAutomationManager.getAllRoutines().length,
+    },
   });
-  
+
   // Return cleanup function
   return () => {
     console.log('Cleaning up Automation System...');
-    
+
     // Clean up global automation manager
     globalAutomationManager.cleanup();
   };
@@ -56,26 +55,26 @@ function registerDefaultRoutines(): void {
     conditions: [
       {
         type: 'RESOURCE_BELOW',
-        resourceType: 'energy',
-        threshold: 100
-      }
+        target: 'energy',
+        value: 100,
+      },
     ],
     actions: [
       {
         type: 'TRANSFER_RESOURCES',
-        target: 'energy-system',
+        target: 'resource-system',
         value: {
           from: 'global-storage',
           to: 'energy-system',
           amount: 50,
-          type: 'energy'
-        }
-      }
+          type: 'energy',
+        },
+      },
     ],
-    systems: ['resource-system', 'energy-system'],
-    tags: ['resource', 'balancing', 'energy']
+    systems: ['resource-system', 'module-system'],
+    tags: ['resource', 'balancing', 'energy'],
   });
-  
+
   // Register performance optimization routine
   globalAutomationManager.registerRoutine({
     id: 'default-performance-optimization',
@@ -95,15 +94,15 @@ function registerDefaultRoutines(): void {
           moduleType: 'resource-manager',
           data: {
             status: 'optimizing',
-            target: 'all'
-          }
-        }
-      }
+            target: 'all',
+          },
+        },
+      },
     ],
     systems: ['resource-system', 'module-system', 'game-loop'],
-    tags: ['performance', 'optimization']
+    tags: ['performance', 'optimization'],
   });
-  
+
   // Register emergency response routine
   globalAutomationManager.registerRoutine({
     id: 'default-emergency-response',
@@ -123,15 +122,15 @@ function registerDefaultRoutines(): void {
           moduleType: 'resource-manager',
           data: {
             status: 'recovering',
-            target: 'all'
-          }
-        }
-      }
+            target: 'all',
+          },
+        },
+      },
     ],
     systems: ['resource-system', 'module-system', 'event-system'],
-    tags: ['emergency', 'error', 'recovery']
+    tags: ['emergency', 'error', 'recovery'],
   });
-  
+
   // Register system maintenance routine
   globalAutomationManager.registerRoutine({
     id: 'default-system-maintenance',
@@ -151,15 +150,15 @@ function registerDefaultRoutines(): void {
           moduleType: 'resource-manager',
           data: {
             status: 'maintaining',
-            target: 'all'
-          }
-        }
-      }
+            target: 'all',
+          },
+        },
+      },
     ],
     systems: ['resource-system', 'module-system', 'game-loop'],
-    tags: ['maintenance', 'system']
+    tags: ['maintenance', 'system'],
   });
-  
+
   console.log('Registered default automation routines');
 }
 
@@ -168,4 +167,4 @@ function registerDefaultRoutines(): void {
  */
 export function initializeCompleteAutomationSystem(): () => void {
   return initializeAutomationSystem();
-} 
+}

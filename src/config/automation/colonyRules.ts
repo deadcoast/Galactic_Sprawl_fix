@@ -344,4 +344,4 @@ export const colonyRules: AutomationRule[] = [
     ],
     interval: 5000, // Check frequently
   },
-]; 
+];

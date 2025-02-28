@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Position } from '../../types/core/GameTypes';
 
 interface FormationTransitionEffectProps {
@@ -115,7 +115,7 @@ export function FormationTransitionEffect({
   }, [sourcePositions, targetPositions, duration, easingFunction, quality, pattern, onComplete]);
 
   return (
-    <div className="absolute inset-0 pointer-events-none">
+    <div className="pointer-events-none absolute inset-0">
       {/* Formation Lines */}
       <svg className="absolute inset-0">
         {sourcePositions.map((source, index) => {
@@ -162,4 +162,4 @@ export function FormationTransitionEffect({
       ))}
     </div>
   );
-} 
+}

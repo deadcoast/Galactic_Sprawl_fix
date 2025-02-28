@@ -1,4 +1,4 @@
-import { ModularBuilding, ModuleType } from '../../types/buildings/ModuleTypes';
+import { ModularBuilding } from '../../types/buildings/ModuleTypes';
 
 export const defaultMothership: ModularBuilding = {
   id: 'mothership-1',
@@ -83,4 +83,4 @@ export const defaultColony: ModularBuilding = {
       currentModule: undefined,
     },
   ],
-}; 
+};

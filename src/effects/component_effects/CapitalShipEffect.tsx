@@ -32,7 +32,7 @@ export function CapitalShipEffect({
   const particleCount = quality === 'high' ? 16 : quality === 'medium' ? 10 : 6;
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {/* Shield Effect */}
       <div className="absolute inset-0">
         <div
@@ -70,7 +70,7 @@ export function CapitalShipEffect({
           {Array.from({ length: Math.ceil(particleCount * weaponCharge) }).map((_, i) => (
             <div
               key={i}
-              className={`absolute w-1 h-1 bg-${color}-400 rounded-full`}
+              className={`absolute h-1 w-1 bg-${color}-400 rounded-full`}
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -85,7 +85,7 @@ export function CapitalShipEffect({
       {/* Status Effects */}
       {status === 'engaging' && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Crosshair className={`w-8 h-8 text-${color}-400 animate-pulse`} />
+          <Crosshair className={`h-8 w-8 text-${color}-400 animate-pulse`} />
         </div>
       )}
 
@@ -95,7 +95,7 @@ export function CapitalShipEffect({
           {Array.from({ length: particleCount }).map((_, i) => (
             <div
               key={i}
-              className="absolute w-1 h-4 bg-yellow-500 rounded-full"
+              className="absolute h-4 w-1 rounded-full bg-yellow-500"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -111,7 +111,7 @@ export function CapitalShipEffect({
       {type === 'harbringerGalleon' && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className={`w-3/4 h-3/4 rounded-full border-2 border-${color}-500/30 animate-spin-slow`}
+            className={`h-3/4 w-3/4 rounded-full border-2 border-${color}-500/30 animate-spin-slow`}
           />
         </div>
       )}
@@ -122,7 +122,7 @@ export function CapitalShipEffect({
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className={`absolute w-8 h-2 bg-${color}-500/30`}
+              className={`absolute h-2 w-8 bg-${color}-500/30`}
               style={{
                 left: '50%',
                 top: `${25 + i * 20}%`,
@@ -138,13 +138,13 @@ export function CapitalShipEffect({
         <div className="absolute inset-0">
           {/* Energy Field */}
           <div
-            className={`absolute inset-0 bg-gradient-radial from-${color}-500/30 via-transparent to-transparent animate-pulse`}
+            className={`bg-gradient-radial absolute inset-0 from-${color}-500/30 animate-pulse via-transparent to-transparent`}
             style={{ animationDuration: '4s' }}
           />
 
           {/* Power Core */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <Zap className={`w-12 h-12 text-${color}-400 animate-pulse`} />
+            <Zap className={`h-12 w-12 text-${color}-400 animate-pulse`} />
           </div>
         </div>
       )}

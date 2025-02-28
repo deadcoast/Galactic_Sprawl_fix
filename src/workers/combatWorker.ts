@@ -1,9 +1,8 @@
 // Combat Web Worker
-import { CombatUnit, CombatUnitStatus } from '../types/combat/CombatTypes';
+import { QuadTree } from '../lib/optimization/QuadTree';
+import { CombatUnit } from '../types/combat/CombatTypes';
 import { Hazard } from '../types/combat/HazardTypes';
 import { Position } from '../types/core/GameTypes';
-import { WeaponSystem } from '../types/weapons/WeaponTypes';
-import { QuadTree } from '../lib/optimization/QuadTree';
 
 interface WorkerMessage {
   type: string;
@@ -112,16 +111,22 @@ function processEngagingUnit(unit: CombatUnit, hazards: Hazard[]): void {
     height: 1000,
   };
 
-  const nearbyObjects = quadTree.retrieve(searchBounds) as Array<{ id: string; position: Position }>;
-  
+  const nearbyObjects = quadTree.retrieve(searchBounds) as Array<{
+    id: string;
+    position: Position;
+  }>;
+
   // Create a filtered array of hazards instead of using Set
   const nearbyHazards: Hazard[] = [];
 
   hazards.forEach(hazard => {
-    if (nearbyObjects.some(obj => 
-      Math.abs(obj.position.x - hazard.position.x) < hazard.radius &&
-      Math.abs(obj.position.y - hazard.position.y) < hazard.radius
-    )) {
+    if (
+      nearbyObjects.some(
+        obj =>
+          Math.abs(obj.position.x - hazard.position.x) < hazard.radius &&
+          Math.abs(obj.position.y - hazard.position.y) < hazard.radius
+      )
+    ) {
       nearbyHazards.push(hazard);
     }
   });
@@ -143,8 +148,8 @@ function processEngagingUnit(unit: CombatUnit, hazards: Hazard[]): void {
   // Check if we found a hazard
   if (nearestHazard) {
     // Check for ready weapon
-    const readyWeapon = unit.weapons.find(weapon => 
-      weapon.status === 'ready' && nearestDistance <= weapon.range
+    const readyWeapon = unit.weapons.find(
+      weapon => weapon.status === 'ready' && nearestDistance <= weapon.range
     );
 
     if (readyWeapon) {
@@ -174,11 +179,11 @@ function calculateNewPosition(current: Position, target: Position): Position {
   const dx = target.x - current.x;
   const dy = target.y - current.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
-  
+
   // Smooth movement with easing
   const speed = 0.1;
   const easing = 1 - Math.pow(0.95, distance);
-  
+
   return {
     x: current.x + dx * speed * easing,
     y: current.y + dy * speed * easing,
@@ -186,4 +191,4 @@ function calculateNewPosition(current: Position, target: Position): Position {
 }
 
 // Prevent TypeScript error about missing self
-export {}; 
+export {};

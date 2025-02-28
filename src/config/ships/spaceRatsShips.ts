@@ -1,21 +1,19 @@
-import { SpaceRatsShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
 import {
-  WeaponMount,
-  WeaponMountSize,
-  WeaponMountPosition,
-  WeaponStatus,
-  WeaponInstance,
-} from '../../types/weapons/WeaponTypes';
-import {
-  PLASMA_EFFECT,
-  GAUSS_EFFECT,
-  EXPLOSIVE_EFFECT,
   DAMAGE_BOOST_EFFECT,
+  EXPLOSIVE_EFFECT,
+  GAUSS_EFFECT,
+  PLASMA_EFFECT,
   SPEED_BOOST_EFFECT,
-  STEALTH_EFFECT,
   SPEED_REDUCTION_EFFECT,
-  SHIELD_FIELD_EFFECT,
+  STEALTH_EFFECT,
 } from '../../effects/types_effects/shipEffects';
+import { FactionShipStats, SpaceRatsShipClass } from '../../types/ships/FactionShipTypes';
+import {
+  WeaponInstance,
+  WeaponMountPosition,
+  WeaponMountSize,
+  WeaponStatus,
+} from '../../types/weapons/WeaponTypes';
 
 export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
   ratKing: {

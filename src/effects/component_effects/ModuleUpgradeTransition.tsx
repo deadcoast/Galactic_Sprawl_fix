@@ -53,10 +53,10 @@ export function ModuleUpgradeTransition({
   const color = getModuleColor();
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {/* Upgrade Energy Field */}
       <div
-        className={`absolute inset-0 bg-gradient-radial from-${color}-500/30 via-${color}-500/10 to-transparent`}
+        className={`bg-gradient-radial absolute inset-0 from-${color}-500/30 via-${color}-500/10 to-transparent`}
         style={{
           opacity: progress,
           transform: `scale(${1 + progress * 0.5})`,
@@ -81,7 +81,7 @@ export function ModuleUpgradeTransition({
       {Array.from({ length: Math.ceil(particleCount * progress) }).map((_, i) => (
         <div
           key={i}
-          className={`absolute w-1 h-4 bg-${color}-400 rounded-full`}
+          className={`absolute h-4 w-1 bg-${color}-400 rounded-full`}
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
@@ -92,9 +92,9 @@ export function ModuleUpgradeTransition({
       ))}
 
       {/* Tier Indicator */}
-      <div className="absolute top-4 right-4 flex items-center space-x-2">
+      <div className="absolute right-4 top-4 flex items-center space-x-2">
         <div className={`text-${color}-400 font-medium`}>Tier {fromTier}</div>
-        <ArrowUp className={`w-4 h-4 text-${color}-400`} />
+        <ArrowUp className={`h-4 w-4 text-${color}-400`} />
         <div className={`text-${color}-400 font-medium`}>Tier {toTier}</div>
       </div>
 
@@ -117,7 +117,7 @@ export function ModuleUpgradeTransition({
       {moduleType === 'radar' && quality !== 'low' && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className={`w-1/2 h-1/2 rounded-full border-2 border-${color}-500/30`}
+            className={`h-1/2 w-1/2 rounded-full border-2 border-${color}-500/30`}
             style={{
               animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
               animationDelay: `${progress * 0.5}s`,
@@ -129,7 +129,7 @@ export function ModuleUpgradeTransition({
       {moduleType === 'dockingBay' && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className={`w-3/4 h-3/4 border-2 border-${color}-500/30`}
+            className={`h-3/4 w-3/4 border-2 border-${color}-500/30`}
             style={{
               clipPath: `inset(0 ${50 - progress * 50}% 0 0)`,
               transform: `scale(${1 + progress * 0.2})`,
@@ -141,7 +141,7 @@ export function ModuleUpgradeTransition({
       {/* Upgrade Complete Flash */}
       {progress === 1 && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Zap className={`w-12 h-12 text-${color}-400 animate-pulse`} />
+          <Zap className={`h-12 w-12 text-${color}-400 animate-pulse`} />
         </div>
       )}
     </div>

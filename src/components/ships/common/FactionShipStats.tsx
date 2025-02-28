@@ -1,6 +1,6 @@
+import { AlertTriangle, Shield, Sword } from 'lucide-react';
 import { SHIP_STATS } from '../../../config/ships/shipStats';
 import type { FactionShipProps, ShipStatsWithWeapons } from '../../../types/ships/FactionShipTypes';
-import { AlertTriangle, Shield, Sword } from 'lucide-react';
 import { FactionBehaviorType } from '../../../types/ships/FactionTypes';
 
 type FactionColorKey = 'spaceRats' | 'lostNova' | 'equatorHorizon';
@@ -18,7 +18,9 @@ const getBehaviorString = (behavior: FactionBehaviorType): string => {
 
 // Add a helper function to format the behavior string
 const formatBehavior = (behavior: string): string => {
-  if (!behavior) return '';
+  if (!behavior) {
+    return '';
+  }
   return behavior.charAt(0).toUpperCase() + behavior.slice(1);
 };
 
@@ -39,7 +41,7 @@ export function FactionShip({
   return (
     <div className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6 ${className}`}>
       {/* Ship Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <h3 className="text-lg font-medium text-white">{ship.name}</h3>
           <div className="flex items-center text-sm text-gray-400">
@@ -49,7 +51,7 @@ export function FactionShip({
           </div>
         </div>
         <div
-          className={`px-3 py-1 rounded-full text-sm ${
+          className={`rounded-full px-3 py-1 text-sm ${
             ship.status === 'engaging'
               ? 'bg-red-900/50 text-red-400'
               : ship.status === 'patrolling'
@@ -64,15 +66,15 @@ export function FactionShip({
       </div>
 
       {/* Health & Shield Bars */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-4">
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Hull Integrity</span>
             <span className={ship.health < ship.maxHealth * 0.3 ? 'text-red-400' : 'text-gray-300'}>
               {Math.round((ship.health / ship.maxHealth) * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full rounded-full transition-all ${
                 ship.health < ship.maxHealth * 0.3 ? 'bg-red-500' : 'bg-green-500'
@@ -83,15 +85,15 @@ export function FactionShip({
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Shield Power</span>
             <span className="text-gray-300">
               {Math.round((ship.shield / ship.maxShield) * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
+              className="h-full rounded-full bg-blue-500 transition-all"
               style={{ width: `${(ship.shield / ship.maxShield) * 100}%` }}
             />
           </div>
@@ -99,22 +101,22 @@ export function FactionShip({
       </div>
 
       {/* Ship Stats */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="p-3 bg-gray-800/50 rounded-lg">
-          <div className="text-sm text-gray-400 mb-1">Weapons</div>
-          <div className="text-xs text-gray-300 flex justify-between">
+      <div className="mb-6 grid grid-cols-2 gap-4">
+        <div className="rounded-lg bg-gray-800/50 p-3">
+          <div className="mb-1 text-sm text-gray-400">Weapons</div>
+          <div className="flex justify-between text-xs text-gray-300">
             <span>{stats.weapons.primary.config.name}</span>
             <span>DMG: {stats.weapons.primary.state.currentStats.damage}</span>
           </div>
           {stats.weapons.secondary?.map((weapon, index) => (
-            <div key={index} className="text-xs text-gray-300 flex justify-between">
+            <div key={index} className="flex justify-between text-xs text-gray-300">
               <span>{weapon.config.name}</span>
               <span>DMG: {weapon.state.currentStats.damage}</span>
             </div>
           ))}
         </div>
-        <div className="p-3 bg-gray-800/50 rounded-lg">
-          <div className="text-sm text-gray-400 mb-1">Abilities</div>
+        <div className="rounded-lg bg-gray-800/50 p-3">
+          <div className="mb-1 text-sm text-gray-400">Abilities</div>
           {stats.abilities.map((ability, index) => (
             <div key={index} className="text-xs text-gray-300">
               {ability.name}
@@ -125,10 +127,10 @@ export function FactionShip({
 
       {/* Tactics & Special Ability */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3 flex items-center justify-between">
           <div className="text-sm font-medium text-gray-300">Combat Tactics</div>
           <div
-            className={`px-2 py-1 rounded text-xs ${
+            className={`rounded px-2 py-1 text-xs ${
               getBehaviorString(ship.tactics) === 'aggressive'
                 ? 'bg-red-900/50 text-red-400'
                 : getBehaviorString(ship.tactics) === 'defensive'
@@ -144,13 +146,13 @@ export function FactionShip({
           <button
             onClick={onSpecialAbility}
             disabled={ship.status === 'disabled'}
-            className={`w-full p-3 rounded-lg ${
+            className={`w-full rounded-lg p-3 ${
               ship.specialAbility.active
                 ? `bg-${color}-500/20 border border-${color}-500/30`
                 : 'bg-gray-700/50 hover:bg-gray-600/50'
             }`}
           >
-            <div className="flex items-center justify-between mb-1">
+            <div className="mb-1 flex items-center justify-between">
               <span className="text-sm font-medium text-white">{ship.specialAbility.name}</span>
               <span className="text-xs text-gray-400">{ship.specialAbility.cooldown}s</span>
             </div>
@@ -164,31 +166,31 @@ export function FactionShip({
         <button
           onClick={onEngage}
           disabled={ship.status === 'disabled'}
-          className={`px-4 py-2 rounded-lg text-sm flex items-center justify-center space-x-2 ${
+          className={`flex items-center justify-center space-x-2 rounded-lg px-4 py-2 text-sm ${
             ship.status === 'disabled'
-              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              ? 'cursor-not-allowed bg-gray-700 text-gray-500'
               : `bg-${color}-500/20 hover:bg-${color}-500/30 text-${color}-200`
           }`}
         >
-          <Sword className="w-4 h-4" />
+          <Sword className="h-4 w-4" />
           <span>Engage</span>
         </button>
         <button
           onClick={onRetreat}
           disabled={ship.status === 'disabled'}
-          className={`px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            ship.status === 'disabled' ? 'opacity-50 cursor-not-allowed' : ''
+          className={`flex items-center justify-center space-x-2 rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 ${
+            ship.status === 'disabled' ? 'cursor-not-allowed opacity-50' : ''
           }`}
         >
-          <Shield className="w-4 h-4" />
+          <Shield className="h-4 w-4" />
           <span>Retreat</span>
         </button>
       </div>
 
       {/* Status Warnings */}
       {ship.status === 'disabled' && (
-        <div className="mt-4 p-3 bg-red-900/20 border border-red-700/30 rounded-lg flex items-start space-x-2">
-          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+        <div className="mt-4 flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3">
+          <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
           <span className="text-sm text-red-200">Ship systems critically damaged</span>
         </div>
       )}

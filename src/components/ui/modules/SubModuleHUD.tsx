@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  SubModule, 
-  SubModuleType, 
-  SubModuleConfig,
-  SubModuleEffect
-} from '../../../types/buildings/ModuleTypes';
+import React, { useEffect, useState } from 'react';
 import { useSubModules } from '../../../hooks/modules/useSubModules';
 import { moduleManager } from '../../../managers/module/ModuleManager';
-import { 
+import { subModuleManager, SubModuleManager } from '../../../managers/module/SubModuleManager';
+import {
+  BaseModule,
+  SubModule,
+  SubModuleConfig,
+  SubModuleEffect,
+  SubModuleType,
+} from '../../../types/buildings/ModuleTypes';
+import {
+  calculateSubModuleComplexity,
   calculateSubModulePower,
   calculateSubModuleSpace,
-  calculateSubModuleComplexity
 } from '../../../utils/modules/moduleValidation';
-import { subModuleManager } from '../../../managers/module/SubModuleManager';
 
 interface SubModuleHUDProps {
   subModuleId: string;
@@ -38,14 +39,14 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
   showControls = true,
   onActivate,
   onDeactivate,
-  onUpgrade
+  onUpgrade,
 }) => {
   const [subModule, setSubModule] = useState<SubModule | null>(null);
   const [config, setConfig] = useState<SubModuleConfig | null>(null);
   const [stats, setStats] = useState<SubModuleStats | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [parentModule, setParentModule] = useState<any>(null);
+  const [parentModule, setParentModule] = useState<BaseModule | null>(null);
 
   // Load sub-module data
   useEffect(() => {
@@ -64,10 +65,12 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
 
       // Get parent module
       const parent = moduleManager.getModule(subModuleData.parentModuleId);
-      setParentModule(parent);
+      setParentModule(parent || null);
 
       // Get sub-module configuration
-      const {configs} = subModuleManager as any;
+      const manager = subModuleManager as SubModuleManager;
+      const configs = (manager as unknown as { configs: Map<SubModuleType, SubModuleConfig> })
+        .configs;
       if (configs && configs instanceof Map) {
         const configData = configs.get(subModuleData.type);
         if (configData) {
@@ -77,7 +80,7 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
           setStats({
             power: calculateSubModulePower(subModuleData, configData),
             space: calculateSubModuleSpace(subModuleData, configData),
-            complexity: calculateSubModuleComplexity(subModuleData, configData)
+            complexity: calculateSubModuleComplexity(subModuleData, configData),
           });
         }
       }
@@ -146,14 +149,13 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
   };
 
   return (
-    <div className={`sub-module-hud sub-module-hud--${subModule.type} sub-module-hud--${subModule.status}`}>
+    <div
+      className={`sub-module-hud sub-module-hud--${subModule.type} sub-module-hud--${subModule.status}`}
+    >
       {/* Sub-module header */}
       <div className="sub-module-hud__header">
         <h4 className="sub-module-hud__title">{subModule.name}</h4>
-        <div 
-          className="sub-module-hud__status" 
-          style={{ backgroundColor: getStatusColor() }}
-        >
+        <div className="sub-module-hud__status" style={{ backgroundColor: getStatusColor() }}>
           {subModule.status}
         </div>
         <div className="sub-module-hud__level">Level {subModule.level}</div>
@@ -163,7 +165,7 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
       {showDetails && (
         <div className="sub-module-hud__details">
           <div className="sub-module-hud__description">{config.description}</div>
-          
+
           <div className="sub-module-hud__stats">
             <div className="sub-module-hud__stat">
               <span className="sub-module-hud__stat-label">Power:</span>
@@ -198,12 +200,14 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
             <div className="sub-module-hud__progress">
               <div className="sub-module-hud__progress-label">Construction Progress</div>
               <div className="sub-module-hud__progress-bar">
-                <div 
-                  className="sub-module-hud__progress-fill" 
+                <div
+                  className="sub-module-hud__progress-fill"
                   style={{ width: `${subModule.progress * 100}%` }}
                 />
               </div>
-              <div className="sub-module-hud__progress-value">{Math.round(subModule.progress * 100)}%</div>
+              <div className="sub-module-hud__progress-value">
+                {Math.round(subModule.progress * 100)}%
+              </div>
             </div>
           )}
         </div>
@@ -213,7 +217,7 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
       {showControls && (
         <div className="sub-module-hud__controls">
           {subModule.isActive ? (
-            <button 
+            <button
               className="sub-module-hud__button sub-module-hud__button--deactivate"
               onClick={handleDeactivate}
               disabled={subModule.status !== 'active'}
@@ -221,7 +225,7 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
               Deactivate
             </button>
           ) : (
-            <button 
+            <button
               className="sub-module-hud__button sub-module-hud__button--activate"
               onClick={handleActivate}
               disabled={subModule.status !== 'inactive' || !parentModule?.isActive}
@@ -229,8 +233,8 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
               Activate
             </button>
           )}
-          
-          <button 
+
+          <button
             className="sub-module-hud__button sub-module-hud__button--upgrade"
             onClick={handleUpgrade}
             disabled={subModule.status !== 'active'}
@@ -255,16 +259,10 @@ interface SubModuleListProps {
 export const SubModuleList: React.FC<SubModuleListProps> = ({
   parentModuleId,
   showDetails = true,
-  showControls = true
+  showControls = true,
 }) => {
-  const { 
-    subModules, 
-    isLoading, 
-    error, 
-    activateSubModule, 
-    deactivateSubModule, 
-    upgradeSubModule 
-  } = useSubModules(parentModuleId);
+  const { subModules, isLoading, error, activateSubModule, deactivateSubModule, upgradeSubModule } =
+    useSubModules(parentModuleId);
 
   // Handle sub-module activation
   const handleActivate = (subModuleId: string) => {
@@ -328,7 +326,7 @@ interface SubModuleCreatorProps {
 export const SubModuleCreator: React.FC<SubModuleCreatorProps> = ({
   parentModuleId,
   availableTypes,
-  onSubModuleCreated
+  onSubModuleCreated,
 }) => {
   const [selectedType, setSelectedType] = useState<SubModuleType | ''>('');
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -371,11 +369,9 @@ export const SubModuleCreator: React.FC<SubModuleCreatorProps> = ({
   return (
     <div className="sub-module-creator">
       <h3 className="sub-module-creator__title">Add Sub-Module</h3>
-      
-      {error && (
-        <div className="sub-module-creator__error">{error}</div>
-      )}
-      
+
+      {error && <div className="sub-module-creator__error">{error}</div>}
+
       <div className="sub-module-creator__form">
         <div className="sub-module-creator__field">
           <label className="sub-module-creator__label" htmlFor="sub-module-type">
@@ -390,11 +386,13 @@ export const SubModuleCreator: React.FC<SubModuleCreatorProps> = ({
           >
             <option value="">Select a type</option>
             {availableTypes.map(type => (
-              <option key={type} value={type}>{type}</option>
+              <option key={type} value={type}>
+                {type}
+              </option>
             ))}
           </select>
         </div>
-        
+
         <button
           className="sub-module-creator__button"
           onClick={handleCreate}
@@ -405,4 +403,4 @@ export const SubModuleCreator: React.FC<SubModuleCreatorProps> = ({
       </div>
     </div>
   );
-}; 
+};

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Database, Zap, Users, Beaker } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Beaker, Database, Users, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useResources } from '../../contexts/GameContext';
 
 interface ResourceDisplayProps {
@@ -57,12 +57,12 @@ function ResourceDisplay({ type, value, rate, capacity, thresholds }: ResourceDi
 
   return (
     <div className={`p-3 ${colors.bg} rounded-lg border ${colors.border}`}>
-      <div className="flex items-center space-x-3 mb-2">
-        <div className={`p-1.5 rounded-lg ${colors.bg}`}>
-          <Icon className={`w-4 h-4 ${colors.base}`} />
+      <div className="mb-2 flex items-center space-x-3">
+        <div className={`rounded-lg p-1.5 ${colors.bg}`}>
+          <Icon className={`h-4 w-4 ${colors.base}`} />
         </div>
         <div className="flex-1">
-          <div className="text-sm font-medium text-gray-300 capitalize">{type}</div>
+          <div className="text-sm font-medium capitalize text-gray-300">{type}</div>
           <div className={`text-lg font-bold ${colors.base}`}>
             {value.toLocaleString()}
             {capacity && ` / ${capacity.toLocaleString()}`}
@@ -76,14 +76,15 @@ function ResourceDisplay({ type, value, rate, capacity, thresholds }: ResourceDi
               exit={{ opacity: 0, y: 10 }}
               className={`text-sm ${rate > 0 ? 'text-green-400' : 'text-red-400'}`}
             >
-              {rate > 0 ? '+' : ''}{rate}/s
+              {rate > 0 ? '+' : ''}
+              {rate}/s
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+      <div className="h-1.5 overflow-hidden rounded-full bg-gray-800">
         <motion.div
           className={`h-full ${colors.fill} transition-all duration-500`}
           initial={{ width: 0 }}
@@ -156,11 +157,7 @@ export function ResourceVisualization() {
         rate={resourceRates.population}
         thresholds={{ low: 50, critical: 25 }}
       />
-      <ResourceDisplay
-        type="research"
-        value={resources.research}
-        rate={resourceRates.research}
-      />
+      <ResourceDisplay type="research" value={resources.research} rate={resourceRates.research} />
     </div>
   );
-} 
+}

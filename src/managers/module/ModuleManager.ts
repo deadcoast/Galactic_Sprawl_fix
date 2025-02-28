@@ -1,13 +1,11 @@
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
   BaseModule,
-  ModuleType,
-  ModuleConfig,
   ModularBuilding,
+  ModuleConfig,
+  ModuleType,
 } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { resourceManager } from '../game/ResourceManager';
-import { ResourceType } from '../../types/resources/ResourceTypes';
 import { moduleStatusManager } from './ModuleStatusManager';
 import { moduleUpgradeManager } from './ModuleUpgradeManager';
 
@@ -50,7 +48,7 @@ export class ModuleManager {
       isActive: false,
       level: 1,
       status: 'constructing',
-      progress: 0
+      progress: 0,
     };
 
     this.modules.set(module.id, module);

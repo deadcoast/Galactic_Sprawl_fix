@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
+import { ReactNode } from 'react';
 
 interface StatusEffectProps {
   /**
@@ -55,9 +55,9 @@ export function StatusEffect({
   return (
     <div className={`status-effect ${className}`}>
       <div
-        className={`px-2 py-1 bg-${color}-500/20 text-${color}-300 rounded-lg text-sm flex items-center gap-2`}
+        className={`px-2 py-1 bg-${color}-500/20 text-${color}-300 flex items-center gap-2 rounded-lg text-sm`}
       >
-        <Icon className="icon w-4 h-4" />
+        <Icon className="icon h-4 w-4" />
         <span>{label}</span>
         {children}
       </div>

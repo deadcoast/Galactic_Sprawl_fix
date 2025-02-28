@@ -191,7 +191,7 @@ export function ThrusterEffect({ size, color, intensity }: ThrusterEffectProps) 
 
       {/* Enhanced Glow Effect */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="pointer-events-none absolute inset-0"
         style={{
           background: `radial-gradient(circle at 50% 0%, ${color}66 0%, ${color}00 70%)`,
           filter: `blur(${intensity * 8}px)`,

@@ -1,5 +1,5 @@
 import { BaseStats } from '../core/GameTypes';
-import { WeaponMount, WeaponType, WeaponInstance, CombatWeaponStats } from '../weapons/WeaponTypes';
+import { CombatWeaponStats, WeaponInstance, WeaponMount, WeaponType } from '../weapons/WeaponTypes';
 
 /**
  * Base ship type interface

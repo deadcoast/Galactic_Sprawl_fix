@@ -32,16 +32,16 @@ export function BuildingUpgradeEffect({
   const particleCount = quality === 'high' ? 12 : quality === 'medium' ? 8 : 4;
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {/* Tier Indicator */}
       <div
-        className={`absolute top-2 right-2 px-3 py-1.5 rounded-full bg-${color}-500/20 border border-${color}-500/30`}
+        className={`absolute right-2 top-2 rounded-full px-3 py-1.5 bg-${color}-500/20 border border-${color}-500/30`}
       >
         <div className="flex items-center space-x-2">
-          <Crown className={`w-4 h-4 text-${color}-400`} />
+          <Crown className={`h-4 w-4 text-${color}-400`} />
           <div className="flex items-center space-x-1">
             {Array.from({ length: tier }).map((_, i) => (
-              <Star key={i} className={`w-3 h-3 text-${color}-400`} />
+              <Star key={i} className={`h-3 w-3 text-${color}-400`} />
             ))}
           </div>
         </div>
@@ -50,7 +50,7 @@ export function BuildingUpgradeEffect({
       {/* Energy Field Effect */}
       <div className="absolute inset-0">
         <div
-          className={`absolute inset-0 bg-gradient-radial from-${color}-500/20 via-${color}-500/10 to-transparent`}
+          className={`bg-gradient-radial absolute inset-0 from-${color}-500/20 via-${color}-500/10 to-transparent`}
           style={{
             opacity: 0.3 + upgradeProgress * 0.7,
             transform: `scale(${1 + upgradeProgress * 0.3})`,
@@ -61,7 +61,7 @@ export function BuildingUpgradeEffect({
         {Array.from({ length: particleCount }).map((_, i) => (
           <div
             key={i}
-            className={`absolute w-2 h-2 rounded-full bg-${color}-400`}
+            className={`absolute h-2 w-2 rounded-full bg-${color}-400`}
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -107,14 +107,14 @@ export function BuildingUpgradeEffect({
         {type === 'radar' && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div
-              className={`w-1/2 h-1/2 rounded-full border-2 border-${color}-500/30 animate-ping`}
+              className={`h-1/2 w-1/2 rounded-full border-2 border-${color}-500/30 animate-ping`}
               style={{ animationDuration: '3s' }}
             />
           </div>
         )}
         {type === 'mining' && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Zap className={`w-12 h-12 text-${color}-400 animate-pulse`} />
+            <Zap className={`h-12 w-12 text-${color}-400 animate-pulse`} />
           </div>
         )}
       </div>

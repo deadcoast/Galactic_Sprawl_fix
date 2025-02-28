@@ -1,13 +1,13 @@
 import { Tier } from '../core/GameTypes';
+import { CombatWeaponStats, WeaponInstance } from '../weapons/WeaponTypes';
 import {
   CommonShip,
   CommonShipAbility,
   CommonShipDisplayStats,
   CommonShipStats,
 } from './CommonShipTypes';
-import { FactionId, FactionBehaviorType } from './FactionTypes';
-import { ShipType, ShipStatus, ShipStats, ShipLoadout } from './ShipTypes';
-import { WeaponMount, WeaponInstance, CombatWeaponStats } from '../weapons/WeaponTypes';
+import { FactionBehaviorType, FactionId } from './FactionTypes';
+import { ShipStats, ShipType } from './ShipTypes';
 
 export interface FactionConfig {
   id: FactionId;

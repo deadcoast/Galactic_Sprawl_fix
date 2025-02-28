@@ -1,12 +1,12 @@
+import { GraduationCap, Radar, Rocket, X } from 'lucide-react';
+import { ContextMenuItem, useContextMenu } from '../../../components/ui/ContextMenu';
+import { Draggable, DragItem, DropTarget } from '../../../components/ui/DragAndDrop';
+import { defaultModuleConfigs } from '../../../config/modules/defaultModuleConfigs';
 import {
   ModularBuilding,
   ModuleAttachmentPoint,
   ModuleType,
 } from '../../../types/buildings/ModuleTypes';
-import { useContextMenu, ContextMenuItem } from '../../../components/ui/ContextMenu';
-import { Draggable, DropTarget, DragItem } from '../../../components/ui/DragAndDrop';
-import { defaultModuleConfigs } from '../../../config/modules/defaultModuleConfigs';
-import { Rocket, Radar, GraduationCap, X } from 'lucide-react';
 
 const MOTHERSHIP_ATTACHMENT_POINTS: ModuleAttachmentPoint[] = [
   {
@@ -64,7 +64,7 @@ export function MothershipCore({
         {
           id: 'detach',
           label: 'Detach Module',
-          icon: <X className="w-4 h-4" />,
+          icon: <X className="h-4 w-4" />,
           action: () => onModuleDetach?.(attachedModule.id),
         },
       ];
@@ -76,7 +76,7 @@ export function MothershipCore({
       return {
         id: type,
         label: config.name,
-        icon: Icon ? <Icon className="w-4 h-4" /> : undefined,
+        icon: Icon ? <Icon className="h-4 w-4" /> : undefined,
         action: () => onModuleAttach?.(type, point.id),
       };
     });
@@ -89,12 +89,12 @@ export function MothershipCore({
   };
 
   return (
-    <div className="relative w-full h-full" data-mothership-id={id}>
+    <div className="relative h-full w-full" data-mothership-id={id}>
       {/* Core Mothership Structure */}
-      <div className="absolute inset-0 bg-gray-900/90 rounded-lg border border-gray-700">
+      <div className="absolute inset-0 rounded-lg border border-gray-700 bg-gray-900/90">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Mothership Control</h2>
-          <div className="text-sm text-gray-400 mb-6">Level {level}</div>
+          <h2 className="mb-4 text-xl font-bold text-white">Mothership Control</h2>
+          <div className="mb-6 text-sm text-gray-400">Level {level}</div>
 
           {/* Module Attachment Points */}
           <div className="space-y-4">
@@ -112,8 +112,8 @@ export function MothershipCore({
                 <div key={point.id}>
                   <DropTarget
                     accept={['module']}
-                    onDrop={(item) => handleModuleDrop(item, point)}
-                    className="p-4 bg-gray-800 rounded-lg hover:bg-gray-800/80 transition-colors"
+                    onDrop={item => handleModuleDrop(item, point)}
+                    className="rounded-lg bg-gray-800 p-4 transition-colors hover:bg-gray-800/80"
                   >
                     <div
                       className="flex items-center justify-between"
@@ -130,7 +130,7 @@ export function MothershipCore({
                               type: 'module',
                               data: attachedModule,
                             }}
-                            className="text-xs text-gray-500 hover:text-gray-400 cursor-grab"
+                            className="cursor-grab text-xs text-gray-500 hover:text-gray-400"
                           >
                             {attachedModule.name}
                           </Draggable>

@@ -40,4 +40,4 @@ afterEach(() => {
 });
 
 // Export mocks for use in tests
-export { moduleEventBusMock }; 
+export { moduleEventBusMock };

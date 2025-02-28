@@ -1,4 +1,4 @@
-import { AlertTriangle, Filter, Search, X, BarChart2, Clock, Award, Play } from 'lucide-react';
+import { AlertTriangle, Award, BarChart2, Filter, Play, Search, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { MissionReplay } from './MissionReplay';
 
@@ -79,8 +79,10 @@ export function MissionLog({ onClose }: MissionLogProps) {
       anomalies: relevantEntries.filter(e => e.type === 'anomaly').length,
       completions: relevantEntries.filter(e => e.type === 'completion').length,
       totalXP: relevantEntries.reduce((sum, entry) => sum + (entry.xpGained || 0), 0),
-      resourcesFound: relevantEntries.reduce((sum, entry) => 
-        sum + (entry.resourcesFound?.reduce((r, res) => r + res.amount, 0) || 0), 0),
+      resourcesFound: relevantEntries.reduce(
+        (sum, entry) => sum + (entry.resourcesFound?.reduce((r, res) => r + res.amount, 0) || 0),
+        0
+      ),
       highPriority: relevantEntries.filter(e => e.importance === 'high').length,
     };
   }, [timeRange, mockEntries]);
@@ -102,32 +104,35 @@ export function MissionLog({ onClose }: MissionLogProps) {
   });
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-gray-900 rounded-lg border border-gray-700 p-6 max-w-2xl w-full mx-4">
-        <div className="flex items-center justify-between mb-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="mx-4 w-full max-w-2xl rounded-lg border border-gray-700 bg-gray-900 p-6">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Mission Log</h2>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowStats(!showStats)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              className="rounded-lg p-2 transition-colors hover:bg-gray-800"
             >
-              <BarChart2 className="w-5 h-5 text-teal-400" />
+              <BarChart2 className="h-5 w-5 text-teal-400" />
             </button>
-            <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
-              <X className="w-5 h-5 text-gray-400" />
+            <button
+              onClick={onClose}
+              className="rounded-lg p-2 transition-colors hover:bg-gray-800"
+            >
+              <X className="h-5 w-5 text-gray-400" />
             </button>
           </div>
         </div>
 
         {/* Statistics Panel */}
         {showStats && (
-          <div className="mb-6 bg-gray-800/50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb-6 rounded-lg bg-gray-800/50 p-4">
+            <div className="mb-4 flex items-center justify-between">
               <h3 className="text-sm font-medium text-gray-300">Mission Statistics</h3>
               <select
                 value={timeRange}
                 onChange={e => setTimeRange(e.target.value as 'day' | 'week' | 'month')}
-                className="px-2 py-1 bg-gray-800 rounded border border-gray-700 text-white text-sm"
+                className="rounded border border-gray-700 bg-gray-800 px-2 py-1 text-sm text-white"
               >
                 <option value="day">Last 24 Hours</option>
                 <option value="week">Last Week</option>
@@ -135,57 +140,61 @@ export function MissionLog({ onClose }: MissionLogProps) {
               </select>
             </div>
             <div className="grid grid-cols-4 gap-4">
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-sm text-gray-400 mb-1">Total Missions</div>
+              <div className="rounded-lg bg-gray-800 p-3">
+                <div className="mb-1 text-sm text-gray-400">Total Missions</div>
                 <div className="text-xl font-medium text-white">{stats.totalMissions}</div>
               </div>
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-sm text-gray-400 mb-1">Discoveries</div>
+              <div className="rounded-lg bg-gray-800 p-3">
+                <div className="mb-1 text-sm text-gray-400">Discoveries</div>
                 <div className="text-xl font-medium text-green-400">{stats.discoveries}</div>
               </div>
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-sm text-gray-400 mb-1">Anomalies</div>
+              <div className="rounded-lg bg-gray-800 p-3">
+                <div className="mb-1 text-sm text-gray-400">Anomalies</div>
                 <div className="text-xl font-medium text-yellow-400">{stats.anomalies}</div>
               </div>
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-sm text-gray-400 mb-1">High Priority</div>
+              <div className="rounded-lg bg-gray-800 p-3">
+                <div className="mb-1 text-sm text-gray-400">High Priority</div>
                 <div className="text-xl font-medium text-red-400">{stats.highPriority}</div>
               </div>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-4">
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-sm text-gray-400 mb-1">Total XP Gained</div>
-                <div className="text-xl font-medium text-teal-400">{stats.totalXP.toLocaleString()}</div>
+              <div className="rounded-lg bg-gray-800 p-3">
+                <div className="mb-1 text-sm text-gray-400">Total XP Gained</div>
+                <div className="text-xl font-medium text-teal-400">
+                  {stats.totalXP.toLocaleString()}
+                </div>
               </div>
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-sm text-gray-400 mb-1">Resources Found</div>
-                <div className="text-xl font-medium text-blue-400">{stats.resourcesFound.toLocaleString()}</div>
+              <div className="rounded-lg bg-gray-800 p-3">
+                <div className="mb-1 text-sm text-gray-400">Resources Found</div>
+                <div className="text-xl font-medium text-blue-400">
+                  {stats.resourcesFound.toLocaleString()}
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {/* Search and Filters */}
-        <div className="flex items-center space-x-4 mb-6">
+        <div className="mb-6 flex items-center space-x-4">
           <div className="relative flex-1">
             <input
               type="text"
               placeholder="Search mission logs..."
-              className="w-full px-4 py-2 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
-            <Search className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+            <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
 
           <div className="flex items-center space-x-2">
-            <Filter className="w-5 h-5 text-gray-400" />
+            <Filter className="h-5 w-5 text-gray-400" />
             <select
               value={filter}
               onChange={e =>
                 setFilter(e.target.value as 'all' | 'discoveries' | 'anomalies' | 'completions')
               }
-              className="px-4 py-2 bg-gray-800 rounded-lg border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="all">All Entries</option>
               <option value="discoveries">Discoveries</option>
@@ -196,25 +205,25 @@ export function MissionLog({ onClose }: MissionLogProps) {
         </div>
 
         {/* Enhanced Mission Entries */}
-        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+        <div className="max-h-96 space-y-3 overflow-y-auto pr-2">
           {filteredEntries.map(entry => (
             <div
               key={entry.id}
-              className={`p-4 rounded-lg ${
+              className={`rounded-lg p-4 ${
                 entry.importance === 'high'
-                  ? 'bg-red-900/20 border border-red-700/30'
+                  ? 'border border-red-700/30 bg-red-900/20'
                   : entry.importance === 'medium'
-                    ? 'bg-yellow-900/20 border border-yellow-700/30'
-                    : 'bg-blue-900/20 border border-blue-700/30'
+                    ? 'border border-yellow-700/30 bg-yellow-900/20'
+                    : 'border border-blue-700/30 bg-blue-900/20'
               }`}
             >
-              <div className="flex items-start justify-between mb-2">
+              <div className="mb-2 flex items-start justify-between">
                 <div>
-                  <div className="text-white font-medium">{entry.description}</div>
+                  <div className="font-medium text-white">{entry.description}</div>
                   <div className="text-sm text-gray-400">{entry.sector}</div>
                   {entry.xpGained && (
-                    <div className="flex items-center text-teal-400 text-sm mt-1">
-                      <Award className="w-4 h-4 mr-1" />
+                    <div className="mt-1 flex items-center text-sm text-teal-400">
+                      <Award className="mr-1 h-4 w-4" />
                       <span>+{entry.xpGained} XP</span>
                     </div>
                   )}
@@ -222,10 +231,10 @@ export function MissionLog({ onClose }: MissionLogProps) {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setSelectedMissionId(entry.id)}
-                    className="p-1 hover:bg-gray-800 rounded transition-colors"
+                    className="rounded p-1 transition-colors hover:bg-gray-800"
                     title="Replay Mission"
                   >
-                    <Play className="w-4 h-4 text-teal-400" />
+                    <Play className="h-4 w-4 text-teal-400" />
                   </button>
                   <div className="text-sm text-gray-500">
                     {new Date(entry.timestamp).toLocaleTimeString()}
@@ -247,13 +256,13 @@ export function MissionLog({ onClose }: MissionLogProps) {
                     {entry.anomalyDetails.type} Anomaly ({entry.anomalyDetails.severity})
                   </span>
                   {entry.anomalyDetails.investigated && (
-                    <span className="text-green-400 ml-2">• Investigated</span>
+                    <span className="ml-2 text-green-400">• Investigated</span>
                   )}
                 </div>
               )}
-              <div className="flex items-center justify-between text-sm mt-2">
+              <div className="mt-2 flex items-center justify-between text-sm">
                 <div
-                  className={`px-2 py-0.5 rounded ${
+                  className={`rounded px-2 py-0.5 ${
                     entry.type === 'discovery'
                       ? 'bg-green-900/50 text-green-400'
                       : entry.type === 'anomaly'
@@ -265,7 +274,7 @@ export function MissionLog({ onClose }: MissionLogProps) {
                 </div>
                 {entry.importance === 'high' && (
                   <div className="flex items-center text-red-400">
-                    <AlertTriangle className="w-4 h-4 mr-1" />
+                    <AlertTriangle className="mr-1 h-4 w-4" />
                     <span>High Priority</span>
                   </div>
                 )}
@@ -277,10 +286,7 @@ export function MissionLog({ onClose }: MissionLogProps) {
 
       {/* Mission Replay Modal */}
       {selectedMissionId && (
-        <MissionReplay
-          missionId={selectedMissionId}
-          onClose={() => setSelectedMissionId(null)}
-        />
+        <MissionReplay missionId={selectedMissionId} onClose={() => setSelectedMissionId(null)} />
       )}
     </div>
   );

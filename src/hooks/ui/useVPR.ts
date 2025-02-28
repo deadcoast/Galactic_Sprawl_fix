@@ -4,6 +4,15 @@ interface AnimationSet {
   impact: string;
 }
 
+// Define a specific interface for VPR state
+interface VPRState {
+  active: boolean;
+  animationState?: 'idle' | 'active' | 'impact';
+  intensity?: number;
+  duration?: number;
+  customClass?: string;
+}
+
 export function useVPR() {
   const getVPRAnimationSet = (type: string, tier: number): AnimationSet => {
     // Base animations
@@ -32,7 +41,7 @@ export function useVPR() {
     }
   };
 
-  const updateVPR = (elementId: string, newState: any) => {
+  const updateVPR = (elementId: string, newState: VPRState) => {
     // This would be used to update VPR state in a real implementation
     console.log('Updating VPR for:', elementId, newState);
   };

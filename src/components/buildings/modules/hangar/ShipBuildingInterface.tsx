@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { PlayerShipClass, PlayerShipCategory } from '../../../../types/ships/PlayerShipTypes';
-import { ShipHangarManager } from '../../../../managers/module/ShipHangarManager';
-import { ResourceCost } from '../../../../types/resources/ResourceTypes';
+import { AlertTriangle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { ShipBlueprint, getAvailableShips } from '../../../../config/ShipBlueprints';
 import { techTreeManager } from '../../../../managers/game/techTreeManager';
-import { AlertTriangle } from 'lucide-react';
+import { ShipHangarManager } from '../../../../managers/module/ShipHangarManager';
+import { ResourceCost } from '../../../../types/resources/ResourceTypes';
+import { PlayerShipCategory, PlayerShipClass } from '../../../../types/ships/PlayerShipTypes';
 
 interface ShipBuildingInterfaceProps {
   manager: ShipHangarManager;
@@ -45,7 +45,9 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
       // Check resource requirements
       ship.requirements.resourceCost.forEach(cost => {
         const requirements = manager.getBuildRequirements(ship.shipClass);
-        const available = requirements.resourceCost.find((r: { type: string }) => r.type === cost.type)?.amount || 0;
+        const available =
+          requirements.resourceCost.find((r: { type: string }) => r.type === cost.type)?.amount ||
+          0;
         if (available < cost.amount) {
           errors.push(`Insufficient ${cost.type}: ${available}/${cost.amount}`);
         }
@@ -97,14 +99,14 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
   );
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       {/* Category Selection */}
-      <div className="flex space-x-2 mb-4">
+      <div className="mb-4 flex space-x-2">
         {['all', 'war', 'recon', 'mining'].map(category => (
           <button
             key={category}
             onClick={() => setSelectedCategory(category as PlayerShipCategory | 'all')}
-            className={`px-4 py-2 rounded-lg ${
+            className={`rounded-lg px-4 py-2 ${
               selectedCategory === category
                 ? 'bg-indigo-600 text-white'
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
@@ -116,20 +118,20 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
       </div>
 
       {/* Ship List */}
-      <div className="grid grid-cols-2 gap-4 flex-1 overflow-y-auto">
+      <div className="grid flex-1 grid-cols-2 gap-4 overflow-y-auto">
         {filteredShips.map(ship => (
           <div
             key={ship.shipClass}
             onClick={() => setSelectedShip(ship)}
-            className={`p-4 rounded-lg cursor-pointer ${
+            className={`cursor-pointer rounded-lg p-4 ${
               selectedShip?.shipClass === ship.shipClass
-                ? 'bg-indigo-900/50 border border-indigo-500'
+                ? 'border border-indigo-500 bg-indigo-900/50'
                 : buildableShips.has(ship.shipClass)
-                  ? 'bg-gray-800/50 border border-gray-700 hover:border-gray-600'
-                  : 'bg-gray-800/30 border border-gray-700/50 opacity-75'
+                  ? 'border border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                  : 'border border-gray-700/50 bg-gray-800/30 opacity-75'
             }`}
           >
-            <div className="flex justify-between items-start mb-2">
+            <div className="mb-2 flex items-start justify-between">
               <div>
                 <h3 className="text-lg font-medium text-white">{ship.name}</h3>
                 <div className="flex items-center text-sm text-gray-400">
@@ -139,11 +141,11 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
                 </div>
               </div>
               {!buildableShips.has(ship.shipClass) && (
-                <AlertTriangle className="w-5 h-5 text-amber-500" />
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
               )}
             </div>
 
-            <p className="text-sm text-gray-400 mb-4">{ship.description}</p>
+            <p className="mb-4 text-sm text-gray-400">{ship.description}</p>
 
             {/* Ship Stats */}
             <div className="grid grid-cols-2 gap-2 text-sm">
@@ -177,17 +179,18 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
             </div>
 
             {/* Resource Costs */}
-            <div className="mt-4 pt-4 border-t border-gray-700">
-              <h4 className="text-sm font-medium text-gray-300 mb-2">Requirements</h4>
+            <div className="mt-4 border-t border-gray-700 pt-4">
+              <h4 className="mb-2 text-sm font-medium text-gray-300">Requirements</h4>
               <div className="flex flex-wrap gap-2">
                 {ship.requirements.resourceCost.map(cost => {
                   const requirements = manager.getBuildRequirements(ship.shipClass);
                   const available =
-                    requirements.resourceCost.find((r: { type: string }) => r.type === cost.type)?.amount || 0;
+                    requirements.resourceCost.find((r: { type: string }) => r.type === cost.type)
+                      ?.amount || 0;
                   return (
                     <div
                       key={cost.type}
-                      className={`px-2 py-1 rounded text-xs ${
+                      className={`rounded px-2 py-1 text-xs ${
                         available >= cost.amount
                           ? 'bg-gray-700/50 text-gray-300'
                           : 'bg-red-900/50 text-red-300'
@@ -212,13 +215,13 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
 
       {/* Build Controls */}
       {selectedShip && (
-        <div className="mt-4 p-4 bg-gray-800 rounded-lg">
+        <div className="mt-4 rounded-lg bg-gray-800 p-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-medium text-white">{selectedShip.name}</h3>
               <div className="text-sm text-gray-400">
                 <p>Build Time: {selectedShip.requirements.buildTime / 1000}s</p>
-                <div className="flex gap-2 mt-1">
+                <div className="mt-1 flex gap-2">
                   {resourceRequirements.map(cost => (
                     <span key={cost.type} className="text-gray-300">
                       {cost.type}: {cost.amount}
@@ -230,10 +233,10 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
             <button
               onClick={handleStartBuild}
               disabled={!buildableShips.has(selectedShip.shipClass)}
-              className={`px-6 py-2 rounded-lg ${
+              className={`rounded-lg px-6 py-2 ${
                 buildableShips.has(selectedShip.shipClass)
-                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  : 'cursor-not-allowed bg-gray-700 text-gray-500'
               }`}
             >
               Build Ship

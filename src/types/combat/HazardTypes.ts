@@ -31,4 +31,4 @@ export interface Hazard {
       pattern: 'circular' | 'radial' | 'directed';
     };
   };
-} 
+}

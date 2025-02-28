@@ -1,11 +1,8 @@
-import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import { miningShipManager } from '../mining/MiningShipManager';
-import { shipMovementManager } from '../../lib/ai/shipMovement';
-import { shipBehaviorManager } from '../../lib/ai/shipBehavior';
 
 interface Hazard {
   id: string;
@@ -109,7 +106,9 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
   private updateFields(): void {
     const now = Date.now();
     this.state.fields.forEach((field, fieldId) => {
-      if (field.status === 'depleted') return;
+      if (field.status === 'depleted') {
+        return;
+      }
 
       // Update hazards
       field.hazards = field.hazards.filter(hazard => {
@@ -240,13 +239,19 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
 
   public extractResource(nodeId: string, amount: number): boolean {
     const node = this.state.resourceNodes.get(nodeId);
-    if (!node || amount <= 0) return false;
+    if (!node || amount <= 0) {
+      return false;
+    }
 
     const field = this.state.fields.get(node.fieldId);
-    if (!field || field.status === 'depleted') return false;
+    if (!field || field.status === 'depleted') {
+      return false;
+    }
 
     const currentAmount = field.resources.get(node.type) || 0;
-    if (currentAmount < amount) return false;
+    if (currentAmount < amount) {
+      return false;
+    }
 
     field.resources.set(node.type, currentAmount - amount);
     node.amount = currentAmount - amount;
@@ -281,7 +286,9 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
 
   public registerResourceNode(fieldId: string, type: ResourceType): string {
     const field = this.state.fields.get(fieldId);
-    if (!field) return '';
+    if (!field) {
+      return '';
+    }
 
     const nodeId = `node-${fieldId}-${type}-${Date.now()}`;
     const amount = field.resources.get(type) || 0;
@@ -376,10 +383,14 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
 
   public getNodeThresholds(nodeId: string): { min: number; max: number } | null {
     const node = this.state.resourceNodes.get(nodeId);
-    if (!node) return null;
+    if (!node) {
+      return null;
+    }
 
     const field = this.state.fields.get(node.fieldId);
-    if (!field) return null;
+    if (!field) {
+      return null;
+    }
 
     const amount = field.resources.get(node.type) || 0;
     return {

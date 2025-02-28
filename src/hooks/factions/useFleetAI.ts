@@ -1,10 +1,10 @@
-import { useAdaptiveAI } from './useAdaptiveAI';
-import { useFactionBehavior } from './useFactionBehavior';
+import { useEffect, useMemo, useState } from 'react';
 import { combatManager } from '../../managers/combat/combatManager';
 import { factionManager } from '../../managers/factions/factionManager';
-import { useEffect, useMemo, useState } from 'react';
-import { FactionId } from '../../types/ships/FactionTypes';
 import { Position } from '../../types/core/GameTypes';
+import { FactionId } from '../../types/ships/FactionTypes';
+import { useAdaptiveAI } from './useAdaptiveAI';
+import { useFactionBehavior } from './useFactionBehavior';
 
 interface CombatUnit {
   id: string;
@@ -221,7 +221,7 @@ export function useFleetAI(fleetId: string, factionId: FactionId) {
 
       // Update fleet behavior and formation based on adaptive AI and faction behavior
       const newState = updateFleetBehavior(fleet, faction, fleetState, adaptiveAI, factionBehavior);
-      
+
       // Update current positions
       const positions = fleet.units.map(unit => unit.position);
       setFleetState({ ...newState, currentPositions: positions });
@@ -321,7 +321,7 @@ function updateFleetBehavior(
 // Helper function to emit officer experience events
 function emitOfficerExperience(officerId: string, amount: number) {
   // This would be connected to your event system
-  console.log(`Officer ${officerId} gained ${amount} experience`);
+  console.warn(`Officer ${officerId} gained ${amount} experience`);
 }
 
 function calculateFleetStrength(fleet: { units: CombatUnit[] }): number {
@@ -551,26 +551,32 @@ function calculateFormationPositions(
       }
       break;
 
-    case 'arrow':
+    case 'arrow': {
       const arrowDepth = Math.ceil(unitCount / 3);
       for (let i = 0; i < unitCount; i++) {
         const row = Math.floor(i / 3);
-        const col = i % 3 - 1;
+        const col = (i % 3) - 1;
         positions.push({
           x:
             center.x +
             Math.cos(formation.facing) * row * formation.spacing +
-            Math.cos(formation.facing + Math.PI / 2) * col * formation.spacing * (1 - row / arrowDepth),
+            Math.cos(formation.facing + Math.PI / 2) *
+              col *
+              formation.spacing *
+              (1 - row / arrowDepth),
           y:
             center.y +
             Math.sin(formation.facing) * row * formation.spacing +
-            Math.sin(formation.facing + Math.PI / 2) * col * formation.spacing * (1 - row / arrowDepth),
+            Math.sin(formation.facing + Math.PI / 2) *
+              col *
+              formation.spacing *
+              (1 - row / arrowDepth),
         });
       }
       break;
+    }
 
-    case 'diamond':
-      const diamondSize = Math.ceil(Math.sqrt(unitCount));
+    case 'diamond': {
       for (let i = 0; i < unitCount; i++) {
         const layer = Math.floor(i / 4);
         const position = i % 4;
@@ -582,8 +588,9 @@ function calculateFormationPositions(
         });
       }
       break;
+    }
 
-    case 'shield':
+    case 'shield': {
       const frontArc = Math.PI * 0.6; // 108 degrees
       const rearArc = Math.PI * 0.3; // 54 degrees
       const frontUnits = Math.ceil(unitCount * 0.7);
@@ -601,21 +608,18 @@ function calculateFormationPositions(
       // Rear arc
       for (let i = 0; i < rearUnits; i++) {
         const angle =
-          formation.facing +
-          Math.PI -
-          rearArc / 2 +
-          (i / Math.max(1, rearUnits - 1)) * rearArc;
+          formation.facing + Math.PI - rearArc / 2 + (i / Math.max(1, rearUnits - 1)) * rearArc;
         positions.push({
           x: center.x + Math.cos(angle) * (formation.spacing * 0.7),
           y: center.y + Math.sin(angle) * (formation.spacing * 0.7),
         });
       }
       break;
+    }
 
-    case 'spearhead':
+    case 'spearhead': {
       const spearUnits = Math.ceil(unitCount * 0.3);
       const wingUnits = Math.floor((unitCount - spearUnits) / 2);
-      let currentIndex = 0;
 
       // Spear tip
       for (let i = 0; i < spearUnits; i++) {
@@ -623,35 +627,25 @@ function calculateFormationPositions(
           x: center.x + Math.cos(formation.facing) * i * formation.spacing,
           y: center.y + Math.sin(formation.facing) * i * formation.spacing,
         });
-        currentIndex++;
       }
 
       // Left wing
       for (let i = 0; i < wingUnits; i++) {
         positions.push({
-          x:
-            center.x +
-            Math.cos(formation.facing + Math.PI * 0.8) * i * formation.spacing,
-          y:
-            center.y +
-            Math.sin(formation.facing + Math.PI * 0.8) * i * formation.spacing,
+          x: center.x + Math.cos(formation.facing + Math.PI * 0.8) * i * formation.spacing,
+          y: center.y + Math.sin(formation.facing + Math.PI * 0.8) * i * formation.spacing,
         });
-        currentIndex++;
       }
 
       // Right wing
       for (let i = 0; i < wingUnits; i++) {
         positions.push({
-          x:
-            center.x +
-            Math.cos(formation.facing - Math.PI * 0.8) * i * formation.spacing,
-          y:
-            center.y +
-            Math.sin(formation.facing - Math.PI * 0.8) * i * formation.spacing,
+          x: center.x + Math.cos(formation.facing - Math.PI * 0.8) * i * formation.spacing,
+          y: center.y + Math.sin(formation.facing - Math.PI * 0.8) * i * formation.spacing,
         });
-        currentIndex++;
       }
       break;
+    }
   }
 
   return positions;

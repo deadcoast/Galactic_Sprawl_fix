@@ -1,9 +1,10 @@
-import { LostNovaShip } from '../../common/LostNovaShip';
-import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
-import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
 import { Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { FactionBehaviorType } from '../../../../types/ships/FactionTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { LostNovaShip } from '../../common/LostNovaShip';
 
 interface EclipseScytheProps {
   id: string;
@@ -21,6 +22,14 @@ interface EclipseScytheProps {
   position: { x: number; y: number };
   rotation: number;
 }
+
+// Helper function to create a FactionBehaviorType from string
+const createFactionBehavior = (behavior: string): FactionBehaviorType => {
+  return {
+    formation: 'standard',
+    behavior: behavior,
+  };
+};
 
 export function EclipseScythe({
   id,
@@ -61,6 +70,9 @@ export function EclipseScythe({
     }
   };
 
+  // Create a proper FactionBehaviorType for tactics
+  const tactics = createFactionBehavior('hit-and-run');
+
   return (
     <div className="relative">
       <LostNovaShip
@@ -76,7 +88,7 @@ export function EclipseScythe({
         stats={stats}
         position={position}
         rotation={rotation}
-        tactics="hit-and-run"
+        tactics={tactics}
         onEngage={onEngage}
         onRetreat={onRetreat}
         onFire={onFire}

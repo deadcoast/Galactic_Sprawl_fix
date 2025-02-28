@@ -1,6 +1,11 @@
-import { ShipType } from './ShipTypes';
-
-export type FactionId = 'player' | 'enemy' | 'neutral' | 'ally' | 'space-rats' | 'lost-nova' | 'equator-horizon';
+export type FactionId =
+  | 'player'
+  | 'enemy'
+  | 'neutral'
+  | 'ally'
+  | 'space-rats'
+  | 'lost-nova'
+  | 'equator-horizon';
 
 export type FactionBehaviorType = {
   formation: string;

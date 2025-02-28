@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
 import { Activity, Battery, Shield, Target, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useGame } from '../../../../contexts/GameContext';
 
 interface ShipStatusMonitorProps {
@@ -32,17 +32,20 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
   useEffect(() => {
     const interval = setInterval(() => {
       const newStatuses: Record<string, ShipStatus> = {};
-      
+
       ships.forEach(ship => {
         // Calculate real-time status values
         const timeSinceLastUpdate = Date.now() - (shipStatuses[ship.id]?.lastUpdate || 0);
         const energyDrain = ship.currentTask ? 0.001 * timeSinceLastUpdate : 0;
         const shieldRecharge = ship.currentTask ? 0 : 0.002 * timeSinceLastUpdate;
-        
+
         newStatuses[ship.id] = {
-          health: Math.max(0, Math.min(100, (shipStatuses[ship.id]?.health || 100))),
+          health: Math.max(0, Math.min(100, shipStatuses[ship.id]?.health || 100)),
           energy: Math.max(0, Math.min(100, (shipStatuses[ship.id]?.energy || 100) - energyDrain)),
-          shield: Math.max(0, Math.min(100, (shipStatuses[ship.id]?.shield || 100) + shieldRecharge)),
+          shield: Math.max(
+            0,
+            Math.min(100, (shipStatuses[ship.id]?.shield || 100) + shieldRecharge)
+          ),
           stealth: calculateStealthLevel(ship),
           experience: ship.experience,
           currentTask: ship.currentTask,
@@ -56,7 +59,9 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
     return () => clearInterval(interval);
   }, [ships, shipStatuses]);
 
-  const calculateStealthLevel = (ship: NonNullable<typeof state.exploration.ships[string]>): number => {
+  const calculateStealthLevel = (
+    ship: NonNullable<(typeof state.exploration.ships)[string]>
+  ): number => {
     // Calculate stealth based on ship status and stealthActive flag
     const baseStealthLevel = ship.stealthActive ? 80 : 50;
     const activityPenalty = ship.status === 'investigating' ? 20 : 0;
@@ -100,14 +105,14 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
         return (
           <div
             key={ship.id}
-            className="bg-gray-900/50 backdrop-blur-sm rounded-lg p-4 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg border border-gray-800 bg-gray-900/50 p-4 backdrop-blur-sm transition-colors hover:border-gray-700"
             onClick={() => onSelectShip?.(ship.id)}
           >
             {/* Ship Header */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Activity className={getTaskColor(ship.status)} />
-                <span className="text-white font-medium">{ship.id}</span>
+                <span className="font-medium text-white">{ship.id}</span>
               </div>
               <span className={`text-sm ${getTaskColor(ship.status)}`}>
                 {ship.status || 'Idle'}
@@ -118,8 +123,8 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
             <div className="space-y-2">
               {/* Health */}
               <div className="flex items-center space-x-2">
-                <Shield className={`w-4 h-4 ${getStatusColor(status.health)}`} />
-                <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
+                <Shield className={`h-4 w-4 ${getStatusColor(status.health)}`} />
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-800">
                   <div
                     className={`h-full ${getStatusColor(status.health)} transition-all duration-300`}
                     style={{ width: `${status.health}%` }}
@@ -132,8 +137,8 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
 
               {/* Energy */}
               <div className="flex items-center space-x-2">
-                <Battery className={`w-4 h-4 ${getStatusColor(status.energy)}`} />
-                <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
+                <Battery className={`h-4 w-4 ${getStatusColor(status.energy)}`} />
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-800">
                   <div
                     className={`h-full ${getStatusColor(status.energy)} transition-all duration-300`}
                     style={{ width: `${status.energy}%` }}
@@ -146,8 +151,8 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
 
               {/* Shield */}
               <div className="flex items-center space-x-2">
-                <Shield className={`w-4 h-4 ${getStatusColor(status.shield)}`} />
-                <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
+                <Shield className={`h-4 w-4 ${getStatusColor(status.shield)}`} />
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-800">
                   <div
                     className={`h-full ${getStatusColor(status.shield)} transition-all duration-300`}
                     style={{ width: `${status.shield}%` }}
@@ -160,8 +165,8 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
 
               {/* Stealth */}
               <div className="flex items-center space-x-2">
-                <Target className={`w-4 h-4 ${getStatusColor(status.stealth)}`} />
-                <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
+                <Target className={`h-4 w-4 ${getStatusColor(status.stealth)}`} />
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-800">
                   <div
                     className={`h-full ${getStatusColor(status.stealth)} transition-all duration-300`}
                     style={{ width: `${status.stealth}%` }}
@@ -174,8 +179,8 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
 
               {/* Experience */}
               <div className="flex items-center space-x-2">
-                <Zap className={`w-4 h-4 ${getStatusColor(status.experience)}`} />
-                <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
+                <Zap className={`h-4 w-4 ${getStatusColor(status.experience)}`} />
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-800">
                   <div
                     className={`h-full ${getStatusColor(status.experience)} transition-all duration-300`}
                     style={{ width: `${status.experience}%` }}
@@ -191,4 +196,4 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
       })}
     </div>
   );
-} 
+}

@@ -1,18 +1,18 @@
-import { TooltipProvider } from './components/ui/TooltipProvider';
-import { ResourceManager } from './managers/game/ResourceManager';
-import { techTreeManager, TechNode } from './managers/game/techTreeManager';
-import { OfficerManager } from './managers/module/OfficerManager';
-import { ShipHangarManager } from './managers/module/ShipHangarManager';
 import { useEffect, useState } from 'react';
-import { GameProvider, useGame } from './contexts/GameContext';
-import { ThresholdProvider } from './contexts/ThresholdContext';
-import { ModuleProvider } from './contexts/ModuleContext';
 import { GameLayout } from './components/ui/GameLayout';
+import { TooltipProvider } from './components/ui/TooltipProvider';
+import { defaultColony, defaultMothership } from './config/buildings/defaultBuildings';
+import { defaultModuleConfigs } from './config/modules/defaultModuleConfigs';
+import { GameProvider, useGame } from './contexts/GameContext';
+import { ModuleProvider } from './contexts/ModuleContext';
+import { ThresholdProvider } from './contexts/ThresholdContext';
 import { assetManager } from './managers/game/assetManager';
 import { gameManager } from './managers/game/gameManager';
+import { ResourceManager } from './managers/game/ResourceManager';
+import { TechNode, techTreeManager } from './managers/game/techTreeManager';
 import { moduleManager } from './managers/module/ModuleManager';
-import { defaultModuleConfigs } from './config/modules/defaultModuleConfigs';
-import { defaultMothership, defaultColony } from './config/buildings/defaultBuildings';
+import { OfficerManager } from './managers/module/OfficerManager';
+import { ShipHangarManager } from './managers/module/ShipHangarManager';
 
 // Initial tech tree setup
 const initialTechs: TechNode[] = [
@@ -50,18 +50,20 @@ const initialTechs: TechNode[] = [
 
 const GameInitializer = ({ children }: { children: React.ReactNode }) => {
   const gameContext = useGame();
-  
+
   // Ensure context is available
   if (!gameContext) {
     return null;
   }
-  
+
   const { dispatch } = gameContext;
   const [isInitialized, setIsInitialized] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [resourceManager] = useState(() => new ResourceManager());
   const [officerManager] = useState(() => new OfficerManager());
-  const [shipHangarManager] = useState(() => new ShipHangarManager(resourceManager, officerManager));
+  const [shipHangarManager] = useState(
+    () => new ShipHangarManager(resourceManager, officerManager)
+  );
 
   useEffect(() => {
     const initializeGame = async () => {
@@ -88,7 +90,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
         initialTechs.forEach(tech => {
           techTreeManager.registerNode(tech);
         });
-        
+
         // Add initial resources
         console.log('Adding initial resources...');
         dispatch({
@@ -116,7 +118,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
         console.log('Starting game loop...');
         dispatch({ type: 'START_GAME' });
         gameManager.start();
-        
+
         console.log('Game initialization complete');
         setIsInitialized(true);
       } catch (error) {
@@ -136,19 +138,21 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
 
   if (loadingError) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        alignItems: 'center', 
-        justifyContent: 'center',
-        height: '100vh',
-        color: '#ff4444',
-        padding: '20px',
-        textAlign: 'center'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          color: '#ff4444',
+          padding: '20px',
+          textAlign: 'center',
+        }}
+      >
         <h2>Failed to Initialize Game</h2>
         <p>{loadingError}</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           style={{
             padding: '10px 20px',
@@ -157,7 +161,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: 'pointer'
+            cursor: 'pointer',
           }}
         >
           Retry
@@ -168,17 +172,19 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
 
   if (!isInitialized) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        alignItems: 'center', 
-        justifyContent: 'center',
-        height: '100vh',
-        color: '#fff',
-        background: '#111',
-        padding: '20px',
-        textAlign: 'center'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          color: '#fff',
+          background: '#111',
+          padding: '20px',
+          textAlign: 'center',
+        }}
+      >
         <h2>Initializing game...</h2>
         <p>Loading assets and preparing game systems</p>
       </div>
@@ -195,15 +201,12 @@ export default function App() {
         <ModuleProvider>
           <TooltipProvider>
             <GameInitializer>
-              <GameLayout
-                empireName="Stellar Dominion"
-                bannerColor="#4FD1C5"
-              >
+              <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
                 <div className="min-h-screen bg-gray-900">
-                  <div className="flex flex-col items-center justify-center h-full">
-                    <h1 className="text-2xl text-blue-500 mb-4">Mothership Control</h1>
-                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                      <div className="text-blue-400 mb-4">
+                  <div className="flex h-full flex-col items-center justify-center">
+                    <h1 className="mb-4 text-2xl text-blue-500">Mothership Control</h1>
+                    <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
+                      <div className="mb-4 text-blue-400">
                         Resources:
                         <div className="grid grid-cols-3 gap-4">
                           <div>Minerals: 2000</div>

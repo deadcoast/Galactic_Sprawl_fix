@@ -1,7 +1,3 @@
-import { HiringPanel } from './HiringPanel';
-import { OfficerCard } from './OfficerCard';
-import { OfficerDetails } from './OfficerDetails';
-import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
 import {
   AlertTriangle,
   ChevronRight,
@@ -14,6 +10,10 @@ import {
   Users,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
+import { HiringPanel } from './HiringPanel';
+import { OfficerCard } from './OfficerCard';
+import { OfficerDetails } from './OfficerDetails';
 
 interface Officer {
   id: string;
@@ -83,13 +83,13 @@ export function OfficersAcademy({
   });
 
   return (
-    <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">
+    <div className="fixed inset-4 flex overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md">
       {/* Left Panel - Officer List */}
-      <div className="w-2/3 border-r border-gray-700 p-6 flex flex-col">
-        <div className="flex items-center justify-between mb-6">
+      <div className="flex w-2/3 flex-col border-r border-gray-700 p-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-violet-500/20 rounded-lg">
-              <Users className="w-6 h-6 text-violet-400" />
+            <div className="rounded-lg bg-violet-500/20 p-2">
+              <Users className="h-6 w-6 text-violet-400" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Officers Academy</h2>
@@ -104,28 +104,28 @@ export function OfficersAcademy({
               <input
                 type="text"
                 placeholder="Search officers..."
-                className="w-64 px-4 py-2 bg-gray-800/90 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
 
             {/* Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`rounded-lg p-2 transition-colors ${
                 showFilters
                   ? 'bg-violet-600 text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
-              <Filter className="w-5 h-5" />
+              <Filter className="h-5 w-5" />
             </button>
           </div>
 
           {/* Filter Buttons */}
-          <div className="flex space-x-2 mb-6">
+          <div className="mb-6 flex space-x-2">
             {[
               { id: 'all', label: 'All Officers', icon: Users },
               { id: 'available', label: 'Available', icon: Star },
@@ -135,41 +135,41 @@ export function OfficersAcademy({
               <button
                 key={id}
                 onClick={() => setFilter(id as 'all' | 'available' | 'training' | 'assigned')}
-                className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
+                className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                   filter === id
                     ? 'bg-violet-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="h-4 w-4" />
                 <span>{label}</span>
               </button>
             ))}
           </div>
 
           {/* View Toggle */}
-          <div className="flex bg-gray-800 rounded-lg p-1">
+          <div className="flex rounded-lg bg-gray-800 p-1">
             <button
               onClick={() => setView('grid')}
-              className={`p-1.5 rounded ${
+              className={`rounded p-1.5 ${
                 view === 'grid' ? 'bg-violet-600 text-white' : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              <div className="w-5 h-5 grid grid-cols-2 gap-0.5">
+              <div className="grid h-5 w-5 grid-cols-2 gap-0.5">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="bg-current rounded-sm" />
+                  <div key={i} className="rounded-sm bg-current" />
                 ))}
               </div>
             </button>
             <button
               onClick={() => setView('list')}
-              className={`p-1.5 rounded ${
+              className={`rounded p-1.5 ${
                 view === 'list' ? 'bg-violet-600 text-white' : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              <div className="w-5 h-5 flex flex-col justify-between">
+              <div className="flex h-5 w-5 flex-col justify-between">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-1 bg-current rounded-sm" />
+                  <div key={i} className="h-1 rounded-sm bg-current" />
                 ))}
               </div>
             </button>
@@ -191,13 +191,13 @@ export function OfficersAcademy({
                 selected={selectedOfficer?.id === officer.id}
                 onClick={() => setSelectedOfficer(officer)}
               />
-              <div className="mt-2 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="mt-2 flex justify-end opacity-0 transition-opacity group-hover:opacity-100">
                 <button
                   onClick={() => setSelectedOfficer(officer)}
                   className="flex items-center text-sm text-violet-400 hover:text-violet-300"
                 >
                   <span>View Details</span>
-                  <ChevronRight className="w-4 h-4 ml-1" />
+                  <ChevronRight className="ml-1 h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -207,9 +207,9 @@ export function OfficersAcademy({
         {/* Hire Button */}
         <button
           onClick={() => setShowHiringPanel(true)}
-          className="mt-6 px-4 py-3 bg-violet-600 hover:bg-violet-700 rounded-lg text-white font-medium flex items-center justify-center space-x-2"
+          className="mt-6 flex items-center justify-center space-x-2 rounded-lg bg-violet-600 px-4 py-3 font-medium text-white hover:bg-violet-700"
         >
-          <Users className="w-5 h-5" />
+          <Users className="h-5 w-5" />
           <span>Hire New Officer</span>
         </button>
       </div>
@@ -225,9 +225,9 @@ export function OfficersAcademy({
             onClose={() => setSelectedOfficer(null)}
           />
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-400 text-center">
+          <div className="flex h-full items-center justify-center text-center text-gray-400">
             <div>
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <Users className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p>Select an officer to view details and manage assignments</p>
             </div>
           </div>
@@ -241,15 +241,15 @@ export function OfficersAcademy({
 
       {/* Tier-specific Features */}
       {tier >= 2 && (
-        <div className="absolute bottom-6 left-6 px-4 py-2 bg-violet-900/50 border border-violet-700/30 rounded-lg flex items-center space-x-2">
-          <Database className="w-4 h-4 text-violet-400" />
+        <div className="absolute bottom-6 left-6 flex items-center space-x-2 rounded-lg border border-violet-700/30 bg-violet-900/50 px-4 py-2">
+          <Database className="h-4 w-4 text-violet-400" />
           <span className="text-sm text-violet-200">Refugee Market Active</span>
         </div>
       )}
 
       {tier >= 3 && (
-        <div className="absolute bottom-6 right-6 px-4 py-2 bg-red-900/50 border border-red-700/30 rounded-lg flex items-center space-x-2">
-          <AlertTriangle className="w-4 h-4 text-red-400" />
+        <div className="absolute bottom-6 right-6 flex items-center space-x-2 rounded-lg border border-red-700/30 bg-red-900/50 px-4 py-2">
+          <AlertTriangle className="h-4 w-4 text-red-400" />
           <span className="text-sm text-red-200">Indoctrination Program Available</span>
         </div>
       )}

@@ -15,6 +15,10 @@ export interface WeaponEffect extends Effect {
   type: 'damage' | 'area' | 'status';
   duration: number;
   strength: number;
+  /** Name of the effect */
+  name: string;
+  /** Description of what the effect does */
+  description: string;
 }
 
 /**

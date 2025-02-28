@@ -1,19 +1,16 @@
-import { FactionShipBase } from './FactionShipBase';
-import { EquatorHorizonShipClass, FactionShipStats } from '../../../types/ships/FactionShipTypes';
-import { ReactNode } from 'react';
-import { WeaponMount } from '../../../types/weapons/WeaponTypes';
-import { DamageEffect, WeaponEffect } from '../../../effects/types_effects/WeaponEffects';
-import { useShipEffects } from '../../../hooks/ships/useShipEffects';
-import { BaseEffect, EffectType, CombatEffectType } from '../../../effects/types_effects/EffectTypes';
 import { Shield, Target } from 'lucide-react';
-import { StatusEffect } from '../../ui/status/StatusEffect';
-import { AbilityButton } from '../../ui/buttons/AbilityButton';
-import { useCallback } from 'react';
-import { createWeaponLike, createCustomWeaponEffect, createDamageEffect } from '../../../utils/weapons/weaponEffectUtils';
+import { ReactNode, useCallback } from 'react';
+import { CombatEffectType } from '../../../effects/types_effects/EffectTypes';
+import { createEffect, isDamageEffect } from '../../../effects/util_effects/effectUtils';
+import { useShipEffects } from '../../../hooks/ships/useShipEffects';
 import { Effect } from '../../../types/core/GameTypes';
+import { EquatorHorizonShipClass, FactionShipStats } from '../../../types/ships/FactionShipTypes';
 import { FactionBehaviorType, FactionId } from '../../../types/ships/FactionTypes';
-import { isWeaponEffect, isDamageEffect } from '../../../effects/util_effects/effectUtils';
-import { createEffect } from '../../../effects/util_effects/effectUtils';
+import { WeaponMount } from '../../../types/weapons/WeaponTypes';
+import { createDamageEffect } from '../../../utils/weapons/weaponEffectUtils';
+import { AbilityButton } from '../../ui/buttons/AbilityButton';
+import { StatusEffect } from '../../ui/status/StatusEffect';
+import { FactionShipBase } from './FactionShipBase';
 
 interface EquatorHorizonShipProps {
   id: string;

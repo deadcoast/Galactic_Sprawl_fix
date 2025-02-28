@@ -1,7 +1,7 @@
-import { EventEmitter } from '../../utils/EventEmitter';
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { Position } from '../../types/core/GameTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
+import { EventEmitter } from '../../utils/EventEmitter';
 
 interface BehaviorNode {
   id: string;
@@ -12,7 +12,7 @@ interface BehaviorNode {
 }
 
 interface BehaviorContext {
-  unit: CombatUnit;
+  unit: CombatUnit & { target?: string };
   factionId: FactionId;
   fleetStrength: number;
   threatLevel: number;
@@ -62,7 +62,7 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
         {
           id: 'check-health',
           type: 'condition',
-          evaluate: (context) => context.unit.health / context.unit.maxHealth > 0.3,
+          evaluate: context => context.unit.stats.health / context.unit.stats.maxHealth > 0.3,
         },
         {
           id: 'select-target',
@@ -71,12 +71,12 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
             {
               id: 'engage-existing',
               type: 'condition',
-              evaluate: (context) => Boolean(context.unit.target),
+              evaluate: context => Boolean(context.unit.target),
             },
             {
               id: 'find-new-target',
               type: 'action',
-              execute: (context) => this.findNearestTarget(context),
+              execute: context => this.findNearestTarget(context),
             },
           ],
         },
@@ -87,12 +87,12 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
             {
               id: 'approach-target',
               type: 'action',
-              execute: (context) => this.moveTowardsTarget(context),
+              execute: context => this.moveTowardsTarget(context),
             },
             {
               id: 'attack-target',
               type: 'action',
-              execute: (context) => this.attackTarget(context),
+              execute: context => this.attackTarget(context),
             },
           ],
         },
@@ -111,12 +111,12 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
             {
               id: 'check-overwhelming-force',
               type: 'condition',
-              evaluate: (context) => context.fleetStrength > context.threatLevel * 1.5,
+              evaluate: context => context.fleetStrength > context.threatLevel * 1.5,
             },
             {
               id: 'maintain-stealth',
               type: 'action',
-              execute: (context) => this.activateStealth(context),
+              execute: context => this.activateStealth(context),
             },
           ],
         },
@@ -127,7 +127,7 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
             {
               id: 'retreat-if-needed',
               type: 'condition',
-              evaluate: (context) => context.unit.health / context.unit.maxHealth < 0.4,
+              evaluate: context => context.unit.stats.health / context.unit.stats.maxHealth < 0.4,
             },
             {
               id: 'opportunistic-attack',
@@ -136,12 +136,12 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
                 {
                   id: 'find-isolated-target',
                   type: 'action',
-                  execute: (context) => this.findIsolatedTarget(context),
+                  execute: context => this.findIsolatedTarget(context),
                 },
                 {
                   id: 'surprise-attack',
                   type: 'action',
-                  execute: (context) => this.performSurpriseAttack(context),
+                  execute: context => this.performSurpriseAttack(context),
                 },
               ],
             },
@@ -162,12 +162,12 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
             {
               id: 'check-fleet-balance',
               type: 'condition',
-              evaluate: (context) => Math.abs(context.fleetStrength - context.threatLevel) < 0.2,
+              evaluate: context => Math.abs(context.fleetStrength - context.threatLevel) < 0.2,
             },
             {
               id: 'adjust-formation',
               type: 'action',
-              execute: (context) => this.adjustFormation(context),
+              execute: context => this.adjustFormation(context),
             },
           ],
         },
@@ -182,12 +182,12 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
                 {
                   id: 'form-attack-pattern',
                   type: 'action',
-                  execute: (context) => this.formAttackPattern(context),
+                  execute: context => this.formAttackPattern(context),
                 },
                 {
                   id: 'execute-coordinated-strike',
                   type: 'action',
-                  execute: (context) => this.executeCoordinatedStrike(context),
+                  execute: context => this.executeCoordinatedStrike(context),
                 },
               ],
             },
@@ -198,12 +198,12 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
                 {
                   id: 'form-defensive-pattern',
                   type: 'action',
-                  execute: (context) => this.formDefensivePattern(context),
+                  execute: context => this.formDefensivePattern(context),
                 },
                 {
                   id: 'coordinate-shield-boost',
                   type: 'action',
-                  execute: (context) => this.coordinateShieldBoost(context),
+                  execute: context => this.coordinateShieldBoost(context),
                 },
               ],
             },
@@ -248,7 +248,7 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
     if (!node.children) {
       return true;
     }
-    
+
     for (const child of node.children) {
       if (!this.evaluateNode(child, context)) {
         return false;
@@ -261,7 +261,7 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
     if (!node.children) {
       return false;
     }
-    
+
     for (const child of node.children) {
       if (this.evaluateNode(child, context)) {
         return true;
@@ -283,7 +283,7 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
     if (context.nearbyEnemies.length === 0) {
       return;
     }
-    
+
     const nearest = context.nearbyEnemies.reduce((closest, current) => {
       const closestDist = this.getDistance(context.unit.position, closest.position);
       const currentDist = this.getDistance(context.unit.position, current.position);
@@ -295,9 +295,8 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
 
   private findIsolatedTarget(context: BehaviorContext): void {
     const isolated = context.nearbyEnemies.find(enemy => {
-      const nearbyAllies = context.nearbyEnemies.filter(other => 
-        other.id !== enemy.id && 
-        this.getDistance(enemy.position, other.position) > 200
+      const nearbyAllies = context.nearbyEnemies.filter(
+        other => other.id !== enemy.id && this.getDistance(enemy.position, other.position) > 200
       );
       return nearbyAllies.length === 0;
     });
@@ -318,7 +317,7 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
       const dx = target.position.x - context.unit.position.x;
       const dy = target.position.y - context.unit.position.y;
       const angle = Math.atan2(dy, dx);
-      
+
       context.unit.position = {
         x: context.unit.position.x + Math.cos(angle) * 5,
         y: context.unit.position.y + Math.sin(angle) * 5,
@@ -354,11 +353,12 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
   }
 
   private adjustFormation(context: BehaviorContext): void {
-    const newFormation = context.fleetStrength > context.threatLevel 
-      ? 'offensive' 
-      : context.fleetStrength < context.threatLevel 
-        ? 'defensive' 
-        : 'balanced';
+    const newFormation =
+      context.fleetStrength > context.threatLevel
+        ? 'offensive'
+        : context.fleetStrength < context.threatLevel
+          ? 'defensive'
+          : 'balanced';
 
     if (newFormation !== context.currentFormation.type) {
       context.currentFormation.type = newFormation;
@@ -389,7 +389,7 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
 
   private coordinateShieldBoost(context: BehaviorContext): void {
     const lowShieldAllies = context.nearbyAllies.filter(
-      ally => ally.shield / ally.maxShield < 0.5
+      ally => ally.stats.shield / ally.stats.maxShield < 0.5
     );
 
     if (lowShieldAllies.length > 0) {
@@ -399,11 +399,9 @@ export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
   }
 
   private getDistance(pos1: Position, pos2: Position): number {
-    return Math.sqrt(
-      Math.pow(pos2.x - pos1.x, 2) + Math.pow(pos2.y - pos1.y, 2)
-    );
+    return Math.sqrt(Math.pow(pos2.x - pos1.x, 2) + Math.pow(pos2.y - pos1.y, 2));
   }
 }
 
 // Export singleton instance
-export const behaviorTreeManager = BehaviorTreeManager.getInstance(); 
+export const behaviorTreeManager = BehaviorTreeManager.getInstance();

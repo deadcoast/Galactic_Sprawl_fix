@@ -16,17 +16,17 @@ interface ReconShipStatusProps {
 
 export function ReconShipStatus({ ships }: ReconShipStatusProps) {
   return (
-    <div className="mt-6 bg-gray-800/50 rounded-lg p-4">
-      <h3 className="text-sm font-medium text-gray-300 mb-3">Active Recon Ships</h3>
+    <div className="mt-6 rounded-lg bg-gray-800/50 p-4">
+      <h3 className="mb-3 text-sm font-medium text-gray-300">Active Recon Ships</h3>
       <div className="space-y-2">
         {ships.map(ship => (
           <div
             key={ship.id}
-            className="flex items-center justify-between bg-gray-800 rounded-lg p-3"
+            className="flex items-center justify-between rounded-lg bg-gray-800 p-3"
           >
             <div className="flex items-center space-x-3">
               <Rocket
-                className={`w-5 h-5 ${
+                className={`h-5 w-5 ${
                   ship.status === 'scanning'
                     ? 'text-teal-400'
                     : ship.status === 'investigating'
@@ -44,7 +44,7 @@ export function ReconShipStatus({ ships }: ReconShipStatusProps) {
                 </div>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-gray-500" />
+            <ChevronRight className="h-5 w-5 text-gray-500" />
           </div>
         ))}
       </div>

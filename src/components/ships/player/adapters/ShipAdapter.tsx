@@ -1,6 +1,6 @@
 import { CommonShip } from '../../../../types/ships/CommonShipTypes';
-import { WarShip } from '../variants/warships/WarShip';
 import { WeaponCategory } from '../../../../types/weapons/WeaponTypes';
+import { WarShip } from '../variants/warships/WarShip';
 
 interface ShipAdapterProps {
   ship: CommonShip;

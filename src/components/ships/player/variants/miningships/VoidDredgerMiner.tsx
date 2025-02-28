@@ -38,15 +38,15 @@ export function VoidDredger({
   onSetTarget,
 }: VoidDredgerProps) {
   return (
-    <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg p-6" data-dredger-id={id}>
+    <div className="rounded-lg border border-amber-700/30 bg-amber-900/20 p-6" data-dredger-id={id}>
       {/* Ship Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <h3 className="text-lg font-medium text-white">{name}</h3>
           <div className="text-sm text-gray-400">Mining Vessel</div>
         </div>
         <div
-          className={`px-3 py-1 rounded-full text-sm ${
+          className={`rounded-full px-3 py-1 text-sm ${
             status === 'mining'
               ? 'bg-green-900/50 text-green-400'
               : status === 'returning'
@@ -63,12 +63,12 @@ export function VoidDredger({
       {/* Mining Status */}
       {targetNode && (
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2 flex items-center justify-between">
             <span className="text-sm text-gray-400">Current Target</span>
             <span className="text-sm text-amber-400">{targetNode.name}</span>
           </div>
-          <div className="p-3 bg-gray-800/50 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
+          <div className="rounded-lg bg-gray-800/50 p-3">
+            <div className="mb-2 flex items-center justify-between">
               <div className="text-sm text-gray-300">{targetNode.type}</div>
               <div className="text-sm text-gray-400">{targetNode.distance}ly</div>
             </div>
@@ -82,15 +82,15 @@ export function VoidDredger({
 
       {/* Cargo Status */}
       <div className="mb-6">
-        <div className="flex justify-between text-sm mb-2">
+        <div className="mb-2 flex justify-between text-sm">
           <span className="text-gray-400">Cargo Hold</span>
           <span className="text-gray-300">
             {cargo.current} / {cargo.capacity}
           </span>
         </div>
-        <div className="h-2 bg-gray-700 rounded-full overflow-hidden mb-3">
+        <div className="mb-3 h-2 overflow-hidden rounded-full bg-gray-700">
           <div
-            className="h-full bg-amber-500 rounded-full transition-all"
+            className="h-full rounded-full bg-amber-500 transition-all"
             style={{ width: `${(cargo.current / cargo.capacity) * 100}%` }}
           />
         </div>
@@ -98,7 +98,7 @@ export function VoidDredger({
           {cargo.resources.map(resource => (
             <div
               key={resource.type}
-              className="flex items-center justify-between p-2 bg-gray-800/50 rounded-lg"
+              className="flex items-center justify-between rounded-lg bg-gray-800/50 p-2"
             >
               <span className="text-sm text-gray-300">{resource.type}</span>
               <span className="text-sm text-amber-400">{resource.amount}</span>
@@ -108,17 +108,17 @@ export function VoidDredger({
       </div>
 
       {/* Efficiency Stats */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="p-3 bg-gray-800/50 rounded-lg">
-          <div className="flex items-center space-x-2 mb-2">
-            <Database className="w-4 h-4 text-gray-400" />
+      <div className="mb-6 grid grid-cols-2 gap-4">
+        <div className="rounded-lg bg-gray-800/50 p-3">
+          <div className="mb-2 flex items-center space-x-2">
+            <Database className="h-4 w-4 text-gray-400" />
             <span className="text-sm text-gray-300">Efficiency</span>
           </div>
           <div className="text-lg font-medium text-amber-400">{Math.round(efficiency * 100)}%</div>
         </div>
-        <div className="p-3 bg-gray-800/50 rounded-lg">
-          <div className="flex items-center space-x-2 mb-2">
-            <Zap className="w-4 h-4 text-gray-400" />
+        <div className="rounded-lg bg-gray-800/50 p-3">
+          <div className="mb-2 flex items-center space-x-2">
+            <Zap className="h-4 w-4 text-gray-400" />
             <span className="text-sm text-gray-300">Rate</span>
           </div>
           <div className="text-lg font-medium text-amber-400">{extractionRate}/s</div>
@@ -130,23 +130,23 @@ export function VoidDredger({
         <button
           onClick={() => onRecall()}
           disabled={status === 'maintenance'}
-          className={`px-4 py-2 rounded-lg text-sm flex items-center justify-center space-x-2 ${
+          className={`flex items-center justify-center space-x-2 rounded-lg px-4 py-2 text-sm ${
             status === 'maintenance'
-              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-              : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-200'
+              ? 'cursor-not-allowed bg-gray-700 text-gray-500'
+              : 'bg-amber-500/20 text-amber-200 hover:bg-amber-500/30'
           }`}
         >
-          <Truck className="w-4 h-4" />
+          <Truck className="h-4 w-4" />
           <span>Recall Ship</span>
         </button>
         <button
           onClick={() => onSetTarget(targetNode?.id || '')}
           disabled={status === 'maintenance'}
-          className={`px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            status === 'maintenance' ? 'opacity-50 cursor-not-allowed' : ''
+          className={`flex items-center justify-center space-x-2 rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 ${
+            status === 'maintenance' ? 'cursor-not-allowed opacity-50' : ''
           }`}
         >
-          <Database className="w-4 h-4" />
+          <Database className="h-4 w-4" />
           <span>Set Target</span>
         </button>
       </div>
@@ -157,9 +157,9 @@ export function VoidDredger({
           {alerts.map((alert, index) => (
             <div
               key={index}
-              className="flex items-start space-x-2 p-3 bg-yellow-900/20 border border-yellow-700/30 rounded-lg"
+              className="flex items-start space-x-2 rounded-lg border border-yellow-700/30 bg-yellow-900/20 p-3"
             >
-              <AlertTriangle className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-yellow-500" />
               <span className="text-sm text-yellow-200">{alert}</span>
             </div>
           ))}

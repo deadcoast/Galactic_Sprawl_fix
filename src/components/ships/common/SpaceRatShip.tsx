@@ -1,14 +1,17 @@
-import { FactionShipBase } from './FactionShipBase';
-import { SpaceRatsShipClass } from '../../../types/ships/FactionShipTypes';
 import { ReactNode } from 'react';
-import { WeaponMount } from '../../../types/weapons/WeaponTypes';
-import { WeaponEffect } from '../../../effects/types_effects/WeaponEffects';
-import { useShipEffects } from '../../../hooks/ships/useShipEffects';
 import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
-import { Zap, Shield } from 'lucide-react';
-import { StatusEffect } from '../../ui/status/StatusEffect';
-import { AbilityButton } from '../../ui/buttons/AbilityButton';
-import { FactionShipStats } from '../../../types/ships/FactionShipTypes';
+import { useShipEffects } from '../../../hooks/ships/useShipEffects';
+import {
+  FactionShip,
+  FactionShipStats,
+  SpaceRatsShipClass,
+} from '../../../types/ships/FactionShipTypes';
+import { FactionBehaviorType } from '../../../types/ships/FactionTypes';
+import { WeaponMount } from '../../../types/weapons/WeaponTypes';
+import { FactionShipBase } from './FactionShipBase';
+
+// Import the correct WeaponEffect type
+import { DamageEffect } from '../../../effects/types_effects/WeaponEffects';
 
 interface SpaceRatShipProps {
   id: string;
@@ -21,7 +24,7 @@ interface SpaceRatShipProps {
   maxShield: number;
   weapons: WeaponMount[];
   stats: FactionShipStats;
-  tactics: 'aggressive' | 'defensive' | 'hit-and-run' | 'stealth';
+  tactics: FactionBehaviorType | string;
   position: { x: number; y: number };
   rotation: number;
   onEngage?: () => void;
@@ -30,6 +33,14 @@ interface SpaceRatShipProps {
   onFire?: (weaponId: string) => void;
   children?: ReactNode;
 }
+
+// Helper function to create a FactionBehaviorType from string
+const createFactionBehavior = (behavior: string): FactionBehaviorType => {
+  return {
+    formation: 'standard',
+    behavior: behavior,
+  };
+};
 
 /**
  * SpaceRatShip Component
@@ -67,7 +78,7 @@ export function SpaceRatShip({
       weapons.forEach(mount => {
         if (mount.currentWeapon) {
           mount.currentWeapon.state.effects = mount.currentWeapon.state.effects.filter(
-            effect => effect.name !== 'Rage Mode'
+            effect => effect.id !== 'rage-mode'
           );
         }
       });
@@ -80,21 +91,22 @@ export function SpaceRatShip({
         magnitude: 1.5,
         duration: 10,
         active: true,
+        cooldown: 0,
       };
       addEffect(baseEffect);
 
       // Apply rage mode effect to all weapons
       weapons.forEach(mount => {
         if (mount.currentWeapon) {
-          const weaponEffect: WeaponEffect = {
+          // Create a proper DamageEffect instead of WeaponEffect
+          const weaponEffect: DamageEffect = {
+            id: 'rage-mode-weapon',
             type: 'damage',
-            name: 'Rage Mode',
-            description: 'Increased weapon damage',
             duration: 10,
             strength: 1.5,
             magnitude: 1.5,
-            active: true,
-            cooldown: 0,
+            damageType: 'physical',
+            penetration: 0.3,
           };
 
           mount.currentWeapon.state.effects.push(weaponEffect);
@@ -113,91 +125,120 @@ export function SpaceRatShip({
         name: 'Scrap Shield',
         description: 'Temporary shield boost from scrap metal',
         type: 'shield',
-        magnitude: 1.3,
+        magnitude: 2.0,
         duration: 8,
         active: true,
+        cooldown: 0,
       };
       addEffect(shieldEffect);
     }
+    onSpecialAbility?.();
+  };
+
+  // Determine which special ability to use based on ship type
+  const handleSpecialAbility = () => {
+    switch (type) {
+      case 'ratKing':
+      case 'asteroidMarauder':
+      case 'plasmaFang':
+        handleRageMode();
+        break;
+      case 'rogueNebula':
+      case 'wailingWreck':
+      case 'verminVanguard':
+        handleScrapShield();
+        break;
+      default:
+        onSpecialAbility?.();
+    }
+  };
+
+  // Create a ship object that matches the expected type
+  const shipData: FactionShip = {
+    id,
+    name,
+    class: type,
+    faction: 'space-rats',
+    status,
+    // Convert string tactics to FactionBehaviorType if needed
+    tactics: typeof tactics === 'string' ? createFactionBehavior(tactics) : tactics,
+    category: 'war',
+    health,
+    maxHealth,
+    shield,
+    maxShield,
+    position,
+    rotation,
+    stats,
+    // Add the required abilities property
+    abilities: [
+      {
+        name: 'Rage Mode',
+        description: 'Increases damage output at the cost of defense',
+        cooldown: 15,
+        duration: 10,
+        active: hasEffect('rage-mode'),
+        effect: {
+          id: 'rage-mode-effect',
+          type: 'damage',
+          duration: 10,
+          magnitude: 1.5,
+        },
+      },
+      {
+        name: 'Scrap Shield',
+        description: 'Temporary shield boost from scrap metal',
+        cooldown: 20,
+        duration: 8,
+        active: hasEffect('scrap-shield'),
+        effect: {
+          id: 'scrap-shield-effect',
+          type: 'shield',
+          duration: 8,
+          magnitude: 2.0,
+        },
+      },
+    ],
   };
 
   return (
     <FactionShipBase
-      ship={{
-        id,
-        name,
-        class: type,
-        faction: 'space-rats',
-        status,
-        tactics,
-        category: 'war',
-        health,
-        maxHealth,
-        shield,
-        maxShield,
-        position,
-        rotation,
-        abilities: [
-          {
-            name: 'Rage Mode',
-            description: 'Increases damage output at the cost of defense',
-            cooldown: 15,
-            duration: 10,
-            active: hasEffect('rage-mode'),
-            effect: {
-              type: 'damage',
-              name: 'Rage Mode',
-              description: 'Increased damage but reduced defense',
-              magnitude: 1.5,
-              duration: 10,
-            },
-          },
-          {
-            name: 'Scrap Shield',
-            description: 'Creates a temporary shield from scrap metal',
-            cooldown: 12,
-            duration: 8,
-            active: hasEffect('scrap-shield'),
-            effect: {
-              type: 'shield',
-              name: 'Scrap Shield',
-              description: 'Temporary shield boost from scrap metal',
-              magnitude: 1.3,
-              duration: 8,
-            },
-          },
-        ],
-        stats,
-      }}
+      ship={shipData}
       onEngage={onEngage}
       onRetreat={onRetreat}
-      onSpecialAbility={onSpecialAbility}
+      onSpecialAbility={handleSpecialAbility}
       onFire={onFire}
     >
-      {/* Status Effects */}
-      <StatusEffect active={hasEffect('rage-mode')} icon={Zap} label="Rage Mode" color="red" />
-      <StatusEffect
-        active={hasEffect('scrap-shield')}
-        icon={Shield}
-        label="Scrap Shield"
-        color="amber"
-      />
+      {/* Space Rats specific UI elements */}
+      <div className="mt-4 space-y-2">
+        {hasEffect('rage-mode') && (
+          <div className="rounded-lg bg-red-900/30 px-3 py-2 text-sm">
+            <div className="font-medium text-gray-300">Rage Mode Active</div>
+            <div className="text-xs text-gray-400">+50% damage, -25% defense</div>
+          </div>
+        )}
 
-      {/* Ability Buttons */}
-      <AbilityButton
-        active={hasEffect('rage-mode')}
-        icon={Zap}
-        label="Rage Mode"
-        color="red"
-        onClick={handleRageMode}
-      />
-      <AbilityButton
-        active={hasEffect('scrap-shield')}
-        icon={Shield}
-        label="Scrap Shield"
-        color="amber"
-        onClick={handleScrapShield}
-      />
+        {hasEffect('scrap-shield') && (
+          <div className="rounded-lg bg-amber-900/30 px-3 py-2 text-sm">
+            <div className="font-medium text-gray-300">Scrap Shield Active</div>
+            <div className="text-xs text-gray-400">+100% shield strength</div>
+          </div>
+        )}
+
+        {type === 'ratKing' && (
+          <div className="rounded-lg bg-red-900/30 px-3 py-2 text-sm">
+            <div className="font-medium text-gray-300">Rat King Aura</div>
+            <div className="text-xs text-gray-400">Nearby allies gain +15% damage</div>
+          </div>
+        )}
+
+        {type === 'wailingWreck' && (
+          <div className="rounded-lg bg-amber-900/30 px-3 py-2 text-sm">
+            <div className="font-medium text-gray-300">Scrap Collector</div>
+            <div className="text-xs text-gray-400">Gains resources from destroyed ships</div>
+          </div>
+        )}
+      </div>
 
       {children}
     </FactionShipBase>

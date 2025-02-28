@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
+import { shipActions, useShipState } from '../../contexts/ShipContext';
 import { BaseEffect } from '../../effects/types_effects/EffectTypes';
-import { useShipState } from '../../contexts/ShipContext';
-import { shipActions } from '../../contexts/ShipContext';
 
 export function useShipEffects() {
   const { state, dispatch } = useShipState();

@@ -1,7 +1,7 @@
 /**
  * Generic event emitter implementation
  */
-export class EventEmitter<T extends Record<string, any>> {
+export class EventEmitter<T extends Record<string, unknown>> {
   private listeners: Map<keyof T, Array<(data: T[keyof T]) => void>> = new Map();
 
   /**

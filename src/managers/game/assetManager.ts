@@ -30,32 +30,32 @@ export class AssetManager {
           name: 'klaed_fighter',
           type: 'ship',
           category: 'sprite',
-          path: '/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla\'ed/Base/PNGs/Kla\'ed - Fighter - Base.png',
+          path: "/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla'ed/Base/PNGs/Kla'ed - Fighter - Base.png",
         },
         {
           name: 'klaed_scout',
           type: 'ship',
           category: 'sprite',
-          path: '/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla\'ed/Base/PNGs/Kla\'ed - Scout - Base.png',
+          path: "/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla'ed/Base/PNGs/Kla'ed - Scout - Base.png",
         },
         {
           name: 'klaed_bomber',
           type: 'ship',
           category: 'sprite',
-          path: '/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla\'ed/Base/PNGs/Kla\'ed - Bomber - Base.png',
+          path: "/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla'ed/Base/PNGs/Kla'ed - Bomber - Base.png",
         },
         {
           name: 'klaed_frigate',
           type: 'ship',
           category: 'sprite',
-          path: '/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla\'ed/Base/PNGs/Kla\'ed - Frigate - Base.png',
+          path: "/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla'ed/Base/PNGs/Kla'ed - Frigate - Base.png",
         },
         {
           name: 'klaed_battlecruiser',
           type: 'ship',
           category: 'sprite',
-          path: '/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla\'ed/Base/PNGs/Kla\'ed - Battlecruiser - Base.png',
-        }
+          path: "/.pixelArtAssets/Space_Ships/Main_Faction_Ships/Space_Rats_Ships/Kla'ed/Base/PNGs/Kla'ed - Battlecruiser - Base.png",
+        },
       ],
     },
     {
@@ -66,12 +66,12 @@ export class AssetManager {
           type: 'ui',
           category: 'sprite',
           path: '/.pixelArtAssets/GUI_Assets/gui_sheet_64x64.aseprite',
-        }
+        },
       ],
     },
     {
       name: 'effects',
-      assets: []  // We'll add effects later as needed
+      assets: [], // We'll add effects later as needed
     },
   ];
 
@@ -92,41 +92,33 @@ export class AssetManager {
       return this.loadPromise;
     }
 
-    this.loadPromise = new Promise(async (resolve, reject) => {
-      try {
-        // Initialize PIXI Assets
-        await PIXI.Assets.init({
-          manifest: {
-            bundles: this.bundles.map(bundle => ({
-              name: bundle.name,
-              assets: bundle.assets.map(asset => ({
-                name: asset.name,
-                srcs: asset.path,
-              })),
+    this.loadPromise = new Promise((resolve, reject) => {
+      // Initialize PIXI Assets
+      PIXI.Assets.init({
+        manifest: {
+          bundles: this.bundles.map(bundle => ({
+            name: bundle.name,
+            assets: bundle.assets.map(asset => ({
+              alias: asset.name,
+              src: asset.path,
             })),
-          },
+          })),
+        },
+      })
+        .then(() => {
+          // Load default bundle
+          return PIXI.Assets.loadBundle('default');
+        })
+        .then(assets => {
+          // Process loaded assets
+          Object.entries(assets).forEach(([name, asset]) => {
+            this.loadedAssets.set(name, asset as PIXI.Texture | PIXI.Spritesheet);
+          });
+          resolve();
+        })
+        .catch(error => {
+          reject(error);
         });
-
-        // Load all bundles
-        await Promise.all(
-          this.bundles.map(async bundle => {
-            const loadedBundle = await PIXI.Assets.loadBundle<
-              Record<string, PIXI.Texture | PIXI.Spritesheet>
-            >(bundle.name);
-            bundle.assets.forEach(asset => {
-              const loadedAsset = loadedBundle[asset.name];
-              if (loadedAsset instanceof PIXI.Texture || loadedAsset instanceof PIXI.Spritesheet) {
-                this.loadedAssets.set(asset.name, loadedAsset);
-              }
-            });
-          })
-        );
-
-        resolve();
-      } catch (error) {
-        console.error('Error loading assets:', error);
-        reject(error);
-      }
     });
 
     return this.loadPromise;

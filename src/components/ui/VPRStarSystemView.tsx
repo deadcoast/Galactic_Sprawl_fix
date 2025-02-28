@@ -1,3 +1,5 @@
+import { AlertTriangle } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { CentralMothership } from '../../effects/component_effects/CentralMothership';
 import { ColonyStarStation } from '../../effects/component_effects/ColonyStarStation';
 import { ExplorationHub } from '../../effects/component_effects/ExplorationHub';
@@ -7,8 +9,6 @@ import { ModuleUpgradeTransition } from '../../effects/component_effects/ModuleU
 import { PopulationIndicator } from '../../effects/component_effects/PopulationIndicator';
 import { StarSystemBackdrop } from '../../effects/component_effects/StarSystemBackdrop';
 import { useScalingSystem } from '../../hooks/game/useScalingSystem';
-import { AlertTriangle } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
 
 interface VPRStarSystemViewProps {
   empireName: string;
@@ -157,9 +157,9 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-gray-900">
+    <div className="relative h-full w-full overflow-hidden bg-gray-900">
       {/* Empire Title */}
-      <div className="absolute top-4 left-4 z-10">
+      <div className="absolute left-4 top-4 z-10">
         <h1 className="text-2xl font-bold text-white">{empireName} Star System</h1>
       </div>
 
@@ -195,7 +195,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
       </div>
 
       {/* Exploration Hub */}
-      <div className="absolute left-1/3 bottom-1/4 -translate-x-1/2">
+      <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2">
         <ExplorationHub
           {...systemData.exploration}
           quality={quality}
@@ -205,7 +205,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
       </div>
 
       {/* Mineral Processing */}
-      <div className="absolute right-1/3 bottom-1/4 -translate-x-1/2">
+      <div className="absolute bottom-1/4 right-1/3 -translate-x-1/2">
         <MineralProcessing
           {...systemData.mineralProcessing}
           quality={quality}
@@ -228,9 +228,9 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
         {alerts.map(alert => (
           <div
             key={`${alert.moduleId}-${alert.message}`}
-            className="px-4 py-2 bg-red-900/80 text-red-200 rounded-lg backdrop-blur-sm flex items-center space-x-2"
+            className="flex items-center space-x-2 rounded-lg bg-red-900/80 px-4 py-2 text-red-200 backdrop-blur-sm"
           >
-            <AlertTriangle className="w-4 h-4" />
+            <AlertTriangle className="h-4 w-4" />
             <span>{alert.message}</span>
           </div>
         ))}

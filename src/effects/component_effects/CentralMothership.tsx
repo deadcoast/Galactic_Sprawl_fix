@@ -29,14 +29,14 @@ export function CentralMothership({
   const glowIntensity = quality === 'low' ? 4 : quality === 'medium' ? 8 : 12;
 
   return (
-    <div className="relative w-96 h-96 cursor-pointer" onMouseEnter={onHover} onClick={onClick}>
+    <div className="relative h-96 w-96 cursor-pointer" onMouseEnter={onHover} onClick={onClick}>
       {/* Base Structure */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative">
           {/* Core Structure */}
-          <div className="w-48 h-48 bg-gray-800/80 rounded-full border-4 border-indigo-500/30 flex items-center justify-center">
-            <div className="w-32 h-32 bg-indigo-900/50 rounded-full flex items-center justify-center">
-              <Crown className="w-16 h-16 text-indigo-400" />
+          <div className="flex h-48 w-48 items-center justify-center rounded-full border-4 border-indigo-500/30 bg-gray-800/80">
+            <div className="flex h-32 w-32 items-center justify-center rounded-full bg-indigo-900/50">
+              <Crown className="h-16 w-16 text-indigo-400" />
             </div>
           </div>
 
@@ -44,7 +44,7 @@ export function CentralMothership({
           {Array.from({ length: tier }).map((_, i) => (
             <div
               key={i}
-              className="absolute inset-0 border-2 border-indigo-500/20 rounded-full"
+              className="absolute inset-0 rounded-full border-2 border-indigo-500/20"
               style={{
                 animation: `spin ${20 + i * 10}s linear infinite`,
                 transform: `scale(${1.2 + i * 0.2}) rotate(${i * 30}deg)`,
@@ -76,7 +76,7 @@ export function CentralMothership({
                 opacity: power / maxPower,
               }}
             >
-              <Zap className="w-6 h-6 text-indigo-400 animate-pulse" />
+              <Zap className="h-6 w-6 animate-pulse text-indigo-400" />
             </div>
           ))}
 
@@ -84,7 +84,7 @@ export function CentralMothership({
           {Array.from({ length: particleCount }).map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 bg-indigo-400 rounded-full animate-float"
+              className="animate-float absolute h-2 w-2 rounded-full bg-indigo-400"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -97,16 +97,16 @@ export function CentralMothership({
       </div>
 
       {/* Status Indicators */}
-      <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 space-y-2">
+      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 transform space-y-2">
         {/* Health Bar */}
         <div className="w-48">
-          <div className="flex justify-between text-xs mb-1">
+          <div className="mb-1 flex justify-between text-xs">
             <span className="text-gray-400">Hull Integrity</span>
             <span className={health < maxHealth * 0.3 ? 'text-red-400' : 'text-gray-300'}>
               {Math.round((health / maxHealth) * 100)}%
             </span>
           </div>
-          <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full rounded-full transition-all ${
                 health < maxHealth * 0.3 ? 'bg-red-500' : 'bg-green-500'
@@ -118,13 +118,13 @@ export function CentralMothership({
 
         {/* Shield Bar */}
         <div className="w-48">
-          <div className="flex justify-between text-xs mb-1">
+          <div className="mb-1 flex justify-between text-xs">
             <span className="text-gray-400">Shield Power</span>
             <span className="text-gray-300">{Math.round((shield / maxShield) * 100)}%</span>
           </div>
-          <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
             <div
-              className="h-full bg-cyan-500 rounded-full transition-all"
+              className="h-full rounded-full bg-cyan-500 transition-all"
               style={{ width: `${(shield / maxShield) * 100}%` }}
             />
           </div>
@@ -132,10 +132,10 @@ export function CentralMothership({
       </div>
 
       {/* Tier Indicator */}
-      <div className="absolute top-0 right-0 px-3 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/30">
+      <div className="absolute right-0 top-0 rounded-full border border-indigo-500/30 bg-indigo-500/20 px-3 py-1.5">
         <div className="flex items-center space-x-1">
           {Array.from({ length: tier }).map((_, i) => (
-            <Crown key={i} className="w-4 h-4 text-indigo-400" />
+            <Crown key={i} className="h-4 w-4 text-indigo-400" />
           ))}
         </div>
       </div>

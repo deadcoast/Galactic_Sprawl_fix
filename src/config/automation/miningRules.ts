@@ -371,4 +371,4 @@ export const miningRules: AutomationRule[] = [
     ],
     interval: 5000, // Check frequently
   },
-]; 
+];

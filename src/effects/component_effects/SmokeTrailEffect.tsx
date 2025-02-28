@@ -169,7 +169,7 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
 export function SmokeTrailEffect({ position, direction, intensity, color }: SmokeTrailProps) {
   return (
     <div
-      className="absolute pointer-events-none"
+      className="pointer-events-none absolute"
       style={{
         left: position.x,
         top: position.y,

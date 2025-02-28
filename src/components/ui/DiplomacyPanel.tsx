@@ -57,16 +57,16 @@ export function DiplomacyPanel({
   const color = getFactionColor(faction.type);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-gray-900/95 backdrop-blur-sm rounded-lg border border-gray-700 p-6 max-w-lg w-full">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="w-full max-w-lg rounded-lg border border-gray-700 bg-gray-900/95 p-6 backdrop-blur-sm">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className={`p-2 bg-${color}-500/20 rounded-lg`}>
-              {faction.type === 'spaceRats' && <Swords className={`w-6 h-6 text-${color}-400`} />}
-              {faction.type === 'lostNova' && <Scale className={`w-6 h-6 text-${color}-400`} />}
+              {faction.type === 'spaceRats' && <Swords className={`h-6 w-6 text-${color}-400`} />}
+              {faction.type === 'lostNova' && <Scale className={`h-6 w-6 text-${color}-400`} />}
               {faction.type === 'equatorHorizon' && (
-                <Crown className={`w-6 h-6 text-${color}-400`} />
+                <Crown className={`h-6 w-6 text-${color}-400`} />
               )}
             </div>
             <div>
@@ -76,7 +76,7 @@ export function DiplomacyPanel({
           </div>
           <div className="flex items-center space-x-4">
             <div
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`rounded-full px-3 py-1 text-sm ${
                 faction.status === 'hostile'
                   ? 'bg-red-900/50 text-red-400'
                   : faction.status === 'friendly'
@@ -88,17 +88,17 @@ export function DiplomacyPanel({
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              className="rounded-lg p-2 transition-colors hover:bg-gray-800"
               aria-label="Close panel"
             >
-              <X className="w-5 h-5 text-gray-400" />
+              <X className="h-5 w-5 text-gray-400" />
             </button>
           </div>
         </div>
 
         {/* Relationship Status */}
         <div className="mb-6">
-          <div className="flex justify-between text-sm mb-2">
+          <div className="mb-2 flex justify-between text-sm">
             <span className="text-gray-400">Relationship</span>
             <span
               className={
@@ -112,7 +112,7 @@ export function DiplomacyPanel({
               {Math.round(faction.relationship * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full rounded-full transition-all ${
                 faction.relationship > 0 ? 'bg-green-500' : 'bg-red-500'
@@ -123,34 +123,34 @@ export function DiplomacyPanel({
         </div>
 
         {/* Available Actions */}
-        <div className="space-y-3 mb-6">
+        <div className="mb-6 space-y-3">
           {availableActions.map(action => (
             <button
               key={action.type}
               onClick={() => onAction(action)}
               disabled={!action.available}
-              className={`w-full p-4 rounded-lg text-left transition-all ${
+              className={`w-full rounded-lg p-4 text-left transition-all ${
                 action.available
                   ? `bg-${color}-900/20 hover:bg-${color}-900/30 border border-${color}-700/30`
-                  : 'bg-gray-800/50 border border-gray-700 opacity-50 cursor-not-allowed'
+                  : 'cursor-not-allowed border border-gray-700 bg-gray-800/50 opacity-50'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  {action.type === 'ceasefire' && <Handshake className="w-5 h-5 text-green-400" />}
-                  {action.type === 'tradeRoute' && <Flag className="w-5 h-5 text-blue-400" />}
-                  {action.type === 'alliance' && <Crown className="w-5 h-5 text-purple-400" />}
-                  {action.type === 'tribute' && <Scale className="w-5 h-5 text-yellow-400" />}
-                  <span className="text-white font-medium">{action.name}</span>
+                  {action.type === 'ceasefire' && <Handshake className="h-5 w-5 text-green-400" />}
+                  {action.type === 'tradeRoute' && <Flag className="h-5 w-5 text-blue-400" />}
+                  {action.type === 'alliance' && <Crown className="h-5 w-5 text-purple-400" />}
+                  {action.type === 'tribute' && <Scale className="h-5 w-5 text-yellow-400" />}
+                  <span className="font-medium text-white">{action.name}</span>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-500" />
+                <ChevronRight className="h-5 w-5 text-gray-500" />
               </div>
-              <p className="text-sm text-gray-400 mb-2">{action.description}</p>
+              <p className="mb-2 text-sm text-gray-400">{action.description}</p>
 
               {/* Requirements */}
               <div className="flex flex-wrap gap-2">
                 {action.requirements.map((req, index) => (
-                  <div key={index} className="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300">
+                  <div key={index} className="rounded bg-gray-800 px-2 py-1 text-xs text-gray-300">
                     {req.type}: {req.value}
                   </div>
                 ))}
@@ -161,8 +161,8 @@ export function DiplomacyPanel({
 
         {/* Warnings & Notes */}
         {faction.type === 'spaceRats' && (
-          <div className="p-3 bg-red-900/20 border border-red-700/30 rounded-lg flex items-start space-x-2">
-            <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+          <div className="flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3">
+            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-red-500" />
             <div className="text-sm text-red-200">
               Space Rats are inherently hostile. Diplomatic options are limited.
             </div>
@@ -170,8 +170,8 @@ export function DiplomacyPanel({
         )}
 
         {faction.type === 'lostNova' && !faction.tradingEnabled && (
-          <div className="p-3 bg-yellow-900/20 border border-yellow-700/30 rounded-lg flex items-start space-x-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+          <div className="flex items-start space-x-2 rounded-lg border border-yellow-700/30 bg-yellow-900/20 p-3">
+            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-500" />
             <div className="text-sm text-yellow-200">
               Improve relations to unlock trading opportunities.
             </div>
@@ -179,8 +179,8 @@ export function DiplomacyPanel({
         )}
 
         {faction.type === 'equatorHorizon' && (
-          <div className="p-3 bg-blue-900/20 border border-blue-700/30 rounded-lg flex items-start space-x-2">
-            <AlertTriangle className="w-5 h-5 text-blue-500 flex-shrink-0" />
+          <div className="flex items-start space-x-2 rounded-lg border border-blue-700/30 bg-blue-900/20 p-3">
+            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-blue-500" />
             <div className="text-sm text-blue-200">
               Ancient protocols govern diplomatic relations.
             </div>

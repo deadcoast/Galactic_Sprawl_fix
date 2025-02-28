@@ -75,7 +75,7 @@ export function TradeRouteEffect({
       {/* Route Indicator */}
       <g transform={`translate(${midX}, ${midY - curvature})`}>
         <circle r={8 + volume * 4} fill="rgba(99, 102, 241, 0.2)" className="animate-pulse" />
-        <Database className="w-4 h-4 text-indigo-400 transform -translate-x-2 -translate-y-2" />
+        <Database className="h-4 w-4 -translate-x-2 -translate-y-2 transform text-indigo-400" />
       </g>
     </g>
   );

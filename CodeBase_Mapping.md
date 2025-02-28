@@ -1,24 +1,26 @@
-***********************************
+---
 PROJECT PHASE MAPPING
-***********************************
+---
 
 ## Project Mapping Guidelines
+
 - All paths are relative to project root
 - Dependencies indicate direct relationships
 - "Used By" indicates reverse dependencies
 - All components should follow consistent naming
 - Event systems should use centralized bus
 
-
 ### Core Systems Architecture
 
 1. Resource Management [~60% Complete]
+
    - Implemented in: src/managers/game/ResourceManager.ts
    - Performance monitoring: src/managers/resource/ResourcePerformanceMonitor.ts
    - Resource events: src/hooks/modules/useModuleEvents.ts
    - Mining implementation: src/managers/mining/MiningShipManagerImpl.ts
 
 2. Module Framework [100% Complete]
+
    - Core types: src/types/buildings/ModuleTypes.ts
    - Module manager: src/managers/module/ModuleManager.ts
    - Module events: src/lib/modules/ModuleEvents.ts
@@ -33,6 +35,7 @@ PROJECT PHASE MAPPING
    - Framework initialization: src/initialization/moduleFrameworkInit.ts
 
 3. Event System [~80% Complete]
+
    - Event emitter: src/utils/EventEmitter.ts
    - Module events: src/lib/modules/ModuleEvents.ts
    - Combat events: src/managers/combat/combatManager.ts
@@ -47,28 +50,54 @@ PROJECT PHASE MAPPING
    - Game Systems Integration: src/initialization/gameSystemsIntegration.ts
 
 4. State Management [~40% Complete]
+
    - Game context: src/contexts/GameContext.tsx
    - Combat state: src/managers/combat/combatManager.ts
    - Fleet AI state: src/hooks/factions/useFleetAI.ts
    - Faction behavior: src/hooks/factions/useFactionBehavior.ts
 
 5. UI Framework [~30% Complete]
+
    - Main layout: src/components/ui/GameLayout.tsx
    - Star system view: src/components/ui/VPRStarSystemView.tsx
    - Tech tree: src/components/ui/TechTree.tsx
    - Game HUD: src/components/ui/GameHUD.tsx
 
-6. VPR (Visual Progress Representation) View
+6. Faction Ship System [~70% Complete]
+
+   - Base components:
+     - FactionShipBase: src/components/ships/common/FactionShipBase.tsx
+     - FactionShipStats: src/components/ships/common/FactionShipStats.tsx
+     - LostNovaShip: src/components/ships/common/LostNovaShip.tsx
+     - SpaceRatShip: src/components/ships/common/SpaceRatShip.tsx
+   - Lost Nova faction ships:
+     - DarkMatterReaper: src/components/ships/FactionShips/lostNova/DarkMatterReaper.tsx
+     - EclipseScythe: src/components/ships/FactionShips/lostNova/EclipseScythe.tsx
+     - NullHunter: src/components/ships/FactionShips/lostNova/NullHunter.tsx
+   - Space Rats faction ships:
+     - RatKing: src/components/ships/FactionShips/spaceRats/RatKing.tsx
+     - RogueNebula: src/components/ships/FactionShips/spaceRats/RogueNebula.tsx
+   - Type definitions:
+     - FactionShipTypes: src/types/ships/FactionShipTypes.ts
+     - FactionTypes: src/types/ships/FactionTypes.ts
+     - ShipTypes: src/types/ships/ShipTypes.ts
+     - WeaponTypes: src/types/weapons/WeaponTypes.ts
+     - WeaponEffects: src/effects/types_effects/WeaponEffects.ts
+
+7. VPR (Visual Progress Representation) View
+
    - Components:
      - VPR View: src/components/ui/VPRStarSystemView.tsx
      - Game Layout: src/components/ui/GameLayout.tsx
 
-7. Civilization Sprawl View [~40% Complete]
+8. Civilization Sprawl View [~40% Complete]
+
    - Components:
      - Sprawl View: src/components/ui/SprawlView.tsx
      - Game Layout: src/components/ui/GameLayout.tsx
 
-8. Resource Management System
+9. Resource Management System
+
    - Primary Components:
      - Resource Manager: src/managers/game/ResourceManager.ts
        Purpose: Central management of all game resources
@@ -83,123 +112,127 @@ PROJECT PHASE MAPPING
        Purpose: Handle mining operations and resource extraction
        Dependencies: ResourceManager, ShipHangarManager
 
-9. Module Framework
-   - Primary Components:
-     - Core Types: src/types/buildings/ModuleTypes.ts
-       Purpose: Type definitions for all module systems
-       Used By: ModuleManager, ShipHangarManager
-     - Module Manager: src/managers/module/ModuleManager.ts
-       Purpose: Manage module lifecycle and interactions
-       Dependencies: ModuleTypes, ModuleEvents
-     - Module Events: src/lib/modules/ModuleEvents.ts
-       Purpose: Handle module-specific events
-       Dependencies: EventEmitter
-     - Ship Hangar: src/managers/module/ShipHangarManager.ts
-       Purpose: Manage ship construction and deployment
-       Dependencies: ModuleTypes, ResourceManager
-     - Module Attachment Manager: src/managers/module/ModuleAttachmentManager.ts
-       Purpose: Manage module attachment to buildings and ships
-       Dependencies: ModuleTypes, ModuleEvents, ModuleManager
-     - Module Validation: src/utils/modules/moduleValidation.ts
-       Purpose: Validate module operations and types
-       Dependencies: ModuleTypes
-     - Module HUD: src/components/ui/modules/ModuleHUD.tsx
-       Purpose: Display module information and controls
-       Dependencies: ModuleManager, ModuleEvents
-     - Module Automation: src/hooks/modules/useModuleAutomation.ts
-       Purpose: Automate module operations based on rules
-       Dependencies: ModuleManager, ModuleEvents
-     - Sub-Module Manager: src/managers/module/SubModuleManager.ts
-       Purpose: Manage sub-module lifecycle and effects
-       Dependencies: ModuleTypes, ModuleEvents, ModuleManager
-     - Sub-Module Hook: src/hooks/modules/useSubModules.ts
-       Purpose: React hook for sub-module management
-       Dependencies: SubModuleManager
-     - Sub-Module HUD: src/components/ui/modules/SubModuleHUD.tsx
-       Purpose: Display sub-module information and controls
-       Dependencies: SubModuleManager, useSubModules
-     - Module Status Manager: src/managers/module/ModuleStatusManager.ts
-       Purpose: Track module status, history, and alerts
-       Dependencies: ModuleTypes, ModuleEvents, ModuleManager
-     - Module Status Hook: src/hooks/modules/useModuleStatus.ts
-       Purpose: React hook for module status management
-       Dependencies: ModuleStatusManager, ModuleEvents
-     - Module Status Display: src/components/ui/modules/ModuleStatusDisplay.tsx
-       Purpose: Visualize module status, metrics, and alerts
-       Dependencies: useModuleStatus, ModuleManager
-     - Module Upgrade Manager: src/managers/module/ModuleUpgradeManager.ts
-       Purpose: Manage module upgrade paths, requirements, and effects
-       Dependencies: ModuleTypes, ModuleEvents, ModuleManager, ResourceManager
-     - Module Upgrade Hook: src/hooks/modules/useModuleUpgrade.ts
-       Purpose: React hook for module upgrade management
-       Dependencies: ModuleUpgradeManager, ModuleEvents
-     - Module Upgrade Display: src/components/ui/modules/ModuleUpgradeDisplay.tsx
-       Purpose: Display module upgrade information and controls
-       Dependencies: useModuleUpgrade, ModuleManager
-     - Module Upgrade Visualization: src/components/ui/modules/ModuleUpgradeVisualization.tsx
-       Purpose: Visualize module upgrades with animations and effects
-       Dependencies: useModuleUpgrade, ModuleUpgradeManager
-     - Module Framework Initialization: src/initialization/moduleFrameworkInit.ts
-       Purpose: Initialize and integrate the module framework with existing systems
-       Dependencies: ModuleManager, ModuleAttachmentManager, ModuleStatusManager, ModuleUpgradeManager, SubModuleManager, ResourceManager
+10. Module Framework
 
-10. Event System
-   - Primary Components:
-     - Event Emitter: src/utils/EventEmitter.ts
-       Purpose: Core event handling system
-       Used By: All event-based systems
-     - Module Events: src/lib/modules/ModuleEvents.ts
-       Purpose: Module-specific event handling
-       Dependencies: EventEmitter
-     - Combat Events: src/managers/combat/combatManager.ts
-       Purpose: Combat-related event handling
-       Dependencies: EventEmitter, FleetAI
-     - Faction Events: src/managers/factions/FactionRelationshipManager.ts
-       Purpose: Manage faction interactions and relationships
-       Dependencies: EventEmitter
-     - Event Dispatcher: src/utils/events/EventDispatcher.tsx
-       Purpose: React Context-based event dispatcher for components
-       Dependencies: ModuleEvents, React Context API
-     - RxJS Integration: src/utils/events/rxjsIntegration.ts
-       Purpose: Integrate RxJS with the event system for reactive programming
-       Dependencies: ModuleEvents, RxJS
-     - Game Loop Manager: src/managers/game/GameLoopManager.ts
-       Purpose: Centralized timer and game loop for consistent updates
-       Dependencies: ModuleEvents
-     - Event Communication: src/utils/events/EventCommunication.ts
-       Purpose: System-to-system messaging and communication
-       Dependencies: ModuleEvents, RxJS
-     - Event Filtering: src/utils/events/EventFiltering.ts
-       Purpose: Filter, batch, and prioritize events
-       Dependencies: RxJS
-     - Event System Initialization: src/initialization/eventSystemInit.ts
-       Purpose: Initialize and integrate all event system components
-       Dependencies: EventDispatcher, RxJS Integration, Game Loop Manager, Event Communication
-     - Automation System Initialization: src/initialization/automationSystemInit.ts
-       Purpose: Initialize the global automation system and register default routines
-       Dependencies: GlobalAutomationManager, EventDispatcher, Game Loop Manager
-     - Game Systems Integration: src/initialization/gameSystemsIntegration.ts
-       Purpose: Integrate the event system with existing game systems
-       Dependencies: ResourceManager, MiningShipManagerImpl, CombatManager, TechTreeManager, EventDispatcher
+- Primary Components:
+  - Core Types: src/types/buildings/ModuleTypes.ts
+    Purpose: Type definitions for all module systems
+    Used By: ModuleManager, ShipHangarManager
+  - Module Manager: src/managers/module/ModuleManager.ts
+    Purpose: Manage module lifecycle and interactions
+    Dependencies: ModuleTypes, ModuleEvents
+  - Module Events: src/lib/modules/ModuleEvents.ts
+    Purpose: Handle module-specific events
+    Dependencies: EventEmitter
+  - Ship Hangar: src/managers/module/ShipHangarManager.ts
+    Purpose: Manage ship construction and deployment
+    Dependencies: ModuleTypes, ResourceManager
+  - Module Attachment Manager: src/managers/module/ModuleAttachmentManager.ts
+    Purpose: Manage module attachment to buildings and ships
+    Dependencies: ModuleTypes, ModuleEvents, ModuleManager
+  - Module Validation: src/utils/modules/moduleValidation.ts
+    Purpose: Validate module operations and types
+    Dependencies: ModuleTypes
+  - Module HUD: src/components/ui/modules/ModuleHUD.tsx
+    Purpose: Display module information and controls
+    Dependencies: ModuleManager, ModuleEvents
+  - Module Automation: src/hooks/modules/useModuleAutomation.ts
+    Purpose: Automate module operations based on rules
+    Dependencies: ModuleManager, ModuleEvents
+  - Sub-Module Manager: src/managers/module/SubModuleManager.ts
+    Purpose: Manage sub-module lifecycle and effects
+    Dependencies: ModuleTypes, ModuleEvents, ModuleManager
+  - Sub-Module Hook: src/hooks/modules/useSubModules.ts
+    Purpose: React hook for sub-module management
+    Dependencies: SubModuleManager
+  - Sub-Module HUD: src/components/ui/modules/SubModuleHUD.tsx
+    Purpose: Display sub-module information and controls
+    Dependencies: SubModuleManager, useSubModules
+  - Module Status Manager: src/managers/module/ModuleStatusManager.ts
+    Purpose: Track module status, history, and alerts
+    Dependencies: ModuleTypes, ModuleEvents, ModuleManager
+  - Module Status Hook: src/hooks/modules/useModuleStatus.ts
+    Purpose: React hook for module status management
+    Dependencies: ModuleStatusManager, ModuleEvents
+  - Module Status Display: src/components/ui/modules/ModuleStatusDisplay.tsx
+    Purpose: Visualize module status, metrics, and alerts
+    Dependencies: useModuleStatus, ModuleManager
+  - Module Upgrade Manager: src/managers/module/ModuleUpgradeManager.ts
+    Purpose: Manage module upgrade paths, requirements, and effects
+    Dependencies: ModuleTypes, ModuleEvents, ModuleManager, ResourceManager
+  - Module Upgrade Hook: src/hooks/modules/useModuleUpgrade.ts
+    Purpose: React hook for module upgrade management
+    Dependencies: ModuleUpgradeManager, ModuleEvents
+  - Module Upgrade Display: src/components/ui/modules/ModuleUpgradeDisplay.tsx
+    Purpose: Display module upgrade information and controls
+    Dependencies: useModuleUpgrade, ModuleManager
+  - Module Upgrade Visualization: src/components/ui/modules/ModuleUpgradeVisualization.tsx
+    Purpose: Visualize module upgrades with animations and effects
+    Dependencies: useModuleUpgrade, ModuleUpgradeManager
+  - Module Framework Initialization: src/initialization/moduleFrameworkInit.ts
+    Purpose: Initialize and integrate the module framework with existing systems
+    Dependencies: ModuleManager, ModuleAttachmentManager, ModuleStatusManager, ModuleUpgradeManager, SubModuleManager, ResourceManager
 
-11. State Management
-   - Primary Components:
-     - Game Context: src/contexts/GameContext.tsx
-       Purpose: Global game state management
-       Used By: All game components
-     - Combat State: src/managers/combat/combatManager.ts
-       Purpose: Manage combat system state
-       Dependencies: GameContext, FleetAI
-     - Fleet AI State: src/hooks/factions/useFleetAI.ts
-       Purpose: Handle fleet AI behavior and state
-       Dependencies: GameContext, FactionBehavior
-     - Faction Behavior: src/hooks/factions/useFactionBehavior.ts
-       Purpose: Manage faction behavior patterns
-       Dependencies: GameContext
+11. Event System
+
+- Primary Components:
+  - Event Emitter: src/utils/EventEmitter.ts
+    Purpose: Core event handling system
+    Used By: All event-based systems
+  - Module Events: src/lib/modules/ModuleEvents.ts
+    Purpose: Module-specific event handling
+    Dependencies: EventEmitter
+  - Combat Events: src/managers/combat/combatManager.ts
+    Purpose: Combat-related event handling
+    Dependencies: EventEmitter, FleetAI
+  - Faction Events: src/managers/factions/FactionRelationshipManager.ts
+    Purpose: Manage faction interactions and relationships
+    Dependencies: EventEmitter
+  - Event Dispatcher: src/utils/events/EventDispatcher.tsx
+    Purpose: React Context-based event dispatcher for components
+    Dependencies: ModuleEvents, React Context API
+  - RxJS Integration: src/utils/events/rxjsIntegration.ts
+    Purpose: Integrate RxJS with the event system for reactive programming
+    Dependencies: ModuleEvents, RxJS
+  - Game Loop Manager: src/managers/game/GameLoopManager.ts
+    Purpose: Centralized timer and game loop for consistent updates
+    Dependencies: ModuleEvents
+  - Event Communication: src/utils/events/EventCommunication.ts
+    Purpose: System-to-system messaging and communication
+    Dependencies: ModuleEvents, RxJS
+  - Event Filtering: src/utils/events/EventFiltering.ts
+    Purpose: Filter, batch, and prioritize events
+    Dependencies: RxJS
+  - Event System Initialization: src/initialization/eventSystemInit.ts
+    Purpose: Initialize and integrate all event system components
+    Dependencies: EventDispatcher, RxJS Integration, Game Loop Manager, Event Communication
+  - Automation System Initialization: src/initialization/automationSystemInit.ts
+    Purpose: Initialize the global automation system and register default routines
+    Dependencies: GlobalAutomationManager, EventDispatcher, Game Loop Manager
+  - Game Systems Integration: src/initialization/gameSystemsIntegration.ts
+    Purpose: Integrate the event system with existing game systems
+    Dependencies: ResourceManager, MiningShipManagerImpl, CombatManager, TechTreeManager, EventDispatcher
+
+12. State Management
+
+- Primary Components:
+  - Game Context: src/contexts/GameContext.tsx
+    Purpose: Global game state management
+    Used By: All game components
+  - Combat State: src/managers/combat/combatManager.ts
+    Purpose: Manage combat system state
+    Dependencies: GameContext, FleetAI
+  - Fleet AI State: src/hooks/factions/useFleetAI.ts
+    Purpose: Handle fleet AI behavior and state
+    Dependencies: GameContext, FactionBehavior
+  - Faction Behavior: src/hooks/factions/useFactionBehavior.ts
+    Purpose: Manage faction behavior patterns
+    Dependencies: GameContext
 
 ### View System Architecture
 
 1. Core UI Framework
+
    - Primary Components:
      - Main Layout: src/components/ui/GameLayout.tsx
        Purpose: Main game layout structure
@@ -215,6 +248,7 @@ PROJECT PHASE MAPPING
        Dependencies: GameContext, ResourceManager
 
 2. Visualization Components
+
    - Primary Components:
      - Star System View: src/components/ui/VPRStarSystemView.tsx
        Purpose: Main game view interface
@@ -224,6 +258,7 @@ PROJECT PHASE MAPPING
        Dependencies: GameLayout, D3
 
 3. Module-Specific Views
+
    - Primary Components:
      - Colony Core: src/components/buildings/colony/ColonyCore.tsx
        Purpose: Colony management interface
@@ -236,6 +271,7 @@ PROJECT PHASE MAPPING
        Dependencies: ReconShipManager
 
 4. Rendering Systems
+
    - Primary Components:
      - Parallax System: src/systems/rendering/ParallaxSystem.ts
        Purpose: Handle multi-layer background effects
@@ -248,6 +284,7 @@ PROJECT PHASE MAPPING
        Dependencies: GSAP, Framer Motion
 
 5. Interactive Systems
+
    - Primary Components:
      - Navigation Controller: src/systems/interaction/NavigationController.ts
        Purpose: Handle zoom, pan, and camera controls
@@ -274,6 +311,7 @@ PROJECT PHASE MAPPING
 ### Game Modules Architecture
 
 1. Core Gameplay Modules
+
    - Primary Components:
      - Colony Core: src/components/buildings/colony/ColonyCore.tsx
        Purpose: Main colony management
@@ -286,6 +324,7 @@ PROJECT PHASE MAPPING
        Dependencies: ResourceManager, ShipHangarManager
 
 2. Support Modules
+
    - Primary Components:
      - Tech Tree Manager: src/managers/game/techTreeManager.ts
        Purpose: Technology progression system
@@ -295,18 +334,21 @@ PROJECT PHASE MAPPING
        Dependencies: ModuleManager, ResourceManager
 
 3. Mothership [~40% Complete]
+
    - Core component: src/components/buildings/colony/ColonyCore.tsx
    - VPR effects: src/effects/component_effects/CentralMothership.tsx
    - Module attachment system implemented
    - Resource management integration needed
 
 4. Colony System [~30% Complete]
+
    - Core component: src/components/buildings/colony/ColonyCore.tsx
    - Automated expansion: src/components/buildings/colony/AutomatedExpansion.tsx
    - Population management needed
    - Resource distribution system needed
 
 5. Combat System [~60% Complete]
+
    - Combat manager: src/managers/combat/combatManager.ts
    - War ship manager: src/managers/combat/WarShipManagerImpl.ts
    - Fleet AI hooks: src/hooks/factions/useFleetAI.ts
@@ -328,6 +370,7 @@ PROJECT PHASE MAPPING
      - Combat environment effects
 
 6. Exploration System [~35% Complete]
+
    - Exploration Hub: src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx
    - Exploration Window: src/components/buildings/modules/ExplorationHub/ExplorationWindow.tsx
    - Recon Ship Manager: src/managers/exploration/ReconShipManagerImpl.ts
@@ -343,6 +386,7 @@ PROJECT PHASE MAPPING
      - Resource potential visualization
 
 7. Mining System [~40% Complete]
+
    - Mining Controls: src/components/buildings/modules/MiningHub/MiningControls.tsx
    - Mining Ship Manager: src/managers/mining/MiningShipManager.ts
    - Features implemented:
@@ -385,6 +429,7 @@ PROJECT PHASE MAPPING
 ### Required Libraries & Dependencies
 
 1. Core Technologies
+
    - React/TypeScript
      Purpose: Main development framework
      Used By: All components
@@ -399,6 +444,7 @@ PROJECT PHASE MAPPING
      Used By: EventEmitter, all event systems
 
 2. Visualization Libraries
+
    - React-konva
      Purpose: Canvas rendering
      Used By: 2D game elements
@@ -413,6 +459,7 @@ PROJECT PHASE MAPPING
      Used By: UI components
 
 3. Animation Libraries
+
    - Framer Motion
      Purpose: Component animations
      Used By: UI transitions
@@ -434,14 +481,19 @@ PROJECT PHASE MAPPING
 ### Development Tools
 
 1. Build Tools
+
    - Webpack/Vite
      Purpose: Build system
      Used By: Development pipeline
    - ESLint/Prettier
      Purpose: Code quality
      Used By: Development workflow
+   - LintingFixes.md
+     Purpose: Documentation of linting fixes and best practices
+     Used By: Development workflow, code quality maintenance
 
 2. Testing Tools
+
    - Jest/Testing Library
      Purpose: Unit/Integration testing
      Used By: Test suites
@@ -449,9 +501,62 @@ PROJECT PHASE MAPPING
      Purpose: Component development
      Used By: UI development
 
+3. Linter Configuration
+
+   - ESLint Config: eslint.config.js
+     Purpose: Configure ESLint v9 with TypeScript support
+     Used By: npm lint scripts
+   - TypeScript Config: tsconfig.json
+     Purpose: Configure TypeScript compiler options
+     Used By: TypeScript compiler, ESLint
+   - Node TypeScript Config: tsconfig.node.json
+     Purpose: Configure TypeScript for Node.js specific code
+     Used By: Node.js related TypeScript files
+   - Linting Fixes Documentation: LintingFixes.md
+     Purpose: Document common linting issues and their solutions
+     Used By: Developers fixing linting issues
+
+4. Linting and Type Safety
+   - Primary Components:
+     - ESLint Configuration: .eslintrc.json
+       Purpose: Configure ESLint rules for the project
+       Used By: All TypeScript/JavaScript files
+     - Prettier Configuration: .prettierrc.json
+       Purpose: Configure code formatting rules
+       Used By: All source files
+     - VPR Hook: src/hooks/ui/useVPR.ts
+       Purpose: Manage Visual Progress Representation state
+       Dependencies: React hooks
+       Contains: VPRState interface for type safety
+     - VPR System Hook: src/hooks/ui/useVPRSystem.ts
+       Purpose: Manage VPR system with modules and upgrades
+       Dependencies: React hooks, VPR Hook
+       Contains: ModuleUpdateData type for type safety
+     - Global Automation Hook: src/hooks/automation/useGlobalAutomation.ts
+       Purpose: Manage global automation events and routines
+       Dependencies: React hooks, Event system
+       Contains: AutomationEvent interface for type safety
+     - Resource Validation: src/utils/resources/resourceValidation.ts
+       Purpose: Validate resource-related objects
+       Dependencies: ResourceTypes
+       Contains: Type guards for resource objects
+     - Type Conversions: src/utils/typeConversions.ts
+       Purpose: Convert between different type representations
+       Dependencies: CombatTypes, WeaponTypes
+       Contains: Helper functions for type conversions
+     - Exploration Hub: src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx
+       Purpose: Manage exploration ships and missions
+       Dependencies: ReconShipManagerImpl
+       Contains: ExplorationTask interface for type safety
+     - Linting Tools: tools/
+       Purpose: Scripts for analyzing and fixing linting issues
+       Files: analyze-lint-errors.js, chart-eslint-by-rule.js, fix-eslint-by-rule.js, track-eslint-progress.js
+       Dependencies: ESLint, fs, path
+
 ### Tech Tree Architecture
 
 1. Core Components
+
    - Primary Components:
      - Tech Node System: src/systems/tech/TechNodeSystem.ts
        Purpose: Manage tech tree node relationships
@@ -483,39 +588,43 @@ PROJECT PHASE MAPPING
 ### Recent System Updates
 
 1. Combat System Type Architecture [~45% Complete]
+
    - Combat types: src/types/combat/CombatTypes.ts
      Purpose: Core combat type definitions
      Dependencies: WeaponTypes, GameTypes, FactionTypes
      Features:
-       - CombatUnit base interface
-       - FactionCombatUnit extension
-       - Combat status system
-       - Weapon integration
-       - Type safety improvements
+     - CombatUnit base interface
+     - FactionCombatUnit extension
+     - Combat status system
+     - Weapon integration
+     - Type safety improvements
 
 2. Weapon System Type Architecture [~50% Complete]
+
    - Weapon types: src/types/weapons/WeaponTypes.ts
      Purpose: Core weapon type definitions
      Used By: CombatTypes, typeConversions
      Features:
-       - WeaponSystem interface
-       - WeaponMount interface
-       - Category and variant types
-       - Status management
-       - Effect system integration
+     - WeaponSystem interface
+     - WeaponMount interface
+     - Category and variant types
+     - Status management
+     - Effect system integration
 
 3. Type Conversion System [~60% Complete]
+
    - Type conversions: src/utils/typeConversions.ts
      Purpose: General type conversion utilities
      Dependencies: All type systems
      Features:
-       - Combat unit conversions
-       - Weapon system conversions
-       - Type guard implementations
-       - Safe type assertions
-       - Validation functions
+     - Combat unit conversions
+     - Weapon system conversions
+     - Type guard implementations
+     - Safe type assertions
+     - Validation functions
 
 4. Geometry System [~70% Complete]
+
    - Core types: src/types/core/GameTypes.ts
      Purpose: Position and vector types
      Used By: All geometry-dependent systems
@@ -523,26 +632,27 @@ PROJECT PHASE MAPPING
      Purpose: Geometry calculation utilities
      Dependencies: GameTypes
      Features:
-       - Vector2D interface
-       - BoundingBox interface
-       - Distance calculations
-       - Angle calculations
-       - Point interpolation
-       - Rotation transformations
+     - Vector2D interface
+     - BoundingBox interface
+     - Distance calculations
+     - Angle calculations
+     - Point interpolation
+     - Rotation transformations
 
 5. Faction System Updates [~55% Complete]
    - Faction types: src/types/ships/FactionTypes.ts
      Purpose: Core faction type definitions
      Used By: CombatTypes, useFactionBehavior
      Features:
-       - Extended FactionId support
-       - FactionBehaviorType improvements
-       - State management types
-       - Configuration interfaces
+     - Extended FactionId support
+     - FactionBehaviorType improvements
+     - State management types
+     - Configuration interfaces
 
 ### Type Safety Implementation Map
 
 1. Combat Type Safety
+
    - Location: src/types/combat/CombatTypes.ts
    - Key Implementations:
      - CombatUnitStatus type with main/secondary states
@@ -552,6 +662,7 @@ PROJECT PHASE MAPPING
      - Formation type safety
 
 2. Weapon Type Safety
+
    - Location: src/types/weapons/WeaponTypes.ts
    - Key Implementations:
      - WeaponCategory type restrictions
@@ -572,25 +683,71 @@ PROJECT PHASE MAPPING
 ### Type Conversion Implementation Map
 
 1. Combat Unit Conversions
+
    - Location: src/utils/typeConversions.ts
    - Key Functions:
-     - convertToFactionCombatUnit
-     - convertToBaseCombatUnit
-     - isFactionCombatUnit type guard
-     - isBaseCombatUnit type guard
+     - convertToFactionCombatUnit: Converts a basic CombatUnit to a FactionCombatUnit with faction-specific properties
+     - convertToBaseCombatUnit: Converts a FactionCombatUnit to a basic CombatUnit
+     - convertToCombatTypesUnit: Converts a CombatUnit from combatManager.ts to a CombatUnit from CombatTypes.ts
+     - convertToManagerUnit: Converts a CombatUnit from CombatTypes.ts to a CombatUnit from combatManager.ts
+     - isFactionCombatUnit: Type guard to check if a unit is a FactionCombatUnit
+     - isBaseCombatUnit: Type guard to check if a unit is a basic CombatUnit
+   - Type Safety Improvements:
+     - Added proper type assertions for weapon type conversions
+     - Fixed FactionBehaviorType object structure in convertToFactionCombatUnit
+     - Added all required properties to stats and experience objects
+     - Used safe property access with optional chaining and nullish coalescing
+     - Extracted properties to local variables with safe defaults
+     - Added proper null checks for undefined values
 
 2. Weapon System Conversions
+
    - Location: src/utils/weapons/weaponTypeConversions.ts
    - Key Functions:
-     - convertWeaponMountToSystem
-     - convertWeaponSystemToMount
-     - convertWeaponCategoryToSystemType
-     - isValidWeaponMount validation
-     - isValidWeaponSystem validation
+     - convertWeaponMountToSystem: Converts a WeaponMount to a WeaponSystem
+     - convertWeaponSystemToMount: Converts a WeaponSystem to a WeaponMount
+     - convertWeaponCategoryToSystemType: Converts a WeaponCategory to a WeaponSystemType
+     - convertSystemTypeToWeaponCategory: Converts a WeaponSystemType to a WeaponCategory
+     - isValidWeaponMount: Validates a WeaponMount object
+     - isValidWeaponSystem: Validates a WeaponSystem object
+   - Type Safety Improvements:
+     - Added type assertion for weapon.type as WeaponSystemType
+     - Used proper type guards for validation
+     - Added safe property access for weapon state properties
+     - Provided default values for optional properties
+
+3. Status Conversion Functions
+
+   - Location: src/utils/typeConversions.ts
+   - Key Functions:
+     - convertStatusToMain: Converts a status string to a CombatUnitStatus.main value
+     - convertMainToStatus: Converts a CombatUnitStatus.main value to a status string
+   - Type Safety Improvements:
+     - Added explicit return types
+     - Used proper type narrowing
+     - Provided default values for all cases
+
+4. Formation Handling
+
+   - Location: src/utils/typeConversions.ts
+   - Key Improvements:
+     - Used type assertion and safe property access for formation properties
+     - Extracted formation properties to local variables with safe defaults
+     - Added proper null checks for undefined values
+     - Used nullish coalescing operator for default values
+
+5. Experience and Stats Handling
+   - Location: src/utils/typeConversions.ts
+   - Key Improvements:
+     - Updated experience object to match the interface requirements
+     - Added all required properties to stats object
+     - Used optional chaining for safe property access
+     - Provided default values for all properties
 
 ### Ship System Architecture
 
 1. Ship Components [~65% Complete]
+
    - Base Components: src/components/ships/base/
      Purpose: Core ship component implementations
      Used By: All ship types
@@ -605,6 +762,7 @@ PROJECT PHASE MAPPING
      Dependencies: base, common components
 
 2. Ship Configuration [~75% Complete]
+
    - Core Stats: src/config/ships/shipStats.ts
      Purpose: Base ship statistics configuration
      Used By: All ship implementations
@@ -612,50 +770,51 @@ PROJECT PHASE MAPPING
      Purpose: Space Rats faction ship configurations
      Dependencies: shipStats.ts
      Features:
-       - 10 unique ship types
-       - Faction-specific stats
-       - Special abilities
-       - Weapon configurations
+     - 10 unique ship types
+     - Faction-specific stats
+     - Special abilities
+     - Weapon configurations
    - Lost Nova Ships: src/config/ships/lostNovaShips.ts
      Purpose: Lost Nova faction ship configurations
      Dependencies: shipStats.ts
      Features:
-       - 10 unique ship types
-       - Stealth mechanics
-       - Advanced tech integration
-       - Special weapon systems
+     - 10 unique ship types
+     - Stealth mechanics
+     - Advanced tech integration
+     - Special weapon systems
    - Equator Horizon Ships: src/config/ships/equatorHorizonShips.ts
      Purpose: Equator Horizon faction ship configurations
      Dependencies: shipStats.ts
      Features:
-       - 10 unique ship types
-       - Balance mechanics
-       - Advanced defense systems
-       - Specialized weapon loadouts
+     - 10 unique ship types
+     - Balance mechanics
+     - Advanced defense systems
+     - Specialized weapon loadouts
    - Configuration Index: src/config/ships/index.ts
      Purpose: Central export point for ship configurations
      Dependencies: All ship configuration files
 
 3. Ship Type Relationships
+
    - Base Ship Types:
      Location: src/components/ships/base/
      Dependencies:
-       - Combat system
-       - Weapon system
-       - Movement system
+     - Combat system
+     - Weapon system
+     - Movement system
    - Faction Ship Extensions:
      Location: src/components/ships/FactionShips/
      Dependencies:
-       - Base ship types
-       - Faction behavior system
-       - Special abilities system
+     - Base ship types
+     - Faction behavior system
+     - Special abilities system
    - Configuration Integration:
      Location: src/config/ships/
      Dependencies:
-       - Ship components
-       - Combat system
-       - Weapon system
-       - Faction system
+     - Ship components
+     - Combat system
+     - Weapon system
+     - Faction system
 
 4. Ship Implementation Features
    - Base Features:
@@ -677,60 +836,64 @@ PROJECT PHASE MAPPING
 ### Ship Implementation Details
 
 1. Base Ship Architecture
+
    - BaseShip: src/components/ships/base/BaseShip.tsx
      Purpose: Core ship component implementation
      Features:
-       - Health/shield management
-       - Basic movement controls
-       - Weapon system integration
-       - Status management
+     - Health/shield management
+     - Basic movement controls
+     - Weapon system integration
+     - Status management
 
 2. Common Ship Components
+
    - FactionShipBase: src/components/ships/common/FactionShipBase.tsx
      Purpose: Base component for all faction ships
      Features:
-       - Faction-specific styling
-       - Status effect container
-       - Ability button container
-       - Weapon control integration
-       - Type-safe faction color mapping using Record<FactionId, string>
+     - Faction-specific styling
+     - Status effect container
+     - Ability button container
+     - Weapon control integration
+     - Type-safe faction color mapping using Record<FactionId, string>
    - FactionShipStats: src/components/ships/common/FactionShipStats.tsx
      Purpose: Shared ship statistics display
      Features:
-       - Faction-specific styling
-       - Status display
-       - Weapon and ability information
-       - Type-safe behavior string conversion with helper functions
+     - Faction-specific styling
+     - Status display
+     - Weapon and ability information
+     - Type-safe behavior string conversion with helper functions
    - FactionFleet: src/components/ships/common/FactionFleet.tsx
      Purpose: Fleet management and formation control
      Features:
-       - Formation transitions
-       - AI adaptation display
-       - Performance metrics
-       - Combat style management
+     - Formation transitions
+     - AI adaptation display
+     - Performance metrics
+     - Combat style management
    - CommonShipMovement: src/components/ships/common/CommonShipMovement.tsx
      Purpose: Shared movement functionality
    - CommonShipStats: src/components/ships/common/CommonShipStats.tsx
      Purpose: Shared ship statistics display
 
 3. Faction-Specific Ships
+
    - SpaceRatShip: src/components/ships/common/SpaceRatShip.tsx
      Purpose: Space Rats faction implementation
      Features:
-       - Faction-specific abilities
-       - Custom weapon handling
+     - Faction-specific abilities
+     - Custom weapon handling
    - LostNovaShip: src/components/ships/common/LostNovaShip.tsx
      Purpose: Lost Nova faction implementation
      Features:
-       - Stealth mechanics
-       - Advanced tech integration
+     - Stealth mechanics
+     - Advanced tech integration
    - EquatorHorizonShip: src/components/ships/common/EquatorHorizonShip.tsx
      Purpose: Equator Horizon faction implementation
      Features:
-       - Balance mechanics
-       - Advanced defense systems
+     - Balance mechanics
+     - Advanced defense systems
 
 4. Ship Formation System
+
    - Formation Shapes:
      - Spearhead
      - Shield
@@ -750,6 +913,7 @@ PROJECT PHASE MAPPING
      - Pattern-based coloring
 
 5. AI Integration
+
    - Adaptive AI:
      - Combat style adaptation
      - Range preference learning
@@ -761,57 +925,82 @@ PROJECT PHASE MAPPING
      - Combat coordination
      - Tactical decision making
 
-12. Type System [~70% Complete]
-    - Primary Components:
-      - Combat Types: src/types/combat/CombatTypes.ts
-        Purpose: Core combat system type definitions
-        Used By: combatManager, useFactionBehavior
-      - Faction Types: src/types/ships/FactionTypes.ts
-        Purpose: Faction-specific type definitions
-        Used By: useFactionBehavior, FactionRelationshipManager
-      - Weapon Types: src/types/weapons/WeaponTypes.ts
-        Purpose: Weapon system type definitions
-        Used By: combatManager, WarShipManager
-      - Type Conversions: src/utils/typeConversions.ts
-        Purpose: Type conversion utilities
-        Used By: All combat and faction systems
+6. Type System [~70% Complete]
 
-13. State Machine System [~50% Complete]
-    - Primary Components:
-      - Faction Behavior: src/hooks/factions/useFactionBehavior.ts
-        Purpose: Manage faction state and behavior
-        Dependencies: FactionTypes, CombatTypes
-      - State Transitions: src/types/ships/FactionTypes.ts
-        Purpose: Define state machine transitions
-        Used By: useFactionBehavior
-      - Event Handling: src/lib/modules/ModuleEvents.ts
-        Purpose: Handle state machine events
-        Dependencies: EventEmitter
+   - Primary Components:
+     - Combat Types: src/types/combat/CombatTypes.ts
+       Purpose: Core combat system type definitions
+       Used By: combatManager, useFactionBehavior
+     - Faction Types: src/types/ships/FactionTypes.ts
+       Purpose: Faction-specific type definitions
+       Used By: useFactionBehavior, FactionRelationshipManager
+     - Weapon Types: src/types/weapons/WeaponTypes.ts
+       Purpose: Weapon system type definitions
+       Used By: combatManager, WarShipManager
+     - Type Conversions: src/utils/typeConversions.ts
+       Purpose: Type conversion utilities
+       Used By: All combat and faction systems
 
-# Effect System Implementation
+7. State Machine System [~50% Complete]
+   - Primary Components:
+     - Faction Behavior: src/hooks/factions/useFactionBehavior.ts
+       Purpose: Manage faction state and behavior
+       Dependencies: FactionTypes, CombatTypes
+     - State Transitions: src/types/ships/FactionTypes.ts
+       Purpose: Define state machine transitions
+       Used By: useFactionBehavior
+     - Event Handling: src/lib/modules/ModuleEvents.ts
+       Purpose: Handle state machine events
+       Dependencies: EventEmitter
+
+# Effect System Implementation Updates
 
 ## Core Effect Types
-- Primary Components:
-  - Base Effect Types: src/types/core/GameTypes.ts
-    Purpose: Core effect type definitions
-    Used By: All effect systems
-  - Effect Type Extensions: src/effects/types_effects/EffectTypes.ts
-    Purpose: Extended effect type definitions
-    Dependencies: GameTypes
-  - Weapon Effect Types: src/effects/types_effects/WeaponEffects.ts
-    Purpose: Weapon-specific effect types
-    Dependencies: GameTypes, EffectTypes
+
+- **WeaponEffects.ts**: src/effects/types_effects/WeaponEffects.ts
+
+  - Updated to include 'name' and 'description' properties in WeaponEffect interface
+  - Ensures type safety for components accessing these properties
+  - Dependencies: GameTypes.ts, EffectTypes.ts
+
+- **EffectTypes.ts**: src/effects/types_effects/EffectTypes.ts
+
+  - Contains BaseEffect interface with 'name' and 'description' properties
+  - Provides type hierarchy for different effect types
+  - Dependencies: GameTypes.ts
+
+- **shipEffects.ts**: src/effects/types_effects/shipEffects.ts
+  - Updated to use BaseEffect instead of Effect for ability effects
+  - Added missing 'id' properties to all effect objects
+  - Dependencies: WeaponEffects.ts, EffectTypes.ts
 
 ## Effect Utilities
-- Primary Components:
-  - Effect Utils: src/effects/util_effects/effectUtils.ts
-    Purpose: Core effect utility functions
-    Dependencies: EffectTypes, GameTypes
-  - Weapon Effect Utils: src/utils/weapons/weaponEffectUtils.ts
-    Purpose: Weapon-specific effect utilities
-    Dependencies: WeaponEffects, effectUtils
+
+- **effectUtils.ts**: src/effects/util_effects/effectUtils.ts
+
+  - Updated createEffect function to ensure duration is not undefined
+  - Provides utility functions for creating different types of effects
+  - Dependencies: EffectTypes.ts, WeaponEffects.ts
+
+- **weaponEffectUtils.ts**: src/utils/weapons/weaponEffectUtils.ts
+  - Updated all effect creation functions to include name and description parameters
+  - Added default values for optional properties
+  - Fixed validateEffect function to properly handle undefined values
+  - Dependencies: WeaponEffects.ts, EffectTypes.ts
+
+## Components Using Effects
+
+- **WeaponComponents.tsx**: src/components/weapons/WeaponComponents.tsx
+
+  - Uses 'name' and 'description' properties from WeaponEffect
+  - Dependencies: WeaponEffects.ts
+
+- **WeaponControl.tsx**: src/components/weapons/WeaponControl.tsx
+  - Uses 'name' and 'description' properties from WeaponEffect
+  - Dependencies: WeaponEffects.ts
 
 ## Effect System Integration
+
 - Primary Components:
   - Ship Effects: src/hooks/ships/useShipEffects.ts
     Purpose: Ship effect management
@@ -824,6 +1013,7 @@ PROJECT PHASE MAPPING
     Dependencies: WeaponEffects, effectUtils
 
 ## Effect Type Relationships
+
 ```
 GameTypes.Effect
 └── EffectTypes.BaseEffect
@@ -836,6 +1026,7 @@ GameTypes.Effect
 ```
 
 ## Effect Creation Flow
+
 ```
 weaponEffectUtils.createWeaponLike
 └── weaponEffectUtils.createBaseWeaponEffect
@@ -845,12 +1036,15 @@ weaponEffectUtils.createWeaponLike
 ```
 
 ## Effect System Dependencies
+
 1. Core Dependencies:
+
    - GameTypes.Effect: Base effect interface
    - EffectTypes.BaseEffect: Extended effect interface
    - WeaponEffects: Weapon effect types
 
 2. Utility Dependencies:
+
    - effectUtils: Core effect functions
    - weaponEffectUtils: Weapon effect functions
    - typeConversions: Type conversion utilities
@@ -883,136 +1077,90 @@ weaponEffectUtils.createWeaponLike
   Dependencies: ResourceTypes, ResourceValidation
   Notes: Uses Array.from() to convert Map entries to an array before iteration to avoid MapIterator errors
 
-- Resource Cost Manager: src/managers/resource/ResourceCostManager.ts
-  Purpose: Manages resource costs and validations
-  Dependencies: ResourceTypes, ResourceValidation
-
-- Resource Exchange Manager: src/managers/resource/ResourceExchangeManager.ts
-  Purpose: Handles resource exchanges and rates
-  Dependencies: ResourceTypes, ResourceValidation
-  Notes: Uses Array.from() to convert Map entries to an array before iteration to avoid MapIterator errors
-
 - Resource Pool Manager: src/managers/resource/ResourcePoolManager.ts
-  Purpose: Manages resource pools and distribution
-  Dependencies: ResourceTypes, ResourceValidation
-  Notes: Uses Array.from() to convert Map entries to an array before iteration to avoid MapIterator errors
+  Purpose: Manages resource pools, distribution, and allocation
+  Dependencies: ResourceTypes, ResourcePoolTypes, ResourceValidation
+  Notes: Uses Array.from() to convert Map entries to an array before iteration to avoid MapIterator errors; uses Map.get() and Map.set() methods for type-safe access
 
-- Resource Integration: src/managers/resource/ResourceIntegration.ts
-  Purpose: Integrates all resource systems
-  Dependencies: ResourceManager, ResourceThresholdManager, ResourceFlowManager
+## Resource Type Definitions
 
-- Mining Resource Integration: src/managers/mining/MiningResourceIntegration.ts
-  Purpose: Connect mining operations with resource management
-  Dependencies: MiningShipManager, ResourceThresholdManager, ResourceFlowManager
+- Resource Types: src/types/resources/ResourceTypes.ts
+  Purpose: Core resource type definitions
+  Dependencies: GameTypes
+  Notes: Includes ResourceType, ResourceState, ResourcePool, ResourceContainer interfaces
 
-- Resource Performance Monitor: src/managers/resource/ResourcePerformanceMonitor.ts
-  Purpose: Monitors resource system performance
-  Dependencies: ResourceTypes, ModuleEvents
+- Resource Serialization Types: src/types/resources/ResourceSerializationTypes.ts
+  Purpose: Serialization interfaces for resource data
+  Dependencies: ResourceTypes
+  Notes: Includes SerializedResource, SerializedResourceState, ResourceTotals interfaces for localStorage persistence
 
-- Resource Visualization: src/components/ui/ResourceVisualizationEnhanced.tsx
-  Purpose: Visualizes resource states and flows
-  Dependencies: ResourceFlowManager, GameContext
+- Resource Pool Types: src/types/resources/ResourcePoolTypes.ts
+  Purpose: Type definitions for resource pool management
+  Dependencies: ResourceTypes
+  Notes: Includes PoolDistributionRule, PoolAllocationResult, PoolAllocationOptions interfaces for pool management
 
-- Resource Display: src/components/ui/ResourceDisplay.tsx
-  Purpose: Displays resource information
-  Dependencies: useResourceManagement, framer-motion
+## Resource Utilities
 
-- Resource Management Hook: src/hooks/resources/useResourceManagement.tsx
-  Purpose: Unified access to resource management system
-  Dependencies: ResourceManager, ResourceIntegration
-  Notes: Uses proper singleton initialization pattern with error handling
+- Resource Validation: src/utils/resources/resourceValidation.ts
+  Purpose: Validates resource objects and operations
+  Dependencies: ResourceTypes
+  Notes: Includes type guards for resource objects
 
 ## Resource Type Relationships
+
 ```
-ResourceTypes.Resource
-├── ResourceTypes.BasicResource
-│   ├── ResourceTypes.Mineral
-│   ├── ResourceTypes.Energy
-│   └── ResourceTypes.Gas
-├── ResourceTypes.AdvancedResource
-│   ├── ResourceTypes.ProcessedMaterial
-│   ├── ResourceTypes.RefinedMaterial
-│   └── ResourceTypes.SpecializedMaterial
-└── ResourceTypes.SpecialResource
-    ├── ResourceTypes.Artifact
-    ├── ResourceTypes.Technology
-    └── ResourceTypes.RareElement
+ResourceTypes.ResourceType
+├── 'minerals'
+├── 'energy'
+├── 'population'
+├── 'research'
+├── 'plasma'
+├── 'gas'
+└── 'exotic'
+
+ResourceTypes.ResourceState
+├── current: number
+├── max: number
+├── min: number
+├── production: number
+└── consumption: number
+
+ResourceSerializationTypes.SerializedResourceState
+├── resources: Record<ResourceType, SerializedResource>
+├── thresholds: Record<string, SerializedThreshold[]>
+├── alerts: ResourceAlert[]
+└── timestamp?: number
+
+ResourcePoolTypes.PoolDistributionRule
+├── id: string
+├── poolId: string
+├── targetIds: string[]
+├── resourceType: ResourceType
+├── percentage: number
+├── minAmount?: number
+├── maxAmount?: number
+├── priority: number
+├── condition?: (state: ResourceState) => boolean
+├── enabled?: boolean
+├── sourceId?: string
+└── amount?: number
 ```
 
-## Resource Container Relationships
+## Resource Tracking Flow
+
 ```
-ResourceTypes.ResourceContainer
-├── ResourceTypes.ResourcePool
-│   ├── ResourceTypes.GlobalPool
-│   └── ResourceTypes.ModulePool
-├── ResourceTypes.ResourceStorage
-│   ├── ResourceTypes.BasicStorage
-│   └── ResourceTypes.AdvancedStorage
-└── ResourceTypes.ResourceTransfer
-    ├── ResourceTypes.DirectTransfer
-    └── ResourceTypes.GradualTransfer
+useResourceTracking
+├── initializeState() → Initial ResourceState
+├── updateResource() → Modified ResourceState
+├── serializeState() → SerializedResourceState (for storage)
+├── deserializeState() → ResourceState (from storage)
+└── calculateTotals() → ResourceTotals (for UI)
 ```
-
-## Resource System Dependencies
-1. Core Dependencies:
-   - ResourceTypes.Resource: Base resource interface
-   - ResourceTypes.ResourceContainer: Resource container interface
-   - ResourceTypes.ResourceThreshold: Threshold configuration interface
-
-2. Utility Dependencies:
-   - resourceUtils: Core resource functions
-   - thresholdUtils: Threshold management functions
-   - flowUtils: Resource flow utilities
-
-3. Integration Dependencies:
-   - useResourceManager: Resource management hook
-   - useResourceThresholds: Threshold management hook
-   - ResourceDisplay: Resource visualization components
-
-## Resource Management System
-
-### Types
-- `src/types/resources/ResourceTypes.ts` - Core resource type definitions
-
-### Utilities
-- `src/utils/resources/resourceValidation.ts` - Resource validation utilities
-
-### Managers
-- `src/managers/resource/ResourceThresholdManager.ts` - Threshold management system
-  - Notes: Uses Array.from() to convert Map entries to an array before iteration to avoid MapIterator errors; includes severity information in the data object of ModuleEvents
-- `src/managers/resource/ResourceFlowManager.ts` - Resource flow optimization
-  - Notes: Uses ResourcePriority interface for priority management, requires complete objects rather than primitive values; uses Array.from() to convert Map entries to an array before iteration to avoid MapIterator errors
-- `src/managers/resource/ResourceStorageManager.ts` - Storage management system
-  - Notes: Uses Array.from() to convert Map entries to an array before iteration to avoid MapIterator errors
-- `src/managers/resource/ResourceCostManager.ts` - Resource cost validation
-- `src/managers/resource/ResourceExchangeManager.ts` - Resource exchange calculations
-  - Notes: Uses Array.from() to convert Map entries to an array before iteration to avoid MapIterator errors
-- `src/managers/resource/ResourcePoolManager.ts` - Resource pool management
-  - Notes: Uses Array.from() to convert Map entries to an array before iteration to avoid MapIterator errors
-- `src/managers/resource/ResourceIntegration.ts` - Integration with existing game systems
-- `src/managers/mining/MiningResourceIntegration.ts` - Integration with mining system
-
-### Hooks
-- `src/hooks/resources/useResourceTracking.ts` - Global resource tracking
-  - Notes: Uses Array.from() to convert Map entries to an array before iteration to avoid MapIterator errors
-- `src/hooks/resources/useResourceManagement.ts` - Resource management hook for React components
-  - Notes: Uses proper singleton initialization pattern with error handling
-
-### UI Components
-- `src/components/ui/ResourceVisualizationEnhanced.tsx` - Enhanced resource visualization component
-
-## Tests
-
-### Resource Management Tests
-- `src/tests/setup.ts`: Test setup file with mocks for localStorage and moduleEventBus
-- `src/tests/managers/resource/ResourceThresholdManager.test.ts`: Tests for ResourceThresholdManager
-- `src/tests/managers/resource/ResourceFlowManager.test.ts`: Tests for ResourceFlowManager
-- `src/tests/managers/resource/ResourceStorageManager.test.ts`: Tests for ResourceStorageManager
-- `src/tests/hooks/resources/useResourceTracking.test.tsx`: Tests for useResourceTracking hook
 
 ## Module Framework
 
 ### Core Components
+
 - `src/types/buildings/ModuleTypes.ts` - Core module type definitions
 - `src/managers/module/ModuleManager.ts` - Central module management
 - `src/lib/modules/ModuleEvents.ts` - Module event definitions
@@ -1033,25 +1181,27 @@ ResourceTypes.ResourceContainer
 - `src/initialization/moduleFrameworkInit.ts` - Module framework initialization
 
 ### Module Managers
+
 - `src/managers/buildings/ShipHangarManager.ts` - Ship hangar module management
 
 12. Automation System [~90% Complete]
-   - Primary Components:
-     - Global Automation Manager: src/managers/automation/GlobalAutomationManager.ts
-       Purpose: Manage global automation routines and execution
-       Dependencies: AutomationManager, GameLoopManager, EventCommunication
-     - Automation Visualization: src/components/ui/automation/AutomationVisualization.tsx
-       Purpose: Visualize and control automation routines
-       Dependencies: GlobalAutomationManager, CSS Styling
-     - Automation CSS: src/styles/automation.css
-       Purpose: Style the automation visualization components
-       Dependencies: None
-     - Automation Hook: src/hooks/automation/useAutomation.ts
-       Purpose: React hook for accessing the global automation system
-       Dependencies: GlobalAutomationManager, AutomationManager
-     - Automation System Initialization: src/initialization/automationSystemInit.ts
-       Purpose: Initialize the automation system and register default routines
-       Dependencies: GlobalAutomationManager, EventDispatcher
+
+- Primary Components:
+  - Global Automation Manager: src/managers/automation/GlobalAutomationManager.ts
+    Purpose: Manage global automation routines and execution
+    Dependencies: AutomationManager, GameLoopManager, EventCommunication
+  - Automation Visualization: src/components/ui/automation/AutomationVisualization.tsx
+    Purpose: Visualize and control automation routines
+    Dependencies: GlobalAutomationManager, CSS Styling
+  - Automation CSS: src/styles/automation.css
+    Purpose: Style the automation visualization components
+    Dependencies: None
+  - Automation Hook: src/hooks/automation/useAutomation.ts
+    Purpose: React hook for accessing the global automation system
+    Dependencies: GlobalAutomationManager, AutomationManager
+  - Automation System Initialization: src/initialization/automationSystemInit.ts
+    Purpose: Initialize the automation system and register default routines
+    Dependencies: GlobalAutomationManager, EventDispatcher
 
 ### Unit Tests
 
@@ -1069,18 +1219,19 @@ ResourceTypes.ResourceContainer
      Purpose: Test the system-to-system communication
      Dependencies: Vitest, moduleEventBus mock
      Features:
-       - System-to-system messaging tests
-       - Message priority tests
-       - Acknowledgment system tests
-       - Error handling tests
-       - Observable stream tests
-       - Cleanup and resource management tests
-   - Event Filtering Tests: 
+     - System-to-system messaging tests
+     - Message priority tests
+     - Acknowledgment system tests
+     - Error handling tests
+     - Observable stream tests
+     - Cleanup and resource management tests
+   - Event Filtering Tests:
      - Basic Tests: `src/tests/utils/events/EventFilteringBasic.test.ts`
 
 ### Build Configuration
 
 1. TypeScript Configuration
+
    - Main configuration: tsconfig.json
      - Target: ES2020
      - Module: ESNext
@@ -1110,17 +1261,176 @@ ResourceTypes.ResourceContainer
    - combatWorker.ts: src/workers/combatWorker.ts
      Purpose: Web Worker for combat calculations
      Features:
-       - Spatial partitioning with quadtree
-       - Batch processing for performance
-       - Hazard detection and avoidance
-       - Weapon targeting system
-       - Position calculation with easing
-       - Type-safe array iteration for hazard processing
-       - Explicit type annotations for collections
-       - Traditional for loops for better type narrowing
-     Dependencies:
-       - CombatTypes.ts
-       - HazardTypes.ts
-       - GameTypes.ts
-       - WeaponTypes.ts
-       - QuadTree.ts
+     - Spatial partitioning with quadtree
+     - Batch processing for performance
+     - Hazard detection and avoidance
+     - Weapon targeting system
+     - Position calculation with easing
+     - Type-safe array iteration for hazard processing
+     - Explicit type annotations for collections
+     - Traditional for loops for better type narrowing
+       Dependencies:
+     - CombatTypes.ts
+     - HazardTypes.ts
+     - GameTypes.ts
+     - WeaponTypes.ts
+     - QuadTree.ts
+
+# Combat System Type Conversion Updates
+
+## Core Type Conversion Utilities
+
+- **typeConversions.ts**: src/utils/typeConversions.ts
+  - Added functions to convert between different CombatUnit interfaces
+  - Handles conversion between manager-style and type-safe CombatUnit objects
+  - Dependencies: CombatTypes.ts, GameTypes.ts
+
+## Combat System Components
+
+- **useCombatAI.ts**: src/hooks/combat/useCombatAI.ts
+
+  - Updated to use type conversion functions for CombatUnit objects
+  - Accesses health, shield, etc. through the stats property
+  - Dependencies: typeConversions.ts, CombatTypes.ts, BehaviorTreeManager.ts
+
+- **ShipClassFactory.ts**: src/factories/ships/ShipClassFactory.ts
+
+  - Updated to create manager-style CombatUnit objects and convert them
+  - Uses proper WeaponSystem interface for weapon conversion
+  - Dependencies: typeConversions.ts, CombatTypes.ts, WeaponTypes.ts
+
+- **BehaviorTreeManager.ts**: src/managers/ai/BehaviorTreeManager.ts
+  - Updated to use the stats property for health, shield, etc.
+  - Added target property to CombatUnit interface in BehaviorContext
+  - Dependencies: CombatTypes.ts, EventEmitter.ts
+
+## Type Relationships
+
+```
+CombatManager.CombatUnit
+├── id: string
+├── faction: string
+├── type: string
+├── tier: number
+├── position: { x, y }
+├── status: string
+├── health: number
+├── maxHealth: number
+├── shield: number
+├── maxShield: number
+├── target?: string
+└── weapons: Array<{
+    id: string,
+    type: string,
+    range: number,
+    damage: number,
+    cooldown: number,
+    status: string
+}>
+
+CombatTypes.CombatUnit
+├── id: string
+├── type: string
+├── position: { x, y }
+├── rotation: number
+├── velocity: { x, y }
+├── status: CombatUnitStatus
+├── weapons: WeaponSystem[]
+└── stats: {
+    health: number,
+    maxHealth: number,
+    shield: number,
+    maxShield: number,
+    armor: number,
+    speed: number,
+    turnRate: number
+}
+```
+
+## Conversion Flow
+
+```
+combatManager.getUnitStatus(unitId)
+└── convertToCombatTypesUnit()
+    └── CombatTypes.CombatUnit with stats property
+```
+
+# Resource Tracking System Implementation
+
+## Core Resource Tracking Types
+
+- **ResourceTypes.ts**: src/types/resources/ResourceTypes.ts
+
+  - Contains core resource type definitions
+  - Includes ResourceState, ResourceType, ResourceThreshold interfaces
+  - Dependencies: GameTypes.ts
+
+- **useResourceTracking.ts**: src/hooks/resources/useResourceTracking.ts
+  - Provides global resource tracking for React components
+  - Manages resource state, history, and alerts
+  - Dependencies: ResourceTypes.ts, EventEmitter.ts
+
+## Resource Serialization Interfaces
+
+- **SerializedResourceState**: Interface for serialized resource state
+
+  - Used for localStorage persistence
+  - Contains serialized resources and thresholds
+  - Implemented in useResourceTracking.ts
+
+- **SerializedResource**: Interface for individual serialized resources
+
+  - Contains amount, capacity, rate properties
+  - Used in SerializedResourceState
+  - Implemented in useResourceTracking.ts
+
+- **ResourceTotals**: Interface for resource totals
+
+  - Contains total amounts, capacities, and rates
+  - Used for summary calculations
+  - Implemented in useResourceTracking.ts
+
+- **SerializedThreshold**: Interface for serialized threshold data
+  - Contains threshold configuration for persistence
+  - Used in SerializedResourceState
+  - Implemented in useResourceTracking.ts
+
+## Type Relationships
+
+```
+ResourceState
+├── resources: Map<ResourceType, Resource>
+├── thresholds: Map<string, ResourceThreshold[]>
+└── history: ResourceHistory
+
+SerializedResourceState
+├── resources: Record<ResourceType, SerializedResource>
+├── thresholds: Record<string, SerializedThreshold[]>
+└── timestamp: number
+
+Resource
+├── amount: number
+├── capacity: number
+└── rate: number
+
+SerializedResource
+├── amount: number
+├── capacity: number
+└── rate: number
+
+ResourceTotals
+├── amounts: Record<ResourceType, number>
+├── capacities: Record<ResourceType, number>
+└── rates: Record<ResourceType, number>
+```
+
+## Resource Tracking Flow
+
+```
+useResourceTracking
+├── initializeState() → Initial ResourceState
+├── updateResource() → Modified ResourceState
+├── serializeState() → SerializedResourceState (for storage)
+├── deserializeState() → ResourceState (from storage)
+└── calculateTotals() → ResourceTotals (for UI)
+```

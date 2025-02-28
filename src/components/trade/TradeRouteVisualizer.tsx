@@ -27,7 +27,7 @@ interface TradeRouteVisualizerProps {
 
 export function TradeRouteVisualizer({ routes, onRouteClick }: TradeRouteVisualizerProps) {
   return (
-    <div className="absolute inset-0 pointer-events-none">
+    <div className="pointer-events-none absolute inset-0">
       <svg className="absolute inset-0">
         <defs>
           <linearGradient id="route-gradient" x1="0" y1="0" x2="100%" y2="0">
@@ -100,7 +100,7 @@ export function TradeRouteVisualizer({ routes, onRouteClick }: TradeRouteVisuali
                   }
                   className="animate-pulse"
                 />
-                <Database className="w-4 h-4 text-indigo-400 transform -translate-x-2 -translate-y-2" />
+                <Database className="h-4 w-4 -translate-x-2 -translate-y-2 transform text-indigo-400" />
               </g>
             </g>
           );
@@ -115,7 +115,7 @@ export function TradeRouteVisualizer({ routes, onRouteClick }: TradeRouteVisuali
         return (
           <div
             key={`label-${route.id}`}
-            className="absolute pointer-events-auto cursor-pointer"
+            className="pointer-events-auto absolute cursor-pointer"
             style={{
               left: midX,
               top: midY - 40,
@@ -124,7 +124,7 @@ export function TradeRouteVisualizer({ routes, onRouteClick }: TradeRouteVisuali
             onClick={() => onRouteClick?.(route.id)}
           >
             <div
-              className={`px-3 py-1 rounded-full text-xs backdrop-blur-sm ${
+              className={`rounded-full px-3 py-1 text-xs backdrop-blur-sm ${
                 route.status === 'active'
                   ? 'bg-indigo-900/80 text-indigo-200'
                   : route.status === 'disrupted'

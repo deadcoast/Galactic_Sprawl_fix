@@ -1,11 +1,11 @@
-import { ModuleEvent, ModuleEventType, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
+import { ModuleEvent, ModuleEventType, moduleEventBus } from '../../lib/modules/ModuleEvents';
 
 /**
  * System identifier type
  */
-export type SystemId = 
+export type SystemId =
   | 'resource-system'
   | 'module-system'
   | 'combat-system'
@@ -24,7 +24,7 @@ export enum MessagePriority {
   HIGH = 1,
   NORMAL = 2,
   LOW = 3,
-  BACKGROUND = 4
+  BACKGROUND = 4,
 }
 
 /**
@@ -37,7 +37,7 @@ export interface SystemMessage {
   type: string;
   priority: MessagePriority;
   timestamp: number;
-  payload: any;
+  payload: unknown;
   requiresAck?: boolean;
   correlationId?: string;
 }
@@ -68,12 +68,15 @@ export class EventCommunication {
   private messageSubject: Subject<SystemMessage> = new Subject();
   private ackSubject: Subject<MessageAcknowledgment> = new Subject();
   private systemId: SystemId;
-  private pendingAcks: Map<string, {
-    message: SystemMessage;
-    timeout: NodeJS.Timeout;
-    resolve: (ack: MessageAcknowledgment) => void;
-    reject: (error: Error) => void;
-  }> = new Map();
+  private pendingAcks: Map<
+    string,
+    {
+      message: SystemMessage;
+      timeout: NodeJS.Timeout;
+      resolve: (ack: MessageAcknowledgment) => void;
+      reject: (error: Error) => void;
+    }
+  > = new Map();
 
   constructor(systemId: SystemId) {
     this.systemId = systemId;
@@ -88,7 +91,7 @@ export class EventCommunication {
     moduleEventBus.subscribe('SYSTEM_MESSAGE' as ModuleEventType, (event: ModuleEvent) => {
       if (event.data && event.data.message) {
         const message = event.data.message as SystemMessage;
-        
+
         // Process the message if it's targeted at this system or is a broadcast
         if (message.target === this.systemId || message.target === 'broadcast') {
           this.processIncomingMessage(message);
@@ -100,7 +103,7 @@ export class EventCommunication {
     moduleEventBus.subscribe('SYSTEM_MESSAGE_ACK' as ModuleEventType, (event: ModuleEvent) => {
       if (event.data && event.data.ack) {
         const ack = event.data.ack as MessageAcknowledgment;
-        
+
         // Process the acknowledgment if it's targeted at this system
         if (ack.target === this.systemId) {
           this.processAcknowledgment(ack);
@@ -121,7 +124,12 @@ export class EventCommunication {
     if (!systemHandlers) {
       // If no handlers and message requires acknowledgment, send negative ack
       if (message.requiresAck) {
-        this.sendAcknowledgment(message.id, message.source, false, 'No handlers registered for this system');
+        this.sendAcknowledgment(
+          message.id,
+          message.source,
+          false,
+          'No handlers registered for this system',
+        );
       }
       return;
     }
@@ -130,22 +138,29 @@ export class EventCommunication {
     if (!typeHandlers || typeHandlers.size === 0) {
       // If no handlers for this type and message requires acknowledgment, send negative ack
       if (message.requiresAck) {
-        this.sendAcknowledgment(message.id, message.source, false, `No handlers registered for message type: ${message.type}`);
+        this.sendAcknowledgment(
+          message.id,
+          message.source,
+          false,
+          `No handlers registered for message type: ${message.type}`,
+        );
       }
       return;
     }
 
     // Call all handlers
-    let handlerPromises: Promise<void>[] = [];
-    let errors: Error[] = [];
+    const handlerPromises: Promise<void>[] = [];
+    const errors: Error[] = [];
 
     typeHandlers.forEach(handler => {
       try {
         const result = handler(message);
         if (result instanceof Promise) {
-          handlerPromises.push(result.catch(error => {
-            errors.push(error);
-          }));
+          handlerPromises.push(
+            result.catch(error => {
+              errors.push(error);
+            }),
+          );
         }
       } catch (error) {
         errors.push(error as Error);
@@ -158,19 +173,19 @@ export class EventCommunication {
         // Wait for all promises to resolve
         Promise.all(handlerPromises).then(() => {
           this.sendAcknowledgment(
-            message.id, 
-            message.source, 
-            errors.length === 0, 
-            errors.length > 0 ? errors.map(e => e.message).join(', ') : undefined
+            message.id,
+            message.source,
+            errors.length === 0,
+            errors.length > 0 ? errors.map(e => e.message).join(', ') : undefined,
           );
         });
       } else {
         // Send acknowledgment immediately
         this.sendAcknowledgment(
-          message.id, 
-          message.source, 
-          errors.length === 0, 
-          errors.length > 0 ? errors.map(e => e.message).join(', ') : undefined
+          message.id,
+          message.source,
+          errors.length === 0,
+          errors.length > 0 ? errors.map(e => e.message).join(', ') : undefined,
         );
       }
     }
@@ -204,7 +219,7 @@ export class EventCommunication {
     messageId: string,
     target: SystemId,
     success: boolean,
-    error?: string
+    error?: string,
   ): void {
     const ack: MessageAcknowledgment = {
       messageId,
@@ -212,7 +227,7 @@ export class EventCommunication {
       target,
       timestamp: Date.now(),
       success,
-      error
+      error,
     };
 
     // Emit through the module event bus
@@ -221,17 +236,14 @@ export class EventCommunication {
       moduleId: `system-${this.systemId}`,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
-      data: { ack }
+      data: { ack },
     });
   }
 
   /**
    * Register a message handler
    */
-  public registerHandler(
-    type: string,
-    handler: MessageHandler
-  ): () => void {
+  public registerHandler(type: string, handler: MessageHandler): () => void {
     // Create system handlers map if it doesn't exist
     if (!this.handlers.has(this.systemId)) {
       this.handlers.set(this.systemId, new Map());
@@ -271,23 +283,23 @@ export class EventCommunication {
   public sendMessage(
     target: SystemId | 'broadcast',
     type: string,
-    payload: any,
+    payload: unknown,
     options: {
       priority?: MessagePriority;
       requiresAck?: boolean;
       timeout?: number;
       correlationId?: string;
-    } = {}
+    } = {},
   ): Promise<MessageAcknowledgment> | void {
     const {
       priority = MessagePriority.NORMAL,
       requiresAck = false,
       timeout = 5000,
-      correlationId
+      correlationId,
     } = options;
 
     const messageId = `${this.systemId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const message: SystemMessage = {
       id: messageId,
       source: this.systemId,
@@ -297,7 +309,7 @@ export class EventCommunication {
       timestamp: Date.now(),
       payload,
       requiresAck,
-      correlationId
+      correlationId,
     };
 
     // Emit through the module event bus
@@ -306,7 +318,7 @@ export class EventCommunication {
       moduleId: `system-${this.systemId}`,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
-      data: { message }
+      data: { message },
     });
 
     // If acknowledgment is required, return a promise
@@ -323,7 +335,7 @@ export class EventCommunication {
           message,
           timeout: timeoutId,
           resolve,
-          reject
+          reject,
         });
       });
     }
@@ -333,27 +345,25 @@ export class EventCommunication {
    * Get an observable of messages for a specific type
    */
   public getMessages(type?: string): Observable<SystemMessage> {
-    return this.messageSubject.asObservable().pipe(
-      filter(message => !type || message.type === type)
-    );
+    return this.messageSubject
+      .asObservable()
+      .pipe(filter(message => !type || message.type === type));
   }
 
   /**
    * Get an observable of acknowledgments
    */
   public getAcknowledgments(correlationId?: string): Observable<MessageAcknowledgment> {
-    return this.ackSubject.asObservable().pipe(
-      filter(ack => !correlationId || ack.correlationId === correlationId)
-    );
+    return this.ackSubject
+      .asObservable()
+      .pipe(filter(ack => !correlationId || ack.correlationId === correlationId));
   }
 
   /**
    * Get an observable of message payloads for a specific type
    */
   public getMessagePayloads<T>(type: string): Observable<T> {
-    return this.getMessages(type).pipe(
-      map(message => message.payload as T)
-    );
+    return this.getMessages(type).pipe(map(message => message.payload as T));
   }
 
   /**
@@ -395,4 +405,4 @@ export function getSystemCommunication(systemId: SystemId): EventCommunication {
 export function cleanupAllSystemCommunications(): void {
   systemCommunications.forEach(comm => comm.cleanup());
   systemCommunications.clear();
-} 
+}

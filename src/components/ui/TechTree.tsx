@@ -786,22 +786,22 @@ export function TechTree() {
             >
               <button
                 onClick={() => handleNodeClick(node)}
-                className={`w-16 h-16 ${colorClasses} rounded-lg border-2 flex items-center justify-center transition-all duration-300 hover:scale-110`}
+                className={`h-16 w-16 ${colorClasses} flex items-center justify-center rounded-lg border-2 transition-all duration-300 hover:scale-110`}
               >
-                <Icon className="w-8 h-8 text-white" />
+                <Icon className="h-8 w-8 text-white" />
                 {!node.unlocked && (
-                  <Lock className="w-4 h-4 absolute top-1 right-1 text-gray-300/70" />
+                  <Lock className="absolute right-1 top-1 h-4 w-4 text-gray-300/70" />
                 )}
                 {node.unlocked && (
-                  <Check className="w-4 h-4 absolute top-1 right-1 text-green-300" />
+                  <Check className="absolute right-1 top-1 h-4 w-4 text-green-300" />
                 )}
               </button>
 
               {/* Hover Tooltip */}
               {isHovered && (
-                <div className="absolute z-10 w-64 p-4 bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-700 -translate-x-1/2 left-1/2 mt-2">
-                  <h3 className="text-lg font-bold text-white mb-1">{node.name}</h3>
-                  <p className="text-sm text-gray-300 mb-2">{node.description}</p>
+                <div className="absolute left-1/2 z-10 mt-2 w-64 -translate-x-1/2 rounded-lg border border-gray-700 bg-gray-800/95 p-4 shadow-xl backdrop-blur-sm">
+                  <h3 className="mb-1 text-lg font-bold text-white">{node.name}</h3>
+                  <p className="mb-2 text-sm text-gray-300">{node.description}</p>
                   {node.requirements.length > 0 && (
                     <div className="text-xs text-gray-400">
                       Requires: {node.requirements.join(', ')}
@@ -817,24 +817,24 @@ export function TechTree() {
   };
 
   return (
-    <div className="p-8 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-800">
-      <h2 className="text-2xl font-bold text-white mb-8 text-center">Technology Tree</h2>
+    <div className="rounded-lg border border-gray-800 bg-gray-900/95 p-8 backdrop-blur-md">
+      <h2 className="mb-8 text-center text-2xl font-bold text-white">Technology Tree</h2>
 
       {/* Category Tabs */}
-      <div className="flex justify-center space-x-4 mb-8">
+      <div className="mb-8 flex justify-center space-x-4">
         {categories.map(category => {
           const isActive = activeCategory === category.id;
           return (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id as TechNode['category'])}
-              className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
+              className={`flex items-center space-x-2 rounded-lg px-4 py-2 transition-colors ${
                 isActive
                   ? 'bg-indigo-600 text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300'
               }`}
             >
-              <category.icon className="w-4 h-4" />
+              <category.icon className="h-4 w-4" />
               <span>{category.name}</span>
             </button>
           );
@@ -844,9 +844,9 @@ export function TechTree() {
       <div className="space-y-12">
         {[1, 2, 3].map(tier => (
           <div key={tier} className="relative">
-            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-0.5 bg-gray-700" />
+            <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-gray-700" />
             <div className="relative">
-              <div className="text-sm font-medium text-gray-400 mb-4 text-center">Tier {tier}</div>
+              <div className="mb-4 text-center text-sm font-medium text-gray-400">Tier {tier}</div>
               {renderTier(tier)}
             </div>
           </div>
@@ -855,10 +855,10 @@ export function TechTree() {
 
       {/* Selected Node Details */}
       {selectedNode && (
-        <div className="mt-8 p-6 bg-gray-800/80 rounded-lg border border-gray-700">
+        <div className="mt-8 rounded-lg border border-gray-700 bg-gray-800/80 p-6">
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">{selectedNode.name}</h3>
+              <h3 className="mb-2 text-xl font-bold text-white">{selectedNode.name}</h3>
               <p className="text-gray-300">{selectedNode.description}</p>
             </div>
             {nodeIcons[selectedNode.icon] && (

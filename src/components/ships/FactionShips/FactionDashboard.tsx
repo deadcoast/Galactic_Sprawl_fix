@@ -1,17 +1,17 @@
+import { AlertTriangle, Crown, Shield } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { AIDebugOverlay } from '../../../components/debug/AIDebugOverlay';
-import { DiplomacyPanel } from '../../ui/DiplomacyPanel';
 import { FactionAI } from '../../../components/factions/FactionAI';
 import { factionConfigs, factionIds } from '../../../config/factions/factionConfig';
 import { getShipStats } from '../../../config/ships/shipStats';
-import { getFactionDefaultShipClass } from '../../../utils/ships/shipClassUtils';
 import { useFactionBehavior } from '../../../hooks/factions/useFactionBehavior';
-import { FactionShip } from '../../../types/ships/FactionShipTypes';
 import { useDebugOverlay } from '../../../hooks/ui/useDebugOverlay';
+import type { FactionState } from '../../../managers/factions/factionManager';
 import type { DebugState } from '../../../types/debug/DebugTypes';
 import type { CommonShipAbility } from '../../../types/ships/CommonShipTypes';
-import type { FactionState } from '../../../managers/factions/factionManager';
-import { AlertTriangle, Crown, Shield } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { FactionShip } from '../../../types/ships/FactionShipTypes';
+import { getFactionDefaultShipClass } from '../../../utils/ships/shipClassUtils';
+import { DiplomacyPanel } from '../../ui/DiplomacyPanel';
 
 interface FactionDashboardProps {
   onFactionUpdate?: (factionId: string, state: FactionState) => void;
@@ -110,7 +110,7 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
   return (
     <div className="space-y-4">
       {/* Faction Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {factionBehaviors.map(behavior => {
           if (!behavior) {
             return null;
@@ -130,40 +130,40 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
           return (
             <div
               key={behavior.id}
-              className={`p-6 rounded-lg border ${
+              className={`rounded-lg border p-6 ${
                 selectedFaction === behavior.id
-                  ? 'bg-gray-800 border-blue-500'
-                  : 'bg-gray-900 border-gray-700'
+                  ? 'border-blue-500 bg-gray-800'
+                  : 'border-gray-700 bg-gray-900'
               }`}
               onClick={() => setSelectedFaction(behavior.id as FactionIdType)}
             >
               {/* Faction Header */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-medium text-white">{config.name}</h3>
                   <div className="text-sm text-gray-400">{behavior.stateMachine.current}</div>
                 </div>
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  className="flex h-10 w-10 items-center justify-center rounded-full"
                   style={{ backgroundColor: config.banner.primaryColor }}
                 >
-                  {config.banner.sigil === 'rat-skull' && <Crown className="w-6 h-6" />}
-                  {config.banner.sigil === 'broken-star' && <AlertTriangle className="w-6 h-6" />}
-                  {config.banner.sigil === 'ancient-wheel' && <Shield className="w-6 h-6" />}
+                  {config.banner.sigil === 'rat-skull' && <Crown className="h-6 w-6" />}
+                  {config.banner.sigil === 'broken-star' && <AlertTriangle className="h-6 w-6" />}
+                  {config.banner.sigil === 'ancient-wheel' && <Shield className="h-6 w-6" />}
                 </div>
               </div>
 
               {/* Status Indicators */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="mb-4 grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm text-gray-400 mb-1">Ships</div>
+                  <div className="mb-1 text-sm text-gray-400">Ships</div>
                   <div className="flex items-baseline space-x-1">
                     <span className="text-2xl font-bold text-white">{totalShips}</span>
                     <span className="text-sm text-gray-400">/ {maxShips}</span>
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-400 mb-1">Fleet Power</div>
+                  <div className="mb-1 text-sm text-gray-400">Fleet Power</div>
                   <div className="text-2xl font-bold text-white">
                     {Math.round(fleetStrength * 100)}%
                   </div>
@@ -173,13 +173,13 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
               {/* Behavior Indicators */}
               <div className="space-y-2">
                 <div>
-                  <div className="flex justify-between text-sm mb-1">
+                  <div className="mb-1 flex justify-between text-sm">
                     <span className="text-gray-400">Aggression</span>
                     <span className={isAggressive ? 'text-red-400' : 'text-green-400'}>
                       {Math.round(behavior.behaviorState.aggression * 100)}%
                     </span>
                   </div>
-                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2 overflow-hidden rounded-full bg-gray-700">
                     <div
                       className={`h-full ${
                         isAggressive ? 'bg-red-500' : 'bg-green-500'
@@ -190,13 +190,13 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-sm mb-1">
+                  <div className="mb-1 flex justify-between text-sm">
                     <span className="text-gray-400">Expansion</span>
                     <span className={isExpanding ? 'text-yellow-400' : 'text-blue-400'}>
                       {Math.round(behavior.behaviorState.expansion * 100)}%
                     </span>
                   </div>
-                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2 overflow-hidden rounded-full bg-gray-700">
                     <div
                       className={`h-full ${
                         isExpanding ? 'bg-yellow-500' : 'bg-blue-500'
@@ -209,12 +209,12 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
 
               {/* Active Fleets */}
               <div className="mt-4">
-                <div className="text-sm text-gray-400 mb-2">Active Fleets</div>
+                <div className="mb-2 text-sm text-gray-400">Active Fleets</div>
                 <div className="space-y-2">
                   {behavior.fleets.map((fleet, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2 bg-gray-800 rounded"
+                      className="flex items-center justify-between rounded bg-gray-800 p-2"
                     >
                       <span className="text-sm">
                         Fleet {index + 1} ({fleet.ships.length} ships)

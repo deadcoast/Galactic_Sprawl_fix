@@ -1,9 +1,10 @@
-import { LostNovaShip } from '../../common/LostNovaShip';
-import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
-import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
 import { Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { FactionBehaviorType } from '../../../../types/ships/FactionTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { LostNovaShip } from '../../common/LostNovaShip';
 
 interface DarkMatterReaperProps {
   id: string;
@@ -21,6 +22,14 @@ interface DarkMatterReaperProps {
   position: { x: number; y: number };
   rotation: number;
 }
+
+// Helper function to create a FactionBehaviorType from string
+const createFactionBehavior = (behavior: string): FactionBehaviorType => {
+  return {
+    formation: 'standard',
+    behavior: behavior,
+  };
+};
 
 export function DarkMatterReaper({
   id,
@@ -61,6 +70,9 @@ export function DarkMatterReaper({
     }
   };
 
+  // Create a proper FactionBehaviorType for tactics
+  const tactics = createFactionBehavior('stealth');
+
   return (
     <div className="relative">
       <LostNovaShip
@@ -74,7 +86,7 @@ export function DarkMatterReaper({
         maxShield={maxShield}
         weapons={weapons}
         stats={stats}
-        tactics="stealth"
+        tactics={tactics}
         position={position}
         rotation={rotation}
         onEngage={onEngage}

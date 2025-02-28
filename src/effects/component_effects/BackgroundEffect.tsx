@@ -151,6 +151,6 @@ export function BackgroundEffect({ quality, intensity, colorScheme }: Background
   }, [quality, intensity, colorScheme]);
 
   return (
-    <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }} />
+    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0" style={{ zIndex: -1 }} />
   );
 }

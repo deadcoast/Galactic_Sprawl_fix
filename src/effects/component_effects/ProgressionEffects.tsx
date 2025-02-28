@@ -25,14 +25,14 @@ export function ProgressionEffects({ tier, type, progress, quality }: Progressio
   const particleCount = quality === 'high' ? 8 : quality === 'medium' ? 5 : 3;
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {/* Tier Indicator */}
       <div
-        className={`absolute top-2 right-2 px-2 py-1 rounded-full bg-${color}-500/20 border border-${color}-500/30`}
+        className={`absolute right-2 top-2 rounded-full px-2 py-1 bg-${color}-500/20 border border-${color}-500/30`}
       >
         <div className="flex items-center space-x-1">
           {Array.from({ length: tier }).map((_, i) => (
-            <Star key={i} className={`w-3 h-3 text-${color}-400`} />
+            <Star key={i} className={`h-3 w-3 text-${color}-400`} />
           ))}
         </div>
       </div>
@@ -41,7 +41,7 @@ export function ProgressionEffects({ tier, type, progress, quality }: Progressio
       <div className="absolute inset-0">
         {/* Energy Field */}
         <div
-          className={`absolute inset-0 bg-gradient-radial from-${color}-500/20 to-transparent`}
+          className={`bg-gradient-radial absolute inset-0 from-${color}-500/20 to-transparent`}
           style={{
             opacity: progress,
             transform: `scale(${1 + progress * 0.2})`,
@@ -52,7 +52,7 @@ export function ProgressionEffects({ tier, type, progress, quality }: Progressio
         {Array.from({ length: particleCount }).map((_, i) => (
           <div
             key={i}
-            className={`absolute w-2 h-2 rounded-full bg-${color}-400`}
+            className={`absolute h-2 w-2 rounded-full bg-${color}-400`}
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -67,11 +67,11 @@ export function ProgressionEffects({ tier, type, progress, quality }: Progressio
           <div className={`absolute inset-0 border-2 border-${color}-500/30 rounded-lg`} />
         )}
         {type === 'ship' && (
-          <div className={`absolute inset-0 bg-${color}-500/10 backdrop-blur-sm rounded-lg`} />
+          <div className={`absolute inset-0 bg-${color}-500/10 rounded-lg backdrop-blur-sm`} />
         )}
         {type === 'technology' && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Zap className={`w-8 h-8 text-${color}-400 animate-pulse`} />
+            <Zap className={`h-8 w-8 text-${color}-400 animate-pulse`} />
           </div>
         )}
       </div>

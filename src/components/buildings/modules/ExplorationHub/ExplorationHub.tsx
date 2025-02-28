@@ -1,30 +1,29 @@
-import { ExplorationControls } from './ExplorationControls';
-import { ExplorationTutorial } from './ExplorationTutorial';
-import { MissionLog } from './MissionLog';
-import { ReconShipStatus } from './ReconShipStatus';
-import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
-import { useTooltipContext } from '../../../../components/ui/tooltip-context';
-import { automationManager } from '../../../../managers/game/AutomationManager';
-import { explorationRules } from '../../../../config/automation/explorationRules';
-import { useContextMenu, ContextMenuItem } from '../../../../components/ui/ContextMenu';
-import { Draggable, DropTarget, DragItem } from '../../../../components/ui/DragAndDrop';
 import {
   AlertTriangle,
-  ChevronDown,
   Filter,
+  Flag,
   History,
   Map,
   Radar,
   Rocket,
   Search,
+  Target,
   ZoomIn,
   ZoomOut,
-  Target,
-  Flag,
-  X,
 } from 'lucide-react';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
+import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
+import { useTooltipContext } from '../../../../components/ui/tooltip-context';
+import { explorationRules } from '../../../../config/automation/explorationRules';
 import { ReconShipManagerImpl } from '../../../../managers/exploration/ReconShipManagerImpl';
+import { automationManager } from '../../../../managers/game/AutomationManager';
+import { Position } from '../../../../types/core/GameTypes';
+import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
+import { ExplorationControls } from './ExplorationControls';
+import { ExplorationTutorial } from './ExplorationTutorial';
+import { MissionLog } from './MissionLog';
+import { ReconShipStatus } from './ReconShipStatus';
 
 interface Sector {
   id: string;
@@ -181,27 +180,27 @@ const SectorComponent = memo(
         {
           id: 'info',
           label: 'View Details',
-          icon: <Map className="w-4 h-4" />,
+          icon: <Map className="h-4 w-4" />,
           action: () => onSelect(sector),
         },
         {
           id: 'assign-ship',
           label: assignedShip ? 'Reassign Ship' : 'Assign Ship',
-          icon: <Rocket className="w-4 h-4" />,
+          icon: <Rocket className="h-4 w-4" />,
           action: () => {}, // No-op action for parent menu
           children: ships
             .filter(ship => ship.status === 'idle' || ship.targetSector === sector.id)
             .map(ship => ({
               id: ship.id,
               label: ship.name,
-              icon: <Target className="w-4 h-4" />,
+              icon: <Target className="h-4 w-4" />,
               action: () => onShipAssign(ship.id, sector.id),
             })),
         },
         {
           id: 'mark-priority',
           label: 'Mark as Priority',
-          icon: <Flag className="w-4 h-4" />,
+          icon: <Flag className="h-4 w-4" />,
           action: () => {
             // Handle priority marking
             console.log(`Marking ${sector.name} as priority`);
@@ -240,11 +239,11 @@ const SectorComponent = memo(
           >
             {/* Sector Visualization */}
             <div
-              className={`w-24 h-24 rounded-lg transition-all duration-300 ${
+              className={`h-24 w-24 rounded-lg transition-all duration-300 ${
                 sector.status === 'unmapped'
                   ? 'bg-gray-800/50'
                   : sector.status === 'scanning'
-                    ? 'bg-teal-900/50 animate-pulse'
+                    ? 'animate-pulse bg-teal-900/50'
                     : 'bg-teal-800/30'
               } relative ${
                 isSelected ? 'ring-2 ring-teal-400 ring-offset-2 ring-offset-gray-900' : ''
@@ -263,7 +262,7 @@ const SectorComponent = memo(
               {/* Resource Potential Indicator */}
               {sector.status !== 'unmapped' && (
                 <div
-                  className="absolute inset-2 border-2 border-teal-500/30 rounded transition-all"
+                  className="absolute inset-2 rounded border-2 border-teal-500/30 transition-all"
                   style={{
                     clipPath: `polygon(0 ${100 - sector.resourcePotential * 100}%, 100% ${100 - sector.resourcePotential * 100}%, 0%, 0 100%)`,
                   }}
@@ -273,7 +272,7 @@ const SectorComponent = memo(
               {/* Habitability Score Ring */}
               {sector.status !== 'unmapped' && (
                 <div
-                  className="absolute inset-0 border-4 border-teal-400/20 rounded-lg transition-all"
+                  className="absolute inset-0 rounded-lg border-4 border-teal-400/20 transition-all"
                   style={{
                     clipPath: `polygon(0 0, ${sector.habitabilityScore * 100}% 0, ${sector.habitabilityScore * 100}% 100%, 0 100%)`,
                   }}
@@ -283,12 +282,12 @@ const SectorComponent = memo(
               {/* Anomaly Indicators */}
               {sector.anomalies.length > 0 && (
                 <div className="mb-3">
-                  <div className="text-xs font-medium text-gray-300 mb-2">Detected Anomalies</div>
+                  <div className="mb-2 text-xs font-medium text-gray-300">Detected Anomalies</div>
                   <div className="space-y-1">
                     {sector.anomalies.map(anomaly => (
                       <div
                         key={anomaly.id}
-                        className={`text-xs px-2 py-1 rounded ${
+                        className={`rounded px-2 py-1 text-xs ${
                           anomaly.severity === 'high'
                             ? 'bg-red-900/50 text-red-400'
                             : anomaly.severity === 'medium'
@@ -305,17 +304,17 @@ const SectorComponent = memo(
 
               {/* Scanning Ship Indicator */}
               {scanningShip && (
-                <div className="absolute -top-2 -right-2">
-                  <Rocket className="w-5 h-5 text-teal-400 animate-pulse" />
+                <div className="absolute -right-2 -top-2">
+                  <Rocket className="h-5 w-5 animate-pulse text-teal-400" />
                 </div>
               )}
             </div>
 
             {/* Sector Label */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-center">
-              <div className="text-teal-200 font-medium">{sector.name}</div>
+            <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-center">
+              <div className="font-medium text-teal-200">{sector.name}</div>
               {sector.status !== 'unmapped' && (
-                <div className="text-teal-300/70 text-sm">
+                <div className="text-sm text-teal-300/70">
                   {sector.status === 'scanning' ? 'Scanning in Progress' : 'Mapped'}
                 </div>
               )}
@@ -334,42 +333,56 @@ const SectorComponent = memo(
       prevProps.showHeatMap === nextProps.showHeatMap &&
       prevProps.ships.length === nextProps.ships.length
     );
-  }
+  },
 );
 
 // Ship Marker Component with drag-and-drop
-const ShipMarker = memo(
-  ({ ship, targetSector }: { ship: ReconShip; targetSector: Sector }) => {
-    return (
-      <div
-        className="absolute transition-all duration-300"
-        style={{
-          left: `calc(50% + ${targetSector.coordinates.x}px)`,
-          top: `calc(50% + ${targetSector.coordinates.y}px)`,
-          transform: 'translate(-50%, -50%)',
+const ShipMarker = memo(({ ship, targetSector }: { ship: ReconShip; targetSector: Sector }) => {
+  return (
+    <div
+      className="absolute transition-all duration-300"
+      style={{
+        left: `calc(50% + ${targetSector.coordinates.x}px)`,
+        top: `calc(50% + ${targetSector.coordinates.y}px)`,
+        transform: 'translate(-50%, -50%)',
+      }}
+    >
+      <Draggable
+        item={{
+          id: ship.id,
+          type: 'ship',
+          data: ship,
         }}
       >
-        <Draggable
-          item={{
-            id: ship.id,
-            type: 'ship',
-            data: ship,
-          }}
-        >
-          <div className="p-2 bg-teal-900/80 backdrop-blur-sm rounded-lg border border-teal-500/30">
-            <div className="flex items-center space-x-2">
-              <Rocket className="w-4 h-4 text-teal-400" />
-              <span className="text-xs font-medium text-teal-200">{ship.name}</span>
-            </div>
-            <div className="text-xs text-teal-400/70 mt-1">
-              {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
-            </div>
+        <div className="rounded-lg border border-teal-500/30 bg-teal-900/80 p-2 backdrop-blur-sm">
+          <div className="flex items-center space-x-2">
+            <Rocket className="h-4 w-4 text-teal-400" />
+            <span className="text-xs font-medium text-teal-200">{ship.name}</span>
           </div>
-        </Draggable>
-      </div>
-    );
-  }
-);
+          <div className="mt-1 text-xs text-teal-400/70">
+            {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
+          </div>
+        </div>
+      </Draggable>
+    </div>
+  );
+});
+
+// Define the ExplorationTask interface to match the one in ReconShipManagerImpl.ts
+interface ExplorationTask {
+  id: string;
+  type: 'explore' | 'investigate' | 'evade';
+  target: {
+    id: string;
+    position: Position;
+  };
+  priority: number;
+  assignedAt: number;
+  specialization: 'mapping' | 'anomaly' | 'resource';
+  status: 'queued' | 'in-progress' | 'completed' | 'failed';
+  progress?: number;
+  threatLevel?: number;
+}
 
 export function ExplorationHub() {
   const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
@@ -444,7 +457,7 @@ export function ExplorationHub() {
           // Calculate progress based on efficiency and time
           const progress = Math.min(
             1,
-            (Date.now() - (ship.lastUpdate || Date.now())) / (10000 / ship.efficiency)
+            (Date.now() - (ship.lastUpdate || Date.now())) / (10000 / ship.efficiency),
           );
 
           // Update ship status based on progress
@@ -460,7 +473,7 @@ export function ExplorationHub() {
             ...ship,
             lastUpdate: Date.now(),
           };
-        })
+        }),
       );
     }, 1000);
 
@@ -469,7 +482,7 @@ export function ExplorationHub() {
       setSectors(prevSectors =>
         prevSectors.map(sector => {
           const scanningShip = ships.find(
-            ship => ship.targetSector === sector.id && ship.status === 'scanning'
+            ship => ship.targetSector === sector.id && ship.status === 'scanning',
           );
 
           if (scanningShip) {
@@ -491,7 +504,7 @@ export function ExplorationHub() {
           }
 
           return sector;
-        })
+        }),
       );
     }, 2000);
 
@@ -505,7 +518,7 @@ export function ExplorationHub() {
             ...transfer,
             progress: Math.min(1, transfer.progress + 0.1),
           };
-        })
+        }),
       );
     }, 3000);
 
@@ -547,15 +560,14 @@ export function ExplorationHub() {
       }
       if (advancedFilters.anomalySeverity !== 'any') {
         const hasMatchingSeverity = sector.anomalies.some(
-          a => a.severity === advancedFilters.anomalySeverity
+          a => a.severity === advancedFilters.anomalySeverity,
         );
         if (!hasMatchingSeverity) {
           return false;
         }
       }
       if (advancedFilters.lastScannedWithin > 0 && sector.lastScanned) {
-        const hoursSinceLastScan =
-          (Date.now() - sector.lastScanned) / (1000 * 60 * 60);
+        const hoursSinceLastScan = (Date.now() - sector.lastScanned) / (1000 * 60 * 60);
         if (hoursSinceLastScan > advancedFilters.lastScannedWithin) {
           return false;
         }
@@ -572,35 +584,32 @@ export function ExplorationHub() {
   }, [sectors, searchQuery, filter, advancedFilters]);
 
   // Enhanced heat map calculation
-  const getSectorHeat = useCallback(
-    (sector: Sector) => {
-      let heatValue = 0;
+  const getSectorHeat = useCallback((sector: Sector) => {
+    let heatValue = 0;
 
-      // Base heat from resource potential
-      heatValue += sector.resourcePotential * 0.4;
+    // Base heat from resource potential
+    heatValue += sector.resourcePotential * 0.4;
 
-      // Heat from habitability
-      heatValue += sector.habitabilityScore * 0.3;
+    // Heat from habitability
+    heatValue += sector.habitabilityScore * 0.3;
 
-      // Heat from anomalies
-      const anomalyHeat = sector.anomalies.reduce((sum, anomaly) => {
-        const severityValue =
-          anomaly.severity === 'high' ? 0.3 : anomaly.severity === 'medium' ? 0.2 : 0.1;
-        return sum + severityValue;
-      }, 0);
-      heatValue += anomalyHeat;
+    // Heat from anomalies
+    const anomalyHeat = sector.anomalies.reduce((sum, anomaly) => {
+      const severityValue =
+        anomaly.severity === 'high' ? 0.3 : anomaly.severity === 'medium' ? 0.2 : 0.1;
+      return sum + severityValue;
+    }, 0);
+    heatValue += anomalyHeat;
 
-      // Reduce heat for older scans
-      if (sector.lastScanned) {
-        const hoursSinceLastScan = (Date.now() - sector.lastScanned) / (1000 * 60 * 60);
-        const ageFactor = Math.max(0, 1 - hoursSinceLastScan / 168); // 168 hours = 1 week
-        heatValue *= ageFactor;
-      }
+    // Reduce heat for older scans
+    if (sector.lastScanned) {
+      const hoursSinceLastScan = (Date.now() - sector.lastScanned) / (1000 * 60 * 60);
+      const ageFactor = Math.max(0, 1 - hoursSinceLastScan / 168); // 168 hours = 1 week
+      heatValue *= ageFactor;
+    }
 
-      return Math.min(1, heatValue);
-    },
-    []
-  );
+    return Math.min(1, heatValue);
+  }, []);
 
   // Memoize handlers
   const handleSectorSelect = useCallback((sector: Sector) => {
@@ -629,7 +638,7 @@ export function ExplorationHub() {
         }));
       }
     },
-    [position]
+    [position],
   );
 
   const handleMouseUp = useCallback(() => {
@@ -646,11 +655,11 @@ export function ExplorationHub() {
     (show: boolean, sector: Sector) => {
       if (show) {
         showTooltip(
-          <div className="p-4 bg-gray-800/95 rounded-lg border border-gray-700 shadow-xl max-w-xs">
-            <div className="flex items-center justify-between mb-3">
+          <div className="max-w-xs rounded-lg border border-gray-700 bg-gray-800/95 p-4 shadow-xl">
+            <div className="mb-3 flex items-center justify-between">
               <div className="font-medium text-white">{sector.name}</div>
               <div
-                className={`px-2 py-0.5 rounded text-xs ${
+                className={`rounded px-2 py-0.5 text-xs ${
                   sector.status === 'unmapped'
                     ? 'bg-gray-700 text-gray-400'
                     : sector.status === 'scanning'
@@ -665,32 +674,32 @@ export function ExplorationHub() {
             {sector.status !== 'unmapped' && (
               <>
                 {/* Resource and Habitability Bars */}
-                <div className="space-y-2 mb-3">
+                <div className="mb-3 space-y-2">
                   <div>
-                    <div className="flex justify-between text-xs mb-1">
+                    <div className="mb-1 flex justify-between text-xs">
                       <span className="text-gray-400">Resources</span>
                       <span className="text-teal-400">
                         {Math.round(sector.resourcePotential * 100)}%
                       </span>
                     </div>
-                    <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
                       <div
-                        className="h-full bg-teal-500 rounded-full"
+                        className="h-full rounded-full bg-teal-500"
                         style={{ width: `${sector.resourcePotential * 100}%` }}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex justify-between text-xs mb-1">
+                    <div className="mb-1 flex justify-between text-xs">
                       <span className="text-gray-400">Habitability</span>
                       <span className="text-teal-400">
                         {Math.round(sector.habitabilityScore * 100)}%
                       </span>
                     </div>
-                    <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
                       <div
-                        className="h-full bg-teal-500 rounded-full"
+                        className="h-full rounded-full bg-teal-500"
                         style={{ width: `${sector.habitabilityScore * 100}%` }}
                       />
                     </div>
@@ -700,12 +709,12 @@ export function ExplorationHub() {
                 {/* Anomalies */}
                 {sector.anomalies.length > 0 && (
                   <div className="mb-3">
-                    <div className="text-xs font-medium text-gray-300 mb-2">Detected Anomalies</div>
+                    <div className="mb-2 text-xs font-medium text-gray-300">Detected Anomalies</div>
                     <div className="space-y-1">
                       {sector.anomalies.map(anomaly => (
                         <div
                           key={anomaly.id}
-                          className={`text-xs px-2 py-1 rounded ${
+                          className={`rounded px-2 py-1 text-xs ${
                             anomaly.severity === 'high'
                               ? 'bg-red-900/50 text-red-400'
                               : anomaly.severity === 'medium'
@@ -728,40 +737,43 @@ export function ExplorationHub() {
                 )}
               </>
             )}
-          </div>
+          </div>,
         );
       } else {
         hideTooltip();
       }
     },
-    [showTooltip, hideTooltip]
+    [showTooltip, hideTooltip],
   );
 
   // Handle ship assignment
-  const handleShipAssign = useCallback((shipId: string, sectorId: string) => {
-    const sector = sectors.find(s => s.id === sectorId);
-    if (!sector) return;
+  const handleShipAssign = useCallback(
+    (shipId: string, sectorId: string) => {
+      const sector = sectors.find(s => s.id === sectorId);
+      if (!sector) return;
 
-    reconManager.assignExplorationTask(
-      shipId,
-      sectorId,
-      sector.coordinates,
-      'mapping' // Default to mapping, can be updated based on sector type
-    );
+      reconManager.assignExplorationTask(
+        shipId,
+        sectorId,
+        sector.coordinates,
+        'mapping', // Default to mapping, can be updated based on sector type
+      );
 
-    setShips(prevShips =>
-      prevShips.map(ship =>
-        ship.id === shipId
-          ? {
-              ...ship,
-              status: 'scanning',
-              targetSector: sectorId,
-              lastUpdate: Date.now(),
-            }
-          : ship
-      )
-    );
-  }, [sectors, reconManager]);
+      setShips(prevShips =>
+        prevShips.map(ship =>
+          ship.id === shipId
+            ? {
+                ...ship,
+                status: 'scanning',
+                targetSector: sectorId,
+                lastUpdate: Date.now(),
+              }
+            : ship,
+        ),
+      );
+    },
+    [sectors, reconManager],
+  );
 
   // Register ships with ReconShipManager
   useEffect(() => {
@@ -802,7 +814,7 @@ export function ExplorationHub() {
 
   // Listen for ReconShipManager events
   useEffect(() => {
-    const handleTaskCompleted = ({ shipId, task }: { shipId: string; task: any }) => {
+    const handleTaskCompleted = ({ shipId, task }: { shipId: string; task: ExplorationTask }) => {
       setShips(prevShips =>
         prevShips.map(ship =>
           ship.id === shipId
@@ -811,8 +823,8 @@ export function ExplorationHub() {
                 status: 'returning',
                 experience: ship.experience + 100, // Base XP gain
               }
-            : ship
-        )
+            : ship,
+        ),
       );
 
       // Update sector status
@@ -824,8 +836,8 @@ export function ExplorationHub() {
                 status: 'mapped',
                 lastScanned: Date.now(),
               }
-            : sector
-        )
+            : sector,
+        ),
       );
     };
 
@@ -845,12 +857,12 @@ export function ExplorationHub() {
   }, [reconManager]);
 
   return (
-    <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">
+    <div className="fixed inset-4 flex overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md">
       {/* Left Panel - Exploration Map */}
-      <div className="w-2/3 border-r border-gray-700 p-6 flex flex-col">
-        <div className="flex items-center justify-between mb-6">
+      <div className="flex w-2/3 flex-col border-r border-gray-700 p-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Radar className="w-6 h-6 text-teal-400" />
+            <Radar className="h-6 w-6 text-teal-400" />
             <h2 className="text-xl font-bold text-white">Exploration Hub</h2>
           </div>
 
@@ -859,110 +871,108 @@ export function ExplorationHub() {
               <input
                 type="text"
                 placeholder="Search sectors..."
-                className="w-64 px-4 py-2 bg-gray-800/90 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
 
             <div className="flex space-x-2">
               <button
                 onClick={() => handleZoom(0.1)}
-                className="p-2 bg-gray-800/90 hover:bg-gray-700/90 rounded-lg backdrop-blur-sm transition-colors"
+                className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
               >
-                <ZoomIn className="w-5 h-5 text-teal-400" />
+                <ZoomIn className="h-5 w-5 text-teal-400" />
               </button>
               <button
                 onClick={() => handleZoom(-0.1)}
-                className="p-2 bg-gray-800/90 hover:bg-gray-700/90 rounded-lg backdrop-blur-sm transition-colors"
+                className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
               >
-                <ZoomOut className="w-5 h-5 text-teal-400" />
+                <ZoomOut className="h-5 w-5 text-teal-400" />
               </button>
             </div>
 
             <button
               onClick={() => setShowMissionLog(true)}
-              className="p-2 bg-gray-800/90 hover:bg-gray-700/90 rounded-lg backdrop-blur-sm transition-colors"
+              className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
             >
-              <History className="w-5 h-5 text-teal-400" />
+              <History className="h-5 w-5 text-teal-400" />
             </button>
           </div>
         </div>
 
         {/* Enhanced Filter Controls */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2 flex items-center justify-between">
             <div className="flex space-x-2">
               <button
                 onClick={() => setFilter('all')}
-                className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
+                className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                   filter === 'all'
                     ? 'bg-teal-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
               >
-                <Map className="w-4 h-4" />
+                <Map className="h-4 w-4" />
                 <span>All Sectors</span>
               </button>
               <button
                 onClick={() => setFilter('unmapped')}
-                className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
+                className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                   filter === 'unmapped'
                     ? 'bg-teal-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
               >
-                <Radar className="w-4 h-4" />
+                <Radar className="h-4 w-4" />
                 <span>Unmapped</span>
               </button>
               <button
                 onClick={() => setFilter('anomalies')}
-                className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
+                className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                   filter === 'anomalies'
                     ? 'bg-teal-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
               >
-                <AlertTriangle className="w-4 h-4" />
+                <AlertTriangle className="h-4 w-4" />
                 <span>Anomalies</span>
               </button>
               <button
                 onClick={() => setShowHeatMap(!showHeatMap)}
-                className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
+                className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                   showHeatMap
                     ? 'bg-teal-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
               >
-                <Map className="w-4 h-4" />
+                <Map className="h-4 w-4" />
                 <span>Heat Map</span>
               </button>
             </div>
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
-                Object.values(advancedFilters).some(v => 
-                  Array.isArray(v) ? v.length > 0 : v !== 0 && v !== false && v !== 'any'
+              className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
+                Object.values(advancedFilters).some(v =>
+                  Array.isArray(v) ? v.length > 0 : v !== 0 && v !== false && v !== 'any',
                 )
                   ? 'bg-teal-600 text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
-              <Filter className="w-4 h-4" />
+              <Filter className="h-4 w-4" />
               <span>Advanced Filters</span>
             </button>
           </div>
 
           {/* Advanced Filters Panel */}
           {showFilters && (
-            <div className="mt-4 bg-gray-800/50 rounded-lg p-4">
+            <div className="mt-4 rounded-lg bg-gray-800/50 p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">
-                    Min Resource Potential
-                  </label>
+                  <label className="mb-2 block text-sm text-gray-400">Min Resource Potential</label>
                   <input
                     type="range"
                     min="0"
@@ -977,14 +987,12 @@ export function ExplorationHub() {
                     }
                     className="w-full"
                   />
-                  <div className="text-sm text-teal-400 mt-1">
+                  <div className="mt-1 text-sm text-teal-400">
                     {Math.round(advancedFilters.minResourcePotential * 100)}%
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">
-                    Min Habitability Score
-                  </label>
+                  <label className="mb-2 block text-sm text-gray-400">Min Habitability Score</label>
                   <input
                     type="range"
                     min="0"
@@ -999,17 +1007,15 @@ export function ExplorationHub() {
                     }
                     className="w-full"
                   />
-                  <div className="text-sm text-teal-400 mt-1">
+                  <div className="mt-1 text-sm text-teal-400">
                     {Math.round(advancedFilters.minHabitabilityScore * 100)}%
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="mt-4 grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">
-                    Anomaly Settings
-                  </label>
+                  <label className="mb-2 block text-sm text-gray-400">Anomaly Settings</label>
                   <div className="space-y-2">
                     <label className="flex items-center">
                       <input
@@ -1033,7 +1039,7 @@ export function ExplorationHub() {
                           anomalySeverity: e.target.value as 'any' | 'low' | 'medium' | 'high',
                         }))
                       }
-                      className="w-full px-2 py-1 bg-gray-700 rounded text-sm text-white"
+                      className="w-full rounded bg-gray-700 px-2 py-1 text-sm text-white"
                     >
                       <option value="any">Any Severity</option>
                       <option value="low">Low</option>
@@ -1043,9 +1049,7 @@ export function ExplorationHub() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">
-                    Last Scanned Within
-                  </label>
+                  <label className="mb-2 block text-sm text-gray-400">Last Scanned Within</label>
                   <select
                     value={advancedFilters.lastScannedWithin}
                     onChange={e =>
@@ -1054,7 +1058,7 @@ export function ExplorationHub() {
                         lastScannedWithin: parseInt(e.target.value),
                       }))
                     }
-                    className="w-full px-2 py-1 bg-gray-700 rounded text-sm text-white"
+                    className="w-full rounded bg-gray-700 px-2 py-1 text-sm text-white"
                   >
                     <option value={0}>Any Time</option>
                     <option value={24}>24 Hours</option>
@@ -1065,9 +1069,7 @@ export function ExplorationHub() {
               </div>
 
               <div className="mt-4">
-                <label className="text-sm text-gray-400 mb-2 block">
-                  Resource Types
-                </label>
+                <label className="mb-2 block text-sm text-gray-400">Resource Types</label>
                 <div className="flex flex-wrap gap-2">
                   {['Dark Matter', 'Helium-3', 'Rare Metals', 'Common Ores'].map(type => (
                     <button
@@ -1080,7 +1082,7 @@ export function ExplorationHub() {
                             : [...prev.resourceTypes, type],
                         }))
                       }
-                      className={`px-2 py-1 rounded text-sm ${
+                      className={`rounded px-2 py-1 text-sm ${
                         advancedFilters.resourceTypes.includes(type)
                           ? 'bg-teal-600 text-white'
                           : 'bg-gray-700 text-gray-400'
@@ -1141,7 +1143,7 @@ export function ExplorationHub() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-1/3 p-6 flex flex-col">
+      <div className="flex w-1/3 flex-col p-6">
         {selectedSector ? (
           <>
             <ExplorationControls sector={selectedSector} onClose={() => setSelectedSector(null)} />
@@ -1150,7 +1152,7 @@ export function ExplorationHub() {
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
+          <div className="flex h-full items-center justify-center text-gray-400">
             Select a sector to view details
           </div>
         )}

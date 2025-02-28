@@ -1,9 +1,10 @@
-import { SpaceRatShip } from '../../common/SpaceRatShip';
-import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
-import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
 import { AlertTriangle, Eye, EyeOff, Radar } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { FactionBehaviorType } from '../../../../types/ships/FactionTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { SpaceRatShip } from '../../common/SpaceRatShip';
 
 interface RogueNebulaProps {
   id: string;
@@ -21,6 +22,14 @@ interface RogueNebulaProps {
   position: { x: number; y: number };
   rotation: number;
 }
+
+// Helper function to create a FactionBehaviorType from string
+const createFactionBehavior = (behavior: string): FactionBehaviorType => {
+  return {
+    formation: 'standard',
+    behavior: behavior,
+  };
+};
 
 export function RogueNebula({
   id,
@@ -65,6 +74,9 @@ export function RogueNebula({
     }
   };
 
+  // Create a proper FactionBehaviorType for tactics
+  const tactics = createFactionBehavior('hit-and-run');
+
   return (
     <div className="relative">
       {/* Ship Base Component */}
@@ -78,7 +90,7 @@ export function RogueNebula({
         shield={shield}
         maxShield={maxShield}
         weapons={weapons}
-        tactics="hit-and-run"
+        tactics={tactics}
         onEngage={onEngage}
         onRetreat={onRetreat}
         onSpecialAbility={() => onSpecialAbility?.(stealthActive ? 'stealth' : 'scan')}
@@ -89,16 +101,16 @@ export function RogueNebula({
       />
 
       {/* Status Effects */}
-      <div className="absolute top-4 right-4 flex flex-col gap-2">
+      <div className="absolute right-4 top-4 flex flex-col gap-2">
         {stealthActive && (
-          <div className="px-2 py-1 bg-violet-500/20 text-violet-300 rounded-lg text-sm flex items-center gap-2">
-            <EyeOff className="w-4 h-4" />
+          <div className="flex items-center gap-2 rounded-lg bg-violet-500/20 px-2 py-1 text-sm text-violet-300">
+            <EyeOff className="h-4 w-4" />
             Stealth Active
           </div>
         )}
         {scanActive && (
-          <div className="px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded-lg text-sm flex items-center gap-2">
-            <Radar className="w-4 h-4" />
+          <div className="flex items-center gap-2 rounded-lg bg-cyan-500/20 px-2 py-1 text-sm text-cyan-300">
+            <Radar className="h-4 w-4" />
             Scan Active
           </div>
         )}
@@ -106,8 +118,8 @@ export function RogueNebula({
 
       {/* Warning indicator for damaged state */}
       {status === 'damaged' && (
-        <div className="absolute top-0 right-0 p-2">
-          <AlertTriangle className="w-6 h-6 text-yellow-500 animate-pulse" />
+        <div className="absolute right-0 top-0 p-2">
+          <AlertTriangle className="h-6 w-6 animate-pulse text-yellow-500" />
         </div>
       )}
 
@@ -120,9 +132,9 @@ export function RogueNebula({
             onSpecialAbility?.('stealth');
           }}
           disabled={status === 'disabled' || status === 'damaged'}
-          className="flex-1 px-4 py-2 bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 rounded-lg flex items-center justify-center gap-2"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-violet-500/20 px-4 py-2 text-violet-300 hover:bg-violet-500/30"
         >
-          {stealthActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          {stealthActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           Stealth
         </button>
         <button
@@ -132,9 +144,9 @@ export function RogueNebula({
             onSpecialAbility?.('scan');
           }}
           disabled={status === 'disabled' || status === 'damaged'}
-          className="flex-1 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 rounded-lg flex items-center justify-center gap-2"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-cyan-500/20 px-4 py-2 text-cyan-300 hover:bg-cyan-500/30"
         >
-          <Radar className="w-4 h-4" />
+          <Radar className="h-4 w-4" />
           Scan
         </button>
       </div>

@@ -166,4 +166,4 @@ export const explorationRules: AutomationRule[] = [
     ],
     interval: 60000, // Check every minute
   },
-]; 
+];

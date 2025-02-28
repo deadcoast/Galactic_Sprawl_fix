@@ -1,4 +1,4 @@
-import { OfficerTrait, TrainingConfig, SquadConfig } from '../types/officers/OfficerTypes';
+import { OfficerTrait, SquadConfig, TrainingConfig } from '../types/officers/OfficerTypes';
 
 /**
  * Officer trait configurations

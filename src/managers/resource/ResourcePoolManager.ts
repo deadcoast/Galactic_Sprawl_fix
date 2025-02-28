@@ -1,9 +1,8 @@
 import {
-  ResourceType,
-  ResourceState,
+  ResourceContainer,
   ResourcePool,
-  ResourceTransfer,
-  ResourceContainer
+  ResourceState,
+  ResourceType,
 } from '../../types/resources/ResourceTypes';
 import { isResourcePool } from '../../utils/resources/resourceValidation';
 
@@ -25,6 +24,9 @@ export interface PoolDistributionRule {
   maxAmount?: number;
   priority: number;
   condition?: (state: ResourceState) => boolean;
+  enabled?: boolean;
+  sourceId?: string;
+  amount?: number;
 }
 
 /**
@@ -274,6 +276,11 @@ export class ResourcePoolManager {
 
     // Process each rule
     for (const rule of sortedRules) {
+      // Skip disabled rules
+      if (rule.enabled === false) {
+        continue;
+      }
+
       const pool = this.pools.get(rule.poolId);
       if (!pool || !pool.resources) {
         continue;
@@ -294,12 +301,12 @@ export class ResourcePoolManager {
 
       // Calculate amount to distribute
       let amountToDistribute = resourceAmount * (rule.percentage / 100);
-      
+
       // Apply min/max constraints
       if (rule.minAmount !== undefined && amountToDistribute < rule.minAmount) {
         amountToDistribute = Math.min(rule.minAmount, resourceAmount);
       }
-      
+
       if (rule.maxAmount !== undefined && amountToDistribute > rule.maxAmount) {
         amountToDistribute = rule.maxAmount;
       }
@@ -344,7 +351,7 @@ export class ResourcePoolManager {
           poolId: rule.poolId,
           resourceType: rule.resourceType,
           allocations,
-          timestamp: now
+          timestamp: now,
         };
 
         results.push(result);
@@ -399,7 +406,7 @@ export class ResourcePoolManager {
     return targetIds.map(targetId => ({
       targetId,
       amount: equalAmount,
-      percentage
+      percentage,
     }));
   }
 
@@ -417,7 +424,8 @@ export class ResourcePoolManager {
         const container = this.containers.get(id);
         return {
           id,
-          priority: container && 'priority' in container ? (container as any).priority as number : 1
+          priority:
+            container && 'priority' in container ? ((container as any).priority as number) : 1,
         };
       })
       .sort((a, b) => (b.priority as number) - (a.priority as number));
@@ -436,7 +444,7 @@ export class ResourcePoolManager {
       return {
         targetId: container.id,
         amount: containerAmount,
-        percentage: containerPercentage
+        percentage: containerPercentage,
       };
     });
   }
@@ -482,7 +490,7 @@ export class ResourcePoolManager {
       return {
         targetId: container.id,
         amount: containerAmount,
-        percentage: containerPercentage
+        percentage: containerPercentage,
       };
     });
   }
@@ -497,28 +505,26 @@ export class ResourcePoolManager {
   ): Array<{ targetId: string; amount: number; percentage: number }> {
     // This is a placeholder for custom allocation logic
     // In a real implementation, this would use more complex rules
-    
+
     // For now, we'll use a combination of priority and demand
     const priorityAllocations = this.allocatePriority(targetIds, resourceType, amount);
     const demandAllocations = this.allocateDemandBased(targetIds, resourceType, amount);
-    
+
     // Combine allocations (50% priority, 50% demand)
     return targetIds.map(id => {
       const priorityAllocation = priorityAllocations.find(a => a.targetId === id);
       const demandAllocation = demandAllocations.find(a => a.targetId === id);
-      
-      const combinedAmount = 
-        ((priorityAllocation?.amount || 0) * 0.5) + 
-        ((demandAllocation?.amount || 0) * 0.5);
-      
-      const combinedPercentage = 
-        ((priorityAllocation?.percentage || 0) * 0.5) + 
-        ((demandAllocation?.percentage || 0) * 0.5);
-      
+
+      const combinedAmount =
+        (priorityAllocation?.amount || 0) * 0.5 + (demandAllocation?.amount || 0) * 0.5;
+
+      const combinedPercentage =
+        (priorityAllocation?.percentage || 0) * 0.5 + (demandAllocation?.percentage || 0) * 0.5;
+
       return {
         targetId: id,
         amount: combinedAmount,
-        percentage: combinedPercentage
+        percentage: combinedPercentage,
       };
     });
   }
@@ -541,18 +547,14 @@ export class ResourcePoolManager {
    * Get pools by type
    */
   public getPoolsByType(type: ResourceType): ResourcePool[] {
-    return Array.from(this.pools.values()).filter(
-      pool => pool.type === type
-    );
+    return Array.from(this.pools.values()).filter(pool => pool.type === type);
   }
 
   /**
    * Get distribution rules by pool ID
    */
   public getDistributionRulesByPool(poolId: string): PoolDistributionRule[] {
-    return Array.from(this.distributionRules.values()).filter(
-      rule => rule.poolId === poolId
-    );
+    return Array.from(this.distributionRules.values()).filter(rule => rule.poolId === poolId);
   }
 
   /**
@@ -588,48 +590,45 @@ export class ResourcePoolManager {
   }
 
   /**
-   * Distribute resources according to rules
+   * Transfer resources directly between containers
    */
-  public distributeResources(): void {
-    // Convert Map entries to array to avoid MapIterator error
-    const ruleEntries = Array.from(this.distributionRules.entries());
-    for (const [ruleId, rule] of ruleEntries) {
-      if (!rule.enabled) {
-        continue;
-      }
-      
-      // Get source container
-      const sourceContainer = this.containers.get(rule.sourceId);
-      if (!sourceContainer) {
-        console.warn(`Source container ${rule.sourceId} not found for rule ${ruleId}`);
-        continue;
-      }
-      
-      // Get target container
-      const targetContainer = this.containers.get(rule.targetId);
-      if (!targetContainer) {
-        console.warn(`Target container ${rule.targetId} not found for rule ${ruleId}`);
-        continue;
-      }
-      
-      // Check if source has enough resources
-      if (sourceContainer.resources[rule.resourceType] < rule.amount) {
-        continue;
-      }
-      
-      // Check if target has enough capacity
-      const targetCapacity = targetContainer.capacity[rule.resourceType] || 0;
-      const targetCurrent = targetContainer.resources[rule.resourceType] || 0;
-      if (targetCurrent + rule.amount > targetCapacity) {
-        continue;
-      }
-      
-      // Transfer resources
-      sourceContainer.resources[rule.resourceType] -= rule.amount;
-      targetContainer.resources[rule.resourceType] = (targetContainer.resources[rule.resourceType] || 0) + rule.amount;
-      
-      // Record transfer
-      this.recordTransfer(rule.sourceId, rule.targetId, rule.resourceType, rule.amount);
+  public transferDirectly(
+    sourceId: string,
+    targetId: string,
+    resourceType: ResourceType,
+    amount: number
+  ): boolean {
+    const sourceContainer = this.containers.get(sourceId);
+    const targetContainer = this.containers.get(targetId);
+
+    if (!sourceContainer || !targetContainer) {
+      console.error(`Source or target container not found: ${sourceId}, ${targetId}`);
+      return false;
     }
+
+    // Initialize resources maps if they don't exist
+    if (!sourceContainer.resources) {
+      sourceContainer.resources = new Map<ResourceType, number>();
+    }
+
+    if (!targetContainer.resources) {
+      targetContainer.resources = new Map<ResourceType, number>();
+    }
+
+    // Check if source has enough resources
+    const sourceAmount = sourceContainer.resources.get(resourceType) || 0;
+    if (sourceAmount < amount) {
+      console.error(`Insufficient ${resourceType} in source container ${sourceId}`);
+      return false;
+    }
+
+    // Transfer resources
+    const targetAmount = targetContainer.resources.get(resourceType) || 0;
+
+    // Update source and target containers
+    sourceContainer.resources.set(resourceType, sourceAmount - amount);
+    targetContainer.resources.set(resourceType, targetAmount + amount);
+
+    return true;
   }
-} 
+}

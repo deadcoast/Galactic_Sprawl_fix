@@ -1,13 +1,13 @@
+import { AlertTriangle, Crown, Shield } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { Crown, AlertTriangle, Shield } from 'lucide-react';
-import { FactionAI } from './FactionAI';
-import { DiplomacyPanel } from '../ui/DiplomacyPanel';
+import { factionConfigs } from '../../config/factions/factions';
 import { useFactionBehavior } from '../../hooks/factions/useFactionBehavior';
 import { useDebugOverlay } from '../../hooks/ui/useDebugOverlay';
-import { AIDebugOverlay } from '../debug/AIDebugOverlay';
-import { factionConfigs } from '../../config/factions/factions';
 import { factionManager, type FactionState } from '../../managers/factions/factionManager';
 import type { FactionId } from '../../types/ships/FactionTypes';
+import { AIDebugOverlay } from '../debug/AIDebugOverlay';
+import { DiplomacyPanel } from '../ui/DiplomacyPanel';
+import { FactionAI } from './FactionAI';
 
 interface FactionManagerProps {
   onFactionUpdate?: (factionId: string, state: FactionState) => void;
@@ -56,16 +56,16 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
   };
 
   return (
-    <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">
+    <div className="fixed inset-4 flex overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md">
       {/* Faction List */}
       <div className="w-1/3 border-r border-gray-700 p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Active Factions</h2>
           <button
             onClick={debugOverlay.toggleVisibility}
-            className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg"
+            className="rounded-lg bg-gray-800 p-2 hover:bg-gray-700"
           >
-            <Shield className="w-5 h-5 text-cyan-400" />
+            <Shield className="h-5 w-5 text-cyan-400" />
           </button>
         </div>
 
@@ -82,19 +82,19 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
               <button
                 key={factionId}
                 onClick={() => handleFactionSelect(factionId)}
-                className="w-full p-4 bg-gray-800/50 hover:bg-gray-800 rounded-lg text-left transition-all"
+                className="w-full rounded-lg bg-gray-800/50 p-4 text-left transition-all hover:bg-gray-800"
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className={`p-2 bg-${config.banner.primaryColor}/20 rounded-lg`}>
                       <config.banner.icon
-                        className={`w-5 h-5 text-${config.banner.primaryColor}-400`}
+                        className={`h-5 w-5 text-${config.banner.primaryColor}-400`}
                       />
                     </div>
-                    <span className="text-white font-medium">{config.name}</span>
+                    <span className="font-medium text-white">{config.name}</span>
                   </div>
                   <div
-                    className={`px-2 py-1 rounded-full text-xs ${
+                    className={`rounded-full px-2 py-1 text-xs ${
                       behavior.behaviorState.currentTactic === 'raid'
                         ? 'bg-red-900/50 text-red-400'
                         : behavior.behaviorState.currentTactic === 'defend'
@@ -107,7 +107,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
                 </div>
 
                 {/* Behavior Metrics */}
-                <div className="grid grid-cols-2 gap-2 mb-2">
+                <div className="mb-2 grid grid-cols-2 gap-2">
                   <div className="text-sm">
                     <span className="text-gray-400">Aggression: </span>
                     <span className="text-gray-200">
@@ -133,7 +133,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
                 {/* Special Rules Warning */}
                 {behavior.specialRules.alwaysHostile && (
                   <div className="mt-2 flex items-center space-x-2 text-xs text-red-400">
-                    <AlertTriangle className="w-4 h-4" />
+                    <AlertTriangle className="h-4 w-4" />
                     <span>Always Hostile</span>
                   </div>
                 )}
@@ -166,9 +166,9 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
             onUpdateBehavior={() => {}}
           />
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-400">
+          <div className="flex h-full items-center justify-center text-gray-400">
             <div className="text-center">
-              <Crown className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <Crown className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p>Select a faction to view details and manage relations</p>
             </div>
           </div>

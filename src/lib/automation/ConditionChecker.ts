@@ -1,8 +1,8 @@
-import { AutomationCondition } from '../../managers/game/AutomationManager';
-import { moduleManager } from '../../managers/module/ModuleManager';
-import { thresholdEvents } from '../../contexts/ThresholdTypes';
 import { Subject } from 'rxjs';
+import { thresholdEvents } from '../../contexts/ThresholdTypes';
+import { AutomationCondition } from '../../managers/game/AutomationManager';
 import { MiningShipManagerImpl } from '../../managers/mining/MiningShipManagerImpl';
+import { moduleManager } from '../../managers/module/ModuleManager';
 
 // Create a subject to handle condition state
 const conditionState = new Subject<{
@@ -179,7 +179,9 @@ export class ConditionChecker {
    */
   public async checkConditions(conditions: AutomationCondition[]): Promise<boolean> {
     try {
-      const results = await Promise.all(conditions.map(condition => this.checkCondition(condition)));
+      const results = await Promise.all(
+        conditions.map(condition => this.checkCondition(condition))
+      );
       return results.every(result => result);
     } catch (error) {
       console.error('Error checking conditions:', error);
@@ -195,4 +197,3 @@ export class ConditionChecker {
     this.lastCheckedTimes.delete(key);
   }
 }
-

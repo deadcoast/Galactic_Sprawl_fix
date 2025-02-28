@@ -1,9 +1,10 @@
-import { LostNovaShip } from '../../common/LostNovaShip';
-import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
-import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
 import { Target } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { FactionBehaviorType } from '../../../../types/ships/FactionTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { LostNovaShip } from '../../common/LostNovaShip';
 
 interface NullHunterProps {
   id: string;
@@ -21,6 +22,14 @@ interface NullHunterProps {
   position: { x: number; y: number };
   rotation: number;
 }
+
+// Helper function to create a FactionBehaviorType from string
+const createFactionBehavior = (behavior: string): FactionBehaviorType => {
+  return {
+    formation: 'standard',
+    behavior: behavior,
+  };
+};
 
 export function NullHunter({
   id,
@@ -63,6 +72,9 @@ export function NullHunter({
     }
   };
 
+  // Create a proper FactionBehaviorType for tactics
+  const tactics = createFactionBehavior('aggressive');
+
   return (
     <div className="relative">
       <LostNovaShip
@@ -78,7 +90,7 @@ export function NullHunter({
         stats={stats}
         position={position}
         rotation={rotation}
-        tactics="aggressive"
+        tactics={tactics}
         onEngage={onEngage}
         onRetreat={onRetreat}
         onFire={onFire}

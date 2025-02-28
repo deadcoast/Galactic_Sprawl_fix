@@ -3,16 +3,7 @@
  * @module WeaponUpgrades
  */
 
-import {
-  BaseWeaponStats,
-  WeaponCategory,
-  WeaponVariant,
-  WeaponUpgrade,
-  WeaponUpgradeType,
-  DamageEffect,
-  AreaEffect,
-} from './WeaponTypes';
-import { WeaponEffectType } from '../../effects/types_effects/WeaponEffects';
+import { AreaEffect, BaseWeaponStats, DamageEffect, WeaponUpgrade } from './WeaponTypes';
 
 // Upgrade Types
 // ------------------------------------------------------------

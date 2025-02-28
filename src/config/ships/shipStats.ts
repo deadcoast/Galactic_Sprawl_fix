@@ -1,8 +1,8 @@
 import { FactionShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
-import { SPACE_RATS_SHIPS } from './spaceRatsShips';
-import { LOST_NOVA_SHIPS } from './lostNovaShips';
 import { EQUATOR_HORIZON_SHIPS } from './equatorHorizonShips';
+import { LOST_NOVA_SHIPS } from './lostNovaShips';
+import { SPACE_RATS_SHIPS } from './spaceRatsShips';
 
 // Base template for unimplemented ships
 const BASE_SHIP_TEMPLATE: FactionShipStats = {
@@ -45,9 +45,11 @@ export function getShipStats(shipClass: FactionShipClass): FactionShipStats {
     // Return base template for unimplemented ships
     return {
       ...BASE_SHIP_TEMPLATE,
-      faction: shipClass.includes('lost-nova') ? 'lost-nova' :
-               shipClass.includes('equator-horizon') ? 'equator-horizon' :
-               'space-rats' as FactionId
+      faction: shipClass.includes('lost-nova')
+        ? 'lost-nova'
+        : shipClass.includes('equator-horizon')
+          ? 'equator-horizon'
+          : ('space-rats' as FactionId),
     };
   }
   return stats;

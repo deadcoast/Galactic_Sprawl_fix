@@ -1,11 +1,11 @@
 import {
+  EquatorHorizonConfig,
   EquatorHorizonShipClass,
   FactionConfig,
   LostNovaConfig,
   LostNovaShipClass,
   SpaceRatsConfig,
   SpaceRatsShipClass,
-  EquatorHorizonConfig,
 } from '../../types/ships/FactionShipTypes';
 import { FactionBehaviorType, FactionId } from '../../types/ships/FactionTypes';
 

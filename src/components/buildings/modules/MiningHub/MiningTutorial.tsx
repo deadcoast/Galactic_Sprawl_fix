@@ -57,31 +57,31 @@ export function MiningTutorial({ onClose }: MiningTutorialProps) {
   const Icon = step.icon;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-        <div className="flex items-center justify-between mb-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="mx-4 w-full max-w-md rounded-lg bg-gray-800 p-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-indigo-500/20 rounded-lg">
-              <Icon className="w-6 h-6 text-indigo-400" />
+            <div className="rounded-lg bg-indigo-500/20 p-2">
+              <Icon className="h-6 w-6 text-indigo-400" />
             </div>
             <h3 className="text-lg font-medium text-white">{step.title}</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-700 rounded-full transition-colors"
+            className="rounded-full p-1 transition-colors hover:bg-gray-700"
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="h-5 w-5 text-gray-400" />
           </button>
         </div>
 
-        <p className="text-gray-300 mb-6">{step.description}</p>
+        <p className="mb-6 text-gray-300">{step.description}</p>
 
         <div className="flex items-center justify-between">
           <div className="flex space-x-1">
             {tutorialSteps.map((_, index) => (
               <div
                 key={index}
-                className={`w-2 h-2 rounded-full ${
+                className={`h-2 w-2 rounded-full ${
                   index === currentStep ? 'bg-indigo-500' : 'bg-gray-600'
                 }`}
               />
@@ -90,10 +90,10 @@ export function MiningTutorial({ onClose }: MiningTutorialProps) {
 
           <button
             onClick={nextStep}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center space-x-2 transition-colors"
+            className="flex items-center space-x-2 rounded-lg bg-indigo-600 px-4 py-2 text-white transition-colors hover:bg-indigo-700"
           >
             <span>{currentStep === tutorialSteps.length - 1 ? 'Get Started' : 'Next'}</span>
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>

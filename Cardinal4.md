@@ -1,25 +1,273 @@
-# CARDINAL FOUR RULES
+# CodeBase Document Index (`CDI`)
 
-1. During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name, or methods used), especially about a fix to a mistake you made or a correction you received, you should take note in the `System_Architecture.md` file so you will not make the same mistake again.
+`CodeBase_Architecture.md` - For Specifics on the code base structure, methods, and architecture.
+`CodeBase_Mapping.md` - A Living file that is to be ONLY updated with specific files, their locations, and purpose.
+`CodeBase_Error_Log.md` - A File to log common issues while debugging, to AVOID them later in development.
+`CodeBase_System_Errors.ts` - The CURRENT Errors on the users IDE. When an error is fixed, that error should be REMOVED from this file.
 
-2. You must update the `System_Mapping.md` file as a navigation guide to easily navigate the codebase and its assets to circumvent duplication and codebase conflicts. 
+---
+
+# Workflow & Instructions(`WFI`)
+
+1. During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name, or methods used), especially about a fix to a mistake you made or a correction you received, you should take note in the `CodeBase_Architecture.md` file so you will not make the same mistake again.
+
+2. You must update the `CodeBase_Mapping.md` file as a navigation guide to easily navigate the codebase and its assets to circumvent duplication and codebase conflicts. a `CodeBase_Mapping.md` file should be ADDITIVE, not destructive. The point is to maintain a complete map of the entire code base. Do not remove entries or information from the file.
 
 3. You will operate on a sctrict workflow called `Rule of Seven` or `RO7`.
+
    1. Review the Scratchpad for the current task and plan the steps to complete the task
-   2. Search codebase for existing implementations and adjust the plan if necessary
+   2. Search `CodeBase_Mapping.md` for existing implementations, if none found search the codebase and adjust the plan if necessary
    3. Take action to complete the task
-   4. Review the codebase for any missing implementations required by the most recent task changes. 
+   4. Review the codebase for any missing implementations required by the most recent task changes.
    5. Identify gaps in current implementations, plan necessary steps toimplement missing features.
    6. Update the `Scratchpad` section.
-   7. Finally, update the `System_Architecture.md` and `System_Mapping.md` files for code base consistency.
+   7. Finally, update the `CodeBase_Architecture.md` and `CodeBase_Mapping.md` files for code base consistency.
 
 4. Use the `.cursorrules` file as a `Scratchpad` to organize your thoughts. Especially when you receive a new task, you should first review the content of the Scratchpad, clear old different task if necessary, first explain the task, and plan the steps you need to take to complete the task. You can use todo markers to indicate the progress, e.g.
+
 ```
 [X] Task 1
 [ ] Task 2
 ```
+
 Also update the progress of the task in the Scratchpad when you finish a subtask.
 Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan. You should add only small and essential notes with the `Scratchpad` plan.
 The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
 
-----
+# TypeScript Linting Correction Workflow (`TLC`)
+
+## Initial Setup & Assessment [RO7.1]
+
+1. **Get Current Linting Status and Analysis**:
+
+```bash
+# Generate a comprehensive analysis of linting issues
+node tools/analyze-lint-errors.js
+
+# View the current status and progress chart
+node tools/eslint-progress-chart.js
+```
+
+- Generates detailed breakdown of all linting issues by rule and file
+- Shows top problematic files and most common error types
+- Displays ASCII chart showing progress over time
+- Creates analysis report in lint-analysis-report.json
+
+2. **Generate Rule-Specific Analysis**:
+
+```bash
+# Analyze distribution of specific rule violations
+node tools/chart-eslint-by-rule.js @typescript-eslint/no-explicit-any
+```
+
+- Charts the distribution of a specific rule violation across directories
+- Identifies hotspots for targeted fixing
+- Shows which files have the most occurrences of a specific issue
+
+## Systematic Fix Strategy [RO7.3]
+
+### Phase 1: Auto-Fix Critical Issues
+
+1. **Run the Rule-Specific Fixer for Top Issues**:
+
+```bash
+# Fix the most common issue automatically
+node tools/fix-eslint-by-rule.js --auto
+
+# Fix critical TypeScript rules
+node tools/fix-eslint-by-rule.js no-unused-vars
+node tools/fix-eslint-by-rule.js prefer-const
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-explicit-any
+```
+
+- Automatically identifies and fixes the most common issues
+- Shows before/after counts for each rule
+- Uses batch processing to handle large codebases efficiently
+- Updates progress tracking after completion
+
+2. **Fix Prettier Formatting Issues**:
+
+```bash
+# Fix all formatting issues
+node tools/fix-eslint-by-rule.js --prettier
+```
+
+- Applies Prettier formatting across the entire codebase
+- Maintains consistent code style without affecting logic
+
+### Phase 2: Rule-Specific Targeted Fixes
+
+1. **Fix TypeScript-Specific Issues**:
+
+```bash
+# Fix TypeScript-specific rules using interactive mode
+node tools/fix-eslint-by-rule.js
+
+# Then select from the menu:
+# 1. @typescript-eslint/explicit-module-boundary-types
+# 2. @typescript-eslint/no-non-null-assertion
+```
+
+- Provides interactive selection of rules to fix
+- Shows count of issues for each rule before fixing
+- Allows fixing in batches to prevent overwhelming changes
+
+2. **Fix React-Specific Issues**:
+
+```bash
+# Fix React hook dependencies
+node tools/fix-eslint-by-rule.js react-hooks/exhaustive-deps
+
+# Fix component issues
+node tools/fix-eslint-by-rule.js react/jsx-key
+```
+
+- Corrects React-specific issues for better component reliability
+- Prevents stale closures and improves rendering performance
+
+3. **Fix Import-Related Issues**:
+
+```bash
+# Fix import ordering
+node tools/fix-eslint-by-rule.js import/order
+
+# Fix unused imports
+node tools/fix-eslint-by-rule.js no-unused-imports
+```
+
+- Cleans up imports for better code organization and smaller bundles
+- Ensures consistent import ordering throughout the codebase
+
+### Phase 3: File and Directory Targeting
+
+1. **Fix Issues in Specific Critical Paths**:
+
+```bash
+# Fix all issues in game loop with detailed reporting
+node tools/fix-eslint-by-rule.js . "src/game-loop"
+
+# Fix all issues in physics engine
+node tools/fix-eslint-by-rule.js . "src/physics"
+
+# Fix all issues in render engine with threshold
+node tools/fix-eslint-by-rule.js . "src/render-engine" --threshold=5
+```
+
+- Targets performance-critical code paths with customized fixing
+- Uses threshold option to focus on most important issues first
+- Provides detailed statistics for each directory
+
+2. **Fix Issues in Current File or Directory**:
+
+```bash
+# Fix all issues in the current file
+node tools/fix-eslint-by-rule.js . "${file}"
+
+# Fix specific rule in current file
+node tools/fix-eslint-by-rule.js rule-name "${file}"
+
+# Dry run to see what would be fixed
+node tools/fix-eslint-by-rule.js --dry-run "${file}"
+```
+
+- Allows targeted fixing during development
+- Provides preview option with --dry-run
+- Maintains code quality incrementally as you work
+
+### Progress Tracking [RO7.6]
+
+1. **Record Current Linting Status**:
+
+```bash
+# Add current linting status to the progress log
+node tools/track-eslint-progress.js
+
+# Add with details about top issues
+node tools/track-eslint-progress.js --details
+```
+
+- Creates timestamped progress entries
+- Analyzes top issues by rule and occurrence count
+- Provides suggestions for which rules to fix next
+- Generates statistics on fix rate and progress
+
+2. **View Progress Chart and Analysis**:
+
+```bash
+# Generate ASCII chart showing progress
+node tools/eslint-progress-chart.js
+
+# Show detailed trend analysis
+node tools/eslint-progress-chart.js --verbose
+```
+
+- Visualizes error reduction over time with ASCII chart
+- Calculates fix rates and estimates completion timeline
+- Shows trend lines for errors vs warnings
+- Provides statistical analysis of fixing progress
+
+### Batch Processing and Automation [RO7.4-5]
+
+1. **Process Files in Batches**:
+
+```bash
+# Fix issues in batches of 20 files
+node tools/fix-eslint-by-rule.js no-unused-vars --batch=20
+
+# Fix with threshold to focus on frequently occurring issues
+node tools/fix-eslint-by-rule.js --threshold=10
+```
+
+- Processes files in configurable batches to avoid overwhelming changes
+- Uses thresholds to prioritize the most common issues
+- Provides progress indicators during batch processing
+- Prevents memory issues with large codebases
+
+2. **Special Handling for Game Engine Code**:
+
+```bash
+# Fix issues with different severity based on directory
+node tools/fix-eslint-by-rule.js . "src/game-loop" --strict
+
+# Analyze critical code paths for potential issues
+node tools/analyze-lint-errors.js "src/game-loop,src/physics,src/render-engine"
+```
+
+- Applies stricter checking to performance-critical code
+- Generates focused analysis reports for game engine components
+- Ensures consistent quality in core game systems
+
+### Verification and Testing [RO7.5]
+
+1. **Verify Fixes with Type Checking**:
+
+```bash
+# Run type checking after fixes
+npm run type-check
+
+# Check for specific files or directories
+npx tsc --noEmit "src/game-loop/**/*.ts"
+```
+
+- Ensures fixes don't introduce type errors
+- Verifies TypeScript compatibility after changes
+- Catches potential runtime issues before they occur
+
+2. **Run Tests After Significant Changes**:
+
+```bash
+# Run tests to verify code still works
+npm run test
+
+# Run tests for specific components
+npm run test -- --testPathPattern=src/game-loop
+```
+
+- Confirms that fixes don't break functionality
+- Validates changes against test suite
+- Prevents regressions in critical game systems
+
+
+------------
+# Scratchpad
+------------

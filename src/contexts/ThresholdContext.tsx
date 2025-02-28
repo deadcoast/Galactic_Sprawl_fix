@@ -1,5 +1,5 @@
-import { ThresholdAction, ThresholdState, initialState, thresholdEvents } from './ThresholdTypes';
 import React, { ReactNode, createContext, useContext, useReducer } from 'react';
+import { ThresholdAction, ThresholdState, initialState, thresholdEvents } from './ThresholdTypes';
 
 // Types
 export interface Resource {

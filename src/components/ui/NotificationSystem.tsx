@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, CheckCircle, Info, X, AlertTriangle } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -142,7 +142,7 @@ export function NotificationSystem({
 
   return (
     <div
-      className={`fixed z-50 m-4 space-y-2 pointer-events-none ${positionClasses[position]}`}
+      className={`pointer-events-none fixed z-50 m-4 space-y-2 ${positionClasses[position]}`}
       style={{ maxWidth: '32rem' }}
     >
       <AnimatePresence>
@@ -156,20 +156,17 @@ export function NotificationSystem({
               initial={{ opacity: 0, y: position.startsWith('top') ? -20 : 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className={`
-                pointer-events-auto w-full p-4 ${colors.bg}
-                backdrop-blur-sm border ${colors.border} rounded-lg shadow-lg
-              `}
+              className={`pointer-events-auto w-full p-4 ${colors.bg} border backdrop-blur-sm ${colors.border} rounded-lg shadow-lg`}
             >
               <div className="flex items-start space-x-3">
-                <Icon className={`w-5 h-5 ${colors.text} flex-shrink-0 mt-0.5`} />
-                <div className="flex-1 min-w-0">
+                <Icon className={`h-5 w-5 ${colors.text} mt-0.5 flex-shrink-0`} />
+                <div className="min-w-0 flex-1">
                   <div className="font-medium text-gray-200">{notification.title}</div>
                   <div className="mt-1 text-sm text-gray-400">{notification.message}</div>
                   {notification.action && (
                     <button
                       onClick={notification.action.onClick}
-                      className={`mt-2 px-3 py-1 text-sm rounded-md ${colors.text} hover:bg-gray-800/50`}
+                      className={`mt-2 rounded-md px-3 py-1 text-sm ${colors.text} hover:bg-gray-800/50`}
                     >
                       {notification.action.label}
                     </button>
@@ -177,9 +174,9 @@ export function NotificationSystem({
                 </div>
                 <button
                   onClick={() => notificationManager.dismiss(notification.id)}
-                  className="flex-shrink-0 w-5 h-5 text-gray-400 hover:text-gray-300"
+                  className="h-5 w-5 flex-shrink-0 text-gray-400 hover:text-gray-300"
                 >
-                  <X className="w-full h-full" />
+                  <X className="h-full w-full" />
                 </button>
               </div>
             </motion.div>

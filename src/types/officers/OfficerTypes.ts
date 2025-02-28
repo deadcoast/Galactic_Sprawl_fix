@@ -3,8 +3,6 @@
  * @module OfficerTypes
  */
 
-import { ModuleType } from '../buildings/ModuleTypes';
-
 // Base Types
 // ------------------------------------------------------------
 

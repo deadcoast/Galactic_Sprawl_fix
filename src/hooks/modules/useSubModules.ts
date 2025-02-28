@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
-import { 
-  SubModule, 
-  SubModuleType, 
-  SubModuleConfig,
-  SubModuleEffect
-} from '../../types/buildings/ModuleTypes';
-import { subModuleManager } from '../../managers/module/SubModuleManager';
+import { useCallback, useEffect, useState } from 'react';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { subModuleManager } from '../../managers/module/SubModuleManager';
+import {
+  SubModule,
+  SubModuleConfig,
+  SubModuleEffect,
+  SubModuleType,
+} from '../../types/buildings/ModuleTypes';
 
 /**
  * Hook for managing sub-modules
@@ -90,12 +90,30 @@ export function useSubModules(parentModuleId?: string) {
     };
 
     // Subscribe to events
-    const unsubscribeCreated = moduleEventBus.subscribe('SUB_MODULE_CREATED' as ModuleEventType, handleSubModuleCreated);
-    const unsubscribeAttached = moduleEventBus.subscribe('SUB_MODULE_ATTACHED' as ModuleEventType, handleSubModuleAttached);
-    const unsubscribeDetached = moduleEventBus.subscribe('SUB_MODULE_DETACHED' as ModuleEventType, handleSubModuleDetached);
-    const unsubscribeUpgraded = moduleEventBus.subscribe('SUB_MODULE_UPGRADED' as ModuleEventType, handleSubModuleUpgraded);
-    const unsubscribeActivated = moduleEventBus.subscribe('SUB_MODULE_ACTIVATED' as ModuleEventType, handleSubModuleActivated);
-    const unsubscribeDeactivated = moduleEventBus.subscribe('SUB_MODULE_DEACTIVATED' as ModuleEventType, handleSubModuleDeactivated);
+    const unsubscribeCreated = moduleEventBus.subscribe(
+      'SUB_MODULE_CREATED' as ModuleEventType,
+      handleSubModuleCreated
+    );
+    const unsubscribeAttached = moduleEventBus.subscribe(
+      'SUB_MODULE_ATTACHED' as ModuleEventType,
+      handleSubModuleAttached
+    );
+    const unsubscribeDetached = moduleEventBus.subscribe(
+      'SUB_MODULE_DETACHED' as ModuleEventType,
+      handleSubModuleDetached
+    );
+    const unsubscribeUpgraded = moduleEventBus.subscribe(
+      'SUB_MODULE_UPGRADED' as ModuleEventType,
+      handleSubModuleUpgraded
+    );
+    const unsubscribeActivated = moduleEventBus.subscribe(
+      'SUB_MODULE_ACTIVATED' as ModuleEventType,
+      handleSubModuleActivated
+    );
+    const unsubscribeDeactivated = moduleEventBus.subscribe(
+      'SUB_MODULE_DEACTIVATED' as ModuleEventType,
+      handleSubModuleDeactivated
+    );
 
     // Cleanup function
     return () => {
@@ -161,9 +179,9 @@ export function useSubModules(parentModuleId?: string) {
     const success = subModuleManager.activateSubModule(subModuleId);
     if (success) {
       // Update local state
-      setSubModules(prev => prev.map(sm => 
-        sm.id === subModuleId ? { ...sm, isActive: true, status: 'active' } : sm
-      ));
+      setSubModules(prev =>
+        prev.map(sm => (sm.id === subModuleId ? { ...sm, isActive: true, status: 'active' } : sm))
+      );
     }
     return success;
   }, []);
@@ -173,9 +191,11 @@ export function useSubModules(parentModuleId?: string) {
     const success = subModuleManager.deactivateSubModule(subModuleId);
     if (success) {
       // Update local state
-      setSubModules(prev => prev.map(sm => 
-        sm.id === subModuleId ? { ...sm, isActive: false, status: 'inactive' } : sm
-      ));
+      setSubModules(prev =>
+        prev.map(sm =>
+          sm.id === subModuleId ? { ...sm, isActive: false, status: 'inactive' } : sm
+        )
+      );
     }
     return success;
   }, []);
@@ -185,9 +205,9 @@ export function useSubModules(parentModuleId?: string) {
     const success = subModuleManager.upgradeSubModule(subModuleId);
     if (success) {
       // Update local state
-      setSubModules(prev => prev.map(sm => 
-        sm.id === subModuleId ? { ...sm, level: sm.level + 1 } : sm
-      ));
+      setSubModules(prev =>
+        prev.map(sm => (sm.id === subModuleId ? { ...sm, level: sm.level + 1 } : sm))
+      );
     }
     return success;
   }, []);
@@ -218,19 +238,19 @@ export function useSubModules(parentModuleId?: string) {
   }, []);
 
   // Register a custom effect handler
-  const registerEffectHandler = useCallback((
-    effectType: string,
-    handler: (effect: SubModuleEffect, moduleId: string) => any
-  ) => {
-    subModuleManager.registerEffectHandler(effectType, handler);
-  }, []);
+  const registerEffectHandler = useCallback(
+    (effectType: string, handler: (effect: SubModuleEffect, moduleId: string) => any) => {
+      subModuleManager.registerEffectHandler(effectType, handler);
+    },
+    []
+  );
 
   return {
     // State
     subModules,
     isLoading,
     error,
-    
+
     // Actions
     createSubModule,
     attachSubModule,
@@ -238,15 +258,15 @@ export function useSubModules(parentModuleId?: string) {
     activateSubModule,
     deactivateSubModule,
     upgradeSubModule,
-    
+
     // Queries
     getSubModule,
     getSubModulesForParent,
     getSubModulesByType,
     getActiveSubModules,
-    
+
     // Registration
     registerSubModuleConfig,
-    registerEffectHandler
+    registerEffectHandler,
   };
-} 
+}

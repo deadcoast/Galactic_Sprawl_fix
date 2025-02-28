@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 export interface DragItem {
   id: string;
   type: 'module' | 'resource' | 'ship';
-  data: any;
+  data: Record<string, unknown>;
 }
 
 interface DragPreviewProps {
@@ -14,14 +14,14 @@ interface DragPreviewProps {
 function DragPreview({ item, currentOffset }: DragPreviewProps) {
   return (
     <div
-      className="fixed pointer-events-none z-50 opacity-75"
+      className="pointer-events-none fixed z-50 opacity-75"
       style={{
         left: currentOffset.x,
         top: currentOffset.y,
         transform: 'translate(-50%, -50%)',
       }}
     >
-      <div className="px-4 py-2 bg-gray-900/90 backdrop-blur-sm border border-gray-700 rounded-lg text-white">
+      <div className="rounded-lg border border-gray-700 bg-gray-900/90 px-4 py-2 text-white backdrop-blur-sm">
         {item.type === 'module' && <span>📦 {item.data.name}</span>}
         {item.type === 'resource' && (
           <span>
@@ -85,9 +85,7 @@ export function DropTarget({ accept, onDrop, children, className = '' }: DropTar
   return (
     <div
       ref={ref}
-      className={`${className} ${
-        isOver ? 'ring-2 ring-cyan-500 ring-opacity-50' : ''
-      }`}
+      className={`${className} ${isOver ? 'ring-2 ring-cyan-500 ring-opacity-50' : ''}`}
     >
       {children}
     </div>
@@ -131,7 +129,7 @@ export function Draggable({
 }
 
 interface UseDragAndDropProps {
-  onDrop?: (item: DragItem, target: any) => void;
+  onDrop?: (item: DragItem, target: HTMLElement) => void;
 }
 
 export function useDragAndDrop({ onDrop }: UseDragAndDropProps = {}) {
@@ -157,7 +155,7 @@ export function useDragAndDrop({ onDrop }: UseDragAndDropProps = {}) {
     setDraggedItem(null);
   };
 
-  const handleDrop = (item: DragItem, target: any) => {
+  const handleDrop = (item: DragItem, target: HTMLElement) => {
     onDrop?.(item, target);
     setDraggedItem(null);
   };
@@ -172,4 +170,4 @@ export function useDragAndDrop({ onDrop }: UseDragAndDropProps = {}) {
       <DragPreview item={draggedItem} currentOffset={dragPosition} />
     ) : null,
   };
-} 
+}

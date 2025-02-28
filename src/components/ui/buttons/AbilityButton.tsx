@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
+import { ReactNode } from 'react';
 
 interface AbilityButtonProps {
   /**
@@ -64,21 +64,9 @@ export function AbilityButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`
-        ability-button
-        flex-1 px-4 py-2
-        ${active ? `bg-${color}-500/30` : `bg-${color}-500/20`}
-        hover:bg-${color}-500/30
-        text-${color}-300
-        rounded-lg
-        flex items-center justify-center gap-2
-        text-sm font-medium
-        transition-colors
-        disabled:opacity-50
-        ${className}
-      `}
+      className={`ability-button flex-1 px-4 py-2 ${active ? `bg-${color}-500/30` : `bg-${color}-500/20`} hover:bg-${color}-500/30 text-${color}-300 flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${className} `}
     >
-      <Icon className="icon w-4 h-4" />
+      <Icon className="icon h-4 w-4" />
       <span>{label}</span>
       {children}
     </button>

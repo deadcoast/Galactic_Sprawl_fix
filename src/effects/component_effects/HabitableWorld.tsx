@@ -48,7 +48,7 @@ export function HabitableWorld({
 
   return (
     <div
-      className="relative w-64 h-64 cursor-pointer"
+      className="relative h-64 w-64 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
@@ -57,7 +57,7 @@ export function HabitableWorld({
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className={`relative w-48 h-48 rounded-full bg-gradient-to-br from-${color}-700 to-${color}-900 overflow-hidden`}
+            className={`relative h-48 w-48 rounded-full bg-gradient-to-br from-${color}-700 to-${color}-900 overflow-hidden`}
           >
             {/* Atmosphere Effect */}
             <div
@@ -91,7 +91,7 @@ export function HabitableWorld({
             {Array.from({ length: particleCount }).map((_, i) => (
               <div
                 key={i}
-                className="absolute w-1 h-1 bg-yellow-300 rounded-full"
+                className="absolute h-1 w-1 rounded-full bg-yellow-300"
                 style={{
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
@@ -103,7 +103,7 @@ export function HabitableWorld({
 
             {/* Development Ring */}
             <div
-              className={`absolute inset-0 border-2 rounded-full transition-all duration-500 ${
+              className={`absolute inset-0 rounded-full border-2 transition-all duration-500 ${
                 isHovered ? 'scale-110' : 'scale-100'
               }`}
               style={{
@@ -131,8 +131,8 @@ export function HabitableWorld({
                 transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
               }}
             >
-              <div className={`p-1 rounded-full bg-${color}-900/80 backdrop-blur-sm`}>
-                <Database className={`w-4 h-4 text-${color}-400`} />
+              <div className={`rounded-full p-1 bg-${color}-900/80 backdrop-blur-sm`}>
+                <Database className={`h-4 w-4 text-${color}-400`} />
               </div>
             </div>
           );
@@ -140,7 +140,7 @@ export function HabitableWorld({
       </div>
 
       {/* Planet Info */}
-      <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 space-y-2 w-48">
+      <div className="absolute -bottom-12 left-1/2 w-48 -translate-x-1/2 transform space-y-2">
         <div className="text-center">
           <div className={`text-${color}-200 font-medium`}>{name}</div>
           <div className={`text-${color}-300/70 text-sm capitalize`}>{type} World</div>
@@ -148,11 +148,11 @@ export function HabitableWorld({
 
         {/* Population Bar */}
         <div>
-          <div className="flex justify-between text-xs mb-1">
+          <div className="mb-1 flex justify-between text-xs">
             <span className="text-gray-400">Population</span>
             <span className="text-gray-300">{Math.round((population / maxPopulation) * 100)}%</span>
           </div>
-          <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full bg-${color}-500 rounded-full transition-all`}
               style={{ width: `${(population / maxPopulation) * 100}%` }}
@@ -163,18 +163,18 @@ export function HabitableWorld({
 
       {/* Anomaly Warnings */}
       {anomalies && anomalies.length > 0 && (
-        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 transform">
           {anomalies.map((anomaly, index) => (
             <div
               key={index}
-              className={`px-3 py-1 rounded-full flex items-center space-x-1 mb-1 ${
+              className={`mb-1 flex items-center space-x-1 rounded-full px-3 py-1 ${
                 anomaly.type === 'warning'
-                  ? 'bg-red-900/80 border border-red-700'
-                  : 'bg-blue-900/80 border border-blue-700'
+                  ? 'border border-red-700 bg-red-900/80'
+                  : 'border border-blue-700 bg-blue-900/80'
               }`}
             >
               <AlertTriangle
-                className={`w-3 h-3 ${
+                className={`h-3 w-3 ${
                   anomaly.type === 'warning' ? 'text-red-400' : 'text-blue-400'
                 }`}
               />

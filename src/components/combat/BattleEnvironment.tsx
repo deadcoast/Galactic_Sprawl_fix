@@ -1,13 +1,12 @@
+import { AlertTriangle, Shield, Zap } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CombatAutomationEffect } from '../../effects/component_effects/CombatAutomationEffect';
 import { useFleetAI } from '../../hooks/factions/useFleetAI';
 import { useGlobalEvents } from '../../hooks/game/useGlobalEvents';
 import { useVPR } from '../../hooks/ui/useVPR';
-import { AlertTriangle, Shield, Zap } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
-import { FactionId } from '../../types/ships/FactionTypes';
+import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { Position } from '../../types/core/GameTypes';
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { CombatAutomationEffect } from '../../effects/component_effects/CombatAutomationEffect';
-import { ModuleEvent } from '../../lib/modules/ModuleEvents';
+import { FactionId } from '../../types/ships/FactionTypes';
 
 interface HazardVPR {
   type: Hazard['type'];
@@ -168,15 +167,17 @@ export function BattleEnvironment({
   const activeHazardsRef = useRef(hazards);
   const particlePositionsRef = useRef<Record<string, Array<{ x: number; y: number }>>>({});
   const weaponEffectsRef = useRef<Record<string, { active: boolean; type: string }>>({});
-  
+
   // State that needs re-renders
   const [impactAnimations, setImpactAnimations] = useState<Record<string, boolean>>({});
-  const [automationEffects, setAutomationEffects] = useState<Array<{
-    id: string;
-    type: 'formation' | 'engagement' | 'repair' | 'shield' | 'attack' | 'retreat';
-    position: Position;
-    timestamp: number;
-  }>>([]);
+  const [automationEffects, setAutomationEffects] = useState<
+    Array<{
+      id: string;
+      type: 'formation' | 'engagement' | 'repair' | 'shield' | 'attack' | 'retreat';
+      position: Position;
+      timestamp: number;
+    }>
+  >([]);
 
   // Batch updates using requestAnimationFrame
   const requestUpdate = useCallback(() => {
@@ -191,32 +192,38 @@ export function BattleEnvironment({
   const fleetAIResult = useFleetAI(fleetId, factionId);
 
   // Memoize fleet AI result
-  const fleetAI = useMemo(() => ({
-    formationPatterns: fleetAIResult.formationPatterns,
-    adaptiveAI: fleetAIResult.adaptiveAI,
-    factionBehavior: {
-      aggressionLevel: fleetAIResult.factionBehavior.behaviorState.aggression,
-      territorialControl: {
-        facing: fleetAIResult.factionBehavior.territory.center.x || 0,
+  const fleetAI = useMemo(
+    () => ({
+      formationPatterns: fleetAIResult.formationPatterns,
+      adaptiveAI: fleetAIResult.adaptiveAI,
+      factionBehavior: {
+        aggressionLevel: fleetAIResult.factionBehavior.behaviorState.aggression,
+        territorialControl: {
+          facing: fleetAIResult.factionBehavior.territory.center.x || 0,
+        },
       },
-    },
-    visualFeedback: {
-      formationLines: {
-        points: [],
-        style: 'solid',
-        color: '#fff',
-        opacity: 0.5,
+      visualFeedback: {
+        formationLines: {
+          points: [],
+          style: 'solid',
+          color: '#fff',
+          opacity: 0.5,
+        },
+        rangeCircles: [],
       },
-      rangeCircles: [],
-    },
-  }), [fleetAIResult]);
+    }),
+    [fleetAIResult]
+  );
 
   // Memoize tech-enhanced values
-  const enhancedValues = useMemo(() => ({
-    detectionRadius: 1000 * techBonuses.detectionRange,
-    hazardResistance: Math.min(0.9, techBonuses.hazardResistance),
-    effectMultiplier: Math.max(0.1, techBonuses.effectPotency),
-  }), [techBonuses]);
+  const enhancedValues = useMemo(
+    () => ({
+      detectionRadius: 1000 * techBonuses.detectionRange,
+      hazardResistance: Math.min(0.9, techBonuses.hazardResistance),
+      effectMultiplier: Math.max(0.1, techBonuses.effectPotency),
+    }),
+    [techBonuses]
+  );
 
   // Optimize collision detection with spatial partitioning
   const spatialGrid = useMemo(() => {
@@ -227,7 +234,7 @@ export function BattleEnvironment({
       const cellX = Math.floor(unit.position.x / cellSize);
       const cellY = Math.floor(unit.position.y / cellSize);
       const cellKey = `${cellX},${cellY}`;
-      
+
       if (!grid[cellKey]) {
         grid[cellKey] = new Set();
       }
@@ -304,8 +311,8 @@ export function BattleEnvironment({
   // Optimize combat loop with worker
   useEffect(() => {
     const worker = new Worker(new URL('../../workers/combatWorker.ts', import.meta.url));
-    
-    worker.onmessage = (e) => {
+
+    worker.onmessage = e => {
       const { type, data } = e.data;
       switch (type) {
         case 'WEAPON_FIRE':
@@ -335,8 +342,12 @@ export function BattleEnvironment({
   // Optimize render with virtualization
   const virtualizedUnits = useMemo(() => {
     return units.filter(unit => {
-      return unit.position.x >= 0 && unit.position.x <= window.innerWidth &&
-                                unit.position.y >= 0 && unit.position.y <= window.innerHeight;
+      return (
+        unit.position.x >= 0 &&
+        unit.position.x <= window.innerWidth &&
+        unit.position.y >= 0 &&
+        unit.position.y <= window.innerHeight
+      );
     });
   }, [units]);
 
@@ -378,9 +389,7 @@ export function BattleEnvironment({
 
         // Cleanup old effects
         setTimeout(() => {
-          setAutomationEffects(prev =>
-            prev.filter(effect => Date.now() - effect.timestamp < 2000)
-          );
+          setAutomationEffects(prev => prev.filter(effect => Date.now() - effect.timestamp < 2000));
         }, 2000);
       }
     });
@@ -458,13 +467,13 @@ export function BattleEnvironment({
   }, [units, onUnitMove]);
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden">
       {/* Combat HUD - Only render visible units */}
-      <div className="absolute top-4 left-4 space-y-2">
+      <div className="absolute left-4 top-4 space-y-2">
         {virtualizedUnits.map(unit => (
           <div
             key={unit.id}
-            className={`px-3 py-2 rounded-lg bg-gray-900/80 backdrop-blur-sm border ${
+            className={`rounded-lg border bg-gray-900/80 px-3 py-2 backdrop-blur-sm ${
               unit.status === 'engaging'
                 ? 'border-red-500'
                 : unit.status === 'damaged'
@@ -475,7 +484,7 @@ export function BattleEnvironment({
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-300">{unit.type}</span>
               <span
-                className={`px-2 py-0.5 rounded-full text-xs ${
+                className={`rounded-full px-2 py-0.5 text-xs ${
                   unit.status === 'engaging'
                     ? 'bg-red-900/50 text-red-400'
                     : unit.status === 'damaged'
@@ -487,14 +496,14 @@ export function BattleEnvironment({
               </span>
             </div>
             {/* Health and Shield Bars */}
-            <div className="space-y-1 mt-1">
-              <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+            <div className="mt-1 space-y-1">
+              <div className="h-1 overflow-hidden rounded-full bg-gray-700">
                 <div
                   className="h-full bg-green-500 transition-all"
                   style={{ width: `${(unit.health / unit.maxHealth) * 100}%` }}
                 />
               </div>
-              <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-1 overflow-hidden rounded-full bg-gray-700">
                 <div
                   className="h-full bg-blue-500 transition-all"
                   style={{ width: `${(unit.shield / unit.maxShield) * 100}%` }}
@@ -521,9 +530,7 @@ export function BattleEnvironment({
           >
             {/* Enhanced Hazard Visualization */}
             <div
-              className={`rounded-full animate-pulse bg-${visuals.color}-500/20 relative overflow-hidden
-                ${impactAnimations[hazard.id] ? visuals.animations.impact : visuals.animations.idle}
-              `}
+              className={`animate-pulse rounded-full bg-${visuals.color}-500/20 relative overflow-hidden ${impactAnimations[hazard.id] ? visuals.animations.impact : visuals.animations.idle} `}
               style={{
                 width: `${hazard.radius * 2}px`,
                 height: `${hazard.radius * 2}px`,
@@ -535,9 +542,7 @@ export function BattleEnvironment({
                 particlePositionsRef.current[hazard.id]?.map((particle, index) => (
                   <div
                     key={index}
-                    className={`absolute w-1 h-1 rounded-full bg-${visuals.color}-400/50
-                    ${visuals.animations.active}
-                  `}
+                    className={`absolute h-1 w-1 rounded-full bg-${visuals.color}-400/50 ${visuals.animations.active} `}
                     style={{
                       left: `${particle.x}%`,
                       top: `${particle.y}%`,
@@ -551,26 +556,20 @@ export function BattleEnvironment({
                 className={`absolute inset-0 flex items-center justify-center ${visuals.animations.idle}`}
               >
                 {hazard.type === 'asteroids' && (
-                  <AlertTriangle className={`w-8 h-8 text-${visuals.color}-400`} />
+                  <AlertTriangle className={`h-8 w-8 text-${visuals.color}-400`} />
                 )}
                 {hazard.type === 'radiation' && (
-                  <Zap className={`w-8 h-8 text-${visuals.color}-400`} />
+                  <Zap className={`h-8 w-8 text-${visuals.color}-400`} />
                 )}
                 {hazard.type === 'anomaly' && (
-                  <Shield className={`w-8 h-8 text-${visuals.color}-400`} />
+                  <Shield className={`h-8 w-8 text-${visuals.color}-400`} />
                 )}
               </div>
             </div>
 
             {/* Enhanced Effect Indicator */}
             <div
-              className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 rounded-full 
-                bg-${visuals.color}-900/80 
-                border border-${visuals.color}-500/50 
-                text-${visuals.color}-200 
-                text-xs whitespace-nowrap
-                ${hazard.severity === 'high' ? 'animate-pulse' : ''}
-                ${visuals.animations.active}`}
+              className={`absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-full px-2 py-1 bg-${visuals.color}-900/80 border border-${visuals.color}-500/50 text-${visuals.color}-200 whitespace-nowrap text-xs ${hazard.severity === 'high' ? 'animate-pulse' : ''} ${visuals.animations.active}`}
             >
               {hazard.effect.type.charAt(0).toUpperCase() + hazard.effect.type.slice(1)}:{' '}
               {Math.round(
@@ -618,7 +617,7 @@ export function BattleEnvironment({
 
       {/* Formation Lines */}
       {fleetAI.visualFeedback && (
-        <svg className="absolute inset-0 pointer-events-none">
+        <svg className="pointer-events-none absolute inset-0">
           <path
             d={`M ${fleetAI.visualFeedback.formationLines.points.map((p: { x: number; y: number }) => `${p.x},${p.y}`).join(' L ')}`}
             stroke={fleetAI.visualFeedback.formationLines.color}

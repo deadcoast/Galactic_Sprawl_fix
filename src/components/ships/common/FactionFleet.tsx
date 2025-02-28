@@ -1,10 +1,10 @@
+import { AlertTriangle, Rocket, Shield, Sword } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { FormationTransitionEffect } from '../../../effects/component_effects/FormationTransitionEffect';
 import { useAdaptiveAI } from '../../../hooks/factions/useAdaptiveAI';
 import { useFleetAI } from '../../../hooks/factions/useFleetAI';
-import { AlertTriangle, Rocket, Shield, Sword } from 'lucide-react';
-import { FactionId } from '../../../types/ships/FactionTypes';
-import { FormationTransitionEffect } from '../../../effects/component_effects/FormationTransitionEffect';
-import { useEffect, useState } from 'react';
 import { Position } from '../../../types/core/GameTypes';
+import { FactionId } from '../../../types/ships/FactionTypes';
 
 interface FactionFleetProps {
   fleetId: string;
@@ -85,12 +85,12 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
+    <div className="rounded-lg bg-gray-800 p-6">
       {/* Fleet Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-indigo-500/20 rounded-lg">
-            <Rocket className="w-6 h-6 text-indigo-400" />
+          <div className="rounded-lg bg-indigo-500/20 p-2">
+            <Rocket className="h-6 w-6 text-indigo-400" />
           </div>
           <div>
             <h3 className="text-lg font-medium text-white">Fleet Control</h3>
@@ -103,16 +103,16 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
 
       {/* Formation Display */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2 flex items-center justify-between">
           <span className="text-sm font-medium text-gray-300">Current Formation</span>
           <span className="text-sm text-gray-400">{fleetAI.formation.type}</span>
         </div>
-        <div className="p-4 bg-gray-700/50 rounded-lg">
-          <div className="aspect-square relative">
+        <div className="rounded-lg bg-gray-700/50 p-4">
+          <div className="relative aspect-square">
             {/* Formation Shape */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div
-                className="w-2/3 h-2/3 transition-all duration-500"
+                className="h-2/3 w-2/3 transition-all duration-500"
                 style={{
                   clipPath: getFormationShape(fleetAI.formation.type),
                   transform: `rotate(${fleetAI.formation.facing}rad)`,
@@ -127,9 +127,19 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
               <FormationTransitionEffect
                 sourcePositions={previousFormation.positions}
                 targetPositions={fleetAI.currentPositions}
-                duration={fleetAI.formation.transitionSpeed ? fleetAI.formation.transitionSpeed * 1000 : 2000}
+                duration={
+                  fleetAI.formation.transitionSpeed
+                    ? fleetAI.formation.transitionSpeed * 1000
+                    : 2000
+                }
                 easingFunction={fleetAI.formation.adaptiveSpacing ? 'easeInOut' : 'linear'}
-                quality={adaptiveAI.performance.survivalRate > 0.7 ? 'high' : adaptiveAI.performance.survivalRate > 0.4 ? 'medium' : 'low'}
+                quality={
+                  adaptiveAI.performance.survivalRate > 0.7
+                    ? 'high'
+                    : adaptiveAI.performance.survivalRate > 0.4
+                      ? 'medium'
+                      : 'low'
+                }
                 pattern={fleetAI.formation.pattern}
                 onComplete={handleTransitionComplete}
               />
@@ -145,7 +155,7 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
                 return (
                   <div
                     key={i}
-                    className="absolute w-3 h-3 bg-indigo-400 rounded-full transition-all duration-500"
+                    className="absolute h-3 w-3 rounded-full bg-indigo-400 transition-all duration-500"
                     style={{
                       left: `${x}%`,
                       top: `${y}%`,
@@ -160,9 +170,9 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
       </div>
 
       {/* AI Adaptations */}
-      <div className="space-y-4 mb-6">
+      <div className="mb-6 space-y-4">
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Combat Style</span>
             <span
               className={
@@ -176,7 +186,7 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
               {adaptiveAI.adaptations.combatStyle}
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 adaptiveAI.adaptations.combatStyle === 'aggressive'
@@ -193,13 +203,13 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Engagement Range</span>
             <span className="text-cyan-400">{adaptiveAI.adaptations.preferredRange}</span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
-              className="h-full bg-cyan-500 rounded-full transition-all duration-500"
+              className="h-full rounded-full bg-cyan-500 transition-all duration-500"
               style={{
                 width: `${
                   adaptiveAI.adaptations.preferredRange === 'long'
@@ -215,15 +225,13 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
 
         {/* Formation Transition Speed */}
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Formation Speed</span>
-            <span className="text-amber-400">
-              {fleetAI.formation.transitionSpeed?.toFixed(1)}x
-            </span>
+            <span className="text-amber-400">{fleetAI.formation.transitionSpeed?.toFixed(1)}x</span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
-              className="h-full bg-amber-500 rounded-full transition-all duration-500"
+              className="h-full rounded-full bg-amber-500 transition-all duration-500"
               style={{
                 width: `${((fleetAI.formation.transitionSpeed || 1) / 2) * 100}%`,
               }}
@@ -233,15 +241,15 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
       </div>
 
       {/* Performance Metrics */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="p-3 bg-gray-700/50 rounded-lg">
-          <div className="text-sm text-gray-400 mb-1">Win Rate</div>
+      <div className="mb-6 grid grid-cols-2 gap-4">
+        <div className="rounded-lg bg-gray-700/50 p-3">
+          <div className="mb-1 text-sm text-gray-400">Win Rate</div>
           <div className="text-lg font-medium text-green-400">
             {Math.round(adaptiveAI.performance.winRate * 100)}%
           </div>
         </div>
-        <div className="p-3 bg-gray-700/50 rounded-lg">
-          <div className="text-sm text-gray-400 mb-1">Survival Rate</div>
+        <div className="rounded-lg bg-gray-700/50 p-3">
+          <div className="mb-1 text-sm text-gray-400">Survival Rate</div>
           <div className="text-lg font-medium text-blue-400">
             {Math.round(adaptiveAI.performance.survivalRate * 100)}%
           </div>
@@ -252,24 +260,24 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => onFleetCommand?.('engage')}
-          className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-lg text-sm text-red-200 flex items-center justify-center space-x-2"
+          className="flex items-center justify-center space-x-2 rounded-lg border border-red-500/30 bg-red-500/20 px-4 py-2 text-sm text-red-200 hover:bg-red-500/30"
         >
-          <Sword className="w-4 h-4" />
+          <Sword className="h-4 w-4" />
           <span>Engage Target</span>
         </button>
         <button
           onClick={() => onFleetCommand?.('defend')}
-          className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-sm text-blue-200 flex items-center justify-center space-x-2"
+          className="flex items-center justify-center space-x-2 rounded-lg border border-blue-500/30 bg-blue-500/20 px-4 py-2 text-sm text-blue-200 hover:bg-blue-500/30"
         >
-          <Shield className="w-4 h-4" />
+          <Shield className="h-4 w-4" />
           <span>Defensive Formation</span>
         </button>
       </div>
 
       {/* Warnings */}
       {adaptiveAI.performance.survivalRate < 0.4 && (
-        <div className="mt-4 p-3 bg-red-900/20 border border-red-700/30 rounded-lg flex items-start space-x-2">
-          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+        <div className="mt-4 flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3">
+          <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
           <span className="text-sm text-red-200">
             Fleet survival rate critical. Consider adjusting combat parameters.
           </span>

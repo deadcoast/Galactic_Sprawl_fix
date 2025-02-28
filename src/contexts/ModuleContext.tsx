@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
-import { BaseModule, ModuleType, ModularBuilding } from '../types/buildings/ModuleTypes';
-import { moduleManager } from '../managers/module/ModuleManager';
-import { Position } from '../types/core/GameTypes';
+import React, { createContext, ReactNode, useContext, useEffect, useReducer } from 'react';
 import { useGame } from '../contexts/GameContext';
+import { moduleManager } from '../managers/module/ModuleManager';
+import { BaseModule, ModularBuilding, ModuleType } from '../types/buildings/ModuleTypes';
+import { Position } from '../types/core/GameTypes';
 
 // State interface
 interface ModuleState {
@@ -158,7 +158,10 @@ export function useBuildingModules(buildingId: string) {
 }
 
 // Helper functions
-export function canBuildModule(moduleType: ModuleType, cost: { minerals?: number; energy?: number }) {
+export function canBuildModule(
+  moduleType: ModuleType,
+  cost: { minerals?: number; energy?: number }
+) {
   const { state } = useGame();
   const { state: moduleState } = useModules();
 
@@ -209,8 +212,11 @@ export function buildModule(moduleType: ModuleType, cost: { minerals?: number; e
   }
 
   // Create and attach the module
-  const position = targetBuilding.attachmentPoints.find(p => p.id === targetPoint)?.position || { x: 0, y: 0 };
-  
+  const position = targetBuilding.attachmentPoints.find(p => p.id === targetPoint)?.position || {
+    x: 0,
+    y: 0,
+  };
+
   dispatch({
     type: 'CREATE_MODULE',
     moduleType,

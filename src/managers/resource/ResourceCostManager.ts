@@ -1,10 +1,10 @@
 import {
-  ResourceType,
-  ResourceState,
+  ResourceContainer,
   ResourceCost,
-  ResourceContainer
+  ResourceState,
+  ResourceType,
 } from '../../types/resources/ResourceTypes';
-import { validateResourceCost, validateResourceCosts } from '../../utils/resources/resourceValidation';
+import { validateResourceCost } from '../../utils/resources/resourceValidation';
 
 /**
  * Cost validation result
@@ -144,20 +144,19 @@ export class ResourceCostManager {
       if (available < amount) {
         missingResources.push({
           type,
-          amount: amount - available
+          amount: amount - available,
         });
       }
     }
 
-    const affordabilityPercentage = totalRequired > 0 
-      ? Math.min(100, (totalAvailable / totalRequired) * 100) 
-      : 100;
+    const affordabilityPercentage =
+      totalRequired > 0 ? Math.min(100, (totalAvailable / totalRequired) * 100) : 100;
 
     return {
       valid: missingResources.length === 0,
       missingResources: missingResources.length > 0 ? missingResources : undefined,
       totalCost: costs,
-      affordabilityPercentage
+      affordabilityPercentage,
     };
   }
 
@@ -173,7 +172,7 @@ export class ResourceCostManager {
       discountPercentage = 0,
       applyTax = false,
       taxPercentage = 0,
-      roundValues = true
+      roundValues = true,
     } = options;
 
     return costs.map(cost => {
@@ -182,25 +181,25 @@ export class ResourceCostManager {
       // Apply global discount if enabled
       if (applyDiscount) {
         const globalDiscount = discountPercentage / 100;
-        adjustedAmount *= (1 - globalDiscount);
+        adjustedAmount *= 1 - globalDiscount;
       }
 
       // Apply resource-specific discount if available
       const resourceDiscount = this.discounts.get(cost.type) || 0;
       if (resourceDiscount > 0) {
-        adjustedAmount *= (1 - resourceDiscount / 100);
+        adjustedAmount *= 1 - resourceDiscount / 100;
       }
 
       // Apply global tax if enabled
       if (applyTax) {
         const globalTax = taxPercentage / 100;
-        adjustedAmount *= (1 + globalTax);
+        adjustedAmount *= 1 + globalTax;
       }
 
       // Apply resource-specific tax if available
       const resourceTax = this.taxes.get(cost.type) || 0;
       if (resourceTax > 0) {
-        adjustedAmount *= (1 + resourceTax / 100);
+        adjustedAmount *= 1 + resourceTax / 100;
       }
 
       // Round values if enabled
@@ -210,7 +209,7 @@ export class ResourceCostManager {
 
       return {
         type: cost.type,
-        amount: adjustedAmount
+        amount: adjustedAmount,
       };
     });
   }
@@ -218,11 +217,7 @@ export class ResourceCostManager {
   /**
    * Apply costs to resources (deduct resources)
    */
-  public applyCosts(
-    costs: ResourceCost[],
-    containerId?: string,
-    source?: string
-  ): boolean {
+  public applyCosts(costs: ResourceCost[], containerId?: string, source?: string): boolean {
     // Validate costs first
     const validation = this.validateCost(costs, containerId);
     if (!validation.valid) {
@@ -279,10 +274,10 @@ export class ResourceCostManager {
    */
   public calculateTieredCosts(baseCosts: ResourceCost[], level: number): ResourceCost[] {
     const scaleFactor = Math.pow(1.5, level - 1);
-    
+
     return baseCosts.map(cost => ({
       type: cost.type,
-      amount: Math.ceil(cost.amount * scaleFactor)
+      amount: Math.ceil(cost.amount * scaleFactor),
     }));
   }
 
@@ -300,7 +295,7 @@ export class ResourceCostManager {
       timestamp: Date.now(),
       source,
       target,
-      success
+      success,
     });
 
     // Trim history if needed
@@ -332,9 +327,7 @@ export class ResourceCostManager {
     target?: string;
     success: boolean;
   }> {
-    return this.costHistory.filter(entry => 
-      entry.costs.some(cost => cost.type === type)
-    );
+    return this.costHistory.filter(entry => entry.costs.some(cost => cost.type === type));
   }
 
   /**
@@ -347,4 +340,4 @@ export class ResourceCostManager {
     this.taxes.clear();
     this.costHistory = [];
   }
-} 
+}

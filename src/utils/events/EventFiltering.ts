@@ -1,6 +1,6 @@
-import { ModuleEvent, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { Observable, Subject, timer, of } from 'rxjs';
+import { Observable, timer } from 'rxjs';
 import { buffer, debounceTime, filter, groupBy, map, mergeMap } from 'rxjs/operators';
+import { ModuleEvent, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { MessagePriority, SystemMessage } from './EventCommunication';
 
 /**
@@ -28,7 +28,7 @@ export class EventPriorityQueue<T extends { priority?: number }> {
    */
   constructor(processor: (event: T) => Promise<void> | void) {
     this.processor = processor;
-    
+
     // Initialize queues for each priority level
     for (let i = 0; i <= 4; i++) {
       this.queues.set(i, []);
@@ -167,9 +167,7 @@ export function createFilteredStream<T>(
   source: Observable<T>,
   condition: FilterCondition<T>
 ): Observable<T> {
-  return source.pipe(
-    filter(condition)
-  );
+  return source.pipe(filter(condition));
 }
 
 /**
@@ -198,7 +196,7 @@ export function createBatchedStream<T, R>(
 export function createGroupedStream<T, K>(
   source: Observable<T>,
   keySelector: (event: T) => K
-): Observable<{ key: K, events: T[] }> {
+): Observable<{ key: K; events: T[] }> {
   return source.pipe(
     groupBy(keySelector),
     mergeMap(group => {
@@ -219,9 +217,7 @@ export function filterEventsByType(
   events: Observable<ModuleEvent>,
   type: ModuleEventType
 ): Observable<ModuleEvent> {
-  return events.pipe(
-    filter(event => event.type === type)
-  );
+  return events.pipe(filter(event => event.type === type));
 }
 
 /**
@@ -233,9 +229,7 @@ export function filterEventsByModuleId(
   events: Observable<ModuleEvent>,
   moduleId: string
 ): Observable<ModuleEvent> {
-  return events.pipe(
-    filter(event => event.moduleId === moduleId)
-  );
+  return events.pipe(filter(event => event.moduleId === moduleId));
 }
 
 /**
@@ -247,9 +241,7 @@ export function filterEventsByModuleType(
   events: Observable<ModuleEvent>,
   moduleType: string
 ): Observable<ModuleEvent> {
-  return events.pipe(
-    filter(event => event.moduleType === moduleType)
-  );
+  return events.pipe(filter(event => event.moduleType === moduleType));
 }
 
 /**
@@ -261,9 +253,7 @@ export function filterMessagesByType(
   messages: Observable<SystemMessage>,
   type: string
 ): Observable<SystemMessage> {
-  return messages.pipe(
-    filter(message => message.type === type)
-  );
+  return messages.pipe(filter(message => message.type === type));
 }
 
 /**
@@ -275,9 +265,7 @@ export function filterMessagesBySource(
   messages: Observable<SystemMessage>,
   source: string
 ): Observable<SystemMessage> {
-  return messages.pipe(
-    filter(message => message.source === source)
-  );
+  return messages.pipe(filter(message => message.source === source));
 }
 
 /**
@@ -295,12 +283,18 @@ export function filterMessagesByPriority(
     filter(message => {
       const messagePriority = message.priority;
       switch (comparison) {
-        case 'eq': return messagePriority === priority;
-        case 'lt': return messagePriority < priority;
-        case 'lte': return messagePriority <= priority;
-        case 'gt': return messagePriority > priority;
-        case 'gte': return messagePriority >= priority;
-        default: return messagePriority === priority;
+        case 'eq':
+          return messagePriority === priority;
+        case 'lt':
+          return messagePriority < priority;
+        case 'lte':
+          return messagePriority <= priority;
+        case 'gt':
+          return messagePriority > priority;
+        case 'gte':
+          return messagePriority >= priority;
+        default:
+          return messagePriority === priority;
       }
     })
   );
@@ -340,11 +334,11 @@ export function createDebouncedProcessor<T>(
   return {
     process: (event: T) => {
       lastEvent = event;
-      
+
       if (timeout) {
         clearTimeout(timeout);
       }
-      
+
       timeout = setTimeout(() => {
         if (lastEvent) {
           processor(lastEvent);
@@ -358,12 +352,12 @@ export function createDebouncedProcessor<T>(
         clearTimeout(timeout);
         timeout = null;
       }
-      
+
       if (lastEvent) {
         processor(lastEvent);
         lastEvent = null;
       }
-    }
+    },
   };
 }
 
@@ -382,7 +376,7 @@ export function createThrottledProcessor<T>(
 
   return (event: T) => {
     const now = Date.now();
-    
+
     if (now - lastProcessTime >= throttleMs) {
       // Process immediately
       lastProcessTime = now;
@@ -390,16 +384,19 @@ export function createThrottledProcessor<T>(
     } else {
       // Store for later processing
       pending = event;
-      
+
       if (!timeout) {
-        timeout = setTimeout(() => {
-          if (pending) {
-            processor(pending);
-            pending = null;
-          }
-          lastProcessTime = Date.now();
-          timeout = null;
-        }, throttleMs - (now - lastProcessTime));
+        timeout = setTimeout(
+          () => {
+            if (pending) {
+              processor(pending);
+              pending = null;
+            }
+            lastProcessTime = Date.now();
+            timeout = null;
+          },
+          throttleMs - (now - lastProcessTime)
+        );
       }
     }
   };
@@ -428,12 +425,12 @@ export function createBatchProcessor<T, R>(
     if (batch.length === 0) {
       return null;
     }
-    
+
     const currentBatch = [...batch];
     batch.length = 0;
-    
+
     const result = batchProcessor(currentBatch);
-    
+
     // Notify callbacks
     resultCallbacks.forEach(callback => {
       try {
@@ -442,14 +439,14 @@ export function createBatchProcessor<T, R>(
         console.error('Error in batch result callback:', error);
       }
     });
-    
+
     return result;
   };
 
   return {
     process: (event: T) => {
       batch.push(event);
-      
+
       if (batch.length >= maxBatchSize) {
         // Process immediately if batch is full
         if (timeout) {
@@ -477,7 +474,7 @@ export function createBatchProcessor<T, R>(
       return () => {
         resultCallbacks.delete(callback);
       };
-    }
+    },
   };
 }
 
@@ -493,14 +490,14 @@ export function createPriorityProcessor<T extends { priority?: number }>(
   return (event: T) => {
     const priority = event.priority !== undefined ? event.priority : defaultPriority;
     const processor = processors.get(priority);
-    
+
     if (processor) {
       processor(event);
     } else {
       // Find the closest priority processor
       let closestPriority: number | null = null;
       let minDistance = Infinity;
-      
+
       for (const p of processors.keys()) {
         const distance = Math.abs(p - priority);
         if (distance < minDistance) {
@@ -508,7 +505,7 @@ export function createPriorityProcessor<T extends { priority?: number }>(
           closestPriority = p;
         }
       }
-      
+
       if (closestPriority !== null) {
         const closestProcessor = processors.get(closestPriority);
         if (closestProcessor) {
@@ -517,4 +514,4 @@ export function createPriorityProcessor<T extends { priority?: number }>(
       }
     }
   };
-} 
+}

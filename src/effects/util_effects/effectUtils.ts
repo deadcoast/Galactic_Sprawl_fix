@@ -1,14 +1,14 @@
-import {
-  BaseEffect,
-  EffectType,
-  EffectStack,
-  WeaponEffect,
-  StatusEffect,
-  CombatEffect,
-  AreaEffect,
-} from '../types_effects/EffectTypes';
 import { Effect } from '../../types/core/GameTypes';
-import { WeaponEffectType, DamageEffect } from '../types_effects/WeaponEffects';
+import {
+  AreaEffect,
+  BaseEffect,
+  CombatEffect,
+  EffectStack,
+  EffectType,
+  StatusEffect,
+  WeaponEffect,
+} from '../types_effects/EffectTypes';
+import { DamageEffect } from '../types_effects/WeaponEffects';
 
 // Effect Creation
 // ------------------------------------------------------------
@@ -31,6 +31,7 @@ export function createEffect(
     magnitude,
     description,
     active: true,
+    duration: options.duration || 0,
     ...options,
   };
 }
@@ -153,10 +154,7 @@ export function isDamageEffect(effect: BaseEffect | Effect): effect is DamageEff
  */
 export function isAreaEffect(effect: BaseEffect | Effect): effect is AreaEffect {
   return (
-    isWeaponEffect(effect) &&
-    effect.type === 'area' &&
-    'radius' in effect &&
-    'falloff' in effect
+    isWeaponEffect(effect) && effect.type === 'area' && 'radius' in effect && 'falloff' in effect
   );
 }
 
@@ -164,11 +162,7 @@ export function isAreaEffect(effect: BaseEffect | Effect): effect is AreaEffect 
  * Type guard for status effects
  */
 export function isStatusEffect(effect: BaseEffect | Effect): effect is StatusEffect {
-  return (
-    isWeaponEffect(effect) &&
-    effect.type === 'status' &&
-    'statusType' in effect
-  );
+  return isWeaponEffect(effect) && effect.type === 'status' && 'statusType' in effect;
 }
 
 /**

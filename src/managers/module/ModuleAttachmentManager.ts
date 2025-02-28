@@ -1,18 +1,11 @@
+import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   BaseModule,
-  ModuleType,
-  ModuleConfig,
+  ModularBuilding,
   ModuleAttachmentPoint,
-  ModularBuilding
+  ModuleType,
 } from '../../types/buildings/ModuleTypes';
-import { Position } from '../../types/core/GameTypes';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { moduleManager } from './ModuleManager';
-import { 
-  validateModuleAttachmentPoint, 
-  canAttachModule,
-  validateModuleCompatibility
-} from '../../utils/modules/moduleValidation';
 
 /**
  * Attachment visualization options
@@ -53,7 +46,7 @@ export class ModuleAttachmentManager {
       showAttachmentPreview: true,
       animateAttachment: true,
       attachmentAnimationDuration: 500,
-      ...options
+      ...options,
     };
 
     // Subscribe to module events
@@ -66,8 +59,10 @@ export class ModuleAttachmentManager {
    */
   private handleModuleAttached = (event: any): void => {
     const { moduleId, buildingId, attachmentPointId } = event.data;
-    console.debug(`[ModuleAttachmentManager] Module ${moduleId} attached to building ${buildingId} at point ${attachmentPointId}`);
-    
+    console.debug(
+      `[ModuleAttachmentManager] Module ${moduleId} attached to building ${buildingId} at point ${attachmentPointId}`
+    );
+
     // Clear any previews or highlights for this building
     this.clearAttachmentVisualization(buildingId);
   };
@@ -77,7 +72,9 @@ export class ModuleAttachmentManager {
    */
   private handleModuleDetached = (event: any): void => {
     const { moduleId, buildingId, attachmentPointId } = event.data;
-    console.debug(`[ModuleAttachmentManager] Module ${moduleId} detached from building ${buildingId} at point ${attachmentPointId}`);
+    console.debug(
+      `[ModuleAttachmentManager] Module ${moduleId} detached from building ${buildingId} at point ${attachmentPointId}`
+    );
   };
 
   /**
@@ -98,7 +95,7 @@ export class ModuleAttachmentManager {
       position: { x: 0, y: 0 },
       isActive: false,
       level: 1,
-      status: 'inactive'
+      status: 'inactive',
     };
 
     // Find valid attachment points
@@ -118,8 +115,8 @@ export class ModuleAttachmentManager {
       data: {
         buildingId,
         validPoints: this.validAttachmentPoints.get(buildingId)?.map(p => p.id) || [],
-        incompatiblePoints: this.incompatibleAttachmentPoints.get(buildingId)?.map(p => p.id) || []
-      }
+        incompatiblePoints: this.incompatibleAttachmentPoints.get(buildingId)?.map(p => p.id) || [],
+      },
     });
   }
 
@@ -136,14 +133,18 @@ export class ModuleAttachmentManager {
       moduleId: 'none',
       moduleType: 'radar' as ModuleType, // Using a default module type
       timestamp: Date.now(),
-      data: { buildingId }
+      data: { buildingId },
     });
   }
 
   /**
    * Complete attachment process
    */
-  public completeAttachment(moduleType: ModuleType, buildingId: string, attachmentPointId: string): AttachmentResult {
+  public completeAttachment(
+    moduleType: ModuleType,
+    buildingId: string,
+    attachmentPointId: string
+  ): AttachmentResult {
     const building = moduleManager.getBuilding(buildingId);
     if (!building) {
       return { success: false, error: `Building ${buildingId} not found` };
@@ -156,30 +157,30 @@ export class ModuleAttachmentManager {
 
     // Check if attachment point is valid for this module type
     if (!attachmentPoint.allowedTypes.includes(moduleType)) {
-      return { 
-        success: false, 
-        error: `Module type ${moduleType} not allowed at attachment point ${attachmentPointId}` 
+      return {
+        success: false,
+        error: `Module type ${moduleType} not allowed at attachment point ${attachmentPointId}`,
       };
     }
 
     // Check if attachment point is already occupied
     if (attachmentPoint.currentModule) {
-      return { 
-        success: false, 
-        error: `Attachment point ${attachmentPointId} already has a module` 
+      return {
+        success: false,
+        error: `Attachment point ${attachmentPointId} already has a module`,
       };
     }
 
     // Create the actual module
-    const {position} = attachmentPoint;
+    const { position } = attachmentPoint;
     const module = moduleManager.createModule(moduleType, position);
 
     // Attach the module
     const attached = moduleManager.attachModule(module.id, buildingId, attachmentPointId);
     if (!attached) {
-      return { 
-        success: false, 
-        error: 'Failed to attach module' 
+      return {
+        success: false,
+        error: 'Failed to attach module',
       };
     }
 
@@ -191,7 +192,7 @@ export class ModuleAttachmentManager {
       success: true,
       moduleId: module.id,
       buildingId,
-      attachmentPointId
+      attachmentPointId,
     };
   }
 
@@ -229,11 +230,15 @@ export class ModuleAttachmentManager {
     const validPoints = this.validAttachmentPoints.get(buildingId) || [];
     const incompatiblePoints = this.incompatibleAttachmentPoints.get(buildingId) || [];
 
-    console.debug(`[ModuleAttachmentManager] Showing attachment visualization for building ${buildingId}`);
+    console.debug(
+      `[ModuleAttachmentManager] Showing attachment visualization for building ${buildingId}`
+    );
     console.debug(`Valid attachment points: ${validPoints.map(p => p.id).join(', ')}`);
-    
+
     if (this.visualizationOptions.highlightIncompatible) {
-      console.debug(`Incompatible attachment points: ${incompatiblePoints.map(p => p.id).join(', ')}`);
+      console.debug(
+        `Incompatible attachment points: ${incompatiblePoints.map(p => p.id).join(', ')}`
+      );
     }
   }
 
@@ -242,8 +247,10 @@ export class ModuleAttachmentManager {
    */
   private clearAttachmentVisualization(buildingId: string): void {
     // This would be implemented with actual UI visualization code
-    console.debug(`[ModuleAttachmentManager] Clearing attachment visualization for building ${buildingId}`);
-    
+    console.debug(
+      `[ModuleAttachmentManager] Clearing attachment visualization for building ${buildingId}`
+    );
+
     this.validAttachmentPoints.delete(buildingId);
     this.incompatibleAttachmentPoints.delete(buildingId);
   }
@@ -267,7 +274,9 @@ export class ModuleAttachmentManager {
     }
 
     // This would be implemented with actual UI preview code
-    console.debug(`[ModuleAttachmentManager] Showing attachment preview for module ${this.previewModule.type} at point ${attachmentPointId}`);
+    console.debug(
+      `[ModuleAttachmentManager] Showing attachment preview for module ${this.previewModule.type} at point ${attachmentPointId}`
+    );
   }
 
   /**
@@ -287,7 +296,11 @@ export class ModuleAttachmentManager {
   /**
    * Check if a module can be attached to a specific point
    */
-  public canAttachToPoint(moduleType: ModuleType, buildingId: string, attachmentPointId: string): boolean {
+  public canAttachToPoint(
+    moduleType: ModuleType,
+    buildingId: string,
+    attachmentPointId: string
+  ): boolean {
     const building = moduleManager.getBuilding(buildingId);
     if (!building) {
       return false;
@@ -322,9 +335,9 @@ export class ModuleAttachmentManager {
     );
 
     if (!attachmentPoint) {
-      return { 
-        success: false, 
-        error: `Module ${moduleId} not found in building ${buildingId}` 
+      return {
+        success: false,
+        error: `Module ${moduleId} not found in building ${buildingId}`,
       };
     }
 
@@ -344,21 +357,21 @@ export class ModuleAttachmentManager {
         timestamp: Date.now(),
         data: {
           buildingId,
-          attachmentPointId: attachmentPoint.id
-        }
+          attachmentPointId: attachmentPoint.id,
+        },
       });
 
       return {
         success: true,
         moduleId,
         buildingId,
-        attachmentPointId: attachmentPoint.id
+        attachmentPointId: attachmentPoint.id,
       };
     }
 
-    return { 
-      success: false, 
-      error: `Module ${moduleId} not found in building ${buildingId}` 
+    return {
+      success: false,
+      error: `Module ${moduleId} not found in building ${buildingId}`,
     };
   }
 
@@ -375,7 +388,7 @@ export class ModuleAttachmentManager {
   public updateVisualizationOptions(options: Partial<AttachmentVisualizationOptions>): void {
     this.visualizationOptions = {
       ...this.visualizationOptions,
-      ...options
+      ...options,
     };
   }
 
@@ -384,18 +397,24 @@ export class ModuleAttachmentManager {
    */
   public cleanup(): void {
     // Unsubscribe from events
-    const unsubscribeAttached = moduleEventBus.subscribe('MODULE_ATTACHED' as ModuleEventType, this.handleModuleAttached);
-    const unsubscribeDetached = moduleEventBus.subscribe('MODULE_DETACHED' as ModuleEventType, this.handleModuleDetached);
-    
+    const unsubscribeAttached = moduleEventBus.subscribe(
+      'MODULE_ATTACHED' as ModuleEventType,
+      this.handleModuleAttached
+    );
+    const unsubscribeDetached = moduleEventBus.subscribe(
+      'MODULE_DETACHED' as ModuleEventType,
+      this.handleModuleDetached
+    );
+
     // Call the unsubscribe functions
     if (typeof unsubscribeAttached === 'function') {
       unsubscribeAttached();
     }
-    
+
     if (typeof unsubscribeDetached === 'function') {
       unsubscribeDetached();
     }
-    
+
     // Clear data
     this.previewModule = null;
     this.validAttachmentPoints.clear();
@@ -404,4 +423,4 @@ export class ModuleAttachmentManager {
 }
 
 // Export singleton instance
-export const moduleAttachmentManager = new ModuleAttachmentManager(); 
+export const moduleAttachmentManager = new ModuleAttachmentManager();

@@ -1,6 +1,6 @@
-import { VisualEffect, VisualEffectConfig } from './VisualEffect';
 import { RenderBatcher } from '../../lib/optimization/RenderBatcher';
 import { Position } from '../../types/core/Position';
+import { VisualEffect, VisualEffectConfig } from './VisualEffect';
 
 interface ShieldImpactConfig extends VisualEffectConfig {
   radius: number;

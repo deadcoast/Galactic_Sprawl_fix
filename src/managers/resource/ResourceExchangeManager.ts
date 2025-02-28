@@ -1,8 +1,7 @@
 import {
-  ResourceType,
-  ResourceState,
   ResourceExchangeRate,
-  ResourceTransfer
+  ResourceState,
+  ResourceType,
 } from '../../types/resources/ResourceTypes';
 
 /**
@@ -34,6 +33,38 @@ export interface ExchangeRateModifier {
   affectedTypes: ResourceType[];
   multiplier: number;
   expiresAt?: number;
+  active?: boolean;
+  sourceType?: ResourceType;
+  targetType?: ResourceType;
+}
+
+/**
+ * Extended resource exchange rate with additional properties
+ */
+export interface ExtendedRate extends ResourceExchangeRate {
+  sourceType?: ResourceType;
+  targetType?: ResourceType;
+}
+
+/**
+ * Exchange path step
+ */
+export interface ExchangePathStep {
+  sourceType: ResourceType;
+  targetType: ResourceType;
+  rate: number;
+  inputAmount: number;
+  outputAmount: number;
+}
+
+/**
+ * Exchange path
+ */
+export interface ExchangePath {
+  steps: ExchangePathStep[];
+  totalRate: number;
+  inputAmount: number;
+  outputAmount: number;
 }
 
 /**
@@ -77,7 +108,7 @@ export class ResourceExchangeManager {
       rate: 0.5, // 2 minerals = 1 energy
       minAmount: 10,
       maxAmount: 1000,
-      cooldown: 5000
+      cooldown: 5000,
     });
 
     this.registerExchangeRate({
@@ -86,7 +117,7 @@ export class ResourceExchangeManager {
       rate: 1.8, // 1 energy = 1.8 minerals
       minAmount: 5,
       maxAmount: 500,
-      cooldown: 5000
+      cooldown: 5000,
     });
 
     this.registerExchangeRate({
@@ -95,7 +126,7 @@ export class ResourceExchangeManager {
       rate: 0.2, // 5 minerals = 1 research
       minAmount: 20,
       maxAmount: 2000,
-      cooldown: 10000
+      cooldown: 10000,
     });
 
     this.registerExchangeRate({
@@ -104,7 +135,7 @@ export class ResourceExchangeManager {
       rate: 0.3, // 3.33 energy = 1 research
       minAmount: 10,
       maxAmount: 1000,
-      cooldown: 10000
+      cooldown: 10000,
     });
 
     this.registerExchangeRate({
@@ -113,7 +144,7 @@ export class ResourceExchangeManager {
       rate: 2.0, // 1 gas = 2 energy
       minAmount: 5,
       maxAmount: 500,
-      cooldown: 5000
+      cooldown: 5000,
     });
 
     this.registerExchangeRate({
@@ -122,7 +153,7 @@ export class ResourceExchangeManager {
       rate: 3.0, // 1 plasma = 3 energy
       minAmount: 5,
       maxAmount: 300,
-      cooldown: 8000
+      cooldown: 8000,
     });
 
     this.registerExchangeRate({
@@ -131,7 +162,7 @@ export class ResourceExchangeManager {
       rate: 5.0, // 1 exotic = 5 research
       minAmount: 1,
       maxAmount: 100,
-      cooldown: 15000
+      cooldown: 15000,
     });
   }
 
@@ -181,7 +212,10 @@ export class ResourceExchangeManager {
   /**
    * Get current exchange rate
    */
-  public getExchangeRate(fromType: ResourceType, toType: ResourceType): ResourceExchangeRate | undefined {
+  public getExchangeRate(
+    fromType: ResourceType,
+    toType: ResourceType
+  ): ResourceExchangeRate | undefined {
     const rateKey = this.getRateKey(fromType, toType);
     return this.currentRates.get(rateKey);
   }
@@ -237,7 +271,9 @@ export class ResourceExchangeManager {
     }
 
     if (rate.maxAmount && amount > rate.maxAmount) {
-      console.warn(`Exchange amount ${amount} is above maximum ${rate.maxAmount}, capping at maximum`);
+      console.warn(
+        `Exchange amount ${amount} is above maximum ${rate.maxAmount}, capping at maximum`
+      );
       amount = rate.maxAmount;
     }
 
@@ -275,7 +311,7 @@ export class ResourceExchangeManager {
       rate: rate.rate,
       timestamp: Date.now(),
       source,
-      target
+      target,
     };
 
     this.transactions.push(transaction);
@@ -326,7 +362,7 @@ export class ResourceExchangeManager {
 
     // Apply market condition modifier
     const marketModifier = this.getMarketConditionModifier();
-    
+
     // Apply all active modifiers
     const now = Date.now();
     for (const [id, modifier] of this.modifiers.entries()) {
@@ -339,11 +375,8 @@ export class ResourceExchangeManager {
       // Apply modifier to affected rates
       for (const [rateKey, rate] of this.currentRates.entries()) {
         const [fromType, toType] = rateKey.split('-') as [ResourceType, ResourceType];
-        
-        if (
-          modifier.affectedTypes.includes(fromType) ||
-          modifier.affectedTypes.includes(toType)
-        ) {
+
+        if (modifier.affectedTypes.includes(fromType) || modifier.affectedTypes.includes(toType)) {
           rate.rate *= modifier.multiplier;
         }
       }
@@ -381,14 +414,14 @@ export class ResourceExchangeManager {
    */
   public updateMarketConditions(): void {
     const now = Date.now();
-    
+
     // Only update at specified intervals
     if (now - this.lastMarketUpdate < this.marketUpdateInterval) {
       return;
     }
-    
+
     this.lastMarketUpdate = now;
-    
+
     // Randomly change market condition
     const rand = Math.random();
     if (rand < 0.6) {
@@ -404,10 +437,10 @@ export class ResourceExchangeManager {
       // 10% chance to become bearish
       this.marketCondition = 'bearish';
     }
-    
+
     // Update rates based on new market condition
     this.updateCurrentRates();
-    
+
     console.debug(`[ResourceExchangeManager] Market condition updated to: ${this.marketCondition}`);
   }
 
@@ -464,15 +497,13 @@ export class ResourceExchangeManager {
       return {
         path: [fromType, toType],
         rate: directRate.rate,
-        amount: amount * directRate.rate
+        amount: amount * directRate.rate,
       };
     }
 
     // All resource types
     const allTypes = Array.from(
-      new Set(
-        Array.from(this.currentRates.values()).flatMap(rate => [rate.fromType, rate.toType])
-      )
+      new Set(Array.from(this.currentRates.values()).flatMap(rate => [rate.fromType, rate.toType]))
     );
 
     // Initialize distances
@@ -542,7 +573,7 @@ export class ResourceExchangeManager {
     return {
       path,
       rate: distances.get(toType) || 0,
-      amount: amount * (distances.get(toType) || 0)
+      amount: amount * (distances.get(toType) || 0),
     };
   }
 
@@ -565,21 +596,34 @@ export class ResourceExchangeManager {
     // Convert Map entries to array to avoid MapIterator error
     const modifierEntries = Array.from(this.modifiers.entries());
     for (const [id, modifier] of modifierEntries) {
-      if (!modifier.active) {
+      // Check if modifier has active property and it's false
+      if (modifier.active === false) {
         continue;
       }
-      
+
       // Convert Map entries to array to avoid MapIterator error
       const rateEntries = Array.from(this.currentRates.entries());
       for (const [rateKey, rate] of rateEntries) {
-        if (modifier.sourceType && rate.sourceType !== modifier.sourceType) {
+        // Cast to extended type for compatibility
+        const extendedRate = rate as ExtendedRate;
+        const extendedModifier = modifier as ExchangeRateModifier;
+
+        // Check if modifier has sourceType and if it matches the rate's sourceType
+        if (
+          extendedModifier.sourceType &&
+          extendedRate.sourceType !== extendedModifier.sourceType
+        ) {
           continue;
         }
-        
-        if (modifier.targetType && rate.targetType !== modifier.targetType) {
+
+        // Check if modifier has targetType and if it matches the rate's targetType
+        if (
+          extendedModifier.targetType &&
+          extendedRate.targetType !== extendedModifier.targetType
+        ) {
           continue;
         }
-        
+
         // Apply modifier
         const newRate = { ...rate };
         newRate.rate *= modifier.multiplier;
@@ -591,73 +635,86 @@ export class ResourceExchangeManager {
   /**
    * Find optimal exchange path
    */
-  private findOptimalPath(sourceType: ResourceType, targetType: ResourceType, amount: number): ExchangePath | null {
+  private findOptimalPath(
+    sourceType: ResourceType,
+    targetType: ResourceType,
+    amount: number
+  ): ExchangePath | null {
     // Direct exchange
     const directKey = this.getRateKey(sourceType, targetType);
     const directRate = this.currentRates.get(directKey);
-    
+
     if (directRate) {
       return {
-        steps: [{
-          sourceType,
-          targetType,
-          rate: directRate.rate,
-          inputAmount: amount,
-          outputAmount: amount * directRate.rate
-        }],
+        steps: [
+          {
+            sourceType,
+            targetType,
+            rate: directRate.rate,
+            inputAmount: amount,
+            outputAmount: amount * directRate.rate,
+          },
+        ],
         totalRate: directRate.rate,
         inputAmount: amount,
-        outputAmount: amount * directRate.rate
+        outputAmount: amount * directRate.rate,
       };
     }
-    
+
     // Try to find a path with one intermediate step
     let bestPath: ExchangePath | null = null;
     let bestRate = 0;
-    
+
     // Convert Map entries to array to avoid MapIterator error
     const rateEntries = Array.from(this.currentRates.entries());
     for (const [rateKey, rate] of rateEntries) {
-      if (rate.sourceType !== sourceType) {
+      // Cast to extended type for compatibility
+      const extendedRate = rate as ExtendedRate;
+
+      if (extendedRate.sourceType !== sourceType) {
         continue;
       }
-      
-      const intermediateType = rate.targetType;
+
+      const intermediateType = extendedRate.targetType;
+      if (!intermediateType) {
+        continue;
+      }
+
       const secondKey = this.getRateKey(intermediateType, targetType);
       const secondRate = this.currentRates.get(secondKey);
-      
+
       if (!secondRate) {
         continue;
       }
-      
-      const totalRate = rate.rate * secondRate.rate;
+
+      const totalRate = extendedRate.rate * secondRate.rate;
       if (totalRate > bestRate) {
         bestRate = totalRate;
-        const intermediateAmount = amount * rate.rate;
+        const intermediateAmount = amount * extendedRate.rate;
         bestPath = {
           steps: [
             {
               sourceType,
               targetType: intermediateType,
-              rate: rate.rate,
+              rate: extendedRate.rate,
               inputAmount: amount,
-              outputAmount: intermediateAmount
+              outputAmount: intermediateAmount,
             },
             {
               sourceType: intermediateType,
               targetType,
               rate: secondRate.rate,
               inputAmount: intermediateAmount,
-              outputAmount: intermediateAmount * secondRate.rate
-            }
+              outputAmount: intermediateAmount * secondRate.rate,
+            },
           ],
           totalRate,
           inputAmount: amount,
-          outputAmount: amount * totalRate
+          outputAmount: amount * totalRate,
         };
       }
     }
-    
+
     return bestPath;
   }
-} 
+}

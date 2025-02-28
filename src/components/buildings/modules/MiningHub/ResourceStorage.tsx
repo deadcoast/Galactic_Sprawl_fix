@@ -16,8 +16,8 @@ interface ResourceStorageProps {
 
 export function ResourceStorage({ storageData }: ResourceStorageProps) {
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
-      <h3 className="text-sm font-medium text-white mb-4">Resource Storage</h3>
+    <div className="rounded-lg bg-gray-800 p-4">
+      <h3 className="mb-4 text-sm font-medium text-white">Resource Storage</h3>
       <div className="space-y-4">
         {storageData.map(resource => {
           const usagePercentage = (resource.currentAmount / resource.maxCapacity) * 100;
@@ -27,7 +27,7 @@ export function ResourceStorage({ storageData }: ResourceStorageProps) {
             <div key={resource.id} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Database className="w-4 h-4 text-indigo-400" />
+                  <Database className="h-4 w-4 text-indigo-400" />
                   <span className="text-sm text-gray-200">{resource.resourceType}</span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -36,13 +36,13 @@ export function ResourceStorage({ storageData }: ResourceStorageProps) {
                     {resource.maxCapacity.toLocaleString()}
                   </span>
                   {isNearCapacity && (
-                    <AlertTriangle className="w-4 h-4 text-yellow-500 animate-pulse" />
+                    <AlertTriangle className="h-4 w-4 animate-pulse text-yellow-500" />
                   )}
                 </div>
               </div>
 
               {/* Storage Bar */}
-              <div className="relative h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div className="relative h-2 overflow-hidden rounded-full bg-gray-700">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     isNearCapacity ? 'bg-yellow-500' : 'bg-indigo-500'
@@ -55,13 +55,13 @@ export function ResourceStorage({ storageData }: ResourceStorageProps) {
               {resource.refiningAmount > 0 && (
                 <div className="flex items-center space-x-2 text-xs">
                   <div className="flex-1">
-                    <div className="flex justify-between text-gray-400 mb-1">
+                    <div className="mb-1 flex justify-between text-gray-400">
                       <span>Refining</span>
                       <span>{Math.round(resource.refiningProgress * 100)}%</span>
                     </div>
-                    <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-1 overflow-hidden rounded-full bg-gray-700">
                       <div
-                        className="h-full bg-teal-500 rounded-full transition-all"
+                        className="h-full rounded-full bg-teal-500 transition-all"
                         style={{ width: `${resource.refiningProgress * 100}%` }}
                       />
                     </div>

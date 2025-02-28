@@ -1,20 +1,20 @@
 import { v4 as uuidv4 } from 'uuid';
-import { EventEmitter } from '../../utils/EventEmitter';
-import { moduleEventBus, ModuleEvent, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { OFFICER_TRAITS, SQUAD_CONFIG, TRAINING_CONFIG } from '../../config/OfficerConfig';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { techTreeManager } from '../../managers/game/techTreeManager';
+import type { ModuleType } from '../../types/buildings/ModuleTypes';
 import type {
-  OfficerEvents,
   OfficerManager as IOfficerManager,
   Officer,
+  OfficerEvents,
   OfficerRole,
+  OfficerSkills,
   OfficerSpecialization,
+  OfficerTier,
   Squad,
   TrainingProgram,
-  OfficerTier,
-  OfficerSkills,
 } from '../../types/officers/OfficerTypes';
-import { OFFICER_TRAITS, TRAINING_CONFIG, SQUAD_CONFIG } from '../../config/OfficerConfig';
-import type { ModuleType } from '../../types/buildings/ModuleTypes';
+import { EventEmitter } from '../../utils/EventEmitter';
 
 type TechNodeUnlockedEvent = {
   nodeId: string;

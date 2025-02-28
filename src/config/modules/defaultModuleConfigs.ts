@@ -217,4 +217,4 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       upkeep: 50,
     },
   },
-}; 
+};

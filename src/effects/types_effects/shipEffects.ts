@@ -1,5 +1,5 @@
+import { AreaEffect as BaseAreaEffect, BaseEffect } from './EffectTypes';
 import { DamageEffect, AreaEffect as WeaponAreaEffect } from './WeaponEffects';
-import { Effect, AreaEffect } from '../../types/core/GameTypes';
 
 // Weapon Effects
 export const PLASMA_EFFECT: DamageEffect = {
@@ -13,6 +13,7 @@ export const PLASMA_EFFECT: DamageEffect = {
   strength: 20,
   damageType: 'energy',
   penetration: 10,
+  id: 'plasma-effect',
 };
 
 export const GAUSS_EFFECT: DamageEffect = {
@@ -26,6 +27,7 @@ export const GAUSS_EFFECT: DamageEffect = {
   strength: 50,
   damageType: 'physical',
   penetration: 30,
+  id: 'gauss-effect',
 };
 
 export const EXPLOSIVE_EFFECT: WeaponAreaEffect = {
@@ -39,10 +41,12 @@ export const EXPLOSIVE_EFFECT: WeaponAreaEffect = {
   strength: 60,
   radius: 60,
   falloff: 0.5,
+  id: 'explosive-effect',
 };
 
 // Ability Effects
-export const DAMAGE_BOOST_EFFECT: Effect = {
+export const DAMAGE_BOOST_EFFECT: BaseEffect = {
+  id: 'damage-boost-effect',
   type: 'damage',
   name: 'Damage Boost',
   description: 'Increases weapon damage',
@@ -50,16 +54,19 @@ export const DAMAGE_BOOST_EFFECT: Effect = {
   duration: 12,
 };
 
-export const SHIELD_FIELD_EFFECT: AreaEffect = {
+export const SHIELD_FIELD_EFFECT: BaseAreaEffect = {
+  id: 'shield-field-effect',
   type: 'shield',
   name: 'Shield Field',
   description: 'Creates a powerful shield field',
   magnitude: 2.0,
   duration: 15,
   radius: 500,
+  position: { x: 0, y: 0 },
 };
 
-export const SPEED_BOOST_EFFECT: Effect = {
+export const SPEED_BOOST_EFFECT: BaseEffect = {
+  id: 'speed-boost-effect',
   type: 'speed',
   name: 'Speed Boost',
   description: 'Increases movement speed',
@@ -67,7 +74,8 @@ export const SPEED_BOOST_EFFECT: Effect = {
   duration: 5,
 };
 
-export const STEALTH_EFFECT: Effect = {
+export const STEALTH_EFFECT: BaseEffect = {
+  id: 'stealth-effect',
   type: 'stealth',
   name: 'Stealth Field',
   description: 'Reduces detection range',
@@ -75,11 +83,13 @@ export const STEALTH_EFFECT: Effect = {
   duration: 8,
 };
 
-export const SPEED_REDUCTION_EFFECT: AreaEffect = {
+export const SPEED_REDUCTION_EFFECT: BaseAreaEffect = {
+  id: 'speed-reduction-effect',
   type: 'speed',
   name: 'Speed Reduction',
   description: 'Creates a field that slows enemies',
   magnitude: 0.6,
   duration: 9,
   radius: 300,
+  position: { x: 0, y: 0 },
 };

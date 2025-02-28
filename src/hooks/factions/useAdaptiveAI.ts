@@ -1,6 +1,6 @@
+import { useEffect, useState } from 'react';
 import { combatManager } from '../../managers/combat/combatManager';
 import { factionManager } from '../../managers/factions/factionManager';
-import { useEffect, useState } from 'react';
 
 interface AdaptiveAIState {
   learningRate: number;

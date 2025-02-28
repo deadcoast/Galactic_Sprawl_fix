@@ -1,34 +1,34 @@
 import { v4 as uuidv4 } from 'uuid';
-import { EventEmitter } from '../../lib/utils/EventEmitter';
-import { moduleEventBus, ModuleEvent } from '../../lib/modules/ModuleEvents';
-import { techTreeManager } from '../game/techTreeManager';
-import { ResourceManager } from '../game/ResourceManager';
-import { Tier, Effect } from '../../types/core/GameTypes';
-import { ResourceCost } from '../../types/resources/ResourceTypes';
-import { PlayerShipClass, PlayerShipCategory } from '../../types/ships/PlayerShipTypes';
-import { CommonShip, CommonShipStats, CommonShipAbility } from '../../types/ships/CommonShipTypes';
 import { SHIP_BLUEPRINTS, ShipBlueprint } from '../../config/ShipBlueprints';
-import {
-  WeaponMount,
-  WeaponCategory,
-  WeaponMountSize,
-  WeaponMountPosition,
-  WeaponStatus,
-  WeaponConfig,
-} from '../../types/weapons/WeaponTypes';
-import { Officer } from '../../types/officers/OfficerTypes';
+import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { EventEmitter } from '../../lib/utils/EventEmitter';
 import {
   ShipHangarManager as IShipHangarManager,
-  ShipHangarState,
-  ShipHangarEvents,
   ShipBuildQueueItem,
-  ShipHangarBay,
   ShipBuildRequirements,
-  ShipUpgradeStats,
+  ShipHangarBay,
+  ShipHangarEvents,
+  ShipHangarState,
   ShipUpgradeInfo,
   ShipUpgradeRequirement,
+  ShipUpgradeStats,
   ShipVisualUpgrade,
 } from '../../types/buildings/ShipHangarTypes';
+import { Effect, Tier } from '../../types/core/GameTypes';
+import { Officer } from '../../types/officers/OfficerTypes';
+import { ResourceCost } from '../../types/resources/ResourceTypes';
+import { CommonShip, CommonShipAbility, CommonShipStats } from '../../types/ships/CommonShipTypes';
+import { PlayerShipCategory, PlayerShipClass } from '../../types/ships/PlayerShipTypes';
+import {
+  WeaponCategory,
+  WeaponConfig,
+  WeaponMount,
+  WeaponMountPosition,
+  WeaponMountSize,
+  WeaponStatus,
+} from '../../types/weapons/WeaponTypes';
+import { ResourceManager } from '../game/ResourceManager';
+import { techTreeManager } from '../game/techTreeManager';
 import { OfficerManager } from './OfficerManager';
 
 // Extend CommonShip to include state
@@ -648,7 +648,7 @@ export class ShipHangarManager
    */
   public update(): void {
     const now = Date.now();
-    let completedItems: ShipBuildQueueItem[] = [];
+    const completedItems: ShipBuildQueueItem[] = [];
 
     // Update progress for each building item
     this.state.buildQueue.forEach(item => {

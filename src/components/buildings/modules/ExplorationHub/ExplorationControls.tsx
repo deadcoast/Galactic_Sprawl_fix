@@ -26,20 +26,20 @@ interface ExplorationControlsProps {
 
 export function ExplorationControls({ sector, onClose }: ExplorationControlsProps) {
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex h-full flex-col">
+      <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-bold text-white">{sector.name}</h2>
-        <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
-          <X className="w-5 h-5 text-gray-400" />
+        <button onClick={onClose} className="rounded-lg p-2 transition-colors hover:bg-gray-800">
+          <X className="h-5 w-5 text-gray-400" />
         </button>
       </div>
 
       {/* Sector Status */}
-      <div className="bg-gray-800 rounded-lg p-4 mb-4">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 rounded-lg bg-gray-800 p-4">
+        <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-medium text-white">Sector Status</h3>
           <div
-            className={`px-2 py-1 rounded text-sm ${
+            className={`rounded px-2 py-1 text-sm ${
               sector.status === 'mapped'
                 ? 'bg-green-900/50 text-green-400'
                 : sector.status === 'scanning'
@@ -54,26 +54,26 @@ export function ExplorationControls({ sector, onClose }: ExplorationControlsProp
         {sector.status !== 'unmapped' && (
           <div className="space-y-4">
             <div>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="mb-1 flex justify-between text-sm">
                 <span className="text-gray-400">Resource Potential</span>
                 <span className="text-teal-400">{Math.round(sector.resourcePotential * 100)}%</span>
               </div>
-              <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-2 overflow-hidden rounded-full bg-gray-700">
                 <div
-                  className="h-full bg-teal-500 rounded-full"
+                  className="h-full rounded-full bg-teal-500"
                   style={{ width: `${sector.resourcePotential * 100}%` }}
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="mb-1 flex justify-between text-sm">
                 <span className="text-gray-400">Habitability Score</span>
                 <span className="text-teal-400">{Math.round(sector.habitabilityScore * 100)}%</span>
               </div>
-              <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-2 overflow-hidden rounded-full bg-gray-700">
                 <div
-                  className="h-full bg-teal-500 rounded-full"
+                  className="h-full rounded-full bg-teal-500"
                   style={{ width: `${sector.habitabilityScore * 100}%` }}
                 />
               </div>
@@ -84,24 +84,24 @@ export function ExplorationControls({ sector, onClose }: ExplorationControlsProp
 
       {/* Anomalies */}
       {sector.anomalies.length > 0 && (
-        <div className="bg-gray-800 rounded-lg p-4 mb-4">
-          <h3 className="text-sm font-medium text-white mb-3">Detected Anomalies</h3>
+        <div className="mb-4 rounded-lg bg-gray-800 p-4">
+          <h3 className="mb-3 text-sm font-medium text-white">Detected Anomalies</h3>
           <div className="space-y-2">
             {sector.anomalies.map(anomaly => (
               <div
                 key={anomaly.id}
-                className={`p-3 rounded-lg ${
+                className={`rounded-lg p-3 ${
                   anomaly.severity === 'high'
-                    ? 'bg-red-900/20 border border-red-700/30'
+                    ? 'border border-red-700/30 bg-red-900/20'
                     : anomaly.severity === 'medium'
-                      ? 'bg-yellow-900/20 border border-yellow-700/30'
-                      : 'bg-blue-900/20 border border-blue-700/30'
+                      ? 'border border-yellow-700/30 bg-yellow-900/20'
+                      : 'border border-blue-700/30 bg-blue-900/20'
                 }`}
               >
-                <div className="flex items-center justify-between mb-1">
+                <div className="mb-1 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <AlertTriangle
-                      className={`w-4 h-4 ${
+                      className={`h-4 w-4 ${
                         anomaly.severity === 'high'
                           ? 'text-red-400'
                           : anomaly.severity === 'medium'
@@ -128,17 +128,17 @@ export function ExplorationControls({ sector, onClose }: ExplorationControlsProp
 
       {/* Quick Actions */}
       <div className="mt-auto">
-        <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
+        <div className="mb-2 flex items-center justify-between text-sm text-gray-400">
           <span>Quick Actions</span>
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="h-4 w-4" />
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <button className="px-4 py-2 bg-teal-600/20 hover:bg-teal-600/30 border border-teal-500/30 rounded-lg text-teal-200 text-sm transition-colors flex items-center justify-center space-x-2">
-            <Rocket className="w-4 h-4" />
+          <button className="flex items-center justify-center space-x-2 rounded-lg border border-teal-500/30 bg-teal-600/20 px-4 py-2 text-sm text-teal-200 transition-colors hover:bg-teal-600/30">
+            <Rocket className="h-4 w-4" />
             <span>Deploy Recon Ship</span>
           </button>
-          <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-300 text-sm transition-colors flex items-center justify-center space-x-2">
-            <Map className="w-4 h-4" />
+          <button className="flex items-center justify-center space-x-2 rounded-lg bg-gray-800 px-4 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-700">
+            <Map className="h-4 w-4" />
             <span>View Analytics</span>
           </button>
         </div>

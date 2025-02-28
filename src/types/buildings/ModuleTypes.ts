@@ -34,14 +34,14 @@ export type ModuleType =
 
 // Sub-module types
 export type SubModuleType =
-  | 'enhancer'    // Enhances parent module capabilities
-  | 'converter'   // Converts resources or outputs
-  | 'processor'   // Processes inputs or outputs
-  | 'storage'     // Provides additional storage
-  | 'efficiency'  // Improves efficiency
-  | 'automation'  // Adds automation capabilities
+  | 'enhancer' // Enhances parent module capabilities
+  | 'converter' // Converts resources or outputs
+  | 'processor' // Processes inputs or outputs
+  | 'storage' // Provides additional storage
+  | 'efficiency' // Improves efficiency
+  | 'automation' // Adds automation capabilities
   | 'specialized' // Specialized functionality
-  | 'utility';    // General utility functions
+  | 'utility'; // General utility functions
 
 // Sub-module interface
 export interface SubModule {
@@ -59,18 +59,18 @@ export interface SubModule {
 
 // Sub-module effect types
 export type SubModuleEffectType =
-  | 'stat_boost'      // Boosts a stat
-  | 'resource_boost'  // Boosts resource production/consumption
-  | 'unlock_ability'  // Unlocks a new ability
-  | 'reduce_cost'     // Reduces costs
-  | 'automation'      // Adds automation
-  | 'special';        // Special effects
+  | 'stat_boost' // Boosts a stat
+  | 'resource_boost' // Boosts resource production/consumption
+  | 'unlock_ability' // Unlocks a new ability
+  | 'reduce_cost' // Reduces costs
+  | 'automation' // Adds automation
+  | 'special'; // Special effects
 
 // Sub-module effect interface
 export interface SubModuleEffect {
   type: SubModuleEffectType;
-  target: string;     // What the effect targets (stat name, resource type, etc.)
-  value: number;      // Effect value (percentage or absolute)
+  target: string; // What the effect targets (stat name, resource type, etc.)
+  value: number; // Effect value (percentage or absolute)
   isPercentage: boolean; // Whether the value is a percentage
   description: string;
 }

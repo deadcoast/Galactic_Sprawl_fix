@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useReducer, ReactNode, useCallback, useEffect, useState } from 'react';
-import { GameEvent, GameEventType } from '../types/core/GameTypes';
+import React, { createContext, ReactNode, useCallback, useContext, useReducer } from 'react';
+import { GameEvent } from '../types/core/GameTypes';
 import { Ship } from '../types/ships/Ship';
 
 interface SectorData {
@@ -62,13 +62,16 @@ interface GameState {
   };
   exploration: {
     sectors: Record<string, SectorData>;
-    ships: Record<string, {
-      id: string;
-      status: 'idle' | 'scanning' | 'investigating' | 'returning';
-      experience: number;
-      stealthActive: boolean;
-      currentTask?: string;
-    }>;
+    ships: Record<
+      string,
+      {
+        id: string;
+        status: 'idle' | 'scanning' | 'investigating' | 'returning';
+        experience: number;
+        stealthActive: boolean;
+        currentTask?: string;
+      }
+    >;
   };
 }
 
@@ -84,7 +87,11 @@ type GameAction =
   | { type: 'ADD_MISSION'; mission: GameState['missions']['history'][0] }
   | { type: 'UPDATE_MISSION_STATS'; stats: Partial<GameState['missions']['statistics']> }
   | { type: 'UPDATE_SECTOR'; sectorId: string; data: Partial<SectorData> }
-  | { type: 'UPDATE_SHIP'; shipId: string; data: Partial<GameState['exploration']['ships'][string]> };
+  | {
+      type: 'UPDATE_SHIP';
+      shipId: string;
+      data: Partial<GameState['exploration']['ships'][string]>;
+    };
 
 // Initial State
 const initialState: GameState = {
@@ -211,7 +218,10 @@ interface GameContextType {
   dispatch: React.Dispatch<GameAction>;
   updateShip: (shipId: string, updates: Partial<Ship>) => void;
   addMission: (mission: GameState['missions']['history'][0]) => void;
-  updateSector: (sectorId: string, updates: Partial<GameState['exploration']['sectors'][0]>) => void;
+  updateSector: (
+    sectorId: string,
+    updates: Partial<GameState['exploration']['sectors'][0]>
+  ) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -227,7 +237,7 @@ export function GameProvider({ children }: GameProviderProps) {
   const updateShip = useCallback((shipId: string, updates: Partial<Ship>) => {
     // Extract status and other updates separately to ensure type safety
     const { status, experience, stealthActive, position, destination, ...otherUpdates } = updates;
-    
+
     dispatch({
       type: 'UPDATE_SHIP',
       shipId,
@@ -237,8 +247,8 @@ export function GameProvider({ children }: GameProviderProps) {
         ...(stealthActive !== undefined && { stealthActive }),
         ...(position && { position }),
         ...(destination && { destination }),
-        ...otherUpdates
-      }
+        ...otherUpdates,
+      },
     });
   }, []);
 
@@ -246,9 +256,12 @@ export function GameProvider({ children }: GameProviderProps) {
     dispatch({ type: 'ADD_MISSION', mission });
   }, []);
 
-  const updateSector = useCallback((sectorId: string, updates: Partial<GameState['exploration']['sectors'][0]>) => {
-    dispatch({ type: 'UPDATE_SECTOR', sectorId, data: updates });
-  }, []);
+  const updateSector = useCallback(
+    (sectorId: string, updates: Partial<GameState['exploration']['sectors'][0]>) => {
+      dispatch({ type: 'UPDATE_SECTOR', sectorId, data: updates });
+    },
+    []
+  );
 
   return (
     <GameContext.Provider

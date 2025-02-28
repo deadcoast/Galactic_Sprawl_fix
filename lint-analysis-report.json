@@ -1,0 +1,255 @@
+{
+  "summary": {
+    "total": 377,
+    "errors": 163,
+    "warnings": 214,
+    "files": 325
+  },
+  "topRules": [
+    [
+      "@typescript-eslint/no-unused-vars",
+      {
+        "errors": 19,
+        "warnings": 120
+      }
+    ],
+    [
+      "@typescript-eslint/no-explicit-any",
+      {
+        "errors": 130,
+        "warnings": 0
+      }
+    ],
+    [
+      "no-console",
+      {
+        "errors": 0,
+        "warnings": 94
+      }
+    ],
+    [
+      "@typescript-eslint/no-require-imports",
+      {
+        "errors": 9,
+        "warnings": 0
+      }
+    ],
+    [
+      "react-hooks/exhaustive-deps",
+      {
+        "errors": 2,
+        "warnings": 0
+      }
+    ],
+    [
+      "no-constant-condition",
+      {
+        "errors": 1,
+        "warnings": 0
+      }
+    ],
+    [
+      "no-undef",
+      {
+        "errors": 1,
+        "warnings": 0
+      }
+    ],
+    [
+      "@typescript-eslint/ban-ts-comment",
+      {
+        "errors": 1,
+        "warnings": 0
+      }
+    ]
+  ],
+  "topFiles": [
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/weapons/WeaponEffectManager.ts",
+      17
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/factions/useFactionBehavior.ts",
+      16
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/tools/fix-eslint-by-rule.js",
+      16
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/game/AsteroidFieldManager.ts",
+      15
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/initialization/eventSystemInit.ts",
+      13
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/mining/MiningResourceIntegration.ts",
+      13
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module/SubModuleManager.ts",
+      13
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/weapons/weaponEffectUtils.ts",
+      12
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/App.tsx",
+      10
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/GameHUD.tsx",
+      9
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module/ModuleAttachmentManager.ts",
+      9
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module/ShipHangarManager.ts",
+      8
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/typeConversions.ts",
+      8
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/modules/useSubModules.ts",
+      7
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/initialization/automationSystemInit.ts",
+      7
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/initialization/moduleFrameworkInit.ts",
+      7
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/automation/GlobalAutomationManager.ts",
+      7
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource/ResourceIntegration.ts",
+      7
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/resources/resourceValidation.ts",
+      7
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/combat/combatManager.ts",
+      6
+    ]
+  ],
+  "topDirs": [
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module",
+      {
+        "errors": 11,
+        "warnings": 25
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/initialization",
+      {
+        "errors": 10,
+        "warnings": 20
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/tools",
+      {
+        "errors": 26,
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource",
+      {
+        "errors": 1,
+        "warnings": 22
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/game",
+      {
+        "errors": 0,
+        "warnings": 18
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/weapons",
+      {
+        "errors": 1,
+        "warnings": 17
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/factions",
+      {
+        "errors": 0,
+        "warnings": 16
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/mining",
+      {
+        "errors": 8,
+        "warnings": 6
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/effects/component_effects",
+      {
+        "errors": 0,
+        "warnings": 13
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/modules",
+      {
+        "errors": 12,
+        "warnings": 1
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui",
+      {
+        "errors": 0,
+        "warnings": 12
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/events",
+      {
+        "errors": 5,
+        "warnings": 7
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/weapons",
+      {
+        "errors": 11,
+        "warnings": 1
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src",
+      {
+        "errors": 0,
+        "warnings": 10
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/combat",
+      {
+        "errors": 9,
+        "warnings": 0
+      }
+    ]
+  ]
+}

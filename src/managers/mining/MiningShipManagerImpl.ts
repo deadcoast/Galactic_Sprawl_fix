@@ -1,10 +1,10 @@
-import { EventEmitter } from '../../lib/utils/EventEmitter';
-import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
-import { Position } from '../../types/core/GameTypes';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { resourceManager } from '../game/ResourceManager';
+import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { Position } from '../../types/core/GameTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
+import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
+import { resourceManager } from '../game/ResourceManager';
 
 interface MiningShip {
   id: string;

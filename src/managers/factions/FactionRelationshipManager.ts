@@ -1,8 +1,8 @@
-import { EventEmitter } from '../../utils/EventEmitter';
-import { FactionId } from '../../types/ships/FactionTypes';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { factionConfigs } from '../../config/factions/factions';
+import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { FactionId } from '../../types/ships/FactionTypes';
+import { EventEmitter } from '../../utils/EventEmitter';
 
 interface RelationshipState {
   value: number; // -1 to 1

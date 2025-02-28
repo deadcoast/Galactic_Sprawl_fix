@@ -1,5 +1,5 @@
-import { shipBehaviorManager } from './shipBehavior';
 import { EventEmitter } from '../utils/EventEmitter';
+import { shipBehaviorManager } from './shipBehavior';
 
 interface Position {
   x: number;

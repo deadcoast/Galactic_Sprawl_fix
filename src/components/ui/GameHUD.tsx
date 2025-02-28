@@ -1,27 +1,10 @@
-import { TechTree } from './TechTree';
-import {
-  ChevronDown,
-  ChevronRight,
-  Crown,
-  Database,
-  Map,
-  Radar,
-  Rocket,
-  Settings,
-  X,
-  Zap,
-  AlertCircle,
-  CheckCircle,
-  Leaf,
-} from 'lucide-react';
-import { useEffect, useState, useMemo } from 'react';
+import { Crown, Database, Map, Radar, Rocket } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
-import { useModules, canBuildModule, buildModule } from '../../contexts/ModuleContext';
+import { buildModule, canBuildModule, useModules } from '../../contexts/ModuleContext';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { ThresholdStatusIndicator } from '../buildings/modules/MiningHub/ThresholdStatusIndicator';
-import { motion } from 'framer-motion';
-import { ResourceVisualization } from './ResourceVisualization';
 import { NotificationSystem, notificationManager } from './NotificationSystem';
+import { ResourceVisualization } from './ResourceVisualization';
 
 interface GameHUDProps {
   empireName: string;
@@ -286,7 +269,11 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
   const { state: moduleState } = moduleContext;
 
   // Add notification
-  const addNotification = (type: 'success' | 'error' | 'info' | 'warning', title: string, message: string) => {
+  const addNotification = (
+    type: 'success' | 'error' | 'info' | 'warning',
+    title: string,
+    message: string
+  ) => {
     notificationManager.show({
       type,
       title,
@@ -312,9 +299,17 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
                   energy: gameState.resources.energy - (item.cost?.energy || 0),
                 },
               });
-              addNotification('success', `Successfully built ${item.name}`, `Successfully built ${item.name}`);
+              addNotification(
+                'success',
+                `Successfully built ${item.name}`,
+                `Successfully built ${item.name}`
+              );
             } else {
-              addNotification('error', `Insufficient resources to build ${item.name}`, `Insufficient resources to build ${item.name}`);
+              addNotification(
+                'error',
+                `Insufficient resources to build ${item.name}`,
+                `Insufficient resources to build ${item.name}`
+              );
             }
           }
         },
@@ -325,22 +320,25 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
 
   const currentMenuItems = getUpdatedMenuItems();
 
-  const resourceStats = useMemo(() => ({
-    minerals: {
-      currentAmount: gameState.resources.minerals,
-      minThreshold: 200,
-      maxThreshold: 2000,
-      maxCapacity: 3000,
-      extractionRate: gameState.resourceRates?.minerals || 0,
-    },
-    energy: {
-      currentAmount: gameState.resources.energy,
-      minThreshold: 100,
-      maxThreshold: 1500,
-      maxCapacity: 2000,
-      extractionRate: gameState.resourceRates?.energy || 0,
-    },
-  }), [gameState.resources, gameState.resourceRates]);
+  const resourceStats = useMemo(
+    () => ({
+      minerals: {
+        currentAmount: gameState.resources.minerals,
+        minThreshold: 200,
+        maxThreshold: 2000,
+        maxCapacity: 3000,
+        extractionRate: gameState.resourceRates?.minerals || 0,
+      },
+      energy: {
+        currentAmount: gameState.resources.energy,
+        minThreshold: 100,
+        maxThreshold: 1500,
+        maxCapacity: 2000,
+        extractionRate: gameState.resourceRates?.energy || 0,
+      },
+    }),
+    [gameState.resources, gameState.resourceRates]
+  );
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -374,20 +372,18 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
   }, [onToggleSprawlView, onToggleVPRView]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none">
+    <div className="pointer-events-none fixed inset-0">
       {/* Top Bar */}
-      <div className="pointer-events-auto p-4 bg-gray-900/80 backdrop-blur-sm border-b border-gray-700/50">
+      <div className="pointer-events-auto border-b border-gray-700/50 bg-gray-900/80 p-4 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Crown className="w-5 h-5 text-amber-400" />
+              <Crown className="h-5 w-5 text-amber-400" />
               <span className="text-lg font-medium text-white">{empireName}</span>
             </div>
             <ResourceVisualization />
           </div>
-          <div className="flex items-center space-x-4">
-            {/* ... existing buttons ... */}
-          </div>
+          <div className="flex items-center space-x-4">{/* ... existing buttons ... */}</div>
         </div>
       </div>
 
@@ -398,14 +394,14 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
 
       {/* Active Category Menu */}
       {activeCategory && (
-        <div className="pointer-events-auto fixed left-24 top-24 w-80 p-4 bg-gray-900/95 backdrop-blur-sm border border-gray-700/50 rounded-lg">
+        <div className="pointer-events-auto fixed left-24 top-24 w-80 rounded-lg border border-gray-700/50 bg-gray-900/95 p-4 backdrop-blur-sm">
           {/* ... existing menu items ... */}
         </div>
       )}
 
       {/* Settings Panel */}
       {showSettings && (
-        <div className="pointer-events-auto fixed right-4 top-24 w-80 p-4 bg-gray-900/95 backdrop-blur-sm border border-gray-700/50 rounded-lg">
+        <div className="pointer-events-auto fixed right-4 top-24 w-80 rounded-lg border border-gray-700/50 bg-gray-900/95 p-4 backdrop-blur-sm">
           {/* ... existing settings ... */}
         </div>
       )}

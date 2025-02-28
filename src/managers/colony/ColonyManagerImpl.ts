@@ -1,9 +1,9 @@
-import { EventEmitter } from '../../utils/EventEmitter';
+import { colonyRules } from '../../config/automation/colonyRules';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { resourceManager } from '../game/ResourceManager';
+import { EventEmitter } from '../../utils/EventEmitter';
 import { automationManager } from '../game/AutomationManager';
-import { colonyRules } from '../../config/automation/colonyRules';
+import { resourceManager } from '../game/ResourceManager';
 
 interface ColonyStats {
   population: number;
@@ -26,15 +26,18 @@ interface ColonyEvents {
 }
 
 export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
-  private colonies: Map<string, {
-    id: string;
-    name: string;
-    level: number;
-    stats: ColonyStats;
-    tradeRoutes: Set<string>;
-    activeResearch: Set<string>;
-    emergencyProtocols: Set<string>;
-  }> = new Map();
+  private colonies: Map<
+    string,
+    {
+      id: string;
+      name: string;
+      level: number;
+      stats: ColonyStats;
+      tradeRoutes: Set<string>;
+      activeResearch: Set<string>;
+      emergencyProtocols: Set<string>;
+    }
+  > = new Map();
 
   constructor() {
     super();
@@ -47,11 +50,7 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
     });
   }
 
-  public registerColony(
-    id: string,
-    name: string,
-    initialStats: Partial<ColonyStats> = {}
-  ): void {
+  public registerColony(id: string, name: string, initialStats: Partial<ColonyStats> = {}): void {
     const defaultStats: ColonyStats = {
       population: 100,
       happiness: 100,
@@ -126,20 +125,17 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
     // Distribute resources
     Object.entries(resourceNeeds).forEach(([resource, amount]) => {
-      resourceManager.transferResources(
-        resource as any,
-        amount,
-        'storage',
-        colonyId
-      );
+      resourceManager.transferResources(resource as any, amount, 'storage', colonyId);
     });
 
     this.emit('resourcesDistributed', { colonyId, resources: resourceNeeds });
   }
 
-  private calculateResourceNeeds(colony: NonNullable<ReturnType<typeof this.colonies.get>>): Record<string, number> {
+  private calculateResourceNeeds(
+    colony: NonNullable<ReturnType<typeof this.colonies.get>>
+  ): Record<string, number> {
     const { population, infrastructure } = colony.stats;
-    
+
     return {
       food: Math.ceil(population * 0.5),
       energy: Math.ceil(population * 0.3 + infrastructure * 10),
@@ -191,8 +187,7 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   private hasRequiredResources(requirements: Record<string, number>): boolean {
     return Object.entries(requirements).every(
-      ([resource, amount]) =>
-        resourceManager.getResourceAmount(resource as any) >= amount
+      ([resource, amount]) => resourceManager.getResourceAmount(resource as any) >= amount
     );
   }
 
@@ -317,4 +312,4 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 }
 
 // Export singleton instance
-export const colonyManager = new ColonyManagerImpl(); 
+export const colonyManager = new ColonyManagerImpl();

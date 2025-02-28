@@ -1,25 +1,25 @@
 import {
   BaseModule,
-  ModuleType,
+  BuildingType,
+  ModularBuilding,
+  ModuleAttachmentPoint,
   ModuleConfig,
   ModuleRequirements,
-  ModuleAttachmentPoint,
-  ModularBuilding,
-  BuildingType,
-  SubModuleType,
-  SubModuleEffectType,
+  ModuleType,
   SubModule,
-  SubModuleEffect,
-  SubModuleRequirements,
+  SubModuleAttachmentPoint,
   SubModuleConfig,
-  SubModuleAttachmentPoint
+  SubModuleEffect,
+  SubModuleEffectType,
+  SubModuleRequirements,
+  SubModuleType,
 } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 
 /**
  * Type guard for ModuleType
  */
-export function isModuleType(value: any): value is ModuleType {
+export function isModuleType(value: unknown): value is ModuleType {
   const validTypes: ModuleType[] = [
     'radar',
     'hangar',
@@ -32,7 +32,7 @@ export function isModuleType(value: any): value is ModuleType {
     'research',
     'food',
     'defense',
-    'resource-manager'
+    'resource-manager',
   ];
   return typeof value === 'string' && validTypes.includes(value as ModuleType);
 }
@@ -40,7 +40,7 @@ export function isModuleType(value: any): value is ModuleType {
 /**
  * Type guard for BuildingType
  */
-export function isBuildingType(value: any): value is BuildingType {
+export function isBuildingType(value: unknown): value is BuildingType {
   const validTypes: BuildingType[] = ['mothership', 'colony'];
   return typeof value === 'string' && validTypes.includes(value as BuildingType);
 }
@@ -48,74 +48,72 @@ export function isBuildingType(value: any): value is BuildingType {
 /**
  * Validates a BaseModule object
  */
-export function validateBaseModule(module: any): module is BaseModule {
-  if (typeof module !== 'object' || module === null) {
+export function validateBaseModule(module: unknown): module is BaseModule {
+  if (!module || typeof module !== 'object') {
     return false;
   }
 
+  const mod = module as Partial<BaseModule>;
+
   return (
-    typeof module.id === 'string' &&
-    typeof module.name === 'string' &&
-    isModuleType(module.type) &&
-    validatePosition(module.position) &&
-    typeof module.isActive === 'boolean' &&
-    typeof module.level === 'number' &&
-    (module.status === 'active' || module.status === 'constructing' || module.status === 'inactive') &&
-    (module.progress === undefined || typeof module.progress === 'number')
+    typeof mod.id === 'string' &&
+    typeof mod.name === 'string' &&
+    isModuleType(mod.type) &&
+    validatePosition(mod.position) &&
+    typeof mod.isActive === 'boolean' &&
+    typeof mod.level === 'number' &&
+    typeof mod.status === 'string'
   );
 }
 
 /**
  * Validates a Position object
  */
-export function validatePosition(position: any): position is Position {
-  if (typeof position !== 'object' || position === null) {
+export function validatePosition(position: unknown): position is Position {
+  if (!position || typeof position !== 'object') {
     return false;
   }
 
-  return (
-    typeof position.x === 'number' &&
-    typeof position.y === 'number' &&
-    (position.z === undefined || typeof position.z === 'number')
-  );
+  const pos = position as Partial<Position>;
+
+  return typeof pos.x === 'number' && typeof pos.y === 'number';
 }
 
 /**
- * Validates a ModuleRequirements object
+ * Validates ModuleRequirements object
  */
-export function validateModuleRequirements(requirements: any): requirements is ModuleRequirements {
-  if (typeof requirements !== 'object' || requirements === null) {
+export function validateModuleRequirements(
+  requirements: unknown
+): requirements is ModuleRequirements {
+  if (!requirements || typeof requirements !== 'object') {
     return false;
   }
 
-  // Check minLevel
-  if (typeof requirements.minLevel !== 'number' || requirements.minLevel < 1) {
+  const req = requirements as Partial<ModuleRequirements>;
+
+  // Check required properties
+  if (
+    typeof req.minLevel !== 'number' ||
+    !Array.isArray(req.buildingType) ||
+    !Array.isArray(req.resourceCosts)
+  ) {
     return false;
   }
 
-  // Check buildingType
-  if (!Array.isArray(requirements.buildingType) || requirements.buildingType.length === 0) {
-    return false;
-  }
-  
-  for (const type of requirements.buildingType) {
+  // Check buildingType array
+  for (const type of req.buildingType) {
     if (!isBuildingType(type)) {
       return false;
     }
   }
 
-  // Check resourceCosts
-  if (!Array.isArray(requirements.resourceCosts)) {
-    return false;
-  }
-
-  for (const cost of requirements.resourceCosts) {
+  // Check resourceCosts array
+  for (const resource of req.resourceCosts) {
     if (
-      typeof cost !== 'object' ||
-      cost === null ||
-      typeof cost.type !== 'string' ||
-      typeof cost.amount !== 'number' ||
-      cost.amount <= 0
+      typeof resource !== 'object' ||
+      resource === null ||
+      typeof resource.type !== 'string' ||
+      typeof resource.amount !== 'number'
     ) {
       return false;
     }
@@ -125,53 +123,56 @@ export function validateModuleRequirements(requirements: any): requirements is M
 }
 
 /**
- * Validates a ModuleConfig object
+ * Validates ModuleConfig object
  */
-export function validateModuleConfig(config: any): config is ModuleConfig {
-  if (typeof config !== 'object' || config === null) {
+export function validateModuleConfig(config: unknown): config is ModuleConfig {
+  if (!config || typeof config !== 'object') {
     return false;
   }
 
+  const cfg = config as Partial<ModuleConfig>;
+
   return (
-    isModuleType(config.type) &&
-    typeof config.name === 'string' &&
-    typeof config.description === 'string' &&
-    validateModuleRequirements(config.requirements) &&
-    typeof config.baseStats === 'object' &&
-    config.baseStats !== null &&
-    typeof config.baseStats.power === 'number' &&
-    typeof config.baseStats.crew === 'number' &&
-    typeof config.baseStats.upkeep === 'number'
+    isModuleType(cfg.type) &&
+    typeof cfg.name === 'string' &&
+    typeof cfg.description === 'string' &&
+    validateModuleRequirements(cfg.requirements) &&
+    typeof cfg.baseStats === 'object' &&
+    cfg.baseStats !== null &&
+    typeof cfg.baseStats.power === 'number' &&
+    typeof cfg.baseStats.crew === 'number' &&
+    typeof cfg.baseStats.upkeep === 'number'
   );
 }
 
 /**
- * Validates a ModuleAttachmentPoint object
+ * Validates ModuleAttachmentPoint object
  */
-export function validateModuleAttachmentPoint(point: any): point is ModuleAttachmentPoint {
-  if (typeof point !== 'object' || point === null) {
+export function validateModuleAttachmentPoint(point: unknown): point is ModuleAttachmentPoint {
+  if (!point || typeof point !== 'object') {
     return false;
   }
 
-  // Check basic properties
+  const pt = point as Partial<ModuleAttachmentPoint>;
+
+  // Check required properties
   if (
-    typeof point.id !== 'string' ||
-    !validatePosition(point.position) ||
-    !Array.isArray(point.allowedTypes) ||
-    point.allowedTypes.length === 0
+    typeof pt.id !== 'string' ||
+    !validatePosition(pt.position) ||
+    !Array.isArray(pt.allowedTypes)
   ) {
     return false;
   }
 
-  // Check that all allowed types are valid
-  for (const type of point.allowedTypes) {
+  // Check allowedTypes array
+  for (const type of pt.allowedTypes) {
     if (!isModuleType(type)) {
       return false;
     }
   }
 
-  // Check currentModule if present
-  if (point.currentModule !== undefined && !validateBaseModule(point.currentModule)) {
+  // Check currentModule if it exists
+  if (pt.currentModule !== undefined && !validateBaseModule(pt.currentModule)) {
     return false;
   }
 
@@ -181,32 +182,47 @@ export function validateModuleAttachmentPoint(point: any): point is ModuleAttach
 /**
  * Validates a ModularBuilding object
  */
-export function validateModularBuilding(building: any): building is ModularBuilding {
+export function validateModularBuilding(building: unknown): building is ModularBuilding {
   if (typeof building !== 'object' || building === null) {
     return false;
   }
 
-  // Check basic properties
-  if (
-    typeof building.id !== 'string' ||
-    !isBuildingType(building.type) ||
-    typeof building.level !== 'number' ||
-    !Array.isArray(building.modules) ||
-    (building.status !== 'active' && building.status !== 'constructing' && building.status !== 'inactive') ||
-    !Array.isArray(building.attachmentPoints)
-  ) {
+  // Use type assertion to access properties
+  const b = building as Partial<ModularBuilding>;
+
+  if (typeof b.id !== 'string' || b.id.trim() === '') {
     return false;
   }
 
-  // Check modules
-  for (const module of building.modules) {
+  if (!isBuildingType(b.type)) {
+    return false;
+  }
+
+  if (typeof b.level !== 'number' || b.level < 1) {
+    return false;
+  }
+
+  if (!Array.isArray(b.modules)) {
+    return false;
+  }
+
+  if (typeof b.status !== 'string' || !['active', 'inactive', 'constructing'].includes(b.status)) {
+    return false;
+  }
+
+  if (!Array.isArray(b.attachmentPoints)) {
+    return false;
+  }
+
+  // Validate each module
+  for (const module of b.modules || []) {
     if (!validateBaseModule(module)) {
       return false;
     }
   }
 
-  // Check attachment points
-  for (const point of building.attachmentPoints) {
+  // Validate each attachment point
+  for (const point of b.attachmentPoints || []) {
     if (!validateModuleAttachmentPoint(point)) {
       return false;
     }
@@ -218,7 +234,10 @@ export function validateModularBuilding(building: any): building is ModularBuild
 /**
  * Checks if a module can be attached to a specific attachment point
  */
-export function canAttachModule(module: BaseModule, attachmentPoint: ModuleAttachmentPoint): boolean {
+export function canAttachModule(
+  module: BaseModule,
+  attachmentPoint: ModuleAttachmentPoint
+): boolean {
   // Check if the attachment point already has a module
   if (attachmentPoint.currentModule) {
     return false;
@@ -255,7 +274,7 @@ export function canUpgradeModule(
   if (building.level < config.requirements.minLevel) {
     return {
       canUpgrade: false,
-      reason: `Building level ${building.level} is below required level ${config.requirements.minLevel}`
+      reason: `Building level ${building.level} is below required level ${config.requirements.minLevel}`,
     };
   }
 
@@ -263,7 +282,7 @@ export function canUpgradeModule(
   if (!config.requirements.buildingType.includes(building.type)) {
     return {
       canUpgrade: false,
-      reason: `Module is not compatible with building type ${building.type}`
+      reason: `Module is not compatible with building type ${building.type}`,
     };
   }
 
@@ -273,7 +292,7 @@ export function canUpgradeModule(
     if (available < cost.amount) {
       return {
         canUpgrade: false,
-        reason: `Insufficient ${cost.type}: ${available}/${cost.amount}`
+        reason: `Insufficient ${cost.type}: ${available}/${cost.amount}`,
       };
     }
   }
@@ -290,10 +309,10 @@ export function calculateUpgradeCosts(
 ): { type: string; amount: number }[] {
   // Scale costs based on current level
   const levelMultiplier = Math.pow(1.5, module.level - 1);
-  
+
   return config.requirements.resourceCosts.map(cost => ({
     type: cost.type,
-    amount: Math.ceil(cost.amount * levelMultiplier)
+    amount: Math.ceil(cost.amount * levelMultiplier),
   }));
 }
 
@@ -303,10 +322,10 @@ export function calculateUpgradeCosts(
 export function calculateModulePower(module: BaseModule, config: ModuleConfig): number {
   // Base power consumption from config
   const basePower = config.baseStats.power;
-  
+
   // Scale by level (10% increase per level)
   const levelMultiplier = 1 + (module.level - 1) * 0.1;
-  
+
   return Math.ceil(basePower * levelMultiplier);
 }
 
@@ -316,10 +335,10 @@ export function calculateModulePower(module: BaseModule, config: ModuleConfig): 
 export function calculateModuleCrew(module: BaseModule, config: ModuleConfig): number {
   // Base crew requirement from config
   const baseCrew = config.baseStats.crew;
-  
+
   // Scale by level (5% increase per level)
   const levelMultiplier = 1 + (module.level - 1) * 0.05;
-  
+
   return Math.ceil(baseCrew * levelMultiplier);
 }
 
@@ -329,10 +348,10 @@ export function calculateModuleCrew(module: BaseModule, config: ModuleConfig): n
 export function calculateModuleUpkeep(module: BaseModule, config: ModuleConfig): number {
   // Base upkeep from config
   const baseUpkeep = config.baseStats.upkeep;
-  
+
   // Scale by level (15% increase per level)
   const levelMultiplier = 1 + (module.level - 1) * 0.15;
-  
+
   return Math.ceil(baseUpkeep * levelMultiplier);
 }
 
@@ -354,7 +373,7 @@ export function validateModuleCompatibility(
   if (!config.requirements.buildingType.includes(buildingType)) {
     return {
       compatible: false,
-      reason: `Module is not compatible with building type ${buildingType}`
+      reason: `Module is not compatible with building type ${buildingType}`,
     };
   }
 
@@ -362,7 +381,7 @@ export function validateModuleCompatibility(
   if (buildingLevel < config.requirements.minLevel) {
     return {
       compatible: false,
-      reason: `Building level ${buildingLevel} is below required level ${config.requirements.minLevel}`
+      reason: `Building level ${buildingLevel} is below required level ${config.requirements.minLevel}`,
     };
   }
 
@@ -372,7 +391,7 @@ export function validateModuleCompatibility(
 /**
  * Type guard for SubModuleType
  */
-export function isSubModuleType(value: any): value is SubModuleType {
+export function isSubModuleType(value: unknown): value is SubModuleType {
   const validTypes: SubModuleType[] = [
     'enhancer',
     'converter',
@@ -381,7 +400,7 @@ export function isSubModuleType(value: any): value is SubModuleType {
     'efficiency',
     'automation',
     'specialized',
-    'utility'
+    'utility',
   ];
   return typeof value === 'string' && validTypes.includes(value as SubModuleType);
 }
@@ -389,14 +408,14 @@ export function isSubModuleType(value: any): value is SubModuleType {
 /**
  * Type guard for SubModuleEffectType
  */
-export function isSubModuleEffectType(value: any): value is SubModuleEffectType {
+export function isSubModuleEffectType(value: unknown): value is SubModuleEffectType {
   const validTypes: SubModuleEffectType[] = [
     'stat_boost',
     'resource_boost',
     'unlock_ability',
     'reduce_cost',
     'automation',
-    'special'
+    'special',
   ];
   return typeof value === 'string' && validTypes.includes(value as SubModuleEffectType);
 }
@@ -404,72 +423,66 @@ export function isSubModuleEffectType(value: any): value is SubModuleEffectType 
 /**
  * Validates a SubModuleEffect object
  */
-export function validateSubModuleEffect(effect: any): effect is SubModuleEffect {
+export function validateSubModuleEffect(effect: unknown): effect is SubModuleEffect {
   if (typeof effect !== 'object' || effect === null) {
     return false;
   }
 
-  return (
-    isSubModuleEffectType(effect.type) &&
-    typeof effect.target === 'string' &&
-    typeof effect.value === 'number' &&
-    typeof effect.isPercentage === 'boolean' &&
-    typeof effect.description === 'string'
-  );
+  // Use type assertion to access properties
+  const e = effect as Partial<SubModuleEffect & { duration?: number }>;
+
+  if (!isSubModuleEffectType(e.type)) {
+    return false;
+  }
+
+  if (typeof e.value !== 'number') {
+    return false;
+  }
+
+  if (typeof e.duration !== 'number' && e.duration !== undefined) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
  * Validates a SubModuleRequirements object
  */
-export function validateSubModuleRequirements(requirements: any): requirements is SubModuleRequirements {
+export function validateSubModuleRequirements(
+  requirements: unknown
+): requirements is SubModuleRequirements {
   if (typeof requirements !== 'object' || requirements === null) {
     return false;
   }
 
-  // Check parentModuleLevel
-  if (typeof requirements.parentModuleLevel !== 'number' || requirements.parentModuleLevel < 1) {
+  // Use type assertion to access properties
+  const r = requirements as Partial<
+    SubModuleRequirements & {
+      moduleLevel?: number;
+      moduleTypes?: ModuleType[];
+      resources?: Record<string, unknown>;
+    }
+  >;
+
+  if (r.moduleLevel !== undefined && typeof r.moduleLevel !== 'number') {
     return false;
   }
 
-  // Check parentModuleTypes
-  if (!Array.isArray(requirements.parentModuleTypes) || requirements.parentModuleTypes.length === 0) {
-    return false;
-  }
-  
-  for (const type of requirements.parentModuleTypes) {
-    if (!isModuleType(type)) {
-      return false;
-    }
-  }
-
-  // Check resourceCosts
-  if (!Array.isArray(requirements.resourceCosts)) {
+  if (r.moduleTypes !== undefined && !Array.isArray(r.moduleTypes)) {
     return false;
   }
 
-  for (const cost of requirements.resourceCosts) {
-    if (
-      typeof cost !== 'object' ||
-      cost === null ||
-      typeof cost.type !== 'string' ||
-      typeof cost.amount !== 'number' ||
-      cost.amount <= 0
-    ) {
-      return false;
-    }
-  }
-
-  // Check incompatibleWith if present
-  if (requirements.incompatibleWith !== undefined) {
-    if (!Array.isArray(requirements.incompatibleWith)) {
-      return false;
-    }
-
-    for (const type of requirements.incompatibleWith) {
-      if (!isSubModuleType(type)) {
+  if (r.moduleTypes) {
+    for (const type of r.moduleTypes) {
+      if (!isModuleType(type)) {
         return false;
       }
     }
+  }
+
+  if (r.resources !== undefined && typeof r.resources !== 'object') {
+    return false;
   }
 
   return true;
@@ -478,38 +491,46 @@ export function validateSubModuleRequirements(requirements: any): requirements i
 /**
  * Validates a SubModule object
  */
-export function validateSubModule(subModule: any): subModule is SubModule {
+export function validateSubModule(subModule: unknown): subModule is SubModule {
   if (typeof subModule !== 'object' || subModule === null) {
     return false;
   }
 
-  // Check basic properties
-  if (
-    typeof subModule.id !== 'string' ||
-    typeof subModule.name !== 'string' ||
-    !isSubModuleType(subModule.type) ||
-    typeof subModule.parentModuleId !== 'string' ||
-    typeof subModule.isActive !== 'boolean' ||
-    typeof subModule.level !== 'number' ||
-    (subModule.status !== 'active' && subModule.status !== 'constructing' && subModule.status !== 'inactive') ||
-    (subModule.progress !== undefined && typeof subModule.progress !== 'number')
-  ) {
+  // Use type assertion to access properties
+  const sm = subModule as Partial<SubModule>;
+
+  if (typeof sm.id !== 'string' || sm.id.trim() === '') {
     return false;
   }
 
-  // Check effects
-  if (!Array.isArray(subModule.effects)) {
+  if (!isSubModuleType(sm.type)) {
     return false;
   }
 
-  for (const effect of subModule.effects) {
-    if (!validateSubModuleEffect(effect)) {
-      return false;
+  if (typeof sm.level !== 'number' || sm.level < 1) {
+    return false;
+  }
+
+  if (sm.effects !== undefined && !Array.isArray(sm.effects)) {
+    return false;
+  }
+
+  if (sm.effects) {
+    for (const effect of sm.effects) {
+      if (!validateSubModuleEffect(effect)) {
+        return false;
+      }
     }
   }
 
-  // Check requirements if present
-  if (subModule.requirements !== undefined && !validateSubModuleRequirements(subModule.requirements)) {
+  if (sm.requirements !== undefined && !validateSubModuleRequirements(sm.requirements)) {
+    return false;
+  }
+
+  if (
+    typeof sm.status !== 'string' ||
+    !['active', 'inactive', 'constructing'].includes(sm.status)
+  ) {
     return false;
   }
 
@@ -519,41 +540,56 @@ export function validateSubModule(subModule: any): subModule is SubModule {
 /**
  * Validates a SubModuleConfig object
  */
-export function validateSubModuleConfig(config: any): config is SubModuleConfig {
+export function validateSubModuleConfig(config: unknown): config is SubModuleConfig {
   if (typeof config !== 'object' || config === null) {
     return false;
   }
 
-  // Check basic properties
-  if (
-    !isSubModuleType(config.type) ||
-    typeof config.name !== 'string' ||
-    typeof config.description !== 'string' ||
-    !validateSubModuleRequirements(config.requirements)
-  ) {
+  // Use type assertion to access properties
+  const c = config as Partial<
+    SubModuleConfig & {
+      attachmentPoints?: SubModuleAttachmentPoint[];
+    }
+  >;
+
+  if (!isSubModuleType(c.type)) {
     return false;
   }
 
-  // Check effects
-  if (!Array.isArray(config.effects)) {
+  if (typeof c.name !== 'string' || c.name.trim() === '') {
     return false;
   }
 
-  for (const effect of config.effects) {
-    if (!validateSubModuleEffect(effect)) {
-      return false;
+  if (typeof c.description !== 'string') {
+    return false;
+  }
+
+  if (c.effects !== undefined && !Array.isArray(c.effects)) {
+    return false;
+  }
+
+  if (c.effects) {
+    for (const effect of c.effects) {
+      if (!validateSubModuleEffect(effect)) {
+        return false;
+      }
     }
   }
 
-  // Check baseStats
-  if (
-    typeof config.baseStats !== 'object' ||
-    config.baseStats === null ||
-    typeof config.baseStats.power !== 'number' ||
-    typeof config.baseStats.space !== 'number' ||
-    typeof config.baseStats.complexity !== 'number'
-  ) {
+  if (c.requirements !== undefined && !validateSubModuleRequirements(c.requirements)) {
     return false;
+  }
+
+  if (c.attachmentPoints !== undefined && !Array.isArray(c.attachmentPoints)) {
+    return false;
+  }
+
+  if (c.attachmentPoints) {
+    for (const point of c.attachmentPoints) {
+      if (!validateSubModuleAttachmentPoint(point)) {
+        return false;
+      }
+    }
   }
 
   return true;
@@ -562,32 +598,51 @@ export function validateSubModuleConfig(config: any): config is SubModuleConfig 
 /**
  * Validates a SubModuleAttachmentPoint object
  */
-export function validateSubModuleAttachmentPoint(point: any): point is SubModuleAttachmentPoint {
+export function validateSubModuleAttachmentPoint(
+  point: unknown
+): point is SubModuleAttachmentPoint {
   if (typeof point !== 'object' || point === null) {
     return false;
   }
 
-  // Check basic properties
-  if (
-    typeof point.id !== 'string' ||
-    typeof point.parentModuleId !== 'string' ||
-    !Array.isArray(point.allowedTypes) ||
-    point.allowedTypes.length === 0 ||
-    typeof point.maxSubModules !== 'number' ||
-    point.maxSubModules < 1
-  ) {
+  // Use type assertion to access properties
+  const p = point as Partial<
+    SubModuleAttachmentPoint & {
+      position?: Position;
+      occupied?: boolean;
+      attachedModuleId?: string;
+    }
+  >;
+
+  if (typeof p.id !== 'string' || p.id.trim() === '') {
     return false;
   }
 
-  // Check that all allowed types are valid
-  for (const type of point.allowedTypes) {
+  if (!Array.isArray(p.allowedTypes)) {
+    return false;
+  }
+
+  for (const type of p.allowedTypes || []) {
     if (!isSubModuleType(type)) {
       return false;
     }
   }
 
-  // Check currentSubModule if present
-  if (point.currentSubModule !== undefined && !validateSubModule(point.currentSubModule)) {
+  if (typeof p.position !== 'object' || p.position === null) {
+    return false;
+  }
+
+  const pos = p.position as Partial<Position>;
+
+  if (typeof pos.x !== 'number' || typeof pos.y !== 'number') {
+    return false;
+  }
+
+  if (p.occupied !== undefined && typeof p.occupied !== 'boolean') {
+    return false;
+  }
+
+  if (p.attachedModuleId !== undefined && typeof p.attachedModuleId !== 'string') {
     return false;
   }
 
@@ -658,7 +713,7 @@ export function canUpgradeSubModule(
   if (parentModule.level < config.requirements.parentModuleLevel) {
     return {
       canUpgrade: false,
-      reason: `Parent module level ${parentModule.level} is below required level ${config.requirements.parentModuleLevel}`
+      reason: `Parent module level ${parentModule.level} is below required level ${config.requirements.parentModuleLevel}`,
     };
   }
 
@@ -670,7 +725,7 @@ export function canUpgradeSubModule(
     if (available < scaledAmount) {
       return {
         canUpgrade: false,
-        reason: `Insufficient ${cost.type}: ${available}/${scaledAmount}`
+        reason: `Insufficient ${cost.type}: ${available}/${scaledAmount}`,
       };
     }
   }
@@ -687,10 +742,10 @@ export function calculateSubModuleUpgradeCosts(
 ): { type: string; amount: number }[] {
   // Scale costs based on current level
   const levelMultiplier = Math.pow(1.5, subModule.level);
-  
+
   return config.requirements.resourceCosts.map(cost => ({
     type: cost.type,
-    amount: Math.ceil(cost.amount * levelMultiplier)
+    amount: Math.ceil(cost.amount * levelMultiplier),
   }));
 }
 
@@ -700,10 +755,10 @@ export function calculateSubModuleUpgradeCosts(
 export function calculateSubModulePower(subModule: SubModule, config: SubModuleConfig): number {
   // Base power consumption from config
   const basePower = config.baseStats.power;
-  
+
   // Scale by level (10% increase per level)
   const levelMultiplier = 1 + (subModule.level - 1) * 0.1;
-  
+
   return Math.ceil(basePower * levelMultiplier);
 }
 
@@ -713,22 +768,25 @@ export function calculateSubModulePower(subModule: SubModule, config: SubModuleC
 export function calculateSubModuleSpace(subModule: SubModule, config: SubModuleConfig): number {
   // Base space requirement from config
   const baseSpace = config.baseStats.space;
-  
+
   // Scale by level (5% increase per level)
   const levelMultiplier = 1 + (subModule.level - 1) * 0.05;
-  
+
   return Math.ceil(baseSpace * levelMultiplier);
 }
 
 /**
  * Calculates the complexity of a sub-module
  */
-export function calculateSubModuleComplexity(subModule: SubModule, config: SubModuleConfig): number {
+export function calculateSubModuleComplexity(
+  subModule: SubModule,
+  config: SubModuleConfig
+): number {
   // Base complexity from config
   const baseComplexity = config.baseStats.complexity;
-  
+
   // Scale by level (15% increase per level)
   const levelMultiplier = 1 + (subModule.level - 1) * 0.15;
-  
+
   return Math.ceil(baseComplexity * levelMultiplier);
-} 
+}

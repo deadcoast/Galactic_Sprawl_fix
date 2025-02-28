@@ -1,7 +1,7 @@
-import { useThreshold } from '../../contexts/ThresholdContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useThreshold } from '../../contexts/ThresholdContext';
 
 interface Transfer {
   id: string;
@@ -134,7 +134,7 @@ export function ResourceTransferManager({ storageNodes }: ResourceTransferManage
   }, [transfers]);
 
   return (
-    <div className="absolute inset-0 pointer-events-none">
+    <div className="pointer-events-none absolute inset-0">
       <AnimatePresence>
         {activeTransfers.map(transfer => (
           <motion.div
@@ -145,7 +145,7 @@ export function ResourceTransferManager({ storageNodes }: ResourceTransferManage
             exit={{ opacity: 0 }}
           >
             {/* Transfer Route Visualization */}
-            <svg className="absolute inset-0 w-full h-full">
+            <svg className="absolute inset-0 h-full w-full">
               <motion.path
                 d="M100,100 C200,100 300,200 400,200" // This will be dynamic based on node positions
                 stroke="rgba(99, 102, 241, 0.4)"
@@ -159,7 +159,7 @@ export function ResourceTransferManager({ storageNodes }: ResourceTransferManage
 
             {/* Transfer Progress Indicator */}
             <motion.div
-              className="absolute bg-indigo-500 rounded-full w-3 h-3 shadow-lg shadow-indigo-500/50"
+              className="absolute h-3 w-3 rounded-full bg-indigo-500 shadow-lg shadow-indigo-500/50"
               style={{
                 left: '100px',
                 top: '100px',
@@ -189,13 +189,13 @@ export function ResourceTransferManager({ storageNodes }: ResourceTransferManage
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="bg-gray-800/90 rounded-lg p-2 flex items-center space-x-2 text-sm"
+              className="flex items-center space-x-2 rounded-lg bg-gray-800/90 p-2 text-sm"
             >
-              <Truck className="w-4 h-4 text-indigo-400" />
+              <Truck className="h-4 w-4 text-indigo-400" />
               <span className="text-gray-300">
                 Transferring {transfer.amount.toFixed(0)} {transfer.resourceType}
               </span>
-              <ArrowRight className="w-4 h-4 text-gray-500" />
+              <ArrowRight className="h-4 w-4 text-gray-500" />
             </motion.div>
           ))}
       </div>

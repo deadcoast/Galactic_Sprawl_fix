@@ -1,4 +1,3 @@
-import { BaseEffect } from '../types_effects/EffectTypes';
 import { RenderBatcher } from '../../lib/optimization/RenderBatcher';
 import { Position } from '../../types/core/Position';
 

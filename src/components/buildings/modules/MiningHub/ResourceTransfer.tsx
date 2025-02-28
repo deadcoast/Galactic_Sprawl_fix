@@ -15,7 +15,7 @@ interface ResourceTransferProps {
 
 export function ResourceTransfer({ transfers }: ResourceTransferProps) {
   return (
-    <div className="absolute inset-0 pointer-events-none">
+    <div className="pointer-events-none absolute inset-0">
       {transfers.map(transfer => (
         <div
           key={transfer.id}
@@ -26,9 +26,9 @@ export function ResourceTransfer({ transfers }: ResourceTransferProps) {
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <div className="flex items-center space-x-1 bg-indigo-900/80 backdrop-blur-sm px-2 py-1 rounded-full border border-indigo-500/50">
+          <div className="flex items-center space-x-1 rounded-full border border-indigo-500/50 bg-indigo-900/80 px-2 py-1 backdrop-blur-sm">
             <span className="text-xs text-indigo-200">+{transfer.amount}</span>
-            <ArrowRight className="w-3 h-3 text-indigo-400" />
+            <ArrowRight className="h-3 w-3 text-indigo-400" />
           </div>
         </div>
       ))}

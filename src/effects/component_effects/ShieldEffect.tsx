@@ -231,7 +231,7 @@ function Shield({ active, health, color, impact }: Omit<ShieldEffectProps, 'size
 export function ShieldEffect({ active, health, color, size, impact }: ShieldEffectProps) {
   return (
     <div
-      className="absolute inset-0 pointer-events-none"
+      className="pointer-events-none absolute inset-0"
       style={{
         width: `${size}px`,
         height: `${size}px`,

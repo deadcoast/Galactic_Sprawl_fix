@@ -1,14 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
-import { moduleManager } from '../../managers/module/ModuleManager';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { useCallback, useEffect, useState } from 'react';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { resourceManager } from '../../managers/game/ResourceManager';
+import { moduleManager } from '../../managers/module/ModuleManager';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 
 /**
  * Automation rule types
  */
-export type AutomationRuleType = 
+export type AutomationRuleType =
   | 'resource-threshold'
   | 'time-based'
   | 'status-based'
@@ -66,7 +66,7 @@ export interface StatusBasedRule extends AutomationRule {
 export interface EventBasedRule extends AutomationRule {
   type: 'event-based';
   eventType: ModuleEventType;
-  eventFilter?: (event: any) => boolean;
+  eventFilter?: (event: ModuleEvent) => boolean;
 }
 
 /**
@@ -80,7 +80,7 @@ export interface CustomRule extends AutomationRule {
 /**
  * Automation rule union type
  */
-export type AutomationRuleUnion = 
+export type AutomationRuleUnion =
   | ResourceThresholdRule
   | TimeBasedRule
   | StatusBasedRule
@@ -111,7 +111,7 @@ export function useModuleAutomation(
     rules: initialRules,
     activeTimers: new Map(),
     lastCheck: Date.now(),
-    checkInterval
+    checkInterval,
   });
 
   /**
@@ -120,7 +120,7 @@ export function useModuleAutomation(
   const addRule = useCallback((rule: AutomationRuleUnion) => {
     setState(prevState => ({
       ...prevState,
-      rules: [...prevState.rules, rule]
+      rules: [...prevState.rules, rule],
     }));
   }, []);
 
@@ -130,7 +130,7 @@ export function useModuleAutomation(
   const removeRule = useCallback((ruleId: string) => {
     setState(prevState => ({
       ...prevState,
-      rules: prevState.rules.filter(rule => rule.id !== ruleId)
+      rules: prevState.rules.filter(rule => rule.id !== ruleId),
     }));
   }, []);
 
@@ -140,9 +140,7 @@ export function useModuleAutomation(
   const enableRule = useCallback((ruleId: string) => {
     setState(prevState => ({
       ...prevState,
-      rules: prevState.rules.map(rule => 
-        rule.id === ruleId ? { ...rule, enabled: true } : rule
-      )
+      rules: prevState.rules.map(rule => (rule.id === ruleId ? { ...rule, enabled: true } : rule)),
     }));
   }, []);
 
@@ -152,9 +150,7 @@ export function useModuleAutomation(
   const disableRule = useCallback((ruleId: string) => {
     setState(prevState => ({
       ...prevState,
-      rules: prevState.rules.map(rule => 
-        rule.id === ruleId ? { ...rule, enabled: false } : rule
-      )
+      rules: prevState.rules.map(rule => (rule.id === ruleId ? { ...rule, enabled: false } : rule)),
     }));
   }, []);
 
@@ -164,7 +160,7 @@ export function useModuleAutomation(
   const enableAutomation = useCallback(() => {
     setState(prevState => ({
       ...prevState,
-      enabled: true
+      enabled: true,
     }));
 
     // Emit event
@@ -173,7 +169,7 @@ export function useModuleAutomation(
       moduleId: 'automation',
       moduleType: 'resource-manager' as ModuleType,
       timestamp: Date.now(),
-      data: { ruleCount: state.rules.length }
+      data: { ruleCount: state.rules.length },
     });
   }, [state.rules.length]);
 
@@ -184,11 +180,11 @@ export function useModuleAutomation(
     setState(prevState => {
       // Clear all active timers
       prevState.activeTimers.forEach(timer => clearTimeout(timer));
-      
+
       return {
         ...prevState,
         enabled: false,
-        activeTimers: new Map()
+        activeTimers: new Map(),
       };
     });
 
@@ -198,7 +194,7 @@ export function useModuleAutomation(
       moduleId: 'automation',
       moduleType: 'resource-manager' as ModuleType,
       timestamp: Date.now(),
-      data: { ruleCount: state.rules.length }
+      data: { ruleCount: state.rules.length },
     });
   }, [state.rules.length]);
 
@@ -217,49 +213,52 @@ export function useModuleAutomation(
   /**
    * Execute a rule's action
    */
-  const executeRuleAction = useCallback((rule: AutomationRuleUnion) => {
-    // Skip if rule is on cooldown
-    if (isRuleOnCooldown(rule)) {
-      return;
-    }
+  const executeRuleAction = useCallback(
+    (rule: AutomationRuleUnion) => {
+      // Skip if rule is on cooldown
+      if (isRuleOnCooldown(rule)) {
+        return;
+      }
 
-    // Get the module
-    const module = moduleManager.getModule(rule.moduleId);
-    if (!module) {
-      console.error(`[ModuleAutomation] Module ${rule.moduleId} not found`);
-      return;
-    }
+      // Get the module
+      const module = moduleManager.getModule(rule.moduleId);
+      if (!module) {
+        console.error(`[ModuleAutomation] Module ${rule.moduleId} not found`);
+        return;
+      }
 
-    // Execute the action
-    switch (rule.action) {
-      case 'activate':
-        if (!module.isActive) {
-          moduleManager.setModuleActive(rule.moduleId, true);
-        }
-        break;
-      case 'deactivate':
-        if (module.isActive) {
-          moduleManager.setModuleActive(rule.moduleId, false);
-        }
-        break;
-      case 'upgrade':
-        moduleManager.upgradeModule(rule.moduleId);
-        break;
-      case 'custom':
-        if (rule.customAction) {
-          rule.customAction(rule.moduleId);
-        }
-        break;
-    }
+      // Execute the action
+      switch (rule.action) {
+        case 'activate':
+          if (!module.isActive) {
+            moduleManager.setModuleActive(rule.moduleId, true);
+          }
+          break;
+        case 'deactivate':
+          if (module.isActive) {
+            moduleManager.setModuleActive(rule.moduleId, false);
+          }
+          break;
+        case 'upgrade':
+          moduleManager.upgradeModule(rule.moduleId);
+          break;
+        case 'custom':
+          if (rule.customAction) {
+            rule.customAction(rule.moduleId);
+          }
+          break;
+      }
 
-    // Update last triggered time
-    setState(prevState => ({
-      ...prevState,
-      rules: prevState.rules.map(r => 
-        r.id === rule.id ? { ...r, lastTriggered: Date.now() } : r
-      )
-    }));
-  }, [isRuleOnCooldown]);
+      // Update last triggered time
+      setState(prevState => ({
+        ...prevState,
+        rules: prevState.rules.map(r =>
+          r.id === rule.id ? { ...r, lastTriggered: Date.now() } : r
+        ),
+      }));
+    },
+    [isRuleOnCooldown]
+  );
 
   /**
    * Check a resource threshold rule
@@ -285,28 +284,28 @@ export function useModuleAutomation(
    */
   const checkTimeBasedRule = useCallback((rule: TimeBasedRule): boolean => {
     const now = Date.now();
-    
+
     // Check if within time window
     if (rule.startTime && rule.endTime) {
       const currentTime = new Date();
       const hours = currentTime.getHours();
       const minutes = currentTime.getMinutes();
       const currentMinutes = hours * 60 + minutes;
-      
+
       // Convert start and end times to minutes
       const startMinutes = Math.floor(rule.startTime / 60);
       const endMinutes = Math.floor(rule.endTime / 60);
-      
+
       if (currentMinutes < startMinutes || currentMinutes > endMinutes) {
         return false;
       }
     }
-    
+
     // Check if interval has passed since last trigger
     if (!rule.lastTriggered) {
       return true;
     }
-    
+
     return now - rule.lastTriggered >= rule.interval;
   }, []);
 
@@ -314,24 +313,24 @@ export function useModuleAutomation(
    * Check a status-based rule
    */
   const checkStatusBasedRule = useCallback((rule: StatusBasedRule): boolean => {
-    const { targetStatus, triggerStatus, targetModuleId } = rule;
-    
+    const { triggerStatus, targetModuleId } = rule;
+
     // If target module is specified, check its status
     if (targetModuleId) {
       const targetModule = moduleManager.getModule(targetModuleId);
       if (!targetModule) {
         return false;
       }
-      
+
       return targetModule.status === triggerStatus;
     }
-    
+
     // Otherwise, check all modules of the same type
     const module = moduleManager.getModule(rule.moduleId);
     if (!module) {
       return false;
     }
-    
+
     const modulesOfSameType = moduleManager.getModulesByType(module.type);
     return modulesOfSameType.some(m => m.status === triggerStatus);
   }, []);
@@ -346,25 +345,23 @@ export function useModuleAutomation(
   /**
    * Check if a rule's condition is met
    */
-  const isRuleConditionMet = useCallback((rule: AutomationRuleUnion): boolean => {
-    switch (rule.type) {
-      case 'resource-threshold':
-        return checkResourceThresholdRule(rule as ResourceThresholdRule);
-      case 'time-based':
-        return checkTimeBasedRule(rule as TimeBasedRule);
-      case 'status-based':
-        return checkStatusBasedRule(rule as StatusBasedRule);
-      case 'custom':
-        return checkCustomRule(rule as CustomRule);
-      default:
-        return false;
-    }
-  }, [
-    checkResourceThresholdRule,
-    checkTimeBasedRule,
-    checkStatusBasedRule,
-    checkCustomRule
-  ]);
+  const isRuleConditionMet = useCallback(
+    (rule: AutomationRuleUnion): boolean => {
+      switch (rule.type) {
+        case 'resource-threshold':
+          return checkResourceThresholdRule(rule as ResourceThresholdRule);
+        case 'time-based':
+          return checkTimeBasedRule(rule as TimeBasedRule);
+        case 'status-based':
+          return checkStatusBasedRule(rule as StatusBasedRule);
+        case 'custom':
+          return checkCustomRule(rule as CustomRule);
+        default:
+          return false;
+      }
+    },
+    [checkResourceThresholdRule, checkTimeBasedRule, checkStatusBasedRule, checkCustomRule]
+  );
 
   /**
    * Check all rules
@@ -392,7 +389,7 @@ export function useModuleAutomation(
     // Update last check time
     setState(prevState => ({
       ...prevState,
-      lastCheck: now
+      lastCheck: now,
     }));
 
     // Emit cycle complete event
@@ -401,10 +398,10 @@ export function useModuleAutomation(
       moduleId: 'automation',
       moduleType: 'resource-manager' as ModuleType,
       timestamp: now,
-      data: { 
+      data: {
         ruleCount: enabledRules.length,
-        checkDuration: Date.now() - now
-      }
+        checkDuration: Date.now() - now,
+      },
     });
   }, [state.enabled, state.rules, isRuleConditionMet, executeRuleAction]);
 
@@ -416,32 +413,32 @@ export function useModuleAutomation(
       return;
     }
 
-    const eventHandlers = new Map<string, (event: any) => void>();
+    const eventHandlers = new Map<string, (event: ModuleEvent) => void>();
 
     // Set up event handlers for each event-based rule
     state.rules
       .filter(rule => rule.type === 'event-based' && rule.enabled)
       .forEach(rule => {
         const eventRule = rule as EventBasedRule;
-        
-        const handler = (event: any) => {
+
+        const handler = (event: ModuleEvent) => {
           // Skip if rule is on cooldown
           if (isRuleOnCooldown(rule)) {
             return;
           }
-          
+
           // Apply event filter if provided
           if (eventRule.eventFilter && !eventRule.eventFilter(event)) {
             return;
           }
-          
+
           // Execute the rule's action
           executeRuleAction(rule);
         };
-        
+
         // Subscribe to the event
         moduleEventBus.subscribe(eventRule.eventType, handler);
-        
+
         // Store the handler for cleanup
         eventHandlers.set(rule.id, handler);
       });
@@ -481,165 +478,186 @@ export function useModuleAutomation(
   /**
    * Create a resource threshold rule
    */
-  const createResourceThresholdRule = useCallback((
-    moduleId: string,
-    resourceType: ResourceType,
-    threshold: number,
-    comparison: 'above' | 'below' | 'equal',
-    action: 'activate' | 'deactivate' | 'upgrade' | 'custom',
-    options?: {
-      name?: string;
-      enabled?: boolean;
-      cooldown?: number;
-      customAction?: (moduleId: string) => void;
-    }
-  ): ResourceThresholdRule => {
-    return {
-      id: `resource-${moduleId}-${resourceType}-${Date.now()}`,
-      name: options?.name || `${resourceType} ${comparison} ${threshold}`,
-      type: 'resource-threshold',
-      moduleId,
-      resourceType,
-      threshold,
-      comparison,
-      action,
-      enabled: options?.enabled !== undefined ? options.enabled : true,
-      cooldown: options?.cooldown,
-      customAction: options?.customAction
-    };
-  }, []);
+  const createResourceThresholdRule = useCallback(
+    (
+      moduleId: string,
+      resourceType: ResourceType,
+      threshold: number,
+      comparison: 'above' | 'below' | 'equal',
+      action: 'activate' | 'deactivate' | 'upgrade' | 'custom',
+      options?: {
+        name?: string;
+        enabled?: boolean;
+        cooldown?: number;
+        customAction?: (moduleId: string) => void;
+      }
+    ): ResourceThresholdRule => {
+      return {
+        id: `resource-${moduleId}-${resourceType}-${Date.now()}`,
+        name: options?.name || `${resourceType} ${comparison} ${threshold}`,
+        type: 'resource-threshold',
+        moduleId,
+        resourceType,
+        threshold,
+        comparison,
+        action,
+        enabled: options?.enabled !== undefined ? options.enabled : true,
+        cooldown: options?.cooldown,
+        customAction: options?.customAction,
+      };
+    },
+    []
+  );
 
   /**
    * Create a time-based rule
    */
-  const createTimeBasedRule = useCallback((
-    moduleId: string,
-    interval: number,
-    action: 'activate' | 'deactivate' | 'upgrade' | 'custom',
-    options?: {
-      name?: string;
-      enabled?: boolean;
-      cooldown?: number;
-      startTime?: number;
-      endTime?: number;
-      customAction?: (moduleId: string) => void;
-    }
-  ): TimeBasedRule => {
-    return {
-      id: `time-${moduleId}-${interval}-${Date.now()}`,
-      name: options?.name || `Every ${interval / 1000} seconds`,
-      type: 'time-based',
-      moduleId,
-      interval,
-      action,
-      enabled: options?.enabled !== undefined ? options.enabled : true,
-      cooldown: options?.cooldown,
-      startTime: options?.startTime,
-      endTime: options?.endTime,
-      customAction: options?.customAction
-    };
-  }, []);
+  const createTimeBasedRule = useCallback(
+    (
+      moduleId: string,
+      interval: number,
+      action: 'activate' | 'deactivate' | 'upgrade' | 'custom',
+      options?: {
+        name?: string;
+        enabled?: boolean;
+        cooldown?: number;
+        startTime?: number;
+        endTime?: number;
+        customAction?: (moduleId: string) => void;
+      }
+    ): TimeBasedRule => {
+      return {
+        id: `time-${moduleId}-${interval}-${Date.now()}`,
+        name: options?.name || `Every ${interval / 1000} seconds`,
+        type: 'time-based',
+        moduleId,
+        interval,
+        action,
+        enabled: options?.enabled !== undefined ? options.enabled : true,
+        cooldown: options?.cooldown,
+        startTime: options?.startTime,
+        endTime: options?.endTime,
+        customAction: options?.customAction,
+      };
+    },
+    []
+  );
 
   /**
    * Create a status-based rule
    */
-  const createStatusBasedRule = useCallback((
-    moduleId: string,
-    targetStatus: 'active' | 'inactive' | 'constructing',
-    triggerStatus: 'active' | 'inactive' | 'constructing',
-    action: 'activate' | 'deactivate' | 'upgrade' | 'custom',
-    options?: {
-      name?: string;
-      enabled?: boolean;
-      cooldown?: number;
-      targetModuleId?: string;
-      customAction?: (moduleId: string) => void;
-    }
-  ): StatusBasedRule => {
-    return {
-      id: `status-${moduleId}-${targetStatus}-${Date.now()}`,
-      name: options?.name || `When ${triggerStatus}, set to ${targetStatus}`,
-      type: 'status-based',
-      moduleId,
-      targetStatus,
-      triggerStatus,
-      action,
-      enabled: options?.enabled !== undefined ? options.enabled : true,
-      cooldown: options?.cooldown,
-      targetModuleId: options?.targetModuleId,
-      customAction: options?.customAction
-    };
-  }, []);
+  const createStatusBasedRule = useCallback(
+    (
+      moduleId: string,
+      targetStatus: 'active' | 'inactive' | 'constructing',
+      triggerStatus: 'active' | 'inactive' | 'constructing',
+      action: 'activate' | 'deactivate' | 'upgrade' | 'custom',
+      options?: {
+        name?: string;
+        enabled?: boolean;
+        cooldown?: number;
+        targetModuleId?: string;
+        customAction?: (moduleId: string) => void;
+      }
+    ): StatusBasedRule => {
+      return {
+        id: `status-${moduleId}-${targetStatus}-${Date.now()}`,
+        name: options?.name || `When ${triggerStatus}, set to ${targetStatus}`,
+        type: 'status-based',
+        moduleId,
+        targetStatus,
+        triggerStatus,
+        action,
+        enabled: options?.enabled !== undefined ? options.enabled : true,
+        cooldown: options?.cooldown,
+        targetModuleId: options?.targetModuleId,
+        customAction: options?.customAction,
+      };
+    },
+    []
+  );
 
   /**
    * Create an event-based rule
    */
-  const createEventBasedRule = useCallback((
-    moduleId: string,
-    eventType: ModuleEventType,
-    action: 'activate' | 'deactivate' | 'upgrade' | 'custom',
-    options?: {
-      name?: string;
-      enabled?: boolean;
-      cooldown?: number;
-      eventFilter?: (event: any) => boolean;
-      customAction?: (moduleId: string) => void;
-    }
-  ): EventBasedRule => {
-    return {
-      id: `event-${moduleId}-${eventType}-${Date.now()}`,
-      name: options?.name || `On ${eventType}`,
-      type: 'event-based',
-      moduleId,
-      eventType,
-      action,
-      enabled: options?.enabled !== undefined ? options.enabled : true,
-      cooldown: options?.cooldown,
-      eventFilter: options?.eventFilter,
-      customAction: options?.customAction
-    };
-  }, []);
+  const createEventBasedRule = useCallback(
+    (
+      moduleId: string,
+      eventType: ModuleEventType,
+      action: 'activate' | 'deactivate' | 'upgrade' | 'custom',
+      options?: {
+        name?: string;
+        enabled?: boolean;
+        cooldown?: number;
+        eventFilter?: (event: ModuleEvent) => boolean;
+        customAction?: (moduleId: string) => void;
+      }
+    ): EventBasedRule => {
+      return {
+        id: `event-${moduleId}-${eventType}-${Date.now()}`,
+        name: options?.name || `On ${eventType}`,
+        type: 'event-based',
+        moduleId,
+        eventType,
+        action,
+        enabled: options?.enabled !== undefined ? options.enabled : true,
+        cooldown: options?.cooldown,
+        eventFilter: options?.eventFilter,
+        customAction: options?.customAction,
+      };
+    },
+    []
+  );
 
   /**
    * Create a custom rule
    */
-  const createCustomRule = useCallback((
-    moduleId: string,
-    condition: (moduleId: string) => boolean,
-    action: 'activate' | 'deactivate' | 'upgrade' | 'custom',
-    options?: {
-      name?: string;
-      enabled?: boolean;
-      cooldown?: number;
-      customAction?: (moduleId: string) => void;
-    }
-  ): CustomRule => {
-    return {
-      id: `custom-${moduleId}-${Date.now()}`,
-      name: options?.name || 'Custom rule',
-      type: 'custom',
-      moduleId,
-      condition,
-      action,
-      enabled: options?.enabled !== undefined ? options.enabled : true,
-      cooldown: options?.cooldown,
-      customAction: options?.customAction
-    };
-  }, []);
+  const createCustomRule = useCallback(
+    (
+      moduleId: string,
+      condition: (moduleId: string) => boolean,
+      action: 'activate' | 'deactivate' | 'upgrade' | 'custom',
+      options?: {
+        name?: string;
+        enabled?: boolean;
+        cooldown?: number;
+        customAction?: (moduleId: string) => void;
+      }
+    ): CustomRule => {
+      return {
+        id: `custom-${moduleId}-${Date.now()}`,
+        name: options?.name || 'Custom rule',
+        type: 'custom',
+        moduleId,
+        condition,
+        action,
+        enabled: options?.enabled !== undefined ? options.enabled : true,
+        cooldown: options?.cooldown,
+        customAction: options?.customAction,
+      };
+    },
+    []
+  );
 
   /**
    * Get rules for a specific module
    */
-  const getRulesForModule = useCallback((moduleId: string): AutomationRuleUnion[] => {
-    return state.rules.filter(rule => rule.moduleId === moduleId);
-  }, [state.rules]);
+  const getRulesForModule = useCallback(
+    (moduleId: string): AutomationRuleUnion[] => {
+      return state.rules.filter(rule => rule.moduleId === moduleId);
+    },
+    [state.rules]
+  );
 
   /**
    * Get rules by type
    */
-  const getRulesByType = useCallback((type: AutomationRuleType): AutomationRuleUnion[] => {
-    return state.rules.filter(rule => rule.type === type);
-  }, [state.rules]);
+  const getRulesByType = useCallback(
+    (type: AutomationRuleType): AutomationRuleUnion[] => {
+      return state.rules.filter(rule => rule.type === type);
+    },
+    [state.rules]
+  );
 
   /**
    * Get all rules
@@ -654,11 +672,11 @@ export function useModuleAutomation(
   const cleanup = useCallback(() => {
     // Disable automation (which clears timers)
     disableAutomation();
-    
+
     // Clear rules
     setState(prevState => ({
       ...prevState,
-      rules: []
+      rules: [],
     }));
   }, [disableAutomation]);
 
@@ -666,30 +684,30 @@ export function useModuleAutomation(
     // State
     enabled: state.enabled,
     rules: state.rules,
-    
+
     // Rule management
     addRule,
     removeRule,
     enableRule,
     disableRule,
-    
+
     // Automation control
     enableAutomation,
     disableAutomation,
-    
+
     // Rule creation
     createResourceThresholdRule,
     createTimeBasedRule,
     createStatusBasedRule,
     createEventBasedRule,
     createCustomRule,
-    
+
     // Rule queries
     getRulesForModule,
     getRulesByType,
     getAllRules,
-    
+
     // Cleanup
-    cleanup
+    cleanup,
   };
-} 
+}

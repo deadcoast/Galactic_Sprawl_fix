@@ -1,8 +1,8 @@
+import { Position } from '../../types/core/GameTypes';
+import { WeaponCategory, WeaponVariant } from '../../types/weapons/WeaponTypes';
 import { EventEmitter } from '../../utils/EventEmitter';
 import { effectLifecycleManager } from '../effects/EffectLifecycleManager';
 import { particleSystemManager } from '../effects/ParticleSystemManager';
-import { Position } from '../../types/core/GameTypes';
-import { WeaponCategory, WeaponVariant } from '../../types/weapons/WeaponTypes';
 
 interface WeaponEffectEvents {
   effectStarted: { weaponId: string; effectType: string };
@@ -51,7 +51,7 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
       size: 2,
       spread: 0.1,
       speed: 2,
-      pattern: 'projectile'
+      pattern: 'projectile',
     });
 
     // Plasma Cannon effects
@@ -62,7 +62,7 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
       size: 4,
       spread: 0.2,
       speed: 1,
-      pattern: 'beam'
+      pattern: 'beam',
     });
 
     // Beam Weapon effects
@@ -73,7 +73,7 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
       size: 3,
       spread: 0.05,
       speed: 3,
-      pattern: 'continuous'
+      pattern: 'continuous',
     });
   }
 
@@ -143,11 +143,17 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
     return systemIds;
   }
 
-  private getQualityAdjustedParticleCount(baseCount: number, quality: 'low' | 'medium' | 'high'): number {
+  private getQualityAdjustedParticleCount(
+    baseCount: number,
+    quality: 'low' | 'medium' | 'high'
+  ): number {
     switch (quality) {
-      case 'low': return Math.floor(baseCount * 0.5);
-      case 'high': return Math.floor(baseCount * 1.5);
-      default: return baseCount;
+      case 'low':
+        return Math.floor(baseCount * 0.5);
+      case 'high':
+        return Math.floor(baseCount * 1.5);
+      default:
+        return baseCount;
     }
   }
 
@@ -226,4 +232,4 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
 }
 
 // Export singleton instance
-export const weaponEffectManager = WeaponEffectManager.getInstance(); 
+export const weaponEffectManager = WeaponEffectManager.getInstance();

@@ -3,15 +3,14 @@
  * @module WeaponTypes
  */
 
-import { Effect } from '../core/GameTypes';
 import {
+  AreaEffect,
+  DamageEffect,
   WeaponEffect,
   WeaponEffectType,
-  DamageEffect,
-  AreaEffect,
 } from '../../effects/types_effects/WeaponEffects';
 
-export type { WeaponEffect, WeaponEffectType, DamageEffect, AreaEffect };
+export type { AreaEffect, DamageEffect, WeaponEffect, WeaponEffectType };
 
 // Base Types
 // ------------------------------------------------------------

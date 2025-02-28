@@ -1,10 +1,10 @@
-import { moduleEventBus, ModuleEventType, ModuleEvent } from '../../lib/modules/ModuleEvents';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
-  ResourceType,
-  ResourceThreshold,
   ResourceAlert,
-  ResourceState
+  ResourceState,
+  ResourceThreshold,
+  ResourceType,
 } from '../../types/resources/ResourceTypes';
 import { validateResourceThreshold } from '../../utils/resources/resourceValidation';
 
@@ -128,7 +128,7 @@ export class ResourceThresholdManager {
     this.thresholdStates.set(config.id, {
       config,
       status: 'inactive',
-      actionsTaken: 0
+      actionsTaken: 0,
     });
 
     return true;
@@ -192,10 +192,10 @@ export class ResourceThresholdManager {
 
     // Convert Map entries to array to avoid MapIterator error
     const thresholdEntries = Array.from(this.thresholds.entries());
-    
+
     for (let i = 0; i < thresholdEntries.length; i++) {
       const [id, config] = thresholdEntries[i];
-      
+
       if (!config.enabled) {
         continue;
       }
@@ -211,17 +211,17 @@ export class ResourceThresholdManager {
       }
 
       const isTriggered = this.isThresholdTriggered(config.threshold, resourceState);
-      
+
       if (isTriggered && state.status === 'inactive') {
         // Threshold triggered
         state.status = this.getThresholdSeverity(config.threshold, resourceState);
         state.lastTriggered = now;
         this.executeThresholdActions(config, state.status);
         state.actionsTaken++;
-        
+
         // Create alert
         this.createAlert(config, state.status);
-        
+
         // Emit event
         moduleEventBus.emit({
           type: RESOURCE_THRESHOLD_TRIGGERED,
@@ -233,19 +233,19 @@ export class ResourceThresholdManager {
             type: config.threshold.type,
             status: state.status,
             timestamp: now,
-            severity: state.status === 'critical' ? 'high' : 'medium'
-          }
+            severity: state.status === 'critical' ? 'high' : 'medium',
+          },
         });
       } else if (!isTriggered && state.status !== 'inactive') {
         // Threshold resolved
         state.status = 'resolved';
         state.lastResolved = now;
-        
+
         // Clear alert if auto-resolve is enabled
         if (config.autoResolve) {
           this.clearAlert(id);
         }
-        
+
         // Emit event
         moduleEventBus.emit({
           type: RESOURCE_THRESHOLD_RESOLVED,
@@ -256,10 +256,10 @@ export class ResourceThresholdManager {
             id,
             type: config.threshold.type,
             timestamp: now,
-            severity: 'info'
-          }
+            severity: 'info',
+          },
         });
-        
+
         // Reset to inactive after a short delay
         setTimeout(() => {
           if (state.status === 'resolved') {
@@ -277,58 +277,61 @@ export class ResourceThresholdManager {
     if (threshold.min !== undefined && state.current < threshold.min) {
       return true;
     }
-    
+
     if (threshold.max !== undefined && state.current > threshold.max) {
       return true;
     }
-    
+
     if (threshold.target !== undefined) {
       const deviation = Math.abs(state.current - threshold.target);
       const maxDeviation = threshold.target * 0.1; // 10% deviation
-      
+
       if (deviation > maxDeviation) {
         return true;
       }
     }
-    
+
     return false;
   }
 
   /**
    * Get threshold severity based on how far the value is from the threshold
    */
-  private getThresholdSeverity(threshold: ResourceThreshold, state: ResourceState): ThresholdStatus {
+  private getThresholdSeverity(
+    threshold: ResourceThreshold,
+    state: ResourceState
+  ): ThresholdStatus {
     if (threshold.min !== undefined && state.current < threshold.min) {
       const ratio = state.current / threshold.min;
-      
+
       if (ratio < 0.5) {
         return 'critical';
       } else {
         return 'warning';
       }
     }
-    
+
     if (threshold.max !== undefined && state.current > threshold.max) {
       const ratio = state.current / threshold.max;
-      
+
       if (ratio > 1.5) {
         return 'critical';
       } else {
         return 'warning';
       }
     }
-    
+
     if (threshold.target !== undefined) {
       const deviation = Math.abs(state.current - threshold.target);
       const deviationRatio = deviation / threshold.target;
-      
+
       if (deviationRatio > 0.25) {
         return 'critical';
       } else {
         return 'warning';
       }
     }
-    
+
     return 'warning';
   }
 
@@ -337,7 +340,7 @@ export class ResourceThresholdManager {
    */
   private executeThresholdActions(config: ThresholdConfig, status: ThresholdStatus): void {
     const now = Date.now();
-    
+
     for (const action of config.actions) {
       switch (action.type) {
         case 'production':
@@ -351,11 +354,11 @@ export class ResourceThresholdManager {
               target: action.target,
               amount: action.amount || 0,
               priority: action.priority || 1,
-              severity: 'info'
-            }
+              severity: 'info',
+            },
           });
           break;
-          
+
         case 'consumption':
           moduleEventBus.emit({
             type: RESOURCE_CONSUMPTION_ADJUST,
@@ -367,11 +370,11 @@ export class ResourceThresholdManager {
               target: action.target,
               amount: action.amount || 0,
               priority: action.priority || 1,
-              severity: 'info'
-            }
+              severity: 'info',
+            },
           });
           break;
-          
+
         case 'transfer':
           moduleEventBus.emit({
             type: RESOURCE_TRANSFER_REQUEST,
@@ -383,11 +386,11 @@ export class ResourceThresholdManager {
               target: action.target,
               amount: action.amount || 0,
               priority: action.priority || 1,
-              severity: 'info'
-            }
+              severity: 'info',
+            },
           });
           break;
-          
+
         case 'notification':
           moduleEventBus.emit({
             type: NOTIFICATION_CREATE,
@@ -398,8 +401,8 @@ export class ResourceThresholdManager {
               type: 'resource',
               message: action.message || `Resource ${config.threshold.type} threshold triggered`,
               severity: status === 'critical' ? 'high' : 'medium',
-              timestamp: now
-            }
+              timestamp: now,
+            },
           });
           break;
       }
@@ -423,12 +426,12 @@ export class ResourceThresholdManager {
         .map(action => ({
           type: action.type as 'production' | 'consumption' | 'transfer',
           target: action.target,
-          amount: action.amount || 0
-        }))
+          amount: action.amount || 0,
+        })),
     };
-    
+
     this.activeAlerts.set(config.id, alert);
-    
+
     moduleEventBus.emit({
       type: RESOURCE_ALERT_CREATED,
       moduleId: RESOURCE_MANAGER_ID,
@@ -436,8 +439,8 @@ export class ResourceThresholdManager {
       timestamp: now,
       data: {
         ...alert,
-        severity: status === 'critical' ? 'high' : 'medium'
-      }
+        severity: status === 'critical' ? 'high' : 'medium',
+      },
     });
   }
 
@@ -450,9 +453,9 @@ export class ResourceThresholdManager {
     if (!alert) {
       return;
     }
-    
+
     this.activeAlerts.delete(id);
-    
+
     moduleEventBus.emit({
       type: RESOURCE_ALERT_CLEARED,
       moduleId: RESOURCE_MANAGER_ID,
@@ -462,8 +465,8 @@ export class ResourceThresholdManager {
         id,
         type: alert.type,
         timestamp: now,
-        severity: 'info'
-      }
+        severity: 'info',
+      },
     });
   }
 
@@ -507,4 +510,4 @@ export class ResourceThresholdManager {
     this.activeAlerts.clear();
     this.resourceStates.clear();
   }
-} 
+}

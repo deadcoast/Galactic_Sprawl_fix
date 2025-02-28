@@ -1,22 +1,20 @@
+import { DamageEffect } from '../../effects/types_effects/WeaponEffects';
+import {
+  DAMAGE_BOOST_EFFECT,
+  EXPLOSIVE_EFFECT,
+  GAUSS_EFFECT,
+  PLASMA_EFFECT,
+  SHIELD_FIELD_EFFECT,
+  SPEED_REDUCTION_EFFECT,
+  STEALTH_EFFECT,
+} from '../../effects/types_effects/shipEffects';
 import { EquatorHorizonShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
 import {
-  WeaponMount,
-  WeaponMountSize,
-  WeaponMountPosition,
-  WeaponStatus,
   WeaponInstance,
+  WeaponMountPosition,
+  WeaponMountSize,
+  WeaponStatus,
 } from '../../types/weapons/WeaponTypes';
-import { DamageEffect, AreaEffect } from '../../effects/types_effects/WeaponEffects';
-import {
-  PLASMA_EFFECT,
-  GAUSS_EFFECT,
-  EXPLOSIVE_EFFECT,
-  DAMAGE_BOOST_EFFECT,
-  SPEED_BOOST_EFFECT,
-  STEALTH_EFFECT,
-  SPEED_REDUCTION_EFFECT,
-  SHIELD_FIELD_EFFECT,
-} from '../../effects/types_effects/shipEffects';
 
 // Special weapon effects for Equator Horizon
 const TEMPORAL_EFFECT = {

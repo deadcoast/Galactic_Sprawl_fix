@@ -1,14 +1,7 @@
+import { useCallback, useEffect, useState } from 'react';
 import { combatManager } from '../../managers/combat/combatManager';
 import { factionManager } from '../../managers/factions/factionManager';
-import { useCallback, useEffect, useState } from 'react';
-import {
-  DebugWeaponEffect,
-  ShieldStatus,
-  CombatStats,
-  AIState,
-  Formation,
-  DebugState,
-} from '../../types/debug/DebugTypes';
+import { CombatStats, DebugState } from '../../types/debug/DebugTypes';
 
 interface PerformanceMetrics {
   usedJSHeapSize: number;

@@ -1,5 +1,3 @@
-import { useGlobalEvents } from '../../../hooks/game/useGlobalEvents';
-import { useVPR } from '../../../hooks/ui/useVPR';
 import {
   AlertTriangle,
   ArrowRight,
@@ -12,6 +10,8 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { EventPayload } from '../../../hooks/game/useGlobalEvents';
+import { useGlobalEvents } from '../../../hooks/game/useGlobalEvents';
+import { useVPR } from '../../../hooks/ui/useVPR';
 
 interface ExpansionData {
   id: string;
@@ -136,15 +136,15 @@ export function AutomatedExpansion({
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="rounded-lg bg-gray-800 p-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div
-            className={`p-2 bg-indigo-500/20 rounded-lg ${
+            className={`rounded-lg bg-indigo-500/20 p-2 ${
               Object.values(activeAnimations).some(v => v) ? 'animate-pulse' : ''
             }`}
           >
-            <Rocket className="w-6 h-6 text-indigo-400" />
+            <Rocket className="h-6 w-6 text-indigo-400" />
           </div>
           <h3 className="text-lg font-medium text-white">Automated Expansion</h3>
         </div>
@@ -158,9 +158,9 @@ export function AutomatedExpansion({
               ],
             })
           }
-          className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+          className="rounded-lg p-2 transition-colors hover:bg-gray-700"
         >
-          <Settings className="w-5 h-5 text-gray-400" />
+          <Settings className="h-5 w-5 text-gray-400" />
         </button>
       </div>
 
@@ -173,28 +173,28 @@ export function AutomatedExpansion({
           return (
             <div
               key={expansion.id}
-              className={`p-4 bg-gray-700/50 rounded-lg transition-all duration-500 ${
+              className={`rounded-lg bg-gray-700/50 p-4 transition-all duration-500 ${
                 activeAnimations[expansion.id]
                   ? `shadow-lg shadow-indigo-500/10 ${animations.active}`
                   : ''
               }`}
             >
-              <div className="flex items-start justify-between mb-4">
+              <div className="mb-4 flex items-start justify-between">
                 <div>
-                  <div className="text-white font-medium mb-1">{expansion.targetSystem}</div>
+                  <div className="mb-1 font-medium text-white">{expansion.targetSystem}</div>
                   <div className="flex items-center text-sm text-gray-400">
-                    <Users className="w-4 h-4 mr-1" />
+                    <Users className="mr-1 h-4 w-4" />
                     <span>{expansion.population.toLocaleString()} Colonists</span>
                   </div>
                 </div>
                 <div
-                  className={`px-3 py-1 rounded-full text-sm ${
+                  className={`rounded-full px-3 py-1 text-sm ${
                     expansion.status === 'preparing'
                       ? 'bg-blue-900/50 text-blue-400'
                       : expansion.status === 'launching'
-                        ? 'bg-yellow-900/50 text-yellow-400 animate-pulse'
+                        ? 'animate-pulse bg-yellow-900/50 text-yellow-400'
                         : expansion.status === 'colonizing'
-                          ? 'bg-green-900/50 text-green-400 animate-pulse'
+                          ? 'animate-pulse bg-green-900/50 text-green-400'
                           : 'bg-gray-900/50 text-gray-400'
                   }`}
                 >
@@ -203,14 +203,14 @@ export function AutomatedExpansion({
               </div>
 
               {/* Progress Bar */}
-              <div className="space-y-1 mb-4">
+              <div className="mb-4 space-y-1">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Progress</span>
                   <span className="text-gray-300">{Math.round(expansion.progress * 100)}%</span>
                 </div>
-                <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
+                <div className="h-2 overflow-hidden rounded-full bg-gray-600">
                   <div
-                    className={`h-full bg-indigo-500 rounded-full transition-all ${
+                    className={`h-full rounded-full bg-indigo-500 transition-all ${
                       activeAnimations[expansion.id] ? 'animate-pulse' : ''
                     }`}
                     style={{ width: `${expansion.progress * 100}%` }}
@@ -219,16 +219,16 @@ export function AutomatedExpansion({
               </div>
 
               {/* Resource Requirements */}
-              <div className="space-y-2 mb-4">
+              <div className="mb-4 space-y-2">
                 <div className="text-sm text-gray-400">Required Resources</div>
                 <div className="flex flex-wrap gap-2">
                   {expansion.resources.map(resource => (
                     <div
                       key={resource.type}
-                      className="px-2 py-1 bg-gray-800 rounded-lg text-sm flex items-center space-x-2"
+                      className="flex items-center space-x-2 rounded-lg bg-gray-800 px-2 py-1 text-sm"
                     >
                       <span className="text-gray-300">{resource.type}</span>
-                      <ArrowRight className="w-4 h-4 text-gray-500" />
+                      <ArrowRight className="h-4 w-4 text-gray-500" />
                       <span className="text-gray-400">{resource.amount}</span>
                     </div>
                   ))}
@@ -255,7 +255,7 @@ export function AutomatedExpansion({
               {expansion.status !== 'complete' && (
                 <button
                   onClick={() => onCancelExpansion(expansion.id)}
-                  className="mt-4 w-full px-4 py-2 bg-red-900/20 hover:bg-red-900/30 border border-red-700/30 rounded-lg text-red-400 text-sm transition-colors"
+                  className="mt-4 w-full rounded-lg border border-red-700/30 bg-red-900/20 px-4 py-2 text-sm text-red-400 transition-colors hover:bg-red-900/30"
                 >
                   Cancel Expansion
                 </button>
@@ -263,13 +263,13 @@ export function AutomatedExpansion({
 
               {/* Enhanced Visual Effects */}
               {showParticles && (
-                <div className="absolute inset-0 overflow-hidden rounded-lg pointer-events-none">
+                <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg">
                   {Array.from({
                     length: expansion.vprData?.particleSystem?.density || 5,
                   }).map((_, i) => (
                     <div
                       key={i}
-                      className={`absolute w-1 h-1 rounded-full ${animations.idle}`}
+                      className={`absolute h-1 w-1 rounded-full ${animations.idle}`}
                       style={{
                         backgroundColor: expansion.vprData?.particleSystem?.color || '#6366f1',
                         left: `${Math.random() * 100}%`,
@@ -286,17 +286,17 @@ export function AutomatedExpansion({
               {techLevel > 1 && (
                 <div className="mt-4 flex items-center space-x-4 text-xs text-gray-400">
                   <div className="flex items-center">
-                    <Zap className="w-3 h-3 mr-1 text-yellow-400" />
+                    <Zap className="mr-1 h-3 w-3 text-yellow-400" />
                     <span>+{Math.round((techBonuses.expansionSpeed - 1) * 100)}% Speed</span>
                   </div>
                   <div className="flex items-center">
-                    <Database className="w-3 h-3 mr-1 text-blue-400" />
+                    <Database className="mr-1 h-3 w-3 text-blue-400" />
                     <span>
                       +{Math.round((techBonuses.resourceEfficiency - 1) * 100)}% Efficiency
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <Users className="w-3 h-3 mr-1 text-green-400" />
+                    <Users className="mr-1 h-3 w-3 text-green-400" />
                     <span>+{Math.round((techBonuses.populationGrowth - 1) * 100)}% Growth</span>
                   </div>
                 </div>
@@ -307,8 +307,8 @@ export function AutomatedExpansion({
       </div>
 
       {/* Threshold Settings with Tech Integration */}
-      <div className="mt-6 p-4 bg-gray-700/30 rounded-lg">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mt-6 rounded-lg bg-gray-700/30 p-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="text-sm font-medium text-gray-300">Expansion Thresholds</div>
           <button
             onClick={() =>
@@ -320,31 +320,31 @@ export function AutomatedExpansion({
                 ],
               })
             }
-            className="text-indigo-400 text-sm hover:text-indigo-300 transition-colors"
+            className="text-sm text-indigo-400 transition-colors hover:text-indigo-300"
           >
             Modify
           </button>
         </div>
 
         {/* Population Threshold */}
-        <div className="space-y-2 mb-4">
+        <div className="mb-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-gray-400">Population Trigger</span>
             <span className="text-gray-300">90%</span>
           </div>
-          <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
-            <div className="h-full bg-indigo-500/50 rounded-full" style={{ width: '90%' }} />
+          <div className="h-2 overflow-hidden rounded-full bg-gray-600">
+            <div className="h-full rounded-full bg-indigo-500/50" style={{ width: '90%' }} />
           </div>
         </div>
 
         {/* Resource Thresholds */}
-        <div className="text-sm text-gray-400 mb-2">Resource Triggers</div>
+        <div className="mb-2 text-sm text-gray-400">Resource Triggers</div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between px-3 py-2 bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between rounded-lg bg-gray-800 px-3 py-2">
             <span className="text-gray-300">Storage Capacity</span>
             <span className="text-gray-400">{'>'} 85%</span>
           </div>
-          <div className="flex items-center justify-between px-3 py-2 bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between rounded-lg bg-gray-800 px-3 py-2">
             <span className="text-gray-300">Production Rate</span>
             <span className="text-gray-400">{'>'} 150/s</span>
           </div>
@@ -352,9 +352,9 @@ export function AutomatedExpansion({
 
         {/* Tech-Enhanced Features */}
         {techLevel >= 2 && (
-          <div className="mt-4 p-3 bg-indigo-900/20 border border-indigo-700/30 rounded-lg">
-            <div className="flex items-center space-x-2 mb-2">
-              <Star className="w-4 h-4 text-indigo-400" />
+          <div className="mt-4 rounded-lg border border-indigo-700/30 bg-indigo-900/20 p-3">
+            <div className="mb-2 flex items-center space-x-2">
+              <Star className="h-4 w-4 text-indigo-400" />
               <span className="text-sm font-medium text-indigo-300">Advanced Automation</span>
             </div>
             <p className="text-xs text-indigo-200">
@@ -366,8 +366,8 @@ export function AutomatedExpansion({
       </div>
 
       {/* Warnings */}
-      <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-700/30 rounded-lg flex items-start space-x-2">
-        <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+      <div className="mt-4 flex items-start space-x-2 rounded-lg border border-yellow-700/30 bg-yellow-900/20 p-3">
+        <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-500" />
         <div className="text-sm text-yellow-200">
           Automated expansion requires stable resource production and population growth. Monitor
           your colony's status to ensure successful expansion.

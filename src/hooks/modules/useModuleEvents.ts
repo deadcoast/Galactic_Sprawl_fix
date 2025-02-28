@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { moduleEventBus, ModuleEvent, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 
 /**
  * Hook to subscribe to module events

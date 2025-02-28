@@ -1,17 +1,17 @@
+import { Crosshair } from 'lucide-react';
+import {
+  CombatWeaponStats,
+  WEAPON_COLORS,
+  WeaponEffect,
+  WeaponSystemProps,
+  WeaponUpgrade,
+} from '../../types/weapons/WeaponTypes';
 import {
   WeaponEffectsDisplay,
   WeaponHeader,
   WeaponStatsDisplay,
   WeaponUpgradeDisplay,
 } from './WeaponComponents';
-import {
-  WEAPON_COLORS,
-  WeaponSystemProps,
-  WeaponUpgrade,
-  WeaponEffect,
-  CombatWeaponStats,
-} from '../../types/weapons/WeaponTypes';
-import { Crosshair } from 'lucide-react';
 
 export function WeaponSystem({
   weapon,
@@ -51,9 +51,9 @@ export function WeaponSystem({
       />
 
       {/* Main Stats */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-4">
         <div>
-          <div className="text-sm text-gray-400 mb-1">Damage</div>
+          <div className="mb-1 text-sm text-gray-400">Damage</div>
           <div className="flex items-baseline space-x-1">
             <span className="text-2xl font-bold text-white">
               {weapon.state.currentStats.damage}
@@ -62,7 +62,7 @@ export function WeaponSystem({
           </div>
         </div>
         <div>
-          <div className="text-sm text-gray-400 mb-1">Range</div>
+          <div className="mb-1 text-sm text-gray-400">Range</div>
           <div className="flex items-baseline space-x-1">
             <span className="text-2xl font-bold text-white">{weapon.state.currentStats.range}</span>
             <span className="text-sm text-gray-400">ly</span>
@@ -86,7 +86,7 @@ export function WeaponSystem({
 
       {/* Available Upgrades */}
       {availableUpgrades && availableUpgrades.length > 0 && resources && (
-        <div className="space-y-3 mb-6">
+        <div className="mb-6 space-y-3">
           <h4 className="text-sm font-medium text-gray-300">Available Upgrades</h4>
           {availableUpgrades.map((upgrade: WeaponUpgrade) => (
             <WeaponUpgradeDisplay
@@ -104,13 +104,13 @@ export function WeaponSystem({
       <button
         onClick={() => onFire?.(weapon.config.id)}
         disabled={weapon.state.status !== 'ready'}
-        className={`w-full px-4 py-3 rounded-lg flex items-center justify-center space-x-2 ${
+        className={`flex w-full items-center justify-center space-x-2 rounded-lg px-4 py-3 ${
           weapon.state.status === 'ready'
             ? `bg-${color}-600 hover:bg-${color}-700 text-white`
-            : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+            : 'cursor-not-allowed bg-gray-700 text-gray-500'
         }`}
       >
-        <Crosshair className="w-5 h-5" />
+        <Crosshair className="h-5 w-5" />
         <span>Fire Weapon</span>
       </button>
     </div>

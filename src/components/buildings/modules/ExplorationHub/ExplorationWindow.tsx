@@ -1,8 +1,3 @@
-import { ExplorationControls } from './ExplorationControls';
-import { ExplorationTutorial } from './ExplorationTutorial';
-import { MissionLog } from './MissionLog';
-import { ReconShipStatus } from './ReconShipStatus';
-import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
 import {
   AlertTriangle,
   Filter,
@@ -15,6 +10,11 @@ import {
   ZoomOut,
 } from 'lucide-react';
 import React, { useRef, useState } from 'react';
+import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
+import { ExplorationControls } from './ExplorationControls';
+import { ExplorationTutorial } from './ExplorationTutorial';
+import { MissionLog } from './MissionLog';
+import { ReconShipStatus } from './ReconShipStatus';
 
 interface Sector {
   id: string;
@@ -176,12 +176,12 @@ export function ExplorationWindow() {
   });
 
   return (
-    <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">
+    <div className="fixed inset-4 flex overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md">
       {/* Left Panel - Exploration Map */}
-      <div className="w-2/3 border-r border-gray-700 p-6 flex flex-col">
-        <div className="flex items-center justify-between mb-6">
+      <div className="flex w-2/3 flex-col border-r border-gray-700 p-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Radar className="w-6 h-6 text-teal-400" />
+            <Radar className="h-6 w-6 text-teal-400" />
             <h2 className="text-xl font-bold text-white">Exploration Hub</h2>
           </div>
 
@@ -190,41 +190,41 @@ export function ExplorationWindow() {
               <input
                 type="text"
                 placeholder="Search sectors..."
-                className="w-64 px-4 py-2 bg-gray-800/90 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
 
             <div className="flex space-x-2">
               <button
                 onClick={() => handleZoom(0.1)}
-                className="p-2 bg-gray-800/90 hover:bg-gray-700/90 rounded-lg backdrop-blur-sm transition-colors"
+                className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
               >
-                <ZoomIn className="w-5 h-5 text-teal-400" />
+                <ZoomIn className="h-5 w-5 text-teal-400" />
               </button>
               <button
                 onClick={() => handleZoom(-0.1)}
-                className="p-2 bg-gray-800/90 hover:bg-gray-700/90 rounded-lg backdrop-blur-sm transition-colors"
+                className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
               >
-                <ZoomOut className="w-5 h-5 text-teal-400" />
+                <ZoomOut className="h-5 w-5 text-teal-400" />
               </button>
             </div>
 
             <button
               onClick={() => setShowMissionLog(true)}
-              className="p-2 bg-gray-800/90 hover:bg-gray-700/90 rounded-lg backdrop-blur-sm transition-colors"
+              className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
             >
-              <History className="w-5 h-5 text-teal-400" />
+              <History className="h-5 w-5 text-teal-400" />
             </button>
           </div>
         </div>
 
         {/* Filter Controls */}
-        <div className="flex items-center space-x-4 mb-6">
+        <div className="mb-6 flex items-center space-x-4">
           <div className="flex items-center space-x-2 text-gray-400">
-            <Filter className="w-4 h-4" />
+            <Filter className="h-4 w-4" />
             <span>Filters:</span>
           </div>
           <div className="flex space-x-2">
@@ -236,13 +236,13 @@ export function ExplorationWindow() {
               <button
                 key={id}
                 onClick={() => setFilter(id as FilterType)}
-                className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
+                className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                   filter === id
                     ? 'bg-teal-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="h-4 w-4" />
                 <span>{label}</span>
               </button>
             ))}
@@ -251,7 +251,7 @@ export function ExplorationWindow() {
 
         {/* Exploration Map */}
         <div
-          className="relative flex-1 bg-gray-900 rounded-lg overflow-hidden cursor-move"
+          className="relative flex-1 cursor-move overflow-hidden rounded-lg bg-gray-900"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -288,11 +288,11 @@ export function ExplorationWindow() {
                   <button onClick={() => setSelectedSector(sector)} className="group relative">
                     {/* Sector Visualization */}
                     <div
-                      className={`w-24 h-24 rounded-lg ${
+                      className={`h-24 w-24 rounded-lg ${
                         sector.status === 'unmapped'
                           ? 'bg-gray-800/50'
                           : sector.status === 'scanning'
-                            ? 'bg-teal-900/50 animate-pulse'
+                            ? 'animate-pulse bg-teal-900/50'
                             : 'bg-teal-800/30'
                       } relative ${
                         isSelected ? 'ring-2 ring-teal-400 ring-offset-2 ring-offset-gray-900' : ''
@@ -301,7 +301,7 @@ export function ExplorationWindow() {
                       {/* Resource Potential Indicator */}
                       {sector.status !== 'unmapped' && (
                         <div
-                          className="absolute inset-2 border-2 border-teal-500/30 rounded"
+                          className="absolute inset-2 rounded border-2 border-teal-500/30"
                           style={{
                             clipPath: `polygon(0 ${100 - sector.resourcePotential * 100}%, 100% ${100 - sector.resourcePotential * 100}%, 100% 100%, 0 100%)`,
                           }}
@@ -311,7 +311,7 @@ export function ExplorationWindow() {
                       {/* Habitability Score Ring */}
                       {sector.status !== 'unmapped' && (
                         <div
-                          className="absolute inset-0 border-4 border-teal-400/20 rounded-lg"
+                          className="absolute inset-0 rounded-lg border-4 border-teal-400/20"
                           style={{
                             clipPath: `polygon(0 0, ${sector.habitabilityScore * 100}% 0, ${sector.habitabilityScore * 100}% 100%, 0 100%)`,
                           }}
@@ -322,7 +322,7 @@ export function ExplorationWindow() {
                       {sector.anomalies.map((anomaly, index) => (
                         <div
                           key={anomaly.id}
-                          className={`absolute w-3 h-3 rounded-full ${
+                          className={`absolute h-3 w-3 rounded-full ${
                             anomaly.severity === 'high'
                               ? 'bg-red-500'
                               : anomaly.severity === 'medium'
@@ -338,17 +338,17 @@ export function ExplorationWindow() {
 
                       {/* Scanning Ship Indicator */}
                       {scanningShip && (
-                        <div className="absolute -top-2 -right-2">
-                          <Rocket className="w-5 h-5 text-teal-400 animate-pulse" />
+                        <div className="absolute -right-2 -top-2">
+                          <Rocket className="h-5 w-5 animate-pulse text-teal-400" />
                         </div>
                       )}
                     </div>
 
                     {/* Sector Label */}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-center">
-                      <div className="text-teal-200 font-medium">{sector.name}</div>
+                    <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-center">
+                      <div className="font-medium text-teal-200">{sector.name}</div>
                       {sector.status !== 'unmapped' && (
-                        <div className="text-teal-300/70 text-sm">
+                        <div className="text-sm text-teal-300/70">
                           {sector.status === 'scanning' ? 'Scanning in Progress' : 'Mapped'}
                         </div>
                       )}
@@ -369,9 +369,9 @@ export function ExplorationWindow() {
         {selectedSector ? (
           <ExplorationControls sector={selectedSector} onClose={() => setSelectedSector(null)} />
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-400 text-center">
+          <div className="flex h-full items-center justify-center text-center text-gray-400">
             <div>
-              <Radar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <Radar className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p>Select a sector to view details and manage exploration</p>
             </div>
           </div>

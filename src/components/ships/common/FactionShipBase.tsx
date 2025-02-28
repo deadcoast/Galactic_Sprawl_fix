@@ -1,24 +1,24 @@
-import type { FactionShipProps, FactionShip } from '../../../types/ships/FactionShipTypes';
-import { BaseShip } from '../base/BaseShip';
-import { StatusEffectContainer } from '../../ui/status/StatusEffect';
-import { AbilityButtonContainer } from '../../ui/buttons/AbilityButton';
 import { ReactNode, useEffect } from 'react';
-import { ShipStatus } from '../../../types/ships/CommonShipTypes';
 import { useShipState } from '../../../contexts/ShipContext';
+import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
 import { useShipActions } from '../../../hooks/ships/useShipActions';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
-import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
+import { ShipStatus } from '../../../types/ships/CommonShipTypes';
+import type { FactionShip, FactionShipProps } from '../../../types/ships/FactionShipTypes';
 import { FactionId } from '../../../types/ships/FactionTypes';
+import { AbilityButtonContainer } from '../../ui/buttons/AbilityButton';
+import { StatusEffectContainer } from '../../ui/status/StatusEffect';
+import { BaseShip } from '../base/BaseShip';
 
 // Update FACTION_COLORS to include all possible FactionId values
 const FACTION_COLORS: Record<FactionId, string> = {
   'space-rats': 'red',
   'lost-nova': 'violet',
   'equator-horizon': 'amber',
-  'player': 'blue',
-  'enemy': 'red',
-  'neutral': 'gray',
-  'ally': 'green',
+  player: 'blue',
+  enemy: 'red',
+  neutral: 'gray',
+  ally: 'green',
 } as const;
 
 /**
@@ -87,7 +87,7 @@ function FactionShipContent({
   return (
     <div className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6 ${className}`}>
       {/* Faction Info */}
-      <div className="flex items-center text-sm text-gray-400 mb-4">
+      <div className="mb-4 flex items-center text-sm text-gray-400">
         <span className="capitalize">{ship.faction.replace(/-/g, ' ')}</span>
         <span className="mx-2">•</span>
         <span>{ship.class.replace(/([A-Z])/g, ' $1').trim()}</span>
@@ -98,7 +98,7 @@ function FactionShipContent({
         {activeEffects.map((effect: BaseEffect) => (
           <div
             key={effect.id}
-            className={`px-3 py-2 bg-${color}-900/30 rounded-lg text-sm mb-2 last:mb-0`}
+            className={`px-3 py-2 bg-${color}-900/30 mb-2 rounded-lg text-sm last:mb-0`}
           >
             <div className="font-medium text-gray-300">{effect.name}</div>
             <div className="text-xs text-gray-400">{effect.description}</div>
@@ -112,7 +112,7 @@ function FactionShipContent({
         <div className="mb-4">
           {ship.stats.abilities.map((ability, index) => (
             <div key={index} className="mb-2 last:mb-0">
-              <div className="flex items-center justify-between mb-1">
+              <div className="mb-1 flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-300">{ability.name}</span>
                 <span className="text-sm text-gray-400">{ability.cooldown}s</span>
               </div>
@@ -123,25 +123,25 @@ function FactionShipContent({
       )}
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="mb-4 grid grid-cols-3 gap-2">
         <button
           onClick={onEngage}
           disabled={state.status === 'disabled'}
-          className={`px-3 py-2 rounded-lg text-sm ${state.status === 'disabled' ? 'bg-gray-700 text-gray-500' : `bg-${color}-600 text-white`}`}
+          className={`rounded-lg px-3 py-2 text-sm ${state.status === 'disabled' ? 'bg-gray-700 text-gray-500' : `bg-${color}-600 text-white`}`}
         >
           Engage
         </button>
         <button
           onClick={onRetreat}
           disabled={state.status === 'disabled'}
-          className={`px-3 py-2 rounded-lg text-sm ${state.status === 'disabled' ? 'bg-gray-700 text-gray-500' : 'bg-yellow-600 text-white'}`}
+          className={`rounded-lg px-3 py-2 text-sm ${state.status === 'disabled' ? 'bg-gray-700 text-gray-500' : 'bg-yellow-600 text-white'}`}
         >
           Retreat
         </button>
         <button
           onClick={onSpecialAbility}
           disabled={state.status === 'disabled'}
-          className={`px-3 py-2 rounded-lg text-sm ${state.status === 'disabled' ? 'bg-gray-700 text-gray-500' : `bg-${color}-500 text-white`}`}
+          className={`rounded-lg px-3 py-2 text-sm ${state.status === 'disabled' ? 'bg-gray-700 text-gray-500' : `bg-${color}-500 text-white`}`}
         >
           Special
         </button>
@@ -155,7 +155,7 @@ function FactionShipContent({
               key={weapon.id}
               onClick={() => handleWeaponFire(weapon.id)}
               disabled={state.status === 'disabled'}
-              className={`w-full px-3 py-2 rounded-lg text-sm ${state.status === 'disabled' ? 'bg-gray-700 text-gray-500' : `bg-${color}-700 text-white`}`}
+              className={`w-full rounded-lg px-3 py-2 text-sm ${state.status === 'disabled' ? 'bg-gray-700 text-gray-500' : `bg-${color}-700 text-white`}`}
             >
               Fire {weapon.currentWeapon?.config.name || weapon.position} Mount
             </button>

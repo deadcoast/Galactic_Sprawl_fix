@@ -1,5 +1,5 @@
-import { combatManager } from '../../managers/combat/combatManager';
 import { useEffect, useState } from 'react';
+import { combatManager } from '../../managers/combat/combatManager';
 
 export function useCombatSystem(zoneId: string) {
   const [zoneStatus, setZoneStatus] = useState(combatManager.getZoneStatus(zoneId));

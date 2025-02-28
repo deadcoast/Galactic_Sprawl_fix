@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, ReactNode, useContext, useReducer } from 'react';
 import { BaseEffect, EffectStack } from '../effects/types_effects/EffectTypes';
 import { CommonShipStats } from '../types/ships/CommonShipTypes';
-import { WeaponMount, WeaponInstance, WeaponState } from '../types/weapons/WeaponTypes';
+import { WeaponMount, WeaponState } from '../types/weapons/WeaponTypes';
 
 // Ship State Types
 // ------------------------------------------------------------

@@ -43,14 +43,14 @@ export function ExplorationHub({
   const particleCount = quality === 'high' ? 12 : quality === 'medium' ? 8 : 4;
 
   return (
-    <div className="relative w-96 h-96">
+    <div className="relative h-96 w-96">
       {/* Main Hub Structure */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative">
           {/* Central Command */}
-          <div className="w-40 h-40 bg-gray-800/80 rounded-lg border-4 border-teal-500/30 flex items-center justify-center transform rotate-45">
-            <div className="w-24 h-24 bg-teal-900/50 rounded-lg flex items-center justify-center transform -rotate-45">
-              <Radar className="w-12 h-12 text-teal-400" />
+          <div className="flex h-40 w-40 rotate-45 transform items-center justify-center rounded-lg border-4 border-teal-500/30 bg-gray-800/80">
+            <div className="flex h-24 w-24 -rotate-45 transform items-center justify-center rounded-lg bg-teal-900/50">
+              <Radar className="h-12 w-12 text-teal-400" />
             </div>
           </div>
 
@@ -68,7 +68,7 @@ export function ExplorationHub({
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="absolute inset-0 border border-teal-500/10 rounded-full"
+                className="absolute inset-0 rounded-full border border-teal-500/10"
                 style={{
                   transform: `scale(${1.5 + i * 0.3}) rotate(${i * 45}deg)`,
                   animation: `spin ${10 + i * 5}s linear infinite`,
@@ -107,7 +107,7 @@ export function ExplorationHub({
               onClick={() => onShipSelect?.(ship.id)}
             >
               <div
-                className={`p-2 rounded-full transition-all duration-300 ${
+                className={`rounded-full p-2 transition-all duration-300 ${
                   ship.status === 'scanning'
                     ? 'bg-teal-500/20'
                     : ship.status === 'investigating'
@@ -116,7 +116,7 @@ export function ExplorationHub({
                 } ${hoveredShip === ship.id ? 'scale-125' : 'scale-100'}`}
               >
                 <Rocket
-                  className={`w-4 h-4 ${
+                  className={`h-4 w-4 ${
                     ship.status === 'scanning'
                       ? 'text-teal-400'
                       : ship.status === 'investigating'
@@ -128,7 +128,7 @@ export function ExplorationHub({
 
               {/* Ship Path */}
               {ship.targetArea && quality !== 'low' && (
-                <svg className="absolute inset-0 pointer-events-none">
+                <svg className="pointer-events-none absolute inset-0">
                   <line
                     x1="0"
                     y1="0"
@@ -143,7 +143,7 @@ export function ExplorationHub({
 
               {/* Ship Info Tooltip */}
               {hoveredShip === ship.id && (
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-800/90 rounded-lg border border-gray-700 whitespace-nowrap z-10">
+                <div className="absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 transform whitespace-nowrap rounded-lg border border-gray-700 bg-gray-800/90 px-3 py-2">
                   <div className="text-sm font-medium text-white">{ship.name}</div>
                   <div className="text-xs text-gray-400">
                     Status: {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)}
@@ -171,7 +171,7 @@ export function ExplorationHub({
               onClick={() => onAnomalyClick?.(anomaly.id)}
             >
               <div
-                className={`p-2 rounded-full transition-all duration-300 ${
+                className={`rounded-full p-2 transition-all duration-300 ${
                   anomaly.severity === 'high'
                     ? 'bg-red-500/20'
                     : anomaly.severity === 'medium'
@@ -180,7 +180,7 @@ export function ExplorationHub({
                 } ${hoveredAnomaly === anomaly.id ? 'scale-125' : 'scale-100'}`}
               >
                 <AlertTriangle
-                  className={`w-4 h-4 ${
+                  className={`h-4 w-4 ${
                     anomaly.severity === 'high'
                       ? 'text-red-400'
                       : anomaly.severity === 'medium'
@@ -192,8 +192,8 @@ export function ExplorationHub({
 
               {/* Anomaly Info Tooltip */}
               {hoveredAnomaly === anomaly.id && (
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-800/90 rounded-lg border border-gray-700 whitespace-nowrap z-10">
-                  <div className="text-sm font-medium text-white capitalize">
+                <div className="absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 transform whitespace-nowrap rounded-lg border border-gray-700 bg-gray-800/90 px-3 py-2">
+                  <div className="text-sm font-medium capitalize text-white">
                     {anomaly.type} Anomaly
                   </div>
                   <div className="text-xs text-gray-400">
@@ -211,7 +211,7 @@ export function ExplorationHub({
           {Array.from({ length: particleCount }).map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 bg-teal-400 rounded-full animate-float"
+              className="animate-float absolute h-2 w-2 rounded-full bg-teal-400"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -224,23 +224,23 @@ export function ExplorationHub({
       </div>
 
       {/* Hub Info */}
-      <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 space-y-2 w-48">
+      <div className="absolute -bottom-12 left-1/2 w-48 -translate-x-1/2 transform space-y-2">
         <div className="text-center">
-          <div className="text-teal-200 font-medium">Exploration Hub</div>
-          <div className="text-teal-300/70 text-sm">
+          <div className="font-medium text-teal-200">Exploration Hub</div>
+          <div className="text-sm text-teal-300/70">
             Tier {tier} • {ships.length} Ships Active
           </div>
         </div>
 
         {/* Mapping Progress */}
         <div>
-          <div className="flex justify-between text-xs mb-1">
+          <div className="mb-1 flex justify-between text-xs">
             <span className="text-gray-400">Area Mapped</span>
             <span className="text-gray-300">{Math.round((mappedArea / totalArea) * 100)}%</span>
           </div>
-          <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
             <div
-              className="h-full bg-teal-500 rounded-full transition-all"
+              className="h-full rounded-full bg-teal-500 transition-all"
               style={{ width: `${(mappedArea / totalArea) * 100}%` }}
             />
           </div>

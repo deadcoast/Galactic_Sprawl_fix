@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { ModuleEventType, ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 
 /**
  * Event dispatcher context interface
@@ -7,19 +7,19 @@ import { ModuleEventType, ModuleEvent, moduleEventBus } from '../../lib/modules/
 interface EventDispatcherContextType {
   // Event subscription
   subscribe: (type: ModuleEventType, listener: (event: ModuleEvent) => void) => () => void;
-  
+
   // Event emission
   emit: (event: ModuleEvent) => void;
-  
+
   // Event history
   getHistory: () => ModuleEvent[];
   getModuleHistory: (moduleId: string) => ModuleEvent[];
   getEventTypeHistory: (type: ModuleEventType) => ModuleEvent[];
   clearHistory: () => void;
-  
+
   // Event filtering
   getFilteredEvents: (filter: (event: ModuleEvent) => boolean) => ModuleEvent[];
-  
+
   // Latest events by type
   latestEvents: Map<ModuleEventType, ModuleEvent>;
 }
@@ -38,14 +38,12 @@ const EventDispatcherContext = createContext<EventDispatcherContextType | null>(
 /**
  * Event dispatcher provider component
  */
-export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = ({ 
-  children, 
-  maxHistorySize = 1000 
+export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = ({
+  children,
+  maxHistorySize = 1000,
 }) => {
   // Store the latest event of each type
-  const [latestEvents, setLatestEvents] = useState<Map<ModuleEventType, ModuleEvent>>(
-    new Map()
-  );
+  const [latestEvents, setLatestEvents] = useState<Map<ModuleEventType, ModuleEvent>>(new Map());
 
   // Subscribe to all module events
   useEffect(() => {
@@ -97,13 +95,11 @@ export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = (
       'SUB_MODULE_ACTIVATED',
       'SUB_MODULE_DEACTIVATED',
       'SUB_MODULE_EFFECT_APPLIED',
-      'SUB_MODULE_EFFECT_REMOVED'
+      'SUB_MODULE_EFFECT_REMOVED',
     ];
 
     // Subscribe to all event types
-    const unsubscribers = eventTypes.map(type => 
-      moduleEventBus.subscribe(type, handleEvent)
-    );
+    const unsubscribers = eventTypes.map(type => moduleEventBus.subscribe(type, handleEvent));
 
     // Cleanup subscriptions
     return () => {
@@ -119,27 +115,25 @@ export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = (
   const value: EventDispatcherContextType = {
     // Event subscription - delegate to moduleEventBus
     subscribe: (type, listener) => moduleEventBus.subscribe(type, listener),
-    
+
     // Event emission - delegate to moduleEventBus
-    emit: (event) => moduleEventBus.emit(event),
-    
+    emit: event => moduleEventBus.emit(event),
+
     // Event history - delegate to moduleEventBus
     getHistory: () => moduleEventBus.getHistory(),
-    getModuleHistory: (moduleId) => moduleEventBus.getModuleHistory(moduleId),
-    getEventTypeHistory: (type) => moduleEventBus.getEventTypeHistory(type),
+    getModuleHistory: moduleId => moduleEventBus.getModuleHistory(moduleId),
+    getEventTypeHistory: type => moduleEventBus.getEventTypeHistory(type),
     clearHistory: () => moduleEventBus.clearHistory(),
-    
+
     // Event filtering
-    getFilteredEvents: (filter) => moduleEventBus.getHistory().filter(filter),
-    
+    getFilteredEvents: filter => moduleEventBus.getHistory().filter(filter),
+
     // Latest events by type
-    latestEvents
+    latestEvents,
   };
 
   return (
-    <EventDispatcherContext.Provider value={value}>
-      {children}
-    </EventDispatcherContext.Provider>
+    <EventDispatcherContext.Provider value={value}>{children}</EventDispatcherContext.Provider>
   );
 };
 
@@ -148,11 +142,11 @@ export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = (
  */
 export const useEventDispatcher = (): EventDispatcherContextType => {
   const context = useContext(EventDispatcherContext);
-  
+
   if (!context) {
     throw new Error('useEventDispatcher must be used within an EventDispatcherProvider');
   }
-  
+
   return context;
 };
 
@@ -165,7 +159,7 @@ export const useEventSubscription = <T extends ModuleEventType>(
   deps: React.DependencyList = []
 ): void => {
   const { subscribe } = useEventDispatcher();
-  
+
   useEffect(() => {
     return subscribe(eventType, callback);
   }, [eventType, ...deps]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -190,10 +184,10 @@ export const useFilteredEvents = (
 ): ModuleEvent[] => {
   const { getFilteredEvents } = useEventDispatcher();
   const [filteredEvents, setFilteredEvents] = useState<ModuleEvent[]>([]);
-  
+
   useEffect(() => {
     setFilteredEvents(getFilteredEvents(filter));
   }, [getFilteredEvents, ...deps]); // eslint-disable-line react-hooks/exhaustive-deps
-  
+
   return filteredEvents;
-}; 
+};

@@ -10,9 +10,9 @@ interface TechBonusProps {
 
 export function TechBonus({ bonuses }: TechBonusProps) {
   return (
-    <div className="absolute top-4 right-4 px-4 py-2 bg-indigo-900/30 border border-indigo-500/30 rounded-lg backdrop-blur-sm">
+    <div className="absolute right-4 top-4 rounded-lg border border-indigo-500/30 bg-indigo-900/30 px-4 py-2 backdrop-blur-sm">
       <div className="flex items-center space-x-2 text-sm">
-        <Zap className="w-4 h-4 text-indigo-400" />
+        <Zap className="h-4 w-4 text-indigo-400" />
         <span className="text-indigo-200">Tech Bonuses Active</span>
       </div>
       <div className="mt-2 space-y-1 text-xs">

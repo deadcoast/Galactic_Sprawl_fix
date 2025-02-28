@@ -1,5 +1,5 @@
 import { ArrowRight, Package } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface CargoShipProps {
   id: string;
@@ -36,13 +36,17 @@ export function ResourceTransferAnimation({ ships }: { ships: CargoShipProps[] }
 
       for (let i = 0; i < particleCount; i++) {
         const particleProgress = (i / particleCount + Date.now() / 2000) % 1;
-        const x = ship.sourcePosition.x + (ship.targetPosition.x - ship.sourcePosition.x) * particleProgress;
-        const y = ship.sourcePosition.y + (ship.targetPosition.y - ship.sourcePosition.y) * particleProgress;
+        const x =
+          ship.sourcePosition.x +
+          (ship.targetPosition.x - ship.sourcePosition.x) * particleProgress;
+        const y =
+          ship.sourcePosition.y +
+          (ship.targetPosition.y - ship.sourcePosition.y) * particleProgress;
 
         newParticles.push({
           x,
           y,
-          angle: angle + (Math.random() - 0.5) * Math.PI / 4,
+          angle: angle + ((Math.random() - 0.5) * Math.PI) / 4,
           speed: 0.5 + Math.random() * 0.5,
           size: 1 + Math.random() * 2,
           opacity: 0.3 + Math.random() * 0.7,
@@ -54,12 +58,16 @@ export function ResourceTransferAnimation({ ships }: { ships: CargoShipProps[] }
     setParticles(newParticles);
 
     const interval = setInterval(() => {
-      setParticles(prev => prev.map(particle => ({
-        ...particle,
-        x: particle.x + Math.cos(particle.angle) * particle.speed,
-        y: particle.y + Math.sin(particle.angle) * particle.speed,
-        opacity: particle.opacity * 0.95,
-      })).filter(p => p.opacity > 0.1));
+      setParticles(prev =>
+        prev
+          .map(particle => ({
+            ...particle,
+            x: particle.x + Math.cos(particle.angle) * particle.speed,
+            y: particle.y + Math.sin(particle.angle) * particle.speed,
+            opacity: particle.opacity * 0.95,
+          }))
+          .filter(p => p.opacity > 0.1)
+      );
     }, 50);
 
     return () => clearInterval(interval);
@@ -79,7 +87,7 @@ export function ResourceTransferAnimation({ ships }: { ships: CargoShipProps[] }
   };
 
   return (
-    <div className="absolute inset-0 pointer-events-none">
+    <div className="pointer-events-none absolute inset-0">
       {/* Particle Effects */}
       {particles.map((particle, index) => (
         <div
@@ -125,22 +133,22 @@ export function ResourceTransferAnimation({ ships }: { ships: CargoShipProps[] }
           >
             {/* Resource Label */}
             <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-              <div className="px-2 py-1 bg-amber-900/80 backdrop-blur-sm rounded-full border border-amber-500/50 text-xs text-amber-200">
+              <div className="rounded-full border border-amber-500/50 bg-amber-900/80 px-2 py-1 text-xs text-amber-200 backdrop-blur-sm">
                 {ship.amount} {ship.resourceType}
               </div>
             </div>
 
             {/* Cargo Ship Icon */}
             <div className="relative">
-              <div className="p-2 bg-amber-500/20 rounded-full animate-pulse">
-                <Package className="w-5 h-5 text-amber-400" />
+              <div className="animate-pulse rounded-full bg-amber-500/20 p-2">
+                <Package className="h-5 w-5 text-amber-400" />
               </div>
               {/* Direction Arrow */}
               <div
                 className="absolute -right-6 top-1/2 -translate-y-1/2"
                 style={{ transform: `rotate(${angle}deg)` }}
               >
-                <ArrowRight className="w-4 h-4 text-amber-400/70" />
+                <ArrowRight className="h-4 w-4 text-amber-400/70" />
               </div>
             </div>
 

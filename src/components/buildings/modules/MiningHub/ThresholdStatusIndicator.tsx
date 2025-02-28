@@ -94,7 +94,7 @@ export function ThresholdStatusIndicator({
   return (
     <div className={`rounded-lg p-2 ${status.bgColor} border ${status.borderColor}`}>
       <div className="flex items-center space-x-2">
-        <status.icon className={`w-4 h-4 ${status.color}`} />
+        <status.icon className={`h-4 w-4 ${status.color}`} />
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <span className={`text-sm font-medium ${status.color}`}>{status.message}</span>
@@ -102,7 +102,7 @@ export function ThresholdStatusIndicator({
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-700">
             <motion.div
               className={`h-full rounded-full ${status.bgColor.replace('/20', '')}`}
               style={{ width: `${status.percentage}%` }}
@@ -112,15 +112,15 @@ export function ThresholdStatusIndicator({
           </div>
 
           {/* Threshold Markers */}
-          <div className="relative h-1 mt-0.5">
+          <div className="relative mt-0.5 h-1">
             {/* Min Threshold Marker */}
             <div
-              className="absolute top-0 w-0.5 h-2 bg-yellow-500"
+              className="absolute top-0 h-2 w-0.5 bg-yellow-500"
               style={{ left: `${(minThreshold / maxCapacity) * 100}%` }}
             />
             {/* Max Threshold Marker */}
             <div
-              className="absolute top-0 w-0.5 h-2 bg-red-500"
+              className="absolute top-0 h-2 w-0.5 bg-red-500"
               style={{ left: `${(maxThreshold / maxCapacity) * 100}%` }}
             />
           </div>

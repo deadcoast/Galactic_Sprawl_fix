@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
-import { GlobalAutomationManager, GlobalRoutine } from '../../managers/automation/GlobalAutomationManager';
+import { useEffect, useState } from 'react';
+import {
+  GlobalAutomationManager,
+  GlobalRoutine,
+} from '../../managers/automation/GlobalAutomationManager';
 import { AutomationManager } from '../../managers/game/AutomationManager';
 
 // Define SystemId type to match what's expected
@@ -26,7 +29,7 @@ export const useAutomation = () => {
       if (!automationManagerInstance) {
         automationManagerInstance = new AutomationManager();
       }
-      
+
       // Create GlobalAutomationManager with the AutomationManager instance
       globalAutomationManager = new GlobalAutomationManager(automationManagerInstance);
       globalAutomationManager.initialize();
@@ -120,16 +123,15 @@ export const useAutomation = () => {
 
   // Get routines by tag
   const getRoutinesByTag = (tag: string) => {
-    return routines.filter(routine => 
-      Array.isArray(routine.tags) && routine.tags.includes(tag)
-    );
+    return routines.filter(routine => Array.isArray(routine.tags) && routine.tags.includes(tag));
   };
 
   // Get routines by system
   const getRoutinesBySystem = (system: string) => {
-    return routines.filter(routine => 
-      Array.isArray(routine.systems) && 
-      routine.systems.some(sys => sys === system as unknown as SystemId)
+    return routines.filter(
+      routine =>
+        Array.isArray(routine.systems) &&
+        routine.systems.some(sys => sys === (system as unknown as SystemId))
     );
   };
 
@@ -143,10 +145,10 @@ export const useAutomation = () => {
       // Generate a unique ID
       const id = `routine-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       const newRoutine = { ...routine, id } as GlobalRoutine;
-      
+
       globalAutomationManager.registerRoutine(newRoutine);
       updateRoutines();
-      
+
       return newRoutine;
     } catch (error) {
       console.error('Failed to create routine:', error);
@@ -166,7 +168,7 @@ export const useAutomation = () => {
     getRoutinesByTag,
     getRoutinesBySystem,
     createRoutine,
-    automationManager: globalAutomationManager
+    automationManager: globalAutomationManager,
   };
 };
 

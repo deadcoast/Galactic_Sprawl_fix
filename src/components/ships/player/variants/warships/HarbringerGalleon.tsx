@@ -1,9 +1,9 @@
-import { ThrusterEffect } from '../../../../../effects/component_effects/ThrusterEffect';
 import { AlertTriangle } from 'lucide-react';
 import * as PIXI from 'pixi.js';
 import { useEffect, useRef } from 'react';
-import { useAssets } from '../../../../../hooks/game/useAssets';
+import { ThrusterEffect } from '../../../../../effects/component_effects/ThrusterEffect';
 import { useAnimation } from '../../../../../hooks/game/useAnimation';
+import { useAssets } from '../../../../../hooks/game/useAssets';
 
 // Type augmentation for PIXI.js
 declare module 'pixi.js' {
@@ -139,19 +139,19 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
 
   return (
     <div className="relative">
-      <div ref={containerRef} className="w-[400px] h-[400px]" />
+      <div ref={containerRef} className="h-[400px] w-[400px]" />
       {/* Health and shield bars */}
       <div className="absolute bottom-0 left-0 w-full px-4 py-2">
         <div className="flex flex-col gap-1">
-          <div className="h-2 bg-gray-700 rounded-full">
+          <div className="h-2 rounded-full bg-gray-700">
             <div
-              className="h-full bg-red-500 rounded-full"
+              className="h-full rounded-full bg-red-500"
               style={{ width: `${(health / maxHealth) * 100}%` }}
             />
           </div>
-          <div className="h-2 bg-gray-700 rounded-full">
+          <div className="h-2 rounded-full bg-gray-700">
             <div
-              className="h-full bg-blue-500 rounded-full"
+              className="h-full rounded-full bg-blue-500"
               style={{ width: `${(shield / maxShield) * 100}%` }}
             />
           </div>
@@ -159,8 +159,8 @@ export const HarbringerGalleon: React.FC<HarbringerGalleonProps> = ({
       </div>
       {/* Warning indicator for damaged state */}
       {status === 'damaged' && (
-        <div className="absolute top-0 right-0 p-2">
-          <AlertTriangle className="w-6 h-6 text-yellow-500 animate-pulse" />
+        <div className="absolute right-0 top-0 p-2">
+          <AlertTriangle className="h-6 w-6 animate-pulse text-yellow-500" />
         </div>
       )}
       {/* Thruster effects */}

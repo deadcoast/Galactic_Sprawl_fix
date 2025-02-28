@@ -22,4 +22,4 @@ export interface Ship {
     x: number;
     y: number;
   };
-} 
+}

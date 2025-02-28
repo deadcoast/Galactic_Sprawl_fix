@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useModuleUpgrade } from '../../../hooks/modules/useModuleUpgrade';
 import { ModuleVisualChange } from '../../../managers/module/ModuleUpgradeManager';
 
@@ -14,7 +14,7 @@ interface ModuleUpgradeVisualizationProps {
 export const ModuleUpgradeVisualization: React.FC<ModuleUpgradeVisualizationProps> = ({
   moduleId,
   quality = 'medium',
-  onComplete
+  onComplete,
 }) => {
   const { upgradeStatus, upgradeProgress } = useModuleUpgrade(moduleId);
   const [visualChanges, setVisualChanges] = useState<ModuleVisualChange[]>([]);
@@ -59,14 +59,14 @@ export const ModuleUpgradeVisualization: React.FC<ModuleUpgradeVisualizationProp
   useEffect(() => {
     if (upgradeProgress === 1 && !isComplete) {
       setIsComplete(true);
-      
+
       // Call onComplete after animation finishes
       const timeout = setTimeout(() => {
         if (onComplete) {
           onComplete();
         }
       }, getAnimationDuration() + 500);
-      
+
       return () => clearTimeout(timeout);
     }
   }, [upgradeProgress, isComplete, onComplete]);
@@ -81,7 +81,7 @@ export const ModuleUpgradeVisualization: React.FC<ModuleUpgradeVisualizationProp
     if (!upgradeStatus) {
       return 'blue';
     }
-    
+
     switch (upgradeStatus.moduleType) {
       case 'radar':
         return 'cyan';
@@ -117,10 +117,10 @@ export const ModuleUpgradeVisualization: React.FC<ModuleUpgradeVisualizationProp
   return (
     <div className="module-upgrade-visualization">
       {/* Background overlay */}
-      <div 
+      <div
         className="module-upgrade-visualization__overlay"
         style={{
-          opacity: upgradeProgress * 0.5
+          opacity: upgradeProgress * 0.5,
         }}
       />
 
@@ -129,7 +129,7 @@ export const ModuleUpgradeVisualization: React.FC<ModuleUpgradeVisualizationProp
         className={`module-upgrade-visualization__energy-field module-upgrade-visualization__energy-field--${color}`}
         style={{
           opacity: upgradeProgress,
-          transform: `scale(${1 + upgradeProgress * 0.5})`
+          transform: `scale(${1 + upgradeProgress * 0.5})`,
         }}
       />
 
@@ -141,7 +141,7 @@ export const ModuleUpgradeVisualization: React.FC<ModuleUpgradeVisualizationProp
             className={`module-upgrade-visualization__expansion-ring module-upgrade-visualization__expansion-ring--${color}`}
             style={{
               transform: `scale(${1 + upgradeProgress * 0.3 * (i + 1)}) rotate(${upgradeProgress * 90}deg)`,
-              opacity: 1 - upgradeProgress * 0.7
+              opacity: 1 - upgradeProgress * 0.7,
             }}
           />
         ))}
@@ -158,7 +158,7 @@ export const ModuleUpgradeVisualization: React.FC<ModuleUpgradeVisualizationProp
               top: `${Math.random() * 100}%`,
               transform: `rotate(${Math.random() * 360}deg) scale(${1 + upgradeProgress})`,
               opacity: 0.5 + upgradeProgress * 0.5,
-              animationDuration: `${Math.random() * 2 + 1}s`
+              animationDuration: `${Math.random() * 2 + 1}s`,
             }}
           />
         ))}
@@ -194,17 +194,15 @@ export const ModuleUpgradeVisualization: React.FC<ModuleUpgradeVisualizationProp
       {visualChanges.length > 0 && (
         <div className="module-upgrade-visualization__visual-changes">
           {visualChanges.map((change, index) => (
-            <div 
+            <div
               key={index}
               className={`module-upgrade-visualization__visual-change module-upgrade-visualization__visual-change--${change.type}`}
               style={{
                 opacity: upgradeProgress,
-                transform: `scale(${upgradeProgress})`
+                transform: `scale(${upgradeProgress})`,
               }}
             >
-              <div className="module-upgrade-visualization__visual-change-label">
-                {change.type}
-              </div>
+              <div className="module-upgrade-visualization__visual-change-label">{change.type}</div>
               <div className="module-upgrade-visualization__visual-change-value">
                 {change.value}
               </div>
@@ -215,13 +213,13 @@ export const ModuleUpgradeVisualization: React.FC<ModuleUpgradeVisualizationProp
 
       {/* Completion flash */}
       {isComplete && (
-        <div 
+        <div
           className={`module-upgrade-visualization__completion-flash module-upgrade-visualization__completion-flash--${color}`}
           style={{
-            animationDuration: `${animationDuration}ms`
+            animationDuration: `${animationDuration}ms`,
           }}
         />
       )}
     </div>
   );
-}; 
+};

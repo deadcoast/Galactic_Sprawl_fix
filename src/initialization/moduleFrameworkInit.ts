@@ -1,30 +1,29 @@
-import { moduleManager } from '../managers/module/ModuleManager';
-import { moduleAttachmentManager } from '../managers/module/ModuleAttachmentManager';
-import { moduleStatusManager } from '../managers/module/ModuleStatusManager';
-import { moduleUpgradeManager } from '../managers/module/ModuleUpgradeManager';
-import { subModuleManager } from '../managers/module/SubModuleManager';
 import { initializeModuleUpgradePaths } from '../config/modules/upgradePathsConfig';
 import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
 import { resourceManager } from '../managers/game/ResourceManager';
+import { moduleManager } from '../managers/module/ModuleManager';
+import { moduleStatusManager } from '../managers/module/ModuleStatusManager';
+import { moduleUpgradeManager } from '../managers/module/ModuleUpgradeManager';
+import { subModuleManager } from '../managers/module/SubModuleManager';
 
 /**
  * Initialize the module framework
  */
 export function initializeModuleFramework(): void {
   console.log('[Initialization] Setting up module framework...');
-  
+
   // Register event handlers for resource integration
   registerResourceIntegration();
-  
+
   // Initialize module upgrade system
   initializeModuleUpgradePaths(moduleUpgradeManager);
-  
+
   // Initialize module status tracking
   initializeStatusTracking();
-  
+
   // Initialize sub-module system
   initializeSubModuleSystem();
-  
+
   console.log('[Initialization] Module framework initialized successfully.');
 }
 
@@ -33,61 +32,58 @@ export function initializeModuleFramework(): void {
  */
 function registerResourceIntegration(): void {
   // Handle module activation/deactivation for resource consumption
-  moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, (event) => {
+  moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, event => {
     const module = moduleManager.getModule(event.moduleId);
     if (!module) {
       return;
     }
-    
+
     // Get module config
     const configs = getModuleConfigs();
     const config = configs[module.type];
     if (!config || !config.resourceConsumption) {
       return;
     }
-    
+
     // Register resource consumption
     for (const [resourceType, amount] of Object.entries(config.resourceConsumption)) {
-      resourceManager.registerConsumption({
-        id: `module-${module.id}`,
+      resourceManager.registerConsumption(`module-${module.id}`, {
         type: resourceType as any,
         amount: amount as number,
-        priority: 'medium',
-        description: `${module.name} operation`
+        interval: 60000, // 1 minute
+        required: false,
       });
     }
   });
-  
-  moduleEventBus.subscribe('MODULE_DEACTIVATED' as ModuleEventType, (event) => {
+
+  moduleEventBus.subscribe('MODULE_DEACTIVATED' as ModuleEventType, event => {
     // Remove resource consumption
     resourceManager.unregisterConsumption(`module-${event.moduleId}`);
   });
-  
+
   // Handle module upgrades for resource production boosts
-  moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, (event) => {
+  moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, event => {
     const module = moduleManager.getModule(event.moduleId);
     if (!module) {
       return;
     }
-    
+
     // Get module config
     const configs = getModuleConfigs();
     const config = configs[module.type];
     if (!config || !config.resourceProduction) {
       return;
     }
-    
+
     // Update resource production based on level
     for (const [resourceType, baseAmount] of Object.entries(config.resourceProduction)) {
       const levelMultiplier = 1 + (module.level - 1) * 0.25; // 25% increase per level
       const amount = (baseAmount as number) * levelMultiplier;
-      
-      resourceManager.registerProduction({
-        id: `module-${module.id}`,
+
+      resourceManager.registerProduction(`module-${module.id}`, {
         type: resourceType as any,
         amount: amount,
-        priority: 'medium',
-        description: `${module.name} production`
+        interval: 60000, // 1 minute
       });
     }
   });
@@ -101,34 +97,30 @@ function initializeStatusTracking(): void {
   setInterval(() => {
     // Get all modules
     const modules = Array.from(moduleManager.getActiveModules());
-    
+
     // Update metrics for each module
     for (const module of modules) {
       // Use updateModuleStatus instead of updateMetrics
-      moduleStatusManager.updateModuleStatus(
-        module.id,
-        module.status,
-        'Periodic update'
-      );
+      moduleStatusManager.updateModuleStatus(module.id, module.status, 'Periodic update');
     }
   }, 60000); // Update every minute
-  
+
   // Handle resource threshold events for module status
-  moduleEventBus.subscribe('RESOURCE_THRESHOLD_TRIGGERED' as ModuleEventType, (event) => {
+  moduleEventBus.subscribe('RESOURCE_THRESHOLD_TRIGGERED' as ModuleEventType, event => {
     if (event.data.thresholdType !== 'min') {
       return;
     }
-    
+
     // Get modules that consume this resource
     const modules = Array.from(moduleManager.getActiveModules());
     const affectedModules = modules.filter(module => {
       const configs = getModuleConfigs();
       const config = configs[module.type];
-      return config && 
-        config.resourceConsumption && 
-        config.resourceConsumption[event.data.resourceType];
+      return (
+        config && config.resourceConsumption && config.resourceConsumption[event.data.resourceType]
+      );
     });
-    
+
     // Update status for affected modules
     for (const module of affectedModules) {
       moduleStatusManager.updateModuleStatus(
@@ -138,23 +130,23 @@ function initializeStatusTracking(): void {
       );
     }
   });
-  
+
   // Handle resource threshold resolution
-  moduleEventBus.subscribe('RESOURCE_THRESHOLD_RESOLVED' as ModuleEventType, (event) => {
+  moduleEventBus.subscribe('RESOURCE_THRESHOLD_RESOLVED' as ModuleEventType, event => {
     if (event.data.thresholdType !== 'min') {
       return;
     }
-    
+
     // Get modules that consume this resource
     const modules = Array.from(moduleManager.getActiveModules());
     const affectedModules = modules.filter(module => {
       const configs = getModuleConfigs();
       const config = configs[module.type];
-      return config && 
-        config.resourceConsumption && 
-        config.resourceConsumption[event.data.resourceType];
+      return (
+        config && config.resourceConsumption && config.resourceConsumption[event.data.resourceType]
+      );
     });
-    
+
     // Update status for affected modules
     for (const module of affectedModules) {
       moduleStatusManager.updateModuleStatus(
@@ -172,16 +164,28 @@ function initializeStatusTracking(): void {
 function initializeSubModuleSystem(): void {
   // Register sub-module configurations
   const subModuleConfigs = getSubModuleConfigs();
-  
+
   for (const [type, config] of Object.entries(subModuleConfigs)) {
     subModuleManager.registerSubModuleConfig({
       type: type as any,
       name: config.name,
       description: config.description,
-      resourceCosts: config.resourceCost, // Changed from resourceCost to resourceCosts
+      requirements: {
+        parentModuleLevel: 1,
+        parentModuleTypes: config.allowedParentTypes || [],
+        resourceCosts: config.resourceCost
+          ? Object.entries(config.resourceCost).map(([type, amount]) => ({
+              type,
+              amount: amount as number,
+            }))
+          : [],
+      },
       effects: config.effects,
-      allowedParentTypes: config.allowedParentTypes,
-      maxPerModule: config.maxPerModule || 3
+      baseStats: {
+        power: 10,
+        space: 5,
+        complexity: 3,
+      },
     });
   }
 }
@@ -192,74 +196,74 @@ function initializeSubModuleSystem(): void {
  */
 function getModuleConfigs(): Record<string, any> {
   return {
-    'radar': {
+    radar: {
       resourceConsumption: {
-        'energy': 5
-      }
+        energy: 5,
+      },
     },
-    'mineral': {
+    mineral: {
       resourceConsumption: {
-        'energy': 10
+        energy: 10,
       },
       resourceProduction: {
-        'minerals': 20
-      }
+        minerals: 20,
+      },
     },
-    'hangar': {
+    hangar: {
       resourceConsumption: {
-        'energy': 15,
-        'minerals': 2
-      }
+        energy: 15,
+        minerals: 2,
+      },
     },
-    'academy': {
+    academy: {
       resourceConsumption: {
-        'energy': 8,
-        'food': 5
-      }
+        energy: 8,
+        food: 5,
+      },
     },
-    'exploration': {
+    exploration: {
       resourceConsumption: {
-        'energy': 12
-      }
+        energy: 12,
+      },
     },
-    'trading': {
+    trading: {
       resourceConsumption: {
-        'energy': 7
+        energy: 7,
       },
       resourceProduction: {
-        'credits': 15
-      }
+        credits: 15,
+      },
     },
-    'population': {
+    population: {
       resourceConsumption: {
-        'energy': 10,
-        'food': 15
-      }
+        energy: 10,
+        food: 15,
+      },
     },
-    'infrastructure': {
+    infrastructure: {
       resourceConsumption: {
-        'energy': 20
-      }
+        energy: 20,
+      },
     },
-    'research': {
+    research: {
       resourceConsumption: {
-        'energy': 25
-      }
+        energy: 25,
+      },
     },
-    'food': {
+    food: {
       resourceConsumption: {
-        'energy': 8,
-        'water': 10
+        energy: 8,
+        water: 10,
       },
       resourceProduction: {
-        'food': 25
-      }
+        food: 25,
+      },
     },
-    'defense': {
+    defense: {
       resourceConsumption: {
-        'energy': 30
-      }
-    }
+        energy: 30,
+      },
+    },
   };
 }
 
@@ -269,12 +273,12 @@ function getModuleConfigs(): Record<string, any> {
  */
 function getSubModuleConfigs(): Record<string, any> {
   return {
-    'efficiency': {
+    efficiency: {
       name: 'Efficiency Module',
       description: 'Improves resource efficiency',
       resourceCost: {
-        'energy': 50,
-        'minerals': 30
+        energy: 50,
+        minerals: 30,
       },
       effects: [
         {
@@ -282,18 +286,18 @@ function getSubModuleConfigs(): Record<string, any> {
           target: 'efficiency',
           value: 15,
           isPercentage: true,
-          description: 'Increases efficiency'
-        }
+          description: 'Increases efficiency',
+        },
       ],
       allowedParentTypes: ['mineral', 'hangar', 'food', 'trading'],
-      maxPerModule: 2
+      maxPerModule: 2,
     },
-    'booster': {
+    booster: {
       name: 'Booster Module',
       description: 'Boosts production output',
       resourceCost: {
-        'energy': 75,
-        'minerals': 50
+        energy: 75,
+        minerals: 50,
       },
       effects: [
         {
@@ -301,18 +305,18 @@ function getSubModuleConfigs(): Record<string, any> {
           target: 'output',
           value: 25,
           isPercentage: true,
-          description: 'Increases production output'
-        }
+          description: 'Increases production output',
+        },
       ],
       allowedParentTypes: ['mineral', 'food', 'trading'],
-      maxPerModule: 1
+      maxPerModule: 1,
     },
-    'range': {
+    range: {
       name: 'Range Extender',
       description: 'Extends operational range',
       resourceCost: {
-        'energy': 60,
-        'minerals': 40
+        energy: 60,
+        minerals: 40,
       },
       effects: [
         {
@@ -320,18 +324,18 @@ function getSubModuleConfigs(): Record<string, any> {
           target: 'range',
           value: 30,
           isPercentage: true,
-          description: 'Increases operational range'
-        }
+          description: 'Increases operational range',
+        },
       ],
       allowedParentTypes: ['radar', 'exploration'],
-      maxPerModule: 2
+      maxPerModule: 2,
     },
-    'capacity': {
+    capacity: {
       name: 'Capacity Expander',
       description: 'Expands storage capacity',
       resourceCost: {
-        'energy': 40,
-        'minerals': 80
+        energy: 40,
+        minerals: 80,
       },
       effects: [
         {
@@ -339,18 +343,18 @@ function getSubModuleConfigs(): Record<string, any> {
           target: 'capacity',
           value: 50,
           isPercentage: true,
-          description: 'Increases storage capacity'
-        }
+          description: 'Increases storage capacity',
+        },
       ],
       allowedParentTypes: ['hangar', 'population', 'infrastructure'],
-      maxPerModule: 3
+      maxPerModule: 3,
     },
-    'automation': {
+    automation: {
       name: 'Automation System',
       description: 'Automates routine operations',
       resourceCost: {
-        'energy': 100,
-        'minerals': 60
+        energy: 100,
+        minerals: 60,
       },
       effects: [
         {
@@ -358,11 +362,11 @@ function getSubModuleConfigs(): Record<string, any> {
           target: 'automation',
           value: 1,
           isPercentage: false,
-          description: 'Enables automation'
-        }
+          description: 'Enables automation',
+        },
       ],
       allowedParentTypes: ['mineral', 'hangar', 'food', 'trading', 'infrastructure'],
-      maxPerModule: 1
-    }
+      maxPerModule: 1,
+    },
   };
-} 
+}

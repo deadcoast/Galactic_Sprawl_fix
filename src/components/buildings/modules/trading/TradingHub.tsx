@@ -48,10 +48,10 @@ export function TradingHub({
   const activeRoutes = module.tradeRoutes.filter(r => r.status === 'active');
 
   return (
-    <div className="p-4 bg-gray-900 rounded-lg">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <TrendingUp className="w-6 h-6" />
+    <div className="rounded-lg bg-gray-900 p-4">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-xl font-bold text-white">
+          <TrendingUp className="h-6 w-6" />
           Trading Hub
         </h2>
         <div className="flex items-center gap-4">
@@ -66,14 +66,14 @@ export function TradingHub({
 
       {/* Market Overview */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-300 mb-3 flex items-center gap-2">
-          <BarChart2 className="w-5 h-5" />
+        <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-300">
+          <BarChart2 className="h-5 w-5" />
           Market Prices
         </h3>
         <div className="grid grid-cols-2 gap-3">
           {module.marketPrices.map(price => (
-            <div key={price.resource} className="bg-gray-800 p-3 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
+            <div key={price.resource} className="rounded-lg bg-gray-800 p-3">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-medium text-gray-300">{price.resource}</div>
                 <div
                   className={`text-xs ${
@@ -99,16 +99,16 @@ export function TradingHub({
 
       {/* Trade Routes */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-300 mb-3 flex items-center gap-2">
-          <RefreshCw className="w-5 h-5" />
+        <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-300">
+          <RefreshCw className="h-5 w-5" />
           Trade Routes ({activeRoutes.length}/{module.maxRoutes})
         </h3>
         <div className="space-y-3">
           {module.tradeRoutes.map(route => (
-            <div key={route.id} className="bg-gray-800 p-3 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
+            <div key={route.id} className="rounded-lg bg-gray-800 p-3">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {route.status === 'failed' && <AlertTriangle className="w-4 h-4 text-red-400" />}
+                  {route.status === 'failed' && <AlertTriangle className="h-4 w-4 text-red-400" />}
                   <div>
                     <div className="text-sm font-medium text-gray-300">
                       {route.source} → {route.destination}
@@ -146,20 +146,20 @@ export function TradingHub({
 
               {/* Assigned Ships */}
               <div className="mt-2">
-                <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
-                  <Ship className="w-4 h-4" />
+                <div className="mb-1 flex items-center gap-1 text-xs text-gray-400">
+                  <Ship className="h-4 w-4" />
                   Assigned Ships ({route.ships.length})
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {route.ships.map(shipId => (
                     <div
                       key={shipId}
-                      className="text-xs bg-gray-700 px-2 py-1 rounded flex items-center gap-1"
+                      className="flex items-center gap-1 rounded bg-gray-700 px-2 py-1 text-xs"
                     >
                       <span>{shipId}</span>
                       <button
                         onClick={() => onUnassignShip(route.id, shipId)}
-                        className="text-red-400 hover:text-red-300 ml-1"
+                        className="ml-1 text-red-400 hover:text-red-300"
                       >
                         ×
                       </button>
@@ -167,7 +167,7 @@ export function TradingHub({
                   ))}
                   <button
                     onClick={() => onAssignShip(route.id, 'new-ship-id')}
-                    className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-blue-400"
+                    className="rounded bg-gray-700 px-2 py-1 text-xs text-blue-400 hover:bg-gray-600"
                   >
                     + Assign Ship
                   </button>
@@ -189,14 +189,14 @@ export function TradingHub({
 
       {/* Create New Route */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-300 mb-3">Create New Route</h3>
+        <h3 className="mb-3 text-lg font-semibold text-gray-300">Create New Route</h3>
         <button
           onClick={() => onCreateRoute('', '', '', 0)}
           disabled={activeRoutes.length >= module.maxRoutes}
-          className={`w-full p-3 rounded-lg text-sm ${
+          className={`w-full rounded-lg p-3 text-sm ${
             activeRoutes.length >= module.maxRoutes
-              ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-300'
+              ? 'cursor-not-allowed bg-gray-800 text-gray-500'
+              : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
           }`}
         >
           + New Trade Route

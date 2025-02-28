@@ -1,11 +1,10 @@
+import { AreaEffect, DamageEffect } from '../../effects/types_effects/WeaponEffects';
 import {
   WeaponCategory,
   BaseWeaponStats as WeaponStats,
   WeaponType,
   WeaponVariant,
-  CombatWeaponStats,
 } from '../../types/weapons/WeaponTypes';
-import { DamageEffect, AreaEffect } from '../../effects/types_effects/WeaponEffects';
 
 // Base stats for each weapon category
 const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {

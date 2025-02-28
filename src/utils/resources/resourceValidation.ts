@@ -1,24 +1,24 @@
 import {
-  ResourceType,
-  ResourceState,
-  ResourceTransfer,
-  ResourceThreshold,
-  ResourceProduction,
-  ResourceConsumption,
-  ResourceFlow,
-  ResourceCost,
-  ResourceContainer,
-  ResourcePool,
-  ResourceStorage,
-  BasicResource,
   AdvancedResource,
-  SpecialResource
+  BasicResource,
+  ResourceConsumption,
+  ResourceContainer,
+  ResourceCost,
+  ResourceFlow,
+  ResourcePool,
+  ResourceProduction,
+  ResourceState,
+  ResourceStorage,
+  ResourceThreshold,
+  ResourceTransfer,
+  ResourceType,
+  SpecialResource,
 } from '../../types/resources/ResourceTypes';
 
 /**
  * Type guard for ResourceType
  */
-export function isResourceType(value: any): value is ResourceType {
+export function isResourceType(value: unknown): value is ResourceType {
   const validTypes: ResourceType[] = [
     'minerals',
     'energy',
@@ -26,7 +26,7 @@ export function isResourceType(value: any): value is ResourceType {
     'research',
     'plasma',
     'gas',
-    'exotic'
+    'exotic',
   ];
   return typeof value === 'string' && validTypes.includes(value as ResourceType);
 }
@@ -38,7 +38,7 @@ export function validateResourceState(state: ResourceState): boolean {
   if (typeof state !== 'object' || state === null) {
     return false;
   }
-  
+
   return (
     typeof state.current === 'number' &&
     typeof state.max === 'number' &&
@@ -57,7 +57,7 @@ export function validateResourceTransfer(transfer: ResourceTransfer): boolean {
   if (typeof transfer !== 'object' || transfer === null) {
     return false;
   }
-  
+
   return (
     isResourceType(transfer.type) &&
     typeof transfer.amount === 'number' &&
@@ -75,12 +75,12 @@ export function validateResourceThreshold(threshold: ResourceThreshold): boolean
   if (typeof threshold !== 'object' || threshold === null) {
     return false;
   }
-  
+
   // Type must be valid
   if (!isResourceType(threshold.type)) {
     return false;
   }
-  
+
   // At least one threshold value must be defined
   if (
     threshold.min === undefined &&
@@ -89,7 +89,7 @@ export function validateResourceThreshold(threshold: ResourceThreshold): boolean
   ) {
     return false;
   }
-  
+
   // Validate threshold values if defined
   if (threshold.min !== undefined && typeof threshold.min !== 'number') {
     return false;
@@ -100,19 +100,22 @@ export function validateResourceThreshold(threshold: ResourceThreshold): boolean
   if (threshold.target !== undefined && typeof threshold.target !== 'number') {
     return false;
   }
-  
+
   // Ensure min <= target <= max if all are defined
-  if (threshold.min !== undefined &&
-      threshold.max !== undefined &&
-      threshold.target !== undefined && !(threshold.min <= threshold.target && threshold.target <= threshold.max)) {
-        return false;
+  if (
+    threshold.min !== undefined &&
+    threshold.max !== undefined &&
+    threshold.target !== undefined &&
+    !(threshold.min <= threshold.target && threshold.target <= threshold.max)
+  ) {
+    return false;
   }
-  
+
   // Ensure min <= max if both are defined
   if (threshold.min !== undefined && threshold.max !== undefined && threshold.min > threshold.max) {
-        return false;
+    return false;
   }
-  
+
   return true;
 }
 
@@ -123,33 +126,32 @@ export function validateResourceProduction(production: ResourceProduction): bool
   if (typeof production !== 'object' || production === null) {
     return false;
   }
-  
+
   // Basic properties validation
-  const basicValid = (
+  const basicValid =
     isResourceType(production.type) &&
     typeof production.amount === 'number' &&
     production.amount >= 0 &&
     typeof production.interval === 'number' &&
-    production.interval > 0
-  );
-  
+    production.interval > 0;
+
   if (!basicValid) {
     return false;
   }
-  
+
   // Validate conditions if defined
   if (production.conditions) {
     if (!Array.isArray(production.conditions)) {
       return false;
     }
-    
+
     for (const condition of production.conditions) {
       if (!validateResourceThreshold(condition)) {
         return false;
       }
     }
   }
-  
+
   return true;
 }
 
@@ -160,34 +162,33 @@ export function validateResourceConsumption(consumption: ResourceConsumption): b
   if (typeof consumption !== 'object' || consumption === null) {
     return false;
   }
-  
+
   // Basic properties validation
-  const basicValid = (
+  const basicValid =
     isResourceType(consumption.type) &&
     typeof consumption.amount === 'number' &&
     consumption.amount >= 0 &&
     typeof consumption.interval === 'number' &&
     consumption.interval > 0 &&
-    typeof consumption.required === 'boolean'
-  );
-  
+    typeof consumption.required === 'boolean';
+
   if (!basicValid) {
     return false;
   }
-  
+
   // Validate conditions if defined
   if (consumption.conditions) {
     if (!Array.isArray(consumption.conditions)) {
       return false;
     }
-    
+
     for (const condition of consumption.conditions) {
       if (!validateResourceThreshold(condition)) {
         return false;
       }
     }
   }
-  
+
   return true;
 }
 
@@ -198,19 +199,18 @@ export function validateResourceFlow(flow: ResourceFlow): boolean {
   if (typeof flow !== 'object' || flow === null) {
     return false;
   }
-  
+
   // Basic properties validation
-  const basicValid = (
+  const basicValid =
     typeof flow.source === 'string' &&
     typeof flow.target === 'string' &&
     Array.isArray(flow.resources) &&
-    flow.resources.length > 0
-  );
-  
+    flow.resources.length > 0;
+
   if (!basicValid) {
     return false;
   }
-  
+
   // Validate resources
   for (const resource of flow.resources) {
     if (
@@ -223,20 +223,20 @@ export function validateResourceFlow(flow: ResourceFlow): boolean {
       return false;
     }
   }
-  
+
   // Validate conditions if defined
   if (flow.conditions) {
     if (!Array.isArray(flow.conditions)) {
       return false;
     }
-    
+
     for (const condition of flow.conditions) {
       if (!validateResourceThreshold(condition)) {
         return false;
       }
     }
   }
-  
+
   return true;
 }
 
@@ -247,12 +247,8 @@ export function validateResourceCost(cost: ResourceCost): boolean {
   if (typeof cost !== 'object' || cost === null) {
     return false;
   }
-  
-  return (
-    isResourceType(cost.type) &&
-    typeof cost.amount === 'number' &&
-    cost.amount >= 0
-  );
+
+  return isResourceType(cost.type) && typeof cost.amount === 'number' && cost.amount >= 0;
 }
 
 /**
@@ -262,24 +258,24 @@ export function validateResourceCosts(costs: ResourceCost[]): boolean {
   if (!Array.isArray(costs)) {
     return false;
   }
-  
+
   for (const cost of costs) {
     if (!validateResourceCost(cost)) {
       return false;
     }
   }
-  
+
   return true;
 }
 
 /**
  * Type guard for BasicResource
  */
-export function isBasicResource(resource: any): resource is BasicResource {
+export function isBasicResource(resource: unknown): resource is BasicResource {
   if (typeof resource !== 'object' || resource === null) {
     return false;
   }
-  
+
   return (
     'id' in resource &&
     'name' in resource &&
@@ -292,11 +288,11 @@ export function isBasicResource(resource: any): resource is BasicResource {
 /**
  * Type guard for AdvancedResource
  */
-export function isAdvancedResource(resource: any): resource is AdvancedResource {
+export function isAdvancedResource(resource: unknown): resource is AdvancedResource {
   if (typeof resource !== 'object' || resource === null) {
     return false;
   }
-  
+
   return (
     'id' in resource &&
     'name' in resource &&
@@ -311,11 +307,11 @@ export function isAdvancedResource(resource: any): resource is AdvancedResource 
 /**
  * Type guard for SpecialResource
  */
-export function isSpecialResource(resource: any): resource is SpecialResource {
+export function isSpecialResource(resource: unknown): resource is SpecialResource {
   if (typeof resource !== 'object' || resource === null) {
     return false;
   }
-  
+
   return (
     'id' in resource &&
     'name' in resource &&
@@ -329,11 +325,11 @@ export function isSpecialResource(resource: any): resource is SpecialResource {
 /**
  * Type guard for ResourceContainer
  */
-export function isResourceContainer(container: any): container is ResourceContainer {
+export function isResourceContainer(container: unknown): container is ResourceContainer {
   if (typeof container !== 'object' || container === null) {
     return false;
   }
-  
+
   return (
     'id' in container &&
     'name' in container &&
@@ -346,11 +342,11 @@ export function isResourceContainer(container: any): container is ResourceContai
 /**
  * Type guard for ResourcePool
  */
-export function isResourcePool(pool: any): pool is ResourcePool {
+export function isResourcePool(pool: unknown): pool is ResourcePool {
   if (!isResourceContainer(pool)) {
     return false;
   }
-  
+
   return (
     'type' in pool &&
     'poolType' in pool &&
@@ -361,11 +357,11 @@ export function isResourcePool(pool: any): pool is ResourcePool {
 /**
  * Type guard for ResourceStorage
  */
-export function isResourceStorage(storage: any): storage is ResourceStorage {
+export function isResourceStorage(storage: unknown): storage is ResourceStorage {
   if (!isResourceContainer(storage)) {
     return false;
   }
-  
+
   return (
     'type' in storage &&
     'storageType' in storage &&
@@ -375,4 +371,4 @@ export function isResourceStorage(storage: any): storage is ResourceStorage {
     storage.efficiency > 0 &&
     storage.efficiency <= 1
   );
-} 
+}

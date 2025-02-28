@@ -1,9 +1,9 @@
-import { SpaceRatShip } from '../../common/SpaceRatShip';
-import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
-import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
 import { SkullIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
+import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { SpaceRatShip } from '../../common/SpaceRatShip';
 
 interface RatKingProps {
   id: string;

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
 import * as PIXI from 'pixi.js';
+import { useEffect, useRef } from 'react';
 import { animationManager, AnimationState } from '../../managers/game/animationManager';
 
 interface UseAnimationProps {

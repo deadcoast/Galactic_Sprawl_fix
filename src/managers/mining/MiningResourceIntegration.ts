@@ -1,13 +1,13 @@
-import { MiningShipManagerImpl } from './MiningShipManagerImpl';
-import { ResourceThresholdManager, ThresholdConfig } from '../resource/ResourceThresholdManager';
-import { ResourceFlowManager, FlowNodeType } from '../resource/ResourceFlowManager';
-import { ResourceType, ResourceThreshold } from '../../types/resources/ResourceTypes';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { Position } from '../../types/core/GameTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
+import { FlowNodeType, ResourceFlowManager } from '../resource/ResourceFlowManager';
+import { ResourceThresholdManager, ThresholdConfig } from '../resource/ResourceThresholdManager';
+import { MiningShipManagerImpl } from './MiningShipManagerImpl';
 
 /**
  * MiningResourceIntegration
- * 
+ *
  * Integrates the MiningShipManager with the resource management system.
  * Connects mining operations with resource thresholds and flow optimization.
  */
@@ -16,12 +16,15 @@ export class MiningResourceIntegration {
   private thresholdManager: ResourceThresholdManager;
   private flowManager: ResourceFlowManager;
   private initialized: boolean = false;
-  private miningNodes: Map<string, {
-    id: string;
-    type: ResourceType;
-    position: Position;
-    efficiency: number;
-  }> = new Map();
+  private miningNodes: Map<
+    string,
+    {
+      id: string;
+      type: ResourceType;
+      position: Position;
+      efficiency: number;
+    }
+  > = new Map();
 
   constructor(
     miningManager: MiningShipManagerImpl,
@@ -61,13 +64,13 @@ export class MiningResourceIntegration {
     // Listen for mining ship registration
     this.miningManager.on('shipRegistered', (data: { shipId: string }) => {
       console.debug(`[MiningResourceIntegration] Mining ship registered: ${data.shipId}`);
-      
+
       // Get the ship from the mining manager
       const ship = (this.miningManager as any).ships.get(data.shipId);
       if (!ship) {
         return;
       }
-      
+
       // Register the ship as a producer node in the flow manager
       this.flowManager.registerNode({
         id: `mining-ship-${data.shipId}`,
@@ -75,29 +78,29 @@ export class MiningResourceIntegration {
         resources: ['minerals', 'gas', 'plasma', 'exotic'] as ResourceType[],
         priority: { type: 'minerals' as ResourceType, priority: 5, consumers: [] },
         efficiency: ship.efficiency || 1.0,
-        active: ship.status === 'mining'
+        active: ship.status === 'mining',
       });
     });
 
     // Listen for mining ship unregistration
     this.miningManager.on('shipUnregistered', (data: { shipId: string }) => {
       console.debug(`[MiningResourceIntegration] Mining ship unregistered: ${data.shipId}`);
-      
+
       // Unregister the ship from the flow manager
       this.flowManager.unregisterNode(`mining-ship-${data.shipId}`);
     });
 
     // Listen for mining task completion
-    moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, (event) => {
+    moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, event => {
       if (event.moduleType !== 'mineral') {
         return;
       }
-      
+
       const ship = event.data?.ship;
       if (!ship) {
         return;
       }
-      
+
       // Update the ship's status in the flow manager
       const node = this.flowManager.getNode(`mining-ship-${ship.id}`);
       if (node) {
@@ -106,16 +109,16 @@ export class MiningResourceIntegration {
     });
 
     // Listen for resource extraction events
-    moduleEventBus.subscribe('RESOURCE_PRODUCED' as ModuleEventType, (event) => {
+    moduleEventBus.subscribe('RESOURCE_PRODUCED' as ModuleEventType, event => {
       if (!event.moduleId.startsWith('mining-ship-')) {
         return;
       }
-      
+
       const { resourceType, newAmount, oldAmount, delta } = event.data;
       if (!resourceType || !delta) {
         return;
       }
-      
+
       // Record the extraction in the flow manager
       const shipId = event.moduleId.replace('mining-ship-', '');
       const transfer = {
@@ -123,9 +126,9 @@ export class MiningResourceIntegration {
         source: `mining-ship-${shipId}`,
         target: `storage-${resourceType}`,
         amount: delta,
-        timestamp: event.timestamp
+        timestamp: event.timestamp,
       };
-      
+
       // Add to transfer history
       this.addTransferToHistory(transfer);
     });
@@ -146,8 +149,8 @@ export class MiningResourceIntegration {
         resourceType: transfer.type,
         amount: transfer.amount,
         source: transfer.source,
-        target: transfer.target
-      }
+        target: transfer.target,
+      },
     });
   }
 
@@ -156,20 +159,20 @@ export class MiningResourceIntegration {
    */
   private registerMiningNodes(): void {
     // Get all resource nodes from the mining manager
-    const {resourceNodes} = this.miningManager as any;
+    const { resourceNodes } = this.miningManager as any;
     if (!resourceNodes) {
       return;
     }
-    
+
     // Register each node in the flow manager
     resourceNodes.forEach((node: any) => {
       this.miningNodes.set(node.id, {
         id: node.id,
         type: node.type,
         position: node.position,
-        efficiency: 1.0
+        efficiency: 1.0,
       });
-      
+
       // Register the node in the flow manager
       this.flowManager.registerNode({
         id: `mining-node-${node.id}`,
@@ -177,9 +180,9 @@ export class MiningResourceIntegration {
         resources: [node.type],
         priority: { type: node.type, priority: 3, consumers: [] },
         efficiency: 1.0,
-        active: true
+        active: true,
       });
-      
+
       // Create a connection to the storage
       this.flowManager.registerConnection({
         id: `mining-connection-${node.id}`,
@@ -189,7 +192,7 @@ export class MiningResourceIntegration {
         maxRate: 10, // Default extraction rate
         currentRate: 0,
         priority: { type: node.type, priority: 3, consumers: [] },
-        active: true
+        active: true,
       });
     });
   }
@@ -199,17 +202,17 @@ export class MiningResourceIntegration {
    */
   private createMiningThresholds(): void {
     // Get all resource nodes from the mining manager
-    const {resourceNodes} = this.miningManager as any;
+    const { resourceNodes } = this.miningManager as any;
     if (!resourceNodes) {
       return;
     }
-    
+
     // Create a set of unique resource types
     const resourceTypes = new Set<ResourceType>();
     resourceNodes.forEach((node: any) => {
       resourceTypes.add(node.type);
     });
-    
+
     // Create thresholds for each resource type
     resourceTypes.forEach(type => {
       // Create a threshold config
@@ -218,18 +221,18 @@ export class MiningResourceIntegration {
         threshold: {
           type,
           min: 100, // Default minimum threshold
-          target: 500 // Default target threshold
+          target: 500, // Default target threshold
         },
         actions: [
           {
             type: 'notification',
             target: 'mining-manager',
-            message: `Low ${type} levels, prioritizing mining`
-          }
+            message: `Low ${type} levels, prioritizing mining`,
+          },
         ],
-        enabled: true
+        enabled: true,
       };
-      
+
       this.thresholdManager.registerThreshold(config);
     });
   }
@@ -248,9 +251,9 @@ export class MiningResourceIntegration {
       id,
       type,
       position,
-      efficiency
+      efficiency,
     });
-    
+
     // Register the node in the flow manager
     this.flowManager.registerNode({
       id: `mining-node-${id}`,
@@ -258,9 +261,9 @@ export class MiningResourceIntegration {
       resources: [type],
       priority: { type, priority: 3, consumers: [] },
       efficiency,
-      active: true
+      active: true,
     });
-    
+
     // Create a connection to the storage
     this.flowManager.registerConnection({
       id: `mining-connection-${id}`,
@@ -270,13 +273,14 @@ export class MiningResourceIntegration {
       maxRate: 10 * efficiency, // Extraction rate based on efficiency
       currentRate: 0,
       priority: { type, priority: 3, consumers: [] },
-      active: true
+      active: true,
     });
-    
+
     // Update thresholds if needed
-    const existingThreshold = this.thresholdManager.getThresholdConfigs()
+    const existingThreshold = this.thresholdManager
+      .getThresholdConfigs()
       .find(config => config.threshold.type === type);
-    
+
     if (!existingThreshold) {
       // Create a new threshold
       const config: ThresholdConfig = {
@@ -284,18 +288,18 @@ export class MiningResourceIntegration {
         threshold: {
           type,
           min: 100,
-          target: 500
+          target: 500,
         },
         actions: [
           {
             type: 'notification',
             target: 'mining-manager',
-            message: `Low ${type} levels, prioritizing mining`
-          }
+            message: `Low ${type} levels, prioritizing mining`,
+          },
         ],
-        enabled: true
+        enabled: true,
       };
-      
+
       this.thresholdManager.registerThreshold(config);
     }
   }
@@ -306,10 +310,10 @@ export class MiningResourceIntegration {
   public unregisterMiningNode(id: string): void {
     // Remove the node
     this.miningNodes.delete(id);
-    
+
     // Unregister the node from the flow manager
     this.flowManager.unregisterNode(`mining-node-${id}`);
-    
+
     // Unregister the connection
     this.flowManager.unregisterConnection(`mining-connection-${id}`);
   }
@@ -323,15 +327,15 @@ export class MiningResourceIntegration {
     if (!node) {
       return;
     }
-    
+
     node.efficiency = efficiency;
-    
+
     // Update the node in the flow manager
     const flowNode = this.flowManager.getNode(`mining-node-${id}`);
     if (flowNode) {
       flowNode.efficiency = efficiency;
     }
-    
+
     // Update the connection
     const connection = this.flowManager.getConnection(`mining-connection-${id}`);
     if (connection) {
@@ -346,21 +350,21 @@ export class MiningResourceIntegration {
     if (!this.initialized) {
       return;
     }
-    
+
     // Unregister all mining nodes
     this.miningNodes.forEach((node, id) => {
       this.flowManager.unregisterNode(`mining-node-${id}`);
       this.flowManager.unregisterConnection(`mining-connection-${id}`);
     });
-    
+
     // Unregister all mining ships
-    const {ships} = this.miningManager as any;
+    const { ships } = this.miningManager as any;
     if (ships) {
       ships.forEach((_: any, shipId: string) => {
         this.flowManager.unregisterNode(`mining-ship-${shipId}`);
       });
     }
-    
+
     this.initialized = false;
   }
 }
@@ -374,14 +378,10 @@ export function createMiningResourceIntegration(
   flowManager: ResourceFlowManager
 ): MiningResourceIntegration {
   // Create the integration
-  const integration = new MiningResourceIntegration(
-    miningManager,
-    thresholdManager,
-    flowManager
-  );
-  
+  const integration = new MiningResourceIntegration(miningManager, thresholdManager, flowManager);
+
   // Initialize the integration
   integration.initialize();
-  
+
   return integration;
-} 
+}

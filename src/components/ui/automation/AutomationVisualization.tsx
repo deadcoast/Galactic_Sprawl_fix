@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { GlobalAutomationManager } from '../../../managers/automation/GlobalAutomationManager';
-import { GlobalRoutine } from '../../../managers/automation/GlobalAutomationManager';
+import React, { useEffect, useState } from 'react';
+import {
+  GlobalAutomationManager,
+  GlobalRoutine,
+} from '../../../managers/automation/GlobalAutomationManager';
 import '../../../styles/automation.css';
 
 // Define the routine type enum to match what's in GlobalAutomationManager
@@ -8,7 +10,7 @@ enum RoutineType {
   RESOURCE_BALANCING = 'RESOURCE_BALANCING',
   PERFORMANCE_OPTIMIZATION = 'PERFORMANCE_OPTIMIZATION',
   EMERGENCY_RESPONSE = 'EMERGENCY_RESPONSE',
-  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE'
+  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE',
 }
 
 // Define SystemId type to match what's expected
@@ -39,11 +41,15 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
 
   // Get all available types and systems for filtering
   const routineTypes = Object.values(RoutineType);
-  const systems = [...new Set(routines.map(routine => 
-    Array.isArray(routine.systems) && routine.systems.length > 0 
-      ? routine.systems[0] 
-      : 'unknown'
-  ))];
+  const systems = [
+    ...new Set(
+      routines.map(routine =>
+        Array.isArray(routine.systems) && routine.systems.length > 0
+          ? routine.systems[0]
+          : 'unknown'
+      )
+    ),
+  ];
 
   useEffect(() => {
     if (!automationManager) {
@@ -87,9 +93,7 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
     return () => {};
   };
 
-  const handleFilterChange = (
-    event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
-  ) => {
+  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     const { name, value } = event.target;
     setFilter(prev => ({
       ...prev,
@@ -113,13 +117,9 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
       } else {
         automationManager.enableRoutine(routineId);
       }
-      
+
       // Update local state
-      setRoutines(prev =>
-        prev.map(r =>
-          r.id === routineId ? { ...r, enabled: !r.enabled } : r
-        )
-      );
+      setRoutines(prev => prev.map(r => (r.id === routineId ? { ...r, enabled: !r.enabled } : r)));
     } catch (error) {
       console.error(`Failed to toggle routine ${routineId}:`, error);
     }
@@ -132,7 +132,7 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
 
     try {
       automationManager.unregisterRoutine(routineId);
-      
+
       // Update local state
       setRoutines(prev => prev.filter(r => r.id !== routineId));
     } catch (error) {
@@ -151,21 +151,15 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
       if (!routine) {
         return;
       }
-      
+
       // Manually trigger the routine execution
       // Note: Since executeRoutine is private, we'll just update the UI
       // In a real implementation, we would need a public method to execute a routine
       console.log(`Executing routine: ${routineId}`);
-      
+
       // Update local state to reflect the routine was run
       const now = new Date().getTime(); // Use number instead of string for lastRun
-      setRoutines(prev =>
-        prev.map(r =>
-          r.id === routineId
-            ? { ...r, lastRun: now }
-            : r
-        )
-      );
+      setRoutines(prev => prev.map(r => (r.id === routineId ? { ...r, lastRun: now } : r)));
     } catch (error) {
       console.error(`Failed to run routine ${routineId}:`, error);
     }
@@ -174,9 +168,10 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
   // Filter routines based on current filter settings
   const filteredRoutines = routines.filter(routine => {
     const matchesType = filter.type === 'all' || routine.type === filter.type;
-    const matchesSystem = filter.system === 'all' || 
-      (Array.isArray(routine.systems) && 
-       routine.systems.some(sys => sys === filter.system as SystemId));
+    const matchesSystem =
+      filter.system === 'all' ||
+      (Array.isArray(routine.systems) &&
+        routine.systems.some(sys => sys === (filter.system as SystemId)));
     const matchesStatus =
       filter.status === 'all' ||
       (filter.status === 'active' && routine.enabled) ||
@@ -185,8 +180,8 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
       !filter.search ||
       routine.name.toLowerCase().includes(filter.search.toLowerCase()) ||
       routine.description.toLowerCase().includes(filter.search.toLowerCase()) ||
-      (Array.isArray(routine.tags) && 
-       routine.tags.some(tag => tag.toLowerCase().includes(filter.search.toLowerCase())));
+      (Array.isArray(routine.tags) &&
+        routine.tags.some(tag => tag.toLowerCase().includes(filter.search.toLowerCase())));
 
     return matchesType && matchesSystem && matchesStatus && matchesSearch;
   });
@@ -212,11 +207,11 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
     if (!timestamp) {
       return 'Never';
     }
-    
+
     const now = new Date().getTime();
     const diffMs = now - timestamp;
     const diffSec = Math.floor(diffMs / 1000);
-    
+
     if (diffSec < 60) {
       return `${diffSec}s ago`;
     }
@@ -253,9 +248,7 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
           {/* Spinner component would go here */}
           <div>Loading...</div>
         </div>
-        <div className="automation-visualization__loading-text">
-          Loading automation routines...
-        </div>
+        <div className="automation-visualization__loading-text">Loading automation routines...</div>
       </div>
     );
   }
@@ -283,9 +276,7 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
 
       <div className="automation-visualization__filters">
         <div className="automation-visualization__filter">
-          <label className="automation-visualization__filter-label">
-            Type:
-          </label>
+          <label className="automation-visualization__filter-label">Type:</label>
           <select
             className="automation-visualization__filter-select"
             name="type"
@@ -302,9 +293,7 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
         </div>
 
         <div className="automation-visualization__filter">
-          <label className="automation-visualization__filter-label">
-            System:
-          </label>
+          <label className="automation-visualization__filter-label">System:</label>
           <select
             className="automation-visualization__filter-select"
             name="system"
@@ -321,9 +310,7 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
         </div>
 
         <div className="automation-visualization__filter">
-          <label className="automation-visualization__filter-label">
-            Status:
-          </label>
+          <label className="automation-visualization__filter-label">Status:</label>
           <select
             className="automation-visualization__filter-select"
             name="status"
@@ -356,10 +343,11 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
           <div className="automation-visualization__routines-list">
             {filteredRoutines.map(routine => {
               const priorityInfo = getPriorityLabel(routine.priority);
-              const systemName = Array.isArray(routine.systems) && routine.systems.length > 0 
-                ? routine.systems[0] 
-                : 'unknown';
-              
+              const systemName =
+                Array.isArray(routine.systems) && routine.systems.length > 0
+                  ? routine.systems[0]
+                  : 'unknown';
+
               return (
                 <div
                   key={routine.id}
@@ -373,9 +361,7 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
                     <div className="automation-visualization__routine-type">
                       {getRoutineTypeIcon(routine.type)}
                     </div>
-                    <div className="automation-visualization__routine-name">
-                      {routine.name}
-                    </div>
+                    <div className="automation-visualization__routine-name">{routine.name}</div>
                     <div
                       className="automation-visualization__routine-priority"
                       style={{ backgroundColor: priorityInfo.color }}
@@ -446,12 +432,10 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
       </div>
 
       <div className="automation-visualization__create">
-        <button className="automation-visualization__create-button">
-          + Create New Routine
-        </button>
+        <button className="automation-visualization__create-button">+ Create New Routine</button>
       </div>
     </div>
   );
 };
 
-export default AutomationVisualization; 
+export default AutomationVisualization;

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { AlertTriangle, Bell, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useThreshold } from '../../../../contexts/ThresholdContext';
 
 interface Alert {
@@ -58,8 +58,8 @@ export function AutomationMonitor() {
   };
 
   return (
-    <div className="bg-gray-800 p-4 rounded-lg">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-lg bg-gray-800 p-4">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Settings className="text-cyan-500" size={20} />
           <h3 className="text-lg font-semibold">Automation Monitor</h3>
@@ -80,7 +80,7 @@ export function AutomationMonitor() {
             alerts.map(alert => (
               <div
                 key={alert.id}
-                className={`flex items-center space-x-2 p-2 rounded ${
+                className={`flex items-center space-x-2 rounded p-2 ${
                   alert.type === 'warning'
                     ? 'bg-yellow-900/20'
                     : alert.type === 'error'

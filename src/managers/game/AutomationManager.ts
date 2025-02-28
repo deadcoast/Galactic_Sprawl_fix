@@ -1,9 +1,8 @@
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import { moduleManager } from '../module/ModuleManager';
 import { resourceManager } from './ResourceManager';
-import { ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { ResourceType } from '../../types/resources/ResourceTypes';
 
 /**
  * Automation condition types
@@ -39,13 +38,55 @@ export interface ResourceThreshold {
   target?: number;
 }
 
+// Define interfaces for condition value types
+export interface ResourceConditionValue {
+  amount: number;
+}
+
+export interface TimeConditionValue {
+  milliseconds: number;
+}
+
+export interface EventConditionValue {
+  eventType: string;
+  eventData?: Record<string, unknown>;
+}
+
+export interface StatusConditionValue {
+  status: string;
+}
+
+// Define interfaces for action value types
+export interface TransferResourcesValue {
+  from: string;
+  to: string;
+  amount: number;
+  type: ResourceType;
+}
+
+export interface ResourceActionValue {
+  amount: number;
+}
+
+export interface EmitEventValue {
+  moduleId: string;
+  moduleType: string;
+  eventType: ModuleEventType;
+  data?: Record<string, unknown>;
+}
+
 /**
  * Automation condition configuration
  */
 export interface AutomationCondition {
   type: AutomationConditionType;
   target?: string;
-  value?: any;
+  value?:
+    | ResourceConditionValue
+    | TimeConditionValue
+    | EventConditionValue
+    | StatusConditionValue
+    | number;
   operator?: 'equals' | 'not_equals' | 'greater' | 'less' | 'contains';
 }
 
@@ -55,7 +96,7 @@ export interface AutomationCondition {
 export interface AutomationAction {
   type: AutomationActionType;
   target?: string;
-  value?: any;
+  value?: TransferResourcesValue | ResourceActionValue | EmitEventValue | number | string;
   delay?: number;
 }
 
@@ -205,27 +246,37 @@ export class AutomationManager {
 
     for (const condition of conditions) {
       switch (condition.type) {
-        case 'RESOURCE_ABOVE':
+        case 'RESOURCE_ABOVE': {
           if (!condition.target || !condition.value) {
             continue;
           }
           const currentAmount = resourceManager.getResourceAmount(condition.target as ResourceType);
-          if (currentAmount <= condition.value) {
+          const threshold =
+            typeof condition.value === 'number'
+              ? condition.value
+              : (condition.value as ResourceConditionValue).amount;
+          if (currentAmount <= threshold) {
             return false;
           }
           break;
+        }
 
-        case 'RESOURCE_BELOW':
+        case 'RESOURCE_BELOW': {
           if (!condition.target || !condition.value) {
             continue;
           }
           const amount = resourceManager.getResourceAmount(condition.target as ResourceType);
-          if (amount >= condition.value) {
+          const threshold =
+            typeof condition.value === 'number'
+              ? condition.value
+              : (condition.value as ResourceConditionValue).amount;
+          if (amount >= threshold) {
             return false;
           }
           break;
+        }
 
-        case 'MODULE_ACTIVE':
+        case 'MODULE_ACTIVE': {
           if (!condition.target) {
             continue;
           }
@@ -234,8 +285,9 @@ export class AutomationManager {
             return false;
           }
           break;
+        }
 
-        case 'MODULE_INACTIVE':
+        case 'MODULE_INACTIVE': {
           if (!condition.target) {
             continue;
           }
@@ -244,16 +296,22 @@ export class AutomationManager {
             return false;
           }
           break;
+        }
 
-        case 'TIME_ELAPSED':
+        case 'TIME_ELAPSED': {
           if (!condition.value) {
             continue;
           }
           const now = Date.now();
-          if (now - (condition.target ? parseInt(condition.target) : 0) < condition.value) {
+          const elapsed =
+            typeof condition.value === 'number'
+              ? condition.value
+              : (condition.value as TimeConditionValue).milliseconds;
+          if (now - (condition.target ? parseInt(condition.target) : 0) < elapsed) {
             return false;
           }
           break;
+        }
 
         case 'EVENT_OCCURRED':
           if (!condition.target || !condition.value) {
@@ -263,15 +321,23 @@ export class AutomationManager {
           // Since we don't have eventManager yet, we'll skip this check
           break;
 
-        case 'STATUS_EQUALS':
+        case 'STATUS_EQUALS': {
           if (!condition.target || !condition.value) {
             continue;
           }
           const targetModule = moduleManager.getModule(condition.target);
-          if (!targetModule || targetModule.status !== condition.value) {
+
+          // Extract the status string from the condition value
+          const statusValue =
+            typeof condition.value === 'string'
+              ? condition.value
+              : (condition.value as StatusConditionValue).status;
+
+          if (!targetModule || targetModule.status !== statusValue) {
             return false;
           }
           break;
+        }
       }
     }
 
@@ -299,27 +365,43 @@ export class AutomationManager {
             moduleManager.setModuleActive(action.target, false);
             break;
 
-          case 'TRANSFER_RESOURCES':
+          case 'TRANSFER_RESOURCES': {
             if (!action.target || !action.value) {
               continue;
             }
-            const { from, to, amount, type } = action.value;
-            resourceManager.transferResources(type as ResourceType, amount, from, to);
+            const transferValue = action.value as TransferResourcesValue;
+            resourceManager.transferResources(
+              transferValue.type,
+              transferValue.amount,
+              transferValue.from,
+              transferValue.to
+            );
             break;
+          }
 
-          case 'PRODUCE_RESOURCES':
+          case 'PRODUCE_RESOURCES': {
             if (!action.target || !action.value) {
               continue;
             }
-            resourceManager.addResource(action.target as ResourceType, action.value);
+            const produceAmount =
+              typeof action.value === 'number'
+                ? action.value
+                : (action.value as ResourceActionValue).amount;
+            resourceManager.addResource(action.target as ResourceType, produceAmount);
             break;
+          }
 
-          case 'CONSUME_RESOURCES':
+          case 'CONSUME_RESOURCES': {
             if (!action.target || !action.value) {
               continue;
             }
-            resourceManager.removeResource(action.target as ResourceType, action.value);
+            const consumeAmount =
+              typeof action.value === 'number'
+                ? action.value
+                : (action.value as ResourceActionValue).amount;
+            resourceManager.removeResource(action.target as ResourceType, consumeAmount);
             break;
+          }
 
           case 'UPGRADE_MODULE':
             if (!action.target) {
@@ -328,18 +410,20 @@ export class AutomationManager {
             moduleManager.upgradeModule(action.target);
             break;
 
-          case 'EMIT_EVENT':
+          case 'EMIT_EVENT': {
             if (!action.target || !action.value) {
               continue;
             }
+            const emitValue = action.value as EmitEventValue;
             moduleEventBus.emit({
               type: action.target as ModuleEventType,
-              moduleId: action.value.moduleId,
-              moduleType: action.value.moduleType,
+              moduleId: emitValue.moduleId,
+              moduleType: emitValue.moduleType as ModuleType,
               timestamp: Date.now(),
-              data: action.value.data,
+              data: emitValue.data,
             });
             break;
+          }
         }
 
         // Apply delay if specified
@@ -347,7 +431,7 @@ export class AutomationManager {
           await new Promise(resolve => setTimeout(resolve, action.delay));
         }
       } catch (error) {
-        console.error(`Error executing action ${action.type}:`, error);
+        console.warn(`Error executing action ${action.type}:`, error);
         // Continue with next action even if one fails
       }
     }
@@ -356,7 +440,7 @@ export class AutomationManager {
   /**
    * Handles module activation
    */
-  private handleModuleActivation = (event: any): void => {
+  private handleModuleActivation = (event: ModuleEvent): void => {
     const rules = Array.from(this.rules.values()).filter(rule => rule.moduleId === event.moduleId);
 
     rules.forEach(rule => {
@@ -369,7 +453,7 @@ export class AutomationManager {
   /**
    * Handles module deactivation
    */
-  private handleModuleDeactivation = (event: any): void => {
+  private handleModuleDeactivation = (event: ModuleEvent): void => {
     const rules = Array.from(this.rules.values()).filter(rule => rule.moduleId === event.moduleId);
 
     rules.forEach(rule => {

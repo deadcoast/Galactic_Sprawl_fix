@@ -136,7 +136,7 @@ export function ExplosionEffect({ position, size, color, onComplete }: Explosion
 
   return (
     <div
-      className="absolute pointer-events-none"
+      className="pointer-events-none absolute"
       style={{
         left: position.x,
         top: position.y,

@@ -1,7 +1,5 @@
 import { useCallback } from 'react';
-import { useShipState } from '../../contexts/ShipContext';
-import { shipActions } from '../../contexts/ShipContext';
-import { ShipStatus } from '../../contexts/ShipContext';
+import { shipActions, ShipStatus, useShipState } from '../../contexts/ShipContext';
 import { CommonShipStats } from '../../types/ships/CommonShipTypes';
 import { WeaponMount } from '../../types/weapons/WeaponTypes';
 

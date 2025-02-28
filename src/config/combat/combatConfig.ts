@@ -63,7 +63,7 @@ export interface CombatConfig {
       preferredTypes: Array<'line' | 'scattered' | 'diamond'>;
     };
   };
-  
+
   // Formation Transitions
   formationTransitions: {
     defaultDuration: number;

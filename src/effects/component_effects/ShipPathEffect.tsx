@@ -1,4 +1,3 @@
-import React from 'react';
 import { Position } from '../../types/core/GameTypes';
 
 interface ShipPathEffectProps {
@@ -66,7 +65,7 @@ export function ShipPathEffect({ source, target, progress, quality, type }: Ship
 
       {/* Particles */}
       {Array.from({ length: particleCount }).map((_, i) => {
-        const particleProgress = ((i / particleCount) + (Date.now() / 2000)) % 1;
+        const particleProgress = (i / particleCount + Date.now() / 2000) % 1;
         const x = source.x + (target.x - source.x) * particleProgress;
         const y = source.y + (target.y - source.y) * particleProgress;
 
@@ -87,12 +86,8 @@ export function ShipPathEffect({ source, target, progress, quality, type }: Ship
 
       {/* Direction Indicator */}
       <g transform={`translate(${midX}, ${midY - curvature})`}>
-        <circle
-          r={4}
-          fill={`rgb(var(--color-${color}-500) / 0.2)`}
-          className="animate-pulse"
-        />
+        <circle r={4} fill={`rgb(var(--color-${color}-500) / 0.2)`} className="animate-pulse" />
       </g>
     </g>
   );
-} 
+}

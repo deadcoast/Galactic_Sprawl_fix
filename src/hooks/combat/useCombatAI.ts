@@ -3,6 +3,7 @@ import { behaviorTreeManager } from '../../managers/ai/BehaviorTreeManager';
 import { combatManager } from '../../managers/combat/combatManager';
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
+import { convertToCombatTypesUnit } from '../../utils/typeConversions';
 
 interface CombatAIState {
   isActive: boolean;
@@ -31,21 +32,19 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
 
   useEffect(() => {
     let actionCount = 0;
-    let startTime = Date.now();
     let successCount = 0;
-    let totalActions = 0;
+    const startTime = Date.now();
 
-    // Subscribe to behavior tree events
     const handleNodeExecuted = ({ nodeId, success }: { nodeId: string; success: boolean }) => {
-      totalActions++;
-      if (success) {
-        successCount++;
-      }
+      successCount += success ? 1 : 0;
+      const totalExecutions = successCount + (actionCount - successCount);
+      const successRate = totalExecutions > 0 ? successCount / totalExecutions : 0;
+
       setState(prev => ({
         ...prev,
         performance: {
           ...prev.performance,
-          successRate: (successCount / totalActions) * 100,
+          successRate,
         },
       }));
     };
@@ -53,6 +52,7 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     const handleActionStarted = ({ actionType }: { actionType: string }) => {
       actionCount++;
       const elapsedMinutes = (Date.now() - startTime) / 60000;
+
       setState(prev => ({
         ...prev,
         lastAction: actionType,
@@ -68,14 +68,19 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
 
     // Update AI context periodically
     const updateInterval = setInterval(() => {
-      const unit = combatManager.getUnitStatus(unitId) as CombatUnit;
-      if (!unit) {
+      const managerUnit = combatManager.getUnitStatus(unitId);
+      if (!managerUnit) {
         return;
       }
 
-      const nearbyUnits = combatManager.getUnitsInRange(unit.position, 500);
-      const nearbyEnemies = nearbyUnits.filter(u => u.faction !== factionId);
-      const nearbyAllies = nearbyUnits.filter(u => u.faction === factionId);
+      // Convert to CombatTypes.CombatUnit
+      const unit = convertToCombatTypesUnit(managerUnit);
+
+      const nearbyUnits = combatManager
+        .getUnitsInRange(unit.position, 500)
+        .map(convertToCombatTypesUnit);
+      const nearbyEnemies = nearbyUnits.filter(u => (u as any).faction !== factionId);
+      const nearbyAllies = nearbyUnits.filter(u => (u as any).faction === factionId);
 
       // Calculate fleet strength and threat level
       const fleetStrength = calculateFleetStrength(unit, nearbyAllies);
@@ -89,7 +94,7 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
         threatLevel,
         nearbyEnemies,
         nearbyAllies,
-        currentFormation: unit.formation || {
+        currentFormation: (unit as any).formation || {
           type: 'balanced',
           spacing: 100,
           facing: 0,
@@ -119,9 +124,12 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
 }
 
 function calculateFleetStrength(unit: CombatUnit, allies: CombatUnit[]): number {
-  const unitStrength = (unit.health / unit.maxHealth) * (unit.shield / unit.maxShield);
+  const unitStrength =
+    (unit.stats.health / unit.stats.maxHealth) * (unit.stats.shield / unit.stats.maxShield);
   const allyStrength = allies.reduce((sum, ally) => {
-    return sum + (ally.health / ally.maxHealth) * (ally.shield / ally.maxShield);
+    return (
+      sum + (ally.stats.health / ally.stats.maxHealth) * (ally.stats.shield / ally.stats.maxShield)
+    );
   }, 0);
 
   return (unitStrength + allyStrength) / (1 + allies.length);
@@ -132,9 +140,12 @@ function calculateThreatLevel(enemies: CombatUnit[]): number {
     return 0;
   }
 
-  return enemies.reduce((sum, enemy) => {
-    const baseStrength = (enemy.health / enemy.maxHealth) * (enemy.shield / enemy.maxShield);
-    const weaponStrength = enemy.weapons.reduce((total, w) => total + w.damage, 0) / 100;
-    return sum + baseStrength * (1 + weaponStrength);
-  }, 0) / enemies.length;
-} 
+  return (
+    enemies.reduce((sum, enemy) => {
+      const baseStrength =
+        (enemy.stats.health / enemy.stats.maxHealth) * (enemy.stats.shield / enemy.stats.maxShield);
+      const weaponStrength = enemy.weapons.reduce((total, w) => total + w.damage, 0) / 100;
+      return sum + baseStrength * (1 + weaponStrength);
+    }, 0) / enemies.length
+  );
+}

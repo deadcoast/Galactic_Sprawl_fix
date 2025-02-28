@@ -1,8 +1,8 @@
-import { useThreshold } from '../../../../contexts/ThresholdContext';
 import { motion } from 'framer-motion';
 import { Clock, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import type { ThresholdHistoryEntry, ThresholdPreset } from '../../../../contexts/ThresholdContext';
+import { useThreshold } from '../../../../contexts/ThresholdContext';
 
 interface ThresholdPresetsPanelProps {
   onClose: () => void;
@@ -67,18 +67,18 @@ export function ThresholdPresetsPanel({ onClose }: ThresholdPresetsPanelProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col"
+        className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-gray-800 p-6"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex space-x-4">
             <button
               onClick={() => setActiveTab('presets')}
-              className={`px-4 py-2 rounded ${
+              className={`rounded px-4 py-2 ${
                 activeTab === 'presets' ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'
               }`}
             >
@@ -86,7 +86,7 @@ export function ThresholdPresetsPanel({ onClose }: ThresholdPresetsPanelProps) {
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`px-4 py-2 rounded ${
+              className={`rounded px-4 py-2 ${
                 activeTab === 'history' ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'
               }`}
             >
@@ -102,25 +102,25 @@ export function ThresholdPresetsPanel({ onClose }: ThresholdPresetsPanelProps) {
           {activeTab === 'presets' ? (
             <div className="space-y-4">
               {/* Create New Preset */}
-              <div className="bg-gray-700 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-white mb-4">Create New Preset</h3>
+              <div className="rounded-lg bg-gray-700 p-4">
+                <h3 className="mb-4 text-lg font-semibold text-white">Create New Preset</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">Preset Name</label>
+                    <label className="mb-1 block text-sm text-gray-400">Preset Name</label>
                     <input
                       type="text"
                       value={newPresetName}
                       onChange={e => setNewPresetName(e.target.value)}
-                      className="w-full bg-gray-600 text-white px-3 py-2 rounded"
+                      className="w-full rounded bg-gray-600 px-3 py-2 text-white"
                       placeholder="Enter preset name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-400 mb-1">Description</label>
+                    <label className="mb-1 block text-sm text-gray-400">Description</label>
                     <textarea
                       value={newPresetDescription}
                       onChange={e => setNewPresetDescription(e.target.value)}
-                      className="w-full bg-gray-600 text-white px-3 py-2 rounded"
+                      className="w-full rounded bg-gray-600 px-3 py-2 text-white"
                       placeholder="Enter preset description"
                       rows={2}
                     />
@@ -128,7 +128,7 @@ export function ThresholdPresetsPanel({ onClose }: ThresholdPresetsPanelProps) {
                   <button
                     onClick={handleCreatePreset}
                     disabled={!newPresetName}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center space-x-2 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Plus size={16} />
                     <span>Create Preset</span>
@@ -141,30 +141,30 @@ export function ThresholdPresetsPanel({ onClose }: ThresholdPresetsPanelProps) {
                 {state.presets.map(preset => (
                   <div
                     key={preset.id}
-                    className={`bg-gray-700 rounded-lg p-4 ${
+                    className={`rounded-lg bg-gray-700 p-4 ${
                       state.activePresetId === preset.id ? 'border-2 border-blue-500' : ''
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="mb-2 flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-white">{preset.name}</h3>
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleApplyPreset(preset.id)}
-                          className="p-2 hover:bg-gray-600 rounded"
+                          className="rounded p-2 hover:bg-gray-600"
                           title="Apply Preset"
                         >
                           <Save size={16} className="text-blue-400" />
                         </button>
                         <button
                           onClick={() => handleRemovePreset(preset.id)}
-                          className="p-2 hover:bg-gray-600 rounded"
+                          className="rounded p-2 hover:bg-gray-600"
                           title="Delete Preset"
                         >
                           <Trash2 size={16} className="text-red-400" />
                         </button>
                       </div>
                     </div>
-                    <p className="text-gray-400 text-sm">{preset.description}</p>
+                    <p className="text-sm text-gray-400">{preset.description}</p>
                   </div>
                 ))}
               </div>
@@ -172,12 +172,12 @@ export function ThresholdPresetsPanel({ onClose }: ThresholdPresetsPanelProps) {
           ) : (
             <div className="space-y-4">
               {state.history.map((entry, index) => (
-                <div key={`${entry.timestamp}-${index}`} className="bg-gray-700 rounded-lg p-4">
+                <div key={`${entry.timestamp}-${index}`} className="rounded-lg bg-gray-700 p-4">
                   <div className="flex items-center space-x-2 text-sm text-gray-400">
                     <Clock size={14} />
                     <span>{formatTimestamp(entry.timestamp)}</span>
                   </div>
-                  <p className="text-white mt-1">{getEventDescription(entry)}</p>
+                  <p className="mt-1 text-white">{getEventDescription(entry)}</p>
                 </div>
               ))}
             </div>

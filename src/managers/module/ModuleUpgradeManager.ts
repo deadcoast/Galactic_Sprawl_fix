@@ -1,9 +1,9 @@
-import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { moduleManager } from './ModuleManager';
-import { resourceManager } from '../game/ResourceManager';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import { moduleStatusManager, ExtendedModuleStatus } from './ModuleStatusManager';
+import { resourceManager } from '../game/ResourceManager';
+import { moduleManager } from './ModuleManager';
+import { moduleStatusManager } from './ModuleStatusManager';
 
 /**
  * Upgrade path for a module
@@ -87,17 +87,20 @@ export interface ModuleUpgradeStatus {
  */
 export class ModuleUpgradeManager {
   private upgradePaths: Map<ModuleType, ModuleUpgradePath>;
-  private activeUpgrades: Map<string, {
-    startTime: number;
-    duration: number;
-    targetLevel: number;
-    timer: NodeJS.Timeout;
-  }>;
+  private activeUpgrades: Map<
+    string,
+    {
+      startTime: number;
+      duration: number;
+      targetLevel: number;
+      timer: NodeJS.Timeout;
+    }
+  >;
 
   constructor() {
     this.upgradePaths = new Map();
     this.activeUpgrades = new Map();
-    
+
     // Subscribe to events
     this.subscribeToEvents();
   }
@@ -132,7 +135,7 @@ export class ModuleUpgradeManager {
     if (!path) {
       return undefined;
     }
-    
+
     return path.levels.find(l => l.level === level);
   }
 
@@ -144,12 +147,12 @@ export class ModuleUpgradeManager {
     if (!module) {
       return undefined;
     }
-    
+
     const path = this.upgradePaths.get(module.type);
     if (!path) {
       return undefined;
     }
-    
+
     return path.levels.find(l => l.level === module.level + 1);
   }
 
@@ -161,23 +164,23 @@ export class ModuleUpgradeManager {
     if (!module) {
       return false;
     }
-    
+
     // Check if module is already being upgraded
     if (this.activeUpgrades.has(moduleId)) {
       return false;
     }
-    
+
     // Check if module is active
     if (!module.isActive) {
       return false;
     }
-    
+
     // Get next upgrade level
     const nextLevel = this.getNextUpgradeLevel(moduleId);
     if (!nextLevel) {
       return false;
     }
-    
+
     // Check requirements
     return this.checkUpgradeRequirements(moduleId, nextLevel);
   }
@@ -190,14 +193,14 @@ export class ModuleUpgradeManager {
     if (!module) {
       return false;
     }
-    
+
     const { requirements } = upgradeLevel;
-    
+
     // Check minimum level requirement
     if (module.level < requirements.minLevel) {
       return false;
     }
-    
+
     // Check resource costs
     for (const cost of requirements.resourceCosts) {
       const available = resourceManager.getResourceAmount(cost.type as ResourceType);
@@ -205,13 +208,13 @@ export class ModuleUpgradeManager {
         return false;
       }
     }
-    
+
     // Check tech requirements
     if (requirements.techRequirements) {
       // TODO: Implement tech requirement checking
       // This would require integration with a tech tree system
     }
-    
+
     // Check module requirements
     if (requirements.moduleRequirements) {
       for (const req of requirements.moduleRequirements) {
@@ -222,7 +225,7 @@ export class ModuleUpgradeManager {
         }
       }
     }
-    
+
     // Check building level
     if (requirements.buildingLevel) {
       // Find the building this module is attached to
@@ -233,12 +236,12 @@ export class ModuleUpgradeManager {
           break;
         }
       }
-      
+
       if (!attachedBuilding || attachedBuilding.level < requirements.buildingLevel) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -250,20 +253,22 @@ export class ModuleUpgradeManager {
     if (!module) {
       return ['Module not found'];
     }
-    
+
     const nextLevel = this.getNextUpgradeLevel(moduleId);
     if (!nextLevel) {
       return ['No upgrade available'];
     }
-    
+
     const { requirements } = nextLevel;
     const missingRequirements: string[] = [];
-    
+
     // Check minimum level requirement
     if (module.level < requirements.minLevel) {
-      missingRequirements.push(`Module level ${module.level} is below required level ${requirements.minLevel}`);
+      missingRequirements.push(
+        `Module level ${module.level} is below required level ${requirements.minLevel}`
+      );
     }
-    
+
     // Check resource costs
     for (const cost of requirements.resourceCosts) {
       const available = resourceManager.getResourceAmount(cost.type as ResourceType);
@@ -271,13 +276,13 @@ export class ModuleUpgradeManager {
         missingRequirements.push(`Insufficient ${cost.type}: ${available}/${cost.amount}`);
       }
     }
-    
+
     // Check tech requirements
     if (requirements.techRequirements) {
       // TODO: Implement tech requirement checking
       // This would require integration with a tech tree system
     }
-    
+
     // Check module requirements
     if (requirements.moduleRequirements) {
       for (const req of requirements.moduleRequirements) {
@@ -288,7 +293,7 @@ export class ModuleUpgradeManager {
         }
       }
     }
-    
+
     // Check building level
     if (requirements.buildingLevel) {
       // Find the building this module is attached to
@@ -299,14 +304,16 @@ export class ModuleUpgradeManager {
           break;
         }
       }
-      
+
       if (!attachedBuilding) {
         missingRequirements.push(`Module not attached to a building`);
       } else if (attachedBuilding.level < requirements.buildingLevel) {
-        missingRequirements.push(`Building level ${attachedBuilding.level} is below required level ${requirements.buildingLevel}`);
+        missingRequirements.push(
+          `Building level ${attachedBuilding.level} is below required level ${requirements.buildingLevel}`
+        );
       }
     }
-    
+
     return missingRequirements;
   }
 
@@ -318,36 +325,39 @@ export class ModuleUpgradeManager {
     if (!module) {
       return undefined;
     }
-    
+
     const path = this.upgradePaths.get(module.type);
     if (!path) {
       return undefined;
     }
-    
+
     const nextLevel = this.getNextUpgradeLevel(moduleId);
-    const maxLevel = path.levels.length > 0 ? path.levels[path.levels.length - 1].level : module.level;
-    
+    const maxLevel =
+      path.levels.length > 0 ? path.levels[path.levels.length - 1].level : module.level;
+
     // Get active upgrade info
     const activeUpgrade = this.activeUpgrades.get(moduleId);
     let upgradeProgress: number | undefined;
     let estimatedTimeRemaining: number | undefined;
-    
+
     if (activeUpgrade) {
       const elapsed = Date.now() - activeUpgrade.startTime;
       upgradeProgress = Math.min(1, elapsed / activeUpgrade.duration);
       estimatedTimeRemaining = Math.max(0, activeUpgrade.duration - elapsed);
     }
-    
+
     // Get upgrade effects
     const effects: ModuleUpgradeEffect[] = [];
     if (nextLevel) {
       effects.push(...nextLevel.effects);
     }
-    
+
     // Check requirements
     const requirementsMet = nextLevel ? this.checkUpgradeRequirements(moduleId, nextLevel) : false;
-    const missingRequirements = nextLevel ? this.getMissingRequirements(moduleId) : ['No upgrade available'];
-    
+    const missingRequirements = nextLevel
+      ? this.getMissingRequirements(moduleId)
+      : ['No upgrade available'];
+
     return {
       moduleId,
       moduleType: module.type,
@@ -359,7 +369,7 @@ export class ModuleUpgradeManager {
       missingRequirements,
       upgradeProgress,
       estimatedTimeRemaining,
-      effects
+      effects,
     };
   }
 
@@ -371,42 +381,46 @@ export class ModuleUpgradeManager {
     if (!this.canUpgrade(moduleId)) {
       return false;
     }
-    
+
     const module = moduleManager.getModule(moduleId);
     if (!module) {
       return false;
     }
-    
+
     const nextLevel = this.getNextUpgradeLevel(moduleId);
     if (!nextLevel) {
       return false;
     }
-    
+
     // Consume resources
     for (const cost of nextLevel.requirements.resourceCosts) {
       resourceManager.removeResource(cost.type as ResourceType, cost.amount);
     }
-    
+
     // Calculate upgrade time (1 minute per level)
     const baseUpgradeTime = 60000; // 1 minute
     const upgradeTime = baseUpgradeTime * nextLevel.level;
-    
+
     // Update module status
-    moduleStatusManager.updateModuleStatus(moduleId, 'upgrading', `Upgrading to level ${nextLevel.level}`);
-    
+    moduleStatusManager.updateModuleStatus(
+      moduleId,
+      'upgrading',
+      `Upgrading to level ${nextLevel.level}`
+    );
+
     // Start upgrade timer
     const timer = setTimeout(() => {
       this.completeUpgrade(moduleId, nextLevel.level);
     }, upgradeTime);
-    
+
     // Store upgrade info
     this.activeUpgrades.set(moduleId, {
       startTime: Date.now(),
       duration: upgradeTime,
       targetLevel: nextLevel.level,
-      timer
+      timer,
     });
-    
+
     // Emit upgrade started event
     moduleEventBus.emit({
       type: 'MODULE_UPGRADE_STARTED' as ModuleEventType,
@@ -418,10 +432,10 @@ export class ModuleUpgradeManager {
         targetLevel: nextLevel.level,
         duration: upgradeTime,
         requirements: nextLevel.requirements,
-        effects: nextLevel.effects
-      }
+        effects: nextLevel.effects,
+      },
     });
-    
+
     return true;
   }
 
@@ -433,16 +447,16 @@ export class ModuleUpgradeManager {
     if (!activeUpgrade) {
       return false;
     }
-    
+
     // Clear timer
     clearTimeout(activeUpgrade.timer);
-    
+
     // Remove from active upgrades
     this.activeUpgrades.delete(moduleId);
-    
+
     // Update module status
     moduleStatusManager.updateModuleStatus(moduleId, 'active', 'Upgrade cancelled');
-    
+
     // Emit upgrade cancelled event
     const module = moduleManager.getModule(moduleId);
     if (module) {
@@ -453,11 +467,11 @@ export class ModuleUpgradeManager {
         timestamp: Date.now(),
         data: {
           currentLevel: module.level,
-          targetLevel: activeUpgrade.targetLevel
-        }
+          targetLevel: activeUpgrade.targetLevel,
+        },
       });
     }
-    
+
     return true;
   }
 
@@ -469,32 +483,32 @@ export class ModuleUpgradeManager {
     if (!activeUpgrade) {
       return;
     }
-    
+
     // Remove from active upgrades
     this.activeUpgrades.delete(moduleId);
-    
+
     // Get module
     const module = moduleManager.getModule(moduleId);
     if (!module) {
       return;
     }
-    
+
     // Get upgrade level
     const upgradeLevel = this.getUpgradeLevel(module.type, targetLevel);
     if (!upgradeLevel) {
       return;
     }
-    
+
     // Update module level
     const oldLevel = module.level;
     module.level = targetLevel;
-    
+
     // Update module status
     moduleStatusManager.updateModuleStatus(moduleId, 'active', `Upgraded to level ${targetLevel}`);
-    
+
     // Apply upgrade effects
     this.applyUpgradeEffects(moduleId, upgradeLevel);
-    
+
     // Emit upgrade completed event
     moduleEventBus.emit({
       type: 'MODULE_UPGRADED' as ModuleEventType,
@@ -505,8 +519,8 @@ export class ModuleUpgradeManager {
         oldLevel,
         newLevel: targetLevel,
         effects: upgradeLevel.effects,
-        visualChanges: upgradeLevel.visualChanges
-      }
+        visualChanges: upgradeLevel.visualChanges,
+      },
     });
   }
 
@@ -516,8 +530,11 @@ export class ModuleUpgradeManager {
   private applyUpgradeEffects(moduleId: string, upgradeLevel: ModuleUpgradeLevel): void {
     // This would apply the effects of the upgrade to the module
     // For now, we'll just log the effects
-    console.log(`[ModuleUpgradeManager] Applying effects to module ${moduleId}:`, upgradeLevel.effects);
-    
+    console.log(
+      `[ModuleUpgradeManager] Applying effects to module ${moduleId}:`,
+      upgradeLevel.effects
+    );
+
     // In a real implementation, this would modify the module's stats, abilities, etc.
     // based on the effects defined in the upgrade level
   }
@@ -543,18 +560,28 @@ export class ModuleUpgradeManager {
     // Clear all active upgrade timers
     for (const [moduleId, upgrade] of Array.from(this.activeUpgrades.entries())) {
       clearTimeout(upgrade.timer);
-      
+
       // Update module status
-      moduleStatusManager.updateModuleStatus(moduleId, 'active', 'Upgrade cancelled due to cleanup');
+      moduleStatusManager.updateModuleStatus(
+        moduleId,
+        'active',
+        'Upgrade cancelled due to cleanup'
+      );
     }
-    
+
     // Clear active upgrades
     this.activeUpgrades.clear();
-    
+
     // Unsubscribe from events
-    const unsubscribeCreated = moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, this.handleModuleCreated);
-    const unsubscribeUpgraded = moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, this.handleModuleUpgraded);
-    
+    const unsubscribeCreated = moduleEventBus.subscribe(
+      'MODULE_CREATED' as ModuleEventType,
+      this.handleModuleCreated
+    );
+    const unsubscribeUpgraded = moduleEventBus.subscribe(
+      'MODULE_UPGRADED' as ModuleEventType,
+      this.handleModuleUpgraded
+    );
+
     if (typeof unsubscribeCreated === 'function') {
       unsubscribeCreated();
     }
@@ -565,4 +592,4 @@ export class ModuleUpgradeManager {
 }
 
 // Export singleton instance
-export const moduleUpgradeManager = new ModuleUpgradeManager(); 
+export const moduleUpgradeManager = new ModuleUpgradeManager();

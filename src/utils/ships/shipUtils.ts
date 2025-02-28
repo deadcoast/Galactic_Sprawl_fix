@@ -1,8 +1,8 @@
 import { BaseStatus, Position, Velocity } from '../../types/core/GameTypes';
 import {
   CommonShip as Ship,
-  CommonShipStats as ShipStats,
   CommonShipDisplayStats as ShipDisplayStats,
+  CommonShipStats as ShipStats,
 } from '../../types/ships/CommonShipTypes';
 import { WeaponCategory, WeaponInstance } from '../../types/weapons/WeaponTypes';
 

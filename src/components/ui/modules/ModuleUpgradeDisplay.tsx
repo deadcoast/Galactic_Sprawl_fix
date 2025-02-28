@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useModuleUpgrade, useModulesWithAvailableUpgrades } from '../../../hooks/modules/useModuleUpgrade';
-import { ModuleUpgradeEffect, ModuleUpgradeRequirements } from '../../../managers/module/ModuleUpgradeManager';
+import React, { useEffect, useState } from 'react';
+import {
+  useModuleUpgrade,
+  useModulesWithAvailableUpgrades,
+} from '../../../hooks/modules/useModuleUpgrade';
 import { moduleManager } from '../../../managers/module/ModuleManager';
+import { BaseModule } from '../../../types/buildings/ModuleTypes';
 
 interface ModuleUpgradeDisplayProps {
   moduleId: string;
@@ -25,7 +28,7 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
   showControls = true,
   onUpgradeStart,
   onUpgradeCancel,
-  onUpgradeComplete
+  onUpgradeComplete,
 }) => {
   const {
     upgradeStatus,
@@ -43,15 +46,15 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
     startUpgrade,
     cancelUpgrade,
     formatTimeRemaining,
-    getEffectDescription
+    getEffectDescription,
   } = useModuleUpgrade(moduleId);
 
-  const [module, setModule] = useState<any>(null);
+  const [module, setModule] = useState<BaseModule | null>(null);
 
   // Load module data
   useEffect(() => {
     const moduleData = moduleManager.getModule(moduleId);
-    setModule(moduleData);
+    setModule(moduleData || null);
   }, [moduleId]);
 
   // Handle upgrade start
@@ -79,7 +82,11 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
 
   // Render loading state
   if (isLoading) {
-    return <div className="module-upgrade-display module-upgrade-display--loading">Loading upgrade data...</div>;
+    return (
+      <div className="module-upgrade-display module-upgrade-display--loading">
+        Loading upgrade data...
+      </div>
+    );
   }
 
   // Render error state
@@ -89,16 +96,18 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
 
   // Render empty state
   if (!upgradeStatus || !module) {
-    return <div className="module-upgrade-display module-upgrade-display--empty">No upgrade data available</div>;
+    return (
+      <div className="module-upgrade-display module-upgrade-display--empty">
+        No upgrade data available
+      </div>
+    );
   }
 
   return (
     <div className="module-upgrade-display">
       {/* Upgrade header */}
       <div className="module-upgrade-display__header">
-        <h4 className="module-upgrade-display__title">
-          {module.name} Upgrades
-        </h4>
+        <h4 className="module-upgrade-display__title">{module.name} Upgrades</h4>
         <div className="module-upgrade-display__level">
           Level {currentLevel}/{maxLevel}
         </div>
@@ -108,13 +117,13 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
       {upgradeProgress !== undefined && (
         <div className="module-upgrade-display__progress">
           <div className="module-upgrade-display__progress-bar">
-            <div 
+            <div
               className="module-upgrade-display__progress-fill"
               style={{ width: `${upgradeProgress * 100}%` }}
             />
           </div>
           <div className="module-upgrade-display__progress-text">
-            {Math.round(upgradeProgress * 100)}% - 
+            {Math.round(upgradeProgress * 100)}% -
             {estimatedTimeRemaining !== undefined && (
               <span> {formatTimeRemaining(estimatedTimeRemaining)} remaining</span>
             )}
@@ -127,9 +136,7 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
         <div className="module-upgrade-display__details">
           <h5 className="module-upgrade-display__section-title">Next Upgrade</h5>
           <div className="module-upgrade-display__next-level">
-            <div className="module-upgrade-display__next-level-name">
-              {nextLevel.name}
-            </div>
+            <div className="module-upgrade-display__next-level-name">{nextLevel.name}</div>
             <div className="module-upgrade-display__next-level-description">
               {nextLevel.description}
             </div>
@@ -143,7 +150,7 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
           <h5 className="module-upgrade-display__section-title">Effects</h5>
           <ul className="module-upgrade-display__effect-list">
             {effects.map((effect, index) => (
-              <li 
+              <li
                 key={index}
                 className={`module-upgrade-display__effect module-upgrade-display__effect--${effect.type}`}
               >
@@ -159,19 +166,18 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
         <div className="module-upgrade-display__requirements">
           <h5 className="module-upgrade-display__section-title">Requirements</h5>
           {requirementsMet ? (
-            <div className="module-upgrade-display__requirements-met">
-              All requirements met
-            </div>
+            <div className="module-upgrade-display__requirements-met">All requirements met</div>
           ) : (
             <ul className="module-upgrade-display__requirement-list">
-              {missingRequirements && missingRequirements.map((requirement, index) => (
-                <li 
-                  key={index}
-                  className="module-upgrade-display__requirement module-upgrade-display__requirement--missing"
-                >
-                  {requirement}
-                </li>
-              ))}
+              {missingRequirements &&
+                missingRequirements.map((requirement, index) => (
+                  <li
+                    key={index}
+                    className="module-upgrade-display__requirement module-upgrade-display__requirement--missing"
+                  >
+                    {requirement}
+                  </li>
+                ))}
             </ul>
           )}
         </div>
@@ -181,23 +187,23 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
       {showControls && (
         <div className="module-upgrade-display__controls">
           {upgradeProgress !== undefined ? (
-            <button 
+            <button
               className="module-upgrade-display__button module-upgrade-display__button--cancel"
               onClick={handleUpgradeCancel}
             >
               Cancel Upgrade
             </button>
           ) : (
-            <button 
+            <button
               className="module-upgrade-display__button module-upgrade-display__button--upgrade"
               onClick={handleUpgradeStart}
               disabled={!upgradeAvailable || !requirementsMet}
             >
-              {upgradeAvailable ? (
-                requirementsMet ? 'Upgrade' : 'Missing Requirements'
-              ) : (
-                'Max Level'
-              )}
+              {upgradeAvailable
+                ? requirementsMet
+                  ? 'Upgrade'
+                  : 'Missing Requirements'
+                : 'Max Level'}
             </button>
           )}
         </div>
@@ -212,25 +218,34 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
 export const ModulesWithUpgradesDisplay: React.FC<{
   onSelectModule?: (moduleId: string) => void;
   onUpgradeStart?: (moduleId: string) => void;
-}> = ({
-  onSelectModule,
-  onUpgradeStart
-}) => {
+}> = ({ onSelectModule, onUpgradeStart }) => {
   const { moduleIds, isLoading, error } = useModulesWithAvailableUpgrades();
 
   // Render loading state
   if (isLoading) {
-    return <div className="modules-with-upgrades-display modules-with-upgrades-display--loading">Loading available upgrades...</div>;
+    return (
+      <div className="modules-with-upgrades-display modules-with-upgrades-display--loading">
+        Loading available upgrades...
+      </div>
+    );
   }
 
   // Render error state
   if (error) {
-    return <div className="modules-with-upgrades-display modules-with-upgrades-display--error">{error}</div>;
+    return (
+      <div className="modules-with-upgrades-display modules-with-upgrades-display--error">
+        {error}
+      </div>
+    );
   }
 
   // Render empty state
   if (moduleIds.length === 0) {
-    return <div className="modules-with-upgrades-display modules-with-upgrades-display--empty">No modules available for upgrade</div>;
+    return (
+      <div className="modules-with-upgrades-display modules-with-upgrades-display--empty">
+        No modules available for upgrade
+      </div>
+    );
   }
 
   return (
@@ -238,7 +253,7 @@ export const ModulesWithUpgradesDisplay: React.FC<{
       <h4 className="modules-with-upgrades-display__title">Available Upgrades</h4>
       <div className="modules-with-upgrades-display__list">
         {moduleIds.map(moduleId => (
-          <ModuleUpgradeSummaryItem 
+          <ModuleUpgradeSummaryItem
             key={moduleId}
             moduleId={moduleId}
             onClick={() => onSelectModule?.(moduleId)}
@@ -257,26 +272,16 @@ const ModuleUpgradeSummaryItem: React.FC<{
   moduleId: string;
   onClick?: () => void;
   onUpgradeStart?: () => void;
-}> = ({
-  moduleId,
-  onClick,
-  onUpgradeStart
-}) => {
-  const {
-    currentLevel,
-    maxLevel,
-    nextLevel,
-    effects,
-    startUpgrade,
-    getEffectDescription
-  } = useModuleUpgrade(moduleId);
-  
-  const [module, setModule] = useState<any>(null);
+}> = ({ moduleId, onClick, onUpgradeStart }) => {
+  const { currentLevel, maxLevel, nextLevel, effects, startUpgrade, getEffectDescription } =
+    useModuleUpgrade(moduleId);
+
+  const [module, setModule] = useState<BaseModule | null>(null);
 
   // Load module data
   useEffect(() => {
     const moduleData = moduleManager.getModule(moduleId);
-    setModule(moduleData);
+    setModule(moduleData || null);
   }, [moduleId]);
 
   // Handle upgrade start
@@ -293,27 +298,20 @@ const ModuleUpgradeSummaryItem: React.FC<{
   }
 
   return (
-    <div 
-      className="module-upgrade-summary-item"
-      onClick={onClick}
-    >
+    <div className="module-upgrade-summary-item" onClick={onClick}>
       <div className="module-upgrade-summary-item__header">
-        <div className="module-upgrade-summary-item__name">
-          {module.name}
-        </div>
+        <div className="module-upgrade-summary-item__name">{module.name}</div>
         <div className="module-upgrade-summary-item__level">
           Level {currentLevel}/{maxLevel}
         </div>
       </div>
-      
-      <div className="module-upgrade-summary-item__next-level">
-        {nextLevel.name}
-      </div>
-      
+
+      <div className="module-upgrade-summary-item__next-level">{nextLevel.name}</div>
+
       {effects && effects.length > 0 && (
         <div className="module-upgrade-summary-item__effects">
           {effects.slice(0, 2).map((effect, index) => (
-            <div 
+            <div
               key={index}
               className={`module-upgrade-summary-item__effect module-upgrade-summary-item__effect--${effect.type}`}
             >
@@ -327,13 +325,10 @@ const ModuleUpgradeSummaryItem: React.FC<{
           )}
         </div>
       )}
-      
-      <button 
-        className="module-upgrade-summary-item__button"
-        onClick={handleUpgradeStart}
-      >
+
+      <button className="module-upgrade-summary-item__button" onClick={handleUpgradeStart}>
         Upgrade
       </button>
     </div>
   );
-}; 
+};

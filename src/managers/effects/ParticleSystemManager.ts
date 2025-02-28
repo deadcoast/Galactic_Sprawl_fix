@@ -1,4 +1,14 @@
-import { WebGLRenderer, Scene, Points, BufferGeometry, BufferAttribute, ShaderMaterial, AdditiveBlending, Color, PerspectiveCamera } from 'three';
+import {
+  AdditiveBlending,
+  BufferAttribute,
+  BufferGeometry,
+  Color,
+  PerspectiveCamera,
+  Points,
+  Scene,
+  ShaderMaterial,
+  WebGLRenderer,
+} from 'three';
 import { EntityPool, PooledEntity } from '../../lib/optimization/EntityPool';
 import { Position } from '../../types/core/GameTypes';
 
@@ -87,7 +97,11 @@ export class ParticleSystemManager {
     }
   }
 
-  private getOrCreatePool(systemId: string, particleSize: number, quality: 'low' | 'medium' | 'high'): EntityPool<Particle> {
+  private getOrCreatePool(
+    systemId: string,
+    particleSize: number,
+    quality: 'low' | 'medium' | 'high'
+  ): EntityPool<Particle> {
     if (!this.particlePools.has(systemId)) {
       this.particlePools.set(systemId, new Map());
     }
@@ -177,7 +191,7 @@ export class ParticleSystemManager {
 
   public update(deltaTime: number): void {
     this.frameCount++;
-    
+
     // Skip frames for low priority systems when under performance pressure
     const shouldUpdate = this.frameCount % this.FRAME_SKIP_THRESHOLD === 0;
     if (!shouldUpdate) {
@@ -202,7 +216,7 @@ export class ParticleSystemManager {
     if (system) {
       system.cleanup();
       this.systems.delete(id);
-      
+
       // Clean up size-based pools
       const sizePools = this.particlePools.get(id);
       if (sizePools) {
@@ -259,7 +273,10 @@ class ParticleSystem {
     const now = performance.now();
     const spawnInterval = 1000 / this.config.spawnRate;
 
-    while (now - this.lastSpawnTime >= spawnInterval && this.particles.size < this.config.maxParticles) {
+    while (
+      now - this.lastSpawnTime >= spawnInterval &&
+      this.particles.size < this.config.maxParticles
+    ) {
       this.spawnParticle();
       this.lastSpawnTime += spawnInterval;
     }
@@ -274,12 +291,18 @@ class ParticleSystem {
     particle.active = true;
     particle.position = { ...this.config.position };
     particle.velocity = {
-      x: this.config.initialVelocity.min.x + Math.random() * (this.config.initialVelocity.max.x - this.config.initialVelocity.min.x),
-      y: this.config.initialVelocity.min.y + Math.random() * (this.config.initialVelocity.max.y - this.config.initialVelocity.min.y),
+      x:
+        this.config.initialVelocity.min.x +
+        Math.random() * (this.config.initialVelocity.max.x - this.config.initialVelocity.min.x),
+      y:
+        this.config.initialVelocity.min.y +
+        Math.random() * (this.config.initialVelocity.max.y - this.config.initialVelocity.min.y),
     };
     particle.acceleration = { ...this.config.acceleration };
-    particle.size = this.config.size.min + Math.random() * (this.config.size.max - this.config.size.min);
-    particle.life = this.config.life.min + Math.random() * (this.config.life.max - this.config.life.min);
+    particle.size =
+      this.config.size.min + Math.random() * (this.config.size.max - this.config.size.min);
+    particle.life =
+      this.config.life.min + Math.random() * (this.config.life.max - this.config.life.min);
     particle.maxLife = particle.life;
 
     this.particles.add(particle);
@@ -352,4 +375,4 @@ class ParticleSystem {
 }
 
 // Export singleton instance
-export const particleSystemManager = ParticleSystemManager.getInstance(); 
+export const particleSystemManager = ParticleSystemManager.getInstance();

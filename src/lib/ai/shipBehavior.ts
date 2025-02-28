@@ -1,12 +1,12 @@
-import { techTreeManager } from '../../managers/game/techTreeManager';
 import { EventEmitter } from '../../lib/utils/EventEmitter';
+import { techTreeManager } from '../../managers/game/techTreeManager';
 import { Salvage } from '../../types/combat/SalvageTypes';
 import {
+  CommonShipCapabilities,
   getDefaultCapabilities,
   getShipCategory,
-  type ShipType,
   ShipCategory,
-  CommonShipCapabilities,
+  type ShipType,
 } from '../../types/ships/CommonShipTypes';
 
 interface Position {

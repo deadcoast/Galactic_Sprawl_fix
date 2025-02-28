@@ -1,6 +1,6 @@
-import { TooltipContext } from './tooltip-context';
-import { useTooltip } from '../../hooks/ui/useTooltip';
 import { ReactNode } from 'react';
+import { useTooltip } from '../../hooks/ui/useTooltip';
+import { TooltipContext } from './tooltip-context';
 
 interface TooltipProviderProps {
   children: ReactNode;
@@ -14,7 +14,7 @@ export function TooltipProvider({ children }: TooltipProviderProps) {
       {children}
       {tooltipState.tooltip.visible && tooltipState.tooltip.content && (
         <div
-          className="fixed z-50 pointer-events-none"
+          className="pointer-events-none fixed z-50"
           style={{
             left: tooltipState.tooltip.position.x,
             top: tooltipState.tooltip.position.y,

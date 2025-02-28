@@ -100,23 +100,23 @@ export function MiningMap({
   return (
     <div className="relative flex-1">
       {/* Zoom Controls */}
-      <div className="absolute top-4 right-4 flex space-x-2 z-10">
+      <div className="absolute right-4 top-4 z-10 flex space-x-2">
         <button
           onClick={() => handleZoom(0.1)}
-          className="p-2 bg-gray-800/90 hover:bg-gray-700/90 rounded-lg backdrop-blur-sm transition-colors"
+          className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
         >
-          <ZoomIn className="w-5 h-5 text-teal-400" />
+          <ZoomIn className="h-5 w-5 text-teal-400" />
         </button>
         <button
           onClick={() => handleZoom(-0.1)}
-          className="p-2 bg-gray-800/90 hover:bg-gray-700/90 rounded-lg backdrop-blur-sm transition-colors"
+          className="rounded-lg bg-gray-800/90 p-2 backdrop-blur-sm transition-colors hover:bg-gray-700/90"
         >
-          <ZoomOut className="w-5 h-5 text-teal-400" />
+          <ZoomOut className="h-5 w-5 text-teal-400" />
         </button>
       </div>
 
       <div
-        className="relative flex-1 bg-gray-900 rounded-lg overflow-hidden cursor-move"
+        className="relative flex-1 cursor-move overflow-hidden rounded-lg bg-gray-900"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -157,30 +157,30 @@ export function MiningMap({
                 <button onClick={() => onSelectNode(resource)} className="group relative">
                   {/* Resource Node Visualization */}
                   <div
-                    className={`w-16 h-16 rounded-full bg-${color}-500/20 animate-pulse relative ${
+                    className={`h-16 w-16 rounded-full bg-${color}-500/20 relative animate-pulse ${
                       isSelected
                         ? `ring-2 ring-${color}-400 ring-offset-2 ring-offset-gray-900`
                         : ''
                     }`}
                   >
                     <div
-                      className={`w-10 h-10 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${color}-400/30`}
+                      className={`absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${color}-400/30`}
                     >
                       <div
-                        className={`w-6 h-6 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${color}-300/40 flex items-center justify-center`}
+                        className={`absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${color}-300/40 flex items-center justify-center`}
                       >
-                        <Database className={`w-4 h-4 text-${color}-200`} />
+                        <Database className={`h-4 w-4 text-${color}-200`} />
                       </div>
                     </div>
 
                     {/* Depletion Warning */}
                     {resource.depletion > 0.5 && (
-                      <AlertTriangle className="absolute -top-1 -right-1 w-4 h-4 text-yellow-500" />
+                      <AlertTriangle className="absolute -right-1 -top-1 h-4 w-4 text-yellow-500" />
                     )}
                   </div>
 
                   {/* Resource Label */}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-center">
+                  <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-center">
                     <div className={`text-${color}-200 text-sm font-medium`}>{resource.name}</div>
                     <div className={`text-${color}-300/70 text-xs`}>
                       {Math.round(resource.abundance * 100)}% • {resource.distance}ly
@@ -212,9 +212,9 @@ export function MiningMap({
                   transform: 'translate(-50%, -50%)',
                 }}
               >
-                <div className="relative group">
+                <div className="group relative">
                   <Truck
-                    className={`w-5 h-5 ${
+                    className={`h-5 w-5 ${
                       ship.status === 'mining'
                         ? 'text-green-400'
                         : ship.status === 'returning'
@@ -224,8 +224,8 @@ export function MiningMap({
                   />
 
                   {/* Ship Info Tooltip */}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <div className="bg-gray-800/95 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700 whitespace-nowrap">
+                  <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="whitespace-nowrap rounded-lg border border-gray-700 bg-gray-800/95 px-3 py-2 backdrop-blur-sm">
                       <div className="text-sm font-medium text-white">{ship.name}</div>
                       <div className="text-xs text-gray-400">
                         {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)} •{' '}

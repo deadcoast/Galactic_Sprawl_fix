@@ -113,6 +113,6 @@ export function StarSystemBackdrop({ quality, dayNightCycle }: StarSystemBackdro
   }, [quality, dayNightCycle]);
 
   return (
-    <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }} />
+    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0" style={{ zIndex: -1 }} />
   );
 }

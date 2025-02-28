@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Database, Zap, Users, Beaker, Droplet, Wind } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Beaker, Database, Droplet, Users, Wind, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useResourceManagement } from '../../hooks/resources/useResourceManagement';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 
@@ -90,12 +90,12 @@ function ResourceDisplay({ type, thresholds }: ResourceDisplayProps) {
 
   return (
     <div className={`p-3 ${colors.bg} rounded-lg border ${colors.border}`}>
-      <div className="flex items-center space-x-3 mb-2">
-        <div className={`p-1.5 rounded-lg ${colors.bg}`}>
-          <Icon className={`w-4 h-4 ${colors.base}`} />
+      <div className="mb-2 flex items-center space-x-3">
+        <div className={`rounded-lg p-1.5 ${colors.bg}`}>
+          <Icon className={`h-4 w-4 ${colors.base}`} />
         </div>
         <div className="flex-1">
-          <div className="text-sm font-medium text-gray-300 capitalize">{type}</div>
+          <div className="text-sm font-medium capitalize text-gray-300">{type}</div>
           <div className={`text-lg font-bold ${colors.base}`}>
             {value.toLocaleString()}
             {capacity > 0 && ` / ${capacity.toLocaleString()}`}
@@ -109,14 +109,15 @@ function ResourceDisplay({ type, thresholds }: ResourceDisplayProps) {
               exit={{ opacity: 0, y: 10 }}
               className={`text-sm ${rate > 0 ? 'text-green-400' : 'text-red-400'}`}
             >
-              {rate > 0 ? '+' : ''}{rate.toFixed(1)}/s
+              {rate > 0 ? '+' : ''}
+              {rate.toFixed(1)}/s
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+      <div className="h-1.5 overflow-hidden rounded-full bg-gray-800">
         <motion.div
           className={`h-full ${colors.fill} transition-all duration-500`}
           initial={{ width: 0 }}
@@ -163,12 +164,8 @@ export function ResourceVisualizationEnhanced() {
   return (
     <div className="grid grid-cols-2 gap-4">
       {resourceTypes.map(type => (
-        <ResourceDisplay
-          key={type}
-          type={type}
-          thresholds={{ low: 1000, critical: 500 }}
-        />
+        <ResourceDisplay key={type} type={type} thresholds={{ low: 1000, critical: 500 }} />
       ))}
     </div>
   );
-} 
+}

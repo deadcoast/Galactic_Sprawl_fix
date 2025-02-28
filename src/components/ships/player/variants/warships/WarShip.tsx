@@ -1,9 +1,5 @@
 import { AlertTriangle, Rocket, Shield } from 'lucide-react';
-import {
-  WeaponCategory,
-  WeaponStatus,
-  CombatWeaponStats,
-} from '../../../../../types/weapons/WeaponTypes';
+import { WeaponCategory, WeaponStatus } from '../../../../../types/weapons/WeaponTypes';
 
 interface WeaponSystem {
   id: string;
@@ -85,7 +81,7 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
       }}
     >
       {/* Ship Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <h3 className="text-lg font-medium text-white">{ship.name}</h3>
           <div className="flex items-center text-sm text-gray-400">
@@ -95,7 +91,7 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
           </div>
         </div>
         <div
-          className={`px-3 py-1 rounded-full text-sm ${
+          className={`rounded-full px-3 py-1 text-sm ${
             ship.status === 'engaging'
               ? 'bg-red-900/50 text-red-400'
               : ship.status === 'patrolling'
@@ -110,15 +106,15 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
       </div>
 
       {/* Hull & Shield Status */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-4">
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Hull Integrity</span>
             <span className={ship.hull < ship.maxHull * 0.3 ? 'text-red-400' : 'text-gray-300'}>
               {Math.round((ship.hull / ship.maxHull) * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full rounded-full transition-all ${
                 ship.hull < ship.maxHull * 0.3 ? 'bg-red-500' : 'bg-green-500'
@@ -129,15 +125,15 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Shield Power</span>
             <span className="text-gray-300">
               {Math.round((ship.shield / ship.maxShield) * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
+              className="h-full rounded-full bg-blue-500 transition-all"
               style={{ width: `${(ship.shield / ship.maxShield) * 100}%` }}
             />
           </div>
@@ -145,12 +141,12 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
       </div>
 
       {/* Weapon Systems */}
-      <div className="space-y-4 mb-6">
+      <div className="mb-6 space-y-4">
         <h4 className="text-sm font-medium text-gray-300">Weapon Systems</h4>
         <div className="grid grid-cols-2 gap-3">
           {ship.weapons.map(weapon => (
-            <div key={weapon.id} className="p-3 bg-gray-700/50 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
+            <div key={weapon.id} className="rounded-lg bg-gray-700/50 p-3">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-medium text-white">{weapon.name}</div>
                 <div
                   className={`text-xs ${
@@ -176,18 +172,18 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
       {/* Special Abilities */}
       {ship.specialAbilities && ship.specialAbilities.length > 0 && (
         <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-300 mb-3">Special Abilities</h4>
+          <h4 className="mb-3 text-sm font-medium text-gray-300">Special Abilities</h4>
           <div className="space-y-2">
             {ship.specialAbilities.map(ability => (
               <div
                 key={ability.name}
-                className={`p-3 rounded-lg ${
+                className={`rounded-lg p-3 ${
                   ability.active
                     ? `bg-${color}-500/20 border border-${color}-500/30`
                     : 'bg-gray-700/50'
                 }`}
               >
-                <div className="flex items-center justify-between mb-1">
+                <div className="mb-1 flex items-center justify-between">
                   <span className="text-sm font-medium text-white">{ability.name}</span>
                   <span className="text-xs text-gray-400">{ability.cooldown}s</span>
                 </div>
@@ -203,23 +199,23 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
         <button
           onClick={onDeploy}
           disabled={ship.status === 'damaged'}
-          className={`px-4 py-2 rounded-lg text-sm flex items-center justify-center space-x-2 ${
+          className={`flex items-center justify-center space-x-2 rounded-lg px-4 py-2 text-sm ${
             ship.status === 'damaged'
-              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              ? 'cursor-not-allowed bg-gray-700 text-gray-500'
               : `bg-${color}-500/20 hover:bg-${color}-500/30 text-${color}-200`
           }`}
         >
-          <Rocket className="w-4 h-4" />
+          <Rocket className="h-4 w-4" />
           <span>Deploy</span>
         </button>
         <button
           onClick={onRecall}
           disabled={ship.status === 'idle'}
-          className={`px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            ship.status === 'idle' ? 'opacity-50 cursor-not-allowed' : ''
+          className={`flex items-center justify-center space-x-2 rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 ${
+            ship.status === 'idle' ? 'cursor-not-allowed opacity-50' : ''
           }`}
         >
-          <Shield className="w-4 h-4" />
+          <Shield className="h-4 w-4" />
           <span>Recall</span>
         </button>
       </div>
@@ -230,9 +226,9 @@ export function WarShip({ ship, quality, onDeploy, onRecall }: WarShipProps) {
           {ship.alerts.map((alert, index) => (
             <div
               key={index}
-              className="flex items-start space-x-2 p-3 bg-red-900/20 border border-red-700/30 rounded-lg"
+              className="flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3"
             >
-              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
               <span className="text-sm text-red-200">{alert}</span>
             </div>
           ))}

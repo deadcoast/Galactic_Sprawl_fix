@@ -1,7 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { moduleUpgradeManager, ModuleUpgradeStatus, ModuleUpgradeLevel, ModuleUpgradeEffect } from '../../managers/module/ModuleUpgradeManager';
 import { moduleManager } from '../../managers/module/ModuleManager';
+import {
+  ModuleUpgradeEffect,
+  moduleUpgradeManager,
+  ModuleUpgradeStatus,
+} from '../../managers/module/ModuleUpgradeManager';
 
 /**
  * Hook for managing module upgrades
@@ -70,9 +74,18 @@ export function useModuleUpgrade(moduleId?: string) {
     };
 
     // Subscribe to events
-    const unsubscribeUpgraded = moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, handleModuleUpgraded);
-    const unsubscribeStarted = moduleEventBus.subscribe('MODULE_UPGRADE_STARTED' as ModuleEventType, handleUpgradeStarted);
-    const unsubscribeCancelled = moduleEventBus.subscribe('MODULE_UPGRADE_CANCELLED' as ModuleEventType, handleUpgradeCancelled);
+    const unsubscribeUpgraded = moduleEventBus.subscribe(
+      'MODULE_UPGRADED' as ModuleEventType,
+      handleModuleUpgraded
+    );
+    const unsubscribeStarted = moduleEventBus.subscribe(
+      'MODULE_UPGRADE_STARTED' as ModuleEventType,
+      handleUpgradeStarted
+    );
+    const unsubscribeCancelled = moduleEventBus.subscribe(
+      'MODULE_UPGRADE_CANCELLED' as ModuleEventType,
+      handleUpgradeCancelled
+    );
 
     // Set up progress update interval for active upgrades
     const progressInterval = setInterval(() => {
@@ -97,7 +110,7 @@ export function useModuleUpgrade(moduleId?: string) {
       if (typeof unsubscribeCancelled === 'function') {
         unsubscribeCancelled();
       }
-      
+
       // Clear interval
       clearInterval(progressInterval);
     };
@@ -124,15 +137,15 @@ export function useModuleUpgrade(moduleId?: string) {
     const seconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes % 60}m`;
     }
-    
+
     if (minutes > 0) {
       return `${minutes}m ${seconds % 60}s`;
     }
-    
+
     return `${seconds}s`;
   }, []);
 
@@ -140,7 +153,7 @@ export function useModuleUpgrade(moduleId?: string) {
   const getEffectDescription = useCallback((effect: ModuleUpgradeEffect): string => {
     const sign = effect.value >= 0 ? '+' : '';
     const valueStr = effect.isPercentage ? `${sign}${effect.value}%` : `${sign}${effect.value}`;
-    
+
     return `${effect.description} (${valueStr})`;
   }, []);
 
@@ -149,7 +162,7 @@ export function useModuleUpgrade(moduleId?: string) {
     upgradeStatus,
     isLoading,
     error,
-    
+
     // Current status
     currentLevel: upgradeStatus?.currentLevel,
     maxLevel: upgradeStatus?.maxLevel,
@@ -160,14 +173,14 @@ export function useModuleUpgrade(moduleId?: string) {
     upgradeProgress: upgradeStatus?.upgradeProgress,
     estimatedTimeRemaining: upgradeStatus?.estimatedTimeRemaining,
     effects: upgradeStatus?.effects,
-    
+
     // Actions
     startUpgrade,
     cancelUpgrade,
-    
+
     // Utilities
     formatTimeRemaining,
-    getEffectDescription
+    getEffectDescription,
   };
 }
 
@@ -187,13 +200,13 @@ export function useModulesWithAvailableUpgrades() {
     try {
       // Get all modules
       const modules = moduleManager.getActiveModules();
-      
+
       // Filter modules with available upgrades
       const availableUpgrades = modules.filter(module => {
         const status = moduleUpgradeManager.getUpgradeStatus(module.id);
         return status?.upgradeAvailable && status?.requirementsMet;
       });
-      
+
       setModuleIds(availableUpgrades.map(module => module.id));
       setIsLoading(false);
     } catch (err) {
@@ -208,13 +221,13 @@ export function useModulesWithAvailableUpgrades() {
       try {
         // Get all modules
         const modules = moduleManager.getActiveModules();
-        
+
         // Filter modules with available upgrades
         const availableUpgrades = modules.filter(module => {
           const status = moduleUpgradeManager.getUpgradeStatus(module.id);
           return status?.upgradeAvailable && status?.requirementsMet;
         });
-        
+
         setModuleIds(availableUpgrades.map(module => module.id));
       } catch (err) {
         setError(`Error updating modules with available upgrades: ${err}`);
@@ -227,8 +240,14 @@ export function useModulesWithAvailableUpgrades() {
     };
 
     // Subscribe to events
-    const unsubscribeUpgraded = moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, handleModuleUpgraded);
-    const unsubscribeResourceChanged = moduleEventBus.subscribe('RESOURCE_CHANGED' as ModuleEventType, handleResourceChanged);
+    const unsubscribeUpgraded = moduleEventBus.subscribe(
+      'MODULE_UPGRADED' as ModuleEventType,
+      handleModuleUpgraded
+    );
+    const unsubscribeResourceChanged = moduleEventBus.subscribe(
+      'RESOURCE_CHANGED' as ModuleEventType,
+      handleResourceChanged
+    );
 
     return () => {
       // Unsubscribe from events
@@ -244,6 +263,6 @@ export function useModulesWithAvailableUpgrades() {
   return {
     moduleIds,
     isLoading,
-    error
+    error,
   };
-} 
+}

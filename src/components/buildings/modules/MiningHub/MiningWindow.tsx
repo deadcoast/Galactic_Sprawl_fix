@@ -1,14 +1,4 @@
-import { MiningControls } from './MiningControls';
-import { MiningMap } from './MiningMap';
-import { MiningTutorial } from './MiningTutorial';
-import { ResourceNode } from './ResourceNode';
-import { ResourceStorage } from './ResourceStorage';
-import { ResourceTransfer } from './ResourceTransfer';
-import { TechBonus } from './TechBonus';
-import { useContextMenu, ContextMenuItem } from '../../../../components/ui/ContextMenu';
-import { Draggable, DropTarget, DragItem } from '../../../../components/ui/DragAndDrop';
 import {
-  AlertTriangle,
   ArrowDown,
   ArrowUp,
   ChevronRight,
@@ -16,14 +6,18 @@ import {
   Grid2X2,
   HelpCircle,
   Map,
-  Pickaxe,
-  Settings,
-  Truck,
-  X,
-  Ship,
   Rocket,
+  Settings,
+  Ship,
 } from 'lucide-react';
 import { useState } from 'react';
+import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
+import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
+import { MiningMap } from './MiningMap';
+import { MiningTutorial } from './MiningTutorial';
+import { ResourceNode } from './ResourceNode';
+import { ResourceStorage } from './ResourceStorage';
+import { ResourceTransfer } from './ResourceTransfer';
 
 // Mock storage data
 const mockStorageData = [
@@ -204,20 +198,20 @@ export function MiningWindow() {
       {
         id: 'info',
         label: 'Resource Info',
-        icon: <Database className="w-4 h-4" />,
+        icon: <Database className="h-4 w-4" />,
         action: () => setSelectedNode(resource),
       },
       {
         id: 'assign-ship',
         label: assignedShip ? 'Reassign Ship' : 'Assign Ship',
-        icon: <Ship className="w-4 h-4" />,
+        icon: <Ship className="h-4 w-4" />,
         action: () => {}, // No-op action for parent menu
         children: mockShips
           .filter(ship => ship.status === 'idle' || ship.targetNode === resource.id)
           .map(ship => ({
             id: ship.id,
             label: ship.name,
-            icon: <Rocket className="w-4 h-4" />,
+            icon: <Rocket className="h-4 w-4" />,
             action: () => {
               // Handle ship assignment
               console.log(`Assigning ${ship.name} to ${resource.name}`);
@@ -227,7 +221,7 @@ export function MiningWindow() {
       {
         id: 'set-priority',
         label: 'Set Priority',
-        icon: <ChevronRight className="w-4 h-4" />,
+        icon: <ChevronRight className="h-4 w-4" />,
         action: () => {}, // No-op action for parent menu
         children: [1, 2, 3, 4, 5].map(priority => ({
           id: `priority-${priority}`,
@@ -242,7 +236,7 @@ export function MiningWindow() {
   };
 
   // Handle resource drop on storage
-  const handleResourceDrop = (item: DragItem, storage: typeof mockStorageData[0]) => {
+  const handleResourceDrop = (item: DragItem, storage: (typeof mockStorageData)[0]) => {
     if (item.type === 'resource') {
       // Handle resource transfer
       console.log(`Transferring ${item.data.type} to ${storage.resourceType} storage`);
@@ -250,16 +244,16 @@ export function MiningWindow() {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h2 className="text-xl font-bold text-white">Mineral Processing</h2>
           <button
             onClick={() => setShowTutorial(true)}
             className="p-2 text-gray-400 hover:text-gray-300"
           >
-            <HelpCircle className="w-5 h-5" />
+            <HelpCircle className="h-5 w-5" />
           </button>
         </div>
         <div className="flex items-center space-x-4">
@@ -267,24 +261,20 @@ export function MiningWindow() {
             onClick={() => setViewMode(prev => (prev === 'map' ? 'grid' : 'map'))}
             className="p-2 text-gray-400 hover:text-gray-300"
           >
-            {viewMode === 'map' ? (
-              <Grid2X2 className="w-5 h-5" />
-            ) : (
-              <Map className="w-5 h-5" />
-            )}
+            {viewMode === 'map' ? <Grid2X2 className="h-5 w-5" /> : <Map className="h-5 w-5" />}
           </button>
           <button className="p-2 text-gray-400 hover:text-gray-300">
-            <Settings className="w-5 h-5" />
+            <Settings className="h-5 w-5" />
           </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center space-x-4 mb-4">
+      <div className="mb-4 flex items-center space-x-4">
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value as SortOption)}
-          className="bg-gray-800 text-gray-300 rounded-lg px-3 py-1.5 text-sm border border-gray-700"
+          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm text-gray-300"
         >
           <option value="priority">Sort by Priority</option>
           <option value="name">Sort by Name</option>
@@ -294,12 +284,12 @@ export function MiningWindow() {
         </select>
         <button
           onClick={() => setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))}
-          className="p-1.5 bg-gray-800 rounded-lg text-gray-400 hover:text-gray-300"
+          className="rounded-lg bg-gray-800 p-1.5 text-gray-400 hover:text-gray-300"
         >
           {sortOrder === 'asc' ? (
-            <ArrowUp className="w-4 h-4" />
+            <ArrowUp className="h-4 w-4" />
           ) : (
-            <ArrowDown className="w-4 h-4" />
+            <ArrowDown className="h-4 w-4" />
           )}
         </button>
       </div>
@@ -317,7 +307,7 @@ export function MiningWindow() {
           <ResourceTransfer transfers={mockTransfers} />
         </MiningMap>
       ) : (
-        <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1">
+        <div className="grid flex-1 grid-cols-2 gap-4 overflow-y-auto">
           {filteredResources.map(resource => {
             const { handleContextMenu, ContextMenuComponent } = useContextMenu({
               items: getResourceMenuItems(resource),
@@ -352,8 +342,8 @@ export function MiningWindow() {
       <div className="mt-4 grid grid-cols-2 gap-4">
         <DropTarget
           accept={['resource']}
-          onDrop={(item) => handleResourceDrop(item, mockStorageData[0])}
-          className="p-4 bg-gray-800 rounded-lg hover:bg-gray-800/80 transition-colors"
+          onDrop={item => handleResourceDrop(item, mockStorageData[0])}
+          className="rounded-lg bg-gray-800 p-4 transition-colors hover:bg-gray-800/80"
         >
           <ResourceStorage storageData={mockStorageData} />
         </DropTarget>
@@ -361,7 +351,7 @@ export function MiningWindow() {
 
       {/* Mining Fleet Status */}
       <div className="mt-4">
-        <h3 className="text-lg font-medium text-white mb-3">Mining Fleet</h3>
+        <h3 className="mb-3 text-lg font-medium text-white">Mining Fleet</h3>
         <div className="grid grid-cols-2 gap-4">
           {mockShips.map(ship => {
             const assignedResource = mockResources.find(r => r.id === ship.targetNode);
@@ -375,14 +365,14 @@ export function MiningWindow() {
                   data: ship,
                 }}
               >
-                <div className="p-4 bg-gray-800 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="rounded-lg bg-gray-800 p-4">
+                  <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Ship className="w-4 h-4 text-cyan-400" />
+                      <Ship className="h-4 w-4 text-cyan-400" />
                       <span className="font-medium text-gray-200">{ship.name}</span>
                     </div>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${
+                      className={`rounded-full px-2 py-0.5 text-xs ${
                         ship.status === 'mining'
                           ? 'bg-green-900/50 text-green-400'
                           : ship.status === 'returning'
@@ -394,11 +384,7 @@ export function MiningWindow() {
                     </span>
                   </div>
                   <div className="text-sm text-gray-400">
-                    {assignedResource ? (
-                      <>Mining: {assignedResource.name}</>
-                    ) : (
-                      <>No assignment</>
-                    )}
+                    {assignedResource ? <>Mining: {assignedResource.name}</> : <>No assignment</>}
                   </div>
                   <div className="mt-2 text-xs text-gray-500">
                     Cargo: {ship.currentLoad}/{ship.capacity} • Efficiency:{' '}
@@ -412,9 +398,7 @@ export function MiningWindow() {
       </div>
 
       {/* Tutorial Modal */}
-      {showTutorial && (
-        <MiningTutorial onClose={() => setShowTutorial(false)} />
-      )}
+      {showTutorial && <MiningTutorial onClose={() => setShowTutorial(false)} />}
     </div>
   );
 }

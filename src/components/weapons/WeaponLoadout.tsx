@@ -1,5 +1,5 @@
-import { WeaponConfig, WeaponMount } from '../../types/weapons/WeaponTypes';
 import { AlertTriangle, Crosshair } from 'lucide-react';
+import { WeaponConfig, WeaponMount } from '../../types/weapons/WeaponTypes';
 
 interface WeaponLoadoutProps {
   mounts: WeaponMount[];
@@ -15,24 +15,24 @@ export function WeaponLoadout({
   onUnequipWeapon,
 }: WeaponLoadoutProps) {
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="rounded-lg bg-gray-800 p-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-red-500/20 rounded-lg">
-            <Crosshair className="w-6 h-6 text-red-400" />
+          <div className="rounded-lg bg-red-500/20 p-2">
+            <Crosshair className="h-6 w-6 text-red-400" />
           </div>
           <h3 className="text-lg font-medium text-white">Weapon Loadout</h3>
         </div>
       </div>
 
       {/* Weapon Mounts */}
-      <div className="space-y-4 mb-6">
+      <div className="mb-6 space-y-4">
         {mounts.map(mount => (
-          <div key={mount.id} className="p-4 bg-gray-700/50 rounded-lg">
-            <div className="flex items-center justify-between mb-3">
+          <div key={mount.id} className="rounded-lg bg-gray-700/50 p-4">
+            <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div
-                  className={`w-2 h-2 rounded-full ${
+                  className={`h-2 w-2 rounded-full ${
                     mount.currentWeapon?.state.status === 'ready' ? 'bg-green-500' : 'bg-red-500'
                   }`}
                 />
@@ -54,7 +54,7 @@ export function WeaponLoadout({
             </div>
 
             {mount.currentWeapon ? (
-              <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+              <div className="flex items-center justify-between rounded-lg bg-gray-800 p-3">
                 <div>
                   <div className="text-sm text-gray-200">{mount.currentWeapon.config.name}</div>
                   <div className="text-xs text-gray-400">
@@ -62,7 +62,7 @@ export function WeaponLoadout({
                   </div>
                 </div>
                 <div
-                  className={`px-2 py-1 rounded text-xs ${
+                  className={`rounded px-2 py-1 text-xs ${
                     mount.currentWeapon.state.status === 'ready'
                       ? 'bg-green-900/50 text-green-400'
                       : 'bg-red-900/50 text-red-400'
@@ -73,10 +73,10 @@ export function WeaponLoadout({
                 </div>
               </div>
             ) : (
-              <div className="p-3 bg-gray-800 rounded-lg">
+              <div className="rounded-lg bg-gray-800 p-3">
                 <select
                   onChange={e => onEquipWeapon(mount.id, e.target.value)}
-                  className="w-full bg-transparent text-gray-300 text-sm focus:outline-none"
+                  className="w-full bg-transparent text-sm text-gray-300 focus:outline-none"
                   defaultValue=""
                 >
                   <option value="" disabled>
@@ -98,18 +98,18 @@ export function WeaponLoadout({
 
       {/* Mount Status Overview */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="p-3 bg-gray-700/50 rounded-lg">
-          <div className="text-sm text-gray-400 mb-1">Total Mounts</div>
+        <div className="rounded-lg bg-gray-700/50 p-3">
+          <div className="mb-1 text-sm text-gray-400">Total Mounts</div>
           <div className="text-lg font-medium text-white">{mounts.length}</div>
         </div>
-        <div className="p-3 bg-gray-700/50 rounded-lg">
-          <div className="text-sm text-gray-400 mb-1">Armed</div>
+        <div className="rounded-lg bg-gray-700/50 p-3">
+          <div className="mb-1 text-sm text-gray-400">Armed</div>
           <div className="text-lg font-medium text-green-400">
             {mounts.filter(m => m.currentWeapon).length}
           </div>
         </div>
-        <div className="p-3 bg-gray-700/50 rounded-lg">
-          <div className="text-sm text-gray-400 mb-1">Empty</div>
+        <div className="rounded-lg bg-gray-700/50 p-3">
+          <div className="mb-1 text-sm text-gray-400">Empty</div>
           <div className="text-lg font-medium text-yellow-400">
             {mounts.filter(m => !m.currentWeapon).length}
           </div>
@@ -118,8 +118,8 @@ export function WeaponLoadout({
 
       {/* Warnings */}
       {mounts.some(m => !m.currentWeapon) && (
-        <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-700/30 rounded-lg flex items-start space-x-2">
-          <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+        <div className="mt-4 flex items-start space-x-2 rounded-lg border border-yellow-700/30 bg-yellow-900/20 p-3">
+          <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-500" />
           <div className="text-sm text-yellow-200">
             Some weapon mounts are empty. Consider equipping weapons for optimal combat performance.
           </div>

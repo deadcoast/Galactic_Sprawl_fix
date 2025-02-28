@@ -1,13 +1,23 @@
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { AutomationManager, AutomationRule, AutomationAction, AutomationCondition } from '../game/AutomationManager';
-import { gameLoopManager, UpdatePriority } from '../game/GameLoopManager';
-import { getSystemCommunication, SystemId, MessagePriority } from '../../utils/events/EventCommunication';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
+import {
+  getSystemCommunication,
+  MessagePriority,
+  SystemId,
+} from '../../utils/events/EventCommunication';
 import { EventPriorityQueue } from '../../utils/events/EventFiltering';
+import {
+  AutomationAction,
+  AutomationCondition,
+  AutomationManager,
+  ResourceConditionValue,
+} from '../game/AutomationManager';
+import { gameLoopManager, UpdatePriority } from '../game/GameLoopManager';
 
 /**
  * Global routine type
  */
-export type GlobalRoutineType = 
+export type GlobalRoutineType =
   | 'system-maintenance'
   | 'resource-balancing'
   | 'performance-optimization'
@@ -42,7 +52,7 @@ export class GlobalAutomationManager {
   private routines: Map<string, GlobalRoutine>;
   private activeRoutines: Map<string, boolean>;
   private routineQueue: EventPriorityQueue<GlobalRoutine & { executionTime: number }>;
-  private systemCommunications: Map<SystemId, any>;
+  private systemCommunications: Map<SystemId, ReturnType<typeof getSystemCommunication>>;
   private isInitialized: boolean = false;
 
   constructor(automationManager: AutomationManager) {
@@ -50,9 +60,9 @@ export class GlobalAutomationManager {
     this.routines = new Map();
     this.activeRoutines = new Map();
     this.systemCommunications = new Map();
-    
+
     // Create a priority queue for routine execution
-    this.routineQueue = new EventPriorityQueue((routine) => {
+    this.routineQueue = new EventPriorityQueue(routine => {
       return this.executeRoutine(routine);
     });
   }
@@ -65,7 +75,7 @@ export class GlobalAutomationManager {
       return;
     }
 
-    console.log('Initializing Global Automation Manager...');
+    console.warn('Initializing Global Automation Manager...');
 
     // Initialize system communications
     this.initializeSystemCommunications();
@@ -83,17 +93,17 @@ export class GlobalAutomationManager {
     moduleEventBus.subscribe('STATUS_CHANGED' as ModuleEventType, this.handleStatusChanged);
 
     this.isInitialized = true;
-    
+
     // Emit initialization event
     moduleEventBus.emit({
       type: 'AUTOMATION_STARTED' as ModuleEventType,
       moduleId: 'global-automation',
       moduleType: 'resource-manager',
       timestamp: Date.now(),
-      data: { 
+      data: {
         routineCount: this.routines.size,
-        systems: Array.from(this.systemCommunications.keys())
-      }
+        systems: Array.from(this.systemCommunications.keys()),
+      },
     });
   }
 
@@ -110,7 +120,7 @@ export class GlobalAutomationManager {
       'tech-system',
       'ui-system',
       'game-loop',
-      'event-system'
+      'event-system',
     ];
 
     systems.forEach(systemId => {
@@ -118,9 +128,9 @@ export class GlobalAutomationManager {
       this.systemCommunications.set(systemId, communication);
 
       // Register message handler for automation requests
-      communication.registerHandler('automation-request', (message) => {
+      communication.registerHandler('automation-request', message => {
         console.log(`Received automation request from ${systemId}:`, message.payload);
-        
+
         if (message.payload.routineId) {
           const routine = this.routines.get(message.payload.routineId);
           if (routine && routine.enabled) {
@@ -128,7 +138,7 @@ export class GlobalAutomationManager {
             return;
           }
         }
-        
+
         if (message.payload.createRoutine) {
           this.registerRoutine(message.payload.createRoutine);
         }
@@ -160,7 +170,7 @@ export class GlobalAutomationManager {
         communication.sendMessage('broadcast', 'routine-registered', {
           routineId: routine.id,
           name: routine.name,
-          type: routine.type
+          type: routine.type,
         });
       }
     });
@@ -182,7 +192,7 @@ export class GlobalAutomationManager {
       const communication = this.systemCommunications.get(systemId);
       if (communication) {
         communication.sendMessage(systemId, 'routine-unregistered', {
-          routineId: routine.id
+          routineId: routine.id,
         });
       }
     });
@@ -203,10 +213,10 @@ export class GlobalAutomationManager {
 
     routine.enabled = true;
     this.activeRoutines.set(routineId, true);
-    
+
     // Schedule the routine
     this.scheduleRoutine(routine);
-    
+
     return true;
   }
 
@@ -231,7 +241,7 @@ export class GlobalAutomationManager {
     // Add to the priority queue
     this.routineQueue.enqueue({
       ...routine,
-      executionTime: Date.now() + (routine.interval || 0)
+      executionTime: Date.now() + (routine.interval || 0),
     });
   }
 
@@ -262,9 +272,12 @@ export class GlobalAutomationManager {
         for (const condition of routine.conditions) {
           if (condition.type === 'RESOURCE_BELOW') {
             // Simple implementation for resource below condition
-            const {resourceType, threshold} = condition as any;
-            if (resourceType && threshold !== undefined) {
-              const resourceAmount = this.getResourceAmount(resourceType);
+            const { target, value } = condition;
+            if (target && value !== undefined) {
+              const resourceAmount = this.getResourceAmount(target);
+              // Extract numeric value for comparison
+              const threshold =
+                typeof value === 'number' ? value : (value as ResourceConditionValue).amount;
               if (resourceAmount > threshold) {
                 conditionsMet = false;
                 break;
@@ -272,9 +285,12 @@ export class GlobalAutomationManager {
             }
           } else if (condition.type === 'RESOURCE_ABOVE') {
             // Simple implementation for resource above condition
-            const {resourceType, threshold} = condition as any;
-            if (resourceType && threshold !== undefined) {
-              const resourceAmount = this.getResourceAmount(resourceType);
+            const { target, value } = condition;
+            if (target && value !== undefined) {
+              const resourceAmount = this.getResourceAmount(target);
+              // Extract numeric value for comparison
+              const threshold =
+                typeof value === 'number' ? value : (value as ResourceConditionValue).amount;
               if (resourceAmount < threshold) {
                 conditionsMet = false;
                 break;
@@ -289,11 +305,11 @@ export class GlobalAutomationManager {
 
       if (!conditionsMet) {
         console.log(`Conditions not met for routine: ${routine.name}`);
-        
+
         // Re-schedule for next interval
         this.scheduleRoutine({
           ...routine,
-          lastRun: Date.now()
+          lastRun: Date.now(),
         });
         return;
       }
@@ -312,7 +328,7 @@ export class GlobalAutomationManager {
       // Update last run time
       const updatedRoutine = {
         ...routine,
-        lastRun: Date.now()
+        lastRun: Date.now(),
       };
       this.routines.set(routine.id, updatedRoutine);
 
@@ -322,11 +338,11 @@ export class GlobalAutomationManager {
         moduleId: 'global-automation',
         moduleType: 'resource-manager',
         timestamp: Date.now(),
-        data: { 
-          routineId: routine.id, 
+        data: {
+          routineId: routine.id,
           routineName: routine.name,
-          routineType: routine.type
-        }
+          routineType: routine.type,
+        },
       });
 
       // Notify relevant systems
@@ -336,7 +352,7 @@ export class GlobalAutomationManager {
           communication.sendMessage(systemId, 'routine-executed', {
             routineId: routine.id,
             success: true,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         }
       });
@@ -345,23 +361,23 @@ export class GlobalAutomationManager {
       this.scheduleRoutine(updatedRoutine);
     } catch (error) {
       console.error(`Error executing routine ${routine.id}:`, error);
-      
+
       // Emit error event
       moduleEventBus.emit({
         type: 'ERROR_OCCURRED' as ModuleEventType,
         moduleId: 'global-automation',
         moduleType: 'resource-manager',
         timestamp: Date.now(),
-        data: { 
-          routineId: routine.id, 
-          error: error instanceof Error ? error.message : String(error)
-        }
+        data: {
+          routineId: routine.id,
+          error: error instanceof Error ? error.message : String(error),
+        },
       });
 
       // Re-schedule for next interval
       this.scheduleRoutine({
         ...routine,
-        lastRun: Date.now()
+        lastRun: Date.now(),
       });
     }
   }
@@ -395,7 +411,7 @@ export class GlobalAutomationManager {
           moduleId: action.target,
           moduleType: 'resource-manager',
           timestamp: Date.now(),
-          data: { source: 'automation' }
+          data: { source: 'automation' },
         });
         break;
 
@@ -409,7 +425,7 @@ export class GlobalAutomationManager {
           moduleId: action.target,
           moduleType: 'resource-manager',
           timestamp: Date.now(),
-          data: { source: 'automation' }
+          data: { source: 'automation' },
         });
         break;
 
@@ -423,23 +439,38 @@ export class GlobalAutomationManager {
           moduleId: 'automation',
           moduleType: 'resource-manager',
           timestamp: Date.now(),
-          data: action.value
+          data: action.value,
         });
         break;
 
-      case 'EMIT_EVENT':
+      case 'EMIT_EVENT': {
         if (!action.target || !action.value) {
           return;
         }
+
+        // Define interface for EmitEventValue
+        interface EmitEventValue {
+          moduleId?: string;
+          moduleType?: string;
+          data?: Record<string, unknown>;
+        }
+
+        // Cast to EmitEventValue or use a safe default
+        const emitValue =
+          typeof action.value === 'object'
+            ? (action.value as EmitEventValue)
+            : { moduleId: 'automation', moduleType: 'resource-manager', data: {} };
+
         // Emit the specified event
         moduleEventBus.emit({
           type: action.target as ModuleEventType,
-          moduleId: action.value.moduleId || 'automation',
-          moduleType: action.value.moduleType || 'resource-manager',
+          moduleId: emitValue.moduleId || 'automation',
+          moduleType: (emitValue.moduleType || 'resource-manager') as ModuleType,
           timestamp: Date.now(),
-          data: action.value.data || {}
+          data: emitValue.data || {},
         });
         break;
+      }
 
       default:
         console.warn(`Unsupported action type: ${action.type}`);
@@ -449,7 +480,7 @@ export class GlobalAutomationManager {
   /**
    * Update method called by the game loop
    */
-  private update(deltaTime: number, elapsedTime: number): void {
+  private update(_deltaTime: number, _elapsedTime: number): void {
     // Process any pending routines
     // The queue itself handles the execution
   }
@@ -457,20 +488,20 @@ export class GlobalAutomationManager {
   /**
    * Handle error events
    */
-  private handleErrorEvent = (event: any): void => {
+  private handleErrorEvent = (event: ModuleEvent): void => {
     // Find emergency response routines
-    const emergencyRoutines = Array.from(this.routines.values())
-      .filter(routine => 
-        routine.enabled && 
+    const emergencyRoutines = Array.from(this.routines.values()).filter(
+      routine =>
+        routine.enabled &&
         routine.type === 'emergency-response' &&
         routine.tags.includes('error-handling')
-      );
+    );
 
     // Schedule emergency routines immediately
     emergencyRoutines.forEach(routine => {
       this.routineQueue.enqueue({
         ...routine,
-        executionTime: Date.now() // Execute immediately
+        executionTime: Date.now(), // Execute immediately
       });
     });
   };
@@ -478,21 +509,21 @@ export class GlobalAutomationManager {
   /**
    * Handle resource shortage events
    */
-  private handleResourceShortage = (event: any): void => {
+  private handleResourceShortage = (event: ModuleEvent): void => {
     // Find resource balancing routines
-    const resourceRoutines = Array.from(this.routines.values())
-      .filter(routine => 
-        routine.enabled && 
+    const resourceRoutines = Array.from(this.routines.values()).filter(
+      routine =>
+        routine.enabled &&
         routine.type === 'resource-balancing' &&
         routine.tags.includes(event.data?.resourceType || 'general')
-      );
+    );
 
     // Schedule resource routines with high priority
     resourceRoutines.forEach(routine => {
       this.routineQueue.enqueue({
         ...routine,
         executionTime: Date.now(), // Execute immediately
-        priority: MessagePriority.HIGH // Override with high priority
+        priority: MessagePriority.HIGH, // Override with high priority
       });
     });
   };
@@ -500,14 +531,14 @@ export class GlobalAutomationManager {
   /**
    * Handle status changed events
    */
-  private handleStatusChanged = (event: any): void => {
+  private handleStatusChanged = (event: ModuleEvent): void => {
     // Find relevant routines based on status
-    const statusRoutines = Array.from(this.routines.values())
-      .filter(routine => 
-        routine.enabled && 
+    const statusRoutines = Array.from(this.routines.values()).filter(
+      routine =>
+        routine.enabled &&
         (routine.type === 'system-maintenance' || routine.type === 'performance-optimization') &&
         routine.tags.includes(event.data?.status || 'general')
-      );
+    );
 
     // Schedule status routines
     statusRoutines.forEach(routine => {
@@ -529,32 +560,28 @@ export class GlobalAutomationManager {
    * Get routines by type
    */
   public getRoutinesByType(type: GlobalRoutineType): GlobalRoutine[] {
-    return Array.from(this.routines.values())
-      .filter(routine => routine.type === type);
+    return Array.from(this.routines.values()).filter(routine => routine.type === type);
   }
 
   /**
    * Get routines by system
    */
   public getRoutinesBySystem(systemId: SystemId): GlobalRoutine[] {
-    return Array.from(this.routines.values())
-      .filter(routine => routine.systems.includes(systemId));
+    return Array.from(this.routines.values()).filter(routine => routine.systems.includes(systemId));
   }
 
   /**
    * Get routines by tag
    */
   public getRoutinesByTag(tag: string): GlobalRoutine[] {
-    return Array.from(this.routines.values())
-      .filter(routine => routine.tags.includes(tag));
+    return Array.from(this.routines.values()).filter(routine => routine.tags.includes(tag));
   }
 
   /**
    * Get active routines
    */
   public getActiveRoutines(): GlobalRoutine[] {
-    return Array.from(this.routines.values())
-      .filter(routine => routine.enabled);
+    return Array.from(this.routines.values()).filter(routine => routine.enabled);
   }
 
   /**
@@ -565,9 +592,18 @@ export class GlobalAutomationManager {
     gameLoopManager.unregisterUpdate('global-automation-manager');
 
     // Unsubscribe from events
-    const unsubscribeError = moduleEventBus.subscribe('ERROR_OCCURRED' as ModuleEventType, this.handleErrorEvent);
-    const unsubscribeShortage = moduleEventBus.subscribe('RESOURCE_SHORTAGE' as ModuleEventType, this.handleResourceShortage);
-    const unsubscribeStatus = moduleEventBus.subscribe('STATUS_CHANGED' as ModuleEventType, this.handleStatusChanged);
+    const unsubscribeError = moduleEventBus.subscribe(
+      'ERROR_OCCURRED' as ModuleEventType,
+      this.handleErrorEvent
+    );
+    const unsubscribeShortage = moduleEventBus.subscribe(
+      'RESOURCE_SHORTAGE' as ModuleEventType,
+      this.handleResourceShortage
+    );
+    const unsubscribeStatus = moduleEventBus.subscribe(
+      'STATUS_CHANGED' as ModuleEventType,
+      this.handleStatusChanged
+    );
 
     if (typeof unsubscribeError === 'function') {
       unsubscribeError();
@@ -593,5 +629,5 @@ export class GlobalAutomationManager {
 // Export singleton instance
 export const globalAutomationManager = new GlobalAutomationManager(
   // We'll need to import the actual instance in the initialization file
-  null as any
-); 
+  null as unknown as AutomationManager
+);

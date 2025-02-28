@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import {
   Salvage,
   SalvageCapability,
@@ -5,7 +6,6 @@ import {
   SalvageManager,
 } from '../../types/combat/SalvageTypes';
 import { ShipType } from '../../types/ships/CommonShipTypes';
-import { v4 as uuidv4 } from 'uuid';
 
 const DEFAULT_DROP_CONFIG: SalvageDropConfig = {
   baseDropRate: 0.5,

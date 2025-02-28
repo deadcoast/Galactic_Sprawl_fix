@@ -1,5 +1,5 @@
+import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { factionManager } from '../../managers/factions/factionManager';
-import { moduleEventBus, ModuleEvent } from '../../lib/modules/ModuleEvents';
 
 export interface Fleet {
   units: CombatUnit[];

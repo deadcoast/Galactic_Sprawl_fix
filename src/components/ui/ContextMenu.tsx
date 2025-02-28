@@ -67,7 +67,7 @@ export function ContextMenu({ items, x, y, onClose }: ContextMenuProps) {
   return createPortal(
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[200px] bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl"
+      className="fixed z-50 min-w-[200px] rounded-lg border border-gray-700 bg-gray-900/95 shadow-xl backdrop-blur-sm"
       style={{
         left: position.x,
         top: position.y,
@@ -84,23 +84,19 @@ export function ContextMenu({ items, x, y, onClose }: ContextMenuProps) {
                 }
               }}
               disabled={item.disabled}
-              className={`w-full px-4 py-2 text-left flex items-center justify-between group ${
-                item.disabled
-                  ? 'opacity-50 cursor-not-allowed'
-                  : 'hover:bg-gray-800 cursor-pointer'
+              className={`group flex w-full items-center justify-between px-4 py-2 text-left ${
+                item.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-800'
               }`}
             >
               <div className="flex items-center space-x-3">
-                {item.icon && <div className="w-4 h-4 text-gray-400">{item.icon}</div>}
+                {item.icon && <div className="h-4 w-4 text-gray-400">{item.icon}</div>}
                 <span className="text-gray-200">{item.label}</span>
               </div>
               <div className="flex items-center space-x-3">
-                {item.shortcut && (
-                  <span className="text-xs text-gray-500">{item.shortcut}</span>
-                )}
+                {item.shortcut && <span className="text-xs text-gray-500">{item.shortcut}</span>}
                 {item.children && (
                   <svg
-                    className="w-4 h-4 text-gray-400"
+                    className="h-4 w-4 text-gray-400"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -156,12 +152,7 @@ export function useContextMenu({ items }: UseContextMenuProps) {
     handleContextMenu,
     closeContextMenu,
     ContextMenuComponent: contextMenu ? (
-      <ContextMenu
-        items={items}
-        x={contextMenu.x}
-        y={contextMenu.y}
-        onClose={closeContextMenu}
-      />
+      <ContextMenu items={items} x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu} />
     ) : null,
   };
-} 
+}

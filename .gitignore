@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 node_modules/
+
+# Tools
+tools/
+lint-errors.txt

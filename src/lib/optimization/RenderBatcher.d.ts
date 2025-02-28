@@ -1,5 +1,5 @@
-import { EventEmitter } from '../utils/EventEmitter';
 import { Position } from '../../types/core/Position';
+import { EventEmitter } from '../utils/EventEmitter';
 
 interface RenderBatch {
   id: string;

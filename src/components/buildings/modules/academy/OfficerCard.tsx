@@ -54,20 +54,20 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
     return (
       <button
         onClick={onClick}
-        className={`w-full p-4 rounded-lg transition-all ${
+        className={`w-full rounded-lg p-4 transition-all ${
           selected
             ? `bg-${color}-900/30 border-2 border-${color}-500`
-            : 'bg-gray-800/50 border border-gray-700 hover:bg-gray-800'
+            : 'border border-gray-700 bg-gray-800/50 hover:bg-gray-800'
         }`}
       >
         <div className="flex items-center space-x-4">
           {/* Portrait */}
           <div
-            className={`relative w-12 h-12 rounded-lg bg-${color}-900/50 flex items-center justify-center overflow-hidden`}
+            className={`relative h-12 w-12 rounded-lg bg-${color}-900/50 flex items-center justify-center overflow-hidden`}
           >
-            <div className={`text-${color}-400 font-bold text-xl`}>{officer.name.charAt(0)}</div>
+            <div className={`text-${color}-400 text-xl font-bold`}>{officer.name.charAt(0)}</div>
             {officer.status === 'training' && (
-              <div className="absolute inset-0 bg-gradient-to-t from-violet-500/20 animate-pulse" />
+              <div className="absolute inset-0 animate-pulse bg-gradient-to-t from-violet-500/20" />
             )}
           </div>
 
@@ -75,23 +75,23 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
           <div className="flex-1">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-white font-medium">{officer.name}</div>
+                <div className="font-medium text-white">{officer.name}</div>
                 <div className="text-sm text-gray-400">{officer.role}</div>
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-500" />
+              <ChevronRight className="h-5 w-5 text-gray-500" />
             </div>
           </div>
         </div>
 
         {/* Progress Bar */}
         <div className="mt-2">
-          <div className="flex justify-between text-xs mb-1">
+          <div className="mb-1 flex justify-between text-xs">
             <span className="text-gray-400">Level {officer.level}</span>
             <span className="text-gray-400">
               {officer.xp}/{officer.nextLevelXp} XP
             </span>
           </div>
-          <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-1 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full bg-${color}-500 rounded-full`}
               style={{ width: `${(officer.xp / officer.nextLevelXp) * 100}%` }}
@@ -100,24 +100,24 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="mb-4 grid grid-cols-3 gap-2">
           <div title={`Combat rating affects battle performance`}>
-            <div className="text-xs text-gray-500 mb-1 flex items-center">
-              <Sword className="w-3 h-3 mr-1" />
+            <div className="mb-1 flex items-center text-xs text-gray-500">
+              <Sword className="mr-1 h-3 w-3" />
               Combat
             </div>
             <div className="text-sm text-gray-300">{officer.stats.combat}</div>
           </div>
           <div title={`Leadership affects squad coordination`}>
-            <div className="text-xs text-gray-500 mb-1 flex items-center">
-              <Users className="w-3 h-3 mr-1" />
+            <div className="mb-1 flex items-center text-xs text-gray-500">
+              <Users className="mr-1 h-3 w-3" />
               Leadership
             </div>
             <div className="text-sm text-gray-300">{officer.stats.leadership}</div>
           </div>
           <div title={`Technical affects ship systems`}>
-            <div className="text-xs text-gray-500 mb-1 flex items-center">
-              <Database className="w-3 h-3 mr-1" />
+            <div className="mb-1 flex items-center text-xs text-gray-500">
+              <Database className="mr-1 h-3 w-3" />
               Technical
             </div>
             <div className="text-sm text-gray-300">{officer.stats.technical}</div>
@@ -127,14 +127,14 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
         {/* Status Indicators */}
         <div className="flex items-center space-x-2">
           {officer.status === 'training' && (
-            <div className="flex items-center text-violet-400 text-xs">
-              <Star className="w-3 h-3 mr-1" />
+            <div className="flex items-center text-xs text-violet-400">
+              <Star className="mr-1 h-3 w-3" />
               In Training
             </div>
           )}
           {officer.assignedTo && (
-            <div className="flex items-center text-cyan-400 text-xs">
-              <Radar className="w-3 h-3 mr-1" />
+            <div className="flex items-center text-xs text-cyan-400">
+              <Radar className="mr-1 h-3 w-3" />
               On Mission
             </div>
           )}
@@ -146,18 +146,18 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
   return (
     <button
       onClick={onClick}
-      className={`relative p-4 rounded-lg transition-all ${
+      className={`relative rounded-lg p-4 transition-all ${
         selected
           ? `bg-${color}-900/30 border-2 border-${color}-500`
-          : 'bg-gray-800/50 border border-gray-700 hover:bg-gray-800'
+          : 'border border-gray-700 bg-gray-800/50 hover:bg-gray-800'
       }`}
     >
       {/* Portrait */}
       <div
-        className={`relative w-full aspect-square rounded-lg bg-${color}-900/50 mb-4 overflow-hidden`}
+        className={`relative aspect-square w-full rounded-lg bg-${color}-900/50 mb-4 overflow-hidden`}
       >
         <div
-          className={`absolute inset-0 flex items-center justify-center text-${color}-400 font-bold text-4xl`}
+          className={`absolute inset-0 flex items-center justify-center text-${color}-400 text-4xl font-bold`}
         >
           {officer.name.charAt(0)}
         </div>
@@ -165,11 +165,11 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
         {/* Status Effects */}
         {officer.status === 'training' && (
           <>
-            <div className="absolute inset-0 bg-gradient-to-t from-violet-500/20 animate-pulse" />
+            <div className="absolute inset-0 animate-pulse bg-gradient-to-t from-violet-500/20" />
             {Array.from({ length: particleCount }).map((_, i) => (
               <div
                 key={i}
-                className="absolute w-1 h-1 bg-violet-400 rounded-full"
+                className="absolute h-1 w-1 rounded-full bg-violet-400"
                 style={{
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
@@ -181,25 +181,25 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
         )}
 
         {officer.status === 'assigned' && (
-          <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+          <div className="absolute right-2 top-2 h-3 w-3 animate-pulse rounded-full bg-green-500" />
         )}
       </div>
 
       {/* Officer Info */}
-      <div className="text-center mb-4">
-        <div className="text-white font-medium mb-1">{officer.name}</div>
+      <div className="mb-4 text-center">
+        <div className="mb-1 font-medium text-white">{officer.name}</div>
         <div className="text-sm text-gray-400">{officer.role}</div>
       </div>
 
       {/* Level & XP */}
       <div className="mb-4">
-        <div className="flex justify-between text-xs mb-1">
+        <div className="mb-1 flex justify-between text-xs">
           <span className="text-gray-400">Level {officer.level}</span>
           <span className="text-gray-400">
             {officer.xp}/{officer.nextLevelXp} XP
           </span>
         </div>
-        <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+        <div className="h-1 overflow-hidden rounded-full bg-gray-700">
           <div
             className={`h-full bg-${color}-500 rounded-full`}
             style={{ width: `${(officer.xp / officer.nextLevelXp) * 100}%` }}
@@ -210,15 +210,15 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
       {/* Skills */}
       <div className="grid grid-cols-3 gap-2">
         <div className="text-center">
-          <div className="text-xs text-gray-400 mb-1">Combat</div>
+          <div className="mb-1 text-xs text-gray-400">Combat</div>
           <div className={`text-${color}-400 font-medium`}>{officer.skills.combat}</div>
         </div>
         <div className="text-center">
-          <div className="text-xs text-gray-400 mb-1">Leadership</div>
+          <div className="mb-1 text-xs text-gray-400">Leadership</div>
           <div className={`text-${color}-400 font-medium`}>{officer.skills.leadership}</div>
         </div>
         <div className="text-center">
-          <div className="text-xs text-gray-400 mb-1">Technical</div>
+          <div className="mb-1 text-xs text-gray-400">Technical</div>
           <div className={`text-${color}-400 font-medium`}>{officer.skills.technical}</div>
         </div>
       </div>
@@ -234,24 +234,24 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="mb-4 grid grid-cols-3 gap-2">
         <div title={`Combat rating affects battle performance`}>
-          <div className="text-xs text-gray-500 mb-1 flex items-center">
-            <Sword className="w-3 h-3 mr-1" />
+          <div className="mb-1 flex items-center text-xs text-gray-500">
+            <Sword className="mr-1 h-3 w-3" />
             Combat
           </div>
           <div className="text-sm text-gray-300">{officer.stats.combat}</div>
         </div>
         <div title={`Leadership affects squad coordination`}>
-          <div className="text-xs text-gray-500 mb-1 flex items-center">
-            <Users className="w-3 h-3 mr-1" />
+          <div className="mb-1 flex items-center text-xs text-gray-500">
+            <Users className="mr-1 h-3 w-3" />
             Leadership
           </div>
           <div className="text-sm text-gray-300">{officer.stats.leadership}</div>
         </div>
         <div title={`Technical affects ship systems`}>
-          <div className="text-xs text-gray-500 mb-1 flex items-center">
-            <Database className="w-3 h-3 mr-1" />
+          <div className="mb-1 flex items-center text-xs text-gray-500">
+            <Database className="mr-1 h-3 w-3" />
             Technical
           </div>
           <div className="text-sm text-gray-300">{officer.stats.technical}</div>
@@ -261,14 +261,14 @@ export function OfficerCard({ officer, view, quality, selected, onClick }: Offic
       {/* Status Indicators */}
       <div className="flex items-center space-x-2">
         {officer.status === 'training' && (
-          <div className="flex items-center text-violet-400 text-xs">
-            <Star className="w-3 h-3 mr-1" />
+          <div className="flex items-center text-xs text-violet-400">
+            <Star className="mr-1 h-3 w-3" />
             In Training
           </div>
         )}
         {officer.assignedTo && (
-          <div className="flex items-center text-cyan-400 text-xs">
-            <Radar className="w-3 h-3 mr-1" />
+          <div className="flex items-center text-xs text-cyan-400">
+            <Radar className="mr-1 h-3 w-3" />
             On Mission
           </div>
         )}

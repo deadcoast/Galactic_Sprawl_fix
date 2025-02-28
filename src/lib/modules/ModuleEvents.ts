@@ -1,4 +1,4 @@
-import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 
 /**
  * Module event types

@@ -1,8 +1,8 @@
-import { SpaceRatShip } from '../../common/SpaceRatShip';
-import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { AlertTriangle } from 'lucide-react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { ShipStatus } from '../../../../types/ships/ShipTypes';
-import { AlertTriangle } from 'lucide-react';
+import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
+import { SpaceRatShip } from '../../common/SpaceRatShip';
 
 interface AsteroidMarauderProps {
   id: string;
@@ -78,8 +78,8 @@ export function AsteroidMarauder({
 
       {/* Warning indicator for damaged state */}
       {status === 'damaged' && (
-        <div className="absolute top-0 right-0 p-2">
-          <AlertTriangle className="w-6 h-6 text-yellow-500 animate-pulse" />
+        <div className="absolute right-0 top-0 p-2">
+          <AlertTriangle className="h-6 w-6 animate-pulse text-yellow-500" />
         </div>
       )}
 
@@ -90,7 +90,7 @@ export function AsteroidMarauder({
           disabled={
             status === 'disabled' || status === 'damaged' || stats.energy <= stats.maxEnergy * 0.5
           }
-          className="flex-1 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg disabled:opacity-50"
+          className="flex-1 rounded-lg bg-blue-500/20 px-4 py-2 text-blue-300 hover:bg-blue-500/30 disabled:opacity-50"
         >
           Boost
         </button>

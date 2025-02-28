@@ -1,12 +1,6 @@
-import { BaseStats, Effect } from '../core/GameTypes';
-import {
-  WeaponMount,
-  WeaponCategory,
-  CombatWeaponStats,
-  WeaponType as WeaponTypeBase,
-} from '../weapons/WeaponTypes';
-import { Tier } from '../core/GameTypes';
+import { BaseStats, Effect, Tier } from '../core/GameTypes';
 import { ResourceCost } from '../resources/ResourceTypes';
+import { WeaponMount, WeaponType as WeaponTypeBase } from '../weapons/WeaponTypes';
 
 // Ship Type Interface
 export interface ShipType {

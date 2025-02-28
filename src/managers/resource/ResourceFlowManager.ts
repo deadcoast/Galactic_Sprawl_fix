@@ -1,13 +1,14 @@
 import {
-  ResourceType,
   ResourceFlow,
-  ResourceTransfer,
+  ResourcePriority,
   ResourceState,
-  ResourceProduction,
-  ResourceConsumption,
-  ResourcePriority
+  ResourceTransfer,
+  ResourceType,
 } from '../../types/resources/ResourceTypes';
-import { validateResourceFlow, validateResourceTransfer } from '../../utils/resources/resourceValidation';
+import {
+  validateResourceFlow,
+  validateResourceTransfer,
+} from '../../utils/resources/resourceValidation';
 
 /**
  * Flow node type
@@ -75,7 +76,7 @@ export class ResourceFlowManager {
     this.network = {
       nodes: new Map<string, FlowNode>(),
       connections: new Map<string, FlowConnection>(),
-      resourceStates: new Map<ResourceType, ResourceState>()
+      resourceStates: new Map<ResourceType, ResourceState>(),
     };
     this.lastOptimization = 0;
     this.optimizationInterval = optimizationInterval;
@@ -181,33 +182,35 @@ export class ResourceFlowManager {
    */
   public optimizeFlows(): FlowOptimizationResult {
     const now = Date.now();
-    
+
     // Skip optimization if not enough time has passed
     if (now - this.lastOptimization < this.optimizationInterval) {
       return {
         transfers: [],
         updatedConnections: [],
         bottlenecks: [],
-        underutilized: []
+        underutilized: [],
       };
     }
-    
+
     this.lastOptimization = now;
-    
+
     // Get active nodes and connections
     const activeNodes = Array.from(this.network.nodes.values()).filter(node => node.active);
-    const activeConnections = Array.from(this.network.connections.values()).filter(conn => conn.active);
-    
+    const activeConnections = Array.from(this.network.connections.values()).filter(
+      conn => conn.active
+    );
+
     // Group nodes by type
     const producers = activeNodes.filter(node => node.type === 'producer');
     const consumers = activeNodes.filter(node => node.type === 'consumer');
     const storages = activeNodes.filter(node => node.type === 'storage');
     const converters = activeNodes.filter(node => node.type === 'converter');
-    
+
     // Calculate resource availability and demand
     const availability: Partial<Record<ResourceType, number>> = {};
     const demand: Partial<Record<ResourceType, number>> = {};
-    
+
     // Initialize with current resource states
     // Convert Map entries to array to avoid MapIterator error
     const resourceStateEntries = Array.from(this.network.resourceStates.entries());
@@ -215,7 +218,7 @@ export class ResourceFlowManager {
       availability[type] = 0;
       demand[type] = 0;
     }
-    
+
     // Calculate production capacity
     for (const producer of producers) {
       for (const resourceType of producer.resources) {
@@ -223,17 +226,19 @@ export class ResourceFlowManager {
         const outgoingConnections = activeConnections.filter(
           conn => conn.source === producer.id && conn.resourceType === resourceType
         );
-        
+
         // Sum up max rates
         const totalMaxRate = outgoingConnections.reduce((sum, conn) => sum + conn.maxRate, 0);
-        
+
         // Apply efficiency if available
-        const effectiveRate = producer.efficiency ? totalMaxRate * producer.efficiency : totalMaxRate;
-        
+        const effectiveRate = producer.efficiency
+          ? totalMaxRate * producer.efficiency
+          : totalMaxRate;
+
         availability[resourceType] = (availability[resourceType] || 0) + effectiveRate;
       }
     }
-    
+
     // Calculate consumption needs
     for (const consumer of consumers) {
       for (const resourceType of consumer.resources) {
@@ -241,14 +246,14 @@ export class ResourceFlowManager {
         const incomingConnections = activeConnections.filter(
           conn => conn.target === consumer.id && conn.resourceType === resourceType
         );
-        
+
         // Sum up max rates
         const totalMaxRate = incomingConnections.reduce((sum, conn) => sum + conn.maxRate, 0);
-        
+
         demand[resourceType] = (demand[resourceType] || 0) + totalMaxRate;
       }
     }
-    
+
     // Adjust for storage capacity
     for (const storage of storages) {
       for (const resourceType of storage.resources) {
@@ -256,47 +261,50 @@ export class ResourceFlowManager {
         if (!resourceState) {
           continue;
         }
-        
+
         // If storage is near capacity, reduce availability
         if (resourceState.current > resourceState.max * 0.9) {
-          availability[resourceType] = Math.max(0, (availability[resourceType] || 0) - (resourceState.max - resourceState.current));
+          availability[resourceType] = Math.max(
+            0,
+            (availability[resourceType] || 0) - (resourceState.max - resourceState.current)
+          );
         }
-        
+
         // If storage is near empty, increase demand
         if (resourceState.current < resourceState.max * 0.1) {
-          demand[resourceType] = (demand[resourceType] || 0) + (resourceState.max * 0.2);
+          demand[resourceType] = (demand[resourceType] || 0) + resourceState.max * 0.2;
         }
       }
     }
-    
+
     // Identify bottlenecks and underutilized resources
     const bottlenecks: string[] = [];
     const underutilized: string[] = [];
-    
+
     for (const [type, availableAmount] of Object.entries(availability)) {
       const demandAmount = demand[type as ResourceType] || 0;
-      
+
       if (availableAmount < demandAmount * 0.9) {
         bottlenecks.push(type);
       } else if (availableAmount > demandAmount * 1.5) {
         underutilized.push(type);
       }
     }
-    
+
     // Optimize flow rates based on priorities
     const updatedConnections: FlowConnection[] = [];
-    
+
     // Sort connections by priority (high to low)
     const prioritizedConnections = [...activeConnections].sort(
       (a, b) => Number(b.priority) - Number(a.priority)
     );
-    
+
     // Adjust flow rates
     for (const connection of prioritizedConnections) {
-      const {resourceType} = connection;
+      const { resourceType } = connection;
       const availableForType = availability[resourceType] || 0;
       const demandForType = demand[resourceType] || 0;
-      
+
       if (availableForType <= 0 || demandForType <= 0) {
         // No flow possible
         connection.currentRate = 0;
@@ -308,42 +316,42 @@ export class ResourceFlowManager {
         const ratio = availableForType / demandForType;
         connection.currentRate = connection.maxRate * ratio;
       }
-      
+
       updatedConnections.push({ ...connection });
-      
+
       // Update the actual connection in the network
       this.network.connections.set(connection.id, connection);
     }
-    
+
     // Generate transfer instructions
     const transfers: ResourceTransfer[] = [];
-    
+
     for (const connection of updatedConnections) {
       if (connection.currentRate <= 0) {
         continue;
       }
-      
+
       const transfer: ResourceTransfer = {
         type: connection.resourceType,
         source: connection.source,
         target: connection.target,
         amount: connection.currentRate,
-        timestamp: now
+        timestamp: now,
       };
-      
+
       if (validateResourceTransfer(transfer)) {
         transfers.push(transfer);
-        
+
         // Add to history
         this.addToTransferHistory(transfer);
       }
     }
-    
+
     return {
       transfers,
       updatedConnections,
       bottlenecks,
-      underutilized
+      underutilized,
     };
   }
 
@@ -352,7 +360,7 @@ export class ResourceFlowManager {
    */
   private addToTransferHistory(transfer: ResourceTransfer): void {
     this.transferHistory.push(transfer);
-    
+
     // Trim history if needed
     if (this.transferHistory.length > this.maxHistorySize) {
       this.transferHistory = this.transferHistory.slice(-this.maxHistorySize);
@@ -409,7 +417,7 @@ export class ResourceFlowManager {
       console.error('Invalid resource flow:', flow);
       return false;
     }
-    
+
     // Extract resource type and other properties from flow
     const resourceType = flow.resources[0]?.type;
     const rate = flow.resources[0]?.amount || 0;
@@ -418,14 +426,14 @@ export class ResourceFlowManager {
     const priority: ResourcePriority = {
       type: resourceType,
       priority: 1,
-      consumers: []
+      consumers: [],
     };
-    
+
     if (!resourceType) {
       console.error('Flow must have at least one resource');
       return false;
     }
-    
+
     // Create nodes if they don't exist
     if (!this.network.nodes.has(flow.source)) {
       this.registerNode({
@@ -433,23 +441,23 @@ export class ResourceFlowManager {
         type: 'producer',
         resources: [resourceType],
         priority: priority,
-        active: true
+        active: true,
       });
     }
-    
+
     if (!this.network.nodes.has(flow.target)) {
       this.registerNode({
         id: flow.target,
         type: 'consumer',
         resources: [resourceType],
         priority: priority,
-        active: true
+        active: true,
       });
     }
-    
+
     // Create connection
     const connectionId = `${flow.source}-${flow.target}-${resourceType}`;
-    
+
     return this.registerConnection({
       id: connectionId,
       source: flow.source,
@@ -458,7 +466,7 @@ export class ResourceFlowManager {
       maxRate: rate,
       currentRate: 0,
       priority: priority,
-      active: true
+      active: true,
     });
   }
 
@@ -471,4 +479,4 @@ export class ResourceFlowManager {
     this.network.resourceStates.clear();
     this.transferHistory = [];
   }
-} 
+}

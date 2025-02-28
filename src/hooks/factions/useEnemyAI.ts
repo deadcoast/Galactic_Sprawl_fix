@@ -1,5 +1,5 @@
-import { factionManager } from '../../managers/factions/factionManager';
 import { useEffect, useState } from 'react';
+import { factionManager } from '../../managers/factions/factionManager';
 
 interface CombatManager {
   getUnitStatus: (unitId: string) => CombatUnit | undefined;

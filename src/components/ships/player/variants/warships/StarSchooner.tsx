@@ -32,15 +32,15 @@ export function StarSchooner({
   onRetreat,
 }: StarSchoonerProps) {
   return (
-    <div className="bg-indigo-900/20 border border-indigo-700/30 rounded-lg p-6">
+    <div className="rounded-lg border border-indigo-700/30 bg-indigo-900/20 p-6">
       {/* Ship Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <h3 className="text-lg font-medium text-white">Star Schooner</h3>
           <div className="text-sm text-gray-400">Tier {tier} Rail Gun Vessel</div>
         </div>
         <div
-          className={`px-3 py-1 rounded-full text-sm ${
+          className={`rounded-full px-3 py-1 text-sm ${
             status === 'engaging'
               ? 'bg-red-900/50 text-red-400'
               : status === 'retreating'
@@ -55,15 +55,15 @@ export function StarSchooner({
       </div>
 
       {/* Combat Status */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-4">
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Hull Integrity</span>
             <span className={hull < maxHull * 0.3 ? 'text-red-400' : 'text-gray-300'}>
               {Math.round((hull / maxHull) * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full rounded-full transition-all ${
                 hull < maxHull * 0.3 ? 'bg-red-500' : 'bg-green-500'
@@ -74,13 +74,13 @@ export function StarSchooner({
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Shield Power</span>
             <span className="text-gray-300">{Math.round((shield / maxShield) * 100)}%</span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
+              className="h-full rounded-full bg-blue-500 transition-all"
               style={{ width: `${(shield / maxShield) * 100}%` }}
             />
           </div>
@@ -88,7 +88,7 @@ export function StarSchooner({
       </div>
 
       {/* Weapon Systems */}
-      <div className="space-y-4 mb-6">
+      <div className="mb-6 space-y-4">
         <h4 className="text-sm font-medium text-gray-300">Rail Gun System</h4>
         <div className="grid grid-cols-2 gap-3">
           {weapons.map(weapon => (
@@ -96,13 +96,13 @@ export function StarSchooner({
               key={weapon.id}
               onClick={() => onFire(weapon.id)}
               disabled={weapon.status !== 'ready'}
-              className={`p-3 rounded-lg transition-colors ${
+              className={`rounded-lg p-3 transition-colors ${
                 weapon.status === 'ready'
-                  ? 'bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30'
-                  : 'bg-gray-700/50 border border-gray-600/30 cursor-not-allowed'
+                  ? 'border border-indigo-500/30 bg-indigo-500/20 hover:bg-indigo-500/30'
+                  : 'cursor-not-allowed border border-gray-600/30 bg-gray-700/50'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-medium text-white">{weapon.name}</div>
                 <div
                   className={`text-xs ${
@@ -127,23 +127,23 @@ export function StarSchooner({
         <button
           onClick={() => onFire(weapons[0].id)}
           disabled={!weapons.some(w => w.status === 'ready')}
-          className={`px-4 py-2 rounded-lg text-sm flex items-center justify-center space-x-2 ${
+          className={`flex items-center justify-center space-x-2 rounded-lg px-4 py-2 text-sm ${
             weapons.some(w => w.status === 'ready')
-              ? 'bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200'
-              : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              ? 'bg-indigo-500/20 text-indigo-200 hover:bg-indigo-500/30'
+              : 'cursor-not-allowed bg-gray-700 text-gray-500'
           }`}
         >
-          <Crosshair className="w-4 h-4" />
+          <Crosshair className="h-4 w-4" />
           <span>Fire Rail Gun</span>
         </button>
         <button
           onClick={onRetreat}
           disabled={status === 'damaged'}
-          className={`px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            status === 'damaged' ? 'opacity-50 cursor-not-allowed' : ''
+          className={`flex items-center justify-center space-x-2 rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 ${
+            status === 'damaged' ? 'cursor-not-allowed opacity-50' : ''
           }`}
         >
-          <Shield className="w-4 h-4" />
+          <Shield className="h-4 w-4" />
           <span>Retreat</span>
         </button>
       </div>

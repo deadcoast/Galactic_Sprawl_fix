@@ -3,14 +3,25 @@ import { Trail } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 import * as THREE from 'three';
-import { VisualEffect, VisualEffectConfig } from './VisualEffect';
 import { RenderBatcher } from '../../lib/optimization/RenderBatcher';
 import { Position } from '../../types/core/Position';
 import { WeaponCategory } from '../../types/weapons/WeaponTypes';
+import { VisualEffect, VisualEffectConfig } from './VisualEffect';
 
 // Props and Config Types
 interface WeaponEffectProps {
-  type: 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets' | 'mgss' | 'pointDefense' | 'plasmaCannon' | 'beamWeapon' | 'pulseWeapon' | 'disruptor' | 'ionCannon';
+  type:
+    | 'machineGun'
+    | 'railGun'
+    | 'gaussCannon'
+    | 'rockets'
+    | 'mgss'
+    | 'pointDefense'
+    | 'plasmaCannon'
+    | 'beamWeapon'
+    | 'pulseWeapon'
+    | 'disruptor'
+    | 'ionCannon';
   color: string;
   position: { x: number; y: number };
   rotation: number;
@@ -246,7 +257,7 @@ export function WeaponEffectComponent({
       {firing && (
         <>
           <div
-            className="absolute inset-0 pointer-events-none"
+            className="pointer-events-none absolute inset-0"
             style={{
               background: `radial-gradient(circle at 50% 0%, ${color}66 0%, ${color}00 70%)`,
               filter: 'blur(8px)',
@@ -255,7 +266,7 @@ export function WeaponEffectComponent({
             }}
           />
           <div
-            className="absolute inset-0 pointer-events-none"
+            className="pointer-events-none absolute inset-0"
             style={{
               background: `radial-gradient(circle at 50% 0%, ${color}33 0%, ${color}00 100%)`,
               filter: 'blur(16px)',

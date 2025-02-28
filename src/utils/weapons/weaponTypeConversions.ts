@@ -1,11 +1,4 @@
-import {
-  WeaponCategory,
-  WeaponSystem,
-  WeaponMount,
-  WeaponMountSize,
-  WeaponMountPosition,
-  WeaponStatus
-} from '../../types/weapons/WeaponTypes';
+import { WeaponCategory, WeaponMount, WeaponSystem } from '../../types/weapons/WeaponTypes';
 
 export type WeaponSystemType = 'machineGun' | 'gaussCannon' | 'railGun' | 'mgss' | 'rockets';
 
@@ -35,7 +28,7 @@ export function convertWeaponCategoryToSystemType(category: WeaponCategory): Wea
     gaussCannon: 'gaussCannon',
     railGun: 'railGun',
     mgss: 'mgss',
-    rockets: 'rockets'
+    rockets: 'rockets',
   };
   return categoryMap[category];
 }
@@ -63,4 +56,4 @@ export function isValidWeaponSystem(weapon: WeaponSystem): boolean {
     typeof weapon.cooldown === 'number' &&
     ['ready', 'charging', 'cooling'].includes(weapon.status)
   );
-} 
+}

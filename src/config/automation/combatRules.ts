@@ -230,4 +230,4 @@ export const combatRules: AutomationRule[] = [
     ],
     interval: 1000, // Check frequently
   },
-]; 
+];

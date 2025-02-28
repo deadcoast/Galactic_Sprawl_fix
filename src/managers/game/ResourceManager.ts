@@ -1,26 +1,29 @@
+import {
+  DEFAULT_CONSUMPTION_RATES,
+  DEFAULT_PRODUCTION_RATES,
+  PRODUCTION_INTERVALS,
+  RESOURCE_MANAGER_CONFIG,
+  RESOURCE_PRIORITIES,
+  RESOURCE_THRESHOLDS,
+  STORAGE_EFFICIENCY,
+  TRANSFER_CONFIG,
+} from '../../config/resource/ResourceConfig';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
-  ResourceType,
-  ResourceState,
-  ResourceTransfer,
-  ResourceManagerConfig,
-  ResourceThreshold,
-  ResourceProduction,
   ResourceConsumption,
   ResourceFlow,
+  ResourceManagerConfig,
+  ResourceProduction,
+  ResourceState,
+  ResourceThreshold,
+  ResourceTransfer,
+  ResourceType,
 } from '../../types/resources/ResourceTypes';
-import {
-  RESOURCE_MANAGER_CONFIG,
-  PRODUCTION_INTERVALS,
-  RESOURCE_THRESHOLDS,
-  DEFAULT_PRODUCTION_RATES,
-  DEFAULT_CONSUMPTION_RATES,
-  TRANSFER_CONFIG,
-  STORAGE_EFFICIENCY,
-  RESOURCE_PRIORITIES,
-} from '../../config/resource/ResourceConfig';
+import type {
+  PerformanceMetrics,
+  ResourcePerformanceSnapshot,
+} from '../resource/ResourcePerformanceMonitor';
 import { resourcePerformanceMonitor } from '../resource/ResourcePerformanceMonitor';
-import type { PerformanceMetrics, ResourcePerformanceSnapshot } from '../resource/ResourcePerformanceMonitor';
 
 // Update TRANSFER_CONFIG type to include MIN_INTERVAL
 const TRANSFER_CONFIG_WITH_MIN = {
@@ -34,7 +37,7 @@ const TRANSFER_CONFIG_WITH_MIN = {
 type ResourceError = {
   code: 'INVALID_RESOURCE' | 'INSUFFICIENT_RESOURCES' | 'INVALID_TRANSFER' | 'THRESHOLD_VIOLATION';
   message: string;
-  details?: any;
+  details?: unknown;
 };
 
 /**
@@ -97,7 +100,7 @@ export class ResourceManager {
     // Initialize optimization strategies
     this.initializeOptimizationStrategies();
 
-    console.debug('[ResourceManager] Initialized with config:', config);
+    console.warn('[ResourceManager] Initialized with config:', config);
   }
 
   /**
@@ -215,7 +218,7 @@ export class ResourceManager {
       if (state) {
         const oldMax = state.max;
         state.max = limits.max * this.storageEfficiency;
-        console.debug(
+        console.warn(
           `[ResourceManager] Updated ${type} storage capacity: ${oldMax.toFixed(2)} -> ${state.max.toFixed(2)}`
         );
       }
@@ -329,7 +332,7 @@ export class ResourceManager {
         data: { transfer },
       });
 
-      console.debug(
+      console.warn(
         `[ResourceManager] Transferred ${transferAmount.toFixed(2)} ${type} from ${source} to ${target}`
       );
 
@@ -400,7 +403,7 @@ export class ResourceManager {
       },
     });
 
-    console.debug(
+    console.warn(
       `[ResourceManager] Registered production for ${production.type}: ${production.amount}/tick every ${production.interval}ms`
     );
   }
@@ -424,7 +427,7 @@ export class ResourceManager {
       },
     });
 
-    console.debug(
+    console.warn(
       `[ResourceManager] Registered consumption for ${consumption.type}: ${consumption.amount}/tick every ${consumption.interval}ms`
     );
   }
@@ -448,7 +451,7 @@ export class ResourceManager {
       },
     });
 
-    console.debug(
+    console.warn(
       `[ResourceManager] Registered flow from ${flow.source} to ${flow.target} for ${flow.resources.length} resource types`
     );
   }
@@ -526,7 +529,7 @@ export class ResourceManager {
           if (Math.abs(currentProduction - targetProduction) > 0.1) {
             const oldProduction = state.production;
             state.production = targetProduction;
-            console.debug(
+            console.warn(
               `[ResourceManager] Optimized production for ${type}: ${oldProduction.toFixed(2)} -> ${targetProduction.toFixed(2)}`
             );
           }
@@ -556,7 +559,7 @@ export class ResourceManager {
               if (!consumer.required) {
                 const oldRate = consumer.amount;
                 consumer.amount *= 1.5; // Increase consumption to reduce excess
-                console.debug(
+                console.warn(
                   `[ResourceManager] Increased consumption rate for ${type}: ${oldRate.toFixed(2)} -> ${consumer.amount.toFixed(2)}`
                 );
               }
@@ -592,7 +595,7 @@ export class ResourceManager {
                 resource.interval * 1.5,
                 TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL
               );
-              console.debug(
+              console.warn(
                 `[ResourceManager] Adjusted transfer interval for ${resource.type}: ${oldInterval}ms -> ${resource.interval}ms`
               );
             } else if (utilization > RESOURCE_THRESHOLDS.HIGH) {
@@ -601,7 +604,7 @@ export class ResourceManager {
                 resource.interval * 0.75,
                 TRANSFER_CONFIG_WITH_MIN.MIN_INTERVAL
               );
-              console.debug(
+              console.warn(
                 `[ResourceManager] Adjusted transfer interval for ${resource.type}: ${oldInterval}ms -> ${resource.interval}ms`
               );
             }
@@ -634,7 +637,7 @@ export class ResourceManager {
   private calculateProductionEfficiency(): number {
     const efficiencies = Array.from(this.resources.entries()).map(([type, state]) => {
       const usage = this.calculateResourceUsage(type);
-      const {production} = state;
+      const { production } = state;
       return usage > 0 ? Math.min(production / usage, 1.5) : 1.0;
     });
 
@@ -678,7 +681,7 @@ export class ResourceManager {
     for (const strategy of strategies) {
       try {
         strategy.apply();
-        console.debug(`[ResourceManager] Applied optimization strategy: ${strategy.id}`);
+        console.warn(`[ResourceManager] Applied optimization strategy: ${strategy.id}`);
       } catch (err) {
         console.error(
           `[ResourceManager] Failed to apply optimization strategy ${strategy.id}:`,
@@ -731,9 +734,7 @@ export class ResourceManager {
       const amount = (baseRate * production.amount * deltaTime) / production.interval;
       this.addResource(production.type, amount);
 
-      console.debug(
-        `[ResourceManager] Produced ${amount.toFixed(2)} ${production.type} from ${id}`
-      );
+      console.warn(`[ResourceManager] Produced ${amount.toFixed(2)} ${production.type} from ${id}`);
     }
 
     // Handle consumption with configured rates
@@ -748,7 +749,7 @@ export class ResourceManager {
 
       if (currentAmount >= amount || !consumption.required) {
         this.removeResource(consumption.type, amount);
-        console.debug(
+        console.warn(
           `[ResourceManager] Consumed ${amount.toFixed(2)} ${consumption.type} by ${id}`
         );
       } else if (consumption.required) {
@@ -770,7 +771,7 @@ export class ResourceManager {
     // Handle flows with configured transfer settings
     for (const [id, flow] of this.flows) {
       if (!this.checkThresholds(flow.conditions)) {
-        console.debug(`[ResourceManager] Flow ${id} skipped due to threshold conditions`);
+        console.warn(`[ResourceManager] Flow ${id} skipped due to threshold conditions`);
         continue;
       }
 
@@ -779,7 +780,7 @@ export class ResourceManager {
           (resource.amount * deltaTime) /
           (resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL);
         this.transferResources(resource.type, amount, flow.source, flow.target);
-        console.debug(
+        console.warn(
           `[ResourceManager] Flow ${id} transferred ${amount.toFixed(2)} ${resource.type}`
         );
       }
@@ -837,7 +838,7 @@ export class ResourceManager {
         const amount = baseRate * production.amount;
         this.addResource(production.type, amount);
 
-        console.debug(
+        console.warn(
           `[ResourceManager] Scheduled production: ${amount.toFixed(2)} ${production.type} from ${id}`
         );
       }
@@ -845,7 +846,7 @@ export class ResourceManager {
 
     this.productionIntervals.set(id, interval);
 
-    console.debug(
+    console.warn(
       `[ResourceManager] Scheduled production for ${id} every ${
         production.interval || PRODUCTION_INTERVALS.NORMAL
       }ms`
@@ -862,7 +863,7 @@ export class ResourceManager {
       this.productionIntervals.delete(id);
       this.unregisterProduction(id);
 
-      console.debug(`[ResourceManager] Cleared production schedule for ${id}`);
+      console.warn(`[ResourceManager] Cleared production schedule for ${id}`);
     }
   }
 
@@ -893,7 +894,7 @@ export class ResourceManager {
 
         this.productionIntervals.set(`${id}-${resource.type}`, interval);
 
-        console.debug(
+        console.warn(
           `[ResourceManager] Scheduled flow for ${resource.type} from ${flow.source} to ${
             flow.target
           } every ${resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL}ms`
@@ -924,7 +925,7 @@ export class ResourceManager {
       });
 
     this.unregisterFlow(id);
-    console.debug(`[ResourceManager] Cleared flow schedule for ${id}`);
+    console.warn(`[ResourceManager] Cleared flow schedule for ${id}`);
   }
 
   /**
@@ -948,7 +949,7 @@ export class ResourceManager {
     // Clear all intervals
     this.productionIntervals.forEach((interval, id) => {
       clearInterval(interval);
-      console.debug(`[ResourceManager] Cleaned up schedule for ${id}`);
+      console.warn(`[ResourceManager] Cleaned up schedule for ${id}`);
     });
     this.productionIntervals.clear();
 
@@ -957,7 +958,7 @@ export class ResourceManager {
     this.flows.clear();
     this.consumptions.clear();
 
-    console.debug('[ResourceManager] Cleaned up all schedules and registrations');
+    console.warn('[ResourceManager] Cleaned up all schedules and registrations');
     resourcePerformanceMonitor.cleanup();
   }
 
@@ -1012,11 +1013,11 @@ export class ResourceManager {
    */
   public getAllResources(): Record<ResourceType, number> {
     const resources: Record<ResourceType, number> = {} as Record<ResourceType, number>;
-    
+
     for (const [type, state] of Array.from(this.resources)) {
       resources[type] = state.current;
     }
-    
+
     return resources;
   }
 
@@ -1025,11 +1026,11 @@ export class ResourceManager {
    */
   public getAllResourceStates(): Record<ResourceType, ResourceState> {
     const states: Record<ResourceType, ResourceState> = {} as Record<ResourceType, ResourceState>;
-    
+
     for (const [type, state] of Array.from(this.resources)) {
       states[type] = { ...state };
     }
-    
+
     return states;
   }
 
@@ -1038,11 +1039,11 @@ export class ResourceManager {
    */
   public getAllResourceFlows(): ResourceFlow[] {
     const flows: ResourceFlow[] = [];
-    
+
     for (const flow of Array.from(this.flows.values())) {
       flows.push({ ...flow });
     }
-    
+
     return flows;
   }
 
@@ -1050,26 +1051,29 @@ export class ResourceManager {
    * Save resource state to localStorage
    */
   private saveResourceState(): void {
-    const resourceData: Record<ResourceType, ResourceState> = {} as Record<ResourceType, ResourceState>;
-    
+    const resourceData: Record<ResourceType, ResourceState> = {} as Record<
+      ResourceType,
+      ResourceState
+    >;
+
     for (const [type, state] of Array.from(this.resources)) {
       resourceData[type] = { ...state };
     }
-    
+
     const productionData: Record<string, ResourceProduction> = {};
-    
+
     for (const [id, production] of Array.from(this.productions)) {
       productionData[id] = { ...production };
     }
-    
+
     const consumptionData: Record<string, ResourceConsumption> = {};
-    
+
     for (const [id, consumption] of Array.from(this.consumptions)) {
       consumptionData[id] = { ...consumption };
     }
-    
+
     const flowData: Record<string, ResourceFlow> = {};
-    
+
     for (const [id, flow] of Array.from(this.flows)) {
       flowData[id] = { ...flow };
     }

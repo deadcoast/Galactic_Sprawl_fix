@@ -1,7 +1,12 @@
+import {
+  AreaEffect,
+  DamageEffect,
+  StatusEffect,
+  WeaponEffect,
+  WeaponEffectType,
+} from '../../effects/types_effects/WeaponEffects';
 import { Effect } from '../../types/core/GameTypes';
-import { WeaponSystem, WeaponCategory, WeaponStatus } from '../../types/weapons/WeaponTypes';
-import { DamageEffect, WeaponEffect, WeaponEffectType, AreaEffect, StatusEffect } from '../../effects/types_effects/WeaponEffects';
-import { BaseEffect } from '../../effects/types_effects/EffectTypes';
+import { WeaponCategory, WeaponSystem } from '../../types/weapons/WeaponTypes';
 
 interface WeaponLike {
   id: string;
@@ -41,7 +46,7 @@ export function convertToWeaponLike(weapon: WeaponSystem & { name?: string }): W
     type: weapon.type,
     damage: weapon.damage,
     cooldown: weapon.cooldown,
-    displayName: 'name' in weapon ? weapon.name : undefined
+    displayName: 'name' in weapon ? weapon.name : undefined,
   };
 }
 
@@ -54,13 +59,17 @@ export function createBaseWeaponEffect(params: {
   magnitude: number;
   duration: number;
   strength: number;
+  name?: string;
+  description?: string;
 }): WeaponEffect {
   return {
     id: params.id,
     type: params.type,
     magnitude: params.magnitude,
     duration: params.duration,
-    strength: params.strength
+    strength: params.strength,
+    name: params.name || params.id,
+    description: params.description || `${params.type} effect with magnitude ${params.magnitude}`,
   };
 }
 
@@ -74,20 +83,24 @@ export function createDamageEffect(params: {
   strength: number;
   damageType: 'physical' | 'energy' | 'explosive';
   penetration: number;
+  name?: string;
+  description?: string;
 }): DamageEffect {
   const baseEffect = createBaseWeaponEffect({
     id: params.id,
     type: 'damage',
     magnitude: params.magnitude,
     duration: params.duration,
-    strength: params.strength
+    strength: params.strength,
+    name: params.name,
+    description: params.description,
   });
 
   return {
     ...baseEffect,
-    type: 'damage',
+    type: 'damage' as const,
     damageType: params.damageType,
-    penetration: params.penetration
+    penetration: params.penetration,
   };
 }
 
@@ -101,20 +114,24 @@ export function createAreaEffect(params: {
   strength: number;
   radius: number;
   falloff: number;
+  name?: string;
+  description?: string;
 }): AreaEffect {
   const baseEffect = createBaseWeaponEffect({
     id: params.id,
     type: 'area',
     magnitude: params.magnitude,
     duration: params.duration,
-    strength: params.strength
+    strength: params.strength,
+    name: params.name,
+    description: params.description,
   });
 
   return {
     ...baseEffect,
-    type: 'area',
+    type: 'area' as const,
     radius: params.radius,
-    falloff: params.falloff
+    falloff: params.falloff,
   };
 }
 
@@ -127,19 +144,23 @@ export function createStatusEffect(params: {
   duration: number;
   strength: number;
   statusType: 'burn' | 'emp' | 'slow' | 'stun';
+  name?: string;
+  description?: string;
 }): StatusEffect {
   const baseEffect = createBaseWeaponEffect({
     id: params.id,
     type: 'status',
     magnitude: params.magnitude,
     duration: params.duration,
-    strength: params.strength
+    strength: params.strength,
+    name: params.name,
+    description: params.description,
   });
 
   return {
     ...baseEffect,
-    type: 'status',
-    statusType: params.statusType
+    type: 'status' as const,
+    statusType: params.statusType,
   };
 }
 
@@ -153,7 +174,9 @@ export function createWeaponEffect(source: WeaponLike): WeaponEffectType {
     duration: source.cooldown,
     strength: source.damage || 0,
     damageType: 'physical',
-    penetration: 0
+    penetration: 0,
+    name: source.displayName || `${source.type} Effect`,
+    description: `Effect from ${source.displayName || source.type}`,
   });
 }
 
@@ -171,6 +194,8 @@ export function createCustomWeaponEffect(params: {
   radius?: number;
   falloff?: number;
   statusType?: 'burn' | 'emp' | 'slow' | 'stun';
+  name?: string;
+  description?: string;
 }): WeaponEffectType {
   switch (params.type) {
     case 'damage':
@@ -180,7 +205,9 @@ export function createCustomWeaponEffect(params: {
         duration: params.duration,
         strength: params.strength,
         damageType: params.damageType || 'physical',
-        penetration: params.penetration || 0
+        penetration: params.penetration || 0,
+        name: params.name,
+        description: params.description,
       });
     case 'area':
       return createAreaEffect({
@@ -189,7 +216,9 @@ export function createCustomWeaponEffect(params: {
         duration: params.duration,
         strength: params.strength,
         radius: params.radius || 0,
-        falloff: params.falloff || 0
+        falloff: params.falloff || 0,
+        name: params.name,
+        description: params.description,
       });
     case 'status':
       return createStatusEffect({
@@ -197,7 +226,9 @@ export function createCustomWeaponEffect(params: {
         magnitude: params.magnitude,
         duration: params.duration,
         strength: params.strength,
-        statusType: params.statusType || 'stun'
+        statusType: params.statusType || 'stun',
+        name: params.name,
+        description: params.description,
       });
   }
 }
@@ -215,7 +246,9 @@ export function createScaledWeaponEffect(
     duration: weapon.cooldown,
     strength: weapon.damage * scale,
     damageType: 'physical',
-    penetration: 0
+    penetration: 0,
+    name: weapon.name || `Scaled ${weapon.type}`,
+    description: `Scaled effect (${scale}x) from ${weapon.name || weapon.type}`,
   });
 }
 
@@ -229,6 +262,7 @@ export function createCombinedWeaponEffect(weapons: WeaponSystem[]): WeaponEffec
 
   const totalDamage = weapons.reduce((sum, w) => sum + w.damage, 0);
   const avgCooldown = weapons.reduce((sum, w) => sum + w.cooldown, 0) / weapons.length;
+  const weaponNames = weapons.map(w => ('name' in w ? (w as any).name : w.type)).join(', ');
 
   return createDamageEffect({
     id: `combined-weapon-effect-${weapons[0].id}`,
@@ -236,7 +270,9 @@ export function createCombinedWeaponEffect(weapons: WeaponSystem[]): WeaponEffec
     duration: avgCooldown,
     strength: totalDamage,
     damageType: 'physical',
-    penetration: 0
+    penetration: 0,
+    name: `Combined Weapons`,
+    description: `Combined effect from: ${weaponNames}`,
   });
 }
 
@@ -247,7 +283,7 @@ export function isValidEffect(effect: unknown): effect is Effect {
   if (!effect || typeof effect !== 'object') {
     return false;
   }
-  
+
   const e = effect as Effect;
   return (
     typeof e.id === 'string' &&
@@ -267,14 +303,10 @@ export function validateEffect(effect: Partial<Effect>): Effect {
   if (!effect.type) {
     throw new Error('Effect must have a type');
   }
-  if (________) {
-    if (typeof effect.magnitude !== 'number') {
-      throw new Error('Effect must have a magnitude');
-    } else if (________) {
-             ___
-           } else {
-             ___;
-           }
+  if (effect.magnitude === undefined) {
+    throw new Error('Effect must have a magnitude');
+  } else if (typeof effect.magnitude !== 'number') {
+    throw new Error('Effect magnitude must be a number');
   }
   if (typeof effect.duration !== 'number') {
     throw new Error('Effect must have a duration');
@@ -285,6 +317,9 @@ export function validateEffect(effect: Partial<Effect>): Effect {
     type: effect.type,
     magnitude: effect.magnitude,
     duration: effect.duration,
+    target: effect.target,
+    active: effect.active,
+    cooldown: effect.cooldown,
   };
 }
 
@@ -296,22 +331,49 @@ export function combineEffects(effects: Effect[]): Effect {
     throw new Error('Cannot combine empty effects array');
   }
 
-  return effects.reduce((combined, effect) => ({
-    id: `${combined.id}-${effect.id}`,
-    type: effect.type,
-    magnitude: combined.magnitude + effect.magnitude,
-    duration: Math.min(combined.duration, effect.duration),
-  }));
+  // Create the base combined effect
+  const combinedEffect: Effect = {
+    id: effects.map(e => e.id).join('-'),
+    type: effects[0].type,
+    magnitude: effects.reduce((sum, e) => sum + e.magnitude, 0),
+    duration: Math.min(...effects.map(e => e.duration)),
+  };
+
+  // Get names and descriptions if available
+  const names = effects.filter(e => 'name' in e).map(e => (e as any).name);
+  const descriptions = effects.filter(e => 'description' in e).map(e => (e as any).description);
+
+  // Add name and description as any to avoid type errors
+  if (names.length > 0) {
+    (combinedEffect as any).name = `Combined: ${names.join(', ')}`;
+  }
+
+  if (descriptions.length > 0) {
+    (combinedEffect as any).description = `Combined effects: ${descriptions.join('; ')}`;
+  }
+
+  return combinedEffect;
 }
 
 /**
  * Scales an effect's magnitude by a factor
  */
 export function scaleEffect(effect: Effect, factor: number): Effect {
-  return {
+  const result = {
     ...effect,
     magnitude: effect.magnitude * factor,
   };
+
+  // Add scaled information to name and description if they exist
+  if ('name' in effect && typeof (effect as any).name === 'string') {
+    (result as any).name = `Scaled ${(effect as any).name}`;
+  }
+
+  if ('description' in effect && typeof (effect as any).description === 'string') {
+    (result as any).description = `${(effect as any).description} (scaled by ${factor})`;
+  }
+
+  return result;
 }
 
 /**
@@ -321,6 +383,6 @@ export function createEffectChain(effects: Effect[]): Effect[] {
   let currentDuration = 0;
   return effects.map(effect => ({
     ...effect,
-    duration: currentDuration += effect.duration,
+    duration: (currentDuration += effect.duration),
   }));
-} 
+}

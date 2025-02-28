@@ -1,16 +1,19 @@
+import { Grid2X2, List, Rocket, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Rocket, Search, Grid2X2, List } from 'lucide-react';
-import { ShipHangarManager } from '../../../../managers/module/ShipHangarManager';
-import { CommonShip } from '../../../../types/ships/CommonShipTypes';
-import { PlayerShipCategory } from '../../../../types/ships/PlayerShipTypes';
 import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
-import { WarShip } from '../../../ships/player/variants/warships/WarShip';
+import { ShipHangarManager } from '../../../../managers/module/ShipHangarManager';
 import { ShipBuildQueueItem } from '../../../../types/buildings/ShipHangarTypes';
+import { Effect } from '../../../../types/core/GameTypes';
+import { CommonShip } from '../../../../types/ships/CommonShipTypes';
+import {
+  WeaponSystem as BaseWeaponSystem,
+  WeaponCategory,
+  WeaponStatus,
+} from '../../../../types/weapons/WeaponTypes';
+import { createWeaponEffect, createWeaponLike } from '../../../../utils/weapons/weaponEffectUtils';
 import { PlayerShipCustomization } from '../../../ships/player/customization/PlayerShipCustomization';
 import { PlayerShipUpgradeSystem } from '../../../ships/player/customization/PlayerShipUpgradeSystem';
-import { Effect } from '../../../../types/core/GameTypes';
-import { createWeaponEffect, createScaledWeaponEffect, createWeaponLike } from '../../../../utils/weapons/weaponEffectUtils';
-import { WeaponSystem as BaseWeaponSystem, WeaponCategory, WeaponStatus } from '../../../../types/weapons/WeaponTypes';
+import { WarShip } from '../../../ships/player/variants/warships/WarShip';
 
 interface HangarWeaponSystem extends BaseWeaponSystem {
   name: string;
@@ -74,13 +77,15 @@ const mockShips: Ship[] = [
         cooldown: 5,
         duration: 10,
         active: false,
-        effect: createWeaponEffect(createWeaponLike({
-          id: 'mg-1',
-          type: 'machineGun',
-          damage: 10,
-          cooldown: 5,
-          displayName: 'Machine Gun'
-        })),
+        effect: createWeaponEffect(
+          createWeaponLike({
+            id: 'mg-1',
+            type: 'machineGun',
+            damage: 10,
+            cooldown: 5,
+            displayName: 'Machine Gun',
+          })
+        ),
       },
     ],
   },
@@ -112,13 +117,15 @@ const mockShips: Ship[] = [
         cooldown: 10,
         duration: 10,
         active: false,
-        effect: createWeaponEffect(createWeaponLike({
-          id: 'rail-1',
-          type: 'railGun',
-          damage: 25,
-          cooldown: 10,
-          displayName: 'Rail Gun'
-        })),
+        effect: createWeaponEffect(
+          createWeaponLike({
+            id: 'rail-1',
+            type: 'railGun',
+            damage: 25,
+            cooldown: 10,
+            displayName: 'Rail Gun',
+          })
+        ),
       },
     ],
   },
@@ -197,7 +204,7 @@ export function ShipHangar({ manager }: ShipHangarProps) {
       damage: 10,
       range: 100,
       cooldown: ability.cooldown,
-      status: 'ready' as WeaponStatus
+      status: 'ready' as WeaponStatus,
     }));
 
     return {
@@ -299,12 +306,12 @@ export function ShipHangar({ manager }: ShipHangarProps) {
   };
 
   return (
-    <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">
+    <div className="fixed inset-4 flex overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md">
       {/* Ship List */}
       <div className="w-2/3 border-r border-gray-700 p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Rocket className="w-6 h-6 text-indigo-400" />
+            <Rocket className="h-6 w-6 text-indigo-400" />
             <h2 className="text-xl font-bold text-white">Ship Hangar</h2>
           </div>
 
@@ -313,37 +320,37 @@ export function ShipHangar({ manager }: ShipHangarProps) {
               <input
                 type="text"
                 placeholder="Search ships..."
-                className="w-64 px-4 py-2 bg-gray-800/90 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
 
             {/* View Toggle */}
-            <div className="flex bg-gray-800 rounded-lg p-1">
+            <div className="flex rounded-lg bg-gray-800 p-1">
               <button
                 onClick={() => setView('grid')}
-                className={`p-1.5 rounded ${
+                className={`rounded p-1.5 ${
                   view === 'grid' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                <Grid2X2 className="w-5 h-5" />
+                <Grid2X2 className="h-5 w-5" />
               </button>
               <button
                 onClick={() => setView('list')}
-                className={`p-1.5 rounded ${
+                className={`rounded p-1.5 ${
                   view === 'list' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                <List className="w-5 h-5" />
+                <List className="h-5 w-5" />
               </button>
             </div>
           </div>
         </div>
 
         {/* Filter Controls */}
-        <div className="flex space-x-2 mb-6">
+        <div className="mb-6 flex space-x-2">
           {[
             { id: 'all', label: 'All Ships' },
             { id: 'idle', label: 'Idle' },
@@ -353,7 +360,7 @@ export function ShipHangar({ manager }: ShipHangarProps) {
             <button
               key={id}
               onClick={() => setFilter(id as 'all' | 'idle' | 'active' | 'damaged')}
-              className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
+              className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                 filter === id
                   ? 'bg-indigo-600 text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
@@ -368,7 +375,7 @@ export function ShipHangar({ manager }: ShipHangarProps) {
         <div
           className={`${
             view === 'grid' ? 'grid grid-cols-2 gap-6' : 'space-y-4'
-          } overflow-y-auto max-h-[calc(100vh-16rem)]`}
+          } max-h-[calc(100vh-16rem)] overflow-y-auto`}
         >
           {filteredShips.map(ship => (
             <WarShip
@@ -386,11 +393,11 @@ export function ShipHangar({ manager }: ShipHangarProps) {
       <div className="w-1/3 p-6">
         {selectedShip ? (
           <>
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-medium text-white">{selectedShip.name}</h3>
               <button
                 onClick={() => setShowCustomization(prev => !prev)}
-                className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 rounded text-sm text-white"
+                className="rounded bg-indigo-600 px-3 py-1 text-sm text-white hover:bg-indigo-700"
               >
                 {showCustomization ? 'Show Upgrades' : 'Customize'}
               </button>
@@ -452,9 +459,9 @@ export function ShipHangar({ manager }: ShipHangarProps) {
             )}
           </>
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-400 text-center">
+          <div className="flex h-full items-center justify-center text-center text-gray-400">
             <div>
-              <Rocket className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <Rocket className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p>Select a ship to view details and manage loadout</p>
             </div>
           </div>
@@ -462,8 +469,8 @@ export function ShipHangar({ manager }: ShipHangarProps) {
       </div>
 
       {/* Build Queue Panel */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gray-800/90 border-t border-gray-700 p-4">
-        <div className="flex items-center justify-between mb-2">
+      <div className="absolute bottom-0 left-0 right-0 border-t border-gray-700 bg-gray-800/90 p-4">
+        <div className="mb-2 flex items-center justify-between">
           <h4 className="text-sm font-medium text-white">Build Queue</h4>
           <span className="text-xs text-gray-400">
             {buildQueue.length} / {manager.getState().maxQueueSize}
@@ -471,19 +478,19 @@ export function ShipHangar({ manager }: ShipHangarProps) {
         </div>
         <div className="flex space-x-4 overflow-x-auto">
           {buildQueue.map(item => (
-            <div key={item.id} className="flex-shrink-0 bg-gray-700 rounded-lg p-3 w-48">
-              <div className="flex justify-between items-center mb-2">
+            <div key={item.id} className="w-48 flex-shrink-0 rounded-lg bg-gray-700 p-3">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-white">{item.shipClass}</span>
                 <button
                   onClick={() => manager.cancelBuild(item.id)}
-                  className="text-gray-400 hover:text-white text-xs"
+                  className="text-xs text-gray-400 hover:text-white"
                 >
                   Cancel
                 </button>
               </div>
-              <div className="w-full bg-gray-600 rounded-full h-2">
+              <div className="h-2 w-full rounded-full bg-gray-600">
                 <div
-                  className="bg-indigo-500 h-2 rounded-full"
+                  className="h-2 rounded-full bg-indigo-500"
                   style={{ width: `${item.progress * 100}%` }}
                 />
               </div>
@@ -493,8 +500,8 @@ export function ShipHangar({ manager }: ShipHangarProps) {
       </div>
 
       {/* Docking Bay Status */}
-      <div className="absolute bottom-6 left-6 px-4 py-2 bg-indigo-900/50 border border-indigo-700/30 rounded-lg flex items-center space-x-2">
-        <Rocket className="w-4 h-4 text-indigo-400" />
+      <div className="absolute bottom-6 left-6 flex items-center space-x-2 rounded-lg border border-indigo-700/30 bg-indigo-900/50 px-4 py-2">
+        <Rocket className="h-4 w-4 text-indigo-400" />
         <span className="text-sm text-indigo-200">
           {ships.length} Ships Docked •{' '}
           {ships.filter(s => ['engaging', 'patrolling'].includes(s.status)).length} Active
@@ -503,8 +510,8 @@ export function ShipHangar({ manager }: ShipHangarProps) {
 
       {/* Warnings */}
       {ships.some(s => s.status === 'damaged') && (
-        <div className="absolute bottom-6 right-6 px-4 py-2 bg-red-900/50 border border-red-700/30 rounded-lg flex items-center space-x-2">
-          <Rocket className="w-4 h-4 text-red-400" />
+        <div className="absolute bottom-6 right-6 flex items-center space-x-2 rounded-lg border border-red-700/30 bg-red-900/50 px-4 py-2">
+          <Rocket className="h-4 w-4 text-red-400" />
           <span className="text-sm text-red-200">Ships requiring repairs detected</span>
         </div>
       )}

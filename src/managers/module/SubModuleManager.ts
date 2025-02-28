@@ -1,17 +1,16 @@
+import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   BaseModule,
   ModuleType,
   SubModule,
-  SubModuleType,
   SubModuleConfig,
-  SubModuleAttachmentPoint,
   SubModuleEffect,
-  SubModuleRequirements
+  SubModuleRequirements,
+  SubModuleType,
 } from '../../types/buildings/ModuleTypes';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { moduleManager } from './ModuleManager';
-import { resourceManager } from '../game/ResourceManager';
 import { ResourceType } from '../../types/resources/ResourceTypes';
+import { resourceManager } from '../game/ResourceManager';
+import { moduleManager } from './ModuleManager';
 
 /**
  * Sub-module attachment result
@@ -41,7 +40,10 @@ export interface EffectApplicationResult {
 export class SubModuleManager {
   private subModules: Map<string, SubModule>;
   private configs: Map<SubModuleType, SubModuleConfig>;
-  private effectHandlers: Map<string, (effect: SubModuleEffect, moduleId: string) => EffectApplicationResult>;
+  private effectHandlers: Map<
+    string,
+    (effect: SubModuleEffect, moduleId: string) => EffectApplicationResult
+  >;
 
   constructor() {
     this.subModules = new Map();
@@ -70,18 +72,20 @@ export class SubModuleManager {
           effectType: effect.type,
           target: effect.target,
           value: effect.value,
-          error: `Module ${moduleId} not found`
+          error: `Module ${moduleId} not found`,
         };
       }
 
       // Apply stat boost (this would be implemented in the actual module)
-      console.debug(`[SubModuleManager] Applied stat boost to ${moduleId}: ${effect.target} ${effect.isPercentage ? '+' : ''}${effect.value}${effect.isPercentage ? '%' : ''}`);
+      console.debug(
+        `[SubModuleManager] Applied stat boost to ${moduleId}: ${effect.target} ${effect.isPercentage ? '+' : ''}${effect.value}${effect.isPercentage ? '%' : ''}`
+      );
 
       return {
         success: true,
         effectType: effect.type,
         target: effect.target,
-        value: effect.value
+        value: effect.value,
       };
     });
 
@@ -94,18 +98,20 @@ export class SubModuleManager {
           effectType: effect.type,
           target: effect.target,
           value: effect.value,
-          error: `Module ${moduleId} not found`
+          error: `Module ${moduleId} not found`,
         };
       }
 
       // Apply resource boost
-      console.debug(`[SubModuleManager] Applied resource boost to ${moduleId}: ${effect.target} ${effect.isPercentage ? '+' : ''}${effect.value}${effect.isPercentage ? '%' : ''}`);
+      console.debug(
+        `[SubModuleManager] Applied resource boost to ${moduleId}: ${effect.target} ${effect.isPercentage ? '+' : ''}${effect.value}${effect.isPercentage ? '%' : ''}`
+      );
 
       return {
         success: true,
         effectType: effect.type,
         target: effect.target,
-        value: effect.value
+        value: effect.value,
       };
     });
 
@@ -118,7 +124,7 @@ export class SubModuleManager {
           effectType: effect.type,
           target: effect.target,
           value: effect.value,
-          error: `Module ${moduleId} not found`
+          error: `Module ${moduleId} not found`,
         };
       }
 
@@ -129,7 +135,7 @@ export class SubModuleManager {
         success: true,
         effectType: effect.type,
         target: effect.target,
-        value: effect.value
+        value: effect.value,
       };
     });
 
@@ -142,18 +148,20 @@ export class SubModuleManager {
           effectType: effect.type,
           target: effect.target,
           value: effect.value,
-          error: `Module ${moduleId} not found`
+          error: `Module ${moduleId} not found`,
         };
       }
 
       // Reduce cost
-      console.debug(`[SubModuleManager] Applied cost reduction to ${moduleId}: ${effect.target} ${effect.isPercentage ? '-' : ''}${effect.value}${effect.isPercentage ? '%' : ''}`);
+      console.debug(
+        `[SubModuleManager] Applied cost reduction to ${moduleId}: ${effect.target} ${effect.isPercentage ? '-' : ''}${effect.value}${effect.isPercentage ? '%' : ''}`
+      );
 
       return {
         success: true,
         effectType: effect.type,
         target: effect.target,
-        value: effect.value
+        value: effect.value,
       };
     });
 
@@ -166,7 +174,7 @@ export class SubModuleManager {
           effectType: effect.type,
           target: effect.target,
           value: effect.value,
-          error: `Module ${moduleId} not found`
+          error: `Module ${moduleId} not found`,
         };
       }
 
@@ -177,7 +185,7 @@ export class SubModuleManager {
         success: true,
         effectType: effect.type,
         target: effect.target,
-        value: effect.value
+        value: effect.value,
       };
     });
 
@@ -190,7 +198,7 @@ export class SubModuleManager {
           effectType: effect.type,
           target: effect.target,
           value: effect.value,
-          error: `Module ${moduleId} not found`
+          error: `Module ${moduleId} not found`,
         };
       }
 
@@ -201,7 +209,7 @@ export class SubModuleManager {
         success: true,
         effectType: effect.type,
         target: effect.target,
-        value: effect.value
+        value: effect.value,
       };
     });
   }
@@ -242,26 +250,34 @@ export class SubModuleManager {
     // Check if parent module supports sub-modules
     const parentConfig = (moduleManager as any).configs.get(parentModule.type);
     if (!parentConfig || !parentConfig.subModuleSupport) {
-      console.error(`[SubModuleManager] Parent module does not support sub-modules: ${parentModuleId}`);
+      console.error(
+        `[SubModuleManager] Parent module does not support sub-modules: ${parentModuleId}`
+      );
       return null;
     }
 
     // Check if parent module allows this sub-module type
     if (!parentConfig.subModuleSupport.allowedTypes.includes(type)) {
-      console.error(`[SubModuleManager] Sub-module type ${type} not allowed for parent module ${parentModuleId}`);
+      console.error(
+        `[SubModuleManager] Sub-module type ${type} not allowed for parent module ${parentModuleId}`
+      );
       return null;
     }
 
     // Check if parent module has reached max sub-modules
     const currentSubModules = parentModule.subModules || [];
     if (currentSubModules.length >= parentConfig.subModuleSupport.maxSubModules) {
-      console.error(`[SubModuleManager] Parent module ${parentModuleId} has reached max sub-modules`);
+      console.error(
+        `[SubModuleManager] Parent module ${parentModuleId} has reached max sub-modules`
+      );
       return null;
     }
 
     // Check requirements
     if (!this.checkRequirements(config.requirements, parentModule)) {
-      console.error(`[SubModuleManager] Requirements not met for sub-module ${type} on parent module ${parentModuleId}`);
+      console.error(
+        `[SubModuleManager] Requirements not met for sub-module ${type} on parent module ${parentModuleId}`
+      );
       return null;
     }
 
@@ -276,7 +292,7 @@ export class SubModuleManager {
       status: 'constructing',
       progress: 0,
       effects: [...config.effects],
-      requirements: config.requirements
+      requirements: config.requirements,
     };
 
     // Store the sub-module
@@ -294,7 +310,7 @@ export class SubModuleManager {
       moduleId: parentModuleId,
       moduleType: parentModule.type,
       timestamp: Date.now(),
-      data: { subModuleId: subModule.id, subModuleType: subModule.type }
+      data: { subModuleId: subModule.id, subModuleType: subModule.type },
     });
 
     return subModule;
@@ -303,7 +319,10 @@ export class SubModuleManager {
   /**
    * Check if requirements are met for a sub-module
    */
-  private checkRequirements(requirements: SubModuleRequirements, parentModule: BaseModule): boolean {
+  private checkRequirements(
+    requirements: SubModuleRequirements,
+    parentModule: BaseModule
+  ): boolean {
     // Check parent module level
     if (parentModule.level < requirements.parentModuleLevel) {
       return false;
@@ -341,7 +360,7 @@ export class SubModuleManager {
     if (!subModule) {
       return {
         success: false,
-        error: `Sub-module ${subModuleId} not found`
+        error: `Sub-module ${subModuleId} not found`,
       };
     }
 
@@ -349,7 +368,7 @@ export class SubModuleManager {
     if (!parentModule) {
       return {
         success: false,
-        error: `Parent module ${parentModuleId} not found`
+        error: `Parent module ${parentModuleId} not found`,
       };
     }
 
@@ -358,7 +377,7 @@ export class SubModuleManager {
     if (!parentConfig || !parentConfig.subModuleSupport) {
       return {
         success: false,
-        error: `Parent module does not support sub-modules: ${parentModuleId}`
+        error: `Parent module does not support sub-modules: ${parentModuleId}`,
       };
     }
 
@@ -366,7 +385,7 @@ export class SubModuleManager {
     if (!parentConfig.subModuleSupport.allowedTypes.includes(subModule.type)) {
       return {
         success: false,
-        error: `Sub-module type ${subModule.type} not allowed for parent module ${parentModuleId}`
+        error: `Sub-module type ${subModule.type} not allowed for parent module ${parentModuleId}`,
       };
     }
 
@@ -375,7 +394,7 @@ export class SubModuleManager {
     if (currentSubModules.length >= parentConfig.subModuleSupport.maxSubModules) {
       return {
         success: false,
-        error: `Parent module ${parentModuleId} has reached max sub-modules`
+        error: `Parent module ${parentModuleId} has reached max sub-modules`,
       };
     }
 
@@ -394,13 +413,13 @@ export class SubModuleManager {
       moduleId: parentModuleId,
       moduleType: parentModule.type,
       timestamp: Date.now(),
-      data: { subModuleId, subModuleType: subModule.type }
+      data: { subModuleId, subModuleType: subModule.type },
     });
 
     return {
       success: true,
       subModuleId,
-      parentModuleId
+      parentModuleId,
     };
   }
 
@@ -412,16 +431,16 @@ export class SubModuleManager {
     if (!subModule) {
       return {
         success: false,
-        error: `Sub-module ${subModuleId} not found`
+        error: `Sub-module ${subModuleId} not found`,
       };
     }
 
-    const {parentModuleId} = subModule;
+    const { parentModuleId } = subModule;
     const parentModule = moduleManager.getModule(parentModuleId);
     if (!parentModule) {
       return {
         success: false,
-        error: `Parent module ${parentModuleId} not found`
+        error: `Parent module ${parentModuleId} not found`,
       };
     }
 
@@ -436,13 +455,13 @@ export class SubModuleManager {
       moduleId: parentModuleId,
       moduleType: parentModule.type,
       timestamp: Date.now(),
-      data: { subModuleId, subModuleType: subModule.type }
+      data: { subModuleId, subModuleType: subModule.type },
     });
 
     return {
       success: true,
       subModuleId,
-      parentModuleId
+      parentModuleId,
     };
   }
 
@@ -481,7 +500,7 @@ export class SubModuleManager {
       moduleId: subModule.parentModuleId,
       moduleType: parentModule.type,
       timestamp: Date.now(),
-      data: { subModuleId, subModuleType: subModule.type }
+      data: { subModuleId, subModuleType: subModule.type },
     });
 
     return true;
@@ -515,7 +534,7 @@ export class SubModuleManager {
       moduleId: subModule.parentModuleId,
       moduleType: moduleManager.getModule(subModule.parentModuleId)?.type as ModuleType,
       timestamp: Date.now(),
-      data: { subModuleId, subModuleType: subModule.type }
+      data: { subModuleId, subModuleType: subModule.type },
     });
 
     return true;
@@ -538,7 +557,7 @@ export class SubModuleManager {
           effectType: effect.type,
           target: effect.target,
           value: effect.value,
-          error: `No handler found for effect type: ${effect.type}`
+          error: `No handler found for effect type: ${effect.type}`,
         });
       }
     }
@@ -574,7 +593,9 @@ export class SubModuleManager {
     // Get the config
     const config = this.configs.get(subModule.type);
     if (!config) {
-      console.error(`[SubModuleManager] No configuration found for sub-module type: ${subModule.type}`);
+      console.error(
+        `[SubModuleManager] No configuration found for sub-module type: ${subModule.type}`
+      );
       return false;
     }
 
@@ -583,7 +604,9 @@ export class SubModuleManager {
     for (const cost of config.requirements.resourceCosts) {
       const scaledAmount = Math.ceil(cost.amount * levelMultiplier);
       if (resourceManager.getResourceAmount(cost.type as ResourceType) < scaledAmount) {
-        console.error(`[SubModuleManager] Insufficient resources for upgrade: ${cost.type} ${scaledAmount}`);
+        console.error(
+          `[SubModuleManager] Insufficient resources for upgrade: ${cost.type} ${scaledAmount}`
+        );
         return false;
       }
 
@@ -615,7 +638,7 @@ export class SubModuleManager {
       moduleId: subModule.parentModuleId,
       moduleType: moduleManager.getModule(subModule.parentModuleId)?.type as ModuleType,
       timestamp: Date.now(),
-      data: { subModuleId, subModuleType: subModule.type, newLevel: subModule.level }
+      data: { subModuleId, subModuleType: subModule.type, newLevel: subModule.level },
     });
 
     return true;
@@ -654,7 +677,7 @@ export class SubModuleManager {
    */
   private handleModuleUpgraded = (event: any): void => {
     const { moduleId, newLevel } = event.data;
-    
+
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
     if (!module || !module.subModules || module.subModules.length === 0) {
@@ -676,7 +699,7 @@ export class SubModuleManager {
    */
   private handleModuleActivated = (event: any): void => {
     const { moduleId } = event.data;
-    
+
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
     if (!module || !module.subModules || module.subModules.length === 0) {
@@ -696,7 +719,7 @@ export class SubModuleManager {
    */
   private handleModuleDeactivated = (event: any): void => {
     const { moduleId } = event.data;
-    
+
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
     if (!module || !module.subModules || module.subModules.length === 0) {
@@ -716,10 +739,19 @@ export class SubModuleManager {
    */
   public cleanup(): void {
     // Unsubscribe from events
-    const unsubscribeUpgraded = moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, this.handleModuleUpgraded);
-    const unsubscribeActivated = moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, this.handleModuleActivated);
-    const unsubscribeDeactivated = moduleEventBus.subscribe('MODULE_DEACTIVATED' as ModuleEventType, this.handleModuleDeactivated);
-    
+    const unsubscribeUpgraded = moduleEventBus.subscribe(
+      'MODULE_UPGRADED' as ModuleEventType,
+      this.handleModuleUpgraded
+    );
+    const unsubscribeActivated = moduleEventBus.subscribe(
+      'MODULE_ACTIVATED' as ModuleEventType,
+      this.handleModuleActivated
+    );
+    const unsubscribeDeactivated = moduleEventBus.subscribe(
+      'MODULE_DEACTIVATED' as ModuleEventType,
+      this.handleModuleDeactivated
+    );
+
     if (typeof unsubscribeUpgraded === 'function') {
       unsubscribeUpgraded();
     }
@@ -729,7 +761,7 @@ export class SubModuleManager {
     if (typeof unsubscribeDeactivated === 'function') {
       unsubscribeDeactivated();
     }
-    
+
     // Clear data
     this.subModules.clear();
     this.configs.clear();
@@ -738,4 +770,4 @@ export class SubModuleManager {
 }
 
 // Export singleton instance
-export const subModuleManager = new SubModuleManager(); 
+export const subModuleManager = new SubModuleManager();

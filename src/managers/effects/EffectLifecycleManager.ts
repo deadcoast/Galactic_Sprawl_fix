@@ -1,6 +1,6 @@
+import { Position } from '../../types/core/GameTypes';
 import { EventEmitter } from '../../utils/EventEmitter';
 import { particleSystemManager } from './ParticleSystemManager';
-import { Position } from '../../types/core/GameTypes';
 
 interface Effect {
   id: string;
@@ -160,4 +160,4 @@ export class EffectLifecycleManager extends EventEmitter<EffectEvents> {
 }
 
 // Export singleton instance
-export const effectLifecycleManager = EffectLifecycleManager.getInstance(); 
+export const effectLifecycleManager = EffectLifecycleManager.getInstance();

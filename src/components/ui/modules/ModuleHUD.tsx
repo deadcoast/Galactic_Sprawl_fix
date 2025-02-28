@@ -1,15 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  BaseModule, 
-  ModuleType, 
-  ModuleConfig 
-} from '../../../types/buildings/ModuleTypes';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ModuleEvent, moduleEventBus } from '../../../lib/modules/ModuleEvents';
 import { moduleManager } from '../../../managers/module/ModuleManager';
-import { moduleEventBus } from '../../../lib/modules/ModuleEvents';
-import { 
-  calculateModulePower, 
-  calculateModuleCrew, 
-  calculateModuleUpkeep 
+import { BaseModule, ModuleConfig } from '../../../types/buildings/ModuleTypes';
+import {
+  calculateModuleCrew,
+  calculateModulePower,
+  calculateModuleUpkeep,
 } from '../../../utils/modules/moduleValidation';
 
 interface ModuleHUDProps {
@@ -37,7 +33,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
   showControls = true,
   onActivate,
   onDeactivate,
-  onUpgrade
+  onUpgrade,
 }) => {
   const [module, setModule] = useState<BaseModule | null>(null);
   const [config, setConfig] = useState<ModuleConfig | null>(null);
@@ -61,7 +57,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
       setModule(moduleData);
 
       // Get module configuration
-      const moduleConfigs = (moduleManager as any).configs;
+      const moduleConfigs = (moduleManager as unknown).configs;
       if (moduleConfigs && moduleConfigs instanceof Map) {
         const configData = moduleConfigs.get(moduleData.type);
         if (configData) {
@@ -71,7 +67,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
           setStats({
             power: calculateModulePower(moduleData, configData),
             crew: calculateModuleCrew(moduleData, configData),
-            upkeep: calculateModuleUpkeep(moduleData, configData)
+            upkeep: calculateModuleUpkeep(moduleData, configData),
           });
         }
       }
@@ -85,7 +81,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
 
   // Subscribe to module events
   useEffect(() => {
-    const handleModuleUpdated = (event: any) => {
+    const handleModuleUpdated = (event: ModuleEvent) => {
       if (event.moduleId === moduleId) {
         // Refresh module data
         const moduleData = moduleManager.getModule(moduleId);
@@ -97,7 +93,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
             setStats({
               power: calculateModulePower(moduleData, config),
               crew: calculateModuleCrew(moduleData, config),
-              upkeep: calculateModuleUpkeep(moduleData, config)
+              upkeep: calculateModuleUpkeep(moduleData, config),
             });
           }
         }
@@ -107,8 +103,14 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
     // Subscribe to relevant events
     const unsubscribeUpgraded = moduleEventBus.subscribe('MODULE_UPGRADED', handleModuleUpdated);
     const unsubscribeActivated = moduleEventBus.subscribe('MODULE_ACTIVATED', handleModuleUpdated);
-    const unsubscribeDeactivated = moduleEventBus.subscribe('MODULE_DEACTIVATED', handleModuleUpdated);
-    const unsubscribeStatusChanged = moduleEventBus.subscribe('STATUS_CHANGED', handleModuleUpdated);
+    const unsubscribeDeactivated = moduleEventBus.subscribe(
+      'MODULE_DEACTIVATED',
+      handleModuleUpdated
+    );
+    const unsubscribeStatusChanged = moduleEventBus.subscribe(
+      'STATUS_CHANGED',
+      handleModuleUpdated
+    );
 
     return () => {
       // Unsubscribe from events
@@ -182,10 +184,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
       {/* Module header */}
       <div className="module-hud__header">
         <h3 className="module-hud__title">{module.name}</h3>
-        <div 
-          className="module-hud__status" 
-          style={{ backgroundColor: getStatusColor() }}
-        >
+        <div className="module-hud__status" style={{ backgroundColor: getStatusColor() }}>
           {module.status}
         </div>
         <div className="module-hud__level">Level {module.level}</div>
@@ -195,7 +194,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
       {showDetails && (
         <div className="module-hud__details">
           <div className="module-hud__description">{config.description}</div>
-          
+
           <div className="module-hud__stats">
             <div className="module-hud__stat">
               <span className="module-hud__stat-label">Power:</span>
@@ -216,8 +215,8 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
             <div className="module-hud__progress">
               <div className="module-hud__progress-label">Construction Progress</div>
               <div className="module-hud__progress-bar">
-                <div 
-                  className="module-hud__progress-fill" 
+                <div
+                  className="module-hud__progress-fill"
                   style={{ width: `${module.progress * 100}%` }}
                 />
               </div>
@@ -231,7 +230,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
       {showControls && (
         <div className="module-hud__controls">
           {module.isActive ? (
-            <button 
+            <button
               className="module-hud__button module-hud__button--deactivate"
               onClick={handleDeactivate}
               disabled={module.status !== 'active'}
@@ -239,7 +238,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
               Deactivate
             </button>
           ) : (
-            <button 
+            <button
               className="module-hud__button module-hud__button--activate"
               onClick={handleActivate}
               disabled={module.status !== 'inactive'}
@@ -247,8 +246,8 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
               Activate
             </button>
           )}
-          
-          <button 
+
+          <button
             className="module-hud__button module-hud__button--upgrade"
             onClick={handleUpgrade}
             disabled={module.status !== 'active'}
@@ -278,7 +277,7 @@ export const ModuleHUDList: React.FC<{
   showControls = true,
   onActivate,
   onDeactivate,
-  onUpgrade
+  onUpgrade,
 }) => {
   return (
     <div className="module-hud-list">
@@ -314,7 +313,7 @@ export const BuildingModulesHUD: React.FC<{
   showControls = true,
   onActivate,
   onDeactivate,
-  onUpgrade
+  onUpgrade,
 }) => {
   const [moduleIds, setModuleIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -343,7 +342,7 @@ export const BuildingModulesHUD: React.FC<{
 
   // Subscribe to module events
   useEffect(() => {
-    const handleModuleAttached = (event: any) => {
+    const handleModuleAttached = (event: ModuleEvent) => {
       if (event.data.buildingId === buildingId) {
         // Refresh module list
         const building = moduleManager.getBuilding(buildingId);
@@ -353,7 +352,7 @@ export const BuildingModulesHUD: React.FC<{
       }
     };
 
-    const handleModuleDetached = (event: any) => {
+    const handleModuleDetached = (event: ModuleEvent) => {
       if (event.data.buildingId === buildingId) {
         // Refresh module list
         const building = moduleManager.getBuilding(buildingId);
@@ -380,7 +379,11 @@ export const BuildingModulesHUD: React.FC<{
 
   // Render loading state
   if (isLoading) {
-    return <div className="building-modules-hud building-modules-hud--loading">Loading building modules...</div>;
+    return (
+      <div className="building-modules-hud building-modules-hud--loading">
+        Loading building modules...
+      </div>
+    );
   }
 
   // Render error state
@@ -390,7 +393,9 @@ export const BuildingModulesHUD: React.FC<{
 
   // Render empty state
   if (moduleIds.length === 0) {
-    return <div className="building-modules-hud building-modules-hud--empty">No modules installed</div>;
+    return (
+      <div className="building-modules-hud building-modules-hud--empty">No modules installed</div>
+    );
   }
 
   return (
@@ -406,4 +411,4 @@ export const BuildingModulesHUD: React.FC<{
       />
     </div>
   );
-}; 
+};

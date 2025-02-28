@@ -10,25 +10,25 @@ export const hangarRules: AutomationRule[] = [
     conditions: [
       {
         type: 'MODULE_ACTIVE',
-        target: 'hangar'
+        target: 'hangar',
       },
       {
         type: 'RESOURCE_ABOVE',
         target: 'energy',
-        value: 100
+        value: 100,
       },
       {
         type: 'RESOURCE_ABOVE',
         target: 'minerals',
-        value: 100
+        value: 100,
       },
       {
         type: 'EVENT_OCCURRED',
         target: 'SHIP_DAMAGED',
         value: {
-          timeWindow: 5000 // Last 5 seconds
-        }
-      }
+          timeWindow: 5000, // Last 5 seconds
+        },
+      },
     ],
     actions: [
       {
@@ -39,12 +39,12 @@ export const hangarRules: AutomationRule[] = [
           moduleType: 'hangar' as ModuleType,
           data: {
             type: 'repair',
-            priority: 1
-          }
-        }
-      }
+            priority: 1,
+          },
+        },
+      },
     ],
-    interval: 10000 // Check every 10 seconds
+    interval: 10000, // Check every 10 seconds
   },
   {
     id: 'hangar-bay-maintenance',
@@ -54,24 +54,24 @@ export const hangarRules: AutomationRule[] = [
     conditions: [
       {
         type: 'MODULE_ACTIVE',
-        target: 'hangar'
+        target: 'hangar',
       },
       {
         type: 'RESOURCE_ABOVE',
         target: 'energy',
-        value: 50
+        value: 50,
       },
       {
         type: 'RESOURCE_ABOVE',
         target: 'minerals',
-        value: 25
+        value: 25,
       },
       {
         type: 'STATUS_EQUALS',
         target: 'hangar',
         value: 'low_efficiency',
-        operator: 'equals'
-      }
+        operator: 'equals',
+      },
     ],
     actions: [
       {
@@ -82,12 +82,12 @@ export const hangarRules: AutomationRule[] = [
           moduleType: 'hangar' as ModuleType,
           data: {
             type: 'maintenance',
-            priority: 2
-          }
-        }
-      }
+            priority: 2,
+          },
+        },
+      },
     ],
-    interval: 30000 // Check every 30 seconds
+    interval: 30000, // Check every 30 seconds
   },
   {
     id: 'hangar-ship-production',
@@ -97,24 +97,24 @@ export const hangarRules: AutomationRule[] = [
     conditions: [
       {
         type: 'MODULE_ACTIVE',
-        target: 'hangar'
+        target: 'hangar',
       },
       {
         type: 'RESOURCE_ABOVE',
         target: 'energy',
-        value: 200
+        value: 200,
       },
       {
         type: 'RESOURCE_ABOVE',
         target: 'minerals',
-        value: 300
+        value: 300,
       },
       {
         type: 'STATUS_EQUALS',
         target: 'hangar',
         value: 'ready_for_production',
-        operator: 'equals'
-      }
+        operator: 'equals',
+      },
     ],
     actions: [
       {
@@ -125,12 +125,12 @@ export const hangarRules: AutomationRule[] = [
           moduleType: 'hangar' as ModuleType,
           data: {
             type: 'production',
-            priority: 3
-          }
-        }
-      }
+            priority: 3,
+          },
+        },
+      },
     ],
-    interval: 60000 // Check every minute
+    interval: 60000, // Check every minute
   },
   {
     id: 'hangar-ship-upgrade',
@@ -140,46 +140,46 @@ export const hangarRules: AutomationRule[] = [
     conditions: [
       {
         type: 'MODULE_ACTIVE',
-        target: 'hangar'
+        target: 'hangar',
       },
       {
         type: 'RESOURCE_ABOVE',
         target: 'energy',
-        value: 300
+        value: 300,
       },
       {
         type: 'RESOURCE_ABOVE',
         target: 'minerals',
-        value: 400
+        value: 400,
       },
       {
         type: 'RESOURCE_ABOVE',
         target: 'plasma',
-        value: 100
+        value: 100,
       },
       {
         type: 'EVENT_OCCURRED',
         target: 'SHIP_EXPERIENCE_THRESHOLD',
         value: {
-          timeWindow: 60000 // Last minute
-        }
-      }
+          timeWindow: 60000, // Last minute
+        },
+      },
     ],
     actions: [
       {
         type: 'CONSUME_RESOURCES',
         target: 'energy',
-        value: 300
+        value: 300,
       },
       {
         type: 'CONSUME_RESOURCES',
         target: 'minerals',
-        value: 400
+        value: 400,
       },
       {
         type: 'CONSUME_RESOURCES',
         target: 'plasma',
-        value: 100
+        value: 100,
       },
       {
         type: 'EMIT_EVENT',
@@ -189,12 +189,12 @@ export const hangarRules: AutomationRule[] = [
           moduleType: 'hangar' as ModuleType,
           data: {
             type: 'upgrade',
-            priority: 4
-          }
-        }
-      }
+            priority: 4,
+          },
+        },
+      },
     ],
-    interval: 120000 // Check every 2 minutes
+    interval: 120000, // Check every 2 minutes
   },
   {
     id: 'hangar-emergency-recall',
@@ -204,21 +204,21 @@ export const hangarRules: AutomationRule[] = [
     conditions: [
       {
         type: 'MODULE_ACTIVE',
-        target: 'hangar'
+        target: 'hangar',
       },
       {
         type: 'EVENT_OCCURRED',
         target: 'SHIP_HEALTH_CRITICAL',
         value: {
-          timeWindow: 5000 // Last 5 seconds
-        }
+          timeWindow: 5000, // Last 5 seconds
+        },
       },
       {
         type: 'STATUS_EQUALS',
         target: 'hangar',
         value: 'in_combat',
-        operator: 'equals'
-      }
+        operator: 'equals',
+      },
     ],
     actions: [
       {
@@ -229,11 +229,11 @@ export const hangarRules: AutomationRule[] = [
           moduleType: 'hangar' as ModuleType,
           data: {
             type: 'recall',
-            priority: 1
-          }
-        }
-      }
+            priority: 1,
+          },
+        },
+      },
     ],
-    interval: 5000 // Check every 5 seconds
-  }
-]; 
+    interval: 5000, // Check every 5 seconds
+  },
+];

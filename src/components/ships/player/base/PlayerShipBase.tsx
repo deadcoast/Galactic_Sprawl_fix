@@ -1,6 +1,6 @@
+import { AlertTriangle, Crosshair, Shield } from 'lucide-react';
 import { PlayerShipProps } from '../../../../types/ships/PlayerShipTypes';
 import { canFireWeapon } from '../../../../utils/ships/shipUtils';
-import { AlertTriangle, Crosshair, Shield } from 'lucide-react';
 
 interface PlayerShipBaseProps extends PlayerShipProps {
   className?: string;
@@ -29,7 +29,7 @@ export function PlayerShipBase({
   return (
     <div className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6 ${className}`}>
       {/* Ship Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <h3 className="text-lg font-medium text-white">{ship.name}</h3>
           <div className="flex items-center text-sm text-gray-400">
@@ -39,7 +39,7 @@ export function PlayerShipBase({
           </div>
         </div>
         <div
-          className={`px-3 py-1 rounded-full text-sm ${
+          className={`rounded-full px-3 py-1 text-sm ${
             ship.status === 'engaging'
               ? 'bg-red-900/50 text-red-400'
               : ship.status === 'patrolling'
@@ -54,9 +54,9 @@ export function PlayerShipBase({
       </div>
 
       {/* Health & Shield Bars */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-4">
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Hull Integrity</span>
             <span
               className={
@@ -66,7 +66,7 @@ export function PlayerShipBase({
               {Math.round((ship.stats.health / ship.stats.maxHealth) * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full rounded-full transition-all ${
                 ship.stats.health < ship.stats.maxHealth * 0.3 ? 'bg-red-500' : 'bg-green-500'
@@ -79,15 +79,15 @@ export function PlayerShipBase({
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Shield Power</span>
             <span className="text-gray-300">
               {Math.round((ship.stats.shield / ship.stats.maxShield) * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
+              className="h-full rounded-full bg-blue-500 transition-all"
               style={{
                 width: `${(ship.stats.shield / ship.stats.maxShield) * 100}%`,
               }}
@@ -98,12 +98,12 @@ export function PlayerShipBase({
 
       {/* Weapon Mounts */}
       <div className="mb-6">
-        <div className="text-sm text-gray-400 mb-2">Weapons</div>
+        <div className="mb-2 text-sm text-gray-400">Weapons</div>
         <div className="space-y-2">
           {ship.stats.weapons.map(mount => (
             <div
               key={mount.id}
-              className="p-2 bg-gray-800/50 rounded-lg flex items-center justify-between"
+              className="flex items-center justify-between rounded-lg bg-gray-800/50 p-2"
             >
               <div className="text-xs text-gray-300">
                 {mount.currentWeapon ? (
@@ -119,7 +119,7 @@ export function PlayerShipBase({
                 <button
                   onClick={() => onFire?.()}
                   disabled={!canFireWeapon(mount.currentWeapon, ship.stats.energy)}
-                  className="px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs"
+                  className="rounded bg-gray-700 px-2 py-1 text-xs hover:bg-gray-600"
                 >
                   Fire
                 </button>
@@ -132,20 +132,20 @@ export function PlayerShipBase({
       {/* Special Abilities */}
       {ship.abilities.length > 0 && (
         <div className="mb-6">
-          <div className="text-sm text-gray-400 mb-2">Abilities</div>
+          <div className="mb-2 text-sm text-gray-400">Abilities</div>
           <div className="space-y-2">
             {ship.abilities.map(ability => (
               <button
                 key={ability.name}
                 onClick={() => onAbility?.()}
                 disabled={ability.active}
-                className={`w-full p-3 rounded-lg ${
+                className={`w-full rounded-lg p-3 ${
                   ability.active
                     ? `bg-${color}-500/20 border border-${color}-500/30`
                     : 'bg-gray-700/50 hover:bg-gray-600/50'
                 }`}
               >
-                <div className="flex items-center justify-between mb-1">
+                <div className="mb-1 flex items-center justify-between">
                   <span className="text-sm font-medium text-white">{ability.name}</span>
                   <span className="text-xs text-gray-400">{ability.cooldown}s</span>
                 </div>
@@ -161,31 +161,31 @@ export function PlayerShipBase({
         <button
           onClick={onFire}
           disabled={ship.status === 'disabled'}
-          className={`px-4 py-2 rounded-lg text-sm flex items-center justify-center space-x-2 ${
+          className={`flex items-center justify-center space-x-2 rounded-lg px-4 py-2 text-sm ${
             ship.status === 'disabled'
-              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              ? 'cursor-not-allowed bg-gray-700 text-gray-500'
               : `bg-${color}-500/20 hover:bg-${color}-500/30 text-${color}-200`
           }`}
         >
-          <Crosshair className="w-4 h-4" />
+          <Crosshair className="h-4 w-4" />
           <span>Fire</span>
         </button>
         <button
           onClick={onUpgrade}
           disabled={ship.status === 'disabled'}
-          className={`px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            ship.status === 'disabled' ? 'opacity-50 cursor-not-allowed' : ''
+          className={`flex items-center justify-center space-x-2 rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 ${
+            ship.status === 'disabled' ? 'cursor-not-allowed opacity-50' : ''
           }`}
         >
-          <Shield className="w-4 h-4" />
+          <Shield className="h-4 w-4" />
           <span>Upgrade</span>
         </button>
       </div>
 
       {/* Status Warnings */}
       {ship.status === 'disabled' && (
-        <div className="mt-4 p-3 bg-red-900/20 border border-red-700/30 rounded-lg flex items-start space-x-2">
-          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+        <div className="mt-4 flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3">
+          <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
           <span className="text-sm text-red-200">Ship systems critically damaged</span>
         </div>
       )}

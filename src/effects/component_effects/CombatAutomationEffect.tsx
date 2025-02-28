@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Shield, Crosshair, AlertTriangle, Zap } from 'lucide-react';
+import { AlertTriangle, Crosshair, Shield, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Position } from '../../types/core/GameTypes';
 
 interface CombatAutomationEffectProps {
@@ -61,17 +61,17 @@ export function CombatAutomationEffect({
   const getEffectIcon = () => {
     switch (type) {
       case 'formation':
-        return <Shield className={`w-8 h-8 text-${getEffectColor()}-400`} />;
+        return <Shield className={`h-8 w-8 text-${getEffectColor()}-400`} />;
       case 'engagement':
-        return <Crosshair className={`w-8 h-8 text-${getEffectColor()}-400`} />;
+        return <Crosshair className={`h-8 w-8 text-${getEffectColor()}-400`} />;
       case 'repair':
-        return <Zap className={`w-8 h-8 text-${getEffectColor()}-400`} />;
+        return <Zap className={`h-8 w-8 text-${getEffectColor()}-400`} />;
       case 'shield':
-        return <Shield className={`w-8 h-8 text-${getEffectColor()}-400`} />;
+        return <Shield className={`h-8 w-8 text-${getEffectColor()}-400`} />;
       case 'attack':
-        return <Crosshair className={`w-8 h-8 text-${getEffectColor()}-400`} />;
+        return <Crosshair className={`h-8 w-8 text-${getEffectColor()}-400`} />;
       case 'retreat':
-        return <AlertTriangle className={`w-8 h-8 text-${getEffectColor()}-400`} />;
+        return <AlertTriangle className={`h-8 w-8 text-${getEffectColor()}-400`} />;
     }
   };
 
@@ -81,7 +81,7 @@ export function CombatAutomationEffect({
 
   return (
     <div
-      className="absolute pointer-events-none"
+      className="pointer-events-none absolute"
       style={{
         left: position.x,
         top: position.y,
@@ -90,22 +90,20 @@ export function CombatAutomationEffect({
     >
       {/* Core Effect */}
       <div
-        className={`relative w-32 h-32 rounded-full bg-${color}-500/20 animate-pulse`}
+        className={`relative h-32 w-32 rounded-full bg-${color}-500/20 animate-pulse`}
         style={{
           animation: `pulse ${1 / intensity}s infinite`,
         }}
       >
         {/* Icon */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          {getEffectIcon()}
-        </div>
+        <div className="absolute inset-0 flex items-center justify-center">{getEffectIcon()}</div>
 
         {/* Particles */}
         {quality !== 'low' &&
           particles.map((particle, index) => (
             <div
               key={index}
-              className={`absolute w-1 h-1 rounded-full bg-${color}-400`}
+              className={`absolute h-1 w-1 rounded-full bg-${color}-400`}
               style={{
                 left: `${particle.x}%`,
                 top: `${particle.y}%`,
@@ -128,7 +126,7 @@ export function CombatAutomationEffect({
 
       {/* Effect Label */}
       <div
-        className={`mt-2 px-3 py-1 rounded-full bg-${color}-900/80 border border-${color}-500/50 text-${color}-200 text-xs text-center uppercase tracking-wider`}
+        className={`mt-2 rounded-full px-3 py-1 bg-${color}-900/80 border border-${color}-500/50 text-${color}-200 text-center text-xs uppercase tracking-wider`}
       >
         {type}
       </div>
@@ -149,4 +147,4 @@ style.textContent = `
     50% { transform: translate(3px, -3px); }
   }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);

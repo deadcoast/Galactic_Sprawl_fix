@@ -1,14 +1,14 @@
-import { ModuleEvent, ModuleEventType, moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { ModuleEventType, moduleEventBus } from '../../lib/modules/ModuleEvents';
 
 /**
  * Update priority levels
  */
 export enum UpdatePriority {
-  CRITICAL = 0,   // Run every frame, no matter what (physics, core game state)
-  HIGH = 1,       // Run most frames, can be skipped occasionally (AI, combat)
-  NORMAL = 2,     // Run regularly, can be skipped more often (resource updates)
-  LOW = 3,        // Run occasionally (visual effects, non-critical updates)
-  BACKGROUND = 4  // Run when there's spare time (analytics, cleanup)
+  CRITICAL = 0, // Run every frame, no matter what (physics, core game state)
+  HIGH = 1, // Run most frames, can be skipped occasionally (AI, combat)
+  NORMAL = 2, // Run regularly, can be skipped more often (resource updates)
+  LOW = 3, // Run occasionally (visual effects, non-critical updates)
+  BACKGROUND = 4, // Run when there's spare time (analytics, cleanup)
 }
 
 /**
@@ -39,11 +39,14 @@ export interface GameLoopStats {
   elapsedTime: number;
   frameCount: number;
   skippedFrames: number;
-  priorityStats: Record<UpdatePriority, {
-    count: number;
-    totalTime: number;
-    averageTime: number;
-  }>;
+  priorityStats: Record<
+    UpdatePriority,
+    {
+      count: number;
+      totalTime: number;
+      averageTime: number;
+    }
+  >;
 }
 
 /**
@@ -84,7 +87,7 @@ export class GameLoopManager {
       throttlePriorities: [UpdatePriority.LOW, UpdatePriority.BACKGROUND],
       statsInterval: 1000, // 1 second
       enableStats: true,
-      ...config
+      ...config,
     };
 
     // Initialize stats
@@ -102,8 +105,8 @@ export class GameLoopManager {
         [UpdatePriority.HIGH]: { count: 0, totalTime: 0, averageTime: 0 },
         [UpdatePriority.NORMAL]: { count: 0, totalTime: 0, averageTime: 0 },
         [UpdatePriority.LOW]: { count: 0, totalTime: 0, averageTime: 0 },
-        [UpdatePriority.BACKGROUND]: { count: 0, totalTime: 0, averageTime: 0 }
-      }
+        [UpdatePriority.BACKGROUND]: { count: 0, totalTime: 0, averageTime: 0 },
+      },
     };
   }
 
@@ -137,7 +140,7 @@ export class GameLoopManager {
       moduleId: 'game-loop-manager',
       moduleType: 'resource-manager',
       timestamp: Date.now(),
-      data: { config: this.config }
+      data: { config: this.config },
     });
   }
 
@@ -169,7 +172,7 @@ export class GameLoopManager {
       moduleId: 'game-loop-manager',
       moduleType: 'resource-manager',
       timestamp: Date.now(),
-      data: { stats: this.stats }
+      data: { stats: this.stats },
     });
   }
 
@@ -187,7 +190,7 @@ export class GameLoopManager {
       callback,
       priority,
       interval,
-      lastUpdate: performance.now()
+      lastUpdate: performance.now(),
     });
 
     // Emit update registered event
@@ -196,7 +199,7 @@ export class GameLoopManager {
       moduleId: 'game-loop-manager',
       moduleType: 'resource-manager',
       timestamp: Date.now(),
-      data: { id, priority, interval }
+      data: { id, priority, interval },
     });
   }
 
@@ -213,7 +216,7 @@ export class GameLoopManager {
         moduleId: 'game-loop-manager',
         moduleType: 'resource-manager',
         timestamp: Date.now(),
-        data: { id }
+        data: { id },
       });
     }
   }
@@ -231,7 +234,7 @@ export class GameLoopManager {
   public updateConfig(config: Partial<GameLoopConfig>): void {
     this.config = {
       ...this.config,
-      ...config
+      ...config,
     };
 
     // Emit config updated event
@@ -240,7 +243,7 @@ export class GameLoopManager {
       moduleId: 'game-loop-manager',
       moduleType: 'resource-manager',
       timestamp: Date.now(),
-      data: { config: this.config }
+      data: { config: this.config },
     });
   }
 
@@ -301,7 +304,7 @@ export class GameLoopManager {
   private processUpdates(deltaTime: number, elapsedTime: number): void {
     // Group updates by priority
     const priorityGroups: Map<UpdatePriority, UpdateRegistration[]> = new Map();
-    
+
     for (const update of this.updates.values()) {
       if (!priorityGroups.has(update.priority)) {
         priorityGroups.set(update.priority, []);
@@ -310,9 +313,13 @@ export class GameLoopManager {
     }
 
     // Process each priority group
-    for (let priority = UpdatePriority.CRITICAL; priority <= UpdatePriority.BACKGROUND; priority++) {
+    for (
+      let priority = UpdatePriority.CRITICAL;
+      priority <= UpdatePriority.BACKGROUND;
+      priority++
+    ) {
       const updates = priorityGroups.get(priority) || [];
-      
+
       // Skip throttled priorities if enabled
       if (
         this.config.priorityThrottling &&
@@ -337,34 +344,34 @@ export class GameLoopManager {
 
         // Measure update time
         const startTime = performance.now();
-        
+
         try {
           // Call the update callback
           update.callback(deltaTime, elapsedTime);
         } catch (error) {
           console.error(`Error in update ${update.id}:`, error);
-          
+
           // Emit error event
           moduleEventBus.emit({
             type: 'ERROR_OCCURRED' as ModuleEventType,
             moduleId: 'game-loop-manager',
             moduleType: 'resource-manager',
             timestamp: Date.now(),
-            data: { 
-              error, 
-              updateId: update.id, 
-              priority: update.priority 
-            }
+            data: {
+              error,
+              updateId: update.id,
+              priority: update.priority,
+            },
           });
         }
 
         // Update stats
         const endTime = performance.now();
         const updateTime = endTime - startTime;
-        
+
         this.stats.priorityStats[priority].count++;
         this.stats.priorityStats[priority].totalTime += updateTime;
-        this.stats.priorityStats[priority].averageTime = 
+        this.stats.priorityStats[priority].averageTime =
           this.stats.priorityStats[priority].totalTime / this.stats.priorityStats[priority].count;
       }
     }
@@ -376,29 +383,29 @@ export class GameLoopManager {
   private reportStats(): void {
     // Calculate average FPS
     const avgFps = this.frameCount / (this.config.statsInterval / 1000);
-    
+
     // Reset frame count for next interval
     this.frameCount = 0;
-    
+
     // Emit stats event
     moduleEventBus.emit({
       type: 'GAME_LOOP_STATS' as ModuleEventType,
       moduleId: 'game-loop-manager',
       moduleType: 'resource-manager',
       timestamp: Date.now(),
-      data: { 
+      data: {
         ...this.stats,
-        avgFps
-      }
+        avgFps,
+      },
     });
-    
+
     // Log stats if in development
     if (process.env.NODE_ENV === 'development') {
       console.debug('[GameLoop] Stats:', {
         fps: avgFps.toFixed(2),
         updateTime: this.stats.updateTime.toFixed(2) + 'ms',
         idleTime: this.stats.idleTime.toFixed(2) + 'ms',
-        skippedFrames: this.stats.skippedFrames
+        skippedFrames: this.stats.skippedFrames,
       });
     }
   }
@@ -413,4 +420,4 @@ export class GameLoopManager {
 }
 
 // Export singleton instance
-export const gameLoopManager = new GameLoopManager(); 
+export const gameLoopManager = new GameLoopManager();

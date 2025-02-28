@@ -7,4 +7,4 @@ export function useGameState() {
     throw new Error('useGameState must be used within a GameProvider');
   }
   return context;
-} 
+}

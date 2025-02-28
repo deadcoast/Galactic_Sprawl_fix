@@ -1,21 +1,20 @@
-import { LostNovaShipClass, FactionShipStats } from '../../types/ships/FactionShipTypes';
 import {
-  WeaponMount,
-  WeaponMountSize,
-  WeaponMountPosition,
-  WeaponStatus,
-  WeaponInstance,
-} from '../../types/weapons/WeaponTypes';
-import {
-  PLASMA_EFFECT,
-  GAUSS_EFFECT,
-  EXPLOSIVE_EFFECT,
   DAMAGE_BOOST_EFFECT,
-  SPEED_BOOST_EFFECT,
-  STEALTH_EFFECT,
-  SPEED_REDUCTION_EFFECT,
+  EXPLOSIVE_EFFECT,
+  GAUSS_EFFECT,
+  PLASMA_EFFECT,
   SHIELD_FIELD_EFFECT,
+  SPEED_BOOST_EFFECT,
+  SPEED_REDUCTION_EFFECT,
+  STEALTH_EFFECT,
 } from '../../effects/types_effects/shipEffects';
+import { FactionShipStats, LostNovaShipClass } from '../../types/ships/FactionShipTypes';
+import {
+  WeaponInstance,
+  WeaponMountPosition,
+  WeaponMountSize,
+  WeaponStatus,
+} from '../../types/weapons/WeaponTypes';
 
 export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
   eclipseScythe: {

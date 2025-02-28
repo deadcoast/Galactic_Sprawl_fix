@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { Pause, Play, SkipBack, SkipForward, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { useGame } from '../../../../contexts/GameContext';
-import { Play, Pause, SkipBack, SkipForward, X } from 'lucide-react';
 import { GameEvent } from '../../../../types/core/GameTypes';
 
 interface MissionReplayProps {
@@ -10,12 +10,12 @@ interface MissionReplayProps {
 
 export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
   const gameContext = useGame();
-  
+
   // Ensure context is available
   if (!gameContext) {
     return null;
   }
-  
+
   const { state } = gameContext;
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -23,24 +23,26 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
 
   // Find the mission and related events
   const mission = state.missions.history.find((m: { id: string }) => m.id === missionId);
-  const events = state.events.filter((e: GameEvent) => 
-    e.timestamp >= (mission?.timestamp || 0) && 
-    e.timestamp <= (mission?.timestamp || 0) + 3600000 // 1 hour window
+  const events = state.events.filter(
+    (e: GameEvent) =>
+      e.timestamp >= (mission?.timestamp || 0) && e.timestamp <= (mission?.timestamp || 0) + 3600000 // 1 hour window
   );
 
   // Calculate total duration
-  const duration = events.length > 0 ? 
-    events[events.length - 1].timestamp - events[0].timestamp : 
-    0;
+  const duration =
+    events.length > 0 ? events[events.length - 1].timestamp - events[0].timestamp : 0;
 
   // Handle playback controls
   const togglePlayback = useCallback(() => {
     setIsPlaying(!isPlaying);
   }, [isPlaying]);
 
-  const handleSeek = useCallback((time: number) => {
-    setCurrentTime(Math.max(0, Math.min(time, duration)));
-  }, [duration]);
+  const handleSeek = useCallback(
+    (time: number) => {
+      setCurrentTime(Math.max(0, Math.min(time, duration)));
+    },
+    [duration]
+  );
 
   const handleSpeedChange = useCallback((speed: number) => {
     setPlaybackSpeed(speed);
@@ -54,7 +56,7 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
 
     const interval = setInterval(() => {
       setCurrentTime(time => {
-        const newTime = time + (100 * playbackSpeed);
+        const newTime = time + 100 * playbackSpeed;
         if (newTime >= duration) {
           setIsPlaying(false);
           return duration;
@@ -71,30 +73,30 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
   }
 
   // Get events up to current time
-  const currentEvents = events.filter((e: GameEvent) => 
-    e.timestamp <= events[0].timestamp + currentTime
+  const currentEvents = events.filter(
+    (e: GameEvent) => e.timestamp <= events[0].timestamp + currentTime
   );
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-gray-900 rounded-lg border border-gray-700 p-6 max-w-4xl w-full mx-4">
-        <div className="flex items-center justify-between mb-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="mx-4 w-full max-w-4xl rounded-lg border border-gray-700 bg-gray-900 p-6">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Mission Replay</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
-            <X className="w-5 h-5 text-gray-400" />
+          <button onClick={onClose} className="rounded-lg p-2 transition-colors hover:bg-gray-800">
+            <X className="h-5 w-5 text-gray-400" />
           </button>
         </div>
 
         {/* Mission Details */}
         <div className="mb-6">
-          <div className="text-lg text-white mb-2">{mission.description}</div>
+          <div className="mb-2 text-lg text-white">{mission.description}</div>
           <div className="text-sm text-gray-400">
             {new Date(mission.timestamp).toLocaleString()}
           </div>
         </div>
 
         {/* Replay Visualization */}
-        <div className="relative h-96 bg-gray-800/50 rounded-lg mb-6 overflow-hidden">
+        <div className="relative mb-6 h-96 overflow-hidden rounded-lg bg-gray-800/50">
           {/* Map View */}
           <div className="absolute inset-0">
             {/* Render map with ship paths and events */}
@@ -108,18 +110,18 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
                   transition: 'all 0.5s ease-out',
                 }}
               >
-                <div className="w-2 h-2 bg-teal-400 rounded-full" />
+                <div className="h-2 w-2 rounded-full bg-teal-400" />
               </div>
             ))}
           </div>
 
           {/* Event Timeline */}
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-gray-900/90 to-transparent p-4">
-            <div className="flex items-center space-x-4 mb-4">
+            <div className="mb-4 flex items-center space-x-4">
               {currentEvents.map((event: GameEvent, index: number) => (
                 <div
                   key={index}
-                  className="w-2 h-2 rounded-full bg-teal-400"
+                  className="h-2 w-2 rounded-full bg-teal-400"
                   style={{
                     left: `${((event.timestamp - events[0].timestamp) / duration) * 100}%`,
                   }}
@@ -134,25 +136,25 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => handleSeek(0)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              className="rounded-lg p-2 transition-colors hover:bg-gray-800"
             >
-              <SkipBack className="w-5 h-5 text-teal-400" />
+              <SkipBack className="h-5 w-5 text-teal-400" />
             </button>
             <button
               onClick={togglePlayback}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              className="rounded-lg p-2 transition-colors hover:bg-gray-800"
             >
               {isPlaying ? (
-                <Pause className="w-5 h-5 text-teal-400" />
+                <Pause className="h-5 w-5 text-teal-400" />
               ) : (
-                <Play className="w-5 h-5 text-teal-400" />
+                <Play className="h-5 w-5 text-teal-400" />
               )}
             </button>
             <button
               onClick={() => handleSeek(duration)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              className="rounded-lg p-2 transition-colors hover:bg-gray-800"
             >
-              <SkipForward className="w-5 h-5 text-teal-400" />
+              <SkipForward className="h-5 w-5 text-teal-400" />
             </button>
           </div>
 
@@ -163,7 +165,7 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
               <button
                 key={speed}
                 onClick={() => handleSpeedChange(speed)}
-                className={`px-2 py-1 rounded text-sm ${
+                className={`rounded px-2 py-1 text-sm ${
                   playbackSpeed === speed
                     ? 'bg-teal-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
@@ -182,4 +184,4 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
       </div>
     </div>
   );
-} 
+}

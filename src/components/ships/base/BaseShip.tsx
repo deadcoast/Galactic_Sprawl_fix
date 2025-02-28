@@ -1,18 +1,11 @@
+import { Crosshair } from 'lucide-react';
 import { ReactNode, useEffect } from 'react';
-import { CommonShipStats } from '../../../types/ships/CommonShipTypes';
-import { ShipStatus } from '../../../types/ships/ShipTypes';
-import {
-  WeaponMount,
-  WeaponInstance,
-  WeaponState,
-  WeaponConfig,
-  CombatWeaponStats,
-} from '../../../types/weapons/WeaponTypes';
 import { ShipProvider, useShipState } from '../../../contexts/ShipContext';
+import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
 import { useShipActions } from '../../../hooks/ships/useShipActions';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
-import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
-import { Crosshair } from 'lucide-react';
+import { CommonShipStats } from '../../../types/ships/CommonShipTypes';
+import { WeaponMount } from '../../../types/weapons/WeaponTypes';
 
 interface BaseShipProps {
   id: string;
@@ -70,7 +63,7 @@ function BaseShipContent({
       <div className="ship-header mb-4">
         <h3 className="text-lg font-medium text-white">{state.name}</h3>
         <div
-          className={`status-badge px-2 py-1 rounded-full text-sm ${
+          className={`status-badge rounded-full px-2 py-1 text-sm ${
             state.status === 'engaging'
               ? 'bg-red-900/50 text-red-400'
               : state.status === 'patrolling'
@@ -87,46 +80,46 @@ function BaseShipContent({
       {/* Health & Shield Bars */}
       <div className="stats-container mb-4">
         <div className="stat-bar mb-2">
-          <div className="text-sm text-gray-400 mb-1">Shield</div>
-          <div className="h-2 bg-gray-700 rounded-full">
+          <div className="mb-1 text-sm text-gray-400">Shield</div>
+          <div className="h-2 rounded-full bg-gray-700">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
+              className="h-full rounded-full bg-blue-500 transition-all"
               style={{ width: `${(state.shield / state.maxShield) * 100}%` }}
             />
           </div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="mt-1 text-xs text-gray-500">
             {Math.round(state.shield)}/{state.maxShield}
           </div>
         </div>
         <div className="stat-bar">
-          <div className="text-sm text-gray-400 mb-1">Health</div>
-          <div className="h-2 bg-gray-700 rounded-full">
+          <div className="mb-1 text-sm text-gray-400">Health</div>
+          <div className="h-2 rounded-full bg-gray-700">
             <div
-              className="h-full bg-red-500 rounded-full transition-all"
+              className="h-full rounded-full bg-red-500 transition-all"
               style={{ width: `${(state.health / state.maxHealth) * 100}%` }}
             />
           </div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="mt-1 text-xs text-gray-500">
             {Math.round(state.health)}/{state.maxHealth}
           </div>
         </div>
       </div>
 
       {/* Weapon Systems */}
-      <div className="weapons-container grid grid-cols-2 gap-3 mb-4">
+      <div className="weapons-container mb-4 grid grid-cols-2 gap-3">
         {state.weapons.map(mount => {
           if (!mount.currentWeapon) return null;
 
           return (
             <div
               key={mount.id}
-              className={`p-3 rounded-lg ${
+              className={`rounded-lg p-3 ${
                 mount.currentWeapon.state.status === 'ready'
                   ? 'bg-gray-800/50 hover:bg-gray-700/50'
                   : 'bg-gray-800/30'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-medium text-white">
                   {mount.currentWeapon.config.name}
                 </div>
@@ -149,13 +142,13 @@ function BaseShipContent({
               <button
                 onClick={() => handleFire(mount.id)}
                 disabled={mount.currentWeapon.state.status !== 'ready'}
-                className={`mt-2 w-full px-3 py-1.5 rounded flex items-center justify-center space-x-2 ${
+                className={`mt-2 flex w-full items-center justify-center space-x-2 rounded px-3 py-1.5 ${
                   mount.currentWeapon.state.status === 'ready'
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                    ? 'bg-gray-700 text-white hover:bg-gray-600'
+                    : 'cursor-not-allowed bg-gray-800 text-gray-500'
                 }`}
               >
-                <Crosshair className="w-4 h-4" />
+                <Crosshair className="h-4 w-4" />
                 <span>Fire</span>
               </button>
             </div>
@@ -166,10 +159,10 @@ function BaseShipContent({
       {/* Active Effects */}
       {activeEffects.length > 0 && (
         <div className="active-effects mb-4">
-          <div className="text-sm text-gray-400 mb-2">Active Effects</div>
+          <div className="mb-2 text-sm text-gray-400">Active Effects</div>
           <div className="space-y-2">
             {activeEffects.map((effect: BaseEffect) => (
-              <div key={effect.id} className="px-3 py-2 bg-gray-800/50 rounded-lg text-sm">
+              <div key={effect.id} className="rounded-lg bg-gray-800/50 px-3 py-2 text-sm">
                 <div className="font-medium text-gray-300">{effect.name}</div>
                 <div className="text-xs text-gray-400">{effect.description}</div>
               </div>
@@ -187,7 +180,7 @@ function BaseShipContent({
           <button
             onClick={onEngage}
             disabled={state.status === 'disabled'}
-            className="flex-1 px-4 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="flex-1 rounded-lg bg-red-900/30 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-900/50 disabled:opacity-50"
           >
             Engage
           </button>
@@ -196,7 +189,7 @@ function BaseShipContent({
           <button
             onClick={onRetreat}
             disabled={state.status === 'disabled'}
-            className="flex-1 px-4 py-2 bg-yellow-900/30 hover:bg-yellow-900/50 text-yellow-400 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="flex-1 rounded-lg bg-yellow-900/30 px-4 py-2 text-sm font-medium text-yellow-400 transition-colors hover:bg-yellow-900/50 disabled:opacity-50"
           >
             Retreat
           </button>

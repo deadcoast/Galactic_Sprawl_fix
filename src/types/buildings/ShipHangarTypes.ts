@@ -1,7 +1,7 @@
-import { Tier, Effect } from '../core/GameTypes';
+import { Effect, Tier } from '../core/GameTypes';
 import { ResourceCost } from '../resources/ResourceTypes';
-import { PlayerShipClass, PlayerShipCategory } from '../ships/PlayerShipTypes';
 import { CommonShip } from '../ships/CommonShipTypes';
+import { PlayerShipCategory, PlayerShipClass } from '../ships/PlayerShipTypes';
 
 /**
  * Ship build queue item

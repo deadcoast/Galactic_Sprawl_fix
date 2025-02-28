@@ -1,9 +1,9 @@
-import { ThresholdPresetsPanel } from './ThresholdPresetsPanel';
-import { ThresholdStatusIndicator } from './ThresholdStatusIndicator';
-import { useThreshold } from '../../../../contexts/ThresholdContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bookmark, Database, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useThreshold } from '../../../../contexts/ThresholdContext';
+import { ThresholdPresetsPanel } from './ThresholdPresetsPanel';
+import { ThresholdStatusIndicator } from './ThresholdStatusIndicator';
 
 interface ThresholdManagerProps {
   resourceId: string;
@@ -78,19 +78,19 @@ export function ThresholdManager({
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-lg bg-gray-800 p-4">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Database className="text-indigo-400" size={20} />
           <h3 className="text-lg font-semibold text-white">{resourceName}</h3>
           {resource?.autoMine && (
-            <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">Auto</span>
+            <span className="rounded bg-blue-500 px-2 py-1 text-xs text-white">Auto</span>
           )}
         </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={toggleAutoMine}
-            className={`px-3 py-1 rounded text-sm ${
+            className={`rounded px-3 py-1 text-sm ${
               resource?.autoMine ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-300'
             }`}
           >
@@ -98,14 +98,14 @@ export function ThresholdManager({
           </button>
           <button
             onClick={() => setShowPresetsPanel(true)}
-            className="p-2 hover:bg-gray-700 rounded"
+            className="rounded p-2 hover:bg-gray-700"
             title="Manage Presets"
           >
             <Bookmark size={16} className="text-gray-400" />
           </button>
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className="p-2 hover:bg-gray-700 rounded"
+            className="rounded p-2 hover:bg-gray-700"
           >
             <Settings size={16} className="text-gray-400" />
           </button>
@@ -128,25 +128,25 @@ export function ThresholdManager({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="space-y-4 mt-4"
+            className="mt-4 space-y-4"
           >
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Minimum Threshold</label>
+                <label className="mb-1 block text-sm text-gray-400">Minimum Threshold</label>
                 <input
                   type="number"
                   value={minThreshold}
                   onChange={e => setMinThreshold(Number(e.target.value))}
-                  className="w-full bg-gray-700 text-white px-3 py-2 rounded"
+                  className="w-full rounded bg-gray-700 px-3 py-2 text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Maximum Threshold</label>
+                <label className="mb-1 block text-sm text-gray-400">Maximum Threshold</label>
                 <input
                   type="number"
                   value={maxThreshold}
                   onChange={e => setMaxThreshold(Number(e.target.value))}
-                  className="w-full bg-gray-700 text-white px-3 py-2 rounded"
+                  className="w-full rounded bg-gray-700 px-3 py-2 text-white"
                 />
               </div>
             </div>
@@ -154,13 +154,13 @@ export function ThresholdManager({
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setIsEditing(false)}
-                className="px-4 py-2 bg-gray-700 text-gray-300 rounded hover:bg-gray-600"
+                className="rounded bg-gray-700 px-4 py-2 text-gray-300 hover:bg-gray-600"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveThresholds}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
               >
                 Save
               </button>

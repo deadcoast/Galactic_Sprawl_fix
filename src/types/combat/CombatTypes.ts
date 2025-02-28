@@ -1,28 +1,28 @@
-import {
-  WeaponCategory,
-  WeaponVariant,
-  CombatWeaponStats,
-  WeaponConfig,
-  WeaponInstance,
-  WeaponType,
-  WeaponMount,
-  WeaponEffect,
-} from '../weapons/WeaponTypes';
-import { Effect, Position } from '../core/GameTypes';
-import { WeaponSystem } from '../weapons/WeaponTypes';
-import { FactionId, FactionBehaviorType } from '../ships/FactionTypes';
+import { Effect } from '../core/GameTypes';
 import { FactionShipClass } from '../ships/FactionShipTypes';
+import { FactionId } from '../ships/FactionTypes';
+import {
+  CombatWeaponStats,
+  WeaponCategory,
+  WeaponConfig,
+  WeaponEffect,
+  WeaponInstance,
+  WeaponMount,
+  WeaponSystem,
+  WeaponType,
+  WeaponVariant,
+} from '../weapons/WeaponTypes';
 
 // Re-export weapon types for backward compatibility
 export type {
   WeaponCategory,
-  WeaponVariant,
-  CombatWeaponStats as WeaponStats,
   WeaponConfig,
-  WeaponInstance,
-  WeaponType,
-  WeaponMount,
   WeaponEffect,
+  WeaponInstance,
+  WeaponMount,
+  CombatWeaponStats as WeaponStats,
+  WeaponType,
+  WeaponVariant,
 };
 
 // Combat-specific types

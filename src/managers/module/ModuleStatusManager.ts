@@ -1,5 +1,4 @@
-import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { moduleManager } from './ModuleManager';
 
 /**
@@ -38,6 +37,16 @@ export interface StatusHistoryEntry {
 }
 
 /**
+ * Module alert interface
+ */
+export interface ModuleAlert {
+  level: 'info' | 'warning' | 'error' | 'critical';
+  message: string;
+  timestamp: number;
+  acknowledged: boolean;
+}
+
+/**
  * Module status details
  */
 export interface ModuleStatusDetails {
@@ -51,12 +60,7 @@ export interface ModuleStatusDetails {
     reliability: number;
     performance: number;
   };
-  alerts: {
-    level: 'info' | 'warning' | 'error' | 'critical';
-    message: string;
-    timestamp: number;
-    acknowledged: boolean;
-  }[];
+  alerts: ModuleAlert[];
 }
 
 /**
@@ -68,13 +72,14 @@ export class ModuleStatusManager {
   private statusUpdateInterval: number;
   private intervalId?: NodeJS.Timeout;
 
-  constructor(statusUpdateInterval = 60000) { // Default to 1 minute updates
+  constructor(statusUpdateInterval = 60000) {
+    // Default to 1 minute updates
     this.moduleStatuses = new Map();
     this.statusUpdateInterval = statusUpdateInterval;
-    
+
     // Subscribe to module events
     this.subscribeToEvents();
-    
+
     // Start status update interval
     this.startStatusUpdates();
   }
@@ -90,11 +95,11 @@ export class ModuleStatusManager {
     moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, this.handleModuleUpgraded);
     moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, this.handleModuleActivated);
     moduleEventBus.subscribe('MODULE_DEACTIVATED' as ModuleEventType, this.handleModuleDeactivated);
-    
+
     // Status events
     moduleEventBus.subscribe('STATUS_CHANGED' as ModuleEventType, this.handleStatusChanged);
     moduleEventBus.subscribe('ERROR_OCCURRED' as ModuleEventType, this.handleErrorOccurred);
-    
+
     // Resource events that might affect status
     moduleEventBus.subscribe('RESOURCE_SHORTAGE' as ModuleEventType, this.handleResourceShortage);
   }
@@ -123,7 +128,7 @@ export class ModuleStatusManager {
    */
   private updateAllModuleMetrics(): void {
     const modules = Array.from(moduleManager.getActiveModules());
-    
+
     for (const module of modules) {
       this.updateModuleMetrics(module.id);
     }
@@ -146,10 +151,10 @@ export class ModuleStatusManager {
     // Calculate uptime (time since first activation)
     const firstActivation = statusDetails.history.find(entry => entry.status === 'active');
     if (firstActivation) {
-      const uptime = module.isActive 
-        ? Date.now() - firstActivation.timestamp 
+      const uptime = module.isActive
+        ? Date.now() - firstActivation.timestamp
         : statusDetails.metrics.uptime;
-      
+
       statusDetails.metrics.uptime = uptime;
     }
 
@@ -186,21 +191,21 @@ export class ModuleStatusManager {
     statusDetails.metrics.efficiency = efficiency;
 
     // Calculate reliability (percentage of time without errors)
-    const errorEntries = statusDetails.history.filter(
-      entry => ['error', 'critical', 'offline'].includes(entry.status)
+    const errorEntries = statusDetails.history.filter(entry =>
+      ['error', 'critical', 'offline'].includes(entry.status)
     );
     const totalTime = Date.now() - statusDetails.history[0].timestamp;
     let errorTime = 0;
-    
+
     for (const entry of errorEntries) {
       errorTime += entry.duration || 0;
     }
-    
-    statusDetails.metrics.reliability = Math.max(0, Math.min(1, 1 - (errorTime / totalTime)));
+
+    statusDetails.metrics.reliability = Math.max(0, Math.min(1, 1 - errorTime / totalTime));
 
     // Calculate performance based on level and status
     let performance = module.level / 10; // Base performance from level (0.1 to 1.0)
-    
+
     // Adjust based on status
     switch (statusDetails.currentStatus) {
       case 'optimized':
@@ -219,7 +224,7 @@ export class ModuleStatusManager {
         // No adjustment
         break;
     }
-    
+
     statusDetails.metrics.performance = Math.min(1, performance);
 
     // Update last updated timestamp
@@ -233,8 +238,8 @@ export class ModuleStatusManager {
       timestamp: Date.now(),
       data: {
         status: statusDetails.currentStatus,
-        metrics: statusDetails.metrics
-      }
+        metrics: statusDetails.metrics,
+      },
     });
   }
 
@@ -254,17 +259,17 @@ export class ModuleStatusManager {
       history: [
         {
           status: module.status as ExtendedModuleStatus,
-          timestamp: Date.now()
-        }
+          timestamp: Date.now(),
+        },
       ],
       lastUpdated: Date.now(),
       metrics: {
         uptime: 0,
         efficiency: 1.0,
         reliability: 1.0,
-        performance: module.level / 10
+        performance: module.level / 10,
       },
-      alerts: []
+      alerts: [],
     };
 
     this.moduleStatuses.set(moduleId, statusDetails);
@@ -274,8 +279,8 @@ export class ModuleStatusManager {
    * Update the status of a module
    */
   public updateModuleStatus(
-    moduleId: string, 
-    status: ExtendedModuleStatus, 
+    moduleId: string,
+    status: ExtendedModuleStatus,
     reason?: string
   ): boolean {
     const module = moduleManager.getModule(moduleId);
@@ -285,7 +290,7 @@ export class ModuleStatusManager {
     }
 
     let statusDetails = this.moduleStatuses.get(moduleId);
-    
+
     // Initialize status tracking if not already done
     if (!statusDetails) {
       this.initializeModuleStatus(moduleId);
@@ -305,11 +310,11 @@ export class ModuleStatusManager {
     const newEntry: StatusHistoryEntry = {
       status,
       timestamp: Date.now(),
-      reason
+      reason,
     };
-    
+
     statusDetails.history.push(newEntry);
-    
+
     // Update current and previous status
     statusDetails.previousStatus = statusDetails.currentStatus;
     statusDetails.currentStatus = status;
@@ -318,7 +323,7 @@ export class ModuleStatusManager {
     // Update module's basic status if it's one of the core statuses
     if (['active', 'constructing', 'inactive'].includes(status)) {
       module.status = status as 'active' | 'constructing' | 'inactive';
-      
+
       // Update module's active state
       if (status === 'active') {
         module.isActive = true;
@@ -336,15 +341,23 @@ export class ModuleStatusManager {
       data: {
         status,
         previousStatus: statusDetails.previousStatus,
-        reason
-      }
+        reason,
+      },
     });
 
     // Create alert for critical statuses
     if (['error', 'critical', 'offline'].includes(status)) {
-      this.addAlert(moduleId, 'error', `Module entered ${status} state${reason ? ': ' + reason : ''}`);
+      this.addAlert(
+        moduleId,
+        'error',
+        `Module entered ${status} state${reason ? ': ' + reason : ''}`
+      );
     } else if (['degraded', 'overloaded'].includes(status)) {
-      this.addAlert(moduleId, 'warning', `Module performance degraded${reason ? ': ' + reason : ''}`);
+      this.addAlert(
+        moduleId,
+        'warning',
+        `Module performance degraded${reason ? ': ' + reason : ''}`
+      );
     } else if (['optimized', 'boost'].includes(status)) {
       this.addAlert(moduleId, 'info', `Module performance enhanced${reason ? ': ' + reason : ''}`);
     }
@@ -356,8 +369,8 @@ export class ModuleStatusManager {
    * Add an alert for a module
    */
   public addAlert(
-    moduleId: string, 
-    level: 'info' | 'warning' | 'error' | 'critical', 
+    moduleId: string,
+    level: 'info' | 'warning' | 'error' | 'critical',
     message: string
   ): void {
     const statusDetails = this.moduleStatuses.get(moduleId);
@@ -369,7 +382,7 @@ export class ModuleStatusManager {
       level,
       message,
       timestamp: Date.now(),
-      acknowledged: false
+      acknowledged: false,
     };
 
     statusDetails.alerts.push(alert);
@@ -382,7 +395,7 @@ export class ModuleStatusManager {
         moduleId,
         moduleType: module.type,
         timestamp: Date.now(),
-        data: { alert }
+        data: { alert },
       });
     }
   }
@@ -424,7 +437,7 @@ export class ModuleStatusManager {
   /**
    * Get alerts for a module
    */
-  public getModuleAlerts(moduleId: string, onlyUnacknowledged = false): any[] {
+  public getModuleAlerts(moduleId: string, onlyUnacknowledged = false): ModuleAlert[] {
     const alerts = this.moduleStatuses.get(moduleId)?.alerts || [];
     return onlyUnacknowledged ? alerts.filter(alert => !alert.acknowledged) : alerts;
   }
@@ -434,13 +447,13 @@ export class ModuleStatusManager {
    */
   public getModulesByStatus(status: ExtendedModuleStatus): string[] {
     const moduleIds: string[] = [];
-    
+
     this.moduleStatuses.forEach((details, moduleId) => {
       if (details.currentStatus === status) {
         moduleIds.push(moduleId);
       }
     });
-    
+
     return moduleIds;
   }
 
@@ -449,31 +462,31 @@ export class ModuleStatusManager {
    */
   public getModulesWithAlerts(level?: 'info' | 'warning' | 'error' | 'critical'): string[] {
     const moduleIds: string[] = [];
-    
+
     this.moduleStatuses.forEach((details, moduleId) => {
-      const hasAlerts = level 
+      const hasAlerts = level
         ? details.alerts.some(alert => alert.level === level && !alert.acknowledged)
         : details.alerts.some(alert => !alert.acknowledged);
-      
+
       if (hasAlerts) {
         moduleIds.push(moduleId);
       }
     });
-    
+
     return moduleIds;
   }
 
   /**
    * Handle module created event
    */
-  private handleModuleCreated = (event: any): void => {
+  private handleModuleCreated = (event: ModuleEvent): void => {
     this.initializeModuleStatus(event.moduleId);
   };
 
   /**
    * Handle module attached event
    */
-  private handleModuleAttached = (event: any): void => {
+  private handleModuleAttached = (event: ModuleEvent): void => {
     const { moduleId } = event;
     this.updateModuleStatus(moduleId, 'inactive', 'Module attached');
   };
@@ -481,7 +494,7 @@ export class ModuleStatusManager {
   /**
    * Handle module detached event
    */
-  private handleModuleDetached = (event: any): void => {
+  private handleModuleDetached = (event: ModuleEvent): void => {
     const { moduleId } = event;
     // We don't remove the status history, just mark it as detached
     this.updateModuleStatus(moduleId, 'inactive', 'Module detached');
@@ -490,20 +503,20 @@ export class ModuleStatusManager {
   /**
    * Handle module upgraded event
    */
-  private handleModuleUpgraded = (event: any): void => {
-    const { moduleId, newLevel } = event.data;
-    this.updateModuleStatus(moduleId, 'upgrading', `Upgrading to level ${newLevel}`);
-    
+  private handleModuleUpgraded = (event: ModuleEvent): void => {
+    const newLevel = event.data?.newLevel as number | undefined;
+    this.updateModuleStatus(event.moduleId, 'upgrading', `Upgrading to level ${newLevel}`);
+
     // After a short delay, return to active status
     setTimeout(() => {
-      this.updateModuleStatus(moduleId, 'active', 'Upgrade completed');
+      this.updateModuleStatus(event.moduleId, 'active', 'Upgrade completed');
     }, 5000);
   };
 
   /**
    * Handle module activated event
    */
-  private handleModuleActivated = (event: any): void => {
+  private handleModuleActivated = (event: ModuleEvent): void => {
     const { moduleId } = event;
     this.updateModuleStatus(moduleId, 'active', 'Module activated');
   };
@@ -511,7 +524,7 @@ export class ModuleStatusManager {
   /**
    * Handle module deactivated event
    */
-  private handleModuleDeactivated = (event: any): void => {
+  private handleModuleDeactivated = (event: ModuleEvent): void => {
     const { moduleId } = event;
     this.updateModuleStatus(moduleId, 'inactive', 'Module deactivated');
   };
@@ -519,12 +532,13 @@ export class ModuleStatusManager {
   /**
    * Handle status changed event
    */
-  private handleStatusChanged = (event: any): void => {
+  private handleStatusChanged = (event: ModuleEvent): void => {
     // Only handle events from other sources to avoid loops
     if (event.data && event.data.source !== 'ModuleStatusManager') {
       const { moduleId } = event;
-      const { status, reason } = event.data;
-      
+      const status = event.data?.status as ExtendedModuleStatus | undefined;
+      const reason = event.data?.reason as string | undefined;
+
       if (status && status !== this.getModuleStatus(moduleId)) {
         this.updateModuleStatus(moduleId, status, reason);
       }
@@ -534,15 +548,16 @@ export class ModuleStatusManager {
   /**
    * Handle error occurred event
    */
-  private handleErrorOccurred = (event: any): void => {
+  private handleErrorOccurred = (event: ModuleEvent): void => {
     const { moduleId } = event;
-    const { error, level, message } = event.data;
-    
+    const level = event.data?.level as 'info' | 'warning' | 'error' | 'critical' | undefined;
+    const message = event.data?.message as string | undefined;
+
     // Add alert
     if (message) {
       this.addAlert(moduleId, level || 'error', message);
     }
-    
+
     // Update status for serious errors
     if (level === 'critical') {
       this.updateModuleStatus(moduleId, 'critical', message || 'Critical error occurred');
@@ -554,17 +569,19 @@ export class ModuleStatusManager {
   /**
    * Handle resource shortage event
    */
-  private handleResourceShortage = (event: any): void => {
+  private handleResourceShortage = (event: ModuleEvent): void => {
     const { moduleId } = event;
-    const { resourceType, amount, required } = event.data;
-    
+    const resourceType = event.data?.resourceType as string | undefined;
+    const amount = event.data?.amount as number | undefined;
+    const required = event.data?.required as number | undefined;
+
     // Add alert
     this.addAlert(
-      moduleId, 
-      'warning', 
+      moduleId,
+      'warning',
       `Resource shortage: ${resourceType} (${amount}/${required})`
     );
-    
+
     // Update status if module is active
     const currentStatus = this.getModuleStatus(moduleId);
     if (currentStatus === 'active') {
@@ -578,18 +595,45 @@ export class ModuleStatusManager {
   public cleanup(): void {
     // Stop interval
     this.stopStatusUpdates();
-    
+
     // Unsubscribe from events
-    const unsubscribeCreated = moduleEventBus.subscribe('MODULE_CREATED' as ModuleEventType, this.handleModuleCreated);
-    const unsubscribeAttached = moduleEventBus.subscribe('MODULE_ATTACHED' as ModuleEventType, this.handleModuleAttached);
-    const unsubscribeDetached = moduleEventBus.subscribe('MODULE_DETACHED' as ModuleEventType, this.handleModuleDetached);
-    const unsubscribeUpgraded = moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, this.handleModuleUpgraded);
-    const unsubscribeActivated = moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, this.handleModuleActivated);
-    const unsubscribeDeactivated = moduleEventBus.subscribe('MODULE_DEACTIVATED' as ModuleEventType, this.handleModuleDeactivated);
-    const unsubscribeStatusChanged = moduleEventBus.subscribe('STATUS_CHANGED' as ModuleEventType, this.handleStatusChanged);
-    const unsubscribeErrorOccurred = moduleEventBus.subscribe('ERROR_OCCURRED' as ModuleEventType, this.handleErrorOccurred);
-    const unsubscribeResourceShortage = moduleEventBus.subscribe('RESOURCE_SHORTAGE' as ModuleEventType, this.handleResourceShortage);
-    
+    const unsubscribeCreated = moduleEventBus.subscribe(
+      'MODULE_CREATED' as ModuleEventType,
+      this.handleModuleCreated
+    );
+    const unsubscribeAttached = moduleEventBus.subscribe(
+      'MODULE_ATTACHED' as ModuleEventType,
+      this.handleModuleAttached
+    );
+    const unsubscribeDetached = moduleEventBus.subscribe(
+      'MODULE_DETACHED' as ModuleEventType,
+      this.handleModuleDetached
+    );
+    const unsubscribeUpgraded = moduleEventBus.subscribe(
+      'MODULE_UPGRADED' as ModuleEventType,
+      this.handleModuleUpgraded
+    );
+    const unsubscribeActivated = moduleEventBus.subscribe(
+      'MODULE_ACTIVATED' as ModuleEventType,
+      this.handleModuleActivated
+    );
+    const unsubscribeDeactivated = moduleEventBus.subscribe(
+      'MODULE_DEACTIVATED' as ModuleEventType,
+      this.handleModuleDeactivated
+    );
+    const unsubscribeStatusChanged = moduleEventBus.subscribe(
+      'STATUS_CHANGED' as ModuleEventType,
+      this.handleStatusChanged
+    );
+    const unsubscribeErrorOccurred = moduleEventBus.subscribe(
+      'ERROR_OCCURRED' as ModuleEventType,
+      this.handleErrorOccurred
+    );
+    const unsubscribeResourceShortage = moduleEventBus.subscribe(
+      'RESOURCE_SHORTAGE' as ModuleEventType,
+      this.handleResourceShortage
+    );
+
     if (typeof unsubscribeCreated === 'function') {
       unsubscribeCreated();
     }
@@ -617,11 +661,11 @@ export class ModuleStatusManager {
     if (typeof unsubscribeResourceShortage === 'function') {
       unsubscribeResourceShortage();
     }
-    
+
     // Clear data
     this.moduleStatuses.clear();
   }
 }
 
 // Export singleton instance
-export const moduleStatusManager = new ModuleStatusManager(); 
+export const moduleStatusManager = new ModuleStatusManager();

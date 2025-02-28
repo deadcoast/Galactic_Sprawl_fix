@@ -1,15 +1,15 @@
+import { AlertTriangle, Database, Grid2X2, Map, Truck } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { miningRules } from '../../../../config/automation/miningRules';
+import { ThresholdProvider, useThreshold } from '../../../../contexts/ThresholdContext';
+import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
+import { automationManager } from '../../../../managers/game/AutomationManager';
+import { ResourceTransferManager } from '../../../../managers/resource/ResourceTransferManager';
 import { AutomationMonitor } from './AutomationMonitor';
 import { MiningControls } from './MiningControls';
 import { MiningMap } from './MiningMap';
 import { ResourceStorage } from './ResourceStorage';
-import { ResourceTransferManager } from '../../../../managers/resource/ResourceTransferManager';
 import { ThresholdManager } from './ThresholdManager';
-import { ThresholdProvider, useThreshold } from '../../../../contexts/ThresholdContext';
-import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
-import { AlertTriangle, Database, Grid2X2, Map, Truck } from 'lucide-react';
-import { useEffect, useState, useMemo } from 'react';
-import { automationManager } from '../../../../managers/game/AutomationManager';
-import { miningRules } from '../../../../config/automation/miningRules';
 
 interface Resource {
   id: string;
@@ -174,15 +174,15 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
   }, []);
 
   return (
-    <div className="fixed inset-4 bg-gray-900/95 backdrop-blur-md rounded-lg border border-gray-700 shadow-2xl flex overflow-hidden">
+    <div className="fixed inset-4 flex overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md">
       {/* Left Panel - Resource Map */}
-      <div className="w-2/3 border-r border-gray-700 p-6 flex flex-col">
+      <div className="flex w-2/3 flex-col border-r border-gray-700 p-6">
         {/* Resource Storage Overview */}
         <ResourceStorage storageData={mockStorageData} />
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Database className="w-6 h-6 text-indigo-400" />
+            <Database className="h-6 w-6 text-indigo-400" />
             <h2 className="text-xl font-bold text-white">Mineral Processing Centre</h2>
           </div>
           <div className="flex items-center space-x-3">
@@ -191,43 +191,43 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
               <input
                 type="text"
                 placeholder="Search resources..."
-                className="w-64 px-4 py-2 bg-gray-800/90 rounded-lg border border-gray-700 text-white placeholder-gray-400"
+                className="w-64 rounded-lg border border-gray-700 bg-gray-800/90 px-4 py-2 text-white placeholder-gray-400"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex bg-gray-800 rounded-lg p-1">
+            <div className="flex rounded-lg bg-gray-800 p-1">
               <button
                 onClick={() => setView('map')}
-                className={`p-1.5 rounded ${
+                className={`rounded p-1.5 ${
                   view === 'map' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                <Map className="w-5 h-5" />
+                <Map className="h-5 w-5" />
               </button>
               <button
                 onClick={() => setView('grid')}
-                className={`p-1.5 rounded ${
+                className={`rounded p-1.5 ${
                   view === 'grid' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                <Grid2X2 className="w-5 h-5" />
+                <Grid2X2 className="h-5 w-5" />
               </button>
             </div>
             <button
               onClick={() => setMineAll(!mineAll)}
-              className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
+              className={`flex items-center space-x-2 rounded-lg px-4 py-2 ${
                 mineAll ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
-              <Truck className="w-4 h-4" />
+              <Truck className="h-4 w-4" />
               <span>Mine All</span>
             </button>
           </div>
         </div>
 
         {/* Resource Type Filters */}
-        <div className="flex space-x-2 mb-6">
+        <div className="mb-6 flex space-x-2">
           {[
             { id: 'all', label: 'All Resources', icon: Database },
             { id: 'mineral', label: 'Minerals', icon: Database },
@@ -237,13 +237,13 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
             <button
               key={id}
               onClick={() => setFilter(id as 'all' | 'mineral' | 'gas' | 'exotic')}
-              className={`px-3 py-2 rounded-lg flex items-center space-x-2 ${
+              className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                 filter === id
                   ? 'bg-indigo-600 text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="h-4 w-4" />
               <span>{label}</span>
             </button>
           ))}
@@ -261,7 +261,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
               quality={quality}
             />
           ) : (
-            <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1">
+            <div className="grid flex-1 grid-cols-2 gap-4 overflow-y-auto">
               {filteredResources.map(resource => (
                 <ThresholdManager
                   key={resource.id}
@@ -281,7 +281,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
       </div>
 
       {/* Right Panel - Controls & Details */}
-      <div className="w-1/3 p-6 flex flex-col space-y-6">
+      <div className="flex w-1/3 flex-col space-y-6 p-6">
         {selectedNode ? (
           <MiningControls
             resource={selectedNode}
@@ -294,9 +294,9 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
             }}
           />
         ) : (
-          <div className="h-48 flex items-center justify-center text-gray-400 text-center">
+          <div className="flex h-48 items-center justify-center text-center text-gray-400">
             <div>
-              <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <Database className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p>Select a resource node to view details and adjust mining parameters</p>
             </div>
           </div>

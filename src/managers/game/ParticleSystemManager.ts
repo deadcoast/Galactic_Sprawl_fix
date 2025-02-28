@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { EventEmitter } from '../../utils/EventEmitter';
 import { EntityPool } from '../../lib/optimization/EntityPool';
 import { Position } from '../../types/core/GameTypes';
+import { EventEmitter } from '../../utils/EventEmitter';
 
 interface Particle {
   id: string;

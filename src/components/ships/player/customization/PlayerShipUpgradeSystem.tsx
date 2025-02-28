@@ -76,39 +76,39 @@ export function PlayerShipUpgradeSystem({
   return (
     <div className={`bg-${color}-900/20 border border-${color}-700/30 rounded-lg p-6`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium text-white">{ship.name}</h3>
           <div className="text-sm text-gray-400">
             Tier {ship.tier} → {ship.tier + 1}
           </div>
         </div>
-        <div className="p-2 bg-indigo-500/20 rounded-lg">
-          <Rocket className="w-6 h-6 text-indigo-400" />
+        <div className="rounded-lg bg-indigo-500/20 p-2">
+          <Rocket className="h-6 w-6 text-indigo-400" />
         </div>
       </div>
 
       {/* Upgrade Requirements */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Requirements</h4>
+        <h4 className="mb-3 text-sm font-medium text-gray-300">Requirements</h4>
         <div className="space-y-2">
           {ship.requirements.map((req, index) => (
             <div
               key={index}
-              className={`flex items-center justify-between p-3 rounded-lg ${
-                req.met ? 'bg-green-900/20 border border-green-700/30' : 'bg-gray-700/50'
+              className={`flex items-center justify-between rounded-lg p-3 ${
+                req.met ? 'border border-green-700/30 bg-green-900/20' : 'bg-gray-700/50'
               }`}
             >
               <div className="flex items-center space-x-2">
-                {req.type === 'tech' && <Crosshair className="w-4 h-4 text-gray-400" />}
-                {req.type === 'resource' && <Shield className="w-4 h-4 text-gray-400" />}
-                {req.type === 'facility' && <Rocket className="w-4 h-4 text-gray-400" />}
+                {req.type === 'tech' && <Crosshair className="h-4 w-4 text-gray-400" />}
+                {req.type === 'resource' && <Shield className="h-4 w-4 text-gray-400" />}
+                {req.type === 'facility' && <Rocket className="h-4 w-4 text-gray-400" />}
                 <span className="text-sm text-gray-300">{req.name}</span>
               </div>
               {req.met ? (
                 <div className="text-xs text-green-400">Met</div>
               ) : (
-                <Lock className="w-4 h-4 text-gray-500" />
+                <Lock className="h-4 w-4 text-gray-500" />
               )}
             </div>
           ))}
@@ -117,18 +117,18 @@ export function PlayerShipUpgradeSystem({
 
       {/* Stat Improvements */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Improvements</h4>
+        <h4 className="mb-3 text-sm font-medium text-gray-300">Improvements</h4>
         <div className="grid grid-cols-2 gap-3">
           {Object.entries(ship.stats).map(([stat, values]) => (
-            <div key={stat} className="p-3 bg-gray-700/50 rounded-lg">
-              <div className="text-sm text-gray-400 capitalize mb-2">{stat}</div>
+            <div key={stat} className="rounded-lg bg-gray-700/50 p-3">
+              <div className="mb-2 text-sm capitalize text-gray-400">{stat}</div>
               <div className="flex items-center justify-between">
                 <div className="text-white">
                   {values.current}
                   {values.unit}
                 </div>
                 <div className="flex items-center text-sm">
-                  <ArrowRight className="w-4 h-4 text-indigo-400 mx-2" />
+                  <ArrowRight className="mx-2 h-4 w-4 text-indigo-400" />
                   <span className="text-indigo-400">
                     {values.upgraded}
                     {values.unit} ({getStatDifference(values.current, values.upgraded)})
@@ -142,15 +142,15 @@ export function PlayerShipUpgradeSystem({
 
       {/* Visual Upgrades */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Visual Enhancements</h4>
+        <h4 className="mb-3 text-sm font-medium text-gray-300">Visual Enhancements</h4>
         <div className="grid grid-cols-2 gap-3">
           {ship.visualUpgrades.map((upgrade, index) => (
             <div
               key={index}
-              className="p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-600/50 transition-colors"
+              className="cursor-pointer rounded-lg bg-gray-700/50 p-3 transition-colors hover:bg-gray-600/50"
               onClick={onPreviewUpgrade}
             >
-              <div className="text-sm font-medium text-white mb-1">{upgrade.name}</div>
+              <div className="mb-1 text-sm font-medium text-white">{upgrade.name}</div>
               <p className="text-xs text-gray-400">{upgrade.description}</p>
             </div>
           ))}
@@ -159,12 +159,12 @@ export function PlayerShipUpgradeSystem({
 
       {/* Resource Costs */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Resource Requirements</h4>
+        <h4 className="mb-3 text-sm font-medium text-gray-300">Resource Requirements</h4>
         <div className="space-y-2">
           {ship.resourceCost.map((resource, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
+              className="flex items-center justify-between rounded-lg bg-gray-700/50 p-3"
             >
               <span className="text-sm text-gray-300">{resource.type}</span>
               <div
@@ -183,20 +183,20 @@ export function PlayerShipUpgradeSystem({
       <button
         onClick={onUpgrade}
         disabled={!canUpgrade}
-        className={`w-full px-4 py-3 rounded-lg flex items-center justify-center space-x-2 ${
+        className={`flex w-full items-center justify-center space-x-2 rounded-lg px-4 py-3 ${
           canUpgrade
-            ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-            : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+            : 'cursor-not-allowed bg-gray-700 text-gray-500'
         }`}
       >
-        <Rocket className="w-5 h-5" />
+        <Rocket className="h-5 w-5" />
         <span>Upgrade to Tier {ship.tier + 1}</span>
       </button>
 
       {/* Warnings */}
       {!canUpgrade && (
-        <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-700/30 rounded-lg flex items-start space-x-2">
-          <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+        <div className="mt-4 flex items-start space-x-2 rounded-lg border border-yellow-700/30 bg-yellow-900/20 p-3">
+          <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-500" />
           <div className="text-sm text-yellow-200">
             {!ship.upgradeAvailable && 'Ship is not eligible for upgrade.'}
             {!allRequirementsMet && 'Not all upgrade requirements are met.'}

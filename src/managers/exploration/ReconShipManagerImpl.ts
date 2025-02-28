@@ -1,8 +1,8 @@
-import { EventEmitter } from '../../utils/EventEmitter';
-import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
-import { Position } from '../../types/core/GameTypes';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { Position } from '../../types/core/GameTypes';
+import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
+import { EventEmitter } from '../../utils/EventEmitter';
 import { combatManager } from '../combat/combatManager';
 
 interface Anomaly {
@@ -270,8 +270,11 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
             data: {
               type: 'anomaly',
               sector: task.target.id,
-              importance: anomalies.some(a => a.severity === 'high') ? 'high' : 
-                         anomalies.some(a => a.severity === 'medium') ? 'medium' : 'low',
+              importance: anomalies.some(a => a.severity === 'high')
+                ? 'high'
+                : anomalies.some(a => a.severity === 'medium')
+                  ? 'medium'
+                  : 'low',
               description: `Discovered ${anomalies.length} anomalies in ${task.target.id}`,
               xpGained: this.calculateExperienceGain(task, ship),
               anomalyDetails: anomalies.map(a => ({
@@ -294,8 +297,7 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
             data: {
               type: 'discovery',
               sector: task.target.id,
-              importance: sector.resources > 3 ? 'high' : 
-                         sector.resources > 1 ? 'medium' : 'low',
+              importance: sector.resources > 3 ? 'high' : sector.resources > 1 ? 'medium' : 'low',
               description: `Located ${sector.resources} resource deposits in ${task.target.id}`,
               xpGained: this.calculateExperienceGain(task, ship),
               resourcesFound: [{ type: 'Unknown', amount: sector.resources }],
@@ -321,9 +323,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
         moduleId: shipId,
         moduleType: 'radar' as ModuleType,
         timestamp: Date.now(),
-        data: { 
-          task, 
-          discoveries: ship.discoveries, 
+        data: {
+          task,
+          discoveries: ship.discoveries,
           experienceGained,
           heatMapValue: this.calculateHeatMapValue(sector),
         },
@@ -342,8 +344,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     // Anomaly contribution (30%)
     if (sector.anomalies) {
       const anomalyHeat = sector.anomalies.reduce((sum: number, anomaly: Anomaly) => {
-        return sum + (anomaly.severity === 'high' ? 0.3 : 
-                     anomaly.severity === 'medium' ? 0.2 : 0.1);
+        return (
+          sum + (anomaly.severity === 'high' ? 0.3 : anomaly.severity === 'medium' ? 0.2 : 0.1)
+        );
       }, 0);
       heatValue += anomalyHeat;
     }
@@ -385,7 +388,10 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     return anomalies;
   }
 
-  private generateAnomalyDescription(type: 'artifact' | 'signal' | 'phenomenon', severity: 'low' | 'medium' | 'high'): string {
+  private generateAnomalyDescription(
+    type: 'artifact' | 'signal' | 'phenomenon',
+    severity: 'low' | 'medium' | 'high'
+  ): string {
     const descriptions = {
       artifact: {
         high: 'Ancient technological marvel of immense power',
@@ -410,27 +416,27 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
   private calculateExperienceGain(task: ExplorationTask, ship: ReconShip): number {
     const baseXP = 100;
     const timeFactor = (Date.now() - task.assignedAt) / 1000 / 60; // Minutes
-    
+
     // Specialization bonus
     const specializationBonus = task.specialization === ship.specialization ? 1.5 : 1.2;
-    
+
     // Threat bonus
     const threatBonus = task.threatLevel ? 1 + task.threatLevel : 1;
-    
+
     // Efficiency bonus
     const efficiencyBonus = ship.efficiency;
-    
+
     // Discovery bonus
-    const discoveryBonus = ship.discoveries.anomaliesFound * 0.1 + 
-                          ship.discoveries.resourcesLocated * 0.05;
+    const discoveryBonus =
+      ship.discoveries.anomaliesFound * 0.1 + ship.discoveries.resourcesLocated * 0.05;
 
     return Math.floor(
-      baseXP * 
-      timeFactor * 
-      specializationBonus * 
-      threatBonus * 
-      efficiencyBonus * 
-      (1 + discoveryBonus)
+      baseXP *
+        timeFactor *
+        specializationBonus *
+        threatBonus *
+        efficiencyBonus *
+        (1 + discoveryBonus)
     );
   }
 

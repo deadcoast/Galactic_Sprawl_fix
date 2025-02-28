@@ -1,16 +1,10 @@
+import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { EventEmitter } from '../../lib/utils/EventEmitter';
-import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
-import { Position } from '../../types/core/GameTypes';
-import { moduleEventBus, ModuleEvent } from '../../lib/modules/ModuleEvents';
-import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { combatManager } from '../../managers/combat/combatManager';
-import { canFireWeapon } from '../../utils/ships/shipUtils';
-import {
-  WeaponInstance,
-  WeaponConfig,
-  WeaponState,
-  CombatWeaponStats,
-} from '../../types/weapons/WeaponTypes';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { Position } from '../../types/core/GameTypes';
+import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
+import { WeaponConfig, WeaponState } from '../../types/weapons/WeaponTypes';
 
 interface WarShip {
   id: string;
@@ -177,10 +171,12 @@ export class WarShipManagerImpl extends EventEmitter {
       if (readyWeapon) {
         readyWeapon.state.status = 'cooling';
         readyWeapon.state.currentStats.cooldown = Date.now();
-        ship.energy -= readyWeapon.config.baseStats.energyCost * (ship.techBonuses?.energyEfficiency || 1);
+        ship.energy -=
+          readyWeapon.config.baseStats.energyCost * (ship.techBonuses?.energyEfficiency || 1);
 
         // Update combat stats
-        ship.combatStats.damageDealt += readyWeapon.config.baseStats.damage * (ship.techBonuses?.weaponEfficiency || 1);
+        ship.combatStats.damageDealt +=
+          readyWeapon.config.baseStats.damage * (ship.techBonuses?.weaponEfficiency || 1);
       }
     }
   }

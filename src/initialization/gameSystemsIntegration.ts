@@ -1,95 +1,139 @@
 import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
-import { getSystemCommunication, SystemId } from '../utils/events/EventCommunication';
+import { CombatManager } from '../managers/combat/combatManager';
 import { gameLoopManager, UpdatePriority } from '../managers/game/GameLoopManager';
 import { ResourceManager } from '../managers/game/ResourceManager';
-import { ResourceThresholdManager } from '../managers/resource/ResourceThresholdManager';
-import { ResourceFlowManager } from '../managers/resource/ResourceFlowManager';
-import { ResourceStorageManager } from '../managers/resource/ResourceStorageManager';
+import { techTreeManager } from '../managers/game/techTreeManager';
+import { MiningResourceIntegration } from '../managers/mining/MiningResourceIntegration';
+import { MiningShipManagerImpl } from '../managers/mining/MiningShipManagerImpl';
 import { ResourceCostManager } from '../managers/resource/ResourceCostManager';
 import { ResourceExchangeManager } from '../managers/resource/ResourceExchangeManager';
-import { ResourcePoolManager } from '../managers/resource/ResourcePoolManager';
+import { ResourceFlowManager } from '../managers/resource/ResourceFlowManager';
 import { ResourceIntegration } from '../managers/resource/ResourceIntegration';
-import { MiningShipManagerImpl } from '../managers/mining/MiningShipManagerImpl';
-import { MiningResourceIntegration } from '../managers/mining/MiningResourceIntegration';
-import { CombatManager } from '../managers/combat/combatManager';
-import { techTreeManager } from '../managers/game/techTreeManager';
-import { EventPriorityQueue } from '../utils/events/EventFiltering';
+import { ResourcePoolManager } from '../managers/resource/ResourcePoolManager';
+import { ResourceStorageManager } from '../managers/resource/ResourceStorageManager';
+import { ResourceThresholdManager } from '../managers/resource/ResourceThresholdManager';
 import { ModuleType } from '../types/buildings/ModuleTypes';
+import { getSystemCommunication } from '../utils/events/EventCommunication';
+import { EventPriorityQueue } from '../utils/events/EventFiltering';
+
+// Define types for message payloads
+interface ResourceUpdatePayload {
+  resourceType: string;
+  [key: string]: unknown;
+}
+
+interface MiningUpdatePayload {
+  shipId: string;
+  [key: string]: unknown;
+}
+
+interface CombatUpdatePayload {
+  type: string;
+  [key: string]: unknown;
+}
+
+interface TechUpdatePayload {
+  nodeId: string;
+  node?: {
+    category: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
 
 /**
  * Integrates the event system with existing game systems
  */
 export function integrateWithGameSystems(): () => void {
-  console.log('Integrating Event System with Game Systems...');
-  
+  console.warn('Integrating Event System with Game Systems...');
+
   // Get system communications
-  const eventSystemComm = getSystemCommunication('event-system');
   const resourceSystemComm = getSystemCommunication('resource-system');
   const miningSystemComm = getSystemCommunication('mining-system');
   const combatSystemComm = getSystemCommunication('combat-system');
   const techSystemComm = getSystemCommunication('tech-system');
-  
+
   // Initialize cleanup functions array
   const cleanupFunctions: Array<() => void> = [];
-  
+
   // ===== Resource System Integration =====
-  
+
   // Get resource system instances
-  const resourceManager = (window as any).resourceManager as ResourceManager;
-  const thresholdManager = (window as any).thresholdManager as ResourceThresholdManager;
-  const flowManager = (window as any).flowManager as ResourceFlowManager;
-  const storageManager = (window as any).storageManager as ResourceStorageManager;
-  const costManager = (window as any).costManager as ResourceCostManager;
-  const exchangeManager = (window as any).exchangeManager as ResourceExchangeManager;
-  const poolManager = (window as any).poolManager as ResourcePoolManager;
-  
+  const resourceManager = (window as unknown as { resourceManager?: ResourceManager })
+    .resourceManager;
+  const thresholdManager = (window as unknown as { thresholdManager?: ResourceThresholdManager })
+    .thresholdManager;
+  const flowManager = (window as unknown as { flowManager?: ResourceFlowManager }).flowManager;
+  const storageManager = (window as unknown as { storageManager?: ResourceStorageManager })
+    .storageManager;
+  const costManager = (window as unknown as { costManager?: ResourceCostManager }).costManager;
+  const exchangeManager = (window as unknown as { exchangeManager?: ResourceExchangeManager })
+    .exchangeManager;
+  const poolManager = (window as unknown as { poolManager?: ResourcePoolManager }).poolManager;
+
   if (resourceManager) {
-    // Create resource integration
-    const resourceIntegration = new ResourceIntegration(
-      resourceManager,
-      thresholdManager,
-      flowManager,
-      storageManager,
-      costManager,
-      exchangeManager,
+    // Make sure all required managers are available
+    if (
+      thresholdManager &&
+      flowManager &&
+      storageManager &&
+      costManager &&
+      exchangeManager &&
       poolManager
-    );
-    
-    // Initialize resource integration
-    resourceIntegration.initialize();
-    
-    // Register resource system event handlers
-    const unregisterResourceHandler = resourceSystemComm.registerHandler('resource-update', (message) => {
-      try {
-        console.log(`Resource update message received: ${message.payload.resourceType}`);
-        
-        // Emit resource event
-        moduleEventBus.emit({
-          type: 'RESOURCE_UPDATED' as ModuleEventType,
-          moduleId: 'resource-system',
-          moduleType: 'resource-manager' as ModuleType,
-          timestamp: Date.now(),
-          data: message.payload
-        });
-      } catch (error) {
-        console.error('Error handling resource update:', error);
-      }
-    });
-    
-    // Add cleanup function
-    cleanupFunctions.push(() => {
-      unregisterResourceHandler();
-      // Additional resource system cleanup if needed
-    });
-    
-    console.log('Resource System integrated with Event System');
+    ) {
+      // Create resource integration
+      const resourceIntegration = new ResourceIntegration(
+        resourceManager,
+        thresholdManager,
+        flowManager,
+        storageManager,
+        costManager,
+        exchangeManager,
+        poolManager
+      );
+
+      // Initialize resource integration
+      resourceIntegration.initialize();
+
+      // Register resource system event handlers
+      const unregisterResourceHandler = resourceSystemComm.registerHandler(
+        'resource-update',
+        (message: { payload: ResourceUpdatePayload }) => {
+          try {
+            console.warn(`Resource update message received: ${message.payload.resourceType}`);
+
+            // Emit resource event
+            moduleEventBus.emit({
+              type: 'RESOURCE_UPDATED' as ModuleEventType,
+              moduleId: 'resource-system',
+              moduleType: 'resource-manager' as ModuleType,
+              timestamp: Date.now(),
+              data: message.payload,
+            });
+          } catch (error) {
+            console.error('Error handling resource update:', error);
+          }
+        }
+      );
+
+      // Add cleanup function
+      cleanupFunctions.push(() => {
+        unregisterResourceHandler();
+        // Additional resource system cleanup if needed
+      });
+
+      console.warn('Resource System integrated with Event System');
+    } else {
+      console.warn('Some resource managers are missing, skipping resource integration');
+    }
   }
-  
+
   // ===== Mining System Integration =====
-  
+
   // Get mining system instance
-  const miningManager = (window as any).miningManager as MiningShipManagerImpl;
-  
+  const miningManager = (window as unknown as { miningManager?: MiningShipManagerImpl })
+    .miningManager;
+
   if (miningManager && thresholdManager && flowManager) {
     // Create mining resource integration
     const miningResourceIntegration = new MiningResourceIntegration(
@@ -97,47 +141,54 @@ export function integrateWithGameSystems(): () => void {
       thresholdManager,
       flowManager
     );
-    
+
     // Initialize mining resource integration
     miningResourceIntegration.initialize();
-    
+
     // Register mining system event handlers
-    const unregisterMiningHandler = miningSystemComm.registerHandler('mining-update', (message) => {
-      try {
-        console.log(`Mining update message received: ${message.payload.shipId}`);
-        
-        // Emit mining event
-        moduleEventBus.emit({
-          type: 'MODULE_UPDATED' as ModuleEventType,
-          moduleId: message.payload.shipId,
-          moduleType: 'mineral' as ModuleType, // Using a valid ModuleType for mining
-          timestamp: Date.now(),
-          data: message.payload
-        });
-      } catch (error) {
-        console.error('Error handling mining update:', error);
+    const unregisterMiningHandler = miningSystemComm.registerHandler(
+      'mining-update',
+      (message: { payload: MiningUpdatePayload }) => {
+        try {
+          console.warn(`Mining update message received: ${message.payload.shipId}`);
+
+          // Emit mining event
+          moduleEventBus.emit({
+            type: 'MODULE_UPDATED' as ModuleEventType,
+            moduleId: message.payload.shipId,
+            moduleType: 'mineral' as ModuleType, // Using a valid ModuleType for mining
+            timestamp: Date.now(),
+            data: message.payload,
+          });
+        } catch (error) {
+          console.error('Error handling mining update:', error);
+        }
       }
-    });
-    
+    );
+
     // Add cleanup function
     cleanupFunctions.push(() => {
       unregisterMiningHandler();
       // Additional mining system cleanup if needed
     });
-    
-    console.log('Mining System integrated with Event System');
+
+    console.warn('Mining System integrated with Event System');
   }
-  
+
   // ===== Combat System Integration =====
-  
+
   // Get combat system instance
-  const combatManager = (window as any).combatManager as CombatManager;
-  
+  const combatManager = (window as unknown as { combatManager?: CombatManager }).combatManager;
+
   if (combatManager) {
     // Create a priority queue for combat events
-    const combatEventQueue = new EventPriorityQueue<any>((event) => {
+    const combatEventQueue = new EventPriorityQueue<{
+      type: string;
+      priority: number;
+      data: unknown;
+    }>(event => {
       try {
-        console.log(`Processing combat event: ${event.type}`);
+        console.warn(`Processing combat event: ${event.type}`);
         // Process the combat event
         return Promise.resolve();
       } catch (error) {
@@ -145,36 +196,39 @@ export function integrateWithGameSystems(): () => void {
         return Promise.resolve();
       }
     });
-    
+
     // Register combat system event handlers
-    const unregisterCombatHandler = combatSystemComm.registerHandler('combat-update', (message) => {
-      try {
-        console.log(`Combat update message received: ${message.payload.type}`);
-        
-        // Enqueue combat event with appropriate priority
-        combatEventQueue.enqueue({
-          type: message.payload.type,
-          priority: getCombatEventPriority(message.payload.type),
-          data: message.payload
-        });
-        
-        // Emit combat event
-        moduleEventBus.emit({
-          type: 'COMBAT_UPDATED' as ModuleEventType,
-          moduleId: 'combat-system',
-          moduleType: 'defense' as ModuleType, // Using a valid ModuleType for combat
-          timestamp: Date.now(),
-          data: message.payload
-        });
-      } catch (error) {
-        console.error('Error handling combat update:', error);
+    const unregisterCombatHandler = combatSystemComm.registerHandler(
+      'combat-update',
+      (message: { payload: CombatUpdatePayload }) => {
+        try {
+          console.warn(`Combat update message received: ${message.payload.type}`);
+
+          // Enqueue combat event with appropriate priority
+          combatEventQueue.enqueue({
+            type: message.payload.type,
+            priority: getCombatEventPriority(message.payload.type),
+            data: message.payload,
+          });
+
+          // Emit combat event
+          moduleEventBus.emit({
+            type: 'COMBAT_UPDATED' as ModuleEventType,
+            moduleId: 'combat-system',
+            moduleType: 'defense' as ModuleType, // Using a valid ModuleType for combat
+            timestamp: Date.now(),
+            data: message.payload,
+          });
+        } catch (error) {
+          console.error('Error handling combat update:', error);
+        }
       }
-    });
-    
+    );
+
     // Register game loop update for combat event processing
     gameLoopManager.registerUpdate(
       'combat-event-processing',
-      (deltaTime: number) => {
+      (_: number) => {
         try {
           // Process combat events based on priority
           // We can't directly access the private methods, so we'll just let the queue
@@ -186,7 +240,7 @@ export function integrateWithGameSystems(): () => void {
       },
       UpdatePriority.HIGH
     );
-    
+
     // Add cleanup function
     cleanupFunctions.push(() => {
       unregisterCombatHandler();
@@ -194,18 +248,18 @@ export function integrateWithGameSystems(): () => void {
       combatEventQueue.clear();
       // Additional combat system cleanup if needed
     });
-    
-    console.log('Combat System integrated with Event System');
+
+    console.warn('Combat System integrated with Event System');
   }
-  
+
   // ===== Tech Tree System Integration =====
-  
+
   if (techTreeManager) {
     // Subscribe to tech tree events
-    const techUnlockedListener = (data: any) => {
+    const techUnlockedListener = (data: TechUpdatePayload) => {
       try {
-        console.log(`Tech node unlocked: ${data.nodeId}`);
-        
+        console.warn(`Tech node unlocked: ${data.nodeId}`);
+
         // Emit tech unlocked event
         moduleEventBus.emit({
           type: 'TECH_UNLOCKED' as ModuleEventType,
@@ -214,71 +268,77 @@ export function integrateWithGameSystems(): () => void {
           timestamp: Date.now(),
           data: {
             nodeId: data.nodeId,
-            node: data.node
-          }
+            node: data.node,
+          },
         });
-        
+
         // Send message to other systems
         techSystemComm.sendMessage('resource-system', 'tech-unlocked', {
           nodeId: data.nodeId,
-          category: data.node.category
+          category: data.node?.category,
         });
-        
+
         // If it's a combat tech, notify combat system
-        if (['warFleet', 'weapons', 'defense'].includes(data.node.category)) {
+        if (
+          data.node?.category &&
+          ['warFleet', 'weapons', 'defense'].includes(data.node.category)
+        ) {
           techSystemComm.sendMessage('combat-system', 'tech-unlocked', {
             nodeId: data.nodeId,
-            category: data.node.category
+            category: data.node.category,
           });
         }
-        
+
         // If it's a mining tech, notify mining system
-        if (['miningFleet'].includes(data.node.category)) {
+        if (data.node?.category && ['miningFleet'].includes(data.node.category)) {
           techSystemComm.sendMessage('mining-system', 'tech-unlocked', {
             nodeId: data.nodeId,
-            category: data.node.category
+            category: data.node.category,
           });
         }
       } catch (error) {
         console.error('Error handling tech unlocked event:', error);
       }
     };
-    
+
     // Register the listener
     techTreeManager.on('nodeUnlocked', techUnlockedListener);
-    
+
     // Register tech system event handlers
-    const unregisterTechHandler = techSystemComm.registerHandler('tech-update', (message) => {
-      try {
-        console.log(`Tech update message received: ${message.payload.nodeId}`);
-        
-        // Emit tech event
-        moduleEventBus.emit({
-          type: 'TECH_UPDATED' as ModuleEventType,
-          moduleId: 'tech-system',
-          moduleType: 'research' as ModuleType, // Using a valid ModuleType for tech
-          timestamp: Date.now(),
-          data: message.payload
-        });
-      } catch (error) {
-        console.error('Error handling tech update:', error);
+    const unregisterTechHandler = techSystemComm.registerHandler(
+      'tech-update',
+      (message: { payload: TechUpdatePayload }) => {
+        try {
+          console.warn(`Tech update message received: ${message.payload.nodeId}`);
+
+          // Emit tech event
+          moduleEventBus.emit({
+            type: 'TECH_UPDATED' as ModuleEventType,
+            moduleId: 'tech-system',
+            moduleType: 'research' as ModuleType, // Using a valid ModuleType for tech
+            timestamp: Date.now(),
+            data: message.payload,
+          });
+        } catch (error) {
+          console.error('Error handling tech update:', error);
+        }
       }
-    });
-    
+    );
+
     // Add cleanup function
     cleanupFunctions.push(() => {
       techTreeManager.off('nodeUnlocked', techUnlockedListener);
       unregisterTechHandler();
       // Additional tech system cleanup if needed
     });
-    
-    console.log('Tech Tree System integrated with Event System');
+
+    console.warn('Tech Tree System integrated with Event System');
   }
-  
+
   // Return combined cleanup function
   return () => {
-    console.log('Cleaning up Game Systems Integration...');
-    
+    console.warn('Cleaning up Game Systems Integration...');
+
     // Execute all cleanup functions
     cleanupFunctions.forEach(cleanup => {
       try {
@@ -299,23 +359,23 @@ function getCombatEventPriority(type: string): number {
     case 'unit-destroyed':
     case 'critical-damage':
       return 0; // CRITICAL
-      
+
     case 'unit-under-attack':
     case 'zone-under-attack':
       return 1; // HIGH
-      
+
     case 'unit-moved':
     case 'weapon-fired':
       return 2; // NORMAL
-      
+
     case 'unit-status-changed':
     case 'zone-status-changed':
       return 3; // LOW
-      
+
     case 'combat-stats-updated':
       return 4; // BACKGROUND
-      
+
     default:
       return 2; // Default to NORMAL priority
   }
-} 
+}

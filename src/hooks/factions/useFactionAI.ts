@@ -1,8 +1,8 @@
-import { factionManager } from '../../managers/factions/factionManager';
 import { useEffect, useState } from 'react';
+import { factionManager } from '../../managers/factions/factionManager';
+import type { AIState } from '../../types/debug/DebugTypes';
 import type { FactionShip } from '../../types/ships/FactionShipTypes';
 import type { FactionId } from '../../types/ships/FactionTypes';
-import type { AIState } from '../../types/debug/DebugTypes';
 
 interface FactionBehavior {
   isHostile: boolean;

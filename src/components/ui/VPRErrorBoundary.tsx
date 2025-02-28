@@ -29,9 +29,9 @@ export class VPRErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-4 bg-red-900/20 border border-red-700/30 rounded-lg">
-          <div className="flex items-center space-x-2 text-red-400 mb-2">
-            <AlertTriangle className="w-5 h-5" />
+        <div className="rounded-lg border border-red-700/30 bg-red-900/20 p-4">
+          <div className="mb-2 flex items-center space-x-2 text-red-400">
+            <AlertTriangle className="h-5 w-5" />
             <span className="font-medium">Module Error</span>
           </div>
           <p className="text-sm text-red-200">

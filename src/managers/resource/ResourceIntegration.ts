@@ -1,16 +1,22 @@
+import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import {
+  ResourcePriority,
+  ResourceState,
+  ResourceThreshold,
+  ResourceTransfer,
+  ResourceType,
+} from '../../types/resources/ResourceTypes';
 import { ResourceManager } from '../game/ResourceManager';
-import { ResourceThresholdManager, ThresholdConfig } from './ResourceThresholdManager';
-import { ResourceFlowManager, FlowNodeType } from './ResourceFlowManager';
-import { ResourceStorageManager, StorageContainerConfig } from './ResourceStorageManager';
 import { ResourceCostManager } from './ResourceCostManager';
 import { ResourceExchangeManager } from './ResourceExchangeManager';
+import { FlowNodeType, ResourceFlowManager } from './ResourceFlowManager';
 import { ResourcePoolManager } from './ResourcePoolManager';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { ResourceType, ResourceState, ResourceThreshold, ResourceTransfer, ResourcePriority } from '../../types/resources/ResourceTypes';
+import { ResourceStorageManager, StorageContainerConfig } from './ResourceStorageManager';
+import { ResourceThresholdManager, ThresholdConfig } from './ResourceThresholdManager';
 
 /**
  * ResourceIntegration
- * 
+ *
  * Integrates the new resource management system with existing game systems.
  * Acts as a bridge between the legacy ResourceManager and the new specialized managers.
  */
@@ -75,9 +81,9 @@ export class ResourceIntegration {
    */
   private subscribeToLegacyEvents(): void {
     // Subscribe to resource update events
-    moduleEventBus.subscribe('RESOURCE_PRODUCED' as ModuleEventType, (event) => {
+    moduleEventBus.subscribe('RESOURCE_PRODUCED' as ModuleEventType, event => {
       const { resourceType, newAmount, oldAmount } = event.data;
-      
+
       // Update resource state in our new system
       const resourceState = this.resourceManager.getResourceState(resourceType);
       if (resourceState) {
@@ -85,9 +91,9 @@ export class ResourceIntegration {
       }
     });
 
-    moduleEventBus.subscribe('RESOURCE_CONSUMED' as ModuleEventType, (event) => {
+    moduleEventBus.subscribe('RESOURCE_CONSUMED' as ModuleEventType, event => {
       const { resourceType, newAmount, oldAmount } = event.data;
-      
+
       // Update resource state in our new system
       const resourceState = this.resourceManager.getResourceState(resourceType);
       if (resourceState) {
@@ -95,20 +101,20 @@ export class ResourceIntegration {
       }
     });
 
-    moduleEventBus.subscribe('RESOURCE_TRANSFERRED' as ModuleEventType, (event) => {
+    moduleEventBus.subscribe('RESOURCE_TRANSFERRED' as ModuleEventType, event => {
       const { resourceType, amount, source, target } = event.data;
-      
+
       // Record the transfer in our local history
       const transfer: ResourceTransfer = {
         type: resourceType,
         amount,
         source,
         target,
-        timestamp: event.timestamp
+        timestamp: event.timestamp,
       };
-      
+
       this.transferHistory.push(transfer);
-      
+
       // Keep history size manageable
       if (this.transferHistory.length > 100) {
         this.transferHistory.shift();
@@ -116,19 +122,20 @@ export class ResourceIntegration {
     });
 
     // Subscribe to threshold events
-    moduleEventBus.subscribe('RESOURCE_SHORTAGE' as ModuleEventType, (event) => {
+    moduleEventBus.subscribe('RESOURCE_SHORTAGE' as ModuleEventType, event => {
       const { resourceType, currentAmount, requiredAmount } = event.data;
-      
+
       // Create an alert in our threshold manager
       const threshold: ResourceThreshold = {
         type: resourceType,
-        min: requiredAmount
+        min: requiredAmount,
       };
-      
+
       // Find existing threshold config or create a new one
-      const existingConfig = this.thresholdManager.getThresholdConfigs()
+      const existingConfig = this.thresholdManager
+        .getThresholdConfigs()
         .find(config => config.threshold.type === resourceType);
-      
+
       if (existingConfig) {
         // Update the threshold
         existingConfig.threshold.min = Math.max(existingConfig.threshold.min || 0, requiredAmount);
@@ -141,13 +148,13 @@ export class ResourceIntegration {
             {
               type: 'notification',
               target: 'system',
-              message: `Resource shortage: ${resourceType}`
-            }
+              message: `Resource shortage: ${resourceType}`,
+            },
           ],
           enabled: true,
-          autoResolve: true
+          autoResolve: true,
         };
-        
+
         this.thresholdManager.registerThreshold(config);
       }
     });
@@ -159,14 +166,14 @@ export class ResourceIntegration {
   private initializeThresholds(): void {
     // Get all resource types
     const resourceTypes = Array.from(this.resourceManager['resources'].keys()) as ResourceType[];
-    
+
     // Create thresholds for each resource type
     resourceTypes.forEach(type => {
       const resourceState = this.resourceManager.getResourceState(type);
       if (!resourceState) {
         return;
       }
-      
+
       // Create a threshold config
       const config: ThresholdConfig = {
         id: `resource-${type}`,
@@ -174,18 +181,18 @@ export class ResourceIntegration {
           type,
           min: resourceState.min,
           max: resourceState.max,
-          target: (resourceState.min + resourceState.max) / 2
+          target: (resourceState.min + resourceState.max) / 2,
         },
         actions: [
           {
             type: 'notification',
             target: 'system',
-            message: `${type} threshold triggered`
-          }
+            message: `${type} threshold triggered`,
+          },
         ],
-        enabled: true
+        enabled: true,
       };
-      
+
       this.thresholdManager.registerThreshold(config);
     });
   }
@@ -196,14 +203,14 @@ export class ResourceIntegration {
   private initializeStorage(): void {
     // Get all resource types
     const resourceTypes = Array.from(this.resourceManager['resources'].keys()) as ResourceType[];
-    
+
     // Create a main storage container for each resource type
     resourceTypes.forEach(type => {
       const resourceState = this.resourceManager.getResourceState(type);
       if (!resourceState) {
         return;
       }
-      
+
       // Create a storage container config
       const config: StorageContainerConfig = {
         id: `main-storage-${type}`,
@@ -211,11 +218,11 @@ export class ResourceIntegration {
         type: 'storage',
         capacity: resourceState.max,
         resourceTypes: [type],
-        priority: 10 // High priority for main storage
+        priority: 10, // High priority for main storage
       };
-      
+
       this.storageManager.registerContainer(config);
-      
+
       // Initialize with current amount
       this.storageManager.storeResource(config.id, type, resourceState.current);
     });
@@ -227,39 +234,39 @@ export class ResourceIntegration {
   private initializeFlows(): void {
     // Get all resource types
     const resourceTypes = Array.from(this.resourceManager['resources'].keys()) as ResourceType[];
-    
+
     // Create producer and consumer nodes for each resource type
     resourceTypes.forEach(type => {
       const resourceState = this.resourceManager.getResourceState(type);
       if (!resourceState) {
         return;
       }
-      
+
       // Create a resource priority
       const resourcePriority: ResourcePriority = {
         type,
         priority: 1,
-        consumers: []
+        consumers: [],
       };
-      
+
       // Create producer node
       this.flowManager.registerNode({
         id: `producer-${type}`,
         type: 'producer' as FlowNodeType,
         resources: [type],
         priority: resourcePriority,
-        active: true
+        active: true,
       });
-      
+
       // Create consumer node
       this.flowManager.registerNode({
         id: `consumer-${type}`,
         type: 'consumer' as FlowNodeType,
         resources: [type],
         priority: resourcePriority,
-        active: true
+        active: true,
       });
-      
+
       // Create storage node
       this.flowManager.registerNode({
         id: `storage-${type}`,
@@ -267,9 +274,9 @@ export class ResourceIntegration {
         resources: [type],
         priority: resourcePriority,
         capacity: resourceState.max,
-        active: true
+        active: true,
       });
-      
+
       // Create connections
       this.flowManager.registerConnection({
         id: `production-${type}`,
@@ -279,9 +286,9 @@ export class ResourceIntegration {
         maxRate: resourceState.production,
         currentRate: 0,
         priority: resourcePriority,
-        active: true
+        active: true,
       });
-      
+
       this.flowManager.registerConnection({
         id: `consumption-${type}`,
         source: `storage-${type}`,
@@ -290,9 +297,9 @@ export class ResourceIntegration {
         maxRate: resourceState.consumption,
         currentRate: 0,
         priority: resourcePriority,
-        active: true
+        active: true,
       });
-      
+
       // Update resource state in flow manager
       this.flowManager.updateResourceState(type, resourceState);
     });
@@ -310,16 +317,16 @@ export class ResourceIntegration {
       timestamp: Date.now(),
       data: {
         type,
-        state
-      }
+        state,
+      },
     });
-    
+
     // Update in flow manager
     this.flowManager.updateResourceState(type, state);
-    
+
     // Update in cost manager
     this.costManager.updateResourceState(type, state);
-    
+
     // Update in exchange manager
     this.exchangeManager.updateResourceState(type, state);
   }
@@ -331,10 +338,10 @@ export class ResourceIntegration {
     if (!this.initialized) {
       return;
     }
-    
+
     // Optimize resource flows
     const flowResult = this.flowManager.optimizeFlows();
-    
+
     // Apply transfers to the legacy resource manager
     flowResult.transfers.forEach(transfer => {
       // Only apply transfers to/from storage
@@ -342,12 +349,12 @@ export class ResourceIntegration {
         // Extract the resource type from the node ID
         const sourceType = transfer.source.replace('storage-', '') as ResourceType;
         const targetType = transfer.target.replace('storage-', '') as ResourceType;
-        
+
         // If transferring from storage to consumer, remove from legacy manager
         if (transfer.source.startsWith('storage-') && transfer.target.startsWith('consumer-')) {
           this.resourceManager.removeResource(sourceType, transfer.amount);
         }
-        
+
         // If transferring from producer to storage, add to legacy manager
         if (transfer.source.startsWith('producer-') && transfer.target.startsWith('storage-')) {
           this.resourceManager.addResource(targetType, transfer.amount);
@@ -363,10 +370,10 @@ export class ResourceIntegration {
     if (!this.initialized) {
       return;
     }
-    
+
     // Stop threshold monitoring
     this.thresholdManager.stop();
-    
+
     // Clean up all managers
     this.thresholdManager.cleanup();
     this.flowManager.cleanup();
@@ -374,7 +381,7 @@ export class ResourceIntegration {
     this.costManager.cleanup();
     this.exchangeManager.cleanup();
     this.poolManager.cleanup();
-    
+
     this.initialized = false;
   }
 }
@@ -390,7 +397,7 @@ export function createResourceIntegration(resourceManager: ResourceManager): Res
   const costManager = new ResourceCostManager();
   const exchangeManager = new ResourceExchangeManager();
   const poolManager = new ResourcePoolManager();
-  
+
   // Create the integration
   const integration = new ResourceIntegration(
     resourceManager,
@@ -401,9 +408,9 @@ export function createResourceIntegration(resourceManager: ResourceManager): Res
     exchangeManager,
     poolManager
   );
-  
+
   // Initialize the integration
   integration.initialize();
-  
+
   return integration;
-} 
+}

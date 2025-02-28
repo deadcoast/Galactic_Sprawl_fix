@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
-import { BaseModule } from '../../../../types/buildings/ModuleTypes';
 import { Rocket, ShieldAlert, Wrench } from 'lucide-react';
-import { automationManager } from '../../../../managers/game/AutomationManager';
+import { useEffect } from 'react';
 import { hangarRules } from '../../../../config/automation/hangarRules';
+import { automationManager } from '../../../../managers/game/AutomationManager';
+import { BaseModule } from '../../../../types/buildings/ModuleTypes';
 
 interface HangarModuleProps {
   module: BaseModule;
@@ -47,11 +47,11 @@ export function HangarModule({
   }, []);
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-lg bg-gray-800 p-6">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-indigo-900/50 rounded-lg">
-            <Rocket className="w-6 h-6 text-indigo-400" />
+          <div className="rounded-lg bg-indigo-900/50 p-2">
+            <Rocket className="h-6 w-6 text-indigo-400" />
           </div>
           <div>
             <h3 className="text-lg font-medium text-white">{module.name}</h3>
@@ -60,7 +60,7 @@ export function HangarModule({
         </div>
         <button
           onClick={module.isActive ? onDeactivate : onActivate}
-          className={`px-4 py-2 rounded-lg text-sm ${
+          className={`rounded-lg px-4 py-2 text-sm ${
             module.isActive
               ? 'bg-red-900/50 text-red-400 hover:bg-red-900/70'
               : 'bg-indigo-900/50 text-indigo-400 hover:bg-indigo-900/70'
@@ -72,14 +72,14 @@ export function HangarModule({
 
       {/* Hangar Status */}
       <div className="space-y-4">
-        <div className="p-4 bg-gray-900/50 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
+        <div className="rounded-lg bg-gray-900/50 p-4">
+          <div className="mb-2 flex items-center justify-between">
             <div className="text-sm text-gray-400">Hangar Capacity</div>
             <div className="text-sm text-gray-300">
               {stats.currentCapacity} / {stats.maxCapacity}
             </div>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
               className="h-full bg-indigo-500 transition-all"
               style={{
@@ -93,10 +93,10 @@ export function HangarModule({
           <button
             onClick={onOpenShipyard}
             disabled={!module.isActive}
-            className="p-4 bg-gray-900/50 hover:bg-gray-900/70 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg group"
+            className="group rounded-lg bg-gray-900/50 p-4 hover:bg-gray-900/70 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <div className="flex items-center space-x-3 mb-2">
-              <Wrench className="w-5 h-5 text-indigo-400" />
+            <div className="mb-2 flex items-center space-x-3">
+              <Wrench className="h-5 w-5 text-indigo-400" />
               <div className="text-sm font-medium text-white">Shipyard</div>
             </div>
             <div className="text-xs text-gray-400">
@@ -107,10 +107,10 @@ export function HangarModule({
           <button
             onClick={onOpenRepairBay}
             disabled={!module.isActive}
-            className="p-4 bg-gray-900/50 hover:bg-gray-900/70 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg group"
+            className="group rounded-lg bg-gray-900/50 p-4 hover:bg-gray-900/70 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <div className="flex items-center space-x-3 mb-2">
-              <ShieldAlert className="w-5 h-5 text-indigo-400" />
+            <div className="mb-2 flex items-center space-x-3">
+              <ShieldAlert className="h-5 w-5 text-indigo-400" />
               <div className="text-sm font-medium text-white">Repair Bay</div>
             </div>
             <div className="text-xs text-gray-400">
@@ -120,8 +120,8 @@ export function HangarModule({
         </div>
 
         {/* Production Stats */}
-        <div className="p-4 bg-gray-900/50 rounded-lg">
-          <div className="text-sm text-gray-400 mb-2">Production Speed</div>
+        <div className="rounded-lg bg-gray-900/50 p-4">
+          <div className="mb-2 text-sm text-gray-400">Production Speed</div>
           <div className="text-2xl font-bold text-white">{100 + module.level * 25}%</div>
         </div>
       </div>

@@ -1,5 +1,5 @@
-import { useScalingSystem } from '../game/useScalingSystem';
 import { useCallback, useEffect, useState } from 'react';
+import { useScalingSystem } from '../game/useScalingSystem';
 
 interface VPRSystemState {
   modules: {
@@ -22,6 +22,14 @@ interface VPRSystemState {
   }[];
 }
 
+// Define a type for module updates
+type ModuleUpdateData = Partial<{
+  type: 'mothership' | 'colony' | 'planet' | 'exploration' | 'mining';
+  tier: 1 | 2 | 3;
+  status: 'active' | 'upgrading' | 'disabled';
+  progress: number;
+}>;
+
 export function useVPRSystem() {
   const [systemState, setSystemState] = useState<VPRSystemState>({
     modules: [],
@@ -32,7 +40,7 @@ export function useVPRSystem() {
   const scaling = useScalingSystem();
 
   // Memoized update handlers
-  const handleModuleUpdate = useCallback((moduleId: string, data: any) => {
+  const handleModuleUpdate = useCallback((moduleId: string, data: ModuleUpdateData) => {
     setSystemState(prev => ({
       ...prev,
       modules: prev.modules.map(mod => (mod.id === moduleId ? { ...mod, ...data } : mod)),
@@ -43,7 +51,7 @@ export function useVPRSystem() {
     setSystemState(prev => ({
       ...prev,
       upgrades: prev.upgrades.map(upgrade =>
-        upgrade.moduleId === moduleId ? { ...upgrade, progress } : upgrade
+        upgrade.moduleId === moduleId ? { ...upgrade, progress } : upgrade,
       ),
     }));
   }, []);
@@ -110,7 +118,7 @@ export function useVPRSystem() {
     setSystemState(prev => ({
       ...prev,
       modules: prev.modules.map(mod =>
-        mod.id === moduleId ? { ...mod, status: 'disabled' } : mod
+        mod.id === moduleId ? { ...mod, status: 'disabled' } : mod,
       ),
       alerts: [
         ...prev.alerts,

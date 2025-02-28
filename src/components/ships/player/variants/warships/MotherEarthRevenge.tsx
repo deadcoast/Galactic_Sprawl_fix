@@ -52,15 +52,15 @@ export function MotherEarthRevenge({
   const occupiedBays = dockingBays.filter(bay => bay.status === 'occupied').length;
 
   return (
-    <div className="bg-rose-900/20 border border-rose-700/30 rounded-lg p-6">
+    <div className="rounded-lg border border-rose-700/30 bg-rose-900/20 p-6">
       {/* Ship Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <h3 className="text-lg font-medium text-white">Mother Earth's Revenge</h3>
           <div className="text-sm text-gray-400">Special Capital Ship</div>
         </div>
         <div
-          className={`px-3 py-1 rounded-full text-sm ${
+          className={`rounded-full px-3 py-1 text-sm ${
             status === 'engaging'
               ? 'bg-red-900/50 text-red-400'
               : status === 'retreating'
@@ -75,15 +75,15 @@ export function MotherEarthRevenge({
       </div>
 
       {/* Combat Status */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-4">
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Hull Integrity</span>
             <span className={hull < maxHull * 0.3 ? 'text-red-400' : 'text-gray-300'}>
               {Math.round((hull / maxHull) * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full rounded-full transition-all ${
                 hull < maxHull * 0.3 ? 'bg-red-500' : 'bg-green-500'
@@ -94,13 +94,13 @@ export function MotherEarthRevenge({
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="mb-1 flex justify-between text-sm">
             <span className="text-gray-400">Shield Power</span>
             <span className="text-gray-300">{Math.round((shield / maxShield) * 100)}%</span>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
+              className="h-full rounded-full bg-blue-500 transition-all"
               style={{ width: `${(shield / maxShield) * 100}%` }}
             />
           </div>
@@ -109,7 +109,7 @@ export function MotherEarthRevenge({
 
       {/* Docking Status */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3 flex items-center justify-between">
           <h4 className="text-sm font-medium text-gray-300">Docking Bays</h4>
           <div className="text-sm text-gray-400">
             {occupiedBays}/{dockingBays.length} Occupied
@@ -121,22 +121,22 @@ export function MotherEarthRevenge({
               key={bay.id}
               onClick={() => bay.status === 'occupied' && onLaunchShip(bay.id)}
               disabled={bay.status === 'empty'}
-              className={`p-3 rounded-lg transition-colors ${
+              className={`rounded-lg p-3 transition-colors ${
                 bay.status === 'occupied'
-                  ? 'bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30'
-                  : 'bg-gray-700/50 border border-gray-600/30'
+                  ? 'border border-rose-500/30 bg-rose-500/20 hover:bg-rose-500/30'
+                  : 'border border-gray-600/30 bg-gray-700/50'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
+              <div className="mb-1 flex items-center justify-between">
                 <span className="text-xs text-gray-300">{bay.type}</span>
                 <div
-                  className={`w-2 h-2 rounded-full ${
+                  className={`h-2 w-2 rounded-full ${
                     bay.status === 'occupied'
                       ? 'bg-green-500'
                       : bay.status === 'launching'
-                        ? 'bg-yellow-500 animate-pulse'
+                        ? 'animate-pulse bg-yellow-500'
                         : bay.status === 'docking'
-                          ? 'bg-blue-500 animate-pulse'
+                          ? 'animate-pulse bg-blue-500'
                           : 'bg-gray-500'
                   }`}
                 />
@@ -150,7 +150,7 @@ export function MotherEarthRevenge({
       </div>
 
       {/* Weapon Systems */}
-      <div className="space-y-4 mb-6">
+      <div className="mb-6 space-y-4">
         <h4 className="text-sm font-medium text-gray-300">Capital Weapons</h4>
         <div className="grid grid-cols-2 gap-3">
           {weapons.map(weapon => (
@@ -158,13 +158,13 @@ export function MotherEarthRevenge({
               key={weapon.id}
               onClick={() => onFire(weapon.id)}
               disabled={weapon.status !== 'ready'}
-              className={`p-3 rounded-lg transition-colors ${
+              className={`rounded-lg p-3 transition-colors ${
                 weapon.status === 'ready'
-                  ? 'bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30'
-                  : 'bg-gray-700/50 border border-gray-600/30 cursor-not-allowed'
+                  ? 'border border-rose-500/30 bg-rose-500/20 hover:bg-rose-500/30'
+                  : 'cursor-not-allowed border border-gray-600/30 bg-gray-700/50'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-medium text-white">{weapon.name}</div>
                 <div
                   className={`text-xs ${
@@ -186,20 +186,20 @@ export function MotherEarthRevenge({
 
       {/* Special Abilities */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-300 mb-3">Special Abilities</h4>
+        <h4 className="mb-3 text-sm font-medium text-gray-300">Special Abilities</h4>
         <div className="space-y-2">
           {specialAbilities.map(ability => (
             <button
               key={ability.name}
               onClick={() => onActivateAbility(ability.name)}
               disabled={ability.active}
-              className={`w-full p-3 rounded-lg text-left transition-colors ${
+              className={`w-full rounded-lg p-3 text-left transition-colors ${
                 ability.active
-                  ? 'bg-rose-500/20 border border-rose-500/30'
+                  ? 'border border-rose-500/30 bg-rose-500/20'
                   : 'bg-gray-700/50 hover:bg-gray-600/50'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
+              <div className="mb-1 flex items-center justify-between">
                 <span className="text-sm font-medium text-white">{ability.name}</span>
                 {ability.active ? (
                   <span className="text-xs text-green-400">Active</span>
@@ -218,23 +218,23 @@ export function MotherEarthRevenge({
         <button
           onClick={() => onFire(weapons[0].id)}
           disabled={!weapons.some(w => w.status === 'ready')}
-          className={`px-4 py-2 rounded-lg text-sm flex items-center justify-center space-x-2 ${
+          className={`flex items-center justify-center space-x-2 rounded-lg px-4 py-2 text-sm ${
             weapons.some(w => w.status === 'ready')
-              ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-200'
-              : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              ? 'bg-rose-500/20 text-rose-200 hover:bg-rose-500/30'
+              : 'cursor-not-allowed bg-gray-700 text-gray-500'
           }`}
         >
-          <Crosshair className="w-4 h-4" />
+          <Crosshair className="h-4 w-4" />
           <span>Fire Capital Weapons</span>
         </button>
         <button
           onClick={onRetreat}
           disabled={status === 'damaged'}
-          className={`px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm flex items-center justify-center space-x-2 ${
-            status === 'damaged' ? 'opacity-50 cursor-not-allowed' : ''
+          className={`flex items-center justify-center space-x-2 rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 ${
+            status === 'damaged' ? 'cursor-not-allowed opacity-50' : ''
           }`}
         >
-          <Shield className="w-4 h-4" />
+          <Shield className="h-4 w-4" />
           <span>Retreat</span>
         </button>
       </div>
@@ -245,9 +245,9 @@ export function MotherEarthRevenge({
           {alerts.map((alert, index) => (
             <div
               key={index}
-              className="p-3 bg-red-900/20 border border-red-700/30 rounded-lg flex items-start space-x-2"
+              className="flex items-start space-x-2 rounded-lg border border-red-700/30 bg-red-900/20 p-3"
             >
-              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
               <span className="text-sm text-red-200">{alert}</span>
             </div>
           ))}
