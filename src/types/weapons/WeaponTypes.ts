@@ -3,7 +3,7 @@
  * @module WeaponTypes
  */
 
-import { Effect as BaseEffect } from '../core/GameTypes';
+import { Effect } from '../core/GameTypes';
 import {
   WeaponEffect,
   WeaponEffectType,
@@ -31,7 +31,12 @@ export type WeaponCategory =
   | 'torpedoes'
   | 'harmonicCannon'
   | 'temporalCannon'
-  | 'quantumCannon';
+  | 'quantumCannon'
+  | 'plasmaCannon'
+  | 'beamWeapon'
+  | 'pulseWeapon'
+  | 'disruptor'
+  | 'ionCannon';
 
 /**
  * Specific weapon variants within each category
@@ -63,7 +68,7 @@ export type WeaponMountSize = 'small' | 'medium' | 'large';
 /**
  * Weapon mount positions
  */
-export type WeaponMountPosition = 'front' | 'side' | 'turret';
+export type WeaponMountPosition = 'front' | 'side' | 'rear' | 'turret';
 
 /**
  * Weapon operational status
@@ -96,7 +101,7 @@ export interface BaseWeaponStats {
   rateOfFire: number;
   energyCost: number;
   cooldown: number;
-  effects: (DamageEffect | AreaEffect)[];
+  effects: WeaponEffectType[];
   special?: {
     armorPenetration?: number;
     shieldDamageBonus?: number;
@@ -109,7 +114,7 @@ export interface BaseWeaponStats {
  * Extended weapon stats with effects
  */
 export interface WeaponStats extends BaseWeaponStats {
-  effects: (DamageEffect | AreaEffect)[];
+  effects: WeaponEffectType[];
   special?: {
     armorPenetration?: number;
     shieldDamageBonus?: number;
@@ -132,13 +137,13 @@ export interface WeaponType {
 /**
  * Extended weapon stats for combat
  */
-export interface CombatWeaponStats extends BaseWeaponStats {
-  special?: {
-    armorPenetration?: number;
-    shieldDamageBonus?: number;
-    areaOfEffect?: number;
-    disableChance?: number;
-  };
+export interface CombatWeaponStats extends WeaponStats {
+  currentAmmo?: number;
+  maxAmmo?: number;
+  reloadTime?: number;
+  spread?: number;
+  projectileSpeed?: number;
+  projectileLifetime?: number;
 }
 
 // Mount and Configuration
@@ -163,9 +168,8 @@ export interface WeaponConfig {
   id: string;
   name: string;
   category: WeaponCategory;
-  variant?: WeaponVariant;
   tier: number;
-  baseStats: CombatWeaponStats;
+  baseStats: WeaponStats;
   visualAsset: string;
   mountRequirements: {
     size: WeaponMountSize;
@@ -173,7 +177,7 @@ export interface WeaponConfig {
   };
   requirements?: {
     tech: string[];
-    resources: { type: string; amount: number }[];
+    resources: string[];
   };
 }
 
@@ -185,10 +189,8 @@ export interface WeaponConfig {
  */
 export interface WeaponState {
   status: WeaponStatus;
-  currentStats: CombatWeaponStats;
-  effects: WeaponEffect[];
-  currentAmmo?: number;
-  maxAmmo?: number;
+  currentStats: WeaponStats;
+  effects: WeaponEffectType[];
 }
 
 /**
@@ -248,14 +250,19 @@ export const WEAPON_COLORS: Record<WeaponCategory, string> = {
   gaussCannon: 'violet',
   railGun: 'indigo',
   mgss: 'fuchsia',
-  rockets: 'rose',
-  pointDefense: 'lime',
-  flakCannon: 'yellow',
-  capitalLaser: 'orange',
-  torpedoes: 'red',
-  harmonicCannon: 'teal',
+  rockets: 'orange',
+  pointDefense: 'yellow',
+  flakCannon: 'amber',
+  capitalLaser: 'red',
+  torpedoes: 'blue',
+  harmonicCannon: 'emerald',
   temporalCannon: 'purple',
-  quantumCannon: 'blue',
+  quantumCannon: 'sky',
+  plasmaCannon: 'rose',
+  beamWeapon: 'pink',
+  pulseWeapon: 'lime',
+  disruptor: 'teal',
+  ionCannon: 'cyan',
 } as const;
 
 export const UPGRADE_COLORS: Record<WeaponUpgradeType, string> = {
@@ -271,6 +278,16 @@ export const UPGRADE_COLORS: Record<WeaponUpgradeType, string> = {
   bigBang: 'rose',
 } as const;
 
-export interface Effect extends BaseEffect {
-  radius?: number; // Add radius for area effects
+export interface WeaponSystem {
+  id: string;
+  type: WeaponCategory;
+  damage: number;
+  range: number;
+  cooldown: number;
+  status: WeaponStatus;
+  upgrades?: {
+    name: string;
+    description: string;
+    unlocked: boolean;
+  }[];
 }

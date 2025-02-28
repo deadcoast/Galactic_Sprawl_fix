@@ -1,0 +1,202 @@
+import { ModuleEvent, ModuleEventType, moduleEventBus } from '../lib/modules/ModuleEvents';
+import { initializeRxJSIntegration } from '../utils/events/rxjsIntegration';
+import { gameLoopManager, UpdatePriority } from '../managers/game/GameLoopManager';
+import { getSystemCommunication, SystemMessage } from '../utils/events/EventCommunication';
+import { EventPriorityQueue } from '../utils/events/EventFiltering';
+import { initializeAutomationSystem } from './automationSystemInit';
+import { integrateWithGameSystems } from './gameSystemsIntegration';
+
+// Define an interface for our priority queue events
+interface PriorityQueueEvent {
+  type: string;
+  priority: number;
+  data: any;
+}
+
+/**
+ * Initialize the event system
+ */
+export function initializeEventSystem(): () => void {
+  console.log('Initializing Event System...');
+  
+  // Initialize RxJS integration
+  const rxjsCleanup = initializeRxJSIntegration();
+  
+  // Initialize system communications
+  const eventSystemComm = getSystemCommunication('event-system');
+  const resourceSystemComm = getSystemCommunication('resource-system');
+  const moduleSystemComm = getSystemCommunication('module-system');
+  
+  // Register basic event handlers
+  const unregisterSystemStartup = eventSystemComm.registerHandler('system-startup', (message) => {
+    console.log(`System startup message received: ${message.payload.systemName}`);
+  });
+  
+  // Start the game loop
+  gameLoopManager.start();
+  
+  // Register a critical update with the game loop
+  gameLoopManager.registerUpdate(
+    'event-system-critical',
+    (deltaTime: number, elapsedTime: number) => {
+      // Process critical events
+    },
+    UpdatePriority.CRITICAL
+  );
+  
+  // Register a normal update with the game loop
+  gameLoopManager.registerUpdate(
+    'event-system-normal',
+    (deltaTime: number, elapsedTime: number) => {
+      // Process normal events
+    },
+    UpdatePriority.NORMAL
+  );
+  
+  // Create a test event to verify the system is working
+  setTimeout(() => {
+    moduleEventBus.emit({
+      type: 'MODULE_CREATED' as ModuleEventType, // Use a valid ModuleEventType
+      moduleId: 'event-system',
+      moduleType: 'resource-manager', // Use a valid ModuleType
+      timestamp: Date.now(),
+      data: { system: 'event-system', status: 'initialized' }
+    });
+    
+    // Send a test message through system communication
+    eventSystemComm.sendMessage('resource-system', 'test-message', {
+      message: 'Hello from Event System!'
+    });
+  }, 100);
+  
+  // Return cleanup function
+  return () => {
+    console.log('Cleaning up Event System...');
+    
+    // Unregister game loop updates
+    gameLoopManager.unregisterUpdate('event-system-critical');
+    gameLoopManager.unregisterUpdate('event-system-normal');
+    
+    // Unregister event handlers
+    unregisterSystemStartup();
+    
+    // Stop the game loop
+    gameLoopManager.stop();
+    
+    // Clean up RxJS integration
+    rxjsCleanup();
+  };
+}
+
+/**
+ * Initialize global event handlers
+ */
+export function initializeGlobalEventHandlers(): () => void {
+  console.log('Initializing Global Event Handlers...');
+  
+  // Create a priority queue for processing events
+  const eventQueue = new EventPriorityQueue<PriorityQueueEvent>((event) => {
+    console.log(`Processing event: ${event.type}`);
+    // Process the event based on its type
+    return Promise.resolve();
+  });
+  
+  // Subscribe to all module events
+  const unsubscribe = subscribeToAllEvents((event) => {
+    // Enqueue the event for processing
+    eventQueue.enqueue({
+      type: event.type,
+      priority: getPriorityForEventType(event.type),
+      data: event
+    });
+  });
+  
+  // Return cleanup function
+  return () => {
+    console.log('Cleaning up Global Event Handlers...');
+    
+    // Unsubscribe from all events
+    unsubscribe();
+    
+    // Clear the event queue
+    eventQueue.clear();
+  };
+}
+
+/**
+ * Helper function to subscribe to all event types
+ */
+function subscribeToAllEvents(callback: (event: ModuleEvent) => void): () => void {
+  // List of all event types we want to subscribe to
+  const eventTypes: ModuleEventType[] = [
+    'MODULE_CREATED',
+    'MODULE_UPDATED',
+    'MODULE_ATTACHED',
+    'MODULE_DETACHED',
+    'RESOURCE_PRODUCED',
+    'RESOURCE_CONSUMED',
+    'RESOURCE_TRANSFERRED',
+    'STATUS_CHANGED',
+    'ERROR_OCCURRED'
+  ] as ModuleEventType[];
+  
+  // Subscribe to each event type
+  const unsubscribers = eventTypes.map(type => 
+    moduleEventBus.subscribe(type, callback)
+  );
+  
+  // Return a function that unsubscribes from all
+  return () => {
+    unsubscribers.forEach(unsubscribe => unsubscribe());
+  };
+}
+
+/**
+ * Get priority for an event type
+ */
+function getPriorityForEventType(type: string): number {
+  // Define priorities for different event types
+  switch (type) {
+    case 'ERROR_OCCURRED':
+      return 0; // CRITICAL
+      
+    case 'RESOURCE_SHORTAGE':
+    case 'MODULE_DETACHED':
+      return 1; // HIGH
+      
+    case 'MODULE_CREATED':
+    case 'MODULE_ATTACHED':
+    case 'RESOURCE_PRODUCED':
+    case 'RESOURCE_CONSUMED':
+      return 2; // NORMAL
+      
+    case 'STATUS_CHANGED':
+    case 'AUTOMATION_CYCLE_COMPLETE':
+      return 3; // LOW
+      
+    case 'MISSION_PROGRESS_UPDATED':
+      return 4; // BACKGROUND
+      
+    default:
+      return 2; // Default to NORMAL priority
+  }
+}
+
+/**
+ * Initialize the entire event system
+ */
+export function initializeCompleteEventSystem(): () => void {
+  // Initialize all components
+  const eventSystemCleanup = initializeEventSystem();
+  const globalHandlersCleanup = initializeGlobalEventHandlers();
+  const automationSystemCleanup = initializeAutomationSystem();
+  const gameSystemsIntegrationCleanup = integrateWithGameSystems();
+  
+  // Return combined cleanup function
+  return () => {
+    gameSystemsIntegrationCleanup();
+    automationSystemCleanup();
+    globalHandlersCleanup();
+    eventSystemCleanup();
+  };
+} 

@@ -83,7 +83,9 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   public updateStats(colonyId: string, updates: Partial<ColonyStats>): void {
     const colony = this.colonies.get(colonyId);
-    if (!colony) return;
+    if (!colony) {
+      return;
+    }
 
     colony.stats = { ...colony.stats, ...updates };
     this.emit('statsUpdated', { colonyId, stats: colony.stats });
@@ -94,7 +96,9 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   private checkForLevelUp(colonyId: string): void {
     const colony = this.colonies.get(colonyId);
-    if (!colony) return;
+    if (!colony) {
+      return;
+    }
 
     const { population, infrastructure } = colony.stats;
     const newLevel = Math.floor(Math.sqrt(population * infrastructure) / 100);
@@ -113,7 +117,9 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   public distributeResources(colonyId: string): void {
     const colony = this.colonies.get(colonyId);
-    if (!colony) return;
+    if (!colony) {
+      return;
+    }
 
     // Calculate resource needs based on population and infrastructure
     const resourceNeeds = this.calculateResourceNeeds(colony);
@@ -143,11 +149,15 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   public buildInfrastructure(colonyId: string, type: string): void {
     const colony = this.colonies.get(colonyId);
-    if (!colony) return;
+    if (!colony) {
+      return;
+    }
 
     // Check resource requirements
     const requirements = this.getInfrastructureRequirements(type, colony.level);
-    if (!this.hasRequiredResources(requirements)) return;
+    if (!this.hasRequiredResources(requirements)) {
+      return;
+    }
 
     // Consume resources
     Object.entries(requirements).forEach(([resource, amount]) => {
@@ -188,7 +198,9 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   public establishTradeRoute(colonyId: string, partnerId: string, resources: string[]): void {
     const colony = this.colonies.get(colonyId);
-    if (!colony) return;
+    if (!colony) {
+      return;
+    }
 
     colony.tradeRoutes.add(partnerId);
     this.emit('tradeRouteEstablished', { colonyId, partnerId, resources });
@@ -204,7 +216,9 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   public activateDefense(colonyId: string, threatLevel: number): void {
     const colony = this.colonies.get(colonyId);
-    if (!colony) return;
+    if (!colony) {
+      return;
+    }
 
     this.emit('defenseActivated', { colonyId, threatLevel });
 
@@ -219,7 +233,9 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   public startResearch(colonyId: string, project: string): void {
     const colony = this.colonies.get(colonyId);
-    if (!colony) return;
+    if (!colony) {
+      return;
+    }
 
     colony.activeResearch.add(project);
     moduleEventBus.emit({
@@ -233,7 +249,9 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   public completeResearch(colonyId: string, project: string, benefits: any): void {
     const colony = this.colonies.get(colonyId);
-    if (!colony) return;
+    if (!colony) {
+      return;
+    }
 
     colony.activeResearch.delete(project);
     this.emit('researchCompleted', { colonyId, project, benefits });
@@ -249,7 +267,9 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   public activateEmergencyProtocol(colonyId: string, type: string): void {
     const colony = this.colonies.get(colonyId);
-    if (!colony) return;
+    if (!colony) {
+      return;
+    }
 
     colony.emergencyProtocols.add(type);
     this.emit('emergencyProtocolActivated', { colonyId, type });
@@ -265,7 +285,9 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   public deactivateEmergencyProtocol(colonyId: string, type: string): void {
     const colony = this.colonies.get(colonyId);
-    if (!colony) return;
+    if (!colony) {
+      return;
+    }
 
     colony.emergencyProtocols.delete(type);
     moduleEventBus.emit({

@@ -1,6 +1,7 @@
 import { SHIP_STATS } from '../../../config/ships/shipStats';
 import type { FactionShipProps, ShipStatsWithWeapons } from '../../../types/ships/FactionShipTypes';
 import { AlertTriangle, Shield, Sword } from 'lucide-react';
+import { FactionBehaviorType } from '../../../types/ships/FactionTypes';
 
 type FactionColorKey = 'spaceRats' | 'lostNova' | 'equatorHorizon';
 
@@ -9,6 +10,17 @@ const FACTION_COLORS = {
   lostNova: 'violet',
   equatorHorizon: 'amber',
 } as const;
+
+// Helper function to get behavior string from FactionBehaviorType
+const getBehaviorString = (behavior: FactionBehaviorType): string => {
+  return behavior.behavior || '';
+};
+
+// Add a helper function to format the behavior string
+const formatBehavior = (behavior: string): string => {
+  if (!behavior) return '';
+  return behavior.charAt(0).toUpperCase() + behavior.slice(1);
+};
 
 export function FactionShip({
   ship,
@@ -117,14 +129,14 @@ export function FactionShip({
           <div className="text-sm font-medium text-gray-300">Combat Tactics</div>
           <div
             className={`px-2 py-1 rounded text-xs ${
-              ship.tactics === 'aggressive'
+              getBehaviorString(ship.tactics) === 'aggressive'
                 ? 'bg-red-900/50 text-red-400'
-                : ship.tactics === 'defensive'
+                : getBehaviorString(ship.tactics) === 'defensive'
                   ? 'bg-blue-900/50 text-blue-400'
                   : 'bg-yellow-900/50 text-yellow-400'
             }`}
           >
-            {ship.tactics.charAt(0).toUpperCase() + ship.tactics.slice(1)}
+            {formatBehavior(getBehaviorString(ship.tactics))}
           </div>
         </div>
 

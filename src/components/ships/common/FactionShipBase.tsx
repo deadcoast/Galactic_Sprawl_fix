@@ -8,11 +8,17 @@ import { useShipState } from '../../../contexts/ShipContext';
 import { useShipActions } from '../../../hooks/ships/useShipActions';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
 import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
+import { FactionId } from '../../../types/ships/FactionTypes';
 
-const FACTION_COLORS = {
+// Update FACTION_COLORS to include all possible FactionId values
+const FACTION_COLORS: Record<FactionId, string> = {
   'space-rats': 'red',
   'lost-nova': 'violet',
   'equator-horizon': 'amber',
+  'player': 'blue',
+  'enemy': 'red',
+  'neutral': 'gray',
+  'ally': 'green',
 } as const;
 
 /**

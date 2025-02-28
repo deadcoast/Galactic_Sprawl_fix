@@ -214,7 +214,7 @@ interface GameContextType {
   updateSector: (sectorId: string, updates: Partial<GameState['exploration']['sectors'][0]>) => void;
 }
 
-const GameContext = createContext<GameContextType | null>(null);
+export const GameContext = createContext<GameContextType | null>(null);
 
 // Provider
 interface GameProviderProps {
@@ -225,7 +225,21 @@ export function GameProvider({ children }: GameProviderProps) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
   const updateShip = useCallback((shipId: string, updates: Partial<Ship>) => {
-    dispatch({ type: 'UPDATE_SHIP', shipId, data: updates });
+    // Extract status and other updates separately to ensure type safety
+    const { status, experience, stealthActive, position, destination, ...otherUpdates } = updates;
+    
+    dispatch({
+      type: 'UPDATE_SHIP',
+      shipId,
+      data: {
+        ...(status && { status }),
+        ...(experience !== undefined && { experience }),
+        ...(stealthActive !== undefined && { stealthActive }),
+        ...(position && { position }),
+        ...(destination && { destination }),
+        ...otherUpdates
+      }
+    });
   }, []);
 
   const addMission = useCallback((mission: GameState['missions']['history'][0]) => {
@@ -254,7 +268,7 @@ export function GameProvider({ children }: GameProviderProps) {
 // Hook
 export function useGame() {
   const context = useContext(GameContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useGame must be used within a GameProvider');
   }
   return context;
@@ -262,26 +276,41 @@ export function useGame() {
 
 // Helper hooks
 export function useResources() {
-  const { state } = useGame();
-  return state.resources;
+  const context = useGame();
+  if (!context) {
+    throw new Error('useResources must be used within a GameProvider');
+  }
+  return context.state.resources;
 }
 
 export function useSystems() {
-  const { state } = useGame();
-  return state.systems;
+  const context = useGame();
+  if (!context) {
+    throw new Error('useSystems must be used within a GameProvider');
+  }
+  return context.state.systems;
 }
 
 export function useGameTime() {
-  const { state } = useGame();
-  return state.gameTime;
+  const context = useGame();
+  if (!context) {
+    throw new Error('useGameTime must be used within a GameProvider');
+  }
+  return context.state.gameTime;
 }
 
 export function useGameRunning() {
-  const { state } = useGame();
-  return state.isRunning;
+  const context = useGame();
+  if (!context) {
+    throw new Error('useGameRunning must be used within a GameProvider');
+  }
+  return context.state.isRunning;
 }
 
 export function useGamePaused() {
-  const { state } = useGame();
-  return state.isPaused;
+  const context = useGame();
+  if (!context) {
+    throw new Error('useGamePaused must be used within a GameProvider');
+  }
+  return context.state.isPaused;
 }

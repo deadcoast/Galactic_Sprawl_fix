@@ -11,14 +11,15 @@ export interface Ship {
     weapons?: number;
     stealth?: number;
   };
-  status: {
-    position: {
-      x: number;
-      y: number;
-    };
-    destination?: {
-      x: number;
-      y: number;
-    };
+  status: 'idle' | 'scanning' | 'investigating' | 'returning';
+  experience: number;
+  stealthActive: boolean;
+  position: {
+    x: number;
+    y: number;
+  };
+  destination?: {
+    x: number;
+    y: number;
   };
 } 

@@ -48,8 +48,15 @@ const initialTechs: TechNode[] = [
   },
 ];
 
-function GameInitializer({ children }: { children: React.ReactNode }) {
-  const { dispatch } = useGame();
+const GameInitializer = ({ children }: { children: React.ReactNode }) => {
+  const gameContext = useGame();
+  
+  // Ensure context is available
+  if (!gameContext) {
+    return null;
+  }
+  
+  const { dispatch } = gameContext;
   const [isInitialized, setIsInitialized] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [resourceManager] = useState(() => new ResourceManager());
@@ -57,7 +64,7 @@ function GameInitializer({ children }: { children: React.ReactNode }) {
   const [shipHangarManager] = useState(() => new ShipHangarManager(resourceManager, officerManager));
 
   useEffect(() => {
-    async function initializeGame() {
+    const initializeGame = async () => {
       try {
         console.log('Initializing game systems...');
 
@@ -116,7 +123,7 @@ function GameInitializer({ children }: { children: React.ReactNode }) {
         console.error('Failed to initialize game:', error);
         setLoadingError(error instanceof Error ? error.message : 'Failed to initialize game');
       }
-    }
+    };
 
     initializeGame();
 
@@ -179,7 +186,7 @@ function GameInitializer({ children }: { children: React.ReactNode }) {
   }
 
   return children;
-}
+};
 
 export default function App() {
   return (

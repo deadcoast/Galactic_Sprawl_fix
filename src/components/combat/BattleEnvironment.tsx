@@ -2,7 +2,7 @@ import { useFleetAI } from '../../hooks/factions/useFleetAI';
 import { useGlobalEvents } from '../../hooks/game/useGlobalEvents';
 import { useVPR } from '../../hooks/ui/useVPR';
 import { AlertTriangle, Shield, Zap } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { FactionId } from '../../types/ships/FactionTypes';
 import { Position } from '../../types/core/GameTypes';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
@@ -164,14 +164,13 @@ export function BattleEnvironment({
   techBonuses = { hazardResistance: 1, detectionRange: 1, effectPotency: 1 },
   onThreatDetected,
 }: BattleEnvironmentProps) {
-  const [activeHazards, setActiveHazards] = useState(hazards);
-  const [particlePositions, setParticlePositions] = useState<
-    Record<string, Array<{ x: number; y: number }>>
-  >({});
+  // Use refs for mutable state that doesn't need re-renders
+  const activeHazardsRef = useRef(hazards);
+  const particlePositionsRef = useRef<Record<string, Array<{ x: number; y: number }>>>({});
+  const weaponEffectsRef = useRef<Record<string, { active: boolean; type: string }>>({});
+  
+  // State that needs re-renders
   const [impactAnimations, setImpactAnimations] = useState<Record<string, boolean>>({});
-  const [weaponEffects, setWeaponEffects] = useState<
-    Record<string, { active: boolean; type: string }>
-  >({});
   const [automationEffects, setAutomationEffects] = useState<Array<{
     id: string;
     type: 'formation' | 'engagement' | 'repair' | 'shield' | 'attack' | 'retreat';
@@ -179,10 +178,20 @@ export function BattleEnvironment({
     timestamp: number;
   }>>([]);
 
+  // Batch updates using requestAnimationFrame
+  const requestUpdate = useCallback(() => {
+    requestAnimationFrame(() => {
+      setImpactAnimations(prev => ({ ...prev }));
+    });
+  }, []);
+
+  // Memoize event handlers
   const { emitEvent } = useGlobalEvents();
   const { getVPRAnimationSet } = useVPR();
   const fleetAIResult = useFleetAI(fleetId, factionId);
-  const fleetAI: FleetAIResult = {
+
+  // Memoize fleet AI result
+  const fleetAI = useMemo(() => ({
     formationPatterns: fleetAIResult.formationPatterns,
     adaptiveAI: fleetAIResult.adaptiveAI,
     factionBehavior: {
@@ -200,35 +209,64 @@ export function BattleEnvironment({
       },
       rangeCircles: [],
     },
-  };
+  }), [fleetAIResult]);
 
   // Memoize tech-enhanced values
-  const enhancedValues = useMemo(
-    () => ({
-      detectionRadius: 1000 * techBonuses.detectionRange,
-      hazardResistance: Math.min(0.9, techBonuses.hazardResistance),
-      effectMultiplier: Math.max(0.1, techBonuses.effectPotency),
-    }),
-    [techBonuses]
-  );
+  const enhancedValues = useMemo(() => ({
+    detectionRadius: 1000 * techBonuses.detectionRange,
+    hazardResistance: Math.min(0.9, techBonuses.hazardResistance),
+    effectMultiplier: Math.max(0.1, techBonuses.effectPotency),
+  }), [techBonuses]);
 
-  // Handle hazard detection and threat response
-  const handleThreatDetection = useCallback(
-    (hazard: Hazard) => {
-      if (onThreatDetected) {
-        onThreatDetected(hazard);
+  // Optimize collision detection with spatial partitioning
+  const spatialGrid = useMemo(() => {
+    const grid: Record<string, Set<string>> = {};
+    const cellSize = 100; // Adjust based on typical unit sizes
+
+    units.forEach(unit => {
+      const cellX = Math.floor(unit.position.x / cellSize);
+      const cellY = Math.floor(unit.position.y / cellSize);
+      const cellKey = `${cellX},${cellY}`;
+      
+      if (!grid[cellKey]) {
+        grid[cellKey] = new Set();
+      }
+      grid[cellKey].add(unit.id);
+    });
+
+    return grid;
+  }, [units]);
+
+  // Optimize particle system
+  const updateParticles = useCallback(() => {
+    if (quality === 'low') {
+      return;
+    }
+
+    const newPositions: Record<string, Array<{ x: number; y: number }>> = {};
+    activeHazardsRef.current.forEach(hazard => {
+      const baseParticleCount = quality === 'high' ? 20 : 10;
+      const tierMultiplier = 1 + (tier - 1) * 0.5;
+      const particleCount = Math.floor(baseParticleCount * tierMultiplier);
+
+      // Use object pooling for particles
+      const particles = particlePositionsRef.current[hazard.id] || [];
+      while (particles.length < particleCount) {
+        particles.push({ x: 0, y: 0 });
       }
 
-      // Emit global event for fleet response
-      emitEvent('THREAT_DETECTED', {
-        hazardId: hazard.id,
-        position: hazard.position,
-        severity: hazard.severity,
-        type: hazard.type,
-      });
-    },
-    [onThreatDetected, emitEvent]
-  );
+      // Update particle positions
+      for (let i = 0; i < particleCount; i++) {
+        particles[i].x = hazard.position.x + (Math.random() - 0.5) * hazard.radius;
+        particles[i].y = hazard.position.y + (Math.random() - 0.5) * hazard.radius;
+      }
+
+      newPositions[hazard.id] = particles.slice(0, particleCount);
+    });
+
+    particlePositionsRef.current = newPositions;
+    requestUpdate();
+  }, [quality, tier, requestUpdate]);
 
   // Enhanced collision effect handling
   const handleCollisionEffect = useCallback(
@@ -255,149 +293,102 @@ export function BattleEnvironment({
   const handleWeaponFire = useCallback(
     (weaponId: string, targetId: string, type: string) => {
       onWeaponFire(weaponId, targetId);
-      setWeaponEffects(prev => ({
-        ...prev,
-        [weaponId]: { active: true, type },
-      }));
+      weaponEffectsRef.current[weaponId] = { active: true, type };
       setTimeout(() => {
-        setWeaponEffects(prev => ({
-          ...prev,
-          [weaponId]: { active: false, type },
-        }));
+        weaponEffectsRef.current[weaponId] = { active: false, type };
       }, 1000);
     },
     [onWeaponFire]
   );
 
-  // Combat automation effect
+  // Optimize combat loop with worker
   useEffect(() => {
-    const combatLoop = setInterval(() => {
-      units.forEach(unit => {
-        if (unit.status === 'engaging') {
-          // Find nearest target
-          const nearestHazard = activeHazards.reduce(
-            (nearest, current) => {
-              const currentDist = Math.sqrt(
-                Math.pow(current.position.x - unit.position.x, 2) +
-                  Math.pow(current.position.y - unit.position.y, 2)
-              );
-              const nearestDist = nearest
-                ? Math.sqrt(
-                    Math.pow(nearest.position.x - unit.position.x, 2) +
-                      Math.pow(nearest.position.y - unit.position.y, 2)
-                  )
-                : Infinity;
-              return currentDist < nearestDist ? current : nearest;
-            },
-            null as Hazard | null
-          );
-
-          if (nearestHazard) {
-            // Find ready weapon in range
-            const readyWeapon = unit.weapons.find(weapon => {
-              const distance = Math.sqrt(
-                Math.pow(nearestHazard.position.x - unit.position.x, 2) +
-                  Math.pow(nearestHazard.position.y - unit.position.y, 2)
-              );
-              return weapon.status === 'ready' && distance <= weapon.range;
-            });
-
-            if (readyWeapon) {
-              handleWeaponFire(readyWeapon.id, nearestHazard.id, readyWeapon.type);
-            }
-          }
-        }
-      });
-    }, 100);
-
-    return () => clearInterval(combatLoop);
-  }, [units, activeHazards, handleWeaponFire]);
-
-  // Handle hazard movement and particle effects with tier-based enhancements
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveHazards(prev =>
-        prev.map(hazard => {
-          if (hazard.movement) {
-            const newX =
-              hazard.position.x + Math.cos(hazard.movement.direction) * hazard.movement.speed;
-            const newY =
-              hazard.position.y + Math.sin(hazard.movement.direction) * hazard.movement.speed;
-
-            // Check if hazard moved into detection range
-            const distanceFromCenter = Math.sqrt(newX * newX + newY * newY);
-            if (distanceFromCenter <= enhancedValues.detectionRadius) {
-              handleThreatDetection(hazard);
-            }
-
-            return {
-              ...hazard,
-              position: { x: newX, y: newY },
-            };
-          }
-          return hazard;
-        })
-      );
-
-      // Update particle positions with tier-based enhancements
-      if (quality !== 'low') {
-        setParticlePositions(() => {
-          const newPositions: Record<string, Array<{ x: number; y: number }>> = {};
-          activeHazards.forEach(hazard => {
-            const baseParticleCount = quality === 'high' ? 20 : 10;
-            const tierMultiplier = 1 + (tier - 1) * 0.5; // More particles for higher tiers
-            const particleCount = Math.floor(baseParticleCount * tierMultiplier);
-
-            newPositions[hazard.id] = Array.from({ length: particleCount }, () => ({
-              x: hazard.position.x + (Math.random() - 0.5) * hazard.radius,
-              y: hazard.position.y + (Math.random() - 0.5) * hazard.radius,
-            }));
-          });
-          return newPositions;
-        });
+    const worker = new Worker(new URL('../../workers/combatWorker.ts', import.meta.url));
+    
+    worker.onmessage = (e) => {
+      const { type, data } = e.data;
+      switch (type) {
+        case 'WEAPON_FIRE':
+          handleWeaponFire(data.weaponId, data.targetId, data.weaponType);
+          break;
+        case 'UNIT_MOVE':
+          onUnitMove(data.unitId, data.position);
+          break;
       }
-    }, 50);
+    };
 
-    // Enhanced collision detection with tech bonuses
-    const collisionCheck = setInterval(() => {
-      const ships = document.querySelectorAll('[data-ship-id]');
-      activeHazards.forEach(hazard => {
-        ships.forEach(ship => {
-          const shipId = ship.getAttribute('data-ship-id');
-          if (shipId) {
-            const shipRect = ship.getBoundingClientRect();
-            const shipCenter = {
-              x: shipRect.left + shipRect.width / 2,
-              y: shipRect.top + shipRect.height / 2,
-            };
-
-            const distance = Math.sqrt(
-              Math.pow(shipCenter.x - hazard.position.x, 2) +
-                Math.pow(shipCenter.y - hazard.position.y, 2)
-            );
-
-            // Apply tech bonus to detection range
-            if (distance <= hazard.radius * techBonuses.detectionRange) {
-              handleCollisionEffect(hazard.id, shipId, hazard.effect);
-            }
-          }
-        });
+    const interval = setInterval(() => {
+      worker.postMessage({
+        type: 'UPDATE',
+        units: units,
+        hazards: activeHazardsRef.current,
+        spatialGrid,
       });
     }, 100);
 
     return () => {
       clearInterval(interval);
-      clearInterval(collisionCheck);
+      worker.terminate();
     };
-  }, [
-    quality,
-    activeHazards,
-    handleCollisionEffect,
-    handleThreatDetection,
-    enhancedValues,
-    tier,
-    techBonuses.detectionRange,
-  ]);
+  }, [units, onUnitMove, handleWeaponFire, spatialGrid]);
+
+  // Optimize render with virtualization
+  const virtualizedUnits = useMemo(() => {
+    return units.filter(unit => {
+      return unit.position.x >= 0 && unit.position.x <= window.innerWidth &&
+                                unit.position.y >= 0 && unit.position.y <= window.innerHeight;
+    });
+  }, [units]);
+
+  // Handle hazard detection and threat response
+  const handleThreatDetection = useCallback(
+    (hazard: Hazard) => {
+      if (onThreatDetected) {
+        onThreatDetected(hazard);
+      }
+
+      // Emit global event for fleet response
+      emitEvent('THREAT_DETECTED', {
+        hazardId: hazard.id,
+        position: hazard.position,
+        severity: hazard.severity,
+        type: hazard.type,
+      });
+    },
+    [onThreatDetected, emitEvent]
+  );
+
+  // Combat automation effect
+  useEffect(() => {
+    const subscription = moduleEventBus.subscribe('AUTOMATION_STARTED', (event: ModuleEvent) => {
+      if (
+        event.type === 'AUTOMATION_STARTED' &&
+        event.moduleType === 'hangar' &&
+        event.data?.type
+      ) {
+        setAutomationEffects(prev => [
+          ...prev,
+          {
+            id: `${event.moduleId}-${Date.now()}`,
+            type: event.data.type,
+            position: event.data.position || { x: 50, y: 50 },
+            timestamp: Date.now(),
+          },
+        ]);
+
+        // Cleanup old effects
+        setTimeout(() => {
+          setAutomationEffects(prev =>
+            prev.filter(effect => Date.now() - effect.timestamp < 2000)
+          );
+        }, 2000);
+      }
+    });
+
+    return () => {
+      subscription();
+    };
+  }, []);
 
   // Get enhanced hazard visuals based on tier and type
   const getHazardVisuals = useCallback(
@@ -435,7 +426,7 @@ export function BattleEnvironment({
     const moveInterval = setInterval(() => {
       units.forEach(unit => {
         if (unit.status === 'engaging') {
-          const nearestHazard = activeHazards.reduce(
+          const nearestHazard = activeHazardsRef.current.reduce(
             (nearest, current) => {
               const currentDist = Math.sqrt(
                 Math.pow(current.position.x - unit.position.x, 2) +
@@ -464,45 +455,13 @@ export function BattleEnvironment({
     }, 100);
 
     return () => clearInterval(moveInterval);
-  }, [units, activeHazards, onUnitMove]);
-
-  // Handle automation events
-  useEffect(() => {
-    const subscription = moduleEventBus.subscribe('AUTOMATION_STARTED', (event: ModuleEvent) => {
-      if (
-        event.type === 'AUTOMATION_STARTED' &&
-        event.moduleType === 'hangar' &&
-        event.data?.type
-      ) {
-        setAutomationEffects(prev => [
-          ...prev,
-          {
-            id: `${event.moduleId}-${Date.now()}`,
-            type: event.data.type,
-            position: event.data.position || { x: 50, y: 50 },
-            timestamp: Date.now(),
-          },
-        ]);
-
-        // Cleanup old effects
-        setTimeout(() => {
-          setAutomationEffects(prev =>
-            prev.filter(effect => Date.now() - effect.timestamp < 2000)
-          );
-        }, 2000);
-      }
-    });
-
-    return () => {
-      subscription();
-    };
-  }, []);
+  }, [units, onUnitMove]);
 
   return (
     <div className="relative w-full h-full overflow-hidden">
-      {/* Combat HUD */}
+      {/* Combat HUD - Only render visible units */}
       <div className="absolute top-4 left-4 space-y-2">
-        {units.map(unit => (
+        {virtualizedUnits.map(unit => (
           <div
             key={unit.id}
             className={`px-3 py-2 rounded-lg bg-gray-900/80 backdrop-blur-sm border ${
@@ -547,7 +506,7 @@ export function BattleEnvironment({
       </div>
 
       {/* Hazards */}
-      {activeHazards.map(hazard => {
+      {hazards.map(hazard => {
         const visuals = getHazardVisuals(hazard);
 
         return (
@@ -573,7 +532,7 @@ export function BattleEnvironment({
             >
               {/* Enhanced Particle Effects */}
               {quality !== 'low' &&
-                particlePositions[hazard.id]?.map((particle, index) => (
+                particlePositionsRef.current[hazard.id]?.map((particle, index) => (
                   <div
                     key={index}
                     className={`absolute w-1 h-1 rounded-full bg-${visuals.color}-400/50
@@ -627,7 +586,7 @@ export function BattleEnvironment({
       })}
 
       {/* Weapon Effects */}
-      {Object.entries(weaponEffects).map(([weaponId, effect]) => {
+      {Object.entries(weaponEffectsRef.current).map(([weaponId, effect]) => {
         if (!effect.active) return null;
 
         const weapon = units.flatMap(u => u.weapons).find(w => w.id === weaponId);

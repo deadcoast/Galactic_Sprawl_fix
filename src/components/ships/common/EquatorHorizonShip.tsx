@@ -2,13 +2,18 @@ import { FactionShipBase } from './FactionShipBase';
 import { EquatorHorizonShipClass, FactionShipStats } from '../../../types/ships/FactionShipTypes';
 import { ReactNode } from 'react';
 import { WeaponMount } from '../../../types/weapons/WeaponTypes';
-import { DamageEffect } from '../../../effects/types_effects/WeaponEffects';
+import { DamageEffect, WeaponEffect } from '../../../effects/types_effects/WeaponEffects';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
-import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
+import { BaseEffect, EffectType, CombatEffectType } from '../../../effects/types_effects/EffectTypes';
 import { Shield, Target } from 'lucide-react';
 import { StatusEffect } from '../../ui/status/StatusEffect';
 import { AbilityButton } from '../../ui/buttons/AbilityButton';
 import { useCallback } from 'react';
+import { createWeaponLike, createCustomWeaponEffect, createDamageEffect } from '../../../utils/weapons/weaponEffectUtils';
+import { Effect } from '../../../types/core/GameTypes';
+import { FactionBehaviorType, FactionId } from '../../../types/ships/FactionTypes';
+import { isWeaponEffect, isDamageEffect } from '../../../effects/util_effects/effectUtils';
+import { createEffect } from '../../../effects/util_effects/effectUtils';
 
 interface EquatorHorizonShipProps {
   id: string;
@@ -60,16 +65,14 @@ export function EquatorHorizonShip({
   const { addEffect, removeEffect, hasEffect } = useShipEffects();
 
   // Handle weapon firing
-  const handleWeaponFire = useCallback(
+  const handleFire = useCallback(
     (weaponId: string) => {
-      const weapon = weapons.find(
-        mount => mount.currentWeapon?.config.id === weaponId
-      )?.currentWeapon;
+      const weapon = weapons.find(mount => mount.id === weaponId)?.currentWeapon;
 
       if (weapon && weapon.state.status === 'ready') {
         // Apply weapon effects
         weapon.state.effects.forEach(effect => {
-          if (effect.type === 'damage') {
+          if (isDamageEffect(effect)) {
             console.debug(
               `[EquatorHorizonShip] Firing weapon ${weaponId} with strength ${effect.strength}`
             );
@@ -93,14 +96,19 @@ export function EquatorHorizonShip({
 
   // Faction-specific effects
   const handleOvercharge = useCallback(() => {
-    if (hasEffect('overcharge')) {
-      removeEffect('overcharge');
+    const effectId = 'overcharge';
+    const hasOvercharge = hasEffect(effectId);
+    if (hasOvercharge) {
+      removeEffect(effectId);
       // Remove overcharge effect from weapons
       weapons.forEach(mount => {
         if (mount.currentWeapon) {
-          mount.currentWeapon.state.effects = mount.currentWeapon.state.effects.filter(
-            effect => effect.name !== 'Overcharge'
-          );
+          mount.currentWeapon.state.effects = mount.currentWeapon.state.effects.filter(effect => {
+            if (isDamageEffect(effect)) {
+              return effect.id !== effectId;
+            }
+            return true;
+          });
 
           // Reset weapon stats
           mount.currentWeapon.state.currentStats = {
@@ -109,34 +117,41 @@ export function EquatorHorizonShip({
         }
       });
     } else {
-      const baseEffect: BaseEffect = {
-        id: 'overcharge',
-        name: 'Overcharge',
-        description: 'Increases weapon damage and accuracy',
-        type: 'accuracy',
-        magnitude: 1.4,
-        duration: 10,
-        active: true,
-      };
+      // Create base effect for ship
+      const baseEffect = createEffect(
+        effectId,
+        'Overcharge',
+        'damage' as CombatEffectType,
+        1.4,
+        'Increases weapon damage and accuracy',
+        {
+          duration: 10,
+          active: true,
+        }
+      );
       addEffect(baseEffect);
 
-      // Apply overcharge effect to all weapons
+      // Create weapon effect for each weapon
       weapons.forEach(mount => {
         if (mount.currentWeapon) {
-          const weaponEffect: DamageEffect = {
-            type: 'damage',
-            name: 'Overcharge',
-            description: 'Increases weapon damage and accuracy',
+          const weaponEffect = createDamageEffect({
+            id: `${mount.currentWeapon.config.id}-${effectId}`,
+            magnitude: mount.currentWeapon.state.currentStats.damage * 1.4,
             duration: 10,
             strength: 1.4,
-            magnitude: 1.4,
             damageType: 'energy',
             penetration: 0.2,
-            active: true,
-            cooldown: 0,
-          };
+          });
 
-          mount.currentWeapon.state.effects.push(weaponEffect);
+          mount.currentWeapon.state.effects = [
+            ...mount.currentWeapon.state.effects.filter(effect => {
+              if (isDamageEffect(effect)) {
+                return effect.id !== weaponEffect.id;
+              }
+              return true;
+            }),
+            weaponEffect,
+          ];
 
           // Update weapon stats with overcharge
           const { currentStats } = mount.currentWeapon.state;
@@ -149,24 +164,30 @@ export function EquatorHorizonShip({
       });
     }
     onSpecialAbility?.();
-  }, [addEffect, removeEffect, hasEffect, weapons, onSpecialAbility]);
+  }, [hasEffect, removeEffect, addEffect, weapons, onSpecialAbility]);
 
+  // Handle reinforced shields effect
   const handleReinforcedShields = useCallback(() => {
-    if (hasEffect('reinforced-shields')) {
-      removeEffect('reinforced-shields');
+    const effectId = 'reinforced-shields';
+    const hasShields = hasEffect(effectId);
+    if (hasShields) {
+      removeEffect(effectId);
     } else {
-      const shieldEffect: BaseEffect = {
-        id: 'reinforced-shields',
-        name: 'Reinforced Shields',
-        description: 'Boosts shield strength and regeneration',
-        type: 'shield',
-        magnitude: 1.5,
-        duration: 15,
-        active: true,
-      };
-      addEffect(shieldEffect);
+      const baseEffect = createEffect(
+        effectId,
+        'Reinforced Shields',
+        'shield' as CombatEffectType,
+        1.5,
+        'Boosts shield strength and regeneration',
+        {
+          duration: 15,
+          active: true,
+        }
+      );
+      addEffect(baseEffect);
     }
-  }, [addEffect, removeEffect, hasEffect]);
+    onSpecialAbility?.();
+  }, [hasEffect, removeEffect, addEffect, onSpecialAbility]);
 
   return (
     <FactionShipBase
@@ -174,9 +195,12 @@ export function EquatorHorizonShip({
         id,
         name,
         class: type,
-        faction: 'equator-horizon',
+        faction: 'equator-horizon' as FactionId,
         status,
-        tactics,
+        tactics: {
+          formation: 'balanced',
+          behavior: 'defensive',
+        } as FactionBehaviorType,
         category: 'war',
         health,
         maxHealth,
@@ -192,12 +216,11 @@ export function EquatorHorizonShip({
             duration: 10,
             active: hasEffect('overcharge'),
             effect: {
-              type: 'accuracy',
-              name: 'Overcharge',
-              description: 'Increases weapon damage and accuracy',
+              id: 'overcharge',
+              type: 'damage',
               magnitude: 1.4,
               duration: 10,
-            },
+            } as Effect,
           },
           {
             name: 'Reinforced Shields',
@@ -206,12 +229,11 @@ export function EquatorHorizonShip({
             duration: 15,
             active: hasEffect('reinforced-shields'),
             effect: {
+              id: 'reinforced-shields',
               type: 'shield',
-              name: 'Reinforced Shields',
-              description: 'Boosts shield strength and regeneration',
               magnitude: 1.5,
               duration: 15,
-            },
+            } as Effect,
           },
         ],
         stats,
@@ -219,7 +241,7 @@ export function EquatorHorizonShip({
       onEngage={onEngage}
       onRetreat={onRetreat}
       onSpecialAbility={onSpecialAbility}
-      onFire={handleWeaponFire}
+      onFire={handleFire}
     >
       {/* Status Effects */}
       <StatusEffect

@@ -10,7 +10,7 @@ import { WeaponCategory } from '../../types/weapons/WeaponTypes';
 
 // Props and Config Types
 interface WeaponEffectProps {
-  type: 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets' | 'mgss' | 'pointDefense';
+  type: 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets' | 'mgss' | 'pointDefense' | 'plasmaCannon' | 'beamWeapon' | 'pulseWeapon' | 'disruptor' | 'ionCannon';
   color: string;
   position: { x: number; y: number };
   rotation: number;
@@ -128,6 +128,47 @@ function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' 
           alpha = (1.0 - beamCore) * (swirl + energyField * 0.4) * intensity;
           finalColor = mix(color, vec3(1.0), fresnel * 0.9 + swirl * 0.3);
         }
+        else if (weaponType == 5) { // Point Defense
+          float pointDefense = smoothstep(0.45, 0.55, abs(uv.x - 0.5));
+          float energyPulse = sin(uv.y * 30.0 - time * 15.0) * 0.5 + 0.5;
+          alpha = (1.0 - pointDefense) * (energyPulse + 0.5) * intensity;
+          finalColor = mix(color, vec3(1.0), fresnel * 0.5);
+        }
+        else if (weaponType == 6) { // Plasma Cannon
+          float plasmaCore = smoothstep(0.45, 0.55, abs(uv.x - 0.5));
+          float plasmaField = fbm(uv * 10.0 + time * 3.0);
+          float energyRings = sin(uv.y * 60.0 + time * 8.0) * 0.5 + 0.5;
+          alpha = (1.0 - plasmaCore) * (plasmaField + energyRings * 0.4) * intensity;
+          finalColor = mix(color, vec3(1.0), fresnel * 0.9 + plasmaField * 0.5);
+        }
+        else if (weaponType == 7) { // Beam Weapon
+          float beamCore = smoothstep(0.48, 0.52, abs(uv.x - 0.5));
+          float energyField = fbm(uv * 12.0 + time * 4.0);
+          float beamPulse = sin(uv.y * 80.0 - time * 20.0) * 0.5 + 0.5;
+          alpha = (1.0 - beamCore) * (energyField + beamPulse * 0.6) * intensity;
+          finalColor = mix(color, vec3(1.0), fresnel * 0.95 + beamPulse * 0.4);
+        }
+        else if (weaponType == 8) { // Pulse Weapon
+          float pulseCore = smoothstep(0.46, 0.54, abs(uv.x - 0.5));
+          float pulseWave = sin(uv.y * 40.0 - time * 12.0) * 0.5 + 0.5;
+          float energyField = fbm(uv * 8.0 + time * 2.0);
+          alpha = (1.0 - pulseCore) * (pulseWave + energyField * 0.3) * intensity;
+          finalColor = mix(color, vec3(1.0), fresnel * 0.8 + pulseWave * 0.5);
+        }
+        else if (weaponType == 9) { // Disruptor
+          float disruptorCore = smoothstep(0.47, 0.53, abs(uv.x - 0.5));
+          float disruption = fbm(uv * 15.0 + time * 5.0);
+          float chaosField = noise(uv * 25.0 + time * 6.0);
+          alpha = (1.0 - disruptorCore) * (disruption + chaosField * 0.4) * intensity;
+          finalColor = mix(color, vec3(1.0), fresnel * 0.7 + disruption * 0.6);
+        }
+        else if (weaponType == 10) { // Ion Cannon
+          float ionCore = smoothstep(0.46, 0.54, abs(uv.x - 0.5));
+          float ionField = fbm(uv * 10.0 + time * 3.5);
+          float ionPulse = sin(uv.y * 70.0 - time * 15.0) * 0.5 + 0.5;
+          alpha = (1.0 - ionCore) * (ionField + ionPulse * 0.5) * intensity;
+          finalColor = mix(color, vec3(1.0), fresnel * 0.85 + ionPulse * 0.45);
+        }
         
         // Add global glow
         alpha += fresnel * 0.3 * intensity;
@@ -153,6 +194,11 @@ function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' 
     rockets: 3,
     mgss: 4,
     pointDefense: 5,
+    plasmaCannon: 6,
+    beamWeapon: 7,
+    pulseWeapon: 8,
+    disruptor: 9,
+    ionCannon: 10,
   };
 
   return (

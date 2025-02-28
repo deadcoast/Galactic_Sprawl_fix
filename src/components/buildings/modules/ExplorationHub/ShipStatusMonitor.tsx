@@ -37,7 +37,7 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
         // Calculate real-time status values
         const timeSinceLastUpdate = Date.now() - (shipStatuses[ship.id]?.lastUpdate || 0);
         const energyDrain = ship.currentTask ? 0.001 * timeSinceLastUpdate : 0;
-        const shieldRecharge = !ship.currentTask ? 0.002 * timeSinceLastUpdate : 0;
+        const shieldRecharge = ship.currentTask ? 0 : 0.002 * timeSinceLastUpdate;
         
         newStatuses[ship.id] = {
           health: Math.max(0, Math.min(100, (shipStatuses[ship.id]?.health || 100))),
@@ -64,13 +64,19 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
   };
 
   const getStatusColor = (value: number): string => {
-    if (value > 66) return 'text-emerald-400';
-    if (value > 33) return 'text-amber-400';
+    if (value > 66) {
+      return 'text-emerald-400';
+    }
+    if (value > 33) {
+      return 'text-amber-400';
+    }
     return 'text-red-400';
   };
 
   const getTaskColor = (status?: 'idle' | 'scanning' | 'investigating' | 'returning'): string => {
-    if (!status) return 'text-gray-400';
+    if (!status) {
+      return 'text-gray-400';
+    }
     switch (status) {
       case 'scanning':
         return 'text-blue-400';
@@ -87,7 +93,9 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
     <div className="space-y-4 p-4">
       {ships.map(ship => {
         const status = shipStatuses[ship.id];
-        if (!status) return null;
+        if (!status) {
+          return null;
+        }
 
         return (
           <div

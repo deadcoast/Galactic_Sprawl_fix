@@ -393,7 +393,9 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     let nearestHazard: Hazard | null = null;
     let nearestDistance = Infinity;
 
-    for (const field of this.state.fields.values()) {
+    // Convert Map entries to array to avoid MapIterator error
+    const fieldValues = Array.from(this.state.fields.values());
+    for (const field of fieldValues) {
       // Calculate distance to field center
       const distanceToField = Math.sqrt(
         Math.pow(position.x - field.position.x, 2) + Math.pow(position.y - field.position.y, 2)
@@ -435,7 +437,9 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     let nearestDistance = Infinity;
 
     // Find nearest hazard across all fields
-    for (const field of this.state.fields.values()) {
+    // Convert Map entries to array to avoid MapIterator error
+    const fieldValues = Array.from(this.state.fields.values());
+    for (const field of fieldValues) {
       for (const hazard of field.hazards) {
         const distance = Math.sqrt(
           Math.pow(position.x - hazard.position.x, 2) + Math.pow(position.y - hazard.position.y, 2)
@@ -496,7 +500,9 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
         };
 
         // Add to parent field
-        for (const [fieldId, field] of this.state.fields.entries()) {
+        // Convert Map entries to array to avoid MapIterator error
+        const fieldEntries = Array.from(this.state.fields.entries());
+        for (const [fieldId, field] of fieldEntries) {
           if (field.hazards.some(h => h.id === hazard.id)) {
             field.hazards.push(newHazard);
             this.state.activeHazards.add(newHazard.id);
@@ -527,7 +533,9 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     };
 
     // Check if ship is in any asteroid field
-    for (const field of this.state.fields.values()) {
+    // Convert Map entries to array to avoid MapIterator error
+    const fieldValues = Array.from(this.state.fields.values());
+    for (const field of fieldValues) {
       const distanceToField = Math.sqrt(
         Math.pow(position.x - field.position.x, 2) + Math.pow(position.y - field.position.y, 2)
       );

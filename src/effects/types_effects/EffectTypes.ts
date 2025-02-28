@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+import { Effect } from '../../types/core/GameTypes';
 
 // Base Effect Types
 // ------------------------------------------------------------
@@ -7,23 +8,13 @@ import { LucideIcon } from 'lucide-react';
  * Base Effect Interface
  * Common properties for all effects in the game
  */
-export interface BaseEffect {
-  /** Unique identifier for the effect */
-  id: string;
+export interface BaseEffect extends Effect {
   /** Name of the effect */
   name: string;
   /** Description of what the effect does */
   description: string;
   /** Type of effect */
   type: EffectType;
-  /** Magnitude/strength of the effect */
-  magnitude: number;
-  /** Duration in seconds (undefined means permanent) */
-  duration?: number;
-  /** Whether the effect is currently active */
-  active?: boolean;
-  /** Cooldown time in seconds before the effect can be reapplied */
-  cooldown?: number;
 }
 
 // Effect Categories

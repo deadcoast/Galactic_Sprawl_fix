@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useGame } from '../../../../contexts/GameContext';
 import { Play, Pause, SkipBack, SkipForward, X } from 'lucide-react';
+import { GameEvent } from '../../../../types/core/GameTypes';
 
 interface MissionReplayProps {
   missionId: string;
@@ -8,14 +9,21 @@ interface MissionReplayProps {
 }
 
 export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
-  const { state } = useGame();
+  const gameContext = useGame();
+  
+  // Ensure context is available
+  if (!gameContext) {
+    return null;
+  }
+  
+  const { state } = gameContext;
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
   // Find the mission and related events
-  const mission = state.missions.history.find(m => m.id === missionId);
-  const events = state.events.filter(e => 
+  const mission = state.missions.history.find((m: { id: string }) => m.id === missionId);
+  const events = state.events.filter((e: GameEvent) => 
     e.timestamp >= (mission?.timestamp || 0) && 
     e.timestamp <= (mission?.timestamp || 0) + 3600000 // 1 hour window
   );
@@ -40,7 +48,9 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
 
   // Update time during playback
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying) {
+      return;
+    }
 
     const interval = setInterval(() => {
       setCurrentTime(time => {
@@ -56,10 +66,12 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
     return () => clearInterval(interval);
   }, [isPlaying, playbackSpeed, duration]);
 
-  if (!mission) return null;
+  if (!mission) {
+    return null;
+  }
 
   // Get events up to current time
-  const currentEvents = events.filter(e => 
+  const currentEvents = events.filter((e: GameEvent) => 
     e.timestamp <= events[0].timestamp + currentTime
   );
 
@@ -104,7 +116,7 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
           {/* Event Timeline */}
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-gray-900/90 to-transparent p-4">
             <div className="flex items-center space-x-4 mb-4">
-              {currentEvents.map((event, index) => (
+              {currentEvents.map((event: GameEvent, index: number) => (
                 <div
                   key={index}
                   className="w-2 h-2 rounded-full bg-teal-400"

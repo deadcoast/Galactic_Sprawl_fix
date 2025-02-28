@@ -200,6 +200,19 @@ export class ResourcePerformanceMonitor {
     this.metricsHistory.clear();
     console.debug('[ResourcePerformanceMonitor] Cleaned up performance monitor');
   }
+
+  /**
+   * Get all metrics history
+   */
+  public getAllMetricsHistory(): Record<ResourceType, PerformanceMetrics[]> {
+    const result: Record<ResourceType, PerformanceMetrics[]> = {} as Record<ResourceType, PerformanceMetrics[]>;
+    
+    for (const [type, metrics] of Array.from(this.metricsHistory)) {
+      result[type] = [...metrics];
+    }
+    
+    return result;
+  }
 }
 
 // Export singleton instance

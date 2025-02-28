@@ -7,6 +7,8 @@ import {
   CombatEffect,
   AreaEffect,
 } from '../types_effects/EffectTypes';
+import { Effect } from '../../types/core/GameTypes';
+import { WeaponEffectType, DamageEffect } from '../types_effects/WeaponEffects';
 
 // Effect Creation
 // ------------------------------------------------------------
@@ -125,29 +127,61 @@ export function removeEffect(stack: EffectStack, effectId: string): EffectStack 
 /**
  * Type guard for weapon effects
  */
-export function isWeaponEffect(effect: BaseEffect): effect is BaseEffect & WeaponEffect {
-  return 'strength' in effect && typeof effect.strength === 'number';
+export function isWeaponEffect(effect: BaseEffect | Effect): effect is WeaponEffect {
+  return (
+    'type' in effect &&
+    (effect.type === 'damage' || effect.type === 'area' || effect.type === 'status') &&
+    'strength' in effect &&
+    typeof effect.strength === 'number'
+  );
+}
+
+/**
+ * Type guard for damage effects
+ */
+export function isDamageEffect(effect: BaseEffect | Effect): effect is DamageEffect {
+  return (
+    isWeaponEffect(effect) &&
+    effect.type === 'damage' &&
+    'damageType' in effect &&
+    'penetration' in effect
+  );
 }
 
 /**
  * Type guard for area effects
  */
-export function isAreaEffect(effect: BaseEffect): effect is AreaEffect {
-  return 'radius' in effect && 'position' in effect;
+export function isAreaEffect(effect: BaseEffect | Effect): effect is AreaEffect {
+  return (
+    isWeaponEffect(effect) &&
+    effect.type === 'area' &&
+    'radius' in effect &&
+    'falloff' in effect
+  );
 }
 
 /**
  * Type guard for status effects
  */
-export function isStatusEffect(effect: BaseEffect): effect is StatusEffect {
-  return 'icon' in effect && 'color' in effect;
+export function isStatusEffect(effect: BaseEffect | Effect): effect is StatusEffect {
+  return (
+    isWeaponEffect(effect) &&
+    effect.type === 'status' &&
+    'statusType' in effect
+  );
 }
 
 /**
  * Type guard for combat effects
  */
-export function isCombatEffect(effect: BaseEffect): effect is CombatEffect {
-  return 'remainingTime' in effect && 'sourceId' in effect && 'targetId' in effect;
+export function isCombatEffect(effect: BaseEffect | Effect): effect is CombatEffect {
+  return (
+    'remainingTime' in effect &&
+    'sourceId' in effect &&
+    'targetId' in effect &&
+    'effects' in effect &&
+    Array.isArray((effect as CombatEffect).effects)
+  );
 }
 
 // Effect Composition

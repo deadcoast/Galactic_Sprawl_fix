@@ -4,6 +4,7 @@ import { combatManager } from '../../managers/combat/combatManager';
 import { factionManager } from '../../managers/factions/factionManager';
 import { useEffect, useMemo, useState } from 'react';
 import { FactionId } from '../../types/ships/FactionTypes';
+import { Position } from '../../types/core/GameTypes';
 
 interface CombatUnit {
   id: string;
@@ -60,11 +61,16 @@ declare module '../../managers/combat/CombatManager' {
 }
 
 interface FleetFormation {
-  type: 'line' | 'wedge' | 'circle' | 'scattered';
+  type: 'line' | 'wedge' | 'circle' | 'scattered' | 'arrow' | 'diamond' | 'shield' | 'spearhead';
   spacing: number;
   facing: number;
   pattern: 'defensive' | 'offensive' | 'balanced';
   adaptiveSpacing: boolean;
+  transitionSpeed?: number;
+  subFormations?: {
+    type: FleetFormation['type'];
+    units: string[];
+  }[];
 }
 
 interface CommandHierarchy {
@@ -90,6 +96,7 @@ interface FleetAIState {
   combatStyle: 'aggressive' | 'defensive' | 'balanced';
   adaptiveLevel: number;
   threatAssessment: number;
+  currentPositions: Position[];
   specialRules?: {
     alwaysHostile?: boolean;
     requiresProvocation?: boolean;
@@ -159,6 +166,7 @@ export function useFleetAI(fleetId: string, factionId: FactionId) {
     combatStyle: 'balanced',
     adaptiveLevel: 0,
     threatAssessment: 0,
+    currentPositions: [],
     hangarStatus: {
       currentTier: 1,
       upgradeProgress: 0,
@@ -213,7 +221,10 @@ export function useFleetAI(fleetId: string, factionId: FactionId) {
 
       // Update fleet behavior and formation based on adaptive AI and faction behavior
       const newState = updateFleetBehavior(fleet, faction, fleetState, adaptiveAI, factionBehavior);
-      setFleetState(newState);
+      
+      // Update current positions
+      const positions = fleet.units.map(unit => unit.position);
+      setFleetState({ ...newState, currentPositions: positions });
 
       // Apply formation updates to fleet units
       applyFleetFormation(fleet, newState.formation);
@@ -393,31 +404,45 @@ function selectNewFormation(
   if (inCombat) {
     if (state.combatStyle === 'defensive' || state.fleetStrength < 0.5) {
       return {
-        type: 'circle',
+        type: 'shield',
         spacing: 150 * (1 + adaptiveAI.experienceLevel * 0.2),
         facing: calculateThreatDirection(fleet),
         pattern: 'defensive',
         adaptiveSpacing: true,
+        transitionSpeed: 1.5,
       };
     }
 
     if (hasCapitalShip) {
       return {
-        type: 'wedge',
+        type: 'diamond',
         spacing: 120 * (1 + adaptiveAI.experienceLevel * 0.2),
         facing: calculateThreatDirection(fleet),
         pattern: 'balanced',
         adaptiveSpacing: true,
+        transitionSpeed: 1.2,
+      };
+    }
+
+    if (state.combatStyle === 'aggressive' && state.fleetStrength > 0.8) {
+      return {
+        type: 'spearhead',
+        spacing: 100 * (1 + adaptiveAI.experienceLevel * 0.2),
+        facing: calculateThreatDirection(fleet),
+        pattern: 'offensive',
+        adaptiveSpacing: true,
+        transitionSpeed: 2.0,
       };
     }
 
     if (unitCount <= 3) {
       return {
-        type: 'line',
+        type: 'arrow',
         spacing: 100 * (1 + adaptiveAI.experienceLevel * 0.2),
         facing: calculateThreatDirection(fleet),
         pattern: 'offensive',
         adaptiveSpacing: true,
+        transitionSpeed: 1.8,
       };
     }
   }
@@ -429,6 +454,7 @@ function selectNewFormation(
     facing: Math.atan2(factionBehavior.territory.center.y, factionBehavior.territory.center.x),
     pattern: 'balanced',
     adaptiveSpacing: true,
+    transitionSpeed: 1.0,
   };
 }
 
@@ -522,6 +548,108 @@ function calculateFormationPositions(
           x: center.x + Math.cos(angle) * distance,
           y: center.y + Math.sin(angle) * distance,
         });
+      }
+      break;
+
+    case 'arrow':
+      const arrowDepth = Math.ceil(unitCount / 3);
+      for (let i = 0; i < unitCount; i++) {
+        const row = Math.floor(i / 3);
+        const col = i % 3 - 1;
+        positions.push({
+          x:
+            center.x +
+            Math.cos(formation.facing) * row * formation.spacing +
+            Math.cos(formation.facing + Math.PI / 2) * col * formation.spacing * (1 - row / arrowDepth),
+          y:
+            center.y +
+            Math.sin(formation.facing) * row * formation.spacing +
+            Math.sin(formation.facing + Math.PI / 2) * col * formation.spacing * (1 - row / arrowDepth),
+        });
+      }
+      break;
+
+    case 'diamond':
+      const diamondSize = Math.ceil(Math.sqrt(unitCount));
+      for (let i = 0; i < unitCount; i++) {
+        const layer = Math.floor(i / 4);
+        const position = i % 4;
+        const angle = (position * Math.PI) / 2 + formation.facing;
+        const distance = layer * formation.spacing;
+        positions.push({
+          x: center.x + Math.cos(angle) * distance,
+          y: center.y + Math.sin(angle) * distance,
+        });
+      }
+      break;
+
+    case 'shield':
+      const frontArc = Math.PI * 0.6; // 108 degrees
+      const rearArc = Math.PI * 0.3; // 54 degrees
+      const frontUnits = Math.ceil(unitCount * 0.7);
+      const rearUnits = unitCount - frontUnits;
+
+      // Front arc
+      for (let i = 0; i < frontUnits; i++) {
+        const angle = formation.facing - frontArc / 2 + (i / (frontUnits - 1)) * frontArc;
+        positions.push({
+          x: center.x + Math.cos(angle) * formation.spacing,
+          y: center.y + Math.sin(angle) * formation.spacing,
+        });
+      }
+
+      // Rear arc
+      for (let i = 0; i < rearUnits; i++) {
+        const angle =
+          formation.facing +
+          Math.PI -
+          rearArc / 2 +
+          (i / Math.max(1, rearUnits - 1)) * rearArc;
+        positions.push({
+          x: center.x + Math.cos(angle) * (formation.spacing * 0.7),
+          y: center.y + Math.sin(angle) * (formation.spacing * 0.7),
+        });
+      }
+      break;
+
+    case 'spearhead':
+      const spearUnits = Math.ceil(unitCount * 0.3);
+      const wingUnits = Math.floor((unitCount - spearUnits) / 2);
+      let currentIndex = 0;
+
+      // Spear tip
+      for (let i = 0; i < spearUnits; i++) {
+        positions.push({
+          x: center.x + Math.cos(formation.facing) * i * formation.spacing,
+          y: center.y + Math.sin(formation.facing) * i * formation.spacing,
+        });
+        currentIndex++;
+      }
+
+      // Left wing
+      for (let i = 0; i < wingUnits; i++) {
+        positions.push({
+          x:
+            center.x +
+            Math.cos(formation.facing + Math.PI * 0.8) * i * formation.spacing,
+          y:
+            center.y +
+            Math.sin(formation.facing + Math.PI * 0.8) * i * formation.spacing,
+        });
+        currentIndex++;
+      }
+
+      // Right wing
+      for (let i = 0; i < wingUnits; i++) {
+        positions.push({
+          x:
+            center.x +
+            Math.cos(formation.facing - Math.PI * 0.8) * i * formation.spacing,
+          y:
+            center.y +
+            Math.sin(formation.facing - Math.PI * 0.8) * i * formation.spacing,
+        });
+        currentIndex++;
       }
       break;
   }

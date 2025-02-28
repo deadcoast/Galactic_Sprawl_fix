@@ -1,5 +1,9 @@
+/**
+ * Core game types used throughout the project
+ */
+
 // Base Types
-export type Quality = 'low' | 'medium' | 'high';
+export type Quality = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 export type Tier = 1 | 2 | 3;
 
 // Faction Types
@@ -38,21 +42,28 @@ export interface BaseStats {
   maxHealth: number;
   shield: number;
   maxShield: number;
+  energy: number;
+  maxEnergy: number;
+  speed: number;
+  turnRate: number;
 }
 
 // Effect Types
 export interface Effect {
-  name: string;
-  description: string;
+  /** Unique identifier for the effect */
+  id: string;
+  /** Type of effect */
   type: string;
+  /** Duration in seconds */
+  duration: number;
+  /** Magnitude/strength of the effect */
   magnitude: number;
-  duration?: number;
+  /** Optional target identifier */
+  target?: string;
+  /** Whether the effect is currently active */
   active?: boolean;
+  /** Cooldown time in seconds */
   cooldown?: number;
-}
-
-export interface AreaEffect extends Effect {
-  radius?: number;
 }
 
 // Ability Types
@@ -61,7 +72,7 @@ export interface Ability {
   description: string;
   cooldown: number;
   duration: number;
-  effect: Effect | AreaEffect;
+  effect: Effect;
   active: boolean;
 }
 

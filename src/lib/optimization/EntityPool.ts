@@ -1,8 +1,6 @@
 import { EventEmitter } from '../utils/EventEmitter';
 
-interface PooledEntity {
-  id: string;
-  active: boolean;
+export interface PooledEntity {
   reset(): void;
 }
 
@@ -16,7 +14,8 @@ interface PoolEvents<T extends PooledEntity> {
  * Generic entity pool for efficient object reuse
  */
 export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<T>> {
-  private entities: T[] = [];
+  private available: T[];
+  private inUse: Set<T>;
   private factory: () => T;
   private maxSize: number;
   private expandSize: number;
@@ -31,65 +30,44 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
     this.factory = factory;
     this.maxSize = maxSize;
     this.expandSize = expandSize;
-    this.initialize(initialSize);
+    this.available = [];
+    this.inUse = new Set();
+
+    // Pre-allocate initial pool
+    for (let i = 0; i < initialSize; i++) {
+      this.available.push(factory());
+    }
 
     // Debug logging
     console.debug(`[EntityPool] Initialized with ${initialSize} entities (max: ${maxSize})`);
   }
 
   /**
-   * Initialize pool with entities
-   */
-  private initialize(size: number): void {
-    for (let i = 0; i < size; i++) {
-      const entity = this.factory();
-      entity.active = false;
-      this.entities.push(entity);
-    }
-  }
-
-  /**
    * Get an inactive entity from the pool
    */
-  public acquire(): T | null {
-    // Try to find an inactive entity
-    const entity = this.entities.find(e => !e.active);
-
-    if (entity) {
-      entity.active = true;
-      this.emit('entityActivated', { entity });
-      return entity;
+  public acquire(): T | undefined {
+    let entity: T;
+    if (this.available.length > 0) {
+      entity = this.available.pop()!;
+    } else {
+      entity = this.factory();
     }
 
-    // If no inactive entities and below max size, expand pool
-    if (this.entities.length < this.maxSize) {
-      const expandAmount = Math.min(this.expandSize, this.maxSize - this.entities.length);
-
-      console.debug(`[EntityPool] Expanding pool by ${expandAmount} entities`);
-
-      this.initialize(expandAmount);
-      this.emit('poolExpanded', { newSize: this.entities.length });
-
-      // Return first entity from expansion
-      const newEntity = this.entities[this.entities.length - expandAmount];
-      newEntity.active = true;
-      this.emit('entityActivated', { entity: newEntity });
-      return newEntity;
-    }
-
-    console.warn('[EntityPool] Pool exhausted, no entities available');
-    return null;
+    entity.reset();
+    this.inUse.add(entity);
+    this.emit('entityActivated', { entity });
+    return entity;
   }
 
   /**
    * Return an entity to the pool
    */
   public release(entity: T): void {
-    const pooledEntity = this.entities.find(e => e.id === entity.id);
-    if (pooledEntity && pooledEntity.active) {
-      pooledEntity.active = false;
-      pooledEntity.reset();
-      this.emit('entityDeactivated', { entity: pooledEntity });
+    if (this.inUse.has(entity)) {
+      this.inUse.delete(entity);
+      entity.reset();
+      this.available.push(entity);
+      this.emit('entityDeactivated', { entity });
     }
   }
 
@@ -97,40 +75,37 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
    * Get all active entities
    */
   public getActiveEntities(): T[] {
-    return this.entities.filter(e => e.active);
+    return Array.from(this.inUse);
   }
 
   /**
    * Get total number of entities in pool
    */
-  public getTotalSize(): number {
-    return this.entities.length;
+  public getTotalCount(): number {
+    return this.available.length + this.inUse.size;
   }
 
   /**
    * Get number of active entities
    */
   public getActiveCount(): number {
-    return this.entities.filter(e => e.active).length;
+    return this.inUse.size;
   }
 
   /**
    * Get number of available entities
    */
   public getAvailableCount(): number {
-    return this.entities.filter(e => !e.active).length;
+    return this.available.length;
   }
 
   /**
    * Clear all entities from pool
    */
   public clear(): void {
-    this.entities.forEach(entity => {
-      if (entity.active) {
-        this.release(entity);
-      }
-    });
-    this.entities = [];
+    this.available = [];
+    this.inUse.clear();
+    this.emit('entityDeactivated', { entity: null });
     console.debug('[EntityPool] Pool cleared');
   }
 }

@@ -198,7 +198,9 @@ export function buildModule(moduleType: ModuleType, cost: { minerals?: number; e
         break;
       }
     }
-    if (targetBuilding) break;
+    if (targetBuilding) {
+      break;
+    }
   }
 
   if (!targetBuilding || !targetPoint) {

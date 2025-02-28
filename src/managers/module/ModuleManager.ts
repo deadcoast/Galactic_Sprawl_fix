@@ -8,6 +8,8 @@ import { Position } from '../../types/core/GameTypes';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { resourceManager } from '../game/ResourceManager';
 import { ResourceType } from '../../types/resources/ResourceTypes';
+import { moduleStatusManager } from './ModuleStatusManager';
+import { moduleUpgradeManager } from './ModuleUpgradeManager';
 
 /**
  * Manages the lifecycle and state of all modules in the game.
@@ -47,9 +49,14 @@ export class ModuleManager {
       position,
       isActive: false,
       level: 1,
+      status: 'constructing',
+      progress: 0
     };
 
     this.modules.set(module.id, module);
+
+    // Initialize status tracking for the new module
+    moduleStatusManager.initializeModuleStatus(module.id);
 
     // Emit creation event
     moduleEventBus.emit({
@@ -98,77 +105,8 @@ export class ModuleManager {
    * Upgrades a module to the next level
    */
   upgradeModule(moduleId: string): boolean {
-    const module = this.modules.get(moduleId);
-    if (!module) {
-      return false;
-    }
-
-    const config = this.configs.get(module.type);
-    if (!config) {
-      return false;
-    }
-
-    // Check requirements
-    const { requirements } = config;
-
-    // Check minimum level requirement
-    if (module.level < requirements.minLevel) {
-      console.debug(
-        `[ModuleManager] Module ${moduleId} does not meet minimum level requirement: ${module.level} < ${requirements.minLevel}`
-      );
-      return false;
-    }
-
-    // Find the building this module is attached to
-    let attachedBuilding: ModularBuilding | undefined;
-    for (const building of this.buildings.values()) {
-      if (building.modules.some(m => m.id === moduleId)) {
-        attachedBuilding = building;
-        break;
-      }
-    }
-
-    // Check building type compatibility
-    if (attachedBuilding && !requirements.buildingType.includes(attachedBuilding.type)) {
-      console.debug(
-        `[ModuleManager] Module ${moduleId} is not compatible with building type: ${attachedBuilding.type}`
-      );
-      return false;
-    }
-
-    // Check resource costs
-    for (const cost of requirements.resourceCosts) {
-      const available = resourceManager.getResourceAmount(cost.type as ResourceType);
-      if (available < cost.amount) {
-        console.debug(
-          `[ModuleManager] Insufficient resources for module ${moduleId} upgrade: ${cost.type} ${available}/${cost.amount}`
-        );
-        return false;
-      }
-    }
-
-    // All requirements met - consume resources
-    requirements.resourceCosts.forEach(cost => {
-      resourceManager.removeResource(cost.type as ResourceType, cost.amount);
-    });
-
-    const oldLevel = module.level;
-    module.level += 1;
-
-    // Emit upgrade event with resource costs
-    moduleEventBus.emit({
-      type: 'MODULE_UPGRADED',
-      moduleId: module.id,
-      moduleType: module.type,
-      timestamp: Date.now(),
-      data: {
-        oldLevel,
-        newLevel: module.level,
-        resourcesConsumed: requirements.resourceCosts,
-      },
-    });
-
-    return true;
+    // Use the ModuleUpgradeManager for upgrades
+    return moduleUpgradeManager.startUpgrade(moduleId);
   }
 
   /**

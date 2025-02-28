@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useEffect, useContext } from 'react';
+import { GameContext } from '../../contexts/GameContext';
 import { gameManager } from '../../managers/game/gameManager';
 import { GameEvent } from '../../types/core/GameTypes';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
@@ -10,7 +10,11 @@ interface Resource {
 }
 
 export function useGameState() {
-  const { state, dispatch } = useGame();
+  const context = useContext(GameContext);
+  if (!context) {
+    throw new Error('useGameState must be used within a GameProvider');
+  }
+  const { state, dispatch } = context;
 
   useEffect(() => {
     // Sync game manager state with context

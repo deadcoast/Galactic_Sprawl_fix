@@ -1,13 +1,12 @@
 import { ShipType } from './ShipTypes';
 
-export type FactionId = 'space-rats' | 'lost-nova' | 'equator-horizon';
+export type FactionId = 'player' | 'enemy' | 'neutral' | 'ally' | 'space-rats' | 'lost-nova' | 'equator-horizon';
 
-export type FactionBehaviorType =
-  | 'aggressive'
-  | 'defensive'
-  | 'hit-and-run'
-  | 'stealth'
-  | 'balance';
+export type FactionBehaviorType = {
+  formation: string;
+  behavior: string;
+  target?: string;
+};
 
 export interface FactionConfig {
   id: FactionId;
@@ -27,12 +26,35 @@ export interface FactionConfig {
 
 export interface FactionState {
   id: FactionId;
-  fleetStrength: number;
-  threatLevel: number;
-  territory: string[];
-  relationships: Record<FactionId, number>;
-  activeShips: ShipType[];
-  currentBehavior: FactionBehaviorType;
+  name: string;
+  color: string;
+  relations: {
+    [key in FactionId]: number;
+  };
+  resources: {
+    [key: string]: number;
+  };
+  territory: {
+    systems: string[];
+    outposts: string[];
+    colonies: string[];
+  };
+  fleets: {
+    [key: string]: {
+      ships: string[];
+      position: {
+        x: number;
+        y: number;
+      };
+      status: string;
+    };
+  };
+  tech: {
+    [key: string]: {
+      level: number;
+      progress: number;
+    };
+  };
 }
 
 // Faction-specific configurations

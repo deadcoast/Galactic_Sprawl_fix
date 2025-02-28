@@ -1,185 +1,173 @@
 import { useState, useEffect } from 'react';
-import {
-  automationManager,
-  AutomationRule,
-  AutomationCondition,
-  AutomationAction,
-} from '../../managers/game/AutomationManager';
-import { useModuleEvents } from '../modules/useModuleEvents';
+import { GlobalAutomationManager, GlobalRoutine } from '../../managers/automation/GlobalAutomationManager';
+import { AutomationManager } from '../../managers/game/AutomationManager';
+
+// Define SystemId type to match what's expected
+type SystemId = string;
+
+// Singleton instance of the automation manager
+let globalAutomationManager: GlobalAutomationManager | null = null;
+// We need an instance of AutomationManager to pass to GlobalAutomationManager
+let automationManagerInstance: AutomationManager | null = null;
 
 /**
- * Hook to manage automation rules for a module
+ * Hook to access the global automation system
  */
-export function useAutomation(moduleId: string) {
-  const [rules, setRules] = useState<AutomationRule[]>([]);
+export const useAutomation = () => {
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [routines, setRoutines] = useState<GlobalRoutine[]>([]);
+  const [activeRoutines, setActiveRoutines] = useState<GlobalRoutine[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<number>(0);
 
-  // Listen for automation events
-  const events = useModuleEvents(
-    ['AUTOMATION_STARTED', 'AUTOMATION_STOPPED', 'AUTOMATION_CYCLE_COMPLETE', 'ERROR_OCCURRED'],
-    moduleId
-  );
-
-  // Update rules when events occur
+  // Initialize the automation manager if it doesn't exist
   useEffect(() => {
-    setRules(automationManager.getRulesForModule(moduleId));
-  }, [moduleId, events]);
+    if (!globalAutomationManager) {
+      // Create AutomationManager instance if needed
+      if (!automationManagerInstance) {
+        automationManagerInstance = new AutomationManager();
+      }
+      
+      // Create GlobalAutomationManager with the AutomationManager instance
+      globalAutomationManager = new GlobalAutomationManager(automationManagerInstance);
+      globalAutomationManager.initialize();
+    }
 
-  /**
-   * Creates a new automation rule
-   */
-  const createRule = (
-    name: string,
-    conditions: AutomationCondition[],
-    actions: AutomationAction[],
-    interval: number = 5000
-  ): string => {
-    const rule: AutomationRule = {
-      id: `${moduleId}-${Date.now()}`,
-      moduleId,
-      name,
-      enabled: true,
-      conditions,
-      actions,
-      interval,
+    // Set initial state
+    setIsInitialized(true);
+    updateRoutines();
+
+    // Subscribe to automation events
+    const unsubscribe = subscribeToEvents();
+
+    return () => {
+      unsubscribe();
     };
+  }, []);
 
-    automationManager.registerRule(rule);
-    setRules(automationManager.getRulesForModule(moduleId));
-    return rule.id;
+  // Update routines state
+  const updateRoutines = () => {
+    if (!globalAutomationManager) {
+      return;
+    }
+
+    try {
+      const allRoutines = globalAutomationManager.getAllRoutines() || [];
+      setRoutines(allRoutines);
+      setActiveRoutines(allRoutines.filter(r => r.enabled));
+      setLastUpdate(Date.now());
+    } catch (error) {
+      console.error('Failed to update automation routines:', error);
+    }
   };
 
-  /**
-   * Updates an existing rule
-   */
-  const updateRule = (ruleId: string, updates: Partial<AutomationRule>): void => {
-    automationManager.updateRule(ruleId, updates);
-    setRules(automationManager.getRulesForModule(moduleId));
+  // Subscribe to automation events
+  const subscribeToEvents = () => {
+    if (!globalAutomationManager) {
+      return () => {};
+    }
+
+    // This would be implemented with the event system
+    // For now, we'll just return an empty function
+    return () => {};
   };
 
-  /**
-   * Removes a rule
-   */
-  const removeRule = (ruleId: string): void => {
-    automationManager.removeRule(ruleId);
-    setRules(automationManager.getRulesForModule(moduleId));
+  // Enable a routine
+  const enableRoutine = (routineId: string) => {
+    if (!globalAutomationManager) {
+      return;
+    }
+
+    try {
+      globalAutomationManager.enableRoutine(routineId);
+      updateRoutines();
+    } catch (error) {
+      console.error(`Failed to enable routine ${routineId}:`, error);
+    }
   };
 
-  /**
-   * Enables or disables a rule
-   */
-  const setRuleEnabled = (ruleId: string, enabled: boolean): void => {
-    automationManager.updateRule(ruleId, { enabled });
-    setRules(automationManager.getRulesForModule(moduleId));
+  // Disable a routine
+  const disableRoutine = (routineId: string) => {
+    if (!globalAutomationManager) {
+      return;
+    }
+
+    try {
+      globalAutomationManager.disableRoutine(routineId);
+      updateRoutines();
+    } catch (error) {
+      console.error(`Failed to disable routine ${routineId}:`, error);
+    }
   };
 
-  /**
-   * Gets a specific rule
-   */
-  const getRule = (ruleId: string): AutomationRule | undefined => {
-    return automationManager.getRule(ruleId);
+  // Remove a routine
+  const removeRoutine = (routineId: string) => {
+    if (!globalAutomationManager) {
+      return;
+    }
+
+    try {
+      globalAutomationManager.unregisterRoutine(routineId);
+      updateRoutines();
+    } catch (error) {
+      console.error(`Failed to remove routine ${routineId}:`, error);
+    }
+  };
+
+  // Get routines by type
+  const getRoutinesByType = (type: string) => {
+    return routines.filter(routine => routine.type === type);
+  };
+
+  // Get routines by tag
+  const getRoutinesByTag = (tag: string) => {
+    return routines.filter(routine => 
+      Array.isArray(routine.tags) && routine.tags.includes(tag)
+    );
+  };
+
+  // Get routines by system
+  const getRoutinesBySystem = (system: string) => {
+    return routines.filter(routine => 
+      Array.isArray(routine.systems) && 
+      routine.systems.some(sys => sys === system as unknown as SystemId)
+    );
+  };
+
+  // Create a new routine
+  const createRoutine = (routine: Omit<GlobalRoutine, 'id'>) => {
+    if (!globalAutomationManager) {
+      return;
+    }
+
+    try {
+      // Generate a unique ID
+      const id = `routine-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const newRoutine = { ...routine, id } as GlobalRoutine;
+      
+      globalAutomationManager.registerRoutine(newRoutine);
+      updateRoutines();
+      
+      return newRoutine;
+    } catch (error) {
+      console.error('Failed to create routine:', error);
+      return null;
+    }
   };
 
   return {
-    rules,
-    createRule,
-    updateRule,
-    removeRule,
-    setRuleEnabled,
-    getRule,
-    lastEvent: events[events.length - 1],
+    isInitialized,
+    routines,
+    activeRoutines,
+    lastUpdate,
+    enableRoutine,
+    disableRoutine,
+    removeRoutine,
+    getRoutinesByType,
+    getRoutinesByTag,
+    getRoutinesBySystem,
+    createRoutine,
+    automationManager: globalAutomationManager
   };
-}
+};
 
-/**
- * Hook to create common automation rules
- */
-export function useCommonAutomationRules(moduleId: string) {
-  const { createRule, updateRule, removeRule } = useAutomation(moduleId);
-
-  /**
-   * Creates a resource threshold rule
-   */
-  const createResourceThresholdRule = (
-    resourceType: string,
-    minThreshold: number,
-    maxThreshold: number,
-    produceAction: AutomationAction,
-    consumeAction: AutomationAction,
-    interval: number = 5000
-  ): string => {
-    return createRule(
-      `${resourceType} Threshold`,
-      [
-        {
-          type: 'RESOURCE_BELOW',
-          target: resourceType,
-          value: minThreshold,
-          operator: 'less',
-        },
-        {
-          type: 'RESOURCE_ABOVE',
-          target: resourceType,
-          value: maxThreshold,
-          operator: 'greater',
-        },
-      ],
-      [produceAction, consumeAction],
-      interval
-    );
-  };
-
-  /**
-   * Creates a cyclic production rule
-   */
-  const createCyclicProductionRule = (
-    resourceType: string,
-    amount: number,
-    interval: number = 5000
-  ): string => {
-    return createRule(
-      `${resourceType} Production`,
-      [
-        {
-          type: 'TIME_ELAPSED',
-          value: interval,
-        },
-      ],
-      [
-        {
-          type: 'PRODUCE_RESOURCES',
-          target: resourceType,
-          value: amount,
-        },
-      ],
-      interval
-    );
-  };
-
-  /**
-   * Creates a module activation rule
-   */
-  const createModuleActivationRule = (triggerModuleId: string, interval: number = 5000): string => {
-    return createRule(
-      'Module Activation',
-      [
-        {
-          type: 'MODULE_ACTIVE',
-          target: triggerModuleId,
-        },
-      ],
-      [
-        {
-          type: 'ACTIVATE_MODULE',
-          target: moduleId,
-        },
-      ],
-      interval
-    );
-  };
-
-  return {
-    createResourceThresholdRule,
-    createCyclicProductionRule,
-    createModuleActivationRule,
-  };
-}
+export default useAutomation;

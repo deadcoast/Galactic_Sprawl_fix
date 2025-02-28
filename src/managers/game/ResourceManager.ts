@@ -1006,6 +1006,74 @@ export class ResourceManager {
   getPerformanceSnapshot(): ResourcePerformanceSnapshot {
     return resourcePerformanceMonitor.getLatestSnapshot();
   }
+
+  /**
+   * Get all resources as an object
+   */
+  public getAllResources(): Record<ResourceType, number> {
+    const resources: Record<ResourceType, number> = {} as Record<ResourceType, number>;
+    
+    for (const [type, state] of Array.from(this.resources)) {
+      resources[type] = state.current;
+    }
+    
+    return resources;
+  }
+
+  /**
+   * Get all resource states
+   */
+  public getAllResourceStates(): Record<ResourceType, ResourceState> {
+    const states: Record<ResourceType, ResourceState> = {} as Record<ResourceType, ResourceState>;
+    
+    for (const [type, state] of Array.from(this.resources)) {
+      states[type] = { ...state };
+    }
+    
+    return states;
+  }
+
+  /**
+   * Get all resource flows
+   */
+  public getAllResourceFlows(): ResourceFlow[] {
+    const flows: ResourceFlow[] = [];
+    
+    for (const flow of Array.from(this.flows.values())) {
+      flows.push({ ...flow });
+    }
+    
+    return flows;
+  }
+
+  /**
+   * Save resource state to localStorage
+   */
+  private saveResourceState(): void {
+    const resourceData: Record<ResourceType, ResourceState> = {} as Record<ResourceType, ResourceState>;
+    
+    for (const [type, state] of Array.from(this.resources)) {
+      resourceData[type] = { ...state };
+    }
+    
+    const productionData: Record<string, ResourceProduction> = {};
+    
+    for (const [id, production] of Array.from(this.productions)) {
+      productionData[id] = { ...production };
+    }
+    
+    const consumptionData: Record<string, ResourceConsumption> = {};
+    
+    for (const [id, consumption] of Array.from(this.consumptions)) {
+      consumptionData[id] = { ...consumption };
+    }
+    
+    const flowData: Record<string, ResourceFlow> = {};
+    
+    for (const [id, flow] of Array.from(this.flows)) {
+      flowData[id] = { ...flow };
+    }
+  }
 }
 
 // Export singleton instance

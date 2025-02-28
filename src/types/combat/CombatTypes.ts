@@ -8,7 +8,10 @@ import {
   WeaponMount,
   WeaponEffect,
 } from '../weapons/WeaponTypes';
-import { Effect } from '../core/GameTypes';
+import { Effect, Position } from '../core/GameTypes';
+import { WeaponSystem } from '../weapons/WeaponTypes';
+import { FactionId, FactionBehaviorType } from '../ships/FactionTypes';
+import { FactionShipClass } from '../ships/FactionShipTypes';
 
 // Re-export weapon types for backward compatibility
 export type {
@@ -23,16 +26,35 @@ export type {
 };
 
 // Combat-specific types
+export type CombatUnitStatus = {
+  main: 'active' | 'disabled' | 'destroyed';
+  secondary?: 'charging' | 'cooling' | 'repairing' | 'boosting';
+  effects: string[];
+};
+
 export interface CombatUnit {
   id: string;
-  position: { x: number; y: number };
+  type: string;
+  position: {
+    x: number;
+    y: number;
+  };
   rotation: number;
-  health: number;
-  maxHealth: number;
-  shield: number;
-  maxShield: number;
-  currentWeapon?: WeaponInstance;
-  effects: Effect[];
+  velocity: {
+    x: number;
+    y: number;
+  };
+  status: CombatUnitStatus;
+  weapons: WeaponSystem[];
+  stats: {
+    health: number;
+    maxHealth: number;
+    shield: number;
+    maxShield: number;
+    armor: number;
+    speed: number;
+    turnRate: number;
+  };
 }
 
 export interface CombatState {
@@ -67,4 +89,52 @@ export interface CombatResult {
   damageDone: Record<string, number>;
   unitsLost: Record<string, number>;
   effectsTriggered: Record<string, number>;
+}
+
+export interface FactionCombatUnit extends CombatUnit {
+  faction: FactionId;
+  class: FactionShipClass;
+  tactics: {
+    formation: string;
+    behavior: string;
+    target?: string;
+  };
+  weaponMounts: WeaponMount[];
+  formation: {
+    type: 'offensive' | 'defensive' | 'balanced';
+    spacing: number;
+    facing: number;
+    position: number;
+  };
+  stats: {
+    health: number;
+    maxHealth: number;
+    shield: number;
+    maxShield: number;
+    armor: number;
+    speed: number;
+    turnRate: number;
+    accuracy: number;
+    evasion: number;
+    criticalChance: number;
+    criticalDamage: number;
+    armorPenetration: number;
+    shieldPenetration: number;
+    experience: number;
+    level: number;
+  };
+  experience: {
+    current: number;
+    total: number;
+    level: number;
+    skills: {
+      name: string;
+      level: number;
+    }[];
+  };
+  status: {
+    main: 'active' | 'disabled' | 'destroyed';
+    secondary?: 'charging' | 'cooling' | 'repairing' | 'boosting';
+    effects: string[];
+  };
 }

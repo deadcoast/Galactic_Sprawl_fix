@@ -43,18 +43,42 @@ export interface CombatConfig {
       facing: number;
       pattern: 'offensive';
       adaptiveSpacing: boolean;
+      transitionSpeed: number;
+      preferredTypes: Array<'spearhead' | 'arrow' | 'wedge'>;
     };
     defensive: {
       spacing: number;
       facing: number;
       pattern: 'defensive';
       adaptiveSpacing: boolean;
+      transitionSpeed: number;
+      preferredTypes: Array<'shield' | 'circle' | 'diamond'>;
     };
     balanced: {
       spacing: number;
       facing: number;
       pattern: 'balanced';
       adaptiveSpacing: boolean;
+      transitionSpeed: number;
+      preferredTypes: Array<'line' | 'scattered' | 'diamond'>;
+    };
+  };
+  
+  // Formation Transitions
+  formationTransitions: {
+    defaultDuration: number;
+    minSpacing: number;
+    maxSpacing: number;
+    adaptiveSpeedFactor: number;
+    patterns: {
+      [key: string]: {
+        to: {
+          [key: string]: {
+            duration: number;
+            easingFunction: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut';
+          };
+        };
+      };
     };
   };
 }
@@ -104,18 +128,90 @@ export const defaultCombatConfig: CombatConfig = {
       facing: 0,
       pattern: 'offensive',
       adaptiveSpacing: true,
+      transitionSpeed: 2.0,
+      preferredTypes: ['spearhead', 'arrow', 'wedge'],
     },
     defensive: {
       spacing: 150,
       facing: 180,
       pattern: 'defensive',
       adaptiveSpacing: true,
+      transitionSpeed: 1.5,
+      preferredTypes: ['shield', 'circle', 'diamond'],
     },
     balanced: {
       spacing: 120,
       facing: 90,
       pattern: 'balanced',
       adaptiveSpacing: true,
+      transitionSpeed: 1.2,
+      preferredTypes: ['line', 'scattered', 'diamond'],
+    },
+  },
+
+  // Formation Transitions
+  formationTransitions: {
+    defaultDuration: 2000,
+    minSpacing: 50,
+    maxSpacing: 300,
+    adaptiveSpeedFactor: 1.2,
+    patterns: {
+      spearhead: {
+        to: {
+          shield: { duration: 3000, easingFunction: 'easeInOut' },
+          scattered: { duration: 1500, easingFunction: 'easeOut' },
+          diamond: { duration: 2500, easingFunction: 'easeInOut' },
+        },
+      },
+      shield: {
+        to: {
+          spearhead: { duration: 3000, easingFunction: 'easeInOut' },
+          circle: { duration: 2000, easingFunction: 'easeInOut' },
+          diamond: { duration: 2500, easingFunction: 'easeInOut' },
+        },
+      },
+      diamond: {
+        to: {
+          shield: { duration: 2500, easingFunction: 'easeInOut' },
+          spearhead: { duration: 2500, easingFunction: 'easeInOut' },
+          arrow: { duration: 2000, easingFunction: 'easeInOut' },
+        },
+      },
+      arrow: {
+        to: {
+          spearhead: { duration: 2000, easingFunction: 'easeInOut' },
+          wedge: { duration: 1500, easingFunction: 'easeInOut' },
+          line: { duration: 1500, easingFunction: 'easeInOut' },
+        },
+      },
+      circle: {
+        to: {
+          shield: { duration: 2000, easingFunction: 'easeInOut' },
+          scattered: { duration: 1500, easingFunction: 'easeOut' },
+          diamond: { duration: 2500, easingFunction: 'easeInOut' },
+        },
+      },
+      wedge: {
+        to: {
+          arrow: { duration: 1500, easingFunction: 'easeInOut' },
+          spearhead: { duration: 2000, easingFunction: 'easeInOut' },
+          line: { duration: 1500, easingFunction: 'easeInOut' },
+        },
+      },
+      line: {
+        to: {
+          arrow: { duration: 1500, easingFunction: 'easeInOut' },
+          wedge: { duration: 1500, easingFunction: 'easeInOut' },
+          scattered: { duration: 1500, easingFunction: 'easeOut' },
+        },
+      },
+      scattered: {
+        to: {
+          line: { duration: 1500, easingFunction: 'easeIn' },
+          circle: { duration: 1500, easingFunction: 'easeIn' },
+          shield: { duration: 2000, easingFunction: 'easeIn' },
+        },
+      },
     },
   },
 };

@@ -48,7 +48,9 @@ export function ContextMenu({ items, x, y, onClose }: ContextMenuProps) {
 
   // Adjust position to keep menu in viewport
   const adjustedPosition = () => {
-    if (!menuRef.current) return { x, y };
+    if (!menuRef.current) {
+      return { x, y };
+    }
 
     const { width, height } = menuRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;

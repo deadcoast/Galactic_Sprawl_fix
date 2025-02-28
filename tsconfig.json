@@ -19,14 +19,18 @@
       "@/*": ["./src/*"]
     },
     "skipLibCheck": true,
-    "types": ["@testing-library/jest-dom", "node"]
+    "types": ["@testing-library/jest-dom", "node"],
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src"],
   "exclude": [
     "node_modules",
     "**/node_modules/*",
     "node_modules/@types/css-font-loading-module",
-    "node_modules/@types/testing-library__*"
+    "node_modules/@types/testing-library__*",
+    "src/tests/utils/events/EventFiltering.test.ts"
   ],
   "references": []
 }

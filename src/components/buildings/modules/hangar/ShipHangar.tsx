@@ -9,15 +9,11 @@ import { ShipBuildQueueItem } from '../../../../types/buildings/ShipHangarTypes'
 import { PlayerShipCustomization } from '../../../ships/player/customization/PlayerShipCustomization';
 import { PlayerShipUpgradeSystem } from '../../../ships/player/customization/PlayerShipUpgradeSystem';
 import { Effect } from '../../../../types/core/GameTypes';
+import { createWeaponEffect, createScaledWeaponEffect, createWeaponLike } from '../../../../utils/weapons/weaponEffectUtils';
+import { WeaponSystem as BaseWeaponSystem, WeaponCategory, WeaponStatus } from '../../../../types/weapons/WeaponTypes';
 
-interface WeaponSystem {
-  id: string;
+interface HangarWeaponSystem extends BaseWeaponSystem {
   name: string;
-  type: 'machineGun' | 'railGun' | 'gaussCannon' | 'rockets';
-  damage: number;
-  range: number;
-  cooldown: number;
-  status: 'ready' | 'charging' | 'cooling';
 }
 
 interface Ship {
@@ -36,13 +32,15 @@ interface Ship {
   maxHull: number;
   shield: number;
   maxShield: number;
-  weapons: WeaponSystem[];
-  specialAbilities?: {
+  weapons: HangarWeaponSystem[];
+  abilities: Array<{
     name: string;
     description: string;
     cooldown: number;
+    duration: number;
     active: boolean;
-  }[];
+    effect: Effect;
+  }>;
   alerts?: string[];
 }
 
@@ -69,6 +67,22 @@ const mockShips: Ship[] = [
         status: 'ready',
       },
     ],
+    abilities: [
+      {
+        name: 'Machine Gun',
+        description: 'Standard weapon system',
+        cooldown: 5,
+        duration: 10,
+        active: false,
+        effect: createWeaponEffect(createWeaponLike({
+          id: 'mg-1',
+          type: 'machineGun',
+          damage: 10,
+          cooldown: 5,
+          displayName: 'Machine Gun'
+        })),
+      },
+    ],
   },
   {
     id: 'schooner-1',
@@ -91,12 +105,20 @@ const mockShips: Ship[] = [
         status: 'charging',
       },
     ],
-    specialAbilities: [
+    abilities: [
       {
-        name: 'Rapid Fire',
-        description: 'Increases fire rate by 50% for 10 seconds',
-        cooldown: 30,
+        name: 'Rail Gun',
+        description: 'Standard weapon system',
+        cooldown: 10,
+        duration: 10,
         active: false,
+        effect: createWeaponEffect(createWeaponLike({
+          id: 'rail-1',
+          type: 'railGun',
+          damage: 25,
+          cooldown: 10,
+          displayName: 'Rail Gun'
+        })),
       },
     ],
   },
@@ -168,6 +190,16 @@ export function ShipHangar({ manager }: ShipHangarProps) {
 
   // Convert CommonShip to Ship interface
   const convertCommonShipToShip = (commonShip: CommonShip): Ship => {
+    const weapons = commonShip.abilities.map(ability => ({
+      id: crypto.randomUUID(),
+      name: ability.name,
+      type: 'machineGun' as WeaponCategory,
+      damage: 10,
+      range: 100,
+      cooldown: ability.cooldown,
+      status: 'ready' as WeaponStatus
+    }));
+
     return {
       id: commonShip.id,
       name: commonShip.name,
@@ -178,14 +210,14 @@ export function ShipHangar({ manager }: ShipHangarProps) {
       maxHull: commonShip.stats.defense.armor,
       shield: commonShip.stats.defense.shield,
       maxShield: commonShip.stats.defense.shield,
-      weapons: commonShip.abilities.map(ability => ({
-        id: crypto.randomUUID(),
-        name: ability.name,
-        type: 'machineGun',
-        damage: 10,
-        range: 100,
-        cooldown: ability.cooldown,
-        status: 'ready',
+      weapons,
+      abilities: weapons.map(w => ({
+        name: w.name,
+        description: 'Standard weapon system',
+        cooldown: w.cooldown,
+        duration: 10,
+        active: false,
+        effect: createWeaponEffect(createWeaponLike(w)),
       })),
     };
   };
@@ -256,12 +288,7 @@ export function ShipHangar({ manager }: ShipHangarProps) {
             cooldown: w.cooldown,
             duration: 10,
             active: false,
-            effect: {
-              name: w.name,
-              description: `Deals ${w.damage} damage`,
-              type: 'damage',
-              magnitude: w.damage,
-            } as Effect,
+            effect: createWeaponEffect(createWeaponLike(w)),
           })),
         };
         manager.dockShip(commonShip);

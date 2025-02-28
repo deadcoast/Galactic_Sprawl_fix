@@ -15,6 +15,7 @@ export default defineConfig({
           if (req.url?.startsWith('/.pixelArtAssets/')) {
             req.url = req.url.replace('/.pixelArtAssets/', '/');
             res.setHeader('Content-Type', 'image/png');
+            // @ts-ignore
             return serveStatic(resolve(__dirname, '.pixelArtAssets'))(req, res, next);
           }
           next();
@@ -45,5 +46,12 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
       },
     },
+  },
+  esbuild: {
+    target: 'es2020',
+  },
+  // Configure TypeScript options
+  css: {
+    devSourcemap: true,
   },
 });

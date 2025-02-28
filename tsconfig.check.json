@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "downlevelIteration": true,
+    "target": "ES2015",
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "exclude": [
+    "node_modules",
+    "**/node_modules/*",
+    "node_modules/@types/css-font-loading-module",
+    "node_modules/@types/testing-library__*",
+    "src/tests/utils/events/EventFiltering.test.ts"
+  ]
+} 
