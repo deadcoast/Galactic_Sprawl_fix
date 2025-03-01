@@ -38,14 +38,20 @@ The goal is to help you maintain a big picture as well as the progress of the ta
 
 ## Initial Setup & Assessment [RO7.1]
 
+- Begin by setting up the Linting with:
+
+```bash
+node tools/setup-linting.js
+```
+
 1. **Get Current Linting Status and Analysis**:
 
 ```bash
 # Generate a comprehensive analysis of linting issues
-node tools/analyze-lint-errors.js
+npx eslint src --format json | node tools/analyze-lint-errors.js
 
 # View the current status and progress chart
-node tools/eslint-progress-chart.js
+node tools/chart-lint-progress.js
 ```
 
 - Generates detailed breakdown of all linting issues by rule and file
@@ -57,12 +63,12 @@ node tools/eslint-progress-chart.js
 
 ```bash
 # Analyze distribution of specific rule violations
-node tools/chart-eslint-by-rule.js @typescript-eslint/no-explicit-any
+npx eslint src --format json | node tools/analyze-lint-errors.js
 ```
 
-- Charts the distribution of a specific rule violation across directories
-- Identifies hotspots for targeted fixing
+- Identifies top issues by rule, file, and directory
 - Shows which files have the most occurrences of a specific issue
+- Suggests fix commands for the most common issues
 
 ## Systematic Fix Strategy [RO7.3]
 
@@ -75,9 +81,9 @@ node tools/chart-eslint-by-rule.js @typescript-eslint/no-explicit-any
 node tools/fix-eslint-by-rule.js --auto
 
 # Fix critical TypeScript rules
-node tools/fix-eslint-by-rule.js no-unused-vars
-node tools/fix-eslint-by-rule.js prefer-const
-node tools/fix-eslint-by-rule.js @typescript-eslint/no-explicit-any
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-unused-vars src
+node tools/fix-eslint-by-rule.js prefer-const src
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-explicit-any src
 ```
 
 - Automatically identifies and fixes the most common issues
@@ -116,10 +122,10 @@ node tools/fix-eslint-by-rule.js
 
 ```bash
 # Fix React hook dependencies
-node tools/fix-eslint-by-rule.js react-hooks/exhaustive-deps
+node tools/fix-eslint-by-rule.js react-hooks/exhaustive-deps src
 
 # Fix component issues
-node tools/fix-eslint-by-rule.js react/jsx-key
+node tools/fix-eslint-by-rule.js react/jsx-key src
 ```
 
 - Corrects React-specific issues for better component reliability
@@ -129,10 +135,10 @@ node tools/fix-eslint-by-rule.js react/jsx-key
 
 ```bash
 # Fix import ordering
-node tools/fix-eslint-by-rule.js import/order
+node tools/fix-eslint-by-rule.js import/order src
 
 # Fix unused imports
-node tools/fix-eslint-by-rule.js no-unused-imports
+node tools/fix-eslint-by-rule.js no-unused-imports src
 ```
 
 - Cleans up imports for better code organization and smaller bundles
@@ -144,13 +150,13 @@ node tools/fix-eslint-by-rule.js no-unused-imports
 
 ```bash
 # Fix all issues in game loop with detailed reporting
-node tools/fix-eslint-by-rule.js . "src/game-loop"
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-unused-vars src/game-loop
 
 # Fix all issues in physics engine
-node tools/fix-eslint-by-rule.js . "src/physics"
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-unused-vars src/physics
 
 # Fix all issues in render engine with threshold
-node tools/fix-eslint-by-rule.js . "src/render-engine" --threshold=5
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-unused-vars src/render-engine --threshold=5
 ```
 
 - Targets performance-critical code paths with customized fixing
@@ -161,13 +167,13 @@ node tools/fix-eslint-by-rule.js . "src/render-engine" --threshold=5
 
 ```bash
 # Fix all issues in the current file
-node tools/fix-eslint-by-rule.js . "${file}"
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-unused-vars src/utils/events
 
 # Fix specific rule in current file
-node tools/fix-eslint-by-rule.js rule-name "${file}"
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-explicit-any src/utils/events
 
 # Dry run to see what would be fixed
-node tools/fix-eslint-by-rule.js --dry-run "${file}"
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-unused-vars src/utils/events --dry-run
 ```
 
 - Allows targeted fixing during development
@@ -180,10 +186,10 @@ node tools/fix-eslint-by-rule.js --dry-run "${file}"
 
 ```bash
 # Add current linting status to the progress log
-node tools/track-eslint-progress.js
+node tools/track-eslint-progress.js --silent
 
 # Add with details about top issues
-node tools/track-eslint-progress.js --details
+node tools/track-eslint-progress.js --details --silent
 ```
 
 - Creates timestamped progress entries
@@ -195,10 +201,10 @@ node tools/track-eslint-progress.js --details
 
 ```bash
 # Generate ASCII chart showing progress
-node tools/eslint-progress-chart.js
+node tools/chart-lint-progress.js
 
 # Show detailed trend analysis
-node tools/eslint-progress-chart.js --verbose
+node tools/chart-lint-progress.js --verbose
 ```
 
 - Visualizes error reduction over time with ASCII chart
@@ -212,10 +218,10 @@ node tools/eslint-progress-chart.js --verbose
 
 ```bash
 # Fix issues in batches of 20 files
-node tools/fix-eslint-by-rule.js no-unused-vars --batch=20
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-unused-vars src --batch=20
 
 # Fix with threshold to focus on frequently occurring issues
-node tools/fix-eslint-by-rule.js --threshold=10
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-unused-vars src --threshold=10
 ```
 
 - Processes files in configurable batches to avoid overwhelming changes
@@ -227,15 +233,35 @@ node tools/fix-eslint-by-rule.js --threshold=10
 
 ```bash
 # Fix issues with different severity based on directory
-node tools/fix-eslint-by-rule.js . "src/game-loop" --strict
+node tools/fix-eslint-by-rule.js @typescript-eslint/no-unused-vars src/game-loop --strict
 
 # Analyze critical code paths for potential issues
-node tools/analyze-lint-errors.js "src/game-loop,src/physics,src/render-engine"
+npx eslint src/game-loop src/physics src/render-engine --format json | node tools/analyze-lint-errors.js
 ```
 
 - Applies stricter checking to performance-critical code
 - Generates focused analysis reports for game engine components
 - Ensures consistent quality in core game systems
+
+### Unified Workflow Execution [RO7.7]
+
+1. **Run the Complete Workflow**:
+
+```bash
+# Run the entire workflow automatically
+node tools/run-lint-workflow.js
+
+# Run only analysis steps (skip fixing)
+node tools/run-lint-workflow.js --skip-fix
+
+# Run in interactive mode (prompt before each step)
+node tools/run-lint-workflow.js --interactive
+```
+
+- Executes all linting tools in the correct sequence
+- Provides options to skip specific steps
+- Shows progress and summary of execution
+- Handles errors gracefully
 
 ### Verification and Testing [RO7.5]
 
@@ -271,56 +297,60 @@ npm run test -- --testPathPattern=src/game-loop
 
 # Scratchpad
 
----
+## Primary Task: Restructure the `CodeBase` Documents & Files
 
-## Current Task: Fix Linting Issues in the Codebase
+**ALL CODEBASE DOCS HAVE BEEN MOVED TO A NEW DIRECTORY `/Galactic_Sprawl/CodeBase_Docs/`**
 
-### Task Description
+- FIRST DOCUMENT TO RESTRUCTURE: `CodeBase_Mapping.md`
+  - (a) **Step by Step**, we will organize and categorize the `CodeBase_Mapping.md` File into seperate CodeBase_Mapping Categories titled `*Category*_References.md` based on their Function in the code base. **For Example:** `UI_References.md`.
+  - (b) Your Goal is to Remove Sections Piece by Piece, Step by Step from top to bottom, creating a coherant and organized `CodeBase_Mapping` directory by assigning extracted sections categorically into the new title formats explained in section (a).
+  - (c) Achieve this by creating new Sub Category `CodeBase_Mapping` Documents in the directory `Galactic_Sprawl/CodeBase_Docs/CodeBase_Mapping`.
+  - (d) The new `CodeBase_Mapping` Directory must be strictly organized and structured, **DO NOT** create verbose amounts of categories. Keep the extracted sections relevant and organized together in the newly created categories.
+  - The File is 8372 lines, so this will need to be done, from top to bottom, one portion at a time **Step by Step**.
+  - **DO NOT** Try to do to much refactoring at once. We aim to retain **ALL** code mapping, just restructuring the organization into their own organized files based on function.
 
-After setting up the TypeScript/TSX linter configuration, we need to fix the identified linting issues in the codebase. The linter has identified a large number of issues that need to be addressed to improve code quality and prevent potential runtime errors. Based on our analysis, we have 368 problems (154 errors, 214 warnings).
+### Secondary Task Description
+
+The task is to implement a comprehensive linting workflow using the newly fixed linting tools. This will help maintain code quality, identify and fix common issues, and track progress over time. The workflow will follow the TypeScript Linting Correction Workflow (TLC) outlined above.
 
 ### Action Plan
 
-1. [x] Fix TypeScript explicit any errors (highest priority)
+[RO7.1] Review and Setup
 
-   - [x] Fixed in src/hooks/ui/useVPR.ts - Created VPRState interface
-   - [x] Fixed in src/hooks/ui/useVPRSystem.ts - Created ModuleUpdateData type
-   - [x] Fixed in src/hooks/automation/useGlobalAutomation.ts - Created AutomationEvent interface
-   - [x] Fixed in src/utils/resources/resourceValidation.ts - Replaced 'any' with 'unknown' in type guards
-   - [x] Fixed in src/utils/typeConversions.ts - Created proper interfaces and helper functions
-   - [x] Fixed in src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx - Added ExplorationTask interface
+[RO7.2] Analyze Codebase
 
-2. [ ] Fix unused variables and imports
+[RO7.3] Fix Critical Issues
 
-   - [ ] Remove or use variables in component files
-   - [ ] Clean up unused imports
-   - [ ] Address underscore variables in callback functions
+[RO7.4] Targeted Fixes
 
-3. [ ] Fix console statement warnings
+[RO7.5] Verification
 
-   - [ ] Replace with appropriate logging or remove
-   - [ ] Keep only necessary debugging statements
+[RO7.6] Progress Tracking
 
-4. [ ] Fix React hooks exhaustive-deps warnings
-   - [ ] Add missing dependencies to dependency arrays
-   - [ ] Extract functions outside of hooks where appropriate
+[RO7.7] Documentation and Integration
 
-### Linting Issues Summary
+### Implementation Summary
 
-Top issues by rule:
+This task will implement a systematic approach to code quality using the fixed linting tools. By following the TLC workflow, we'll identify and fix common issues, track progress, and establish best practices for ongoing development. The focus will be on improving TypeScript type safety, removing unused code, and ensuring consistent formatting.
 
-- @typescript-eslint/no-explicit-any: Many errors across the codebase (fixed several key files)
-- @typescript-eslint/no-unused-vars: Many warnings for unused variables
-- no-console: Many warnings for console statements
+### Next Steps
 
-Top files with issues:
+1. Continue fixing issues in other problematic files:
+   - Next: ResourceManager.ts (6 issues)
+   - Next: moduleSystemInit.ts (5 issues)
 
-- src/hooks/factions/useFactionBehavior.ts
-- src/managers/weapons/WeaponEffectManager.ts
-- src/initialization files
-- src/managers/module files
+### Progress Summary
 
-Progress:
-
-- Total: 368 problems (154 errors, 214 warnings)
-- Fixed: 6 files with explicit any errors
+- Total issues remaining: ~155 (down from 219)
+- Top issue types:
+  - @typescript-eslint/no-explicit-any: ~54 errors (down from 76)
+  - @typescript-eslint/no-unused-vars: ~60 warnings (down from 74)
+  - no-console: ~34 warnings (down from 67)
+  - react-hooks/exhaustive-deps: 2 errors
+- Most problematic directories:
+  - managers/resource: 1 errors, 22 warnings
+  - managers/module: 0 errors, 9 warnings (improved from 6 errors, 24 warnings)
+  - src/initialization: 0 errors, 5 warnings (improved from 9 errors, 7 warnings)
+- Most problematic files:
+  - managers/resource/ResourceManager.ts: 6 issues
+  - src/initialization/moduleSystemInit.ts: 5 issues
