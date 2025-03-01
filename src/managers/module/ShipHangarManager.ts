@@ -174,11 +174,14 @@ export class ShipHangarManager
    * Set up event listeners
    */
   private setupEventListeners(): void {
-    techTreeManager.on('nodeUnlocked', (event: { nodeId: string; node: any }) => {
-      if (event.node.type === 'hangar') {
-        this.handleTierUpgrade(event.node.tier as Tier);
+    techTreeManager.on(
+      'nodeUnlocked',
+      (event: { nodeId: string; node: { type: string; tier: number } }) => {
+        if (event.node.type === 'hangar') {
+          this.handleTierUpgrade(event.node.tier as Tier);
+        }
       }
-    });
+    );
   }
 
   /**
@@ -219,7 +222,7 @@ export class ShipHangarManager
    * Handle module activation
    */
   private handleModuleActivation(moduleId: string): void {
-    console.debug(`[ShipHangarManager] Module ${moduleId} activated`);
+    console.warn(`[ShipHangarManager] Module ${moduleId} activated`);
     const oldEfficiency = this.state.resourceEfficiency;
     const oldSpeed = this.state.buildSpeedMultiplier;
 
@@ -227,7 +230,7 @@ export class ShipHangarManager
     this.state.resourceEfficiency *= 0.9; // 10% reduction in resource costs
     this.state.buildSpeedMultiplier *= 1.1; // 10% increase in build speed
 
-    console.debug(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
+    console.warn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
       Resource Efficiency: ${oldEfficiency.toFixed(2)} -> ${this.state.resourceEfficiency.toFixed(2)}
       Build Speed: ${oldSpeed.toFixed(2)} -> ${this.state.buildSpeedMultiplier.toFixed(2)}`);
   }
@@ -236,7 +239,7 @@ export class ShipHangarManager
    * Handle module deactivation
    */
   private handleModuleDeactivation(moduleId: string): void {
-    console.debug(`[ShipHangarManager] Module ${moduleId} deactivated`);
+    console.warn(`[ShipHangarManager] Module ${moduleId} deactivated`);
     const oldEfficiency = this.state.resourceEfficiency;
     const oldSpeed = this.state.buildSpeedMultiplier;
 
@@ -244,7 +247,7 @@ export class ShipHangarManager
     this.state.resourceEfficiency /= 0.9; // Remove 10% reduction
     this.state.buildSpeedMultiplier /= 1.1; // Remove 10% increase
 
-    console.debug(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
+    console.warn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
       Resource Efficiency: ${oldEfficiency.toFixed(2)} -> ${this.state.resourceEfficiency.toFixed(2)}
       Build Speed: ${oldSpeed.toFixed(2)} -> ${this.state.buildSpeedMultiplier.toFixed(2)}`);
   }
@@ -253,7 +256,7 @@ export class ShipHangarManager
    * Handle module status change
    */
   private handleModuleStatusChange(moduleId: string, status: string): void {
-    console.debug(`[ShipHangarManager] Module ${moduleId} status changed to ${status}`);
+    console.warn(`[ShipHangarManager] Module ${moduleId} status changed to ${status}`);
     const oldEfficiency = this.state.resourceEfficiency;
     const oldSpeed = this.state.buildSpeedMultiplier;
 
@@ -275,7 +278,7 @@ export class ShipHangarManager
         break;
     }
 
-    console.debug(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
+    console.warn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
       Resource Efficiency: ${oldEfficiency.toFixed(2)} -> ${this.state.resourceEfficiency.toFixed(2)}
       Build Speed: ${oldSpeed.toFixed(2)} -> ${this.state.buildSpeedMultiplier.toFixed(2)}`);
   }
@@ -755,7 +758,6 @@ export class ShipHangarManager
                   cooldown: weapon.cooldown,
                   effects: [],
                 },
-                effects: [],
               },
             },
           })) || [],

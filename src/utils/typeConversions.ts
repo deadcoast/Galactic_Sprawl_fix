@@ -96,10 +96,10 @@ export function convertWeaponSystemToMount(weapon: WeaponSystem, index: number):
 export function convertToFactionCombatUnit(
   unit: CombatUnit,
   factionId: FactionId,
-  shipClass: FactionShipClass,
+  shipClass: FactionShipClass
 ): FactionCombatUnit {
   const weaponMounts = unit.weapons.map((weapon, index) =>
-    convertWeaponSystemToMount(weapon, index),
+    convertWeaponSystemToMount(weapon, index)
   );
   const weaponSystems = weaponMounts.map(convertWeaponMountToSystem);
 
@@ -185,7 +185,7 @@ export function convertToBaseCombatUnit(unit: FactionCombatUnit): CombatUnit {
 
 // Type guard functions
 export function isFactionCombatUnit(
-  unit: CombatUnit | FactionCombatUnit,
+  unit: CombatUnit | FactionCombatUnit
 ): unit is FactionCombatUnit {
   return 'class' in unit && 'tactics' in unit && 'weaponMounts' in unit;
 }
@@ -226,7 +226,7 @@ interface ManagerWeapon {
 }
 
 export function convertToCombatTypesUnit(
-  unit: ManagerCombatUnit,
+  unit: ManagerCombatUnit
 ): import('../types/combat/CombatTypes').CombatUnit {
   // Create a CombatUnit that matches the interface in CombatTypes.ts
   return {
@@ -326,7 +326,7 @@ function convertMainToStatus(main: 'active' | 'disabled' | 'destroyed'): string 
  * Converts a CombatUnit from CombatTypes.ts to a CombatUnit from combatManager.ts
  */
 export function convertToManagerUnit(
-  unit: import('../types/combat/CombatTypes').CombatUnit,
+  unit: import('../types/combat/CombatTypes').CombatUnit
 ): ManagerCombatUnit {
   // Create a CombatUnit that matches the interface in combatManager.ts
   return {

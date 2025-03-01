@@ -128,7 +128,7 @@ export class EventCommunication {
           message.id,
           message.source,
           false,
-          'No handlers registered for this system',
+          'No handlers registered for this system'
         );
       }
       return;
@@ -142,7 +142,7 @@ export class EventCommunication {
           message.id,
           message.source,
           false,
-          `No handlers registered for message type: ${message.type}`,
+          `No handlers registered for message type: ${message.type}`
         );
       }
       return;
@@ -159,7 +159,7 @@ export class EventCommunication {
           handlerPromises.push(
             result.catch(error => {
               errors.push(error);
-            }),
+            })
           );
         }
       } catch (error) {
@@ -176,7 +176,7 @@ export class EventCommunication {
             message.id,
             message.source,
             errors.length === 0,
-            errors.length > 0 ? errors.map(e => e.message).join(', ') : undefined,
+            errors.length > 0 ? errors.map(e => e.message).join(', ') : undefined
           );
         });
       } else {
@@ -185,7 +185,7 @@ export class EventCommunication {
           message.id,
           message.source,
           errors.length === 0,
-          errors.length > 0 ? errors.map(e => e.message).join(', ') : undefined,
+          errors.length > 0 ? errors.map(e => e.message).join(', ') : undefined
         );
       }
     }
@@ -219,7 +219,7 @@ export class EventCommunication {
     messageId: string,
     target: SystemId,
     success: boolean,
-    error?: string,
+    error?: string
   ): void {
     const ack: MessageAcknowledgment = {
       messageId,
@@ -289,7 +289,7 @@ export class EventCommunication {
       requiresAck?: boolean;
       timeout?: number;
       correlationId?: string;
-    } = {},
+    } = {}
   ): Promise<MessageAcknowledgment> | void {
     const {
       priority = MessagePriority.NORMAL,

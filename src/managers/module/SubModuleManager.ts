@@ -1,6 +1,7 @@
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   BaseModule,
+  ModuleConfig,
   ModuleType,
   SubModule,
   SubModuleConfig,
@@ -11,6 +12,24 @@ import {
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { resourceManager } from '../game/ResourceManager';
 import { moduleManager } from './ModuleManager';
+
+// Define interfaces for module event data
+interface ModuleUpgradedEventData {
+  moduleId: string;
+  newLevel: number;
+  previousLevel?: number;
+}
+
+interface ModuleActivatedEventData {
+  moduleId: string;
+  timestamp?: number;
+}
+
+interface ModuleDeactivatedEventData {
+  moduleId: string;
+  reason?: string;
+  timestamp?: number;
+}
 
 /**
  * Sub-module attachment result
@@ -77,7 +96,7 @@ export class SubModuleManager {
       }
 
       // Apply stat boost (this would be implemented in the actual module)
-      console.debug(
+      console.warn(
         `[SubModuleManager] Applied stat boost to ${moduleId}: ${effect.target} ${effect.isPercentage ? '+' : ''}${effect.value}${effect.isPercentage ? '%' : ''}`
       );
 
@@ -103,7 +122,7 @@ export class SubModuleManager {
       }
 
       // Apply resource boost
-      console.debug(
+      console.warn(
         `[SubModuleManager] Applied resource boost to ${moduleId}: ${effect.target} ${effect.isPercentage ? '+' : ''}${effect.value}${effect.isPercentage ? '%' : ''}`
       );
 
@@ -129,7 +148,7 @@ export class SubModuleManager {
       }
 
       // Unlock ability
-      console.debug(`[SubModuleManager] Unlocked ability for ${moduleId}: ${effect.target}`);
+      console.warn(`[SubModuleManager] Unlocked ability for ${moduleId}: ${effect.target}`);
 
       return {
         success: true,
@@ -153,7 +172,7 @@ export class SubModuleManager {
       }
 
       // Reduce cost
-      console.debug(
+      console.warn(
         `[SubModuleManager] Applied cost reduction to ${moduleId}: ${effect.target} ${effect.isPercentage ? '-' : ''}${effect.value}${effect.isPercentage ? '%' : ''}`
       );
 
@@ -179,7 +198,7 @@ export class SubModuleManager {
       }
 
       // Apply automation
-      console.debug(`[SubModuleManager] Applied automation to ${moduleId}: ${effect.target}`);
+      console.warn(`[SubModuleManager] Applied automation to ${moduleId}: ${effect.target}`);
 
       return {
         success: true,
@@ -203,7 +222,7 @@ export class SubModuleManager {
       }
 
       // Apply special effect
-      console.debug(`[SubModuleManager] Applied special effect to ${moduleId}: ${effect.target}`);
+      console.warn(`[SubModuleManager] Applied special effect to ${moduleId}: ${effect.target}`);
 
       return {
         success: true,
@@ -248,8 +267,10 @@ export class SubModuleManager {
     }
 
     // Check if parent module supports sub-modules
-    const parentConfig = (moduleManager as any).configs.get(parentModule.type);
-    if (!parentConfig || !parentConfig.subModuleSupport) {
+    const parentModuleConfig = (
+      moduleManager as unknown as { configs: Map<ModuleType, ModuleConfig> }
+    ).configs.get(parentModule.type);
+    if (!parentModuleConfig || !parentModuleConfig.subModuleSupport) {
       console.error(
         `[SubModuleManager] Parent module does not support sub-modules: ${parentModuleId}`
       );
@@ -257,7 +278,7 @@ export class SubModuleManager {
     }
 
     // Check if parent module allows this sub-module type
-    if (!parentConfig.subModuleSupport.allowedTypes.includes(type)) {
+    if (!parentModuleConfig.subModuleSupport.allowedTypes.includes(type)) {
       console.error(
         `[SubModuleManager] Sub-module type ${type} not allowed for parent module ${parentModuleId}`
       );
@@ -266,7 +287,7 @@ export class SubModuleManager {
 
     // Check if parent module has reached max sub-modules
     const currentSubModules = parentModule.subModules || [];
-    if (currentSubModules.length >= parentConfig.subModuleSupport.maxSubModules) {
+    if (currentSubModules.length >= parentModuleConfig.subModuleSupport.maxSubModules) {
       console.error(
         `[SubModuleManager] Parent module ${parentModuleId} has reached max sub-modules`
       );
@@ -373,8 +394,10 @@ export class SubModuleManager {
     }
 
     // Check if parent module supports sub-modules
-    const parentConfig = (moduleManager as any).configs.get(parentModule.type);
-    if (!parentConfig || !parentConfig.subModuleSupport) {
+    const parentModuleConfig = (
+      moduleManager as unknown as { configs: Map<ModuleType, ModuleConfig> }
+    ).configs.get(parentModule.type);
+    if (!parentModuleConfig || !parentModuleConfig.subModuleSupport) {
       return {
         success: false,
         error: `Parent module does not support sub-modules: ${parentModuleId}`,
@@ -382,7 +405,7 @@ export class SubModuleManager {
     }
 
     // Check if parent module allows this sub-module type
-    if (!parentConfig.subModuleSupport.allowedTypes.includes(subModule.type)) {
+    if (!parentModuleConfig.subModuleSupport.allowedTypes.includes(subModule.type)) {
       return {
         success: false,
         error: `Sub-module type ${subModule.type} not allowed for parent module ${parentModuleId}`,
@@ -391,7 +414,7 @@ export class SubModuleManager {
 
     // Check if parent module has reached max sub-modules
     const currentSubModules = parentModule.subModules || [];
-    if (currentSubModules.length >= parentConfig.subModuleSupport.maxSubModules) {
+    if (currentSubModules.length >= parentModuleConfig.subModuleSupport.maxSubModules) {
       return {
         success: false,
         error: `Parent module ${parentModuleId} has reached max sub-modules`,
@@ -571,7 +594,7 @@ export class SubModuleManager {
   private removeSubModuleEffects(subModule: SubModule): void {
     // This would be implemented to reverse the effects
     // For now, we'll just log the removal
-    console.debug(`[SubModuleManager] Removed effects for sub-module ${subModule.id}`);
+    console.warn(`[SubModuleManager] Removed effects for sub-module ${subModule.id}`);
   }
 
   /**
@@ -675,8 +698,8 @@ export class SubModuleManager {
   /**
    * Handle module upgraded event
    */
-  private handleModuleUpgraded = (event: any): void => {
-    const { moduleId, newLevel } = event.data;
+  private handleModuleUpgraded = (event: ModuleEvent): void => {
+    const { moduleId, _newLevel } = event.data as ModuleUpgradedEventData;
 
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
@@ -697,8 +720,8 @@ export class SubModuleManager {
   /**
    * Handle module activated event
    */
-  private handleModuleActivated = (event: any): void => {
-    const { moduleId } = event.data;
+  private handleModuleActivated = (event: ModuleEvent): void => {
+    const { moduleId } = event.data as ModuleActivatedEventData;
 
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
@@ -717,8 +740,8 @@ export class SubModuleManager {
   /**
    * Handle module deactivated event
    */
-  private handleModuleDeactivated = (event: any): void => {
-    const { moduleId } = event.data;
+  private handleModuleDeactivated = (event: ModuleEvent): void => {
+    const { moduleId } = event.data as ModuleDeactivatedEventData;
 
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);

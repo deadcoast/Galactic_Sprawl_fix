@@ -5,12 +5,14 @@ import { moduleManager } from '../managers/module/ModuleManager';
 import { moduleStatusManager } from '../managers/module/ModuleStatusManager';
 import { moduleUpgradeManager } from '../managers/module/ModuleUpgradeManager';
 import { subModuleManager } from '../managers/module/SubModuleManager';
+import { ModuleType, SubModuleEffect, SubModuleType } from '../types/buildings/ModuleTypes';
+import { ResourceType } from '../types/resources/ResourceTypes';
 
 /**
  * Initialize the module framework
  */
 export function initializeModuleFramework(): void {
-  console.log('[Initialization] Setting up module framework...');
+  console.warn('[Initialization] Setting up module framework...');
 
   // Register event handlers for resource integration
   registerResourceIntegration();
@@ -24,7 +26,7 @@ export function initializeModuleFramework(): void {
   // Initialize sub-module system
   initializeSubModuleSystem();
 
-  console.log('[Initialization] Module framework initialized successfully.');
+  console.warn('[Initialization] Module framework initialized successfully.');
 }
 
 /**
@@ -48,7 +50,7 @@ function registerResourceIntegration(): void {
     // Register resource consumption
     for (const [resourceType, amount] of Object.entries(config.resourceConsumption)) {
       resourceManager.registerConsumption(`module-${module.id}`, {
-        type: resourceType as any,
+        type: resourceType as ResourceType,
         amount: amount as number,
         interval: 60000, // 1 minute
         required: false,
@@ -81,7 +83,7 @@ function registerResourceIntegration(): void {
       const amount = (baseAmount as number) * levelMultiplier;
 
       resourceManager.registerProduction(`module-${module.id}`, {
-        type: resourceType as any,
+        type: resourceType as ResourceType,
         amount: amount,
         interval: 60000, // 1 minute
       });
@@ -167,7 +169,7 @@ function initializeSubModuleSystem(): void {
 
   for (const [type, config] of Object.entries(subModuleConfigs)) {
     subModuleManager.registerSubModuleConfig({
-      type: type as any,
+      type: type as SubModuleType,
       name: config.name,
       description: config.description,
       requirements: {
@@ -194,7 +196,17 @@ function initializeSubModuleSystem(): void {
  * Get module configurations
  * This would typically come from a configuration file
  */
-function getModuleConfigs(): Record<string, any> {
+interface ModuleConfig {
+  resourceConsumption?: Record<string, number>;
+  resourceProduction?: Record<string, number>;
+  upgradeRequirements?: {
+    level: number;
+    resources: Record<string, number>;
+  };
+  stats?: Record<string, number>;
+}
+
+function getModuleConfigs(): Record<string, ModuleConfig> {
   return {
     radar: {
       resourceConsumption: {
@@ -271,7 +283,21 @@ function getModuleConfigs(): Record<string, any> {
  * Get sub-module configurations
  * This would typically come from a configuration file
  */
-function getSubModuleConfigs(): Record<string, any> {
+interface SubModuleConfig {
+  name: string;
+  description: string;
+  resourceCost?: Record<string, number>;
+  allowedParentTypes?: ModuleType[];
+  effects: SubModuleEffect[];
+  baseStats?: {
+    power: number;
+    space: number;
+    complexity: number;
+  };
+  maxPerModule?: number;
+}
+
+function getSubModuleConfigs(): Record<string, SubModuleConfig> {
   return {
     efficiency: {
       name: 'Efficiency Module',
@@ -282,91 +308,82 @@ function getSubModuleConfigs(): Record<string, any> {
       },
       effects: [
         {
-          type: 'stat',
+          type: 'stat_boost',
           target: 'efficiency',
-          value: 15,
+          value: 10,
           isPercentage: true,
-          description: 'Increases efficiency',
+          description: 'Increases efficiency by 10%',
         },
       ],
-      allowedParentTypes: ['mineral', 'hangar', 'food', 'trading'],
       maxPerModule: 2,
     },
-    booster: {
-      name: 'Booster Module',
-      description: 'Boosts production output',
+    converter: {
+      name: 'Resource Converter',
+      description: 'Converts resources',
       resourceCost: {
         energy: 75,
         minerals: 50,
       },
       effects: [
         {
-          type: 'resource',
-          target: 'output',
-          value: 25,
+          type: 'resource_boost',
+          target: 'conversion',
+          value: 5,
           isPercentage: true,
-          description: 'Increases production output',
+          description: 'Enables resource conversion',
         },
       ],
-      allowedParentTypes: ['mineral', 'food', 'trading'],
-      maxPerModule: 1,
     },
-    range: {
-      name: 'Range Extender',
-      description: 'Extends operational range',
+    processor: {
+      name: 'Resource Processor',
+      description: 'Processes resources more efficiently',
       resourceCost: {
         energy: 60,
         minerals: 40,
       },
       effects: [
         {
-          type: 'stat',
-          target: 'range',
-          value: 30,
+          type: 'stat_boost',
+          target: 'processing',
+          value: 15,
           isPercentage: true,
-          description: 'Increases operational range',
+          description: 'Increases processing efficiency',
         },
       ],
-      allowedParentTypes: ['radar', 'exploration'],
-      maxPerModule: 2,
     },
-    capacity: {
-      name: 'Capacity Expander',
-      description: 'Expands storage capacity',
+    storage: {
+      name: 'Storage Module',
+      description: 'Provides additional storage',
       resourceCost: {
         energy: 40,
-        minerals: 80,
-      },
-      effects: [
-        {
-          type: 'stat',
-          target: 'capacity',
-          value: 50,
-          isPercentage: true,
-          description: 'Increases storage capacity',
-        },
-      ],
-      allowedParentTypes: ['hangar', 'population', 'infrastructure'],
-      maxPerModule: 3,
-    },
-    automation: {
-      name: 'Automation System',
-      description: 'Automates routine operations',
-      resourceCost: {
-        energy: 100,
         minerals: 60,
       },
       effects: [
         {
-          type: 'ability',
+          type: 'stat_boost',
+          target: 'storage',
+          value: 20,
+          isPercentage: true,
+          description: 'Increases storage capacity',
+        },
+      ],
+    },
+    automation: {
+      name: 'Automation Module',
+      description: 'Adds automation capabilities',
+      resourceCost: {
+        energy: 100,
+        minerals: 80,
+      },
+      effects: [
+        {
+          type: 'unlock_ability',
           target: 'automation',
           value: 1,
           isPercentage: false,
           description: 'Enables automation',
         },
       ],
-      allowedParentTypes: ['mineral', 'hangar', 'food', 'trading', 'infrastructure'],
-      maxPerModule: 1,
     },
   };
 }

@@ -54,7 +54,7 @@ export interface ResourceTotals {
 /**
  * Type guard for SerializedResource
  */
-export function isSerializedResource(obj: any): obj is SerializedResource {
+export function isSerializedResource(obj: unknown): obj is SerializedResource {
   return (
     obj !== null &&
     typeof obj === 'object' &&
@@ -68,7 +68,7 @@ export function isSerializedResource(obj: any): obj is SerializedResource {
 /**
  * Type guard for SerializedResourceState
  */
-export function isSerializedResourceState(obj: any): obj is SerializedResourceState {
+export function isSerializedResourceState(obj: unknown): obj is SerializedResourceState {
   return (
     obj !== null &&
     typeof obj === 'object' &&
@@ -81,8 +81,8 @@ export function isSerializedResourceState(obj: any): obj is SerializedResourceSt
 /**
  * Helper function to convert Map to Record for serialization
  */
-export function serializeResourceMap(map: Map<ResourceType, any>): Record<ResourceType, any> {
-  const record: Record<ResourceType, any> = {} as Record<ResourceType, any>;
+export function serializeResourceMap<T>(map: Map<ResourceType, T>): Record<ResourceType, T> {
+  const record: Record<ResourceType, T> = {} as Record<ResourceType, T>;
 
   // Convert Map entries to array to avoid MapIterator error
   Array.from(map.entries()).forEach(([key, value]) => {

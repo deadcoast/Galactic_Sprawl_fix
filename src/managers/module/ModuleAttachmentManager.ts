@@ -1,4 +1,4 @@
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   BaseModule,
   ModularBuilding,
@@ -8,7 +8,17 @@ import {
 import { moduleManager } from './ModuleManager';
 
 /**
- * Attachment visualization options
+ * Interface for module event data
+ */
+interface _ModuleAttachmentEventData {
+  moduleId: string;
+  buildingId: string;
+  attachmentPointId: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Visualization options for module attachment
  */
 export interface AttachmentVisualizationOptions {
   showValidPoints: boolean;
@@ -19,7 +29,7 @@ export interface AttachmentVisualizationOptions {
 }
 
 /**
- * Attachment result
+ * Result of an attachment operation
  */
 export interface AttachmentResult {
   success: boolean;
@@ -57,22 +67,24 @@ export class ModuleAttachmentManager {
   /**
    * Handle module attached event
    */
-  private handleModuleAttached = (event: any): void => {
-    const { moduleId, buildingId, attachmentPointId } = event.data;
-    console.debug(
+  private handleModuleAttached = (event: ModuleEvent): void => {
+    const { moduleId, buildingId, attachmentPointId } = event.data || {};
+    console.warn(
       `[ModuleAttachmentManager] Module ${moduleId} attached to building ${buildingId} at point ${attachmentPointId}`
     );
 
     // Clear any previews or highlights for this building
-    this.clearAttachmentVisualization(buildingId);
+    if (buildingId) {
+      this.clearAttachmentVisualization(buildingId);
+    }
   };
 
   /**
    * Handle module detached event
    */
-  private handleModuleDetached = (event: any): void => {
-    const { moduleId, buildingId, attachmentPointId } = event.data;
-    console.debug(
+  private handleModuleDetached = (event: ModuleEvent): void => {
+    const { moduleId, buildingId, attachmentPointId } = event.data || {};
+    console.warn(
       `[ModuleAttachmentManager] Module ${moduleId} detached from building ${buildingId} at point ${attachmentPointId}`
     );
   };
@@ -226,17 +238,16 @@ export class ModuleAttachmentManager {
    */
   private showAttachmentVisualization(buildingId: string): void {
     // This would be implemented with actual UI visualization code
-    // For now, we'll just log the information
     const validPoints = this.validAttachmentPoints.get(buildingId) || [];
     const incompatiblePoints = this.incompatibleAttachmentPoints.get(buildingId) || [];
 
-    console.debug(
+    console.warn(
       `[ModuleAttachmentManager] Showing attachment visualization for building ${buildingId}`
     );
-    console.debug(`Valid attachment points: ${validPoints.map(p => p.id).join(', ')}`);
+    console.warn(`Valid attachment points: ${validPoints.map(p => p.id).join(', ')}`);
 
     if (this.visualizationOptions.highlightIncompatible) {
-      console.debug(
+      console.warn(
         `Incompatible attachment points: ${incompatiblePoints.map(p => p.id).join(', ')}`
       );
     }
@@ -247,7 +258,7 @@ export class ModuleAttachmentManager {
    */
   private clearAttachmentVisualization(buildingId: string): void {
     // This would be implemented with actual UI visualization code
-    console.debug(
+    console.warn(
       `[ModuleAttachmentManager] Clearing attachment visualization for building ${buildingId}`
     );
 
@@ -274,7 +285,7 @@ export class ModuleAttachmentManager {
     }
 
     // This would be implemented with actual UI preview code
-    console.debug(
+    console.warn(
       `[ModuleAttachmentManager] Showing attachment preview for module ${this.previewModule.type} at point ${attachmentPointId}`
     );
   }

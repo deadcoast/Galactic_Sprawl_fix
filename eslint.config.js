@@ -1,20 +1,13 @@
 import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
+import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettierConfig,
   {
-    ignores: [
-      'node_modules/**',
-      'dist/**',
-      'build/**',
-      'coverage/**',
-      '.git/**',
-      '.venv/**'
-    ]
+    ignores: ['node_modules/**', 'dist/**', 'build/**', 'coverage/**', '.git/**', '.venv/**'],
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
@@ -22,15 +15,22 @@ export default tseslint.config(
       'no-var': 'error',
       'prefer-const': 'warn',
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': 'warn',
-      'no-console': ['warn', { allow: ['warn', 'error'] }]
-    }
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+    },
   },
   {
     files: ['**/*.test.ts', '**/*.test.tsx'],
     rules: {
-      'no-console': 'off'
-    }
+      'no-console': 'off',
+    },
   },
   {
     files: ['tools/**/*.js'],
@@ -41,11 +41,11 @@ export default tseslint.config(
         module: 'readonly',
         require: 'readonly',
         __dirname: 'readonly',
-        __filename: 'readonly'
-      }
+        __filename: 'readonly',
+      },
     },
     rules: {
-      'no-console': 'off'
-    }
+      'no-console': 'off',
+    },
   }
-); 
+);

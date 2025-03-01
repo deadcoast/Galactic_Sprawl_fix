@@ -70,7 +70,7 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     this.startUpdateLoop();
 
     // Debug logging
-    console.debug('[AsteroidFieldManager] Initialized');
+    console.warn('[AsteroidFieldManager] Initialized');
   }
 
   private setupEventListeners(): void {
@@ -129,7 +129,7 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
 
       // Update resources
       let totalResources = 0;
-      field.resources.forEach((amount, type) => {
+      field.resources.forEach((amount, _type) => {
         totalResources += amount;
       });
 
@@ -214,7 +214,7 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     this.emit('fieldGenerated', { fieldId, position });
 
     // Debug logging
-    console.debug(
+    console.warn(
       `[AsteroidFieldManager] Generated field ${fieldId} at (${position.x}, ${position.y}) with density ${density}`
     );
 
@@ -257,17 +257,17 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     node.amount = currentAmount - amount;
 
     // Debug logging
-    console.debug(`[AsteroidFieldManager] Extracted ${amount} ${node.type} from node ${nodeId}`);
+    console.warn(`[AsteroidFieldManager] Extracted ${amount} ${node.type} from node ${nodeId}`);
 
     return true;
   }
 
   private handleModuleActivation(moduleId: string): void {
-    console.debug(`[AsteroidFieldManager] Module ${moduleId} activated`);
+    console.warn(`[AsteroidFieldManager] Module ${moduleId} activated`);
   }
 
   private handleModuleDeactivation(moduleId: string): void {
-    console.debug(`[AsteroidFieldManager] Module ${moduleId} deactivated`);
+    console.warn(`[AsteroidFieldManager] Module ${moduleId} deactivated`);
   }
 
   public cleanup(): void {
@@ -280,22 +280,21 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     this.state.activeHazards.clear();
     this.state.resourceNodes.clear();
 
-    // Debug logging
-    console.debug('[AsteroidFieldManager] Cleanup completed');
+    console.warn('[AsteroidFieldManager] Cleaned up');
   }
 
-  public registerResourceNode(fieldId: string, type: ResourceType): string {
+  public registerResourceNode(fieldId: string, _type: ResourceType): string {
     const field = this.state.fields.get(fieldId);
     if (!field) {
       return '';
     }
 
-    const nodeId = `node-${fieldId}-${type}-${Date.now()}`;
-    const amount = field.resources.get(type) || 0;
+    const nodeId = `node-${fieldId}-${_type}-${Date.now()}`;
+    const amount = field.resources.get(_type) || 0;
 
     this.state.resourceNodes.set(nodeId, {
       fieldId,
-      type,
+      type: _type,
       amount,
     });
 
@@ -307,7 +306,7 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
       timestamp: Date.now(),
       data: {
         id: nodeId,
-        type,
+        type: _type,
         position: field.position,
         amount,
         thresholds: {
@@ -320,34 +319,30 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     this.emit('resourceNodeRegistered', {
       nodeId,
       fieldId,
-      type,
+      type: _type,
       position: field.position,
     });
 
-    console.debug(
-      `[AsteroidFieldManager] Registered resource node ${nodeId} of type ${type} in field ${fieldId}`
-    );
+    console.warn(`[AsteroidFieldManager] Registered resource node ${nodeId} for field ${fieldId}`);
     return nodeId;
   }
 
   public handleMiningTask(nodeId: string, shipId: string, amount: number): boolean {
     const node = this.state.resourceNodes.get(nodeId);
     if (!node) {
-      console.debug(`[AsteroidFieldManager] Mining task failed: Node ${nodeId} not found`);
+      console.warn(`[AsteroidFieldManager] Node ${nodeId} not found`);
       return false;
     }
 
     const field = this.state.fields.get(node.fieldId);
     if (!field || field.status === 'depleted') {
-      console.debug(
-        `[AsteroidFieldManager] Mining task failed: Field ${node.fieldId} not found or depleted`
-      );
+      console.warn(`[AsteroidFieldManager] Field ${node.fieldId} not found`);
       return false;
     }
 
     const extracted = this.extractResource(nodeId, amount);
     if (!extracted) {
-      console.debug(
+      console.warn(
         `[AsteroidFieldManager] Mining task failed: Could not extract ${amount} resources from node ${nodeId}`
       );
       return false;
@@ -375,8 +370,8 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
       },
     });
 
-    console.debug(
-      `[AsteroidFieldManager] Mining task completed: Extracted ${amount} ${node.type} from node ${nodeId}, ${remaining} remaining`
+    console.warn(
+      `[AsteroidFieldManager] Ship ${shipId} extracted ${amount} of ${node.type} from node ${nodeId}`
     );
     return true;
   }
@@ -438,7 +433,7 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
       this.handleHazardCollision(shipId, nearestHazard);
     }
 
-    console.debug(
+    console.warn(
       `[AsteroidFieldManager] Ship ${shipId} position updated: (${position.x}, ${position.y}), in field: ${inField}`
     );
   }
@@ -474,10 +469,14 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     // Return position that moves away from hazard
-    return {
+    const avoidanceVector = {
       x: position.x + (dx / distance) * 50, // Move 50 units away
       y: position.y + (dy / distance) * 50,
     };
+
+    console.warn(`[AsteroidFieldManager] Calculated avoidance vector for ship ${shipId}`);
+
+    return avoidanceVector;
   }
 
   private handleHazardCollision(shipId: string, hazard: Hazard): void {
@@ -524,9 +523,7 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
       }
     }
 
-    console.debug(
-      `[AsteroidFieldManager] Ship ${shipId} collided with hazard ${hazard.id} of type ${hazard.type}`
-    );
+    console.warn(`[AsteroidFieldManager] Ship ${shipId} collided with hazard ${hazard.id}`);
   }
 
   public getShipBonuses(
@@ -537,36 +534,38 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     hazardResistance: number;
     miningEfficiency: number;
   } {
-    const bonuses = {
+    const defaultBonuses = {
       speedMultiplier: 1.0,
       hazardResistance: 1.0,
       miningEfficiency: 1.0,
     };
 
     // Check if ship is in any asteroid field
-    // Convert Map entries to array to avoid MapIterator error
-    const fieldValues = Array.from(this.state.fields.values());
-    for (const field of fieldValues) {
+    for (const field of this.state.fields.values()) {
+      if (field.status === 'depleted') {
+        continue;
+      }
+
       const distanceToField = Math.sqrt(
         Math.pow(position.x - field.position.x, 2) + Math.pow(position.y - field.position.y, 2)
       );
 
       if (distanceToField <= field.radius) {
         // Apply field density effects
-        bonuses.speedMultiplier *= Math.max(0.5, 1 - field.density * 0.5);
-        bonuses.hazardResistance *= Math.max(0.6, 1 - field.density * 0.4);
-        bonuses.miningEfficiency *= 1 + field.density * 0.3;
+        defaultBonuses.speedMultiplier *= Math.max(0.5, 1 - field.density * 0.5);
+        defaultBonuses.hazardResistance *= Math.max(0.6, 1 - field.density * 0.4);
+        defaultBonuses.miningEfficiency *= 1 + field.density * 0.3;
 
         // Log the bonuses
-        console.debug(`[AsteroidFieldManager] Ship ${shipId} field bonuses:
-          Speed: ${bonuses.speedMultiplier.toFixed(2)}x
-          Hazard Resistance: ${bonuses.hazardResistance.toFixed(2)}x
-          Mining Efficiency: ${bonuses.miningEfficiency.toFixed(2)}x`);
+        console.warn(`[AsteroidFieldManager] Ship ${shipId} field bonuses:
+          Speed: ${defaultBonuses.speedMultiplier.toFixed(2)}x
+          Hazard Resistance: ${defaultBonuses.hazardResistance.toFixed(2)}x
+          Mining Efficiency: ${defaultBonuses.miningEfficiency.toFixed(2)}x`);
 
         break; // Only apply bonuses from one field
       }
     }
 
-    return bonuses;
+    return defaultBonuses;
   }
 }

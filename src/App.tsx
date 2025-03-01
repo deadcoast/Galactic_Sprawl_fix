@@ -61,38 +61,38 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [resourceManager] = useState(() => new ResourceManager());
   const [officerManager] = useState(() => new OfficerManager());
-  const [shipHangarManager] = useState(
+  const [_shipHangarManager] = useState(
     () => new ShipHangarManager(resourceManager, officerManager)
   );
 
   useEffect(() => {
     const initializeGame = async () => {
       try {
-        console.log('Initializing game systems...');
+        console.warn('Initializing game systems...');
 
         // Register module configurations
-        console.log('Registering module configurations...');
+        console.warn('Registering module configurations...');
         Object.values(defaultModuleConfigs).forEach(config => {
           moduleManager.registerModuleConfig(config);
         });
 
         // Register default buildings
-        console.log('Registering default buildings...');
+        console.warn('Registering default buildings...');
         moduleManager.registerBuilding(defaultMothership);
         moduleManager.registerBuilding(defaultColony);
 
         // Initialize asset manager
-        console.log('Initializing asset manager...');
+        console.warn('Initializing asset manager...');
         await assetManager.initialize();
 
         // Register initial technologies
-        console.log('Registering initial technologies...');
+        console.warn('Registering initial technologies...');
         initialTechs.forEach(tech => {
           techTreeManager.registerNode(tech);
         });
 
         // Add initial resources
-        console.log('Adding initial resources...');
+        console.warn('Adding initial resources...');
         dispatch({
           type: 'UPDATE_RESOURCES',
           resources: {
@@ -104,7 +104,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
         });
 
         // Update systems count
-        console.log('Updating system counts...');
+        console.warn('Updating system counts...');
         dispatch({
           type: 'UPDATE_SYSTEMS',
           systems: {
@@ -115,11 +115,11 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
         });
 
         // Start the game
-        console.log('Starting game loop...');
+        console.warn('Starting game loop...');
         dispatch({ type: 'START_GAME' });
         gameManager.start();
 
-        console.log('Game initialization complete');
+        console.warn('Game initialization complete');
         setIsInitialized(true);
       } catch (error) {
         console.error('Failed to initialize game:', error);

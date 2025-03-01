@@ -16,7 +16,7 @@ interface WeaponLike {
   displayName?: string;
 }
 
-interface CommonShipAbility {
+interface _CommonShipAbility {
   id?: string;
   name: string;
   type?: string;
@@ -260,66 +260,57 @@ export function createCombinedWeaponEffect(weapons: WeaponSystem[]): WeaponEffec
     throw new Error('Cannot create combined effect from empty weapons array');
   }
 
-  const totalDamage = weapons.reduce((sum, w) => sum + w.damage, 0);
-  const avgCooldown = weapons.reduce((sum, w) => sum + w.cooldown, 0) / weapons.length;
-  const weaponNames = weapons.map(w => ('name' in w ? (w as any).name : w.type)).join(', ');
+  // Calculate combined damage and cooldown
+  const totalDamage = weapons.reduce((sum, weapon) => sum + weapon.damage, 0);
+  const avgCooldown = weapons.reduce((sum, weapon) => sum + weapon.cooldown, 0) / weapons.length;
 
-  return createDamageEffect({
-    id: `combined-weapon-effect-${weapons[0].id}`,
-    magnitude: totalDamage,
-    duration: avgCooldown,
-    strength: totalDamage,
-    damageType: 'physical',
-    penetration: 0,
-    name: `Combined Weapons`,
-    description: `Combined effect from: ${weaponNames}`,
-  });
+  // Create a combined weapon-like object
+  const combinedWeapon: WeaponLike = {
+    id: `combined-${weapons[0].id}`,
+    type: weapons[0].type,
+    damage: totalDamage,
+    cooldown: avgCooldown,
+    displayName: `Combined ${weapons[0].type}`,
+  };
+
+  // Create effect from the combined weapon
+  return createWeaponEffect(combinedWeapon);
 }
 
 /**
- * Type guard to check if an object is a valid Effect
+ * Checks if an object is a valid Effect
  */
 export function isValidEffect(effect: unknown): effect is Effect {
   if (!effect || typeof effect !== 'object') {
     return false;
   }
 
-  const e = effect as Effect;
+  const effectObj = effect as Partial<Effect>;
   return (
-    typeof e.id === 'string' &&
-    typeof e.type === 'string' &&
-    typeof e.duration === 'number' &&
-    typeof e.magnitude === 'number'
+    typeof effectObj.id === 'string' &&
+    typeof effectObj.type === 'string' &&
+    typeof effectObj.magnitude === 'number' &&
+    typeof effectObj.duration === 'number'
   );
 }
 
 /**
- * Validates and normalizes an effect object
+ * Validates and normalizes an effect
  */
 export function validateEffect(effect: Partial<Effect>): Effect {
   if (!effect.id) {
     throw new Error('Effect must have an id');
   }
+
   if (!effect.type) {
     throw new Error('Effect must have a type');
-  }
-  if (effect.magnitude === undefined) {
-    throw new Error('Effect must have a magnitude');
-  } else if (typeof effect.magnitude !== 'number') {
-    throw new Error('Effect magnitude must be a number');
-  }
-  if (typeof effect.duration !== 'number') {
-    throw new Error('Effect must have a duration');
   }
 
   return {
     id: effect.id,
     type: effect.type,
-    magnitude: effect.magnitude,
-    duration: effect.duration,
-    target: effect.target,
-    active: effect.active,
-    cooldown: effect.cooldown,
+    magnitude: effect.magnitude || 0,
+    duration: effect.duration || 0,
   };
 }
 
@@ -331,58 +322,57 @@ export function combineEffects(effects: Effect[]): Effect {
     throw new Error('Cannot combine empty effects array');
   }
 
-  // Create the base combined effect
-  const combinedEffect: Effect = {
-    id: effects.map(e => e.id).join('-'),
-    type: effects[0].type,
-    magnitude: effects.reduce((sum, e) => sum + e.magnitude, 0),
-    duration: Math.min(...effects.map(e => e.duration)),
+  // Use the first effect as a base
+  const baseEffect = effects[0];
+
+  // Combine magnitudes and take the longest duration
+  const combinedMagnitude = effects.reduce((sum, effect) => sum + effect.magnitude, 0);
+  const maxDuration = Math.max(...effects.map(effect => effect.duration));
+
+  // Create a new effect with combined values
+  return {
+    id: `combined-${baseEffect.id}`,
+    type: baseEffect.type,
+    magnitude: combinedMagnitude,
+    duration: maxDuration,
   };
-
-  // Get names and descriptions if available
-  const names = effects.filter(e => 'name' in e).map(e => (e as any).name);
-  const descriptions = effects.filter(e => 'description' in e).map(e => (e as any).description);
-
-  // Add name and description as any to avoid type errors
-  if (names.length > 0) {
-    (combinedEffect as any).name = `Combined: ${names.join(', ')}`;
-  }
-
-  if (descriptions.length > 0) {
-    (combinedEffect as any).description = `Combined effects: ${descriptions.join('; ')}`;
-  }
-
-  return combinedEffect;
 }
 
 /**
- * Scales an effect's magnitude by a factor
+ * Scales an effect by a factor
  */
 export function scaleEffect(effect: Effect, factor: number): Effect {
-  const result = {
-    ...effect,
+  // Create a new effect with scaled values
+  return {
+    id: `scaled-${effect.id}`,
+    type: effect.type,
     magnitude: effect.magnitude * factor,
+    duration: effect.duration,
   };
-
-  // Add scaled information to name and description if they exist
-  if ('name' in effect && typeof (effect as any).name === 'string') {
-    (result as any).name = `Scaled ${(effect as any).name}`;
-  }
-
-  if ('description' in effect && typeof (effect as any).description === 'string') {
-    (result as any).description = `${(effect as any).description} (scaled by ${factor})`;
-  }
-
-  return result;
 }
 
 /**
- * Creates a chain of effects that trigger in sequence
+ * Creates a chain of effects that trigger sequentially
  */
 export function createEffectChain(effects: Effect[]): Effect[] {
-  let currentDuration = 0;
-  return effects.map(effect => ({
-    ...effect,
-    duration: (currentDuration += effect.duration),
-  }));
+  if (effects.length <= 1) {
+    return effects;
+  }
+
+  // Create a new array of effects with sequential triggers
+  return effects.map((effect, index) => {
+    if (index === 0) {
+      return effect;
+    }
+
+    // Each subsequent effect is triggered by the previous one
+    return {
+      ...effect,
+      id: `chain-${index}-${effect.id}`,
+      trigger: {
+        type: 'effect-complete',
+        effectId: effects[index - 1].id,
+      },
+    };
+  });
 }

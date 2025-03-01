@@ -10,7 +10,7 @@ export const moduleEventSubject = new Subject<ModuleEvent>();
  * Observable for all module events
  */
 export const moduleEvents$ = moduleEventSubject.asObservable().pipe(
-  share(), // Share the observable to prevent multiple subscriptions
+  share() // Share the observable to prevent multiple subscriptions
 );
 
 /**
@@ -50,15 +50,15 @@ export function getEventsByModule(moduleId: string): Observable<ModuleEvent> {
  */
 export function getEventsByData<T>(
   propertyName: string,
-  propertyValue: T,
+  propertyValue: T
 ): Observable<ModuleEvent> {
   return moduleEvents$.pipe(
     filter(
       event =>
         event.data &&
         event.data[propertyName] !== undefined &&
-        event.data[propertyName] === propertyValue,
-    ),
+        event.data[propertyName] === propertyValue
+    )
   );
 }
 
@@ -68,7 +68,7 @@ export function getEventsByData<T>(
 export function getEventData<T>(eventType: ModuleEventType): Observable<T> {
   return moduleEvents$.pipe(
     filter(event => event.type === eventType),
-    map(event => event.data as T),
+    map(event => event.data as T)
   );
 }
 
@@ -76,7 +76,7 @@ export function getEventData<T>(eventType: ModuleEventType): Observable<T> {
  * Create a custom event observable with filtering
  */
 export function createFilteredEventStream(
-  filterFn: (event: ModuleEvent) => boolean,
+  filterFn: (event: ModuleEvent) => boolean
 ): Observable<ModuleEvent> {
   return moduleEvents$.pipe(filter(filterFn));
 }
@@ -96,7 +96,7 @@ export function emitEvent(event: ModuleEvent): void {
  * Hook up a Subject to a specific event type
  */
 export function createEventTypeSubject<T extends ModuleEventType>(
-  eventType: T,
+  eventType: T
 ): Subject<ModuleEvent> {
   const subject = new Subject<ModuleEvent>();
 
@@ -126,11 +126,11 @@ export function createEventTypeSubject<T extends ModuleEventType>(
  */
 export function createTransformedEventStream<T, R>(
   eventType: ModuleEventType,
-  transformFn: (event: ModuleEvent) => R,
+  transformFn: (event: ModuleEvent) => R
 ): Observable<R> {
   return moduleEvents$.pipe(
     filter(event => event.type === eventType),
-    map(transformFn),
+    map(transformFn)
   );
 }
 
@@ -139,10 +139,10 @@ export function createTransformedEventStream<T, R>(
  */
 export function createDebouncedEventStream(
   eventType: ModuleEventType,
-  debounceTime: number,
+  debounceTime: number
 ): Observable<ModuleEvent> {
   return moduleEvents$.pipe(
-    filter(event => event.type === eventType),
+    filter(event => event.type === eventType)
     // We would normally use debounceTime here, but we're keeping it simple
     // debounceTime(debounceTime)
   );
@@ -153,10 +153,10 @@ export function createDebouncedEventStream(
  */
 export function createThrottledEventStream(
   eventType: ModuleEventType,
-  throttleTime: number,
+  throttleTime: number
 ): Observable<ModuleEvent> {
   return moduleEvents$.pipe(
-    filter(event => event.type === eventType),
+    filter(event => event.type === eventType)
     // We would normally use throttleTime here, but we're keeping it simple
     // throttleTime(throttleTime)
   );
@@ -167,10 +167,10 @@ export function createThrottledEventStream(
  */
 export function createBufferedEventStream(
   eventType: ModuleEventType,
-  bufferTime: number,
+  bufferTime: number
 ): Observable<ModuleEvent[]> {
   return moduleEvents$.pipe(
-    filter(event => event.type === eventType),
+    filter(event => event.type === eventType)
     // We would normally use bufferTime here, but we're keeping it simple
     // bufferTime(bufferTime)
   ) as unknown as Observable<ModuleEvent[]>;

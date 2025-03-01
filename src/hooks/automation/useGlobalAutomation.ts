@@ -66,15 +66,15 @@ export function useGlobalAutomation() {
     // Subscribe to automation events
     const unsubscribeStarted = moduleEventBus.subscribe(
       'AUTOMATION_STARTED' as ModuleEventType,
-      handleAutomationEvent,
+      handleAutomationEvent
     );
     const unsubscribeStopped = moduleEventBus.subscribe(
       'AUTOMATION_STOPPED' as ModuleEventType,
-      handleAutomationEvent,
+      handleAutomationEvent
     );
     const unsubscribeComplete = moduleEventBus.subscribe(
       'AUTOMATION_CYCLE_COMPLETE' as ModuleEventType,
-      handleAutomationEvent,
+      handleAutomationEvent
     );
 
     // Cleanup subscriptions
@@ -107,7 +107,7 @@ export function useGlobalAutomation() {
         interval?: number;
         enabled?: boolean;
         tags?: string[];
-      },
+      }
     ): string => {
       const routine: GlobalRoutine = {
         id: `routine-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -135,7 +135,7 @@ export function useGlobalAutomation() {
 
       return routineId;
     },
-    [],
+    []
   );
 
   /**
@@ -231,7 +231,7 @@ export function useGlobalAutomation() {
         priority?: MessagePriority;
         enabled?: boolean;
         tags?: string[];
-      },
+      }
     ): string => {
       return createRoutine(
         name,
@@ -245,10 +245,10 @@ export function useGlobalAutomation() {
           priority: options?.priority || MessagePriority.LOW,
           enabled: options?.enabled,
           tags: options?.tags || ['maintenance'],
-        },
+        }
       );
     },
-    [createRoutine],
+    [createRoutine]
   );
 
   /**
@@ -266,7 +266,7 @@ export function useGlobalAutomation() {
         priority?: MessagePriority;
         enabled?: boolean;
         tags?: string[];
-      },
+      }
     ): string => {
       return createRoutine(name, 'resource-balancing', description, conditions, actions, systems, {
         interval: options?.interval || 300000, // Default to 5 minutes
@@ -275,7 +275,7 @@ export function useGlobalAutomation() {
         tags: options?.tags || ['resource'],
       });
     },
-    [createRoutine],
+    [createRoutine]
   );
 
   /**
@@ -293,7 +293,7 @@ export function useGlobalAutomation() {
         priority?: MessagePriority;
         enabled?: boolean;
         tags?: string[];
-      },
+      }
     ): string => {
       return createRoutine(
         name,
@@ -307,10 +307,10 @@ export function useGlobalAutomation() {
           priority: options?.priority || MessagePriority.LOW,
           enabled: options?.enabled,
           tags: options?.tags || ['performance'],
-        },
+        }
       );
     },
-    [createRoutine],
+    [createRoutine]
   );
 
   /**
@@ -327,7 +327,7 @@ export function useGlobalAutomation() {
         priority?: MessagePriority;
         enabled?: boolean;
         tags?: string[];
-      },
+      }
     ): string => {
       return createRoutine(name, 'emergency-response', description, conditions, actions, systems, {
         interval: 0, // Emergency routines are triggered by events, not time
@@ -336,7 +336,7 @@ export function useGlobalAutomation() {
         tags: options?.tags || ['emergency'],
       });
     },
-    [createRoutine],
+    [createRoutine]
   );
 
   /**
@@ -354,7 +354,7 @@ export function useGlobalAutomation() {
         priority?: MessagePriority;
         enabled?: boolean;
         tags?: string[];
-      },
+      }
     ): string => {
       return createRoutine(
         name,
@@ -368,10 +368,10 @@ export function useGlobalAutomation() {
           priority: options?.priority || MessagePriority.NORMAL,
           enabled: options?.enabled,
           tags: options?.tags || ['scheduled'],
-        },
+        }
       );
     },
-    [createRoutine],
+    [createRoutine]
   );
 
   return {

@@ -51,7 +51,7 @@ export function useVPRSystem() {
     setSystemState(prev => ({
       ...prev,
       upgrades: prev.upgrades.map(upgrade =>
-        upgrade.moduleId === moduleId ? { ...upgrade, progress } : upgrade,
+        upgrade.moduleId === moduleId ? { ...upgrade, progress } : upgrade
       ),
     }));
   }, []);
@@ -118,7 +118,7 @@ export function useVPRSystem() {
     setSystemState(prev => ({
       ...prev,
       modules: prev.modules.map(mod =>
-        mod.id === moduleId ? { ...mod, status: 'disabled' } : mod,
+        mod.id === moduleId ? { ...mod, status: 'disabled' } : mod
       ),
       alerts: [
         ...prev.alerts,

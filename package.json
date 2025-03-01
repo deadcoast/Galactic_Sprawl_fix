@@ -31,7 +31,11 @@
     "lint:status": "node tools/eslint-progress-chart.js && echo '\\nTop issues:' && node tools/fix-eslint-by-rule.js --threshold=5",
     "lint:fix-top": "node tools/fix-eslint-by-rule.js --auto",
     "lint:fix-critical": "npm run lint:fix-rule -- no-unused-vars --auto && npm run lint:fix-rule -- prefer-const --auto && npm run lint:fix-rule -- eqeqeq --auto",
-    "format:prettier": "node tools/fix-eslint-by-rule.js --prettier"
+    "format:prettier": "node tools/fix-eslint-by-rule.js --prettier",
+    "lint:workflow": "node tools/run-lint-workflow.js",
+    "lint:workflow:interactive": "node tools/run-lint-workflow.js --interactive",
+    "lint:workflow:auto-fix": "node tools/run-lint-workflow.js --auto-fix",
+    "lint:workflow:analyze": "node tools/run-lint-workflow.js --skip-fix"
   },
   "dependencies": {
     "@pixi/particle-emitter": "^5.0.8",

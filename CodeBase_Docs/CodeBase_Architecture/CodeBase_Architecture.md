@@ -27,6 +27,219 @@ GALACTIC SPRAWL SYSTEM ARCHITECTURE
   - Limiting console statements (allowing only `console.warn` and `console.error`)
   - Ignoring test files for certain rules
 - Identified linting issues that need to be addressed
+- Enhanced linting tools:
+
+  - Added progress bar to `analyze-lint-errors.js` to provide visual feedback during execution
+  - Progress bar shows percentage complete and number of files processed
+  - Added status messages to indicate different stages of analysis (parsing, analyzing, generating report)
+  - Improved `analyze-lint-errors.js` with:
+    - Batch processing to prevent hanging with large inputs
+    - Debug logging with `--debug` flag for troubleshooting
+    - Option to disable progress bar with `--no-progress` flag
+    - Configurable timeout with `--timeout=<ms>` option
+    - Comprehensive error handling with try/catch blocks
+    - Detailed error messages for better debugging
+    - Memory-efficient processing of large codebases
+  - Usage examples for `analyze-lint-errors.js`:
+
+    ```bash
+    # Basic usage
+    npx eslint src/ --format json | node tools/analyze-lint-errors.js
+
+    # With debug logging
+    npx eslint src/ --format json | node tools/analyze-lint-errors.js --debug
+    ```
+
+### Linting Workflow and Testing
+
+- Implemented a comprehensive linting workflow with the following steps:
+
+  1. **Setup Linting Environment** (`tools/setup-linting.js`):
+     - Initializes and configures ESLint and Prettier
+     - Creates/updates configuration files
+     - Sets up VS Code integration
+  2. **Analyze Linting Issues** (`tools/analyze-lint-errors.js`):
+     - Analyzes ESLint output to categorize and prioritize errors
+     - Generates detailed reports with statistics
+     - Identifies top issues by rule, file, and directory
+  3. **Fix Issues by Rule** (`tools/fix-eslint-by-rule.js`):
+     - Fixes ESLint and Prettier issues by rule name or automatically
+     - Provides interactive menu of top issues
+     - Supports batch processing and dry run mode
+     - Features color-coded output with spinner for better UX
+  4. **Track Linting Progress** (`tools/track-eslint-progress.js`):
+     - Records linting status to track progress over time
+     - Creates timestamped entries with issue counts
+     - Supports detailed breakdown of top issues
+  5. **Visualize Progress** (`tools/chart-lint-progress.js`):
+     - Generates ASCII chart showing progress over time
+     - Calculates fix rates and estimates completion timeline
+     - Provides detailed trend analysis in verbose mode
+
+- Added a unified workflow runner (`tools/run-lint-workflow.js`):
+
+  - Executes all linting tools in the correct sequence
+  - Provides options to skip specific steps
+  - Shows progress and summary of execution
+  - Handles errors gracefully
+
+- Implemented comprehensive test suite for all linting tools:
+
+  - Created test files for each linting tool:
+    - `tools/tests/setup-linting.test.js`
+    - `tools/tests/analyze-lint-errors.test.js`
+    - `tools/tests/fix-eslint-by-rule.test.js`
+    - `tools/tests/fix-typescript-any.test.js`
+    - `tools/tests/run-lint-workflow.test.js`
+  - Tests use Vitest framework for modern JavaScript testing
+  - Implemented mocks for file system, child process, and readline
+  - Tests cover various scenarios and edge cases:
+    - Command-line flag handling
+    - Error handling and graceful failure
+    - Progress tracking and reporting
+    - Interactive mode functionality
+    - Batch processing and thresholds
+  - Run tests with `npx vitest run tools/tests/`
+
+- Enhanced `fix-eslint-by-rule.js` and `fix-typescript-any.js` with:
+  - Color-coded output for better readability
+  - Spinner animation during command execution
+  - Progress indicators for long-running operations
+  - Improved error handling and user feedback
+  - Memory-efficient processing of large codebases
+
+### Linting Issue Fixes
+
+#### Fixing TypeScript `any` Types
+
+When fixing `any` types, we follow these best practices:
+
+1. **Use `unknown` for type guards**: Replace `any` with `unknown` in type guard functions to maintain type safety while allowing for runtime type checking.
+
+   ```typescript
+   // Before
+   function isValidResource(obj: any): obj is Resource {
+     // type checking logic
+   }
+
+   // After
+   function isValidResource(obj: unknown): obj is Resource {
+     // type checking logic
+   }
+   ```
+
+2. **Create specific interfaces for event data**: When handling events, create specific interfaces for the event data structure instead of using `any`.
+
+   ```typescript
+   // Before
+   private handleModuleUpgraded = (event: any): void => {
+     const { moduleId, newLevel } = event.data;
+     // handle event
+   };
+
+   // After
+   interface ModuleUpgradedEventData {
+     moduleId: string;
+     newLevel: number;
+     previousLevel?: number;
+   }
+
+   private handleModuleUpgraded = (event: ModuleEvent): void => {
+     const { moduleId, newLevel } = event.data as ModuleUpgradedEventData;
+     // handle event
+   };
+   ```
+
+3. **Use type assertions with caution**: When accessing private properties or methods, use type assertions with `unknown` as an intermediate step to avoid direct `any` usage.
+
+   ```typescript
+   // Before
+   const config = (manager as any).configs.get(type);
+
+   // After
+   const config = (manager as unknown as { configs: Map<string, Config> }).configs.get(type);
+   ```
+
+4. **Create reusable utility types**: For common patterns, create reusable utility types to avoid repeating `any` types.
+
+   ```typescript
+   // Before
+   function processData(data: any): any {
+     // process data
+   }
+
+   // After
+   type DataInput = Record<string, unknown>;
+   type DataOutput = { processed: boolean; result: unknown };
+
+   function processData(data: DataInput): DataOutput {
+     // process data
+   }
+   ```
+
+5. **Use generics for flexible typing**: When a function needs to work with different types, use generics instead of `any`.
+
+   ```typescript
+   // Before
+   function convertMapToRecord(map: Map<string, any>): Record<string, any> {
+     // conversion logic
+   }
+
+   // After
+   function convertMapToRecord<K extends string, V>(map: Map<K, V>): Record<K, V> {
+     // conversion logic
+   }
+   ```
+
+#### Fixing Unused Variables
+
+For unused variables, we follow these practices:
+
+1. **Remove unused variables**: Delete variables that are not used in the code.
+
+2. **Use underscore for intentionally unused parameters**: Use `_` for parameters that are required by a function signature but not used in the function body.
+
+   ```javascript
+   // Before
+   function processItems(items, callback) {
+     // logic that doesn't use callback
+   }
+
+   // After
+   function processItems(items, _) {
+     // logic that doesn't use the second parameter
+   }
+   ```
+
+3. **Use empty catch blocks**: For try/catch blocks where the error is not used, use an empty catch parameter.
+
+   ```javascript
+   // Before
+   try {
+     // risky operation
+   } catch (error) {
+     console.log('Operation failed');
+   }
+
+   // After
+   try {
+     // risky operation
+   } catch {
+     console.log('Operation failed');
+   }
+   ```
+
+4. **Comment out variables for future use**: If a variable might be needed in the future, comment it out with a note.
+
+   ```javascript
+   // Before
+   const result = calculateResult();
+   const metadata = getMetadata(); // Not used yet
+
+   // After
+   const result = calculateResult();
+   // const metadata = getMetadata(); // Will be used in future implementation
+   ```
 
 ### Type Safety Best Practices
 
@@ -2235,7 +2448,7 @@ By following these best practices, we ensure that the Event System remains robus
    ```typescript
    // Serialization
    function serializeResourceMap(
-     map: Map<ResourceType, Resource>,
+     map: Map<ResourceType, Resource>
    ): Record<ResourceType, SerializedResource> {
      const record: Record<ResourceType, SerializedResource> = {} as Record<
        ResourceType,
@@ -2253,7 +2466,7 @@ By following these best practices, we ensure that the Event System remains robus
 
    // Deserialization
    function deserializeResourceMap(
-     record: Record<ResourceType, SerializedResource>,
+     record: Record<ResourceType, SerializedResource>
    ): Map<ResourceType, Resource> {
      const map = new Map<ResourceType, Resource>();
      Object.entries(record).forEach(([key, value]) => {
@@ -2455,7 +2668,7 @@ Based on our fixes to the typeConversions.ts file, we've identified several comm
    ```typescript
    // Type guard for FactionCombatUnit
    export function isFactionCombatUnit(
-     unit: CombatUnit | FactionCombatUnit,
+     unit: CombatUnit | FactionCombatUnit
    ): unit is FactionCombatUnit {
      return 'class' in unit && 'tactics' in unit && 'weaponMounts' in unit;
    }
@@ -2473,7 +2686,7 @@ Based on our fixes to the typeConversions.ts file, we've identified several comm
     * Converts a CombatUnit from combatManager.ts to a CombatUnit from CombatTypes.ts
     */
    export function convertToCombatTypesUnit(
-     unit: any,
+     unit: any
    ): import('../types/combat/CombatTypes').CombatUnit {
      // Create a CombatUnit that matches the interface in CombatTypes.ts
      return {
@@ -2793,7 +3006,7 @@ When working with event handlers in the codebase, follow these best practices to
    ```typescript
    const unsubscribeCreated = moduleEventBus.subscribe(
      'MODULE_CREATED' as ModuleEventType,
-     this.handleModuleCreated,
+     this.handleModuleCreated
    );
 
    if (typeof unsubscribeCreated === 'function') {

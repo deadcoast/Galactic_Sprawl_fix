@@ -7,9 +7,13 @@ import { MessagePriority } from '../utils/events/EventCommunication';
  * Initialize the automation system
  */
 export function initializeAutomationSystem(): () => void {
-  console.log('Initializing Automation System...');
+  console.warn('Initializing Automation System...');
 
   // Set the automation manager in the global automation manager
+  // NOTE: Using 'any' here is necessary because automationManager is a private property
+  // that needs to be set during initialization. This is a special case where we need
+  // to access a private property from outside the class.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (globalAutomationManager as any).automationManager = automationManager;
 
   // Initialize the global automation manager
@@ -32,7 +36,7 @@ export function initializeAutomationSystem(): () => void {
 
   // Return cleanup function
   return () => {
-    console.log('Cleaning up Automation System...');
+    console.warn('Cleaning up Automation System...');
 
     // Clean up global automation manager
     globalAutomationManager.cleanup();
@@ -88,8 +92,9 @@ function registerDefaultRoutines(): void {
     actions: [
       {
         type: 'EMIT_EVENT',
-        target: 'STATUS_CHANGED' as any,
+        target: 'STATUS_CHANGED' as ModuleEventType,
         value: {
+          eventType: 'STATUS_CHANGED',
           moduleId: 'performance-optimizer',
           moduleType: 'resource-manager',
           data: {
@@ -116,8 +121,9 @@ function registerDefaultRoutines(): void {
     actions: [
       {
         type: 'EMIT_EVENT',
-        target: 'STATUS_CHANGED' as any,
+        target: 'STATUS_CHANGED' as ModuleEventType,
         value: {
+          eventType: 'STATUS_CHANGED',
           moduleId: 'error-recovery',
           moduleType: 'resource-manager',
           data: {
@@ -144,8 +150,9 @@ function registerDefaultRoutines(): void {
     actions: [
       {
         type: 'EMIT_EVENT',
-        target: 'STATUS_CHANGED' as any,
+        target: 'STATUS_CHANGED' as ModuleEventType,
         value: {
+          eventType: 'STATUS_CHANGED',
           moduleId: 'system-maintenance',
           moduleType: 'resource-manager',
           data: {
@@ -159,7 +166,7 @@ function registerDefaultRoutines(): void {
     tags: ['maintenance', 'system'],
   });
 
-  console.log('Registered default automation routines');
+  console.warn('Registered default automation routines');
 }
 
 /**

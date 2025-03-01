@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { subModuleManager } from '../../managers/module/SubModuleManager';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { EffectApplicationResult, subModuleManager } from '../../managers/module/SubModuleManager';
 import {
   SubModule,
   SubModuleConfig,
@@ -41,7 +41,7 @@ export function useSubModules(parentModuleId?: string) {
       return;
     }
 
-    const handleSubModuleCreated = (event: any) => {
+    const handleSubModuleCreated = (event: ModuleEvent) => {
       if (event.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
@@ -49,7 +49,7 @@ export function useSubModules(parentModuleId?: string) {
       }
     };
 
-    const handleSubModuleAttached = (event: any) => {
+    const handleSubModuleAttached = (event: ModuleEvent) => {
       if (event.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
@@ -57,7 +57,7 @@ export function useSubModules(parentModuleId?: string) {
       }
     };
 
-    const handleSubModuleDetached = (event: any) => {
+    const handleSubModuleDetached = (event: ModuleEvent) => {
       if (event.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
@@ -65,7 +65,7 @@ export function useSubModules(parentModuleId?: string) {
       }
     };
 
-    const handleSubModuleUpgraded = (event: any) => {
+    const handleSubModuleUpgraded = (event: ModuleEvent) => {
       if (event.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
@@ -73,7 +73,7 @@ export function useSubModules(parentModuleId?: string) {
       }
     };
 
-    const handleSubModuleActivated = (event: any) => {
+    const handleSubModuleActivated = (event: ModuleEvent) => {
       if (event.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
@@ -81,7 +81,7 @@ export function useSubModules(parentModuleId?: string) {
       }
     };
 
-    const handleSubModuleDeactivated = (event: any) => {
+    const handleSubModuleDeactivated = (event: ModuleEvent) => {
       if (event.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
@@ -239,7 +239,10 @@ export function useSubModules(parentModuleId?: string) {
 
   // Register a custom effect handler
   const registerEffectHandler = useCallback(
-    (effectType: string, handler: (effect: SubModuleEffect, moduleId: string) => any) => {
+    (
+      effectType: string,
+      handler: (effect: SubModuleEffect, moduleId: string) => EffectApplicationResult
+    ) => {
       subModuleManager.registerEffectHandler(effectType, handler);
     },
     []

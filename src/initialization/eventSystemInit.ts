@@ -10,26 +10,27 @@ import { integrateWithGameSystems } from './gameSystemsIntegration';
 interface PriorityQueueEvent {
   type: string;
   priority: number;
-  data: any;
+  data: Record<string, unknown> | ModuleEvent;
 }
 
 /**
  * Initialize the event system
  */
 export function initializeEventSystem(): () => void {
-  console.log('Initializing Event System...');
+  console.warn('Initializing Event System...');
 
   // Initialize RxJS integration
   const rxjsCleanup = initializeRxJSIntegration();
 
   // Initialize system communications
   const eventSystemComm = getSystemCommunication('event-system');
-  const resourceSystemComm = getSystemCommunication('resource-system');
-  const moduleSystemComm = getSystemCommunication('module-system');
+  const _resourceSystemComm = getSystemCommunication('resource-system');
+  const _moduleSystemComm = getSystemCommunication('module-system');
 
   // Register basic event handlers
   const unregisterSystemStartup = eventSystemComm.registerHandler('system-startup', message => {
-    console.log(`System startup message received: ${message.payload.systemName}`);
+    const payload = message.payload as { systemName: string };
+    console.warn(`System startup message received: ${payload.systemName}`);
   });
 
   // Start the game loop
@@ -38,7 +39,7 @@ export function initializeEventSystem(): () => void {
   // Register a critical update with the game loop
   gameLoopManager.registerUpdate(
     'event-system-critical',
-    (deltaTime: number, elapsedTime: number) => {
+    (_deltaTime: number, _elapsedTime: number) => {
       // Process critical events
     },
     UpdatePriority.CRITICAL
@@ -47,7 +48,7 @@ export function initializeEventSystem(): () => void {
   // Register a normal update with the game loop
   gameLoopManager.registerUpdate(
     'event-system-normal',
-    (deltaTime: number, elapsedTime: number) => {
+    (_deltaTime: number, _elapsedTime: number) => {
       // Process normal events
     },
     UpdatePriority.NORMAL
@@ -71,7 +72,7 @@ export function initializeEventSystem(): () => void {
 
   // Return cleanup function
   return () => {
-    console.log('Cleaning up Event System...');
+    console.warn('Cleaning up Event System...');
 
     // Unregister game loop updates
     gameLoopManager.unregisterUpdate('event-system-critical');
@@ -92,11 +93,11 @@ export function initializeEventSystem(): () => void {
  * Initialize global event handlers
  */
 export function initializeGlobalEventHandlers(): () => void {
-  console.log('Initializing Global Event Handlers...');
+  console.warn('Initializing Global Event Handlers...');
 
   // Create a priority queue for processing events
   const eventQueue = new EventPriorityQueue<PriorityQueueEvent>(event => {
-    console.log(`Processing event: ${event.type}`);
+    console.warn(`Processing event: ${event.type}`);
     // Process the event based on its type
     return Promise.resolve();
   });
@@ -113,7 +114,7 @@ export function initializeGlobalEventHandlers(): () => void {
 
   // Return cleanup function
   return () => {
-    console.log('Cleaning up Global Event Handlers...');
+    console.warn('Cleaning up Global Event Handlers...');
 
     // Unsubscribe from all events
     unsubscribe();

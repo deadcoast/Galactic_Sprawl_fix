@@ -36,7 +36,7 @@ export interface FactionWeaponSystem extends WeaponSystem {
 }
 
 // Convert weapon system to weapon instance
-function convertToWeaponInstance(weapon: WeaponSystem): WeaponInstance {
+function _convertToWeaponInstance(weapon: WeaponSystem): WeaponInstance {
   const config: WeaponConfig = {
     id: weapon.id,
     name: weapon.type,
@@ -76,7 +76,7 @@ function convertToWeaponInstance(weapon: WeaponSystem): WeaponInstance {
 }
 
 // Convert combat unit weapons to weapon mounts
-function convertToWeaponMounts(weapons: WeaponSystem[]): WeaponMount[] {
+function _convertToWeaponMounts(weapons: WeaponSystem[]): WeaponMount[] {
   return weapons.map((weapon, index) => convertWeaponSystemToMount(weapon, index));
 }
 
@@ -140,7 +140,7 @@ export interface FactionCombatUnit
 }
 
 // Keep only one implementation of hasStatus
-function hasStatus(
+function _hasStatus(
   unit: CombatUnit | FactionCombatUnit,
   status: CombatUnitStatus['main'] | CombatUnitStatus['secondary'] | string
 ): boolean {
@@ -163,7 +163,7 @@ function convertUnitsToFaction(
   defaultFaction: FactionId
 ): FactionCombatUnit[] {
   return units.map(unit => {
-    const baseStats = getShipBehaviorStats(unit.type as unknown as ShipClass);
+    const _baseStats = getShipBehaviorStats(unit.type as unknown as ShipClass);
 
     const factionUnit: FactionCombatUnit = {
       id: unit.id,
@@ -1029,7 +1029,7 @@ export function useFactionBehavior(factionId: FactionId) {
       switch (eventType) {
         case 'behaviorChanged': {
           const { oldBehavior, newBehavior } = event as FactionBehaviorEvents['behaviorChanged'];
-          console.debug(
+          console.warn(
             `[FactionBehavior] ${factionId} behavior changed from ${oldBehavior} to ${newBehavior}`
           );
           break;
@@ -1071,7 +1071,7 @@ export function useFactionBehavior(factionId: FactionId) {
               [targetFaction]: newValue,
             },
           }));
-          console.debug(
+          console.warn(
             `[FactionBehavior] ${factionId} relationship with ${targetFaction} changed from ${oldValue} to ${newValue}`
           );
           break;
@@ -1090,7 +1090,7 @@ export function useFactionBehavior(factionId: FactionId) {
               },
             },
           }));
-          console.debug(
+          console.warn(
             `[FactionBehavior] ${factionId} ${resourceType} income changed from ${oldAmount} to ${newAmount}`
           );
           break;
@@ -1102,7 +1102,7 @@ export function useFactionBehavior(factionId: FactionId) {
             ...prev,
             combatTactics: newTactics,
           }));
-          console.debug(
+          console.warn(
             `[FactionBehavior] ${factionId} combat tactics updated:
           Range: ${oldTactics.preferredRange} -> ${newTactics.preferredRange}
           Formation: ${oldTactics.formationStyle} -> ${newTactics.formationStyle}
@@ -1305,7 +1305,7 @@ function calculateBehaviorState(
 }
 
 // Helper functions
-function calculateDistance(a: { x: number; y: number }, b: { x: number; y: number }): number {
+function _calculateDistance(a: { x: number; y: number }, b: { x: number; y: number }): number {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   return Math.sqrt(dx * dx + dy * dy);
@@ -1509,7 +1509,7 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
 };
 
 // Helper function to determine ship class based on unit status
-function determineShipClass(unit: FactionCombatUnit): ShipClass {
+function _determineShipClass(unit: FactionCombatUnit): ShipClass {
   const status = unit.status;
   const factionShips = FACTION_SHIPS[unit.faction] || [];
 
@@ -1535,7 +1535,7 @@ function determineShipClass(unit: FactionCombatUnit): ShipClass {
 }
 
 // Update determineShipStatus function to handle complex status
-function determineShipStatus(unit: FactionCombatUnit): CommonShipStatus {
+function _determineShipStatus(unit: FactionCombatUnit): CommonShipStatus {
   const status = unit.status.main;
   if (status === 'active') {
     return 'ready' as CommonShipStatus;
@@ -1547,7 +1547,7 @@ function determineShipStatus(unit: FactionCombatUnit): CommonShipStatus {
 }
 
 // Helper function to determine formation
-function determineFormation(units: FactionCombatUnit[]): FactionFleet['formation'] {
+function _determineFormation(units: FactionCombatUnit[]): FactionFleet['formation'] {
   return {
     type: 'defensive',
     spacing: 50,
@@ -1688,7 +1688,7 @@ function calculateThreatLevel(
 }
 
 // Helper function to normalize ship class
-function normalizeShipClass(shipClass: string): FactionShipClass {
+function _normalizeShipClass(shipClass: string): FactionShipClass {
   const camelCase = shipClass.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
   return camelCase as FactionShipClass;
 }
@@ -1939,7 +1939,7 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
 }
 
 // Update updateFleet function with proper type handling
-function updateFleet(fleet: FactionFleet, units: CombatUnit[]): FactionFleet {
+function _updateFleet(fleet: FactionFleet, units: CombatUnit[]): FactionFleet {
   const factionUnits = units.map(u =>
     convertToFactionCombatUnit(u, 'neutral', u.type as FactionShipClass)
   );

@@ -8,6 +8,7 @@ interface WeaponEffectEvents {
   effectStarted: { weaponId: string; effectType: string };
   effectEnded: { weaponId: string; effectType: string };
   qualityChanged: { weaponId: string; quality: 'low' | 'medium' | 'high' };
+  [key: string]: unknown;
 }
 
 interface WeaponEffectConfig {
@@ -101,7 +102,7 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
     }
 
     const quality = this.qualitySettings.get(weaponId) || 'medium';
-    const particleCount = this.getQualityAdjustedParticleCount(config.particleCount, quality);
+    const _particleCount = this.getQualityAdjustedParticleCount(config.particleCount, quality);
 
     const systemIds: string[] = [];
 
@@ -159,36 +160,36 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
 
   private createMainEffect(
     weaponId: string,
-    position: Position,
-    direction: number,
-    config: WeaponEffectConfig,
-    quality: 'low' | 'medium' | 'high'
+    _position: Position,
+    _direction: number,
+    _config: WeaponEffectConfig,
+    _quality: 'low' | 'medium' | 'high'
   ): string {
     return `${weaponId}-main-${Date.now()}`;
   }
 
   private createBeamEffect(
-    position: Position,
-    direction: number,
-    config: WeaponEffectConfig,
-    quality: 'low' | 'medium' | 'high'
+    _position: Position,
+    _direction: number,
+    _config: WeaponEffectConfig,
+    _quality: 'low' | 'medium' | 'high'
   ): string[] {
     return [`beam-${Date.now()}`];
   }
 
   private createExplosionEffect(
-    position: Position,
-    config: WeaponEffectConfig,
-    quality: 'low' | 'medium' | 'high'
+    _position: Position,
+    _config: WeaponEffectConfig,
+    _quality: 'low' | 'medium' | 'high'
   ): string[] {
     return [`explosion-${Date.now()}`];
   }
 
   private createContinuousEffect(
-    position: Position,
-    direction: number,
-    config: WeaponEffectConfig,
-    quality: 'low' | 'medium' | 'high'
+    _position: Position,
+    _direction: number,
+    _config: WeaponEffectConfig,
+    _quality: 'low' | 'medium' | 'high'
   ): string[] {
     return [`continuous-${Date.now()}`];
   }
@@ -220,7 +221,7 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
 
   public cleanup(): void {
     // Clean up all active effects
-    for (const [weaponId, effects] of this.activeEffects) {
+    for (const [_weaponId, effects] of this.activeEffects) {
       effects.forEach(effectId => {
         effectLifecycleManager.cleanupEffectsByType(`weapon-${effectId}`);
       });

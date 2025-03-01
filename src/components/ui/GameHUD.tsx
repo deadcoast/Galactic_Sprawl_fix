@@ -26,7 +26,7 @@ interface MenuItem {
   };
 }
 
-interface Notification {
+interface _Notification {
   id: string;
   type: 'success' | 'error';
   message: string;
@@ -223,7 +223,7 @@ const menuItems: Record<MenuCategory, MenuItem[]> = {
   ],
 };
 
-const categoryColors: Record<MenuCategory, { bg: string; border: string; hover: string }> = {
+const _categoryColors: Record<MenuCategory, { bg: string; border: string; hover: string }> = {
   mining: {
     bg: 'from-amber-950/80 to-amber-900/80',
     border: 'border-amber-700/50',
@@ -246,7 +246,7 @@ const categoryColors: Record<MenuCategory, { bg: string; border: string; hover: 
   },
 };
 
-const categoryIcons = {
+const _categoryIcons = {
   mining: Database,
   exploration: Radar,
   mothership: Rocket,
@@ -254,8 +254,8 @@ const categoryIcons = {
 };
 
 export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: GameHUDProps) {
-  const [activeCategory, setActiveCategory] = useState<MenuCategory | null>(null);
-  const [showTechTree, setShowTechTree] = useState(false);
+  const [activeCategory, _setActiveCategory] = useState<MenuCategory | null>(null);
+  const [_showTechTree, setShowTechTree] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const gameContext = useGame();
   const moduleContext = useModules();
@@ -266,7 +266,7 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
   }
 
   const { state: gameState, dispatch: gameDispatch } = gameContext;
-  const { state: moduleState } = moduleContext;
+  const { state: _moduleState } = moduleContext;
 
   // Add notification
   const addNotification = (
@@ -318,9 +318,9 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
     return updatedItems;
   };
 
-  const currentMenuItems = getUpdatedMenuItems();
+  const _currentMenuItems = getUpdatedMenuItems();
 
-  const resourceStats = useMemo(
+  const _resourceStats = useMemo(
     () => ({
       minerals: {
         currentAmount: gameState.resources.minerals,
@@ -412,7 +412,7 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
   );
 }
 
-function getTierColor(tier: number) {
+function _getTierColor(tier: number) {
   switch (tier) {
     case 1:
       return 'emerald';

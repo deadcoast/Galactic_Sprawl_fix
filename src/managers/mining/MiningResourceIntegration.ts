@@ -5,6 +5,28 @@ import { FlowNodeType, ResourceFlowManager } from '../resource/ResourceFlowManag
 import { ResourceThresholdManager, ThresholdConfig } from '../resource/ResourceThresholdManager';
 import { MiningShipManagerImpl } from './MiningShipManagerImpl';
 
+// Define interfaces for the types we need
+interface MiningShip {
+  id: string;
+  efficiency: number;
+  status: string;
+}
+
+interface ResourceNode {
+  id: string;
+  type: ResourceType;
+  position: Position;
+  efficiency: number;
+}
+
+interface ResourceTransfer {
+  type: ResourceType;
+  source: string;
+  target: string;
+  amount: number;
+  timestamp: number;
+}
+
 /**
  * MiningResourceIntegration
  *
@@ -54,7 +76,7 @@ export class MiningResourceIntegration {
     this.createMiningThresholds();
 
     this.initialized = true;
-    console.debug('[MiningResourceIntegration] Mining resource integration initialized');
+    console.warn('[MiningResourceIntegration] Mining resource integration initialized');
   }
 
   /**
@@ -63,10 +85,13 @@ export class MiningResourceIntegration {
   private subscribeToMiningEvents(): void {
     // Listen for mining ship registration
     this.miningManager.on('shipRegistered', (data: { shipId: string }) => {
-      console.debug(`[MiningResourceIntegration] Mining ship registered: ${data.shipId}`);
+      console.warn(`[MiningResourceIntegration] Mining ship registered: ${data.shipId}`);
 
       // Get the ship from the mining manager
-      const ship = (this.miningManager as any).ships.get(data.shipId);
+      const miningManagerWithShips = this.miningManager as unknown as {
+        ships: Map<string, MiningShip>;
+      };
+      const ship = miningManagerWithShips.ships.get(data.shipId);
       if (!ship) {
         return;
       }
@@ -84,7 +109,7 @@ export class MiningResourceIntegration {
 
     // Listen for mining ship unregistration
     this.miningManager.on('shipUnregistered', (data: { shipId: string }) => {
-      console.debug(`[MiningResourceIntegration] Mining ship unregistered: ${data.shipId}`);
+      console.warn(`[MiningResourceIntegration] Mining ship unregistered: ${data.shipId}`);
 
       // Unregister the ship from the flow manager
       this.flowManager.unregisterNode(`mining-ship-${data.shipId}`);
@@ -114,7 +139,7 @@ export class MiningResourceIntegration {
         return;
       }
 
-      const { resourceType, newAmount, oldAmount, delta } = event.data;
+      const { resourceType, _newAmount, _oldAmount, delta } = event.data;
       if (!resourceType || !delta) {
         return;
       }
@@ -137,7 +162,7 @@ export class MiningResourceIntegration {
   /**
    * Add a transfer to the history
    */
-  private addTransferToHistory(transfer: any): void {
+  private addTransferToHistory(transfer: ResourceTransfer): void {
     // We can't directly access the private addToTransferHistory method,
     // so we'll emit an event that the ResourceIntegration will handle
     moduleEventBus.emit({
@@ -159,13 +184,16 @@ export class MiningResourceIntegration {
    */
   private registerMiningNodes(): void {
     // Get all resource nodes from the mining manager
-    const { resourceNodes } = this.miningManager as any;
+    const miningManagerWithNodes = this.miningManager as unknown as {
+      resourceNodes: ResourceNode[];
+    };
+    const { resourceNodes } = miningManagerWithNodes;
     if (!resourceNodes) {
       return;
     }
 
     // Register each node in the flow manager
-    resourceNodes.forEach((node: any) => {
+    resourceNodes.forEach((node: ResourceNode) => {
       this.miningNodes.set(node.id, {
         id: node.id,
         type: node.type,
@@ -202,14 +230,17 @@ export class MiningResourceIntegration {
    */
   private createMiningThresholds(): void {
     // Get all resource nodes from the mining manager
-    const { resourceNodes } = this.miningManager as any;
+    const miningManagerWithNodes = this.miningManager as unknown as {
+      resourceNodes: ResourceNode[];
+    };
+    const { resourceNodes } = miningManagerWithNodes;
     if (!resourceNodes) {
       return;
     }
 
     // Create a set of unique resource types
     const resourceTypes = new Set<ResourceType>();
-    resourceNodes.forEach((node: any) => {
+    resourceNodes.forEach((node: ResourceNode) => {
       resourceTypes.add(node.type);
     });
 
@@ -344,7 +375,7 @@ export class MiningResourceIntegration {
   }
 
   /**
-   * Clean up resources
+   * Cleanup the integration
    */
   public cleanup(): void {
     if (!this.initialized) {
@@ -357,10 +388,18 @@ export class MiningResourceIntegration {
       this.flowManager.unregisterConnection(`mining-connection-${id}`);
     });
 
+    // Unregister all thresholds
+    this.miningNodes.forEach((node, _id) => {
+      this.thresholdManager.unregisterThreshold(`mining-threshold-${node.type}`);
+    });
+
     // Unregister all mining ships
-    const { ships } = this.miningManager as any;
+    const miningManagerWithShips = this.miningManager as unknown as {
+      ships: Map<string, MiningShip>;
+    };
+    const { ships } = miningManagerWithShips;
     if (ships) {
-      ships.forEach((_: any, shipId: string) => {
+      ships.forEach((_ship: MiningShip, shipId: string) => {
         this.flowManager.unregisterNode(`mining-ship-${shipId}`);
       });
     }

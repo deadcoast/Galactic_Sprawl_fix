@@ -333,7 +333,7 @@ const SectorComponent = memo(
       prevProps.showHeatMap === nextProps.showHeatMap &&
       prevProps.ships.length === nextProps.ships.length
     );
-  },
+  }
 );
 
 // Ship Marker Component with drag-and-drop
@@ -457,7 +457,7 @@ export function ExplorationHub() {
           // Calculate progress based on efficiency and time
           const progress = Math.min(
             1,
-            (Date.now() - (ship.lastUpdate || Date.now())) / (10000 / ship.efficiency),
+            (Date.now() - (ship.lastUpdate || Date.now())) / (10000 / ship.efficiency)
           );
 
           // Update ship status based on progress
@@ -473,7 +473,7 @@ export function ExplorationHub() {
             ...ship,
             lastUpdate: Date.now(),
           };
-        }),
+        })
       );
     }, 1000);
 
@@ -482,7 +482,7 @@ export function ExplorationHub() {
       setSectors(prevSectors =>
         prevSectors.map(sector => {
           const scanningShip = ships.find(
-            ship => ship.targetSector === sector.id && ship.status === 'scanning',
+            ship => ship.targetSector === sector.id && ship.status === 'scanning'
           );
 
           if (scanningShip) {
@@ -504,7 +504,7 @@ export function ExplorationHub() {
           }
 
           return sector;
-        }),
+        })
       );
     }, 2000);
 
@@ -518,7 +518,7 @@ export function ExplorationHub() {
             ...transfer,
             progress: Math.min(1, transfer.progress + 0.1),
           };
-        }),
+        })
       );
     }, 3000);
 
@@ -560,7 +560,7 @@ export function ExplorationHub() {
       }
       if (advancedFilters.anomalySeverity !== 'any') {
         const hasMatchingSeverity = sector.anomalies.some(
-          a => a.severity === advancedFilters.anomalySeverity,
+          a => a.severity === advancedFilters.anomalySeverity
         );
         if (!hasMatchingSeverity) {
           return false;
@@ -638,7 +638,7 @@ export function ExplorationHub() {
         }));
       }
     },
-    [position],
+    [position]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -737,13 +737,13 @@ export function ExplorationHub() {
                 )}
               </>
             )}
-          </div>,
+          </div>
         );
       } else {
         hideTooltip();
       }
     },
-    [showTooltip, hideTooltip],
+    [showTooltip, hideTooltip]
   );
 
   // Handle ship assignment
@@ -756,7 +756,7 @@ export function ExplorationHub() {
         shipId,
         sectorId,
         sector.coordinates,
-        'mapping', // Default to mapping, can be updated based on sector type
+        'mapping' // Default to mapping, can be updated based on sector type
       );
 
       setShips(prevShips =>
@@ -768,11 +768,11 @@ export function ExplorationHub() {
                 targetSector: sectorId,
                 lastUpdate: Date.now(),
               }
-            : ship,
-        ),
+            : ship
+        )
       );
     },
-    [sectors, reconManager],
+    [sectors, reconManager]
   );
 
   // Register ships with ReconShipManager
@@ -823,8 +823,8 @@ export function ExplorationHub() {
                 status: 'returning',
                 experience: ship.experience + 100, // Base XP gain
               }
-            : ship,
-        ),
+            : ship
+        )
       );
 
       // Update sector status
@@ -836,8 +836,8 @@ export function ExplorationHub() {
                 status: 'mapped',
                 lastScanned: Date.now(),
               }
-            : sector,
-        ),
+            : sector
+        )
       );
     };
 
@@ -956,7 +956,7 @@ export function ExplorationHub() {
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                 Object.values(advancedFilters).some(v =>
-                  Array.isArray(v) ? v.length > 0 : v !== 0 && v !== false && v !== 'any',
+                  Array.isArray(v) ? v.length > 0 : v !== 0 && v !== false && v !== 'any'
                 )
                   ? 'bg-teal-600 text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
