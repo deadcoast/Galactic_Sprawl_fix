@@ -17,7 +17,7 @@ export interface RenderItem {
   color: string;
   texture?: string;
   shader?: string;
-  uniforms?: Record<string, any>;
+  uniforms?: Record<string, unknown>;
 }
 
 export interface RenderBatcherEvents {
@@ -39,7 +39,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
 
   constructor() {
     super();
-    console.debug('[RenderBatcher] Initialized');
+    console.warn('[RenderBatcher] Initialized');
   }
 
   /**
@@ -135,7 +135,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
       });
 
       // Render each group
-      byShader.forEach((items, key) => {
+      byShader.forEach((items, _key) => {
         // Set up shader and texture once for the group
         this.setupShaderAndTexture(ctx, items[0]);
         this.drawCalls++;

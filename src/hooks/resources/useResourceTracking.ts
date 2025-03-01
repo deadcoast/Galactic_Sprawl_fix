@@ -89,7 +89,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
     types = ['minerals', 'energy', 'population', 'research', 'plasma', 'gas', 'exotic'],
     updateInterval = 1000,
     historyLimit = 100,
-    enableAlerts = true,
+    enableAlerts: _enableAlerts = true,
     enableThresholds = true,
   } = options;
 
@@ -591,7 +591,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
   }, [state.resources]);
 
   // Calculate resource totals
-  const calculateTotals = useCallback(
+  const _calculateTotals = useCallback(
     (resources: Map<ResourceType, ResourceState>): ResourceTotals => {
       const totals: ResourceTotals = {
         production: 0,
@@ -628,7 +628,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
   );
 
   // Calculate resource percentages
-  const calculatePercentages = useCallback(
+  const _calculatePercentages = useCallback(
     (resources: Map<ResourceType, ResourceState>): Record<ResourceType, number> => {
       const percentages: Record<ResourceType, number> = {} as Record<ResourceType, number>;
 

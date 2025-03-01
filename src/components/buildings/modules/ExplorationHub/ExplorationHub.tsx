@@ -203,7 +203,7 @@ const SectorComponent = memo(
           icon: <Flag className="h-4 w-4" />,
           action: () => {
             // Handle priority marking
-            console.log(`Marking ${sector.name} as priority`);
+            console.warn(`Marking ${sector.name} as priority`);
           },
         },
       ];

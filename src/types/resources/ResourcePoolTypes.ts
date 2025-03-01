@@ -83,7 +83,7 @@ export interface PoolResourceSummary {
 /**
  * Type guard for PoolDistributionRule
  */
-export function isPoolDistributionRule(obj: any): obj is PoolDistributionRule {
+export function isPoolDistributionRule(obj: unknown): obj is PoolDistributionRule {
   return (
     obj !== null &&
     typeof obj === 'object' &&
@@ -93,14 +93,14 @@ export function isPoolDistributionRule(obj: any): obj is PoolDistributionRule {
     'resourceType' in obj &&
     'percentage' in obj &&
     'priority' in obj &&
-    Array.isArray(obj.targetIds)
+    Array.isArray((obj as PoolDistributionRule).targetIds)
   );
 }
 
 /**
  * Type guard for PoolAllocationResult
  */
-export function isPoolAllocationResult(obj: any): obj is PoolAllocationResult {
+export function isPoolAllocationResult(obj: unknown): obj is PoolAllocationResult {
   return (
     obj !== null &&
     typeof obj === 'object' &&
@@ -108,7 +108,7 @@ export function isPoolAllocationResult(obj: any): obj is PoolAllocationResult {
     'resourceType' in obj &&
     'allocations' in obj &&
     'timestamp' in obj &&
-    Array.isArray(obj.allocations)
+    Array.isArray((obj as PoolAllocationResult).allocations)
   );
 }
 

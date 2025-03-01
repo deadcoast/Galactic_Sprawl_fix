@@ -4,6 +4,13 @@ import { useAutomation } from '../../../hooks/automation/useAutomation';
 import { GlobalRoutine } from '../../../managers/automation/GlobalAutomationManager';
 import { MessagePriority, SystemId } from '../../../utils/events/EventCommunication';
 
+// Define a type for the useAutomation function with its static properties
+interface UseAutomationFunction {
+  (): ReturnType<typeof useAutomation>;
+  globalAutomationManager: unknown;
+  automationManagerInstance: unknown;
+}
+
 // Mock the GlobalAutomationManager
 vi.mock('../../../managers/automation/GlobalAutomationManager', () => {
   const mockRoutines: GlobalRoutine[] = [];
@@ -107,8 +114,8 @@ describe('useAutomation', () => {
     vi.clearAllMocks();
 
     // Reset the singleton instances
-    (useAutomation as any).globalAutomationManager = null;
-    (useAutomation as any).automationManagerInstance = null;
+    (useAutomation as UseAutomationFunction).globalAutomationManager = null;
+    (useAutomation as UseAutomationFunction).automationManagerInstance = null;
   });
 
   afterEach(() => {

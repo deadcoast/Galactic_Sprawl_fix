@@ -33,10 +33,10 @@ export class ShieldImpactEffect extends VisualEffect {
     this.createCrackPoints();
 
     // Debug logging
-    console.debug(`[ShieldImpactEffect] Started effect with damage: ${this.config.damage}`);
+    console.warn(`[ShieldImpactEffect] Started effect with damage: ${this.config.damage}`);
   }
 
-  protected onUpdate(progress: number): void {
+  protected onUpdate(_progress: number): void {
     // No additional update needed as points are transformed during rendering
   }
 
@@ -45,7 +45,7 @@ export class ShieldImpactEffect extends VisualEffect {
     this.hexagonPoints = [];
     this.crackPoints = [];
 
-    console.debug('[ShieldImpactEffect] Completed effect');
+    console.warn('[ShieldImpactEffect] Completed effect');
   }
 
   protected onReset(): void {

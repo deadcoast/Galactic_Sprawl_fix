@@ -24,9 +24,10 @@ interface BatchedUpdate {
 }
 
 // Type guard for Hazard
-function isHazard(obj: any): obj is Hazard {
+function _isHazard(obj: unknown): obj is Hazard {
   return (
-    obj &&
+    obj !== null &&
+    obj !== undefined &&
     typeof obj === 'object' &&
     'id' in obj &&
     'position' in obj &&

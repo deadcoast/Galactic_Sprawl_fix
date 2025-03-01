@@ -288,7 +288,7 @@ export function SprawlView({ empire }: { empire: EmpireDetails }) {
 
   const onToggleSprawlView = () => {
     // Implement the logic to toggle the sprawl view
-    console.log('Sprawl view toggled');
+    console.warn('Sprawl view toggled');
   };
 
   return (

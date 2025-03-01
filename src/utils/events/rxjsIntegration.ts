@@ -124,7 +124,7 @@ export function createEventTypeSubject<T extends ModuleEventType>(
 /**
  * Create a specialized event stream with transformation
  */
-export function createTransformedEventStream<T, R>(
+export function createTransformedEventStream<_T, R>(
   eventType: ModuleEventType,
   transformFn: (event: ModuleEvent) => R
 ): Observable<R> {
@@ -139,12 +139,12 @@ export function createTransformedEventStream<T, R>(
  */
 export function createDebouncedEventStream(
   eventType: ModuleEventType,
-  debounceTime: number
+  _debounceTime: number
 ): Observable<ModuleEvent> {
   return moduleEvents$.pipe(
     filter(event => event.type === eventType)
     // We would normally use debounceTime here, but we're keeping it simple
-    // debounceTime(debounceTime)
+    // debounceTime(_debounceTime)
   );
 }
 
@@ -153,12 +153,12 @@ export function createDebouncedEventStream(
  */
 export function createThrottledEventStream(
   eventType: ModuleEventType,
-  throttleTime: number
+  _throttleTime: number
 ): Observable<ModuleEvent> {
   return moduleEvents$.pipe(
     filter(event => event.type === eventType)
     // We would normally use throttleTime here, but we're keeping it simple
-    // throttleTime(throttleTime)
+    // throttleTime(_throttleTime)
   );
 }
 
@@ -167,12 +167,12 @@ export function createThrottledEventStream(
  */
 export function createBufferedEventStream(
   eventType: ModuleEventType,
-  bufferTime: number
+  _bufferTime: number
 ): Observable<ModuleEvent[]> {
   return moduleEvents$.pipe(
     filter(event => event.type === eventType)
     // We would normally use bufferTime here, but we're keeping it simple
-    // bufferTime(bufferTime)
+    // bufferTime(_bufferTime)
   ) as unknown as Observable<ModuleEvent[]>;
 }
 

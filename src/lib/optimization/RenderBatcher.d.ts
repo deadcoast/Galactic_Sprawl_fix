@@ -17,7 +17,7 @@ interface RenderItem {
   color: string;
   texture?: string;
   shader?: string;
-  uniforms?: Record<string, any>;
+  uniforms?: Record<string, unknown>;
 }
 
 interface RenderBatcherEvents {

@@ -110,7 +110,7 @@ interface RangeCircle {
   opacity: number;
 }
 
-interface FleetAIResult {
+interface _FleetAIResult {
   formationPatterns: {
     defensive: {
       spacing: number;
@@ -245,7 +245,7 @@ export function BattleEnvironment({
   }, [units]);
 
   // Optimize particle system
-  const updateParticles = useCallback(() => {
+  const _updateParticles = useCallback(() => {
     if (quality === 'low') {
       return;
     }
@@ -276,7 +276,7 @@ export function BattleEnvironment({
   }, [quality, tier, requestUpdate]);
 
   // Enhanced collision effect handling
-  const handleCollisionEffect = useCallback(
+  const _handleCollisionEffect = useCallback(
     (hazardId: string, shipId: string, effect: Hazard['effect']) => {
       // Apply tech bonuses to effect
       const modifiedEffect = {
@@ -352,7 +352,7 @@ export function BattleEnvironment({
   }, [units]);
 
   // Handle hazard detection and threat response
-  const handleThreatDetection = useCallback(
+  const _handleThreatDetection = useCallback(
     (hazard: Hazard) => {
       if (onThreatDetected) {
         onThreatDetected(hazard);

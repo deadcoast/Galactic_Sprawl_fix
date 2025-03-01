@@ -441,7 +441,7 @@ export class ResourceExchangeManager {
     // Update rates based on new market condition
     this.updateCurrentRates();
 
-    console.debug(`[ResourceExchangeManager] Market condition updated to: ${this.marketCondition}`);
+    console.warn(`[ResourceExchangeManager] Market condition updated to: ${this.marketCondition}`);
   }
 
   /**
@@ -543,7 +543,7 @@ export class ResourceExchangeManager {
       }
 
       // Check all neighbors
-      for (const [rateKey, rate] of this.currentRates.entries()) {
+      for (const [_rateKey, rate] of this.currentRates.entries()) {
         if (rate.fromType === current) {
           const neighbor = rate.toType;
           const distance = (distances.get(current) || 0) * rate.rate;
@@ -595,7 +595,7 @@ export class ResourceExchangeManager {
     // Apply modifiers to base rates
     // Convert Map entries to array to avoid MapIterator error
     const modifierEntries = Array.from(this.modifiers.entries());
-    for (const [id, modifier] of modifierEntries) {
+    for (const [_id, modifier] of modifierEntries) {
       // Check if modifier has active property and it's false
       if (modifier.active === false) {
         continue;
@@ -603,7 +603,7 @@ export class ResourceExchangeManager {
 
       // Convert Map entries to array to avoid MapIterator error
       const rateEntries = Array.from(this.currentRates.entries());
-      for (const [rateKey, rate] of rateEntries) {
+      for (const [_rateKey, rate] of rateEntries) {
         // Cast to extended type for compatibility
         const extendedRate = rate as ExtendedRate;
         const extendedModifier = modifier as ExchangeRateModifier;
@@ -627,7 +627,7 @@ export class ResourceExchangeManager {
         // Apply modifier
         const newRate = { ...rate };
         newRate.rate *= modifier.multiplier;
-        this.currentRates.set(rateKey, newRate);
+        this.currentRates.set(_rateKey, newRate);
       }
     }
   }
@@ -667,7 +667,7 @@ export class ResourceExchangeManager {
 
     // Convert Map entries to array to avoid MapIterator error
     const rateEntries = Array.from(this.currentRates.entries());
-    for (const [rateKey, rate] of rateEntries) {
+    for (const [_rateKey, rate] of rateEntries) {
       // Cast to extended type for compatibility
       const extendedRate = rate as ExtendedRate;
 

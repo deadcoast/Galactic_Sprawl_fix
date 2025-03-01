@@ -269,7 +269,7 @@ class ParticleSystem {
     this.updateGeometry();
   }
 
-  private spawnParticles(deltaTime: number): void {
+  private spawnParticles(_deltaTime: number): void {
     const now = performance.now();
     const spawnInterval = 1000 / this.config.spawnRate;
 

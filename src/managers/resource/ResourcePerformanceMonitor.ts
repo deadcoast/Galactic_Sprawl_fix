@@ -42,7 +42,7 @@ export class ResourcePerformanceMonitor {
    */
   private startMonitoring(): void {
     setInterval(() => this.takeSnapshot(), this.snapshotInterval);
-    console.debug('[ResourcePerformanceMonitor] Started monitoring');
+    console.warn('[ResourcePerformanceMonitor] Started monitoring');
   }
 
   /**
@@ -171,7 +171,7 @@ export class ResourcePerformanceMonitor {
    * Logs performance insights
    */
   private logPerformanceInsights(snapshot: ResourcePerformanceSnapshot): void {
-    console.debug(`[ResourcePerformanceMonitor] Performance Snapshot:
+    console.warn(`[ResourcePerformanceMonitor] Performance Snapshot:
       System Load: ${(snapshot.systemLoad * 100).toFixed(1)}%
       Bottlenecks: ${snapshot.bottlenecks.join(', ') || 'None'}
       
@@ -198,7 +198,7 @@ export class ResourcePerformanceMonitor {
    */
   cleanup(): void {
     this.metricsHistory.clear();
-    console.debug('[ResourcePerformanceMonitor] Cleaned up performance monitor');
+    console.warn('[ResourcePerformanceMonitor] Cleaned up performance monitor');
   }
 
   /**

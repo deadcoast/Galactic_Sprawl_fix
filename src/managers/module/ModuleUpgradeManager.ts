@@ -5,6 +5,15 @@ import { resourceManager } from '../game/ResourceManager';
 import { moduleManager } from './ModuleManager';
 import { moduleStatusManager } from './ModuleStatusManager';
 
+// Define the ModuleEvent interface
+interface ModuleEvent {
+  type: ModuleEventType;
+  moduleId: string;
+  moduleType: ModuleType;
+  timestamp: number;
+  data?: Record<string, unknown>;
+}
+
 /**
  * Upgrade path for a module
  * Defines the progression of a module through levels
@@ -530,7 +539,7 @@ export class ModuleUpgradeManager {
   private applyUpgradeEffects(moduleId: string, upgradeLevel: ModuleUpgradeLevel): void {
     // This would apply the effects of the upgrade to the module
     // For now, we'll just log the effects
-    console.log(
+    console.warn(
       `[ModuleUpgradeManager] Applying effects to module ${moduleId}:`,
       upgradeLevel.effects
     );
@@ -542,14 +551,14 @@ export class ModuleUpgradeManager {
   /**
    * Handle module created event
    */
-  private handleModuleCreated = (event: any): void => {
+  private handleModuleCreated = (_event: ModuleEvent): void => {
     // Nothing to do here for now
   };
 
   /**
    * Handle module upgraded event
    */
-  private handleModuleUpgraded = (event: any): void => {
+  private handleModuleUpgraded = (_event: ModuleEvent): void => {
     // Nothing to do here for now
   };
 

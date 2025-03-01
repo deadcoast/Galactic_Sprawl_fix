@@ -137,7 +137,11 @@ describe('ResourceThresholdManager', () => {
 
   it('should handle resource updates', () => {
     // Create a private method accessor for testing
-    const handleResourceUpdate = vi.spyOn(thresholdManager as any, 'handleResourceUpdate');
+    const thresholdManagerImpl = thresholdManager as unknown;
+    const handleResourceUpdate = vi.spyOn(
+      thresholdManagerImpl as { handleResourceUpdate: (event: unknown) => void },
+      'handleResourceUpdate'
+    );
 
     // Simulate resource update event
     const resourceUpdate = {
@@ -153,7 +157,10 @@ describe('ResourceThresholdManager', () => {
     };
 
     // Manually call the event handler
-    (thresholdManager as any).handleResourceUpdate(resourceUpdate);
+    const privateManager = thresholdManager as unknown as {
+      handleResourceUpdate: (event: typeof resourceUpdate) => void;
+    };
+    privateManager.handleResourceUpdate(resourceUpdate);
 
     expect(handleResourceUpdate).toHaveBeenCalledWith(resourceUpdate);
   });
@@ -195,10 +202,14 @@ describe('ResourceThresholdManager', () => {
     };
 
     // Manually call the event handler
-    (thresholdManager as any).handleResourceUpdate(resourceUpdate);
+    const privateManager = thresholdManager as unknown as {
+      handleResourceUpdate: (event: typeof resourceUpdate) => void;
+      checkThresholds: () => void;
+    };
+    privateManager.handleResourceUpdate(resourceUpdate);
 
     // Manually trigger check
-    (thresholdManager as any).checkThresholds();
+    privateManager.checkThresholds();
 
     // Check if alert was created
     const alerts = thresholdManager.getActiveAlerts();
@@ -220,10 +231,14 @@ describe('ResourceThresholdManager', () => {
     };
 
     // Manually call the event handler
-    (thresholdManager as any).handleResourceUpdate(resolveUpdate);
+    const privateManagerResolve = thresholdManager as unknown as {
+      handleResourceUpdate: (event: typeof resolveUpdate) => void;
+      checkThresholds: () => void;
+    };
+    privateManagerResolve.handleResourceUpdate(resolveUpdate);
 
     // Manually trigger check
-    (thresholdManager as any).checkThresholds();
+    privateManagerResolve.checkThresholds();
 
     // Check if alert was cleared (due to autoResolve)
     const updatedAlerts = thresholdManager.getActiveAlerts();

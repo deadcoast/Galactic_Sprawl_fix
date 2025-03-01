@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import {
   ModuleUpgradeEffect,
   moduleUpgradeManager,
   ModuleUpgradeStatus,
 } from '../../managers/module/ModuleUpgradeManager';
+
+/**
+ * Interface for module event data
+ */
+interface _ModuleEventData {
+  moduleId: string;
+  [key: string]: unknown;
+}
 
 /**
  * Hook for managing module upgrades
@@ -40,7 +48,7 @@ export function useModuleUpgrade(moduleId?: string) {
       return;
     }
 
-    const handleModuleUpgraded = (event: any) => {
+    const handleModuleUpgraded = (event: ModuleEvent) => {
       if (event.moduleId === moduleId) {
         try {
           const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
@@ -51,7 +59,7 @@ export function useModuleUpgrade(moduleId?: string) {
       }
     };
 
-    const handleUpgradeStarted = (event: any) => {
+    const handleUpgradeStarted = (event: ModuleEvent) => {
       if (event.moduleId === moduleId) {
         try {
           const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
@@ -62,7 +70,7 @@ export function useModuleUpgrade(moduleId?: string) {
       }
     };
 
-    const handleUpgradeCancelled = (event: any) => {
+    const handleUpgradeCancelled = (event: ModuleEvent) => {
       if (event.moduleId === moduleId) {
         try {
           const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
@@ -93,7 +101,7 @@ export function useModuleUpgrade(moduleId?: string) {
         try {
           const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
           setUpgradeStatus(status || null);
-        } catch (err) {
+        } catch (_err) {
           // Silently ignore errors during progress updates
         }
       }

@@ -29,7 +29,7 @@ interface EventDispatcherContextType {
  */
 interface EventDispatcherProviderProps {
   children: ReactNode;
-  maxHistorySize?: number;
+  _maxHistorySize?: number;
 }
 
 // Create the context with a default value
@@ -40,7 +40,7 @@ const EventDispatcherContext = createContext<EventDispatcherContextType | null>(
  */
 export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = ({
   children,
-  maxHistorySize = 1000,
+  _maxHistorySize = 1000,
 }) => {
   // Store the latest event of each type
   const [latestEvents, setLatestEvents] = useState<Map<ModuleEventType, ModuleEvent>>(new Map());
@@ -162,7 +162,7 @@ export const useEventSubscription = <T extends ModuleEventType>(
 
   useEffect(() => {
     return subscribe(eventType, callback);
-  }, [eventType, ...deps]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [eventType, callback, subscribe, ...deps]);
 };
 
 /**
@@ -187,7 +187,7 @@ export const useFilteredEvents = (
 
   useEffect(() => {
     setFilteredEvents(getFilteredEvents(filter));
-  }, [getFilteredEvents, ...deps]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [getFilteredEvents, filter, ...deps]);
 
   return filteredEvents;
 };

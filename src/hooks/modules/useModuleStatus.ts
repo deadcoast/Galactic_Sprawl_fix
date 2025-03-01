@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   ExtendedModuleStatus,
   ModuleStatusDetails,
@@ -47,14 +47,14 @@ export function useModuleStatus(moduleId?: string) {
       return;
     }
 
-    const handleStatusChanged = (event: any) => {
+    const handleStatusChanged = (event: ModuleEvent) => {
       if (event.moduleId === moduleId) {
         const details = moduleStatusManager.getModuleStatusDetails(moduleId);
         setStatusDetails(details || null);
       }
     };
 
-    const handleErrorOccurred = (event: any) => {
+    const handleErrorOccurred = (event: ModuleEvent) => {
       if (event.moduleId === moduleId) {
         const details = moduleStatusManager.getModuleStatusDetails(moduleId);
         setStatusDetails(details || null);

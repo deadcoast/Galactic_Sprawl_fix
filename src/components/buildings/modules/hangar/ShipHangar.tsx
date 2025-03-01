@@ -48,7 +48,7 @@ interface Ship {
 }
 
 // Mock data for demonstration
-const mockShips: Ship[] = [
+const _mockShips: Ship[] = [
   {
     id: 'spitflare-1',
     name: 'Spitflare Alpha',
@@ -167,7 +167,7 @@ export function ShipHangar({ manager }: ShipHangarProps) {
       }
     };
 
-    const handleBuildStarted = ({ queueItem }: { queueItem: ShipBuildQueueItem }) => {
+    const handleBuildStarted = ({ queueItem: _queueItem }: { queueItem: ShipBuildQueueItem }) => {
       setBuildQueue(manager.getBuildQueue());
     };
 

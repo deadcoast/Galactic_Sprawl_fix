@@ -34,10 +34,10 @@ export class EngineTrailEffect extends VisualEffect {
 
   protected onStart(): void {
     this.lastEmitTime = Date.now();
-    console.debug(`[EngineTrailEffect] Started with power: ${this.config.enginePower}`);
+    console.warn(`[EngineTrailEffect] Started with power: ${this.config.enginePower}`);
   }
 
-  protected onUpdate(progress: number): void {
+  protected onUpdate(_progress: number): void {
     const now = Date.now();
 
     // Emit new particles
@@ -52,7 +52,7 @@ export class EngineTrailEffect extends VisualEffect {
 
   protected onComplete(): void {
     this.trailPoints = [];
-    console.debug('[EngineTrailEffect] Completed');
+    console.warn('[EngineTrailEffect] Completed');
   }
 
   protected onReset(): void {

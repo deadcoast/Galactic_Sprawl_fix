@@ -20,7 +20,7 @@ interface StarSchoonerProps {
 }
 
 export function StarSchooner({
-  id,
+  id: _id,
   tier,
   status,
   hull,

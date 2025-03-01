@@ -9,6 +9,22 @@ import {
   SystemMessage,
 } from '../../../utils/events/EventCommunication';
 
+// Define handler types to replace any
+type SystemMessageHandler = (event: { data: { message: SystemMessage } }) => void;
+type SystemMessageAckHandler = (event: { data: { acknowledgment: MessageAcknowledgment } }) => void;
+
+// Define a type for the mock emit calls
+interface MockEmitCall {
+  type: string;
+  moduleId: string;
+  data: {
+    message: SystemMessage;
+  };
+}
+
+// Define a type for the mock function
+type MockFunction = ReturnType<typeof vi.fn>;
+
 // Mock the moduleEventBus
 vi.mock('../../../lib/modules/ModuleEvents', () => {
   return {
@@ -32,8 +48,8 @@ vi.mock('../../../lib/modules/ModuleEvents', () => {
 });
 
 // Store handlers for testing
-let systemMessageHandler: any;
-let systemMessageAckHandler: any;
+let systemMessageHandler: SystemMessageHandler;
+let systemMessageAckHandler: SystemMessageAckHandler;
 
 describe('EventCommunication', () => {
   let resourceSystem: EventCommunication;
@@ -43,8 +59,8 @@ describe('EventCommunication', () => {
     vi.clearAllMocks();
 
     // Reset handlers
-    systemMessageHandler = null;
-    systemMessageAckHandler = null;
+    systemMessageHandler = null as unknown as SystemMessageHandler;
+    systemMessageAckHandler = null as unknown as SystemMessageAckHandler;
 
     // Create system instances
     resourceSystem = getSystemCommunication('resource-system');
@@ -254,7 +270,7 @@ describe('EventCommunication', () => {
       expect(promise).toBeInstanceOf(Promise);
 
       // Get the message ID from the emit call
-      const emitCall = (moduleEventBus.emit as any).mock.calls[0][0];
+      const emitCall = (moduleEventBus.emit as MockFunction).mock.calls[0][0] as MockEmitCall;
       const messageId = emitCall.data.message.id;
 
       // Create an acknowledgment
@@ -268,7 +284,7 @@ describe('EventCommunication', () => {
 
       // Simulate receiving the acknowledgment
       systemMessageAckHandler({
-        data: { ack },
+        data: { acknowledgment: ack },
       });
 
       // Check that the promise resolves with the acknowledgment
@@ -293,7 +309,7 @@ describe('EventCommunication', () => {
       ) as Promise<MessageAcknowledgment>;
 
       // Get the message ID from the emit call
-      const emitCall = (moduleEventBus.emit as any).mock.calls[0][0];
+      const emitCall = (moduleEventBus.emit as MockFunction).mock.calls[0][0] as MockEmitCall;
       const messageId = emitCall.data.message.id;
 
       // Create a failed acknowledgment
@@ -308,7 +324,7 @@ describe('EventCommunication', () => {
 
       // Simulate receiving the acknowledgment
       systemMessageAckHandler({
-        data: { ack },
+        data: { acknowledgment: ack },
       });
 
       // Check that the promise rejects with the error
@@ -608,7 +624,7 @@ describe('EventCommunication', () => {
 
       // Simulate receiving the acknowledgment
       systemMessageAckHandler({
-        data: { ack },
+        data: { acknowledgment: ack },
       });
 
       // Check that the observer was called with the acknowledgment

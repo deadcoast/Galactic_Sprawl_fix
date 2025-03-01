@@ -124,7 +124,7 @@ export function ResourceVisualization() {
   // Calculate resource rates
   useEffect(() => {
     const interval = setInterval(() => {
-      setResourceRates(prev => ({
+      setResourceRates(_prev => ({
         minerals: Math.random() * 10 - 2, // Example rate calculation
         energy: Math.random() * 15 - 5,
         population: Math.random() * 2 - 0.5,

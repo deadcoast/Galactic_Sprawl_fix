@@ -278,7 +278,20 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
           updatedStats.effects = [...updatedStats.effects, ...value];
         } else if (key !== 'special' && key !== 'effects') {
           const numericValue = value as number;
-          (updatedStats as any)[key] *= numericValue;
+          // Handle each property explicitly
+          if (key === 'damage' && 'damage' in updatedStats) {
+            updatedStats.damage *= numericValue;
+          } else if (key === 'range' && 'range' in updatedStats) {
+            updatedStats.range *= numericValue;
+          } else if (key === 'accuracy' && 'accuracy' in updatedStats) {
+            updatedStats.accuracy *= numericValue;
+          } else if (key === 'rateOfFire' && 'rateOfFire' in updatedStats) {
+            updatedStats.rateOfFire *= numericValue;
+          } else if (key === 'energyCost' && 'energyCost' in updatedStats) {
+            updatedStats.energyCost *= numericValue;
+          } else if (key === 'cooldown' && 'cooldown' in updatedStats) {
+            updatedStats.cooldown *= numericValue;
+          }
         }
       });
     });

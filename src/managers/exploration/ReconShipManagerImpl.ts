@@ -20,7 +20,7 @@ interface Threat {
   type: string;
 }
 
-interface ReconShipEvents {
+interface ReconShipEvents extends Record<string, unknown> {
   shipRegistered: { shipId: string };
   shipUnregistered: { shipId: string };
   taskAssigned: { shipId: string; task: ExplorationTask };
@@ -87,19 +87,20 @@ interface ExplorationTask {
   threatLevel?: number;
 }
 
+interface SectorData {
+  id: string;
+  position: Position;
+  explored: boolean;
+  anomalies: Anomaly[];
+  resources: number;
+  habitabilityScore?: number;
+  lastScanned?: number;
+}
+
 export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
   private ships: Map<string, ReconShip> = new Map();
   private tasks: Map<string, ExplorationTask> = new Map();
-  private sectors: Map<
-    string,
-    {
-      id: string;
-      position: Position;
-      explored: boolean;
-      anomalies: Anomaly[];
-      resources: number;
-    }
-  > = new Map();
+  private sectors: Map<string, SectorData> = new Map();
 
   public registerShip(ship: ReconShip): void {
     if (ship.capabilities.canScan) {
@@ -327,13 +328,13 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
           task,
           discoveries: ship.discoveries,
           experienceGained,
-          heatMapValue: this.calculateHeatMapValue(sector),
+          heatMapValue: sector ? this.calculateHeatMapValue(sector) : 0,
         },
       });
     }
   }
 
-  private calculateHeatMapValue(sector: any): number {
+  private calculateHeatMapValue(sector: SectorData): number {
     if (!sector) return 0;
 
     let heatValue = 0;
@@ -370,7 +371,7 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     const count = Math.floor(Math.random() * 3 * detectionSkill) + 1;
     const anomalies: Anomaly[] = [];
     const anomalyTypes = ['artifact', 'signal', 'phenomenon'] as const;
-    const severityLevels = ['high', 'medium', 'low'] as const;
+    const _severityLevels = ['high', 'medium', 'low'] as const;
 
     for (let i = 0; i < count; i++) {
       const type = anomalyTypes[Math.floor(Math.random() * anomalyTypes.length)];

@@ -14,7 +14,7 @@ const conditionState = new Subject<{
 /**
  * Extended condition type with runtime state
  */
-interface RuntimeCondition extends AutomationCondition {
+interface _RuntimeCondition extends AutomationCondition {
   lastChecked?: number;
 }
 
@@ -127,9 +127,9 @@ export class ConditionChecker {
     this.lastCheckedTimes.set(key, now);
 
     if (condition.operator === 'greater') {
-      return elapsed > condition.value;
+      return elapsed > Number(condition.value);
     } else if (condition.operator === 'less') {
-      return elapsed < condition.value;
+      return elapsed < Number(condition.value);
     }
 
     return elapsed >= Number(condition.value);
@@ -138,7 +138,7 @@ export class ConditionChecker {
   /**
    * Checks an event-based condition
    */
-  private checkEventCondition(condition: AutomationCondition): boolean {
+  private checkEventCondition(_condition: AutomationCondition): boolean {
     // TODO: Implement event checking using moduleEventBus
     return false;
   }
@@ -157,16 +157,16 @@ export class ConditionChecker {
     }
 
     // Get module status from metadata
-    const status = (module as any).metadata?.status;
+    const status = (module as { metadata?: { status?: string } }).metadata?.status;
     if (!status) {
       return false;
     }
 
     switch (condition.operator) {
       case 'equals':
-        return status === condition.value;
+        return status === String(condition.value);
       case 'not_equals':
-        return status !== condition.value;
+        return status !== String(condition.value);
       case 'contains':
         return status.includes(String(condition.value));
       default:

@@ -116,7 +116,7 @@ export interface OfficerEvent {
   type: OfficerEventType;
   officerId?: string;
   squadId?: string;
-  data?: any;
+  data?: Record<string, unknown>;
   timestamp: number;
 }
 

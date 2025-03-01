@@ -65,7 +65,7 @@ export interface ModuleEvent {
   moduleId: string;
   moduleType: ModuleType;
   timestamp: number;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 /**

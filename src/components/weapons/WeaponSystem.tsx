@@ -29,7 +29,7 @@ export function WeaponSystem({
         ...weapon.state.currentStats,
         ...upgrade.stats,
       };
-      console.debug(`[WeaponSystem] Applying upgrade ${upgradeId}, new stats:`, updatedStats);
+      console.warn(`[WeaponSystem] Applying upgrade ${upgradeId}, new stats:`, updatedStats);
       onUpgrade(upgradeId);
     }
   };

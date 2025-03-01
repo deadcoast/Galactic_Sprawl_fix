@@ -32,7 +32,7 @@ export function FormationTransitionEffect({
   const [particles, setParticles] = useState<ParticleProps[]>([]);
 
   // Quality-based settings
-  const particleCount = quality === 'high' ? 16 : quality === 'medium' ? 8 : 4;
+  const _particleCount = quality === 'high' ? 16 : quality === 'medium' ? 8 : 4;
   const trailLength = quality === 'high' ? 8 : quality === 'medium' ? 4 : 2;
   const glowIntensity = quality === 'high' ? '12px' : quality === 'medium' ? '8px' : '4px';
 
@@ -82,8 +82,8 @@ export function FormationTransitionEffect({
         }
 
         // Calculate current position
-        const currentX = source.x + (target.x - source.x) * easedProgress;
-        const currentY = source.y + (target.y - source.y) * easedProgress;
+        const _currentX = source.x + (target.x - source.x) * easedProgress;
+        const _currentY = source.y + (target.y - source.y) * easedProgress;
 
         // Add trail particles
         for (let i = 0; i < trailLength; i++) {
@@ -124,16 +124,16 @@ export function FormationTransitionEffect({
             return null;
           }
 
-          const currentX = source.x + (target.x - source.x) * progress;
-          const currentY = source.y + (target.y - source.y) * progress;
+          const _currentX = source.x + (target.x - source.x) * progress;
+          const _currentY = source.y + (target.y - source.y) * progress;
 
           return (
             <line
               key={index}
               x1={source.x}
               y1={source.y}
-              x2={currentX}
-              y2={currentY}
+              x2={_currentX}
+              y2={_currentY}
               stroke={getPatternColor()}
               strokeWidth="2"
               strokeDasharray="4 4"

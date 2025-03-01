@@ -301,7 +301,7 @@ export class WeaponEffectVisual extends VisualEffect {
     this.trailPoints = [this.config.position];
 
     // Debug logging
-    console.debug(`[WeaponEffect] Started ${this.config.type} effect`);
+    console.warn(`[WeaponEffect] Started ${this.config.type} effect`);
   }
 
   protected onUpdate(progress: number): void {
@@ -332,7 +332,7 @@ export class WeaponEffectVisual extends VisualEffect {
     this.impactParticles = [];
     this.impactStartTime = 0;
 
-    console.debug(`[WeaponEffect] Completed ${this.config.type} effect`);
+    console.warn(`[WeaponEffect] Completed ${this.config.type} effect`);
   }
 
   protected onReset(): void {

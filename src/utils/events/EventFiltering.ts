@@ -84,7 +84,7 @@ export class EventPriorityQueue<T extends { priority?: number }> {
   private async processQueueInternal(): Promise<void> {
     // Process all events in priority order
     const queueEntries = Array.from(this.queues.entries());
-    for (const [priority, queue] of queueEntries) {
+    for (const [_priority, queue] of queueEntries) {
       while (queue.length > 0) {
         const event = queue.shift();
         if (event) {
@@ -147,7 +147,7 @@ export class EventPriorityQueue<T extends { priority?: number }> {
   public processAll(): void {
     // Convert Map entries to array to avoid MapIterator error
     const queueEntries = Array.from(this.queues.entries());
-    for (const [priority, queue] of queueEntries) {
+    for (const [_priority, queue] of queueEntries) {
       while (queue.length > 0) {
         const event = queue.shift();
         if (event) {

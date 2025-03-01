@@ -19,6 +19,14 @@ import {
   moduleEvents$,
 } from '../../../utils/events/rxjsIntegration';
 
+// Define a type for the mock function
+type MockFunction = ReturnType<typeof vi.fn>;
+
+// Define a type for the subject with cleanup method
+interface SubjectWithCleanup<T> extends Subject<T> {
+  cleanup: () => void;
+}
+
 // Mock the moduleEventBus
 vi.mock('../../../lib/modules/ModuleEvents', () => {
   const mockEventBus = {
@@ -180,10 +188,15 @@ describe('RxJS Integration', () => {
 
   describe('getEventData', () => {
     it('should map events to their data', () => {
-      const dataItems: any[] = [];
+      // Define a type for the data items
+      interface ModuleCreatedData {
+        name: string;
+      }
+
+      const dataItems: ModuleCreatedData[] = [];
 
       // Subscribe to data from MODULE_CREATED events
-      const subscription = getEventData<{ name: string }>(
+      const subscription = getEventData<ModuleCreatedData>(
         'MODULE_CREATED' as ModuleEventType
       ).subscribe({
         next: data => {
@@ -283,7 +296,7 @@ describe('RxJS Integration', () => {
       });
 
       // Call the event handler that was passed to moduleEventBus.subscribe
-      const eventHandler = (moduleEventBus.subscribe as any).mock.calls[0][1];
+      const eventHandler = (moduleEventBus.subscribe as MockFunction).mock.calls[0][1];
       eventHandler(sampleEvent1);
 
       // Check that the event was received
@@ -291,14 +304,15 @@ describe('RxJS Integration', () => {
       expect(events[0]).toEqual(sampleEvent1);
 
       // Clean up
-      (subject as any).cleanup();
+      (subject as SubjectWithCleanup<ModuleEvent>).cleanup();
       subscription.unsubscribe();
     });
   });
 
   describe('createTransformedEventStream', () => {
     it('should create a transformed event stream', () => {
-      const transformedItems: any[] = [];
+      // Define a type for the transformed items
+      const transformedItems: string[] = [];
 
       // Create a transformed stream that extracts the module ID
       const subscription = createTransformedEventStream<ModuleEvent, string>(

@@ -155,7 +155,7 @@ export function MiningWindow() {
   const [viewMode, setViewMode] = useState<ViewMode>('map');
   const [sortBy, setSortBy] = useState<SortOption>('priority');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [filter, setFilter] = useState<FilterOption>('all');
+  const [filter, _setFilter] = useState<FilterOption>('all');
   const [showTutorial, setShowTutorial] = useState(false);
 
   // Mock tech bonuses
@@ -214,7 +214,9 @@ export function MiningWindow() {
             icon: <Rocket className="h-4 w-4" />,
             action: () => {
               // Handle ship assignment
-              console.log(`Assigning ${ship.name} to ${resource.name}`);
+              // Replace console.log with actual implementation
+              // console.log(`Assigning ${ship.name} to ${resource.name}`);
+              // TODO: Implement ship assignment logic
             },
           })),
       },
@@ -228,7 +230,9 @@ export function MiningWindow() {
           label: `Priority ${priority}`,
           action: () => {
             // Handle priority change
-            console.log(`Setting ${resource.name} priority to ${priority}`);
+            // Replace console.log with actual implementation
+            // console.log(`Setting ${resource.name} priority to ${priority}`);
+            // TODO: Implement priority change logic
           },
         })),
       },
@@ -236,10 +240,12 @@ export function MiningWindow() {
   };
 
   // Handle resource drop on storage
-  const handleResourceDrop = (item: DragItem, storage: (typeof mockStorageData)[0]) => {
+  const handleResourceDrop = (item: DragItem, _storage: (typeof mockStorageData)[0]) => {
     if (item.type === 'resource') {
       // Handle resource transfer
-      console.log(`Transferring ${item.data.type} to ${storage.resourceType} storage`);
+      // Replace console.log with actual implementation
+      // console.log(`Transferring ${item.data.type} to ${storage.resourceType} storage`);
+      // TODO: Implement resource transfer logic
     }
   };
 

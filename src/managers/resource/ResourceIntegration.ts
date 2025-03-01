@@ -73,7 +73,7 @@ export class ResourceIntegration {
     this.thresholdManager.start();
 
     this.initialized = true;
-    console.debug('[ResourceIntegration] Resource management system integrated');
+    console.warn('[ResourceIntegration] Resource management system integrated');
   }
 
   /**
@@ -82,7 +82,7 @@ export class ResourceIntegration {
   private subscribeToLegacyEvents(): void {
     // Subscribe to resource update events
     moduleEventBus.subscribe('RESOURCE_PRODUCED' as ModuleEventType, event => {
-      const { resourceType, newAmount, oldAmount } = event.data;
+      const { resourceType, _newAmount, _oldAmount } = event.data;
 
       // Update resource state in our new system
       const resourceState = this.resourceManager.getResourceState(resourceType);
@@ -92,7 +92,7 @@ export class ResourceIntegration {
     });
 
     moduleEventBus.subscribe('RESOURCE_CONSUMED' as ModuleEventType, event => {
-      const { resourceType, newAmount, oldAmount } = event.data;
+      const { resourceType, _newAmount, _oldAmount } = event.data;
 
       // Update resource state in our new system
       const resourceState = this.resourceManager.getResourceState(resourceType);
@@ -123,7 +123,7 @@ export class ResourceIntegration {
 
     // Subscribe to threshold events
     moduleEventBus.subscribe('RESOURCE_SHORTAGE' as ModuleEventType, event => {
-      const { resourceType, currentAmount, requiredAmount } = event.data;
+      const { resourceType, _currentAmount, requiredAmount } = event.data;
 
       // Create an alert in our threshold manager
       const threshold: ResourceThreshold = {
@@ -334,7 +334,7 @@ export class ResourceIntegration {
   /**
    * Update method to be called on game loop
    */
-  public update(deltaTime: number): void {
+  public update(_deltaTime: number): void {
     if (!this.initialized) {
       return;
     }

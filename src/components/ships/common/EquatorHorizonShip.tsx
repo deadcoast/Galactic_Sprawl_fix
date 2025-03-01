@@ -23,7 +23,7 @@ interface EquatorHorizonShipProps {
   maxShield: number;
   weapons: WeaponMount[];
   stats: FactionShipStats;
-  tactics: 'aggressive' | 'defensive' | 'hit-and-run' | 'stealth';
+  _tactics: 'aggressive' | 'defensive' | 'hit-and-run' | 'stealth';
   position: { x: number; y: number };
   rotation: number;
   onEngage?: () => void;
@@ -50,7 +50,7 @@ export function EquatorHorizonShip({
   maxShield,
   weapons,
   stats,
-  tactics,
+  _tactics,
   position,
   rotation,
   onEngage,
@@ -70,7 +70,7 @@ export function EquatorHorizonShip({
         // Apply weapon effects
         weapon.state.effects.forEach(effect => {
           if (isDamageEffect(effect)) {
-            console.debug(
+            console.warn(
               `[EquatorHorizonShip] Firing weapon ${weaponId} with strength ${effect.strength}`
             );
           }

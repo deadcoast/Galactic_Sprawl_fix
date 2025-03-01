@@ -1,4 +1,7 @@
-import { ModuleUpgradePath } from '../../managers/module/ModuleUpgradeManager';
+import {
+  ModuleUpgradeManager,
+  ModuleUpgradePath,
+} from '../../managers/module/ModuleUpgradeManager';
 
 /**
  * Sample upgrade paths for different module types
@@ -317,7 +320,7 @@ export const moduleUpgradePaths: ModuleUpgradePath[] = [
 /**
  * Initialize module upgrade paths
  */
-export function initializeModuleUpgradePaths(moduleUpgradeManager: any): void {
+export function initializeModuleUpgradePaths(moduleUpgradeManager: ModuleUpgradeManager): void {
   for (const path of moduleUpgradePaths) {
     moduleUpgradeManager.registerUpgradePath(path);
   }

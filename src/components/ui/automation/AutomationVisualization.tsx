@@ -155,7 +155,7 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
       // Manually trigger the routine execution
       // Note: Since executeRoutine is private, we'll just update the UI
       // In a real implementation, we would need a public method to execute a routine
-      console.log(`Executing routine: ${routineId}`);
+      console.warn(`Executing routine: ${routineId}`);
 
       // Update local state to reflect the routine was run
       const now = new Date().getTime(); // Use number instead of string for lastRun

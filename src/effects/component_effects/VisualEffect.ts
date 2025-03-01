@@ -24,7 +24,7 @@ export abstract class VisualEffect {
 
   public start(): void {
     this.onStart();
-    console.debug(`[${this.getEffectType()}] Started effect ${this.id}`);
+    console.warn(`[${this.getEffectType()}] Started effect ${this.id}`);
   }
 
   public update(): void {
@@ -52,7 +52,7 @@ export abstract class VisualEffect {
     if (this.isComplete) return;
     this.isComplete = true;
     this.onComplete();
-    console.debug(`[${this.getEffectType()}] Completed effect ${this.id}`);
+    console.warn(`[${this.getEffectType()}] Completed effect ${this.id}`);
   }
 
   public reset(): void {

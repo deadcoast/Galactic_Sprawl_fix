@@ -63,6 +63,24 @@ interface CombatZone {
   threatLevel: number;
 }
 
+interface FormationUpdateData {
+  position: { x: number; y: number };
+  units: string[];
+}
+
+interface EngagementData {
+  targetId: string;
+  units: string[];
+}
+
+interface UnitActionData {
+  unitId: string;
+}
+
+interface WeaponFireData extends UnitActionData {
+  targetId: string;
+}
+
 class CombatManagerImpl implements CombatManager {
   private combatZones: Map<string, CombatZone> = new Map();
   private units: Map<string, CombatUnit> = new Map();
@@ -107,7 +125,7 @@ class CombatManagerImpl implements CombatManager {
     });
   }
 
-  private handleFormationUpdate(data: any): void {
+  private handleFormationUpdate(data: FormationUpdateData): void {
     const { position, units } = data;
     if (position && units) {
       units.forEach((unitId: string) => {
@@ -123,7 +141,7 @@ class CombatManagerImpl implements CombatManager {
     }
   }
 
-  private handleEngagement(data: any): void {
+  private handleEngagement(data: EngagementData): void {
     const { targetId, units } = data;
     if (targetId && units) {
       units.forEach((unitId: string) => {
@@ -136,7 +154,7 @@ class CombatManagerImpl implements CombatManager {
     }
   }
 
-  private handleDamageControl(data: any): void {
+  private handleDamageControl(data: UnitActionData): void {
     const { unitId } = data;
     if (unitId) {
       const unit = this.units.get(unitId);
@@ -150,7 +168,7 @@ class CombatManagerImpl implements CombatManager {
     }
   }
 
-  private handleShieldBoost(data: any): void {
+  private handleShieldBoost(data: UnitActionData): void {
     const { unitId } = data;
     if (unitId) {
       const unit = this.units.get(unitId);
@@ -161,7 +179,7 @@ class CombatManagerImpl implements CombatManager {
     }
   }
 
-  private handleWeaponFire(data: any): void {
+  private handleWeaponFire(data: WeaponFireData): void {
     const { unitId, targetId } = data;
     if (unitId && targetId) {
       const unit = this.units.get(unitId);
@@ -190,7 +208,7 @@ class CombatManagerImpl implements CombatManager {
     }
   }
 
-  private handleRetreat(data: any): void {
+  private handleRetreat(data: UnitActionData): void {
     const { unitId } = data;
     if (unitId) {
       const unit = this.units.get(unitId);

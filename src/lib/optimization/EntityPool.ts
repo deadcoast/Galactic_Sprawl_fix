@@ -39,7 +39,7 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
     }
 
     // Debug logging
-    console.debug(`[EntityPool] Initialized with ${initialSize} entities (max: ${maxSize})`);
+    console.warn(`[EntityPool] Initialized with ${initialSize} entities (max: ${maxSize})`);
   }
 
   /**
@@ -105,7 +105,7 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
   public clear(): void {
     this.available = [];
     this.inUse.clear();
-    this.emit('entityDeactivated', { entity: null });
-    console.debug('[EntityPool] Pool cleared');
+    this.emit('entityDeactivated', { entity: null as unknown as T });
+    console.warn('[EntityPool] Pool cleared');
   }
 }

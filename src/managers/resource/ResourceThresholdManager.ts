@@ -187,7 +187,7 @@ export class ResourceThresholdManager {
    */
   private checkThresholds(): void {
     const now = Date.now();
-    const deltaTime = now - this.lastCheck;
+    const _deltaTime = now - this.lastCheck;
     this.lastCheck = now;
 
     // Convert Map entries to array to avoid MapIterator error

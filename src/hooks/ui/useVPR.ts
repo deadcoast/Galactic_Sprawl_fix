@@ -43,7 +43,7 @@ export function useVPR() {
 
   const updateVPR = (elementId: string, newState: VPRState) => {
     // This would be used to update VPR state in a real implementation
-    console.log('Updating VPR for:', elementId, newState);
+    console.warn('Updating VPR for:', elementId, newState);
   };
 
   return {

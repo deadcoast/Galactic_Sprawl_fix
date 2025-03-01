@@ -273,7 +273,7 @@ export class ResourceStorageManager {
     let totalStored = 0;
 
     // Try to store in containers by score order
-    for (const { containerId, score } of sortedContainers) {
+    for (const { containerId, score: _ } of sortedContainers) {
       if (remainingAmount <= 0) {
         break;
       }
@@ -322,7 +322,7 @@ export class ResourceStorageManager {
     let totalRetrieved = 0;
 
     // Try to retrieve from containers by score order
-    for (const { containerId, score } of sortedContainers) {
+    for (const { containerId, score: _ } of sortedContainers) {
       if (remainingAmount <= 0) {
         break;
       }
@@ -432,7 +432,7 @@ export class ResourceStorageManager {
   /**
    * Convert overflow to another resource type
    */
-  private convertOverflow(type: ResourceType, amount: number): number {
+  private convertOverflow(_type: ResourceType, _amount: number): number {
     // This is a placeholder for resource conversion logic
     // In a real implementation, this would convert the resource to another type
     // based on conversion rules

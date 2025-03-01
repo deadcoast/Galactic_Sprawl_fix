@@ -205,7 +205,7 @@ export class ResourceFlowManager {
     const producers = activeNodes.filter(node => node.type === 'producer');
     const consumers = activeNodes.filter(node => node.type === 'consumer');
     const storages = activeNodes.filter(node => node.type === 'storage');
-    const converters = activeNodes.filter(node => node.type === 'converter');
+    const _converters = activeNodes.filter(node => node.type === 'converter');
 
     // Calculate resource availability and demand
     const availability: Partial<Record<ResourceType, number>> = {};
@@ -214,7 +214,7 @@ export class ResourceFlowManager {
     // Initialize with current resource states
     // Convert Map entries to array to avoid MapIterator error
     const resourceStateEntries = Array.from(this.network.resourceStates.entries());
-    for (const [type, state] of resourceStateEntries) {
+    for (const [type, _state] of resourceStateEntries) {
       availability[type] = 0;
       demand[type] = 0;
     }
@@ -421,7 +421,7 @@ export class ResourceFlowManager {
     // Extract resource type and other properties from flow
     const resourceType = flow.resources[0]?.type;
     const rate = flow.resources[0]?.amount || 0;
-    const interval = flow.resources[0]?.interval || 1000;
+    const _interval = flow.resources[0]?.interval || 1000;
     // Create a proper ResourcePriority object
     const priority: ResourcePriority = {
       type: resourceType,

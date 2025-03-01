@@ -129,18 +129,24 @@ export class GlobalAutomationManager {
 
       // Register message handler for automation requests
       communication.registerHandler('automation-request', message => {
-        console.log(`Received automation request from ${systemId}:`, message.payload);
+        console.warn(`Received automation request from ${systemId}:`, message.payload);
 
-        if (message.payload.routineId) {
-          const routine = this.routines.get(message.payload.routineId);
+        // Type assertion for payload
+        const payload = message.payload as {
+          routineId?: string;
+          createRoutine?: GlobalRoutine;
+        };
+
+        if (payload.routineId) {
+          const routine = this.routines.get(payload.routineId);
           if (routine && routine.enabled) {
             this.scheduleRoutine(routine);
             return;
           }
         }
 
-        if (message.payload.createRoutine) {
-          this.registerRoutine(message.payload.createRoutine);
+        if (payload.createRoutine) {
+          this.registerRoutine(payload.createRoutine);
         }
       });
     });
@@ -262,7 +268,7 @@ export class GlobalAutomationManager {
         return;
       }
 
-      console.log(`Executing routine: ${routine.name} (${routine.id})`);
+      console.warn(`Executing routine: ${routine.name} (${routine.id})`);
 
       // Check conditions
       let conditionsMet = true;
@@ -304,7 +310,7 @@ export class GlobalAutomationManager {
       }
 
       if (!conditionsMet) {
-        console.log(`Conditions not met for routine: ${routine.name}`);
+        console.warn(`Conditions not met for routine: ${routine.name}`);
 
         // Re-schedule for next interval
         this.scheduleRoutine({
@@ -385,7 +391,7 @@ export class GlobalAutomationManager {
   /**
    * Helper method to get resource amount
    */
-  private getResourceAmount(resourceType: string): number {
+  private getResourceAmount(_resourceType: string): number {
     try {
       // Try to access the resource manager through the automation manager
       // This is a simplified implementation
@@ -488,7 +494,7 @@ export class GlobalAutomationManager {
   /**
    * Handle error events
    */
-  private handleErrorEvent = (event: ModuleEvent): void => {
+  private handleErrorEvent = (_event: ModuleEvent): void => {
     // Find emergency response routines
     const emergencyRoutines = Array.from(this.routines.values()).filter(
       routine =>

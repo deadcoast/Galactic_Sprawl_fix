@@ -1,6 +1,7 @@
 import { colonyRules } from '../../config/automation/colonyRules';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import { EventEmitter } from '../../utils/EventEmitter';
 import { automationManager } from '../game/AutomationManager';
 import { resourceManager } from '../game/ResourceManager';
@@ -14,14 +15,24 @@ interface ColonyStats {
   energyProduction: number;
 }
 
-interface ColonyEvents {
+// Add a ResearchBenefits interface
+export interface ResearchBenefits {
+  resourceBonus?: Record<ResourceType, number>;
+  infrastructureBonus?: number;
+  populationBonus?: number;
+  happinessBonus?: number;
+  unlocks?: string[];
+  [key: string]: unknown;
+}
+
+interface ColonyEvents extends Record<string, unknown> {
   statsUpdated: { colonyId: string; stats: ColonyStats };
   resourcesDistributed: { colonyId: string; resources: Record<string, number> };
   infrastructureBuilt: { colonyId: string; type: string; level: number };
   populationGrew: { colonyId: string; amount: number };
   tradeRouteEstablished: { colonyId: string; partnerId: string; resources: string[] };
   defenseActivated: { colonyId: string; threatLevel: number };
-  researchCompleted: { colonyId: string; project: string; benefits: any };
+  researchCompleted: { colonyId: string; project: string; benefits: ResearchBenefits };
   emergencyProtocolActivated: { colonyId: string; type: string };
 }
 
@@ -125,7 +136,7 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
     // Distribute resources
     Object.entries(resourceNeeds).forEach(([resource, amount]) => {
-      resourceManager.transferResources(resource as any, amount, 'storage', colonyId);
+      resourceManager.transferResources(resource as ResourceType, amount, 'storage', colonyId);
     });
 
     this.emit('resourcesDistributed', { colonyId, resources: resourceNeeds });
@@ -157,7 +168,7 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
     // Consume resources
     Object.entries(requirements).forEach(([resource, amount]) => {
-      resourceManager.removeResource(resource as any, amount);
+      resourceManager.removeResource(resource as ResourceType, amount);
     });
 
     // Update infrastructure
@@ -187,7 +198,7 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   private hasRequiredResources(requirements: Record<string, number>): boolean {
     return Object.entries(requirements).every(
-      ([resource, amount]) => resourceManager.getResourceAmount(resource as any) >= amount
+      ([resource, amount]) => resourceManager.getResourceAmount(resource as ResourceType) >= amount
     );
   }
 
@@ -242,7 +253,7 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
     });
   }
 
-  public completeResearch(colonyId: string, project: string, benefits: any): void {
+  public completeResearch(colonyId: string, project: string, benefits: ResearchBenefits): void {
     const colony = this.colonies.get(colonyId);
     if (!colony) {
       return;

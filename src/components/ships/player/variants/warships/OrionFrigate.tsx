@@ -26,7 +26,7 @@ interface OrionFrigateProps {
 }
 
 export function OrionFrigate({
-  id,
+  id: _id,
   status,
   hull,
   maxHull,

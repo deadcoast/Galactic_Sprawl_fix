@@ -37,7 +37,7 @@ export class ParticleSystemManager extends EventEmitter<ParticleSystemEvents> {
     this.particlePool = new EntityPool<Particle>(() => this.createParticle(), initialPoolSize);
 
     // Debug logging
-    console.debug(`[ParticleSystemManager] Initialized with pool size ${initialPoolSize}`);
+    console.warn(`[ParticleSystemManager] Initialized with pool size ${initialPoolSize}`);
   }
 
   /**

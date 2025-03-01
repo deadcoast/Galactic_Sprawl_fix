@@ -35,7 +35,7 @@ const initialState: ModuleState = {
 function moduleReducer(state: ModuleState, action: ModuleAction): ModuleState {
   switch (action.type) {
     case 'CREATE_MODULE': {
-      const module = moduleManager.createModule(action.moduleType, action.position);
+      const _module = moduleManager.createModule(action.moduleType, action.position);
       return {
         ...state,
         activeModules: moduleManager.getActiveModules(),
@@ -186,7 +186,7 @@ export function canBuildModule(
   return false;
 }
 
-export function buildModule(moduleType: ModuleType, cost: { minerals?: number; energy?: number }) {
+export function buildModule(moduleType: ModuleType, _cost: { minerals?: number; energy?: number }) {
   const { dispatch, state } = useModules();
 
   // Find a suitable building and attachment point

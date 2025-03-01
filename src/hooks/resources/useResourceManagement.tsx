@@ -58,7 +58,7 @@ export function useResourceManagement() {
       return;
     }
 
-    const frameId = requestAnimationFrame(time => {
+    const frameId = requestAnimationFrame(_time => {
       integration.update(1000 / 60); // Assume 60 FPS
     });
 

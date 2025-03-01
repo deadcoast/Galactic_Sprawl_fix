@@ -1,204 +1,112 @@
 {
   "summary": {
-    "total": 191,
-    "errors": 76,
-    "warnings": 115,
+    "total": 0,
+    "errors": 0,
+    "warnings": 0,
     "files": 312
   },
-  "topRules": [
-    [
-      "@typescript-eslint/no-explicit-any",
-      {
-        "errors": 74,
-        "warnings": 0
-      }
-    ],
-    [
-      "@typescript-eslint/no-unused-vars",
-      {
-        "errors": 0,
-        "warnings": 64
-      }
-    ],
-    [
-      "no-console",
-      {
-        "errors": 0,
-        "warnings": 51
-      }
-    ],
-    [
-      "react-hooks/exhaustive-deps",
-      {
-        "errors": 2,
-        "warnings": 0
-      }
-    ]
-  ],
+  "topRules": [],
   "topFiles": [
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module/SubModuleManager.ts",
-      8
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/App.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/modules/useSubModules.ts",
-      7
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/colony/AutomatedExpansion.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/initialization/automationSystemInit.ts",
-      7
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/colony/BiodomeModule.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/initialization/moduleFrameworkInit.ts",
-      7
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/colony/ColonyCore.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module/ShipHangarManager.ts",
-      7
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/colony/CulturalCenter.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource/ResourceIntegration.ts",
-      7
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/colony/EconomicHub.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/combat/combatManager.ts",
-      6
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/colony/HabitableWorld.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/managers/resource/ResourceThresholdManager.test.ts",
-      6
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/colony/ResourceTransferAnimation.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/automation/GlobalAutomationManager.ts",
-      5
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/ExplorationControls.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/colony/ColonyManagerImpl.ts",
-      5
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module/ModuleUpgradeManager.ts",
-      5
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/ExplorationTutorial.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/MiningWindow.tsx",
-      4
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/ExplorationWindow.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/combat/BattleEnvironment.tsx",
-      4
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/MissionLog.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/combat/useCombatAI.ts",
-      4
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/MissionReplay.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/modules/useModuleUpgrade.ts",
-      4
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/ReconShipStatus.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource/ResourceExchangeManager.ts",
-      4
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/ShipStatusMonitor.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource/ResourceStorageManager.ts",
-      4
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/AutomationMonitor.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/events/EventCommunication.test.ts",
-      4
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/MineralProcessingCentre.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/events/rxjsIntegration.test.ts",
-      4
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/MiningControls.tsx",
+      0
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/events/rxjsIntegration.ts",
-      4
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/MiningMap.tsx",
+      0
     ]
   ],
   "topDirs": [
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource",
-      {
-        "errors": 1,
-        "warnings": 22
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module",
-      {
-        "errors": 4,
-        "warnings": 17
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/initialization",
-      {
-        "errors": 9,
-        "warnings": 7
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/effects/component_effects",
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src",
       {
         "errors": 0,
-        "warnings": 13
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/modules",
-      {
-        "errors": 12,
-        "warnings": 1
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/combat",
-      {
-        "errors": 9,
         "warnings": 0
       }
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/events",
-      {
-        "errors": 2,
-        "warnings": 7
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/managers/resource",
-      {
-        "errors": 8,
-        "warnings": 0
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/events",
-      {
-        "errors": 8,
-        "warnings": 0
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/optimization",
-      {
-        "errors": 2,
-        "warnings": 4
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/automation",
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/colony",
       {
         "errors": 0,
-        "warnings": 5
+        "warnings": 0
       }
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/colony",
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub",
       {
-        "errors": 5,
+        "errors": 0,
         "warnings": 0
       }
     ],
@@ -206,21 +114,84 @@
       "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub",
       {
         "errors": 0,
-        "warnings": 4
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/academy",
+      {
+        "errors": 0,
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/hangar",
+      {
+        "errors": 0,
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/radar",
+      {
+        "errors": 0,
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/trading",
+      {
+        "errors": 0,
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/mothership",
+      {
+        "errors": 0,
+        "warnings": 0
       }
     ],
     [
       "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/combat",
       {
         "errors": 0,
-        "warnings": 4
+        "warnings": 0
       }
     ],
     [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/combat",
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/debug",
       {
-        "errors": 3,
-        "warnings": 1
+        "errors": 0,
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/factions",
+      {
+        "errors": 0,
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ships/FactionShips",
+      {
+        "errors": 0,
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ships/FactionShips/equatorHorizon",
+      {
+        "errors": 0,
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ships/FactionShips/lostNova",
+      {
+        "errors": 0,
+        "warnings": 0
       }
     ]
   ]

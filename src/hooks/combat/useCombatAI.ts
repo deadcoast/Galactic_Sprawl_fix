@@ -17,6 +17,19 @@ interface CombatAIState {
   };
 }
 
+// Define formation interface to replace any type
+interface UnitFormation {
+  type: 'offensive' | 'defensive' | 'balanced';
+  spacing: number;
+  facing: number;
+}
+
+// Extend CombatUnit with faction property
+interface ExtendedCombatUnit extends CombatUnit {
+  faction: FactionId;
+  formation?: UnitFormation;
+}
+
 export function useCombatAI(unitId: string, factionId: FactionId) {
   const [state, setState] = useState<CombatAIState>({
     isActive: false,
@@ -35,7 +48,13 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     let successCount = 0;
     const startTime = Date.now();
 
-    const handleNodeExecuted = ({ nodeId, success }: { nodeId: string; success: boolean }) => {
+    const handleNodeExecuted = ({
+      nodeId: _nodeId,
+      success,
+    }: {
+      nodeId: string;
+      success: boolean;
+    }) => {
       successCount += success ? 1 : 0;
       const totalExecutions = successCount + (actionCount - successCount);
       const successRate = totalExecutions > 0 ? successCount / totalExecutions : 0;
@@ -74,13 +93,13 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
       }
 
       // Convert to CombatTypes.CombatUnit
-      const unit = convertToCombatTypesUnit(managerUnit);
+      const unit = convertToCombatTypesUnit(managerUnit) as ExtendedCombatUnit;
 
       const nearbyUnits = combatManager
         .getUnitsInRange(unit.position, 500)
-        .map(convertToCombatTypesUnit);
-      const nearbyEnemies = nearbyUnits.filter(u => (u as any).faction !== factionId);
-      const nearbyAllies = nearbyUnits.filter(u => (u as any).faction === factionId);
+        .map(convertToCombatTypesUnit) as ExtendedCombatUnit[];
+      const nearbyEnemies = nearbyUnits.filter(u => u.faction !== factionId);
+      const nearbyAllies = nearbyUnits.filter(u => u.faction === factionId);
 
       // Calculate fleet strength and threat level
       const fleetStrength = calculateFleetStrength(unit, nearbyAllies);
@@ -94,7 +113,7 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
         threatLevel,
         nearbyEnemies,
         nearbyAllies,
-        currentFormation: (unit as any).formation || {
+        currentFormation: unit.formation || {
           type: 'balanced',
           spacing: 100,
           facing: 0,

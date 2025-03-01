@@ -34,7 +34,7 @@ function BaseShipContent({
   onFire,
   onEngage,
   onRetreat,
-  onSpecialAbility,
+  onSpecialAbility: _onSpecialAbility,
   className = '',
   children,
 }: Omit<

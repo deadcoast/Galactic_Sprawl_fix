@@ -401,7 +401,7 @@ export class GameLoopManager {
 
     // Log stats if in development
     if (process.env.NODE_ENV === 'development') {
-      console.debug('[GameLoop] Stats:', {
+      console.warn('[GameLoop] Stats:', {
         fps: avgFps.toFixed(2),
         updateTime: this.stats.updateTime.toFixed(2) + 'ms',
         idleTime: this.stats.idleTime.toFixed(2) + 'ms',

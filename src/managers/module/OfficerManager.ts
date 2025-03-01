@@ -641,7 +641,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
     return this.currentTier;
   }
 
-  private emitModuleEvent(type: ModuleEventType, data: any): void {
+  private emitModuleEvent(type: ModuleEventType, data: Record<string, unknown>): void {
     moduleEventBus.emit({
       type,
       moduleId: 'officer-manager',

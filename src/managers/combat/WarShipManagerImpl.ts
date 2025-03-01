@@ -68,6 +68,23 @@ interface CombatTask {
   };
 }
 
+// New interfaces for event data
+interface FormationChangeData {
+  formation?: {
+    type: 'offensive' | 'defensive' | 'balanced';
+    spacing: number;
+    facing: number;
+  };
+}
+
+interface EngagementData {
+  targetId?: string;
+}
+
+interface AttackData {
+  targetId?: string;
+}
+
 export class WarShipManagerImpl extends EventEmitter {
   private ships: Map<string, WarShip> = new Map();
   private tasks: Map<string, CombatTask> = new Map();
@@ -94,10 +111,10 @@ export class WarShipManagerImpl extends EventEmitter {
         if (ship) {
           switch (event.data.type) {
             case 'formation':
-              this.handleFormationChange(ship, event.data);
+              this.handleFormationChange(ship, event.data as FormationChangeData);
               break;
             case 'engagement':
-              this.handleEngagement(ship, event.data);
+              this.handleEngagement(ship, event.data as EngagementData);
               break;
             case 'repair':
               this.handleRepair(ship);
@@ -106,7 +123,7 @@ export class WarShipManagerImpl extends EventEmitter {
               this.handleShieldBoost(ship);
               break;
             case 'attack':
-              this.handleAttack(ship, event.data);
+              this.handleAttack(ship, event.data as AttackData);
               break;
             case 'retreat':
               this.handleRetreat(ship);
@@ -117,7 +134,7 @@ export class WarShipManagerImpl extends EventEmitter {
     });
   }
 
-  private handleFormationChange(ship: WarShip, data: any): void {
+  private handleFormationChange(ship: WarShip, data: FormationChangeData): void {
     const { formation } = data;
     if (formation) {
       const formationId = `formation-${Date.now()}`;
@@ -130,7 +147,7 @@ export class WarShipManagerImpl extends EventEmitter {
     }
   }
 
-  private handleEngagement(ship: WarShip, data: any): void {
+  private handleEngagement(ship: WarShip, data: EngagementData): void {
     const { targetId } = data;
     if (targetId) {
       const task: CombatTask = {
@@ -164,7 +181,7 @@ export class WarShipManagerImpl extends EventEmitter {
     }
   }
 
-  private handleAttack(ship: WarShip, data: any): void {
+  private handleAttack(ship: WarShip, data: AttackData): void {
     const { targetId } = data;
     if (targetId) {
       const readyWeapon = ship.weapons.find(w => w.state.status === 'ready');

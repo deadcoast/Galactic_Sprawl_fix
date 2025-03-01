@@ -17,7 +17,8 @@ import {
 } from '../../types/weapons/WeaponTypes';
 
 // Special weapon effects for Equator Horizon
-const TEMPORAL_EFFECT = {
+const _TEMPORAL_EFFECT = {
+  id: 'temporal-disruption',
   type: 'damage',
   name: 'Temporal Disruption',
   description: 'Time-warping energy damage',
@@ -31,7 +32,8 @@ const TEMPORAL_EFFECT = {
   strength: 80,
 } as DamageEffect;
 
-const QUANTUM_EFFECT = {
+const _QUANTUM_EFFECT = {
+  id: 'quantum-collapse',
   type: 'damage',
   name: 'Quantum Collapse',
   description: 'Reality-warping energy damage',
@@ -45,7 +47,8 @@ const QUANTUM_EFFECT = {
   strength: 100,
 } as DamageEffect;
 
-const HARMONIC_EFFECT = {
+const _HARMONIC_EFFECT = {
+  id: 'harmonic-resonance',
   type: 'damage',
   name: 'Harmonic Resonance',
   description: 'Shield-penetrating harmonic damage',

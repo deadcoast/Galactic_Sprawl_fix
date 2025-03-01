@@ -19,7 +19,7 @@ interface SpitflareProps {
 }
 
 export function Spitflare({
-  id,
+  id: _id,
   status,
   hull,
   maxHull,

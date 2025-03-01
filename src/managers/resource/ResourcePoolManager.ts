@@ -425,21 +425,21 @@ export class ResourcePoolManager {
         return {
           id,
           priority:
-            container && 'priority' in container ? ((container as any).priority as number) : 1,
+            container && 'priority' in container ? (container as { priority: number }).priority : 1,
         };
       })
-      .sort((a, b) => (b.priority as number) - (a.priority as number));
+      .sort((a, b) => b.priority - a.priority);
 
     // Calculate total priority
     const totalPriority = containersWithPriority.reduce(
-      (sum, container) => sum + (container.priority as number),
+      (sum, container) => sum + container.priority,
       0
     );
 
     // Allocate based on priority
     return containersWithPriority.map(container => {
-      const containerPercentage = ((container.priority as number) / totalPriority) * 100;
-      const containerAmount = ((container.priority as number) / totalPriority) * amount;
+      const containerPercentage = (container.priority / totalPriority) * 100;
+      const containerAmount = (container.priority / totalPriority) * amount;
 
       return {
         targetId: container.id,
