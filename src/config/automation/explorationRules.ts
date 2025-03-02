@@ -1,3 +1,4 @@
+import { ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { AutomationRule } from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 
@@ -19,7 +20,9 @@ export const explorationRules: AutomationRule[] = [
       {
         type: 'RESOURCE_ABOVE',
         target: 'energy',
-        value: 100,
+        value: {
+          amount: 100,
+        },
       },
     ],
     actions: [
@@ -29,6 +32,7 @@ export const explorationRules: AutomationRule[] = [
         value: {
           moduleId: 'exploration-hub',
           moduleType: 'exploration' as ModuleType,
+          eventType: 'DISPATCH_RECON' as ModuleEventType,
           data: {
             type: 'mapping',
             priority: 1,
@@ -54,25 +58,26 @@ export const explorationRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'RESOURCE_DISCOVERED',
         value: {
-          timeWindow: 5000, // Last 5 seconds
+          eventType: 'RESOURCE_DISCOVERED',
         },
       },
     ],
     actions: [
       {
         type: 'EMIT_EVENT',
-        target: 'UPDATE_MINING_MAP',
+        target: 'PROCESS_DISCOVERY',
         value: {
           moduleId: 'exploration-hub',
           moduleType: 'exploration' as ModuleType,
+          eventType: 'PROCESS_DISCOVERY' as ModuleEventType,
           data: {
-            type: 'resource-update',
+            type: 'processing',
             priority: 2,
           },
         },
       },
     ],
-    interval: 5000, // Check every 5 seconds
+    interval: 10000, // Check every 10 seconds
   },
 
   // Anomaly Investigation
@@ -90,7 +95,7 @@ export const explorationRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'ANOMALY_DETECTED',
         value: {
-          timeWindow: 10000, // Last 10 seconds
+          eventType: 'ANOMALY_DETECTED',
         },
       },
     ],
@@ -101,6 +106,7 @@ export const explorationRules: AutomationRule[] = [
         value: {
           moduleId: 'exploration-hub',
           moduleType: 'exploration' as ModuleType,
+          eventType: 'INVESTIGATE_ANOMALY' as ModuleEventType,
           data: {
             type: 'investigation',
             priority: 3,
@@ -108,14 +114,14 @@ export const explorationRules: AutomationRule[] = [
         },
       },
     ],
-    interval: 10000, // Check every 10 seconds
+    interval: 15000, // Check every 15 seconds
   },
 
-  // Experience-Based Ship Upgrades
+  // Exploration Ship Maintenance
   {
-    id: 'recon-ship-upgrade',
+    id: 'ship-maintenance',
     moduleId: 'exploration-hub',
-    name: 'Recon Ship Experience Upgrade',
+    name: 'Exploration Ship Maintenance',
     enabled: true,
     conditions: [
       {
@@ -124,46 +130,64 @@ export const explorationRules: AutomationRule[] = [
       },
       {
         type: 'EVENT_OCCURRED',
-        target: 'SHIP_EXPERIENCE_THRESHOLD',
+        target: 'SHIP_DAMAGED',
         value: {
-          timeWindow: 60000, // Last minute
+          eventType: 'SHIP_DAMAGED',
         },
-      },
-      {
-        type: 'RESOURCE_ABOVE',
-        target: 'minerals',
-        value: 200,
-      },
-      {
-        type: 'RESOURCE_ABOVE',
-        target: 'energy',
-        value: 150,
       },
     ],
     actions: [
       {
-        type: 'CONSUME_RESOURCES',
-        target: 'minerals',
-        value: 200,
-      },
-      {
-        type: 'CONSUME_RESOURCES',
-        target: 'energy',
-        value: 150,
-      },
-      {
         type: 'EMIT_EVENT',
-        target: 'UPGRADE_RECON_SHIP',
+        target: 'REPAIR_SHIP',
         value: {
           moduleId: 'exploration-hub',
           moduleType: 'exploration' as ModuleType,
+          eventType: 'REPAIR_SHIP' as ModuleEventType,
           data: {
-            type: 'upgrade',
+            type: 'maintenance',
             priority: 4,
           },
         },
       },
     ],
     interval: 60000, // Check every minute
+  },
+
+  // Exploration Data Analysis
+  {
+    id: 'data-analysis',
+    moduleId: 'exploration-hub',
+    name: 'Exploration Data Analysis',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'exploration-hub',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'DATA_COLLECTED',
+        value: {
+          eventType: 'DATA_COLLECTED',
+        },
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'ANALYZE_DATA',
+        value: {
+          moduleId: 'exploration-hub',
+          moduleType: 'exploration' as ModuleType,
+          eventType: 'ANALYZE_DATA' as ModuleEventType,
+          data: {
+            type: 'analysis',
+            priority: 2,
+          },
+        },
+      },
+    ],
+    interval: 20000, // Check every 20 seconds
   },
 ];

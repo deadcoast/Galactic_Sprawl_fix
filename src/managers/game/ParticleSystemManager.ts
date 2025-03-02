@@ -22,6 +22,7 @@ interface ParticleSystemEvents {
   particleUpdated: { particle: Particle };
   particleDied: { particle: Particle };
   systemUpdated: { activeCount: number };
+  [key: string]: unknown;
 }
 
 /**

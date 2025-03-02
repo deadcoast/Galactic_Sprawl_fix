@@ -1,5 +1,7 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { AlertTriangle, Crosshair, Shield, Zap } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { Position } from '../../types/core/GameTypes';
 
 interface CombatAutomationEffectProps {
@@ -17,10 +19,10 @@ export function CombatAutomationEffect({
   intensity = 1,
   quality = 'high',
 }: CombatAutomationEffectProps) {
-  const [isActive, setIsActive] = useState(true);
-  const [particles, setParticles] = useState<Position[]>([]);
+  const [isActive, setIsActive] = React.useState(true);
+  const [particles, setParticles] = React.useState<Position[]>([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Initialize particles based on quality
     const particleCount = quality === 'low' ? 5 : quality === 'medium' ? 10 : 20;
     const newParticles = Array.from({ length: particleCount }).map(() => ({
@@ -61,17 +63,23 @@ export function CombatAutomationEffect({
   const getEffectIcon = () => {
     switch (type) {
       case 'formation':
-        return <Shield className={`h-8 w-8 text-${getEffectColor()}-400`} />;
+        return React.createElement(Shield, { className: `h-8 w-8 text-${getEffectColor()}-400` });
       case 'engagement':
-        return <Crosshair className={`h-8 w-8 text-${getEffectColor()}-400`} />;
+        return React.createElement(Crosshair, {
+          className: `h-8 w-8 text-${getEffectColor()}-400`,
+        });
       case 'repair':
-        return <Zap className={`h-8 w-8 text-${getEffectColor()}-400`} />;
+        return React.createElement(Zap, { className: `h-8 w-8 text-${getEffectColor()}-400` });
       case 'shield':
-        return <Shield className={`h-8 w-8 text-${getEffectColor()}-400`} />;
+        return React.createElement(Shield, { className: `h-8 w-8 text-${getEffectColor()}-400` });
       case 'attack':
-        return <Crosshair className={`h-8 w-8 text-${getEffectColor()}-400`} />;
+        return React.createElement(Crosshair, {
+          className: `h-8 w-8 text-${getEffectColor()}-400`,
+        });
       case 'retreat':
-        return <AlertTriangle className={`h-8 w-8 text-${getEffectColor()}-400`} />;
+        return React.createElement(AlertTriangle, {
+          className: `h-8 w-8 text-${getEffectColor()}-400`,
+        });
     }
   };
 
@@ -79,58 +87,76 @@ export function CombatAutomationEffect({
 
   const color = getEffectColor();
 
-  return (
-    <div
-      className="pointer-events-none absolute"
-      style={{
+  return React.createElement(
+    'div',
+    {
+      className: 'pointer-events-none absolute',
+      style: {
         left: position.x,
         top: position.y,
         transform: 'translate(-50%, -50%)',
-      }}
-    >
-      {/* Core Effect */}
-      <div
-        className={`relative h-32 w-32 rounded-full bg-${color}-500/20 animate-pulse`}
-        style={{
-          animation: `pulse ${1 / intensity}s infinite`,
-        }}
-      >
-        {/* Icon */}
-        <div className="absolute inset-0 flex items-center justify-center">{getEffectIcon()}</div>
+      },
+    },
+    [
+      // Core Effect
+      React.createElement(
+        'div',
+        {
+          key: 'core',
+          className: `relative h-32 w-32 rounded-full bg-${color}-500/20 animate-pulse`,
+          style: {
+            animation: `pulse ${1 / intensity}s infinite`,
+          },
+        },
+        [
+          // Icon
+          React.createElement(
+            'div',
+            {
+              key: 'icon',
+              className: 'absolute inset-0 flex items-center justify-center',
+            },
+            getEffectIcon()
+          ),
 
-        {/* Particles */}
-        {quality !== 'low' &&
-          particles.map((particle, index) => (
-            <div
-              key={index}
-              className={`absolute h-1 w-1 rounded-full bg-${color}-400`}
-              style={{
-                left: `${particle.x}%`,
-                top: `${particle.y}%`,
-                opacity: 0.5 + Math.random() * 0.5,
-                animation: `float ${1 + Math.random()}s infinite`,
-              }}
-            />
-          ))}
+          // Particles
+          quality !== 'low' &&
+            particles.map((particle, index) =>
+              React.createElement('div', {
+                key: `particle-${index}`,
+                className: `absolute h-1 w-1 rounded-full bg-${color}-400`,
+                style: {
+                  left: `${particle.x}%`,
+                  top: `${particle.y}%`,
+                  opacity: 0.5 + Math.random() * 0.5,
+                  animation: `float ${1 + Math.random()}s infinite`,
+                },
+              })
+            ),
 
-        {/* Glow Effect */}
-        <div
-          className={`absolute inset-0 rounded-full`}
-          style={{
-            background: `radial-gradient(circle, ${color}33 0%, ${color}00 70%)`,
-            filter: 'blur(8px)',
-            animation: `pulse ${1.5 / intensity}s infinite`,
-          }}
-        />
-      </div>
+          // Glow Effect
+          React.createElement('div', {
+            key: 'glow',
+            className: `absolute inset-0 rounded-full`,
+            style: {
+              background: `radial-gradient(circle, ${color}33 0%, ${color}00 70%)`,
+              filter: 'blur(8px)',
+              animation: `pulse ${1.5 / intensity}s infinite`,
+            },
+          }),
+        ]
+      ),
 
-      {/* Effect Label */}
-      <div
-        className={`mt-2 rounded-full px-3 py-1 bg-${color}-900/80 border border-${color}-500/50 text-${color}-200 text-center text-xs uppercase tracking-wider`}
-      >
-        {type}
-      </div>
-    </div>
+      // Effect Label
+      React.createElement(
+        'div',
+        {
+          key: 'label',
+          className: `mt-2 rounded-full px-3 py-1 bg-${color}-900/80 border border-${color}-500/50 text-${color}-200 text-center text-xs uppercase tracking-wider`,
+        },
+        type
+      ),
+    ]
   );
 }
 

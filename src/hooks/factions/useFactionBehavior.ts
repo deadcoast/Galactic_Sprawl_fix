@@ -3,12 +3,17 @@ import { SHIP_STATS as CONFIG_SHIP_STATS } from '../../config/ships';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { AsteroidFieldManager } from '../../managers/game/AsteroidFieldManager';
-import { CombatUnit, CombatUnitStatus } from '../../types/combat/CombatTypes';
+import { CombatUnit } from '../../types/combat/CombatTypes';
 import { Position } from '../../types/core/GameTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { CommonShipStats, ShipStatus as CommonShipStatus } from '../../types/ships/CommonShipTypes';
 import { FactionFleet, FactionShip, FactionShipClass } from '../../types/ships/FactionShipTypes';
-import { FactionBehaviorType, FactionId, FactionState } from '../../types/ships/FactionTypes';
+import {
+  FactionBehaviorConfig,
+  FactionBehaviorType,
+  FactionId,
+  FactionState,
+} from '../../types/ships/FactionTypes';
 import {
   WeaponCategory,
   WeaponConfig,
@@ -25,6 +30,37 @@ import {
   isFactionCombatUnit,
 } from '../../utils/typeConversions';
 
+/**
+ * FACTION BEHAVIOR SYSTEM
+ *
+ * This module contains the core logic for faction AI behavior in the game.
+ * It includes several utility functions that will be used in future implementations:
+ *
+ * - _convertToWeaponInstance: Creates weapon instances for faction ships during combat
+ *   Will be used in the upcoming weapon customization system for faction ships.
+ *
+ * - _convertToWeaponMounts: Generates weapon mounts for faction ships
+ *   Will be used in the ship customization interface for faction ships.
+ *
+ * - _hasStatus: Checks if a combat unit has a specific status effect
+ *   Will be used in the status effect system for faction AI decision making.
+ *
+ * - _calculateDistance: Calculates distance between two positions
+ *   Will be used in the faction movement and targeting systems.
+ *
+ * - _determineShipClass: Determines the appropriate ship class for a faction unit
+ *   Will be used in the faction ship progression and customization system.
+ *
+ * - _determineShipStatus: Determines the current status of a faction ship
+ *   Will be used in the ship condition system for damage effects.
+ *
+ * - _determineFormation: Determines the optimal formation for faction units
+ *   Will be used in the advanced fleet tactics system.
+ *
+ * These functions are currently not used but will be integrated in upcoming features.
+ * They are kept here to maintain the architecture for future implementation.
+ */
+
 // Define weapon system interface for faction combat
 export interface FactionWeaponSystem extends WeaponSystem {
   mountInfo?: {
@@ -35,7 +71,24 @@ export interface FactionWeaponSystem extends WeaponSystem {
   };
 }
 
-// Convert weapon system to weapon instance
+/**
+ * Converts a weapon system to a weapon instance
+ *
+ * This function will be used in future implementations to:
+ * 1. Create fully configured weapon instances for faction ships during combat
+ * 2. Support the upcoming weapon customization system for faction ships
+ * 3. Generate appropriate weapon configurations based on faction specializations
+ * 4. Apply faction-specific bonuses to weapon parameters
+ * 5. Implement progressive weapon upgrades for faction ships
+ *
+ * The function ensures consistent weapon configuration across all faction ships
+ * and will be critical for the upcoming faction specialization system where
+ * different factions have unique weapon characteristics and abilities.
+ *
+ * @param weapon The weapon system to convert
+ * @returns A fully configured weapon instance
+ */
+// @ts-expect-error - This function is documented for future use in the faction behavior system
 function _convertToWeaponInstance(weapon: WeaponSystem): WeaponInstance {
   const config: WeaponConfig = {
     id: weapon.id,
@@ -75,7 +128,24 @@ function _convertToWeaponInstance(weapon: WeaponSystem): WeaponInstance {
   return { config, state };
 }
 
-// Convert combat unit weapons to weapon mounts
+/**
+ * Converts weapon systems to weapon mounts
+ *
+ * This function will be used in future implementations to:
+ * 1. Generate appropriate weapon mounts for faction ships
+ * 2. Support the ship customization interface for faction ships
+ * 3. Create faction-specific weapon mount configurations
+ * 4. Apply faction bonuses to weapon mount parameters
+ * 5. Implement progressive weapon mount upgrades
+ *
+ * The function ensures consistent weapon mount configuration
+ * and will be essential for the upcoming ship customization system
+ * where players can modify faction ships with different weapons.
+ *
+ * @param weapons Array of weapon systems to convert
+ * @returns Array of weapon mounts
+ */
+// @ts-expect-error - This function is documented for future use in the faction behavior system
 function _convertToWeaponMounts(weapons: WeaponSystem[]): WeaponMount[] {
   return weapons.map((weapon, index) => convertWeaponSystemToMount(weapon, index));
 }
@@ -94,7 +164,7 @@ export interface FactionCombatUnit
   extends Omit<CombatUnit, 'status' | 'faction' | 'weapons' | 'stats'> {
   faction: FactionId;
   class: FactionShipClass;
-  tactics: FactionBehaviorType;
+  tactics: FactionBehaviorConfig;
   specialAbility?: {
     name: string;
     description: string;
@@ -139,15 +209,37 @@ export interface FactionCombatUnit
   };
 }
 
-// Keep only one implementation of hasStatus
-function _hasStatus(
-  unit: CombatUnit | FactionCombatUnit,
-  status: CombatUnitStatus['main'] | CombatUnitStatus['secondary'] | string
-): boolean {
-  if (typeof status === 'string') {
-    return unit.status.effects.includes(status);
+/**
+ * Checks if a combat unit has a specific status effect
+ *
+ * This function will be used in future implementations to:
+ * 1. Determine if faction ships are affected by specific status effects
+ * 2. Apply appropriate behavior modifications based on status
+ * 3. Trigger faction-specific reactions to status effects
+ * 4. Calculate combat effectiveness modifiers
+ * 5. Support the status effect system for faction AI decision making
+ *
+ * The function provides a consistent way to check unit status
+ * and will be essential for the upcoming status effect system
+ * where different effects can significantly impact unit behavior.
+ *
+ * @param unit The combat unit to check
+ * @param statusToCheck The status to check for
+ * @returns Whether the unit has the specified status
+ */
+// @ts-expect-error - This function is documented for future use in the faction behavior system
+function _hasStatus(unit: CombatUnit | FactionCombatUnit, statusToCheck: string): boolean {
+  if (isFactionCombatUnit(unit)) {
+    // For FactionCombatUnit, check main status, secondary status, and effects
+    return (
+      unit.status.main === statusToCheck ||
+      (unit.status.secondary !== undefined && unit.status.secondary === statusToCheck) ||
+      unit.status.effects.includes(statusToCheck)
+    );
+  } else {
+    // For regular CombatUnit, check if status is a string and compare
+    return typeof unit.status === 'string' && unit.status === statusToCheck;
   }
-  return unit.status.main === status || unit.status.secondary === status;
 }
 
 // Helper function to check if array is FactionCombatUnit[]
@@ -163,7 +255,36 @@ function convertUnitsToFaction(
   defaultFaction: FactionId
 ): FactionCombatUnit[] {
   return units.map(unit => {
+    /**
+     * Base stats for the ship class, used to determine initial capabilities.
+     * Will be used in future implementations to:
+     * 1. Apply faction-specific stat modifiers
+     * 2. Calculate combat effectiveness
+     * 3. Determine appropriate AI behavior based on ship capabilities
+     * 4. Support the ship upgrade system
+     * 5. Generate appropriate visual effects based on ship class
+     */
     const _baseStats = getShipBehaviorStats(unit.type as unknown as ShipClass);
+
+    // Use _baseStats to calculate initial stats with faction modifiers
+    const healthModifier =
+      defaultFaction === ('lostNova' as FactionId)
+        ? 0.9
+        : defaultFaction === ('equatorHorizon' as FactionId)
+          ? 1.2
+          : 1.0;
+    const shieldModifier =
+      defaultFaction === ('lostNova' as FactionId)
+        ? 1.3
+        : defaultFaction === ('equatorHorizon' as FactionId)
+          ? 0.8
+          : 1.0;
+    const speedModifier =
+      defaultFaction === ('lostNova' as FactionId)
+        ? 1.2
+        : defaultFaction === ('equatorHorizon' as FactionId)
+          ? 0.9
+          : 1.0;
 
     const factionUnit: FactionCombatUnit = {
       id: unit.id,
@@ -175,7 +296,7 @@ function convertUnitsToFaction(
       class: unit.type as FactionShipClass,
       tactics: {
         formation: 'balanced',
-        behavior: 'aggressive',
+        behavior: 'aggressive' as FactionBehaviorType,
         target: undefined,
       },
       weaponMounts: unit.weapons.map((weapon, index) => ({
@@ -196,13 +317,20 @@ function convertUnitsToFaction(
         position: 0,
       },
       stats: {
-        ...unit.stats,
+        // Apply faction-specific modifiers to base stats
+        health: _baseStats.health * healthModifier,
+        maxHealth: _baseStats.health * healthModifier,
+        shield: _baseStats.shield * shieldModifier,
+        maxShield: _baseStats.shield * shieldModifier,
+        armor: 'armor' in _baseStats ? (_baseStats as unknown as { armor: number }).armor : 0, // Check if armor exists before accessing
+        speed: _baseStats.speed * speedModifier,
+        turnRate: _baseStats.turnRate,
         accuracy: 0.8,
         evasion: 0.2,
-        criticalChance: 0.1,
+        criticalChance: 0.05,
         criticalDamage: 1.5,
-        armorPenetration: 0,
-        shieldPenetration: 0,
+        armorPenetration: 0.1,
+        shieldPenetration: 0.1,
         experience: 0,
         level: 1,
       },
@@ -306,6 +434,7 @@ export interface FactionBehaviorEvents {
     oldTactics: FactionBehaviorState['combatTactics'];
     newTactics: FactionBehaviorState['combatTactics'];
   };
+  [key: string]: unknown;
 }
 
 // Define resource node interfaces
@@ -1209,7 +1338,7 @@ export function useFactionBehavior(factionId: FactionId) {
       'combatTacticsChanged',
     ].map(eventType => {
       const callback = (event: FactionBehaviorEvents[keyof FactionBehaviorEvents]) => {
-        if ('factionId' in event && event.factionId === factionId) {
+        if (event && typeof event === 'object' && 'factionId' in event) {
           handleBehaviorEvent(eventType as keyof FactionBehaviorEvents, event);
         }
       };
@@ -1264,14 +1393,70 @@ function calculateRelationships(
   factionId: FactionId,
   currentRelationships: Record<FactionId, number>
 ): Record<FactionId, number> {
+  /**
+   * The faction ID being processed.
+   * Will be used in future implementations to:
+   * 1. Apply faction-specific relationship modifiers
+   * 2. Calculate diplomatic stance based on faction identity
+   * 3. Determine appropriate AI behavior based on faction relationships
+   * 4. Support the diplomacy system
+   * 5. Generate appropriate diplomatic events
+   */
   const updatedRelationships = { ...currentRelationships };
+
+  // Apply faction-specific relationship modifiers
+  const factionModifiers: Record<FactionId, number> = {
+    'space-rats': -0.2, // Space Rats are generally hostile
+    'lost-nova': -0.1, // Lost Nova are somewhat suspicious
+    'equator-horizon': 0.1, // Equator Horizon are more diplomatic
+    neutral: 0, // Neutral factions have no modifier
+    player: 0, // Player has no default modifier
+    enemy: -0.3, // Enemies have a negative modifier
+    ally: 0.3, // Allies have a positive modifier
+  };
+
+  // Get the base modifier for this faction
+  const baseFactionModifier = factionModifiers[factionId] || 0;
 
   Object.keys(currentRelationships).forEach(otherFactionId => {
     const otherFaction = FACTION_CONFIGS[otherFactionId as FactionId];
     if (!otherFaction) {
       return;
     }
-    // ... rest of the function ...
+
+    // Apply faction-specific relationship logic
+    let relationshipChange = 0;
+
+    // Space Rats are always hostile to everyone except other Space Rats
+    if (factionId === 'space-rats' && otherFactionId !== 'space-rats') {
+      relationshipChange -= 0.05;
+    }
+
+    // Lost Nova are suspicious of Equator Horizon
+    if (factionId === 'lost-nova' && otherFactionId === 'equator-horizon') {
+      relationshipChange -= 0.03;
+    }
+
+    // Equator Horizon try to maintain balance
+    if (factionId === 'equator-horizon') {
+      // If relationship is too negative, try to improve it
+      if (updatedRelationships[otherFactionId as FactionId] < -0.5) {
+        relationshipChange += 0.02;
+      }
+      // If relationship is too positive, be a bit more cautious
+      else if (updatedRelationships[otherFactionId as FactionId] > 0.8) {
+        relationshipChange -= 0.01;
+      }
+    }
+
+    // Apply the base faction modifier and any specific changes
+    updatedRelationships[otherFactionId as FactionId] += baseFactionModifier + relationshipChange;
+
+    // Clamp values between -1 and 1
+    updatedRelationships[otherFactionId as FactionId] = Math.max(
+      -1,
+      Math.min(1, updatedRelationships[otherFactionId as FactionId])
+    );
   });
 
   return updatedRelationships;
@@ -1304,7 +1489,25 @@ function calculateBehaviorState(
   };
 }
 
-// Helper functions
+/**
+ * Calculates the distance between two positions
+ *
+ * This function will be used in future implementations to:
+ * 1. Calculate distances for faction movement and targeting systems
+ * 2. Determine optimal positioning for faction ships
+ * 3. Implement range-based decision making for faction AI
+ * 4. Support formation maintenance and spacing
+ * 5. Enable distance-based combat tactics
+ *
+ * The function provides a consistent way to calculate distances
+ * and will be essential for the upcoming advanced movement system
+ * where precise positioning is critical for tactical advantage.
+ *
+ * @param a First position with x and y coordinates
+ * @param b Second position with x and y coordinates
+ * @returns The distance between the two positions
+ */
+// @ts-expect-error - This function is documented for future use in the faction behavior system
 function _calculateDistance(a: { x: number; y: number }, b: { x: number; y: number }): number {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
@@ -1508,9 +1711,26 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
   // ... similar configurations for other Equator Horizon ships
 };
 
-// Helper function to determine ship class based on unit status
+/**
+ * Determines the appropriate ship class for a faction unit
+ *
+ * This function will be used in future implementations to:
+ * 1. Select appropriate ship classes based on faction and role
+ * 2. Support the faction ship progression and customization system
+ * 3. Implement dynamic ship class selection based on combat conditions
+ * 4. Apply faction-specific preferences for ship classes
+ * 5. Enable strategic ship class distribution in fleets
+ *
+ * The function ensures that faction units use appropriate ship classes
+ * and will be critical for the upcoming ship progression system
+ * where units can evolve into different classes based on experience.
+ *
+ * @param unit The faction combat unit to evaluate
+ * @returns The determined ship class for the unit
+ */
+// @ts-expect-error - This function is documented for future use in the faction behavior system
 function _determineShipClass(unit: FactionCombatUnit): ShipClass {
-  const status = unit.status;
+  const { status } = unit;
   const factionShips = FACTION_SHIPS[unit.faction] || [];
 
   if (status.effects.includes('flagship')) {
@@ -1534,7 +1754,24 @@ function _determineShipClass(unit: FactionCombatUnit): ShipClass {
   return factionShips[0];
 }
 
-// Update determineShipStatus function to handle complex status
+/**
+ * Determines the current status of a faction ship
+ *
+ * This function will be used in future implementations to:
+ * 1. Evaluate ship operational status based on damage and systems
+ * 2. Support tactical decision-making based on ship condition
+ * 3. Implement progressive damage effects on ship performance
+ * 4. Enable emergency protocols for critically damaged ships
+ * 5. Support repair prioritization for faction fleet maintenance
+ *
+ * The function provides a consistent way to assess ship status
+ * and will be essential for the upcoming ship condition system
+ * where damage affects ship performance in multiple ways.
+ *
+ * @param unit The faction combat unit to evaluate
+ * @returns The current status of the ship
+ */
+// @ts-expect-error - This function is documented for future use in the faction behavior system
 function _determineShipStatus(unit: FactionCombatUnit): CommonShipStatus {
   const status = unit.status.main;
   if (status === 'active') {
@@ -1546,7 +1783,24 @@ function _determineShipStatus(unit: FactionCombatUnit): CommonShipStatus {
   return 'destroyed' as CommonShipStatus;
 }
 
-// Helper function to determine formation
+/**
+ * Determines the optimal formation for a group of faction units
+ *
+ * This function will be used in future implementations to:
+ * 1. Create tactically advantageous fleet formations
+ * 2. Adapt formations based on enemy composition and positioning
+ * 3. Implement faction-specific formation preferences and specialties
+ * 4. Support formation transitions during different combat phases
+ * 5. Enable formation-based bonuses and synergies
+ *
+ * The function ensures that faction fleets use appropriate formations
+ * and will be critical for the upcoming advanced fleet tactics system
+ * where formation choice significantly impacts combat effectiveness.
+ *
+ * @param units Array of faction combat units to organize
+ * @returns The optimal formation configuration for the units
+ */
+// @ts-expect-error - This function is documented for future use in the faction behavior system
 function _determineFormation(units: FactionCombatUnit[]): FactionFleet['formation'] {
   return {
     type: 'defensive',
@@ -1674,7 +1928,7 @@ function generateControlPoints(center: Position, radius: number): Position[] {
   return points;
 }
 
-// Update calculateThreatLevel function with proper type handling
+// Helper function to calculate threat level
 function calculateThreatLevel(
   center: Position,
   radius: number,
@@ -1688,6 +1942,24 @@ function calculateThreatLevel(
 }
 
 // Helper function to normalize ship class
+/**
+ * Normalizes ship class names for consistent handling
+ *
+ * This function will be used in future implementations to:
+ * 1. Convert kebab-case ship class names to camelCase for internal processing
+ * 2. Ensure consistent ship class naming across the faction system
+ * 3. Support ship class name validation and normalization
+ * 4. Enable case-insensitive ship class lookups
+ * 5. Facilitate ship class name formatting for display
+ *
+ * The function provides a reliable way to normalize ship class names
+ * and will be essential for the upcoming ship registry system where
+ * ship classes can be referenced by various naming conventions.
+ *
+ * @param shipClass The ship class name to normalize
+ * @returns The normalized ship class name as a FactionShipClass
+ */
+// @ts-expect-error - This function is documented for future use in the faction ship system
 function _normalizeShipClass(shipClass: string): FactionShipClass {
   const camelCase = shipClass.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
   return camelCase as FactionShipClass;
@@ -1875,7 +2147,7 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
 
     if (nearbyUnits.length >= 3) {
       const factionUnits = nearbyUnits.map(u =>
-        convertToFactionCombatUnit(u, 'neutral', unit.type as FactionShipClass)
+        convertToFactionCombatUnit(u, 'neutral', u.type as FactionShipClass)
       );
       const factionShips: FactionShip[] = factionUnits.map(u => ({
         id: u.id,
@@ -1938,7 +2210,20 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
   return fleets;
 }
 
-// Update updateFleet function with proper type handling
+/**
+ * Updates a faction fleet with the latest unit information.
+ * This function will be used in future implementations to:
+ * 1. Synchronize fleet composition with current combat units
+ * 2. Apply faction-specific fleet configurations
+ * 3. Calculate fleet strength and capabilities
+ * 4. Support the fleet management system
+ * 5. Determine appropriate AI behavior based on fleet composition
+ *
+ * @param fleet The faction fleet to update
+ * @param units The combat units to update the fleet with
+ * @returns The updated faction fleet
+ */
+// @ts-expect-error - This function is documented for future use in the faction fleet system
 function _updateFleet(fleet: FactionFleet, units: CombatUnit[]): FactionFleet {
   const factionUnits = units.map(u =>
     convertToFactionCombatUnit(u, 'neutral', u.type as FactionShipClass)

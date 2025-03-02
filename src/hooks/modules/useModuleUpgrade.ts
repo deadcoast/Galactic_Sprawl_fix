@@ -9,7 +9,18 @@ import {
 
 /**
  * Interface for module event data
+ *
+ * This interface will be used in future implementations to:
+ * 1. Provide strong typing for module events
+ * 2. Type check event data in event handlers
+ * 3. Validate event data before processing
+ * 4. Provide better error messages when event data is malformed
+ * 5. Enable auto-completion and type safety when accessing event data properties
+ *
+ * The index signature [key: string]: unknown allows for additional properties
+ * while maintaining type safety by requiring explicit type checking before use.
  */
+// @ts-expect-error - This interface is documented for future use in the module event system
 interface _ModuleEventData {
   moduleId: string;
   [key: string]: unknown;

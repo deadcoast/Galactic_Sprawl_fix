@@ -1,8 +1,8 @@
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
   ResourcePriority,
   ResourceState,
-  ResourceThreshold,
   ResourceTransfer,
   ResourceType,
 } from '../../types/resources/ResourceTypes';
@@ -77,43 +77,75 @@ export class ResourceIntegration {
   }
 
   /**
-   * Subscribe to events from the legacy resource manager
+   * Subscribe to legacy resource events
    */
   private subscribeToLegacyEvents(): void {
-    // Subscribe to resource update events
+    // Subscribe to resource produced events
     moduleEventBus.subscribe('RESOURCE_PRODUCED' as ModuleEventType, event => {
-      const { resourceType, _newAmount, _oldAmount } = event.data;
+      // Type guard for event data
+      if (!event.data || typeof event.data !== 'object') {
+        return;
+      }
 
-      // Update resource state in our new system
+      // Extract and validate resource type
+      const resourceType = event.data.type;
+      if (!this.isValidResourceType(resourceType)) {
+        return;
+      }
+
+      // Get resource state
       const resourceState = this.resourceManager.getResourceState(resourceType);
       if (resourceState) {
         this.updateResourceState(resourceType, resourceState);
       }
     });
 
+    // Subscribe to resource consumed events
     moduleEventBus.subscribe('RESOURCE_CONSUMED' as ModuleEventType, event => {
-      const { resourceType, _newAmount, _oldAmount } = event.data;
+      // Type guard for event data
+      if (!event.data || typeof event.data !== 'object') {
+        return;
+      }
 
-      // Update resource state in our new system
+      // Extract and validate resource type
+      const resourceType = event.data.type;
+      if (!this.isValidResourceType(resourceType)) {
+        return;
+      }
+
+      // Get resource state
       const resourceState = this.resourceManager.getResourceState(resourceType);
       if (resourceState) {
         this.updateResourceState(resourceType, resourceState);
       }
     });
 
+    // Subscribe to resource transferred events
     moduleEventBus.subscribe('RESOURCE_TRANSFERRED' as ModuleEventType, event => {
-      const { resourceType, amount, source, target } = event.data;
+      // Type guard for event data
+      if (!event.data || typeof event.data !== 'object') {
+        return;
+      }
 
-      // Record the transfer in our local history
-      const transfer: ResourceTransfer = {
+      // Extract and validate transfer properties
+      const { resourceType, amount, source, target } = event.data;
+      if (
+        !this.isValidResourceType(resourceType) ||
+        typeof amount !== 'number' ||
+        typeof source !== 'string' ||
+        typeof target !== 'string'
+      ) {
+        return;
+      }
+
+      // Record transfer in history
+      this.transferHistory.push({
         type: resourceType,
         amount,
         source,
         target,
-        timestamp: event.timestamp,
-      };
-
-      this.transferHistory.push(transfer);
+        timestamp: Date.now(),
+      });
 
       // Keep history size manageable
       if (this.transferHistory.length > 100) {
@@ -121,43 +153,113 @@ export class ResourceIntegration {
       }
     });
 
-    // Subscribe to threshold events
+    // Subscribe to resource shortage events
     moduleEventBus.subscribe('RESOURCE_SHORTAGE' as ModuleEventType, event => {
-      const { resourceType, _currentAmount, requiredAmount } = event.data;
+      // Type guard for event data
+      if (!event.data || typeof event.data !== 'object') {
+        return;
+      }
 
-      // Create an alert in our threshold manager
-      const threshold: ResourceThreshold = {
-        type: resourceType,
-        min: requiredAmount,
-      };
+      // Extract and validate threshold properties
+      const { resourceType, requiredAmount } = event.data;
+      if (!this.isValidResourceType(resourceType) || typeof requiredAmount !== 'number') {
+        return;
+      }
 
-      // Find existing threshold config or create a new one
+      // Get current resource state
+      const currentAmount = this.resourceManager.getResourceAmount(resourceType);
+      const status = currentAmount < requiredAmount ? 'warning' : 'inactive';
+
+      // Emit a status change event for the resource module
+      moduleEventBus.emit({
+        type: 'STATUS_CHANGED' as ModuleEventType,
+        moduleId: `resource-${resourceType}`,
+        moduleType: 'resource' as ModuleType,
+        timestamp: Date.now(),
+        data: {
+          status,
+          previousStatus: 'unknown',
+          reason: `Resource ${resourceType} ${status === 'warning' ? 'shortage' : 'sufficient'}`,
+          currentAmount,
+          requiredAmount,
+          deficit: status === 'warning' ? requiredAmount - currentAmount : 0,
+        },
+      });
+
+      // Log the status change
+      console.warn(
+        `[ResourceIntegration] Resource ${resourceType} status: ${status} (${currentAmount}/${requiredAmount})`
+      );
+
+      // Find or create threshold configuration
       const existingConfig = this.thresholdManager
         .getThresholdConfigs()
         .find(config => config.threshold.type === resourceType);
 
       if (existingConfig) {
-        // Update the threshold
+        // Update existing threshold if needed
         existingConfig.threshold.min = Math.max(existingConfig.threshold.min || 0, requiredAmount);
+        // Update the threshold configuration
+        this.thresholdManager.registerThreshold({
+          ...existingConfig,
+          threshold: {
+            ...existingConfig.threshold,
+            min: Math.max(existingConfig.threshold.min || 0, requiredAmount),
+          },
+        });
       } else {
-        // Create a new threshold config
-        const config: ThresholdConfig = {
+        // Create new threshold configuration
+        this.thresholdManager.registerThreshold({
           id: `shortage-${resourceType}-${Date.now()}`,
-          threshold,
+          threshold: {
+            type: resourceType,
+            min: requiredAmount,
+          },
           actions: [
             {
               type: 'notification',
               target: 'system',
-              message: `Resource shortage: ${resourceType}`,
+              message: `Low ${resourceType} resources`,
+              priority: 1,
             },
           ],
           enabled: true,
           autoResolve: true,
-        };
-
-        this.thresholdManager.registerThreshold(config);
+        });
       }
     });
+  }
+
+  /**
+   * Type guard to validate if a value is a valid ResourceType
+   */
+  private isValidResourceType(value: unknown): value is ResourceType {
+    if (typeof value !== 'string') {
+      return false;
+    }
+
+    // Check if the value is one of the known resource types
+    // This assumes ResourceType is a string enum or string literal type
+    const validTypes = [
+      'energy',
+      'minerals',
+      'food',
+      'consumer_goods',
+      'alloys',
+      'research',
+      'influence',
+      'unity',
+      'exotic_matter',
+      'dark_matter',
+      'nanites',
+      'living_metal',
+      'zro',
+      'motes',
+      'gases',
+      'crystals',
+    ];
+
+    return validTypes.includes(value as string);
   }
 
   /**

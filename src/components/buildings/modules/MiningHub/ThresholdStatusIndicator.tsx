@@ -1,6 +1,8 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { motion } from 'framer-motion';
 import { AlertTriangle, Check, TrendingDown, TrendingUp } from 'lucide-react';
-import { useMemo } from 'react';
+import * as React from 'react';
 
 interface ThresholdStatusIndicatorProps {
   currentAmount: number;
@@ -19,7 +21,7 @@ export function ThresholdStatusIndicator({
   extractionRate,
   showDetails = false,
 }: ThresholdStatusIndicatorProps) {
-  const status = useMemo(() => {
+  const status = React.useMemo(() => {
     const percentage = (currentAmount / maxCapacity) * 100;
 
     if (currentAmount < minThreshold) {

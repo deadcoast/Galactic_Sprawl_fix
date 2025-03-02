@@ -1,9 +1,12 @@
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import { resourceManager } from '../game/ResourceManager';
+import { ResourceManager } from '../game/ResourceManager';
 import { moduleManager } from './ModuleManager';
 import { moduleStatusManager } from './ModuleStatusManager';
+
+// Create an instance of ResourceManager
+const resourceManager = new ResourceManager();
 
 // Define the ModuleEvent interface
 interface ModuleEvent {

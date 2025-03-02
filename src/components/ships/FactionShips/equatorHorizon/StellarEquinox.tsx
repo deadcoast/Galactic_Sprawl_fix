@@ -73,13 +73,12 @@ export function StellarEquinox({
         shield={shield}
         maxShield={maxShield}
         weapons={weapons}
-        tactics="defensive"
+        stats={stats}
         position={position}
         rotation={rotation}
         onEngage={onEngage}
         onRetreat={onRetreat}
         onFire={onFire}
-        stats={stats}
         onSpecialAbility={() => {
           setStellarConvergenceActive(!stellarConvergenceActive);
           onSpecialAbility?.();

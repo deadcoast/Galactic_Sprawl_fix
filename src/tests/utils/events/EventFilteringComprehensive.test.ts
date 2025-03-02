@@ -295,7 +295,7 @@ describe('Event Processor Functions', () => {
         [MessagePriority.HIGH, highProcessor],
       ]);
 
-      const priorityProcessor = createPriorityProcessor<TestEvent>(processors).slice(________);
+      const priorityProcessor = createPriorityProcessor<TestEvent>(processors);
 
       // Process an event without priority
       priorityProcessor({ data: 'no priority' });

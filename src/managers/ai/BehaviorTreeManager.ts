@@ -32,6 +32,7 @@ interface BehaviorEvents {
   treeCompleted: { unitId: string; success: boolean };
   actionStarted: { unitId: string; actionType: string };
   actionCompleted: { unitId: string; actionType: string };
+  [key: string]: unknown;
 }
 
 export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {

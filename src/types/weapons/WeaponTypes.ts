@@ -184,12 +184,14 @@ export interface WeaponConfig {
 // ------------------------------------------------------------
 
 /**
- * Weapon state
+ * Current state of a weapon
  */
 export interface WeaponState {
   status: WeaponStatus;
   currentStats: WeaponStats;
   effects: WeaponEffectType[];
+  currentAmmo?: number;
+  maxAmmo?: number;
 }
 
 /**

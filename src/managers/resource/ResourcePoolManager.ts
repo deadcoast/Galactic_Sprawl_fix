@@ -103,7 +103,7 @@ export class ResourcePoolManager {
     }
 
     // Remove all distribution rules for this pool
-    for (const [ruleId, rule] of this.distributionRules.entries()) {
+    for (const [ruleId, rule] of Array.from(this.distributionRules.entries())) {
       if (rule.poolId === id) {
         this.distributionRules.delete(ruleId);
       }
@@ -422,6 +422,21 @@ export class ResourcePoolManager {
     const containersWithPriority = targetIds
       .map(id => {
         const container = this.containers.get(id);
+
+        // Check if container can accept this resource type
+        if (container && 'acceptedTypes' in container) {
+          const typedContainer = container as { acceptedTypes?: ResourceType[] };
+          if (
+            typedContainer.acceptedTypes &&
+            !typedContainer.acceptedTypes.includes(resourceType)
+          ) {
+            console.warn(
+              `[ResourcePoolManager] Container ${id} cannot accept resource type ${resourceType}`
+            );
+            return { id, priority: 0 }; // Zero priority means it won't receive any allocation
+          }
+        }
+
         return {
           id,
           priority:
@@ -436,10 +451,22 @@ export class ResourcePoolManager {
       0
     );
 
+    // Log allocation details
+    console.log(
+      `[ResourcePoolManager] Allocating ${amount} units of ${resourceType} based on priority`
+    );
+
     // Allocate based on priority
     return containersWithPriority.map(container => {
       const containerPercentage = (container.priority / totalPriority) * 100;
       const containerAmount = (container.priority / totalPriority) * amount;
+
+      // Log individual container allocation
+      if (containerAmount > 0) {
+        console.log(
+          `[ResourcePoolManager] Allocated ${containerAmount.toFixed(2)} units of ${resourceType} to container ${container.id} (${containerPercentage.toFixed(2)}%)`
+        );
+      }
 
       return {
         targetId: container.id,

@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+import * as React from 'react';
 import { Position } from '../../types/core/GameTypes';
 
 interface FormationTransitionEffectProps {
@@ -28,8 +30,8 @@ export function FormationTransitionEffect({
   pattern,
   onComplete,
 }: FormationTransitionEffectProps) {
-  const [progress, setProgress] = useState(0);
-  const [particles, setParticles] = useState<ParticleProps[]>([]);
+  const [progress, setProgress] = React.useState(0);
+  const [particles, setParticles] = React.useState<ParticleProps[]>([]);
 
   // Quality-based settings
   const _particleCount = quality === 'high' ? 16 : quality === 'medium' ? 8 : 4;
@@ -62,7 +64,7 @@ export function FormationTransitionEffect({
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     const startTime = Date.now();
     const color = getPatternColor();
 
@@ -99,6 +101,36 @@ export function FormationTransitionEffect({
             color,
           });
         }
+
+        // Add additional particles based on quality setting
+        for (let i = 0; i < _particleCount; i++) {
+          // Calculate random position along the path
+          const randomProgress = Math.random() * easedProgress;
+          const particleX = source.x + (target.x - source.x) * randomProgress;
+          const particleY = source.y + (target.y - source.y) * randomProgress;
+
+          // Add some randomness to particle position
+          const jitter = 5;
+          const jitterX = (Math.random() - 0.5) * jitter;
+          const jitterY = (Math.random() - 0.5) * jitter;
+
+          newParticles.push({
+            x: particleX + jitterX,
+            y: particleY + jitterY,
+            size: 3 * Math.random() + 1,
+            opacity: 0.2 * Math.random() + 0.1,
+            color,
+          });
+        }
+
+        // Add a particle at the current position for better visualization
+        newParticles.push({
+          x: _currentX,
+          y: _currentY,
+          size: 6,
+          opacity: 0.5,
+          color,
+        });
       });
 
       setParticles(newParticles);
@@ -112,54 +144,63 @@ export function FormationTransitionEffect({
 
     const frameId = requestAnimationFrame(updateFrame);
     return () => cancelAnimationFrame(frameId);
-  }, [sourcePositions, targetPositions, duration, easingFunction, quality, pattern, onComplete]);
+  }, [
+    sourcePositions,
+    targetPositions,
+    duration,
+    easingFunction,
+    quality,
+    pattern,
+    onComplete,
+    trailLength,
+    _particleCount,
+  ]);
 
-  return (
-    <div className="pointer-events-none absolute inset-0">
-      {/* Formation Lines */}
-      <svg className="absolute inset-0">
-        {sourcePositions.map((source, index) => {
-          const target = targetPositions[index];
-          if (!target) {
-            return null;
-          }
+  // Create formation lines
+  const formationLines = sourcePositions.map((source, index) => {
+    const target = targetPositions[index];
+    if (!target) {
+      return null;
+    }
 
-          const _currentX = source.x + (target.x - source.x) * progress;
-          const _currentY = source.y + (target.y - source.y) * progress;
+    const _currentX = source.x + (target.x - source.x) * progress;
+    const _currentY = source.y + (target.y - source.y) * progress;
 
-          return (
-            <line
-              key={index}
-              x1={source.x}
-              y1={source.y}
-              x2={_currentX}
-              y2={_currentY}
-              stroke={getPatternColor()}
-              strokeWidth="2"
-              strokeDasharray="4 4"
-              className="opacity-30"
-            />
-          );
-        })}
-      </svg>
+    return React.createElement('line', {
+      key: index,
+      x1: source.x,
+      y1: source.y,
+      x2: _currentX,
+      y2: _currentY,
+      stroke: getPatternColor(),
+      strokeWidth: '2',
+      strokeDasharray: '4 4',
+      className: 'opacity-30',
+    });
+  });
 
-      {/* Particles */}
-      {particles.map((particle, index) => (
-        <div
-          key={`particle-${index}`}
-          className="absolute rounded-full transition-all duration-100"
-          style={{
-            left: particle.x,
-            top: particle.y,
-            width: particle.size,
-            height: particle.size,
-            backgroundColor: particle.color,
-            opacity: particle.opacity,
-            transform: 'translate(-50%, -50%)',
-            filter: `blur(${glowIntensity})`,
-          }}
-        />
-      ))}
-    </div>
-  );
+  // Create particles
+  const particleElements = particles.map((particle, index) => {
+    return React.createElement('div', {
+      key: `particle-${index}`,
+      className: 'absolute rounded-full transition-all duration-100',
+      style: {
+        left: particle.x,
+        top: particle.y,
+        width: particle.size,
+        height: particle.size,
+        backgroundColor: particle.color,
+        opacity: particle.opacity,
+        transform: 'translate(-50%, -50%)',
+        filter: `blur(${glowIntensity})`,
+      },
+    });
+  });
+
+  return React.createElement('div', { className: 'pointer-events-none absolute inset-0' }, [
+    // Formation Lines
+    React.createElement('svg', { className: 'absolute inset-0', key: 'svg' }, formationLines),
+    // Particles
+    ...particleElements,
+  ]);
 }

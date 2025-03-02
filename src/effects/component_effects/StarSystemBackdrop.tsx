@@ -1,4 +1,6 @@
-import { useEffect, useRef } from 'react';
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+import * as React from 'react';
 
 interface StarSystemBackdropProps {
   quality: 'low' | 'medium' | 'high';
@@ -6,9 +8,9 @@ interface StarSystemBackdropProps {
 }
 
 export function StarSystemBackdrop({ quality, dayNightCycle }: StarSystemBackdropProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) {
       return;
@@ -112,7 +114,9 @@ export function StarSystemBackdrop({ quality, dayNightCycle }: StarSystemBackdro
     };
   }, [quality, dayNightCycle]);
 
-  return (
-    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0" style={{ zIndex: -1 }} />
-  );
+  return React.createElement('canvas', {
+    ref: canvasRef,
+    className: 'pointer-events-none fixed inset-0',
+    style: { zIndex: -1 },
+  });
 }

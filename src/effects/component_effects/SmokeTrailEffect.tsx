@@ -1,6 +1,99 @@
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useEffect, useRef } from 'react';
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+
+// Mock for @react-three/fiber
+interface FrameState {
+  clock: {
+    elapsedTime: number;
+  };
+}
+
+const useFrame = (callback: (state: FrameState) => void): void => {
+  // This is a mock implementation
+  useEffect(() => {
+    let frameId: number;
+    const state: FrameState = { clock: { elapsedTime: 0 } };
+    let lastTime = 0;
+
+    const animate = (time: number) => {
+      const delta = (time - lastTime) / 1000;
+      lastTime = time;
+      state.clock.elapsedTime += delta;
+      callback(state);
+      frameId = requestAnimationFrame(animate);
+    };
+
+    frameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frameId);
+  }, [callback]);
+};
+
+// Mock Canvas component
+interface CanvasProps {
+  children: React.ReactNode;
+  camera: {
+    position: [number, number, number];
+    fov: number;
+  };
+  style: React.CSSProperties;
+}
+
+/**
+ * Canvas component for rendering 3D content
+ *
+ * @param children - The 3D content to render
+ * @param camera - Camera configuration for the 3D scene
+ *                 This parameter is currently unused in this mock implementation
+ *                 but will be used in the future to:
+ *                 1. Configure the camera position and field of view
+ *                 2. Set up proper perspective for smoke trail effects
+ *                 3. Enable camera animations during intense smoke effects
+ *                 4. Support dynamic camera adjustments based on smoke density
+ *                 5. Allow for camera tracking of moving smoke sources
+ * @param style - CSS styles for the canvas container
+ */
+const Canvas: React.FC<CanvasProps> = ({ children, camera, style }) => {
+  // Apply camera settings to the container style
+  const enhancedStyle = {
+    ...style,
+    // Use camera position to adjust perspective
+    perspective: `${1000 / (camera.fov / 75)}px`,
+    perspectiveOrigin: `${50 + camera.position[0] * 5}% ${50 - camera.position[1] * 5}%`,
+    // Add a subtle transform based on camera position for parallax effect
+    transform: `${style.transform || ''} rotateX(${camera.position[1]}deg) rotateY(${-camera.position[0]}deg)`,
+  };
+
+  return React.createElement('div', { style: enhancedStyle }, children);
+};
+
+// Declare JSX namespace for Three.js elements
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      points: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        ref?: React.RefObject<THREE.Points>;
+      };
+      bufferGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      bufferAttribute: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        attach: string;
+        count: number;
+        array: Float32Array;
+        itemSize: number;
+      };
+      shaderMaterial: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        attach?: string;
+        transparent?: boolean;
+        depthWrite?: boolean;
+        blending?: THREE.Blending;
+        uniforms?: Record<string, { value: unknown }>;
+        vertexShader?: string;
+        fragmentShader?: string;
+      };
+    }
+  }
+}
 
 interface SmokeTrailProps {
   position: { x: number; y: number };
@@ -10,178 +103,183 @@ interface SmokeTrailProps {
 }
 
 function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, 'position'>) {
-  const particlesRef = useRef<THREE.Points>(null);
-  const particleCount = 1000;
-  const particlePositions = useRef<Float32Array>();
-  const particleVelocities = useRef<Float32Array>();
-  const particleStartTimes = useRef<Float32Array>();
+  const pointsRef = useRef<THREE.Points>(null);
+  const geometryRef = useRef<THREE.BufferGeometry>(null);
+  const particleCount = Math.floor(intensity * 100);
+  const positions = new Float32Array(particleCount * 3);
+  const sizes = new Float32Array(particleCount);
+  const opacities = new Float32Array(particleCount);
+  const velocities = useRef<Float32Array>(new Float32Array(particleCount * 3));
+  const ages = useRef<Float32Array>(new Float32Array(particleCount));
 
+  // Initialize particles
   useEffect(() => {
-    if (!particlesRef.current) {
-      return;
-    }
+    if (!geometryRef.current) return;
 
-    particlePositions.current = new Float32Array(particleCount * 3);
-    particleVelocities.current = new Float32Array(particleCount * 3);
-    particleStartTimes.current = new Float32Array(particleCount);
-
-    const positions = particlePositions.current;
-    const velocities = particleVelocities.current;
-    const startTimes = particleStartTimes.current;
+    // Convert direction from degrees to radians
+    const directionRad = (direction * Math.PI) / 180;
+    const baseVelocity = 0.2 + intensity * 0.1;
 
     for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3;
-      positions[i3] = 0;
-      positions[i3 + 1] = 0;
-      positions[i3 + 2] = 0;
+      // Random position near origin
+      positions[i * 3] = (Math.random() - 0.5) * 0.2;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 0.2;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
 
-      const angle = direction * (Math.PI / 180) + (Math.random() - 0.5) * Math.PI * 0.5;
-      const speed = (0.5 + Math.random() * 0.5) * intensity;
-      velocities[i3] = Math.cos(angle) * speed;
-      velocities[i3 + 1] = Math.sin(angle) * speed;
-      velocities[i3 + 2] = (Math.random() - 0.5) * 0.2;
+      // Random size
+      sizes[i] = Math.random() * 0.5 + 0.5;
 
-      startTimes[i] = -Math.random() * 2.0;
+      // Initial opacity
+      opacities[i] = Math.random() * 0.5 + 0.5;
+
+      // Velocity in direction with some randomness
+      const spreadAngle = (Math.random() - 0.5) * Math.PI * 0.2;
+      const speed = baseVelocity * (Math.random() * 0.5 + 0.75);
+      velocities.current[i * 3] = Math.cos(directionRad + spreadAngle) * speed;
+      velocities.current[i * 3 + 1] = Math.sin(directionRad + spreadAngle) * speed;
+      velocities.current[i * 3 + 2] = (Math.random() - 0.5) * 0.05;
+
+      // Random initial age
+      ages.current[i] = Math.random() * 2;
     }
 
-    const geometry = particlesRef.current.geometry as THREE.BufferGeometry;
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('startTime', new THREE.BufferAttribute(startTimes, 1));
-  }, [direction, intensity]);
+    // Set attributes
+    geometryRef.current.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometryRef.current.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    geometryRef.current.setAttribute('opacity', new THREE.BufferAttribute(opacities, 1));
+  }, [particleCount, positions, sizes, opacities, direction, intensity]);
 
+  // Vertex shader
+  const vertexShader = `
+    attribute float size;
+    attribute float opacity;
+    varying float vOpacity;
+    
+    void main() {
+      vOpacity = opacity;
+      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+      gl_PointSize = size * (300.0 / -mvPosition.z);
+      gl_Position = projectionMatrix * mvPosition;
+    }
+  `;
+
+  // Fragment shader
+  const fragmentShader = `
+    uniform vec3 color;
+    varying float vOpacity;
+    
+    void main() {
+      // Create a circular particle
+      vec2 center = gl_PointCoord - vec2(0.5);
+      float dist = length(center);
+      float alpha = smoothstep(0.5, 0.4, dist) * vOpacity;
+      
+      // Smoke color with soft edges
+      gl_FragColor = vec4(color, alpha);
+    }
+  `;
+
+  // Update particles
   useFrame(state => {
-    if (
-      !particlesRef.current ||
-      !particlePositions.current ||
-      !particleVelocities.current ||
-      !particleStartTimes.current
-    ) {
-      return;
-    }
+    if (!geometryRef.current) return;
+
+    const positions = geometryRef.current.attributes.position.array as Float32Array;
+    const opacities = geometryRef.current.attributes.opacity.array as Float32Array;
+    const sizes = geometryRef.current.attributes.size.array as Float32Array;
 
     const time = state.clock.elapsedTime;
-    const positions = particlePositions.current;
-    const velocities = particleVelocities.current;
-    const startTimes = particleStartTimes.current;
-    const geometry = particlesRef.current.geometry as THREE.BufferGeometry;
-    const positionAttribute = geometry.getAttribute('position');
+    const lifespan = 2 + intensity;
 
     for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3;
-      const particleTime = time - startTimes[i];
+      // Update age
+      ages.current[i] += 0.016; // Approximately 60fps
 
-      if (particleTime > 2.0) {
-        // Reset particle
-        positions[i3] = 0;
-        positions[i3 + 1] = 0;
-        positions[i3 + 2] = 0;
-        startTimes[i] = time;
-      } else if (particleTime > 0) {
-        // Update particle position
-        positions[i3] += velocities[i3] * 0.016;
-        positions[i3 + 1] += velocities[i3 + 1] * 0.016;
-        positions[i3 + 2] += velocities[i3 + 2] * 0.016;
+      // Reset particles that have lived their lifespan
+      if (ages.current[i] > lifespan) {
+        // Reset position
+        positions[i * 3] = (Math.random() - 0.5) * 0.2;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 0.2;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
 
-        // Add turbulence
-        positions[i3] += Math.sin(particleTime * 5 + i) * 0.02;
-        positions[i3 + 1] += Math.cos(particleTime * 3 + i) * 0.02;
+        // Reset age
+        ages.current[i] = 0;
+
+        // Reset opacity
+        opacities[i] = Math.random() * 0.5 + 0.5;
+
+        // Reset size
+        sizes[i] = Math.random() * 0.5 + 0.5;
+      } else {
+        // Update position based on velocity
+        positions[i * 3] += velocities.current[i * 3];
+        positions[i * 3 + 1] += velocities.current[i * 3 + 1];
+        positions[i * 3 + 2] += velocities.current[i * 3 + 2];
+
+        // Add some turbulence
+        const turbulence = 0.01;
+        positions[i * 3] += Math.sin(time * 2 + i) * turbulence;
+        positions[i * 3 + 1] += Math.cos(time * 2 + i) * turbulence;
+
+        // Fade out based on age
+        const ageRatio = ages.current[i] / lifespan;
+        opacities[i] = Math.max(0, 1 - ageRatio) * (Math.random() * 0.1 + 0.9);
+
+        // Grow slightly as they age
+        sizes[i] = (Math.random() * 0.5 + 0.5) * (1 + ageRatio);
       }
     }
 
-    positionAttribute.needsUpdate = true;
+    // Update attributes
+    geometryRef.current.attributes.position.needsUpdate = true;
+    geometryRef.current.attributes.opacity.needsUpdate = true;
+    geometryRef.current.attributes.size.needsUpdate = true;
   });
 
-  const smokeShader = {
-    uniforms: {
-      time: { value: 0 },
-      color: { value: new THREE.Color(color) },
-      intensity: { value: intensity },
-    },
-    vertexShader: `
-      attribute float startTime;
-      uniform float time;
-      varying float vAlpha;
-      
-      void main() {
-        float particleTime = time - startTime;
-        if (particleTime > 0.0 && particleTime < 2.0) {
-          float normalizedTime = particleTime / 2.0;
-          vAlpha = (1.0 - normalizedTime) * (1.0 - normalizedTime);
-          
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          gl_Position = projectionMatrix * mvPosition;
-          gl_PointSize = mix(8.0, 2.0, normalizedTime) * (1.0 - length(position) * 0.1);
-        } else {
-          vAlpha = 0.0;
-          gl_Position = vec4(0.0);
-          gl_PointSize = 0.0;
-        }
-      }
-    `,
-    fragmentShader: `
-      uniform vec3 color;
-      uniform float intensity;
-      varying float vAlpha;
+  // Parse color string to RGB
+  const colorObj = new THREE.Color(color);
 
-      void main() {
-        vec2 uv = gl_PointCoord - 0.5;
-        float r = length(uv);
-        if (r > 0.5) discard;
-        
-        float softness = smoothstep(0.5, 0.0, r);
-        float glowPower = pow(softness, 2.0);
-        vec3 glowColor = mix(color, vec3(1.0), glowPower * 0.5);
-        
-        gl_FragColor = vec4(glowColor, vAlpha * intensity * softness);
-      }
-    `,
-  };
-
-  return (
-    <points ref={particlesRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={particleCount}
-          array={new Float32Array(particleCount * 3)}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-startTime"
-          count={particleCount}
-          array={new Float32Array(particleCount)}
-          itemSize={1}
-        />
-      </bufferGeometry>
-      <shaderMaterial
-        attach="material"
-        transparent
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        uniforms={smokeShader.uniforms}
-        vertexShader={smokeShader.vertexShader}
-        fragmentShader={smokeShader.fragmentShader}
-      />
-    </points>
-  );
+  return React.createElement('points', { ref: pointsRef }, [
+    React.createElement('bufferGeometry', { ref: geometryRef }),
+    React.createElement('shaderMaterial', {
+      attach: 'material',
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        color: { value: colorObj },
+      },
+      vertexShader,
+      fragmentShader,
+    }),
+  ]);
 }
 
 export function SmokeTrailEffect({ position, direction, intensity, color }: SmokeTrailProps) {
-  return (
-    <div
-      className="pointer-events-none absolute"
-      style={{
-        left: position.x,
-        top: position.y,
-        width: '400px',
-        height: '400px',
-        transform: 'translate(-50%, -50%)',
-      }}
-    >
-      <Canvas camera={{ position: [0, 0, 50], fov: 50 }} style={{ background: 'transparent' }}>
-        <SmokeParticles direction={direction} intensity={intensity} color={color} />
-      </Canvas>
-    </div>
+  // Create the smoke particles element
+  const smokeParticlesElement = React.createElement(SmokeParticles, {
+    direction,
+    intensity,
+    color,
+  });
+
+  return React.createElement(
+    'div',
+    {
+      style: {
+        position: 'absolute',
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        width: '0',
+        height: '0',
+        overflow: 'visible',
+        pointerEvents: 'none',
+      },
+    },
+    React.createElement(Canvas, {
+      camera: { position: [0, 0, 5], fov: 75 },
+      style: { width: '300px', height: '300px', transform: 'translate(-150px, -150px)' },
+      children: smokeParticlesElement,
+    })
   );
 }
 

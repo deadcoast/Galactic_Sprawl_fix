@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ModuleEvent, moduleEventBus } from '../../../lib/modules/ModuleEvents';
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+import * as React from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../../lib/modules/ModuleEvents';
 import { moduleManager } from '../../../managers/module/ModuleManager';
 import { BaseModule, ModuleConfig } from '../../../types/buildings/ModuleTypes';
 import {
@@ -56,8 +59,9 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
 
       setModule(moduleData);
 
-      // Get module configuration
-      const moduleConfigs = (moduleManager as unknown).configs;
+      // Get module configs from manager
+      const moduleConfigs = (moduleManager as unknown as { configs: Map<string, ModuleConfig> })
+        .configs;
       if (moduleConfigs && moduleConfigs instanceof Map) {
         const configData = moduleConfigs.get(moduleData.type);
         if (configData) {
@@ -343,7 +347,7 @@ export const BuildingModulesHUD: React.FC<{
   // Subscribe to module events
   useEffect(() => {
     const handleModuleAttached = (event: ModuleEvent) => {
-      if (event.data.buildingId === buildingId) {
+      if (event.data?.buildingId === buildingId) {
         // Refresh module list
         const building = moduleManager.getBuilding(buildingId);
         if (building) {
@@ -353,7 +357,7 @@ export const BuildingModulesHUD: React.FC<{
     };
 
     const handleModuleDetached = (event: ModuleEvent) => {
-      if (event.data.buildingId === buildingId) {
+      if (event.data?.buildingId === buildingId) {
         // Refresh module list
         const building = moduleManager.getBuilding(buildingId);
         if (building) {
@@ -362,17 +366,81 @@ export const BuildingModulesHUD: React.FC<{
       }
     };
 
-    // Subscribe to relevant events
-    const unsubscribeAttached = moduleEventBus.subscribe('MODULE_ATTACHED', handleModuleAttached);
-    const unsubscribeDetached = moduleEventBus.subscribe('MODULE_DETACHED', handleModuleDetached);
+    /**
+     * Handler for module status changes - will be implemented in future updates
+     * This function will be used to:
+     * 1. Update module status indicators in real-time
+     * 2. Trigger visual feedback for status transitions
+     * 3. Update performance metrics based on status changes
+     * 4. Notify connected systems about status changes
+     * 5. Log status changes for analytics and debugging
+     */
+    const handleModuleStatusChanged = (event: ModuleEvent) => {
+      if (event.data?.buildingId === buildingId) {
+        // Future implementation will:
+        // - Update status indicators with animation
+        // - Trigger status-specific effects
+        // - Update resource consumption based on new status
+        // - Notify connected modules of status change
+        console.warn('Module status changed handler to be implemented');
+      }
+    };
 
+    /**
+     * Handler for module alerts - will be implemented in future updates
+     * This function will be used to:
+     * 1. Display visual alert indicators on modules
+     * 2. Categorize alerts by severity (warning, critical, info)
+     * 3. Aggregate similar alerts to prevent UI clutter
+     * 4. Provide interactive alert resolution options
+     * 5. Track alert history for troubleshooting
+     */
+    const handleModuleAlertAdded = (event: ModuleEvent) => {
+      if (event.data?.buildingId === buildingId) {
+        // Future implementation will:
+        // - Create alert notification with appropriate styling
+        // - Add alert to module's alert history
+        // - Provide resolution options based on alert type
+        // - Update module status if alert is critical
+        console.warn('Module alert handler to be implemented');
+      }
+    };
+
+    // Subscribe to relevant events
+    const unsubscribeAttached = moduleEventBus.subscribe(
+      'MODULE_ATTACHED' as ModuleEventType,
+      handleModuleAttached
+    );
+    const unsubscribeDetached = moduleEventBus.subscribe(
+      'MODULE_DETACHED' as ModuleEventType,
+      handleModuleDetached
+    );
+
+    // Subscribe to module status changed events
+    const unsubscribeStatusChanged = moduleEventBus.subscribe(
+      'MODULE_STATUS_CHANGED' as ModuleEventType,
+      handleModuleStatusChanged
+    );
+
+    // Subscribe to module alert events
+    const unsubscribeAlertAdded = moduleEventBus.subscribe(
+      'MODULE_ALERT_ADDED' as ModuleEventType,
+      handleModuleAlertAdded
+    );
+
+    // Cleanup subscriptions
     return () => {
-      // Unsubscribe from events
       if (typeof unsubscribeAttached === 'function') {
         unsubscribeAttached();
       }
       if (typeof unsubscribeDetached === 'function') {
         unsubscribeDetached();
+      }
+      if (typeof unsubscribeStatusChanged === 'function') {
+        unsubscribeStatusChanged();
+      }
+      if (typeof unsubscribeAlertAdded === 'function') {
+        unsubscribeAlertAdded();
       }
     };
   }, [buildingId]);

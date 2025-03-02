@@ -4,7 +4,10 @@ import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
-import { resourceManager } from '../game/ResourceManager';
+import { ResourceManager } from '../game/ResourceManager';
+
+// Create an instance of ResourceManager
+const resourceManager = new ResourceManager();
 
 interface MiningShip {
   id: string;
@@ -84,6 +87,62 @@ export class MiningShipManagerImpl extends EventEmitter {
     }
   }
 
+  /**
+   * Register a resource node that can be mined by ships
+   * @param id - Unique identifier for the resource node
+   * @param type - Type of resource at this node
+   * @param position - Position of the resource node
+   * @param thresholds - Min/max thresholds for resource extraction
+   */
+  public registerResourceNode(
+    id: string,
+    type: ResourceType,
+    position: Position,
+    thresholds: { min: number; max: number }
+  ): void {
+    this.resourceNodes.set(id, {
+      id,
+      type,
+      position,
+      thresholds,
+    });
+
+    console.warn(`[MiningShipManager] Registered resource node ${id} of type ${type}`);
+  }
+
+  /**
+   * Unregister a resource node
+   * @param id - Unique identifier for the resource node to unregister
+   */
+  public unregisterResourceNode(id: string): void {
+    if (this.resourceNodes.has(id)) {
+      this.resourceNodes.delete(id);
+      console.warn(`[MiningShipManager] Unregistered resource node ${id}`);
+
+      // Unassign any ships that were targeting this node
+      this.ships.forEach((ship, shipId) => {
+        if (ship.targetNode === id) {
+          this.updateShipStatus(shipId, 'idle');
+          ship.targetNode = undefined;
+          console.warn(`[MiningShipManager] Unassigned ship ${shipId} from deleted node ${id}`);
+        }
+      });
+    }
+  }
+
+  /**
+   * Get all registered resource nodes
+   * @returns Array of resource nodes
+   */
+  public getResourceNodes(): Array<{
+    id: string;
+    type: ResourceType;
+    position: Position;
+    thresholds: { min: number; max: number };
+  }> {
+    return Array.from(this.resourceNodes.values());
+  }
+
   public assignMiningTask(
     shipId: string,
     resourceId: string,
@@ -92,12 +151,23 @@ export class MiningShipManagerImpl extends EventEmitter {
     thresholds: { min: number; max: number }
   ): void {
     const ship = this.ships.get(shipId);
-    if (!ship || !ship.capabilities.canMine) {
+    if (!ship) {
+      console.warn(`[MiningShipManager] Cannot assign task: Ship ${shipId} not found`);
       return;
     }
 
+    // Check if the resource node is registered
+    if (!this.resourceNodes.has(resourceId)) {
+      // Auto-register the resource node if it doesn't exist
+      this.registerResourceNode(resourceId, resourceType, position, thresholds);
+      console.warn(
+        `[MiningShipManager] Auto-registered resource node ${resourceId} during task assignment`
+      );
+    }
+
+    const taskId = `mining-task-${shipId}-${Date.now()}`;
     const task: MiningTask = {
-      id: `mine-${resourceId}`,
+      id: taskId,
       type: 'mine',
       target: {
         id: resourceId,

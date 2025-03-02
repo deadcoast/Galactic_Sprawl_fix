@@ -225,8 +225,9 @@ const SectorComponent = memo(
         <DropTarget
           accept={['ship']}
           onDrop={(item: DragItem) => {
-            if (item.type === 'ship') {
-              onShipAssign(item.data.id, sector.id);
+            if (item.type === 'ship' && typeof item.data.id === 'string') {
+              const shipId = item.data.id;
+              onShipAssign(shipId, sector.id);
             }
           }}
           className="group relative"

@@ -17,6 +17,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 0.1,
     effects: [
       {
+        id: 'kinetic-impact-effect',
         type: 'damage',
         name: 'Kinetic Impact',
         description: 'Basic kinetic damage',
@@ -40,6 +41,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 0.3,
     effects: [
       {
+        id: 'gauss-impact-effect',
         type: 'damage',
         name: 'Gauss Impact',
         description: 'Electromagnetic acceleration damage',
@@ -66,6 +68,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 1.0,
     effects: [
       {
+        id: 'hypervelocity-impact-effect',
         type: 'damage',
         name: 'Hypervelocity Impact',
         description: 'High-velocity projectile damage',
@@ -92,6 +95,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 0.1,
     effects: [
       {
+        id: 'mgss-impact-effect',
         type: 'damage',
         name: 'MGSS Impact',
         description: 'Multi-gun system damage',
@@ -115,6 +119,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 0.5,
     effects: [
       {
+        id: 'rocket-explosion-effect',
         type: 'area',
         name: 'Rocket Explosion',
         description: 'Area explosive damage',
@@ -140,6 +145,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 0.05,
     effects: [
       {
+        id: 'point-defense-effect',
         type: 'damage',
         name: 'Point Defense',
         description: 'Anti-missile/fighter damage',
@@ -163,6 +169,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 0.2,
     effects: [
       {
+        id: 'flak-cannon-effect',
         type: 'area',
         name: 'Flak Burst',
         description: 'Area anti-fighter damage',
@@ -189,6 +196,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 2.0,
     effects: [
       {
+        id: 'capital-laser-effect',
         type: 'damage',
         name: 'Capital Laser',
         description: 'Heavy energy damage',
@@ -215,6 +223,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 2.0,
     effects: [
       {
+        id: 'torpedo-effect',
         type: 'area',
         name: 'Torpedo Detonation',
         description: 'Heavy explosive damage',
@@ -242,6 +251,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 0.5,
     effects: [
       {
+        id: 'harmonic-resonance-effect',
         type: 'damage',
         name: 'Harmonic Resonance',
         description: 'Shield-penetrating damage',
@@ -268,6 +278,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 1.0,
     effects: [
       {
+        id: 'temporal-disruption-effect',
         type: 'damage',
         name: 'Temporal Disruption',
         description: 'Time-warping damage',
@@ -294,17 +305,18 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 1.5,
     effects: [
       {
+        id: 'quantum-disruption-effect',
         type: 'damage',
-        name: 'Quantum Collapse',
-        description: 'Reality-warping damage',
-        magnitude: 120,
+        name: 'Quantum Disruption',
+        description: 'Armor-penetrating damage',
+        magnitude: 100,
         duration: 0,
         active: true,
-        cooldown: 1.5,
-        damage: 120,
+        cooldown: 0.8,
+        damage: 100,
         damageType: 'energy',
-        penetration: 0.6,
-        strength: 120,
+        penetration: 0.4,
+        strength: 100,
       } as DamageEffect,
     ],
     special: {
@@ -321,17 +333,18 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 5,
     effects: [
       {
+        id: 'plasma-burst-effect',
         type: 'damage',
-        name: 'Plasma Burn',
+        name: 'Plasma Burst',
         description: 'High-energy plasma damage',
-        magnitude: 400,
-        duration: 3,
+        magnitude: 120,
+        duration: 0,
         active: true,
-        cooldown: 5,
-        damage: 400,
+        cooldown: 1.2,
+        damage: 120,
         damageType: 'energy',
-        penetration: 0.5,
-        strength: 400,
+        penetration: 0.3,
+        strength: 120,
       } as DamageEffect,
     ],
     special: {
@@ -348,6 +361,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 8,
     effects: [
       {
+        id: 'capital-laser-effect',
         type: 'damage',
         name: 'Concentrated Beam',
         description: 'Continuous high-energy beam damage',
@@ -375,6 +389,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 2,
     effects: [
       {
+        id: 'energy-pulse-effect',
         type: 'damage',
         name: 'Energy Pulse',
         description: 'Rapid energy pulse damage',
@@ -401,6 +416,7 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 1,
     effects: [
       {
+        id: 'system-disruption-effect',
         type: 'damage',
         name: 'System Disruption',
         description: 'Shield-disrupting energy damage',
@@ -428,17 +444,18 @@ const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {
     cooldown: 4,
     effects: [
       {
+        id: 'ion-cannon-effect',
         type: 'damage',
-        name: 'Ion Storm',
-        description: 'Shield-piercing ion damage',
-        magnitude: 300,
-        duration: 2,
+        name: 'Ion Cannon',
+        description: 'Massive energy damage',
+        magnitude: 400,
+        duration: 0,
         active: true,
-        cooldown: 4,
-        damage: 300,
+        cooldown: 3,
+        damage: 400,
         damageType: 'energy',
-        penetration: 0.4,
-        strength: 300,
+        penetration: 0.5,
+        strength: 400,
       } as DamageEffect,
     ],
     special: {
@@ -456,6 +473,7 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
     damage: 15,
     effects: [
       {
+        id: 'plasma-burn-effect',
         type: 'damage',
         name: 'Plasma Burn',
         description: 'Plasma damage over time',
@@ -477,6 +495,7 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
     damage: 8,
     effects: [
       {
+        id: 'shield-disruption-effect',
         type: 'damage',
         name: 'Shield Disruption',
         description: 'Enhanced shield damage',
@@ -501,6 +520,7 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
     accuracy: 0.85,
     effects: [
       {
+        id: 'area-gauss-effect',
         type: 'area',
         name: 'Area Gauss',
         description: 'Area electromagnetic damage',
@@ -524,6 +544,7 @@ const variantModifiers: Record<WeaponVariant, Partial<WeaponStats>> = {
     energyCost: 20,
     effects: [
       {
+        id: 'rapid-gauss-effect',
         type: 'damage',
         name: 'Rapid Gauss',
         description: 'Rapid electromagnetic damage',

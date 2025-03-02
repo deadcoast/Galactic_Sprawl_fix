@@ -1,12 +1,55 @@
 {
   "summary": {
-    "total": 0,
-    "errors": 0,
-    "warnings": 0,
-    "files": 312
+    "total": 8,
+    "errors": 2,
+    "warnings": 6,
+    "files": 332
   },
-  "topRules": [],
+  "topRules": [
+    [
+      "@typescript-eslint/no-unused-vars",
+      {
+        "errors": 1,
+        "warnings": 6
+      }
+    ],
+    [
+      "@typescript-eslint/ban-ts-comment",
+      {
+        "errors": 1,
+        "warnings": 0
+      }
+    ]
+  ],
   "topFiles": [
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module/SubModuleManager.ts",
+      3
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/combat/combatManager.ts",
+      2
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource/ResourceIntegration.ts",
+      1
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/test-prettier.js",
+      1
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/vite.config.ts",
+      1
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/eslint.config.js",
+      0
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/postcss.config.js",
+      0
+    ],
     [
       "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/App.tsx",
       0
@@ -58,37 +101,37 @@
     [
       "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/MissionLog.tsx",
       0
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/MissionReplay.tsx",
-      0
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/ReconShipStatus.tsx",
-      0
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/ShipStatusMonitor.tsx",
-      0
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/AutomationMonitor.tsx",
-      0
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/MineralProcessingCentre.tsx",
-      0
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/MiningControls.tsx",
-      0
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/MiningMap.tsx",
-      0
     ]
   ],
   "topDirs": [
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module",
+      {
+        "errors": 0,
+        "warnings": 3
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl",
+      {
+        "errors": 2,
+        "warnings": 0
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/combat",
+      {
+        "errors": 0,
+        "warnings": 2
+      }
+    ],
+    [
+      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource",
+      {
+        "errors": 0,
+        "warnings": 1
+      }
+    ],
     [
       "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src",
       {
@@ -161,34 +204,6 @@
     ],
     [
       "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/debug",
-      {
-        "errors": 0,
-        "warnings": 0
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/factions",
-      {
-        "errors": 0,
-        "warnings": 0
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ships/FactionShips",
-      {
-        "errors": 0,
-        "warnings": 0
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ships/FactionShips/equatorHorizon",
-      {
-        "errors": 0,
-        "warnings": 0
-      }
-    ],
-    [
-      "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ships/FactionShips/lostNova",
       {
         "errors": 0,
         "warnings": 0

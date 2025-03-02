@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { resourceManager } from '../../managers/game/ResourceManager';
+import { ResourceManager } from '../../managers/game/ResourceManager';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
+
+// Create an instance of ResourceManager
+const resourceManager = new ResourceManager();
 
 /**
  * Automation rule types

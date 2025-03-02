@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { moduleEventBus } from '../../../lib/modules/ModuleEvents';
-import { resourceManager } from '../../../managers/game/ResourceManager';
+import { ResourceManager } from '../../../managers/game/ResourceManager';
 import { moduleManager } from '../../../managers/module/ModuleManager';
 import { moduleStatusManager } from '../../../managers/module/ModuleStatusManager';
 import { moduleUpgradeManager } from '../../../managers/module/ModuleUpgradeManager';
+import { BuildingType, ModuleType } from '../../../types/buildings/ModuleTypes';
 
 // Mock dependencies
 vi.mock('../../../managers/module/ModuleManager', () => ({
@@ -17,16 +18,23 @@ vi.mock('../../../managers/module/ModuleManager', () => ({
 vi.mock('../../../lib/modules/ModuleEvents', () => ({
   moduleEventBus: {
     emit: vi.fn(),
-    subscribe: vi.fn().mockReturnValue(() => {}),
+    on: vi.fn(),
+    off: vi.fn(),
   },
 }));
 
+// Mock ResourceManager
 vi.mock('../../../managers/game/ResourceManager', () => ({
-  resourceManager: {
-    getResourceAmount: vi.fn(),
-    removeResource: vi.fn(),
-  },
+  ResourceManager: vi.fn().mockImplementation(() => ({
+    hasResource: vi.fn(),
+    getResource: vi.fn(),
+    consumeResource: vi.fn(),
+    addResource: vi.fn(),
+  })),
 }));
+
+// Create a mock instance of ResourceManager
+const resourceManager = new ResourceManager();
 
 vi.mock('../../../managers/module/ModuleStatusManager', () => ({
   moduleStatusManager: {
@@ -45,11 +53,11 @@ describe('ModuleUpgradeManager', () => {
     vi.mocked(moduleManager.getModule).mockReturnValue({
       id: 'test-module-1',
       name: 'Test Module',
-      type: 'radar',
+      type: 'radar' as ModuleType,
       position: { x: 0, y: 0 },
       isActive: true,
       level: 1,
-      status: 'active',
+      status: 'active' as const,
       progress: 0,
     });
 
@@ -60,17 +68,18 @@ describe('ModuleUpgradeManager', () => {
     vi.mocked(moduleManager.getBuildings).mockReturnValue([
       {
         id: 'test-building-1',
-        name: 'Test Building',
+        type: 'mothership' as BuildingType,
         level: 3,
+        status: 'active' as const,
         modules: [
           {
             id: 'test-module-1',
             name: 'Test Module',
-            type: 'radar',
+            type: 'radar' as ModuleType,
             position: { x: 0, y: 0 },
             isActive: true,
             level: 1,
-            status: 'active',
+            status: 'active' as const,
             progress: 0,
           },
         ],
@@ -80,7 +89,7 @@ describe('ModuleUpgradeManager', () => {
 
     // Register a test upgrade path
     moduleUpgradeManager.registerUpgradePath({
-      moduleType: 'radar',
+      moduleType: 'radar' as ModuleType,
       levels: [
         {
           level: 2,
@@ -136,7 +145,7 @@ describe('ModuleUpgradeManager', () => {
 
   it('should register and retrieve upgrade paths', () => {
     // Get the upgrade path
-    const path = moduleUpgradeManager.getUpgradePath('radar');
+    const path = moduleUpgradeManager.getUpgradePath('radar' as ModuleType);
 
     // Verify the path
     expect(path).toBeDefined();
@@ -169,11 +178,11 @@ describe('ModuleUpgradeManager', () => {
     vi.mocked(moduleManager.getModule).mockReturnValue({
       id: 'test-module-1',
       name: 'Test Module',
-      type: 'radar',
+      type: 'radar' as ModuleType,
       position: { x: 0, y: 0 },
       isActive: false,
       level: 1,
-      status: 'inactive',
+      status: 'inactive' as const,
       progress: 0,
     });
 
@@ -252,11 +261,11 @@ describe('ModuleUpgradeManager', () => {
     vi.mocked(moduleManager.getModule).mockReturnValue({
       id: 'test-module-1',
       name: 'Test Module',
-      type: 'radar',
+      type: 'radar' as ModuleType,
       position: { x: 0, y: 0 },
       isActive: true,
       level: 2,
-      status: 'active',
+      status: 'active' as const,
       progress: 0,
     });
 

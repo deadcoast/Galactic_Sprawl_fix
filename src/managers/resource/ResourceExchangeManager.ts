@@ -365,26 +365,27 @@ export class ResourceExchangeManager {
 
     // Apply all active modifiers
     const now = Date.now();
-    for (const [id, modifier] of this.modifiers.entries()) {
+    for (const [id, modifier] of Array.from(this.modifiers.entries())) {
       // Skip expired modifiers
       if (modifier.expiresAt && modifier.expiresAt < now) {
+        // Remove expired modifier
         this.modifiers.delete(id);
         continue;
       }
 
-      // Apply modifier to affected rates
-      for (const [rateKey, rate] of this.currentRates.entries()) {
-        const [fromType, toType] = rateKey.split('-') as [ResourceType, ResourceType];
-
-        if (modifier.affectedTypes.includes(fromType) || modifier.affectedTypes.includes(toType)) {
-          rate.rate *= modifier.multiplier;
-        }
+      // Skip inactive modifiers
+      if (modifier.active === false) {
+        continue;
       }
     }
 
-    // Apply market condition modifier to all rates
-    for (const rate of this.currentRates.values()) {
+    // Calculate rates based on modifiers
+    this.calculateRates();
+
+    // Apply market condition to all rates
+    for (const [key, rate] of Array.from(this.currentRates.entries())) {
       rate.rate *= marketModifier;
+      this.currentRates.set(key, rate);
     }
   }
 
@@ -491,7 +492,19 @@ export class ResourceExchangeManager {
     toType: ResourceType,
     amount: number
   ): { path: ResourceType[]; rate: number; amount: number } | null {
-    // Direct exchange
+    // Try to find the optimal path using our pathfinding algorithm
+    const optimalPath = this.findOptimalPath(fromType, toType, amount);
+
+    // If we found an optimal path, convert it to the expected return format
+    if (optimalPath) {
+      return {
+        path: optimalPath.steps.map(step => step.sourceType).concat([toType]),
+        rate: optimalPath.totalRate,
+        amount: optimalPath.outputAmount,
+      };
+    }
+
+    // Direct exchange fallback
     const directRate = this.getExchangeRate(fromType, toType);
     if (directRate) {
       return {
@@ -501,80 +514,8 @@ export class ResourceExchangeManager {
       };
     }
 
-    // All resource types
-    const allTypes = Array.from(
-      new Set(Array.from(this.currentRates.values()).flatMap(rate => [rate.fromType, rate.toType]))
-    );
-
-    // Initialize distances
-    const distances = new Map<ResourceType, number>();
-    const previous = new Map<ResourceType, ResourceType | null>();
-    const visited = new Set<ResourceType>();
-
-    for (const type of allTypes) {
-      distances.set(type, type === fromType ? 1 : 0);
-      previous.set(type, null);
-    }
-
-    while (visited.size < allTypes.length) {
-      // Find unvisited node with highest distance
-      let current: ResourceType | null = null;
-      let maxDistance = 0;
-
-      for (const type of allTypes) {
-        if (!visited.has(type)) {
-          const distance = distances.get(type) || 0;
-          if (distance > maxDistance) {
-            maxDistance = distance;
-            current = type;
-          }
-        }
-      }
-
-      if (!current || maxDistance === 0) {
-        break;
-      }
-
-      visited.add(current);
-
-      // If we reached the target, we're done
-      if (current === toType) {
-        break;
-      }
-
-      // Check all neighbors
-      for (const [_rateKey, rate] of this.currentRates.entries()) {
-        if (rate.fromType === current) {
-          const neighbor = rate.toType;
-          const distance = (distances.get(current) || 0) * rate.rate;
-
-          if (distance > (distances.get(neighbor) || 0)) {
-            distances.set(neighbor, distance);
-            previous.set(neighbor, current);
-          }
-        }
-      }
-    }
-
-    // If we couldn't reach the target, return null
-    if (!(distances.get(toType) || 0)) {
-      return null;
-    }
-
-    // Reconstruct path
-    const path: ResourceType[] = [];
-    let current: ResourceType | null = toType;
-
-    while (current) {
-      path.unshift(current);
-      current = previous.get(current) || null;
-    }
-
-    return {
-      path,
-      rate: distances.get(toType) || 0,
-      amount: amount * (distances.get(toType) || 0),
-    };
+    // No path found
+    return null;
   }
 
   /**

@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 
 /**
@@ -29,7 +29,11 @@ interface EventDispatcherContextType {
  */
 interface EventDispatcherProviderProps {
   children: ReactNode;
-  _maxHistorySize?: number;
+  /**
+   * Maximum number of events to keep in history
+   * Currently unused but kept for future implementation of history size limiting
+   */
+  __maxHistorySize?: number;
 }
 
 // Create the context with a default value
@@ -40,10 +44,34 @@ const EventDispatcherContext = createContext<EventDispatcherContextType | null>(
  */
 export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = ({
   children,
-  _maxHistorySize = 1000,
+  __maxHistorySize = 1000,
 }) => {
   // Store the latest event of each type
   const [latestEvents, setLatestEvents] = useState<Map<ModuleEventType, ModuleEvent>>(new Map());
+
+  // Reference to track the current max history size
+  const maxHistorySizeRef = useRef<number>(__maxHistorySize);
+
+  // Update the ref when the prop changes
+  useEffect(() => {
+    maxHistorySizeRef.current = __maxHistorySize;
+    console.warn(`[EventDispatcher] Setting max history size to ${__maxHistorySize}`);
+
+    // Update the moduleEventBus maxHistorySize if possible
+    // Note: This is a workaround since we can't directly access the private property
+    try {
+      // @ts-expect-error - Accessing private property for configuration
+      if (moduleEventBus.maxHistorySize !== undefined) {
+        // @ts-expect-error - Accessing private property for configuration
+        moduleEventBus.maxHistorySize = __maxHistorySize;
+        console.warn(
+          `[EventDispatcher] Updated moduleEventBus history size to ${__maxHistorySize}`
+        );
+      }
+    } catch (error) {
+      console.warn('[EventDispatcher] Could not update moduleEventBus history size:', error);
+    }
+  }, [__maxHistorySize]);
 
   // Subscribe to all module events
   useEffect(() => {
@@ -119,14 +147,39 @@ export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = (
     // Event emission - delegate to moduleEventBus
     emit: event => moduleEventBus.emit(event),
 
-    // Event history - delegate to moduleEventBus
-    getHistory: () => moduleEventBus.getHistory(),
-    getModuleHistory: moduleId => moduleEventBus.getModuleHistory(moduleId),
-    getEventTypeHistory: type => moduleEventBus.getEventTypeHistory(type),
+    // Event history - delegate to moduleEventBus with size limit
+    getHistory: () => {
+      const history = moduleEventBus.getHistory();
+      // Apply our own size limit if the history is too large
+      return history.length > maxHistorySizeRef.current
+        ? history.slice(history.length - maxHistorySizeRef.current)
+        : history;
+    },
+    getModuleHistory: moduleId => {
+      const history = moduleEventBus.getModuleHistory(moduleId);
+      // Apply our own size limit if the history is too large
+      return history.length > maxHistorySizeRef.current
+        ? history.slice(history.length - maxHistorySizeRef.current)
+        : history;
+    },
+    getEventTypeHistory: type => {
+      const history = moduleEventBus.getEventTypeHistory(type);
+      // Apply our own size limit if the history is too large
+      return history.length > maxHistorySizeRef.current
+        ? history.slice(history.length - maxHistorySizeRef.current)
+        : history;
+    },
     clearHistory: () => moduleEventBus.clearHistory(),
 
-    // Event filtering
-    getFilteredEvents: filter => moduleEventBus.getHistory().filter(filter),
+    // Event filtering with size limit
+    getFilteredEvents: filter => {
+      const history = moduleEventBus.getHistory();
+      const filtered = history.filter(filter);
+      // Apply our own size limit if the filtered history is too large
+      return filtered.length > maxHistorySizeRef.current
+        ? filtered.slice(filtered.length - maxHistorySizeRef.current)
+        : filtered;
+    },
 
     // Latest events by type
     latestEvents,

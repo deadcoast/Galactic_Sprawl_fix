@@ -2,6 +2,279 @@
 
 This document tracks system-wide errors that have been identified and fixed in the Galactic Sprawl codebase. It serves as a reference for common issues and their solutions.
 
+## TypeScript Type Errors and Solutions
+
+We've been systematically fixing TypeScript type errors throughout the codebase. Here's a summary of the common error categories and their solutions:
+
+### 1. Map Iteration Issues
+
+**Problem**: TypeScript errors when iterating over Map objects using for...of loops.
+
+**Solution**:
+
+- Use `Array.from()` to convert Map entries, keys, or values to arrays before iteration:
+
+  ```typescript
+  // Before (causes TypeScript error)
+  for (const [key, value] of resourceMap) {
+    // process key and value
+  }
+
+  // After (type-safe)
+  for (const [key, value] of Array.from(resourceMap.entries())) {
+    // process key and value
+  }
+  ```
+
+- Alternative approaches:
+  - Use Map.forEach() method
+  - Use Array.from() with map.keys() or map.values()
+  - Configure TypeScript with downlevelIteration or target ES2015+
+
+### 2. Automation Rule Type Errors
+
+**Problem**: Type errors in automation rule configurations due to incorrect or missing type annotations.
+
+**Solution**:
+
+- Properly type condition values to match expected types:
+
+  ```typescript
+  // Before (incorrect typing)
+  {
+    type: 'event',
+    value: {
+      timeWindow: 300000,
+    }
+  }
+
+  // After (correct typing)
+  {
+    type: 'event',
+    value: {
+      eventType: 'module-event',
+      eventData: { type: 'upgrade-complete' },
+      timeElapsed: 300000,
+    } as EventConditionValue
+  }
+  ```
+
+- Ensure action values include all required properties
+- Use type assertions for string literals
+- Create consistent interfaces for automation rules
+
+### 3. ResourceManager Import Issues
+
+**Problem**: Import errors with the resourceManager singleton.
+
+**Solution**:
+
+- Create instances of ResourceManager instead of importing the singleton:
+
+  ```typescript
+  // Before (causes error)
+  import { resourceManager } from '../../managers/game/ResourceManager';
+
+  // After (fixed)
+  import { ResourceManager } from '../../managers/game/ResourceManager';
+  const resourceManager = new ResourceManager();
+  ```
+
+- For test files, create mock instances:
+  ```typescript
+  import { ResourceManager } from '../../managers/game/ResourceManager';
+  const mockResourceManager = new ResourceManager();
+  // Configure mock as needed
+  ```
+
+### 4. DragAndDrop Type Issues
+
+**Problem**: Type errors with the DragItem interface and drag-and-drop operations.
+
+**Solution**:
+
+- Use generic type parameters for the DragItem interface:
+
+  ```typescript
+  // Before (limited flexibility)
+  interface DragItem {
+    id: string;
+    type: 'module' | 'resource' | 'ship';
+    data: Record<string, unknown>;
+  }
+
+  // After (improved flexibility)
+  interface DragItem<T = Record<string, unknown>> {
+    id: string;
+    type: 'module' | 'resource' | 'ship';
+    data: T;
+  }
+  ```
+
+- Safely access properties with type guards and assertions
+- Extract values with proper null checks
+- Convert unknown types to appropriate primitive types
+
+### 5. FactionBehaviorType vs FactionBehaviorConfig Issues
+
+**Problem**: Inconsistencies between string literal union types and object types.
+
+**Solution**:
+
+- Define separate types for different use cases:
+
+  ```typescript
+  // String literal union type for simple references
+  export type FactionBehaviorType =
+    | 'aggressive'
+    | 'defensive'
+    | 'hit-and-run'
+    | 'stealth'
+    | 'balance';
+
+  // Object interface for complex data
+  export interface FactionBehaviorConfig {
+    formation: string;
+    behavior: FactionBehaviorType;
+    target?: string;
+  }
+  ```
+
+- Create helper functions for type conversion:
+  ```typescript
+  const createFactionBehavior = (behavior: string): FactionBehaviorConfig => {
+    return {
+      formation: 'standard',
+      behavior: behavior as FactionBehaviorType,
+    };
+  };
+  ```
+- Use type assertions for string literals
+- Ensure consistent property types in interfaces
+
+### 6. Ship Ability Issues
+
+**Problem**: Missing properties in ship ability objects causing type errors.
+
+**Solution**:
+
+- Include all required properties from the CommonShipAbility interface:
+
+  ```typescript
+  // Before (missing 'id' property)
+  {
+    name: 'Overcharge',
+    description: 'Increases weapon damage and accuracy',
+    cooldown: 15,
+    duration: 10,
+    active: hasEffect('overcharge'),
+    effect: {
+      id: 'overcharge',
+      type: 'damage',
+      magnitude: 1.4,
+      duration: 10,
+    } as Effect,
+  }
+
+  // After (with 'id' property)
+  {
+    id: 'overcharge-ability',
+    name: 'Overcharge',
+    description: 'Increases weapon damage and accuracy',
+    cooldown: 15,
+    duration: 10,
+    active: hasEffect('overcharge'),
+    effect: {
+      id: 'overcharge',
+      type: 'damage',
+      magnitude: 1.4,
+      duration: 10,
+    } as Effect,
+  }
+  ```
+
+- Generate descriptive IDs for ship abilities
+- Complete all required properties for effect objects
+- Maintain consistent structure for ship abilities
+
+### 7. Unused Variables/Interfaces
+
+**Problem**: Variables and interfaces declared but never used.
+
+**Solution**:
+
+- Prefix unused variables with underscore (\_) and add comments explaining future use:
+  ```typescript
+  // Ship-specific stats - kept for future implementation of ship stat scaling
+  // These will be used when implementing dynamic ship stat adjustments based on player progression
+  const _baseHealth = 1200;
+  const _baseShield = 800;
+  const _baseSpeed = 3.5;
+  ```
+- Prefix unused interfaces with double underscore (\_\_) and add comments
+- Remove truly unused variables with no future purpose
+- Fix unused parameters in function signatures
+- Update function calls when removing parameters
+- Fix unused imports
+
+### 8. Property Access on Possibly Undefined Values
+
+**Problem**: TypeScript errors when accessing properties on possibly undefined values.
+
+**Solution**:
+
+- Use optional chaining (?.) for safe property access:
+
+  ```typescript
+  // Before (unsafe property access)
+  if (event.data.buildingId === buildingId) {
+    // handle event
+  }
+
+  // After (safe property access with optional chaining)
+  if (event.data?.buildingId === buildingId) {
+    // handle event
+  }
+  ```
+
+- Add null checks before accessing properties
+- Use nullish coalescing operator (??) for default values
+- Create type guards for complex objects
+- Destructure after null checks
+- Use early returns with null checks
+
+### 9. Incompatible Type Assignments
+
+**Problem**: TypeScript errors when assigning incompatible types.
+
+**Solution**:
+
+- Update interfaces to include required properties:
+
+  ```typescript
+  // Before (missing properties)
+  export interface WeaponState {
+    status: WeaponStatus;
+    currentStats: WeaponStats;
+    effects: WeaponEffectType[];
+  }
+
+  // After (with required properties)
+  export interface WeaponState {
+    status: WeaponStatus;
+    currentStats: WeaponStats;
+    effects: WeaponEffectType[];
+    currentAmmo?: number;
+    maxAmmo?: number;
+  }
+  ```
+
+- Remove unused properties from component props
+- Use proper type assertions
+- Create helper functions for type conversions
+- Use type guards for union types
+- Update component props to match expected types
+
 ## Recent Linting Progress (Updated)
 
 We have made significant progress in fixing linting issues across the codebase. The following files have been fixed:

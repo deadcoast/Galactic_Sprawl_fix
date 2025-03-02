@@ -6,7 +6,7 @@ import {
   FactionShipStats,
   LostNovaShipClass,
 } from '../../../types/ships/FactionShipTypes';
-import { FactionBehaviorType } from '../../../types/ships/FactionTypes';
+import { FactionBehaviorConfig, FactionBehaviorType } from '../../../types/ships/FactionTypes';
 import { WeaponMount } from '../../../types/weapons/WeaponTypes';
 import { FactionShipBase } from './FactionShipBase';
 
@@ -24,7 +24,7 @@ interface LostNovaShipProps {
   maxShield: number;
   weapons: WeaponMount[];
   stats: FactionShipStats;
-  tactics: FactionBehaviorType;
+  tactics: FactionBehaviorConfig | string;
   position: { x: number; y: number };
   rotation: number;
   onEngage?: () => void;
@@ -34,11 +34,11 @@ interface LostNovaShipProps {
   children?: ReactNode;
 }
 
-// Helper function to create a FactionBehaviorType from string
-const createFactionBehavior = (behavior: string): FactionBehaviorType => {
+// Helper function to create a FactionBehaviorConfig from string
+const createFactionBehavior = (behavior: string): FactionBehaviorConfig => {
   return {
     formation: 'standard',
-    behavior: behavior,
+    behavior: behavior as FactionBehaviorType,
   };
 };
 
@@ -101,6 +101,8 @@ export function LostNovaShip({
           // Create a proper DamageEffect instead of WeaponEffect
           const weaponEffect: DamageEffect = {
             id: 'void-pulse-weapon',
+            name: 'Void Pulse Weapon Effect',
+            description: 'Disrupts enemy shields and cloaking',
             type: 'damage',
             duration: 8,
             strength: 1.0,
@@ -172,6 +174,7 @@ export function LostNovaShip({
     // Add the required abilities property
     abilities: [
       {
+        id: 'void-pulse-ability',
         name: 'Void Pulse',
         description: 'Disrupts enemy shields and cloaking',
         cooldown: 10,
@@ -185,6 +188,7 @@ export function LostNovaShip({
         },
       },
       {
+        id: 'stealth-field-ability',
         name: 'Stealth Field',
         description: 'Reduces detection range of enemy ships',
         cooldown: 15,

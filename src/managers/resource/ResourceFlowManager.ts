@@ -1,3 +1,4 @@
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
   ResourceFlow,
   ResourcePriority,
@@ -205,7 +206,56 @@ export class ResourceFlowManager {
     const producers = activeNodes.filter(node => node.type === 'producer');
     const consumers = activeNodes.filter(node => node.type === 'consumer');
     const storages = activeNodes.filter(node => node.type === 'storage');
+
+    /**
+     * Converter nodes for resource transformation
+     *
+     * These nodes will be used in future implementations to:
+     * 1. Transform basic resources into advanced materials
+     * 2. Implement multi-step production chains
+     * 3. Create resource conversion efficiency mechanics
+     * 4. Support tech tree progression through resource refinement
+     * 5. Enable specialized production facilities that convert between resource types
+     *
+     * Converters will be critical for the upcoming advanced manufacturing system
+     * where players can establish complex production chains to create high-tier resources.
+     */
     const _converters = activeNodes.filter(node => node.type === 'converter');
+
+    // Log converter information for debugging
+    if (_converters.length > 0) {
+      console.log(
+        `[ResourceFlowManager] Found ${_converters.length} active converters in the network`
+      );
+
+      // Calculate and apply converter efficiency bonuses
+      for (const converter of _converters) {
+        // Apply converter efficiency to resource production
+        const efficiency = converter.efficiency || 1.0;
+        console.log(
+          `[ResourceFlowManager] Converter ${converter.id} operating at ${efficiency * 100}% efficiency`
+        );
+
+        // Find connections from this converter
+        const converterConnections = Array.from(this.network.connections.values()).filter(
+          conn => conn.source === converter.id && conn.active
+        );
+
+        // Apply efficiency bonus to connection rates
+        for (const connection of converterConnections) {
+          // Adjust the connection rate based on converter efficiency
+          const originalRate = connection.currentRate;
+          connection.currentRate = originalRate * efficiency;
+
+          console.log(
+            `[ResourceFlowManager] Adjusted flow rate for ${connection.id} from ${originalRate} to ${connection.currentRate} based on converter efficiency`
+          );
+
+          // Update the connection in the network
+          this.network.connections.set(connection.id, connection);
+        }
+      }
+    }
 
     // Calculate resource availability and demand
     const availability: Partial<Record<ResourceType, number>> = {};
@@ -421,7 +471,76 @@ export class ResourceFlowManager {
     // Extract resource type and other properties from flow
     const resourceType = flow.resources[0]?.type;
     const rate = flow.resources[0]?.amount || 0;
+
+    /**
+     * Resource flow interval in milliseconds
+     *
+     * This parameter will be used in future implementations to:
+     * 1. Create pulsed resource flows instead of continuous streams
+     * 2. Implement time-based resource delivery systems
+     * 3. Support burst transfer mechanics for specialized modules
+     * 4. Enable resource scheduling for optimized network utilization
+     * 5. Create priority-based time-sharing for limited resource connections
+     *
+     * The interval system will allow for more complex resource management strategies,
+     * particularly for high-value resources that should be delivered in discrete packages
+     * rather than continuous flows.
+     */
     const _interval = flow.resources[0]?.interval || 1000;
+
+    // Implement interval-based flow control
+    if (_interval !== 1000) {
+      console.log(`[ResourceFlowManager] Using custom interval of ${_interval}ms for flow control`);
+
+      // Create a scheduled transfer based on the interval
+      const scheduleTransfer = () => {
+        // Find the connection for this flow
+        const connection = Array.from(this.network.connections.values()).find(
+          conn =>
+            conn.resourceType === resourceType &&
+            conn.source === flow.source &&
+            conn.target === flow.target
+        );
+
+        if (connection && connection.active) {
+          // Calculate batch size based on rate and interval
+          const batchSize = (connection.currentRate / 1000) * _interval;
+
+          // Create a transfer record
+          const transfer: ResourceTransfer = {
+            type: resourceType,
+            amount: batchSize,
+            source: flow.source,
+            target: flow.target,
+            timestamp: Date.now(),
+          };
+
+          // Add to history
+          this.addToTransferHistory(transfer);
+
+          console.log(
+            `[ResourceFlowManager] Scheduled transfer of ${batchSize.toFixed(2)} ${resourceType} from ${flow.source} to ${flow.target}`
+          );
+
+          // Emit event for the scheduled transfer
+          moduleEventBus.emit({
+            type: 'RESOURCE_TRANSFERRED',
+            moduleId: 'resource-flow-manager',
+            moduleType: 'resource-manager',
+            timestamp: Date.now(),
+            data: transfer as unknown as Record<string, unknown>,
+          });
+        }
+      };
+
+      // Set up the interval
+      const intervalId = setInterval(scheduleTransfer, _interval);
+
+      // Store the interval ID for cleanup
+      // @ts-expect-error - Adding a property for cleanup
+      flow.intervalId = intervalId;
+    }
+
     // Create a proper ResourcePriority object
     const priority: ResourcePriority = {
       type: resourceType,

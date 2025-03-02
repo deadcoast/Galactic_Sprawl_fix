@@ -73,13 +73,12 @@ export function EtherealGalleon({
         shield={shield}
         maxShield={maxShield}
         weapons={weapons}
-        tactics="hit-and-run"
+        stats={stats}
         position={position}
         rotation={rotation}
         onEngage={onEngage}
         onRetreat={onRetreat}
         onFire={onFire}
-        stats={stats}
         onSpecialAbility={() => {
           setEtherealWindsActive(!etherealWindsActive);
           onSpecialAbility?.();

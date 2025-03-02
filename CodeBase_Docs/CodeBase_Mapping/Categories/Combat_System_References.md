@@ -24,6 +24,39 @@ COMBAT SYSTEM REFERENCES
   - WeaponTypes.ts
   - QuadTree.ts
 
+## Combat System Components
+
+- **BattleEnvironment.tsx**: src/components/combat/BattleEnvironment.tsx
+  Purpose: Main component for rendering the combat environment
+  Features:
+  - Hazard visualization and management
+  - Combat unit movement and rendering
+  - Weapon effects and animations
+  - Fleet AI visualization with formation lines
+  - Combat optimization using web workers
+  - Implementation of the `__FleetAIResult` interface for advanced fleet AI visualization:
+    ```typescript
+    interface __FleetAIResult {
+      formationPatterns: string[];
+      adaptiveAI: boolean;
+      factionBehavior: string;
+      visualFeedback?: {
+        formationLines: {
+          points: [number, number][];
+          style: 'solid' | 'dashed';
+          color: string;
+          opacity: number;
+        }[];
+      };
+    }
+    ```
+    Dependencies:
+  - CombatTypes.ts
+  - HazardTypes.ts
+  - WeaponTypes.ts
+  - combatWorker.ts
+  - useFactionBehavior.ts
+
 # Combat System Type Conversion Updates
 
 ## Core Type Conversion Utilities
@@ -101,4 +134,44 @@ CombatTypes.CombatUnit
 combatManager.getUnitStatus(unitId)
 └── convertToCombatTypesUnit()
 └── CombatTypes.CombatUnit with stats property
+```
+
+## Fleet AI Visualization
+
+The BattleEnvironment component implements advanced fleet AI visualization using the `__FleetAIResult` interface. This allows for:
+
+1. **Formation Pattern Visualization**: Displays the formation patterns used by fleet AI
+2. **Adaptive AI Feedback**: Shows how the AI adapts to combat situations
+3. **Faction-specific Behavior**: Visualizes different behaviors based on faction
+4. **Visual Feedback**: Renders formation lines with customizable styles, colors, and opacity
+
+Example implementation:
+
+```typescript
+// Create a memoized fleet AI result
+const fleetAIResult = useMemo<__FleetAIResult>(() => ({
+  formationPatterns: ['delta', 'arrow', 'shield'],
+  adaptiveAI: true,
+  factionBehavior: faction,
+  visualFeedback: {
+    formationLines: [{
+      points: [[0, 0], [100, 100]],
+      style: 'solid' as 'solid' | 'dashed',
+      color: '#3498db',
+      opacity: 0.75
+    }]
+  }
+}), [faction]);
+
+// Render formation lines based on fleet AI result
+{fleetAIResult.visualFeedback?.formationLines.map((line, index) => (
+  <path
+    key={`formation-line-${index}`}
+    d={`M ${line.points.map(p => p.join(',')).join(' L ')}`}
+    stroke={line.color}
+    strokeWidth={2}
+    opacity={line.opacity}
+    strokeDasharray={line.style === 'dashed' ? '5,5' : undefined}
+  />
+))}
 ```

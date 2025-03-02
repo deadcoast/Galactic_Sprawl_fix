@@ -20,6 +20,10 @@ const factionConfigMap: Record<FactionId, keyof typeof shipClassConfigs> = {
   'space-rats': 'spaceRats',
   'lost-nova': 'lostNova',
   'equator-horizon': 'equatorHorizon',
+  player: 'spaceRats',
+  enemy: 'lostNova',
+  neutral: 'equatorHorizon',
+  ally: 'spaceRats',
 };
 
 export function useShipClassManager() {

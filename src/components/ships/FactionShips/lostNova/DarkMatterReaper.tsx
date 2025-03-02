@@ -1,7 +1,7 @@
 import { Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { FactionBehaviorType } from '../../../../types/ships/FactionTypes';
+import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
 import { ShipStatus } from '../../../../types/ships/ShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { LostNovaShip } from '../../common/LostNovaShip';
@@ -23,11 +23,32 @@ interface DarkMatterReaperProps {
   rotation: number;
 }
 
-// Helper function to create a FactionBehaviorType from string
-const createFactionBehavior = (behavior: string): FactionBehaviorType => {
+// Ship-specific stats - kept for future implementation of ship stat scaling
+// These will be used when implementing dynamic ship stat adjustments based on player progression
+const _baseHealth = 1200;
+const _baseShield = 800;
+const _baseSpeed = 3.5;
+const _baseDamage = 120;
+const _baseRange = 450;
+const _baseFireRate = 1.2;
+
+// Ship-specific weapon template - kept for future implementation of weapon customization
+// This will be used when implementing the weapon customization system
+const _primaryWeapon = {
+  id: 'dark-matter-cannon',
+  name: 'Dark Matter Cannon',
+  type: 'energy',
+  damage: _baseDamage,
+  range: _baseRange,
+  fireRate: _baseFireRate,
+  status: 'ready',
+};
+
+// Helper function to create a FactionBehaviorConfig from string
+const createFactionBehavior = (behavior: string): FactionBehaviorConfig => {
   return {
     formation: 'standard',
-    behavior: behavior,
+    behavior: behavior as FactionBehaviorType,
   };
 };
 
@@ -49,11 +70,32 @@ export function DarkMatterReaper({
 }: DarkMatterReaperProps) {
   const [voidPulseActive, setVoidPulseActive] = useState(false);
 
+  // Use the base stats for scaling calculations
+  const healthScaling = maxHealth / _baseHealth;
+  const shieldScaling = maxShield / _baseShield;
+  const speedScaling = stats.speed / _baseSpeed;
+
+  // Create a weapon configuration based on the primary weapon template
+  const weaponConfig = {
+    ..._primaryWeapon,
+    damage: _primaryWeapon.damage * healthScaling,
+    range: _primaryWeapon.range * (stats.tier || 1),
+    fireRate: _primaryWeapon.fireRate * speedScaling,
+  };
+
   useEffect(() => {
     if (status === 'disabled') {
       setVoidPulseActive(false);
     }
-  }, [status]);
+
+    // Log weapon and shield scaling for debugging
+    console.debug('Dark Matter Reaper stats scaling:', {
+      healthScaling,
+      shieldScaling,
+      speedScaling,
+      weaponConfig,
+    });
+  }, [status, healthScaling, shieldScaling, speedScaling, weaponConfig]);
 
   const mapStatus = (status: ShipStatus) => {
     switch (status) {
@@ -70,7 +112,7 @@ export function DarkMatterReaper({
     }
   };
 
-  // Create a proper FactionBehaviorType for tactics
+  // Create a proper FactionBehaviorConfig for tactics
   const tactics = createFactionBehavior('stealth');
 
   return (

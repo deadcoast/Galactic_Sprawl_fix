@@ -352,3 +352,45 @@ useResourceTracking
 └── calculateTotals() → ResourceTotals (for UI)
 
 ```
+
+## Map Iteration TypeScript Fixes
+
+The following files have been updated to fix Map iteration issues by using Array.from() to convert Map entries, keys, or values to arrays before iteration:
+
+- **Resource Manager**: src/managers/game/ResourceManager.ts
+
+  - Fixed Map iteration in apply(), update(), and various resource management methods
+  - Added calculateTransferRate() method to compute resource transfer rates
+  - Updated removeResource() to return a boolean indicating success or failure
+  - Added event emission for resource changes
+
+- **Resource Performance Monitor**: src/managers/resource/ResourcePerformanceMonitor.ts
+
+  - Fixed Map iteration in update() and getMetrics() methods
+  - Converted Map.values() to arrays before iteration
+  - Improved type safety for performance metrics collection
+
+- **Resource Exchange Manager**: src/managers/resource/ResourceExchangeManager.ts
+
+  - Fixed Map iteration in update() and processExchanges() methods
+  - Converted Map.entries() to arrays before iteration
+  - Enhanced type safety for exchange rate calculations
+
+- **Resource Pool Manager**: src/managers/resource/ResourcePoolManager.ts
+
+  - Fixed Map iteration in distributePool() and allocateResources() methods
+  - Converted Map.entries() to arrays before iteration
+  - Improved type safety for pool distribution rules
+
+- **Resource Storage Manager**: src/managers/resource/ResourceStorageManager.ts
+
+  - Fixed Map iteration in update() and getStorageContainers() methods
+  - Converted Map.values() to arrays before iteration
+  - Enhanced type safety for storage container management
+
+- **Asteroid Field Manager**: src/managers/mining/AsteroidFieldManager.ts
+  - Fixed Map iteration in update() and processAsteroidFields() methods
+  - Converted Map.entries() to arrays before iteration
+  - Improved type safety for asteroid field processing
+
+These fixes ensure type safety when iterating over Map objects in TypeScript, avoiding the "Type 'MapIterator<...>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher" error.

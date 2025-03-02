@@ -8,9 +8,25 @@ import {
 import { moduleManager } from './ModuleManager';
 
 /**
- * Interface for module event data
+ * Interface for module attachment event data
+ *
+ * This interface will be used in future implementations to:
+ * 1. Provide strong typing for module attachment events
+ * 2. Type check event data in attachment event handlers
+ * 3. Validate attachment event data before processing
+ * 4. Provide better error messages when attachment event data is malformed
+ * 5. Enable auto-completion and type safety when accessing attachment event data properties
+ *
+ * The interface includes the essential properties needed for attachment operations:
+ * - moduleId: Identifies the module being attached/detached
+ * - buildingId: Identifies the building the module is being attached to/detached from
+ * - attachmentPointId: Identifies the specific attachment point on the building
+ *
+ * The index signature [key: string]: unknown allows for additional properties
+ * while maintaining type safety by requiring explicit type checking before use.
  */
-interface _ModuleAttachmentEventData {
+// @ts-expect-error - This interface is documented for future use in the module attachment system
+interface __ModuleAttachmentEventData {
   moduleId: string;
   buildingId: string;
   attachmentPointId: string;
@@ -74,7 +90,7 @@ export class ModuleAttachmentManager {
     );
 
     // Clear any previews or highlights for this building
-    if (buildingId) {
+    if (buildingId && typeof buildingId === 'string') {
       this.clearAttachmentVisualization(buildingId);
     }
   };

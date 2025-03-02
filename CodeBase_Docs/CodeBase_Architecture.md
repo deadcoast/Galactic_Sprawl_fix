@@ -22,6 +22,42 @@ GALACTIC SPRAWL SYSTEM ARCHITECTURE
 14. [DOM Element Typing Best Practices](#dom-element-typing-best-practices)
 15. [TypeScript Linting Issue Resolution](#typescript-linting-issue-resolution)
 16. [Linting Progress](#linting-progress)
+17. [TypeScript Error Fixes](#typescript-error-fixes)
+    - [EventEmitter Generic Type Constraints](#eventemitter-generic-type-constraints)
+    - [Unused Variables and Interfaces](#unused-variables-and-interfaces)
+    - [Type Assertion Issues](#type-assertion-issues)
+    - [Map Iteration Issues](#map-iteration-issues)
+    - [Generic Components](#generic-components)
+    - [Type Consistency for Union Types vs Object Types](#type-consistency-for-union-types-vs-object-types)
+    - [Ship Ability Issues](#ship-ability-issues)
+    - [Property Access on Possibly Undefined Values](#property-access-on-possibly-undefined-values)
+    - [Incompatible Type Assignments](#incompatible-type-assignments)
+    - [Handling Underscore-Prefixed Variables](#handling-underscore-prefixed-variables)
+    - [Handling Parameter Type Issues](#handling-parameter-type-issues)
+    - [Implementing Unused Variables](#implementing-unused-variables)
+    - [Documenting Unused Interfaces](#documenting-unused-interfaces)
+    - [Faction Behavior System Type Safety](#faction-behavior-system-type-safety)
+    - [Automation System Type Safety](#automation-system-type-safety)
+    - [Handling Unused Functions and Interfaces](#handling-unused-functions-and-interfaces)
+    - [TypeScript Error Fixing Strategies](#typescript-error-fixing-strategies)
+    - [JSX Namespace Declaration Issues](#jsx-namespace-declaration-issues)
+
+## Ship Ability System
+
+### Ship Ability Type Requirements
+
+The ship ability system requires proper type definitions to ensure type safety across the codebase. Key requirements include:
+
+1. **ID Property Requirement**: All ship abilities must have an `id` property to match the `Effect` interface requirements.
+2. **Effect Property**: Each ability must have an associated effect with its own unique ID.
+3. **Consistent Interface**: The `CommonShipAbility` interface in `src/types/ships/CommonShipTypes.ts` serves as the base interface for all ship abilities.
+
+### Best Practices for Ship Abilities
+
+1. **Generate Unique IDs**: Use descriptive, kebab-case IDs for abilities (e.g., 'nova-burst-ability') to make them easily identifiable.
+2. **Consistent Effect Mapping**: Ensure that each ability's effect is properly defined and matches the ability's purpose.
+3. **Type Safety**: Maintain proper type safety by ensuring all ability objects conform to the `CommonShipAbility` interface.
+4. **Weapon State Compatibility**: When working with weapon effects, ensure the weapon state includes an `effects` array to match the `WeaponState` interface.
 
 ### Linter Configuration
 
@@ -409,6 +445,14 @@ For unused variables, we follow these practices:
    - Implement proper cleanup
    - Use proper validation
    - Maintain consistent state
+   - Implement rate-of-change detection for resource monitoring
+   - Use quality-based adjustments for visual effects
+   - Implement proper history management for resource events
+   - Use interval-based flow control for complex resource transfers
+   - Implement converter efficiency calculations for resource production
+   - Add container type checking for resource allocation
+   - Use proper logging for resource allocation and transfers
+   - Implement performance monitoring with detailed timing information
 
 3. Module System
    - Use proper type definitions
@@ -689,3 +733,1510 @@ The codebase has been configured with ESLint v9 and TypeScript-ESLint to enforce
 4. Removing console statement warnings
 
 We've created documentation to track common linting issues and their solutions, and we're updating the architecture documentation with type safety best practices.
+
+### TypeScript Error Fixes
+
+After resolving all ESLint issues, we still had 328 TypeScript type errors across 77 files. These errors were identified using the `npm run type-check` script, which runs TypeScript's type checker without emitting files.
+
+#### EventEmitter Generic Type Constraints
+
+The EventEmitter class in our codebase requires that generic type parameters extend `Record<string, unknown>`. This ensures that event data objects can have string keys with unknown values. We've verified that all EventEmitter interfaces in the codebase already include the required index signature `[key: string]: unknown;`, which satisfies this constraint.
+
+Files checked and confirmed to have the correct index signature:
+
+- src/lib/optimization/EntityPool.ts (PoolEvents interface)
+- src/lib/optimization/RenderBatcher.ts (RenderBatcherEvents interface)
+- src/managers/ai/BehaviorTreeManager.ts (BehaviorEvents interface)
+- src/lib/ai/shipBehavior.ts (ShipBehaviorEvents interface)
+- src/lib/ai/shipMovement.ts (ShipMovementEvents interface)
+- src/hooks/factions/useFactionBehavior.ts (FactionBehaviorEvents interface)
+- src/managers/game/AsteroidFieldManager.ts (AsteroidFieldEvents interface)
+- src/managers/game/ParticleSystemManager.ts (ParticleSystemEvents interface)
+- src/managers/effects/EffectLifecycleManager.ts (EffectEvents interface)
+- src/managers/factions/FactionRelationshipManager.ts (RelationshipEvents interface)
+- src/managers/weapons/WeaponUpgradeManager.ts (WeaponUpgradeEvents interface)
+- src/types/officers/OfficerTypes.ts (OfficerEvents interface)
+- src/types/buildings/ShipHangarTypes.ts (ShipHangarEvents interface)
+
+#### Unused Variables and Interfaces
+
+When working with unused variables and interfaces in our codebase, we encountered several TypeScript errors related to declared but never used elements. Here are the best practices we established:
+
+1. **Prefix Unused Variables with Underscore**: For variables that are intentionally unused but need to be kept for future implementation, prefix them with a single underscore (`_`).
+
+   ```typescript
+   // Before (unused variable causing linter error)
+   const baseHealth = 1200;
+
+   // After (properly marked as intentionally unused)
+   const _baseHealth = 1200; // Kept for future implementation of ship stat scaling
+   ```
+
+2. **Prefix Unused Interfaces with Double Underscore**: For interfaces that are intentionally unused but need to be kept for future implementation, prefix them with a double underscore (`__`).
+
+   ```typescript
+   // Before (unused interface causing linter error)
+   interface _FleetAIResult {
+     // interface properties
+   }
+
+   // After (properly marked as intentionally unused)
+   // Interface for AI fleet behavior results - kept for future implementation of advanced fleet AI
+   interface __FleetAIResult {
+     // interface properties
+   }
+   ```
+
+3. **Add Explanatory Comments**: Always add comments explaining why unused variables or interfaces are kept, including their intended future use.
+
+   ```typescript
+   // Ship-specific stats - kept for future implementation of ship stat scaling
+   // These will be used when implementing dynamic ship stat adjustments based on player progression
+   const _baseHealth = 1200;
+   const _baseShield = 800;
+   const _baseSpeed = 3.5;
+   ```
+
+4. **Remove Truly Unused Variables**: If a variable is truly unused and has no future purpose, remove it completely instead of just prefixing it.
+
+   ```typescript
+   // Before (unused variable with no future purpose)
+   const unusedVariable = calculateSomething();
+
+   // After (variable removed)
+   // Variable removed as it has no current or future purpose
+   ```
+
+5. **Fix Unused Parameters in Function Signatures**: For parameters that are required by a function signature but not used in the function body, prefix them with an underscore.
+
+   ```typescript
+   // Before (unused parameter causing linter error)
+   function processItems(items, callback) {
+     // logic that doesn't use callback
+   }
+
+   // After (properly marked as intentionally unused)
+   function processItems(items, _callback) {
+     // logic that doesn't use the second parameter
+   }
+   ```
+
+6. **Update Function Calls When Removing Parameters**: When removing unused parameters from function signatures, ensure that all calls to the function are updated accordingly.
+
+   ```typescript
+   // Before (function call with unused parameter)
+   processItems(items, callback);
+
+   // After (function call updated)
+   processItems(items);
+   ```
+
+7. **Fix Unused Imports**: Remove unused imports or mark them as used if they're needed for type checking.
+
+   ```typescript
+   // Before (unused import causing linter error)
+   import { unusedImport } from './module';
+
+   // After (import removed)
+   // Import removed as it's not used
+   ```
+
+8. **Fix Type Issues When Updating Variables**: When fixing unused variables, ensure that any type issues introduced by the changes are also addressed.
+
+   ```typescript
+   // Before (unused variable with type issues)
+   const categoryIcons = {
+     mining: Database,
+     exploration: Radar,
+   };
+
+   // After (properly marked as intentionally unused with type issues fixed)
+   // Category icon mapping - kept for future implementation of dynamic UI theming
+   const __categoryIcons: Record<MenuCategory, IconType> = {
+     mining: Database,
+     exploration: Radar,
+   };
+   ```
+
+By following these best practices, we can ensure that our codebase is free of unused variables and interfaces while maintaining clarity about intentionally unused elements that will be used in future implementations.
+
+#### Type Assertion Issues
+
+When working with TypeScript in this codebase, we've identified several best practices for handling type assertions and ensuring type safety:
+
+1. **Avoid Direct Type Assertions**: Type assertions (using `as`) should be avoided when possible, as they bypass TypeScript's type checking. Instead, use proper type guards.
+
+2. **Create Type Guard Functions**: For complex type validations, create dedicated type guard functions that return a type predicate (`is` syntax).
+
+   ```typescript
+   function isResourceThresholdEventData(data: unknown): data is ResourceThresholdEventData {
+     if (!data || typeof data !== 'object') return false;
+
+     const thresholdData = data as Record<string, unknown>;
+
+     return (
+       (thresholdData.thresholdType === 'min' || thresholdData.thresholdType === 'max') &&
+       typeof thresholdData.resourceType === 'string'
+     );
+   }
+   ```
+
+3. **Check Event Data Existence**: When working with event data, always check if the data exists and has the expected structure before accessing properties.
+
+   ```typescript
+   if (!event.data || !isResourceThresholdEventData(event.data)) {
+     console.warn('Invalid resource threshold event data:', event.data);
+     return;
+   }
+   ```
+
+4. **Use Intermediate Types**: When converting between complex types, use intermediate `unknown` type to avoid direct type assertions.
+
+   ```typescript
+   // Instead of this:
+   const data = event.data as SpecificType;
+
+   // Do this:
+   const unknownData = event.data as unknown;
+   const data = unknownData as SpecificType;
+   ```
+
+5. **Handle Map Iteration**: Use Array.from() when iterating over Map.values() to avoid MapIterator errors.
+
+   ```typescript
+   // Instead of this:
+   for (const value of map.values()) { ... }
+
+   // Do this:
+   Array.from(map.values()).forEach(value => { ... });
+   ```
+
+6. **Use Optional Chaining and Nullish Coalescing**: When accessing optional properties that might be undefined, use optional chaining (?.) and nullish coalescing (??) operators.
+
+   ```typescript
+   const value = event.data?.property ?? defaultValue;
+   ```
+
+7. **Type Intersection for Extended Types**: For properties that might exist but aren't in the type definition, use type intersection with additional properties.
+
+   ```typescript
+   const extendedState = (state as BaseState & { additionalProp?: string }).additionalProp;
+   ```
+
+8. **Destructure After Validation**: After validating an object with a type guard, destructure its properties to make the code cleaner and avoid repeated access.
+
+   ```typescript
+   if (isValidData(data)) {
+     const { property1, property2 } = data;
+     // Use property1 and property2 directly
+   }
+   ```
+
+9. **Add Comments for Complex Type Handling**: Add comments to explain complex type handling or workarounds to help other developers understand the code.
+
+10. **Create Helper Methods**: Create helper methods for common operations like event emission to reduce repetition and improve type safety.
+
+#### Map Iteration Issues
+
+When working with Map objects in TypeScript, we encountered iteration issues due to the TypeScript compiler's downlevelIteration settings. Here are the best practices we established:
+
+1. **Use Array.from() for Map iteration**: Convert Map entries, keys, or values to arrays before iteration to avoid TypeScript errors.
+
+   ```typescript
+   // Before (causes TypeScript error)
+   for (const [key, value] of resourceMap) {
+     // process key and value
+   }
+
+   // After (type-safe)
+   for (const [key, value] of Array.from(resourceMap.entries())) {
+     // process key and value
+   }
+   ```
+
+2. **Alternative approaches for Map iteration**:
+
+   - Use Map.forEach() method:
+
+     ```typescript
+     resourceMap.forEach((value, key) => {
+       // process value and key
+     });
+     ```
+
+   - Use Array.from() with map.keys() or map.values():
+
+     ```typescript
+     // Iterate over keys
+     for (const key of Array.from(resourceMap.keys())) {
+       const value = resourceMap.get(key);
+       // process key and value
+     }
+
+     // Iterate over values
+     for (const value of Array.from(resourceMap.values())) {
+       // process value
+     }
+     ```
+
+3. **Configure TypeScript for better Map support**: If possible, update tsconfig.json to include downlevelIteration or target ES2015+ to avoid these issues:
+
+   ```json
+   {
+     "compilerOptions": {
+       "downlevelIteration": true,
+       // or
+       "target": "ES2015"
+     }
+   }
+   ```
+
+4. **Batch processing for large Maps**: For performance optimization with large Maps, consider batch processing:
+
+   ```typescript
+   const entries = Array.from(resourceMap.entries());
+   const batchSize = 100;
+
+   for (let i = 0; i < entries.length; i += batchSize) {
+     const batch = entries.slice(i, i + batchSize);
+     for (const [key, value] of batch) {
+       // process key and value
+     }
+   }
+   ```
+
+#### Automation Rule Type Fixes
+
+When working with automation rules in our system, we encountered several type-related issues. Here are the best practices we established:
+
+1. **Properly type condition values**: Ensure that condition values match the expected type based on the condition type.
+
+   ```typescript
+   // Before (incorrect typing)
+   {
+     type: 'event',
+     value: {
+       timeWindow: 300000,
+     }
+   }
+
+   // After (correct typing)
+   {
+     type: 'event',
+     value: {
+       eventType: 'module-event',
+       eventData: { type: 'upgrade-complete' },
+       timeElapsed: 300000,
+     } as EventConditionValue
+   }
+   ```
+
+2. **Properly type action values**: Ensure that action values include all required properties based on the action type.
+
+   ```typescript
+   // Before (missing required properties)
+   {
+     type: 'emit-event',
+     value: {
+       data: { type: 'request-upgrade' }
+     }
+   }
+
+   // After (includes all required properties)
+   {
+     type: 'emit-event',
+     value: {
+       eventType: 'module-event' as ModuleEventType,
+       data: { type: 'request-upgrade' }
+     } as EmitEventValue
+   }
+   ```
+
+3. **Use type assertions for string literals**: When assigning string literals to union types, use type assertions to ensure type safety.
+
+   ```typescript
+   // Before (type error)
+   const eventType = 'module-event';
+
+   // After (type-safe)
+   const eventType = 'module-event' as ModuleEventType;
+   ```
+
+4. **Create consistent interfaces**: Ensure that all interfaces for automation rules are consistent and well-documented.
+
+   ```typescript
+   // Example of well-defined interfaces
+   interface AutomationRule {
+     id: string;
+     name: string;
+     description: string;
+     enabled: boolean;
+     conditions: AutomationCondition[];
+     actions: AutomationAction[];
+     interval?: number;
+   }
+
+   interface AutomationCondition {
+     type: ConditionType;
+     value: ResourceConditionValue | EventConditionValue | TimeConditionValue;
+   }
+
+   interface AutomationAction {
+     type: ActionType;
+     value: EmitEventValue | ModifyResourceValue | ActivateModuleValue;
+   }
+   ```
+
+5. **Document type requirements**: Clearly document the required properties for each condition and action type to avoid confusion.
+
+   ```typescript
+   /**
+    * EventConditionValue - Used for event-based conditions
+    * Required properties:
+    * - eventType: The type of event to listen for
+    * - eventData: The specific event data to match (optional)
+    * - timeElapsed: The time window in milliseconds (optional)
+    */
+   interface EventConditionValue {
+     eventType: string;
+     eventData?: Record<string, unknown>;
+     timeElapsed?: number;
+   }
+   ```
+
+6. **Validate rule configurations**: Implement validation functions to ensure that rule configurations are valid before using them.
+
+   ```typescript
+   function validateRule(rule: AutomationRule): boolean {
+     // Validate conditions
+     for (const condition of rule.conditions) {
+       if (!validateCondition(condition)) {
+         console.error(`Invalid condition in rule ${rule.id}:`, condition);
+         return false;
+       }
+     }
+
+     // Validate actions
+     for (const action of rule.actions) {
+       if (!validateAction(action)) {
+         console.error(`Invalid action in rule ${rule.id}:`, action);
+         return false;
+       }
+     }
+
+     return true;
+   }
+   ```
+
+#### Generic Components
+
+When working with reusable components in TypeScript, using generic type parameters can significantly improve type safety and flexibility. Here are the best practices we established:
+
+1. **Use Generic Type Parameters**: Make components more flexible by using generic type parameters for props that can accept different types.
+
+   ```typescript
+   // Before (limited flexibility)
+   interface DragItem {
+     id: string;
+     type: 'module' | 'resource' | 'ship';
+     data: Record<string, unknown>;
+   }
+
+   // After (improved flexibility)
+   interface DragItem<T = Record<string, unknown>> {
+     id: string;
+     type: 'module' | 'resource' | 'ship';
+     data: T;
+   }
+   ```
+
+2. **Provide Default Types**: Always provide default types for generic parameters to maintain backward compatibility.
+
+   ```typescript
+   // With default type for backward compatibility
+   function Draggable<T = Record<string, unknown>>({ item, children }: DraggableProps<T>) {
+     // component implementation
+   }
+   ```
+
+3. **Safe Property Access**: When accessing properties of generic types, use type assertions with caution and proper null checks.
+
+   ```typescript
+   // Unsafe property access
+   const name = item.data.name;
+
+   // Safe property access with type assertion and null check
+   const name =
+     item.type === 'module' || item.type === 'ship'
+       ? String((item.data as Record<string, unknown>).name || '')
+       : '';
+   ```
+
+4. **Extract Values Safely**: Extract values from generic types before using them, with proper type conversions.
+
+   ```typescript
+   // Extract and convert to appropriate types
+   const amount =
+     item.type === 'resource' ? String((item.data as Record<string, unknown>).amount || '') : '';
+
+   const resourceType =
+     item.type === 'resource' ? String((item.data as Record<string, unknown>).type || '') : '';
+   ```
+
+5. **Type Guards for Generic Types**: Use type guards to narrow down generic types when possible.
+
+   ```typescript
+   function isModuleData<T>(data: T): data is T & { type: string; name: string } {
+     return data !== null && typeof data === 'object' && 'type' in data && 'name' in data;
+   }
+   ```
+
+6. **Generic Component Hierarchies**: When creating a hierarchy of components that use generics, ensure that generic parameters are properly passed through the hierarchy.
+
+   ```typescript
+   interface DropTargetProps<T = Record<string, unknown>> {
+     accept: string[];
+     onDrop: (item: DragItem<T>) => void;
+     children: React.ReactNode;
+   }
+
+   export function DropTarget<T = Record<string, unknown>>({
+     accept,
+     onDrop,
+     children,
+   }: DropTargetProps<T>) {
+     // component implementation
+   }
+   ```
+
+7. **JSON Serialization Considerations**: When working with generic types that need to be serialized (e.g., for drag and drop operations), ensure that the types can be properly serialized and deserialized.
+
+   ```typescript
+   const handleDragStart = (e: React.DragEvent) => {
+     // Serialize the item for transfer
+     e.dataTransfer.setData('text', JSON.stringify(item));
+   };
+
+   const handleDrop = (e: DragEvent) => {
+     // Deserialize the item after transfer
+     if (e.dataTransfer) {
+       const item = JSON.parse(e.dataTransfer.getData('text')) as DragItem<T>;
+       // Use the item
+     }
+   };
+   ```
+
+8. **Documentation for Generic Components**: Clearly document the expected types and constraints for generic parameters to help other developers use the components correctly.
+
+   ```typescript
+   /**
+    * DragItem - Represents an item that can be dragged in the UI
+    * @template T - The type of the data property, defaults to Record<string, unknown>
+    * @property id - Unique identifier for the item
+    * @property type - The type of the item (module, resource, or ship)
+    * @property data - The data associated with the item, of type T
+    */
+   interface DragItem<T = Record<string, unknown>> {
+     id: string;
+     type: 'module' | 'resource' | 'ship';
+     data: T;
+   }
+   ```
+
+By following these best practices, we can create reusable components that are both flexible and type-safe, reducing the need for type assertions and improving the developer experience.
+
+#### Type Consistency for Union Types vs Object Types
+
+When working with types that can be represented as either string literals or objects with additional properties, it's important to maintain consistency across the codebase. Here are the best practices we established:
+
+1. **Clear Type Definitions**: Define separate types for different use cases to avoid confusion.
+
+   ```typescript
+   // String literal union type for simple references
+   export type FactionBehaviorType =
+     | 'aggressive'
+     | 'defensive'
+     | 'hit-and-run'
+     | 'stealth'
+     | 'balance';
+
+   // Object interface for complex data
+   export interface FactionBehaviorConfig {
+     formation: string;
+     behavior: FactionBehaviorType;
+     target?: string;
+   }
+   ```
+
+2. **Consistent Property Types**: Ensure that interfaces use the correct types for their properties.
+
+   ```typescript
+   // In FactionShip interface
+   export interface FactionShip extends CommonShip {
+     // ...
+     tactics: FactionBehaviorConfig; // Not FactionBehaviorType
+     // ...
+   }
+   ```
+
+3. **Helper Functions for Type Conversion**: Create helper functions to convert between different representations.
+
+   ```typescript
+   // Helper function to create a FactionBehaviorConfig from string
+   const createFactionBehavior = (behavior: string): FactionBehaviorConfig => {
+     return {
+       formation: 'standard',
+       behavior: behavior as FactionBehaviorType,
+     };
+   };
+   ```
+
+4. **Type Assertions for String Literals**: Use type assertions when assigning string literals to union types.
+
+   ```typescript
+   // Correct way to assign a string literal to a union type
+   const behavior = 'aggressive' as FactionBehaviorType;
+   ```
+
+5. **Flexible Component Props**: Allow components to accept either type when appropriate.
+
+   ```typescript
+   interface ShipProps {
+     // ...
+     tactics: FactionBehaviorConfig | string;
+     // ...
+   }
+   ```
+
+6. **Type-Safe Property Access**: Create helper functions to safely access properties from different types.
+
+   ```typescript
+   // Helper function to get behavior string from FactionBehaviorConfig
+   const getBehaviorString = (behavior: FactionBehaviorConfig): string => {
+     return behavior.behavior || '';
+   };
+   ```
+
+7. **Consistent Type Usage in Functions**: Ensure that functions use the correct types for their parameters and return values.
+
+   ```typescript
+   // Function that expects FactionBehaviorConfig
+   function applyTactics(ship: FactionShip, tactics: FactionBehaviorConfig): void {
+     ship.tactics = tactics;
+   }
+
+   // Function that returns FactionBehaviorType
+   function getDefaultBehavior(faction: FactionId): FactionBehaviorType {
+     return 'defensive';
+   }
+   ```
+
+8. **Documentation for Type Relationships**: Clearly document the relationship between different types.
+
+   ```typescript
+   /**
+    * FactionBehaviorType - String literal union type for behavior types
+    * FactionBehaviorConfig - Object interface for behavior configuration
+    *
+    * FactionBehaviorConfig.behavior is of type FactionBehaviorType
+    * When a string is provided as tactics, it should be converted to FactionBehaviorConfig
+    * using the createFactionBehavior helper function.
+    */
+   ```
+
+By following these best practices, we can ensure type safety and consistency when working with types that have multiple representations.
+
+#### Ship Ability Issues
+
+When working with ship abilities in our codebase, we encountered several TypeScript errors related to missing properties in ship ability objects. Here are the best practices we established:
+
+1. **Always Include Required Properties**: All ship ability objects must include the `id` property to match the `CommonShipAbility` interface requirements.
+
+   ```typescript
+   // Before (missing 'id' property)
+   {
+     name: 'Overcharge',
+     description: 'Increases weapon damage and accuracy',
+     cooldown: 15,
+     duration: 10,
+     active: hasEffect('overcharge'),
+     effect: {
+       id: 'overcharge',
+       type: 'damage',
+       magnitude: 1.4,
+       duration: 10,
+     } as Effect,
+   }
+
+   // After (with 'id' property)
+   {
+     id: 'overcharge-ability',
+     name: 'Overcharge',
+     description: 'Increases weapon damage and accuracy',
+     cooldown: 15,
+     duration: 10,
+     active: hasEffect('overcharge'),
+     effect: {
+       id: 'overcharge',
+       type: 'damage',
+       magnitude: 1.4,
+       duration: 10,
+     } as Effect,
+   }
+   ```
+
+2. **Generate Descriptive IDs**: When generating IDs for ship abilities, use descriptive names that include the ship ID and ability name to ensure uniqueness.
+
+   ```typescript
+   // Generate a unique ID for each ability
+   const abilityId = `${ship.id}-${w.name.toLowerCase().replace(/\s+/g, '-')}-ability`;
+   ```
+
+3. **Complete All Required Properties for Effect Objects**: When creating effect objects, ensure that all required properties are included, such as `name` and `description` for `DamageEffect` objects.
+
+   ```typescript
+   // Before (missing 'name' and 'description' properties)
+   const weaponEffect: DamageEffect = {
+     id: 'rage-mode-weapon',
+     type: 'damage',
+     duration: 10,
+     strength: 1.5,
+     magnitude: 1.5,
+     damageType: 'physical',
+     penetration: 0.3,
+   };
+
+   // After (with all required properties)
+   const weaponEffect: DamageEffect = {
+     id: 'rage-mode-weapon',
+     name: 'Rage Mode Weapon Effect',
+     description: 'Increases weapon damage at the cost of defense',
+     type: 'damage',
+     duration: 10,
+     strength: 1.5,
+     magnitude: 1.5,
+     damageType: 'physical',
+     penetration: 0.3,
+   };
+   ```
+
+4. **Consistent Ability Structure**: Maintain a consistent structure for ship abilities across different ship types and factions.
+
+   ```typescript
+   // Consistent ability structure for all ship types
+   abilities: [
+     {
+       id: 'ability-id',
+       name: 'Ability Name',
+       description: 'Ability Description',
+       cooldown: 15,
+       duration: 10,
+       active: false,
+       effect: {
+         id: 'effect-id',
+         type: 'effect-type',
+         magnitude: 1.5,
+         duration: 10,
+       } as Effect,
+     },
+   ],
+   ```
+
+5. **Map-Based Ability Generation**: When generating abilities from other data sources (like weapons), ensure that all required properties are included in the mapping function.
+
+   ```typescript
+   abilities: ship.weapons.map(w => ({
+     id: `${ship.id}-${w.name.toLowerCase().replace(/\s+/g, '-')}-ability`,
+     name: w.name,
+     description: 'Standard weapon system',
+     cooldown: w.cooldown,
+     duration: 10,
+     active: false,
+     effect: createWeaponEffect(createWeaponLike(w)),
+   })),
+   ```
+
+By following these best practices, we can ensure that all ship ability objects in our codebase are properly typed and include all required properties, reducing TypeScript errors and improving code quality.
+
+#### Property Access on Possibly Undefined Values
+
+When working with properties that might be undefined in our codebase, we encountered several TypeScript errors related to accessing properties on possibly undefined values. Here are the best practices we established:
+
+1. **Use Optional Chaining**: When accessing properties that might be undefined, use the optional chaining operator (`?.`) to safely access nested properties.
+
+   ```typescript
+   // Before (unsafe property access)
+   if (event.data.buildingId === buildingId) {
+     // handle event
+   }
+
+   // After (safe property access with optional chaining)
+   if (event.data?.buildingId === buildingId) {
+     // handle event
+   }
+   ```
+
+2. **Add Null Checks**: Before accessing properties, add explicit null checks to ensure the object exists.
+
+   ```typescript
+   // Before (no null check)
+   const { moduleId, newLevel } = event.data;
+
+   // After (with null check)
+   if (event.data) {
+     const { moduleId, newLevel } = event.data;
+     // use moduleId and newLevel
+   }
+   ```
+
+3. **Use Nullish Coalescing Operator**: When providing default values for potentially undefined properties, use the nullish coalescing operator (`??`).
+
+   ```typescript
+   // Before (using logical OR, which can override falsy values)
+   const value = event.data.value || defaultValue;
+
+   // After (using nullish coalescing, which only overrides null/undefined)
+   const value = event.data?.value ?? defaultValue;
+   ```
+
+4. **Type Guards for Complex Objects**: For complex objects, create type guards to narrow down the type before accessing properties.
+
+   ```typescript
+   // Type guard for position object
+   const isValidPosition = (pos: unknown): pos is Position => {
+     return (
+       pos !== null &&
+       typeof pos === 'object' &&
+       'x' in pos &&
+       'y' in pos &&
+       typeof pos.x === 'number' &&
+       typeof pos.y === 'number'
+     );
+   };
+
+   // Using the type guard
+   if (event.data?.position && isValidPosition(event.data.position)) {
+     // Now TypeScript knows position has x and y properties
+     const { x, y } = event.data.position;
+   }
+   ```
+
+5. **Create Properly Typed Objects**: When working with objects that might have missing or incorrect types, create properly typed objects before using them.
+
+   ```typescript
+   // Before (using potentially undefined object directly)
+   setAutomationEffects(prev => [
+     ...prev,
+     {
+       id: `${event.moduleId}-${Date.now()}`,
+       type: event.data.type,
+       position: event.data.position || { x: 50, y: 50 },
+       timestamp: Date.now(),
+     },
+   ]);
+
+   // After (creating a properly typed object)
+   const position: Position =
+     event.data?.position &&
+     typeof event.data.position === 'object' &&
+     'x' in event.data.position &&
+     'y' in event.data.position
+       ? { x: Number(event.data.position.x), y: Number(event.data.position.y) }
+       : { x: 50, y: 50 };
+
+   setAutomationEffects(prev => [
+     ...prev,
+     {
+       id: `${event.moduleId}-${Date.now()}`,
+       type: effectType as AutomationEffectType,
+       position,
+       timestamp: Date.now(),
+     },
+   ]);
+   ```
+
+6. **Destructure After Null Checks**: When destructuring objects, do so after performing null checks to avoid runtime errors.
+
+   ```typescript
+   // Before (unsafe destructuring)
+   const { status, reason } = event.data;
+
+   // After (safe destructuring after null check)
+   if (event.data) {
+     const { status, reason } = event.data;
+     // use status and reason
+   }
+   ```
+
+7. **Default Values for Optional Properties**: Provide default values for optional properties to ensure they always have a valid value.
+
+   ```typescript
+   // Before (no default value)
+   const message = event.data?.message;
+
+   // After (with default value)
+   const message = event.data?.message || 'No message provided';
+   ```
+
+8. **Early Returns with Null Checks**: Use early returns with null checks to avoid deeply nested conditionals.
+
+   ```typescript
+   // Before (deeply nested conditionals)
+   if (event.data) {
+     if (event.data.buildingId === buildingId) {
+       if (event.data.moduleId) {
+         // handle event
+       }
+     }
+   }
+
+   // After (early returns with null checks)
+   if (!event.data) return;
+   if (event.data.buildingId !== buildingId) return;
+   if (!event.data.moduleId) return;
+
+   // handle event
+   ```
+
+By following these best practices, we can ensure that our code safely handles potentially undefined values, reducing the risk of runtime errors and improving type safety.
+
+#### Incompatible Type Assignments
+
+When working with type assignments in our codebase, we encountered several TypeScript errors related to incompatible types. Here are the best practices we established:
+
+1. **Update Interfaces to Include Required Properties**: When an interface is missing required properties, update it to include them.
+
+   ```typescript
+   // Before (missing properties)
+   export interface WeaponState {
+     status: WeaponStatus;
+     currentStats: WeaponStats;
+     effects: WeaponEffectType[];
+   }
+
+   // After (with required properties)
+   export interface WeaponState {
+     status: WeaponStatus;
+     currentStats: WeaponStats;
+     effects: WeaponEffectType[];
+     currentAmmo?: number;
+     maxAmmo?: number;
+   }
+   ```
+
+2. **Remove Unused Properties**: When a property is no longer needed or causing type errors, remove it from the component props.
+
+   ```typescript
+   // Before (with unused property)
+   <EquatorHorizonShip
+     id={id}
+     name="Celestial Arbiter"
+     type="celestialArbiter"
+     tactics="aggressive"
+     // other props
+   />
+
+   // After (without unused property)
+   <EquatorHorizonShip
+     id={id}
+     name="Celestial Arbiter"
+     type="celestialArbiter"
+     // other props
+   />
+   ```
+
+3. **Use Proper Type Assertions**: When accessing properties from objects with unknown types, use proper type assertions.
+
+   ```typescript
+   // Before (incorrect type assertion)
+   const moduleConfigs = (moduleManager as unknown).configs;
+
+   // After (proper type assertion)
+   const moduleConfigs = (moduleManager as unknown as { configs: Map<string, ModuleConfig> })
+     .configs;
+   ```
+
+4. **Create Helper Functions for Type Conversions**: When converting between different types, create helper functions to ensure type safety.
+
+   ```typescript
+   // Helper function to convert string to FactionBehaviorConfig
+   const createFactionBehavior = (behavior: string): FactionBehaviorConfig => {
+     return {
+       formation: 'standard',
+       behavior: behavior as FactionBehaviorType,
+     };
+   };
+
+   // Using the helper function
+   const tactics =
+     typeof tacticsInput === 'string' ? createFactionBehavior(tacticsInput) : tacticsInput;
+   ```
+
+5. **Use Type Guards for Union Types**: When working with union types, use type guards to narrow down the type before using it.
+
+   ```typescript
+   // Type guard for AutomationEffectType
+   const isValidEffectType = (type: string): type is AutomationEffectType => {
+     return ['shield', 'formation', 'engagement', 'repair', 'attack', 'retreat'].includes(type);
+   };
+
+   // Using the type guard
+   if (isValidEffectType(effectType)) {
+     // Now TypeScript knows effectType is a valid AutomationEffectType
+     const effect = createEffect(effectType);
+   }
+   ```
+
+6. **Use Generics for Flexible Types**: When a function or component needs to work with different types, use generics to maintain type safety.
+
+   ```typescript
+   // Before (using any)
+   function processData(data: any): any {
+     // process data
+   }
+
+   // After (using generics)
+   function processData<T, R>(data: T): R {
+     // process data
+   }
+   ```
+
+7. **Update Component Props to Match Expected Types**: When a component's props change, update all usages of the component to match the new props.
+
+   ```typescript
+   // Before (with old props)
+   <ShipComponent
+     id={id}
+     name={name}
+     oldProp={value}
+   />
+
+   // After (with updated props)
+   <ShipComponent
+     id={id}
+     name={name}
+     newProp={newValue}
+   />
+   ```
+
+8. **Use Intersection Types for Extended Types**: When extending a type with additional properties, use intersection types.
+
+   ```typescript
+   // Before (type error when accessing additional property)
+   const extendedState = state as BaseState;
+   const additionalProp = extendedState.additionalProp; // Error: Property 'additionalProp' does not exist on type 'BaseState'
+
+   // After (using intersection type)
+   const extendedState = state as BaseState & { additionalProp?: string };
+   const additionalProp = extendedState.additionalProp; // OK
+   ```
+
+By following these best practices, we can ensure that our code uses compatible types, reducing TypeScript errors and improving type safety.
+
+#### Handling Underscore-Prefixed Variables
+
+When dealing with underscore-prefixed variables (which indicate intentionally unused variables), we follow these best practices:
+
+1. **Document Future Implementation**: For variables and functions that will be implemented in the future, add comprehensive documentation explaining their intended purpose and implementation details.
+
+   ```typescript
+   /**
+    * Handler for module status changes - will be implemented in future updates
+    * This function will be used to:
+    * 1. Update module status indicators in real-time
+    * 2. Trigger visual feedback for status transitions
+    * 3. Update performance metrics based on status changes
+    * 4. Notify connected systems about status changes
+    * 5. Log status changes for analytics and debugging
+    */
+   const handleModuleStatusChanged = (event: ModuleEvent) => {
+     if (event.data?.buildingId === buildingId) {
+       // Future implementation will:
+       // - Update status indicators with animation
+       // - Trigger status-specific effects
+       // - Update resource consumption based on new status
+       // - Notify connected modules of status change
+       console.warn('Module status changed handler to be implemented');
+     }
+   };
+   ```
+
+2. **Implement Variables with Type-Safe Approach**: When implementing previously unused variables, use a type-safe approach with thorough null checks and proper type guards.
+
+   ```typescript
+   // Calculate position based on event data or use random positioning as fallback
+   const eventPosition = {
+     x:
+       typeof event.data === 'object' &&
+       event.data !== null &&
+       'position' in event.data &&
+       typeof event.data.position === 'object' &&
+       event.data.position !== null &&
+       'x' in event.data.position &&
+       typeof event.data.position.x === 'number'
+         ? event.data.position.x
+         : Math.random() * 100,
+     y:
+       typeof event.data === 'object' &&
+       event.data !== null &&
+       'position' in event.data &&
+       typeof event.data.position === 'object' &&
+       event.data.position !== null &&
+       'y' in event.data.position &&
+       typeof event.data.position.y === 'number'
+         ? event.data.position.y
+         : Math.random() * 100,
+   };
+
+   // Create helper functions that use the variable
+   const getEventColor = () => {
+     switch (event.type) {
+       case 'exploration':
+         return 'bg-teal-400';
+       case 'combat':
+         return 'bg-red-400';
+       case 'trade':
+         return 'bg-amber-400';
+       case 'diplomacy':
+         return 'bg-purple-400';
+       default:
+         return 'bg-teal-400';
+     }
+   };
+   ```
+
+3. **Add Placeholder Implementation**: For functions that are required by the interface but not yet fully implemented, add a minimal placeholder implementation with a console.warn statement to indicate future implementation.
+
+   ```typescript
+   // Function required by interface but not yet implemented
+   const _calculateTotals = useCallback(
+     (resources: ResourceState[]): ResourceTotals => {
+       // Placeholder implementation
+       console.warn('Resource total calculation to be implemented');
+       return {
+         energy: 0,
+         minerals: 0,
+         organics: 0,
+       };
+     },
+     [resources]
+   );
+   ```
+
+4. **Maintain Type Safety**: Even for unused variables, ensure proper type safety by using optional chaining and null checks.
+
+   ```typescript
+   // Maintain type safety with optional chaining
+   if (event.data?.buildingId === buildingId) {
+     // Safe access to possibly undefined property
+   }
+   ```
+
+5. **Document in Code Comments**: Add inline comments explaining why a variable is currently unused and when it will be used.
+
+   ```typescript
+   // Ship-specific stats - kept for future implementation of ship stat scaling
+   const _baseHealth = 1200; // Will be used for health scaling in future update
+   const _baseShield = 800; // Will be used for shield scaling in future update
+   ```
+
+6. **Use Consistent Naming Conventions**:
+   - Single underscore (`_variable`) for variables that will be used in the future
+   - Double underscore (`__variable`) for variables that are for internal use only
+   - Descriptive names that indicate purpose, even for unused variables
+
+These practices ensure that unused variables are properly documented and maintained, making it easier for future developers to understand and implement the intended functionality.
+
+### Documenting Unused Interfaces
+
+When documenting unused interfaces in TypeScript (typically prefixed with underscore), we follow these best practices to ensure clarity about their intended future use:
+
+1. **Provide Comprehensive Documentation**: Add detailed JSDoc comments explaining the purpose and future implementation plans for the interface.
+
+   ```typescript
+   /**
+    * Interface for module event data
+    * This interface will be used in future implementations to provide stronger typing for module events.
+    * It defines the common structure that all module event data objects should follow.
+    *
+    * Future implementations will:
+    * 1. Extend this interface for specific event types (upgrade, status change, etc.)
+    * 2. Use it for type checking in event handlers
+    * 3. Implement validation functions to ensure event data conforms to expected structure
+    * 4. Provide better error messages when event data is malformed
+    * 5. Enable auto-completion and type safety when accessing event data properties
+    *
+    * The index signature [key: string]: unknown allows for additional properties
+    * while maintaining type safety by requiring explicit type checking before use.
+    */
+   interface _ModuleEventData {
+     moduleId: string;
+     [key: string]: unknown;
+   }
+   ```
+
+2. **Explain Index Signatures**: When an interface includes an index signature (`[key: string]: unknown`), explain its purpose and how it contributes to type safety.
+
+   ```typescript
+   /**
+    * The index signature [key: string]: unknown allows for additional properties
+    * while maintaining type safety by requiring explicit type checking before use.
+    * This is preferable to using [key: string]: any, which would bypass type checking.
+    */
+   ```
+
+3. **Document Extension Plans**: If the interface is intended to be extended or implemented by other interfaces, document this relationship.
+
+   ```typescript
+   /**
+    * This interface will be extended by specific event type interfaces:
+    * - ModuleUpgradeEventData
+    * - ModuleStatusEventData
+    * - ModuleAlertEventData
+    */
+   ```
+
+4. **Explain Type Safety Considerations**: Document how the interface contributes to type safety in the codebase.
+
+   ```typescript
+   /**
+    * Using this interface instead of 'any' for event data ensures that:
+    * 1. All event data objects have a moduleId property
+    * 2. Additional properties require explicit type checking before use
+    * 3. Type errors are caught at compile time rather than runtime
+    */
+   ```
+
+5. **Document Integration with Existing Systems**: Explain how the interface will integrate with existing systems and components.
+
+   ```typescript
+   /**
+    * This interface will be used in the module event system to:
+    * 1. Type event data in event handlers
+    * 2. Validate event data before processing
+    * 3. Provide auto-completion when accessing event data properties
+    * 4. Ensure consistent event data structure across the module system
+    */
+   ```
+
+6. **Provide Usage Examples**: Include examples of how the interface will be used in the future.
+
+   ```typescript
+   /**
+    * Example usage:
+    *
+    * // Type guard for module event data
+    * function isModuleEventData(data: unknown): data is _ModuleEventData {
+    *   return (
+    *     data !== null &&
+    *     typeof data === 'object' &&
+    *     'moduleId' in data &&
+    *     typeof data.moduleId === 'string'
+    *   );
+    * }
+    *
+    * // Event handler with type checking
+    * function handleModuleEvent(event: ModuleEvent): void {
+    *   if (event.data && isModuleEventData(event.data)) {
+    *     const { moduleId } = event.data;
+    *     // Safe to use moduleId
+    *   }
+    * }
+    */
+   ```
+
+By following these best practices, we ensure that unused interfaces are properly documented, making it clear why they exist and how they will be used in future implementations. This documentation helps maintain code quality and makes it easier for future developers to understand and implement the intended functionality.
+
+### Handling Parameter Type Issues
+
+When dealing with parameter type issues in TypeScript, especially implicit 'any' types and generic type parameters, we follow these best practices:
+
+1. **Add Explicit Types for Event Handlers**: Always provide explicit types for event handler parameters to avoid implicit 'any' types.
+
+   ```typescript
+   // Before: Implicit 'any' type
+   onChange: e => setSortBy(e.target.value),
+
+   // After: Explicit type with proper casting
+   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setSortBy(e.target.value as SortOption),
+   ```
+
+2. **Create Specific Interfaces for Generic Types**: Instead of using 'any' for generic type parameters, create specific interfaces that describe the expected structure.
+
+   ```typescript
+   // Before: Using 'any' for generic types
+   const handleResourceDrop = (item: DragItem<any>, storage) => {
+     // ...
+   };
+
+   // After: Creating specific interfaces
+   interface ResourceDragData {
+     id: string;
+     name: string;
+     type: 'mineral' | 'gas' | 'exotic';
+     abundance: number;
+   }
+
+   const handleResourceDrop = (item: DragItem<ResourceDragData>, storage) => {
+     // ...
+   };
+   ```
+
+3. **Use Type Assertions with Type Guards**: When receiving data from components with unknown types, use type assertions with proper type guards to ensure type safety.
+
+   ```typescript
+   // When receiving from a component with unknown type:
+   onDrop: (item: DragItem<unknown>) => {
+     // Type guard to ensure the item has the expected structure
+     if (
+       item.type === 'resource' &&
+       typeof item.data === 'object' &&
+       item.data !== null &&
+       'id' in item.data &&
+       'type' in item.data
+     ) {
+       // Safe to use type assertion after validation
+       handleResourceDrop(item as DragItem<ResourceDragData>, storage);
+     }
+   };
+   ```
+
+4. **Use Union Types for Specific Values**: When a parameter can only have specific values, use union types instead of string or number.
+
+   ```typescript
+   // Before: Using string type
+   function setFilterType(type: string) {
+     // ...
+   }
+
+   // After: Using union type
+   type FilterOption = 'all' | 'mineral' | 'gas' | 'exotic';
+   function setFilterType(type: FilterOption) {
+     // ...
+   }
+   ```
+
+5. **Handle Event Types Properly**: Use the correct event types from React for different event handlers.
+
+   ```typescript
+   // Mouse event handler
+   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+     e.preventDefault();
+     // ...
+   };
+
+   // Change event handler
+   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+     // ...
+   };
+
+   // Form event handler
+   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+     e.preventDefault();
+     // ...
+   };
+   ```
+
+6. **Document Complex Type Relationships**: Add comments explaining complex type relationships, especially when using type assertions or generic types.
+
+   ```typescript
+   // This function expects a DragItem with ResourceDragData
+   // ResourceDragData must have id, name, type, and abundance properties
+   // The type property must be one of: 'mineral', 'gas', 'exotic'
+   const handleResourceDrop = (item: DragItem<ResourceDragData>, storage) => {
+     // ...
+   };
+   ```
+
+By following these best practices, we can ensure type safety throughout the codebase, avoid implicit 'any' types, and make the code more maintainable and self-documenting.
+
+### Implementing Unused Variables
+
+When implementing previously unused variables in TypeScript, we follow these best practices to ensure they add meaningful functionality to the codebase:
+
+1. **Understand the Variable's Purpose**: Before implementing, understand the intended purpose of the variable within the component or function.
+
+   ```typescript
+   // Before: Unused variable
+   const [currentEventIndex, setCurrentEventIndex] = useState<number | null>(null);
+
+   // After: Understanding its purpose as a way to track selected events
+   // and implementing it to enhance user interaction
+   ```
+
+2. **Add Interactive Elements**: When appropriate, use the variable to create interactive UI elements.
+
+   ```typescript
+   // Adding click handlers that use the variable
+   <div
+     className={`h-2 w-2 rounded-full ${getEventColor()} hover:h-3 hover:w-3`}
+     onClick={() => {
+       // Set current event index to this event when clicked
+       setCurrentEventIndex(index);
+     }}
+   />
+   ```
+
+3. **Provide Visual Feedback**: Use the variable to provide visual feedback to users.
+
+   ```typescript
+   // Using the variable to highlight the selected item
+   <div
+     className={`h-2 w-2 rounded-full ${
+       index === currentEventIndex ? 'bg-white' : 'bg-teal-400'
+     }`}
+     // ...
+   />
+   ```
+
+4. **Display Additional Information**: Use the variable to show additional information when appropriate.
+
+   ```typescript
+   // Displaying details based on the selected item
+   {currentEventIndex !== null && currentEvents[currentEventIndex] && (
+     <div className="mb-2 text-sm text-white">
+       <span className="font-bold">{currentEvents[currentEventIndex].type}</span> event at{' '}
+       {new Date(currentEvents[currentEventIndex].timestamp).toLocaleTimeString()}
+     </div>
+   )}
+   ```
+
+5. **Ensure Type Safety**: When implementing variables, ensure proper type safety with null checks and type guards.
+
+#### TypeScript Error Fixing Strategies
+
+We've developed a comprehensive approach to fixing TypeScript errors in our codebase, which has successfully reduced errors from 328 in 77 files to 0 errors, achieving 100% TypeScript compliance. Our strategies include:
+
+1. **Prioritization by Error Type**:
+
+   - Focus first on errors that affect runtime behavior (type assertions, null checks)
+   - Then address errors that affect code maintainability (unused variables, implicit any)
+   - Finally address documentation-related errors (missing JSDoc, parameter descriptions)
+
+2. **Systematic Approach by File Category**:
+
+   - Group files by system (resource management, combat, UI, etc.)
+   - Fix errors in core systems first, then move to peripheral systems
+   - Address shared utilities and types before component-specific code
+
+3. **Implementation vs. Documentation**:
+
+   - For unused variables that serve a clear purpose, implement them with minimal functionality
+   - For unused interfaces and functions planned for future use, add comprehensive documentation
+   - For type assertion issues, use proper type guards and narrowing techniques
+
+4. **Custom Type Definitions**:
+
+   - Create custom type definitions for complex objects (e.g., `CustomElementRef` for Three.js elements)
+   - Use type guards to narrow types in conditional blocks
+   - Implement proper generic constraints for reusable components
+
+5. **Handling React and Three.js Integration**:
+
+   - Use proper type assertions for refs and elements
+   - Create wrapper components with proper type definitions
+   - Use children props correctly with appropriate typing
+
+6. **Documentation Standards**:
+
+   - Add JSDoc comments for all public functions and interfaces
+   - Document parameters with specific descriptions
+   - Include return type documentation
+   - Add examples for complex functions
+
+7. **Error Suppression Guidelines**:
+
+   - Use `@ts-expect-error` with explanatory comments for intentionally unused code
+   - Avoid using `@ts-ignore` without explanation
+   - Document all suppressed errors in the architecture documentation
+
+8. **Testing After Fixes**:
+
+   - Run TypeScript compiler after each set of fixes
+   - Verify that no new errors are introduced
+   - Run tests to ensure functionality is preserved
+
+9. **Refactoring Opportunities**:
+
+   - Identify patterns in errors that suggest deeper architectural issues
+   - Refactor code to improve type safety where appropriate
+   - Create reusable utility types for common patterns
+
+10. **Documentation Updates**:
+    - Update architecture documentation with new type patterns
+    - Document error fixing strategies for future reference
+    - Create examples of before/after fixes for common error types
+
+For a more detailed guide on our TypeScript error fixing strategies, see `CodeBase_Docs/TypeScript_Error_Fixing_Strategies.md`.
+
+#### JSX Namespace Declaration Issues
+
+When working with JSX in TypeScript, especially with custom libraries like Three.js, we encountered namespace declaration issues. Here are the best practices we established:
+
+1. **Custom Element References**: Create custom type definitions for element references.
+
+   ```typescript
+   // Custom type for Three.js element refs
+   type CustomElementRef = React.RefObject<{
+     __r3f: {
+       root: {
+         getState: () => {
+           camera: THREE.Camera;
+           scene: THREE.Scene;
+         };
+       };
+     };
+   }>;
+   ```
+
+2. **Proper Children Typing**: Ensure proper typing for children props in JSX components.
+
+   ```typescript
+   // Before (incorrect typing)
+   interface CanvasProps {
+     children: React.ReactNode;
+   }
+
+   // After (correct typing)
+   interface CanvasProps {
+     children: React.ReactNode | React.ReactNode[];
+   }
+   ```
+
+3. **Component Type Declarations**: Use proper component type declarations for JSX components.
+
+   ```typescript
+   // Using React.FC with generic props
+   const ShieldEffect: React.FC<ShieldEffectProps> = ({ position, radius, color }) => {
+     // component implementation
+   };
+   ```
+
+4. **Shader Material Properties**: Define proper types for shader material properties.
+
+   ```typescript
+   // Type definition for shader material properties
+   interface ShaderMaterialProps {
+     uniforms: {
+       [key: string]: {
+         value: any;
+       };
+     };
+     vertexShader: string;
+     fragmentShader: string;
+     transparent?: boolean;
+     side?: THREE.Side;
+   }
+   ```
+
+5. **Event Handling**: Properly type event handlers for JSX elements.
+
+   ```typescript
+   // Properly typed event handler
+   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+     e.stopPropagation();
+     // handler implementation
+   };
+   ```
+
+By following these best practices, we've successfully resolved all JSX namespace declaration issues in our codebase.

@@ -597,7 +597,7 @@ export class ResourceStorageManager {
   public getTotalStored(type: ResourceType): number {
     let total = 0;
 
-    for (const container of this.containers.values()) {
+    for (const container of Array.from(this.containers.values())) {
       const resourceState = container.resources.get(type);
       if (resourceState) {
         total += resourceState.current;
@@ -613,7 +613,7 @@ export class ResourceStorageManager {
   public getTotalCapacity(type: ResourceType): number {
     let total = 0;
 
-    for (const container of this.containers.values()) {
+    for (const container of Array.from(this.containers.values())) {
       const resourceState = container.resources.get(type);
       if (resourceState) {
         total += resourceState.max;

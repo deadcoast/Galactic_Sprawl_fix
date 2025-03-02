@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { resourceManager } from '../../managers/game/ResourceManager';
+import { ResourceManager } from '../../managers/game/ResourceManager';
 import {
   ResourceIntegration,
   createResourceIntegration,
 } from '../../managers/resource/ResourceIntegration';
 import { ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
+
+// Create an instance of ResourceManager
+const resourceManager = new ResourceManager();
 
 // Singleton instance of the resource integration
 let resourceIntegrationInstance: ResourceIntegration | null = null;

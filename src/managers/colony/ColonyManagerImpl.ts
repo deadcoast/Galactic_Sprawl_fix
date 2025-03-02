@@ -4,7 +4,10 @@ import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { EventEmitter } from '../../utils/EventEmitter';
 import { automationManager } from '../game/AutomationManager';
-import { resourceManager } from '../game/ResourceManager';
+import { ResourceManager } from '../game/ResourceManager';
+
+// Create an instance of ResourceManager
+const resourceManager = new ResourceManager();
 
 interface ColonyStats {
   population: number;
@@ -180,7 +183,7 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
     });
   }
 
-  private getInfrastructureRequirements(type: string, level: number): Record<string, number> {
+  private getInfrastructureRequirements(_type: string, level: number): Record<string, number> {
     const baseRequirements = {
       minerals: 100,
       energy: 50,

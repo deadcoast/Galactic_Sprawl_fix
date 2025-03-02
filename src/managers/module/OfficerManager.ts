@@ -44,11 +44,11 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
    * Set up event listeners for tech tree unlocks and other relevant events
    */
   private setupEventListeners(): void {
-    techTreeManager.on('nodeUnlocked', (event: TechNodeUnlockedEvent) => {
+    techTreeManager.on('nodeUnlocked', ((event: TechNodeUnlockedEvent) => {
       if (event.node.type === 'academy') {
         this.handleAcademyUpgrade(event.node.tier as OfficerTier);
       }
-    });
+    }) as (data: unknown) => void);
 
     moduleEventBus.subscribe('MODULE_ACTIVATED', (event: ModuleEvent) => {
       if (event.moduleType === 'academy') {
@@ -68,7 +68,7 @@ export class OfficerManager extends EventEmitter<OfficerEvents> implements IOffi
       moduleEventBus.emit({
         type: 'MODULE_UPGRADED',
         moduleId: this.moduleId,
-        moduleType: 'academy',
+        moduleType: 'academy' as ModuleType,
         timestamp: Date.now(),
         data: { tier },
       });

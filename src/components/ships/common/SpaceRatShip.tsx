@@ -6,7 +6,7 @@ import {
   FactionShipStats,
   SpaceRatsShipClass,
 } from '../../../types/ships/FactionShipTypes';
-import { FactionBehaviorType } from '../../../types/ships/FactionTypes';
+import { FactionBehaviorConfig, FactionBehaviorType } from '../../../types/ships/FactionTypes';
 import { WeaponMount } from '../../../types/weapons/WeaponTypes';
 import { FactionShipBase } from './FactionShipBase';
 
@@ -24,7 +24,7 @@ interface SpaceRatShipProps {
   maxShield: number;
   weapons: WeaponMount[];
   stats: FactionShipStats;
-  tactics: FactionBehaviorType | string;
+  tactics: FactionBehaviorConfig | string;
   position: { x: number; y: number };
   rotation: number;
   onEngage?: () => void;
@@ -34,11 +34,11 @@ interface SpaceRatShipProps {
   children?: ReactNode;
 }
 
-// Helper function to create a FactionBehaviorType from string
-const createFactionBehavior = (behavior: string): FactionBehaviorType => {
+// Helper function to create a FactionBehaviorConfig from string
+const createFactionBehavior = (behavior: string): FactionBehaviorConfig => {
   return {
-    formation: 'standard',
-    behavior: behavior,
+    formation: 'chaotic',
+    behavior: behavior as FactionBehaviorType,
   };
 };
 
@@ -101,6 +101,8 @@ export function SpaceRatShip({
           // Create a proper DamageEffect instead of WeaponEffect
           const weaponEffect: DamageEffect = {
             id: 'rage-mode-weapon',
+            name: 'Rage Mode Weapon Effect',
+            description: 'Increases weapon damage at the cost of defense',
             type: 'damage',
             duration: 10,
             strength: 1.5,
@@ -173,6 +175,7 @@ export function SpaceRatShip({
     // Add the required abilities property
     abilities: [
       {
+        id: 'rage-mode-ability',
         name: 'Rage Mode',
         description: 'Increases damage output at the cost of defense',
         cooldown: 15,
@@ -186,6 +189,7 @@ export function SpaceRatShip({
         },
       },
       {
+        id: 'scrap-shield-ability',
         name: 'Scrap Shield',
         description: 'Temporary shield boost from scrap metal',
         cooldown: 20,

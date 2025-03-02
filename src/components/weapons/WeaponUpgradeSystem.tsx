@@ -34,11 +34,18 @@ export function WeaponUpgradeSystem({ weapon, onUpgrade }: WeaponUpgradeSystemPr
 
   const renderStatValue = (key: keyof BaseWeaponStats, value: number) => {
     if (typeof value !== 'number') return null;
+
+    // Format the key for display (convert camelCase to Title Case with spaces)
+    const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+
     return (
-      <span className={`text-xs ${value > 0 ? 'text-green-400' : 'text-red-400'}`}>
-        {value > 0 ? '+' : ''}
-        {value}
-      </span>
+      <div className="flex w-full justify-between">
+        <span className="text-xs text-gray-300">{formattedKey}:</span>
+        <span className={`text-xs ${value > 0 ? 'text-green-400' : 'text-red-400'}`}>
+          {value > 0 ? '+' : ''}
+          {value}
+        </span>
+      </div>
     );
   };
 

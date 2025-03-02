@@ -84,7 +84,12 @@ export class MiningResourceIntegration {
    */
   private subscribeToMiningEvents(): void {
     // Listen for mining ship registration
-    this.miningManager.on('shipRegistered', (data: { shipId: string }) => {
+    this.miningManager.on('shipRegistered', (data: unknown) => {
+      // Type guard for ship registration data
+      if (!isShipRegistrationData(data)) {
+        return;
+      }
+
       console.warn(`[MiningResourceIntegration] Mining ship registered: ${data.shipId}`);
 
       // Get the ship from the mining manager
@@ -108,7 +113,12 @@ export class MiningResourceIntegration {
     });
 
     // Listen for mining ship unregistration
-    this.miningManager.on('shipUnregistered', (data: { shipId: string }) => {
+    this.miningManager.on('shipUnregistered', (data: unknown) => {
+      // Type guard for ship registration data
+      if (!isShipRegistrationData(data)) {
+        return;
+      }
+
       console.warn(`[MiningResourceIntegration] Mining ship unregistered: ${data.shipId}`);
 
       // Unregister the ship from the flow manager
@@ -126,6 +136,11 @@ export class MiningResourceIntegration {
         return;
       }
 
+      // Type guard for ship object
+      if (!isShipObject(ship)) {
+        return;
+      }
+
       // Update the ship's status in the flow manager
       const node = this.flowManager.getNode(`mining-ship-${ship.id}`);
       if (node) {
@@ -139,14 +154,19 @@ export class MiningResourceIntegration {
         return;
       }
 
-      const { resourceType, _newAmount, _oldAmount, delta } = event.data;
+      // Type guard for resource event data
+      if (!isResourceEventData(event.data)) {
+        return;
+      }
+
+      const { resourceType, delta } = event.data;
       if (!resourceType || !delta) {
         return;
       }
 
       // Record the extraction in the flow manager
       const shipId = event.moduleId.replace('mining-ship-', '');
-      const transfer = {
+      const transfer: ResourceTransfer = {
         type: resourceType as ResourceType,
         source: `mining-ship-${shipId}`,
         target: `storage-${resourceType}`,
@@ -384,6 +404,10 @@ export class MiningResourceIntegration {
 
     // Unregister all mining nodes
     this.miningNodes.forEach((node, id) => {
+      // Use the node parameter to log more detailed information about the node being unregistered
+      console.warn(
+        `[MiningResourceIntegration] Unregistering mining node ${id} (type: ${node.type}, efficiency: ${node.efficiency.toFixed(2)})`
+      );
       this.flowManager.unregisterNode(`mining-node-${id}`);
       this.flowManager.unregisterConnection(`mining-connection-${id}`);
     });
@@ -423,4 +447,49 @@ export function createMiningResourceIntegration(
   integration.initialize();
 
   return integration;
+}
+
+/**
+ * Type guard for ship object
+ */
+function isShipObject(obj: unknown): obj is { id: string; status: string } {
+  return (
+    obj !== null &&
+    typeof obj === 'object' &&
+    'id' in obj &&
+    typeof (obj as { id: unknown }).id === 'string' &&
+    'status' in obj &&
+    typeof (obj as { status: unknown }).status === 'string'
+  );
+}
+
+/**
+ * Type guard for resource event data
+ */
+function isResourceEventData(data: unknown): data is {
+  resourceType: string;
+  delta: number;
+  _newAmount?: number;
+  _oldAmount?: number;
+} {
+  return (
+    data !== null &&
+    typeof data === 'object' &&
+    'resourceType' in data &&
+    typeof (data as { resourceType: unknown }).resourceType === 'string' &&
+    'delta' in data &&
+    typeof (data as { delta: unknown }).delta === 'number'
+  );
+}
+
+/**
+ * Type guard for ship registration data
+ */
+function isShipRegistrationData(data: unknown): data is { shipId: string } {
+  return (
+    data !== null &&
+    typeof data === 'object' &&
+    'shipId' in data &&
+    typeof (data as { shipId: unknown }).shipId === 'string'
+  );
 }

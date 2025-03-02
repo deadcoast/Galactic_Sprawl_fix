@@ -21,7 +21,20 @@ UI COMPONENTS REFERENCES
     Used By: All view components
   - Game HUD: src/components/ui/GameHUD.tsx
     Purpose: Heads-up display interface
-    Dependencies: GameContext, ResourceManager
+    Dependencies: GameContext, ResourceManager, ModuleContext
+    Features:
+    - Dynamic menu categories with custom styling
+    - Resource visualization and monitoring
+    - Module building interface
+    - Notification system integration
+    - Keyboard shortcuts for view toggling
+    - Resource threshold warnings
+    - Tech level visualization
+      Implementation:
+    - Uses category-based menu system with icons and colors
+    - Implements resource statistics tracking and visualization
+    - Provides visual feedback for resource thresholds
+    - Supports future UI theming through color and icon mappings
   - VPR View: src/components/ui/VPRStarSystemView.tsx
     Purpose: Visual progress representation
     Dependencies: GameLayout, ResourceManager
@@ -93,9 +106,35 @@ UI COMPONENTS REFERENCES
 
 ## Module UI Components
 
-- Module HUD: src/components/ui/modules/ModuleHUD.tsx
+- **ModuleHUD Component**: src/components/ui/modules/ModuleHUD.tsx
   Purpose: Display module information and controls
-  Dependencies: ModuleManager, ModuleEvents
+  Dependencies: ModuleManager, ModuleEvents, React, useModuleState
+  Features:
+
+  - Real-time module status monitoring
+  - Module alert system with severity levels
+  - Interactive module controls and configuration
+  - Resource consumption visualization
+  - Module performance metrics
+  - Status change event handling
+  - Alert notification system
+    Key Functions:
+  - `handleModuleStatusChanged`: Handles module status change events
+  - `handleModuleAlertAdded`: Processes and displays module alerts
+  - `renderModuleControls`: Renders module-specific control interfaces
+  - `renderModuleStatus`: Visualizes current module status and metrics
+    Implementation Notes:
+  - Uses event-based architecture for real-time updates
+  - Implements modular design for different module types
+  - Provides visual feedback for status changes and alerts
+  - Supports keyboard shortcuts for module control
+    Future Implementations:
+  - Enhanced status indicators with animations
+  - Alert categorization and filtering system
+  - Interactive resolution options for alerts
+  - Performance metrics tracking and visualization
+  - Resource consumption optimization suggestions
+
 - Sub-Module HUD: src/components/ui/modules/SubModuleHUD.tsx
   Purpose: Display sub-module information and controls
   Dependencies: SubModuleManager, useSubModules
@@ -109,6 +148,35 @@ UI COMPONENTS REFERENCES
   Purpose: Visualize module upgrades with animations and effects
   Dependencies: useModuleUpgrade, ModuleUpgradeManager
 
+## Game HUD System
+
+- **GameHUD Component**: src/components/ui/GameHUD.tsx
+  - Purpose: Main heads-up display for game interface
+  - Dependencies: React, GameContext, ModuleContext, NotificationSystem
+  - Features:
+    - Category-based menu system for module building
+    - Resource visualization and monitoring
+    - Tech level visualization with tier-based colors
+    - Notification system integration
+    - Keyboard shortcuts for view toggling
+    - Resource threshold warnings
+    - Settings panel with resource analytics
+  - Key Interfaces:
+    - `MenuItem`: Interface for menu items with actions and costs
+    - `_Notification`: Interface for future custom notification system
+    - `MenuCategory`: Type for different menu categories
+  - Implementation Notes:
+    - Uses category colors and icons for visual theming
+    - Implements resource statistics tracking with warning thresholds
+    - Provides visual feedback for resource levels
+    - Supports keyboard shortcuts for efficient navigation
+    - Integrates with notification system for alerts
+  - Future Implementations:
+    - Dynamic UI theming through `__categoryColors` and `__categoryIcons`
+    - Enhanced resource analytics through `__resourceStats`
+    - Tech progression visualization through `__getTierColor`
+    - Custom notification system through `_Notification` interface
+
 ## VPR (Visual Progress Representation) View
 
 - Components:
@@ -120,3 +188,48 @@ UI COMPONENTS REFERENCES
 - Components:
   - Sprawl View: src/components/ui/SprawlView.tsx
   - Game Layout: src/components/ui/GameLayout.tsx
+
+## Drag and Drop System
+
+- **DragAndDrop Component**: src/components/ui/DragAndDrop.tsx
+  - Purpose: Provides drag and drop functionality for various game elements
+  - Dependencies: React
+  - Features:
+    - Generic type parameters for flexible data handling
+    - Type-safe drag and drop operations
+    - Preview component for dragged items
+    - Drop target component for receiving dragged items
+    - Custom hook for managing drag and drop state
+  - Used By:
+    - MiningWindow.tsx (for resource and ship dragging)
+    - ExplorationHub.tsx (for ship assignment)
+    - MothershipCore.tsx (for module attachment)
+    - ColonyCore.tsx (for module management)
+  - Key Interfaces:
+    - `DragItem<T>`: Generic interface for draggable items
+    - `DropTargetProps<T>`: Props for drop target component
+    - `DraggableProps<T>`: Props for draggable component
+  - Implementation Notes:
+    - Uses generic type parameters for type-safe data handling
+    - Safely extracts and displays properties from generic data
+    - Handles serialization and deserialization of drag data
+    - Provides customizable styling for drag and drop elements
+
+## Resource Visualization System
+
+- **ResourceVisualization Component**: src/components/ui/ResourceVisualization.tsx
+  - Purpose: Visualize resource levels and extraction rates
+  - Dependencies: React, GameContext, Framer Motion
+  - Features:
+    - Animated resource displays with progress bars
+    - Resource type icons and color coding
+    - Extraction rate indicators
+    - Warning indicators for low resources
+  - Used By:
+    - GameHUD.tsx (for resource monitoring)
+    - ResourceManager.tsx (for detailed resource analytics)
+  - Implementation Notes:
+    - Uses Framer Motion for smooth animations
+    - Provides visual feedback for resource thresholds
+    - Supports multiple resource types with consistent styling
+    - Integrates with notification system for resource warnings

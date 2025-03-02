@@ -86,6 +86,7 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'phase-shift-ability',
         name: 'Phase Shift',
         description: 'Temporarily becomes untargetable',
         cooldown: 20,
@@ -164,6 +165,7 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'void-blast-ability',
         name: 'Void Blast',
         description: 'Unleashes a devastating energy blast',
         cooldown: 45,
@@ -242,6 +244,7 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'dark-matter-shield-ability',
         name: 'Dark Matter Shield',
         description: 'Creates an impenetrable shield',
         cooldown: 30,
@@ -320,6 +323,7 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'quantum-leap-ability',
         name: 'Quantum Leap',
         description: 'Instantly teleports a short distance',
         cooldown: 15,
@@ -398,6 +402,7 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'entropy-field-ability',
         name: 'Entropy Field',
         description: 'Creates a field that slows enemies',
         cooldown: 35,
@@ -476,6 +481,7 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'void-jump-ability',
         name: 'Void Jump',
         description: 'Enables short-range teleportation',
         cooldown: 22,
@@ -554,6 +560,7 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'star-tear-ability',
         name: 'Star Tear',
         description: 'Unleashes a devastating area attack',
         cooldown: 45,
@@ -632,6 +639,7 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'nebula-shield-ability',
         name: 'Nebula Shield',
         description: 'Creates a powerful shield field',
         cooldown: 32,
@@ -710,6 +718,7 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'wake-of-destruction-ability',
         name: 'Wake of Destruction',
         description: 'Creates a destructive field',
         cooldown: 38,
@@ -788,6 +797,7 @@ export const LOST_NOVA_SHIPS: Record<LostNovaShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'forbidden-technology-ability',
         name: 'Forbidden Technology',
         description: 'Unleashes devastating area damage',
         cooldown: 50,

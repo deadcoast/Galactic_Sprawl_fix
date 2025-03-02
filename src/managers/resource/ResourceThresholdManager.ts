@@ -24,6 +24,31 @@ const RESOURCE_MANAGER_ID = 'resource-threshold-manager';
 const RESOURCE_MANAGER_TYPE: ModuleType = 'resource-manager';
 
 /**
+ * Interface for resource update event data
+ */
+interface ResourceUpdateEventData {
+  type: ResourceType;
+  state: ResourceState;
+}
+
+/**
+ * Type guard for ResourceUpdateEventData
+ */
+function isResourceUpdateEventData(data: unknown): data is ResourceUpdateEventData {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+
+  const updateData = data as Record<string, unknown>;
+
+  return (
+    typeof updateData.type === 'string' &&
+    updateData.state !== undefined &&
+    typeof updateData.state === 'object'
+  );
+}
+
+/**
  * Threshold action types
  */
 export type ThresholdActionType = 'production' | 'consumption' | 'transfer' | 'notification';
@@ -64,6 +89,8 @@ export interface ThresholdState {
   lastTriggered?: number;
   lastResolved?: number;
   actionsTaken: number;
+  lastValue?: number;
+  rateOfChange?: number;
 }
 
 /**
@@ -177,9 +204,18 @@ export class ResourceThresholdManager {
    * Update resource state
    */
   private handleResourceUpdate = (event: ModuleEvent): void => {
-    if (event.data && event.data.type && event.data.state) {
-      this.resourceStates.set(event.data.type, event.data.state);
+    if (!event.data) {
+      console.warn('Resource update event missing data');
+      return;
     }
+
+    if (!isResourceUpdateEventData(event.data)) {
+      console.warn('Invalid resource update event data:', event.data);
+      return;
+    }
+
+    const { type, state } = event.data;
+    this.resourceStates.set(type, state);
   };
 
   /**
@@ -201,6 +237,40 @@ export class ResourceThresholdManager {
       }
 
       const state = this.thresholdStates.get(id);
+
+      // Use _deltaTime to calculate rate of change for time-sensitive thresholds
+      if (_deltaTime > 0 && state) {
+        const resourceType = config.threshold.type;
+        const resourceState = this.resourceStates.get(resourceType);
+
+        if (resourceState && state.lastValue !== undefined) {
+          // Calculate rate of change per second
+          const currentValue = resourceState.current;
+          const rateOfChange = ((currentValue - state.lastValue) / _deltaTime) * 1000;
+
+          // Log significant rate changes for monitoring
+          if (Math.abs(rateOfChange) > 0.5) {
+            // Threshold for significant change
+            console.warn(
+              `[ResourceThresholdManager] Significant rate change detected for ${resourceType}: ${rateOfChange.toFixed(2)} units/sec`
+            );
+          }
+
+          // Update the last value for next calculation
+          this.thresholdStates.set(id, {
+            ...state,
+            lastValue: currentValue,
+            rateOfChange,
+          });
+        } else if (resourceState) {
+          // Initialize lastValue if not set
+          this.thresholdStates.set(id, {
+            ...state,
+            lastValue: resourceState.current,
+          });
+        }
+      }
+
       if (!state) {
         continue;
       }

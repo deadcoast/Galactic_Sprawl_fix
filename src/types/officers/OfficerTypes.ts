@@ -226,4 +226,5 @@ export interface OfficerEvents {
   academyActivated: {
     moduleId: string;
   };
+  [key: string]: unknown;
 }

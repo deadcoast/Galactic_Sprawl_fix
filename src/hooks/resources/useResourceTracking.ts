@@ -78,6 +78,14 @@ export interface ResourceTrackingResult {
   lastUpdated: number;
   isLoading: boolean;
   error: Error | null;
+
+  // Resource metrics
+  resourceMetrics: {
+    totals: ResourceTotals;
+    percentages: Record<ResourceType, number>;
+    criticalResources: ResourceType[];
+    abundantResources: ResourceType[];
+  };
 }
 
 /**
@@ -196,10 +204,17 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
     try {
       // Serialize the state
       const serializedState: SerializedResourceState = {
-        resources: serializeResourceMap(state.resources) as Record<
-          ResourceType,
-          SerializedResource
-        >,
+        resources: Object.fromEntries(
+          Array.from(state.resources.entries()).map(([key, value]) => [
+            key,
+            {
+              current: value.current,
+              capacity: value.max, // Convert max to capacity
+              production: value.production,
+              consumption: value.consumption,
+            } as SerializedResource,
+          ])
+        ) as Record<ResourceType, SerializedResource>,
         thresholds: serializeResourceMap(state.thresholds) as Record<string, SerializedThreshold[]>,
         alerts: state.alerts,
         timestamp: Date.now(),
@@ -647,6 +662,23 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
     []
   );
 
+  // Calculate current resource totals and percentages for the UI
+  const resourceMetrics = useMemo(() => {
+    const totals = _calculateTotals(state.resources);
+    const percentages = _calculatePercentages(state.resources);
+
+    return {
+      totals,
+      percentages,
+      criticalResources: Object.entries(percentages)
+        .filter(([_, percent]) => percent < 10)
+        .map(([type]) => type as ResourceType),
+      abundantResources: Object.entries(percentages)
+        .filter(([_, percent]) => percent > 90)
+        .map(([type]) => type as ResourceType),
+    };
+  }, [state.resources, _calculateTotals, _calculatePercentages]);
+
   return {
     // Resource states
     resources: state.resources,
@@ -684,5 +716,8 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
     lastUpdated: state.lastUpdated,
     isLoading,
     error,
+
+    // Resource metrics
+    resourceMetrics,
   };
 }

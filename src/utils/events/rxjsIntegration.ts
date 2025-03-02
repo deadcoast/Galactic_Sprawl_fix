@@ -53,12 +53,20 @@ export function getEventsByData<T>(
   propertyValue: T
 ): Observable<ModuleEvent> {
   return moduleEvents$.pipe(
-    filter(
-      event =>
-        event.data &&
-        event.data[propertyName] !== undefined &&
-        event.data[propertyName] === propertyValue
-    )
+    filter((event: ModuleEvent) => {
+      // Check if event.data exists
+      if (!event.data) {
+        return false;
+      }
+
+      // Check if the property exists in event.data
+      if (!(propertyName in (event.data as Record<string, unknown>))) {
+        return false;
+      }
+
+      // Check if the property value matches
+      return (event.data as Record<string, unknown>)[propertyName] === propertyValue;
+    })
   );
 }
 

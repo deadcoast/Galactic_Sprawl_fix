@@ -85,6 +85,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'pirate-fury-ability',
         name: "Pirate's Fury",
         description: 'Increases damage and fire rate',
         cooldown: 45,
@@ -163,6 +164,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'scavenger-boost-ability',
         name: 'Scavenger Boost',
         description: 'Temporarily increases speed and evasion',
         cooldown: 20,
@@ -241,6 +243,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'stealth-drive-ability',
         name: 'Stealth Drive',
         description: 'Activates cloaking technology',
         cooldown: 30,
@@ -319,6 +322,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'vengeance-strike-ability',
         name: 'Vengeance Strike',
         description: 'Increases damage when health is low',
         cooldown: 40,
@@ -397,6 +401,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'sector-control-ability',
         name: 'Sector Control',
         description: 'Creates a field that slows enemies',
         cooldown: 35,
@@ -475,6 +480,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'sonic-disruption-ability',
         name: 'Sonic Disruption',
         description: 'Slows down nearby enemies',
         cooldown: 35,
@@ -553,6 +559,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'chaos-wave-ability',
         name: 'Chaos Wave',
         description: 'Unleashes a devastating wave of energy',
         cooldown: 40,
@@ -631,6 +638,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'plasma-burst-ability',
         name: 'Plasma Burst',
         description: 'Releases a concentrated burst of plasma energy',
         cooldown: 22,
@@ -709,6 +717,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'rally-vermin-ability',
         name: 'Rally Vermin',
         description: 'Increases speed of nearby allies',
         cooldown: 28,
@@ -787,6 +796,7 @@ export const SPACE_RATS_SHIPS: Record<SpaceRatsShipClass, FactionShipStats> = {
     },
     abilities: [
       {
+        id: 'void-cloak-ability',
         name: 'Void Cloak',
         description: 'Activates stealth capabilities',
         cooldown: 32,

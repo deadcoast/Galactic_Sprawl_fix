@@ -16,6 +16,7 @@ interface EffectEvents {
   effectStarted: { effectId: string; type: string };
   effectEnded: { effectId: string; type: string };
   effectCleaned: { effectId: string; type: string };
+  [key: string]: unknown;
 }
 
 export class EffectLifecycleManager extends EventEmitter<EffectEvents> {

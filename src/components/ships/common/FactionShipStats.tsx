@@ -1,7 +1,7 @@
 import { AlertTriangle, Shield, Sword } from 'lucide-react';
 import { SHIP_STATS } from '../../../config/ships/shipStats';
 import type { FactionShipProps, ShipStatsWithWeapons } from '../../../types/ships/FactionShipTypes';
-import { FactionBehaviorType } from '../../../types/ships/FactionTypes';
+import { FactionBehaviorConfig } from '../../../types/ships/FactionTypes';
 
 type FactionColorKey = 'spaceRats' | 'lostNova' | 'equatorHorizon';
 
@@ -11,8 +11,8 @@ const FACTION_COLORS = {
   equatorHorizon: 'amber',
 } as const;
 
-// Helper function to get behavior string from FactionBehaviorType
-const getBehaviorString = (behavior: FactionBehaviorType): string => {
+// Helper function to get behavior string from FactionBehaviorConfig
+const getBehaviorString = (behavior: FactionBehaviorConfig): string => {
   return behavior.behavior || '';
 };
 

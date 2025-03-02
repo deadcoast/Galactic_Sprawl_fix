@@ -1,7 +1,7 @@
 import { Target } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { FactionBehaviorType } from '../../../../types/ships/FactionTypes';
+import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
 import { ShipStatus } from '../../../../types/ships/ShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { LostNovaShip } from '../../common/LostNovaShip';
@@ -23,11 +23,11 @@ interface NullHunterProps {
   rotation: number;
 }
 
-// Helper function to create a FactionBehaviorType from string
-const createFactionBehavior = (behavior: string): FactionBehaviorType => {
+// Helper function to create a FactionBehaviorConfig from string
+const createFactionBehavior = (behavior: string): FactionBehaviorConfig => {
   return {
     formation: 'standard',
-    behavior: behavior,
+    behavior: behavior as FactionBehaviorType,
   };
 };
 
@@ -72,7 +72,7 @@ export function NullHunter({
     }
   };
 
-  // Create a proper FactionBehaviorType for tactics
+  // Create a proper FactionBehaviorConfig for tactics
   const tactics = createFactionBehavior('aggressive');
 
   return (

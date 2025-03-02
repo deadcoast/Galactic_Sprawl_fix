@@ -1,4 +1,9 @@
-import { AutomationRule } from '../../managers/game/AutomationManager';
+import { ModuleEventType } from '../../lib/modules/ModuleEvents';
+import {
+  AutomationRule,
+  EmitEventValue,
+  EventConditionValue,
+} from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 
 /**
@@ -20,8 +25,11 @@ export const combatRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'FLEET_POSITION_CHANGED',
         value: {
-          timeWindow: 10000,
-        },
+          eventType: 'FLEET_POSITION_CHANGED',
+          eventData: {
+            timeElapsed: 10000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -31,11 +39,12 @@ export const combatRules: AutomationRule[] = [
         value: {
           moduleId: 'combat',
           moduleType: 'combat' as ModuleType,
+          eventType: 'UPDATE_FLEET_FORMATION' as ModuleEventType,
           data: {
             type: 'formation',
             priority: 2,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 10000, // Check every 10 seconds
@@ -56,8 +65,11 @@ export const combatRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'HOSTILE_DETECTED',
         value: {
-          timeWindow: 5000,
-        },
+          eventType: 'HOSTILE_DETECTED',
+          eventData: {
+            timeElapsed: 5000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -67,11 +79,12 @@ export const combatRules: AutomationRule[] = [
         value: {
           moduleId: 'combat',
           moduleType: 'combat' as ModuleType,
+          eventType: 'INITIATE_COMBAT' as ModuleEventType,
           data: {
             type: 'engagement',
             priority: 5,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 5000, // Check every 5 seconds
@@ -92,8 +105,11 @@ export const combatRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'SHIP_DAMAGED',
         value: {
-          timeWindow: 3000,
-        },
+          eventType: 'SHIP_DAMAGED',
+          eventData: {
+            timeElapsed: 3000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -103,11 +119,12 @@ export const combatRules: AutomationRule[] = [
         value: {
           moduleId: 'combat',
           moduleType: 'combat' as ModuleType,
+          eventType: 'ACTIVATE_DAMAGE_CONTROL' as ModuleEventType,
           data: {
             type: 'repair',
             priority: 4,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 3000, // Check every 3 seconds
@@ -133,8 +150,11 @@ export const combatRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'SHIELD_LOW',
         value: {
-          timeWindow: 5000,
-        },
+          eventType: 'SHIELD_LOW',
+          eventData: {
+            timeElapsed: 5000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -144,11 +164,12 @@ export const combatRules: AutomationRule[] = [
         value: {
           moduleId: 'combat',
           moduleType: 'combat' as ModuleType,
+          eventType: 'BOOST_SHIELDS' as ModuleEventType,
           data: {
             type: 'shield',
             priority: 3,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 5000, // Check every 5 seconds
@@ -174,8 +195,11 @@ export const combatRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'TARGET_LOCKED',
         value: {
-          timeWindow: 2000,
-        },
+          eventType: 'TARGET_LOCKED',
+          eventData: {
+            timeElapsed: 2000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -185,11 +209,12 @@ export const combatRules: AutomationRule[] = [
         value: {
           moduleId: 'combat',
           moduleType: 'combat' as ModuleType,
+          eventType: 'FIRE_WEAPONS' as ModuleEventType,
           data: {
             type: 'attack',
             priority: 5,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 2000, // Check every 2 seconds
@@ -210,8 +235,11 @@ export const combatRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'CRITICAL_DAMAGE',
         value: {
-          timeWindow: 1000,
-        },
+          eventType: 'CRITICAL_DAMAGE',
+          eventData: {
+            timeElapsed: 1000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -221,11 +249,12 @@ export const combatRules: AutomationRule[] = [
         value: {
           moduleId: 'combat',
           moduleType: 'combat' as ModuleType,
+          eventType: 'INITIATE_RETREAT' as ModuleEventType,
           data: {
             type: 'retreat',
             priority: 5,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 1000, // Check frequently

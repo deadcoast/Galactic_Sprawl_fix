@@ -1,4 +1,9 @@
-import { AutomationRule } from '../../managers/game/AutomationManager';
+import { ModuleEventType } from '../../lib/modules/ModuleEvents';
+import {
+  AutomationRule,
+  EmitEventValue,
+  EventConditionValue,
+} from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 
 /**
@@ -34,11 +39,12 @@ export const colonyRules: AutomationRule[] = [
         value: {
           moduleId: 'colony',
           moduleType: 'colony' as ModuleType,
+          eventType: 'INCREASE_POPULATION' as ModuleEventType,
           data: {
             type: 'growth',
             priority: 1,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 60000, // Check every minute
@@ -68,11 +74,12 @@ export const colonyRules: AutomationRule[] = [
         value: {
           moduleId: 'colony',
           moduleType: 'colony' as ModuleType,
+          eventType: 'INCREASE_FOOD_PRODUCTION' as ModuleEventType,
           data: {
             type: 'production',
             priority: 2,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 30000, // Check every 30 seconds
@@ -103,8 +110,11 @@ export const colonyRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'INFRASTRUCTURE_NEEDED',
         value: {
-          timeWindow: 300000, // Last 5 minutes
-        },
+          eventType: 'INFRASTRUCTURE_NEEDED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -114,14 +124,15 @@ export const colonyRules: AutomationRule[] = [
         value: {
           moduleId: 'colony',
           moduleType: 'colony' as ModuleType,
+          eventType: 'BUILD_INFRASTRUCTURE' as ModuleEventType,
           data: {
             type: 'construction',
-            priority: 2,
+            priority: 3,
           },
-        },
+        } as EmitEventValue,
       },
     ],
-    interval: 300000, // Check every 5 minutes
+    interval: 60000, // Check every minute
   },
 
   // Trade Route Management
@@ -139,8 +150,11 @@ export const colonyRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'TRADE_OPPORTUNITY',
         value: {
-          timeWindow: 60000,
-        },
+          eventType: 'TRADE_OPPORTUNITY',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -150,11 +164,12 @@ export const colonyRules: AutomationRule[] = [
         value: {
           moduleId: 'colony',
           moduleType: 'colony' as ModuleType,
+          eventType: 'ESTABLISH_TRADE_ROUTE' as ModuleEventType,
           data: {
             type: 'trade',
             priority: 2,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 60000, // Check every minute
@@ -175,8 +190,11 @@ export const colonyRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'THREAT_DETECTED',
         value: {
-          timeWindow: 10000, // Last 10 seconds
-        },
+          eventType: 'THREAT_DETECTED',
+          eventData: {
+            timeElapsed: 10000, // Last 10 seconds
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -186,11 +204,12 @@ export const colonyRules: AutomationRule[] = [
         value: {
           moduleId: 'colony',
           moduleType: 'colony' as ModuleType,
+          eventType: 'ACTIVATE_DEFENSE_SYSTEMS' as ModuleEventType,
           data: {
             type: 'defense',
             priority: 5, // Highest priority
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 10000, // Check every 10 seconds
@@ -211,8 +230,11 @@ export const colonyRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'RESOURCE_IMBALANCE',
         value: {
-          timeWindow: 30000,
-        },
+          eventType: 'RESOURCE_IMBALANCE',
+          eventData: {
+            timeElapsed: 30000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -222,11 +244,12 @@ export const colonyRules: AutomationRule[] = [
         value: {
           moduleId: 'colony',
           moduleType: 'colony' as ModuleType,
+          eventType: 'OPTIMIZE_RESOURCE_DISTRIBUTION' as ModuleEventType,
           data: {
             type: 'distribution',
             priority: 2,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 30000, // Check every 30 seconds
@@ -245,32 +268,81 @@ export const colonyRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'research',
+        target: 'knowledge',
         value: 500,
       },
       {
         type: 'EVENT_OCCURRED',
         target: 'RESEARCH_OPPORTUNITY',
         value: {
-          timeWindow: 300000, // Last 5 minutes
-        },
+          eventType: 'RESEARCH_OPPORTUNITY',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
       {
         type: 'EMIT_EVENT',
-        target: 'START_RESEARCH_PROJECT',
+        target: 'INITIATE_RESEARCH',
         value: {
           moduleId: 'colony',
           moduleType: 'colony' as ModuleType,
+          eventType: 'INITIATE_RESEARCH' as ModuleEventType,
           data: {
             type: 'research',
             priority: 3,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 300000, // Check every 5 minutes
+  },
+
+  // Energy Management
+  {
+    id: 'energy-management',
+    moduleId: 'colony',
+    name: 'Energy Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'colony',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: 'energy',
+        value: 500,
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'ENERGY_SHORTAGE',
+        value: {
+          eventType: 'ENERGY_SHORTAGE',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'INCREASE_ENERGY_PRODUCTION',
+        value: {
+          moduleId: 'colony',
+          moduleType: 'colony' as ModuleType,
+          eventType: 'INCREASE_ENERGY_PRODUCTION' as ModuleEventType,
+          data: {
+            type: 'production',
+            priority: 4,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
   },
 
   // Population Happiness
@@ -286,10 +358,13 @@ export const colonyRules: AutomationRule[] = [
       },
       {
         type: 'EVENT_OCCURRED',
-        target: 'LOW_HAPPINESS_DETECTED',
+        target: 'HAPPINESS_DECLINE',
         value: {
-          timeWindow: 60000,
-        },
+          eventType: 'HAPPINESS_DECLINE',
+          eventData: {
+            timeElapsed: 5000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -299,11 +374,12 @@ export const colonyRules: AutomationRule[] = [
         value: {
           moduleId: 'colony',
           moduleType: 'colony' as ModuleType,
+          eventType: 'IMPROVE_LIVING_CONDITIONS' as ModuleEventType,
           data: {
-            type: 'happiness',
-            priority: 2,
+            type: 'social',
+            priority: 3,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 60000, // Check every minute
@@ -324,8 +400,11 @@ export const colonyRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'EMERGENCY_SITUATION',
         value: {
-          timeWindow: 5000,
-        },
+          eventType: 'EMERGENCY_SITUATION',
+          eventData: {
+            timeElapsed: 5000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -335,11 +414,12 @@ export const colonyRules: AutomationRule[] = [
         value: {
           moduleId: 'colony',
           moduleType: 'colony' as ModuleType,
+          eventType: 'ACTIVATE_EMERGENCY_PROTOCOLS' as ModuleEventType,
           data: {
             type: 'emergency',
             priority: 5, // Highest priority
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 5000, // Check frequently

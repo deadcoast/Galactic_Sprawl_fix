@@ -6,7 +6,7 @@ import {
   CommonShipDisplayStats,
   CommonShipStats,
 } from './CommonShipTypes';
-import { FactionBehaviorType, FactionId } from './FactionTypes';
+import { FactionBehaviorConfig, FactionBehaviorType, FactionId } from './FactionTypes';
 import { ShipStats, ShipType } from './ShipTypes';
 
 export interface FactionConfig {
@@ -147,7 +147,7 @@ export interface FactionShip extends CommonShip {
   position: { x: number; y: number };
   rotation: number;
   target?: string;
-  tactics: FactionBehaviorType;
+  tactics: FactionBehaviorConfig;
   specialAbility?: {
     name: string;
     description: string;

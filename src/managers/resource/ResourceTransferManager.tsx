@@ -1,6 +1,8 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Truck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { useThreshold } from '../../contexts/ThresholdContext';
 
 interface Transfer {
@@ -25,12 +27,12 @@ interface ResourceTransferManagerProps {
 }
 
 export function ResourceTransferManager({ storageNodes }: ResourceTransferManagerProps) {
-  const [transfers, setTransfers] = useState<Transfer[]>([]);
-  const [activeTransfers, setActiveTransfers] = useState<Transfer[]>([]);
+  const [transfers, setTransfers] = React.useState<Transfer[]>([]);
+  const [activeTransfers, setActiveTransfers] = React.useState<Transfer[]>([]);
   const { state } = useThreshold();
 
   // Monitor thresholds and initiate transfers
-  useEffect(() => {
+  React.useEffect(() => {
     const checkThresholds = () => {
       const newTransfers: Transfer[] = [];
 
@@ -84,7 +86,7 @@ export function ResourceTransferManager({ storageNodes }: ResourceTransferManage
   }, [state.resources, storageNodes]);
 
   // Process transfers
-  useEffect(() => {
+  React.useEffect(() => {
     const processTransfers = () => {
       setTransfers(currentTransfers => {
         const updatedTransfers = currentTransfers.map(transfer => {
@@ -129,7 +131,7 @@ export function ResourceTransferManager({ storageNodes }: ResourceTransferManage
   }, []);
 
   // Update active transfers for visualization
-  useEffect(() => {
+  React.useEffect(() => {
     setActiveTransfers(transfers.filter(t => t.status === 'in-progress'));
   }, [transfers]);
 

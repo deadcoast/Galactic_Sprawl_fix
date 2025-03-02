@@ -1,12 +1,35 @@
 import { initializeModuleUpgradePaths } from '../config/modules/upgradePathsConfig';
 import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
-import { resourceManager } from '../managers/game/ResourceManager';
+import { ResourceManager } from '../managers/game/ResourceManager';
 import { moduleManager } from '../managers/module/ModuleManager';
 import { moduleStatusManager } from '../managers/module/ModuleStatusManager';
 import { moduleUpgradeManager } from '../managers/module/ModuleUpgradeManager';
 import { subModuleManager } from '../managers/module/SubModuleManager';
 import { ModuleType, SubModuleEffect, SubModuleType } from '../types/buildings/ModuleTypes';
 import { ResourceType } from '../types/resources/ResourceTypes';
+
+// Create an instance of ResourceManager
+const resourceManager = new ResourceManager();
+
+// Define interfaces for event data types
+interface ResourceThresholdEventData {
+  thresholdType: 'min' | 'max';
+  resourceType: ResourceType;
+}
+
+// Type guard for ResourceThresholdEventData
+function isResourceThresholdEventData(data: unknown): data is ResourceThresholdEventData {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+
+  const thresholdData = data as Record<string, unknown>;
+
+  return (
+    (thresholdData.thresholdType === 'min' || thresholdData.thresholdType === 'max') &&
+    typeof thresholdData.resourceType === 'string'
+  );
+}
 
 /**
  * Initialize the module framework
@@ -109,7 +132,14 @@ function initializeStatusTracking(): void {
 
   // Handle resource threshold events for module status
   moduleEventBus.subscribe('RESOURCE_THRESHOLD_TRIGGERED' as ModuleEventType, event => {
-    if (event.data.thresholdType !== 'min') {
+    if (!event.data || !isResourceThresholdEventData(event.data)) {
+      console.warn('Invalid resource threshold event data:', event.data);
+      return;
+    }
+
+    const { thresholdType, resourceType } = event.data;
+
+    if (thresholdType !== 'min') {
       return;
     }
 
@@ -119,23 +149,28 @@ function initializeStatusTracking(): void {
       const configs = getModuleConfigs();
       const config = configs[module.type];
       return (
-        config && config.resourceConsumption && config.resourceConsumption[event.data.resourceType]
+        config &&
+        config.resourceConsumption &&
+        config.resourceConsumption[resourceType as keyof typeof config.resourceConsumption]
       );
     });
 
     // Update status for affected modules
     for (const module of affectedModules) {
-      moduleStatusManager.updateModuleStatus(
-        module.id,
-        'degraded',
-        `Low ${event.data.resourceType} supply`
-      );
+      moduleStatusManager.updateModuleStatus(module.id, 'degraded', `Low ${resourceType} supply`);
     }
   });
 
   // Handle resource threshold resolution
   moduleEventBus.subscribe('RESOURCE_THRESHOLD_RESOLVED' as ModuleEventType, event => {
-    if (event.data.thresholdType !== 'min') {
+    if (!event.data || !isResourceThresholdEventData(event.data)) {
+      console.warn('Invalid resource threshold event data:', event.data);
+      return;
+    }
+
+    const { thresholdType, resourceType } = event.data;
+
+    if (thresholdType !== 'min') {
       return;
     }
 
@@ -145,7 +180,9 @@ function initializeStatusTracking(): void {
       const configs = getModuleConfigs();
       const config = configs[module.type];
       return (
-        config && config.resourceConsumption && config.resourceConsumption[event.data.resourceType]
+        config &&
+        config.resourceConsumption &&
+        config.resourceConsumption[resourceType as keyof typeof config.resourceConsumption]
       );
     });
 
@@ -154,7 +191,7 @@ function initializeStatusTracking(): void {
       moduleStatusManager.updateModuleStatus(
         module.id,
         'active',
-        `${event.data.resourceType} supply restored`
+        `${resourceType} supply restored`
       );
     }
   });

@@ -103,26 +103,76 @@ class CombatManagerImpl implements CombatManager {
       if (event.moduleType === 'hangar') {
         switch (event.data?.type) {
           case 'formation':
-            this.handleFormationUpdate(event.data);
+            if (this.isFormationUpdateData(event.data)) {
+              this.handleFormationUpdate(event.data);
+            }
             break;
           case 'engagement':
-            this.handleEngagement(event.data);
+            if (this.isEngagementData(event.data)) {
+              this.handleEngagement(event.data);
+            }
             break;
           case 'repair':
-            this.handleDamageControl(event.data);
+            if (this.isUnitActionData(event.data)) {
+              this.handleDamageControl(event.data);
+            }
             break;
           case 'shield':
-            this.handleShieldBoost(event.data);
+            if (this.isUnitActionData(event.data)) {
+              this.handleShieldBoost(event.data);
+            }
             break;
           case 'attack':
-            this.handleWeaponFire(event.data);
+            if (this.isWeaponFireData(event.data)) {
+              this.handleWeaponFire(event.data);
+            }
             break;
           case 'retreat':
-            this.handleRetreat(event.data);
+            if (this.isUnitActionData(event.data)) {
+              this.handleRetreat(event.data);
+            }
             break;
         }
       }
     });
+  }
+
+  // Type guards for event data
+  private isFormationUpdateData(data: unknown): data is FormationUpdateData {
+    return (
+      typeof data === 'object' &&
+      data !== null &&
+      'position' in data &&
+      'units' in data &&
+      Array.isArray((data as FormationUpdateData).units)
+    );
+  }
+
+  private isEngagementData(data: unknown): data is EngagementData {
+    return (
+      typeof data === 'object' &&
+      data !== null &&
+      'targetId' in data &&
+      'units' in data &&
+      Array.isArray((data as EngagementData).units)
+    );
+  }
+
+  private isUnitActionData(data: unknown): data is UnitActionData {
+    return (
+      typeof data === 'object' &&
+      data !== null &&
+      'unitId' in data &&
+      typeof (data as UnitActionData).unitId === 'string'
+    );
+  }
+
+  private isWeaponFireData(data: unknown): data is WeaponFireData {
+    return (
+      this.isUnitActionData(data) &&
+      'targetId' in data &&
+      typeof (data as WeaponFireData).targetId === 'string'
+    );
   }
 
   private handleFormationUpdate(data: FormationUpdateData): void {
@@ -219,31 +269,55 @@ class CombatManagerImpl implements CombatManager {
     }
   }
 
-  private startCombatLoop() {
+  private startCombatLoop(): void {
     setInterval(() => {
-      this.updateCombatZones();
+      // Update combat zones
+      Array.from(this.combatZones.values()).forEach(zone => {
+        // Process each zone individually
+        this.updateCombatZone(zone);
+      });
+
+      // Update unit behaviors
+      Array.from(this.units.values()).forEach(unit => {
+        // Process each unit individually
+        this.updateUnitBehavior(unit);
+      });
+
+      // Process auto dispatch for reinforcements
       this.processAutoDispatch();
-      this.updateUnitBehaviors();
     }, 1000);
   }
 
-  private updateCombatZones() {
-    this.combatZones.forEach(zone => {
-      // Update threat level based on hostile units
-      zone.threatLevel = this.calculateZoneThreatLevel(zone);
+  private updateCombatZone(zone: CombatZone): void {
+    // Update threat level based on hostile units
+    zone.threatLevel = this.calculateZoneThreatLevel(zone);
 
-      // Merge nearby zones if they overlap
-      this.combatZones.forEach(otherZone => {
-        if (zone.id !== otherZone.id && this.zonesOverlap(zone, otherZone)) {
-          this.mergeZones(zone, otherZone);
-        }
+    // Check for overlapping zones and merge if necessary
+    Array.from(this.combatZones.values())
+      .filter(otherZone => otherZone.id !== zone.id && this.zonesOverlap(zone, otherZone))
+      .forEach(overlappingZone => {
+        this.mergeZones(zone, overlappingZone);
       });
+  }
 
-      // Remove empty zones
-      if (zone.units.length === 0) {
-        this.combatZones.delete(zone.id);
+  private updateUnitBehavior(unit: CombatUnit): void {
+    // Update unit status based on health
+    if (this.shouldRetreat(unit) && unit.status !== 'retreating') {
+      this.initiateRetreat(unit);
+      return;
+    }
+
+    // Find targets for units in combat
+    if (unit.status === 'engaging' && unit.target) {
+      const target = this.units.get(unit.target);
+      if (target) {
+        this.updateCombat(unit, target);
+      } else {
+        // Target no longer exists, reset status
+        unit.status = 'idle';
+        unit.target = undefined;
       }
-    });
+    }
   }
 
   private calculateZoneThreatLevel(zone: CombatZone): number {
@@ -375,30 +449,6 @@ class CombatManagerImpl implements CombatManager {
     return (threatFactor * 0.4 + (1 - healthFactor) * 0.3) / (distance * 0.3);
   }
 
-  private updateUnitBehaviors() {
-    this.units.forEach(unit => {
-      if (unit.status === 'disabled') {
-        return;
-      }
-
-      // Check for retreat conditions
-      if (this.shouldRetreat(unit)) {
-        this.initiateRetreat(unit);
-        return;
-      }
-
-      // Update combat behavior
-      if (unit.status === 'engaging' && unit.target) {
-        const target = this.units.get(unit.target);
-        if (target) {
-          this.updateCombat(unit, target);
-        } else {
-          unit.target = undefined;
-        }
-      }
-    });
-  }
-
   private shouldRetreat(unit: CombatUnit): boolean {
     // Check health threshold
     if (unit.health < unit.maxHealth * this.RETREAT_HEALTH_THRESHOLD) {
@@ -481,7 +531,7 @@ class CombatManagerImpl implements CombatManager {
   }
 
   private findUnitZone(unit: CombatUnit): CombatZone | null {
-    for (const zone of this.combatZones.values()) {
+    for (const zone of Array.from(this.combatZones.values())) {
       if (zone.units.some(u => u.id === unit.id)) {
         return zone;
       }

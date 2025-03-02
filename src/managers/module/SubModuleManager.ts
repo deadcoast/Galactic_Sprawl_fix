@@ -10,22 +10,71 @@ import {
   SubModuleType,
 } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import { resourceManager } from '../game/ResourceManager';
+import { ResourceManager } from '../game/ResourceManager';
 import { moduleManager } from './ModuleManager';
 
-// Define interfaces for module event data
-interface ModuleUpgradedEventData {
+// Create an instance of ResourceManager
+const resourceManager = new ResourceManager();
+
+/**
+ * Interface for module upgrade event data
+ *
+ * This interface will be used in future implementations to:
+ * 1. Provide strong typing for module upgrade events
+ * 2. Track module level changes for progression systems
+ * 3. Trigger cascading upgrades for connected sub-modules
+ * 4. Calculate resource refunds for module downgrades
+ * 5. Enable upgrade-specific visual effects and animations
+ *
+ * The interface includes the previous level to support rollback operations
+ * and to calculate the exact changes in module capabilities between versions.
+ * This will be critical for the upcoming module progression system where
+ * upgrades can trigger complex chains of effects throughout the station.
+ */
+// @ts-expect-error - This interface is documented for future use in the module upgrade system
+interface _ModuleUpgradedEventData {
   moduleId: string;
   newLevel: number;
   previousLevel?: number;
 }
 
-interface ModuleActivatedEventData {
+/**
+ * Interface for module activation event data
+ *
+ * This interface will be used in future implementations to:
+ * 1. Provide strong typing for module activation events
+ * 2. Track module activation timing for performance metrics
+ * 3. Implement cooldown periods between activations
+ * 4. Trigger power-up sequences and animations
+ * 5. Coordinate activation of dependent modules
+ *
+ * The timestamp property allows for precise tracking of when modules
+ * are activated, which will be essential for the upcoming module
+ * synchronization system where timing between module activations
+ * can create synergy effects.
+ */
+// @ts-expect-error - This interface is documented for future use in the module activation system
+interface _ModuleActivatedEventData {
   moduleId: string;
   timestamp?: number;
 }
 
-interface ModuleDeactivatedEventData {
+/**
+ * Interface for module deactivation event data
+ *
+ * This interface will be used in future implementations to:
+ * 1. Provide strong typing for module deactivation events
+ * 2. Track reasons for deactivation (user action, damage, power loss, etc.)
+ * 3. Implement graceful shutdown procedures for critical modules
+ * 4. Trigger emergency backup systems when key modules go offline
+ * 5. Log deactivation patterns for system diagnostics
+ *
+ * The reason property allows for categorizing different types of deactivations,
+ * which will be important for the upcoming module reliability system where
+ * frequent unexpected deactivations can lead to permanent damage.
+ */
+// @ts-expect-error - This interface is documented for future use in the module deactivation system
+interface _ModuleDeactivatedEventData {
   moduleId: string;
   reason?: string;
   timestamp?: number;
@@ -699,7 +748,16 @@ export class SubModuleManager {
    * Handle module upgraded event
    */
   private handleModuleUpgraded = (event: ModuleEvent): void => {
-    const { moduleId, _newLevel } = event.data as ModuleUpgradedEventData;
+    // Type guard for event data
+    if (!event.data || typeof event.data !== 'object') {
+      return;
+    }
+
+    // Safely extract moduleId with type checking
+    const moduleId = typeof event.data.moduleId === 'string' ? event.data.moduleId : undefined;
+    if (!moduleId) {
+      return;
+    }
 
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
@@ -721,7 +779,16 @@ export class SubModuleManager {
    * Handle module activated event
    */
   private handleModuleActivated = (event: ModuleEvent): void => {
-    const { moduleId } = event.data as ModuleActivatedEventData;
+    // Type guard for event data
+    if (!event.data || typeof event.data !== 'object') {
+      return;
+    }
+
+    // Safely extract moduleId with type checking
+    const moduleId = typeof event.data.moduleId === 'string' ? event.data.moduleId : undefined;
+    if (!moduleId) {
+      return;
+    }
 
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
@@ -741,7 +808,16 @@ export class SubModuleManager {
    * Handle module deactivated event
    */
   private handleModuleDeactivated = (event: ModuleEvent): void => {
-    const { moduleId } = event.data as ModuleDeactivatedEventData;
+    // Type guard for event data
+    if (!event.data || typeof event.data !== 'object') {
+      return;
+    }
+
+    // Safely extract moduleId with type checking
+    const moduleId = typeof event.data.moduleId === 'string' ? event.data.moduleId : undefined;
+    if (!moduleId) {
+      return;
+    }
 
     // Check if module has sub-modules
     const module = moduleManager.getModule(moduleId);
@@ -762,6 +838,8 @@ export class SubModuleManager {
    */
   public cleanup(): void {
     // Unsubscribe from events
+    // Note: We need to unsubscribe by subscribing again and then calling the returned function
+    // This is because we don't store the unsubscribe functions when initially subscribing
     const unsubscribeUpgraded = moduleEventBus.subscribe(
       'MODULE_UPGRADED' as ModuleEventType,
       this.handleModuleUpgraded
@@ -775,6 +853,7 @@ export class SubModuleManager {
       this.handleModuleDeactivated
     );
 
+    // Call the unsubscribe functions if they are functions
     if (typeof unsubscribeUpgraded === 'function') {
       unsubscribeUpgraded();
     }

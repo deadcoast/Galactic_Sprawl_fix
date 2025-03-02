@@ -1,5 +1,7 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { AlertTriangle, Database, Grid2X2, Map, Truck } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import * as React from 'react';
 import { miningRules } from '../../../../config/automation/miningRules';
 import { ThresholdProvider, useThreshold } from '../../../../contexts/ThresholdContext';
 import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
@@ -31,12 +33,12 @@ interface MineralProcessingCentreProps {
 }
 
 function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) {
-  const [selectedNode, setSelectedNode] = useState<Resource | null>(null);
-  const [filter, setFilter] = useState<'all' | 'mineral' | 'gas' | 'exotic'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [view, setView] = useState<'map' | 'grid'>('map');
-  const [mineAll, setMineAll] = useState(false);
-  const [techBonuses, setTechBonuses] = useState({
+  const [selectedNode, setSelectedNode] = React.useState<Resource | null>(null);
+  const [filter, setFilter] = React.useState<'all' | 'mineral' | 'gas' | 'exotic'>('all');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [view, setView] = React.useState<'map' | 'grid'>('map');
+  const [mineAll, setMineAll] = React.useState(false);
+  const [techBonuses, setTechBonuses] = React.useState({
     extractionRate: 1,
     storageCapacity: 1,
     efficiency: 1,
@@ -49,7 +51,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
     scaling.performance.fps > 45 ? 'high' : scaling.performance.fps > 30 ? 'medium' : 'low';
 
   // Mock data for demonstration
-  const mockResources = useMemo<Resource[]>(
+  const mockResources = React.useMemo<Resource[]>(
     () => [
       {
         id: 'iron-belt-1',
@@ -89,7 +91,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
   ); // Empty dependency array since this data is static
 
   // Initialize resources in threshold state
-  useEffect(() => {
+  React.useEffect(() => {
     mockResources.forEach(resource => {
       if (!state.resources[resource.id]) {
         dispatch({
@@ -109,7 +111,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
   }, [dispatch, mockResources, state.resources]);
 
   // Handle mine all toggle
-  useEffect(() => {
+  React.useEffect(() => {
     dispatch({
       type: 'SET_GLOBAL_AUTO_MINE',
       payload: mineAll,
@@ -149,7 +151,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
   });
 
   // Implement useEffect for tier-based tech bonuses
-  useEffect(() => {
+  React.useEffect(() => {
     const tierBonuses = {
       1: { extractionRate: 1, storageCapacity: 1, efficiency: 1 },
       2: { extractionRate: 1.5, storageCapacity: 1.5, efficiency: 1.25 },
@@ -159,7 +161,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
   }, [tier]);
 
   // Register automation rules on mount
-  useEffect(() => {
+  React.useEffect(() => {
     // Register each mining rule
     miningRules.forEach(rule => {
       automationManager.registerRule(rule);

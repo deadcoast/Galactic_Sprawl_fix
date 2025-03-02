@@ -26,6 +26,7 @@ export interface RenderBatcherEvents {
   batchRemoved: { batchId: string };
   frameStarted: { timestamp: number };
   frameEnded: { timestamp: number; drawCalls: number };
+  [key: string]: unknown;
 }
 
 /**

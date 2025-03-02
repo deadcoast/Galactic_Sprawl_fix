@@ -83,8 +83,13 @@ export function MothershipCore({
   };
 
   const handleModuleDrop = (item: DragItem, point: ModuleAttachmentPoint) => {
-    if (item.type === 'module' && point.allowedTypes.includes(item.data.type)) {
-      onModuleAttach?.(item.data.type, point.id);
+    if (
+      item.type === 'module' &&
+      point.allowedTypes.includes(item.data.type as ModuleType) &&
+      typeof item.data.type === 'string'
+    ) {
+      const moduleType = item.data.type as ModuleType;
+      onModuleAttach?.(moduleType, point.id);
     }
   };
 

@@ -36,6 +36,7 @@ interface ShipWithState extends CommonShip {
   state: ShipState;
 }
 
+// Update ShipEffect to extend Effect properly
 interface ShipEffect extends Effect {
   name: string;
   description: string;
@@ -136,8 +137,14 @@ export class ShipHangarManager
     });
 
     moduleEventBus.subscribe('STATUS_CHANGED', (event: ModuleEvent) => {
-      if (event.moduleType === 'hangar') {
-        this.handleModuleStatusChange(event.moduleId, event.data.status);
+      if (
+        event.moduleType === 'hangar' &&
+        event.data &&
+        typeof event.data === 'object' &&
+        'status' in event.data
+      ) {
+        const status = String(event.data.status);
+        this.handleModuleStatusChange(event.moduleId, status);
       }
     });
   }
@@ -174,14 +181,14 @@ export class ShipHangarManager
    * Set up event listeners
    */
   private setupEventListeners(): void {
-    techTreeManager.on(
-      'nodeUnlocked',
-      (event: { nodeId: string; node: { type: string; tier: number } }) => {
-        if (event.node.type === 'hangar') {
-          this.handleTierUpgrade(event.node.tier as Tier);
-        }
+    techTreeManager.on('nodeUnlocked', ((event: {
+      nodeId: string;
+      node: { type: string; tier: number };
+    }) => {
+      if (event.node.type === 'hangar') {
+        this.handleTierUpgrade(event.node.tier as Tier);
       }
-    );
+    }) as (data: unknown) => void);
   }
 
   /**
@@ -333,7 +340,7 @@ export class ShipHangarManager
 
       // Find an assigned officer that meets the requirements
       let hasQualifiedOfficer = false;
-      for (const [shipId, officerId] of this.assignedOfficers) {
+      for (const [shipId, officerId] of Array.from(this.assignedOfficers.entries())) {
         const officer = this.officerManager.getOfficer(officerId);
         const ship = this.getDockedShips().find(s => s.id === shipId);
         if (
@@ -528,20 +535,25 @@ export class ShipHangarManager
    * Dock a ship in an available bay
    */
   public dockShip(ship: CommonShip): void {
-    const availableBay = this.state.bays.find(
-      bay => bay.status === 'available' && bay.ships.length < bay.capacity
+    const availableBays = this.getAvailableBays();
+    if (availableBays.length === 0) {
+      this.emit('error', { message: 'No available bays for docking' });
+      return;
+    }
+
+    // Find the bay with the most space
+    const targetBay = availableBays.reduce((prev, current) =>
+      prev.capacity - prev.ships.length > current.capacity - current.ships.length ? prev : current
     );
 
-    if (!availableBay) {
-      throw new Error('No available docking bays');
+    // Initialize ship stats if needed
+    if (!ship.stats || Object.keys(ship.stats).length === 0) {
+      const shipClass = this.getShipClass(ship);
+      ship.stats = this._getBaseStats(shipClass);
     }
 
-    availableBay.ships.push(ship);
-    if (availableBay.ships.length === availableBay.capacity) {
-      availableBay.status = 'full';
-    }
-
-    this.emit('shipDocked', { ship, bay: availableBay });
+    targetBay.ships.push(ship);
+    this.emit('shipDocked', { ship, bay: targetBay });
   }
 
   /**
@@ -758,17 +770,20 @@ export class ShipHangarManager
                   cooldown: weapon.cooldown,
                   effects: [],
                 },
+                effects: [],
               },
             },
           })) || [],
         abilities:
           blueprint.abilities?.map(ability => ({
+            id: uuidv4(),
             name: ability.name,
             description: ability.description,
             cooldown: ability.cooldown,
             duration: ability.duration,
             active: false,
             effect: {
+              id: uuidv4(),
               name: ability.name,
               description: ability.description,
               type: 'ability',
@@ -792,12 +807,14 @@ export class ShipHangarManager
       },
       abilities:
         blueprint.abilities?.map(ability => ({
+          id: uuidv4(),
           name: ability.name,
           description: ability.description,
           cooldown: ability.cooldown,
           duration: ability.duration,
           active: false,
           effect: {
+            id: uuidv4(),
             name: ability.name,
             description: ability.description,
             type: 'ability',
@@ -841,7 +858,7 @@ export class ShipHangarManager
   /**
    * Get ship category from class
    */
-  private getShipCategory(shipClass: PlayerShipClass): PlayerShipCategory {
+  private _getShipCategory(shipClass: PlayerShipClass): PlayerShipCategory {
     if (shipClass.includes('void-dredger')) {
       return 'mining';
     }
@@ -854,7 +871,7 @@ export class ShipHangarManager
   /**
    * Get base stats for a ship class
    */
-  private getBaseStats(shipClass: PlayerShipClass): CommonShipStats {
+  private _getBaseStats(shipClass: PlayerShipClass): CommonShipStats {
     const blueprint = SHIP_BLUEPRINTS.find(bp => bp.shipClass === shipClass);
     if (!blueprint) {
       // Return default stats if no blueprint found
@@ -940,12 +957,14 @@ export class ShipHangarManager
         })) || [],
       abilities:
         blueprint.abilities?.map(ability => ({
+          id: uuidv4(),
           name: ability.name,
           description: ability.description,
           cooldown: ability.cooldown,
           duration: ability.duration,
           active: false,
           effect: {
+            id: uuidv4(),
             name: ability.name,
             description: ability.description,
             type: 'ability',
@@ -991,7 +1010,10 @@ export class ShipHangarManager
    * Get ships by category
    */
   public getShipsByCategory(category: PlayerShipCategory): CommonShip[] {
-    return this.getDockedShips().filter(ship => ship.category === category);
+    return this.getDockedShips().filter(ship => {
+      const shipClass = this.getShipClass(ship);
+      return this._getShipCategory(shipClass) === category;
+    });
   }
 
   /**
@@ -1429,69 +1451,63 @@ export class ShipHangarManager
   }
 
   /**
-   * Activate a ship's ability
+   * Apply ship effects when activating abilities
    */
   public activateAbility(shipId: string, abilityName: string): void {
-    // Find the ship
-    let targetShip: CommonShip | undefined;
-
-    for (const bay of this.state.bays) {
-      const ship = bay.ships.find(s => s.id === shipId);
-      if (ship) {
-        targetShip = ship;
-        break;
-      }
+    const ship = this.findShipById(shipId);
+    if (!ship || !ship.abilities) {
+      this.emit('error', { message: `Ship ${shipId} not found or has no abilities` });
+      return;
     }
 
-    if (!targetShip) {
-      throw new Error('Ship not found');
-    }
-
-    // Find the ability
-    const ability = targetShip.abilities.find(a => a.name === abilityName);
+    const ability = ship.abilities.find(a => a.name === abilityName);
     if (!ability) {
-      throw new Error('Ability not found');
+      this.emit('error', { message: `Ability ${abilityName} not found on ship ${shipId}` });
+      return;
     }
 
     // Check if ability is on cooldown
-    const cooldownInfo = this.abilityCooldowns.get(`${shipId}-${abilityName}`);
-    if (cooldownInfo && Date.now() < cooldownInfo.endTime) {
-      throw new Error('Ability is on cooldown');
+    const cooldownKey = `${shipId}-${abilityName}`;
+    if (this.abilityCooldowns.has(cooldownKey)) {
+      const remainingCooldown = this.getAbilityCooldown(shipId, abilityName);
+      this.emit('error', {
+        message: `Ability ${abilityName} is on cooldown for ${remainingCooldown}s`,
+      });
+      return;
     }
 
-    // Check if ability is already active
-    if (ability.active) {
-      throw new Error('Ability is already active');
+    // Apply ability effect
+    if (ability.effect) {
+      const shipWithState = ship as ShipWithState;
+      // Create a ShipEffect from the ability's Effect
+      const shipEffect: ShipEffect = {
+        id: `${ability.id}-effect`,
+        name: abilityName, // Use ability name since Effect doesn't have name
+        description: `Effect of ${abilityName}`, // Use a generated description
+        type: 'buff', // Default to buff
+        magnitude: ability.effect.magnitude,
+        duration: ability.effect.duration,
+        active: true,
+        cooldown: ability.effect.cooldown || 0,
+        source: {
+          type: 'ability',
+          id: ability.id,
+        },
+      };
+      this._applyShipEffect(shipWithState, shipEffect);
     }
 
-    // Activate ability
-    ability.active = true;
-    ability.effect.active = true;
-
-    // Start ability timer
-    const abilityTimer = setTimeout(() => {
+    // Set up ability timer
+    const timer = setTimeout(() => {
       this.deactivateAbility(shipId, abilityName);
     }, ability.duration * 1000);
 
-    // Store active ability info
     this.activeAbilities.set(`${shipId}-${abilityName}`, {
-      timer: abilityTimer,
+      timer,
       ability,
       startTime: Date.now(),
     });
 
-    // Start cooldown timer
-    const cooldownTimer = setTimeout(() => {
-      this.abilityCooldowns.delete(`${shipId}-${abilityName}`);
-    }, ability.cooldown * 1000);
-
-    // Store cooldown info
-    this.abilityCooldowns.set(`${shipId}-${abilityName}`, {
-      timer: cooldownTimer,
-      endTime: Date.now() + ability.cooldown * 1000,
-    });
-
-    // Emit event
     this.emit('abilityActivated', {
       shipId,
       abilityName,
@@ -1556,12 +1572,14 @@ export class ShipHangarManager
   }
 
   /**
-   * Get all active abilities for a ship
+   * Get active abilities for a ship
    */
   public getActiveAbilities(shipId: string): string[] {
-    return Array.from(this.activeAbilities.entries())
-      .filter(([key]) => key.startsWith(`${shipId}-`))
-      .map(([key]) => key.split('-')[1]);
+    const shipAbilities = Array.from(this.activeAbilities.entries()).filter(([key]) =>
+      key.startsWith(`${shipId}-`)
+    );
+
+    return shipAbilities.map(([key]) => key.split('-')[1]);
   }
 
   /**
@@ -1786,63 +1804,44 @@ export class ShipHangarManager
       return;
     }
 
-    // Calculate maintenance cost based on bay tier and ship count
-    const baseCosts = bay.maintenanceCost;
-    const shipCount = bay.ships.length;
-    const actualCosts = baseCosts.map(cost => ({
-      type: cost.type,
-      amount: Math.ceil(cost.amount * (1 + (shipCount / bay.capacity) * 0.5)),
-    }));
+    // Check if we have enough resources for maintenance
+    const canAfford = bay.maintenanceCost.every(cost => {
+      const currentAmount = this.resourceManager.getResourceAmount(cost.type);
+      return currentAmount >= cost.amount;
+    });
 
-    // Check if we can afford maintenance
-    const canAfford = actualCosts.every(
-      cost => this.resourceManager.getResourceAmount(cost.type) >= cost.amount
-    );
-
-    if (canAfford) {
-      // Consume resources
-      actualCosts.forEach(cost => {
-        this.resourceManager.removeResource(cost.type, cost.amount);
-      });
-
-      // Update bay efficiency
-      bay.efficiency = Math.min(1.0, bay.efficiency + 0.1);
-      bay.lastMaintenance = Date.now();
-
-      // Update timer info
-      const timerInfo = this.bayMaintenanceTimers.get(bayId);
-      if (timerInfo) {
-        timerInfo.lastMaintenance = bay.lastMaintenance;
-        timerInfo.efficiency = bay.efficiency;
-      }
-
-      this.emit('bayMaintained', {
-        bayId,
-        newEfficiency: bay.efficiency,
-        maintenanceCost: actualCosts,
-      });
-    } else {
-      // Decrease efficiency due to missed maintenance
+    if (!canAfford) {
+      // Reduce efficiency if maintenance is skipped
       bay.efficiency = Math.max(0.5, bay.efficiency - 0.1);
-
-      // Update timer info
-      const timerInfo = this.bayMaintenanceTimers.get(bayId);
-      if (timerInfo) {
-        timerInfo.efficiency = bay.efficiency;
-      }
-
-      this.emit('bayMaintenanceFailed', {
+      this.emit('bayMaintenanceSkipped', {
         bayId,
         newEfficiency: bay.efficiency,
-        requiredResources: actualCosts,
+        reason: 'insufficient_resources',
       });
+      return;
     }
+
+    // Deduct maintenance costs
+    bay.maintenanceCost.forEach(cost => {
+      this.resourceManager.removeResource(cost.type, cost.amount);
+    });
+
+    // Update efficiency based on bay status
+    const efficiencyBonus = this._getBayEfficiencyBonus(bay);
+    bay.efficiency = Math.min(1.0, bay.efficiency + 0.1 * efficiencyBonus);
+    bay.lastMaintenance = Date.now();
+
+    this.emit('bayMaintained', {
+      bayId,
+      newEfficiency: bay.efficiency,
+      maintenanceCost: bay.maintenanceCost,
+    });
   }
 
   /**
    * Get bay efficiency bonus
    */
-  private getBayEfficiencyBonus(bay: ShipHangarBay): number {
+  private _getBayEfficiencyBonus(bay: ShipHangarBay): number {
     // Base multiplier from tier
     const tierMultiplier = 1 + (bay.tier - 1) * 0.1; // 10% per tier
 
@@ -2036,7 +2035,9 @@ export class ShipHangarManager
     delete ship.officerBonuses;
   }
 
-  // Update cleanup method
+  /**
+   * Cleanup resources
+   */
   public cleanup(): void {
     // Clear all repair timers
     this.activeRepairs.forEach((repair, shipId) => {
@@ -2103,7 +2104,10 @@ export class ShipHangarManager
         ship.stats.weapons.forEach(mount => {
           if (mount.currentWeapon) {
             mount.currentWeapon.state.status = 'ready';
-            mount.currentWeapon.state.effects = [];
+            // Ensure effects array exists
+            if (!mount.currentWeapon.state.effects) {
+              mount.currentWeapon.state.effects = [];
+            }
           }
         });
       });
@@ -2128,7 +2132,7 @@ export class ShipHangarManager
     this.bayMaintenanceTimers.clear();
 
     // Clean up officer assignments and remove bonuses
-    for (const [shipId, officerId] of this.assignedOfficers) {
+    for (const [shipId, officerId] of Array.from(this.assignedOfficers.entries())) {
       const ship = this.getDockedShips().find(s => s.id === shipId);
       if (ship) {
         this.removeOfficerBonuses(ship); // Remove any active bonuses
@@ -2139,8 +2143,22 @@ export class ShipHangarManager
     this.assignedOfficers.clear();
   }
 
+  /**
+   * Get all assigned officers
+   */
+  public getAssignedOfficers(): { shipId: string; officerId: string }[] {
+    const assignments: { shipId: string; officerId: string }[] = [];
+    for (const [shipId, officerId] of Array.from(this.assignedOfficers.entries())) {
+      assignments.push({ shipId, officerId });
+    }
+    return assignments;
+  }
+
   // Add effect handling methods
-  private applyShipEffect(ship: ShipWithState, effect: ShipEffect): void {
+  /**
+   * Apply an effect to a ship
+   */
+  private _applyShipEffect(ship: ShipWithState, effect: ShipEffect): void {
     // Initialize ship state if needed
     if (!ship.state) {
       ship.state = { activeEffects: [], effectHistory: [] };
@@ -2217,12 +2235,25 @@ export class ShipHangarManager
 
   public hasOfficerMeetingRequirements(minLevel: number, specialization: string): boolean {
     // Check all assigned officers for one that meets requirements
-    for (const [_, officerId] of this.assignedOfficers) {
+    for (const [_, officerId] of Array.from(this.assignedOfficers.entries())) {
       const officer = this.officerManager.getOfficer(officerId);
       if (officer && officer.level >= minLevel && officer.specialization === specialization) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Find a ship by ID across all bays
+   */
+  private findShipById(shipId: string): CommonShip | undefined {
+    for (const bay of this.state.bays) {
+      const ship = bay.ships.find(s => s.id === shipId);
+      if (ship) {
+        return ship;
+      }
+    }
+    return undefined;
   }
 }

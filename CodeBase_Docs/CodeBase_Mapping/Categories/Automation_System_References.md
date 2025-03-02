@@ -197,6 +197,67 @@ GlobalAutomationManager
     - Combat system integration tests
     - Event system integration tests
 
+## Automation Rule Configuration Files
+
+- **Exploration Rules**: src/config/automation/explorationRules.ts
+
+  - Purpose: Define automation rules for exploration activities
+  - Dependencies: AutomationManager, ModuleEventType
+  - Features:
+    - Exploration ship deployment
+    - Sector scanning automation
+    - Anomaly investigation
+    - Resource discovery
+  - Condition Types: Event conditions for module events
+  - Action Types: Emit event actions to trigger exploration activities
+
+- **Hangar Rules**: src/config/automation/hangarRules.ts
+
+  - Purpose: Define automation rules for ship hangar management
+  - Dependencies: AutomationManager, ModuleEventType
+  - Features:
+    - Ship maintenance scheduling
+    - Fleet composition optimization
+    - Ship deployment automation
+    - Repair prioritization
+  - Condition Types: Event conditions for ship status changes
+  - Action Types: Emit event actions to trigger hangar operations
+
+- **Colony Rules**: src/config/automation/colonyRules.ts
+
+  - Purpose: Define automation rules for colony management
+  - Dependencies: AutomationManager, ModuleEventType
+  - Features:
+    - Population management
+    - Resource allocation
+    - Building construction
+    - Defense prioritization
+  - Condition Types: Resource conditions for colony resources
+  - Action Types: Emit event actions to trigger colony operations
+
+- **Mining Rules**: src/config/automation/miningRules.ts
+
+  - Purpose: Define automation rules for mining operations
+  - Dependencies: AutomationManager, ModuleEventType
+  - Features:
+    - Mining ship deployment
+    - Resource extraction optimization
+    - Asteroid field management
+    - Depletion handling
+  - Condition Types: Event conditions for mining events
+  - Action Types: Emit event actions to trigger mining operations
+
+- **Combat Rules**: src/config/automation/combatRules.ts
+  - Purpose: Define automation rules for combat operations
+  - Dependencies: AutomationManager, ModuleEventType
+  - Features:
+    - Combat ship deployment
+    - Formation management
+    - Target prioritization
+    - Retreat conditions
+  - Condition Types: Event conditions for combat events
+  - Action Types: Emit event actions to trigger combat operations
+
 12. Automation System [~90% Complete]
 
 - Primary Components:

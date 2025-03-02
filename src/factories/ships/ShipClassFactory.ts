@@ -29,6 +29,9 @@ export class ShipClassFactory {
       throw new Error(`Invalid ship class: ${shipClass}`);
     }
 
+    // Initialize weapon mounts with proper state
+    const initializedWeaponMounts = stats.weapons.map(mount => this._createWeaponMount(mount));
+
     // Create a manager-style CombatUnit first
     const managerUnit = {
       id: `${factionId}-${shipClass}-${Date.now()}`,
@@ -40,7 +43,7 @@ export class ShipClassFactory {
       maxHealth: stats.maxHealth,
       shield: stats.shield,
       maxShield: stats.maxShield,
-      weapons: stats.weapons.map(this.convertToWeaponSystem),
+      weapons: initializedWeaponMounts.map(this.convertToWeaponSystem),
       faction: factionId,
       formation,
     };
@@ -71,7 +74,25 @@ export class ShipClassFactory {
     };
   }
 
-  private createWeaponMount(mount: WeaponMount): WeaponMount {
+  /**
+   * Creates a weapon mount with initialized state
+   *
+   * This function will be used in future implementations to:
+   * 1. Create weapon mounts for ship customization in the hangar module
+   * 2. Initialize weapon mounts when a new ship is constructed
+   * 3. Reset weapon mounts when a ship is repaired or refitted
+   * 4. Clone weapon mounts when creating ship templates
+   * 5. Validate weapon compatibility when attaching weapons to mounts
+   *
+   * The function ensures that all weapon mounts have a consistent state structure,
+   * particularly setting the weapon status to 'ready' for newly created or reset mounts.
+   * This will be critical for the upcoming weapon customization system where players
+   * can swap weapons between different mounts.
+   *
+   * @param mount - The base weapon mount to initialize or clone
+   * @returns A new weapon mount with initialized state
+   */
+  private _createWeaponMount(mount: WeaponMount): WeaponMount {
     return {
       ...mount,
       currentWeapon: mount.currentWeapon

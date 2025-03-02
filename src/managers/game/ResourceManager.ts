@@ -8,7 +8,8 @@ import {
   STORAGE_EFFICIENCY,
   TRANSFER_CONFIG,
 } from '../../config/resource/ResourceConfig';
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
   ResourceConsumption,
   ResourceFlow,
@@ -19,10 +20,6 @@ import {
   ResourceTransfer,
   ResourceType,
 } from '../../types/resources/ResourceTypes';
-import type {
-  PerformanceMetrics,
-  ResourcePerformanceSnapshot,
-} from '../resource/ResourcePerformanceMonitor';
 import { resourcePerformanceMonitor } from '../resource/ResourcePerformanceMonitor';
 
 // Update TRANSFER_CONFIG type to include MIN_INTERVAL
@@ -172,13 +169,30 @@ export class ResourceManager {
   /**
    * Removes from a resource amount
    */
-  removeResource(type: ResourceType, amount: number): void {
+  removeResource(type: ResourceType, amount: number): boolean {
     const state = this.resources.get(type);
     if (!state) {
-      return;
+      return false;
     }
 
-    this.setResourceAmount(type, state.current - amount);
+    const oldAmount = state.current;
+    state.current = Math.max(state.min, Math.min(oldAmount - amount, state.max));
+
+    // Emit resource event
+    moduleEventBus.emit({
+      type: state.current < oldAmount ? 'RESOURCE_PRODUCED' : 'RESOURCE_CONSUMED',
+      moduleId: 'resource-manager',
+      moduleType: 'radar', // Default type
+      timestamp: Date.now(),
+      data: {
+        resourceType: type,
+        oldAmount,
+        newAmount: state.current,
+        delta: state.current - oldAmount,
+      },
+    });
+
+    return true;
   }
 
   /**
@@ -521,7 +535,9 @@ export class ResourceManager {
         return now - this.optimizationMetrics.lastOptimizationTime > 60000; // Run every minute
       },
       apply: () => {
-        for (const [type, state] of this.resources) {
+        // Convert Map entries to array to avoid MapIterator error
+        const resourceEntries = Array.from(this.resources.entries());
+        for (const [type, state] of resourceEntries) {
           const usage = this.calculateResourceUsage(type);
           const currentProduction = state.production;
           const targetProduction = usage * 1.2; // 20% buffer
@@ -549,19 +565,22 @@ export class ResourceManager {
         );
       },
       apply: () => {
-        for (const [type, state] of this.resources) {
+        // Convert Map entries to array to avoid MapIterator error
+        const resourceEntries = Array.from(this.resources.entries());
+        for (const [type, state] of resourceEntries) {
           if (state.current / state.max > RESOURCE_THRESHOLDS.HIGH) {
             const consumers = Array.from(this.consumptions.values())
               .filter(c => c.type === type)
-              .sort((a, b) => (b.required ? 1 : -1));
+              .sort((_a, b) => (b.required ? 1 : -1));
 
             for (const consumer of consumers) {
               if (!consumer.required) {
                 const oldRate = consumer.amount;
-                consumer.amount *= 1.5; // Increase consumption to reduce excess
+                consumer.amount *= 1.5;
                 console.warn(
-                  `[ResourceManager] Increased consumption rate for ${type}: ${oldRate.toFixed(2)} -> ${consumer.amount.toFixed(2)}`
+                  `[ResourceManager] Increased consumption of ${type} for ${consumer.type}: ${oldRate.toFixed(2)} -> ${consumer.amount.toFixed(2)}`
                 );
+                break;
               }
             }
           }
@@ -577,37 +596,28 @@ export class ResourceManager {
       priority: 3,
       condition: () => this.flows.size > 0,
       apply: () => {
-        for (const flow of this.flows.values()) {
+        // Convert Map values to array to avoid MapIterator error
+        const flowValues = Array.from(this.flows.values());
+        for (const flow of flowValues) {
           const sourceStates = flow.resources.map(r => ({
             resource: r,
             state: this.resources.get(r.type),
           }));
 
-          for (const { resource, state } of sourceStates) {
-            if (!state) {
-              continue;
-            }
+          // Check if any source is below threshold
+          const belowThreshold = sourceStates.some(
+            s => s.state && s.state.current / s.state.max < RESOURCE_THRESHOLDS.LOW
+          );
 
-            const utilization = state.current / state.max;
-            if (utilization < RESOURCE_THRESHOLDS.LOW) {
-              const oldInterval = resource.interval;
-              resource.interval = Math.max(
-                resource.interval * 1.5,
-                TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL
-              );
+          if (belowThreshold) {
+            // Reduce flow rate
+            flow.resources.forEach(r => {
+              const oldRate = r.amount;
+              r.amount *= 0.8;
               console.warn(
-                `[ResourceManager] Adjusted transfer interval for ${resource.type}: ${oldInterval}ms -> ${resource.interval}ms`
+                `[ResourceManager] Reduced flow rate for ${r.type}: ${oldRate.toFixed(2)} -> ${r.amount.toFixed(2)}`
               );
-            } else if (utilization > RESOURCE_THRESHOLDS.HIGH) {
-              const oldInterval = resource.interval;
-              resource.interval = Math.max(
-                resource.interval * 0.75,
-                TRANSFER_CONFIG_WITH_MIN.MIN_INTERVAL
-              );
-              console.warn(
-                `[ResourceManager] Adjusted transfer interval for ${resource.type}: ${oldInterval}ms -> ${resource.interval}ms`
-              );
-            }
+            });
           }
         }
         this.optimizationMetrics.transferEfficiency = this.calculateTransferEfficiency();
@@ -713,7 +723,9 @@ export class ResourceManager {
     this.runOptimizations();
 
     // Update performance metrics for each resource
-    for (const [type, state] of this.resources) {
+    // Convert Map entries to array to avoid MapIterator error
+    const resourceEntries = Array.from(this.resources.entries());
+    for (const [type, state] of resourceEntries) {
       const usage = this.calculateResourceUsage(type);
       resourcePerformanceMonitor.recordMetrics(
         type,
@@ -725,43 +737,45 @@ export class ResourceManager {
     }
 
     // Handle production with configured rates
-    for (const [id, production] of this.productions) {
+    // Convert Map entries to array to avoid MapIterator error
+    const productionEntries = Array.from(this.productions.entries());
+    for (const [id, production] of productionEntries) {
       if (!this.checkThresholds(production.conditions)) {
         continue;
       }
 
-      const baseRate = DEFAULT_PRODUCTION_RATES[production.type];
-      const amount = (baseRate * production.amount * deltaTime) / production.interval;
+      // Calculate amount to produce based on rate and time
+      const amount = (production.amount * deltaTime) / production.interval;
       this.addResource(production.type, amount);
 
       console.warn(`[ResourceManager] Produced ${amount.toFixed(2)} ${production.type} from ${id}`);
     }
 
     // Handle consumption with configured rates
-    for (const [id, consumption] of this.consumptions) {
+    // Convert Map entries to array to avoid MapIterator error
+    const consumptionEntries = Array.from(this.consumptions.entries());
+    for (const [id, consumption] of consumptionEntries) {
       if (!this.checkThresholds(consumption.conditions)) {
         continue;
       }
 
-      const baseRate = DEFAULT_CONSUMPTION_RATES[consumption.type];
-      const amount = (baseRate * consumption.amount * deltaTime) / consumption.interval;
-      const currentAmount = this.getResourceAmount(consumption.type);
+      // Calculate amount to consume based on rate and time
+      const amount = (consumption.amount * deltaTime) / consumption.interval;
+      const success = this.removeResource(consumption.type, amount);
 
-      if (currentAmount >= amount || !consumption.required) {
-        this.removeResource(consumption.type, amount);
+      if (success) {
         console.warn(
           `[ResourceManager] Consumed ${amount.toFixed(2)} ${consumption.type} by ${id}`
         );
       } else if (consumption.required) {
-        moduleEventBus.emit({
-          type: 'RESOURCE_SHORTAGE',
-          moduleId: id,
-          moduleType: 'resource-manager',
-          timestamp: Date.now(),
-          data: {
-            resourceType: consumption.type,
-            required: amount,
-            available: currentAmount,
+        // Log error for required consumption
+        this.handleError(id, {
+          code: 'INSUFFICIENT_RESOURCES',
+          message: `Failed to consume required resource: ${consumption.type}`,
+          details: {
+            type: consumption.type,
+            amount,
+            consumer: id,
             priority: RESOURCE_PRIORITIES[consumption.type],
           },
         });
@@ -769,21 +783,34 @@ export class ResourceManager {
     }
 
     // Handle flows with configured transfer settings
-    for (const [id, flow] of this.flows) {
+    // Convert Map entries to array to avoid MapIterator error
+    const flowEntries = Array.from(this.flows.entries());
+    for (const [id, flow] of flowEntries) {
       if (!this.checkThresholds(flow.conditions)) {
         console.warn(`[ResourceManager] Flow ${id} skipped due to threshold conditions`);
         continue;
       }
 
-      for (const resource of flow.resources) {
-        const amount =
-          (resource.amount * deltaTime) /
-          (resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL);
-        this.transferResources(resource.type, amount, flow.source, flow.target);
-        console.warn(
-          `[ResourceManager] Flow ${id} transferred ${amount.toFixed(2)} ${resource.type}`
-        );
-      }
+      // Process each resource in the flow
+      flow.resources.forEach(resource => {
+        // Calculate amount to transfer based on rate and time
+        const amount = (resource.amount * deltaTime) / (resource.interval || 1000);
+        const success = this.transferResources(resource.type, amount, flow.source, flow.target);
+
+        if (success) {
+          console.warn(
+            `[ResourceManager] Transferred ${amount.toFixed(2)} ${resource.type} from ${
+              flow.source
+            } to ${flow.target}`
+          );
+        } else {
+          console.warn(
+            `[ResourceManager] Failed to transfer ${amount.toFixed(2)} ${resource.type} from ${
+              flow.source
+            } to ${flow.target}`
+          );
+        }
+      });
     }
   }
 
@@ -903,11 +930,7 @@ export class ResourceManager {
 
       return true;
     } catch (err) {
-      this.handleError(id, {
-        code: 'INVALID_TRANSFER',
-        message: 'Failed to schedule flow',
-        details: err,
-      });
+      console.error(`[ResourceManager] Failed to schedule flow for ${id}:`, err);
       return false;
     }
   }
@@ -915,72 +938,236 @@ export class ResourceManager {
   /**
    * Clears a flow schedule
    */
-  clearFlowSchedule(id: string): void {
-    // Clear all intervals for this flow
-    Array.from(this.productionIntervals.entries())
-      .filter(([key]) => key.startsWith(id))
-      .forEach(([key, interval]) => {
-        clearInterval(interval);
-        this.productionIntervals.delete(key);
-      });
+  private clearFlowSchedule(id: string): void {
+    const intervals = Array.from(this.productionIntervals.entries())
+      .filter(entry => entry[0].startsWith(`${id}-`))
+      .map(entry => entry[1]);
 
+    intervals.forEach(interval => {
+      clearInterval(interval);
+    });
+
+    this.productionIntervals.delete(`${id}-`);
     this.unregisterFlow(id);
+
     console.warn(`[ResourceManager] Cleared flow schedule for ${id}`);
   }
 
-  /**
-   * Gets the production schedule status
-   */
-  getProductionSchedule(id: string): boolean {
-    return this.productionIntervals.has(id);
+  public getAllResources(): Record<ResourceType, number> {
+    const resources: Record<ResourceType, number> = {} as Record<ResourceType, number>;
+
+    // Convert Map entries to array to avoid MapIterator error
+    const resourceEntries = Array.from(this.resources.entries());
+    for (const [type, state] of resourceEntries) {
+      resources[type] = state.current;
+    }
+
+    return resources;
+  }
+
+  public getAllResourceStates(): Record<ResourceType, ResourceState> {
+    const states: Record<ResourceType, ResourceState> = {} as Record<ResourceType, ResourceState>;
+
+    // Convert Map entries to array to avoid MapIterator error
+    const resourceEntries = Array.from(this.resources.entries());
+    for (const [type, state] of resourceEntries) {
+      states[type] = { ...state };
+    }
+
+    return states;
+  }
+
+  public getAllResourceFlows(): ResourceFlow[] {
+    const flows: ResourceFlow[] = [];
+
+    // Convert Map values to array to avoid MapIterator error
+    const flowValues = Array.from(this.flows.values());
+    for (const flow of flowValues) {
+      flows.push({ ...flow });
+    }
+
+    return flows;
   }
 
   /**
-   * Gets all active production schedules
+   * Saves the current resource state to localStorage and emits an event
+   * This method is used for persistence and state recovery after game reload
+   * It captures the complete resource system state including:
+   * - Current resource amounts and limits
+   * - Production configurations
+   * - Consumption configurations
+   * - Flow configurations
    */
-  getActiveSchedules(): string[] {
-    return Array.from(this.productionIntervals.keys());
+  private __saveResourceState(): void {
+    const resourceData: Record<ResourceType, ResourceState> = {} as Record<
+      ResourceType,
+      ResourceState
+    >;
+
+    // Convert Map entries to array to avoid MapIterator error
+    const resourceEntries = Array.from(this.resources.entries());
+    for (const [type, state] of resourceEntries) {
+      resourceData[type] = { ...state };
+    }
+
+    const productionData: Record<string, ResourceProduction> = {};
+
+    // Convert Map entries to array to avoid MapIterator error
+    const productionEntries = Array.from(this.productions.entries());
+    for (const [id, production] of productionEntries) {
+      productionData[id] = { ...production };
+    }
+
+    const consumptionData: Record<string, ResourceConsumption> = {};
+
+    // Convert Map entries to array to avoid MapIterator error
+    const consumptionEntries = Array.from(this.consumptions.entries());
+    for (const [id, consumption] of consumptionEntries) {
+      consumptionData[id] = { ...consumption };
+    }
+
+    const flowData: Record<string, ResourceFlow> = {};
+
+    // Convert Map entries to array to avoid MapIterator error
+    const flowEntries = Array.from(this.flows.entries());
+    for (const [id, flow] of flowEntries) {
+      flowData[id] = { ...flow };
+    }
+
+    // Create a complete state object
+    const completeState = {
+      resources: resourceData,
+      productions: productionData,
+      consumptions: consumptionData,
+      flows: flowData,
+      storageEfficiency: this.storageEfficiency,
+      timestamp: Date.now(),
+    };
+
+    try {
+      // Save to localStorage
+      localStorage.setItem('resourceManagerState', JSON.stringify(completeState));
+
+      // Emit an event to notify that the state has been saved
+      moduleEventBus.emit({
+        type: 'RESOURCE_STATE_SAVED' as ModuleEventType,
+        moduleId: 'resource-manager',
+        moduleType: 'resource-manager' as ModuleType,
+        timestamp: Date.now(),
+        data: {
+          timestamp: completeState.timestamp,
+          resourceCount: Object.keys(resourceData).length,
+          productionCount: Object.keys(productionData).length,
+          consumptionCount: Object.keys(consumptionData).length,
+          flowCount: Object.keys(flowData).length,
+        },
+      });
+
+      console.warn(
+        `[ResourceManager] State saved with ${Object.keys(resourceData).length} resources`
+      );
+    } catch (error) {
+      // Handle potential localStorage errors
+      this.handleError('save-state', {
+        code: 'INVALID_TRANSFER',
+        message: 'Failed to save resource state',
+        details: error,
+      });
+      console.error('[ResourceManager] Failed to save state:', error);
+    }
   }
 
   /**
-   * Cleans up all schedules
+   * Loads the resource state from localStorage
+   * @returns True if state was successfully loaded, false otherwise
    */
-  cleanup(): void {
-    // Clear all intervals
-    this.productionIntervals.forEach((interval, id) => {
-      clearInterval(interval);
-      console.warn(`[ResourceManager] Cleaned up schedule for ${id}`);
-    });
-    this.productionIntervals.clear();
+  public loadResourceState(): boolean {
+    try {
+      const savedState = localStorage.getItem('resourceManagerState');
+      if (!savedState) {
+        return false;
+      }
 
-    // Clear all registrations
-    this.productions.clear();
-    this.flows.clear();
-    this.consumptions.clear();
+      const parsedState = JSON.parse(savedState);
 
-    console.warn('[ResourceManager] Cleaned up all schedules and registrations');
-    resourcePerformanceMonitor.cleanup();
+      // Validate the state structure
+      if (
+        !parsedState.resources ||
+        !parsedState.productions ||
+        !parsedState.consumptions ||
+        !parsedState.flows
+      ) {
+        console.warn('[ResourceManager] Invalid saved state structure');
+        return false;
+      }
+
+      // Clear current state
+      this.resources.clear();
+      this.productions.clear();
+      this.consumptions.clear();
+      this.flows.clear();
+
+      // Restore resources
+      Object.entries(parsedState.resources).forEach(([type, state]) => {
+        this.resources.set(type as ResourceType, state as ResourceState);
+      });
+
+      // Restore productions
+      Object.entries(parsedState.productions).forEach(([id, production]) => {
+        this.productions.set(id, production as ResourceProduction);
+      });
+
+      // Restore consumptions
+      Object.entries(parsedState.consumptions).forEach(([id, consumption]) => {
+        this.consumptions.set(id, consumption as ResourceConsumption);
+      });
+
+      // Restore flows
+      Object.entries(parsedState.flows).forEach(([id, flow]) => {
+        this.flows.set(id, flow as ResourceFlow);
+      });
+
+      // Restore storage efficiency
+      if (typeof parsedState.storageEfficiency === 'number') {
+        this.storageEfficiency = parsedState.storageEfficiency;
+      }
+
+      // Emit an event to notify that the state has been loaded
+      moduleEventBus.emit({
+        type: 'RESOURCE_STATE_LOADED' as ModuleEventType,
+        moduleId: 'resource-manager',
+        moduleType: 'resource-manager' as ModuleType,
+        timestamp: Date.now(),
+        data: {
+          originalTimestamp: parsedState.timestamp,
+          resourceCount: Object.keys(parsedState.resources).length,
+          productionCount: Object.keys(parsedState.productions).length,
+          consumptionCount: Object.keys(parsedState.consumptions).length,
+          flowCount: Object.keys(parsedState.flows).length,
+        },
+      });
+
+      console.warn(
+        `[ResourceManager] State loaded with ${Object.keys(parsedState.resources).length} resources`
+      );
+      return true;
+    } catch (error) {
+      this.handleError('load-state', {
+        code: 'INVALID_TRANSFER',
+        message: 'Failed to load resource state',
+        details: error,
+      });
+      console.error('[ResourceManager] Failed to load state:', error);
+      return false;
+    }
   }
 
   /**
-   * Gets the last error for an operation
+   * Saves the current resource state
+   * This is a public method that triggers the private __saveResourceState method
    */
-  getLastError(id: string): ResourceError | undefined {
-    return this.errors.get(id);
-  }
-
-  /**
-   * Clears error state for an operation
-   */
-  clearError(id: string): void {
-    this.errors.delete(id);
-  }
-
-  /**
-   * Gets current optimization metrics
-   */
-  getOptimizationMetrics() {
-    return { ...this.optimizationMetrics };
+  public saveState(): void {
+    this.__saveResourceState();
   }
 
   /**
@@ -993,92 +1180,4 @@ export class ResourceManager {
 
     return recentTransfers / 60; // Transfers per second
   }
-
-  /**
-   * Gets performance metrics
-   */
-  getPerformanceMetrics(type: ResourceType): PerformanceMetrics[] {
-    return resourcePerformanceMonitor.getResourceHistory(type);
-  }
-
-  /**
-   * Gets latest performance snapshot
-   */
-  getPerformanceSnapshot(): ResourcePerformanceSnapshot {
-    return resourcePerformanceMonitor.getLatestSnapshot();
-  }
-
-  /**
-   * Get all resources as an object
-   */
-  public getAllResources(): Record<ResourceType, number> {
-    const resources: Record<ResourceType, number> = {} as Record<ResourceType, number>;
-
-    for (const [type, state] of Array.from(this.resources)) {
-      resources[type] = state.current;
-    }
-
-    return resources;
-  }
-
-  /**
-   * Get all resource states
-   */
-  public getAllResourceStates(): Record<ResourceType, ResourceState> {
-    const states: Record<ResourceType, ResourceState> = {} as Record<ResourceType, ResourceState>;
-
-    for (const [type, state] of Array.from(this.resources)) {
-      states[type] = { ...state };
-    }
-
-    return states;
-  }
-
-  /**
-   * Get all resource flows
-   */
-  public getAllResourceFlows(): ResourceFlow[] {
-    const flows: ResourceFlow[] = [];
-
-    for (const flow of Array.from(this.flows.values())) {
-      flows.push({ ...flow });
-    }
-
-    return flows;
-  }
-
-  /**
-   * Save resource state to localStorage
-   */
-  private saveResourceState(): void {
-    const resourceData: Record<ResourceType, ResourceState> = {} as Record<
-      ResourceType,
-      ResourceState
-    >;
-
-    for (const [type, state] of Array.from(this.resources)) {
-      resourceData[type] = { ...state };
-    }
-
-    const productionData: Record<string, ResourceProduction> = {};
-
-    for (const [id, production] of Array.from(this.productions)) {
-      productionData[id] = { ...production };
-    }
-
-    const consumptionData: Record<string, ResourceConsumption> = {};
-
-    for (const [id, consumption] of Array.from(this.consumptions)) {
-      consumptionData[id] = { ...consumption };
-    }
-
-    const flowData: Record<string, ResourceFlow> = {};
-
-    for (const [id, flow] of Array.from(this.flows)) {
-      flowData[id] = { ...flow };
-    }
-  }
 }
-
-// Export singleton instance
-export const resourceManager = new ResourceManager();

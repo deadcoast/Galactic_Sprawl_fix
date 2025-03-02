@@ -1,6 +1,8 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { motion } from 'framer-motion';
 import { Clock, Plus, Save, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import * as React from 'react';
 import type { ThresholdHistoryEntry, ThresholdPreset } from '../../../../contexts/ThresholdContext';
 import { useThreshold } from '../../../../contexts/ThresholdContext';
 
@@ -10,9 +12,9 @@ interface ThresholdPresetsPanelProps {
 
 export function ThresholdPresetsPanel({ onClose }: ThresholdPresetsPanelProps) {
   const { state, dispatch } = useThreshold();
-  const [activeTab, setActiveTab] = useState<'presets' | 'history'>('presets');
-  const [newPresetName, setNewPresetName] = useState('');
-  const [newPresetDescription, setNewPresetDescription] = useState('');
+  const [activeTab, setActiveTab] = React.useState<'presets' | 'history'>('presets');
+  const [newPresetName, setNewPresetName] = React.useState('');
+  const [newPresetDescription, setNewPresetDescription] = React.useState('');
 
   const handleCreatePreset = () => {
     if (!newPresetName) {

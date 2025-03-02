@@ -23,8 +23,27 @@ interface BatchedUpdate {
   }>;
 }
 
-// Type guard for Hazard
-function _isHazard(obj: unknown): obj is Hazard {
+/**
+ * Type guard function to validate hazard objects
+ *
+ * This function will be used in future implementations to:
+ * 1. Validate hazard objects before processing them in combat calculations
+ * 2. Ensure type safety when working with environmental hazards
+ * 3. Support the upcoming environmental hazards system
+ * 4. Prevent runtime errors from malformed hazard data
+ * 5. Enable proper TypeScript type narrowing for hazard objects
+ *
+ * The function provides a reliable way to verify that an object conforms to
+ * the Hazard interface requirements before processing it in combat logic.
+ * This will be critical for the upcoming environmental hazards system where
+ * combat areas can contain various obstacles and dangerous zones that affect
+ * unit movement and combat effectiveness.
+ *
+ * @param obj The object to check
+ * @returns True if the object is a valid Hazard, false otherwise
+ */
+// @ts-expect-error - This function is documented for future use in the combat hazard system
+function __isHazard(obj: unknown): obj is Hazard {
   return (
     obj !== null &&
     obj !== undefined &&

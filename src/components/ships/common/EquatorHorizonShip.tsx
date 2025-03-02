@@ -5,7 +5,7 @@ import { createEffect, isDamageEffect } from '../../../effects/util_effects/effe
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
 import { Effect } from '../../../types/core/GameTypes';
 import { EquatorHorizonShipClass, FactionShipStats } from '../../../types/ships/FactionShipTypes';
-import { FactionBehaviorType, FactionId } from '../../../types/ships/FactionTypes';
+import { FactionBehaviorConfig, FactionId } from '../../../types/ships/FactionTypes';
 import { WeaponMount } from '../../../types/weapons/WeaponTypes';
 import { createDamageEffect } from '../../../utils/weapons/weaponEffectUtils';
 import { AbilityButton } from '../../ui/buttons/AbilityButton';
@@ -23,7 +23,6 @@ interface EquatorHorizonShipProps {
   maxShield: number;
   weapons: WeaponMount[];
   stats: FactionShipStats;
-  _tactics: 'aggressive' | 'defensive' | 'hit-and-run' | 'stealth';
   position: { x: number; y: number };
   rotation: number;
   onEngage?: () => void;
@@ -50,7 +49,6 @@ export function EquatorHorizonShip({
   maxShield,
   weapons,
   stats,
-  _tactics,
   position,
   rotation,
   onEngage,
@@ -197,7 +195,7 @@ export function EquatorHorizonShip({
         tactics: {
           formation: 'balanced',
           behavior: 'defensive',
-        } as FactionBehaviorType,
+        } as FactionBehaviorConfig,
         category: 'war',
         health,
         maxHealth,
@@ -207,6 +205,7 @@ export function EquatorHorizonShip({
         rotation,
         abilities: [
           {
+            id: 'overcharge-ability',
             name: 'Overcharge',
             description: 'Increases weapon damage and accuracy',
             cooldown: 15,
@@ -220,6 +219,7 @@ export function EquatorHorizonShip({
             } as Effect,
           },
           {
+            id: 'reinforced-shields-ability',
             name: 'Reinforced Shields',
             description: 'Boosts shield strength and regeneration',
             cooldown: 20,

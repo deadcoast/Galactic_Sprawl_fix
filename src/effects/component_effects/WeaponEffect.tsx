@@ -1,6 +1,9 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { useSpring } from '@react-spring/three';
 import { Trail } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
+import * as React from 'react';
 import { useRef } from 'react';
 import * as THREE from 'three';
 import { RenderBatcher } from '../../lib/optimization/RenderBatcher';
@@ -212,22 +215,26 @@ function WeaponBeam({ type, color, firing }: Omit<WeaponEffectProps, 'position' 
     ionCannon: 10,
   };
 
-  return (
-    <mesh>
-      <planeGeometry args={[0.2, 1, 32, 32]} />
-      <shaderMaterial
-        ref={materialRef}
-        transparent
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        uniforms={shader.uniforms}
-        vertexShader={shader.vertexShader}
-        fragmentShader={shader.fragmentShader}
-      />
-      {type !== 'machineGun' && (
-        <Trail width={0.2} length={5} color={color} attenuation={(t: number) => t * t} />
-      )}
-    </mesh>
+  return React.createElement(
+    'mesh',
+    null,
+    React.createElement('planeGeometry', { args: [0.2, 1, 32, 32] }),
+    React.createElement('shaderMaterial', {
+      ref: materialRef,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: shader.uniforms,
+      vertexShader: shader.vertexShader,
+      fragmentShader: shader.fragmentShader,
+    }),
+    type !== 'machineGun' &&
+      React.createElement(Trail, {
+        width: 0.2,
+        length: 5,
+        color: color,
+        attenuation: (t: number) => t * t,
+      })
   );
 }
 
@@ -238,45 +245,48 @@ export function WeaponEffectComponent({
   rotation,
   firing,
 }: WeaponEffectProps) {
-  return (
-    <div
-      className="absolute"
-      style={{
+  return React.createElement(
+    'div',
+    {
+      className: 'absolute',
+      style: {
         left: position.x,
         top: position.y,
         width: '100px',
         height: '200px',
         transform: `rotate(${rotation}deg)`,
-      }}
-    >
-      <Canvas camera={{ position: [0, 0, 2], fov: 75 }} style={{ background: 'transparent' }}>
-        <WeaponBeam type={type} color={color} firing={firing} />
-      </Canvas>
+      },
+    },
+    React.createElement(Canvas, {
+      camera: { position: [0, 0, 2], fov: 75 },
+      style: { background: 'transparent' },
+      children: React.createElement(WeaponBeam, { type: type, color: color, firing: firing }),
+    }),
 
-      {/* Enhanced Glow Effect */}
-      {firing && (
-        <>
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background: `radial-gradient(circle at 50% 0%, ${color}66 0%, ${color}00 70%)`,
-              filter: 'blur(8px)',
-              opacity: 0.8,
-              animation: 'pulse 1.5s ease-in-out infinite',
-            }}
-          />
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background: `radial-gradient(circle at 50% 0%, ${color}33 0%, ${color}00 100%)`,
-              filter: 'blur(16px)',
-              opacity: 0.6,
-              animation: 'pulse 2s ease-in-out infinite reverse',
-            }}
-          />
-        </>
-      )}
-    </div>
+    /* Enhanced Glow Effect */
+    firing &&
+      React.createElement(
+        React.Fragment,
+        null,
+        React.createElement('div', {
+          className: 'pointer-events-none absolute inset-0',
+          style: {
+            background: `radial-gradient(circle at 50% 0%, ${color}66 0%, ${color}00 70%)`,
+            filter: 'blur(8px)',
+            opacity: 0.8,
+            animation: 'pulse 1.5s ease-in-out infinite',
+          },
+        }),
+        React.createElement('div', {
+          className: 'pointer-events-none absolute inset-0',
+          style: {
+            background: `radial-gradient(circle at 50% 0%, ${color}33 0%, ${color}00 100%)`,
+            filter: 'blur(16px)',
+            opacity: 0.6,
+            animation: 'pulse 2s ease-in-out infinite reverse',
+          },
+        })
+      )
   );
 }
 

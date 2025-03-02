@@ -1,3 +1,6 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+import * as React from 'react';
 import { useEffect, useRef } from 'react';
 
 interface BackgroundEffectProps {
@@ -150,7 +153,9 @@ export function BackgroundEffect({ quality, intensity, colorScheme }: Background
     };
   }, [quality, intensity, colorScheme]);
 
-  return (
-    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0" style={{ zIndex: -1 }} />
-  );
+  return React.createElement('canvas', {
+    ref: canvasRef,
+    className: 'pointer-events-none fixed inset-0',
+    style: { zIndex: -1 },
+  });
 }

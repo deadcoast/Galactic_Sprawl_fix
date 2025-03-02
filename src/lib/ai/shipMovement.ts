@@ -13,9 +13,17 @@ interface MovementState {
   maxSpeed: number;
   rotationSpeed: number;
   currentRotation: number;
+  lastPosition: Position;
 }
 
-class ShipMovementManagerImpl extends EventEmitter {
+interface ShipMovementEvents {
+  movementStarted: { shipId: string; targetPosition: Position };
+  movementUpdated: { shipId: string; position: Position; rotation: number };
+  movementCompleted: { shipId: string; finalPosition: Position };
+  [key: string]: unknown;
+}
+
+class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
   private movementStates: Map<string, MovementState> = new Map();
 
   constructor() {
@@ -41,12 +49,26 @@ class ShipMovementManagerImpl extends EventEmitter {
       rotationSpeed: number;
     }
   ): void {
+    // Log the initial position for debugging purposes
+    console.log(
+      `Registering ship ${shipId} at initial position (${initialPosition.x}, ${initialPosition.y})`
+    );
+
     this.movementStates.set(shipId, {
       currentSpeed: 0,
       acceleration: stats.acceleration,
       maxSpeed: stats.maxSpeed,
       rotationSpeed: stats.rotationSpeed,
       currentRotation: 0,
+      // Store the initial position as the last known position
+      lastPosition: initialPosition,
+    });
+
+    // Emit an event to notify that the ship has been registered with its initial position
+    this.emit('movementUpdated', {
+      shipId,
+      position: initialPosition,
+      rotation: 0,
     });
   }
 
@@ -89,7 +111,10 @@ class ShipMovementManagerImpl extends EventEmitter {
         if (task?.type === 'salvage') {
           shipBehaviorManager.completeTask(shipId);
         }
-        this.emit('movementCompleted', { shipId });
+        this.emit('movementCompleted', {
+          shipId,
+          finalPosition: shipPositions.get(shipId) || { x: 0, y: 0 },
+        });
         return;
       }
 

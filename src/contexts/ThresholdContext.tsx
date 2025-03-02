@@ -1,4 +1,6 @@
-import React, { ReactNode, createContext, useContext, useReducer } from 'react';
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+import * as React from 'react';
 import { ThresholdAction, ThresholdState, initialState, thresholdEvents } from './ThresholdTypes';
 
 // Types
@@ -257,11 +259,11 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
 }
 
 // Context
-const ThresholdContext = createContext<ThresholdContextType | undefined>(undefined);
+const ThresholdContext = React.createContext<ThresholdContextType | undefined>(undefined);
 
 // Provider
-export function ThresholdProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(thresholdReducer, initialState);
+export function ThresholdProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = React.useReducer(thresholdReducer, initialState);
 
   return (
     <ThresholdContext.Provider value={{ state, dispatch }}>{children}</ThresholdContext.Provider>
@@ -270,7 +272,7 @@ export function ThresholdProvider({ children }: { children: ReactNode }) {
 
 // Hook
 export function useThreshold() {
-  const context = useContext(ThresholdContext);
+  const context = React.useContext(ThresholdContext);
   if (context === undefined) {
     throw new Error('useThreshold must be used within a ThresholdProvider');
   }

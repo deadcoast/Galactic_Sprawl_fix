@@ -4,7 +4,7 @@ CODEBASE MAPPING INDEX
 
 # Galactic Sprawl Codebase Mapping
 
-This document serves as the main index for the Galactic Sprawl project codebase mapping. The detailed mapping has been categorized into separate files for better organization and maintainability.
+This document serves as the main index for the Galactic Sprawl project codebase mapping. The detailed mapping has been categorized into separate files for better organization and maintainability. When you add to a category, you must also add a reference to it in this index.
 
 ## Project Mapping Guidelines
 
@@ -13,6 +13,68 @@ This document serves as the main index for the Galactic Sprawl project codebase 
 - "Used By" indicates reverse dependencies
 - All components should follow consistent naming
 - Event systems should use centralized bus
+
+### Event Data Type Guards
+
+- `src/hooks/game/useGameState.ts` - Added type guards for mission and sector event data to ensure type safety when handling events.
+- `src/initialization/moduleFrameworkInit.ts` - Added type guards for resource threshold event data to ensure type safety when handling resource events.
+- `src/utils/events/rxjsIntegration.ts` - Fixed filter predicate for event data to properly handle possibly undefined values.
+- `src/tests/utils/events/rxjsIntegration.test.ts` - Added proper null checks for event data in tests.
+- `src/utils/ships/shipUtils.ts` - Fixed handling of the currentAmmo property on WeaponState using type intersection.
+- `src/managers/resource/ResourceThresholdManager.ts` - Added type guards for resource update event data to ensure type safety when handling resource updates.
+
+### Type Guard Patterns
+
+- Type Guard for Event Data:
+
+  ```typescript
+  function isResourceEvent(event: GameEvent): event is ResourceEvent {
+    return event.type === 'RESOURCE_UPDATE' && 'resourceId' in event.data;
+  }
+  ```
+
+- Type Guard for Nullable Values:
+
+  ```typescript
+  function isNonNullResource(resource: Resource | null): resource is Resource {
+    return resource !== null;
+  }
+  ```
+
+### TypeScript Error Fixes
+
+- `src/components/ui/modules/ModuleHUD.tsx` - Added documentation for unused event handlers to explain their future implementation.
+- `src/components/buildings/modules/ExplorationHub/MissionReplay.tsx` - Implemented the unused event variable to enhance UI by highlighting the current event.
+- `src/components/ui/GameHUD.tsx` - Added documentation for the \_Notification interface to explain its future use.
+- `src/components/buildings/modules/MiningHub/ResourceNode.tsx` - Implemented unused techBonuses, assignedShip, and color variables.
+- `src/components/buildings/modules/MiningHub/MiningWindow.tsx` - Implemented unused handleContextMenuEvent function and fixed parameter types.
+- `src/hooks/modules/useModuleUpgrade.ts` - Added documentation for the \_ModuleEventData interface.
+- `src/hooks/resource/useResourceTracking.ts` - Implemented unused \_calculateTotals and \_calculatePercentages functions.
+- `src/hooks/vpr/useVPR.ts` - Implemented unused type parameter in getVPRAnimationSet function.
+- `src/hooks/vpr/useVPRInteractivity.ts` - Implemented unused moduleId parameter in handleModuleHover function.
+- `src/hooks/factions/useFactionBehavior.ts` - Added documentation for 11 unused functions and fixed a syntax error.
+- `src/initialization/eventSystemInit.ts` - Implemented unused \_resourceSystemComm and \_moduleSystemComm variables.
+- `src/managers/combat/combatManager.ts` - Implemented unused zone and unit processing functions.
+- `src/managers/module/ModuleAttachmentManager.ts` - Added documentation for the \_\_ModuleAttachmentEventData interface.
+- `src/managers/resource/ResourceExchangeManager.ts` - Implemented unused calculateRates and findOptimalPath functions.
+- `src/lib/automation/ConditionChecker.ts` - Added documentation for the \_\_RuntimeCondition interface and \_miningManager variable, and fixed interface property issues by updating the code to use the correct properties from the AutomationCondition interface.
+- `src/lib/optimization/EntityPool.ts` - Added documentation for unused \_maxSize and \_expandSize variables.
+- `src/components/weapons/WeaponUpgradeSystem.tsx` - Implemented the unused key parameter in the renderStatValue function to display formatted stat names.
+- `src/contexts/ModuleContext.tsx` - Implemented the unused \_module variable in the CREATE_MODULE case by adding logging for module creation.
+- `src/effects/component_effects/ExplosionEffect.tsx` - Implemented the target parameter in the gsap.to function and added documentation for the camera parameter.
+- `src/effects/component_effects/ShieldEffect.tsx` - Implemented the uniforms, vertexShader, fragmentShader, and components parameters with comprehensive documentation.
+- `src/effects/component_effects/ShieldImpactEffect.ts` - Implemented the point parameter in the ripplePoints.forEach method to calculate position.
+- `src/effects/component_effects/SmokeTrailEffect.tsx` - Added documentation for the camera parameter in the Canvas component.
+- `src/effects/component_effects/ThrusterEffect.tsx` - Implemented the callback parameter in the mockUseFrame function and added documentation for the CanvasProps interface.
+
+## Ship Types and Abilities
+
+- src/types/ships/CommonShipTypes.ts: Contains the CommonShipAbility interface which now includes an id property to match the Effect interface requirements
+- src/managers/module/ShipHangarManager.ts: Updated to include unique IDs for ship abilities and their effects
+- src/config/ships/spaceRatsShips.ts: Added unique IDs to all ship abilities
+- src/config/ships/lostNovaShips.ts: Added unique IDs to all ship abilities
+- src/config/ships/equatorHorizonShips.ts: Added unique IDs to all ship abilities
+- src/components/ships/FactionShips/lostNova/DarkMatterReaper.tsx: Implements a Lost Nova faction ship with base stats scaling and weapon configuration. Uses underscore-prefixed variables for future stat scaling implementation.
 
 ## Categories
 
@@ -145,11 +207,173 @@ This document serves as the main index for the Galactic Sprawl project codebase 
     - Security Considerations
     - Accessibility Considerations
 
+## Type System and Error Fixes
+
+- [Type Relationship References](Categories/Type_Relationship_References.md) - Hierarchical relationships between types in the system
+- [TypeScript Error Fixes](Categories/TypeScript_Error_Fixes.md) - Tracking of files fixed for TypeScript errors, categorized by error type
+
+## Combat System
+
+### Weapon Configuration
+
+- `src/config/combat/weaponConfig.ts`: Defines weapon configurations including stats, effects, and behaviors
+  - Contains effect definitions for various weapon types
+  - Each effect must have a unique ID to satisfy the `Effect` interface
+  - Effects include properties like name, description, duration, and strength
+  - Used by the `WeaponEffectManager` to apply effects during combat
+
+### Weapon Types
+
+- `src/types/weapons/WeaponTypes.ts`: Contains interfaces and types for the weapon system
+  - Defines `WeaponMount` interface for weapon attachment points
+  - Defines weapon categories, states, and upgrade paths
+  - Used throughout the combat system for type safety
+
+### Weapon Effects
+
+- `src/effects/types_effects/EffectTypes.ts`: Defines the base effect types used in the game
+  - Contains `BaseEffect` interface which is extended by specific effect types
+  - Categorizes effects into combat, status, and other types
+  - Used by the weapon system to apply effects to targets
+
+### Effect Interface
+
+- `src/types/core/GameTypes.ts`: Contains the `Effect` interface definition
+  - Requires each effect to have a unique `id` property
+  - Used by weapon effects, ship abilities, and other game systems
+  - Ensures consistent effect handling across the codebase
+
+## Automation System
+
+### Automation Manager
+
+- `src/managers/game/AutomationManager.ts`: Manages automated behaviors in the game
+  - Defines interfaces for automation conditions and actions
+  - Handles event-based automation triggers
+  - Processes condition checks and action execution
+
+### Automation Rules
+
+- `src/config/automation/`: Directory containing rule configurations for different modules
+  - `hangarRules.ts`: Rules for ship hangar automation
+  - `miningRules.ts`: Rules for mining operations automation
+  - `combatRules.ts`: Rules for combat automation
+  - `colonyRules.ts`: Rules for colony management automation
+  - `explorationRules.ts`: Rules for exploration automation
+  - Each file contains condition and action definitions that must match the expected types
+
+### Condition Checker
+
+- `src/lib/automation/ConditionChecker.ts`: Validates conditions for automation rules
+  - Implements logic to check different condition types
+  - Handles resource, time, event, and status conditions
+  - Used by the automation system to determine when to trigger actions
+
+## Module System
+
+### Module Manager
+
+- `src/managers/module/ModuleManager.ts`: Manages the lifecycle and state of all modules in the game
+  - Handles module creation, attachment, upgrades, and state updates
+  - Maintains a registry of module configurations
+  - Provides methods to attach modules to buildings
+  - Manages module activation and deactivation
+
+### Module Upgrade Manager
+
+- `src/managers/module/ModuleUpgradeManager.ts`: Manages the upgrade paths and processes for modules
+  - Defines upgrade paths with levels, requirements, and effects
+  - Handles the upgrade process including resource costs
+  - Manages upgrade status tracking
+  - Provides methods to check upgrade requirements
+
+### Module Tests
+
+- `src/tests/managers/module/ModuleManager.test.ts`: Tests for the Module Manager
+
+  - Tests module creation, attachment, and state management
+  - Verifies building registration and module retrieval
+  - Ensures proper event emission for module actions
+  - Uses properly typed mock objects that match the actual implementation
+
+- `src/tests/managers/module/ModuleUpgradeManager.test.ts`: Tests for the Module Upgrade Manager
+  - Tests upgrade path registration and retrieval
+  - Verifies upgrade requirement checking
+  - Tests the upgrade process including resource costs
+  - Ensures proper event emission for upgrade actions
+  - Uses properly typed mock objects with all required properties
+
+### Module Types
+
+- `src/types/buildings/ModuleTypes.ts`: Contains interfaces and types for the module system
+  - Defines `BaseModule` interface for all modules
+  - Defines `ModuleType` for different module categories
+  - Defines `ModuleConfig` for module configuration
+  - Defines `ModularBuilding` for buildings that can have modules
+  - Defines `ModuleAttachmentPoint` for module attachment points
+  - Used throughout the module system for type safety
+
+## Type Safety Improvements
+
+### Event Data Type Guards
+
+- `src/hooks/game/useGameState.ts` - Added type guards for mission and sector event data to ensure type safety when handling events.
+- `src/initialization/moduleFrameworkInit.ts` - Added type guards for resource threshold event data to ensure type safety when handling resource events.
+- `src/utils/events/rxjsIntegration.ts` - Fixed filter predicate for event data to properly handle possibly undefined values.
+- `src/tests/utils/events/rxjsIntegration.test.ts` - Added proper null checks for event data in tests.
+- `src/utils/ships/shipUtils.ts` - Fixed handling of the currentAmmo property on WeaponState using type intersection.
+- `src/managers/resource/ResourceThresholdManager.ts` - Added type guards for resource update event data to ensure type safety when handling resource updates.
+
+### Faction Behavior Types
+
+- `src/types/ships/FactionTypes.ts` - Updated the FactionBehaviorType to be a string literal union type instead of an object type.
+- `src/types/ships/FactionTypes.ts` - Added a new FactionBehaviorConfig interface for behavior configuration objects.
+- `src/config/factions/factionConfig.ts` - Updated faction configurations to use the new FactionBehaviorType with proper type assertions.
+- `src/config/factions/factionConfig.ts` - Added missing faction configurations for 'player', 'enemy', 'neutral', and 'ally' to satisfy the Record<FactionId, FactionConfig> type.
+- `src/hooks/factions/useFactionBehavior.ts` - Updated the FactionCombatUnit interface to use FactionBehaviorConfig for the tactics property.
+- `src/hooks/factions/useFactionBehavior.ts` - Updated the convertUnitsToFaction function to use the new FactionBehaviorType with proper type assertions.
+
+## Visual Effects System
+
+### Component Effects
+
+- `src/effects/component_effects/ExplosionEffect.tsx` - Implements explosion visual effects with particle systems
+
+  - Uses Three.js for 3D rendering
+  - Implements proper animation lifecycle with useFrame
+  - Provides configurable size, color, and intensity
+  - Includes proper cleanup to prevent memory leaks
+
+- `src/effects/component_effects/ShieldEffect.tsx` - Implements shield visual effects with custom shaders
+
+  - Uses custom shader materials for advanced visual effects
+  - Implements hexagonal grid patterns and glow effects
+  - Provides impact point visualization
+  - Supports dynamic shield health visualization
+
+- `src/effects/component_effects/ShieldImpactEffect.ts` - Implements shield impact visual effects
+
+  - Creates ripple effects at impact points
+  - Generates crack patterns based on damage
+  - Provides configurable impact intensity
+  - Integrates with the shield effect system
+
+- `src/effects/component_effects/SmokeTrailEffect.tsx` - Implements smoke trail visual effects
+
+  - Uses particle systems for realistic smoke
+  - Provides configurable direction and intensity
+  - Implements proper physics-based movement
+  - Includes turbulence for natural-looking smoke
+
+- `src/effects/component_effects/ThrusterEffect.tsx` - Implements thruster visual effects
+  - Creates realistic engine exhaust effects
+  - Provides configurable size and intensity
+  - Implements proper particle lifecycle
+  - Includes glow effects for visual enhancement
+
 ## Maintenance
 
-This mapping is maintained as a living document. When adding new components or modifying existing ones, please update the relevant category file. The original comprehensive mapping file has been preserved for reference but is being gradually migrated to this categorized structure.
-
-**IMPORTANT: This file has been restructured into separate category files for better organization and maintainability.**
+This mapping is maintained as a living document. When adding new components or modifying existing ones, please update the relevant category file and add it to this index.
 
 Please refer to the [CodeBase Mapping Index](./CodeBase_Mapping_Index.md) for the complete documentation.
 
@@ -219,5 +443,3 @@ When updating the codebase:
 2. Update existing documentation to reflect changes in the codebase
 3. Maintain consistent formatting and organization within each category file
 4. If a new category is needed, create a new file and update the index
-
-This file is kept for historical reference but is no longer actively maintained. All updates should be made to the appropriate category files.

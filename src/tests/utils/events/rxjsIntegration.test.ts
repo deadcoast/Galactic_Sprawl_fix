@@ -168,7 +168,12 @@ describe('RxJS Integration', () => {
           events.push(event);
 
           // Check that only events with data.resourceType === 'iron' are received
-          expect(event.data.resourceType).toBe('iron');
+          if (event.data && typeof event.data === 'object') {
+            const data = event.data as Record<string, unknown>;
+            expect(data.resourceType).toBe('iron');
+          } else {
+            expect.fail('Event data is undefined or not an object');
+          }
         },
       });
 

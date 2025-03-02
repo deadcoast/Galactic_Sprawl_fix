@@ -39,7 +39,15 @@ interface ShipTask {
   assignedAt: number;
 }
 
-class ShipBehaviorManagerImpl extends EventEmitter {
+interface ShipBehaviorEvents {
+  taskAssigned: { shipId: string; taskId: string; taskType: string };
+  taskCompleted: { shipId: string; taskId: string; success: boolean };
+  shipAdded: { shipId: string; category: ShipCategory };
+  shipRemoved: { shipId: string };
+  [key: string]: unknown;
+}
+
+class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
   private tasks: Map<string, ShipTask> = new Map();
   private ships: Map<string, ShipWithPosition> = new Map();
   private salvageTargets: Map<string, string> = new Map(); // salvageId -> shipId
@@ -103,7 +111,11 @@ class ShipBehaviorManagerImpl extends EventEmitter {
     }
 
     this.tasks.set(task.id, task);
-    this.emit('taskAssigned', { shipId: task.id, task });
+    this.emit('taskAssigned', {
+      shipId: task.id,
+      taskId: task.id,
+      taskType: task.type,
+    });
   }
 
   public assignSalvageTask(shipId: string, salvageId: string, position: Position): void {
@@ -119,7 +131,11 @@ class ShipBehaviorManagerImpl extends EventEmitter {
     };
 
     this.tasks.set(shipId, task);
-    this.emit('taskAssigned', { shipId, task });
+    this.emit('taskAssigned', {
+      shipId,
+      taskId: task.id,
+      taskType: task.type,
+    });
   }
 
   public registerShip(ship: ShipWithPosition): void {
@@ -145,7 +161,11 @@ class ShipBehaviorManagerImpl extends EventEmitter {
         this.salvageTargets.delete(task.target.id);
       }
       this.tasks.delete(shipId);
-      this.emit('taskCompleted', { shipId, task });
+      this.emit('taskCompleted', {
+        shipId,
+        taskId: task.id,
+        success: true,
+      });
     }
   }
 

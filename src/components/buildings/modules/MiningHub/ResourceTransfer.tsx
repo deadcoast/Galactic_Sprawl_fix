@@ -1,4 +1,7 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { ArrowRight } from 'lucide-react';
+import * as React from 'react';
 
 interface TransferAnimation {
   id: string;
@@ -14,24 +17,35 @@ interface ResourceTransferProps {
 }
 
 export function ResourceTransfer({ transfers }: ResourceTransferProps) {
-  return (
-    <div className="pointer-events-none absolute inset-0">
-      {transfers.map(transfer => (
-        <div
-          key={transfer.id}
-          className="absolute"
-          style={{
+  return React.createElement(
+    'div',
+    { className: 'pointer-events-none absolute inset-0' },
+    transfers.map(transfer =>
+      React.createElement(
+        'div',
+        {
+          key: transfer.id,
+          className: 'absolute',
+          style: {
             left: `${transfer.progress * 100}%`,
             top: '50%',
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          <div className="flex items-center space-x-1 rounded-full border border-indigo-500/50 bg-indigo-900/80 px-2 py-1 backdrop-blur-sm">
-            <span className="text-xs text-indigo-200">+{transfer.amount}</span>
-            <ArrowRight className="h-3 w-3 text-indigo-400" />
-          </div>
-        </div>
-      ))}
-    </div>
+            transform: `translate(-50%, -50%)`,
+          },
+        },
+        React.createElement(
+          'div',
+          {
+            className:
+              'flex items-center space-x-1 rounded-full border border-indigo-500/50 bg-indigo-900/80 px-2 py-1 backdrop-blur-sm',
+          },
+          React.createElement(
+            'span',
+            { className: 'text-xs text-indigo-200' },
+            `+${transfer.amount}`
+          ),
+          React.createElement(ArrowRight, { className: 'h-3 w-3 text-indigo-400' })
+        )
+      )
+    )
   );
 }

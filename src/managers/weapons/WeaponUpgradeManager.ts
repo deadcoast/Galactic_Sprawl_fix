@@ -14,6 +14,7 @@ interface WeaponUpgradeEvents {
   statsUpdated: { weaponId: string; stats: CombatWeaponStats };
   specializationUnlocked: { weaponId: string; specializationType: string };
   experienceGained: { weaponId: string; amount: number };
+  [key: string]: unknown;
 }
 
 interface WeaponSpecialization {

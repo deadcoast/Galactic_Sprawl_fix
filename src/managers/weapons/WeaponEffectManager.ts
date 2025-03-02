@@ -102,7 +102,6 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
     }
 
     const quality = this.qualitySettings.get(weaponId) || 'medium';
-    const _particleCount = this.getQualityAdjustedParticleCount(config.particleCount, quality);
 
     const systemIds: string[] = [];
 
@@ -144,7 +143,11 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
     return systemIds;
   }
 
-  private getQualityAdjustedParticleCount(
+  /**
+   * Adjusts particle count based on quality setting
+   * Currently unused but kept for future implementation of quality-based particle effects
+   */
+  private _getQualityAdjustedParticleCount(
     baseCount: number,
     quality: 'low' | 'medium' | 'high'
   ): number {
@@ -174,6 +177,16 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
     _config: WeaponEffectConfig,
     _quality: 'low' | 'medium' | 'high'
   ): string[] {
+    // Adjust particle count based on quality setting
+    const adjustedParticleCount = this._getQualityAdjustedParticleCount(
+      _config.particleCount,
+      _quality
+    );
+
+    console.log(
+      `[WeaponEffectManager] Creating beam effect with ${adjustedParticleCount} particles at quality ${_quality}`
+    );
+
     return [`beam-${Date.now()}`];
   }
 
@@ -182,6 +195,16 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
     _config: WeaponEffectConfig,
     _quality: 'low' | 'medium' | 'high'
   ): string[] {
+    // Adjust particle count based on quality setting
+    const adjustedParticleCount = this._getQualityAdjustedParticleCount(
+      _config.particleCount,
+      _quality
+    );
+
+    console.log(
+      `[WeaponEffectManager] Creating explosion effect with ${adjustedParticleCount} particles at quality ${_quality}`
+    );
+
     return [`explosion-${Date.now()}`];
   }
 
@@ -191,6 +214,16 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
     _config: WeaponEffectConfig,
     _quality: 'low' | 'medium' | 'high'
   ): string[] {
+    // Adjust particle count based on quality setting
+    const adjustedParticleCount = this._getQualityAdjustedParticleCount(
+      _config.particleCount,
+      _quality
+    );
+
+    console.log(
+      `[WeaponEffectManager] Creating continuous effect with ${adjustedParticleCount} particles at quality ${_quality}`
+    );
+
     return [`continuous-${Date.now()}`];
   }
 

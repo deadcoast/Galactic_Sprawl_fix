@@ -1,4 +1,7 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { Database } from 'lucide-react';
+import * as React from 'react';
 
 interface TradeRouteEffectProps {
   source: { x: number; y: number };
@@ -32,52 +35,65 @@ export function TradeRouteEffect({
     Q ${midX} ${midY - curvature} ${target.x} ${target.y}
   `;
 
-  return (
-    <g>
-      {/* Base Route */}
-      <path
-        d={path}
-        stroke="rgba(99, 102, 241, 0.3)"
-        strokeWidth={2 + volume * 2}
-        fill="none"
-        filter={`blur(${glowIntensity}px)`}
-      />
+  return React.createElement(
+    'g',
+    null,
+    /* Base Route */
+    React.createElement('path', {
+      d: path,
+      stroke: 'rgba(99, 102, 241, 0.3)',
+      strokeWidth: 2 + volume * 2,
+      fill: 'none',
+      filter: `blur(${glowIntensity}px)`,
+    }),
 
-      {/* Animated Flow */}
-      {active && (
-        <>
-          <path
-            d={path}
-            stroke="url(#route-gradient)"
-            strokeWidth={2 + volume * 2}
-            fill="none"
-            className="trade-route"
-          />
+    /* Animated Flow */
+    active &&
+      React.createElement(
+        React.Fragment,
+        null,
+        React.createElement('path', {
+          d: path,
+          stroke: 'url(#route-gradient)',
+          strokeWidth: 2 + volume * 2,
+          fill: 'none',
+          className: 'trade-route',
+        }),
 
-          {/* Flow Particles */}
-          {Array.from({ length: particleCount }).map((_, i) => {
-            const progress = (i / particleCount + Date.now() / 2000) % 1;
-            const point = getPointOnPath(path, progress);
+        /* Flow Particles */
+        Array.from({ length: particleCount }).map((_, i) => {
+          const progress = (i / particleCount + Date.now() / 2000) % 1;
+          const point = getPointOnPath(path, progress);
 
-            return (
-              <g key={i} transform={`translate(${point.x}, ${point.y})`} className="animate-pulse">
-                <circle
-                  r={2 + volume}
-                  fill="rgba(99, 102, 241, 0.5)"
-                  filter={`blur(${glowIntensity / 2}px)`}
-                />
-              </g>
-            );
-          })}
-        </>
-      )}
+          return React.createElement(
+            'g',
+            {
+              key: i,
+              transform: `translate(${point.x}, ${point.y})`,
+              className: 'animate-pulse',
+            },
+            React.createElement('circle', {
+              r: 2 + volume,
+              fill: 'rgba(99, 102, 241, 0.5)',
+              filter: `blur(${glowIntensity / 2}px)`,
+            })
+          );
+        })
+      ),
 
-      {/* Route Indicator */}
-      <g transform={`translate(${midX}, ${midY - curvature})`}>
-        <circle r={8 + volume * 4} fill="rgba(99, 102, 241, 0.2)" className="animate-pulse" />
-        <Database className="h-4 w-4 -translate-x-2 -translate-y-2 transform text-indigo-400" />
-      </g>
-    </g>
+    /* Route Indicator */
+    React.createElement(
+      'g',
+      { transform: `translate(${midX}, ${midY - curvature})` },
+      React.createElement('circle', {
+        r: 8 + volume * 4,
+        fill: 'rgba(99, 102, 241, 0.2)',
+        className: 'animate-pulse',
+      }),
+      React.createElement(Database, {
+        className: 'h-4 w-4 -translate-x-2 -translate-y-2 transform text-indigo-400',
+      })
+    )
   );
 }
 

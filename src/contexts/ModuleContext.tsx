@@ -36,6 +36,12 @@ function moduleReducer(state: ModuleState, action: ModuleAction): ModuleState {
   switch (action.type) {
     case 'CREATE_MODULE': {
       const _module = moduleManager.createModule(action.moduleType, action.position);
+
+      // Log module creation for debugging and analytics
+      console.warn(
+        `[ModuleContext] Created module: ${_module.id} (${_module.type}) at position (${_module.position.x}, ${_module.position.y})`
+      );
+
       return {
         ...state,
         activeModules: moduleManager.getActiveModules(),

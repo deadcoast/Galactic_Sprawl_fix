@@ -1,6 +1,8 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bookmark, Database, Settings } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { useThreshold } from '../../../../contexts/ThresholdContext';
 import { ThresholdPresetsPanel } from './ThresholdPresetsPanel';
 import { ThresholdStatusIndicator } from './ThresholdStatusIndicator';
@@ -23,13 +25,13 @@ export function ThresholdManager({
   const { state, dispatch } = useThreshold();
   const resource = state.resources[resourceId];
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [showPresetsPanel, setShowPresetsPanel] = useState(false);
-  const [minThreshold, setMinThreshold] = useState(resource?.thresholds.min || 0);
-  const [maxThreshold, setMaxThreshold] = useState(resource?.thresholds.max || maxCapacity);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [showPresetsPanel, setShowPresetsPanel] = React.useState(false);
+  const [minThreshold, setMinThreshold] = React.useState(resource?.thresholds.min || 0);
+  const [maxThreshold, setMaxThreshold] = React.useState(resource?.thresholds.max || maxCapacity);
 
   // Initialize threshold if not exists
-  useEffect(() => {
+  React.useEffect(() => {
     if (!resource) {
       dispatch({
         type: 'ADD_RESOURCE',

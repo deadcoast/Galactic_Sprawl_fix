@@ -498,7 +498,7 @@ export function createPriorityProcessor<T extends { priority?: number }>(
       let closestPriority: number | null = null;
       let minDistance = Infinity;
 
-      for (const p of processors.keys()) {
+      for (const p of Array.from(processors.keys())) {
         const distance = Math.abs(p - priority);
         if (distance < minDistance) {
           minDistance = distance;

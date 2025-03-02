@@ -16,7 +16,25 @@ interface WeaponLike {
   displayName?: string;
 }
 
-interface _CommonShipAbility {
+/**
+ * Common ship ability interface for standardizing ship special abilities
+ *
+ * This interface will be used in future implementations to:
+ * 1. Standardize the structure of ship special abilities across different ship classes
+ * 2. Enable ability sharing and inheritance between related ship types
+ * 3. Support the upcoming ship ability customization system
+ * 4. Provide consistent ability parameters for UI display and tooltips
+ * 5. Facilitate ability cooldown and activation state tracking
+ *
+ * Properties:
+ * - id: Unique identifier for the ability
+ * - name: Display name of the ability
+ * - type: Category of ability (offensive, defensive, utility, etc.)
+ * - cooldown: Time in seconds before the ability can be used again
+ * - damage: Base damage value for offensive abilities
+ */
+// @ts-expect-error - This interface is documented for future use in the ship ability system
+interface __CommonShipAbility {
   id?: string;
   name: string;
   type?: string;

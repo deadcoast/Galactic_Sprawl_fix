@@ -33,6 +33,48 @@ export function initializeEventSystem(): () => void {
     console.warn(`System startup message received: ${payload.systemName}`);
   });
 
+  // Register resource system event handlers
+  const unregisterResourceEvents = _resourceSystemComm.registerHandler(
+    'resource-update',
+    message => {
+      const payload = message.payload as {
+        resourceType: string;
+        amount: number;
+        operation: 'add' | 'subtract';
+      };
+      console.warn(
+        `Resource update: ${payload.operation} ${payload.amount} of ${payload.resourceType}`
+      );
+
+      // Forward important resource events to the module system
+      if (payload.amount > 1000) {
+        _moduleSystemComm.sendMessage('resource-system', 'resource-threshold-reached', {
+          resourceType: payload.resourceType,
+          amount: payload.amount,
+          timestamp: Date.now(),
+        });
+      }
+    }
+  );
+
+  // Register module system event handlers
+  const unregisterModuleEvents = _moduleSystemComm.registerHandler(
+    'module-status-change',
+    message => {
+      const payload = message.payload as { moduleId: string; status: string };
+      console.warn(`Module status change: ${payload.moduleId} is now ${payload.status}`);
+
+      // Notify the event system about important module status changes
+      if (payload.status === 'critical' || payload.status === 'offline') {
+        eventSystemComm.sendMessage('broadcast', 'system-alert', {
+          level: payload.status === 'critical' ? 'warning' : 'error',
+          message: `Module ${payload.moduleId} is ${payload.status}`,
+          timestamp: Date.now(),
+        });
+      }
+    }
+  );
+
   // Start the game loop
   gameLoopManager.start();
 
@@ -80,6 +122,8 @@ export function initializeEventSystem(): () => void {
 
     // Unregister event handlers
     unregisterSystemStartup();
+    unregisterResourceEvents();
+    unregisterModuleEvents();
 
     // Stop the game loop
     gameLoopManager.stop();

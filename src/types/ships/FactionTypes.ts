@@ -7,11 +7,18 @@ export type FactionId =
   | 'lost-nova'
   | 'equator-horizon';
 
-export type FactionBehaviorType = {
+export type FactionBehaviorType =
+  | 'aggressive'
+  | 'defensive'
+  | 'hit-and-run'
+  | 'stealth'
+  | 'balance';
+
+export interface FactionBehaviorConfig {
   formation: string;
-  behavior: string;
+  behavior: FactionBehaviorType;
   target?: string;
-};
+}
 
 export interface FactionConfig {
   id: FactionId;

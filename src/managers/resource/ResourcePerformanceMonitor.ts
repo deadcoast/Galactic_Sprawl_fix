@@ -25,16 +25,23 @@ export class ResourcePerformanceMonitor {
   private metricsHistory: Map<ResourceType, PerformanceMetrics[]>;
   private snapshotInterval: number;
   private maxHistoryLength: number;
-  private lastSnapshotTime: number;
+  private _lastSnapshotTime: number;
 
   constructor(snapshotInterval = 5000, maxHistoryLength = 100) {
     this.metricsHistory = new Map();
     this.snapshotInterval = snapshotInterval;
     this.maxHistoryLength = maxHistoryLength;
-    this.lastSnapshotTime = Date.now();
+    this._lastSnapshotTime = Date.now();
 
     // Start monitoring
     this.startMonitoring();
+  }
+
+  /**
+   * Returns the time elapsed since the last snapshot in milliseconds
+   */
+  public getTimeSinceLastSnapshot(): number {
+    return Date.now() - this._lastSnapshotTime;
   }
 
   /**
@@ -98,7 +105,7 @@ export class ResourcePerformanceMonitor {
    */
   private takeSnapshot(): void {
     const snapshot = this.generateSnapshot();
-    this.lastSnapshotTime = Date.now();
+    this._lastSnapshotTime = Date.now();
 
     // Emit performance snapshot
     moduleEventBus.emit({
@@ -125,7 +132,7 @@ export class ResourcePerformanceMonitor {
     const recommendations: string[] = [];
 
     // Calculate current metrics for each resource
-    for (const [type, history] of this.metricsHistory) {
+    for (const [type, history] of Array.from(this.metricsHistory.entries())) {
       if (history.length === 0) {
         continue;
       }
@@ -173,7 +180,7 @@ export class ResourcePerformanceMonitor {
   private logPerformanceInsights(snapshot: ResourcePerformanceSnapshot): void {
     console.warn(`[ResourcePerformanceMonitor] Performance Snapshot:
       System Load: ${(snapshot.systemLoad * 100).toFixed(1)}%
-      Bottlenecks: ${snapshot.bottlenecks.join(', ') || 'None'}
+      Bottlenecks: ${snapshot.bottlenecks.join(', ').slice() || 'None'}
       
       Recommendations:
       ${snapshot.recommendations.map(r => `- ${r}`).join('\n      ') || '- No recommendations'}`);
@@ -191,6 +198,13 @@ export class ResourcePerformanceMonitor {
    */
   getLatestSnapshot(): ResourcePerformanceSnapshot {
     return this.generateSnapshot();
+  }
+
+  /**
+   * Returns the time of the last snapshot
+   */
+  public getLastSnapshotTime(): number {
+    return this._lastSnapshotTime;
   }
 
   /**

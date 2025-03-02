@@ -1,17 +1,32 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
-export interface DragItem {
+export interface DragItem<T = Record<string, unknown>> {
   id: string;
   type: 'module' | 'resource' | 'ship';
-  data: Record<string, unknown>;
+  data: T;
 }
 
-interface DragPreviewProps {
-  item: DragItem;
+interface DragPreviewProps<T = Record<string, unknown>> {
+  item: DragItem<T>;
   currentOffset: { x: number; y: number };
 }
 
-function DragPreview({ item, currentOffset }: DragPreviewProps) {
+function DragPreview<T = Record<string, unknown>>({ item, currentOffset }: DragPreviewProps<T>) {
+  // Extract properties safely with type assertions
+  const name =
+    item.type === 'module' || item.type === 'ship'
+      ? String((item.data as Record<string, unknown>).name || '')
+      : '';
+
+  const amount =
+    item.type === 'resource' ? String((item.data as Record<string, unknown>).amount || '') : '';
+
+  const resourceType =
+    item.type === 'resource' ? String((item.data as Record<string, unknown>).type || '') : '';
+
   return (
     <div
       className="pointer-events-none fixed z-50 opacity-75"
@@ -22,26 +37,31 @@ function DragPreview({ item, currentOffset }: DragPreviewProps) {
       }}
     >
       <div className="rounded-lg border border-gray-700 bg-gray-900/90 px-4 py-2 text-white backdrop-blur-sm">
-        {item.type === 'module' && <span>📦 {item.data.name}</span>}
+        {item.type === 'module' && <span>📦 {name}</span>}
         {item.type === 'resource' && (
           <span>
-            💎 {item.data.amount} {item.data.type}
+            💎 {amount} {resourceType}
           </span>
         )}
-        {item.type === 'ship' && <span>🚀 {item.data.name}</span>}
+        {item.type === 'ship' && <span>🚀 {name}</span>}
       </div>
     </div>
   );
 }
 
-interface DropTargetProps {
+interface DropTargetProps<T = Record<string, unknown>> {
   accept: string[];
-  onDrop: (item: DragItem) => void;
+  onDrop: (item: DragItem<T>) => void;
   children: React.ReactNode;
   className?: string;
 }
 
-export function DropTarget({ accept, onDrop, children, className = '' }: DropTargetProps) {
+export function DropTarget<T = Record<string, unknown>>({
+  accept,
+  onDrop,
+  children,
+  className = '',
+}: DropTargetProps<T>) {
   const [isOver, setIsOver] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -61,7 +81,7 @@ export function DropTarget({ accept, onDrop, children, className = '' }: DropTar
       e.preventDefault();
       setIsOver(false);
       if (e.dataTransfer) {
-        const item = JSON.parse(e.dataTransfer.getData('text')) as DragItem;
+        const item = JSON.parse(e.dataTransfer.getData('text')) as DragItem<T>;
         if (accept.includes(item.type)) {
           onDrop(item);
         }
@@ -92,21 +112,21 @@ export function DropTarget({ accept, onDrop, children, className = '' }: DropTar
   );
 }
 
-interface DraggableProps {
-  item: DragItem;
+interface DraggableProps<T = Record<string, unknown>> {
+  item: DragItem<T>;
   children: React.ReactNode;
   className?: string;
   onDragStart?: () => void;
   onDragEnd?: () => void;
 }
 
-export function Draggable({
+export function Draggable<T = Record<string, unknown>>({
   item,
   children,
   className = '',
   onDragStart,
   onDragEnd,
-}: DraggableProps) {
+}: DraggableProps<T>) {
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('text', JSON.stringify(item));
     onDragStart?.();
@@ -128,12 +148,14 @@ export function Draggable({
   );
 }
 
-interface UseDragAndDropProps {
-  onDrop?: (item: DragItem, target: HTMLElement) => void;
+interface UseDragAndDropProps<T = Record<string, unknown>> {
+  onDrop?: (item: DragItem<T>, target: HTMLElement) => void;
 }
 
-export function useDragAndDrop({ onDrop }: UseDragAndDropProps = {}) {
-  const [draggedItem, setDraggedItem] = useState<DragItem | null>(null);
+export function useDragAndDrop<T = Record<string, unknown>>({
+  onDrop,
+}: UseDragAndDropProps<T> = {}) {
+  const [draggedItem, setDraggedItem] = useState<DragItem<T> | null>(null);
   const [dragPosition, setDragPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -147,7 +169,7 @@ export function useDragAndDrop({ onDrop }: UseDragAndDropProps = {}) {
     return () => document.removeEventListener('mousemove', handleMouseMove);
   }, [draggedItem]);
 
-  const handleDragStart = (item: DragItem) => {
+  const handleDragStart = (item: DragItem<T>) => {
     setDraggedItem(item);
   };
 
@@ -155,7 +177,7 @@ export function useDragAndDrop({ onDrop }: UseDragAndDropProps = {}) {
     setDraggedItem(null);
   };
 
-  const handleDrop = (item: DragItem, target: HTMLElement) => {
+  const handleDrop = (item: DragItem<T>, target: HTMLElement) => {
     onDrop?.(item, target);
     setDraggedItem(null);
   };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 
 interface ScalingState {
   systemCount: number;
@@ -11,8 +11,17 @@ interface ScalingState {
   };
 }
 
+// Add a type declaration for the Performance interface with memory property
+interface ExtendedPerformance extends Performance {
+  memory?: {
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+    jsHeapSizeLimit: number;
+  };
+}
+
 export function useScalingSystem() {
-  const [scalingState, setScalingState] = useState<ScalingState>({
+  const [scalingState, setScalingState] = React.useState<ScalingState>({
     systemCount: 0,
     activeTradeRoutes: 0,
     resourceNodes: 0,
@@ -24,7 +33,7 @@ export function useScalingSystem() {
   });
 
   // Performance monitoring
-  useEffect(() => {
+  React.useEffect(() => {
     let frameCount = 0;
     let lastTime = performance.now();
     let frameTime = 0;
@@ -39,12 +48,16 @@ export function useScalingSystem() {
         const fps = Math.round((frameCount * 1000) / frameTime);
         const renderTime = frameTime / frameCount;
 
+        // Cast performance to ExtendedPerformance to access memory property
+        const extendedPerformance = window.performance as ExtendedPerformance;
+        const memoryUsage = extendedPerformance.memory?.usedJSHeapSize || 0;
+
         setScalingState(prev => ({
           ...prev,
           performance: {
             fps,
             renderTime,
-            memoryUsage: window.performance?.memory?.usedJSHeapSize || 0,
+            memoryUsage,
           },
         }));
 

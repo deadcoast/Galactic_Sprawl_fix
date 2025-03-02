@@ -48,15 +48,15 @@ export interface GlobalRoutine {
  * Extends the module-specific automation with system-wide routines
  */
 export class GlobalAutomationManager {
-  private automationManager: AutomationManager;
+  private _automationManager: AutomationManager;
   private routines: Map<string, GlobalRoutine>;
   private activeRoutines: Map<string, boolean>;
   private routineQueue: EventPriorityQueue<GlobalRoutine & { executionTime: number }>;
   private systemCommunications: Map<SystemId, ReturnType<typeof getSystemCommunication>>;
   private isInitialized: boolean = false;
 
-  constructor(automationManager: AutomationManager) {
-    this.automationManager = automationManager;
+  constructor(_automationManager: AutomationManager) {
+    this._automationManager = _automationManager;
     this.routines = new Map();
     this.activeRoutines = new Map();
     this.systemCommunications = new Map();
@@ -76,6 +76,17 @@ export class GlobalAutomationManager {
     }
 
     console.warn('Initializing Global Automation Manager...');
+
+    // Log the automation manager status
+    if (this._automationManager) {
+      console.log(
+        `[GlobalAutomationManager] Using automation manager for condition checking and rule management`
+      );
+    } else {
+      console.warn(
+        '[GlobalAutomationManager] No automation manager provided, some features may be limited'
+      );
+    }
 
     // Initialize system communications
     this.initializeSystemCommunications();
@@ -131,22 +142,28 @@ export class GlobalAutomationManager {
       communication.registerHandler('automation-request', message => {
         console.warn(`Received automation request from ${systemId}:`, message.payload);
 
-        // Type assertion for payload
-        const payload = message.payload as {
-          routineId?: string;
-          createRoutine?: GlobalRoutine;
-        };
+        // Use type guard instead of type assertion
+        const { payload } = message;
+        if (payload && typeof payload === 'object') {
+          const routineId = 'routineId' in payload ? String(payload.routineId) : undefined;
+          const createRoutine =
+            'createRoutine' in payload &&
+            payload.createRoutine &&
+            typeof payload.createRoutine === 'object'
+              ? (payload.createRoutine as GlobalRoutine)
+              : undefined;
 
-        if (payload.routineId) {
-          const routine = this.routines.get(payload.routineId);
-          if (routine && routine.enabled) {
-            this.scheduleRoutine(routine);
-            return;
+          if (routineId) {
+            const routine = this.routines.get(routineId);
+            if (routine && routine.enabled) {
+              this.scheduleRoutine(routine);
+              return;
+            }
           }
-        }
 
-        if (payload.createRoutine) {
-          this.registerRoutine(payload.createRoutine);
+          if (createRoutine) {
+            this.registerRoutine(createRoutine);
+          }
         }
       });
     });
@@ -445,7 +462,7 @@ export class GlobalAutomationManager {
           moduleId: 'automation',
           moduleType: 'resource-manager',
           timestamp: Date.now(),
-          data: action.value,
+          data: this.convertActionValueToRecord(action.value),
         });
         break;
 
@@ -459,28 +476,118 @@ export class GlobalAutomationManager {
           moduleId?: string;
           moduleType?: string;
           data?: Record<string, unknown>;
+          [key: string]: unknown; // Add index signature to satisfy Record<string, unknown>
         }
 
-        // Cast to EmitEventValue or use a safe default
-        const emitValue =
-          typeof action.value === 'object'
-            ? (action.value as EmitEventValue)
-            : { moduleId: 'automation', moduleType: 'resource-manager', data: {} };
+        // Use type guard instead of type assertion
+        const emitValue: EmitEventValue = {};
 
-        // Emit the specified event
-        moduleEventBus.emit({
-          type: action.target as ModuleEventType,
-          moduleId: emitValue.moduleId || 'automation',
-          moduleType: (emitValue.moduleType || 'resource-manager') as ModuleType,
-          timestamp: Date.now(),
-          data: emitValue.data || {},
-        });
+        if (typeof action.value === 'object' && action.value !== null) {
+          // First cast to unknown to avoid type errors
+          const value = action.value as unknown as Record<string, unknown>;
+
+          if ('moduleId' in value && typeof value.moduleId === 'string') {
+            emitValue.moduleId = value.moduleId;
+          }
+
+          if ('moduleType' in value && typeof value.moduleType === 'string') {
+            emitValue.moduleType = value.moduleType as ModuleType;
+          }
+
+          if ('data' in value && typeof value.data === 'object' && value.data !== null) {
+            emitValue.data = value.data as Record<string, unknown>;
+          }
+        }
+
+        // Validate that action.target is a valid ModuleEventType
+        const isValidEventType = (type: string): type is ModuleEventType => {
+          return [
+            'MODULE_CREATED',
+            'MODULE_ATTACHED',
+            'MODULE_DETACHED',
+            'MODULE_UPGRADED',
+            'MODULE_ACTIVATED',
+            'MODULE_DEACTIVATED',
+            'MODULE_UPDATED',
+            'ATTACHMENT_STARTED',
+            'ATTACHMENT_CANCELLED',
+            'ATTACHMENT_COMPLETED',
+            'ATTACHMENT_PREVIEW_SHOWN',
+            'RESOURCE_PRODUCED',
+            'RESOURCE_CONSUMED',
+            'RESOURCE_TRANSFERRED',
+            'RESOURCE_PRODUCTION_REGISTERED',
+            'RESOURCE_PRODUCTION_UNREGISTERED',
+            'RESOURCE_CONSUMPTION_REGISTERED',
+            'RESOURCE_CONSUMPTION_UNREGISTERED',
+            'RESOURCE_FLOW_REGISTERED',
+            'RESOURCE_FLOW_UNREGISTERED',
+            'RESOURCE_SHORTAGE',
+            'RESOURCE_UPDATED',
+            'AUTOMATION_STARTED',
+            'AUTOMATION_STOPPED',
+            'AUTOMATION_CYCLE_COMPLETE',
+            'STATUS_CHANGED',
+            'ERROR_OCCURRED',
+            'MISSION_STARTED',
+            'MISSION_COMPLETED',
+            'MISSION_FAILED',
+            'MISSION_PROGRESS_UPDATED',
+            'MISSION_REWARD_CLAIMED',
+            'SUB_MODULE_CREATED',
+            'SUB_MODULE_ATTACHED',
+            'SUB_MODULE_DETACHED',
+            'SUB_MODULE_UPGRADED',
+            'SUB_MODULE_ACTIVATED',
+            'SUB_MODULE_DEACTIVATED',
+            'SUB_MODULE_EFFECT_APPLIED',
+            'SUB_MODULE_EFFECT_REMOVED',
+            'COMBAT_UPDATED',
+            'TECH_UNLOCKED',
+            'TECH_UPDATED',
+          ].includes(type as ModuleEventType);
+        };
+
+        if (isValidEventType(action.target)) {
+          // Emit the specified event
+          moduleEventBus.emit({
+            type: action.target,
+            moduleId: emitValue.moduleId || 'automation',
+            moduleType: (emitValue.moduleType || 'resource-manager') as ModuleType,
+            timestamp: Date.now(),
+            data: emitValue.data || {},
+          });
+        } else {
+          console.warn(`Invalid event type: ${action.target}`);
+        }
         break;
       }
 
       default:
         console.warn(`Unsupported action type: ${action.type}`);
     }
+  }
+
+  // Add a helper method to convert action values to Record<string, unknown>
+  private convertActionValueToRecord(value: unknown): Record<string, unknown> {
+    if (value === null || value === undefined) {
+      return {};
+    }
+
+    if (typeof value === 'object') {
+      // If it's already an object, convert it to a Record<string, unknown>
+      // First cast to unknown, then to Record<string, unknown> to avoid type errors
+      return Object.entries(value as unknown as Record<string, unknown>).reduce(
+        (acc, [key, val]) => {
+          acc[key] = val;
+          return acc;
+        },
+        {} as Record<string, unknown>
+      );
+    }
+
+    // If it's a primitive value, wrap it in an object
+    return { value };
   }
 
   /**
@@ -521,7 +628,11 @@ export class GlobalAutomationManager {
       routine =>
         routine.enabled &&
         routine.type === 'resource-balancing' &&
-        routine.tags.includes(event.data?.resourceType || 'general')
+        routine.tags.includes(
+          event.data && typeof event.data === 'object' && 'resourceType' in event.data
+            ? String(event.data.resourceType)
+            : 'general'
+        )
     );
 
     // Schedule resource routines with high priority
@@ -543,7 +654,11 @@ export class GlobalAutomationManager {
       routine =>
         routine.enabled &&
         (routine.type === 'system-maintenance' || routine.type === 'performance-optimization') &&
-        routine.tags.includes(event.data?.status || 'general')
+        routine.tags.includes(
+          event.data && typeof event.data === 'object' && 'status' in event.data
+            ? String(event.data.status)
+            : 'general'
+        )
     );
 
     // Schedule status routines
@@ -629,6 +744,14 @@ export class GlobalAutomationManager {
     this.systemCommunications.clear();
 
     this.isInitialized = false;
+  }
+
+  /**
+   * Get the automation manager instance
+   * This method is used for testing and debugging purposes
+   */
+  public getAutomationManager(): AutomationManager | null {
+    return this._automationManager || null;
   }
 }
 

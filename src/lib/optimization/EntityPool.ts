@@ -8,6 +8,7 @@ interface PoolEvents<T extends PooledEntity> {
   entityActivated: { entity: T };
   entityDeactivated: { entity: T };
   poolExpanded: { newSize: number };
+  [key: string]: unknown;
 }
 
 /**
@@ -17,8 +18,28 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
   private available: T[];
   private inUse: Set<T>;
   private factory: () => T;
-  private maxSize: number;
-  private expandSize: number;
+
+  /**
+   * Maximum size limit for the entity pool
+   * Will be used in future implementations to:
+   * 1. Prevent unbounded memory growth by limiting total entities
+   * 2. Implement pool size policies based on application state
+   * 3. Support dynamic resizing based on usage patterns
+   * 4. Trigger cleanup operations when approaching size limits
+   * 5. Provide metrics for memory optimization
+   */
+  private _maxSize: number; // Will be used to limit pool growth in future implementation
+
+  /**
+   * Size increment for pool expansion operations
+   * Will be used in future implementations to:
+   * 1. Control growth rate when pool needs to expand
+   * 2. Implement adaptive expansion based on usage patterns
+   * 3. Optimize memory allocation by batch-creating entities
+   * 4. Support different expansion strategies (linear, exponential)
+   * 5. Provide configuration options for performance tuning
+   */
+  private _expandSize: number; // Will be used for dynamic pool expansion in future implementation
 
   constructor(
     factory: () => T,
@@ -28,8 +49,8 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
   ) {
     super();
     this.factory = factory;
-    this.maxSize = maxSize;
-    this.expandSize = expandSize;
+    this._maxSize = maxSize;
+    this._expandSize = expandSize;
     this.available = [];
     this.inUse = new Set();
 
@@ -50,7 +71,34 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
     if (this.available.length > 0) {
       entity = this.available.pop()!;
     } else {
-      entity = this.factory();
+      // Check if we've reached the maximum pool size
+      const totalEntities = this.getTotalCount();
+      if (totalEntities >= this._maxSize) {
+        console.warn(
+          `[EntityPool] Maximum pool size (${this._maxSize}) reached, cannot create more entities`
+        );
+        return undefined;
+      }
+
+      // If we're running low on entities, expand the pool by _expandSize
+      if (this.available.length === 0 && totalEntities < this._maxSize) {
+        const expandSize = Math.min(this._expandSize, this._maxSize - totalEntities);
+        console.log(`[EntityPool] Expanding pool by ${expandSize} entities`);
+
+        // Create new entities in batch
+        for (let i = 0; i < expandSize; i++) {
+          this.available.push(this.factory());
+        }
+
+        // Emit event for pool expansion
+        this.emit('poolExpanded', { newSize: this.getTotalCount() });
+
+        // Get an entity from the newly expanded pool
+        entity = this.available.pop()!;
+      } else {
+        // Create a single new entity if we haven't expanded
+        entity = this.factory();
+      }
     }
 
     entity.reset();

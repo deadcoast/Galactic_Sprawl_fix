@@ -20,6 +20,7 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [currentEventIndex, setCurrentEventIndex] = useState<number | null>(null);
 
   // Find the mission and related events
   const mission = state.missions.history.find((m: { id: string }) => m.id === missionId);
@@ -100,19 +101,72 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
           {/* Map View */}
           <div className="absolute inset-0">
             {/* Render map with ship paths and events */}
-            {currentEvents.map((event, index) => (
-              <div
-                key={index}
-                className="absolute"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  transition: 'all 0.5s ease-out',
-                }}
-              >
-                <div className="h-2 w-2 rounded-full bg-teal-400" />
-              </div>
-            ))}
+            {currentEvents.map((event, index) => {
+              // Calculate position based on event data or use random positioning as fallback
+              const eventPosition = {
+                x:
+                  typeof event.data === 'object' &&
+                  event.data !== null &&
+                  'position' in event.data &&
+                  typeof event.data.position === 'object' &&
+                  event.data.position !== null &&
+                  'x' in event.data.position &&
+                  typeof event.data.position.x === 'number'
+                    ? event.data.position.x
+                    : Math.random() * 100,
+                y:
+                  typeof event.data === 'object' &&
+                  event.data !== null &&
+                  'position' in event.data &&
+                  typeof event.data.position === 'object' &&
+                  event.data.position !== null &&
+                  'y' in event.data.position &&
+                  typeof event.data.position.y === 'number'
+                    ? event.data.position.y
+                    : Math.random() * 100,
+              };
+
+              // Determine event marker appearance based on event type
+              const getEventColor = () => {
+                switch (event.type) {
+                  case 'exploration':
+                    return 'bg-teal-400';
+                  case 'combat':
+                    return 'bg-red-400';
+                  case 'trade':
+                    return 'bg-amber-400';
+                  case 'diplomacy':
+                    return 'bg-purple-400';
+                  default:
+                    return 'bg-teal-400';
+                }
+              };
+
+              // Check if this is the current event being viewed
+              const isCurrentEvent = index === currentEventIndex;
+
+              return (
+                <div
+                  key={index}
+                  className="absolute"
+                  style={{
+                    left: `${eventPosition.x}%`,
+                    top: `${eventPosition.y}%`,
+                    transition: 'all 0.5s ease-out',
+                    zIndex: isCurrentEvent ? 10 : 1, // Bring current event to front
+                  }}
+                  title={`${event.type} event at ${new Date(event.timestamp).toLocaleTimeString()}`}
+                >
+                  <div
+                    className={`${isCurrentEvent ? 'h-4 w-4 ring-2 ring-white' : 'h-2 w-2'} rounded-full ${getEventColor()} hover:h-3 hover:w-3`}
+                    onClick={() => {
+                      // Set current event index to this event when clicked
+                      setCurrentEventIndex(index);
+                    }}
+                  />
+                </div>
+              );
+            })}
           </div>
 
           {/* Event Timeline */}
@@ -121,13 +175,24 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
               {currentEvents.map((event: GameEvent, index: number) => (
                 <div
                   key={index}
-                  className="h-2 w-2 rounded-full bg-teal-400"
+                  className={`h-2 w-2 rounded-full ${
+                    index === currentEventIndex ? 'bg-white' : 'bg-teal-400'
+                  }`}
                   style={{
                     left: `${((event.timestamp - events[0].timestamp) / duration) * 100}%`,
                   }}
+                  onClick={() => setCurrentEventIndex(index)}
                 />
               ))}
             </div>
+
+            {/* Current Event Details */}
+            {currentEventIndex !== null && currentEvents[currentEventIndex] && (
+              <div className="mb-2 text-sm text-white">
+                <span className="font-bold">{currentEvents[currentEventIndex].type}</span> event at{' '}
+                {new Date(currentEvents[currentEventIndex].timestamp).toLocaleTimeString()}
+              </div>
+            )}
           </div>
         </div>
 

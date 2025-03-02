@@ -371,7 +371,6 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     const count = Math.floor(Math.random() * 3 * detectionSkill) + 1;
     const anomalies: Anomaly[] = [];
     const anomalyTypes = ['artifact', 'signal', 'phenomenon'] as const;
-    const _severityLevels = ['high', 'medium', 'low'] as const;
 
     for (let i = 0; i < count; i++) {
       const type = anomalyTypes[Math.floor(Math.random() * anomalyTypes.length)];

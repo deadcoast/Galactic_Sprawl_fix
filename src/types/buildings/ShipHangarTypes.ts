@@ -210,6 +210,7 @@ export interface ShipHangarEvents {
     shipId: string;
     officerId: string;
   };
+  [key: string]: unknown;
 }
 
 /**

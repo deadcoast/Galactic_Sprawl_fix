@@ -1,5 +1,7 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { AlertTriangle, Bell, Settings } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { useThreshold } from '../../../../contexts/ThresholdContext';
 
 interface Alert {
@@ -10,11 +12,11 @@ interface Alert {
 }
 
 export function AutomationMonitor() {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [alerts, setAlerts] = React.useState<Alert[]>([]);
+  const [isExpanded, setIsExpanded] = React.useState(false);
   const { state } = useThreshold();
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Monitor thresholds and generate alerts
     const checkThresholds = () => {
       const newAlerts: Alert[] = [];
@@ -49,62 +51,71 @@ export function AutomationMonitor() {
   const getAlertIcon = (type: Alert['type']) => {
     switch (type) {
       case 'warning':
-        return <AlertTriangle className="text-yellow-500" size={16} />;
+        return React.createElement(AlertTriangle, { className: 'text-yellow-500', size: 16 });
       case 'error':
-        return <AlertTriangle className="text-red-500" size={16} />;
+        return React.createElement(AlertTriangle, { className: 'text-red-500', size: 16 });
       case 'info':
-        return <Bell className="text-blue-500" size={16} />;
+        return React.createElement(Bell, { className: 'text-blue-500', size: 16 });
     }
   };
 
-  return (
-    <div className="rounded-lg bg-gray-800 p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Settings className="text-cyan-500" size={20} />
-          <h3 className="text-lg font-semibold">Automation Monitor</h3>
-        </div>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="text-gray-400 hover:text-white"
-        >
-          {isExpanded ? 'Collapse' : 'Expand'}
-        </button>
-      </div>
-
-      {isExpanded && (
-        <div className="space-y-2">
-          {alerts.length === 0 ? (
-            <p className="text-gray-400">No active alerts</p>
-          ) : (
-            alerts.map(alert => (
-              <div
-                key={alert.id}
-                className={`flex items-center space-x-2 rounded p-2 ${
-                  alert.type === 'warning'
-                    ? 'bg-yellow-900/20'
-                    : alert.type === 'error'
-                      ? 'bg-red-900/20'
-                      : 'bg-blue-900/20'
-                }`}
-              >
-                {getAlertIcon(alert.type)}
-                <span className="flex-1">{alert.message}</span>
-                <span className="text-sm text-gray-400">
-                  {new Date(alert.timestamp).toLocaleTimeString()}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {!isExpanded && alerts.length > 0 && (
-        <div className="flex items-center space-x-2 text-sm text-gray-400">
-          <AlertTriangle size={16} />
-          <span>{alerts.length} active alerts</span>
-        </div>
-      )}
-    </div>
+  return React.createElement(
+    'div',
+    { className: 'rounded-lg bg-gray-800 p-4' },
+    React.createElement(
+      'div',
+      { className: 'mb-4 flex items-center justify-between' },
+      React.createElement(
+        'div',
+        { className: 'flex items-center space-x-2' },
+        React.createElement(Settings, { className: 'text-cyan-500', size: 20 }),
+        React.createElement('h3', { className: 'text-lg font-semibold' }, 'Automation Monitor')
+      ),
+      React.createElement(
+        'button',
+        {
+          onClick: () => setIsExpanded(!isExpanded),
+          className: 'text-gray-400 hover:text-white',
+        },
+        isExpanded ? 'Collapse' : 'Expand'
+      )
+    ),
+    isExpanded &&
+      React.createElement(
+        'div',
+        { className: 'space-y-2' },
+        alerts.length === 0
+          ? React.createElement('p', { className: 'text-gray-400' }, 'No active alerts')
+          : alerts.map(alert =>
+              React.createElement(
+                'div',
+                {
+                  key: alert.id,
+                  className: `flex items-center space-x-2 rounded p-2 ${
+                    alert.type === 'warning'
+                      ? 'bg-yellow-900/20'
+                      : alert.type === 'error'
+                        ? 'bg-red-900/20'
+                        : 'bg-blue-900/20'
+                  }`,
+                },
+                getAlertIcon(alert.type),
+                React.createElement('span', { className: 'flex-1' }, alert.message),
+                React.createElement(
+                  'span',
+                  { className: 'text-sm text-gray-400' },
+                  new Date(alert.timestamp).toLocaleTimeString()
+                )
+              )
+            )
+      ),
+    !isExpanded &&
+      alerts.length > 0 &&
+      React.createElement(
+        'div',
+        { className: 'flex items-center space-x-2 text-sm text-gray-400' },
+        React.createElement(AlertTriangle, { size: 16 }),
+        React.createElement('span', null, alerts.length, ' active alerts')
+      )
   );
 }

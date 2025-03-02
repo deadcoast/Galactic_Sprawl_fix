@@ -4,7 +4,7 @@ import {
   CommonShipDisplayStats as ShipDisplayStats,
   CommonShipStats as ShipStats,
 } from '../../types/ships/CommonShipTypes';
-import { WeaponCategory, WeaponInstance } from '../../types/weapons/WeaponTypes';
+import { WeaponCategory, WeaponInstance, WeaponState } from '../../types/weapons/WeaponTypes';
 
 // Status Conversions
 export function normalizeShipStatus(status: string): BaseStatus {
@@ -125,9 +125,12 @@ export function getDisplayStats(ship: Ship): ShipDisplayStats {
 
 // Combat Utilities
 export function canFireWeapon(weapon: WeaponInstance, shipEnergy: number): boolean {
+  // Check if the weapon has ammo constraints
+  const hasAmmo = (weapon.state as WeaponState & { currentAmmo?: number }).currentAmmo;
+
   return (
     weapon.state.status === 'ready' &&
-    (!weapon.state.currentAmmo || weapon.state.currentAmmo > 0) &&
+    (hasAmmo === undefined || hasAmmo > 0) &&
     shipEnergy >= weapon.config.baseStats.energyCost
   );
 }

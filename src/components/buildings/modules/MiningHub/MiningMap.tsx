@@ -1,5 +1,7 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { AlertTriangle, Database, Truck, ZoomIn, ZoomOut } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import * as React from 'react';
 
 interface Resource {
   id: string;
@@ -50,10 +52,10 @@ export function MiningMap({
   children,
   quality,
 }: MiningMapProps) {
-  const [zoom, setZoom] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const isDragging = useRef(false);
-  const lastPosition = useRef({ x: 0, y: 0 });
+  const [zoom, setZoom] = React.useState(1);
+  const [position, setPosition] = React.useState({ x: 0, y: 0 });
+  const isDragging = React.useRef(false);
+  const lastPosition = React.useRef({ x: 0, y: 0 });
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isDragging.current = true;

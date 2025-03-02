@@ -17,7 +17,7 @@ export const spaceRatsConfig: SpaceRatsConfig = {
     secondaryColor: 'gray',
     sigil: 'rat-skull',
   },
-  defaultBehavior: 'aggressive',
+  defaultBehavior: 'aggressive' as FactionBehaviorType,
   spawnConditions: {
     minThreatLevel: 0, // Always hostile
     maxShipsPerFleet: 8,
@@ -37,7 +37,7 @@ export const lostNovaConfig: LostNovaConfig = {
     secondaryColor: 'indigo',
     sigil: 'broken-star',
   },
-  defaultBehavior: 'stealth',
+  defaultBehavior: 'stealth' as FactionBehaviorType,
   spawnConditions: {
     minThreatLevel: 0.3, // Only appears when somewhat threatened
     maxShipsPerFleet: 6,
@@ -57,7 +57,7 @@ export const equatorHorizonConfig: EquatorHorizonConfig = {
     secondaryColor: 'violet',
     sigil: 'ancient-wheel',
   },
-  defaultBehavior: 'balance',
+  defaultBehavior: 'balance' as FactionBehaviorType,
   spawnConditions: {
     minThreatLevel: 0.7, // Only appears when player is powerful
     maxShipsPerFleet: 10,
@@ -118,16 +118,76 @@ export const shipClassConfigs = {
 
 export const factionIds = ['space-rats', 'lost-nova', 'equator-horizon'] as const;
 
-export const factionBehaviors: FactionBehaviorType[] = [
+export const factionBehaviors = [
   'aggressive',
   'defensive',
   'hit-and-run',
   'stealth',
   'balance',
-] as const;
+] as const satisfies FactionBehaviorType[];
 
 export const factionConfigs: Record<FactionId, FactionConfig> = {
   'space-rats': spaceRatsConfig,
   'lost-nova': lostNovaConfig,
   'equator-horizon': equatorHorizonConfig,
+  player: {
+    id: 'player',
+    name: 'Player Faction',
+    banner: {
+      primaryColor: 'blue',
+      secondaryColor: 'gold',
+      sigil: 'star',
+    },
+    defaultBehavior: 'defensive' as FactionBehaviorType,
+    spawnConditions: {
+      minThreatLevel: 0,
+      maxShipsPerFleet: 10,
+      territoryPreference: ['player-systems', 'core-sectors', 'resource-rich'],
+    },
+  },
+  enemy: {
+    id: 'enemy',
+    name: 'Enemy Faction',
+    banner: {
+      primaryColor: 'red',
+      secondaryColor: 'black',
+      sigil: 'skull',
+    },
+    defaultBehavior: 'aggressive' as FactionBehaviorType,
+    spawnConditions: {
+      minThreatLevel: 0,
+      maxShipsPerFleet: 8,
+      territoryPreference: ['border-systems', 'strategic-points', 'resource-rich'],
+    },
+  },
+  neutral: {
+    id: 'neutral',
+    name: 'Neutral Faction',
+    banner: {
+      primaryColor: 'gray',
+      secondaryColor: 'white',
+      sigil: 'circle',
+    },
+    defaultBehavior: 'defensive' as FactionBehaviorType,
+    spawnConditions: {
+      minThreatLevel: 0.5,
+      maxShipsPerFleet: 5,
+      territoryPreference: ['neutral-zones', 'trade-routes', 'peaceful-sectors'],
+    },
+  },
+  ally: {
+    id: 'ally',
+    name: 'Allied Faction',
+    banner: {
+      primaryColor: 'green',
+      secondaryColor: 'blue',
+      sigil: 'shield',
+    },
+    defaultBehavior: 'defensive' as FactionBehaviorType,
+    spawnConditions: {
+      minThreatLevel: 0.2,
+      maxShipsPerFleet: 7,
+      territoryPreference: ['allied-systems', 'border-defense', 'joint-operations'],
+    },
+  },
 } as const;

@@ -1,4 +1,7 @@
-import { AlertTriangle, Database } from 'lucide-react';
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+import { AlertTriangle, Database, Truck, Zap } from 'lucide-react';
+import * as React from 'react';
 
 interface Resource {
   id: string;
@@ -18,15 +21,22 @@ interface Resource {
 interface ResourceNodeProps {
   resource: Resource;
   isSelected: boolean;
-  onClick: () => void;
   techBonuses: {
     extractionRate: number;
     storageCapacity: number;
     efficiency: number;
   };
+  onClick: () => void;
+  assignedShip: string;
 }
 
-export function ResourceNode({ resource, isSelected, onClick }: ResourceNodeProps) {
+export function ResourceNode({
+  resource,
+  isSelected,
+  techBonuses,
+  onClick,
+  assignedShip,
+}: ResourceNodeProps) {
   const getTypeColor = (type: Resource['type']) => {
     switch (type) {
       case 'mineral':
@@ -42,56 +52,133 @@ export function ResourceNode({ resource, isSelected, onClick }: ResourceNodeProp
 
   const color = getTypeColor(resource.type);
 
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full rounded-lg border-2 p-4 transition-all ${
+  const abundanceColor =
+    resource.abundance > 0.7
+      ? 'bg-emerald-500'
+      : resource.abundance > 0.4
+        ? 'bg-amber-500'
+        : 'bg-red-500';
+
+  const extractionColor =
+    resource.extractionRate > 5
+      ? 'bg-emerald-500'
+      : resource.extractionRate > 2
+        ? 'bg-amber-500'
+        : 'bg-red-500';
+
+  // Calculate the effective extraction rate with tech bonuses
+  const effectiveExtractionRate = resource.extractionRate * (1 + techBonuses.extractionRate);
+
+  // Determine if a ship is assigned to this resource node
+  const hasAssignedShip = assignedShip && assignedShip.length > 0;
+
+  return React.createElement(
+    'button',
+    {
+      className: `w-full rounded-lg border ${
         isSelected
-          ? `bg-${color}-900/20 border-${color}-500`
-          : `border-gray-700 bg-gray-800/50 hover:border-${color}-500/50`
-      }`}
-    >
-      <div className="mb-3 flex items-start justify-between">
-        <div>
-          <h3 className="mb-1 text-sm font-medium text-white">{resource.name}</h3>
-          <div className="flex items-center text-xs text-gray-400">
-            <Database className="mr-1 h-3 w-3" />
-            <span className="capitalize">{resource.type}</span>
-            <span className="mx-2">•</span>
-            <span>{resource.distance}ly</span>
-          </div>
-        </div>
-        {resource.depletion > 0.5 && <AlertTriangle className="h-5 w-5 text-yellow-500" />}
-      </div>
+          ? `border-${color}-500 bg-${color}-900/30`
+          : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+      } p-4 text-left transition-colors`,
+      onClick: onClick,
+    },
+    React.createElement(
+      'div',
+      { className: 'mb-3 flex items-start justify-between' },
+      React.createElement(
+        'div',
+        null,
+        React.createElement(
+          'h3',
+          { className: 'mb-1 text-sm font-medium text-white' },
+          resource.name
+        ),
+        React.createElement(
+          'div',
+          { className: 'flex items-center text-xs text-gray-400' },
+          React.createElement(Database, { className: `mr-1 h-3 w-3 text-${color}-400` }),
+          React.createElement('span', { className: 'capitalize' }, resource.type),
+          React.createElement('span', { className: 'mx-2' }, '•'),
+          React.createElement('span', null, `${resource.distance}ly`)
+        )
+      ),
+      resource.depletion > 0.5 &&
+        React.createElement(AlertTriangle, { className: 'h-5 w-5 text-yellow-500' })
+    ),
 
-      {/* Resource Bars */}
-      <div className="space-y-2">
-        <div>
-          <div className="mb-1 flex justify-between text-xs">
-            <span className="text-gray-400">Abundance</span>
-            <span className="text-gray-300">{Math.round(resource.abundance * 100)}%</span>
-          </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
-            <div
-              className={`h-full bg-${color}-500 rounded-full`}
-              style={{ width: `${resource.abundance * 100}%` }}
-            />
-          </div>
-        </div>
+    React.createElement(
+      'div',
+      { className: 'space-y-2' },
+      React.createElement(
+        'div',
+        null,
+        React.createElement(
+          'div',
+          { className: 'mb-1 flex justify-between text-xs' },
+          React.createElement('span', { className: 'text-gray-400' }, 'Abundance'),
+          React.createElement(
+            'span',
+            { className: 'text-gray-300' },
+            `${Math.round(resource.abundance * 100)}%`
+          )
+        ),
+        React.createElement(
+          'div',
+          { className: 'h-1.5 overflow-hidden rounded-full bg-gray-700' },
+          React.createElement('div', {
+            className: `h-full ${abundanceColor} transition-all`,
+            style: { width: `${resource.abundance * 100}%` },
+          })
+        )
+      ),
+      React.createElement(
+        'div',
+        null,
+        React.createElement(
+          'div',
+          { className: 'mb-1 flex justify-between text-xs' },
+          React.createElement('span', { className: 'text-gray-400' }, 'Extraction'),
+          React.createElement(
+            'span',
+            { className: 'text-gray-300' },
+            `${effectiveExtractionRate.toFixed(1)}/s ${techBonuses.extractionRate > 0 ? `(+${Math.round(techBonuses.extractionRate * 100)}%)` : ''}`
+          )
+        ),
+        React.createElement(
+          'div',
+          { className: 'h-1.5 overflow-hidden rounded-full bg-gray-700' },
+          React.createElement('div', {
+            className: `h-full ${extractionColor} transition-all`,
+            style: { width: `${Math.min((effectiveExtractionRate / 10) * 100, 100)}%` },
+          })
+        )
+      ),
 
-        <div>
-          <div className="mb-1 flex justify-between text-xs">
-            <span className="text-gray-400">Extraction</span>
-            <span className="text-gray-300">{resource.extractionRate}/s</span>
-          </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
-            <div
-              className={`h-full bg-${color}-400 rounded-full`}
-              style={{ width: `${(resource.extractionRate / 30) * 100}%` }}
-            />
-          </div>
-        </div>
-      </div>
-    </button>
+      // Display assigned ship information if a ship is assigned
+      hasAssignedShip &&
+        React.createElement(
+          'div',
+          {
+            className:
+              'mt-2 flex items-center justify-between rounded bg-gray-700/30 px-2 py-1 text-xs',
+          },
+          React.createElement(
+            'div',
+            { className: 'flex items-center' },
+            React.createElement(Truck, { className: 'mr-1 h-3 w-3 text-gray-400' }),
+            React.createElement('span', { className: 'text-gray-300' }, 'Mining Ship Assigned')
+          ),
+          React.createElement(
+            'div',
+            { className: 'flex items-center' },
+            React.createElement(Zap, { className: 'mr-1 h-3 w-3 text-gray-400' }),
+            React.createElement(
+              'span',
+              { className: 'text-gray-300' },
+              `Efficiency: +${Math.round(techBonuses.efficiency * 100)}%`
+            )
+          )
+        )
+    )
   );
 }

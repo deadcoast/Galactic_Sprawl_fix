@@ -95,7 +95,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               rateOfFire: 2,
               energyCost: 40,
               cooldown: 5,
-              effects: [PLASMA_EFFECT],
+              effects: [PLASMA_EFFECT, _QUANTUM_EFFECT],
             },
             visualAsset: 'weapons/plasma/ancient',
             mountRequirements: {
@@ -112,9 +112,51 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               rateOfFire: 2,
               energyCost: 40,
               cooldown: 5,
-              effects: [PLASMA_EFFECT],
+              effects: [PLASMA_EFFECT, _QUANTUM_EFFECT],
             },
-            effects: [PLASMA_EFFECT],
+            effects: [PLASMA_EFFECT, _QUANTUM_EFFECT],
+          },
+        } as WeaponInstance,
+      },
+      {
+        id: 'temporal-1',
+        size: 'medium' as WeaponMountSize,
+        position: 'side' as WeaponMountPosition,
+        rotation: 0,
+        allowedCategories: ['temporalCannon'],
+        currentWeapon: {
+          config: {
+            id: 'temporal-disruptor',
+            name: 'Temporal Disruptor',
+            category: 'temporalCannon',
+            tier: 3,
+            baseStats: {
+              damage: 300,
+              range: 900,
+              accuracy: 0.9,
+              rateOfFire: 1.5,
+              energyCost: 35,
+              cooldown: 4,
+              effects: [_TEMPORAL_EFFECT],
+            },
+            visualAsset: 'weapons/temporal/disruptor',
+            mountRequirements: {
+              size: 'medium' as WeaponMountSize,
+              power: 50,
+            },
+          },
+          state: {
+            status: 'ready' as WeaponStatus,
+            currentStats: {
+              damage: 300,
+              range: 900,
+              accuracy: 0.9,
+              rateOfFire: 1.5,
+              energyCost: 35,
+              cooldown: 4,
+              effects: [_TEMPORAL_EFFECT],
+            },
+            effects: [_TEMPORAL_EFFECT],
           },
         } as WeaponInstance,
       },
@@ -132,6 +174,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
+        id: 'celestial-shield-ability',
         name: 'Celestial Shield',
         description: 'Creates an impenetrable energy barrier',
         cooldown: 60,
@@ -173,7 +216,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               rateOfFire: 1,
               energyCost: 100,
               cooldown: 8,
-              effects: [PLASMA_EFFECT],
+              effects: [PLASMA_EFFECT, _HARMONIC_EFFECT],
             },
             visualAsset: 'weapons/beam/ancient',
             mountRequirements: {
@@ -190,9 +233,9 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
               rateOfFire: 1,
               energyCost: 100,
               cooldown: 8,
-              effects: [PLASMA_EFFECT],
+              effects: [PLASMA_EFFECT, _HARMONIC_EFFECT],
             },
-            effects: [PLASMA_EFFECT],
+            effects: [PLASMA_EFFECT, _HARMONIC_EFFECT],
           },
         } as WeaponInstance,
       },
@@ -210,12 +253,22 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
+        id: 'energy-surge-ability',
         name: 'Energy Surge',
         description: 'Temporarily boosts weapon damage',
         cooldown: 45,
         duration: 15,
         active: false,
         effect: DAMAGE_BOOST_EFFECT,
+      },
+      {
+        id: 'quantum-collapse-ability',
+        name: 'Quantum Collapse',
+        description: 'Unleashes a reality-warping energy burst',
+        cooldown: 90,
+        duration: 5,
+        active: false,
+        effect: _QUANTUM_EFFECT,
       },
     ],
   },
@@ -247,11 +300,11 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
             baseStats: {
               damage: 150,
               range: 800,
-              accuracy: 0.9,
-              rateOfFire: 4,
+              accuracy: 0.85,
+              rateOfFire: 3,
               energyCost: 20,
-              cooldown: 2,
-              effects: [PLASMA_EFFECT],
+              cooldown: 3,
+              effects: [GAUSS_EFFECT, _HARMONIC_EFFECT],
             },
             visualAsset: 'weapons/pulse/ancient',
             mountRequirements: {
@@ -264,13 +317,55 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
             currentStats: {
               damage: 150,
               range: 800,
-              accuracy: 0.9,
-              rateOfFire: 4,
+              accuracy: 0.85,
+              rateOfFire: 3,
               energyCost: 20,
-              cooldown: 2,
-              effects: [PLASMA_EFFECT],
+              cooldown: 3,
+              effects: [GAUSS_EFFECT, _HARMONIC_EFFECT],
             },
-            effects: [PLASMA_EFFECT],
+            effects: [GAUSS_EFFECT, _HARMONIC_EFFECT],
+          },
+        } as WeaponInstance,
+      },
+      {
+        id: 'temporal-2',
+        size: 'small' as WeaponMountSize,
+        position: 'side' as WeaponMountPosition,
+        rotation: 0,
+        allowedCategories: ['temporalCannon'],
+        currentWeapon: {
+          config: {
+            id: 'temporal-pulse',
+            name: 'Temporal Pulse',
+            category: 'temporalCannon',
+            tier: 2,
+            baseStats: {
+              damage: 120,
+              range: 700,
+              accuracy: 0.8,
+              rateOfFire: 2,
+              energyCost: 25,
+              cooldown: 3.5,
+              effects: [_TEMPORAL_EFFECT],
+            },
+            visualAsset: 'weapons/temporal/pulse',
+            mountRequirements: {
+              size: 'small' as WeaponMountSize,
+              power: 30,
+            },
+          },
+          state: {
+            status: 'ready' as WeaponStatus,
+            currentStats: {
+              damage: 120,
+              range: 700,
+              accuracy: 0.8,
+              rateOfFire: 2,
+              energyCost: 25,
+              cooldown: 3.5,
+              effects: [_TEMPORAL_EFFECT],
+            },
+            effects: [_TEMPORAL_EFFECT],
           },
         } as WeaponInstance,
       },
@@ -288,6 +383,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
+        id: 'time-dilation-ability',
         name: 'Time Dilation',
         description: 'Slows nearby enemies',
         cooldown: 40,
@@ -366,6 +462,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
+        id: 'temporal-shield-ability',
         name: 'Temporal Shield',
         description: 'Creates a shield that absorbs damage',
         cooldown: 30,
@@ -444,6 +541,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
+        id: 'judgement-beam-ability',
         name: 'Judgement Beam',
         description: 'Fires a powerful beam of energy',
         cooldown: 50,
@@ -522,6 +620,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
+        id: 'first-contact-ability',
         name: 'First Contact',
         description: 'Creates a massive protective shield',
         cooldown: 55,
@@ -600,6 +699,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
+        id: 'threat-neutralization-ability',
         name: 'Threat Neutralization',
         description: 'Unleashes a devastating attack',
         cooldown: 42,
@@ -678,6 +778,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
+        id: 'wrath-of-balance-ability',
         name: 'Wrath of Balance',
         description: 'Unleashes devastating area damage',
         cooldown: 60,
@@ -756,6 +857,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
+        id: 'perfect-stealth-ability',
         name: 'Perfect Stealth',
         description: 'Activates perfect stealth technology',
         cooldown: 38,
@@ -834,6 +936,7 @@ export const EQUATOR_HORIZON_SHIPS: Record<EquatorHorizonShipClass, FactionShipS
     },
     abilities: [
       {
+        id: 'order-from-chaos-ability',
         name: 'Order from Chaos',
         description: 'Creates a powerful shield field',
         cooldown: 48,

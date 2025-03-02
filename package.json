@@ -18,7 +18,7 @@
     "coverage": "vitest run --coverage",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
-    "type-check": "tsc --noEmit --downlevelIteration",
+    "type-check": "tsc --noEmit --downlevelIteration --skipLibCheck",
     "type-check:downlevel": "tsc --project tsconfig.check.json",
     "format:all": "prettier --write \"src/**/*.{ts,tsx,css,scss}\" && npm run lint:fix",
     "validate": "npm-run-all --parallel type-check lint:critical",

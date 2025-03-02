@@ -38,6 +38,7 @@ interface RelationshipEvents {
     type: 'attack' | 'territory' | 'trade';
     severity: number;
   };
+  [key: string]: unknown;
 }
 
 export class FactionRelationshipManager extends EventEmitter<RelationshipEvents> {
@@ -55,10 +56,14 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
 
     factionIds.forEach(factionId => {
       factionIds.forEach(targetId => {
-        if (factionId !== targetId) {
-          const key = this.getRelationshipKey(factionId as FactionId, targetId as FactionId);
+        if (
+          factionId !== targetId &&
+          this.isValidFactionId(factionId) &&
+          this.isValidFactionId(targetId)
+        ) {
+          const key = this.getRelationshipKey(factionId, targetId);
           this.relationships.set(key, {
-            value: this.getInitialRelationshipValue(factionId as FactionId, targetId as FactionId),
+            value: this.getInitialRelationshipValue(factionId, targetId),
             lastUpdate: Date.now(),
             tradeCount: 0,
             conflictCount: 0,
@@ -69,29 +74,84 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
     });
   }
 
+  /**
+   * Type guard to validate if a string is a valid FactionId
+   */
+  private isValidFactionId(id: string): id is FactionId {
+    return id in factionConfigs;
+  }
+
+  /**
+   * Type guard to validate resource transfer event data
+   */
+  private isResourceTransferEventData(data: unknown): data is {
+    sourceFaction: FactionId;
+    targetFaction: FactionId;
+    resourceType: string;
+    amount: number;
+  } {
+    if (!data || typeof data !== 'object') {
+      return false;
+    }
+
+    const obj = data as Record<string, unknown>;
+
+    return (
+      'sourceFaction' in obj &&
+      'targetFaction' in obj &&
+      'resourceType' in obj &&
+      'amount' in obj &&
+      this.isValidFactionId(String(obj.sourceFaction)) &&
+      this.isValidFactionId(String(obj.targetFaction)) &&
+      typeof obj.resourceType === 'string' &&
+      (typeof obj.amount === 'number' || typeof obj.amount === 'string')
+    );
+  }
+
+  /**
+   * Type guard to validate combat event data
+   */
+  private isCombatEventData(data: unknown): data is {
+    type: 'combat';
+    attackerFaction: FactionId;
+    defenderFaction: FactionId;
+    damage?: number;
+  } {
+    if (!data || typeof data !== 'object') {
+      return false;
+    }
+
+    const obj = data as Record<string, unknown>;
+
+    return (
+      'type' in obj &&
+      obj.type === 'combat' &&
+      'attackerFaction' in obj &&
+      'defenderFaction' in obj &&
+      this.isValidFactionId(String(obj.attackerFaction)) &&
+      this.isValidFactionId(String(obj.defenderFaction))
+    );
+  }
+
   private setupEventListeners(): void {
     moduleEventBus.subscribe('RESOURCE_TRANSFERRED' as ModuleEventType, event => {
-      if (event.data.sourceFaction && event.data.targetFaction) {
+      if (this.isResourceTransferEventData(event.data)) {
         this.recordTrade(
-          event.data.sourceFaction as FactionId,
-          event.data.targetFaction as FactionId,
-          event.data.resourceType,
-          event.data.amount
+          event.data.sourceFaction,
+          event.data.targetFaction,
+          String(event.data.resourceType),
+          Number(event.data.amount)
         );
       }
     });
 
     moduleEventBus.subscribe('STATUS_CHANGED' as ModuleEventType, event => {
-      if (
-        event.data.type === 'combat' &&
-        event.data.attackerFaction &&
-        event.data.defenderFaction
-      ) {
+      if (this.isCombatEventData(event.data)) {
         this.recordConflict(
-          event.data.attackerFaction as FactionId,
-          event.data.defenderFaction as FactionId,
+          event.data.attackerFaction,
+          event.data.defenderFaction,
           'attack',
-          event.data.damage || 1
+          event.data.damage !== undefined ? Number(event.data.damage) : 1
         );
       }
     });
@@ -133,6 +193,41 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
     return this.relationships.get(key)?.treatyStatus || 'none';
   }
 
+  /**
+   * Helper method to emit module events with proper typing
+   * @param factionId - The ID of the faction related to the event
+   * @param eventType - The type of event to emit (must be a valid ModuleEventType)
+   * @param data - Additional data to include with the event
+   */
+  private emitModuleEvent(
+    factionId: FactionId,
+    eventType: string,
+    data: Record<string, unknown>
+  ): void {
+    // Validate that eventType is a valid ModuleEventType
+    // This is a runtime check since we can't enforce this at compile time
+    const validEventTypes = [
+      'STATUS_CHANGED',
+      'RELATIONSHIP_UPDATED',
+      'TREATY_ESTABLISHED',
+      'TREATY_BROKEN',
+      'DIPLOMATIC_ACTION',
+    ];
+
+    // Use the provided eventType or default to STATUS_CHANGED if invalid
+    const finalEventType = validEventTypes.includes(eventType) ? eventType : 'STATUS_CHANGED';
+
+    moduleEventBus.emit({
+      type: finalEventType as ModuleEventType,
+      moduleId: `faction-${factionId}`,
+      moduleType: 'trading' as ModuleType,
+      timestamp: Date.now(),
+      data: {
+        ...data,
+      },
+    });
+  }
+
   public modifyRelationship(
     factionId: FactionId,
     targetId: FactionId,
@@ -159,18 +254,12 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
       this.updateTreatyStatus(factionId, targetId);
 
       // Emit module event for status change
-      moduleEventBus.emit({
-        type: 'STATUS_CHANGED' as ModuleEventType,
-        moduleId: `faction-${factionId}`,
-        moduleType: 'trading' as ModuleType,
-        timestamp: Date.now(),
-        data: {
-          type: 'relationship',
-          targetFaction: targetId,
-          oldValue,
-          newValue: state.value,
-          reason,
-        },
+      this.emitModuleEvent(factionId, 'relationship', {
+        type: 'relationship',
+        targetFaction: targetId,
+        oldValue,
+        newValue: state.value,
+        reason,
       });
     }
   }
@@ -205,17 +294,11 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
       });
 
       // Emit module event for treaty change
-      moduleEventBus.emit({
-        type: 'STATUS_CHANGED' as ModuleEventType,
-        moduleId: `faction-${factionId}`,
-        moduleType: 'trading' as ModuleType,
-        timestamp: Date.now(),
-        data: {
-          type: 'treaty',
-          targetFaction: targetId,
-          oldStatus,
-          newStatus,
-        },
+      this.emitModuleEvent(factionId, 'treaty', {
+        type: 'treaty',
+        targetFaction: targetId,
+        oldStatus,
+        newStatus,
       });
     }
   }
@@ -382,18 +465,12 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
       this.modifyRelationship(factionId, targetId, relationshipChange, `diplomatic_${action}`);
 
       // Emit module event for diplomatic action
-      moduleEventBus.emit({
-        type: 'STATUS_CHANGED' as ModuleEventType,
-        moduleId: `faction-${factionId}`,
-        moduleType: 'trading' as ModuleType,
-        timestamp: Date.now(),
-        data: {
-          type: 'diplomatic_action',
-          action,
-          targetFaction: targetId,
-          success: true,
-          resources,
-        },
+      this.emitModuleEvent(factionId, 'diplomatic_action', {
+        type: 'diplomatic_action',
+        action,
+        targetFaction: targetId,
+        success: true,
+        resources,
       });
     }
 

@@ -1,7 +1,7 @@
 import { AlertTriangle, Eye, EyeOff, Radar } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { FactionBehaviorType } from '../../../../types/ships/FactionTypes';
+import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
 import { ShipStatus } from '../../../../types/ships/ShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { SpaceRatShip } from '../../common/SpaceRatShip';
@@ -23,11 +23,11 @@ interface RogueNebulaProps {
   rotation: number;
 }
 
-// Helper function to create a FactionBehaviorType from string
-const createFactionBehavior = (behavior: string): FactionBehaviorType => {
+// Helper function to create a FactionBehaviorConfig from string
+const createFactionBehavior = (behavior: string): FactionBehaviorConfig => {
   return {
-    formation: 'standard',
-    behavior: behavior,
+    formation: 'chaotic',
+    behavior: behavior as FactionBehaviorType,
   };
 };
 

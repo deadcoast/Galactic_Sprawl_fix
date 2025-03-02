@@ -37,6 +37,7 @@ interface Ship {
   maxShield: number;
   weapons: HangarWeaponSystem[];
   abilities: Array<{
+    id: string;
     name: string;
     description: string;
     cooldown: number;
@@ -47,7 +48,7 @@ interface Ship {
   alerts?: string[];
 }
 
-// Mock data for demonstration
+// Mock data for development and testing purposes
 const _mockShips: Ship[] = [
   {
     id: 'spitflare-1',
@@ -72,6 +73,7 @@ const _mockShips: Ship[] = [
     ],
     abilities: [
       {
+        id: 'mg-1-ability',
         name: 'Machine Gun',
         description: 'Standard weapon system',
         cooldown: 5,
@@ -112,6 +114,7 @@ const _mockShips: Ship[] = [
     ],
     abilities: [
       {
+        id: 'rail-1-ability',
         name: 'Rail Gun',
         description: 'Standard weapon system',
         cooldown: 10,
@@ -147,6 +150,17 @@ export function ShipHangar({ manager }: ShipHangarProps) {
   const scaling = useScalingSystem();
   const quality =
     scaling.performance.fps > 45 ? 'high' : scaling.performance.fps > 30 ? 'medium' : 'low';
+
+  // Use mock ships for development and testing when no ships are available
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && ships.length === 0) {
+      console.log('Using mock ships for development:', _mockShips);
+      // Only use mock ships if no real ships are available from the manager
+      if (manager.getDockedShips().length === 0) {
+        setShips(_mockShips);
+      }
+    }
+  }, [ships.length, manager]);
 
   useEffect(() => {
     // Initial load
@@ -219,6 +233,7 @@ export function ShipHangar({ manager }: ShipHangarProps) {
       maxShield: commonShip.stats.defense.shield,
       weapons,
       abilities: weapons.map(w => ({
+        id: `${commonShip.id}-${w.name.toLowerCase().replace(/\s+/g, '-')}-ability`,
         name: w.name,
         description: 'Standard weapon system',
         cooldown: w.cooldown,
@@ -290,6 +305,7 @@ export function ShipHangar({ manager }: ShipHangarProps) {
             },
           },
           abilities: ship.weapons.map(w => ({
+            id: `${ship.id}-${w.name.toLowerCase().replace(/\s+/g, '-')}-ability`,
             name: w.name,
             description: 'Standard weapon system',
             cooldown: w.cooldown,

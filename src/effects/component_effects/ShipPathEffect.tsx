@@ -1,3 +1,6 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+import * as React from 'react';
 import { Position } from '../../types/core/GameTypes';
 
 interface ShipPathEffectProps {
@@ -42,52 +45,58 @@ export function ShipPathEffect({ source, target, progress, quality, type }: Ship
 
   const color = getPathColor();
 
-  return (
-    <g>
-      {/* Base Path */}
-      <path
-        d={path}
-        stroke={`rgb(var(--color-${color}-500) / 0.3)`}
-        strokeWidth={2}
-        fill="none"
-        filter={`blur(${glowIntensity}px)`}
-      />
+  return React.createElement(
+    'g',
+    null,
+    /* Base Path */
+    React.createElement('path', {
+      d: path,
+      stroke: `rgb(var(--color-${color}-500) / 0.3)`,
+      strokeWidth: 2,
+      fill: 'none',
+      filter: `blur(${glowIntensity}px)`,
+    }),
 
-      {/* Progress Path */}
-      <path
-        d={path}
-        stroke={`rgb(var(--color-${color}-400))`}
-        strokeWidth={2}
-        strokeDasharray={`${progress * distance} ${distance}`}
-        fill="none"
-        className="transition-all duration-300"
-      />
+    /* Progress Path */
+    React.createElement('path', {
+      d: path,
+      stroke: `rgb(var(--color-${color}-400))`,
+      strokeWidth: 2,
+      strokeDasharray: `${progress * distance} ${distance}`,
+      fill: 'none',
+      className: 'transition-all duration-300',
+    }),
 
-      {/* Particles */}
-      {Array.from({ length: particleCount }).map((_, i) => {
-        const particleProgress = (i / particleCount + Date.now() / 2000) % 1;
-        const x = source.x + (target.x - source.x) * particleProgress;
-        const y = source.y + (target.y - source.y) * particleProgress;
+    /* Particles */
+    Array.from({ length: particleCount }).map((_, i) => {
+      const particleProgress = (i / particleCount + Date.now() / 2000) % 1;
+      const x = source.x + (target.x - source.x) * particleProgress;
+      const y = source.y + (target.y - source.y) * particleProgress;
 
-        return (
-          <g key={i} transform={`translate(${x}, ${y})`}>
-            <circle
-              r={2}
-              fill={`rgb(var(--color-${color}-400))`}
-              className="animate-pulse"
-              style={{
-                animationDuration: '1s',
-                animationDelay: `${i * 0.1}s`,
-              }}
-            />
-          </g>
-        );
-      })}
+      return React.createElement(
+        'g',
+        { key: i, transform: `translate(${x}, ${y})` },
+        React.createElement('circle', {
+          r: 2,
+          fill: `rgb(var(--color-${color}-400))`,
+          className: 'animate-pulse',
+          style: {
+            animationDuration: '1s',
+            animationDelay: `${i * 0.1}s`,
+          },
+        })
+      );
+    }),
 
-      {/* Direction Indicator */}
-      <g transform={`translate(${midX}, ${midY - curvature})`}>
-        <circle r={4} fill={`rgb(var(--color-${color}-500) / 0.2)`} className="animate-pulse" />
-      </g>
-    </g>
+    /* Direction Indicator */
+    React.createElement(
+      'g',
+      { transform: `translate(${midX}, ${midY - curvature})` },
+      React.createElement('circle', {
+        r: 4,
+        fill: `rgb(var(--color-${color}-500) / 0.2)`,
+        className: 'animate-pulse',
+      })
+    )
   );
 }

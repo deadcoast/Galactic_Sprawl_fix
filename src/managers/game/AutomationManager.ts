@@ -2,7 +2,10 @@ import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { moduleManager } from '../module/ModuleManager';
-import { resourceManager } from './ResourceManager';
+import { ResourceManager } from './ResourceManager';
+
+// Create an instance of ResourceManager
+const resourceManager = new ResourceManager();
 
 /**
  * Automation condition types

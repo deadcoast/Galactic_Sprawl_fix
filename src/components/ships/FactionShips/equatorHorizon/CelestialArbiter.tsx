@@ -74,7 +74,6 @@ export function CelestialArbiter({
         maxShield={maxShield}
         weapons={weapons}
         stats={stats}
-        tactics="aggressive"
         position={position}
         rotation={rotation}
         onEngage={onEngage}

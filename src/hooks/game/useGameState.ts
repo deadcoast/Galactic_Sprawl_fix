@@ -9,6 +9,76 @@ interface Resource {
   amount: number;
 }
 
+// Define interfaces for event data types
+interface MissionCompletedEventData {
+  type: 'discovery' | 'anomaly' | 'completion';
+  description: string;
+  sector: string;
+  importance: 'low' | 'medium' | 'high';
+  xpGained?: number;
+  resourcesFound?: Array<{ type: string; amount: number }>;
+  anomalyDetails?: {
+    type: string;
+    severity: string;
+    investigated: boolean;
+  };
+}
+
+interface SectorUpdateEventData {
+  heatMapValue: number;
+  task: {
+    target: {
+      id: string;
+    };
+  };
+  resourcePotential: number;
+  habitabilityScore: number;
+}
+
+// Type guard functions
+function isMissionCompletedEventData(data: unknown): data is MissionCompletedEventData {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+
+  const missionData = data as Record<string, unknown>;
+
+  return (
+    (missionData.type === 'discovery' ||
+      missionData.type === 'anomaly' ||
+      missionData.type === 'completion') &&
+    typeof missionData.description === 'string' &&
+    typeof missionData.sector === 'string' &&
+    (missionData.importance === 'low' ||
+      missionData.importance === 'medium' ||
+      missionData.importance === 'high')
+  );
+}
+
+function isSectorUpdateEventData(data: unknown): data is SectorUpdateEventData {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+
+  const sectorData = data as Record<string, unknown>;
+
+  // Use explicit boolean checks for each condition
+  const hasHeatMapValue = typeof sectorData.heatMapValue === 'number';
+  const hasTask = sectorData.task !== undefined && sectorData.task !== null;
+  const isTaskObject = hasTask && typeof sectorData.task === 'object';
+  const hasTarget = isTaskObject && 'target' in (sectorData.task as object);
+  const isTargetObject =
+    hasTarget && typeof (sectorData.task as Record<string, unknown>).target === 'object';
+  const hasId =
+    isTargetObject && 'id' in ((sectorData.task as Record<string, unknown>).target as object);
+  const isIdString =
+    hasId &&
+    typeof ((sectorData.task as Record<string, unknown>).target as Record<string, unknown>).id ===
+      'string';
+
+  return hasHeatMapValue && isTaskObject && hasTarget && isTargetObject && hasId && isIdString;
+}
+
 export function useGameState() {
   const context = useContext(GameContext);
   if (!context) {
@@ -36,7 +106,12 @@ export function useGameState() {
 
     // Listen for mission events
     const unsubscribeMissionEvents = moduleEventBus.subscribe('MISSION_COMPLETED', event => {
-      if (event.moduleType === 'radar') {
+      if (event.moduleType === 'radar' && event.data) {
+        if (!isMissionCompletedEventData(event.data)) {
+          console.warn('Invalid mission data format:', event.data);
+          return;
+        }
+
         const missionData = event.data;
         dispatch({
           type: 'ADD_MISSION',
@@ -80,16 +155,22 @@ export function useGameState() {
     const unsubscribeSectorUpdates = moduleEventBus.subscribe(
       'AUTOMATION_CYCLE_COMPLETE',
       event => {
-        if (event.moduleType === 'radar' && event.data.heatMapValue !== undefined) {
+        if (event.moduleType === 'radar' && event.data) {
+          if (!isSectorUpdateEventData(event.data)) {
+            console.warn('Invalid sector update data format:', event.data);
+            return;
+          }
+
+          const sectorData = event.data;
           dispatch({
             type: 'UPDATE_SECTOR',
-            sectorId: event.data.task.target.id,
+            sectorId: sectorData.task.target.id,
             data: {
               status: 'mapped' as const,
-              resourcePotential: event.data.resourcePotential || 0,
-              habitabilityScore: event.data.habitabilityScore || 0,
+              resourcePotential: sectorData.resourcePotential || 0,
+              habitabilityScore: sectorData.habitabilityScore || 0,
               lastScanned: event.timestamp,
-              heatMapValue: event.data.heatMapValue,
+              heatMapValue: sectorData.heatMapValue,
             },
           });
         }

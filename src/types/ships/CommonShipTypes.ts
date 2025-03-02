@@ -59,6 +59,7 @@ export interface CommonWeaponStats {
 
 // Common Ship Ability Interface
 export interface CommonShipAbility {
+  id: string;
   name: string;
   description: string;
   cooldown: number;

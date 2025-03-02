@@ -1,5 +1,7 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import { ChevronRight, Database, Pickaxe, Settings, Star } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 
 interface Resource {
   id: string;
@@ -42,16 +44,16 @@ interface MiningControlsProps {
 }
 
 export function MiningControls({ resource, techBonuses, onExperienceGained }: MiningControlsProps) {
-  const [autoMine, setAutoMine] = useState(false);
-  const [miningProgress, setMiningProgress] = useState(0);
-  const [totalResourcesMined, setTotalResourcesMined] = useState(0);
+  const [autoMine, setAutoMine] = React.useState(false);
+  const [miningProgress, setMiningProgress] = React.useState(0);
+  const [totalResourcesMined, setTotalResourcesMined] = React.useState(0);
 
   // Calculate mining efficiency with tech bonuses
   const effectiveExtractionRate = resource.extractionRate * techBonuses.extractionRate;
   const effectiveEfficiency = Math.min(1, techBonuses.efficiency);
 
   // Calculate experience gains
-  useEffect(() => {
+  React.useEffect(() => {
     if (!autoMine) {
       return;
     }

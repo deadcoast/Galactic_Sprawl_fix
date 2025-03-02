@@ -1,4 +1,9 @@
-import { AutomationRule } from '../../managers/game/AutomationManager';
+import { ModuleEventType } from '../../lib/modules/ModuleEvents';
+import {
+  AutomationRule,
+  EmitEventValue,
+  EventConditionValue,
+} from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 
 /**
@@ -19,12 +24,16 @@ export const miningRules: AutomationRule[] = [
       {
         type: 'RESOURCE_ABOVE',
         target: 'energy',
-        value: 150,
+        value: {
+          amount: 150,
+        },
       },
       {
         type: 'STATUS_EQUALS',
         target: 'mineral-processing',
-        value: 'ready_for_mining',
+        value: {
+          status: 'ready_for_mining',
+        },
       },
     ],
     actions: [
@@ -34,6 +43,7 @@ export const miningRules: AutomationRule[] = [
         value: {
           moduleId: 'mineral-processing',
           moduleType: 'mineral' as ModuleType,
+          eventType: 'DISPATCH_MINING_SHIP' as ModuleEventType,
           data: {
             type: 'mining',
             priority: 1,
@@ -58,7 +68,9 @@ export const miningRules: AutomationRule[] = [
       {
         type: 'RESOURCE_BELOW',
         target: 'minerals',
-        value: 1000, // Minimum threshold
+        value: {
+          amount: 1000, // Minimum threshold
+        },
       },
     ],
     actions: [
@@ -68,6 +80,7 @@ export const miningRules: AutomationRule[] = [
         value: {
           moduleId: 'mineral-processing',
           moduleType: 'mineral' as ModuleType,
+          eventType: 'INCREASE_MINING_PRIORITY' as ModuleEventType,
           data: {
             resourceType: 'minerals',
             priority: 2,
@@ -93,37 +106,18 @@ export const miningRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'SHIP_DAMAGE_REPORTED',
         value: {
-          timeWindow: 30000, // Last 30 seconds
+          eventType: 'SHIP_DAMAGE_REPORTED',
         },
-      },
-      {
-        type: 'RESOURCE_ABOVE',
-        target: 'minerals',
-        value: 200,
-      },
-      {
-        type: 'RESOURCE_ABOVE',
-        target: 'energy',
-        value: 150,
       },
     ],
     actions: [
-      {
-        type: 'CONSUME_RESOURCES',
-        target: 'minerals',
-        value: 200,
-      },
-      {
-        type: 'CONSUME_RESOURCES',
-        target: 'energy',
-        value: 150,
-      },
       {
         type: 'EMIT_EVENT',
         target: 'REPAIR_MINING_SHIP',
         value: {
           moduleId: 'mineral-processing',
           moduleType: 'mineral' as ModuleType,
+          eventType: 'REPAIR_MINING_SHIP' as ModuleEventType,
           data: {
             type: 'repair',
             priority: 3,
@@ -131,7 +125,7 @@ export const miningRules: AutomationRule[] = [
         },
       },
     ],
-    interval: 30000, // Check every 30 seconds
+    interval: 15000, // Check every 15 seconds
   },
 
   // Resource Storage Optimization
@@ -158,22 +152,23 @@ export const miningRules: AutomationRule[] = [
         value: {
           moduleId: 'mineral-processing',
           moduleType: 'mineral' as ModuleType,
+          eventType: 'OPTIMIZE_STORAGE' as ModuleEventType,
           data: {
             type: 'storage',
             priority: 2,
             action: 'transfer',
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 15000, // Check every 15 seconds
   },
 
-  // Efficiency Monitoring
+  // Mining Route Optimization
   {
-    id: 'efficiency-monitor',
+    id: 'mining-route-optimization',
     moduleId: 'mineral-processing',
-    name: 'Mining Efficiency Monitor',
+    name: 'Mining Route Optimization',
     enabled: true,
     conditions: [
       {
@@ -184,8 +179,11 @@ export const miningRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'LOW_EFFICIENCY_DETECTED',
         value: {
-          timeWindow: 60000, // Last minute
-        },
+          eventType: 'LOW_EFFICIENCY_DETECTED',
+          eventData: {
+            timeElapsed: 60000, // Last minute
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -195,11 +193,12 @@ export const miningRules: AutomationRule[] = [
         value: {
           moduleId: 'mineral-processing',
           moduleType: 'mineral' as ModuleType,
+          eventType: 'OPTIMIZE_MINING_ROUTES' as ModuleEventType,
           data: {
             type: 'optimization',
             priority: 1,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 60000, // Check every minute
@@ -220,8 +219,11 @@ export const miningRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'RESOURCE_DEMAND_CHANGED',
         value: {
-          timeWindow: 30000,
-        },
+          eventType: 'RESOURCE_DEMAND_CHANGED',
+          eventData: {
+            timeElapsed: 30000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -231,11 +233,12 @@ export const miningRules: AutomationRule[] = [
         value: {
           moduleId: 'mineral-processing',
           moduleType: 'mineral' as ModuleType,
+          eventType: 'UPDATE_MINING_PRIORITIES' as ModuleEventType,
           data: {
             type: 'prioritization',
             priority: 1,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 30000,
@@ -256,8 +259,11 @@ export const miningRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'MINING_MILESTONE_REACHED',
         value: {
-          timeWindow: 300000, // Last 5 minutes
-        },
+          eventType: 'MINING_MILESTONE_REACHED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
       },
       {
         type: 'RESOURCE_ABOVE',
@@ -287,11 +293,12 @@ export const miningRules: AutomationRule[] = [
         value: {
           moduleId: 'mineral-processing',
           moduleType: 'mineral' as ModuleType,
+          eventType: 'UPGRADE_MINING_SHIP' as ModuleEventType,
           data: {
             type: 'upgrade',
             priority: 2,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 300000, // Check every 5 minutes
@@ -312,8 +319,11 @@ export const miningRules: AutomationRule[] = [
         type: 'EVENT_OCCURRED',
         target: 'RESOURCE_NODE_DEPLETING',
         value: {
-          timeWindow: 60000,
-        },
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
       },
     ],
     actions: [
@@ -323,11 +333,12 @@ export const miningRules: AutomationRule[] = [
         value: {
           moduleId: 'mineral-processing',
           moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
           data: {
             type: 'exploration',
             priority: 1,
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 60000,
@@ -362,13 +373,129 @@ export const miningRules: AutomationRule[] = [
         value: {
           moduleId: 'mineral-processing',
           moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
           data: {
             type: 'emergency',
             priority: 5, // Highest priority
           },
-        },
+        } as EmitEventValue,
       },
     ],
     interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
   },
 ];

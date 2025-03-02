@@ -54,6 +54,7 @@ interface AsteroidFieldEvents {
   resourceExtracted: { nodeId: string; type: ResourceType; amount: number; remaining: number };
   shipHazardCollision: { shipId: string; hazardId: string; effect: Hazard['effect'] };
   shipPositionUpdated: { shipId: string; position: Position; inField: boolean };
+  [key: string]: unknown;
 }
 
 export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
@@ -541,7 +542,7 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     };
 
     // Check if ship is in any asteroid field
-    for (const field of this.state.fields.values()) {
+    for (const field of Array.from(this.state.fields.values())) {
       if (field.status === 'depleted') {
         continue;
       }

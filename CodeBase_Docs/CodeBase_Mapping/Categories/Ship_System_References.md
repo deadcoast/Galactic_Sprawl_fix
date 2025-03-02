@@ -353,3 +353,55 @@ SHIP SYSTEM REFERENCES
      - Event Handling: src/lib/modules/ModuleEvents.ts
        Purpose: Handle state machine events
        Dependencies: EventEmitter
+
+### Faction Behavior System
+
+- **FactionBehaviorType and FactionBehaviorConfig**: src/types/ships/FactionTypes.ts
+
+  - Purpose: Define faction behavior types and configuration
+  - Features:
+    - FactionBehaviorType as string literal union type
+    - FactionBehaviorConfig as object interface with behavior property
+    - Clear separation of concerns between types
+
+- **FactionShipStats Component**: src/components/ships/common/FactionShipStats.tsx
+
+  - Purpose: Display ship statistics with faction-specific styling
+  - Features:
+    - Helper function to get behavior string from FactionBehaviorConfig
+    - Type-safe behavior string formatting
+    - Conditional styling based on behavior type
+
+- **EquatorHorizonShip Component**: src/components/ships/common/EquatorHorizonShip.tsx
+
+  - Purpose: Equator Horizon faction ship implementation
+  - Features:
+    - Uses FactionBehaviorConfig for tactics property
+    - Properly typed behavior values
+
+- **LostNovaShip Component**: src/components/ships/common/LostNovaShip.tsx
+
+  - Purpose: Lost Nova faction ship implementation
+  - Features:
+    - Helper function to create FactionBehaviorConfig from string
+    - Flexible tactics property accepting string or FactionBehaviorConfig
+    - Type-safe behavior conversion
+
+- **SpaceRatShip Component**: src/components/ships/common/SpaceRatShip.tsx
+
+  - Purpose: Space Rats faction ship implementation
+  - Features:
+    - Helper function to create FactionBehaviorConfig from string
+    - Flexible tactics property accepting string or FactionBehaviorConfig
+    - Type-safe behavior conversion
+
+- **Faction Ship Files**:
+  - src/components/ships/FactionShips/lostNova/DarkMatterReaper.tsx
+  - src/components/ships/FactionShips/lostNova/EclipseScythe.tsx
+  - src/components/ships/FactionShips/lostNova/NullHunter.tsx
+  - src/components/ships/FactionShips/spaceRats/RogueNebula.tsx
+  - Purpose: Specific faction ship implementations
+  - Features:
+    - Helper functions to create FactionBehaviorConfig from string
+    - Type-safe behavior conversion
+    - Consistent behavior configuration
