@@ -224,7 +224,7 @@ export class ResourceFlowManager {
 
     // Log converter information for debugging
     if (_converters.length > 0) {
-      console.log(
+      console.warn(
         `[ResourceFlowManager] Found ${_converters.length} active converters in the network`
       );
 
@@ -232,7 +232,7 @@ export class ResourceFlowManager {
       for (const converter of _converters) {
         // Apply converter efficiency to resource production
         const efficiency = converter.efficiency || 1.0;
-        console.log(
+        console.warn(
           `[ResourceFlowManager] Converter ${converter.id} operating at ${efficiency * 100}% efficiency`
         );
 
@@ -247,7 +247,7 @@ export class ResourceFlowManager {
           const originalRate = connection.currentRate;
           connection.currentRate = originalRate * efficiency;
 
-          console.log(
+          console.warn(
             `[ResourceFlowManager] Adjusted flow rate for ${connection.id} from ${originalRate} to ${connection.currentRate} based on converter efficiency`
           );
 
@@ -490,7 +490,9 @@ export class ResourceFlowManager {
 
     // Implement interval-based flow control
     if (_interval !== 1000) {
-      console.log(`[ResourceFlowManager] Using custom interval of ${_interval}ms for flow control`);
+      console.warn(
+        `[ResourceFlowManager] Using custom interval of ${_interval}ms for flow control`
+      );
 
       // Create a scheduled transfer based on the interval
       const scheduleTransfer = () => {
@@ -518,7 +520,7 @@ export class ResourceFlowManager {
           // Add to history
           this.addToTransferHistory(transfer);
 
-          console.log(
+          console.warn(
             `[ResourceFlowManager] Scheduled transfer of ${batchSize.toFixed(2)} ${resourceType} from ${flow.source} to ${flow.target}`
           );
 
