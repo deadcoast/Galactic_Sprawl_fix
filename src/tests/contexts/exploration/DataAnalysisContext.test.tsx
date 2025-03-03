@@ -14,7 +14,7 @@ import { Dataset, AnalysisConfig, AnalysisResult } from '../../../types/explorat
 // Test component that uses the DataAnalysisContext
 const TestComponent: React.FC<{
   onCreateDataset?: (datasetId: string) => void;
-  onUpdateDataset?: (id: string, updates: any) => void;
+  onUpdateDataset?: (id: string, updates: Partial<Omit<Dataset, 'id' | 'createdAt' | 'updatedAt'>>) => void;
   onDeleteDataset?: (id: string) => void;
   onCreateAnalysisConfig?: (configId: string) => void;
   onRunAnalysis?: (resultId: string) => void;
