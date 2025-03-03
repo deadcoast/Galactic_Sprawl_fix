@@ -519,4 +519,148 @@ export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
   ): void {
     this.eventEmitter.off(event, callback);
   }
+
+  /**
+   * Register an environmental hazard for threat assessment
+   */
+  public registerEnvironmentalHazard(hazard: EnvironmentalHazard): void {
+    this.environmentalHazards.set(hazard.id, hazard);
+
+    // Register the hazard with all known units
+    for (const unitId of this.knownCombatUnits.keys()) {
+      this.assessHazardThreat(unitId, hazard);
+    }
+  }
+
+  /**
+   * Unregister an environmental hazard
+   */
+  public unregisterEnvironmentalHazard(hazardId: string): void {
+    this.environmentalHazards.delete(hazardId);
+
+    // Remove this hazard from all threat assessments
+    for (const [unitId, threats] of this.threatAssessments.entries()) {
+      if (threats.has(hazardId)) {
+        threats.delete(hazardId);
+        this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_REMOVED, {
+          sourceId: unitId,
+          targetId: hazardId,
+          reason: 'MANUAL',
+        });
+      }
+    }
+  }
+
+  /**
+   * Assess the threat level of a hazard for a specific unit
+   */
+  private assessHazardThreat(unitId: string, hazard: EnvironmentalHazard): void {
+    const unit = this.knownCombatUnits.get(unitId);
+    if (!unit) return;
+
+    const distance = getDistance(unit.position, hazard.position);
+
+    // Determine threat level based on distance and hazard severity
+    let threatLevel = ThreatLevel.NONE;
+
+    if (distance <= hazard.radius) {
+      // Unit is inside the hazard
+      threatLevel = hazard.severity > 0.7 ? ThreatLevel.CRITICAL : ThreatLevel.HIGH;
+    } else {
+      // Unit is outside but within range
+      const normalizedDistance = (distance - hazard.radius) / this.LOW_THREAT_DISTANCE;
+      if (normalizedDistance < 0.2) {
+        threatLevel = ThreatLevel.HIGH;
+      } else if (normalizedDistance < 0.5) {
+        threatLevel = ThreatLevel.MEDIUM;
+      } else if (normalizedDistance < 1.0) {
+        threatLevel = ThreatLevel.LOW;
+      }
+    }
+
+    // Only create an assessment if there's a threat
+    if (threatLevel !== ThreatLevel.NONE) {
+      // Create or update the threat assessment
+      const assessment: ThreatAssessment = {
+        targetId: hazard.id,
+        level: threatLevel,
+        type: ThreatType.ENVIRONMENTAL,
+        distance: distance,
+        bearing: 0, // Calculate if needed
+        estimatedDamageOutput: hazard.severity * 100, // Rough estimate
+        estimatedTimeToImpact: 0, // Immediate for environmental hazards
+        timestamp: Date.now(),
+      };
+
+      // Store the assessment
+      let unitThreats = this.threatAssessments.get(unitId);
+      if (!unitThreats) {
+        unitThreats = new Map();
+        this.threatAssessments.set(unitId, unitThreats);
+      }
+
+      const existingAssessment = unitThreats.get(hazard.id);
+      unitThreats.set(hazard.id, assessment);
+
+      // Emit appropriate event
+      if (!existingAssessment) {
+        this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_DETECTED, {
+          sourceId: unitId,
+          assessment,
+        });
+      } else if (existingAssessment.level !== assessment.level) {
+        this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_LEVEL_CHANGED, {
+          sourceId: unitId,
+          targetId: hazard.id,
+          previousLevel: existingAssessment.level,
+          newLevel: assessment.level,
+        });
+      } else {
+        this.eventEmitter.emit(ThreatAssessmentEvent.THREAT_UPDATED, {
+          sourceId: unitId,
+          assessment,
+          previousAssessment: existingAssessment,
+        });
+      }
+    }
+  }
+
+  /**
+   * Get all environmental hazards that pose a threat to a unit
+   */
+  public getEnvironmentalThreats(unitId: string): ThreatAssessment[] {
+    const unitThreats = this.threatAssessments.get(unitId);
+    if (!unitThreats) return [];
+
+    return Array.from(unitThreats.values())
+      .filter(threat => threat.type === ThreatType.ENVIRONMENTAL)
+      .sort((a, b) => {
+        // Sort by threat level (critical first)
+        if (a.level !== b.level) {
+          return this.getThreatLevelValue(b.level) - this.getThreatLevelValue(a.level);
+        }
+        // Then by distance (closest first)
+        return a.distance - b.distance;
+      });
+  }
+
+  /**
+   * Helper to convert threat level to numeric value for sorting
+   */
+  private getThreatLevelValue(level: ThreatLevel): number {
+    switch (level) {
+      case ThreatLevel.CRITICAL:
+        return 4;
+      case ThreatLevel.HIGH:
+        return 3;
+      case ThreatLevel.MEDIUM:
+        return 2;
+      case ThreatLevel.LOW:
+        return 1;
+      case ThreatLevel.NONE:
+        return 0;
+      default:
+        return 0;
+    }
+  }
 }

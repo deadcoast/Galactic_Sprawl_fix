@@ -285,3 +285,35 @@ UI COMPONENTS REFERENCES
     - Used in formation tactics panel for organizing different formation options
     - Used in resource management interfaces for categorized content
     - Used in settings panels for grouped configuration options
+
+## Tech Tree System
+
+- **TechTree Component**: src/components/ui/TechTree.tsx
+  - Purpose: Visualize and manage technology progression
+  - Dependencies: React, TechTreeManager
+  - Features:
+    - Interactive tech node visualization
+    - Category-based filtering
+    - Research progress tracking
+    - Node unlocking system
+    - Tech synergy visualization
+    - Connection visualization between nodes
+    - Tier-based organization
+  - Key Interfaces:
+    - `TechNode`: Interface extending ImportedTechNode with icon property
+    - `NodeIconsType`: Type for node icons using Lucide icons
+  - Helper Functions:
+    - `_mapToLocalTechNode`: Maps imported tech nodes to local format
+    - `getCategoryIcon`: Determines icon based on tech category
+    - `getTierNodes`: Filters nodes by tier
+    - `canUnlockNode`: Checks if a node can be unlocked
+  - Implementation Notes:
+    - Uses React state for managing tech nodes and research progress
+    - Implements refs for node position tracking
+    - Provides visual feedback for node status and research progress
+    - Supports keyboard navigation and accessibility
+  - Related Components:
+    - `TechVisualFeedback`: src/components/ui/tech/TechVisualFeedback.tsx
+    - `TechConnectionLine`: src/components/ui/tech/TechVisualFeedback.tsx
+    - `ResearchProgressIndicator`: src/components/ui/tech/TechVisualFeedback.tsx
+    - `TechSynergyIndicator`: src/components/ui/tech/TechVisualFeedback.tsx

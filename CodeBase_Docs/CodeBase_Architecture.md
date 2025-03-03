@@ -8,7 +8,6 @@ GALACTIC SPRAWL SYSTEM ARCHITECTURE
 2. [Linting Workflow and Testing](#linting-workflow-and-testing)
 3. [Linting Issue Fixes](#linting-issue-fixes)
    - [Fixing TypeScript `any` Types](#fixing-typescript-any-types)
-   - [Fixing Unused Variables](#fixing-unused-variables)
    - [Fixing Console Statements](#fixing-console-statements)
 4. [Type Safety Best Practices](#type-safety-best-practices)
 5. [State Management Best Practices](#state-management-best-practices)
@@ -25,7 +24,6 @@ GALACTIC SPRAWL SYSTEM ARCHITECTURE
 16. [Linting Progress](#linting-progress)
 17. [TypeScript Error Fixes](#typescript-error-fixes)
     - [EventEmitter Generic Type Constraints](#eventemitter-generic-type-constraints)
-    - [Unused Variables and Interfaces](#unused-variables-and-interfaces)
     - [Type Assertion Issues](#type-assertion-issues)
     - [Map Iteration Issues](#map-iteration-issues)
 18. [Testing Framework Configuration](#testing-framework-configuration)
@@ -180,13 +178,11 @@ The ship ability system requires proper type definitions to ensure type safety a
 - JSON format used for configuration files to avoid CommonJS module issues
 - Key linting rules:
   - No use of `var` (use `const` or `let` instead)
-  - Warning for unused variables
   - Limited console statements (only `console.warn` and `console.error` allowed)
   - Special rules for test files
 - Common linting issues to fix:
   - Replace `any` types with proper TypeScript types
   - Add curly braces to case blocks with lexical declarations
-  - Remove unused variables and imports
   - Replace console.log statements with proper logging
 - Run linter with `npx eslint [file-or-directory]` command
 - Fix linting issues with `npx eslint --fix [file-or-directory]` command
@@ -255,7 +251,6 @@ The ship ability system requires proper type definitions to ensure type safety a
 
   - Always use explicit return types for functions
   - Avoid using 'any' type - create interfaces instead
-  - Prefix unused variables with underscore
   - Use appropriate console methods based on severity
   - Include all referenced variables in React hook dependency arrays
   - Use unknown instead of any for values of truly unknown type
@@ -404,109 +399,6 @@ When fixing `any` types, we follow these best practices:
    const dynamicConfig: Record<string, unknown> = {};
    ```
 
-#### Fixing Unused Variables
-
-For unused variables, we follow these practices:
-
-1. **Remove unused variables**: Delete variables that are not used in the code.
-
-2. **Use underscore for intentionally unused parameters**: Use `_` for parameters that are required by a function signature but not used in the function body.
-
-   ```javascript
-   // Before
-   function processItems(items, callback) {
-     // logic that doesn't use callback
-   }
-
-   // After
-   function processItems(items, _) {
-     // logic that doesn't use the second parameter
-   }
-   ```
-
-3. **Use empty catch blocks**: For try/catch blocks where the error is not used, use an empty catch parameter.
-
-   ```javascript
-   // Before
-   try {
-     // risky operation
-   } catch (error) {
-     console.log('Operation failed');
-   }
-
-   // After
-   try {
-     // risky operation
-   } catch {
-     console.log('Operation failed');
-   }
-   ```
-
-4. **Comment out variables for future use**: If a variable might be needed in the future, comment it out with a note.
-
-   ```javascript
-   // Before
-   const result = calculateResult();
-   const metadata = getMetadata(); // Not used yet
-
-   // After
-   const result = calculateResult();
-   // const metadata = getMetadata(); // Will be used in future implementation
-   ```
-
-5. **Fix Unused Parameters in Function Signatures**: For parameters that are required by a function signature but not used in the function body, prefix them with an underscore.
-
-   ```typescript
-   // Before (unused parameter causing linter error)
-   function processItems(items, callback) {
-     // logic that doesn't use callback
-   }
-
-   // After (properly marked as intentionally unused)
-   function processItems(items, _callback) {
-     // logic that doesn't use the second parameter
-   }
-   ```
-
-6. **Update Function Calls When Removing Parameters**: When removing unused parameters from function signatures, ensure that all calls to the function are updated accordingly.
-
-   ```typescript
-   // Before (function call with unused parameter)
-   processItems(items, callback);
-
-   // After (function call updated)
-   processItems(items);
-   ```
-
-7. **Fix Unused Imports**: Remove unused imports or mark them as used if they're needed for type checking.
-
-   ```typescript
-   // Before (unused import causing linter error)
-   import { unusedImport } from './module';
-
-   // After (import removed)
-   // Import removed as it's not used
-   ```
-
-8. **Fix Type Issues When Updating Variables**: When fixing unused variables, ensure that any type issues introduced by the changes are also addressed.
-
-   ```typescript
-   // Before (unused variable with type issues)
-   const categoryIcons = {
-     mining: Database,
-     exploration: Radar,
-   };
-
-   // After (properly marked as intentionally unused with type issues fixed)
-   // Category icon mapping - kept for future implementation of dynamic UI theming
-   const __categoryIcons: Record<MenuCategory, IconType> = {
-     mining: Database,
-     exploration: Radar,
-   };
-   ```
-
-By following these best practices, we can ensure that our codebase is free of unused variables and interfaces while maintaining clarity about intentionally unused elements that will be used in future implementations.
-
 #### Fixing Console Statements
 
 For console statements, we follow these practices to comply with our ESLint configuration, which only allows `console.warn` and `console.error` methods:
@@ -630,12 +522,66 @@ For console statements, we follow these practices to comply with our ESLint conf
    - Implement proper animation cleanup
 
 3. Visual Systems
+
    - Use consistent shader patterns
    - Scale effect intensity based on power
    - Maintain proper z-index ordering
    - Use appropriate blend modes
    - Implement proper cleanup for effects
    - Use quality-based particle systems
+
+4. Tech Tree System
+
+   The Tech Tree System is implemented in `src/components/ui/TechTree.tsx` and provides a visual representation of the technology progression in the game.
+
+   #### Key Components
+
+   1. **TechNode Interface**:
+
+      - Extends the imported `ImportedTechNode` from the tech tree manager
+      - Adds icon property for visual representation
+      - Uses a type-safe approach with `NodeIconsType` for icon references
+
+   2. **Visual Components**:
+
+      - `TechVisualFeedback`: Renders individual tech nodes with visual feedback
+      - `TechConnectionLine`: Renders connections between tech nodes
+      - `ResearchProgressIndicator`: Shows research progress for active technologies
+      - `TechSynergyIndicator`: Displays synergy effects between technologies
+
+   3. **Helper Functions**:
+
+      - `_mapToLocalTechNode`: Maps imported tech nodes to local format
+      - `getCategoryIcon`: Determines the appropriate icon based on tech category
+      - `getTierNodes`: Filters nodes by tier for organized display
+
+   4. **State Management**:
+
+      - Uses React state for managing tech nodes, connections, and research progress
+      - Implements functions for starting research, unlocking nodes, and handling node selection
+
+   5. **Rendering Logic**:
+      - Organizes nodes by tier for hierarchical display
+      - Renders connections between nodes with appropriate status indicators
+      - Provides filtering by category for focused viewing
+
+   #### Best Practices
+
+   1. **Type Safety**:
+
+      - Uses TypeScript interfaces for clear type definitions
+      - Avoids `any` types by using proper interfaces and type aliases
+
+   2. **Component Organization**:
+
+      - Separates visual components into dedicated files
+      - Uses consistent naming conventions for functions and variables
+      - Implements clear separation of concerns between data and presentation
+
+   3. **Performance Optimization**:
+      - Uses refs for node position tracking
+      - Implements efficient rendering with conditional logic
+      - Avoids unnecessary re-renders with appropriate state management
 
 ### System Integration Rules
 
@@ -968,108 +914,6 @@ Files checked and confirmed to have the correct index signature:
 - src/managers/weapons/WeaponUpgradeManager.ts (WeaponUpgradeEvents interface)
 - src/types/officers/OfficerTypes.ts (OfficerEvents interface)
 - src/types/buildings/ShipHangarTypes.ts (ShipHangarEvents interface)
-
-#### Unused Variables and Interfaces
-
-When working with unused variables and interfaces in our codebase, we encountered several TypeScript errors related to declared but never used elements. Here are the best practices we established:
-
-1. **Prefix Unused Variables with Underscore**: For variables that are intentionally unused but need to be kept for future implementation, prefix them with a single underscore (`_`).
-
-   ```typescript
-   // Before (unused variable causing linter error)
-   const baseHealth = 1200;
-
-   // After (properly marked as intentionally unused)
-   const _baseHealth = 1200; // Kept for future implementation of ship stat scaling
-   ```
-
-2. **Prefix Unused Interfaces with Double Underscore**: For interfaces that are intentionally unused but need to be kept for future implementation, prefix them with a double underscore (`__`).
-
-   ```typescript
-   // Before (unused interface causing linter error)
-   interface _FleetAIResult {
-     // interface properties
-   }
-
-   // After (properly marked as intentionally unused)
-   // Interface for AI fleet behavior results - kept for future implementation of advanced fleet AI
-   interface __FleetAIResult {
-     // interface properties
-   }
-   ```
-
-3. **Add Explanatory Comments**: Always add comments explaining why unused variables or interfaces are kept, including their intended future use.
-
-   ```typescript
-   // Ship-specific stats - kept for future implementation of ship stat scaling
-   // These will be used when implementing dynamic ship stat adjustments based on player progression
-   const _baseHealth = 1200;
-   const _baseShield = 800;
-   const _baseSpeed = 3.5;
-   ```
-
-4. **Remove Truly Unused Variables**: If a variable is truly unused and has no future purpose, remove it completely instead of just prefixing it.
-
-   ```typescript
-   // Before (unused variable with no future purpose)
-   const unusedVariable = calculateSomething();
-
-   // After (variable removed)
-   // Variable removed as it has no current or future purpose
-   ```
-
-5. **Fix Unused Parameters in Function Signatures**: For parameters that are required by a function signature but not used in the function body, prefix them with an underscore.
-
-   ```typescript
-   // Before (unused parameter causing linter error)
-   function processItems(items, callback) {
-     // logic that doesn't use callback
-   }
-
-   // After (properly marked as intentionally unused)
-   function processItems(items, _callback) {
-     // logic that doesn't use the second parameter
-   }
-   ```
-
-6. **Update Function Calls When Removing Parameters**: When removing unused parameters from function signatures, ensure that all calls to the function are updated accordingly.
-
-   ```typescript
-   // Before (function call with unused parameter)
-   processItems(items, callback);
-
-   // After (function call updated)
-   processItems(items);
-   ```
-
-7. **Fix Unused Imports**: Remove unused imports or mark them as used if they're needed for type checking.
-
-   ```typescript
-   // Before (unused import causing linter error)
-   import { unusedImport } from './module';
-
-   // After (import removed)
-   // Import removed as it's not used
-   ```
-
-8. **Fix Type Issues When Updating Variables**: When fixing unused variables, ensure that any type issues introduced by the changes are also addressed.
-
-   ```typescript
-   // Before (unused variable with type issues)
-   const categoryIcons = {
-     mining: Database,
-     exploration: Radar,
-   };
-
-   // After (properly marked as intentionally unused with type issues fixed)
-   // Category icon mapping - kept for future implementation of dynamic UI theming
-   const __categoryIcons: Record<MenuCategory, IconType> = {
-     mining: Database,
-     exploration: Radar,
-   };
-   ```
-
-By following these best practices, we can ensure that our codebase is free of unused variables and interfaces while maintaining clarity about intentionally unused elements that will be used in future implementations.
 
 #### Type Assertion Issues
 
@@ -2791,30 +2635,6 @@ The system uses a dataset-based approach where exploration data is organized int
 - ARIA attributes for screen reader compatibility
 - Color contrast compliance for visualization elements
 - Responsive design for different screen sizes and devices
-
-### Fixing Unused Variables
-
-When fixing unused variables, follow these guidelines:
-
-1. **Evaluate the variable's purpose**: Before removing a variable, understand why it was declared and if it might be needed in the future.
-
-2. **Use variables or remove them**: Either use the variable in a meaningful way or remove it completely. Don't just prefix with underscore to silence linter warnings.
-
-3. **For props**: If a prop is declared but not used, either:
-
-   - Remove it from the interface and all component calls
-   - Make it optional and implement functionality that uses it
-   - Use it in the component in a meaningful way
-
-4. **For state variables**: If a state variable is declared but not used, either:
-
-   - Remove the state declaration completely
-   - Implement functionality that uses the state variable
-
-5. **For functions**: If a function is declared but not used, either:
-   - Remove the function completely
-   - Call the function where appropriate
-   - Export the function if it's meant to be used externally
 
 ### Exploration System Component Fixes
 

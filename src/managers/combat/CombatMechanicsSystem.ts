@@ -481,7 +481,13 @@ export class CombatMechanicsSystemImpl implements CombatMechanicsSystem {
 
     // Apply effects
     for (const effect of projectile.effects) {
-      // Implementation depends on effect type
+      this.applyEffect(
+        targetId,
+        projectile.sourceId,
+        effect.type,
+        effect.duration,
+        effect.magnitude
+      );
     }
   }
 
@@ -620,6 +626,11 @@ export class CombatMechanicsSystemImpl implements CombatMechanicsSystem {
     if (healthRatio < this.CRITICAL_HIT_THRESHOLD) {
       criticalChance += (this.CRITICAL_HIT_THRESHOLD - healthRatio) * 0.5;
     }
+
+    // Adjust critical chance based on damage amount relative to target's max health
+    // Higher damage relative to max health increases critical chance
+    const damageRatio = damage / targetUnit.stats.maxHealth;
+    criticalChance += damageRatio * 0.3; // 30% boost for damage equal to max health
 
     // Random check
     const isCritical = Math.random() < criticalChance;

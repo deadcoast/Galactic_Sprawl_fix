@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ClassifiableDiscovery,
@@ -148,6 +148,27 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
         classification.id === id ? { ...classification, ...updates } : classification
       )
     );
+  }, []);
+
+  // Add a new taxonomy category
+  const addTaxonomyCategory = useCallback((category: Omit<TaxonomyCategory, 'id'>) => {
+    const newCategory: TaxonomyCategory = {
+      ...category,
+      id: uuidv4(),
+    };
+    setTaxonomyCategories(prev => [...prev, newCategory]);
+  }, []);
+
+  // Update an existing taxonomy category
+  const updateTaxonomyCategory = useCallback((id: string, updates: Partial<TaxonomyCategory>) => {
+    setTaxonomyCategories(prev =>
+      prev.map(category => (category.id === id ? { ...category, ...updates } : category))
+    );
+  }, []);
+
+  // Delete a taxonomy category
+  const deleteTaxonomyCategory = useCallback((id: string) => {
+    setTaxonomyCategories(prev => prev.filter(category => category.id !== id));
   }, []);
 
   // Delete a classification
@@ -331,33 +352,23 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
     [taxonomyCategories, getTaxonomyCategory]
   );
 
-  // Create the context value
-  const contextValue = useMemo(
-    () => ({
-      taxonomyCategories,
-      classifications,
-      addClassification,
-      updateClassification,
-      deleteClassification,
-      getClassificationById,
-      getClassificationsForDiscovery,
-      getTaxonomyCategory,
-      getSimilarDiscoveries,
-      generateClassificationSuggestions,
-    }),
-    [
-      taxonomyCategories,
-      classifications,
-      addClassification,
-      updateClassification,
-      deleteClassification,
-      getClassificationById,
-      getClassificationsForDiscovery,
-      getTaxonomyCategory,
-      getSimilarDiscoveries,
-      generateClassificationSuggestions,
-    ]
-  );
+  // Provide the context value
+  const contextValue: ClassificationContextType = {
+    classifications,
+    taxonomyCategories,
+    discoveries,
+    addClassification,
+    updateClassification,
+    deleteClassification,
+    getClassificationById,
+    getClassificationsForDiscovery,
+    getTaxonomyCategory,
+    getSimilarDiscoveries,
+    generateClassificationSuggestions,
+    addTaxonomyCategory,
+    updateTaxonomyCategory,
+    deleteTaxonomyCategory,
+  };
 
   return (
     <ClassificationContext.Provider value={contextValue}>{children}</ClassificationContext.Provider>

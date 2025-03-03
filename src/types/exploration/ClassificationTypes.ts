@@ -92,6 +92,7 @@ export interface ClassificationSuggestion {
 export interface ClassificationContextType {
   taxonomyCategories: TaxonomyCategory[];
   classifications: Classification[];
+  discoveries: ClassifiableDiscovery[];
   addClassification: (classification: Omit<Classification, 'id'>) => void;
   updateClassification: (id: string, updates: Partial<Classification>) => void;
   deleteClassification: (id: string) => void;
@@ -102,4 +103,7 @@ export interface ClassificationContextType {
   generateClassificationSuggestions: (
     discovery: ClassifiableDiscovery
   ) => ClassificationSuggestion[];
+  addTaxonomyCategory: (category: Omit<TaxonomyCategory, 'id'>) => void;
+  updateTaxonomyCategory: (id: string, updates: Partial<TaxonomyCategory>) => void;
+  deleteTaxonomyCategory: (id: string) => void;
 }

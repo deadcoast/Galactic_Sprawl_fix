@@ -2916,3 +2916,20 @@ export function ExplorationDataManagerDemo() {
 ```
 
 This change indicates to TypeScript and ESLint that we are intentionally not using these variables, which suppresses the warnings.
+
+## Testing Issues with DataAnalysisSystem Component (March 3, 2025)
+
+### Error
+
+Tests for the DataAnalysisSystem component were timing out when trying to interact with the component, particularly when clicking on tabs:
+
+```
+Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+```
+
+### Cause
+
+The DataAnalysisSystem component has complex state management and interactions that can cause tests to hang or time out when trying to simulate user interactions like clicking on tabs. This is likely due to asynchronous operations or state updates that don't complete properly in the test environment.
+
+### Solution

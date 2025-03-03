@@ -110,3 +110,19 @@ The following components have been improved to fix linting issues and enhance co
 - Fixed integration with GalaxyMapSystem
 
 These improvements have enhanced the code quality, maintainability, and performance of the exploration system components while ensuring type safety and reducing technical debt.
+
+## Testing Considerations
+
+### DataAnalysisSystem Testing
+
+The DataAnalysisSystem component has complex state management and interactions that require special consideration for testing:
+
+1. **Mock the component for testing**: Instead of testing the full component with all its interactions, create a simplified mock that renders the necessary elements for testing.
+
+2. **Test specific functionality in isolation**: Break down tests to focus on specific functionality rather than testing complex interactions.
+
+3. **Ensure React imports are present**: Make sure all components that use JSX have the necessary React import, especially in the AnalysisVisualization component.
+
+4. **Add data-testid attributes**: Use data-testid attributes to make it easier to select elements in tests.
+
+These approaches help avoid timeouts and make tests more reliable by focusing on the specific functionality being tested rather than complex interactions.
