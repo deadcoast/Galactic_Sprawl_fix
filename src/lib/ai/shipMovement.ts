@@ -49,9 +49,9 @@ class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
       rotationSpeed: number;
     }
   ): void {
-    // Log the initial position for debugging purposes
-    console.log(
-      `Registering ship ${shipId} at initial position (${initialPosition.x}, ${initialPosition.y})`
+    // Log initial position for debugging
+    console.warn(
+      `[ShipMovementSystem] Ship ${shipId} initial position: (${initialPosition.x}, ${initialPosition.y})`
     );
 
     this.movementStates.set(shipId, {

@@ -68,32 +68,34 @@ const Canvas: React.FC<CanvasProps> = ({ children, camera, style }) => {
   return React.createElement('div', { style: enhancedStyle }, children);
 };
 
-// Declare JSX namespace for Three.js elements
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      points: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        ref?: React.RefObject<THREE.Points>;
-      };
-      bufferGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-      bufferAttribute: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        attach: string;
-        count: number;
-        array: Float32Array;
-        itemSize: number;
-      };
-      shaderMaterial: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        attach?: string;
-        transparent?: boolean;
-        depthWrite?: boolean;
-        blending?: THREE.Blending;
-        uniforms?: Record<string, { value: unknown }>;
-        vertexShader?: string;
-        fragmentShader?: string;
-      };
-    }
-  }
-}
+// Define custom element types for Three.js components
+type ThreePointsProps = {
+  ref?: React.RefObject<THREE.Points>;
+  [key: string]: unknown;
+};
+
+type ThreeBufferGeometryProps = {
+  [key: string]: unknown;
+};
+
+type ThreeBufferAttributeProps = {
+  attach: string;
+  count: number;
+  array: Float32Array;
+  itemSize: number;
+  [key: string]: unknown;
+};
+
+type ThreeShaderMaterialProps = {
+  attach?: string;
+  transparent?: boolean;
+  depthWrite?: boolean;
+  blending?: THREE.Blending;
+  uniforms?: Record<string, { value: unknown }>;
+  vertexShader?: string;
+  fragmentShader?: string;
+  [key: string]: unknown;
+};
 
 interface SmokeTrailProps {
   position: { x: number; y: number };
@@ -104,53 +106,100 @@ interface SmokeTrailProps {
 
 function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, 'position'>) {
   const pointsRef = useRef<THREE.Points>(null);
-  const geometryRef = useRef<THREE.BufferGeometry>(null);
   const particleCount = Math.floor(intensity * 100);
   const positions = new Float32Array(particleCount * 3);
   const sizes = new Float32Array(particleCount);
   const opacities = new Float32Array(particleCount);
-  const velocities = useRef<Float32Array>(new Float32Array(particleCount * 3));
-  const ages = useRef<Float32Array>(new Float32Array(particleCount));
+  const angles = new Float32Array(particleCount);
+  const lifetimes = new Float32Array(particleCount);
 
   // Initialize particles
   useEffect(() => {
-    if (!geometryRef.current) return;
+    // Create a THREE.Color object from the color string
+    const colorObj = new THREE.Color(color);
 
     // Convert direction from degrees to radians
     const directionRad = (direction * Math.PI) / 180;
-    const baseVelocity = 0.2 + intensity * 0.1;
+
+    // Base direction vector
+    const baseVectorX = Math.cos(directionRad);
+    const baseVectorY = Math.sin(directionRad);
 
     for (let i = 0; i < particleCount; i++) {
-      // Random position near origin
-      positions[i * 3] = (Math.random() - 0.5) * 0.2;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 0.2;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
+      // Random angle deviation from base direction
+      const angleDeviation = (Math.random() - 0.5) * Math.PI * 0.5;
+      const particleAngle = directionRad + angleDeviation;
 
-      // Random size
-      sizes[i] = Math.random() * 0.5 + 0.5;
+      // Random distance from origin
+      const distance = Math.random() * intensity * 5;
 
-      // Initial opacity
-      opacities[i] = Math.random() * 0.5 + 0.5;
+      // Calculate position
+      const x = Math.cos(particleAngle) * distance;
+      const y = Math.sin(particleAngle) * distance;
+      const z = (Math.random() - 0.5) * 2; // Small z-variation for depth
 
-      // Velocity in direction with some randomness
-      const spreadAngle = (Math.random() - 0.5) * Math.PI * 0.2;
-      const speed = baseVelocity * (Math.random() * 0.5 + 0.75);
-      velocities.current[i * 3] = Math.cos(directionRad + spreadAngle) * speed;
-      velocities.current[i * 3 + 1] = Math.sin(directionRad + spreadAngle) * speed;
-      velocities.current[i * 3 + 2] = (Math.random() - 0.5) * 0.05;
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = z;
 
-      // Random initial age
-      ages.current[i] = Math.random() * 2;
+      // Random sizes based on intensity
+      sizes[i] = Math.random() * intensity + 0.5;
+
+      // Random opacity
+      opacities[i] = Math.random() * 0.7 + 0.3;
+
+      // Store the angle for animation
+      angles[i] = particleAngle;
+
+      // Random lifetime for each particle
+      lifetimes[i] = Math.random() * 2 + 1;
     }
 
-    // Set attributes
-    geometryRef.current.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometryRef.current.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    geometryRef.current.setAttribute('opacity', new THREE.BufferAttribute(opacities, 1));
-  }, [particleCount, positions, sizes, opacities, direction, intensity]);
+    console.warn(`Initialized ${particleCount} smoke particles with base color: ${color}`);
+  }, [color, direction, intensity, particleCount, positions, sizes, opacities, angles, lifetimes]);
 
-  // Vertex shader
-  const vertexShader = `
+  // Animate particles
+  useFrame(state => {
+    if (!pointsRef.current) {
+      return;
+    }
+
+    const time = state.clock.elapsedTime;
+    const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
+    const sizes = pointsRef.current.geometry.attributes.size.array as Float32Array;
+    const opacities = pointsRef.current.geometry.attributes.opacity.array as Float32Array;
+
+    for (let i = 0; i < particleCount; i++) {
+      const idx = i * 3;
+      const angle = angles[i];
+      const lifetime = lifetimes[i];
+
+      // Calculate age of particle (0 to 1)
+      const age = (time % lifetime) / lifetime;
+
+      // Move particles along their angle
+      const speed = 0.01 * intensity * (1 - age); // Slow down as they age
+      positions[idx] += Math.cos(angle) * speed;
+      positions[idx + 1] += Math.sin(angle) * speed;
+
+      // Add some turbulence
+      positions[idx] += Math.sin(time * 2 + i) * 0.003;
+      positions[idx + 1] += Math.cos(time * 2 + i) * 0.003;
+
+      // Fade out particles as they age
+      opacities[i] = (1 - age) * 0.7;
+
+      // Grow particles slightly as they age
+      sizes[i] = (0.5 + age * 1.5) * intensity;
+    }
+
+    pointsRef.current.geometry.attributes.position.needsUpdate = true;
+    pointsRef.current.geometry.attributes.size.needsUpdate = true;
+    pointsRef.current.geometry.attributes.opacity.needsUpdate = true;
+  });
+
+  // Create shader material for smoke particles
+  const smokeVertexShader = `
     attribute float size;
     attribute float opacity;
     varying float vOpacity;
@@ -163,105 +212,78 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
     }
   `;
 
-  // Fragment shader
-  const fragmentShader = `
+  const smokeFragmentShader = `
     uniform vec3 color;
     varying float vOpacity;
     
     void main() {
-      // Create a circular particle
+      // Calculate distance from center of point
       vec2 center = gl_PointCoord - vec2(0.5);
       float dist = length(center);
-      float alpha = smoothstep(0.5, 0.4, dist) * vOpacity;
       
-      // Smoke color with soft edges
+      // Soft circular particle
+      float alpha = smoothstep(0.5, 0.3, dist) * vOpacity;
+      
+      // Apply a soft smoke texture effect
+      float noise = fract(sin(dot(gl_PointCoord, vec2(12.9898, 78.233))) * 43758.5453);
+      alpha *= mix(0.8, 1.0, noise);
+      
       gl_FragColor = vec4(color, alpha);
     }
   `;
 
-  // Update particles
-  useFrame(state => {
-    if (!geometryRef.current) return;
-
-    const positions = geometryRef.current.attributes.position.array as Float32Array;
-    const opacities = geometryRef.current.attributes.opacity.array as Float32Array;
-    const sizes = geometryRef.current.attributes.size.array as Float32Array;
-
-    const time = state.clock.elapsedTime;
-    const lifespan = 2 + intensity;
-
-    for (let i = 0; i < particleCount; i++) {
-      // Update age
-      ages.current[i] += 0.016; // Approximately 60fps
-
-      // Reset particles that have lived their lifespan
-      if (ages.current[i] > lifespan) {
-        // Reset position
-        positions[i * 3] = (Math.random() - 0.5) * 0.2;
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 0.2;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
-
-        // Reset age
-        ages.current[i] = 0;
-
-        // Reset opacity
-        opacities[i] = Math.random() * 0.5 + 0.5;
-
-        // Reset size
-        sizes[i] = Math.random() * 0.5 + 0.5;
-      } else {
-        // Update position based on velocity
-        positions[i * 3] += velocities.current[i * 3];
-        positions[i * 3 + 1] += velocities.current[i * 3 + 1];
-        positions[i * 3 + 2] += velocities.current[i * 3 + 2];
-
-        // Add some turbulence
-        const turbulence = 0.01;
-        positions[i * 3] += Math.sin(time * 2 + i) * turbulence;
-        positions[i * 3 + 1] += Math.cos(time * 2 + i) * turbulence;
-
-        // Fade out based on age
-        const ageRatio = ages.current[i] / lifespan;
-        opacities[i] = Math.max(0, 1 - ageRatio) * (Math.random() * 0.1 + 0.9);
-
-        // Grow slightly as they age
-        sizes[i] = (Math.random() * 0.5 + 0.5) * (1 + ageRatio);
-      }
-    }
-
-    // Update attributes
-    geometryRef.current.attributes.position.needsUpdate = true;
-    geometryRef.current.attributes.opacity.needsUpdate = true;
-    geometryRef.current.attributes.size.needsUpdate = true;
-  });
-
-  // Parse color string to RGB
-  const colorObj = new THREE.Color(color);
-
-  return React.createElement('points', { ref: pointsRef }, [
-    React.createElement('bufferGeometry', { ref: geometryRef }),
-    React.createElement('shaderMaterial', {
-      attach: 'material',
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      uniforms: {
-        color: { value: colorObj },
-      },
-      vertexShader,
-      fragmentShader,
-    }),
-  ]);
+  // Use React.createElement with type assertions for Three.js elements
+  return React.createElement(
+    React.Fragment,
+    null,
+    React.createElement(
+      'points',
+      { ref: pointsRef } as ThreePointsProps,
+      React.createElement(
+        'bufferGeometry',
+        {} as ThreeBufferGeometryProps,
+        React.createElement('bufferAttribute', {
+          attach: 'attributes.position',
+          count: particleCount,
+          array: positions,
+          itemSize: 3,
+        } as ThreeBufferAttributeProps),
+        React.createElement('bufferAttribute', {
+          attach: 'attributes.size',
+          count: particleCount,
+          array: sizes,
+          itemSize: 1,
+        } as ThreeBufferAttributeProps),
+        React.createElement('bufferAttribute', {
+          attach: 'attributes.opacity',
+          count: particleCount,
+          array: opacities,
+          itemSize: 1,
+        } as ThreeBufferAttributeProps)
+      ),
+      React.createElement('shaderMaterial', {
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          color: { value: new THREE.Color(color) },
+        },
+        vertexShader: smokeVertexShader,
+        fragmentShader: smokeFragmentShader,
+      } as ThreeShaderMaterialProps)
+    )
+  );
 }
 
 export function SmokeTrailEffect({ position, direction, intensity, color }: SmokeTrailProps) {
-  // Create the smoke particles element
+  // Create the smoke particles element first
   const smokeParticlesElement = React.createElement(SmokeParticles, {
     direction,
     intensity,
     color,
   });
 
+  // Then create the Canvas with the smoke particles as children
   return React.createElement(
     'div',
     {
@@ -271,13 +293,16 @@ export function SmokeTrailEffect({ position, direction, intensity, color }: Smok
         top: `${position.y}px`,
         width: '0',
         height: '0',
-        overflow: 'visible',
         pointerEvents: 'none',
       },
     },
     React.createElement(Canvas, {
-      camera: { position: [0, 0, 5], fov: 75 },
-      style: { width: '300px', height: '300px', transform: 'translate(-150px, -150px)' },
+      camera: { position: [0, 0, 10], fov: 75 },
+      style: {
+        width: '300px',
+        height: '300px',
+        transform: 'translate(-150px, -150px)',
+      },
       children: smokeParticlesElement,
     })
   );

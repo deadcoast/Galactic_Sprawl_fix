@@ -83,7 +83,7 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
       // If we're running low on entities, expand the pool by _expandSize
       if (this.available.length === 0 && totalEntities < this._maxSize) {
         const expandSize = Math.min(this._expandSize, this._maxSize - totalEntities);
-        console.log(`[EntityPool] Expanding pool by ${expandSize} entities`);
+        console.warn(`[EntityPool] Expanding pool by ${expandSize} entities`);
 
         // Create new entities in batch
         for (let i = 0; i < expandSize; i++) {

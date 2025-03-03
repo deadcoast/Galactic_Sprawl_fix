@@ -14,8 +14,10 @@ import {
   Target,
 } from 'lucide-react';
 import * as React from 'react';
+import { useCallback, useMemo } from 'react';
 import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
 import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
+import { MiningResource } from '../../../../types/mining/MiningTypes';
 import { MiningMap } from './MiningMap';
 import { MiningTutorial } from './MiningTutorial';
 import { ResourceNode } from './ResourceNode';
@@ -217,11 +219,14 @@ const createDragData = (type: 'resource' | 'ship', data: BaseDragDataInput): Dra
 };
 
 export function MiningWindow() {
-  const [selectedNode, setSelectedNode] = React.useState<Resource | null>(null);
-  const [viewMode, setViewMode] = React.useState<ViewMode>('map');
+  const [selectedNode, setSelectedNode] = React.useState<MiningResource | null>(null);
+  const [viewMode, setViewMode] = React.useState<'map' | 'grid'>('map');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [mineAll, setMineAll] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<SortOption>('priority');
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc');
-  const [filterBy, setFilterBy] = React.useState<FilterOption>('all');
+  const [tier, setTier] = React.useState<1 | 2 | 3>(1);
+  const [filterBy, setFilterBy] = React.useState<'all' | 'mineral' | 'gas' | 'exotic'>('all');
   const [showTutorial, setShowTutorial] = React.useState(false);
   const [showSettings, setShowSettings] = React.useState(false);
   const [contextMenuItems, setContextMenuItems] = React.useState<ContextMenuItem[]>([]);
@@ -229,38 +234,86 @@ export function MiningWindow() {
     items: contextMenuItems,
   });
 
-  // Mock tech bonuses
-  const techBonuses = {
-    extractionRate: 1.2,
-    efficiency: 1.1,
-    range: 1.15,
-    storageCapacity: 1.5,
-  };
+  // Memoize filtered and sorted resources
+  const filteredResources = useMemo(() => {
+    return mockResources
+      .filter(resource => {
+        if (searchQuery && !resource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+          return false;
+        }
+        if (filterBy !== 'all' && resource.type !== filterBy) {
+          return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        let comparison = 0;
+        switch (sortBy) {
+          case 'priority':
+            comparison = a.priority - b.priority;
+            break;
+          case 'name':
+            comparison = a.name.localeCompare(b.name);
+            break;
+          case 'type':
+            comparison = a.type.localeCompare(b.type);
+            break;
+          case 'abundance':
+            comparison = b.abundance - a.abundance;
+            break;
+          case 'distance':
+            comparison = a.distance - b.distance;
+            break;
+        }
+        return sortOrder === 'asc' ? comparison : -comparison;
+      });
+  }, [mockResources, searchQuery, filterBy, sortBy, sortOrder]);
 
-  // Filter and sort resources
-  const filteredResources = mockResources
-    .filter(resource => filterBy === 'all' || resource.type === filterBy)
-    .sort((a, b) => {
-      let comparison = 0;
-      switch (sortBy) {
-        case 'priority':
-          comparison = a.priority - b.priority;
-          break;
-        case 'name':
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case 'type':
-          comparison = a.type.localeCompare(b.type);
-          break;
-        case 'abundance':
-          comparison = b.abundance - a.abundance;
-          break;
-        case 'distance':
-          comparison = a.distance - b.distance;
-          break;
+  // Memoize tech bonuses based on tier
+  const techBonuses = useMemo(() => {
+    const tierBonuses = {
+      1: { extractionRate: 1, storageCapacity: 1, efficiency: 1 },
+      2: { extractionRate: 1.5, storageCapacity: 1.5, efficiency: 1.25 },
+      3: { extractionRate: 2, storageCapacity: 2, efficiency: 1.5 },
+    } as const;
+    return tierBonuses[tier];
+  }, [tier]);
+
+  // Memoize handlers
+  const handleNodeSelect = useCallback((node: MiningResource) => {
+    setSelectedNode(node);
+  }, []);
+
+  const handleFilterChange = useCallback((newFilter: 'all' | 'mineral' | 'gas' | 'exotic') => {
+    setFilterBy(newFilter);
+  }, []);
+
+  const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  }, []);
+
+  const handleViewChange = useCallback((newView: 'map' | 'grid') => {
+    setViewMode(newView);
+  }, []);
+
+  const handleMineAllToggle = useCallback(() => {
+    setMineAll(prev => !prev);
+  }, []);
+
+  const handleSortChange = useCallback((option: SortOption) => {
+    setSortBy(prevSort => {
+      if (prevSort === option) {
+        setSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
+        return option;
       }
-      return sortOrder === 'asc' ? comparison : -comparison;
+      setSortOrder('asc');
+      return option;
     });
+  }, []);
+
+  const handleTierChange = useCallback((newTier: 1 | 2 | 3) => {
+    setTier(newTier);
+  }, []);
 
   // Context menu for resources
   const getResourceMenuItems = (resource: Resource): ContextMenuItem[] => {
@@ -345,11 +398,6 @@ export function MiningWindow() {
     setShowSettings(prev => !prev);
   };
 
-  // Handle filter change
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilterBy(e.target.value as FilterOption);
-  };
-
   // Context menu handler for resources
   const handleContextMenuEvent = (e: React.MouseEvent, resource: Resource) => {
     e.preventDefault();
@@ -376,7 +424,7 @@ export function MiningWindow() {
         console.warn(`Setting thresholds for resource: ${resource.name}`);
         break;
       case 'view-details':
-        setSelectedNode(resource);
+        setSelectedNode(resource as MiningResource);
         break;
       case 'scan-deposits':
         console.warn(`Scanning for deposits around resource: ${resource.name}`);
@@ -481,7 +529,7 @@ export function MiningWindow() {
               'rounded-md border border-gray-700 bg-gray-800 px-3 py-1 text-sm text-gray-300',
             value: sortBy,
             onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
-              setSortBy(e.target.value as SortOption),
+              handleSortChange(e.target.value as SortOption),
           },
           React.createElement('option', { value: 'priority' }, 'Sort by Priority'),
           React.createElement('option', { value: 'name' }, 'Sort by Name'),
@@ -562,7 +610,7 @@ export function MiningWindow() {
                       resource: resource,
                       isSelected: selectedNode?.id === resource.id,
                       techBonuses: techBonuses,
-                      onClick: () => setSelectedNode(resource),
+                      onClick: () => setSelectedNode(resource as MiningResource),
                       assignedShip:
                         mockShips.find(ship => ship.targetNode === resource.id)?.id || '',
                     })

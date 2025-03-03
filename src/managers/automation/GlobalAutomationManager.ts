@@ -79,7 +79,7 @@ export class GlobalAutomationManager {
 
     // Log the automation manager status
     if (this._automationManager) {
-      console.log(
+      console.warn(
         `[GlobalAutomationManager] Using automation manager for condition checking and rule management`
       );
     } else {

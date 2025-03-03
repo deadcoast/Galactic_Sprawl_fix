@@ -30,27 +30,17 @@ const useFrame = (callback: (state: FrameState, delta: number) => void): void =>
   }, [callback]);
 };
 
-// Declare JSX namespace for Three.js elements
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      points: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        ref?: React.RefObject<THREE.Points>;
-      };
-      bufferGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-      pointsMaterial: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        size?: number;
-        transparent?: boolean;
-        vertexColors?: boolean;
-        blending?: THREE.Blending;
-        depthWrite?: boolean;
-      };
-      ambientLight: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        intensity?: number;
-      };
-    }
-  }
-}
+// Define custom element types for Three.js components
+type ThreeJSElementProps = {
+  ref?: React.RefObject<THREE.Object3D | THREE.BufferGeometry | THREE.Material>;
+  size?: number;
+  transparent?: boolean;
+  vertexColors?: boolean;
+  blending?: THREE.Blending;
+  depthWrite?: boolean;
+  intensity?: number;
+  [key: string]: unknown;
+};
 
 // src/components/effects/ExplosionEffect.tsx
 interface ExplosionEffectProps {
@@ -78,7 +68,9 @@ function ExplosionParticles({
 
   // Initialize particles
   useEffect(() => {
-    if (!geometryRef.current) return;
+    if (!geometryRef.current) {
+      return;
+    }
 
     // Create a THREE.Color object from the color string
     const colorObj = new THREE.Color(color);
@@ -123,14 +115,16 @@ function ExplosionParticles({
     geometryRef.current.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
     // Log color information for debugging
-    console.log(
+    console.warn(
       `Explosion particles initialized with base color: rgb(${Math.floor(baseR * 255)}, ${Math.floor(baseG * 255)}, ${Math.floor(baseB * 255)})`
     );
   }, [color, particleCount, positions, colors, sizes, size]);
 
   // Animate particles
   useFrame((state, delta) => {
-    if (!geometryRef.current || !pointsRef.current) return;
+    if (!geometryRef.current || !pointsRef.current) {
+      return;
+    }
 
     const positions = geometryRef.current.attributes.position.array as Float32Array;
     const sizes = geometryRef.current.attributes.size.array as Float32Array;
@@ -171,20 +165,21 @@ function ExplosionParticles({
     }
   });
 
+  // Create elements using React.createElement with explicit typing
   return React.createElement(
     React.Fragment,
     null,
     React.createElement(
       'points',
-      { ref: pointsRef },
-      React.createElement('bufferGeometry', { ref: geometryRef }),
+      { ref: pointsRef } as ThreeJSElementProps,
+      React.createElement('bufferGeometry', { ref: geometryRef } as ThreeJSElementProps),
       React.createElement('pointsMaterial', {
         size: 2,
         transparent: true,
         vertexColors: true,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
-      })
+      } as ThreeJSElementProps)
     )
   );
 }

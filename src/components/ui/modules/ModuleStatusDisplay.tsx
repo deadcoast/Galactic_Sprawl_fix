@@ -17,243 +17,119 @@ interface ModuleStatusDisplayProps {
 /**
  * Component for displaying module status
  */
-export const ModuleStatusDisplay: React.FC<ModuleStatusDisplayProps> = ({
-  moduleId,
-  showDetails = true,
-  showHistory = false,
-  showAlerts = true,
-  showMetrics = true,
-  onStatusChange,
-  onAlertAcknowledge,
-}) => {
-  const {
-    statusDetails,
-    isLoading,
-    error,
-    currentStatus,
-    previousStatus,
-    history,
-    metrics,
-    alerts,
-    updateStatus,
-    acknowledgeAlert,
-    getStatusColor,
-    getAlertColor,
-    formatUptime,
-  } = useModuleStatus(moduleId);
+export const ModuleStatusDisplay = React.memo<ModuleStatusDisplayProps>(
+  ({
+    moduleId,
+    showDetails = true,
+    showHistory = false,
+    showAlerts = true,
+    showMetrics = true,
+    onStatusChange,
+    onAlertAcknowledge,
+  }) => {
+    const {
+      statusDetails,
+      isLoading,
+      error,
+      currentStatus,
+      previousStatus,
+      history,
+      metrics,
+      alerts,
+      updateStatus,
+      acknowledgeAlert,
+      getStatusColor,
+      getAlertColor,
+      formatUptime,
+    } = useModuleStatus(moduleId);
 
-  const [module, setModule] = useState<BaseModule | null>(null);
+    const [module, setModule] = useState<BaseModule | null>(null);
 
-  // Load module data
-  useEffect(() => {
-    const moduleData = moduleManager.getModule(moduleId);
-    setModule(moduleData || null);
-  }, [moduleId]);
+    // Load module data
+    useEffect(() => {
+      const moduleData = moduleManager.getModule(moduleId);
+      setModule(moduleData || null);
+    }, [moduleId]);
 
-  // Handle status change
-  const handleStatusChange = (status: ExtendedModuleStatus) => {
-    updateStatus(status);
-    if (onStatusChange) {
-      onStatusChange(status);
-    }
-  };
+    // Handle status change
+    const handleStatusChange = (status: ExtendedModuleStatus) => {
+      updateStatus(status);
+      if (onStatusChange) {
+        onStatusChange(status);
+      }
+    };
 
-  // Handle alert acknowledge
-  const handleAlertAcknowledge = (alertIndex: number) => {
-    acknowledgeAlert(alertIndex);
-    if (onAlertAcknowledge) {
-      onAlertAcknowledge(alertIndex);
-    }
-  };
+    // Handle alert acknowledge
+    const handleAlertAcknowledge = (alertIndex: number) => {
+      acknowledgeAlert(alertIndex);
+      if (onAlertAcknowledge) {
+        onAlertAcknowledge(alertIndex);
+      }
+    };
 
-  // Render loading state
-  if (isLoading) {
-    return (
-      <div className="module-status-display module-status-display--loading">
-        Loading status data...
-      </div>
-    );
-  }
-
-  // Render error state
-  if (error) {
-    return <div className="module-status-display module-status-display--error">{error}</div>;
-  }
-
-  // Render empty state
-  if (!statusDetails || !module) {
-    return (
-      <div className="module-status-display module-status-display--empty">
-        No status data available
-      </div>
-    );
-  }
-
-  return (
-    <div className="module-status-display">
-      {/* Status header */}
-      <div className="module-status-display__header">
-        <h4 className="module-status-display__title">{module.name} Status</h4>
-        <div
-          className="module-status-display__status-badge"
-          style={{ backgroundColor: getStatusColor(currentStatus) }}
-        >
-          {currentStatus}
+    // Render loading state
+    if (isLoading) {
+      return (
+        <div className="module-status-display module-status-display--loading">
+          Loading status data...
         </div>
-      </div>
+      );
+    }
 
-      {/* Status details */}
-      {showDetails && (
-        <div className="module-status-display__details">
-          <div className="module-status-display__detail">
-            <span className="module-status-display__detail-label">Current Status:</span>
-            <span
-              className="module-status-display__detail-value"
-              style={{ color: getStatusColor(currentStatus) }}
-            >
-              {currentStatus}
-            </span>
+    // Render error state
+    if (error) {
+      return <div className="module-status-display module-status-display--error">{error}</div>;
+    }
+
+    // Render empty state
+    if (!statusDetails || !module) {
+      return (
+        <div className="module-status-display module-status-display--empty">
+          No status data available
+        </div>
+      );
+    }
+
+    return (
+      <div className="module-status-display">
+        {/* Module Header */}
+        <div className="module-status-display__header">
+          <h3 className="module-status-display__title">{module.name}</h3>
+          <div
+            className="module-status-display__status"
+            style={{ backgroundColor: getStatusColor(currentStatus) }}
+          >
+            {currentStatus}
           </div>
+        </div>
 
-          {previousStatus && (
+        {/* Module Details */}
+        {showDetails && (
+          <div className="module-status-display__details">
             <div className="module-status-display__detail">
-              <span className="module-status-display__detail-label">Previous Status:</span>
-              <span
-                className="module-status-display__detail-value"
-                style={{ color: getStatusColor(previousStatus) }}
-              >
-                {previousStatus}
+              <span className="module-status-display__detail-label">Type:</span>
+              <span className="module-status-display__detail-value">{module.type}</span>
+            </div>
+            <div className="module-status-display__detail">
+              <span className="module-status-display__detail-label">Level:</span>
+              <span className="module-status-display__detail-value">{module.level}</span>
+            </div>
+            <div className="module-status-display__detail">
+              <span className="module-status-display__detail-label">Uptime:</span>
+              <span className="module-status-display__detail-value">
+                {formatUptime(metrics?.uptime || 0)}
               </span>
             </div>
-          )}
-
-          <div className="module-status-display__detail">
-            <span className="module-status-display__detail-label">Last Updated:</span>
-            <span className="module-status-display__detail-value">
-              {new Date(statusDetails.lastUpdated).toLocaleString()}
-            </span>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Metrics */}
-      {showMetrics && metrics && (
-        <div className="module-status-display__metrics">
-          <h5 className="module-status-display__section-title">Metrics</h5>
-
-          <div className="module-status-display__metric">
-            <span className="module-status-display__metric-label">Uptime:</span>
-            <span className="module-status-display__metric-value">
-              {formatUptime(metrics.uptime)}
-            </span>
-          </div>
-
-          <div className="module-status-display__metric">
-            <span className="module-status-display__metric-label">Efficiency:</span>
-            <div className="module-status-display__progress-bar">
-              <div
-                className="module-status-display__progress-fill"
-                style={{
-                  width: `${metrics.efficiency * 100}%`,
-                  backgroundColor: metrics.efficiency >= 1 ? 'green' : 'orange',
-                }}
-              />
-            </div>
-            <span className="module-status-display__metric-value">
-              {Math.round(metrics.efficiency * 100)}%
-            </span>
-          </div>
-
-          <div className="module-status-display__metric">
-            <span className="module-status-display__metric-label">Reliability:</span>
-            <div className="module-status-display__progress-bar">
-              <div
-                className="module-status-display__progress-fill"
-                style={{
-                  width: `${metrics.reliability * 100}%`,
-                  backgroundColor:
-                    metrics.reliability >= 0.9
-                      ? 'green'
-                      : metrics.reliability >= 0.7
-                        ? 'yellow'
-                        : 'red',
-                }}
-              />
-            </div>
-            <span className="module-status-display__metric-value">
-              {Math.round(metrics.reliability * 100)}%
-            </span>
-          </div>
-
-          <div className="module-status-display__metric">
-            <span className="module-status-display__metric-label">Performance:</span>
-            <div className="module-status-display__progress-bar">
-              <div
-                className="module-status-display__progress-fill"
-                style={{
-                  width: `${metrics.performance * 100}%`,
-                  backgroundColor:
-                    metrics.performance >= 0.8
-                      ? 'green'
-                      : metrics.performance >= 0.5
-                        ? 'yellow'
-                        : 'red',
-                }}
-              />
-            </div>
-            <span className="module-status-display__metric-value">
-              {Math.round(metrics.performance * 100)}%
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Alerts */}
-      {showAlerts && alerts.length > 0 && (
-        <div className="module-status-display__alerts">
-          <h5 className="module-status-display__section-title">Alerts</h5>
-
-          <ul className="module-status-display__alert-list">
-            {alerts.map((alert, index) => (
-              <li
-                key={index}
-                className={`module-status-display__alert ${alert.acknowledged ? 'module-status-display__alert--acknowledged' : ''}`}
-              >
-                <div
-                  className="module-status-display__alert-level"
-                  style={{ backgroundColor: getAlertColor(alert.level) }}
-                >
-                  {alert.level}
-                </div>
-                <div className="module-status-display__alert-message">{alert.message}</div>
-                <div className="module-status-display__alert-time">
-                  {new Date(alert.timestamp).toLocaleTimeString()}
-                </div>
-                {!alert.acknowledged && (
-                  <button
-                    className="module-status-display__alert-ack-button"
-                    onClick={() => handleAlertAcknowledge(index)}
-                  >
-                    Acknowledge
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Status history */}
-      {showHistory && history.length > 0 && (
-        <div className="module-status-display__history">
-          <h5 className="module-status-display__section-title">Status History</h5>
-
-          <ul className="module-status-display__history-list">
-            {history
-              .slice()
-              .reverse()
-              .map((entry, index) => (
-                <li key={index} className="module-status-display__history-entry">
+        {/* Status History */}
+        {showHistory && history.length > 0 && (
+          <div className="module-status-display__history">
+            <h4 className="module-status-display__section-title">Status History</h4>
+            <ul className="module-status-display__history-list">
+              {history.map((entry, index) => (
+                <li key={index} className="module-status-display__history-item">
                   <div
                     className="module-status-display__history-status"
                     style={{ backgroundColor: getStatusColor(entry.status) }}
@@ -261,71 +137,79 @@ export const ModuleStatusDisplay: React.FC<ModuleStatusDisplayProps> = ({
                     {entry.status}
                   </div>
                   <div className="module-status-display__history-time">
-                    {new Date(entry.timestamp).toLocaleString()}
+                    {new Date(entry.timestamp).toLocaleTimeString()}
                   </div>
-                  {entry.duration && (
-                    <div className="module-status-display__history-duration">
-                      {formatUptime(entry.duration)}
-                    </div>
-                  )}
-                  {entry.reason && (
-                    <div className="module-status-display__history-reason">{entry.reason}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Module Alerts */}
+        {showAlerts && alerts.length > 0 && (
+          <div className="module-status-display__alerts">
+            <h4 className="module-status-display__section-title">Alerts</h4>
+            <ul className="module-status-display__alert-list">
+              {alerts.map((alert, index) => (
+                <li key={index} className="module-status-display__alert-item">
+                  <div
+                    className="module-status-display__alert-level"
+                    style={{ backgroundColor: getAlertColor(alert.level) }}
+                  >
+                    {alert.level}
+                  </div>
+                  <div className="module-status-display__alert-message">{alert.message}</div>
+                  <div className="module-status-display__alert-time">
+                    {new Date(alert.timestamp).toLocaleTimeString()}
+                  </div>
+                  {!alert.acknowledged && (
+                    <button
+                      className="module-status-display__alert-acknowledge"
+                      onClick={() => handleAlertAcknowledge(index)}
+                    >
+                      Acknowledge
+                    </button>
                   )}
                 </li>
               ))}
-          </ul>
-        </div>
-      )}
+            </ul>
+          </div>
+        )}
 
-      {/* Status controls */}
-      <div className="module-status-display__controls">
-        <h5 className="module-status-display__section-title">Change Status</h5>
-
-        <div className="module-status-display__status-buttons">
-          <button
-            className="module-status-display__status-button module-status-display__status-button--active"
-            onClick={() => handleStatusChange('active')}
-            disabled={currentStatus === 'active'}
-          >
-            Active
-          </button>
-
-          <button
-            className="module-status-display__status-button module-status-display__status-button--inactive"
-            onClick={() => handleStatusChange('inactive')}
-            disabled={currentStatus === 'inactive'}
-          >
-            Inactive
-          </button>
-
-          <button
-            className="module-status-display__status-button module-status-display__status-button--maintenance"
-            onClick={() => handleStatusChange('maintenance')}
-            disabled={currentStatus === 'maintenance'}
-          >
-            Maintenance
-          </button>
-
-          <button
-            className="module-status-display__status-button module-status-display__status-button--optimized"
-            onClick={() => handleStatusChange('optimized')}
-            disabled={currentStatus === 'optimized'}
-          >
-            Optimize
-          </button>
-
-          <button
-            className="module-status-display__status-button module-status-display__status-button--powersave"
-            onClick={() => handleStatusChange('powersave')}
-            disabled={currentStatus === 'powersave'}
-          >
-            Power Save
-          </button>
-        </div>
+        {/* Performance Metrics */}
+        {showMetrics && metrics && (
+          <div className="module-status-display__metrics">
+            <h4 className="module-status-display__section-title">Performance Metrics</h4>
+            <div className="module-status-display__metric-grid">
+              {Object.entries(metrics || {}).map(([key, value]) => (
+                <div key={key} className="module-status-display__metric">
+                  <div className="module-status-display__metric-label">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                  </div>
+                  <div className="module-status-display__metric-value">
+                    {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
-};
+    );
+  },
+  (prevProps, nextProps) => {
+    // Compare props to determine if re-render is needed
+    return (
+      prevProps.moduleId === nextProps.moduleId &&
+      prevProps.showDetails === nextProps.showDetails &&
+      prevProps.showHistory === nextProps.showHistory &&
+      prevProps.showAlerts === nextProps.showAlerts &&
+      prevProps.showMetrics === nextProps.showMetrics &&
+      prevProps.onStatusChange === nextProps.onStatusChange &&
+      prevProps.onAlertAcknowledge === nextProps.onAlertAcknowledge
+    );
+  }
+);
 
 interface ModuleStatusSummaryProps {
   moduleIds: string[];
@@ -335,26 +219,33 @@ interface ModuleStatusSummaryProps {
 /**
  * Component for displaying a summary of multiple module statuses
  */
-export const ModuleStatusSummary: React.FC<ModuleStatusSummaryProps> = ({
-  moduleIds,
-  onSelectModule,
-}) => {
-  return (
-    <div className="module-status-summary">
-      <h4 className="module-status-summary__title">Module Status Summary</h4>
+export const ModuleStatusSummary = React.memo<ModuleStatusSummaryProps>(
+  ({ moduleIds, onSelectModule }) => {
+    return (
+      <div className="module-status-summary">
+        <h4 className="module-status-summary__title">Module Status Summary</h4>
 
-      <div className="module-status-summary__list">
-        {moduleIds.map(moduleId => (
-          <ModuleStatusSummaryItem
-            key={moduleId}
-            moduleId={moduleId}
-            onClick={() => onSelectModule?.(moduleId)}
-          />
-        ))}
+        <div className="module-status-summary__list">
+          {moduleIds.map(moduleId => (
+            <ModuleStatusSummaryItem
+              key={moduleId}
+              moduleId={moduleId}
+              onClick={() => onSelectModule?.(moduleId)}
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+  (prevProps, nextProps) => {
+    // Compare props to determine if re-render is needed
+    return (
+      prevProps.moduleIds.length === nextProps.moduleIds.length &&
+      prevProps.moduleIds.every((id, index) => id === nextProps.moduleIds[index]) &&
+      prevProps.onSelectModule === nextProps.onSelectModule
+    );
+  }
+);
 
 interface ModuleStatusSummaryItemProps {
   moduleId: string;
@@ -364,80 +255,68 @@ interface ModuleStatusSummaryItemProps {
 /**
  * Component for displaying a summary of a single module's status
  */
-const ModuleStatusSummaryItem: React.FC<ModuleStatusSummaryItemProps> = ({ moduleId, onClick }) => {
-  const { currentStatus, metrics, alerts, getStatusColor } = useModuleStatus(moduleId);
+const ModuleStatusSummaryItem = React.memo<ModuleStatusSummaryItemProps>(
+  ({ moduleId, onClick }) => {
+    const { currentStatus, metrics, alerts, getStatusColor } = useModuleStatus(moduleId);
 
-  const [module, setModule] = useState<BaseModule | null>(null);
+    const [module, setModule] = useState<BaseModule | null>(null);
 
-  // Load module data
-  useEffect(() => {
-    const moduleData = moduleManager.getModule(moduleId);
-    setModule(moduleData || null);
-  }, [moduleId]);
+    // Load module data
+    useEffect(() => {
+      const moduleData = moduleManager.getModule(moduleId);
+      setModule(moduleData || null);
+    }, [moduleId]);
 
-  if (!module) {
-    return null;
-  }
+    if (!module) {
+      return null;
+    }
 
-  const unacknowledgedAlerts = alerts.filter(alert => !alert.acknowledged);
+    const unacknowledgedAlerts = alerts.filter(alert => !alert.acknowledged);
 
-  return (
-    <div className="module-status-summary-item" onClick={onClick}>
-      <div className="module-status-summary-item__header">
-        <div className="module-status-summary-item__name">{module.name}</div>
-        <div
-          className="module-status-summary-item__status"
-          style={{ backgroundColor: getStatusColor(currentStatus) }}
-        >
-          {currentStatus}
+    return (
+      <div className="module-status-summary-item" onClick={onClick}>
+        <div className="module-status-summary-item__header">
+          <div className="module-status-summary-item__name">{module.name}</div>
+          <div
+            className="module-status-summary-item__status"
+            style={{ backgroundColor: getStatusColor(currentStatus) }}
+          >
+            {currentStatus}
+          </div>
         </div>
+
+        {metrics && (
+          <div className="module-status-summary-item__metrics">
+            <div className="module-status-summary-item__metric">
+              <span className="module-status-summary-item__metric-label">Efficiency:</span>
+              <span className="module-status-summary-item__metric-value">
+                {Math.round(metrics.efficiency * 100)}%
+              </span>
+            </div>
+            <div className="module-status-summary-item__metric">
+              <span className="module-status-summary-item__metric-label">Performance:</span>
+              <span className="module-status-summary-item__metric-value">
+                {Math.round(metrics.performance * 100)}%
+              </span>
+            </div>
+          </div>
+        )}
+
+        {unacknowledgedAlerts.length > 0 && (
+          <div className="module-status-summary-item__alerts">
+            <span className="module-status-summary-item__alert-count">
+              {unacknowledgedAlerts.length} Alert{unacknowledgedAlerts.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+        )}
       </div>
-
-      {metrics && (
-        <div className="module-status-summary-item__metrics">
-          <div className="module-status-summary-item__metric">
-            <span className="module-status-summary-item__metric-label">Efficiency:</span>
-            <div className="module-status-summary-item__progress-bar">
-              <div
-                className="module-status-summary-item__progress-fill"
-                style={{
-                  width: `${metrics.efficiency * 100}%`,
-                  backgroundColor: metrics.efficiency >= 1 ? 'green' : 'orange',
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="module-status-summary-item__metric">
-            <span className="module-status-summary-item__metric-label">Reliability:</span>
-            <div className="module-status-summary-item__progress-bar">
-              <div
-                className="module-status-summary-item__progress-fill"
-                style={{
-                  width: `${metrics.reliability * 100}%`,
-                  backgroundColor:
-                    metrics.reliability >= 0.9
-                      ? 'green'
-                      : metrics.reliability >= 0.7
-                        ? 'yellow'
-                        : 'red',
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {unacknowledgedAlerts.length > 0 && (
-        <div className="module-status-summary-item__alerts">
-          <div className="module-status-summary-item__alert-count">
-            {unacknowledgedAlerts.length} alert{unacknowledgedAlerts.length !== 1 ? 's' : ''}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+    );
+  },
+  (prevProps, nextProps) => {
+    // Compare props to determine if re-render is needed
+    return prevProps.moduleId === nextProps.moduleId && prevProps.onClick === nextProps.onClick;
+  }
+);
 
 interface ModuleAlertListProps {
   alertLevel?: 'info' | 'warning' | 'error' | 'critical';
@@ -447,43 +326,52 @@ interface ModuleAlertListProps {
 /**
  * Component for displaying a list of module alerts
  */
-export const ModuleAlertList: React.FC<ModuleAlertListProps> = ({ alertLevel, onSelectModule }) => {
-  const { moduleIds, isLoading, error } = useModulesWithStatus(undefined, alertLevel);
+export const ModuleAlertList = React.memo<ModuleAlertListProps>(
+  ({ alertLevel, onSelectModule }) => {
+    const { moduleIds, isLoading, error } = useModulesWithStatus(undefined, alertLevel);
 
-  // Render loading state
-  if (isLoading) {
-    return <div className="module-alert-list module-alert-list--loading">Loading alerts...</div>;
-  }
+    // Render loading state
+    if (isLoading) {
+      return <div className="module-alert-list module-alert-list--loading">Loading alerts...</div>;
+    }
 
-  // Render error state
-  if (error) {
-    return <div className="module-alert-list module-alert-list--error">{error}</div>;
-  }
+    // Render error state
+    if (error) {
+      return <div className="module-alert-list module-alert-list--error">{error}</div>;
+    }
 
-  // Render empty state
-  if (moduleIds.length === 0) {
-    return <div className="module-alert-list module-alert-list--empty">No alerts</div>;
-  }
+    // Render empty state
+    if (moduleIds.length === 0) {
+      return <div className="module-alert-list module-alert-list--empty">No alerts</div>;
+    }
 
-  return (
-    <div className="module-alert-list">
-      <h4 className="module-alert-list__title">
-        Module Alerts {alertLevel ? `(${alertLevel})` : ''}
-      </h4>
+    return (
+      <div className="module-alert-list">
+        <h4 className="module-alert-list__title">
+          Module Alerts {alertLevel ? `(${alertLevel})` : ''}
+        </h4>
 
-      <div className="module-alert-list__list">
-        {moduleIds.map(moduleId => (
-          <ModuleAlertItem
-            key={moduleId}
-            moduleId={moduleId}
-            alertLevel={alertLevel}
-            onClick={() => onSelectModule?.(moduleId)}
-          />
-        ))}
+        <div className="module-alert-list__list">
+          {moduleIds.map(moduleId => (
+            <ModuleAlertItem
+              key={moduleId}
+              moduleId={moduleId}
+              alertLevel={alertLevel}
+              onClick={() => onSelectModule?.(moduleId)}
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+  (prevProps, nextProps) => {
+    // Compare props to determine if re-render is needed
+    return (
+      prevProps.alertLevel === nextProps.alertLevel &&
+      prevProps.onSelectModule === nextProps.onSelectModule
+    );
+  }
+);
 
 interface ModuleAlertItemProps {
   moduleId: string;
@@ -494,58 +382,68 @@ interface ModuleAlertItemProps {
 /**
  * Component for displaying a single module's alerts
  */
-const ModuleAlertItem: React.FC<ModuleAlertItemProps> = ({ moduleId, alertLevel, onClick }) => {
-  const { currentStatus, alerts, getStatusColor, getAlertColor } = useModuleStatus(moduleId);
+const ModuleAlertItem = React.memo<ModuleAlertItemProps>(
+  ({ moduleId, alertLevel, onClick }) => {
+    const { currentStatus, alerts, getStatusColor, getAlertColor } = useModuleStatus(moduleId);
 
-  const [module, setModule] = useState<BaseModule | null>(null);
+    const [module, setModule] = useState<BaseModule | null>(null);
 
-  // Load module data
-  useEffect(() => {
-    const moduleData = moduleManager.getModule(moduleId);
-    setModule(moduleData || null);
-  }, [moduleId]);
+    // Load module data
+    useEffect(() => {
+      const moduleData = moduleManager.getModule(moduleId);
+      setModule(moduleData || null);
+    }, [moduleId]);
 
-  if (!module) {
-    return null;
-  }
+    if (!module) {
+      return null;
+    }
 
-  // Filter alerts by level and acknowledgement
-  const filteredAlerts = alerts.filter(
-    alert => !alert.acknowledged && (!alertLevel || alert.level === alertLevel)
-  );
+    // Filter alerts by level and acknowledgement
+    const filteredAlerts = alerts.filter(
+      alert => !alert.acknowledged && (!alertLevel || alert.level === alertLevel)
+    );
 
-  if (filteredAlerts.length === 0) {
-    return null;
-  }
+    if (filteredAlerts.length === 0) {
+      return null;
+    }
 
-  return (
-    <div className="module-alert-item" onClick={onClick}>
-      <div className="module-alert-item__header">
-        <div className="module-alert-item__name">{module.name}</div>
-        <div
-          className="module-alert-item__status"
-          style={{ backgroundColor: getStatusColor(currentStatus) }}
-        >
-          {currentStatus}
+    return (
+      <div className="module-alert-item" onClick={onClick}>
+        <div className="module-alert-item__header">
+          <div className="module-alert-item__name">{module.name}</div>
+          <div
+            className="module-alert-item__status"
+            style={{ backgroundColor: getStatusColor(currentStatus) }}
+          >
+            {currentStatus}
+          </div>
         </div>
-      </div>
 
-      <ul className="module-alert-item__alert-list">
-        {filteredAlerts.map((alert, index) => (
-          <li key={index} className="module-alert-item__alert">
-            <div
-              className="module-alert-item__alert-level"
-              style={{ backgroundColor: getAlertColor(alert.level) }}
-            >
-              {alert.level}
-            </div>
-            <div className="module-alert-item__alert-message">{alert.message}</div>
-            <div className="module-alert-item__alert-time">
-              {new Date(alert.timestamp).toLocaleTimeString()}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
+        <ul className="module-alert-item__alert-list">
+          {filteredAlerts.map((alert, index) => (
+            <li key={index} className="module-alert-item__alert">
+              <div
+                className="module-alert-item__alert-level"
+                style={{ backgroundColor: getAlertColor(alert.level) }}
+              >
+                {alert.level}
+              </div>
+              <div className="module-alert-item__alert-message">{alert.message}</div>
+              <div className="module-alert-item__alert-time">
+                {new Date(alert.timestamp).toLocaleTimeString()}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Compare props to determine if re-render is needed
+    return (
+      prevProps.moduleId === nextProps.moduleId &&
+      prevProps.alertLevel === nextProps.alertLevel &&
+      prevProps.onClick === nextProps.onClick
+    );
+  }
+);

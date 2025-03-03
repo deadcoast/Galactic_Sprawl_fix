@@ -110,9 +110,9 @@ const shaderMaterial = (
   });
 
   // Log shader compilation for debugging
-  console.log(`Creating shader material with ${Object.keys(uniforms).length} uniforms`);
-  console.log(`Vertex shader length: ${vertexShader.length} characters`);
-  console.log(`Fragment shader length: ${fragmentShader.length} characters`);
+  console.warn(`Creating shader material with ${Object.keys(uniforms).length} uniforms`);
+  console.warn(`Vertex shader length: ${vertexShader.length} characters`);
+  console.warn(`Fragment shader length: ${fragmentShader.length} characters`);
 
   // This is a mock implementation that returns a component
   return (props: ShaderMaterialProps) => {
@@ -162,9 +162,9 @@ const useFrame = (callback: (state: FrameState) => void): void => {
 // Mock for extend
 const extendThree = (components: Record<string, unknown>): void => {
   // Register the components with Three.js (mock implementation)
-  console.log(`Registering ${Object.keys(components).length} custom components with Three.js:`);
+  console.warn(`Registering ${Object.keys(components).length} custom components with Three.js:`);
   Object.keys(components).forEach(name => {
-    console.log(`- ${name}`);
+    console.warn(`- ${name}`);
   });
 
   // In a real implementation, this would extend Three.js with custom shader materials
@@ -465,7 +465,7 @@ const Canvas: React.FC<CanvasProps> = ({ children, camera, style }) => {
 
   // Log camera settings for debugging
   React.useEffect(() => {
-    console.log(
+    console.warn(
       `Canvas initialized with camera at position [${camera.position.join(', ')}], FOV: ${camera.fov}`
     );
 

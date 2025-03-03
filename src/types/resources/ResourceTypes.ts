@@ -241,3 +241,114 @@ export interface ResourceAlert {
     amount: number;
   }[];
 }
+
+/**
+ * Resource Conversion Recipe
+ *
+ * Defines how one set of resources is converted to another
+ */
+export interface ResourceConversionRecipe {
+  id: string;
+  name: string;
+  description?: string;
+  inputs: ResourceCost[];
+  outputs: ResourceCost[];
+  processingTime: number; // Time in milliseconds to complete one conversion cycle
+  baseEfficiency: number; // Base efficiency (1.0 = 100%)
+}
+
+/**
+ * Resource Conversion Process
+ *
+ * Represents an active conversion process
+ */
+export interface ResourceConversionProcess {
+  recipeId: string;
+  progress: number; // Progress from 0 to 1
+  startTime: number; // Timestamp when the process started
+  endTime: number; // Timestamp when the process will complete
+  sourceId: string; // ID of the converter node
+  active: boolean; // Whether the process is active
+  paused: boolean; // Whether the process is paused
+  inputsProvided: boolean; // Whether the required inputs have been provided
+  appliedEfficiency?: number; // The efficiency applied to this process
+}
+
+/**
+ * Multi-Step Conversion Chain
+ *
+ * Represents a sequence of conversion recipes that form a production chain
+ */
+export interface ConversionChain {
+  id: string;
+  name: string;
+  description?: string;
+  steps: string[]; // Array of recipe IDs in sequence
+  active: boolean;
+}
+
+/**
+ * Chain Execution Status
+ *
+ * Tracks the execution status of a multi-step conversion chain
+ */
+export interface ChainExecutionStatus {
+  chainId: string;
+  currentStepIndex: number;
+  recipeIds: string[];
+  startTime: number;
+  estimatedEndTime: number;
+  progress: number; // Overall progress from 0 to 1
+  stepStatus: {
+    recipeId: string;
+    converterId: string;
+    processId?: string;
+    status: 'pending' | 'in_progress' | 'completed' | 'failed';
+    startTime?: number;
+    endTime?: number;
+  }[];
+  resourceTransfers: {
+    type: ResourceType;
+    amount: number;
+    fromStep: number;
+    toStep: number;
+    status: 'pending' | 'in_progress' | 'completed';
+  }[];
+  active: boolean;
+  paused: boolean;
+  completed: boolean;
+  failed: boolean;
+  errorMessage?: string;
+}
+
+/**
+ * Converter Node Configuration
+ *
+ * Configuration for a converter node in the resource network
+ */
+export interface ConverterNodeConfig {
+  supportedRecipes: string[]; // IDs of recipes this converter can process
+  maxConcurrentProcesses: number; // Maximum number of concurrent conversion processes
+  autoStart: boolean; // Whether to automatically start conversion when inputs are available
+  queueBehavior: 'fifo' | 'priority'; // How to handle the process queue
+  byproducts?: { [key in ResourceType]?: number }; // Chance to produce byproducts (0-1)
+  efficiencyModifiers?: { [key: string]: number }; // Modifiers that affect efficiency
+  tier?: 1 | 2 | 3; // Technology tier of the converter
+  chainBonus?: number; // Bonus when used in a conversion chain
+}
+
+/**
+ * Converter Process Status
+ *
+ * Detailed status information about a converter's processing
+ */
+export interface ConverterProcessStatus {
+  activeProcesses: ResourceConversionProcess[];
+  queuedProcesses: ResourceConversionProcess[];
+  completedProcesses: number;
+  failedProcesses: number;
+  totalResourcesProduced: { [key in ResourceType]?: number };
+  totalResourcesConsumed: { [key in ResourceType]?: number };
+  averageEfficiency: number;
+  uptime: number; // Total time the converter has been active
+}

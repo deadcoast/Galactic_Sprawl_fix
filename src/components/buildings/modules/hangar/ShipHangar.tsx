@@ -154,7 +154,7 @@ export function ShipHangar({ manager }: ShipHangarProps) {
   // Use mock ships for development and testing when no ships are available
   useEffect(() => {
     if (process.env.NODE_ENV === 'development' && ships.length === 0) {
-      console.log('Using mock ships for development:', _mockShips);
+      console.warn('Using mock ships for development:', _mockShips);
       // Only use mock ships if no real ships are available from the manager
       if (manager.getDockedShips().length === 0) {
         setShips(_mockShips);

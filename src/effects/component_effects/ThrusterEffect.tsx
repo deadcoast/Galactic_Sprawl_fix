@@ -4,35 +4,37 @@ import * as React from 'react';
 // Mock the @react-three/fiber imports if they can't be found
 // This allows TypeScript to compile without errors while preserving the component's structure
 // In a real environment with @react-three/fiber installed, these will be overridden by the actual imports
-import { Canvas as ThreeCanvas, useFrame as ThreeUseFrame } from '@react-three/fiber';
+import { useFrame as ThreeUseFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// Declare JSX namespace for Three.js elements
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      points: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        ref?: React.RefObject<THREE.Points>;
-      };
-      bufferGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-      bufferAttribute: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        attach: string;
-        count: number;
-        array: Float32Array;
-        itemSize: number;
-      };
-      shaderMaterial: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        attach?: string;
-        transparent?: boolean;
-        depthWrite?: boolean;
-        blending?: THREE.Blending;
-        uniforms?: Record<string, { value: unknown }>;
-        vertexShader?: string;
-        fragmentShader?: string;
-      };
-    }
-  }
-}
+// Define custom element types for Three.js components
+type ThreePointsProps = {
+  ref?: React.RefObject<THREE.Points>;
+  [key: string]: unknown;
+};
+
+type ThreeBufferGeometryProps = {
+  [key: string]: unknown;
+};
+
+type ThreeBufferAttributeProps = {
+  attach: string;
+  count: number;
+  array: Float32Array;
+  itemSize: number;
+  [key: string]: unknown;
+};
+
+type ThreeShaderMaterialProps = {
+  attach?: string;
+  transparent?: boolean;
+  depthWrite?: boolean;
+  blending?: THREE.Blending;
+  uniforms?: Record<string, { value: unknown }>;
+  vertexShader?: string;
+  fragmentShader?: string;
+  [key: string]: unknown;
+};
 
 // Define mock types if @react-three/fiber is not available
 // This helps TypeScript understand the structure without the actual library
@@ -48,7 +50,7 @@ declare global {
  *
  * This interface is currently used for type checking during development,
  * but will be replaced by the actual @react-three/fiber implementation
- * at runtime.
+ * when the application is built with the proper dependencies.
  */
 interface CanvasProps {
   children: React.ReactNode;
@@ -60,58 +62,62 @@ interface CanvasProps {
 }
 
 /**
- * Mock implementation of the useFrame hook from @react-three/fiber
+ * Interface for the state object passed to useFrame callbacks
+ * This defines the structure of the state object that is passed to
+ * animation frame callbacks, allowing components to access time
+ * information for animations.
  *
- * @param callback - Function to be called on each animation frame
- *                  This function receives a state object with clock information
- *                  and is used to:
- *                  1. Update particle positions and properties
- *                  2. Animate thruster effects based on time
- *                  3. Apply physics-based movement to particles
- *                  4. Handle particle lifecycle (creation, animation, destruction)
- *                  5. Synchronize thruster animations with ship movement
+ * Properties:
+ * - clock: Contains timing information for animations
+ *   - elapsedTime: The total time elapsed since the animation started
+ *
+ * This interface is used for type checking during development and
+ * will be replaced by the actual @react-three/fiber implementation.
  */
+interface FrameState {
+  clock: {
+    elapsedTime: number;
+  };
+}
+
+// Mock implementation of useFrame if the real one is not available
 const mockUseFrame = (callback: (state: { clock: { elapsedTime: number } }) => void) => {
-  // This is a mock implementation that would be replaced at runtime
-  // In a real implementation, this would set up a requestAnimationFrame loop
   React.useEffect(() => {
     let frameId: number;
     const state = { clock: { elapsedTime: 0 } };
     let lastTime = 0;
 
     const animate = (time: number) => {
-      // Calculate elapsed time
       const delta = (time - lastTime) / 1000;
       lastTime = time;
       state.clock.elapsedTime += delta;
-
-      // Call the provided callback with the current state
       callback(state);
-
-      // Continue the animation loop
       frameId = requestAnimationFrame(animate);
     };
 
-    // Start the animation loop
     frameId = requestAnimationFrame(animate);
-
-    // Clean up the animation loop when the component unmounts
-    return () => {
-      cancelAnimationFrame(frameId);
-    };
+    return () => cancelAnimationFrame(frameId);
   }, [callback]);
 };
 
-// Use either the real useFrame or our mock implementation
+// Use the real useFrame if available, otherwise use the mock
 const useFrame = ThreeUseFrame || mockUseFrame;
 
-// Create a Canvas component that uses either the real Canvas or our mock implementation
+/**
+ * Canvas component for rendering 3D content
+ * This component provides a container for rendering 3D content
+ * using Three.js. It's a simplified version that works without
+ * the full @react-three/fiber library for development purposes.
+ *
+ * @param children - The 3D content to render
+ * @param camera - Camera configuration for the 3D scene
+ * @param style - CSS styles for the canvas container
+ */
 const Canvas: React.FC<CanvasProps> = ({ children, camera, style }) => {
-  if (ThreeCanvas) {
-    // Make sure to pass children explicitly
-    return React.createElement(ThreeCanvas, { camera, style, children });
-  }
-  return React.createElement('div', { style }, children);
+  const defaultCamera = camera || { position: [0, 0, 5], fov: 75 };
+  const defaultStyle = style || { width: '100%', height: '100%' };
+
+  return React.createElement('div', { style: defaultStyle }, children);
 };
 
 interface ThrusterEffectProps {
@@ -122,50 +128,126 @@ interface ThrusterEffectProps {
 
 function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
   const pointsRef = React.useRef<THREE.Points>(null);
-  const geometryRef = React.useRef<THREE.BufferGeometry>(null);
 
-  // Determine particle count based on size
-  const particleCount = size === 'small' ? 100 : size === 'medium' ? 200 : 300;
+  // Convert size to numeric value
+  const sizeValue = size === 'small' ? 1 : size === 'medium' ? 2 : 3;
+
+  // Calculate particle count based on size and intensity
+  const particleCount = Math.floor(sizeValue * intensity * 50);
 
   // Create arrays for particle properties
   const positions = new Float32Array(particleCount * 3);
   const sizes = new Float32Array(particleCount);
   const opacities = new Float32Array(particleCount);
-  const velocities = React.useRef<Float32Array>(new Float32Array(particleCount * 3));
-  const lifetimes = React.useRef<Float32Array>(new Float32Array(particleCount));
+  const velocities = new Float32Array(particleCount * 3);
+  const lifetimes = new Float32Array(particleCount);
 
   // Initialize particles
   React.useEffect(() => {
-    if (!geometryRef.current) return;
+    // Create a THREE.Color object from the color string
+    const colorObj = new THREE.Color(color);
 
-    // Set up initial particle properties
+    // Log color information for debugging
+    console.warn(
+      `Initializing thruster with color: rgb(${Math.floor(colorObj.r * 255)}, ${Math.floor(
+        colorObj.g * 255
+      )}, ${Math.floor(colorObj.b * 255)})`
+    );
+
+    // Initialize each particle
     for (let i = 0; i < particleCount; i++) {
-      // Random position near origin with slight spread
-      positions[i * 3] = (Math.random() - 0.5) * 0.1;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 0.1;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 0.1;
+      // Random position within a cone shape
+      const angle = Math.random() * Math.PI * 2;
+      const radius = Math.random() * sizeValue * 0.2;
 
-      // Random size based on thruster size
-      const sizeMultiplier = size === 'small' ? 0.5 : size === 'medium' ? 0.75 : 1;
-      sizes[i] = (Math.random() * 0.5 + 0.5) * sizeMultiplier;
+      // Position at the base of the cone (thruster output)
+      positions[i * 3] = Math.cos(angle) * radius;
+      positions[i * 3 + 1] = Math.sin(angle) * radius;
+      positions[i * 3 + 2] = 0;
+
+      // Random sizes based on intensity and particle position
+      sizes[i] = (Math.random() * 0.5 + 0.5) * sizeValue * (intensity * 0.5);
 
       // Initial opacity
-      opacities[i] = Math.random() * 0.5 + 0.5;
+      opacities[i] = Math.random() * 0.7 + 0.3;
 
-      // Velocity - primarily in the negative y direction (thruster pointing down)
-      velocities.current[i * 3] = (Math.random() - 0.5) * 0.2;
-      velocities.current[i * 3 + 1] = -(Math.random() * 0.5 + 0.5) * intensity;
-      velocities.current[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
+      // Velocity - primarily in the z-direction (backward from thruster)
+      velocities[i * 3] = (Math.random() - 0.5) * 0.1 * intensity;
+      velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.1 * intensity;
+      velocities[i * 3 + 2] = -(Math.random() * 0.5 + 0.5) * intensity;
 
       // Random lifetime
-      lifetimes.current[i] = Math.random() * 2;
+      lifetimes[i] = Math.random() * 1 + 0.5;
+    }
+  }, [
+    color,
+    intensity,
+    particleCount,
+    positions,
+    sizes,
+    opacities,
+    velocities,
+    lifetimes,
+    sizeValue,
+  ]);
+
+  // Animate particles
+  useFrame(state => {
+    if (!pointsRef.current) {
+      return;
     }
 
-    // Set geometry attributes
-    geometryRef.current.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometryRef.current.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    geometryRef.current.setAttribute('opacity', new THREE.BufferAttribute(opacities, 1));
-  }, [particleCount, size, intensity, positions, sizes, opacities]);
+    const time = state.clock.elapsedTime;
+    const { geometry } = pointsRef.current;
+
+    // Get attribute arrays
+    const positionArray = geometry.attributes.position.array as Float32Array;
+    const sizeArray = geometry.attributes.size.array as Float32Array;
+    const opacityArray = geometry.attributes.opacity.array as Float32Array;
+
+    // Update each particle
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3;
+
+      // Calculate particle age based on time
+      const age = (time * intensity) % lifetimes[i];
+      const ageRatio = age / lifetimes[i];
+
+      // Update position based on velocity
+      positionArray[i3] += velocities[i3] * 0.1;
+      positionArray[i3 + 1] += velocities[i3 + 1] * 0.1;
+      positionArray[i3 + 2] += velocities[i3 + 2] * 0.1;
+
+      // Add some turbulence
+      positionArray[i3] += Math.sin(time * 10 + i) * 0.01 * intensity;
+      positionArray[i3 + 1] += Math.cos(time * 10 + i) * 0.01 * intensity;
+
+      // Fade out based on age
+      opacityArray[i] = Math.max(0, 1 - ageRatio) * intensity;
+
+      // Grow slightly as they age
+      sizeArray[i] = sizes[i] * (1 - ageRatio * 0.5);
+
+      // Reset particle if it's reached the end of its life
+      if (ageRatio > 0.95) {
+        // Reset position to thruster output
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.random() * sizeValue * 0.2;
+
+        positionArray[i3] = Math.cos(angle) * radius;
+        positionArray[i3 + 1] = Math.sin(angle) * radius;
+        positionArray[i3 + 2] = 0;
+
+        // Reset opacity
+        opacityArray[i] = Math.random() * 0.7 + 0.3;
+      }
+    }
+
+    // Mark attributes as needing update
+    geometry.attributes.position.needsUpdate = true;
+    geometry.attributes.size.needsUpdate = true;
+    geometry.attributes.opacity.needsUpdate = true;
+  });
 
   // Vertex shader for particles
   const vertexShader = `
@@ -190,105 +272,64 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
       // Create a circular particle with soft edges
       vec2 center = gl_PointCoord - vec2(0.5);
       float dist = length(center);
-      float alpha = smoothstep(0.5, 0.3, dist) * vOpacity;
+      float alpha = smoothstep(0.5, 0.2, dist) * vOpacity;
       
-      // Add glow effect
-      vec3 finalColor = mix(color, vec3(1.0, 1.0, 1.0), smoothstep(0.5, 0.0, dist) * 0.6);
+      // Add some variation to the color based on position
+      vec3 finalColor = color * (1.0 + (gl_PointCoord.y - 0.5) * 0.5);
       
       gl_FragColor = vec4(finalColor, alpha);
     }
   `;
 
-  // Update particles on each frame
-  useFrame(state => {
-    if (!geometryRef.current) return;
-
-    const positions = geometryRef.current.attributes.position.array as Float32Array;
-    const opacities = geometryRef.current.attributes.opacity.array as Float32Array;
-    const sizes = geometryRef.current.attributes.size.array as Float32Array;
-
-    const time = state.clock.elapsedTime;
-    const maxLifetime = 1.0 + intensity * 0.5;
-
-    for (let i = 0; i < particleCount; i++) {
-      // Update lifetime
-      lifetimes.current[i] += 0.016; // Approximately 60fps
-
-      // Reset particles that have lived their lifetime
-      if (lifetimes.current[i] > maxLifetime) {
-        // Reset position to origin with slight randomness
-        positions[i * 3] = (Math.random() - 0.5) * 0.1;
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 0.1;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 0.1;
-
-        // Reset lifetime
-        lifetimes.current[i] = 0;
-
-        // Reset opacity
-        opacities[i] = Math.random() * 0.5 + 0.5;
-
-        // Reset size
-        const sizeMultiplier = size === 'small' ? 0.5 : size === 'medium' ? 0.75 : 1;
-        sizes[i] = (Math.random() * 0.5 + 0.5) * sizeMultiplier;
-
-        // Reset velocity with some randomness
-        velocities.current[i * 3] = (Math.random() - 0.5) * 0.2;
-        velocities.current[i * 3 + 1] = -(Math.random() * 0.5 + 0.5) * intensity;
-        velocities.current[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
-      } else {
-        // Update position based on velocity
-        positions[i * 3] += velocities.current[i * 3];
-        positions[i * 3 + 1] += velocities.current[i * 3 + 1];
-        positions[i * 3 + 2] += velocities.current[i * 3 + 2];
-
-        // Add some turbulence based on time
-        const turbulence = 0.01 * intensity;
-        positions[i * 3] += Math.sin(time * 5 + i) * turbulence;
-        positions[i * 3 + 2] += Math.cos(time * 5 + i) * turbulence;
-
-        // Fade out based on lifetime
-        const lifeRatio = lifetimes.current[i] / maxLifetime;
-        opacities[i] = Math.max(0, 1 - lifeRatio) * (Math.random() * 0.1 + 0.9);
-
-        // Grow slightly as they age
-        sizes[i] *= 1.01;
-      }
-    }
-
-    // Update geometry attributes
-    geometryRef.current.attributes.position.needsUpdate = true;
-    geometryRef.current.attributes.opacity.needsUpdate = true;
-    geometryRef.current.attributes.size.needsUpdate = true;
-  });
-
-  // Parse color string to THREE.Color
-  const colorObj = new THREE.Color(color);
-
-  return React.createElement('points', { ref: pointsRef }, [
-    React.createElement('bufferGeometry', { ref: geometryRef }),
-    React.createElement('shaderMaterial', {
-      attach: 'material',
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      uniforms: {
-        color: { value: colorObj },
-      },
-      vertexShader,
-      fragmentShader,
-    }),
-  ]);
+  // Use React.createElement with type assertions for Three.js elements
+  return React.createElement(
+    React.Fragment,
+    null,
+    React.createElement(
+      'points',
+      { ref: pointsRef } as ThreePointsProps,
+      React.createElement(
+        'bufferGeometry',
+        {} as ThreeBufferGeometryProps,
+        React.createElement('bufferAttribute', {
+          attach: 'attributes.position',
+          count: particleCount,
+          array: positions,
+          itemSize: 3,
+        } as ThreeBufferAttributeProps),
+        React.createElement('bufferAttribute', {
+          attach: 'attributes.size',
+          count: particleCount,
+          array: sizes,
+          itemSize: 1,
+        } as ThreeBufferAttributeProps),
+        React.createElement('bufferAttribute', {
+          attach: 'attributes.opacity',
+          count: particleCount,
+          array: opacities,
+          itemSize: 1,
+        } as ThreeBufferAttributeProps)
+      ),
+      React.createElement('shaderMaterial', {
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          color: { value: new THREE.Color(color) },
+        },
+        vertexShader,
+        fragmentShader,
+      } as ThreeShaderMaterialProps)
+    )
+  );
 }
 
 export function ThrusterEffect({ size, color, intensity }: ThrusterEffectProps) {
-  // Size multiplier based on thruster size
-  const sizeMultiplier = size === 'small' ? 1 : size === 'medium' ? 1.5 : 2;
-
   // Create the thruster particles element
   const thrusterParticlesElement = React.createElement(ThrusterParticles, {
     size,
     color,
-    intensity: intensity * sizeMultiplier,
+    intensity,
   });
 
   return React.createElement(

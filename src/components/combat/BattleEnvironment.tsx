@@ -256,7 +256,7 @@ export function BattleEnvironment({
     };
 
     // Log the fleet AI result for debugging
-    console.log('Advanced fleet AI result:', customFleetAIResult);
+    console.warn('Advanced fleet AI result:', customFleetAIResult);
 
     // Update active hazards
     activeHazardsRef.current = hazards;

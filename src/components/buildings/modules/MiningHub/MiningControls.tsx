@@ -1,45 +1,16 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { ChevronRight, Database, Pickaxe, Settings, Star } from 'lucide-react';
-import * as React from 'react';
-
-interface Resource {
-  id: string;
-  name: string;
-  type: 'mineral' | 'gas' | 'exotic';
-  abundance: number;
-  distance: number;
-  extractionRate: number;
-  depletion: number;
-  priority: number;
-  thresholds: {
-    min: number;
-    max: number;
-  };
-}
-
-interface TechBonuses {
-  extractionRate: number;
-  storageCapacity: number;
-  efficiency: number;
-}
-
-interface MiningExperience {
-  baseAmount: number;
-  bonusFactors: {
-    resourceRarity: number; // Exotic > Gas > Mineral
-    extractionEfficiency: number;
-    resourceQuality: number; // Based on abundance
-    distanceModifier: number; // Further = more XP
-    techBonus: number; // Bonus from tech tree upgrades
-  };
-  totalXP: number; // Calculated total XP
-  unlockedTech: string[]; // Tech tree nodes that can be unlocked - removed optional
-}
+import React, { useCallback, useEffect, useMemo } from 'react';
+import {
+  MiningExperience,
+  MiningResource,
+  MiningTechBonuses,
+} from '../../../../types/mining/MiningTypes';
 
 interface MiningControlsProps {
-  resource: Resource;
-  techBonuses: TechBonuses;
+  resource: MiningResource;
+  techBonuses: MiningTechBonuses;
   onExperienceGained: (experience: MiningExperience) => void;
 }
 
@@ -48,12 +19,55 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
   const [miningProgress, setMiningProgress] = React.useState(0);
   const [totalResourcesMined, setTotalResourcesMined] = React.useState(0);
 
-  // Calculate mining efficiency with tech bonuses
-  const effectiveExtractionRate = resource.extractionRate * techBonuses.extractionRate;
-  const effectiveEfficiency = Math.min(1, techBonuses.efficiency);
+  // Memoize mining efficiency calculations
+  const { effectiveExtractionRate, effectiveEfficiency } = useMemo(
+    () => ({
+      effectiveExtractionRate: resource.extractionRate * techBonuses.extractionRate,
+      effectiveEfficiency: Math.min(1, techBonuses.efficiency),
+    }),
+    [resource.extractionRate, techBonuses.extractionRate, techBonuses.efficiency]
+  );
 
-  // Calculate experience gains
-  React.useEffect(() => {
+  // Memoize experience calculation function
+  const calculateExperience = useCallback(() => {
+    const experience: MiningExperience = {
+      baseAmount: 10,
+      bonusFactors: {
+        resourceRarity: resource.type === 'exotic' ? 3 : resource.type === 'gas' ? 2 : 1,
+        extractionEfficiency: effectiveEfficiency,
+        resourceQuality: resource.abundance,
+        distanceModifier: Math.min(2, resource.distance / 500),
+        techBonus: (techBonuses.extractionRate + techBonuses.efficiency) / 2,
+      },
+      totalXP: 0,
+      unlockedTech: [], // Initialize as empty array
+    };
+
+    // Calculate total XP with all bonuses
+    experience.totalXP =
+      experience.baseAmount *
+      Object.values(experience.bonusFactors).reduce<number>((acc, factor) => {
+        // Ensure factor is a number
+        const numericFactor = typeof factor === 'number' ? factor : 0;
+        return acc * numericFactor;
+      }, 1);
+
+    // Check for tech tree unlocks based on total XP
+    if (experience.totalXP >= 100) {
+      experience.unlockedTech = ['improved-extraction'];
+    }
+    if (experience.totalXP >= 250) {
+      experience.unlockedTech.push('processing-algorithms');
+    }
+    if (experience.totalXP >= 500) {
+      experience.unlockedTech.push('exotic-mining');
+    }
+
+    return experience;
+  }, [resource.type, resource.abundance, resource.distance, effectiveEfficiency, techBonuses]);
+
+  // Effect for mining progress
+  useEffect(() => {
     if (!autoMine) {
       return;
     }
@@ -67,35 +81,7 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
           setTotalResourcesMined(total => total + 1);
 
           // Calculate and award experience
-          const experience: MiningExperience = {
-            baseAmount: 10,
-            bonusFactors: {
-              resourceRarity: resource.type === 'exotic' ? 3 : resource.type === 'gas' ? 2 : 1,
-              extractionEfficiency: effectiveEfficiency,
-              resourceQuality: resource.abundance,
-              distanceModifier: Math.min(2, resource.distance / 500),
-              techBonus: (techBonuses.extractionRate + techBonuses.efficiency) / 2,
-            },
-            totalXP: 0,
-            unlockedTech: [], // Initialize as empty array
-          };
-
-          // Calculate total XP with all bonuses
-          experience.totalXP =
-            experience.baseAmount *
-            Object.values(experience.bonusFactors).reduce((acc, factor) => acc * factor, 1);
-
-          // Check for tech tree unlocks based on total XP
-          if (experience.totalXP >= 100) {
-            experience.unlockedTech = ['improved-extraction'];
-          }
-          if (experience.totalXP >= 250) {
-            experience.unlockedTech.push('processing-algorithms');
-          }
-          if (experience.totalXP >= 500) {
-            experience.unlockedTech.push('exotic-mining');
-          }
-
+          const experience = calculateExperience();
           onExperienceGained(experience);
           return 0;
         }
@@ -106,11 +92,10 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
     return () => clearInterval(miningInterval);
   }, [
     autoMine,
-    resource,
     effectiveExtractionRate,
     effectiveEfficiency,
+    calculateExperience,
     onExperienceGained,
-    techBonuses,
   ]);
 
   return (

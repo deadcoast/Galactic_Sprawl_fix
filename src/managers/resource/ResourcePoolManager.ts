@@ -452,7 +452,7 @@ export class ResourcePoolManager {
     );
 
     // Log allocation details
-    console.log(
+    console.warn(
       `[ResourcePoolManager] Allocating ${amount} units of ${resourceType} based on priority`
     );
 
@@ -463,7 +463,7 @@ export class ResourcePoolManager {
 
       // Log individual container allocation
       if (containerAmount > 0) {
-        console.log(
+        console.warn(
           `[ResourcePoolManager] Allocated ${containerAmount.toFixed(2)} units of ${resourceType} to container ${container.id} (${containerPercentage.toFixed(2)}%)`
         );
       }

@@ -183,7 +183,7 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
       _quality
     );
 
-    console.log(
+    console.warn(
       `[WeaponEffectManager] Creating beam effect with ${adjustedParticleCount} particles at quality ${_quality}`
     );
 
@@ -201,7 +201,7 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
       _quality
     );
 
-    console.log(
+    console.warn(
       `[WeaponEffectManager] Creating explosion effect with ${adjustedParticleCount} particles at quality ${_quality}`
     );
 
@@ -220,7 +220,7 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
       _quality
     );
 
-    console.log(
+    console.warn(
       `[WeaponEffectManager] Creating continuous effect with ${adjustedParticleCount} particles at quality ${_quality}`
     );
 

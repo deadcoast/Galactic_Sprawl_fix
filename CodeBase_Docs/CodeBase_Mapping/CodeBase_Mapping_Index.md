@@ -66,6 +66,33 @@ This document serves as the main index for the Galactic Sprawl project codebase 
 - `src/effects/component_effects/ShieldImpactEffect.ts` - Implemented the point parameter in the ripplePoints.forEach method to calculate position.
 - `src/effects/component_effects/SmokeTrailEffect.tsx` - Added documentation for the camera parameter in the Canvas component.
 - `src/effects/component_effects/ThrusterEffect.tsx` - Implemented the callback parameter in the mockUseFrame function and added documentation for the CanvasProps interface.
+- `src/effects/component_effects/ExplosionEffect.tsx` - Replaced JSX namespace declaration with proper type definitions for Three.js elements.
+- `src/effects/component_effects/SmokeTrailEffect.tsx` - Replaced JSX namespace declaration with proper type definitions for Three.js elements.
+- `src/effects/component_effects/ThrusterEffect.tsx` - Replaced JSX namespace declaration with proper type definitions for Three.js elements.
+
+### ESLint Console Statement Fixes
+
+- `src/lib/ai/shipMovement.ts` - Replaced console.log with console.warn for ship position logging.
+- `src/lib/optimization/EntityPool.ts` - Replaced console.log with console.warn for pool expansion logging.
+- `src/managers/automation/GlobalAutomationManager.ts` - Replaced console.log with console.warn for automation manager status.
+- `src/managers/resource/ResourcePoolManager.ts` - Replaced console.log with console.warn for resource allocation logging.
+- `src/managers/weapons/WeaponEffectManager.ts` - Replaced console.log with console.warn for weapon effect creation.
+- `src/components/buildings/modules/hangar/ShipHangar.tsx` - Replaced console.log with console.warn for mock ships usage.
+- `src/components/combat/BattleEnvironment.tsx` - Replaced console.log with console.warn for fleet AI debugging.
+- `src/components/ui/GameHUD.tsx` - Replaced console.log with console.warn for notification system debugging.
+- `src/effects/component_effects/ExplosionEffect.tsx` - Replaced console.log with console.warn for particle effect debugging.
+- `src/effects/component_effects/ShieldEffect.tsx` - Replaced console.log with console.warn for shader material debugging.
+
+### Event System Optimizations
+
+- `src/utils/events/EventBatcher.ts` - Implemented event batching for high-frequency events using RxJS operators. Provides configuration options for time window, batch size, and empty batch handling.
+- `src/hooks/events/useEventBatching.ts` - Created React hooks for event batching, debouncing, and throttling. Includes useEventBatching, useEventDebouncing, and useEventThrottling hooks.
+- `src/utils/events/EventFilter.ts` - Implemented optimized event filtering with three strategies: standard filtering, batch processing, and indexed filtering. Provides efficient filtering for large event histories.
+- `src/hooks/events/useEventFiltering.ts` - Created React hooks for event filtering, including useEventFiltering and usePaginatedEventFiltering hooks.
+- `src/tests/utils/events/EventBatcher.test.ts` - Added comprehensive tests for the EventBatcher utility, covering batch creation, configuration, and batch processing functions.
+- `src/tests/hooks/events/useEventBatching.test.tsx` - Added tests for the event batching hooks, including initialization, configuration updates, and event handling.
+- `src/tests/utils/events/EventFilter.test.ts` - Added tests for the EventFilter class, covering basic filtering, batch processing, indexed filtering, and configuration updates.
+- `CodeBase_Docs/Event_System_Optimizations.md` - Created detailed documentation for the event system optimizations, including implementation details, usage examples, and best practices.
 
 ## Ship Types and Abilities
 
@@ -128,6 +155,8 @@ This document serves as the main index for the Galactic Sprawl project codebase 
    - Component Tests
    - Integration Tests
    - End-to-End Tests
+   - Test Utilities
+   - Playwright Setup
 
 8. [Ship System](./Categories/Ship_System_References.md)
 
@@ -443,3 +472,193 @@ When updating the codebase:
 2. Update existing documentation to reflect changes in the codebase
 3. Maintain consistent formatting and organization within each category file
 4. If a new category is needed, create a new file and update the index
+
+### TypeScript Namespace Fixes
+
+The following files had TypeScript namespace issues that were fixed by replacing namespace declarations with proper type definitions:
+
+1. `src/effects/component_effects/ExplosionEffect.tsx` - Replaced JSX namespace declaration with proper type definitions for Three.js elements.
+2. `src/effects/component_effects/SmokeTrailEffect.tsx` - Replaced JSX namespace declaration with proper type definitions for Three.js elements.
+3. `src/effects/component_effects/ThrusterEffect.tsx` - Replaced JSX namespace declaration with proper type definitions for Three.js elements.
+
+These fixes ensure that the codebase follows modern TypeScript best practices by using ES2015 module syntax instead of namespaces.
+
+### Resource Management System Optimizations
+
+- `src/managers/resource/ResourceFlowManager.ts` - Optimized for better performance with large resource networks:
+
+  - Added caching system for resource states to reduce redundant lookups
+  - Implemented batch processing for large networks to prevent UI freezing
+  - Split the large `optimizeFlows()` method into smaller, focused methods
+  - Added performance metrics to track execution time and resource usage
+  - Enhanced converter node processing with better efficiency calculations
+  - Improved error handling with more descriptive warning messages
+  - Added configurable parameters for optimization interval, cache TTL, and batch size
+
+- `src/tests/managers/resource/ResourceFlowManager.test.ts` - Updated tests for the optimized ResourceFlowManager:
+
+  - Added tests for the caching system
+  - Added tests for batch processing with large networks
+  - Added tests for converter node processing
+  - Added tests for performance metrics
+  - Updated existing tests to work with the new implementation
+
+- `src/tests/managers/resource/ResourceFlowManager.cache.test.ts` - Tests for the caching system of ResourceFlowManager, including cache invalidation, expiration, and isolation.
+- `src/tests/managers/resource/ResourceFlowManager.batch.test.ts` - Tests for batch processing functionality of ResourceFlowManager for handling large resource networks efficiently.
+- `src/tests/managers/resource/ResourceFlowManager.errors.test.ts` - Tests for error handling and edge cases in ResourceFlowManager, including input validation, edge conditions, and error recovery.
+- `src/tests/integration/resource/MiningResourceIntegration.test.ts` - Integration tests for the interaction between ResourceFlowManager and MiningResourceIntegration, testing node registration, resource thresholds, transfers, and flow optimization.
+- `src/tests/integration/ui/ResourceVisualization.test.tsx` - Integration tests for the ResourceVisualization UI component's interaction with the resource management system, testing resource display, updates, threshold indicators, and user interactions.
+- `src/tests/performance/ResourceFlowManager.benchmark.ts` - Performance benchmarks for ResourceFlowManager, measuring execution time, nodes processed, connections processed, transfers generated, and memory usage for different network sizes and configurations.
+
+- `CodeBase_Docs/ResourceFlowManager_Optimizations.md` - Detailed documentation of the ResourceFlowManager optimizations:
+
+  - Overview of the optimization goals
+  - Explanation of the caching system implementation
+  - Details on batch processing for large networks
+  - Code refactoring and organization improvements
+  - Performance monitoring and metrics
+  - Converter system improvements
+  - Usage examples and future improvement plans
+
+- `CodeBase_Docs/ResourceFlowManager_Testing.md` - Comprehensive documentation of the ResourceFlowManager test implementation, testing strategy, and best practices identified.
+
+- `CodeBase_Docs/Integration_Testing_Best_Practices.md` - Guidelines and best practices for creating integration tests, including test structure, mocking strategies, type safety techniques, and common test scenarios.
+
+- `CodeBase_Docs/Performance_Benchmark_Practices.md` - Guidelines and best practices for creating performance benchmarks, including benchmark structure, scenario design, metric collection, and result reporting.
+
+## React Component Optimizations
+
+### Optimized Components
+
+1. **MiningWindow** (`src/components/buildings/modules/MiningHub/MiningWindow.tsx`)
+
+   - Purpose: Main interface for mining operations
+   - Optimizations:
+     - Memoized resource filtering and sorting
+     - Cached tech bonus calculations
+     - Optimized event handlers
+     - Type-safe state management
+
+2. **ModuleStatusDisplay** (`src/components/modules/ModuleStatusDisplay.tsx`)
+
+   - Purpose: Displays module status information
+   - Optimizations:
+     - Wrapped in React.memo
+     - Optimized prop comparisons
+     - Efficient state updates
+
+3. **ModuleStatusSummary** (`src/components/modules/ModuleStatusSummary.tsx`)
+
+   - Purpose: Shows summary of module statuses
+   - Optimizations:
+     - Wrapped in React.memo
+     - Efficient data aggregation
+     - Optimized rendering
+
+4. **ModuleStatusSummaryItem** (`src/components/modules/ModuleStatusSummaryItem.tsx`)
+
+   - Purpose: Individual module status item
+   - Optimizations:
+     - Wrapped in React.memo
+     - Minimal prop dependencies
+     - Efficient updates
+
+5. **ModuleAlertList** (`src/components/alerts/ModuleAlertList.tsx`)
+
+   - Purpose: Displays module alerts
+   - Optimizations:
+     - Wrapped in React.memo
+     - Efficient alert filtering
+     - Optimized rendering
+
+6. **ModuleAlertItem** (`src/components/alerts/ModuleAlertItem.tsx`)
+   - Purpose: Individual alert item
+   - Optimizations:
+     - Wrapped in React.memo
+     - Minimal prop dependencies
+     - Efficient updates
+
+### Performance Enhancement Patterns
+
+1. **Memoization Strategy**
+
+   - Use React.memo for pure components
+   - Implement useMemo for expensive calculations
+   - Apply useCallback for event handlers
+
+2. **State Management**
+
+   - Group related state
+   - Use functional updates
+   - Implement proper cleanup
+
+3. **Type Safety**
+
+   - Strong TypeScript types
+   - Proper interface definitions
+   - Type-safe event handling
+
+4. **Event System Integration**
+   - Efficient event batching
+   - Proper event filtering
+   - Optimized event handlers
+
+### Next Steps
+
+1. **Component Rendering Performance**
+
+   - [ ] Implement React.memo for remaining pure components
+   - [ ] Add useMemo for expensive calculations in other components
+   - [ ] Optimize re-renders with proper dependency arrays
+
+2. **Testing**
+
+   - [ ] Add performance benchmarks
+   - [ ] Implement component tests
+   - [ ] Create end-to-end tests
+
+3. **Documentation**
+   - [ ] Update component documentation
+   - [ ] Document performance considerations
+   - [ ] Create usage examples
+
+## Testing Framework and End-to-End Testing
+
+- `playwright.config.ts`: Configuration file for Playwright end-to-end testing
+
+  - Defines test directory (`src/tests/e2e`)
+  - Sets timeouts and reporter options
+  - Configures browsers (Chromium and Firefox)
+  - Sets up web server command and port
+
+- `src/tests/e2e/README.md`: Documentation for setting up and running Playwright tests
+
+  - Installation instructions
+  - Configuration details
+  - Examples and best practices
+  - Page Object Model pattern documentation
+
+- `src/tests/e2e/models/MiningPage.ts`: Page Object Model for the Mining page
+
+  - Locators for page elements
+  - Methods for interacting with the page
+  - Helper methods for verification and assertions
+
+- `src/tests/e2e/mining.spec.ts`: End-to-end tests for the Mining page
+
+  - Tests for resource display
+  - Tests for search and filtering functionality
+  - Tests for resource selection and view mode toggle
+  - Tests for ship assignment and resource prioritization
+
+- `src/tests/components/ui/ResourceVisualization.snapshot.test.tsx`: Snapshot tests for the ResourceVisualization component
+
+  - Tests for default state rendering
+  - Tests for low resource levels rendering
+  - Tests for critical resource levels rendering
+
+- Test configuration in package.json:
+  - `test:e2e`: Runs Playwright tests
+  - `test:e2e:ui`: Runs Playwright tests with UI
+  - `test:e2e:headed`: Runs Playwright tests in headed mode
+  - `test:e2e:debug`: Runs Playwright tests in debug mode

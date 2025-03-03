@@ -1,23 +1,40 @@
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
+  ChainExecutionStatus,
+  ConversionChain,
+  ConverterNodeConfig,
+  ConverterProcessStatus,
+  ResourceConversionProcess,
+  ResourceConversionRecipe,
   ResourceFlow,
   ResourcePriority,
   ResourceState,
   ResourceTransfer,
   ResourceType,
 } from '../../types/resources/ResourceTypes';
-import {
-  validateResourceFlow,
-  validateResourceTransfer,
-} from '../../utils/resources/resourceValidation';
+import { validateResourceTransfer } from '../../utils/resources/resourceValidation';
 
 /**
- * Flow node type
+ * Types of nodes in the resource flow network
+ * - producer: Generates resources (mines, power plants, etc.)
+ * - consumer: Uses resources (factories, habitats, etc.)
+ * - storage: Stores resources (warehouses, tanks, etc.)
+ * - converter: Transforms resources (refineries, processors, etc.)
  */
 export type FlowNodeType = 'producer' | 'consumer' | 'storage' | 'converter';
 
 /**
- * Flow node interface
+ * Represents a node in the resource flow network
+ * @interface FlowNode
+ * @property {string} id - Unique identifier for the node
+ * @property {FlowNodeType} type - Type of node (producer, consumer, storage, converter)
+ * @property {ResourceType[]} resources - Types of resources this node can handle
+ * @property {ResourcePriority} priority - Priority configuration for this node
+ * @property {number} [capacity] - Maximum capacity for storage nodes
+ * @property {number} [efficiency] - Efficiency multiplier for converter nodes (1.0 = 100% efficiency)
+ * @property {boolean} active - Whether this node is currently active in the network
+ * @property {ConverterNodeConfig} [converterConfig] - Configuration for converter nodes
+ * @property {ConverterProcessStatus} [converterStatus] - Status information for converter nodes
  */
 export interface FlowNode {
   id: string;
@@ -27,10 +44,21 @@ export interface FlowNode {
   capacity?: number;
   efficiency?: number;
   active: boolean;
+  converterConfig?: ConverterNodeConfig;
+  converterStatus?: ConverterProcessStatus;
 }
 
 /**
- * Flow connection interface
+ * Represents a connection between nodes in the resource flow network
+ * @interface FlowConnection
+ * @property {string} id - Unique identifier for the connection
+ * @property {string} source - ID of the source node
+ * @property {string} target - ID of the target node
+ * @property {ResourceType} resourceType - Type of resource flowing through this connection
+ * @property {number} maxRate - Maximum flow rate allowed through this connection
+ * @property {number} currentRate - Current flow rate through this connection
+ * @property {ResourcePriority} priority - Priority configuration for this connection
+ * @property {boolean} active - Whether this connection is currently active
  */
 export interface FlowConnection {
   id: string;
@@ -44,7 +72,11 @@ export interface FlowConnection {
 }
 
 /**
- * Flow network interface
+ * Represents the entire resource flow network
+ * @interface FlowNetwork
+ * @property {Map<string, FlowNode>} nodes - Map of node IDs to node objects
+ * @property {Map<string, FlowConnection>} connections - Map of connection IDs to connection objects
+ * @property {Map<ResourceType, ResourceState>} resourceStates - Map of resource types to resource states
  */
 export interface FlowNetwork {
   nodes: Map<string, FlowNode>;
@@ -53,18 +85,69 @@ export interface FlowNetwork {
 }
 
 /**
- * Flow optimization result
+ * Result of the flow optimization process
+ * @interface FlowOptimizationResult
+ * @property {ResourceTransfer[]} transfers - Resource transfers generated during optimization
+ * @property {FlowConnection[]} updatedConnections - Connections with updated flow rates
+ * @property {string[]} bottlenecks - Resource types with insufficient supply to meet demand
+ * @property {string[]} underutilized - Resource types with excess supply compared to demand
+ * @property {Object} [performanceMetrics] - Performance metrics for the optimization process
+ * @property {number} [performanceMetrics.executionTimeMs] - Total execution time in milliseconds
+ * @property {number} [performanceMetrics.nodesProcessed] - Number of nodes processed
+ * @property {number} [performanceMetrics.connectionsProcessed] - Number of connections processed
+ * @property {number} [performanceMetrics.transfersGenerated] - Number of transfers generated
  */
 export interface FlowOptimizationResult {
   transfers: ResourceTransfer[];
   updatedConnections: FlowConnection[];
   bottlenecks: string[];
   underutilized: string[];
+  performanceMetrics?: {
+    executionTimeMs: number;
+    nodesProcessed: number;
+    connectionsProcessed: number;
+    transfersGenerated: number;
+  };
 }
 
 /**
- * Resource Flow Manager
- * Manages and optimizes resource flows between producers, consumers, and storage
+ * Result of a conversion process
+ */
+export interface ConversionResult {
+  success: boolean;
+  processId?: string;
+  recipeId?: string;
+  converterId?: string;
+  error?: string;
+  inputsConsumed?: { type: ResourceType; amount: number }[];
+  outputsProduced?: { type: ResourceType; amount: number }[];
+  byproductsProduced?: { type: ResourceType; amount: number }[];
+  timestamp: number;
+}
+
+/**
+ * Represents a cached resource state entry
+ * @interface ResourceCacheEntry
+ * @property {ResourceState} state - The cached resource state
+ * @property {number} lastUpdated - Timestamp when the cache entry was last updated
+ * @property {number} expiresAt - Timestamp when the cache entry expires
+ * @private
+ */
+interface ResourceCacheEntry {
+  state: ResourceState;
+  lastUpdated: number;
+  expiresAt: number;
+}
+
+/**
+ * Manages the flow of resources between producers, consumers, storages, and converters.
+ * Handles resource transfer, flow optimization, and network management.
+ *
+ * The ResourceFlowManager optimizes resource distribution based on priorities and
+ * connection constraints, creating efficient resource flows throughout the network.
+ * It supports various node types including converters that can transform resources.
+ *
+ * @class ResourceFlowManager
  */
 export class ResourceFlowManager {
   private network: FlowNetwork;
@@ -72,8 +155,29 @@ export class ResourceFlowManager {
   private optimizationInterval: number;
   private transferHistory: ResourceTransfer[];
   private maxHistorySize: number;
+  private resourceCache: Map<ResourceType, ResourceCacheEntry>;
+  private cacheTTL: number; // Time-to-live for cache entries in milliseconds
+  private batchSize: number; // Batch size for processing large networks
+  private recipes: Map<string, ResourceConversionRecipe>; // Available conversion recipes
+  private chains: Map<string, ConversionChain>; // Available conversion chains
+  private activeProcesses: Map<string, ResourceConversionProcess>; // Active conversion processes
+  private activeChains: Map<string, ChainExecutionStatus>; // Active conversion chains
+  private processIntervalId?: number; // Interval ID for processing conversions
 
-  constructor(optimizationInterval = 5000) {
+  /**
+   * Creates a new ResourceFlowManager instance
+   *
+   * @param {number} [optimizationInterval=5000] - Interval between flow optimizations in milliseconds
+   * @param {number} [cacheTTL=2000] - Time-to-live for resource cache entries in milliseconds
+   * @param {number} [batchSize=100] - Batch size for processing large networks
+   * @param {number} [processInterval=1000] - Interval for processing conversions in milliseconds
+   */
+  constructor(
+    optimizationInterval = 5000,
+    cacheTTL = 2000,
+    batchSize = 100,
+    processInterval = 1000
+  ) {
     this.network = {
       nodes: new Map<string, FlowNode>(),
       connections: new Map<string, FlowConnection>(),
@@ -82,29 +186,75 @@ export class ResourceFlowManager {
     this.lastOptimization = 0;
     this.optimizationInterval = optimizationInterval;
     this.transferHistory = [];
-    this.maxHistorySize = 100;
+    this.maxHistorySize = 1000;
+    this.resourceCache = new Map<ResourceType, ResourceCacheEntry>();
+    this.cacheTTL = cacheTTL;
+    this.batchSize = batchSize;
+    this.recipes = new Map();
+    this.chains = new Map();
+    this.activeProcesses = new Map();
+    this.activeChains = new Map();
+
+    // Start processing interval
+    this.startProcessingInterval(processInterval);
   }
 
   /**
-   * Register a flow node
+   * Registers a node in the resource flow network
+   *
+   * Adds a new node to the network or updates an existing node with the same ID.
+   * Nodes can be producers, consumers, storage facilities, or converters.
+   *
+   * @param {FlowNode} node - The node to register
+   * @returns {boolean} True if the node was successfully registered, false otherwise
+   *
+   * @example
+   * // Register a producer node
+   * flowManager.registerNode({
+   *   id: 'mine-1',
+   *   type: 'producer',
+   *   resources: ['minerals'],
+   *   priority: { type: 'minerals', priority: 2, consumers: [] },
+   *   active: true
+   * });
    */
   public registerNode(node: FlowNode): boolean {
     if (!node.id || !node.resources || node.resources.length === 0) {
-      console.error('Invalid flow node:', node);
+      console.warn('Invalid flow node:', node);
       return false;
     }
 
     this.network.nodes.set(node.id, node);
+
+    // Invalidate cache for affected resource types
+    for (const resourceType of node.resources) {
+      this.invalidateCache(resourceType);
+    }
+
     return true;
   }
 
   /**
-   * Unregister a flow node
+   * Unregisters a node from the resource flow network
+   *
+   * Removes a node and all its connections from the network.
+   * This will also remove any connections where this node is a source or target.
+   *
+   * @param {string} id - The ID of the node to unregister
+   * @returns {boolean} True if the node was successfully unregistered, false if the node was not found
+   *
+   * @example
+   * // Unregister a node
+   * flowManager.unregisterNode('mine-1');
    */
   public unregisterNode(id: string): boolean {
     if (!this.network.nodes.has(id)) {
       return false;
     }
+
+    // Get node resources before removing it
+    const node = this.network.nodes.get(id);
+    const affectedResources = node ? [...node.resources] : [];
 
     // Remove all connections to/from this node
     // Convert Map entries to array to avoid MapIterator error
@@ -116,85 +266,224 @@ export class ResourceFlowManager {
     }
 
     this.network.nodes.delete(id);
+
+    // Invalidate cache for affected resource types
+    for (const resourceType of affectedResources) {
+      this.invalidateCache(resourceType);
+    }
+
     return true;
   }
 
   /**
-   * Register a flow connection
+   * Registers a connection between nodes in the resource flow network
+   *
+   * Adds a new connection or updates an existing connection with the same ID.
+   * Connections define how resources flow between nodes and at what rate.
+   * Both source and target nodes must exist in the network.
+   *
+   * @param {FlowConnection} connection - The connection to register
+   * @returns {boolean} True if the connection was successfully registered, false otherwise
+   *
+   * @example
+   * // Register a connection between a mine and a factory
+   * flowManager.registerConnection({
+   *   id: 'mine-to-factory',
+   *   source: 'mine-1',
+   *   target: 'factory-1',
+   *   resourceType: 'minerals',
+   *   maxRate: 10,
+   *   currentRate: 5,
+   *   priority: { type: 'minerals', priority: 1, consumers: [] },
+   *   active: true
+   * });
    */
   public registerConnection(connection: FlowConnection): boolean {
-    if (!connection.id || !connection.source || !connection.target || !connection.resourceType) {
-      console.error('Invalid flow connection:', connection);
+    if (
+      !connection.id ||
+      !connection.source ||
+      !connection.target ||
+      !connection.resourceType ||
+      connection.maxRate <= 0
+    ) {
+      console.warn('Invalid connection:', connection);
       return false;
     }
 
-    // Verify source and target nodes exist
-    if (!this.network.nodes.has(connection.source) || !this.network.nodes.has(connection.target)) {
-      console.error('Source or target node does not exist:', connection);
+    // Ensure source and target nodes exist
+    if (!this.network.nodes.has(connection.source)) {
+      console.warn(`Source node ${connection.source} does not exist`);
       return false;
     }
 
-    // Verify source node can provide the resource
+    if (!this.network.nodes.has(connection.target)) {
+      console.warn(`Target node ${connection.target} does not exist`);
+      return false;
+    }
+
+    // Ensure source node has the resource type
     const sourceNode = this.network.nodes.get(connection.source);
     if (!sourceNode?.resources.includes(connection.resourceType)) {
-      console.error('Source node cannot provide resource:', connection);
-      return false;
-    }
-
-    // Verify target node can accept the resource
-    const targetNode = this.network.nodes.get(connection.target);
-    if (!targetNode?.resources.includes(connection.resourceType)) {
-      console.error('Target node cannot accept resource:', connection);
+      console.warn(
+        `Source node ${connection.source} does not have resource type ${connection.resourceType}`
+      );
       return false;
     }
 
     this.network.connections.set(connection.id, connection);
+
+    // Invalidate cache for the affected resource type
+    this.invalidateCache(connection.resourceType);
+
     return true;
   }
 
   /**
-   * Unregister a flow connection
+   * Unregisters a connection from the resource flow network
+   *
+   * Removes a connection between nodes from the network.
+   *
+   * @param {string} id - The ID of the connection to unregister
+   * @returns {boolean} True if the connection was successfully unregistered, false if the connection was not found
+   *
+   * @example
+   * // Unregister a connection
+   * flowManager.unregisterConnection('mine-to-factory');
    */
   public unregisterConnection(id: string): boolean {
-    if (!this.network.connections.has(id)) {
+    const connection = this.network.connections.get(id);
+    if (!connection) {
       return false;
     }
 
+    // Store resource type before removing the connection
+    const { resourceType } = connection;
+
     this.network.connections.delete(id);
+
+    // Invalidate cache for the affected resource type
+    this.invalidateCache(resourceType);
+
     return true;
   }
 
   /**
-   * Update resource state
+   * Updates the state of a resource in the network
+   *
+   * Updates the current, minimum, maximum, production, and consumption values
+   * for a specific resource type. Also invalidates any cache entries for this resource.
+   *
+   * @param {ResourceType} type - The type of resource to update
+   * @param {ResourceState} state - The new state of the resource
+   *
+   * @example
+   * // Update the state of minerals
+   * flowManager.updateResourceState('minerals', {
+   *   current: 1000,
+   *   min: 0,
+   *   max: 5000,
+   *   production: 50,
+   *   consumption: 30
+   * });
    */
   public updateResourceState(type: ResourceType, state: ResourceState): void {
     this.network.resourceStates.set(type, state);
+
+    // Invalidate cache for the affected resource type
+    this.invalidateCache(type);
   }
 
   /**
-   * Get resource state
+   * Gets the current state of a resource in the network
+   *
+   * Returns the cached state if available and not expired,
+   * otherwise returns the stored state from the network.
+   *
+   * @param {ResourceType} type - The type of resource to query
+   * @returns {ResourceState | undefined} The current state of the resource, or undefined if not found
+   *
+   * @example
+   * // Get the current state of minerals
+   * const mineralState = flowManager.getResourceState('minerals');
+   * if (mineralState) {
+   *   console.warn(`Current minerals: ${mineralState.current}/${mineralState.max}`);
+   * }
    */
   public getResourceState(type: ResourceType): ResourceState | undefined {
-    return this.network.resourceStates.get(type);
+    // Check cache first
+    const now = Date.now();
+    const cachedEntry = this.resourceCache.get(type);
+
+    if (cachedEntry && now < cachedEntry.expiresAt) {
+      return cachedEntry.state;
+    }
+
+    // Cache miss or expired, get from network
+    const state = this.network.resourceStates.get(type);
+
+    // Update cache if state exists
+    if (state) {
+      this.resourceCache.set(type, {
+        state: { ...state }, // Clone to prevent reference issues
+        lastUpdated: now,
+        expiresAt: now + this.cacheTTL,
+      });
+    }
+
+    return state;
   }
 
   /**
-   * Optimize resource flows
+   * Invalidate cache for a resource type
+   */
+  private invalidateCache(type: ResourceType): void {
+    this.resourceCache.delete(type);
+  }
+
+  /**
+   * Optimizes resource flows in the network
+   *
+   * This is the core method that balances resource distribution across the network
+   * based on priorities, connection constraints, and node types.
+   *
+   * The optimization process:
+   * 1. Processes converters to apply efficiency modifiers
+   * 2. Calculates resource availability and demand
+   * 3. Identifies bottlenecks and underutilized resources
+   * 4. Optimizes flow rates based on priorities
+   * 5. Generates transfer records for the optimized flows
+   *
+   * Performance metrics are included in the result to track optimization efficiency.
+   *
+   * @returns {FlowOptimizationResult} The result of the optimization process
+   *
+   * @example
+   * // Optimize resource flows and handle bottlenecks
+   * const result = flowManager.optimizeFlows();
+   * if (result.bottlenecks.length > 0) {
+   *   console.warn(`Resource bottlenecks detected: ${result.bottlenecks.join(', ')}`);
+   * }
    */
   public optimizeFlows(): FlowOptimizationResult {
-    const now = Date.now();
+    const startTime = Date.now();
 
     // Skip optimization if not enough time has passed
-    if (now - this.lastOptimization < this.optimizationInterval) {
+    if (startTime - this.lastOptimization < this.optimizationInterval) {
       return {
         transfers: [],
         updatedConnections: [],
         bottlenecks: [],
         underutilized: [],
+        performanceMetrics: {
+          executionTimeMs: 0,
+          nodesProcessed: 0,
+          connectionsProcessed: 0,
+          transfersGenerated: 0,
+        },
       };
     }
 
-    this.lastOptimization = now;
+    this.lastOptimization = startTime;
 
     // Get active nodes and connections
     const activeNodes = Array.from(this.network.nodes.values()).filter(node => node.active);
@@ -202,66 +491,924 @@ export class ResourceFlowManager {
       conn => conn.active
     );
 
+    // Performance tracking
+    let nodesProcessed = 0;
+    let connectionsProcessed = 0;
+    let transfersGenerated = 0;
+
     // Group nodes by type
     const producers = activeNodes.filter(node => node.type === 'producer');
     const consumers = activeNodes.filter(node => node.type === 'consumer');
     const storages = activeNodes.filter(node => node.type === 'storage');
+    const converters = activeNodes.filter(node => node.type === 'converter');
 
-    /**
-     * Converter nodes for resource transformation
-     *
-     * These nodes will be used in future implementations to:
-     * 1. Transform basic resources into advanced materials
-     * 2. Implement multi-step production chains
-     * 3. Create resource conversion efficiency mechanics
-     * 4. Support tech tree progression through resource refinement
-     * 5. Enable specialized production facilities that convert between resource types
-     *
-     * Converters will be critical for the upcoming advanced manufacturing system
-     * where players can establish complex production chains to create high-tier resources.
-     */
-    const _converters = activeNodes.filter(node => node.type === 'converter');
+    nodesProcessed = activeNodes.length;
 
-    // Log converter information for debugging
-    if (_converters.length > 0) {
-      console.warn(
-        `[ResourceFlowManager] Found ${_converters.length} active converters in the network`
-      );
+    // Process converters if any exist
+    if (converters.length > 0) {
+      this.processConverters(converters, activeConnections);
+    }
 
-      // Calculate and apply converter efficiency bonuses
-      for (const converter of _converters) {
+    // Calculate resource availability and demand using batch processing for large networks
+    const { availability, demand } = this.calculateResourceBalance(
+      producers,
+      consumers,
+      storages,
+      activeConnections
+    );
+
+    // Identify bottlenecks and underutilized resources
+    const { bottlenecks, underutilized } = this.identifyResourceIssues(availability, demand);
+
+    // Optimize flow rates based on priorities using batch processing
+    const { updatedConnections, transfers } = this.optimizeFlowRates(
+      activeConnections,
+      availability,
+      demand
+    );
+
+    connectionsProcessed = activeConnections.length;
+    transfersGenerated = transfers.length;
+
+    const endTime = Date.now();
+    const executionTimeMs = endTime - startTime;
+
+    return {
+      transfers,
+      updatedConnections,
+      bottlenecks,
+      underutilized,
+      performanceMetrics: {
+        executionTimeMs,
+        nodesProcessed,
+        connectionsProcessed,
+        transfersGenerated,
+      },
+    };
+  }
+
+  /**
+   * Process converter nodes
+   */
+  private processConverters(converters: FlowNode[], activeConnections: FlowConnection[]): void {
+    if (converters.length === 0) {
+      return;
+    }
+
+    console.warn(
+      `[ResourceFlowManager] Processing ${converters.length} active converters in the network`
+    );
+
+    // Process converters in batches if there are many
+    const batchCount = Math.ceil(converters.length / this.batchSize);
+
+    for (let i = 0; i < batchCount; i++) {
+      const batchStart = i * this.batchSize;
+      const batchEnd = Math.min((i + 1) * this.batchSize, converters.length);
+      const converterBatch = converters.slice(batchStart, batchEnd);
+
+      for (const converter of converterBatch) {
         // Apply converter efficiency to resource production
         const efficiency = converter.efficiency || 1.0;
-        console.warn(
-          `[ResourceFlowManager] Converter ${converter.id} operating at ${efficiency * 100}% efficiency`
-        );
 
-        // Find connections from this converter
-        const converterConnections = Array.from(this.network.connections.values()).filter(
-          conn => conn.source === converter.id && conn.active
-        );
-
-        // Apply efficiency bonus to connection rates
-        for (const connection of converterConnections) {
-          // Adjust the connection rate based on converter efficiency
-          const originalRate = connection.currentRate;
-          connection.currentRate = originalRate * efficiency;
-
-          console.warn(
-            `[ResourceFlowManager] Adjusted flow rate for ${connection.id} from ${originalRate} to ${connection.currentRate} based on converter efficiency`
+        // Check if this is an advanced converter with conversion configuration
+        if (converter.converterConfig) {
+          // Process advanced converter node with recipes and conversion chains
+          this.processAdvancedConverter(converter, activeConnections);
+        } else {
+          // Simple efficiency-based converter (legacy support)
+          // Find connections from this converter
+          const converterConnections = activeConnections.filter(
+            conn => conn.source === converter.id && conn.active
           );
 
-          // Update the connection in the network
-          this.network.connections.set(connection.id, connection);
+          // Apply efficiency bonus to connection rates
+          for (const connection of converterConnections) {
+            // Adjust the connection rate based on converter efficiency
+            const originalRate = connection.currentRate;
+            connection.currentRate = originalRate * efficiency;
+
+            // Update the connection in the network
+            this.network.connections.set(connection.id, connection);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Process an advanced converter with multi-step production chains
+   *
+   * @param {FlowNode} converter - The converter node to process
+   * @param {FlowConnection[]} activeConnections - Active connections in the network
+   * @private
+   */
+  private processAdvancedConverter(converter: FlowNode, activeConnections: FlowConnection[]): void {
+    if (!converter.converterConfig) {
+      return;
+    }
+
+    const config = converter.converterConfig;
+
+    // Initialize converter status if not present
+    if (!converter.converterStatus) {
+      converter.converterStatus = {
+        activeProcesses: [],
+        queuedProcesses: [],
+        completedProcesses: 0,
+        failedProcesses: 0,
+        totalResourcesProduced: {},
+        totalResourcesConsumed: {},
+        averageEfficiency: converter.efficiency || 1.0,
+        uptime: 0,
+      };
+    }
+
+    // Update converter status in network
+    this.network.nodes.set(converter.id, converter);
+
+    // Auto-start new conversion processes if configured
+    if (config.autoStart) {
+      this.tryStartConversions(converter);
+    }
+  }
+
+  /**
+   * Try to start conversion processes for a converter node
+   *
+   * @param {FlowNode} converter - The converter node
+   * @private
+   */
+  private tryStartConversions(converter: FlowNode): void {
+    if (!converter.converterConfig || !converter.converterStatus) {
+      return;
+    }
+
+    const config = converter.converterConfig;
+    const status = converter.converterStatus;
+
+    // Check if we can start more processes
+    if (status.activeProcesses.length >= config.maxConcurrentProcesses) {
+      return;
+    }
+
+    // Get supported recipes
+    const availableRecipes = config.supportedRecipes
+      .map(recipeId => this.recipes.get(recipeId))
+      .filter(recipe => recipe !== undefined) as ResourceConversionRecipe[];
+
+    // Try to start each supported recipe
+    for (const recipe of availableRecipes) {
+      // Check if we're at maximum capacity
+      if (status.activeProcesses.length >= config.maxConcurrentProcesses) {
+        break;
+      }
+
+      // Check if we have the required inputs
+      const canStart = this.checkRecipeInputs(converter.id, recipe);
+
+      if (canStart) {
+        // Start the conversion process
+        this.startConversionProcess(converter.id, recipe.id);
+      }
+    }
+
+    // Update converter in network
+    this.network.nodes.set(converter.id, converter);
+  }
+
+  /**
+   * Check if a converter has the required inputs for a recipe
+   *
+   * @param {string} converterId - The ID of the converter node
+   * @param {ResourceConversionRecipe} recipe - The recipe to check
+   * @returns {boolean} True if the converter has all required inputs
+   * @private
+   */
+  private checkRecipeInputs(converterId: string, recipe: ResourceConversionRecipe): boolean {
+    // Check each required input
+    for (const input of recipe.inputs) {
+      // Get current resource state
+      const resourceState = this.getResourceState(input.type);
+
+      // If resource state doesn't exist or is less than required, return false
+      if (!resourceState || resourceState.current < input.amount) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Start a conversion process
+   *
+   * @param {string} converterId - The ID of the converter node
+   * @param {string} recipeId - The ID of the recipe to start
+   * @returns {ConversionResult} The result of starting the conversion
+   * @private
+   */
+  private startConversionProcess(converterId: string, recipeId: string): ConversionResult {
+    // Get converter and recipe
+    const converter = this.network.nodes.get(converterId);
+    const recipe = this.recipes.get(recipeId);
+
+    if (!converter || converter.type !== 'converter' || !recipe) {
+      return {
+        success: false,
+        error: 'Invalid converter or recipe',
+        timestamp: Date.now(),
+      };
+    }
+
+    // Ensure converter has a status
+    if (!converter.converterStatus) {
+      converter.converterStatus = {
+        activeProcesses: [],
+        queuedProcesses: [],
+        completedProcesses: 0,
+        failedProcesses: 0,
+        totalResourcesProduced: {},
+        totalResourcesConsumed: {},
+        averageEfficiency: converter.efficiency || 1.0,
+        uptime: 0,
+      };
+    }
+
+    // Check if converter can process this recipe
+    if (
+      converter.converterConfig &&
+      !converter.converterConfig.supportedRecipes.includes(recipeId)
+    ) {
+      return {
+        success: false,
+        error: 'Recipe not supported by this converter',
+        timestamp: Date.now(),
+      };
+    }
+
+    // Check if converter has reached maximum concurrent processes
+    if (
+      converter.converterConfig &&
+      converter.converterStatus.activeProcesses.length >=
+        converter.converterConfig.maxConcurrentProcesses
+    ) {
+      return {
+        success: false,
+        error: 'Maximum concurrent processes reached',
+        timestamp: Date.now(),
+      };
+    }
+
+    // Check if inputs are available
+    const hasInputs = this.checkRecipeInputs(converterId, recipe);
+    if (!hasInputs) {
+      return {
+        success: false,
+        error: 'Insufficient inputs',
+        timestamp: Date.now(),
+      };
+    }
+
+    // Consume inputs
+    const now = Date.now();
+    const inputsConsumed: { type: ResourceType; amount: number }[] = [];
+
+    for (const input of recipe.inputs) {
+      // Get resource state
+      const state = this.getResourceState(input.type);
+      if (!state) {
+        continue;
+      }
+
+      // Consume resource
+      state.current -= input.amount;
+      state.consumption += input.amount;
+
+      // Update resource state
+      this.updateResourceState(input.type, state);
+
+      // Add to inputs consumed
+      inputsConsumed.push({ type: input.type, amount: input.amount });
+
+      // Update converter status
+      if (converter.converterStatus) {
+        // Initialize totalResourcesConsumed if it doesn't exist
+        if (!converter.converterStatus.totalResourcesConsumed) {
+          converter.converterStatus.totalResourcesConsumed = {};
+        }
+
+        // Update the consumed amount
+        const currentAmount = converter.converterStatus.totalResourcesConsumed[input.type] || 0;
+        converter.converterStatus.totalResourcesConsumed[input.type] = currentAmount + input.amount;
+      }
+    }
+
+    // Calculate efficiency
+    const efficiency = this.calculateConverterEfficiency(converter, recipe);
+
+    // Create conversion process
+    const processId = `${converterId}-${recipeId}-${now}`;
+    const processEndTime = now + recipe.processingTime;
+
+    const process: ResourceConversionProcess = {
+      recipeId,
+      progress: 0,
+      startTime: now,
+      endTime: processEndTime,
+      sourceId: converterId,
+      active: true,
+      paused: false,
+      inputsProvided: true,
+      appliedEfficiency: efficiency,
+    };
+
+    // Apply efficiency to processing time
+    if (efficiency !== 1.0) {
+      // More efficient = faster processing
+      const newDuration = recipe.processingTime / efficiency;
+      process.endTime = process.startTime + newDuration;
+    }
+
+    // Add process to active processes
+    this.activeProcesses.set(processId, process);
+
+    // Add process to converter's active processes
+    converter.converterStatus.activeProcesses.push(process);
+
+    // Update converter in network
+    this.network.nodes.set(converterId, converter);
+
+    // Emit resource produced event
+    moduleEventBus.emit({
+      type: 'RESOURCE_PRODUCED',
+      moduleId: converter.id,
+      moduleType: 'resource',
+      timestamp: Date.now(),
+      data: {
+        processId,
+        recipeId: recipe.id,
+        converterId: converter.id,
+        outputsProduced: [],
+        byproductsProduced: [],
+        efficiency,
+      },
+    });
+
+    // Return the result
+    return {
+      success: true,
+      processId,
+      recipeId: recipe.id,
+      converterId: converter.id,
+      inputsConsumed,
+      timestamp: now,
+    };
+  }
+
+  /**
+   * Start the processing interval for conversion processes
+   *
+   * @param {number} interval - The interval in milliseconds
+   * @private
+   */
+  private startProcessingInterval(interval: number): void {
+    // Clear any existing interval
+    if (this.processIntervalId) {
+      clearInterval(this.processIntervalId);
+    }
+
+    // Set new interval
+    this.processIntervalId = setInterval(() => {
+      this.processConversions();
+    }, interval) as unknown as number;
+  }
+
+  /**
+   * Process all active conversion processes
+   * @private
+   */
+  private processConversions(): void {
+    // Array to collect processes to complete
+    const processesToComplete: string[] = [];
+
+    // Check all active processes
+    for (const [processId, process] of this.activeProcesses.entries()) {
+      // Skip paused processes
+      if (process.paused) {
+        continue;
+      }
+
+      // Check if process is active
+      if (!process.active) {
+        continue;
+      }
+
+      // Get current time
+      const now = Date.now();
+
+      // Check if process is complete
+      if (now >= process.endTime) {
+        processesToComplete.push(processId);
+      }
+    }
+
+    // Complete processes
+    for (const processId of processesToComplete) {
+      // Get process
+      const process = this.activeProcesses.get(processId);
+      if (!process) {
+        continue;
+      }
+
+      // Get converter
+      const converter = this.network.nodes.get(process.sourceId);
+      if (!converter) {
+        // Converter not found, remove process from active processes
+        this.activeProcesses.delete(processId);
+        continue;
+      }
+
+      // Get recipe
+      const recipe = this.recipes.get(process.recipeId);
+      if (!recipe) {
+        // Recipe not found, remove process from active processes
+        this.activeProcesses.delete(processId);
+        continue;
+      }
+
+      // Complete the process
+      const result = this.completeConversionProcess(processId, process, converter, recipe);
+
+      // Check if this process is part of an active chain
+      for (const chainStatus of this.activeChains.values()) {
+        // Find the step that contains this process
+        const stepIndex = chainStatus.stepStatus.findIndex(step => step.processId === processId);
+        if (stepIndex >= 0) {
+          // Found a matching step
+          const step = chainStatus.stepStatus[stepIndex];
+
+          // Update step status
+          step.status = result.success ? 'completed' : 'failed';
+          step.endTime = Date.now();
+
+          // Update chain status
+          if (!result.success) {
+            chainStatus.failed = true;
+            chainStatus.active = false;
+            chainStatus.errorMessage = result.error || 'Process failed';
+          } else if (stepIndex === chainStatus.stepStatus.length - 1) {
+            // This was the last step in the chain
+            chainStatus.completed = true;
+            chainStatus.active = false;
+          } else if (chainStatus.active && !chainStatus.paused) {
+            // Move to the next step
+            chainStatus.currentStepIndex = stepIndex + 1;
+            this.processNextChainStep(chainStatus.chainId);
+          }
+
+          // Update chain progress
+          this.updateChainProgress(chainStatus.chainId);
+        }
+      }
+    }
+  }
+
+  /**
+   * Complete a conversion process and produce outputs
+   *
+   * @param {string} processId - The ID of the process
+   * @param {ResourceConversionProcess} process - The process to complete
+   * @param {FlowNode} converter - The converter node
+   * @param {ResourceConversionRecipe} recipe - The recipe being processed
+   * @returns {ConversionResult} The result of the conversion
+   * @private
+   */
+  private completeConversionProcess(
+    processId: string,
+    process: ResourceConversionProcess,
+    converter: FlowNode,
+    recipe: ResourceConversionRecipe
+  ): ConversionResult {
+    // Remove process from active processes
+    this.activeProcesses.delete(processId);
+
+    // Remove process from converter's active processes
+    if (converter.converterStatus) {
+      converter.converterStatus.activeProcesses = converter.converterStatus.activeProcesses.filter(
+        p => p.startTime !== process.startTime || p.recipeId !== process.recipeId
+      );
+    }
+
+    // Get efficiency from process or calculate it
+    const efficiency =
+      process.appliedEfficiency || this.calculateConverterEfficiency(converter, recipe);
+
+    // Produce outputs
+    const outputsProduced: { type: ResourceType; amount: number }[] = [];
+    for (const output of recipe.outputs) {
+      // Apply efficiency to output amount
+      const outputAmount = Math.max(1, Math.floor(output.amount * efficiency));
+
+      // Get resource state
+      const state = this.getResourceState(output.type) || {
+        current: 0,
+        max: 100,
+        min: 0,
+        production: 0,
+        consumption: 0,
+      };
+
+      // Add output to resource state
+      state.current += outputAmount;
+      state.production += outputAmount;
+
+      // Update resource state
+      this.updateResourceState(output.type, state);
+
+      // Add to outputs produced
+      outputsProduced.push({ type: output.type, amount: outputAmount });
+
+      // Update converter status
+      if (converter.converterStatus) {
+        // Initialize totalResourcesProduced if it doesn't exist
+        if (!converter.converterStatus.totalResourcesProduced) {
+          converter.converterStatus.totalResourcesProduced = {};
+        }
+
+        // Update the produced amount
+        const currentAmount = converter.converterStatus.totalResourcesProduced[output.type] || 0;
+        converter.converterStatus.totalResourcesProduced[output.type] =
+          currentAmount + outputAmount;
+      }
+    }
+
+    // Check for byproducts
+    const byproductsProduced: { type: ResourceType; amount: number }[] = [];
+    if (converter.converterConfig?.byproducts) {
+      for (const [resourceType, chance] of Object.entries(converter.converterConfig.byproducts)) {
+        // Roll for byproduct
+        if (Math.random() < chance) {
+          // Determine amount (1-3 units)
+          const amount = Math.floor(Math.random() * 3) + 1;
+
+          // Get resource state
+          const state = this.getResourceState(resourceType as ResourceType) || {
+            current: 0,
+            max: 100,
+            min: 0,
+            production: 0,
+            consumption: 0,
+          };
+
+          // Add byproduct to resource state
+          state.current += amount;
+          state.production += amount;
+
+          // Update resource state
+          this.updateResourceState(resourceType as ResourceType, state);
+
+          // Add to byproducts produced
+          byproductsProduced.push({ type: resourceType as ResourceType, amount });
         }
       }
     }
 
-    // Calculate resource availability and demand
+    // Update converter status
+    if (converter.converterStatus) {
+      // Update completed processes count
+      converter.converterStatus.completedProcesses++;
+
+      // Update average efficiency
+      const oldAvg = converter.converterStatus.averageEfficiency;
+      const oldCount = converter.converterStatus.completedProcesses - 1;
+      const newAvg =
+        (oldAvg * oldCount + efficiency) / converter.converterStatus.completedProcesses;
+      converter.converterStatus.averageEfficiency = newAvg;
+    }
+
+    // Update converter in network
+    this.network.nodes.set(converter.id, converter);
+
+    // Emit event
+    moduleEventBus.emit({
+      type: 'RESOURCE_PRODUCED',
+      moduleId: converter.id,
+      moduleType: 'converter',
+      timestamp: Date.now(),
+      data: {
+        processId,
+        recipeId: recipe.id,
+        converterId: converter.id,
+        outputsProduced: outputsProduced || [],
+        outputsProduced,
+        byproductsProduced,
+        efficiency,
+      },
+    });
+
+    // Return result
+    return {
+      success: true,
+      processId,
+      recipeId: recipe.id,
+      converterId: converter.id,
+      outputsProduced,
+      byproductsProduced,
+      timestamp: Date.now(),
+    };
+  }
+
+  /**
+   * Register a conversion recipe
+   *
+   * @param {ResourceConversionRecipe} recipe - The recipe to register
+   * @returns {boolean} True if the recipe was successfully registered
+   */
+  public registerRecipe(recipe: ResourceConversionRecipe): boolean {
+    // Validate the recipe
+    if (!recipe.id || !recipe.inputs.length || !recipe.outputs.length) {
+      return false;
+    }
+
+    // Add to recipes map
+    this.recipes.set(recipe.id, recipe);
+    return true;
+  }
+
+  /**
+   * Unregister a conversion recipe
+   *
+   * @param {string} id - The ID of the recipe to unregister
+   * @returns {boolean} True if the recipe was successfully unregistered
+   */
+  public unregisterRecipe(id: string): boolean {
+    // Check if recipe exists
+    if (!this.recipes.has(id)) {
+      return false;
+    }
+
+    // Remove recipe from recipes map
+    this.recipes.delete(id);
+
+    // Also remove from any chains that use it
+    for (const chain of this.chains.values()) {
+      chain.steps = chain.steps.filter(step => step !== id);
+    }
+
+    return true;
+  }
+
+  /**
+   * Register a conversion chain
+   *
+   * @param {ConversionChain} chain - The chain to register
+   * @returns {boolean} True if the chain was successfully registered
+   */
+  public registerChain(chain: ConversionChain): boolean {
+    // Validate the chain
+    if (!chain.id || !chain.steps.length) {
+      return false;
+    }
+
+    // Verify all recipes in the chain exist
+    for (const recipeId of chain.steps) {
+      if (!this.recipes.has(recipeId)) {
+        return false;
+      }
+    }
+
+    // Add to chains map
+    this.chains.set(chain.id, chain);
+    return true;
+  }
+
+  /**
+   * Unregister a conversion chain
+   *
+   * @param {string} id - The ID of the chain to unregister
+   * @returns {boolean} True if the chain was successfully unregistered
+   */
+  public unregisterChain(id: string): boolean {
+    // Check if chain exists
+    if (!this.chains.has(id)) {
+      return false;
+    }
+
+    // Remove chain from chains map
+    this.chains.delete(id);
+    return true;
+  }
+
+  /**
+   * Get all registered recipes
+   *
+   * @returns {ResourceConversionRecipe[]} Array of all registered recipes
+   */
+  public getRecipes(): ResourceConversionRecipe[] {
+    return Array.from(this.recipes.values());
+  }
+
+  /**
+   * Get a specific recipe by ID
+   *
+   * @param {string} id - The ID of the recipe to get
+   * @returns {ResourceConversionRecipe | undefined} The recipe, or undefined if not found
+   */
+  public getRecipe(id: string): ResourceConversionRecipe | undefined {
+    return this.recipes.get(id);
+  }
+
+  /**
+   * Get all registered chains
+   *
+   * @returns {ConversionChain[]} Array of all registered chains
+   */
+  public getChains(): ConversionChain[] {
+    return Array.from(this.chains.values());
+  }
+
+  /**
+   * Get a specific chain by ID
+   *
+   * @param {string} id - The ID of the chain to get
+   * @returns {ConversionChain | undefined} The chain, or undefined if not found
+   */
+  public getChain(id: string): ConversionChain | undefined {
+    return this.chains.get(id);
+  }
+
+  /**
+   * Start a conversion process manually
+   *
+   * @param {string} converterId - The ID of the converter node
+   * @param {string} recipeId - The ID of the recipe to start
+   * @returns {ConversionResult} The result of starting the conversion
+   */
+  public startConversion(converterId: string, recipeId: string): ConversionResult {
+    return this.startConversionProcess(converterId, recipeId);
+  }
+
+  /**
+   * Pause a conversion process
+   *
+   * @param {string} processId - The ID of the process to pause
+   * @returns {boolean} True if the process was successfully paused
+   */
+  public pauseConversion(processId: string): boolean {
+    const process = this.activeProcesses.get(processId);
+    if (!process) {
+      return false;
+    }
+
+    process.paused = true;
+    this.activeProcesses.set(processId, process);
+
+    // Update in converter's status
+    const converter = this.network.nodes.get(process.sourceId);
+    if (converter && converter.converterStatus) {
+      const processIndex = converter.converterStatus.activeProcesses.findIndex(
+        p => p.startTime === process.startTime && p.recipeId === process.recipeId
+      );
+
+      if (processIndex >= 0) {
+        converter.converterStatus.activeProcesses[processIndex] = process;
+        this.network.nodes.set(process.sourceId, converter);
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Resume a paused conversion process
+   *
+   * @param {string} processId - The ID of the process to resume
+   * @returns {boolean} True if the process was successfully resumed
+   */
+  public resumeConversion(processId: string): boolean {
+    const process = this.activeProcesses.get(processId);
+    if (!process) {
+      return false;
+    }
+
+    process.paused = false;
+    this.activeProcesses.set(processId, process);
+
+    // Update in converter's status
+    const converter = this.network.nodes.get(process.sourceId);
+    if (converter && converter.converterStatus) {
+      const processIndex = converter.converterStatus.activeProcesses.findIndex(
+        p => p.startTime === process.startTime && p.recipeId === process.recipeId
+      );
+
+      if (processIndex >= 0) {
+        converter.converterStatus.activeProcesses[processIndex] = process;
+        this.network.nodes.set(process.sourceId, converter);
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Cancel a conversion process
+   *
+   * @param {string} processId - The ID of the process to cancel
+   * @returns {boolean} True if the process was successfully cancelled
+   */
+  public cancelConversion(processId: string): boolean {
+    const process = this.activeProcesses.get(processId);
+    if (!process) {
+      return false;
+    }
+
+    // Remove from active processes
+    this.activeProcesses.delete(processId);
+
+    // Update in converter's status
+    const converter = this.network.nodes.get(process.sourceId);
+    if (converter && converter.converterStatus) {
+      converter.converterStatus.activeProcesses = converter.converterStatus.activeProcesses.filter(
+        p => p.startTime !== process.startTime || p.recipeId !== process.recipeId
+      );
+      converter.converterStatus.failedProcesses++;
+      this.network.nodes.set(process.sourceId, converter);
+    }
+
+    return true;
+  }
+
+  /**
+   * Get all active conversion processes
+   *
+   * @returns {ResourceConversionProcess[]} Array of all active conversion processes
+   */
+  public getActiveProcesses(): ResourceConversionProcess[] {
+    return Array.from(this.activeProcesses.values());
+  }
+
+  /**
+   * Get active conversion processes for a specific converter
+   *
+   * @param {string} converterId - The ID of the converter
+   * @returns {ResourceConversionProcess[]} Array of active conversion processes for the converter
+   */
+  public getConverterProcesses(converterId: string): ResourceConversionProcess[] {
+    return Array.from(this.activeProcesses.values()).filter(
+      process => process.sourceId === converterId
+    );
+  }
+
+  /**
+   * Update converter configuration
+   *
+   * @param {string} converterId - The ID of the converter
+   * @param {ConverterNodeConfig} config - The new configuration
+   * @returns {boolean} True if the configuration was successfully updated
+   */
+  public updateConverterConfig(converterId: string, config: ConverterNodeConfig): boolean {
+    const converter = this.network.nodes.get(converterId);
+    if (!converter || converter.type !== 'converter') {
+      return false;
+    }
+
+    converter.converterConfig = config;
+    this.network.nodes.set(converterId, converter);
+    return true;
+  }
+
+  /**
+   * Get converter status
+   *
+   * @param {string} converterId - The ID of the converter
+   * @returns {ConverterProcessStatus | undefined} The converter status, or undefined if not found
+   */
+  public getConverterStatus(converterId: string): ConverterProcessStatus | undefined {
+    const converter = this.network.nodes.get(converterId);
+    if (!converter || converter.type !== 'converter') {
+      return undefined;
+    }
+
+    return converter.converterStatus;
+  }
+
+  /**
+   * Calculates resource balance (availability and demand)
+   */
+  private calculateResourceBalance(
+    producers: FlowNode[],
+    consumers: FlowNode[],
+    storages: FlowNode[],
+    activeConnections: FlowConnection[]
+  ): {
+    availability: Partial<Record<ResourceType, number>>;
+    demand: Partial<Record<ResourceType, number>>;
+  } {
+    // Initialize with current resource states
     const availability: Partial<Record<ResourceType, number>> = {};
     const demand: Partial<Record<ResourceType, number>> = {};
 
-    // Initialize with current resource states
     // Convert Map entries to array to avoid MapIterator error
     const resourceStateEntries = Array.from(this.network.resourceStates.entries());
     for (const [type, _state] of resourceStateEntries) {
@@ -269,65 +1416,102 @@ export class ResourceFlowManager {
       demand[type] = 0;
     }
 
-    // Calculate production capacity
-    for (const producer of producers) {
-      for (const resourceType of producer.resources) {
-        // Find outgoing connections for this resource
-        const outgoingConnections = activeConnections.filter(
-          conn => conn.source === producer.id && conn.resourceType === resourceType
-        );
+    // Process producers in batches if there are many
+    const producerBatchCount = Math.ceil(producers.length / this.batchSize);
 
-        // Sum up max rates
-        const totalMaxRate = outgoingConnections.reduce((sum, conn) => sum + conn.maxRate, 0);
+    for (let i = 0; i < producerBatchCount; i++) {
+      const batchStart = i * this.batchSize;
+      const batchEnd = Math.min((i + 1) * this.batchSize, producers.length);
+      const producerBatch = producers.slice(batchStart, batchEnd);
 
-        // Apply efficiency if available
-        const effectiveRate = producer.efficiency
-          ? totalMaxRate * producer.efficiency
-          : totalMaxRate;
-
-        availability[resourceType] = (availability[resourceType] || 0) + effectiveRate;
-      }
-    }
-
-    // Calculate consumption needs
-    for (const consumer of consumers) {
-      for (const resourceType of consumer.resources) {
-        // Find incoming connections for this resource
-        const incomingConnections = activeConnections.filter(
-          conn => conn.target === consumer.id && conn.resourceType === resourceType
-        );
-
-        // Sum up max rates
-        const totalMaxRate = incomingConnections.reduce((sum, conn) => sum + conn.maxRate, 0);
-
-        demand[resourceType] = (demand[resourceType] || 0) + totalMaxRate;
-      }
-    }
-
-    // Adjust for storage capacity
-    for (const storage of storages) {
-      for (const resourceType of storage.resources) {
-        const resourceState = this.network.resourceStates.get(resourceType);
-        if (!resourceState) {
-          continue;
-        }
-
-        // If storage is near capacity, reduce availability
-        if (resourceState.current > resourceState.max * 0.9) {
-          availability[resourceType] = Math.max(
-            0,
-            (availability[resourceType] || 0) - (resourceState.max - resourceState.current)
+      for (const producer of producerBatch) {
+        for (const resourceType of producer.resources) {
+          // Find outgoing connections for this resource
+          const outgoingConnections = activeConnections.filter(
+            conn => conn.source === producer.id && conn.resourceType === resourceType
           );
-        }
 
-        // If storage is near empty, increase demand
-        if (resourceState.current < resourceState.max * 0.1) {
-          demand[resourceType] = (demand[resourceType] || 0) + resourceState.max * 0.2;
+          // Sum up max rates
+          const totalMaxRate = outgoingConnections.reduce((sum, conn) => sum + conn.maxRate, 0);
+
+          // Apply efficiency if available
+          const effectiveRate = producer.efficiency
+            ? totalMaxRate * producer.efficiency
+            : totalMaxRate;
+
+          availability[resourceType] = (availability[resourceType] || 0) + effectiveRate;
         }
       }
     }
 
-    // Identify bottlenecks and underutilized resources
+    // Process consumers in batches if there are many
+    const consumerBatchCount = Math.ceil(consumers.length / this.batchSize);
+
+    for (let i = 0; i < consumerBatchCount; i++) {
+      const batchStart = i * this.batchSize;
+      const batchEnd = Math.min((i + 1) * this.batchSize, consumers.length);
+      const consumerBatch = consumers.slice(batchStart, batchEnd);
+
+      for (const consumer of consumerBatch) {
+        for (const resourceType of consumer.resources) {
+          // Find incoming connections for this resource
+          const incomingConnections = activeConnections.filter(
+            conn => conn.target === consumer.id && conn.resourceType === resourceType
+          );
+
+          // Sum up max rates
+          const totalMaxRate = incomingConnections.reduce((sum, conn) => sum + conn.maxRate, 0);
+
+          demand[resourceType] = (demand[resourceType] || 0) + totalMaxRate;
+        }
+      }
+    }
+
+    // Process storage nodes in batches if there are many
+    const storageBatchCount = Math.ceil(storages.length / this.batchSize);
+
+    for (let i = 0; i < storageBatchCount; i++) {
+      const batchStart = i * this.batchSize;
+      const batchEnd = Math.min((i + 1) * this.batchSize, storages.length);
+      const storageBatch = storages.slice(batchStart, batchEnd);
+
+      for (const storage of storageBatch) {
+        for (const resourceType of storage.resources) {
+          // Use cached resource state if available
+          const resourceState = this.getResourceState(resourceType);
+          if (!resourceState) {
+            continue;
+          }
+
+          // If storage is near capacity, reduce availability
+          if (resourceState.current > resourceState.max * 0.9) {
+            availability[resourceType] = Math.max(
+              0,
+              (availability[resourceType] || 0) - (resourceState.max - resourceState.current)
+            );
+          }
+
+          // If storage is near empty, increase demand
+          if (resourceState.current < resourceState.max * 0.1) {
+            demand[resourceType] = (demand[resourceType] || 0) + resourceState.max * 0.2;
+          }
+        }
+      }
+    }
+
+    return { availability, demand };
+  }
+
+  /**
+   * Identifies resource bottlenecks and underutilized resources
+   */
+  private identifyResourceIssues(
+    availability: Partial<Record<ResourceType, number>>,
+    demand: Partial<Record<ResourceType, number>>
+  ): {
+    bottlenecks: string[];
+    underutilized: string[];
+  } {
     const bottlenecks: string[] = [];
     const underutilized: string[] = [];
 
@@ -341,72 +1525,85 @@ export class ResourceFlowManager {
       }
     }
 
-    // Optimize flow rates based on priorities
-    const updatedConnections: FlowConnection[] = [];
-
-    // Sort connections by priority (high to low)
-    const prioritizedConnections = [...activeConnections].sort(
-      (a, b) => Number(b.priority) - Number(a.priority)
-    );
-
-    // Adjust flow rates
-    for (const connection of prioritizedConnections) {
-      const { resourceType } = connection;
-      const availableForType = availability[resourceType] || 0;
-      const demandForType = demand[resourceType] || 0;
-
-      if (availableForType <= 0 || demandForType <= 0) {
-        // No flow possible
-        connection.currentRate = 0;
-      } else if (availableForType >= demandForType) {
-        // Full flow possible
-        connection.currentRate = Math.min(connection.maxRate, demandForType);
-      } else {
-        // Partial flow based on ratio
-        const ratio = availableForType / demandForType;
-        connection.currentRate = connection.maxRate * ratio;
-      }
-
-      updatedConnections.push({ ...connection });
-
-      // Update the actual connection in the network
-      this.network.connections.set(connection.id, connection);
-    }
-
-    // Generate transfer instructions
-    const transfers: ResourceTransfer[] = [];
-
-    for (const connection of updatedConnections) {
-      if (connection.currentRate <= 0) {
-        continue;
-      }
-
-      const transfer: ResourceTransfer = {
-        type: connection.resourceType,
-        source: connection.source,
-        target: connection.target,
-        amount: connection.currentRate,
-        timestamp: now,
-      };
-
-      if (validateResourceTransfer(transfer)) {
-        transfers.push(transfer);
-
-        // Add to history
-        this.addToTransferHistory(transfer);
-      }
-    }
-
-    return {
-      transfers,
-      updatedConnections,
-      bottlenecks,
-      underutilized,
-    };
+    return { bottlenecks, underutilized };
   }
 
   /**
-   * Add a transfer to history
+   * Optimizes flow rates based on priorities
+   */
+  private optimizeFlowRates(
+    activeConnections: FlowConnection[],
+    availability: Partial<Record<ResourceType, number>>,
+    demand: Partial<Record<ResourceType, number>>
+  ): {
+    updatedConnections: FlowConnection[];
+    transfers: ResourceTransfer[];
+  } {
+    const updatedConnections: FlowConnection[] = [];
+    const transfers: ResourceTransfer[] = [];
+    const now = Date.now();
+
+    // Sort connections by priority (high to low)
+    const prioritizedConnections = [...activeConnections].sort(
+      (a, b) => Number(b.priority.priority) - Number(a.priority.priority)
+    );
+
+    // Process connections in batches if there are many
+    const connectionBatchCount = Math.ceil(prioritizedConnections.length / this.batchSize);
+
+    for (let i = 0; i < connectionBatchCount; i++) {
+      const batchStart = i * this.batchSize;
+      const batchEnd = Math.min((i + 1) * this.batchSize, prioritizedConnections.length);
+      const connectionBatch = prioritizedConnections.slice(batchStart, batchEnd);
+
+      // Adjust flow rates for this batch
+      for (const connection of connectionBatch) {
+        const { resourceType } = connection;
+        const availableForType = availability[resourceType] || 0;
+        const demandForType = demand[resourceType] || 0;
+
+        if (availableForType <= 0 || demandForType <= 0) {
+          // No flow possible
+          connection.currentRate = 0;
+        } else if (availableForType >= demandForType) {
+          // Full flow possible
+          connection.currentRate = Math.min(connection.maxRate, demandForType);
+        } else {
+          // Partial flow based on ratio
+          const ratio = availableForType / demandForType;
+          connection.currentRate = connection.maxRate * ratio;
+        }
+
+        updatedConnections.push({ ...connection });
+
+        // Update the actual connection in the network
+        this.network.connections.set(connection.id, connection);
+
+        // Generate transfer if flow is positive
+        if (connection.currentRate > 0) {
+          const transfer: ResourceTransfer = {
+            type: connection.resourceType,
+            source: connection.source,
+            target: connection.target,
+            amount: connection.currentRate,
+            timestamp: now,
+          };
+
+          if (validateResourceTransfer(transfer)) {
+            transfers.push(transfer);
+
+            // Add to history
+            this.addToTransferHistory(transfer);
+          }
+        }
+      }
+    }
+
+    return { updatedConnections, transfers };
+  }
+
+  /**
+   * Adds a transfer to history
    */
   private addToTransferHistory(transfer: ResourceTransfer): void {
     this.transferHistory.push(transfer);
@@ -418,140 +1615,729 @@ export class ResourceFlowManager {
   }
 
   /**
-   * Get transfer history
+   * Cleans up resources and releases event handlers
+   *
+   * Call this method when the ResourceFlowManager is no longer needed
+   * to prevent memory leaks and ensure proper resource cleanup.
+   *
+   * @example
+   * // Clean up the flow manager when it's no longer needed
+   * flowManager.cleanup();
    */
-  public getTransferHistory(): ResourceTransfer[] {
-    return [...this.transferHistory];
+  public cleanup(): void {
+    moduleEventBus.clearHistory();
+    this.resourceCache.clear();
+    this.network.connections.clear();
+    this.network.nodes.clear();
+    this.network.resourceStates.clear();
+    this.transferHistory = [];
+    this.recipes.clear();
+    this.chains.clear();
+    this.activeProcesses.clear();
+    this.activeChains.clear();
+
+    // Clear process interval
+    if (this.processIntervalId) {
+      clearInterval(this.processIntervalId);
+      this.processIntervalId = undefined;
+    }
   }
 
   /**
-   * Get transfer history for a specific resource type
+   * Start a conversion chain
+   *
+   * @param {string} chainId - The ID of the chain to start
+   * @param {string[]} converterIds - IDs of converters to use for each step (in order)
+   * @returns {ChainExecutionStatus | null} The chain execution status, or null if failed
    */
-  public getTransferHistoryByType(type: ResourceType): ResourceTransfer[] {
-    return this.transferHistory.filter(transfer => transfer.type === type);
+  public startChain(chainId: string, converterIds: string[]): ChainExecutionStatus | null {
+    // Check if chain exists
+    const chain = this.chains.get(chainId);
+    if (!chain) {
+      console.warn(`[ResourceFlowManager] Failed to start chain: Chain ${chainId} not found`);
+      return null;
+    }
+
+    // Validate that we have the right number of converters
+    if (converterIds.length !== chain.steps.length) {
+      console.warn(
+        `[ResourceFlowManager] Failed to start chain: ${converterIds.length} converters provided for ${chain.steps.length} steps`
+      );
+      return null;
+    }
+
+    // Check if all converters exist and can process the required recipes
+    for (let i = 0; i < chain.steps.length; i++) {
+      const recipeId = chain.steps[i];
+      const converterId = converterIds[i];
+
+      // Check if converter exists
+      const converter = this.network.nodes.get(converterId);
+      if (!converter || converter.type !== 'converter') {
+        console.warn(
+          `[ResourceFlowManager] Failed to start chain: Converter ${converterId} not found or not a converter`
+        );
+        return null;
+      }
+
+      // Check if converter can process this recipe
+      if (!converter.converterConfig?.supportedRecipes.includes(recipeId)) {
+        console.warn(
+          `[ResourceFlowManager] Failed to start chain: Converter ${converterId} does not support recipe ${recipeId}`
+        );
+        return null;
+      }
+
+      // Check if recipe exists
+      if (!this.recipes.has(recipeId)) {
+        console.warn(`[ResourceFlowManager] Failed to start chain: Recipe ${recipeId} not found`);
+        return null;
+      }
+    }
+
+    // Create chain execution status
+    const now = Date.now();
+
+    // Calculate estimated time
+    let totalProcessingTime = 0;
+    for (const recipeId of chain.steps) {
+      const recipe = this.recipes.get(recipeId);
+      if (recipe) {
+        totalProcessingTime += recipe.processingTime;
+      }
+    }
+
+    // Initialize step status
+    const stepStatus = chain.steps.map((recipeId, index) => ({
+      recipeId,
+      converterId: converterIds[index],
+      status: 'pending' as 'pending' | 'in_progress' | 'completed' | 'failed',
+    }));
+
+    // Create chain execution status
+    const chainStatus: ChainExecutionStatus = {
+      chainId,
+      currentStepIndex: 0,
+      recipeIds: [...chain.steps],
+      startTime: now,
+      estimatedEndTime: now + totalProcessingTime,
+      progress: 0,
+      stepStatus,
+      resourceTransfers: [],
+      active: true,
+      paused: false,
+      completed: false,
+      failed: false,
+    };
+
+    // Store chain status
+    this.activeChains.set(chainId, chainStatus);
+
+    // Try to start the first step
+    this.processNextChainStep(chainId);
+
+    return chainStatus;
   }
 
   /**
-   * Get all nodes
+   * Process the next step in a chain
+   *
+   * @param {string} chainId - The ID of the chain to process
+   * @returns {boolean} True if the next step was started, false otherwise
+   * @private
+   */
+  private processNextChainStep(chainId: string): boolean {
+    // Get chain status
+    const chainStatus = this.activeChains.get(chainId);
+    if (
+      !chainStatus ||
+      !chainStatus.active ||
+      chainStatus.paused ||
+      chainStatus.completed ||
+      chainStatus.failed
+    ) {
+      return false;
+    }
+
+    // Get current step
+    const { currentStepIndex } = chainStatus;
+    if (currentStepIndex >= chainStatus.recipeIds.length) {
+      // Chain is complete
+      chainStatus.completed = true;
+      chainStatus.active = false;
+      return false;
+    }
+
+    // Get step info
+    const recipeId = chainStatus.recipeIds[currentStepIndex];
+    const stepStatus = chainStatus.stepStatus[currentStepIndex];
+    const { converterId } = stepStatus;
+
+    // If the current step is already in progress or completed, move to the next step
+    if (stepStatus.status === 'completed') {
+      chainStatus.currentStepIndex++;
+      return this.processNextChainStep(chainId);
+    }
+
+    // If the current step is in progress, just return
+    if (stepStatus.status === 'in_progress' && stepStatus.processId) {
+      return true;
+    }
+
+    // Check if we have enough resources for this step
+    const recipe = this.recipes.get(recipeId);
+    if (!recipe) {
+      // Recipe not found, mark step as failed
+      stepStatus.status = 'failed';
+      chainStatus.failed = true;
+      chainStatus.active = false;
+      chainStatus.errorMessage = `Recipe ${recipeId} not found`;
+      return false;
+    }
+
+    // If this is not the first step, check if we need to transfer output from previous step
+    if (currentStepIndex > 0) {
+      const previousStepIndex = currentStepIndex - 1;
+      const previousStepStatus = chainStatus.stepStatus[previousStepIndex];
+
+      // Make sure previous step is completed
+      if (previousStepStatus.status !== 'completed') {
+        // Previous step not completed yet, wait
+        return false;
+      }
+
+      // Transfer outputs from previous step to current step inputs
+      this.transferChainStepResources(chainId, previousStepIndex, currentStepIndex);
+    }
+
+    // Check if converter has enough inputs
+    const canStart = this.checkRecipeInputs(converterId, recipe);
+    if (!canStart) {
+      // Not enough inputs, don't start yet
+      return false;
+    }
+
+    // Start the conversion process
+    const result = this.startConversionProcess(converterId, recipeId);
+    if (!result.success || !result.processId) {
+      // Failed to start process
+      stepStatus.status = 'failed';
+      chainStatus.failed = true;
+      chainStatus.active = false;
+      chainStatus.errorMessage = result.error || 'Failed to start conversion process';
+      return false;
+    }
+
+    // Update step status
+    stepStatus.status = 'in_progress';
+    stepStatus.processId = result.processId;
+    stepStatus.startTime = Date.now();
+
+    // Update chain progress
+    this.updateChainProgress(chainId);
+
+    return true;
+  }
+
+  /**
+   * Transfer resources between chain steps
+   *
+   * @param {string} chainId - The ID of the chain
+   * @param {number} fromStepIndex - The index of the step to transfer from
+   * @param {number} toStepIndex - The index of the step to transfer to
+   * @returns {boolean} True if transfer was successful
+   * @private
+   */
+  private transferChainStepResources(
+    chainId: string,
+    fromStepIndex: number,
+    toStepIndex: number
+  ): boolean {
+    // Get chain status
+    const chainStatus = this.activeChains.get(chainId);
+    if (!chainStatus) {
+      return false;
+    }
+
+    // Get step info
+    const fromStepStatus = chainStatus.stepStatus[fromStepIndex];
+    const toStepStatus = chainStatus.stepStatus[toStepIndex];
+
+    // Get recipes
+    const fromRecipeId = chainStatus.recipeIds[fromStepIndex];
+    const toRecipeId = chainStatus.recipeIds[toStepIndex];
+    const fromRecipe = this.recipes.get(fromRecipeId);
+    const toRecipe = this.recipes.get(toRecipeId);
+
+    if (!fromRecipe || !toRecipe) {
+      return false;
+    }
+
+    // Get converters
+    const fromConverterId = fromStepStatus.converterId;
+    const toConverterId = toStepStatus.converterId;
+    const fromConverter = this.network.nodes.get(fromConverterId);
+    const toConverter = this.network.nodes.get(toConverterId);
+
+    if (!fromConverter || !toConverter) {
+      return false;
+    }
+
+    // Create transfers for each matching output-input
+    const transfers: { type: ResourceType; amount: number }[] = [];
+
+    // Check which outputs from the previous step match inputs for the current step
+    for (const output of fromRecipe.outputs) {
+      for (const input of toRecipe.inputs) {
+        if (output.type === input.type) {
+          // This output matches an input for the next step
+          // Calculate the transfer amount (can be less than required if not enough available)
+          const transferAmount = Math.min(output.amount, input.amount);
+
+          if (transferAmount > 0) {
+            transfers.push({ type: output.type, amount: transferAmount });
+
+            // Add to resource transfers list for tracking
+            chainStatus.resourceTransfers.push({
+              type: output.type,
+              amount: transferAmount,
+              fromStep: fromStepIndex,
+              toStep: toStepIndex,
+              status: 'in_progress',
+            });
+          }
+        }
+      }
+    }
+
+    // Execute the transfers
+    const now = Date.now();
+    for (const transfer of transfers) {
+      // Create a resource transfer
+      const resourceTransfer: ResourceTransfer = {
+        type: transfer.type,
+        amount: transfer.amount,
+        source: fromConverterId,
+        target: toConverterId,
+        timestamp: now,
+      };
+
+      // Validate and execute the transfer
+      const isValid = validateResourceTransfer(resourceTransfer);
+      if (isValid) {
+        // Update resource states
+        const state = this.getResourceState(transfer.type) || {
+          current: 0,
+          max: 100,
+          min: 0,
+          production: 0,
+          consumption: 0,
+        };
+
+        // Add to transfer history
+        this.addToTransferHistory(resourceTransfer);
+
+        // Mark the corresponding resource transfer as completed
+        const resourceTransferIndex = chainStatus.resourceTransfers.findIndex(
+          rt =>
+            rt.type === transfer.type &&
+            rt.fromStep === fromStepIndex &&
+            rt.toStep === toStepIndex &&
+            rt.status === 'in_progress'
+        );
+        if (resourceTransferIndex >= 0) {
+          chainStatus.resourceTransfers[resourceTransferIndex].status = 'completed';
+        }
+      } else {
+        // Invalid transfer
+        console.warn(
+          `[ResourceFlowManager] Invalid chain step resource transfer: ${JSON.stringify(resourceTransfer)}`
+        );
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Update the progress of a chain
+   *
+   * @param {string} chainId - The ID of the chain to update
+   * @private
+   */
+  private updateChainProgress(chainId: string): void {
+    const chainStatus = this.activeChains.get(chainId);
+    if (!chainStatus) {
+      return;
+    }
+
+    // Calculate overall progress
+    let completedSteps = 0;
+    let totalProgress = 0;
+
+    for (const step of chainStatus.stepStatus) {
+      if (step.status === 'completed') {
+        completedSteps++;
+        totalProgress += 1.0;
+      } else if (step.status === 'in_progress' && step.processId) {
+        // Get process progress
+        const process = this.activeProcesses.get(step.processId);
+        if (process) {
+          totalProgress += process.progress;
+        }
+      }
+    }
+
+    // Update progress
+    chainStatus.progress = totalProgress / chainStatus.stepStatus.length;
+
+    // Check if all steps are completed
+    if (completedSteps === chainStatus.stepStatus.length) {
+      chainStatus.completed = true;
+      chainStatus.active = false;
+    }
+  }
+
+  /**
+   * Pause a running chain
+   *
+   * @param {string} chainId - The ID of the chain to pause
+   * @returns {boolean} True if the chain was successfully paused
+   */
+  public pauseChain(chainId: string): boolean {
+    const chainStatus = this.activeChains.get(chainId);
+    if (
+      !chainStatus ||
+      !chainStatus.active ||
+      chainStatus.paused ||
+      chainStatus.completed ||
+      chainStatus.failed
+    ) {
+      return false;
+    }
+
+    // Pause the chain
+    chainStatus.paused = true;
+
+    // Pause any active conversion process
+    const { currentStepIndex } = chainStatus;
+    if (currentStepIndex < chainStatus.stepStatus.length) {
+      const stepStatus = chainStatus.stepStatus[currentStepIndex];
+      if (stepStatus.status === 'in_progress' && stepStatus.processId) {
+        this.pauseConversion(stepStatus.processId);
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Resume a paused chain
+   *
+   * @param {string} chainId - The ID of the chain to resume
+   * @returns {boolean} True if the chain was successfully resumed
+   */
+  public resumeChain(chainId: string): boolean {
+    const chainStatus = this.activeChains.get(chainId);
+    if (
+      !chainStatus ||
+      !chainStatus.active ||
+      !chainStatus.paused ||
+      chainStatus.completed ||
+      chainStatus.failed
+    ) {
+      return false;
+    }
+
+    // Resume the chain
+    chainStatus.paused = false;
+
+    // Resume any active conversion process
+    const { currentStepIndex } = chainStatus;
+    if (currentStepIndex < chainStatus.stepStatus.length) {
+      const stepStatus = chainStatus.stepStatus[currentStepIndex];
+      if (stepStatus.status === 'in_progress' && stepStatus.processId) {
+        this.resumeConversion(stepStatus.processId);
+      }
+    }
+
+    // Try to process the next step
+    this.processNextChainStep(chainId);
+
+    return true;
+  }
+
+  /**
+   * Cancel a running chain
+   *
+   * @param {string} chainId - The ID of the chain to cancel
+   * @returns {boolean} True if the chain was successfully cancelled
+   */
+  public cancelChain(chainId: string): boolean {
+    const chainStatus = this.activeChains.get(chainId);
+    if (!chainStatus || chainStatus.completed) {
+      return false;
+    }
+
+    // Cancel any active conversion process
+    for (const step of chainStatus.stepStatus) {
+      if (step.status === 'in_progress' && step.processId) {
+        this.cancelConversion(step.processId);
+      }
+    }
+
+    // Mark chain as failed
+    chainStatus.active = false;
+    chainStatus.paused = false;
+    chainStatus.failed = true;
+    chainStatus.errorMessage = 'Chain cancelled by user';
+
+    return true;
+  }
+
+  /**
+   * Get all active chains
+   *
+   * @returns {ChainExecutionStatus[]} Array of all active chain execution statuses
+   */
+  public getActiveChains(): ChainExecutionStatus[] {
+    return Array.from(this.activeChains.values());
+  }
+
+  /**
+   * Get a specific chain execution status by ID
+   *
+   * @param {string} chainId - The ID of the chain to get
+   * @returns {ChainExecutionStatus | undefined} The chain execution status, or undefined if not found
+   */
+  public getChainStatus(chainId: string): ChainExecutionStatus | undefined {
+    return this.activeChains.get(chainId);
+  }
+
+  /**
+   * Calculate the efficiency for a converter based on input quality and other modifiers
+   *
+   * @param {FlowNode} converter - The converter node
+   * @param {ResourceConversionRecipe} recipe - The recipe being processed
+   * @returns {number} The calculated efficiency (1.0 = 100%)
+   * @private
+   */
+  private calculateConverterEfficiency(
+    converter: FlowNode,
+    recipe: ResourceConversionRecipe
+  ): number {
+    // Start with the converter's base efficiency
+    let efficiency = converter.efficiency || 1.0;
+
+    // Apply recipe base efficiency
+    efficiency *= recipe.baseEfficiency;
+
+    // Check for converter config efficiency modifiers
+    if (converter.converterConfig?.efficiencyModifiers) {
+      const modifiers = converter.converterConfig.efficiencyModifiers;
+
+      // Apply general modifiers
+      if (modifiers['global']) {
+        efficiency *= modifiers['global'];
+      }
+
+      // Apply recipe-specific modifiers
+      if (modifiers[recipe.id]) {
+        efficiency *= modifiers[recipe.id];
+      }
+
+      // Apply resource-specific modifiers
+      for (const input of recipe.inputs) {
+        if (modifiers[input.type]) {
+          efficiency *= modifiers[input.type];
+        }
+      }
+    }
+
+    // Apply dynamic efficiency based on resource quality (simulated)
+    // In a real implementation, we would check actual resource quality
+    // This is a placeholder for the resource quality system
+    const qualityFactors = this.calculateResourceQualityFactors(recipe.inputs);
+    for (const [resourceType, factor] of Object.entries(qualityFactors)) {
+      efficiency *= factor;
+    }
+
+    // Apply technology tier bonus (1-10% per tier)
+    if (converter.converterConfig?.tier) {
+      const tierBonus = 1 + converter.converterConfig.tier * 0.05;
+      efficiency *= tierBonus;
+    }
+
+    // Apply network stress factor
+    const networkStressFactor = this.calculateNetworkStressFactor(converter);
+    efficiency *= networkStressFactor;
+
+    // Apply chain bonus if this is part of a chain
+    if (converter.converterConfig?.chainBonus) {
+      efficiency *= converter.converterConfig.chainBonus;
+    }
+
+    // Clamp efficiency to reasonable range (0.1 to 5.0)
+    efficiency = Math.max(0.1, Math.min(5.0, efficiency));
+
+    return efficiency;
+  }
+
+  /**
+   * Calculate quality factors for input resources
+   *
+   * @param {ResourceCost[]} inputs - The input resources
+   * @returns {Record<string, number>} Quality factors by resource type
+   * @private
+   */
+  private calculateResourceQualityFactors(
+    inputs: { type: ResourceType; amount: number }[]
+  ): Record<string, number> {
+    const qualityFactors: Record<string, number> = {};
+
+    for (const input of inputs) {
+      // For now, use a simulated quality factor
+      // In the future, this would be based on actual resource quality attributes
+      const baseQuality = 1.0;
+      const randomVariation = Math.random() * 0.2 - 0.1; // -10% to +10%
+      qualityFactors[input.type] = baseQuality + randomVariation;
+    }
+
+    return qualityFactors;
+  }
+
+  /**
+   * Calculate network stress factor based on resource availability and demand
+   *
+   * @param {FlowNode} converter - The converter node
+   * @returns {number} Network stress factor (0.7 to 1.3)
+   * @private
+   */
+  private calculateNetworkStressFactor(converter: FlowNode): number {
+    // Default to neutral factor
+    let stressFactor = 1.0;
+
+    // Check resource states for converter's resources
+    for (const resourceType of converter.resources) {
+      const state = this.getResourceState(resourceType);
+      if (state) {
+        // Calculate resource utilization
+        const utilization = state.consumption / Math.max(state.production, 0.001);
+
+        // High utilization reduces efficiency
+        if (utilization > 0.9) {
+          stressFactor *= 0.9;
+        }
+        // Low utilization increases efficiency
+        else if (utilization < 0.5) {
+          stressFactor *= 1.1;
+        }
+      }
+    }
+
+    // Clamp to reasonable range
+    return Math.max(0.7, Math.min(1.3, stressFactor));
+  }
+
+  /**
+   * Apply efficiency mechanics to a conversion process
+   *
+   * @param {string} processId - The ID of the process
+   * @param {ResourceConversionProcess} process - The conversion process
+   * @param {FlowNode} converter - The converter node
+   * @param {ResourceConversionRecipe} recipe - The recipe being processed
+   * @returns {number} The efficiency applied to the process
+   * @private
+   */
+  private applyEfficiencyToProcess(
+    processId: string,
+    process: ResourceConversionProcess,
+    converter: FlowNode,
+    recipe: ResourceConversionRecipe
+  ): number {
+    // Calculate efficiency
+    const efficiency = this.calculateConverterEfficiency(converter, recipe);
+
+    // Store efficiency with the process
+    process.appliedEfficiency = efficiency;
+
+    // Apply efficiency to processing time
+    if (efficiency !== 1.0) {
+      // More efficient = faster processing
+      const newDuration = recipe.processingTime / efficiency;
+      process.endTime = process.startTime + newDuration;
+      process.progress = Math.min(process.startTime - process.startTime / newDuration, 1);
+    }
+
+    return efficiency;
+  }
+
+  /**
+   * Apply efficiency to resource outputs when completing a process
+   *
+   * @param {ConversionResult} result - The conversion result
+   * @param {number} efficiency - The efficiency to apply
+   * @returns {ConversionResult} The updated conversion result
+   * @private
+   */
+  private applyEfficiencyToOutputs(result: ConversionResult, efficiency: number): ConversionResult {
+    if (!result.success || !result.outputsProduced) {
+      return result;
+    }
+
+    // Apply efficiency to output amounts
+    for (const output of result.outputsProduced) {
+      // Higher efficiency = more output
+      output.amount = Math.floor(output.amount * efficiency);
+
+      // Ensure minimum of 1 output if any was produced
+      output.amount = Math.max(output.amount, 1);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get all nodes in the network
+   *
+   * @returns {FlowNode[]} Array of all nodes in the network
    */
   public getNodes(): FlowNode[] {
     return Array.from(this.network.nodes.values());
   }
 
   /**
-   * Get all connections
+   * Get all connections in the network
+   *
+   * @returns {FlowConnection[]} Array of all connections in the network
    */
   public getConnections(): FlowConnection[] {
     return Array.from(this.network.connections.values());
   }
 
   /**
-   * Get node by ID
-   */
-  public getNode(id: string): FlowNode | undefined {
-    return this.network.nodes.get(id);
-  }
-
-  /**
-   * Get connection by ID
+   * Get a specific connection by ID
+   *
+   * @param {string} id - ID of the connection to retrieve
+   * @returns {FlowConnection | undefined} The connection if found, undefined otherwise
    */
   public getConnection(id: string): FlowConnection | undefined {
     return this.network.connections.get(id);
   }
 
   /**
-   * Create a resource flow
+   * Create a resource flow between nodes
+   *
+   * This method creates a resource flow by automatically registering nodes and connections
+   * based on the resource flow specification.
+   *
+   * @param {ResourceFlow} flow - The resource flow specification
+   * @returns {boolean} True if the flow was successfully created, false otherwise
    */
   public createFlow(flow: ResourceFlow): boolean {
-    if (!validateResourceFlow(flow)) {
-      console.error('Invalid resource flow:', flow);
-      return false;
-    }
-
-    // Extract resource type and other properties from flow
-    const resourceType = flow.resources[0]?.type;
-    const rate = flow.resources[0]?.amount || 0;
-
-    /**
-     * Resource flow interval in milliseconds
-     *
-     * This parameter will be used in future implementations to:
-     * 1. Create pulsed resource flows instead of continuous streams
-     * 2. Implement time-based resource delivery systems
-     * 3. Support burst transfer mechanics for specialized modules
-     * 4. Enable resource scheduling for optimized network utilization
-     * 5. Create priority-based time-sharing for limited resource connections
-     *
-     * The interval system will allow for more complex resource management strategies,
-     * particularly for high-value resources that should be delivered in discrete packages
-     * rather than continuous flows.
-     */
-    const _interval = flow.resources[0]?.interval || 1000;
-
-    // Implement interval-based flow control
-    if (_interval !== 1000) {
-      console.warn(
-        `[ResourceFlowManager] Using custom interval of ${_interval}ms for flow control`
-      );
-
-      // Create a scheduled transfer based on the interval
-      const scheduleTransfer = () => {
-        // Find the connection for this flow
-        const connection = Array.from(this.network.connections.values()).find(
-          conn =>
-            conn.resourceType === resourceType &&
-            conn.source === flow.source &&
-            conn.target === flow.target
-        );
-
-        if (connection && connection.active) {
-          // Calculate batch size based on rate and interval
-          const batchSize = (connection.currentRate / 1000) * _interval;
-
-          // Create a transfer record
-          const transfer: ResourceTransfer = {
-            type: resourceType,
-            amount: batchSize,
-            source: flow.source,
-            target: flow.target,
-            timestamp: Date.now(),
-          };
-
-          // Add to history
-          this.addToTransferHistory(transfer);
-
-          console.warn(
-            `[ResourceFlowManager] Scheduled transfer of ${batchSize.toFixed(2)} ${resourceType} from ${flow.source} to ${flow.target}`
-          );
-
-          // Emit event for the scheduled transfer
-          moduleEventBus.emit({
-            type: 'RESOURCE_TRANSFERRED',
-            moduleId: 'resource-flow-manager',
-            moduleType: 'resource-manager',
-            timestamp: Date.now(),
-            data: transfer as unknown as Record<string, unknown>,
-          });
-        }
-      };
-
-      // Set up the interval
-      const intervalId = setInterval(scheduleTransfer, _interval);
-
-      // Store the interval ID for cleanup
-      // @ts-expect-error - Adding a property for cleanup
-      flow.intervalId = intervalId;
-    }
-
-    // Create a proper ResourcePriority object
-    const priority: ResourcePriority = {
-      type: resourceType,
-      priority: 1,
-      consumers: [],
-    };
-
-    if (!resourceType) {
-      console.error('Flow must have at least one resource');
+    // Validate the flow
+    if (!flow.source || !flow.target || !flow.resources || flow.resources.length === 0) {
+      console.warn('Invalid resource flow:', flow);
       return false;
     }
 
@@ -560,8 +2346,8 @@ export class ResourceFlowManager {
       this.registerNode({
         id: flow.source,
         type: 'producer',
-        resources: [resourceType],
-        priority: priority,
+        resources: flow.resources.map(r => r.type),
+        priority: { type: flow.resources[0].type, priority: 1, consumers: [] },
         active: true,
       });
     }
@@ -570,34 +2356,33 @@ export class ResourceFlowManager {
       this.registerNode({
         id: flow.target,
         type: 'consumer',
-        resources: [resourceType],
-        priority: priority,
+        resources: flow.resources.map(r => r.type),
+        priority: { type: flow.resources[0].type, priority: 1, consumers: [] },
         active: true,
       });
     }
 
-    // Create connection
-    const connectionId = `${flow.source}-${flow.target}-${resourceType}`;
+    // Create connections for each resource
+    let success = true;
+    for (const resource of flow.resources) {
+      const connectionId = `${flow.source}-${flow.target}-${resource.type}`;
+      const connection: FlowConnection = {
+        id: connectionId,
+        source: flow.source,
+        target: flow.target,
+        resourceType: resource.type,
+        maxRate: resource.amount,
+        currentRate: 0,
+        priority: { type: resource.type, priority: 1, consumers: [] },
+        active: true,
+      };
 
-    return this.registerConnection({
-      id: connectionId,
-      source: flow.source,
-      target: flow.target,
-      resourceType: resourceType,
-      maxRate: rate,
-      currentRate: 0,
-      priority: priority,
-      active: true,
-    });
-  }
+      const registered = this.registerConnection(connection);
+      if (!registered) {
+        success = false;
+      }
+    }
 
-  /**
-   * Clean up resources
-   */
-  public cleanup(): void {
-    this.network.nodes.clear();
-    this.network.connections.clear();
-    this.network.resourceStates.clear();
-    this.transferHistory = [];
+    return success;
   }
 }

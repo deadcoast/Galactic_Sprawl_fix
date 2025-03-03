@@ -2,7 +2,19 @@ import React, { createContext, ReactNode, useContext, useEffect, useRef, useStat
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 
 /**
- * Event dispatcher context interface
+ * Interface defining the context type for the EventDispatcher.
+ * Provides methods for subscribing to events, emitting events, accessing event history,
+ * filtering events, and accessing the latest events by type.
+ *
+ * @interface EventDispatcherContextType
+ * @property {Function} subscribe - Function to subscribe to specific event types
+ * @property {Function} emit - Function to emit events to the event bus
+ * @property {Function} getHistory - Function to get the complete event history
+ * @property {Function} getModuleHistory - Function to get events for a specific module
+ * @property {Function} getEventTypeHistory - Function to get events of a specific type
+ * @property {Function} clearHistory - Function to clear the event history
+ * @property {Function} getFilteredEvents - Function to get events matching a filter function
+ * @property {Map<ModuleEventType, ModuleEvent>} latestEvents - Map of the most recent event of each type
  */
 interface EventDispatcherContextType {
   // Event subscription
@@ -25,22 +37,51 @@ interface EventDispatcherContextType {
 }
 
 /**
- * Event dispatcher provider props
+ * Props for the EventDispatcherProvider component.
+ *
+ * @interface EventDispatcherProviderProps
+ * @property {ReactNode} children - Child components that will have access to the event context
+ * @property {number} [__maxHistorySize=1000] - Maximum number of events to keep in history
  */
 interface EventDispatcherProviderProps {
   children: ReactNode;
   /**
    * Maximum number of events to keep in history
-   * Currently unused but kept for future implementation of history size limiting
+   * Controls the maximum size of the event history to prevent excessive memory usage
    */
   __maxHistorySize?: number;
 }
 
-// Create the context with a default value
+/**
+ * React Context for the EventDispatcher.
+ * Initially set to null and properly initialized in the EventDispatcherProvider.
+ */
 const EventDispatcherContext = createContext<EventDispatcherContextType | null>(null);
 
 /**
- * Event dispatcher provider component
+ * Provider component for the event dispatcher system.
+ *
+ * This component sets up a React context that provides access to the event system
+ * throughout the component tree. It handles:
+ * - Tracking the latest events by type
+ * - Managing history size limits
+ * - Subscribing to events from the underlying moduleEventBus
+ * - Providing methods to interact with the event system
+ *
+ * All components that need to work with events should be descendants of this provider.
+ *
+ * @component
+ * @example
+ * // In your application's root component
+ * import { EventDispatcherProvider } from '../utils/events/EventDispatcher';
+ *
+ * const App = () => {
+ *   return (
+ *     <EventDispatcherProvider>
+ *       <YourComponents />
+ *     </EventDispatcherProvider>
+ *   );
+ * };
  */
 export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = ({
   children,
@@ -191,7 +232,34 @@ export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = (
 };
 
 /**
- * Hook to use the event dispatcher
+ * Hook to access the event dispatcher context.
+ *
+ * Provides access to all event operations such as subscribing to events,
+ * emitting events, accessing event history, and viewing the latest events.
+ *
+ * @returns {EventDispatcherContextType} The event dispatcher context
+ * @throws {Error} If used outside of an EventDispatcherProvider
+ *
+ * @example
+ * const MyComponent = () => {
+ *   const { emit, getHistory } = useEventDispatcher();
+ *
+ *   const handleButtonClick = () => {
+ *     emit({
+ *       type: 'MODULE_ACTIVATED',
+ *       moduleId: 'module-1',
+ *       moduleType: 'production',
+ *       timestamp: Date.now()
+ *     });
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <button onClick={handleButtonClick}>Activate Module</button>
+ *       <div>Total Events: {getHistory().length}</div>
+ *     </div>
+ *   );
+ * };
  */
 export const useEventDispatcher = (): EventDispatcherContextType => {
   const context = useContext(EventDispatcherContext);
@@ -204,7 +272,29 @@ export const useEventDispatcher = (): EventDispatcherContextType => {
 };
 
 /**
- * Hook to subscribe to specific event types
+ * Hook to subscribe to a specific event type.
+ *
+ * This hook simplifies the process of subscribing to events by automatically
+ * handling subscription and cleanup. The callback will be called whenever
+ * an event of the specified type is emitted.
+ *
+ * @template T - The specific event type to subscribe to
+ * @param {T} eventType - The event type to subscribe to
+ * @param {Function} callback - Function to call when an event of this type occurs
+ * @param {React.DependencyList} [deps=[]] - Additional dependencies for the effect
+ *
+ * @example
+ * // Subscribe to MODULE_CREATED events
+ * const ModuleTracker = () => {
+ *   const [moduleCount, setModuleCount] = useState(0);
+ *
+ *   useEventSubscription('MODULE_CREATED', (event) => {
+ *     setModuleCount(prev => prev + 1);
+ *     console.warn(`New module created: ${event.moduleId}`);
+ *   });
+ *
+ *   return <div>Total modules created: {moduleCount}</div>;
+ * };
  */
 export const useEventSubscription = <T extends ModuleEventType>(
   eventType: T,
@@ -219,7 +309,34 @@ export const useEventSubscription = <T extends ModuleEventType>(
 };
 
 /**
- * Hook to get the latest event of a specific type
+ * Hook to get the latest event of a specific type.
+ *
+ * Retrieves the most recent event of the specified type that has been
+ * emitted in the system. Returns undefined if no event of that type
+ * has been emitted yet.
+ *
+ * @template T - The specific event type to query
+ * @param {T} eventType - The event type to get the latest event for
+ * @returns {ModuleEvent | undefined} The latest event of the specified type, or undefined if none exists
+ *
+ * @example
+ * // Display information about the most recent error
+ * const ErrorDisplay = () => {
+ *   const latestError = useLatestEvent('ERROR_OCCURRED');
+ *
+ *   if (!latestError) {
+ *     return <div>No errors reported</div>;
+ *   }
+ *
+ *   return (
+ *     <div className="error-panel">
+ *       <h3>Latest Error</h3>
+ *       <p>Module: {latestError.moduleId}</p>
+ *       <p>Time: {new Date(latestError.timestamp).toLocaleString()}</p>
+ *       <p>Message: {latestError.data?.message || 'Unknown error'}</p>
+ *     </div>
+ *   );
+ * };
  */
 export const useLatestEvent = <T extends ModuleEventType>(
   eventType: T
@@ -229,7 +346,41 @@ export const useLatestEvent = <T extends ModuleEventType>(
 };
 
 /**
- * Hook to get filtered events
+ * Hook to get events that match a filter function.
+ *
+ * Allows for complex event filtering beyond just module ID or event type.
+ * Automatically updates when new events are emitted that match the filter.
+ *
+ * @param {Function} filter - Filter function that returns true for events to include
+ * @param {React.DependencyList} [deps=[]] - Additional dependencies for the effect
+ * @returns {ModuleEvent[]} Array of events that match the filter
+ *
+ * @example
+ * // Display all resource shortage events from the last hour
+ * const ResourceShortageMonitor = () => {
+ *   const oneHourAgo = Date.now() - 3600000;
+ *
+ *   const recentShortages = useFilteredEvents(
+ *     (event) => (
+ *       event.type === 'RESOURCE_SHORTAGE' &&
+ *       event.timestamp > oneHourAgo
+ *     ),
+ *     [oneHourAgo] // Update when oneHourAgo changes
+ *   );
+ *
+ *   return (
+ *     <div>
+ *       <h3>Recent Resource Shortages: {recentShortages.length}</h3>
+ *       <ul>
+ *         {recentShortages.map(event => (
+ *           <li key={event.timestamp}>
+ *             {event.data?.resourceType}: {new Date(event.timestamp).toLocaleTimeString()}
+ *           </li>
+ *         ))}
+ *       </ul>
+ *     </div>
+ *   );
+ * };
  */
 export const useFilteredEvents = (
   filter: (event: ModuleEvent) => boolean,

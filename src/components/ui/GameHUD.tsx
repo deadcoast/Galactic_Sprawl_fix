@@ -323,7 +323,7 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
     if (type === 'success' || type === 'error') {
       // This will be used in the future notification system
       const notification = _createNotification(type, message);
-      console.log('Future notification system:', notification);
+      console.warn('Future notification system:', notification);
     }
 
     // Current implementation using the notification manager
