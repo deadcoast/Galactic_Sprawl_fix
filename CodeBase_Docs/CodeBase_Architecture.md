@@ -28,25 +28,7 @@ GALACTIC SPRAWL SYSTEM ARCHITECTURE
     - [Unused Variables and Interfaces](#unused-variables-and-interfaces)
     - [Type Assertion Issues](#type-assertion-issues)
     - [Map Iteration Issues](#map-iteration-issues)
-    - [Generic Components](#generic-components)
-    - [Type Consistency for Union Types vs Object Types](#type-consistency-for-union-types-vs-object-types)
-    - [Ship Ability Issues](#ship-ability-issues)
-    - [Property Access on Possibly Undefined Values](#property-access-on-possibly-undefined-values)
-    - [Incompatible Type Assignments](#incompatible-type-assignments)
-    - [Handling Underscore-Prefixed Variables](#handling-underscore-prefixed-variables)
-    - [Handling Parameter Type Issues](#handling-parameter-type-issues)
-    - [Implementing Unused Variables](#implementing-unused-variables)
-    - [Documenting Unused Interfaces](#documenting-unused-interfaces)
-    - [Faction Behavior System Type Safety](#faction-behavior-system-type-safety)
-    - [Automation System Type Safety](#automation-system-type-safety)
-    - [Handling Unused Functions and Interfaces](#handling-unused-functions-and-interfaces)
-    - [TypeScript Error Fixing Strategies](#typescript-error-fixing-strategies)
-    - [JSX Namespace Declaration Issues](#jsx-namespace-declaration-issues)
-18. [End-to-End Testing with Playwright](#end-to-end-testing-with-playwright)
-19. [Resource Management System](#resource-management-system)
-    - [Multi-Step Production Chains](#multi-step-production-chains)
-    - [Resource Conversion Efficiency](#resource-conversion-efficiency)
-    - [Converter Management UI](#converter-management-ui)
+18. [Testing Framework Configuration](#testing-framework-configuration)
 
 ## End-to-End Testing with Playwright
 
@@ -2522,8 +2504,6 @@ The fixes involved:
 - Using type assertions with React.createElement
 - Ensuring proper typing for all props and attributes
 
-```
-
 ## Testing Architecture
 
 ### Test Utilities
@@ -2531,6 +2511,7 @@ The fixes involved:
 The test utilities in `src/tests/utils/testUtils.tsx` have been enhanced to include:
 
 1. **Mock Factories** - Consistent creation of test data
+
    - `createMockResource` - Creates resource objects with sensible defaults
    - `createMockResourceNode` - Creates producer or consumer nodes
    - `createMockResourceConnection` - Creates connections between nodes
@@ -2538,6 +2519,7 @@ The test utilities in `src/tests/utils/testUtils.tsx` have been enhanced to incl
    - `createMockEvent` - Creates game events
 
 2. **Common Testing Patterns** - Standardized approaches for common scenarios
+
    - `testLoadingState` - Tests a component's loading state
    - `testErrorState` - Tests a component's error handling
    - `testFormSubmission` - Tests a form's validation and submission
@@ -2552,6 +2534,7 @@ The test utilities in `src/tests/utils/testUtils.tsx` have been enhanced to incl
 We've implemented performance benchmarks for critical systems:
 
 1. **ResourceFlowManager Benchmarks** (`src/tests/performance/ResourceFlowManager.benchmark.ts`)
+
    - Tests different network sizes (50 to 500 nodes)
    - Compares batch processing strategies
    - Evaluates cache configurations
@@ -2566,6 +2549,7 @@ We've implemented performance benchmarks for critical systems:
 These benchmarks are designed to be run as part of the CI process to detect performance regressions early.
 
 Additional documentation on these topics can be found in:
+
 - `CodeBase_Docs/Test_Utilities_Guide.md` - Complete guide to the enhanced test utilities
 - `CodeBase_Docs/Performance_Benchmark_Practices.md` - Best practices for performance benchmarking
 
@@ -2576,12 +2560,14 @@ Additional documentation on these topics can be found in:
 The ResourceFlowManager now supports multi-step production chains through the following components:
 
 1. **ResourceConversionProcess Interface**:
+
    - Tracks the state of conversion processes with unique process IDs
    - Includes start and end timestamps for performance monitoring
    - Supports efficiency tracking with base and applied efficiency values
    - Handles both primary outputs and byproducts
 
 2. **Conversion Process Lifecycle**:
+
    - `startConversionProcess`: Initiates a conversion with input validation
    - `updateConversionProcess`: Updates the state of an ongoing conversion
    - `completeConversionProcess`: Finalizes conversion and produces outputs
@@ -2597,18 +2583,21 @@ The ResourceFlowManager now supports multi-step production chains through the fo
 The efficiency system has been enhanced with the following features:
 
 1. **Efficiency Calculation**:
+
    - Base efficiency determined by converter properties
    - Applied efficiency calculated with modifiers from various sources
    - Compound efficiency for multi-step processes
    - Efficiency impacts both resource consumption and production rates
 
 2. **Efficiency Modifiers**:
+
    - Environmental factors (temperature, pressure)
    - Module upgrades and technology levels
    - Operator skill levels
    - Maintenance status
 
 3. **Implementation Details**:
+
    - Efficiency values stored as decimals (0.0 to 1.0+)
    - Values above 1.0 represent super-efficient conversions
    - Efficiency applied to both resource consumption and production
@@ -2661,16 +2650,19 @@ The visualization helps players understand complex production chains by:
 The converter management UI implements several important UI/UX principles:
 
 1. **Consistent Visual Language**:
+
    - Color coding for status (green for success, yellow for in-progress, red for failure)
    - Consistent layout and interaction patterns across components
    - Clear hierarchy of information with the most important data prominently displayed
 
 2. **Real-Time Feedback**:
+
    - Progress bars show the current status of processes and chains
    - Status indicators update immediately when changes occur
    - Efficiency factors are displayed with their current values
 
 3. **Responsive Design**:
+
    - Adapts to different screen sizes using CSS Grid
    - Maintains usability on smaller screens with reorganized layouts
    - Ensures all interactive elements remain accessible on mobile devices
@@ -2682,4 +2674,154 @@ The converter management UI implements several important UI/UX principles:
    - Alternative indicators beyond color for status (icons, text, etc.)
 
 These UI components work together to create a comprehensive and intuitive interface for managing the converter system, making complex production chains more accessible and easier to manage for players.
+
+## Testing Framework Configuration
+
+Galactic Sprawl uses a dual testing system with Vitest as the primary testing framework and Jest as a secondary framework. This setup provides maximum compatibility with different testing approaches and libraries.
+
+### Vitest Configuration
+
+Vitest is the preferred testing framework for most test cases. It offers better compatibility with our Vite-based build system and faster execution.
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  plugins: [react(), viteTsconfigPaths()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/tests/setup.ts', './src/tests/setup/testingLibrary.setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      exclude: ['node_modules/', 'src/tests/'],
+    },
+  },
+});
+```
+
+Vitest tests can be run using the following npm scripts:
+
+- `npm test` - Run all Vitest tests
+- `npm run test:ui` - Run tests with Vitest UI
+- `npm run coverage` - Generate test coverage report
+
+### Jest Configuration
+
+Jest is used as a secondary testing framework, primarily for legacy tests and compatibility with certain testing patterns.
+
+```javascript
+// jest.config.js
+export default {
+  preset: 'ts-jest/presets/js-with-ts-esm',
+  testEnvironment: 'node',
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
+  },
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
+  testMatch: ['**/tests/**/*.test.ts', '**/tests/**/*.test.tsx'],
+  setupFilesAfterEnv: ['<rootDir>/jest-setup.js'],
+};
+```
+
+Jest tests can be run using the following npm scripts:
+
+- `npm run test:jest` - Run all Jest tests
+- `npm run test:jest:watch` - Run Jest tests in watch mode
+- `npm run test:jest:coverage` - Generate Jest test coverage report
+- `npm run test:jest:resource` - Run resource-specific Jest tests
+
+### Compatibility Layer
+
+To ensure compatibility between Vitest and Jest, we use a setup file (`jest-setup.js`) that maps Vitest's API to Jest's global objects:
+
+```javascript
+// jest-setup.js
+import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
+
+// Map Vitest's vi to Jest's jest global
+globalThis.vi = jest;
+
+// Add compatibility layer for Vitest functions
+globalThis.describe = describe;
+globalThis.it = test;
+globalThis.expect = expect;
+globalThis.beforeEach = beforeEach;
+globalThis.afterEach = afterEach;
+```
+
+This allows tests written for Vitest to run with Jest with minimal modifications.
+
+### Testing Best Practices
+
+1. **Prefer Vitest for new tests** - Use Vitest for all new test files for better performance and compatibility with our build system.
+2. **Use React Testing Library** - For component tests, use React Testing Library with the setup provided in `testingLibrary.setup.ts`.
+3. **Organize tests by type** - Organize tests into unit, integration, and e2e directories.
+4. **Mock external dependencies** - Use `vi.mock()` (or `jest.mock()` for Jest tests) to mock external dependencies.
+5. **Use test utilities** - Leverage the test utilities in `src/tests/utils` for common testing patterns.
+
+### Testing Directory Structure
+
+```
+src/tests/
+├── components/     # Component unit tests
+├── e2e/           # End-to-end tests
+├── hooks/         # Hook tests
+├── integration/   # Integration tests
+├── managers/      # Manager module tests
+├── performance/   # Performance benchmark tests
+├── setup/         # Test setup files
+└── utils/         # Test utilities
+```
+
+When writing tests, follow the naming convention of `[filename].(test|spec).[ts|tsx]` to ensure tests are picked up by the test runner.
+
+## Type Safety Best Practices
+
+### Resource Type Interfaces
+
+When working with resource-related interfaces, especially the `ResourceTotals` interface, ensure you follow these guidelines:
+
+1. **Complete Implementation**: The `ResourceTotals` interface has a specific structure that must be fully implemented:
+
+   ```typescript
+   interface ResourceTotals {
+     production: number;
+     consumption: number;
+     net: number;
+     amounts?: Record<ResourceType, number>;
+     capacities?: Record<ResourceType, number>;
+     rates?: Record<ResourceType, number>;
+   }
+   ```
+
+2. **Resource Types Coverage**: When implementing objects that use the `ResourceType` enum or string union, always include all possible resource types, even if they have zero values:
+
+   ```typescript
+   // Example of complete resource type coverage
+   const resourceAmounts = {
+     minerals: 600,
+     energy: 1000,
+     population: 50,
+     research: 200,
+     plasma: 0,
+     gas: 0,
+     exotic: 0,
+   };
+   ```
+
+3. **Mock Objects in Tests**: When creating mock objects for tests, ensure they fully implement the expected interface structure. This is especially important for complex interfaces like `ResourceTrackingResult`.
+
+4. **Consistent Structure**: Maintain consistent structure across all implementations of resource-related interfaces to prevent type errors and ensure compatibility across the codebase.
+
+```
+
 ```

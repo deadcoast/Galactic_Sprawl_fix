@@ -80,14 +80,26 @@ describe('ResourceVisualization Integration', () => {
     });
 
     // Set up thresholds
-    thresholdManager.registerThreshold('minerals', {
-      min: 100,
-      max: 2000,
+    thresholdManager.registerThreshold({
+      id: 'minerals',
+      threshold: {
+        type: 'minerals',
+        min: 100,
+        max: 2000,
+      },
+      actions: [],
+      enabled: true,
     });
 
-    thresholdManager.registerThreshold('energy', {
-      min: 200,
-      max: 5000,
+    thresholdManager.registerThreshold({
+      id: 'energy',
+      threshold: {
+        type: 'energy',
+        min: 200,
+        max: 5000,
+      },
+      actions: [],
+      enabled: true,
     });
 
     // Clear mock call history
@@ -140,23 +152,86 @@ describe('ResourceVisualization Integration', () => {
 
       // Update the mock for useResourceTracking
       vi.mocked(useResourceTracking).mockReturnValue({
-        resources: {
-          minerals: 600, // Updated value
-          energy: 1000,
-          population: 50,
-          research: 200,
-        },
-        resourceRates: {
-          minerals: 10,
-          energy: 20,
-          population: 1,
-          research: 5,
-        },
-        thresholds: {
-          minerals: { low: 100, critical: 50 },
-          energy: { low: 200, critical: 100 },
-          population: { low: 10, critical: 5 },
-          research: { low: 50, critical: 20 },
+        resources: new Map([
+          ['minerals', { current: 600, max: 2000, min: 0, production: 10, consumption: 5 }], // Updated value
+          ['energy', { current: 1000, max: 5000, min: 0, production: 20, consumption: 10 }],
+          ['population', { current: 50, max: 100, min: 0, production: 1, consumption: 0 }],
+          ['research', { current: 200, max: 500, min: 0, production: 5, consumption: 0 }],
+        ]),
+        resourceList: [
+          {
+            type: 'minerals',
+            state: { current: 600, max: 2000, min: 0, production: 10, consumption: 5 },
+          },
+          {
+            type: 'energy',
+            state: { current: 1000, max: 5000, min: 0, production: 20, consumption: 10 },
+          },
+          {
+            type: 'population',
+            state: { current: 50, max: 100, min: 0, production: 1, consumption: 0 },
+          },
+          {
+            type: 'research',
+            state: { current: 200, max: 500, min: 0, production: 5, consumption: 0 },
+          },
+        ],
+        getResource: vi.fn(),
+        history: [],
+        getHistoryByType: vi.fn(),
+        clearHistory: vi.fn(),
+        alerts: [],
+        getAlertsByType: vi.fn(),
+        clearAlerts: vi.fn(),
+        dismissAlert: vi.fn(),
+        setThreshold: vi.fn(),
+        removeThreshold: vi.fn(),
+        updateResource: vi.fn(),
+        incrementResource: vi.fn(),
+        decrementResource: vi.fn(),
+        transferResource: vi.fn(),
+        getTotalResources: vi.fn().mockReturnValue(1850),
+        getResourcePercentage: vi.fn(),
+        getResourcesAboveThreshold: vi.fn(),
+        getResourcesBelowThreshold: vi.fn(),
+        lastUpdated: Date.now(),
+        isLoading: false,
+        error: null,
+        resourceMetrics: {
+          totals: {
+            production: 36,
+            consumption: 15,
+            net: 21,
+            amounts: {
+              minerals: 600,
+              energy: 1000,
+              population: 50,
+              research: 200,
+              plasma: 0,
+              gas: 0,
+              exotic: 0,
+            },
+            capacities: {
+              minerals: 2000,
+              energy: 5000,
+              population: 100,
+              research: 500,
+              plasma: 0,
+              gas: 0,
+              exotic: 0,
+            },
+          },
+          percentages: {
+            minerals: 0.3,
+            energy: 0.2,
+            population: 0.5,
+            research: 0.4,
+            plasma: 0,
+            gas: 0,
+            exotic: 0,
+          },
+          criticalResources: [],
+          abundantResources: ['energy'],
         },
       });
 
@@ -184,23 +259,86 @@ describe('ResourceVisualization Integration', () => {
   it('should display visual indicators for resource thresholds', () => {
     // Simulate low resource state
     vi.mocked(useResourceTracking).mockReturnValue({
-      resources: {
-        minerals: 90, // Below low threshold
-        energy: 90, // Below critical threshold
-        population: 50,
-        research: 200,
-      },
-      resourceRates: {
-        minerals: 10,
-        energy: 20,
-        population: 1,
-        research: 5,
-      },
-      thresholds: {
-        minerals: { low: 100, critical: 50 },
-        energy: { low: 200, critical: 100 },
-        population: { low: 10, critical: 5 },
-        research: { low: 50, critical: 20 },
+      resources: new Map([
+        ['minerals', { current: 90, max: 2000, min: 0, production: 10, consumption: 15 }], // Below low threshold
+        ['energy', { current: 90, max: 5000, min: 0, production: 20, consumption: 25 }], // Below critical threshold
+        ['population', { current: 50, max: 100, min: 0, production: 1, consumption: 0 }],
+        ['research', { current: 200, max: 500, min: 0, production: 5, consumption: 0 }],
+      ]),
+      resourceList: [
+        {
+          type: 'minerals',
+          state: { current: 90, max: 2000, min: 0, production: 10, consumption: 15 },
+        },
+        {
+          type: 'energy',
+          state: { current: 90, max: 5000, min: 0, production: 20, consumption: 25 },
+        },
+        {
+          type: 'population',
+          state: { current: 50, max: 100, min: 0, production: 1, consumption: 0 },
+        },
+        {
+          type: 'research',
+          state: { current: 200, max: 500, min: 0, production: 5, consumption: 0 },
+        },
+      ],
+      getResource: vi.fn(),
+      history: [],
+      getHistoryByType: vi.fn(),
+      clearHistory: vi.fn(),
+      alerts: [],
+      getAlertsByType: vi.fn(),
+      clearAlerts: vi.fn(),
+      dismissAlert: vi.fn(),
+      setThreshold: vi.fn(),
+      removeThreshold: vi.fn(),
+      updateResource: vi.fn(),
+      incrementResource: vi.fn(),
+      decrementResource: vi.fn(),
+      transferResource: vi.fn(),
+      getTotalResources: vi.fn().mockReturnValue(430),
+      getResourcePercentage: vi.fn(),
+      getResourcesAboveThreshold: vi.fn(),
+      getResourcesBelowThreshold: vi.fn(),
+      lastUpdated: Date.now(),
+      isLoading: false,
+      error: null,
+      resourceMetrics: {
+        totals: {
+          production: 36,
+          consumption: 40,
+          net: -4,
+          amounts: {
+            minerals: 90,
+            energy: 90,
+            population: 50,
+            research: 200,
+            plasma: 0,
+            gas: 0,
+            exotic: 0,
+          },
+          capacities: {
+            minerals: 2000,
+            energy: 5000,
+            population: 100,
+            research: 500,
+            plasma: 0,
+            gas: 0,
+            exotic: 0,
+          },
+        },
+        percentages: {
+          minerals: 0.045,
+          energy: 0.018,
+          population: 0.5,
+          research: 0.4,
+          plasma: 0,
+          gas: 0,
+          exotic: 0,
+        },
+        criticalResources: ['minerals', 'energy'],
+        abundantResources: [],
       },
     });
 

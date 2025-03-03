@@ -4,6 +4,24 @@ TESTING FRAMEWORK REFERENCES
 
 # Testing Framework
 
+## Configuration Files
+
+- Vitest Configuration: `vitest.config.ts`
+  Purpose: Configures Vitest testing framework
+  Dependencies: Vite, React, JSdom
+
+- Jest Configuration: `jest.config.js`
+  Purpose: Configures Jest testing framework
+  Dependencies: ts-jest
+
+- Jest Setup: `jest-setup.js`
+  Purpose: Provides compatibility layer between Vitest and Jest
+  Dependencies: @jest/globals
+  Features:
+  - Maps Vitest's `vi` to Jest's `jest` global
+  - Adds compatibility layer for Vitest functions to run in Jest environment
+  - Uses `globalThis` to define global functions and avoid ESLint errors
+
 ## Unit Tests
 
 ### Event System Tests

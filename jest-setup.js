@@ -1,12 +1,12 @@
 // Setup file for Jest to make Vitest tests compatible
-import { jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals';
 
 // Map Vitest's vi to Jest's jest global
-global.vi = jest;
+globalThis.vi = jest;
 
 // Add compatibility layer for Vitest functions
-global.describe = describe;
-global.it = test;
-global.expect = expect;
-global.beforeEach = beforeEach;
-global.afterEach = afterEach;
+globalThis.describe = describe;
+globalThis.it = test;
+globalThis.expect = expect;
+globalThis.beforeEach = beforeEach;
+globalThis.afterEach = afterEach;

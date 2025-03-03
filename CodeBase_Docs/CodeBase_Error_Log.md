@@ -1125,3 +1125,92 @@ The following issues still need to be addressed:
 - Apply efficiency calculations in completeConversionProcess method
 - Handle edge cases for zero or negative efficiency values
 - Update tests to verify efficiency calculations
+
+### Jest Setup Undefined Globals and Functions Error
+
+**Problem**: In the `jest-setup.js` file, there were errors related to undefined `global` object and test functions (`describe`, `test`, `expect`, `beforeEach`, `afterEach`).
+
+**Solution**:
+
+1. Import all required test functions from `@jest/globals` to properly define them:
+
+```javascript
+// Before (causes linter errors)
+import { jest } from '@jest/globals';
+
+global.vi = jest;
+global.describe = describe; // Error: 'describe' is not defined
+// More undefined function errors...
+
+// After (fixed)
+import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
+
+global.vi = jest;
+global.describe = describe; // Now properly defined
+global.it = test;
+global.expect = expect;
+global.beforeEach = beforeEach;
+global.afterEach = afterEach;
+```
+
+2. Replace `global` with `globalThis` to fix ESLint 'no-undef' errors:
+
+```javascript
+// Before (ESLint errors - 'global' is not defined)
+global.vi = jest;
+global.describe = describe;
+// More global assignments...
+
+// After (ESLint errors fixed)
+globalThis.vi = jest;
+globalThis.describe = describe;
+globalThis.it = test;
+globalThis.expect = expect;
+globalThis.beforeEach = beforeEach;
+globalThis.afterEach = afterEach;
+```
+
+**Context**: This fix ensures compatibility between Vitest and Jest in our dual testing environment, preventing errors when running Jest tests with code written for Vitest. Using `globalThis` instead of `global` follows modern JavaScript standards and prevents ESLint no-undef errors.
+
+### 10. ResourceTotals Interface Implementation in Tests
+
+**Problem**: Type errors in test files when mocking the ResourceTotals interface due to incomplete implementation of the interface structure.
+
+**Solution**:
+
+- Ensure mock objects fully implement the ResourceTotals interface structure:
+
+  ```typescript
+  // Before (incomplete implementation)
+  totals: { minerals: 600, energy: 1000, population: 50, research: 200 }
+
+  // After (complete implementation)
+  totals: {
+    production: 36,
+    consumption: 15,
+    net: 21,
+    amounts: {
+      minerals: 600,
+      energy: 1000,
+      population: 50,
+      research: 200,
+      plasma: 0,
+      gas: 0,
+      exotic: 0
+    },
+    capacities: {
+      minerals: 2000,
+      energy: 5000,
+      population: 100,
+      research: 500,
+      plasma: 0,
+      gas: 0,
+      exotic: 0
+    }
+  }
+  ```
+
+- Include all resource types in the ResourceTotals interface, even if they have zero values
+- Ensure percentages object includes all resource types
+- Properly structure the totals object with production, consumption, net, amounts, and capacities properties
+- Use consistent structure across all mock objects in test files

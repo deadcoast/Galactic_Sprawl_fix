@@ -11,7 +11,7 @@
 ### Integration Tests
 
 - `src/tests/integration/resource/MiningResourceIntegration.test.ts` - Integration tests for the ResourceFlowManager and MiningResourceIntegration classes
-- `src/tests/integration/ui/ResourceVisualization.test.tsx` - Integration tests for the ResourceVisualization UI component
+- `src/tests/integration/ui/ResourceVisualization.test.tsx` - Integration tests for the ResourceVisualization UI component with complete ResourceTrackingResult mock implementations, testing resource visualization rendering with different resource states (normal, critical, abundant)
 
 ### Component Tests
 
@@ -48,6 +48,16 @@
 
 - `src/components/ui/resource/ChainVisualization.tsx` - React component that visualizes production chains using D3.js
 - `src/components/ui/resource/ConverterDashboard.tsx` - Main interface for managing converters and production chains
+- `src/components/ui/resource/ConverterDetailsView.tsx` - Detailed view of a single converter with stats, active processes, available recipes, and efficiency factors
+- `src/components/ui/resource/ChainManagementInterface.tsx` - Interface for creating and managing multi-step production chains and templates
+- `src/components/ui/resource/ConverterDashboard.css` - Styles for the converter dashboard component
+- `src/components/ui/resource/ConverterDetailsView.css` - Styles for the converter details view component
+- `src/components/ui/resource/ChainManagementInterface.css` - Styles for the chain management interface component
+
+### Pages
+
+- `src/pages/ConverterManagementPage.tsx` - Page component that integrates the converter management UI components with routing
+- `src/pages/ConverterManagementPage.css` - Styles for the converter management page
 
 ### Event System
 
