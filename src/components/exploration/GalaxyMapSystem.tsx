@@ -1,5 +1,5 @@
 import { Filter, Map, Search, ZoomIn, ZoomOut } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface Sector {
   id: string;
@@ -14,6 +14,14 @@ interface Sector {
     type: string;
     amount: number;
   }>;
+  factionControl?: FactionControl;
+}
+
+interface FactionControl {
+  factionId: string;
+  factionName: string;
+  controlLevel: 'minimal' | 'partial' | 'full';
+  hostility: 'friendly' | 'neutral' | 'hostile';
 }
 
 interface Anomaly {
@@ -24,6 +32,27 @@ interface Anomaly {
   investigated: boolean;
 }
 
+interface TradeRoute {
+  id: string;
+  sourceSectorId: string;
+  targetSectorId: string;
+  resourceType: string;
+  volume: number; // 0-1 scale for line thickness
+  active: boolean;
+}
+
+interface CosmicEvent {
+  id: string;
+  type: 'storm' | 'solarFlare' | 'anomaly';
+  position: { x: number; y: number };
+  radius: number;
+  duration: number; // in seconds
+  startTime: number; // timestamp
+  affectedSectors: string[]; // sector IDs
+  severity: 'low' | 'medium' | 'high';
+  description: string;
+}
+
 interface GalaxyMapSystemProps {
   sectors: Sector[];
   onSectorSelect: (sectorId: string) => void;
@@ -32,6 +61,11 @@ interface GalaxyMapSystemProps {
   activeScanId?: string;
   className?: string;
   quality?: 'low' | 'medium' | 'high';
+  // Additional props for enhanced features
+  cosmicEvents?: CosmicEvent[];
+  affectedSectorIds?: string[];
+  tradeRoutes?: TradeRoute[];
+  activeOverlays?: ('factions' | 'tradeRoutes' | 'resources' | 'anomalies')[];
 }
 
 export function GalaxyMapSystem({
@@ -42,6 +76,10 @@ export function GalaxyMapSystem({
   activeScanId,
   className = '',
   quality = 'medium',
+  cosmicEvents,
+  affectedSectorIds,
+  tradeRoutes,
+  activeOverlays,
 }: GalaxyMapSystemProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
@@ -174,11 +212,27 @@ export function GalaxyMapSystem({
   // Get sector color based on status and selection
   const getSectorColor = useCallback(
     (sector: Sector) => {
+      // Check if sector is affected by cosmic events
+      if (affectedSectorIds?.includes(sector.id)) {
+        return 'rgba(255, 100, 100, 0.7)';
+      }
+
       if (sector.id === selectedSectorId) {
         return 'rgba(255, 255, 255, 0.9)';
       }
       if (sector.id === activeScanId) {
         return 'rgba(0, 255, 255, 0.9)';
+      }
+
+      // If faction overlay is active and sector has faction control
+      if (activeOverlays?.includes('factions') && sector.factionControl) {
+        if (sector.factionControl.hostility === 'hostile') {
+          return 'rgba(220, 38, 38, 0.7)'; // Red for hostile
+        } else if (sector.factionControl.hostility === 'friendly') {
+          return 'rgba(16, 185, 129, 0.7)'; // Green for friendly
+        } else {
+          return 'rgba(245, 158, 11, 0.7)'; // Amber for neutral
+        }
       }
 
       switch (sector.status) {
@@ -194,7 +248,7 @@ export function GalaxyMapSystem({
           return 'rgba(150, 150, 150, 0.6)';
       }
     },
-    [selectedSectorId, activeScanId]
+    [selectedSectorId, activeScanId, activeOverlays, affectedSectorIds]
   );
 
   // Get sector size based on resource potential and anomalies
@@ -222,7 +276,7 @@ export function GalaxyMapSystem({
 
   // Render sector markers
   const renderSectors = useCallback(() => {
-    return filteredSectors.map(sector => {
+    return filteredSectors.map((sector: Sector) => {
       const { x, y } = sector.coordinates;
       const color = getSectorColor(sector);
       const size = getSectorSize(sector);
@@ -244,6 +298,83 @@ export function GalaxyMapSystem({
             className="cursor-pointer transition-all duration-200"
           />
 
+          {/* Faction control indicator */}
+          {activeOverlays?.includes('factions') && sector.factionControl && (
+            <g>
+              {/* Control level indicator */}
+              <circle
+                cx={posX}
+                cy={posY}
+                r={size + 5}
+                fill="none"
+                stroke={
+                  sector.factionControl.hostility === 'hostile'
+                    ? 'rgba(220, 38, 38, 0.5)'
+                    : sector.factionControl.hostility === 'friendly'
+                      ? 'rgba(16, 185, 129, 0.5)'
+                      : 'rgba(245, 158, 11, 0.5)'
+                }
+                strokeWidth={
+                  sector.factionControl.controlLevel === 'full'
+                    ? 3
+                    : sector.factionControl.controlLevel === 'partial'
+                      ? 2
+                      : 1
+                }
+                strokeDasharray={sector.factionControl.controlLevel === 'minimal' ? '3,3' : 'none'}
+              />
+            </g>
+          )}
+
+          {/* Resource indicators */}
+          {activeOverlays?.includes('resources') &&
+            sector.resources &&
+            sector.resources.length > 0 && (
+              <g>
+                {(sector.resources || []).map((resource, index) => {
+                  const angle = (index * 2 * Math.PI) / sector.resources!.length;
+                  const resourceX = posX + Math.cos(angle) * (size + 8);
+                  const resourceY = posY + Math.sin(angle) * (size + 8);
+
+                  // Determine color based on resource type
+                  const resourceColor =
+                    resource.type === 'minerals'
+                      ? 'rgb(59, 130, 246)'
+                      : resource.type === 'gas'
+                        ? 'rgb(16, 185, 129)'
+                        : resource.type === 'energy'
+                          ? 'rgb(245, 158, 11)'
+                          : resource.type === 'organic'
+                            ? 'rgb(139, 92, 246)'
+                            : 'rgb(236, 72, 153)'; // exotic
+
+                  // Size based on amount
+                  const resourceSize = 2 + (resource.amount / 100) * 4;
+
+                  return (
+                    <g key={`${sector.id}-${resource.type}`}>
+                      <circle
+                        cx={resourceX}
+                        cy={resourceY}
+                        r={resourceSize}
+                        fill={resourceColor}
+                        className={resource.amount > 50 ? 'animate-pulse' : ''}
+                      />
+                      <line
+                        x1={posX}
+                        y1={posY}
+                        x2={resourceX}
+                        y2={resourceY}
+                        stroke={resourceColor}
+                        strokeWidth={0.5}
+                        strokeOpacity={0.5}
+                      />
+                    </g>
+                  );
+                })}
+              </g>
+            )}
+
           {/* Anomaly indicator */}
           {sector.anomalies.length > 0 && (
             <circle
@@ -251,9 +382,9 @@ export function GalaxyMapSystem({
               cy={posY - size - 5}
               r={3}
               fill={
-                sector.anomalies.some(a => a.severity === 'high')
+                sector.anomalies.some((a: Anomaly) => a.severity === 'high')
                   ? 'rgba(255, 50, 50, 0.8)'
-                  : sector.anomalies.some(a => a.severity === 'medium')
+                  : sector.anomalies.some((a: Anomaly) => a.severity === 'medium')
                     ? 'rgba(255, 150, 50, 0.8)'
                     : 'rgba(255, 255, 50, 0.8)'
               }
@@ -310,6 +441,7 @@ export function GalaxyMapSystem({
     getSectorColor,
     getSectorSize,
     onSectorSelect,
+    activeOverlays,
   ]);
 
   return (
@@ -445,7 +577,10 @@ export function GalaxyMapSystem({
             <select
               value={advancedFilters.anomalySeverity}
               onChange={e =>
-                setAdvancedFilters(prev => ({ ...prev, anomalySeverity: e.target.value as any }))
+                setAdvancedFilters(prev => ({
+                  ...prev,
+                  anomalySeverity: e.target.value as 'any' | 'low' | 'medium' | 'high',
+                }))
               }
               className="w-full rounded border border-gray-600 bg-gray-700 px-2 py-1 text-xs text-gray-300"
               disabled={!advancedFilters.hasAnomalies}
@@ -544,6 +679,70 @@ export function GalaxyMapSystem({
             stroke="rgba(255, 255, 255, 0.5)"
             strokeWidth="1"
           />
+
+          {/* Trade Routes */}
+          {tradeRoutes && activeOverlays?.includes('tradeRoutes') && (
+            <>
+              {tradeRoutes
+                .filter(route => route.active)
+                .map(route => {
+                  const sourceSector = sectors.find(s => s.id === route.sourceSectorId);
+                  const targetSector = sectors.find(s => s.id === route.targetSectorId);
+
+                  if (!sourceSector || !targetSector) return null;
+
+                  const sourceX = sourceSector.coordinates.x * zoom + offset.x;
+                  const sourceY = sourceSector.coordinates.y * zoom + offset.y;
+                  const targetX = targetSector.coordinates.x * zoom + offset.x;
+                  const targetY = targetSector.coordinates.y * zoom + offset.y;
+
+                  // Calculate control points for curved lines
+                  const dx = targetX - sourceX;
+                  const dy = targetY - sourceY;
+                  const distance = Math.sqrt(dx * dx + dy * dy);
+                  const midX = (sourceX + targetX) / 2;
+                  const midY = (sourceY + targetY) / 2;
+                  const curveFactor = 0.2;
+                  const perpX = -dy * curveFactor;
+                  const perpY = dx * curveFactor;
+                  const controlX = midX + perpX;
+                  const controlY = midY + perpY;
+
+                  return (
+                    <g key={route.id}>
+                      {/* Trade route path */}
+                      <path
+                        d={`M ${sourceX} ${sourceY} Q ${controlX} ${controlY} ${targetX} ${targetY}`}
+                        fill="none"
+                        stroke={
+                          route.resourceType === 'minerals'
+                            ? 'rgba(59, 130, 246, 0.6)'
+                            : route.resourceType === 'gas'
+                              ? 'rgba(16, 185, 129, 0.6)'
+                              : route.resourceType === 'energy'
+                                ? 'rgba(245, 158, 11, 0.6)'
+                                : route.resourceType === 'organic'
+                                  ? 'rgba(139, 92, 246, 0.6)'
+                                  : 'rgba(236, 72, 153, 0.6)'
+                        }
+                        strokeWidth={1 + route.volume * 3}
+                        strokeDasharray={route.volume < 0.5 ? '5,5' : 'none'}
+                        className="opacity-70"
+                      />
+
+                      {/* Animated flow along the path */}
+                      <circle r={2 + route.volume * 2}>
+                        <animateMotion
+                          dur={`${10 - route.volume * 5}s`}
+                          repeatCount="indefinite"
+                          path={`M ${sourceX} ${sourceY} Q ${controlX} ${controlY} ${targetX} ${targetY}`}
+                        />
+                      </circle>
+                    </g>
+                  );
+                })}
+            </>
+          )}
 
           {/* Sectors */}
           {renderSectors()}

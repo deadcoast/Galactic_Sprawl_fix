@@ -42,6 +42,7 @@ export type ModuleEventType =
   | 'RESOURCE_FLOW_UNREGISTERED'
   | 'RESOURCE_SHORTAGE'
   | 'RESOURCE_UPDATED'
+  | 'RESOURCE_DISCOVERED'
   // Automation events
   | 'AUTOMATION_STARTED'
   | 'AUTOMATION_STOPPED'

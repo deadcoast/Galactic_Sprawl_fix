@@ -1,4 +1,4 @@
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
@@ -286,10 +286,59 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
             },
           });
         } else if (task.specialization === 'resource') {
-          sector.resources = Math.floor(Math.random() * 5) + 1;
-          ship.discoveries.resourcesLocated += sector.resources;
+          // Generate more detailed resource data
+          const resourceCount = Math.floor(Math.random() * 5) + 1;
+          const resourceTypes: ('minerals' | 'energy' | 'gas' | 'plasma' | 'exotic')[] = [
+            'minerals',
+            'energy',
+            'gas',
+            'plasma',
+            'exotic',
+          ];
 
-          // Emit mission event
+          // Create detailed resource signals
+          const resourceSignals = Array.from({ length: resourceCount }, () => {
+            const signalType = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
+            const signalStrength = 0.3 + Math.random() * 0.7; // 30-100% strength
+            const signalDepth = Math.random(); // 0-100% depth (higher = harder to access)
+            const signalPatterns = ['concentrated', 'scattered', 'veins'] as const;
+            const signalPattern = signalPatterns[Math.floor(Math.random() * signalPatterns.length)];
+
+            return {
+              type: signalType,
+              strength: signalStrength,
+              depth: signalDepth,
+              pattern: signalPattern,
+            };
+          });
+
+          // Update sector with resource count
+          sector.resources = resourceCount;
+          ship.discoveries.resourcesLocated += resourceCount;
+
+          // Determine importance based on resource quality and quantity
+          const averageStrength =
+            resourceSignals.reduce((sum, signal) => sum + signal.strength, 0) /
+            resourceSignals.length;
+          const hasExotic = resourceSignals.some(signal => signal.type === 'exotic');
+          const importance = hasExotic
+            ? 'high'
+            : averageStrength > 0.7 || resourceCount > 3
+              ? 'high'
+              : averageStrength > 0.5 || resourceCount > 1
+                ? 'medium'
+                : 'low';
+
+          // Create detailed resource data for the event
+          const resourcesFound = resourceSignals.map(signal => ({
+            type: signal.type,
+            amount: Math.floor(signal.strength * 100),
+            quality: signal.strength,
+            accessibility: 1 - signal.depth,
+            distribution: signal.pattern,
+          }));
+
+          // Emit mission event with detailed resource data
           moduleEventBus.emit({
             type: 'MISSION_COMPLETED',
             moduleId: shipId,
@@ -298,10 +347,26 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
             data: {
               type: 'discovery',
               sector: task.target.id,
-              importance: sector.resources > 3 ? 'high' : sector.resources > 1 ? 'medium' : 'low',
-              description: `Located ${sector.resources} resource deposits in ${task.target.id}`,
+              importance,
+              description: `Located ${resourceCount} resource deposits in ${task.target.id}`,
               xpGained: this.calculateExperienceGain(task, ship),
-              resourcesFound: [{ type: 'Unknown', amount: sector.resources }],
+              resourcesFound,
+              rawSignals: resourceSignals,
+            },
+          });
+
+          // Also emit a resource discovery event for the resource discovery system
+          moduleEventBus.emit({
+            type: 'RESOURCE_DISCOVERED' as ModuleEventType,
+            moduleId: shipId,
+            moduleType: 'radar' as ModuleType,
+            timestamp: Date.now(),
+            data: {
+              sectorId: task.target.id,
+              sectorName: task.target.id, // This would be better with actual sector name
+              resourceSignals,
+              scanQuality: 0.5 + ship.sensors.accuracy * 0.5, // 50-100% based on ship sensors
+              confidence: 0.4 + ship.experience / 1000, // Confidence increases with ship experience
             },
           });
         }

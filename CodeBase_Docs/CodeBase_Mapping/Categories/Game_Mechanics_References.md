@@ -65,21 +65,69 @@ GAME MECHANICS REFERENCES
   - Advanced AI behaviors
   - Combat environment effects
 
-### Exploration System [~35% Complete]
+### Exploration System (~75% Complete)
 
-- Exploration Hub: src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx
-- Exploration Window: src/components/buildings/modules/ExplorationHub/ExplorationWindow.tsx
-- Recon Ship Manager: src/managers/exploration/ReconShipManagerImpl.ts
-- Features implemented:
-  - Sector mapping system with unmapped/mapped/scanning states
-  - Recon ship tracking and task management
-  - Experience and discovery tracking
-  - Anomaly detection system
-- Features needed:
-  - Real-time map updates
-  - Advanced filtering system
-  - Detailed anomaly analysis
-  - Resource potential visualization
+**Components:**
+
+- Exploration Hub (`src/components/exploration/ExplorationHub.tsx`)
+- Exploration Window (`src/components/exploration/ExplorationWindow.tsx`)
+- Recon Ship Manager (`src/components/exploration/ReconShipManager.tsx`)
+- Automated Sector Scanner (`src/components/exploration/AutomatedSectorScanner.tsx`)
+- Real-Time Map Updates (`src/components/exploration/RealTimeMapUpdates.tsx`)
+- Advanced Filtering System (`src/components/exploration/AdvancedFilteringSystem.tsx`)
+- Advanced Filtering Demo (`src/components/exploration/AdvancedFilteringDemo.tsx`)
+- Exploration System Integration (`src/components/exploration/ExplorationSystemIntegration.tsx`)
+- Detailed Anomaly Analysis (`src/components/exploration/DetailedAnomalyAnalysis.tsx`)
+- Detailed Anomaly Analysis Demo (`src/components/exploration/DetailedAnomalyAnalysisDemo.tsx`)
+- Resource Potential Visualization (`src/components/exploration/ResourcePotentialVisualization.tsx`)
+- Resource Potential Visualization Demo (`src/components/exploration/ResourcePotentialVisualizationDemo.tsx`)
+- Galaxy Map System (`src/components/exploration/GalaxyMapSystem.tsx`)
+- Galaxy Mapping System (`src/components/exploration/GalaxyMappingSystem.tsx`)
+- Galaxy Mapping System Demo (`src/components/exploration/GalaxyMappingSystemDemo.tsx`)
+- Resource Discovery System (`src/components/exploration/ResourceDiscoverySystem.tsx`)
+- Resource Discovery Demo (`src/components/exploration/ResourceDiscoveryDemo.tsx`)
+
+**Implementations:**
+
+- Sector mapping
+- Anomaly detection
+- Recon ship deployment
+- Sector data collection
+- Automated sector scanning
+- Energy consumption management
+- Real-time map updates
+- Ship movement visualization
+- Scan progress tracking
+- Advanced filtering system
+- Filter visualization
+- Multi-criteria search
+- Detailed anomaly analysis
+- Spectrum analysis visualization
+- Material properties analysis
+- Spatial distortion analysis
+- Biological impact assessment
+- Resource potential visualization
+- Resource distribution mapping
+- Resource quality assessment
+- Extraction difficulty analysis
+- Resource value estimation
+- Galaxy mapping system
+- Faction territory visualization
+- Trade route visualization
+- Cosmic event system
+- Interactive tutorial system
+- Resource discovery processing
+- Raw signal analysis
+- Resource classification
+- Resource data generation
+- Discovery confidence calculation
+
+**Features Needed:**
+
+- Exploration data management
+- Discovery classification
+- Recon ship coordination
+- Data analysis system
 
 ### Mining System [~40% Complete]
 
