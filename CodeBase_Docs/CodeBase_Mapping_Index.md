@@ -224,3 +224,18 @@
 - `src/services/ErrorLoggingService.ts` - Singleton service that provides structured error logging with categorization by type and severity, error grouping, and support for remote error reporting. Includes utilities for tracking error occurrences and deduplicating similar errors.
 
 - `src/services/RecoveryService.ts` - Service for recovering from critical application failures through various strategies including state snapshots, application resets, and graceful degradation. Provides automatic error detection and recovery mechanisms.
+
+### Exploration System
+
+- `CodeBase_Docs/CodeBase_Mapping/exploration_components.md` - Comprehensive mapping of all exploration system components, their relationships, and supporting files
+- `src/components/exploration/AutomatedSectorScanner.tsx` - Component for automated sector scanning
+- `src/components/exploration/RealTimeMapUpdates.tsx` - Component for real-time map updates
+- `src/components/exploration/AdvancedFilteringSystem.tsx` - Component for advanced filtering of exploration data
+- `src/components/exploration/DetailedAnomalyAnalysis.tsx` - Component for detailed anomaly analysis
+- `src/components/exploration/ResourcePotentialVisualization.tsx` - Component for resource potential visualization
+- `src/components/exploration/GalaxyMappingSystem.tsx` - Component for galaxy mapping
+- `src/components/exploration/ResourceDiscoverySystem.tsx` - Component for resource discovery
+- `src/components/exploration/ExplorationDataManager.tsx` - Component for exploration data management
+- `src/components/exploration/DiscoveryClassification.tsx` - Component for discovery classification
+- `src/contexts/ClassificationContext.tsx` - Context provider for the classification system
+- `src/types/exploration/ClassificationTypes.ts` - Types and interfaces for the classification system

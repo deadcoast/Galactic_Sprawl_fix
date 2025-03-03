@@ -65,7 +65,7 @@ GAME MECHANICS REFERENCES
   - Advanced AI behaviors
   - Combat environment effects
 
-### Exploration System (~75% Complete)
+### Exploration System (~80% Complete)
 
 **Components:**
 
@@ -86,6 +86,8 @@ GAME MECHANICS REFERENCES
 - Galaxy Mapping System Demo (`src/components/exploration/GalaxyMappingSystemDemo.tsx`)
 - Resource Discovery System (`src/components/exploration/ResourceDiscoverySystem.tsx`)
 - Resource Discovery Demo (`src/components/exploration/ResourceDiscoveryDemo.tsx`)
+- Exploration Data Manager (`src/components/exploration/ExplorationDataManager.tsx`)
+- Exploration Data Manager Demo (`src/components/exploration/ExplorationDataManagerDemo.tsx`)
 
 **Implementations:**
 
@@ -121,10 +123,17 @@ GAME MECHANICS REFERENCES
 - Resource classification
 - Resource data generation
 - Discovery confidence calculation
+- Exploration data management
+- Data categorization system
+- Record tagging and organization
+- Data export and import
+- Related records linking
+- Starred records system
+- Notes and documentation
+- Search and filtering
 
 **Features Needed:**
 
-- Exploration data management
 - Discovery classification
 - Recon ship coordination
 - Data analysis system

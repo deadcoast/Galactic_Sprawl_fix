@@ -2445,3 +2445,345 @@ A demonstration component `ResourceDiscoveryDemo` is available that showcases th
 - `src/components/exploration/ResourcePotentialVisualization.tsx`
 - `src/components/exploration/GalaxyMapSystem.tsx`
 - `src/managers/exploration/ReconShipManagerImpl.ts`
+
+### ExplorationDataManager
+
+**Key Features:**
+
+- Comprehensive exploration data management system for organizing, categorizing, and analyzing exploration data
+- Hierarchical category system with parent-child relationships for organizing records
+- Tagging system for flexible record organization and filtering
+- Advanced search and filtering capabilities for finding specific records
+- Starred records system for marking important discoveries
+- Notes and documentation system for adding context to records
+- Related records linking for establishing connections between discoveries
+- Data export and import functionality for sharing and backing up data
+- Record editing and deletion capabilities
+- Sorting by various criteria (name, date, type)
+- Mobile-responsive design with collapsible sections
+
+**Implementation Details:**
+
+- Standalone component that can be integrated with any exploration system
+- Uses React hooks for state management and memoization for performance
+- Implements a hierarchical category system with expandable/collapsible tree view
+- Provides comprehensive filtering capabilities including text search, type filters, tag filters, and category filters
+- Supports record selection for batch operations (export, delete)
+- Includes record detail view for editing and viewing comprehensive information
+- Implements data export and import functionality with JSON format
+- Provides a clean API for record and category management
+- Supports different record types (sectors, anomalies, resources) with type-specific visualizations
+
+**Usage Example:**
+
+```tsx
+<ExplorationDataManager
+  records={records}
+  categories={categories}
+  onSaveRecord={handleSaveRecord}
+  onDeleteRecord={handleDeleteRecord}
+  onExportData={handleExportData}
+  onImportData={handleImportData}
+  onCreateCategory={handleCreateCategory}
+  onUpdateCategory={handleUpdateCategory}
+  onDeleteCategory={handleDeleteCategory}
+/>
+```
+
+**Demo Component:**
+
+A demonstration component `ExplorationDataManagerDemo` is available that showcases the `ExplorationDataManager` component with sample data. It provides controls for adding sample sectors, anomalies, and resources, as well as clearing all data.
+
+**File Location:**
+
+- `src/components/exploration/ExplorationDataManager.tsx`
+- `src/components/exploration/ExplorationDataManagerDemo.tsx`
+
+**Related Components:**
+
+- `src/components/exploration/ResourceDiscoverySystem.tsx`
+- `src/components/exploration/DetailedAnomalyAnalysis.tsx`
+- `src/components/exploration/GalaxyMapSystem.tsx`
+
+### DiscoveryClassification
+
+**Key Features:**
+
+- Comprehensive discovery classification system for both anomalies and resources
+- Hierarchical taxonomy system with categories and subcategories
+- AI-powered classification suggestions with confidence scoring
+- Detailed property management for different classification types
+- Classification history tracking and comparison
+- Similar discovery identification and cross-referencing
+- Confidence level visualization and management
+- Compact and full view modes for different UI contexts
+- Mobile-responsive design with collapsible sections
+
+**Implementation Details:**
+
+- Standalone component that can be integrated with any exploration system
+- Uses React Context for state management and data sharing
+- Implements a hierarchical taxonomy system for organizing discoveries
+- Provides AI-powered classification suggestions based on discovery properties
+- Supports both anomaly and resource classification with type-specific properties
+- Includes comprehensive classification history tracking
+- Implements similar discovery identification based on classification properties
+- Provides confidence scoring and visualization for classifications
+- Supports both compact and full view modes for different UI contexts
+
+**Usage Example:**
+
+```tsx
+<ClassificationProvider>
+  <DiscoveryClassification discovery={discoveryData} onClassify={handleClassify} compact={false} />
+</ClassificationProvider>
+```
+
+**Demo Component:**
+
+A demonstration component `DiscoveryClassificationDemo` is available that showcases the `DiscoveryClassification` component with sample data. It provides controls for filtering discoveries, switching between view modes, and searching for specific discoveries.
+
+**File Location:**
+
+- `src/components/exploration/DiscoveryClassification.tsx`
+- `src/components/exploration/DiscoveryClassificationDemo.tsx`
+- `src/contexts/ClassificationContext.tsx`
+- `src/types/exploration/ClassificationTypes.ts`
+
+**Related Components:**
+
+- `src/components/exploration/DetailedAnomalyAnalysis.tsx` - For anomaly analysis integration
+- `src/components/exploration/ResourceDiscoverySystem.tsx` - For resource discovery integration
+- `src/components/exploration/ExplorationDataManager.tsx` - For data persistence integration
+
+**Technical Architecture:**
+
+The Discovery Classification system is built on a layered architecture:
+
+1. **Data Layer:**
+
+   - `ClassificationTypes.ts` - Core interfaces and types
+   - `ClassificationContext.tsx` - State management and data operations
+
+2. **UI Layer:**
+
+   - `DiscoveryClassification.tsx` - Main classification interface
+   - `DiscoveryClassificationDemo.tsx` - Demo and testing component
+
+3. **Integration Layer:**
+   - Integration with DetailedAnomalyAnalysis for anomaly classification
+   - Integration with ResourceDiscoverySystem for resource classification
+   - Integration with ExplorationDataManager for data persistence
+
+The system uses a hierarchical taxonomy approach with parent-child relationships between categories. Each category can have specific properties that are used to classify discoveries. The AI suggestion system analyzes discovery properties to suggest appropriate classifications with confidence scores.
+
+**Performance Considerations:**
+
+- Uses React.memo and useMemo for optimized rendering
+- Implements virtualized lists for large discovery datasets
+- Provides configurable view modes for different performance requirements
+- Uses lazy loading for classification suggestions
+
+**Accessibility Features:**
+
+- Keyboard navigation support for all interactive elements
+- ARIA attributes for screen reader compatibility
+- Color contrast compliance for confidence level indicators
+- Responsive design for different screen sizes and devices
+
+### ReconShipCoordination
+
+**Key Features:**
+
+- Fleet formation management for recon ships
+- Coordinated scanning capabilities for improved efficiency
+- Formation type specialization (exploration, survey, defensive)
+- Role-based ship assignments within formations
+- Automatic task distribution among available ships
+- Formation bonuses for scan speed, detection, and stealth
+- Visual management interface for formations and coordination
+- Mobile-responsive design with tabbed interface
+
+**Implementation Details:**
+
+- Standalone component that integrates with ReconShipManagerImpl
+- Uses React hooks for state management and memoization for performance
+- Implements a tabbed interface for organizing different coordination features
+- Provides comprehensive formation management with role assignments
+- Supports coordinated scanning with multiple ships for improved efficiency
+- Includes automatic task distribution with formation prioritization
+- Implements expandable/collapsible sections for better information organization
+- Provides a clean API for formation and coordination management
+
+**Usage Example:**
+
+```tsx
+<ReconShipCoordination
+  ships={ships}
+  sectors={sectors}
+  formations={formations}
+  onCreateFormation={handleCreateFormation}
+  onDisbandFormation={handleDisbandFormation}
+  onAddShipToFormation={handleAddShipToFormation}
+  onRemoveShipFromFormation={handleRemoveShipFromFormation}
+  onStartCoordinatedScan={handleStartCoordinatedScan}
+  onShareTask={handleShareTask}
+  onAutoDistributeTasks={handleAutoDistributeTasks}
+/>
+```
+
+**Demo Component:**
+
+A demonstration component `ReconShipCoordinationDemo` is available that showcases the `ReconShipCoordination` component with sample data. It provides a comprehensive demonstration of formation management, coordinated scanning, and automatic task distribution with real-time progress tracking and activity logging.
+
+**File Location:**
+
+- `src/components/exploration/ReconShipCoordination.tsx`
+- `src/components/exploration/ReconShipCoordinationDemo.tsx`
+- `src/managers/exploration/ReconShipManagerImpl.ts` (Enhanced with coordination capabilities)
+
+**Related Components:**
+
+- `src/components/exploration/AutomatedSectorScanner.tsx` - For sector scanning integration
+- `src/components/exploration/RealTimeMapUpdates.tsx` - For visualizing coordinated operations
+
+**Technical Architecture:**
+
+The ReconShipCoordination system is built on a layered architecture:
+
+1. **Data Layer:**
+   - `ReconShipManagerImpl.ts` - Core implementation of recon ship management and coordination
+   - Fleet formation data structures and coordination algorithms
+
+2. **UI Layer:**
+   - `ReconShipCoordination.tsx` - Main coordination interface
+   - `ReconShipCoordinationDemo.tsx` - Demo and testing component
+
+3. **Integration Layer:**
+   - Integration with AutomatedSectorScanner for coordinated scanning
+   - Integration with RealTimeMapUpdates for visualizing coordinated operations
+
+The system uses a formation-based approach to coordination, where ships can be organized into formations with specific types (exploration, survey, defensive) and roles (leader, support, scout). Each formation provides bonuses to its member ships based on the formation type and composition. The coordination system enables more efficient scanning operations through coordinated scans and automatic task distribution.
+
+**Performance Considerations:**
+
+- Uses React.memo and useMemo for optimized rendering
+- Implements efficient algorithms for formation management
+- Provides configurable options for automatic task distribution
+- Uses optimized data structures for formation tracking
+
+**Accessibility Features:**
+
+- Keyboard navigation support for all interactive elements
+- ARIA attributes for screen reader compatibility
+- Color contrast compliance for formation type indicators
+- Responsive design for different screen sizes and devices
+
+### DataAnalysisSystem
+
+**Key Features:**
+
+- Comprehensive data analysis for exploration data (sectors, anomalies, resources)
+- Multiple analysis types (trend, correlation, distribution, clustering, prediction, etc.)
+- Interactive visualizations for analysis results
+- Dataset management for organizing and filtering exploration data
+- Analysis configuration management for reusable analysis setups
+- Insight generation for automatic pattern detection
+- Support for various visualization types (charts, maps, tables, etc.)
+- Mobile-responsive design with tabbed interface
+
+**Implementation Details:**
+
+- Standalone component that integrates with existing exploration components
+- Uses React Context for state management and data sharing
+- Implements a tabbed interface for organizing different analysis features
+- Provides comprehensive dataset management with filtering capabilities
+- Supports multiple analysis types with configurable parameters
+- Generates insights based on analysis results
+- Implements various visualization types for different analysis needs
+- Provides a clean API for analysis configuration and execution
+
+**Usage Example:**
+
+```tsx
+<DataAnalysisProvider>
+  <DataAnalysisSystem />
+</DataAnalysisProvider>
+```
+
+**Demo Component:**
+
+A demonstration component `DataAnalysisSystemDemo` is available that showcases the `DataAnalysisSystem` component with sample data. It provides a comprehensive demonstration of dataset creation, analysis configuration, and result visualization.
+
+**File Location:**
+
+- `src/components/exploration/DataAnalysisSystem.tsx`
+- `src/components/exploration/DataAnalysisSystemDemo.tsx`
+- `src/types/exploration/DataAnalysisTypes.ts`
+- `src/contexts/DataAnalysisContext.tsx`
+
+**Related Components:**
+
+- `src/components/exploration/ExplorationDataManager.tsx` - For data management integration
+- `src/components/exploration/ResourceDiscoverySystem.tsx` - For resource data integration
+- `src/components/exploration/DetailedAnomalyAnalysis.tsx` - For anomaly data integration
+
+**Technical Architecture:**
+
+The Data Analysis System is built on a layered architecture:
+
+1. **Data Layer:**
+   - `DataAnalysisTypes.ts` - Core interfaces and types
+   - `DataAnalysisContext.tsx` - State management and data operations
+
+2. **UI Layer:**
+   - `DataAnalysisSystem.tsx` - Main analysis interface
+   - `DataAnalysisSystemDemo.tsx` - Demo and testing component
+
+3. **Analysis Layer:**
+   - Dataset management for organizing exploration data
+   - Analysis configuration for setting up analysis parameters
+   - Analysis execution for running analyses on datasets
+   - Result visualization for displaying analysis results
+
+The system uses a dataset-based approach where exploration data is organized into datasets that can be analyzed using various analysis types. Each analysis type has its own set of parameters and visualization options. The system provides a comprehensive set of analysis types for different exploration data analysis needs.
+
+**Analysis Types:**
+
+1. **Trend Analysis**: Analyze how values change over time or another dimension
+2. **Correlation Analysis**: Identify relationships between different variables
+3. **Distribution Analysis**: Analyze how values are distributed across a range
+4. **Clustering Analysis**: Group similar data points into clusters
+5. **Prediction Analysis**: Predict values based on historical data
+6. **Comparison Analysis**: Compare different groups of data
+7. **Anomaly Detection**: Identify outliers and anomalies in the data
+8. **Resource Mapping**: Visualize resource distribution across sectors
+9. **Sector Analysis**: Analyze sector properties and compare sectors
+
+**Visualization Types:**
+
+1. **Line Chart**: Show trends over time or another dimension
+2. **Bar Chart**: Compare values across categories
+3. **Scatter Plot**: Show relationships between two variables
+4. **Pie Chart**: Show proportions of a whole
+5. **Heat Map**: Show intensity of values across two dimensions
+6. **Radar Chart**: Compare multiple variables across categories
+7. **Histogram**: Show distribution of values
+8. **Box Plot**: Show distribution statistics
+9. **Table**: Show raw data in tabular format
+10. **Map**: Show spatial distribution of values
+11. **Network Graph**: Show relationships between entities
+
+**Performance Considerations:**
+
+- Uses React.memo and useMemo for optimized rendering
+- Implements efficient data structures for dataset management
+- Provides configurable visualization quality for performance optimization
+- Uses lazy loading for analysis results
+
+**Accessibility Features:**
+
+- Keyboard navigation support for all interactive elements
+- ARIA attributes for screen reader compatibility
+- Color contrast compliance for visualization elements
+- Responsive design for different screen sizes and devices
