@@ -1968,3 +1968,81 @@ Also implemented the `handleImpact` method to properly handle weapon effect impa
 2. Always ensure tests verify real functionality, not just method existence
 
 3. Document implementation requirements in design documents before writing placeholder code
+
+## Fixing Unused Variables in Hazard and Weapon Effect Managers (March 3, 2025)
+
+### Error
+
+TypeScript and ESLint errors about unused variables:
+
+```
+'position' is declared but its value is never read.
+'position' is defined but never used. Allowed unused args must match /^_/u.
+
+'tier' is declared but its value is never read.
+'tier' is defined but never used. Allowed unused args must match /^_/u.
+
+'hazardId' is declared but its value is never read.
+```
+
+### Cause
+
+Parameter variables were defined in method signatures but never used within the method bodies. According to project linting rules, unused variables must be prefixed with an underscore (`_`).
+
+### Solution
+
+1. Prefixed unused position parameters with underscore in hazard creation methods:
+
+   ```typescript
+   // Before
+   private createDamageHazard(
+     id: string,
+     position: Position,  // Unused
+     strength: number,
+     // ...
+   ): DamageHazardEffect {
+     // position never used in method body
+   }
+
+   // After
+   private createDamageHazard(
+     id: string,
+     _position: Position,  // Properly marked as intentionally unused
+     strength: number,
+     // ...
+   ): DamageHazardEffect {
+     // Method implementation
+   }
+   ```
+
+2. Applied the same pattern to the `tier` parameter in `generateHazardDescription` and the `hazardId` parameter in `applyHazardInteractionEffects`:
+
+   ```typescript
+   // Before
+   private generateHazardDescription(
+     type: HazardEffectType['type'],
+     subType: string,
+     strength: number,
+     tier: number  // Unused
+   ): string {
+     // tier never used in method body
+   }
+
+   // After
+   private generateHazardDescription(
+     type: HazardEffectType['type'],
+     subType: string,
+     strength: number,
+     _tier: number  // Properly marked as intentionally unused
+   ): string {
+     // Method implementation
+   }
+   ```
+
+### Prevention
+
+1. When designing method signatures, only include parameters that will actually be used in the implementation.
+2. For parameters that are part of an interface or might be needed in the future but are currently unused, prefix them with an underscore.
+3. Document in comments why a parameter is kept but not used if it's not immediately obvious.
+4. When implementing methods from interfaces or base classes, ensure all parameters are either used or properly marked as unused.
+5. Use a linting tool like ESLint with the `no-unused-vars` rule to catch unused variables early.

@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { GameLayout } from './components/ui/GameLayout';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { TooltipProvider } from './components/ui/TooltipProvider';
 import { defaultColony, defaultMothership } from './config/buildings/defaultBuildings';
 import { defaultModuleConfigs } from './config/modules/defaultModuleConfigs';
@@ -13,6 +12,20 @@ import { TechNode, techTreeManager } from './managers/game/techTreeManager';
 import { moduleManager } from './managers/module/ModuleManager';
 import { OfficerManager } from './managers/module/OfficerManager';
 import { ShipHangarManager } from './managers/module/ShipHangarManager';
+
+// Lazy load components that aren't needed on initial render
+const GameLayout = lazy(() =>
+  import('./components/ui/GameLayout').then(module => ({ default: module.GameLayout }))
+);
+
+// Loading component
+const LoadingComponent = () => (
+  <div className="flex h-screen w-full flex-col items-center justify-center bg-gray-900 text-white">
+    <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+    <h2 className="mb-2 text-xl font-medium">Loading Game Components...</h2>
+    <p className="text-gray-400">Preparing your galactic adventure</p>
+  </div>
+);
 
 // Initial tech tree setup
 const initialTechs: TechNode[] = [
@@ -61,7 +74,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [resourceManager] = useState(() => new ResourceManager());
   const [officerManager] = useState(() => new OfficerManager());
-  const [_shipHangarManager] = useState(
+  const [shipHangarManager] = useState(
     () => new ShipHangarManager(resourceManager, officerManager)
   );
 
@@ -201,23 +214,25 @@ export default function App() {
         <ModuleProvider>
           <TooltipProvider>
             <GameInitializer>
-              <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
-                <div className="min-h-screen bg-gray-900">
-                  <div className="flex h-full flex-col items-center justify-center">
-                    <h1 className="mb-4 text-2xl text-blue-500">Mothership Control</h1>
-                    <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-                      <div className="mb-4 text-blue-400">
-                        Resources:
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>Minerals: 2000</div>
-                          <div>Energy: 2000</div>
-                          <div>Population: 100</div>
+              <Suspense fallback={<LoadingComponent />}>
+                <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
+                  <div className="min-h-screen bg-gray-900">
+                    <div className="flex h-full flex-col items-center justify-center">
+                      <h1 className="mb-4 text-2xl text-blue-500">Mothership Control</h1>
+                      <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
+                        <div className="mb-4 text-blue-400">
+                          Resources:
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>Minerals: 2000</div>
+                            <div>Energy: 2000</div>
+                            <div>Population: 100</div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </GameLayout>
+                </GameLayout>
+              </Suspense>
             </GameInitializer>
           </TooltipProvider>
         </ModuleProvider>

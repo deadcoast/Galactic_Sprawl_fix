@@ -2551,3 +2551,59 @@ The `AdvancedWeaponEffectManager` has comprehensive tests that verify all key fu
    - Tests getters and setters for event data
 
 These tests ensure that the `AdvancedWeaponEffectManager` functions correctly and maintains its interface contract. The tests are designed to be resilient to implementation changes while verifying the core functionality.
+
+### Handling Unused Variables
+
+When handling unused variables in our codebase, we follow these best practices:
+
+1. **Prefix Unused Parameters with Underscore**: For parameters that are not used in the method body but need to be kept in the signature (e.g., for interface compatibility), prefix them with an underscore.
+
+   ```typescript
+   // Parameter not used but required by interface
+   public processEffect(_effectId: string, target: string): void {
+     // Implementation doesn't need effectId
+     this.applyToTarget(target);
+   }
+   ```
+
+2. **Document Future Usage Plans**: When a parameter is currently unused but will be used in future implementations, add a comment explaining its intended future use.
+
+   ```typescript
+   // Position will be used in future for spatial effects
+   private createFieldHazard(
+     id: string,
+     _position: Position, // Will be used for position-based field distortion in v2.0
+     strength: number,
+     // ...
+   ): FieldHazardEffect {
+     // Current implementation
+   }
+   ```
+
+3. **Remove Truly Unnecessary Parameters**: If a parameter is not required by an interface and has no future use, consider removing it from the method signature entirely.
+
+4. **Use Parameter Destructuring with Ignored Values**: When destructuring objects, use the underscore prefix for properties you don't need.
+
+   ```typescript
+   // Only need specific properties
+   const { id, type, _unused, ...rest } = eventData;
+   ```
+
+5. **Check Interface Requirements**: Before marking a parameter as unused, verify if it's required by an interface the class implements.
+
+   ```typescript
+   // Required by HazardGenerator interface
+   createHazard(id: string, position: Position): Hazard;
+   ```
+
+6. **Be Cautious with Callback Parameters**: For event handlers and callbacks, be especially careful when marking parameters as unused, as they may be required by the callback signature.
+
+   ```typescript
+   // Event handler where the event object is required by the type
+   const handleClick = (_event: React.MouseEvent): void => {
+     // Implementation doesn't use the event object
+     incrementCounter();
+   };
+   ```
+
+These practices help maintain clean code while ensuring type safety and following our linting rules that require unused variables to be prefixed with an underscore.

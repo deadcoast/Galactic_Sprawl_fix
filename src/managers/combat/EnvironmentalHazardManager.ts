@@ -438,7 +438,7 @@ export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
    */
   private createDamageHazard(
     id: string,
-    position: Position,
+    _position: Position,
     strength: number,
     duration: number,
     radius: number,
@@ -519,7 +519,7 @@ export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
    */
   private createFieldHazard(
     id: string,
-    position: Position,
+    _position: Position,
     strength: number,
     duration: number,
     radius: number,
@@ -635,7 +635,7 @@ export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
    */
   private createWeatherHazard(
     id: string,
-    position: Position,
+    _position: Position,
     strength: number,
     duration: number,
     radius: number,
@@ -740,7 +740,7 @@ export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
    */
   private createAnomalyHazard(
     id: string,
-    position: Position,
+    _position: Position,
     strength: number,
     duration: number,
     radius: number,
@@ -900,7 +900,7 @@ export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
     type: HazardEffectType['type'],
     subType: string,
     strength: number,
-    tier: number
+    _tier: number
   ): string {
     const intensity = strength < 40 ? 'minor' : strength < 70 ? 'significant' : 'severe';
 

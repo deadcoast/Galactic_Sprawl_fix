@@ -1002,7 +1002,9 @@ export class AdvancedWeaponEffectManager
   public handleHazardInteraction(effectId: string, hazardId: string): void {
     // Get the effect
     const effect = this.effects.get(effectId);
-    if (!effect) return;
+    if (!effect) {
+      return;
+    }
 
     // Create default position and interaction type
     const position = { x: 0, y: 0 } as Position;
@@ -1079,7 +1081,7 @@ export class AdvancedWeaponEffectManager
    */
   private applyHazardInteractionEffects(
     effect: EnvironmentalInteractionEffect,
-    hazardId: string,
+    _hazardId: string,
     interactionType: string
   ): void {
     // Make a copy of the current values before modifying
@@ -1145,7 +1147,9 @@ export class AdvancedWeaponEffectManager
    */
   public handleImpact(effectId: string, targetId: string, damageMultiplier: number = 1.0): void {
     const effect = this.effects.get(effectId);
-    if (!effect) return;
+    if (!effect) {
+      return;
+    }
 
     // Calculate damage based on effect type and multiplier
     const damage = effect.strength * damageMultiplier;

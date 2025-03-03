@@ -60,8 +60,8 @@ The goal is to help you maintain a big picture as well as the progress of the ta
 
    - [x] Modernize build system
      - [x] Update to latest TypeScript version
-     - [ ] Optimize bundle size with code splitting
-     - [ ] Implement tree shaking for unused code
+     - [x] Optimize bundle size with code splitting
+     - [x] Implement tree shaking for unused code
    - [x] Improve error handling
      - [x] Fix ESLint errors in jest-setup.js
      - [x] Fix ESLint error in Button.tsx (unused asChild prop)
@@ -70,6 +70,7 @@ The goal is to help you maintain a big picture as well as the progress of the ta
      - [x] Document Sourcery false positives for self-assignments in AdvancedWeaponEffectManager
      - [x] Create comprehensive tests for AdvancedWeaponEffectManager
      - [x] Implement hazard interaction functionality in AdvancedWeaponEffectManager
+     - [x] Fix unused variables in hazard and weapon effect managers
      - [ ] Add global error boundary
      - [ ] Implement structured error logging
      - [ ] Create recovery mechanisms for critical failures
