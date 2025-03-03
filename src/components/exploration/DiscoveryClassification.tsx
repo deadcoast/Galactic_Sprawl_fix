@@ -167,9 +167,15 @@ export function DiscoveryClassification({
 
   // Helper function to get confidence level from score
   const getConfidenceLevelFromScore = (score: number): ConfidenceLevel => {
-    if (score >= 0.9) return 'confirmed';
-    if (score >= 0.7) return 'high';
-    if (score >= 0.4) return 'medium';
+    if (score >= 0.9) {
+      return 'confirmed';
+    }
+    if (score >= 0.7) {
+      return 'high';
+    }
+    if (score >= 0.4) {
+      return 'medium';
+    }
     return 'low';
   };
 
@@ -192,7 +198,9 @@ export function DiscoveryClassification({
   // Render the category hierarchy
   const renderCategoryHierarchy = (categoryId: string, level = 0) => {
     const category = getTaxonomyCategory(categoryId);
-    if (!category) return null;
+    if (!category) {
+      return null;
+    }
 
     // Find child categories
     const children = taxonomyCategories.filter(c => c.parentId === categoryId);

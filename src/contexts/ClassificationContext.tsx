@@ -183,13 +183,17 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
   const getSimilarDiscoveries = useCallback(
     (discoveryId: string) => {
       const discovery = discoveries.find(d => d.id === discoveryId);
-      if (!discovery || !discovery.classification) return [];
+      if (!discovery || !discovery.classification) {
+        return [];
+      }
 
       const targetClassification = discovery.classification;
 
       // Find discoveries with similar classifications
       return discoveries.filter(d => {
-        if (d.id === discoveryId || !d.classification) return false;
+        if (d.id === discoveryId || !d.classification) {
+          return false;
+        }
 
         // Check if they share the same category
         if (d.classification.categoryId === targetClassification.categoryId) {

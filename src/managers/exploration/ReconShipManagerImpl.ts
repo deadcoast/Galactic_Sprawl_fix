@@ -226,7 +226,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
 
   private assignEvasionTask(shipId: string, position: Position, threats: Threat[]): void {
     const ship = this.ships.get(shipId);
-    if (!ship) return;
+    if (!ship) {
+      return;
+    }
 
     // Calculate safe position away from threats
     const safePosition = this.calculateSafePosition(position, threats);
@@ -441,7 +443,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
   }
 
   private calculateHeatMapValue(sector: SectorData): number {
-    if (!sector) return 0;
+    if (!sector) {
+      return 0;
+    }
 
     let heatValue = 0;
 
@@ -689,7 +693,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
   }
 
   private calculateThreatLevel(threats: Threat[], ship: ReconShip): number {
-    if (threats.length === 0) return 0;
+    if (threats.length === 0) {
+      return 0;
+    }
 
     return threats.reduce((total, threat) => {
       const distance = Math.sqrt(
@@ -779,7 +785,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
    */
   public disbandFleetFormation(formationId: string): void {
     const formation = this.formations.get(formationId);
-    if (!formation) return;
+    if (!formation) {
+      return;
+    }
 
     // Remove formation information from ships
     formation.shipIds.forEach(shipId => {
@@ -806,7 +814,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     const formation = this.formations.get(formationId);
     const ship = this.ships.get(shipId);
 
-    if (!formation || !ship || formation.shipIds.includes(shipId)) return;
+    if (!formation || !ship || formation.shipIds.includes(shipId)) {
+      return;
+    }
 
     // Add ship to formation
     formation.shipIds.push(shipId);
@@ -846,7 +856,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     const formation = this.formations.get(formationId);
     const ship = this.ships.get(shipId);
 
-    if (!formation || !ship || !formation.shipIds.includes(shipId)) return;
+    if (!formation || !ship || !formation.shipIds.includes(shipId)) {
+      return;
+    }
 
     // Check if this is the leader
     const isLeader = shipId === formation.leaderId;
@@ -1015,14 +1027,20 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     // Get available ships
     const availableShips = Array.from(this.ships.values()).filter(ship => ship.status === 'idle');
 
-    if (availableShips.length === 0 || sectorIds.length === 0) return;
+    if (availableShips.length === 0 || sectorIds.length === 0) {
+      return;
+    }
 
     // Sort ships by priority (formations first if prioritizeFormations is true)
     const sortedShips = [...availableShips].sort((a, b) => {
       if (prioritizeFormations) {
         // Ships in formations have higher priority
-        if (a.formationId && !b.formationId) return -1;
-        if (!a.formationId && b.formationId) return 1;
+        if (a.formationId && !b.formationId) {
+          return -1;
+        }
+        if (!a.formationId && b.formationId) {
+          return 1;
+        }
       }
 
       // Then sort by experience
@@ -1031,7 +1049,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
 
     // Distribute tasks
     sectorIds.forEach((sectorId, index) => {
-      if (index >= sortedShips.length) return;
+      if (index >= sortedShips.length) {
+        return;
+      }
 
       const ship = sortedShips[index];
 
@@ -1087,7 +1107,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
    */
   public getShipsInFormation(formationId: string): ReconShip[] {
     const formation = this.formations.get(formationId);
-    if (!formation) return [];
+    if (!formation) {
+      return [];
+    }
 
     return formation.shipIds
       .map(id => this.ships.get(id))
@@ -1301,7 +1323,7 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
     const scanAccuracy = Math.min(
       0.95,
       ships.reduce((total, ship) => {
-        let accuracy = ship.sensors.accuracy;
+        let {accuracy} = ship.sensors;
 
         // Add tech bonuses if available
         if (ship.techBonuses?.scanSpeed) {
@@ -1357,7 +1379,9 @@ export class ReconShipManagerImpl extends EventEmitter<ReconShipEvents> {
    */
   private updateSectorData(sectorId: string, results: ScanResult): void {
     const sector = this.sectors.get(sectorId);
-    if (!sector) return;
+    if (!sector) {
+      return;
+    }
 
     // Update sector data
     this.sectors.set(sectorId, {

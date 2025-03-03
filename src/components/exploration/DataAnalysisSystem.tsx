@@ -422,7 +422,9 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
 
   // Function to create a dataset from exploration data
   const handleCreateDataset = () => {
-    if (!newDatasetName) return;
+    if (!newDatasetName) {
+      return;
+    }
     
     // Create sample data points based on the selected source
     const dataPoints: DataPoint[] = generateSampleDataPoints(newDatasetSource);
@@ -515,7 +517,9 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
 
   // Function to create an analysis configuration
   const handleCreateAnalysis = () => {
-    if (!newAnalysisName || !newAnalysisDatasetId) return;
+    if (!newAnalysisName || !newAnalysisDatasetId) {
+      return;
+    }
     
     // Create parameters based on analysis type
     const parameters = generateDefaultParameters(newAnalysisType);
