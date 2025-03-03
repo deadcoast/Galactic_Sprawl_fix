@@ -1,5 +1,6 @@
 import { isEqual } from 'lodash';
-import React, { ComponentType, ReactElement, useEffect, useRef } from 'react';
+import * as React from 'react';
+import { ComponentType, JSXElementConstructor, ReactElement, useEffect, useRef } from 'react';
 import {
   ComponentProfilingOptions,
   ComponentProfilingResult,
@@ -94,6 +95,15 @@ export function createComponentProfiler(
   };
 }
 
+// Extended interface for internal profiler properties
+interface InternalProfilerOptions {
+  enabled: boolean;
+  logToConsole: boolean;
+  slowRenderThreshold: number;
+  trackPropChanges: boolean;
+  maxRenderHistory: number;
+}
+
 /**
  * Higher-order function that wraps a component render function with profiling
  *
@@ -111,7 +121,7 @@ export function profileRender<Props, Result>(
 ): Result {
   const { metrics, renderHistory } = profiler;
   const { enabled, logToConsole, slowRenderThreshold, trackPropChanges, maxRenderHistory } =
-    profiler as unknown as { [key: string]: any };
+    profiler as unknown as InternalProfilerOptions;
 
   if (!enabled) {
     return renderFn(nextProps);
@@ -221,7 +231,7 @@ export function withProfiling<Props>(
 
       // Profile the render
       const result = profileRender<Props, ReactElement>(
-        p => React.createElement(Component, p),
+        p => React.createElement(Component as unknown as JSXElementConstructor<Props>, p),
         profiler,
         prevPropsRef.current,
         props

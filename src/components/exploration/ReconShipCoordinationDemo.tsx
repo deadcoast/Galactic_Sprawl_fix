@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { ReconShipCoordination } from './ReconShipCoordination';
+import { useEffect, useState } from 'react';
 import { Position } from '../../types/core/GameTypes';
+import { ReconShipCoordination } from './ReconShipCoordination';
 
 // Sample data interfaces
 interface ReconShip {
@@ -43,6 +43,76 @@ interface FleetFormation {
 interface ReconShipCoordinationDemoProps {
   className?: string;
 }
+
+// Sample data generation functions
+const generateSampleShips = (count: number): ReconShip[] => {
+  const shipTypes = ['AC27G', 'PathFinder', 'VoidSeeker'] as const;
+  const specializations = ['mapping', 'resource', 'anomaly'] as const;
+  const statuses = ['idle', 'scanning'] as const;
+
+  return Array.from({ length: count }, (_, i) => ({
+    id: `ship-${i + 1}`,
+    name: `Ship ${i + 1}`,
+    type: shipTypes[Math.floor(Math.random() * shipTypes.length)],
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    experience: Math.floor(Math.random() * 2000),
+    specialization: specializations[Math.floor(Math.random() * specializations.length)],
+    efficiency: 0.5 + Math.random() * 0.5,
+    position: { x: 50 + Math.random() * 200, y: 50 + Math.random() * 200 },
+    formationId: Math.random() > 0.7 ? undefined : undefined, // Will be assigned later
+    targetSector: undefined,
+  }));
+};
+
+const generateSampleSectors = (count: number): Sector[] => {
+  const statuses = ['unmapped', 'mapped', 'scanning', 'analyzed'] as const;
+
+  return Array.from({ length: count }, (_, i) => ({
+    id: `sector-${i + 1}`,
+    name: `Sector ${i + 1}`,
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    coordinates: { x: 50 + Math.random() * 300, y: 50 + Math.random() * 300 },
+    resourcePotential: Math.floor(Math.random() * 100),
+    habitabilityScore: Math.floor(Math.random() * 100),
+  }));
+};
+
+const generateSampleFormations = (count: number, ships: ReconShip[]): FleetFormation[] => {
+  const formationTypes = ['exploration', 'survey', 'defensive'] as const;
+  const formations: FleetFormation[] = [];
+
+  for (let i = 0; i < count; i++) {
+    // Get random ships for this formation
+    const availableShips = ships.filter(ship => !ship.formationId);
+    if (availableShips.length < 2) break;
+
+    const shipCount = Math.min(Math.floor(Math.random() * 3) + 2, availableShips.length);
+    const formationShips = availableShips.slice(0, shipCount);
+    const leaderId = formationShips[0].id;
+
+    const formation: FleetFormation = {
+      id: `formation-${i + 1}`,
+      name: `Formation ${i + 1}`,
+      type: formationTypes[Math.floor(Math.random() * formationTypes.length)],
+      shipIds: formationShips.map(ship => ship.id),
+      leaderId,
+      createdAt: Date.now(),
+      position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
+      scanBonus: Math.random() * 0.3,
+      detectionBonus: Math.random() * 0.3,
+      stealthBonus: Math.random() * 0.3,
+    };
+
+    formations.push(formation);
+
+    // Update ships with formation ID
+    for (const ship of formationShips) {
+      ship.formationId = formation.id;
+    }
+  }
+
+  return formations;
+};
 
 export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinationDemoProps) {
   // Sample data
@@ -148,10 +218,44 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
   const [scanProgress, setScanProgress] = useState<Record<string, number>>({});
   const [logs, setLogs] = useState<string[]>([]);
 
+  // Generate sample data on component mount
+  useEffect(() => {
+    // Generate sample ships
+    const sampleShips = generateSampleShips(10);
+    setShips(sampleShips);
+
+    // Generate sample sectors
+    const sampleSectors = generateSampleSectors(20);
+    setSectors(sampleSectors);
+
+    // Generate sample formations
+    const sampleFormations = generateSampleFormations(3, sampleShips);
+    setFormations(sampleFormations);
+  }, []);
+
+  // Function to regenerate sample data
+  const handleRegenerateData = () => {
+    // Generate sample ships
+    const sampleShips = generateSampleShips(10);
+    setShips(sampleShips);
+
+    // Generate sample sectors
+    const sampleSectors = generateSampleSectors(20);
+    setSectors(sampleSectors);
+
+    // Generate sample formations
+    const sampleFormations = generateSampleFormations(3, sampleShips);
+    setFormations(sampleFormations);
+
+    // Clear logs
+    setLogs([]);
+    addLog('Data regenerated');
+  };
+
   // Add a log entry
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
-    setLogs((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 9)]);
+    setLogs(prev => [`[${timestamp}] ${message}`, ...prev.slice(0, 9)]);
   };
 
   // Simulate scan progress
@@ -160,47 +264,47 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
 
     const interval = setInterval(() => {
       // Update scan progress
-      setScanProgress((prev) => {
+      setScanProgress(prev => {
         const newProgress = { ...prev };
-        
-        scanningSectors.forEach((sectorId) => {
+
+        scanningSectors.forEach(sectorId => {
           if (newProgress[sectorId] === undefined) {
             newProgress[sectorId] = 0;
           }
-          
+
           // Increment progress
           newProgress[sectorId] += 0.05;
-          
+
           // Check if scan is complete
           if (newProgress[sectorId] >= 1) {
             // Complete the scan
-            setSectors((prevSectors) =>
-              prevSectors.map((sector) =>
+            setSectors(prevSectors =>
+              prevSectors.map(sector =>
                 sector.id === sectorId ? { ...sector, status: 'analyzed' } : sector
               )
             );
-            
+
             // Reset ships
-            setShips((prevShips) =>
-              prevShips.map((ship) =>
+            setShips(prevShips =>
+              prevShips.map(ship =>
                 scanningShips.includes(ship.id)
                   ? { ...ship, status: 'idle', targetSector: undefined }
                   : ship
               )
             );
-            
+
             // Remove from scanning lists
             setScanningShips([]);
             setScanningSectors([]);
-            
+
             // Add log
-            addLog(`Scan of ${sectors.find((s) => s.id === sectorId)?.name} completed`);
-            
+            addLog(`Scan of ${sectors.find(s => s.id === sectorId)?.name} completed`);
+
             // Remove from progress
             delete newProgress[sectorId];
           }
         });
-        
+
         return newProgress;
       });
     }, 500);
@@ -228,13 +332,13 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
       stealthBonus: calculateStealthBonus(type, shipIds),
       createdAt: Date.now(),
     };
-    
+
     // Add the formation
-    setFormations((prev) => [...prev, newFormation]);
-    
+    setFormations(prev => [...prev, newFormation]);
+
     // Update ships
-    setShips((prevShips) =>
-      prevShips.map((ship) => {
+    setShips(prevShips =>
+      prevShips.map(ship => {
         if (shipIds.includes(ship.id)) {
           return {
             ...ship,
@@ -246,7 +350,7 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         return ship;
       })
     );
-    
+
     // Add log
     addLog(`Formation "${name}" created with ${shipIds.length} ships`);
   };
@@ -254,12 +358,12 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
   // Handle disbanding a formation
   const handleDisbandFormation = (formationId: string) => {
     // Get the formation
-    const formation = formations.find((f) => f.id === formationId);
+    const formation = formations.find(f => f.id === formationId);
     if (!formation) return;
-    
+
     // Update ships
-    setShips((prevShips) =>
-      prevShips.map((ship) => {
+    setShips(prevShips =>
+      prevShips.map(ship => {
         if (ship.formationId === formationId) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { formationId, formationRole, coordinationBonus, ...rest } = ship;
@@ -268,10 +372,10 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         return ship;
       })
     );
-    
+
     // Remove the formation
-    setFormations((prev) => prev.filter((f) => f.id !== formationId));
-    
+    setFormations(prev => prev.filter(f => f.id !== formationId));
+
     // Add log
     addLog(`Formation "${formation.name}" disbanded`);
   };
@@ -279,16 +383,16 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
   // Handle adding a ship to a formation
   const handleAddShipToFormation = (formationId: string, shipId: string) => {
     // Get the formation
-    const formation = formations.find((f) => f.id === formationId);
+    const formation = formations.find(f => f.id === formationId);
     if (!formation) return;
-    
+
     // Get the ship
-    const ship = ships.find((s) => s.id === shipId);
+    const ship = ships.find(s => s.id === shipId);
     if (!ship) return;
-    
+
     // Update the formation
-    setFormations((prevFormations) =>
-      prevFormations.map((f) => {
+    setFormations(prevFormations =>
+      prevFormations.map(f => {
         if (f.id === formationId) {
           const updatedShipIds = [...f.shipIds, shipId];
           return {
@@ -303,10 +407,10 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         return f;
       })
     );
-    
+
     // Update the ship
-    setShips((prevShips) =>
-      prevShips.map((s) => {
+    setShips(prevShips =>
+      prevShips.map(s => {
         if (s.id === shipId) {
           return {
             ...s,
@@ -318,7 +422,7 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         return s;
       })
     );
-    
+
     // Add log
     addLog(`Ship "${ship.name}" added to formation "${formation.name}"`);
   };
@@ -326,30 +430,30 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
   // Handle removing a ship from a formation
   const handleRemoveShipFromFormation = (formationId: string, shipId: string) => {
     // Get the formation
-    const formation = formations.find((f) => f.id === formationId);
+    const formation = formations.find(f => f.id === formationId);
     if (!formation) return;
-    
+
     // Get the ship
-    const ship = ships.find((s) => s.id === shipId);
+    const ship = ships.find(s => s.id === shipId);
     if (!ship) return;
-    
+
     // Check if this is the leader
     const isLeader = shipId === formation.leaderId;
-    
+
     // Update the formation
-    setFormations((prevFormations) =>
-      prevFormations.map((f) => {
+    setFormations(prevFormations =>
+      prevFormations.map(f => {
         if (f.id === formationId) {
-          const updatedShipIds = f.shipIds.filter((id) => id !== shipId);
-          
+          const updatedShipIds = f.shipIds.filter(id => id !== shipId);
+
           // If no ships left, remove the formation
           if (updatedShipIds.length === 0) {
             return f;
           }
-          
+
           // If this was the leader, assign a new leader
           const updatedLeaderId = isLeader ? updatedShipIds[0] : f.leaderId;
-          
+
           return {
             ...f,
             shipIds: updatedShipIds,
@@ -363,13 +467,13 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         return f;
       })
     );
-    
+
     // If this was the leader and there's a new leader, update the new leader's role
     if (isLeader && formation.shipIds.length > 1) {
-      const newLeaderId = formation.shipIds.find((id) => id !== shipId);
+      const newLeaderId = formation.shipIds.find(id => id !== shipId);
       if (newLeaderId) {
-        setShips((prevShips) =>
-          prevShips.map((s) => {
+        setShips(prevShips =>
+          prevShips.map(s => {
             if (s.id === newLeaderId) {
               return {
                 ...s,
@@ -382,10 +486,10 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         );
       }
     }
-    
+
     // Update the ship
-    setShips((prevShips) =>
-      prevShips.map((s) => {
+    setShips(prevShips =>
+      prevShips.map(s => {
         if (s.id === shipId) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { formationId, formationRole, coordinationBonus, ...rest } = s;
@@ -394,12 +498,12 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         return s;
       })
     );
-    
+
     // If no ships left, remove the formation
     if (formation.shipIds.length === 1) {
-      setFormations((prev) => prev.filter((f) => f.id !== formationId));
+      setFormations(prev => prev.filter(f => f.id !== formationId));
     }
-    
+
     // Add log
     addLog(`Ship "${ship.name}" removed from formation "${formation.name}"`);
   };
@@ -407,12 +511,12 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
   // Handle starting a coordinated scan
   const handleStartCoordinatedScan = (sectorId: string, shipIds: string[]) => {
     // Get the sector
-    const sector = sectors.find((s) => s.id === sectorId);
+    const sector = sectors.find(s => s.id === sectorId);
     if (!sector) return;
-    
+
     // Update ships
-    setShips((prevShips) =>
-      prevShips.map((ship) => {
+    setShips(prevShips =>
+      prevShips.map(ship => {
         if (shipIds.includes(ship.id)) {
           return {
             ...ship,
@@ -423,10 +527,10 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         return ship;
       })
     );
-    
+
     // Update sector
-    setSectors((prevSectors) =>
-      prevSectors.map((s) => {
+    setSectors(prevSectors =>
+      prevSectors.map(s => {
         if (s.id === sectorId) {
           return {
             ...s,
@@ -436,21 +540,19 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         return s;
       })
     );
-    
+
     // Set scanning ships and sectors
     setScanningShips(shipIds);
     setScanningSectors([sectorId]);
-    
+
     // Initialize scan progress
-    setScanProgress((prev) => ({
+    setScanProgress(prev => ({
       ...prev,
       [sectorId]: 0,
     }));
-    
+
     // Add log
-    addLog(
-      `Coordinated scan of "${sector.name}" started with ${shipIds.length} ships`
-    );
+    addLog(`Coordinated scan of "${sector.name}" started with ${shipIds.length} ships`);
   };
 
   // Handle sharing a task
@@ -460,22 +562,20 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
     taskType: 'explore' | 'investigate' | 'evade'
   ) => {
     // Get the ships
-    const sourceShip = ships.find((s) => s.id === sourceShipId);
-    const targetShip = ships.find((s) => s.id === targetShipId);
+    const sourceShip = ships.find(s => s.id === sourceShipId);
+    const targetShip = ships.find(s => s.id === targetShipId);
     if (!sourceShip || !targetShip) return;
-    
+
     // Add log
-    addLog(
-      `Task "${taskType}" shared from "${sourceShip.name}" to "${targetShip.name}"`
-    );
+    addLog(`Task "${taskType}" shared from "${sourceShip.name}" to "${targetShip.name}"`);
   };
 
   // Handle auto-distributing tasks
   const handleAutoDistributeTasks = (sectorIds: string[], prioritizeFormations: boolean) => {
     // Get available ships
-    const availableShips = ships.filter((ship) => ship.status === 'idle');
+    const availableShips = ships.filter(ship => ship.status === 'idle');
     if (availableShips.length === 0) return;
-    
+
     // Sort ships by priority
     const sortedShips = [...availableShips].sort((a, b) => {
       if (prioritizeFormations) {
@@ -483,29 +583,29 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         if (a.formationId && !b.formationId) return -1;
         if (!a.formationId && b.formationId) return 1;
       }
-      
+
       // Then sort by experience
       return b.experience - a.experience;
     });
-    
+
     // Distribute tasks
     const assignedShips: string[] = [];
     const assignedSectors: string[] = [];
-    
+
     sectorIds.forEach((sectorId, index) => {
       if (index >= sortedShips.length) return;
-      
+
       const ship = sortedShips[index];
-      
+
       // If ship is in a formation, check if we can do a coordinated scan
       if (ship.formationId && prioritizeFormations) {
-        const formation = formations.find((f) => f.id === ship.formationId);
+        const formation = formations.find(f => f.id === ship.formationId);
         if (formation) {
           // Get all idle ships in the formation
           const formationShips = ships
-            .filter((s) => s.formationId === formation.id && s.status === 'idle')
-            .map((s) => s.id);
-          
+            .filter(s => s.formationId === formation.id && s.status === 'idle')
+            .map(s => s.id);
+
           if (formationShips.length > 1) {
             // Start a coordinated scan
             handleStartCoordinatedScan(sectorId, formationShips);
@@ -515,10 +615,10 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
           }
         }
       }
-      
+
       // Otherwise, assign an individual task
-      setShips((prevShips) =>
-        prevShips.map((s) => {
+      setShips(prevShips =>
+        prevShips.map(s => {
           if (s.id === ship.id) {
             return {
               ...s,
@@ -529,10 +629,10 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
           return s;
         })
       );
-      
+
       // Update sector
-      setSectors((prevSectors) =>
-        prevSectors.map((s) => {
+      setSectors(prevSectors =>
+        prevSectors.map(s => {
           if (s.id === sectorId) {
             return {
               ...s,
@@ -542,26 +642,26 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
           return s;
         })
       );
-      
+
       // Add to assigned lists
       assignedShips.push(ship.id);
       assignedSectors.push(sectorId);
-      
+
       // Initialize scan progress
-      setScanProgress((prev) => ({
+      setScanProgress(prev => ({
         ...prev,
         [sectorId]: 0,
       }));
-      
+
       // Set scanning ships and sectors
-      setScanningShips((prev) => [...prev, ship.id]);
-      setScanningSectors((prev) => [...prev, sectorId]);
-      
+      setScanningShips(prev => [...prev, ship.id]);
+      setScanningSectors(prev => [...prev, sectorId]);
+
       // Add log
-      const sector = sectors.find((s) => s.id === sectorId);
+      const sector = sectors.find(s => s.id === sectorId);
       addLog(`Ship "${ship.name}" assigned to scan "${sector?.name || sectorId}"`);
     });
-    
+
     // Add summary log
     addLog(
       `Auto-distributed tasks: ${assignedShips.length} ships assigned to ${assignedSectors.length} sectors`
@@ -570,12 +670,12 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
 
   // Helper functions
   const calculateAveragePosition = (shipIds: string[]): Position => {
-    const selectedShips = ships.filter((ship) => shipIds.includes(ship.id));
+    const selectedShips = ships.filter(ship => shipIds.includes(ship.id));
     if (selectedShips.length === 0) return { x: 0, y: 0 };
-    
+
     const totalX = selectedShips.reduce((sum, ship) => sum + ship.position.x, 0);
     const totalY = selectedShips.reduce((sum, ship) => sum + ship.position.y, 0);
-    
+
     return {
       x: totalX / selectedShips.length,
       y: totalY / selectedShips.length,
@@ -586,9 +686,9 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
     type: 'exploration' | 'survey' | 'defensive',
     shipIds: string[]
   ): number => {
-    const selectedShips = ships.filter((ship) => shipIds.includes(ship.id));
+    const selectedShips = ships.filter(ship => shipIds.includes(ship.id));
     if (selectedShips.length === 0) return 0;
-    
+
     // Base bonus depends on formation type
     let baseBonus = 0;
     switch (type) {
@@ -602,20 +702,20 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         baseBonus = 0.1;
         break;
     }
-    
+
     // Additional bonus based on ship count (diminishing returns)
     const shipCountFactor = Math.min(1, 0.5 + selectedShips.length * 0.1);
-    
+
     // Specialization bonus
     const specializationCounts = {
-      mapping: selectedShips.filter((ship) => ship.specialization === 'mapping').length,
-      anomaly: selectedShips.filter((ship) => ship.specialization === 'anomaly').length,
-      resource: selectedShips.filter((ship) => ship.specialization === 'resource').length,
+      mapping: selectedShips.filter(ship => ship.specialization === 'mapping').length,
+      anomaly: selectedShips.filter(ship => ship.specialization === 'anomaly').length,
+      resource: selectedShips.filter(ship => ship.specialization === 'resource').length,
     };
-    
+
     // Synergy bonus for diverse specializations
-    const diversityBonus = Object.values(specializationCounts).every((count) => count > 0) ? 0.1 : 0;
-    
+    const diversityBonus = Object.values(specializationCounts).every(count => count > 0) ? 0.1 : 0;
+
     return baseBonus * shipCountFactor + diversityBonus;
   };
 
@@ -623,9 +723,9 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
     type: 'exploration' | 'survey' | 'defensive',
     shipIds: string[]
   ): number => {
-    const selectedShips = ships.filter((ship) => shipIds.includes(ship.id));
+    const selectedShips = ships.filter(ship => shipIds.includes(ship.id));
     if (selectedShips.length === 0) return 0;
-    
+
     // Base bonus depends on formation type
     let baseBonus = 0;
     switch (type) {
@@ -639,10 +739,10 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         baseBonus = 0.3;
         break;
     }
-    
+
     // Additional bonus based on ship count (diminishing returns)
     const shipCountFactor = Math.min(1, 0.5 + selectedShips.length * 0.1);
-    
+
     return baseBonus * shipCountFactor;
   };
 
@@ -650,9 +750,9 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
     type: 'exploration' | 'survey' | 'defensive',
     shipIds: string[]
   ): number => {
-    const selectedShips = ships.filter((ship) => shipIds.includes(ship.id));
+    const selectedShips = ships.filter(ship => shipIds.includes(ship.id));
     if (selectedShips.length === 0) return 0;
-    
+
     // Base bonus depends on formation type
     let baseBonus = 0;
     switch (type) {
@@ -666,10 +766,10 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
         baseBonus = 0.2;
         break;
     }
-    
+
     // Additional bonus based on ship count (diminishing returns)
     const shipCountFactor = Math.min(1, 0.5 + selectedShips.length * 0.1);
-    
+
     return baseBonus * shipCountFactor;
   };
 
@@ -685,67 +785,74 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
     ) {
       return 'support'; // Primary support role
     }
-    
+
     return 'scout'; // Scout role for other combinations
   };
 
   return (
-    <div className={`border rounded-lg shadow-sm ${className}`}>
-      <div className="border-b p-4 bg-gray-50 dark:bg-gray-800">
-        <h2 className="text-xl font-semibold">Recon Ship Coordination Demo</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Demonstration of recon ship coordination features
-        </p>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4">
-        <div className="lg:col-span-2">
-          <ReconShipCoordination
-            ships={ships}
-            sectors={sectors}
-            formations={formations}
-            onCreateFormation={handleCreateFormation}
-            onDisbandFormation={handleDisbandFormation}
-            onAddShipToFormation={handleAddShipToFormation}
-            onRemoveShipFromFormation={handleRemoveShipFromFormation}
-            onStartCoordinatedScan={handleStartCoordinatedScan}
-            onShareTask={handleShareTask}
-            onAutoDistributeTasks={handleAutoDistributeTasks}
-          />
+    <div className={`flex h-full flex-col overflow-hidden bg-gray-900 ${className}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between bg-gray-800 p-4">
+        <h2 className="text-xl font-bold text-white">Recon Ship Coordination</h2>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleRegenerateData}
+            className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
+          >
+            Regenerate Data
+          </button>
         </div>
-        
-        <div>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-grow overflow-hidden">
+        <ReconShipCoordination
+          ships={ships}
+          sectors={sectors}
+          formations={formations}
+          onCreateFormation={handleCreateFormation}
+          onDisbandFormation={handleDisbandFormation}
+          onAddShipToFormation={handleAddShipToFormation}
+          onRemoveShipFromFormation={handleRemoveShipFromFormation}
+          onStartCoordinatedScan={handleStartCoordinatedScan}
+          onShareTask={handleShareTask}
+          onAutoDistributeTasks={handleAutoDistributeTasks}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 p-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
           {/* Status Panel */}
-          <div className="border rounded-lg shadow-sm mb-4">
-            <div className="border-b p-3 bg-gray-50 dark:bg-gray-800">
+          <div className="mb-4 rounded-lg border shadow-sm">
+            <div className="border-b bg-gray-50 p-3 dark:bg-gray-800">
               <h3 className="font-medium">Status</h3>
             </div>
             <div className="p-3">
               <div className="mb-3">
-                <h4 className="text-sm font-medium mb-1">Ships</h4>
+                <h4 className="mb-1 text-sm font-medium">Ships</h4>
                 <div className="text-sm">
                   <div>Total: {ships.length}</div>
-                  <div>Idle: {ships.filter((s) => s.status === 'idle').length}</div>
-                  <div>Scanning: {ships.filter((s) => s.status === 'scanning').length}</div>
-                  <div>In Formations: {ships.filter((s) => s.formationId).length}</div>
+                  <div>Idle: {ships.filter(s => s.status === 'idle').length}</div>
+                  <div>Scanning: {ships.filter(s => s.status === 'scanning').length}</div>
+                  <div>In Formations: {ships.filter(s => s.formationId).length}</div>
                 </div>
               </div>
-              
+
               <div className="mb-3">
-                <h4 className="text-sm font-medium mb-1">Sectors</h4>
+                <h4 className="mb-1 text-sm font-medium">Sectors</h4>
                 <div className="text-sm">
                   <div>Total: {sectors.length}</div>
-                  <div>Unmapped: {sectors.filter((s) => s.status === 'unmapped').length}</div>
-                  <div>Scanning: {sectors.filter((s) => s.status === 'scanning').length}</div>
-                  <div>Analyzed: {sectors.filter((s) => s.status === 'analyzed').length}</div>
+                  <div>Unmapped: {sectors.filter(s => s.status === 'unmapped').length}</div>
+                  <div>Scanning: {sectors.filter(s => s.status === 'scanning').length}</div>
+                  <div>Analyzed: {sectors.filter(s => s.status === 'analyzed').length}</div>
                 </div>
               </div>
-              
+
               <div>
-                <h4 className="text-sm font-medium mb-1">Formations</h4>
+                <h4 className="mb-1 text-sm font-medium">Formations</h4>
                 <div className="text-sm">
                   <div>Total: {formations.length}</div>
-                  {formations.map((formation) => (
+                  {formations.map(formation => (
                     <div key={formation.id}>
                       {formation.name}: {formation.shipIds.length} ships
                     </div>
@@ -754,25 +861,25 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
               </div>
             </div>
           </div>
-          
+
           {/* Scan Progress */}
           {Object.keys(scanProgress).length > 0 && (
-            <div className="border rounded-lg shadow-sm mb-4">
-              <div className="border-b p-3 bg-gray-50 dark:bg-gray-800">
+            <div className="mb-4 rounded-lg border shadow-sm">
+              <div className="border-b bg-gray-50 p-3 dark:bg-gray-800">
                 <h3 className="font-medium">Scan Progress</h3>
               </div>
               <div className="p-3">
                 {Object.entries(scanProgress).map(([sectorId, progress]) => {
-                  const sector = sectors.find((s) => s.id === sectorId);
+                  const sector = sectors.find(s => s.id === sectorId);
                   return (
                     <div key={sectorId} className="mb-2 last:mb-0">
-                      <div className="flex justify-between text-sm mb-1">
+                      <div className="mb-1 flex justify-between text-sm">
                         <span>{sector?.name || sectorId}</span>
                         <span>{Math.round(progress * 100)}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                      <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
                         <div
-                          className="bg-blue-600 h-2.5 rounded-full"
+                          className="h-2.5 rounded-full bg-blue-600"
                           style={{ width: `${Math.round(progress * 100)}%` }}
                         ></div>
                       </div>
@@ -782,17 +889,17 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
               </div>
             </div>
           )}
-          
+
           {/* Activity Log */}
-          <div className="border rounded-lg shadow-sm">
-            <div className="border-b p-3 bg-gray-50 dark:bg-gray-800">
+          <div className="rounded-lg border shadow-sm">
+            <div className="border-b bg-gray-50 p-3 dark:bg-gray-800">
               <h3 className="font-medium">Activity Log</h3>
             </div>
             <div className="p-3">
               <div className="max-h-60 overflow-y-auto">
                 {logs.length > 0 ? (
                   logs.map((log, index) => (
-                    <div key={index} className="text-xs mb-1 last:mb-0">
+                    <div key={index} className="mb-1 text-xs last:mb-0">
                       {log}
                     </div>
                   ))
@@ -806,4 +913,4 @@ export function ReconShipCoordinationDemo({ className = '' }: ReconShipCoordinat
       </div>
     </div>
   );
-} 
+}

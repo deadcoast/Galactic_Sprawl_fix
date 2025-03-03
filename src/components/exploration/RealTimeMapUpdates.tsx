@@ -457,7 +457,7 @@ export function RealTimeMapUpdates({
           {isConnected ? (
             <Wifi
               className="mr-1 h-4 w-4 text-green-400"
-              onMouseEnter={e => {
+              onMouseEnter={() => {
                 showTooltip('Connected to real-time updates');
               }}
               onMouseLeave={hideTooltip}
@@ -465,7 +465,7 @@ export function RealTimeMapUpdates({
           ) : (
             <WifiOff
               className="mr-1 h-4 w-4 text-red-400"
-              onMouseEnter={e => {
+              onMouseEnter={() => {
                 showTooltip('Disconnected from real-time updates');
               }}
               onMouseLeave={hideTooltip}
@@ -482,7 +482,7 @@ export function RealTimeMapUpdates({
               onClick={handleManualRefresh}
               className="flex items-center text-xs text-gray-300 hover:text-white"
               disabled={isUpdating}
-              onMouseEnter={e => {
+              onMouseEnter={() => {
                 showTooltip('Manually refresh map data');
               }}
               onMouseLeave={hideTooltip}

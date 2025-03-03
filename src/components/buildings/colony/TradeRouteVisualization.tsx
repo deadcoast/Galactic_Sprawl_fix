@@ -43,7 +43,7 @@ interface TradeRouteVisualizationProps {
  * Shows resource flows, trade efficiency, and allows interaction with routes.
  */
 export function TradeRouteVisualization({
-  colonyId,
+  colonyId: _colonyId,
   colonyName,
   tradePartners,
   tradeRoutes,

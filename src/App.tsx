@@ -80,7 +80,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [resourceManager] = useState(() => new ResourceManager());
   const [officerManager] = useState(() => new OfficerManager());
-  const [shipHangarManager] = useState(
+  const [_shipHangarManager] = useState(
     () => new ShipHangarManager(resourceManager, officerManager)
   );
 

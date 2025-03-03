@@ -27,6 +27,8 @@ interface Anomaly {
 interface ResourceData {
   type: ResourceType;
   amount: number;
+  quality: number;
+  extractionDifficulty: number;
 }
 
 interface FactionControl {
@@ -72,11 +74,11 @@ const generateSampleSectors = (count: number): Sector[] => {
     // Randomly determine if sector has anomalies
     const hasAnomalies = Math.random() > 0.7;
     const anomalies = hasAnomalies
-      ? Array.from({ length: Math.floor(Math.random() * 3) + 1 }, (_, index) => ({
-          id: `anomaly-${i}-${index}`,
+      ? Array.from({ length: Math.floor(Math.random() * 3) + 1 }, (_, _index) => ({
+          id: `anomaly-${i}-${_index}`,
           type: anomalyTypes[Math.floor(Math.random() * anomalyTypes.length)],
           severity: severities[Math.floor(Math.random() * severities.length)],
-          description: `Sample anomaly ${index + 1} in sector ${i + 1}`,
+          description: `Sample anomaly ${_index + 1} in sector ${i + 1}`,
           investigated: Math.random() > 0.5,
         }))
       : [];
@@ -87,6 +89,8 @@ const generateSampleSectors = (count: number): Sector[] => {
       ? Array.from({ length: Math.floor(Math.random() * 3) + 1 }, (_, index) => ({
           type: resourceTypes[Math.floor(Math.random() * resourceTypes.length)] as ResourceType,
           amount: Math.floor(Math.random() * 100),
+          quality: Math.max(0.1, Math.min(1.0, 0.5 + index * 0.2)),
+          extractionDifficulty: Math.random(),
         }))
       : [];
 

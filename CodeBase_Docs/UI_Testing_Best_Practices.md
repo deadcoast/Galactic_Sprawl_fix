@@ -395,3 +395,103 @@ Integrate UI tests into CI/CD:
    - Use visual comparison tools for UI regression
    - Generate and review reports for visual changes
    - Automate approval for expected changes
+
+## Testing React Components with TypeScript
+
+When testing React components with TypeScript, it's important to ensure proper type definitions for both the component props and any mocked data. This helps catch type errors early and makes tests more robust.
+
+### Best Practices for TypeScript Component Testing
+
+1. **Define proper interfaces for component props and data**:
+   ```typescript
+   interface ReconShip {
+     id: string;
+     name: string;
+     type: 'AC27G' | 'PathFinder' | 'VoidSeeker';
+     status: 'idle' | 'scanning' | 'investigating' | 'returning';
+     // other properties...
+   }
+   ```
+
+2. **Type your mock data explicitly**:
+   ```typescript
+   const mockShips: ReconShip[] = [
+     {
+       id: 'ship-1',
+       name: 'Explorer Alpha',
+       type: 'AC27G',
+       // other properties...
+     }
+   ];
+   ```
+
+3. **Create proper types for mocked components**:
+   ```typescript
+   // Create a type for the mock component props
+   type MockComponentProps = {
+     mockProps?: ReconShipCoordinationProps;
+   };
+
+   // Extend the component type to include mock properties
+   type MockedReconShipCoordination = typeof ReconShipCoordination & MockComponentProps;
+   ```
+
+4. **Use type assertions correctly when mocking components**:
+   ```typescript
+   vi.mock('../../../components/exploration/ReconShipCoordination', () => ({
+     ReconShipCoordination: vi.fn((props: ReconShipCoordinationProps) => {
+       // Store the props for testing
+       (ReconShipCoordination as MockedReconShipCoordination).mockProps = props;
+       
+       // Return mock JSX
+     })
+   }));
+   ```
+
+5. **Use optional chaining when accessing mock properties**:
+   ```typescript
+   const mockProps = (ReconShipCoordination as MockedReconShipCoordination).mockProps;
+   expect(mockProps?.ships).toEqual(mockShips);
+   ```
+
+### Example: Testing a Complex Component
+
+For complex components like `ReconShipCoordination`, it's often easier to mock the component itself rather than trying to test all its internal functionality. This approach focuses on testing:
+
+1. That the component receives the correct props
+2. That the component calls the correct callbacks with the right parameters
+3. That the component renders the expected UI elements
+
+```typescript
+// Mock the component's internal functions
+vi.mock('../../../components/exploration/ReconShipCoordination', () => ({
+  ReconShipCoordination: vi.fn((props: ReconShipCoordinationProps) => {
+    // Store the props for testing
+    (ReconShipCoordination as MockedReconShipCoordination).mockProps = props;
+    
+    return (
+      <div data-testid="recon-ship-coordination">
+        {/* Simplified mock UI */}
+      </div>
+    );
+  })
+}));
+
+// Test that callbacks are called correctly
+it('should call onDisbandFormation when disband button is clicked', () => {
+  render(<ReconShipCoordination {...props} />);
+  
+  const disbandButton = screen.getByTestId('disband-formation-1');
+  disbandButton.click();
+  
+  expect(mockOnDisbandFormation).toHaveBeenCalledWith('formation-1');
+});
+```
+
+This approach is particularly useful for components that:
+- Have complex internal state management
+- Rely on context providers
+- Contain many conditional rendering paths
+- Have complex user interactions
+
+For simpler components, you may prefer to test the actual component implementation rather than mocking it.

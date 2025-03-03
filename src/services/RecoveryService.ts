@@ -158,7 +158,7 @@ class RecoveryService {
    * Determine appropriate recovery strategy for an error
    */
   public determineRecoveryStrategy(
-    error: Error,
+    _error: Error,
     errorType: ErrorType = ErrorType.UNKNOWN,
     severity: ErrorSeverity = ErrorSeverity.MEDIUM
   ): RecoveryStrategy {
@@ -235,7 +235,7 @@ class RecoveryService {
           // Example: store.dispatch({ type: 'ENTER_DEGRADED_MODE' });
           return true;
 
-        case RecoveryStrategy.ROLLBACK:
+        case RecoveryStrategy.ROLLBACK: {
           // Rollback to the last known good state
           const latestSnapshot = this.getLatestSnapshot();
           if (latestSnapshot) {
@@ -249,6 +249,7 @@ class RecoveryService {
           );
           // Fall back to reset if no snapshot is available
           return this.executeRecovery(RecoveryStrategy.RESET_STATE, error, metadata);
+        }
 
         case RecoveryStrategy.NONE:
           // Do nothing

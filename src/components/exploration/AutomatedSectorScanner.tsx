@@ -104,13 +104,19 @@ export function AutomatedSectorScanner({
   const sectorsNeedingScans = useMemo(() => {
     return sectors.filter(sector => {
       // Never scanned or unmapped
-      if (sector.status === 'unmapped') return true;
+      if (sector.status === 'unmapped') {
+        return true;
+      }
 
       // If already scanning, skip
-      if (sector.status === 'scanning') return false;
+      if (sector.status === 'scanning') {
+        return false;
+      }
 
       // If no last scan time, it needs a scan
-      if (!sector.lastScanned) return true;
+      if (!sector.lastScanned) {
+        return true;
+      }
 
       // Check if it's been more than 24 hours since last scan
       const hoursSinceLastScan = (Date.now() - sector.lastScanned) / (1000 * 60 * 60);

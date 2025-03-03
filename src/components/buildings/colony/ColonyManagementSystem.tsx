@@ -140,12 +140,12 @@ export function ColonyManagementSystem({
   // State
   const [population, setPopulation] = useState(initialPopulation);
   const [growthModifiers, setGrowthModifiers] = useState(initialGrowthModifiers);
-  const [tradePartners, setTradePartners] = useState(initialTradePartners);
+  const [tradePartners, _setTradePartners] = useState(initialTradePartners);
   const [tradeRoutes, setTradeRoutes] = useState(initialTradeRoutes);
   const [populationEvents, setPopulationEvents] = useState(initialPopulationEvents);
-  const [buildings, setBuildings] = useState(initialBuildings);
-  const [resources, setResources] = useState(initialResources);
-  const [satisfactionFactors, setSatisfactionFactors] = useState(initialSatisfactionFactors);
+  const [buildings, _setBuildings] = useState(initialBuildings);
+  const [resources, _setResources] = useState(initialResources);
+  const [satisfactionFactors, _setSatisfactionFactors] = useState(initialSatisfactionFactors);
   const [autoGrowthEnabled, setAutoGrowthEnabled] = useState(false);
   const [cycleLength, setCycleLength] = useState(60000); // 1 minute default
   const [expandedSections, setExpandedSections] = useState({

@@ -177,6 +177,34 @@ export function ResourceDiscoverySystem({
   const [processingProgress, setProcessingProgress] = useState(0);
   const [notes, setNotes] = useState('');
 
+  // Quality settings for visualization and processing
+  const qualitySettings = useMemo(() => {
+    switch (quality) {
+      case 'low':
+        return {
+          processingSpeed: 50, // ms between processing steps
+          animationDuration: 300,
+          maxDataPoints: 50,
+          confidenceDecimalPlaces: 1,
+        };
+      case 'high':
+        return {
+          processingSpeed: 20,
+          animationDuration: 500,
+          maxDataPoints: 200,
+          confidenceDecimalPlaces: 3,
+        };
+      case 'medium':
+      default:
+        return {
+          processingSpeed: 35,
+          animationDuration: 400,
+          maxDataPoints: 100,
+          confidenceDecimalPlaces: 2,
+        };
+    }
+  }, [quality]);
+
   // Get the selected discovery
   const selectedDiscovery = useMemo(
     () => discoveries.find(d => d.id === selectedDiscoveryId) || null,
@@ -232,30 +260,22 @@ export function ResourceDiscoverySystem({
       setProcessingDiscoveryId(discoveryId);
       setProcessingProgress(0);
 
-      // Simulate processing time
-      const processInterval = setInterval(() => {
-        setProcessingProgress(prev => {
-          const newProgress = prev + (Math.random() * 5 + 2);
-          if (newProgress >= 100) {
-            clearInterval(processInterval);
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 5;
+        setProcessingProgress(progress);
 
-            // Generate processed data from raw data
-            const processedData = generateProcessedData(discovery);
+        if (progress >= 100) {
+          clearInterval(interval);
+          const processedData = generateProcessedData(discovery);
+          onProcessDiscovery(discoveryId, processedData);
+          setProcessingDiscoveryId(null);
+        }
+      }, qualitySettings.processingSpeed); // Use quality setting for processing speed
 
-            // Call the callback with processed data
-            onProcessDiscovery(discoveryId, processedData);
-
-            // Reset processing state
-            setProcessingDiscoveryId(null);
-            return 0;
-          }
-          return newProgress;
-        });
-      }, 200);
-
-      return () => clearInterval(processInterval);
+      return () => clearInterval(interval);
     },
-    [discoveries, onProcessDiscovery]
+    [discoveries, onProcessDiscovery, qualitySettings]
   );
 
   // Generate processed resource data from raw data

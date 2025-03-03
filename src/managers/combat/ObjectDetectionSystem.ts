@@ -47,7 +47,7 @@ export interface ObjectLostEventData {
 }
 
 // Event map for the detection system
-export interface ObjectDetectionEventMap {
+export interface ObjectDetectionEventMap extends Record<string, unknown> {
   [ObjectDetectionEvent.OBJECT_DETECTED]: DetectionEventData;
   [ObjectDetectionEvent.OBJECT_LOST]: ObjectLostEventData;
   [ObjectDetectionEvent.SCAN_COMPLETED]: ScanCompletedEventData;

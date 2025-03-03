@@ -35,6 +35,12 @@ export interface ErrorMetadata {
   action?: string; // Action being performed when error occurred
   timestamp?: number; // When the error occurred
   additionalData?: Record<string, unknown>; // Any additional context
+  recoveryStrategy?: string; // Recovery strategy being applied
+  originalError?: string; // Original error message when handling recovery errors
+  filename?: string; // Filename where error occurred (for global errors)
+  lineno?: number; // Line number where error occurred
+  colno?: number; // Column number where error occurred
+  reason?: string; // Reason for unhandled promise rejection
 }
 
 // Complete error log entry structure

@@ -27,7 +27,7 @@ interface ResourceDashboardProps {
 }
 
 export function ResourceDashboard({
-  colonyId,
+  colonyId: _colonyId,
   resources,
   onResourceClick,
 }: ResourceDashboardProps) {

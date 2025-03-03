@@ -1,16 +1,13 @@
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import { DataAnalysisSystem } from '../../../components/exploration/DataAnalysisSystem';
 import { DataAnalysisProvider } from '../../../contexts/DataAnalysisContext';
 import {
-  createMockDataset,
   createMockAnalysisConfig,
   createMockAnalysisResult,
-  createMockDataPoint
+  createMockDataset,
 } from '../../utils/exploration/explorationTestUtils';
-import { Dataset, AnalysisConfig, AnalysisResult } from '../../../types/exploration/DataAnalysisTypes';
 
 describe('DataAnalysisSystem', () => {
   const mockDatasets = [
@@ -18,16 +15,16 @@ describe('DataAnalysisSystem', () => {
       id: 'dataset-1',
       name: 'Anomaly Dataset',
       description: 'Dataset containing anomaly data',
-      source: 'anomalies'
+      source: 'anomalies',
     }),
     createMockDataset({
       id: 'dataset-2',
       name: 'Resource Dataset',
       description: 'Dataset containing resource data',
-      source: 'resources'
-    })
+      source: 'resources',
+    }),
   ];
-  
+
   const mockAnalysisConfigs = [
     createMockAnalysisConfig({
       id: 'config-1',
@@ -35,7 +32,7 @@ describe('DataAnalysisSystem', () => {
       description: 'Analysis of trends over time',
       datasetId: 'dataset-1',
       type: 'trend',
-      visualizationType: 'lineChart'
+      visualizationType: 'lineChart',
     }),
     createMockAnalysisConfig({
       id: 'config-2',
@@ -43,16 +40,16 @@ describe('DataAnalysisSystem', () => {
       description: 'Analysis of data distribution',
       datasetId: 'dataset-2',
       type: 'distribution',
-      visualizationType: 'histogram'
-    })
+      visualizationType: 'histogram',
+    }),
   ];
-  
+
   const mockAnalysisResults = [
     createMockAnalysisResult({
       id: 'result-1',
       analysisConfigId: 'config-1',
-      status: 'completed'
-    })
+      status: 'completed',
+    }),
   ];
 
   it('should render the component with datasets and analysis configs', () => {
@@ -69,7 +66,7 @@ describe('DataAnalysisSystem', () => {
     // Check if datasets are rendered
     expect(screen.getByText('Anomaly Dataset')).toBeInTheDocument();
     expect(screen.getByText('Resource Dataset')).toBeInTheDocument();
-    
+
     // Check if analysis configs are rendered
     expect(screen.getByText('Trend Analysis')).toBeInTheDocument();
     expect(screen.getByText('Distribution Analysis')).toBeInTheDocument();
@@ -77,7 +74,7 @@ describe('DataAnalysisSystem', () => {
 
   it('should allow creating a new dataset', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <DataAnalysisProvider
         initialDatasets={mockDatasets}
@@ -89,16 +86,18 @@ describe('DataAnalysisSystem', () => {
     );
 
     // Find and click the create dataset button
-    const createButton = screen.getByRole('button', { name: /create dataset|new dataset|add dataset/i });
+    const createButton = screen.getByRole('button', {
+      name: /create dataset|new dataset|add dataset/i,
+    });
     await user.click(createButton);
 
     // Fill in the dataset form (this will vary based on your implementation)
     const nameInput = screen.getByLabelText(/name/i);
     const descriptionInput = screen.getByLabelText(/description/i);
-    
+
     await user.type(nameInput, 'New Test Dataset');
     await user.type(descriptionInput, 'A dataset created in a test');
-    
+
     // Submit the form
     const submitButton = screen.getByRole('button', { name: /save|create|submit/i });
     await user.click(submitButton);
@@ -111,7 +110,7 @@ describe('DataAnalysisSystem', () => {
 
   it('should allow creating a new analysis configuration', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <DataAnalysisProvider
         initialDatasets={mockDatasets}
@@ -127,16 +126,18 @@ describe('DataAnalysisSystem', () => {
     await user.click(datasetElement);
 
     // Find and click the create analysis button
-    const createButton = screen.getByRole('button', { name: /create analysis|new analysis|add analysis/i });
+    const createButton = screen.getByRole('button', {
+      name: /create analysis|new analysis|add analysis/i,
+    });
     await user.click(createButton);
 
     // Fill in the analysis config form (this will vary based on your implementation)
     const nameInput = screen.getByLabelText(/name/i);
     const typeSelect = screen.getByLabelText(/type/i);
-    
+
     await user.type(nameInput, 'New Test Analysis');
     await user.selectOptions(typeSelect, 'correlation');
-    
+
     // Submit the form
     const submitButton = screen.getByRole('button', { name: /save|create|submit/i });
     await user.click(submitButton);
@@ -149,7 +150,7 @@ describe('DataAnalysisSystem', () => {
 
   it('should allow running an analysis', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <DataAnalysisProvider
         initialDatasets={mockDatasets}
@@ -197,7 +198,7 @@ describe('DataAnalysisSystem', () => {
 
   it('should allow filtering datasets', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <DataAnalysisProvider
         initialDatasets={mockDatasets}
@@ -228,7 +229,7 @@ describe('DataAnalysisSystem', () => {
 
     // Replace the actual visualization component with our mock
     vi.mock('../../../components/exploration/visualizations/AnalysisVisualization', () => ({
-      AnalysisVisualization: mockVisualizationComponent
+      AnalysisVisualization: mockVisualizationComponent,
     }));
 
     render(
@@ -261,7 +262,7 @@ describe('DataAnalysisSystem', () => {
       id: 'error-result',
       analysisConfigId: 'config-2',
       status: 'failed',
-      error: 'Failed to process data: insufficient data points'
+      error: 'Failed to process data: insufficient data points',
     });
 
     render(
@@ -283,4 +284,4 @@ describe('DataAnalysisSystem', () => {
       expect(screen.getByText(/Failed to process data/i)).toBeInTheDocument();
     });
   });
-}); 
+});

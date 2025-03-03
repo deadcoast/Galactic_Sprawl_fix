@@ -50,7 +50,7 @@ export function DiscoveryClassification({
 
   // State for UI
   const [showSuggestions, setShowSuggestions] = useState<boolean>(true);
-  const [showSimilarDiscoveries, setShowSimilarDiscoveries] = useState<boolean>(false);
+  const [_showSimilarDiscoveries, _setShowSimilarDiscoveries] = useState<boolean>(false);
   const [showTaxonomyBrowser, setShowTaxonomyBrowser] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'classify' | 'history' | 'similar'>('classify');
@@ -75,29 +75,6 @@ export function DiscoveryClassification({
     () => getSimilarDiscoveries(discovery.id),
     [getSimilarDiscoveries, discovery.id]
   );
-
-  // Filter taxonomy categories based on discovery type and search query
-  const filteredCategories = useMemo(() => {
-    const rootCategoryId = discovery.type === 'anomaly' ? 'anomaly-root' : 'resource-root';
-
-    return taxonomyCategories.filter(category => {
-      // Filter by discovery type
-      const isCorrectType =
-        category.id === rootCategoryId ||
-        taxonomyCategories.some(
-          c =>
-            c.id === category.parentId && (c.id === rootCategoryId || c.parentId === rootCategoryId)
-        );
-
-      // Filter by search query if provided
-      const matchesSearch = searchQuery
-        ? category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          category.description.toLowerCase().includes(searchQuery.toLowerCase())
-        : true;
-
-      return isCorrectType && matchesSearch;
-    });
-  }, [taxonomyCategories, discovery.type, searchQuery]);
 
   // Get properties for the selected category
   const selectedCategoryProperties = useMemo(() => {

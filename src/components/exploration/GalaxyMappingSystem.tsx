@@ -58,24 +58,24 @@ interface CosmicEvent {
 
 interface GalaxyMappingSystemProps {
   sectors: Sector[];
-  tradeRoutes?: TradeRoute[];
   onSectorSelect: (sectorId: string) => void;
-  onSectorScan: (sectorId: string) => void;
+  onSectorScan?: (sectorId: string) => void;
   selectedSectorId?: string;
   activeScanId?: string;
   className?: string;
   quality?: 'low' | 'medium' | 'high';
+  tradeRoutes?: TradeRoute[];
 }
 
 export function GalaxyMappingSystem({
   sectors,
-  tradeRoutes = [],
   onSectorSelect,
   onSectorScan,
   selectedSectorId,
   activeScanId,
   className = '',
   quality = 'medium',
+  tradeRoutes = [],
 }: GalaxyMappingSystemProps) {
   // State for overlays and view options
   const [view, setView] = useState({
@@ -85,7 +85,7 @@ export function GalaxyMappingSystem({
   });
 
   // State for cosmic events
-  const [cosmicEvents, setCosmicEvents] = useState<CosmicEvent[]>([]);
+  const [cosmicEventsState, setCosmicEvents] = useState<CosmicEvent[]>([]);
 
   // Update day/night cycle
   useEffect(() => {
@@ -99,70 +99,40 @@ export function GalaxyMappingSystem({
     return () => clearInterval(interval);
   }, []);
 
-  // Generate random cosmic events
+  // Generate cosmic events periodically
   useEffect(() => {
     const generateEvent = () => {
-      if (cosmicEvents.length >= 3) return; // Limit to 3 active events
+      if (cosmicEventsState.length >= 3) return; // Limit to 3 active events
 
       const eventTypes = ['storm', 'solarFlare', 'anomaly'] as const;
-      const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+      const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
 
-      // Find a random sector to center the event around
-      const randomSectorIndex = Math.floor(Math.random() * sectors.length);
-      const centerSector = sectors[randomSectorIndex];
-
-      if (!centerSector) return;
-
-      // Calculate affected sectors (those within radius)
-      const radius = 50 + Math.random() * 100;
-      const affectedSectors = sectors
-        .filter(sector => {
-          const dx = sector.coordinates.x - centerSector.coordinates.x;
-          const dy = sector.coordinates.y - centerSector.coordinates.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          return distance <= radius;
-        })
-        .map(sector => sector.id);
-
+      // Create a new cosmic event
       const newEvent: CosmicEvent = {
-        id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        type: eventType,
+        id: `event-${Date.now()}`,
+        type,
         position: {
-          x: centerSector.coordinates.x,
-          y: centerSector.coordinates.y,
+          x: Math.random() * 1000,
+          y: Math.random() * 1000,
         },
-        radius,
-        duration: 30 + Math.random() * 90, // 30-120 seconds
+        radius: 100 + Math.random() * 200,
+        duration: 30000 + Math.random() * 60000,
         startTime: Date.now(),
-        affectedSectors,
+        affectedSectors: sectors.map(s => s.id).filter(() => Math.random() > 0.7),
         severity: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
-        description: `${eventType === 'storm' ? 'Cosmic Storm' : eventType === 'solarFlare' ? 'Solar Flare' : 'Spatial Anomaly'} detected in sector ${centerSector.name}`,
+        description: `A cosmic event has been detected in this region.`,
       };
 
       setCosmicEvents(prev => [...prev, newEvent]);
+
+      // Remove event after duration
+      setTimeout(() => {
+        setCosmicEvents(prev => prev.filter(e => e.id !== newEvent.id));
+      }, newEvent.duration);
     };
 
-    // Generate an event every 30-60 seconds
-    const interval = setInterval(() => {
-      if (Math.random() > 0.7) {
-        generateEvent();
-      }
-    }, 30000);
-
-    // Clean up expired events
-    const cleanupInterval = setInterval(() => {
-      setCosmicEvents(prev =>
-        prev.filter(event => {
-          const elapsed = (Date.now() - event.startTime) / 1000;
-          return elapsed < event.duration;
-        })
-      );
-    }, 5000);
-
-    return () => {
-      clearInterval(interval);
-      clearInterval(cleanupInterval);
-    };
+    const interval = setInterval(generateEvent, 15000);
+    return () => clearInterval(interval);
   }, [sectors]);
 
   // Toggle tutorial
@@ -183,10 +153,10 @@ export function GalaxyMappingSystem({
     []
   );
 
-  // Get affected sectors by cosmic events
+  // Use the affected sectors directly from the cosmic events
   const affectedSectorIds = useMemo(() => {
-    return cosmicEvents.flatMap(event => event.affectedSectors);
-  }, [cosmicEvents]);
+    return cosmicEventsState.flatMap(event => event.affectedSectors);
+  }, [cosmicEventsState]);
 
   return (
     <div className="relative flex h-full flex-col">
@@ -273,7 +243,7 @@ export function GalaxyMappingSystem({
       </div>
 
       {/* Cosmic Events */}
-      {cosmicEvents.map(event => (
+      {cosmicEventsState.map(event => (
         <div
           key={event.id}
           className="absolute z-20"
@@ -315,8 +285,6 @@ export function GalaxyMappingSystem({
         activeScanId={activeScanId}
         className={className}
         quality={quality}
-        // Pass additional props for enhanced features
-        cosmicEvents={cosmicEvents}
         affectedSectorIds={affectedSectorIds}
         tradeRoutes={tradeRoutes}
         activeOverlays={view.activeOverlays}

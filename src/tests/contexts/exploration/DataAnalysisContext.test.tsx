@@ -1,29 +1,36 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DataAnalysisProvider, useDataAnalysis } from '../../../contexts/DataAnalysisContext';
 import {
-  createMockDataset,
+  AnalysisConfig,
+  AnalysisResult,
+  Dataset,
+} from '../../../types/exploration/DataAnalysisTypes';
+import {
   createMockAnalysisConfig,
   createMockAnalysisResult,
-  createMockDataPoint
+  createMockDataPoint,
+  createMockDataset,
 } from '../../utils/exploration/explorationTestUtils';
-import { Dataset, AnalysisConfig, AnalysisResult } from '../../../types/exploration/DataAnalysisTypes';
 
 // Test component that uses the DataAnalysisContext
 const TestComponent: React.FC<{
   onCreateDataset?: (datasetId: string) => void;
-  onUpdateDataset?: (id: string, updates: Partial<Omit<Dataset, 'id' | 'createdAt' | 'updatedAt'>>) => void;
+  onUpdateDataset?: (
+    id: string,
+    updates: Partial<Omit<Dataset, 'id' | 'createdAt' | 'updatedAt'>>
+  ) => void;
   onDeleteDataset?: (id: string) => void;
   onCreateAnalysisConfig?: (configId: string) => void;
   onRunAnalysis?: (resultId: string) => void;
-}> = ({ 
-  onCreateDataset, 
-  onUpdateDataset, 
-  onDeleteDataset, 
-  onCreateAnalysisConfig, 
-  onRunAnalysis 
+}> = ({
+  onCreateDataset,
+  onUpdateDataset,
+  onDeleteDataset,
+  onCreateAnalysisConfig,
+  onRunAnalysis,
 }) => {
   const {
     datasets,
@@ -32,14 +39,14 @@ const TestComponent: React.FC<{
     createDataset,
     updateDataset,
     deleteDataset,
-    getDatasetById,
+    getDatasetById: _getDatasetById,
     createAnalysisConfig,
-    updateAnalysisConfig,
-    deleteAnalysisConfig,
-    getAnalysisConfigById,
+    updateAnalysisConfig: _updateAnalysisConfig,
+    deleteAnalysisConfig: _deleteAnalysisConfig,
+    getAnalysisConfigById: _getAnalysisConfigById,
     runAnalysis,
-    getAnalysisResultById,
-    getAnalysisResultsByConfigId
+    getAnalysisResultById: _getAnalysisResultById,
+    getAnalysisResultsByConfigId: _getAnalysisResultsByConfigId,
   } = useDataAnalysis();
 
   const handleCreateDataset = () => {
@@ -49,11 +56,11 @@ const TestComponent: React.FC<{
       dataPoints: [
         createMockDataPoint({ type: 'anomaly' }),
         createMockDataPoint({ type: 'resource' }),
-        createMockDataPoint({ type: 'sector' })
+        createMockDataPoint({ type: 'sector' }),
       ],
-      source: 'mixed' as const
+      source: 'mixed' as const,
     };
-    
+
     const datasetId = createDataset(newDataset);
     if (onCreateDataset) {
       onCreateDataset(datasetId);
@@ -63,9 +70,9 @@ const TestComponent: React.FC<{
   const handleUpdateDataset = (id: string) => {
     const updates = {
       name: 'Updated Dataset',
-      description: 'Updated description'
+      description: 'Updated description',
     };
-    
+
     updateDataset(id, updates);
     if (onUpdateDataset) {
       onUpdateDataset(id, updates);
@@ -87,15 +94,15 @@ const TestComponent: React.FC<{
       datasetId,
       parameters: {
         xAxis: 'date',
-        yAxis: 'properties.value'
+        yAxis: 'properties.value',
       },
       visualizationType: 'lineChart' as const,
       visualizationConfig: {
         showLegend: true,
-        colors: ['#3b82f6', '#10b981', '#ef4444']
-      }
+        colors: ['#3b82f6', '#10b981', '#ef4444'],
+      },
     };
-    
+
     const configId = createAnalysisConfig(newConfig);
     if (onCreateAnalysisConfig) {
       onCreateAnalysisConfig(configId);
@@ -112,26 +119,26 @@ const TestComponent: React.FC<{
   return (
     <div>
       <h1>Data Analysis Test Component</h1>
-      
+
       <div>
         <h2>Datasets ({datasets.length})</h2>
         <ul>
           {datasets.map(dataset => (
             <li key={dataset.id} data-testid={`dataset-${dataset.id}`}>
               {dataset.name} - {dataset.dataPoints.length} data points
-              <button 
+              <button
                 onClick={() => handleUpdateDataset(dataset.id)}
                 data-testid={`update-dataset-${dataset.id}`}
               >
                 Update
               </button>
-              <button 
+              <button
                 onClick={() => handleDeleteDataset(dataset.id)}
                 data-testid={`delete-dataset-${dataset.id}`}
               >
                 Delete
               </button>
-              <button 
+              <button
                 onClick={() => handleCreateAnalysisConfig(dataset.id)}
                 data-testid={`create-config-${dataset.id}`}
               >
@@ -141,14 +148,14 @@ const TestComponent: React.FC<{
           ))}
         </ul>
       </div>
-      
+
       <div>
         <h2>Analysis Configs ({analysisConfigs.length})</h2>
         <ul>
           {analysisConfigs.map(config => (
             <li key={config.id} data-testid={`config-${config.id}`}>
               {config.name} - Type: {config.type}
-              <button 
+              <button
                 onClick={() => handleRunAnalysis(config.id)}
                 data-testid={`run-analysis-${config.id}`}
               >
@@ -158,7 +165,7 @@ const TestComponent: React.FC<{
           ))}
         </ul>
       </div>
-      
+
       <div>
         <h2>Analysis Results ({analysisResults.length})</h2>
         <ul>
@@ -169,7 +176,7 @@ const TestComponent: React.FC<{
           ))}
         </ul>
       </div>
-      
+
       <button onClick={handleCreateDataset} data-testid="create-dataset">
         Create Dataset
       </button>
@@ -187,42 +194,42 @@ describe('DataAnalysisContext', () => {
       createMockDataset({
         id: 'dataset-1',
         name: 'Test Dataset 1',
-        source: 'anomalies'
+        source: 'anomalies',
       }),
       createMockDataset({
         id: 'dataset-2',
         name: 'Test Dataset 2',
-        source: 'resources'
-      })
+        source: 'resources',
+      }),
     ];
-    
+
     mockAnalysisConfigs = [
       createMockAnalysisConfig({
         id: 'config-1',
         name: 'Test Config 1',
         datasetId: 'dataset-1',
-        type: 'trend'
+        type: 'trend',
       }),
       createMockAnalysisConfig({
         id: 'config-2',
         name: 'Test Config 2',
         datasetId: 'dataset-2',
-        type: 'correlation'
-      })
+        type: 'correlation',
+      }),
     ];
-    
+
     mockAnalysisResults = [
       createMockAnalysisResult({
         id: 'result-1',
         analysisConfigId: 'config-1',
-        status: 'completed'
-      })
+        status: 'completed',
+      }),
     ];
   });
 
   it('should render datasets', () => {
     render(
-      <DataAnalysisProvider 
+      <DataAnalysisProvider
         initialDatasets={mockDatasets}
         initialAnalysisConfigs={mockAnalysisConfigs}
         initialAnalysisResults={mockAnalysisResults}
@@ -239,7 +246,7 @@ describe('DataAnalysisContext', () => {
 
   it('should render analysis configs', () => {
     render(
-      <DataAnalysisProvider 
+      <DataAnalysisProvider
         initialDatasets={mockDatasets}
         initialAnalysisConfigs={mockAnalysisConfigs}
         initialAnalysisResults={mockAnalysisResults}
@@ -256,7 +263,7 @@ describe('DataAnalysisContext', () => {
 
   it('should render analysis results', () => {
     render(
-      <DataAnalysisProvider 
+      <DataAnalysisProvider
         initialDatasets={mockDatasets}
         initialAnalysisConfigs={mockAnalysisConfigs}
         initialAnalysisResults={mockAnalysisResults}
@@ -276,7 +283,7 @@ describe('DataAnalysisContext', () => {
     const user = userEvent.setup();
 
     render(
-      <DataAnalysisProvider 
+      <DataAnalysisProvider
         initialDatasets={mockDatasets}
         initialAnalysisConfigs={mockAnalysisConfigs}
         initialAnalysisResults={mockAnalysisResults}
@@ -290,7 +297,7 @@ describe('DataAnalysisContext', () => {
 
     // Check if the callback was called with a dataset ID
     expect(onCreateDataset).toHaveBeenCalledWith(expect.any(String));
-    
+
     // The new dataset should be added to the list
     await waitFor(() => {
       expect(screen.getAllByTestId(/^dataset-/)).toHaveLength(mockDatasets.length + 1);
@@ -302,7 +309,7 @@ describe('DataAnalysisContext', () => {
     const user = userEvent.setup();
 
     render(
-      <DataAnalysisProvider 
+      <DataAnalysisProvider
         initialDatasets={mockDatasets}
         initialAnalysisConfigs={mockAnalysisConfigs}
         initialAnalysisResults={mockAnalysisResults}
@@ -319,7 +326,7 @@ describe('DataAnalysisContext', () => {
       mockDatasets[0].id,
       expect.objectContaining({
         name: 'Updated Dataset',
-        description: 'Updated description'
+        description: 'Updated description',
       })
     );
   });
@@ -329,7 +336,7 @@ describe('DataAnalysisContext', () => {
     const user = userEvent.setup();
 
     render(
-      <DataAnalysisProvider 
+      <DataAnalysisProvider
         initialDatasets={mockDatasets}
         initialAnalysisConfigs={mockAnalysisConfigs}
         initialAnalysisResults={mockAnalysisResults}
@@ -346,7 +353,7 @@ describe('DataAnalysisContext', () => {
 
     // Check if the callback was called with the correct ID
     expect(onDeleteDataset).toHaveBeenCalledWith(mockDatasets[0].id);
-    
+
     // The dataset should be removed from the list
     await waitFor(() => {
       expect(screen.getAllByTestId(/^dataset-/)).toHaveLength(initialDatasets.length - 1);
@@ -358,7 +365,7 @@ describe('DataAnalysisContext', () => {
     const user = userEvent.setup();
 
     render(
-      <DataAnalysisProvider 
+      <DataAnalysisProvider
         initialDatasets={mockDatasets}
         initialAnalysisConfigs={mockAnalysisConfigs}
         initialAnalysisResults={mockAnalysisResults}
@@ -372,7 +379,7 @@ describe('DataAnalysisContext', () => {
 
     // Check if the callback was called with a config ID
     expect(onCreateAnalysisConfig).toHaveBeenCalledWith(expect.any(String));
-    
+
     // The new config should be added to the list
     await waitFor(() => {
       expect(screen.getAllByTestId(/^config-/)).toHaveLength(mockAnalysisConfigs.length + 1);
@@ -384,7 +391,7 @@ describe('DataAnalysisContext', () => {
     const user = userEvent.setup();
 
     render(
-      <DataAnalysisProvider 
+      <DataAnalysisProvider
         initialDatasets={mockDatasets}
         initialAnalysisConfigs={mockAnalysisConfigs}
         initialAnalysisResults={mockAnalysisResults}
@@ -400,10 +407,10 @@ describe('DataAnalysisContext', () => {
     await waitFor(() => {
       expect(onRunAnalysis).toHaveBeenCalledWith(expect.any(String));
     });
-    
+
     // A new result should be added to the list
     await waitFor(() => {
       expect(screen.getAllByTestId(/^result-/)).toHaveLength(mockAnalysisResults.length + 1);
     });
   });
-}); 
+});

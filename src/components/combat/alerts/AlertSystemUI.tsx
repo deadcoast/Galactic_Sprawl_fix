@@ -84,10 +84,10 @@ export function AlertSystemUI({
     if (hasCritical) {
       // Play critical alert sound
       // This would be implemented with actual sound effects in a real app
-      console.log('Playing critical alert sound');
+      console.warn('Playing critical alert sound');
     } else if (hasDanger) {
       // Play danger alert sound
-      console.log('Playing danger alert sound');
+      console.warn('Playing danger alert sound');
     }
   }, [sortedAlerts, muted]);
 
@@ -113,49 +113,18 @@ export function AlertSystemUI({
   };
 
   // Get background color for alert level
-  const getAlertBackground = (level: AlertLevel, acknowledged: boolean = false) => {
-    if (acknowledged) {
-      switch (level) {
-        case 'critical':
-          return 'bg-red-900/30';
-        case 'danger':
-          return 'bg-red-800/20';
-        case 'warning':
-          return 'bg-yellow-800/20';
-        case 'info':
-          return 'bg-blue-800/20';
-        default:
-          return 'bg-gray-800/20';
-      }
-    }
-
+  const getAlertBackground = (level: AlertLevel) => {
     switch (level) {
       case 'critical':
-        return 'bg-red-900/50';
-      case 'danger':
         return 'bg-red-800/40';
+      case 'danger':
+        return 'bg-red-700/40';
       case 'warning':
-        return 'bg-yellow-800/40';
+        return 'bg-yellow-700/40';
       case 'info':
         return 'bg-blue-800/40';
       default:
         return 'bg-gray-800/40';
-    }
-  };
-
-  // Get border color for alert level
-  const getAlertBorder = (level: AlertLevel) => {
-    switch (level) {
-      case 'critical':
-        return 'border-red-500';
-      case 'danger':
-        return 'border-red-400';
-      case 'warning':
-        return 'border-yellow-400';
-      case 'info':
-        return 'border-blue-400';
-      default:
-        return 'border-gray-400';
     }
   };
 
@@ -240,7 +209,7 @@ export function AlertSystemUI({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
-                className={`flex items-start border-b border-gray-800 p-3 ${getAlertBackground(alert.level, alert.acknowledged)} ${alert.acknowledged ? 'opacity-70' : 'opacity-100'} `}
+                className={`flex items-start border-b border-gray-800 p-3 ${getAlertBackground(alert.level)} ${alert.acknowledged ? 'opacity-70' : 'opacity-100'} `}
               >
                 <div className="mr-3 mt-0.5 flex-shrink-0">{getAlertIcon(alert.level)}</div>
 

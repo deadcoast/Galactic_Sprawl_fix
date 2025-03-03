@@ -421,7 +421,7 @@ export function DetailedAnomalyAnalysis({
               <label className="block text-xs text-gray-400">Quality Level</label>
               <select
                 value={quality}
-                onChange={e => {
+                onChange={_e => {
                   // This would typically be handled by a parent component
                   console.warn('Quality level change would be handled by parent component');
                 }}

@@ -406,6 +406,272 @@ This approach ensures:
 3. Proper encapsulation of internal state
 4. Clean separation of concerns
 
+## Interface Extension for Missing Properties
+
+### Problem Pattern
+
+When you see errors like:
+
+```
+Object literal may only specify known properties, and 'propertyName' does not exist in type 'InterfaceName'.
+```
+
+This occurs when you're trying to use properties that aren't defined in an interface.
+
+### Solution Strategy
+
+1. **Identify the interface** that needs to be extended
+2. **Add the missing properties** to the interface definition
+3. **Include proper documentation** for the new properties
+
+```typescript
+// Before
+interface ErrorMetadata {
+  userId?: string;
+  action?: string;
+}
+
+// After
+interface ErrorMetadata {
+  userId?: string;
+  action?: string;
+  recoveryStrategy?: string; // Added missing property
+  filename?: string; // Added missing property
+}
+```
+
+## Lexical Declarations in Case Blocks
+
+### Problem Pattern
+
+When you see ESLint errors like:
+
+```
+Unexpected lexical declaration in case block.
+```
+
+This occurs when you declare variables with `let` or `const` inside a case block in a switch statement without proper block scoping.
+
+### Solution Strategy
+
+1. **Wrap the case block in curly braces** to create a proper block scope
+
+```typescript
+// Before - Error
+switch (value) {
+  case 'something':
+    const variable = getValue();
+    doSomething(variable);
+    break;
+}
+
+// After - Fixed
+switch (value) {
+  case 'something': {
+    const variable = getValue();
+    doSomething(variable);
+    break;
+  }
+}
+```
+
+## Unused Parameters
+
+### Problem Pattern
+
+When you see TypeScript warnings like:
+
+```
+'parameterName' is declared but its value is never read.
+```
+
+This occurs when you have function parameters, destructured props, or state variables that aren't used in the function body.
+
+### Solution Strategy
+
+1. **Prefix unused parameters with an underscore** to indicate they're intentionally unused
+
+```typescript
+// Before - Warning
+function processData(data: Data, options: Options): Result {
+  // Only uses data, not options
+  return transform(data);
+}
+
+// After - Fixed
+function processData(data: Data, _options: Options): Result {
+  // Only uses data, not options
+  return transform(data);
+}
+```
+
+2. **For destructured props in React components**, rename the variables during destructuring:
+
+```typescript
+// Before - Warning
+function MyComponent({ id, name, description }: Props) {
+  // Only uses name
+  return <div>{name}</div>;
+}
+
+// After - Fixed
+function MyComponent({ id: _id, name, description: _description }: Props) {
+  // Only uses name
+  return <div>{name}</div>;
+}
+```
+
+3. **For unused state variables**, prefix with underscore:
+
+```typescript
+// Before - Warning
+const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+// dimensions is never used, only setDimensions
+
+// After - Fixed
+const [_dimensions, setDimensions] = useState({ width: 0, height: 0 });
+```
+
+4. **For destructured object properties**, rename during destructuring:
+
+```typescript
+// Before - Warning
+const {
+  datasets,
+  analysisConfigs,
+  getDatasetById, // Unused
+  createAnalysisConfig,
+} = useDataAnalysis();
+
+// After - Fixed
+const {
+  datasets,
+  analysisConfigs,
+  getDatasetById: _getDatasetById, // Renamed during destructuring
+  createAnalysisConfig,
+} = useDataAnalysis();
+```
+
+5. **For already prefixed but still unused code**, remove it entirely:
+
+```typescript
+// Before - Still showing warning
+const _getAlertBorder = (level: AlertLevel) => {
+  // ... function implementation
+};
+
+// After - Fixed
+// Removed unused function
+```
+
+6. **For complex unused code blocks**, remove them and leave a comment:
+
+```typescript
+// Before - Warning
+const _filteredCategories = useMemo(() => {
+  // ... complex implementation
+}, [dependencies]);
+
+// After - Fixed
+// Filter taxonomy categories based on discovery type and search query - Removed unused code
+```
+
+This approach is particularly useful when destructuring from objects with specific property names, such as context hooks or API responses.
+
+## React Component Type Compatibility
+
+### Problem Pattern
+
+When you see errors like:
+
+```
+No overload matches this call.
+  The last overload gave the following error.
+    Argument of type 'ComponentType<Props>' is not assignable to parameter of type 'string | FunctionComponent<{}> | ComponentClass<{}, any>'.
+```
+
+This occurs when using generic component types with React.createElement.
+
+### Solution Strategy
+
+1. **Import JSXElementConstructor** from React
+2. **Use a type assertion** with JSXElementConstructor for the component
+
+```typescript
+// Before - Error
+p => React.createElement(Component, p);
+
+// After - Fixed
+import { JSXElementConstructor } from 'react';
+
+p => React.createElement(Component as unknown as JSXElementConstructor<Props>, p);
+```
+
+## React Import Compatibility
+
+### Problem Pattern
+
+When you see errors like:
+
+```
+Module can only be default-imported using the 'esModuleInterop' flag
+```
+
+This occurs because React is exported using `export =` syntax, which requires a different import style.
+
+### Solution Strategy
+
+1. **Use namespace import** for React
+
+```typescript
+// Before - Error
+import React, { ComponentType, ReactElement } from 'react';
+
+// After - Fixed
+import * as React from 'react';
+import { ComponentType, ReactElement } from 'react';
+```
+
+## Interface Constraint Satisfaction
+
+### Problem Pattern
+
+When you see errors like:
+
+```
+Type 'InterfaceName' does not satisfy the constraint 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'InterfaceName'.
+```
+
+This occurs when an interface is used with a generic class or function that requires the interface to extend a specific type (in this case, `Record<string, unknown>`), but the interface doesn't satisfy that constraint.
+
+### Solution Strategy
+
+1. **Explicitly extend the required type** in the interface definition
+
+```typescript
+// Before - Error
+interface EventMap {
+  event1: EventData1;
+  event2: EventData2;
+}
+
+// After - Fixed
+interface EventMap extends Record<string, unknown> {
+  event1: EventData1;
+  event2: EventData2;
+}
+```
+
+2. **Understand the constraint requirements**:
+
+   - `Record<string, unknown>` requires that the interface can accept any string key with an unknown value
+   - This is often required for event emitters, maps, and other collections that need to be indexed by string keys
+
+3. **Consider the implications**:
+   - Extending `Record<string, unknown>` means the interface will accept any string key, not just the ones explicitly defined
+   - This can sometimes lead to less type safety, so use it judiciously
+
 ## Conclusion
 
 By systematically addressing TypeScript errors using these strategies, we've achieved 100% TypeScript compliance in our codebase. This has improved code quality, maintainability, and developer experience, while reducing the risk of runtime errors.

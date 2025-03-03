@@ -25,7 +25,11 @@ interface SatisfactionMeterProps {
   onFactorClick?: (factorType: SatisfactionFactor['type']) => void;
 }
 
-export function SatisfactionMeter({ colonyId, factors, onFactorClick }: SatisfactionMeterProps) {
+export function SatisfactionMeter({
+  colonyId: _colonyId,
+  factors,
+  onFactorClick,
+}: SatisfactionMeterProps) {
   // Calculate overall satisfaction
   const overallSatisfaction = factors.reduce(
     (sum, factor) => sum + factor.value * factor.weight,

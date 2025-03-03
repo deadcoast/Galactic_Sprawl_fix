@@ -30,13 +30,13 @@ interface PopulationGrowthModuleProps {
  * Shows growth rate, modifiers, and provides controls for adjusting growth parameters.
  */
 export function PopulationGrowthModule({
-  colonyId,
+  colonyId: _colonyId,
   currentPopulation,
   maxPopulation,
   baseGrowthRate,
   growthModifiers,
   cycleLength,
-  quality,
+  quality: _quality,
   onPopulationChange,
   onModifierToggle,
 }: PopulationGrowthModuleProps) {

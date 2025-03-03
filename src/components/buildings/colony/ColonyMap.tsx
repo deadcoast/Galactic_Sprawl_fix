@@ -21,16 +21,16 @@ interface ColonyMapProps {
 }
 
 export function ColonyMap({
-  colonyId,
+  colonyId: _colonyId,
   buildings,
-  population,
-  maxPopulation,
-  quality,
+  population: _population,
+  maxPopulation: _maxPopulation,
+  quality: _quality,
   onBuildingClick,
   onMapClick,
 }: ColonyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [_dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);

@@ -48,7 +48,7 @@ export function AnomalyAnalysis({
   onInvestigate,
   onAnalysisComplete,
   className = '',
-  quality = 'medium',
+  quality: _quality = 'medium',
 }: AnomalyAnalysisProps) {
   const [selectedAnomalyId, setSelectedAnomalyId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'date' | 'severity' | 'type'>('severity');

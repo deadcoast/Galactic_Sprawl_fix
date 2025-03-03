@@ -39,7 +39,7 @@ interface GrowthRateModifiersProps {
  * Allows toggling modifiers on/off and adding/removing modifiers.
  */
 export function GrowthRateModifiers({
-  colonyId,
+  colonyId: _colonyId,
   baseGrowthRate,
   modifiers,
   onModifierToggle,

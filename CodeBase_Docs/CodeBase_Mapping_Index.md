@@ -18,6 +18,9 @@
 
 - `src/tests/components/ui/ResourceVisualization.snapshot.test.tsx` - Snapshot tests for the ResourceVisualization component
 - `src/tests/components/buildings/MiningWindow.test.tsx` - Component tests for the MiningWindow component with user interactions
+- `src/tests/components/exploration/ReconShipCoordination.test.tsx`: Tests for the ReconShipCoordination component, focusing on proper prop passing and callback handling. Uses component mocking to simplify testing of this complex component.
+- `src/tests/components/exploration/DataAnalysisSystem.test.tsx`: Tests for the DataAnalysisSystem component.
+- `src/tests/components/exploration/DiscoveryClassification.test.tsx`: Tests for the DiscoveryClassification component.
 
 ### End-to-End Tests
 
@@ -128,12 +131,16 @@
 
 ### Colony System
 
-- `src/components/buildings/colony/ColonyManagementSystem.tsx` - Main component for managing a colony, integrating population growth, trade routes, and growth modifiers
+- `src/components/buildings/colony/ColonyManagementSystem.tsx`: Main component for managing a colony, integrating population growth, trade routes, and growth modifiers. Provides comprehensive colony management with expandable sections for different aspects of colony operations.
+  - Key interfaces: `GrowthModifier`, `TradePartner`, `TradeRoute`, `PopulationEvent`, `BuildingData`, `ResourceData`, `SatisfactionFactor`
+  - Key features: Population management, trade route visualization, growth modifier management, building management, resource tracking, satisfaction monitoring
 - `src/components/buildings/colony/PopulationGrowthModule.tsx` - Component for visualizing and managing population growth with growth history tracking and modifier support
 - `src/components/buildings/colony/TradeRouteVisualization.tsx` - Component for visualizing trade routes between the colony and its trade partners with resource flow animations
 - `src/components/buildings/colony/GrowthRateModifiers.tsx` - Component for managing growth rate modifiers with visual feedback on modifier effects
 - `src/components/buildings/colony/AutomatedPopulationManager.tsx` - Component for automating population growth with cycle management and event tracking
-- `src/components/buildings/colony/ColonyMap.tsx` - Interactive map component for visualizing and managing colony buildings
+- `src/components/buildings/colony/ColonyMap.tsx`: Interactive map component for visualizing and managing colony buildings. Supports zooming, panning, and building selection. Displays buildings with color-coding based on type and status indicators.
+  - Key interfaces: `BuildingData`, `ColonyMapProps`
+  - Key features: Interactive grid, building visualization, status indicators, zoom/pan controls
 - `src/components/buildings/colony/ResourceDashboard.tsx` - Dashboard component for monitoring and managing colony resources
 - `src/components/buildings/colony/SatisfactionMeter.tsx` - Component for visualizing colony satisfaction based on various factors
 - `src/components/buildings/colony/PopulationProjectionChart.tsx` - Component for projecting future population growth based on current growth rate
@@ -150,6 +157,13 @@
 - **src/components/combat/alerts/AlertSystemUI.tsx**: Alert system UI with different severity levels and interaction options.
 - **src/components/combat/CombatSystemDemo.tsx**: Demo component that integrates all combat system UI components.
 - **src/pages/CombatSystemPage.tsx**: Page that showcases the Combat System UI components.
+
+### Combat Systems
+
+- `src/managers/combat/ObjectDetectionSystem.ts`: Implements a system for detecting objects in space based on scanner capabilities and environmental factors. Handles passive and active scanning, detection confidence, and environmental effects on detection.
+  - Key interfaces: `ObjectDetectionEventMap`, `DetectorUnit`, `DetectableObject`
+  - Key classes: `ObjectDetectionSystemImpl`
+  - Key enums: `ObjectDetectionEvent`
 
 ## Documentation
 
@@ -221,10 +235,6 @@
 
 - `src/components/ui/GlobalErrorBoundary.tsx` - React error boundary component that wraps the entire application to catch and handle uncaught errors. Provides a user-friendly fallback UI with error details and a reload option.
 
-- `src/services/ErrorLoggingService.ts` - Singleton service that provides structured error logging with categorization by type and severity, error grouping, and support for remote error reporting. Includes utilities for tracking error occurrences and deduplicating similar errors.
-
-- `src/services/RecoveryService.ts` - Service for recovering from critical application failures through various strategies including state snapshots, application resets, and graceful degradation. Provides automatic error detection and recovery mechanisms.
-
 ### Exploration System
 
 - `CodeBase_Docs/CodeBase_Mapping/exploration_components.md` - Comprehensive mapping of all exploration system components, their relationships, and supporting files
@@ -237,5 +247,33 @@
 - `src/components/exploration/ResourceDiscoverySystem.tsx` - Component for resource discovery
 - `src/components/exploration/ExplorationDataManager.tsx` - Component for exploration data management
 - `src/components/exploration/DiscoveryClassification.tsx` - Component for discovery classification
+- `src/components/exploration/DataAnalysisSystem.tsx`: Component for analyzing exploration data with various visualization types. Provides dataset management, analysis configuration, and result visualization.
+  - Key interfaces: `DataAnalysisSystemProps`, `ResultVisualizationProps`
+  - Key features: Dataset creation, analysis configuration, result visualization, multiple chart types
 - `src/contexts/ClassificationContext.tsx` - Context provider for the classification system
+- `src/contexts/DataAnalysisContext.tsx` - Context provider for the data analysis system
 - `src/types/exploration/ClassificationTypes.ts` - Types and interfaces for the classification system
+- `src/types/exploration/DataAnalysisTypes.ts` - Types and interfaces for the data analysis system
+
+## Services
+
+### Core Services
+
+- `src/services/ErrorLoggingService.ts`: Provides structured error logging capabilities for the application. Handles logging errors with metadata, categorizing errors by type and severity, and sending errors to a remote logging service.
+
+  - Key interfaces: `ErrorMetadata`, `ErrorLogEntry`
+  - Key enums: `ErrorSeverity`, `ErrorType`
+
+- `src/services/RecoveryService.ts`: Provides mechanisms for recovering from critical application failures. Handles saving application state snapshots, restoring previous states, implementing different recovery strategies, and providing graceful degradation options.
+  - Key interfaces: `StateSnapshot`, `RecoveryConfig`
+  - Key enums: `RecoveryStrategy`
+
+### Other Services
+
+// ... existing code ...
+
+### Utilities
+
+- `src/utils/profiling/componentProfiler.ts`: Provides utilities for profiling React component performance. Includes functions for measuring render times, tracking prop changes, and identifying wasted renders.
+  - Key functions: `createComponentProfiler`, `profileRender`, `withProfiling`
+  - Key interfaces: `InternalProfilerOptions`

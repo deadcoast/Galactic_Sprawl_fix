@@ -400,8 +400,8 @@ const generateSampleRecords = (
 
 export function ExplorationDataManagerDemo() {
   const [sectors, setSectors] = useState<Sector[]>([]);
-  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
-  const [resources, setResources] = useState<ResourceData[]>([]);
+  const [_anomalies, setAnomalies] = useState<Anomaly[]>([]);
+  const [_resources, setResources] = useState<ResourceData[]>([]);
   const [categories, setCategories] = useState<ExplorationCategory[]>([]);
   const [records, setRecords] = useState<ExplorationRecord[]>([]);
 

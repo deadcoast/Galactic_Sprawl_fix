@@ -96,8 +96,8 @@ export function ExplorationDataManager({
   onExportData,
   onImportData,
   onCreateCategory,
-  onUpdateCategory,
-  onDeleteCategory,
+  onUpdateCategory: _onUpdateCategory,
+  onDeleteCategory: _onDeleteCategory,
   className = '',
 }: ExplorationDataManagerProps) {
   // State
@@ -110,7 +110,7 @@ export function ExplorationDataManager({
   const [filterType, setFilterType] = useState<'all' | 'sector' | 'anomaly' | 'resource'>('all');
   const [filterStarred, setFilterStarred] = useState(false);
   const [filterTags, setFilterTags] = useState<string[]>([]);
-  const [editingRecord, setEditingRecord] = useState<ExplorationRecord | null>(null);
+  const [_editingRecord, _setEditingRecord] = useState<ExplorationRecord | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#3b82f6'); // Default blue
   const [newCategoryParentId, setNewCategoryParentId] = useState<string | undefined>(undefined);

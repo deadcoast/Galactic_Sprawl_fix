@@ -154,19 +154,6 @@ export function RadarSweepAnimation({
     }
   }, [size, color, backgroundColor, quality]);
 
-  // Calculate sweep gradient points
-  const getSweepGradientPoints = () => {
-    const center = size / 2;
-    const angleRad = (rotation * Math.PI) / 180;
-
-    return {
-      x1: center,
-      y1: center,
-      x2: center + Math.cos(angleRad) * center,
-      y2: center + Math.sin(angleRad) * center,
-    };
-  };
-
   // Render particles based on quality
   const renderParticles = () => {
     if (!isActive) {

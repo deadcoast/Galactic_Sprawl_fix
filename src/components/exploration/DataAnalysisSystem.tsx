@@ -1,18 +1,24 @@
-import React, { useState } from 'react';
 import {
+  AlertTriangle,
   BarChart2,
   Database,
-  Filter,
-  List,
+  // Filter,
+  // List,
   Play,
   Plus,
-  Save,
+  // Save,
   Settings,
   Trash2,
-  AlertTriangle,
 } from 'lucide-react';
+import * as React from 'react';
 import { useDataAnalysis } from '../../contexts/DataAnalysisContext';
-import { AnalysisConfig, AnalysisType, Dataset, VisualizationType, DataPoint, AnalysisResult } from '../../types/exploration/DataAnalysisTypes';
+import {
+  AnalysisConfig,
+  AnalysisResult,
+  AnalysisType,
+  DataPoint,
+  /* Dataset, */ VisualizationType,
+} from '../../types/exploration/DataAnalysisTypes';
 
 interface DataAnalysisSystemProps {
   className?: string;
@@ -28,7 +34,7 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
   if (result.status === 'pending' || result.status === 'processing') {
     return (
       <div className="flex flex-col items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+        <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"></div>
         <p className="text-blue-500">Processing analysis...</p>
       </div>
     );
@@ -37,9 +43,9 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
   if (result.status === 'failed') {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-red-500">
-        <AlertTriangle className="h-12 w-12 mb-4" />
+        <AlertTriangle className="mb-4 h-12 w-12" />
         <p className="font-medium">Analysis failed</p>
-        <p className="text-sm mt-2">{result.error || 'Unknown error'}</p>
+        <p className="mt-2 text-sm">{result.error || 'Unknown error'}</p>
       </div>
     );
   }
@@ -47,7 +53,7 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
   // Render different visualizations based on the configuration type and visualization type
   if (!config) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="py-8 text-center text-gray-500">
         <BarChart2 className="mx-auto mb-2" />
         <p>Configuration not found</p>
       </div>
@@ -63,17 +69,17 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
       </div>
 
       {/* Visualization */}
-      <div className="border rounded p-4 bg-white mb-4">
-        {renderVisualization(result, config)}
-      </div>
+      <div className="mb-4 rounded border bg-white p-4">{renderVisualization(result, config)}</div>
 
       {/* Insights */}
       {result.insights && result.insights.length > 0 && (
         <div className="mb-4">
-          <h4 className="font-medium mb-2">Insights</h4>
-          <ul className="list-disc pl-5 space-y-1">
+          <h4 className="mb-2 font-medium">Insights</h4>
+          <ul className="list-disc space-y-1 pl-5">
             {result.insights.map((insight, index) => (
-              <li key={index} className="text-sm">{insight}</li>
+              <li key={index} className="text-sm">
+                {insight}
+              </li>
             ))}
           </ul>
         </div>
@@ -82,7 +88,7 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
       {/* Summary */}
       {result.summary && (
         <div className="mb-4">
-          <h4 className="font-medium mb-2">Summary</h4>
+          <h4 className="mb-2 font-medium">Summary</h4>
           <p className="text-sm">{result.summary}</p>
         </div>
       )}
@@ -112,10 +118,10 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
               result.status === 'completed'
                 ? 'text-green-500'
                 : result.status === 'failed'
-                ? 'text-red-500'
-                : result.status === 'processing'
-                ? 'text-blue-500'
-                : 'text-gray-500'
+                  ? 'text-red-500'
+                  : result.status === 'processing'
+                    ? 'text-blue-500'
+                    : 'text-gray-500'
             }`}
           >
             {result.status}
@@ -130,7 +136,7 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
 function renderVisualization(result: AnalysisResult, config: AnalysisConfig) {
   // This is a placeholder implementation that would be replaced with actual chart components
   // In a real implementation, you would use a charting library like recharts, visx, or d3
-  
+
   switch (config.visualizationType) {
     case 'lineChart':
       return renderLineChart(result, config);
@@ -156,22 +162,20 @@ function renderVisualization(result: AnalysisResult, config: AnalysisConfig) {
       return renderNetwork(result, config);
     default:
       return (
-        <div className="text-center py-8 text-gray-500">
+        <div className="py-8 text-center text-gray-500">
           <p>Custom visualization</p>
-          <pre className="mt-4 text-xs overflow-x-auto">
-            {JSON.stringify(result.data, null, 2)}
-          </pre>
+          <pre className="mt-4 overflow-x-auto text-xs">{JSON.stringify(result.data, null, 2)}</pre>
         </div>
       );
   }
 }
 
 // Placeholder visualization renderers
-function renderLineChart(result: AnalysisResult, config: AnalysisConfig) {
+function renderLineChart(_result: AnalysisResult, _config: AnalysisConfig) {
   return (
-    <div className="h-64 flex items-center justify-center">
+    <div className="flex h-64 items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 mb-2">Line Chart Visualization</p>
+        <p className="mb-2 text-gray-500">Line Chart Visualization</p>
         <p className="text-xs text-gray-400">
           (In a real implementation, this would be a line chart using a charting library)
         </p>
@@ -180,11 +184,11 @@ function renderLineChart(result: AnalysisResult, config: AnalysisConfig) {
   );
 }
 
-function renderBarChart(result: AnalysisResult, config: AnalysisConfig) {
+function renderBarChart(_result: AnalysisResult, _config: AnalysisConfig) {
   return (
-    <div className="h-64 flex items-center justify-center">
+    <div className="flex h-64 items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 mb-2">Bar Chart Visualization</p>
+        <p className="mb-2 text-gray-500">Bar Chart Visualization</p>
         <p className="text-xs text-gray-400">
           (In a real implementation, this would be a bar chart using a charting library)
         </p>
@@ -193,11 +197,11 @@ function renderBarChart(result: AnalysisResult, config: AnalysisConfig) {
   );
 }
 
-function renderScatterPlot(result: AnalysisResult, config: AnalysisConfig) {
+function renderScatterPlot(_result: AnalysisResult, _config: AnalysisConfig) {
   return (
-    <div className="h-64 flex items-center justify-center">
+    <div className="flex h-64 items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 mb-2">Scatter Plot Visualization</p>
+        <p className="mb-2 text-gray-500">Scatter Plot Visualization</p>
         <p className="text-xs text-gray-400">
           (In a real implementation, this would be a scatter plot using a charting library)
         </p>
@@ -206,11 +210,11 @@ function renderScatterPlot(result: AnalysisResult, config: AnalysisConfig) {
   );
 }
 
-function renderPieChart(result: AnalysisResult, config: AnalysisConfig) {
+function renderPieChart(_result: AnalysisResult, _config: AnalysisConfig) {
   return (
-    <div className="h-64 flex items-center justify-center">
+    <div className="flex h-64 items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 mb-2">Pie Chart Visualization</p>
+        <p className="mb-2 text-gray-500">Pie Chart Visualization</p>
         <p className="text-xs text-gray-400">
           (In a real implementation, this would be a pie chart using a charting library)
         </p>
@@ -219,11 +223,11 @@ function renderPieChart(result: AnalysisResult, config: AnalysisConfig) {
   );
 }
 
-function renderHeatMap(result: AnalysisResult, config: AnalysisConfig) {
+function renderHeatMap(_result: AnalysisResult, _config: AnalysisConfig) {
   return (
-    <div className="h-64 flex items-center justify-center">
+    <div className="flex h-64 items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 mb-2">Heat Map Visualization</p>
+        <p className="mb-2 text-gray-500">Heat Map Visualization</p>
         <p className="text-xs text-gray-400">
           (In a real implementation, this would be a heat map using a charting library)
         </p>
@@ -232,11 +236,11 @@ function renderHeatMap(result: AnalysisResult, config: AnalysisConfig) {
   );
 }
 
-function renderRadarChart(result: AnalysisResult, config: AnalysisConfig) {
+function renderRadarChart(_result: AnalysisResult, _config: AnalysisConfig) {
   return (
-    <div className="h-64 flex items-center justify-center">
+    <div className="flex h-64 items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 mb-2">Radar Chart Visualization</p>
+        <p className="mb-2 text-gray-500">Radar Chart Visualization</p>
         <p className="text-xs text-gray-400">
           (In a real implementation, this would be a radar chart using a charting library)
         </p>
@@ -245,11 +249,11 @@ function renderRadarChart(result: AnalysisResult, config: AnalysisConfig) {
   );
 }
 
-function renderHistogram(result: AnalysisResult, config: AnalysisConfig) {
+function renderHistogram(_result: AnalysisResult, _config: AnalysisConfig) {
   return (
-    <div className="h-64 flex items-center justify-center">
+    <div className="flex h-64 items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 mb-2">Histogram Visualization</p>
+        <p className="mb-2 text-gray-500">Histogram Visualization</p>
         <p className="text-xs text-gray-400">
           (In a real implementation, this would be a histogram using a charting library)
         </p>
@@ -258,11 +262,11 @@ function renderHistogram(result: AnalysisResult, config: AnalysisConfig) {
   );
 }
 
-function renderBoxPlot(result: AnalysisResult, config: AnalysisConfig) {
+function renderBoxPlot(_result: AnalysisResult, _config: AnalysisConfig) {
   return (
-    <div className="h-64 flex items-center justify-center">
+    <div className="flex h-64 items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 mb-2">Box Plot Visualization</p>
+        <p className="mb-2 text-gray-500">Box Plot Visualization</p>
         <p className="text-xs text-gray-400">
           (In a real implementation, this would be a box plot using a charting library)
         </p>
@@ -271,50 +275,50 @@ function renderBoxPlot(result: AnalysisResult, config: AnalysisConfig) {
   );
 }
 
-function renderTable(result: AnalysisResult, config: AnalysisConfig) {
+function renderTable(result: AnalysisResult, _config: AnalysisConfig) {
   // For the table visualization, we'll actually implement a simple table
   const data = result.data as Record<string, unknown>;
-  
+
   if (!data || !Array.isArray(data.data)) {
     return (
-      <div className="text-center py-4 text-gray-500">
+      <div className="py-4 text-center text-gray-500">
         <p>No tabular data available</p>
       </div>
     );
   }
-  
+
   const tableData = data.data as Record<string, unknown>[];
   if (tableData.length === 0) {
     return (
-      <div className="text-center py-4 text-gray-500">
+      <div className="py-4 text-center text-gray-500">
         <p>No data available</p>
       </div>
     );
   }
-  
+
   // Get column headers from the first row
   const columns = Object.keys(tableData[0]);
-  
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            {columns.map((column) => (
+            {columns.map(column => (
               <th
                 key={column}
-                className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
               >
                 {column}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="divide-y divide-gray-200 bg-white">
           {tableData.map((row, rowIndex) => (
             <tr key={rowIndex}>
-              {columns.map((column) => (
-                <td key={`${rowIndex}-${column}`} className="px-3 py-2 whitespace-nowrap text-xs">
+              {columns.map(column => (
+                <td key={`${rowIndex}-${column}`} className="whitespace-nowrap px-3 py-2 text-xs">
                   {formatCellValue(row[column])}
                 </td>
               ))}
@@ -326,26 +330,27 @@ function renderTable(result: AnalysisResult, config: AnalysisConfig) {
   );
 }
 
-function renderMap(result: AnalysisResult, config: AnalysisConfig) {
+function renderMap(_result: AnalysisResult, _config: AnalysisConfig) {
   return (
-    <div className="h-64 flex items-center justify-center">
+    <div className="flex h-64 items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 mb-2">Map Visualization</p>
+        <p className="mb-2 text-gray-500">Map Visualization</p>
         <p className="text-xs text-gray-400">
-          (In a real implementation, this would be a map using a mapping library)
+          (In a real implementation, this would be a map visualization using a mapping library)
         </p>
       </div>
     </div>
   );
 }
 
-function renderNetwork(result: AnalysisResult, config: AnalysisConfig) {
+function renderNetwork(_result: AnalysisResult, _config: AnalysisConfig) {
   return (
-    <div className="h-64 flex items-center justify-center">
+    <div className="flex h-64 items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-500 mb-2">Network Graph Visualization</p>
+        <p className="mb-2 text-gray-500">Network Visualization</p>
         <p className="text-xs text-gray-400">
-          (In a real implementation, this would be a network graph using a graph visualization library)
+          (In a real implementation, this would be a network graph using a graph visualization
+          library)
         </p>
       </div>
     </div>
@@ -357,11 +362,11 @@ function formatCellValue(value: unknown): string {
   if (value === null || value === undefined) {
     return '';
   }
-  
+
   if (typeof value === 'object') {
     return JSON.stringify(value);
   }
-  
+
   return String(value);
 }
 
@@ -376,48 +381,48 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     createAnalysisConfig,
     deleteAnalysisConfig,
     runAnalysis,
-    getAnalysisResultsByConfigId,
+    getAnalysisResultsByConfigId: _getAnalysisResultsByConfigId,
   } = useDataAnalysis();
 
   // State for active tab and selected items
-  const [activeTab, setActiveTab] = useState<'datasets' | 'analysis' | 'results'>('datasets');
-  const [selectedDatasetId, setSelectedDatasetId] = useState<string | null>(null);
-  const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null);
-  const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = React.useState<'datasets' | 'analysis' | 'results'>('datasets');
+  const [selectedDatasetId, setSelectedDatasetId] = React.useState<string | null>(null);
+  const [selectedConfigId, setSelectedConfigId] = React.useState<string | null>(null);
+  const [selectedResultId, setSelectedResultId] = React.useState<string | null>(null);
 
   // State for dataset creation
-  const [showCreateDataset, setShowCreateDataset] = useState(false);
-  const [newDatasetName, setNewDatasetName] = useState('');
-  const [newDatasetDescription, setNewDatasetDescription] = useState('');
-  const [newDatasetSource, setNewDatasetSource] = useState<'sectors' | 'anomalies' | 'resources' | 'mixed'>('sectors');
-  
+  const [showCreateDataset, setShowCreateDataset] = React.useState(false);
+  const [newDatasetName, setNewDatasetName] = React.useState('');
+  const [newDatasetDescription, setNewDatasetDescription] = React.useState('');
+  const [newDatasetSource, setNewDatasetSource] = React.useState<
+    'sectors' | 'anomalies' | 'resources' | 'mixed'
+  >('sectors');
+
   // State for analysis configuration creation
-  const [showCreateAnalysis, setShowCreateAnalysis] = useState(false);
-  const [newAnalysisName, setNewAnalysisName] = useState('');
-  const [newAnalysisDescription, setNewAnalysisDescription] = useState('');
-  const [newAnalysisType, setNewAnalysisType] = useState<AnalysisType>('trend');
-  const [newAnalysisDatasetId, setNewAnalysisDatasetId] = useState('');
-  const [newAnalysisVisualization, setNewAnalysisVisualization] = useState<VisualizationType>('lineChart');
+  const [showCreateAnalysis, setShowCreateAnalysis] = React.useState(false);
+  const [newAnalysisName, setNewAnalysisName] = React.useState('');
+  const [newAnalysisDescription, setNewAnalysisDescription] = React.useState('');
+  const [newAnalysisType, setNewAnalysisType] = React.useState<AnalysisType>('trend');
+  const [newAnalysisDatasetId, setNewAnalysisDatasetId] = React.useState('');
+  const [newAnalysisVisualization, setNewAnalysisVisualization] =
+    React.useState<VisualizationType>('lineChart');
 
   // Get selected items
   const selectedDataset = selectedDatasetId
-    ? datasets.find((dataset) => dataset.id === selectedDatasetId)
+    ? datasets.find(dataset => dataset.id === selectedDatasetId)
     : null;
   const selectedConfig = selectedConfigId
-    ? analysisConfigs.find((config) => config.id === selectedConfigId)
+    ? analysisConfigs.find(config => config.id === selectedConfigId)
     : null;
-  const selectedResults = selectedConfigId
-    ? getAnalysisResultsByConfigId(selectedConfigId)
-    : [];
 
   // Get the selected result
   const selectedResult = selectedResultId
-    ? analysisResults.find((result) => result.id === selectedResultId)
+    ? analysisResults.find(result => result.id === selectedResultId)
     : null;
-  
+
   // Get the configuration for the selected result
   const selectedResultConfig = selectedResult
-    ? analysisConfigs.find((config) => config.id === selectedResult.analysisConfigId)
+    ? analysisConfigs.find(config => config.id === selectedResult.analysisConfigId)
     : undefined;
 
   // Function to create a dataset from exploration data
@@ -425,10 +430,10 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     if (!newDatasetName) {
       return;
     }
-    
+
     // Create sample data points based on the selected source
     const dataPoints: DataPoint[] = generateSampleDataPoints(newDatasetSource);
-    
+
     // Create the dataset
     createDataset({
       name: newDatasetName,
@@ -436,19 +441,21 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
       dataPoints,
       source: newDatasetSource,
     });
-    
+
     // Reset form
     setNewDatasetName('');
     setNewDatasetDescription('');
     setNewDatasetSource('sectors');
     setShowCreateDataset(false);
   };
-  
+
   // Helper function to generate sample data points
-  const generateSampleDataPoints = (source: 'sectors' | 'anomalies' | 'resources' | 'mixed'): DataPoint[] => {
+  const generateSampleDataPoints = (
+    source: 'sectors' | 'anomalies' | 'resources' | 'mixed'
+  ): DataPoint[] => {
     const now = Date.now();
     const dataPoints: DataPoint[] = [];
-    
+
     // Generate different sample data based on the source
     switch (source) {
       case 'sectors':
@@ -494,7 +501,9 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
             date: now - i * 86400000, // days ago
             coordinates: { x: Math.random() * 100, y: Math.random() * 100 },
             properties: {
-              type: ['minerals', 'gas', 'energy', 'organic', 'exotic'][Math.floor(Math.random() * 5)],
+              type: ['minerals', 'gas', 'energy', 'organic', 'exotic'][
+                Math.floor(Math.random() * 5)
+              ],
               amount: Math.random() * 100,
               quality: Math.random(),
               accessibility: Math.random(),
@@ -511,7 +520,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
         dataPoints.push(...generateSampleDataPoints('resources').slice(0, 4));
         break;
     }
-    
+
     return dataPoints;
   };
 
@@ -520,13 +529,13 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     if (!newAnalysisName || !newAnalysisDatasetId) {
       return;
     }
-    
+
     // Create parameters based on analysis type
     const parameters = generateDefaultParameters(newAnalysisType);
-    
+
     // Create visualization config based on visualization type
     const visualizationConfig = generateDefaultVisualizationConfig(newAnalysisVisualization);
-    
+
     // Create the analysis configuration
     createAnalysisConfig({
       name: newAnalysisName,
@@ -537,7 +546,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
       visualizationType: newAnalysisVisualization,
       visualizationConfig,
     });
-    
+
     // Reset form
     setNewAnalysisName('');
     setNewAnalysisDescription('');
@@ -546,7 +555,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     setNewAnalysisVisualization('lineChart');
     setShowCreateAnalysis(false);
   };
-  
+
   // Helper function to generate default parameters based on analysis type
   const generateDefaultParameters = (type: AnalysisType): Record<string, unknown> => {
     switch (type) {
@@ -613,7 +622,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
         return {};
     }
   };
-  
+
   // Helper function to generate default visualization config based on visualization type
   const generateDefaultVisualizationConfig = (type: VisualizationType): Record<string, unknown> => {
     switch (type) {
@@ -703,14 +712,14 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   };
 
   return (
-    <div className={`border rounded-lg shadow-sm ${className}`}>
+    <div className={`rounded-lg border shadow-sm ${className}`}>
       {/* Header */}
-      <div className="border-b p-4 bg-gray-50 dark:bg-gray-800">
-        <h2 className="text-xl font-semibold flex items-center">
+      <div className="border-b bg-gray-50 p-4 dark:bg-gray-800">
+        <h2 className="flex items-center text-xl font-semibold">
           <BarChart2 className="mr-2" />
           Data Analysis System
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Analyze exploration data to discover patterns and insights
         </p>
       </div>
@@ -762,50 +771,54 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
       <div className="p-4">
         {/* Datasets Tab */}
         {activeTab === 'datasets' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {/* Dataset List */}
-            <div className="border rounded-lg p-4">
-              <div className="flex justify-between items-center mb-4">
+            <div className="rounded-lg border p-4">
+              <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-medium">Datasets</h3>
                 <button
-                  className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="rounded bg-blue-500 p-1 text-white hover:bg-blue-600"
                   title="Create new dataset"
                   onClick={() => setShowCreateDataset(!showCreateDataset)}
                 >
                   <Plus size={16} />
                 </button>
               </div>
-              
+
               {/* Create Dataset Form */}
               {showCreateDataset && (
-                <div className="mb-4 p-3 border rounded bg-gray-50">
-                  <h4 className="font-medium mb-2">Create New Dataset</h4>
+                <div className="mb-4 rounded border bg-gray-50 p-3">
+                  <h4 className="mb-2 font-medium">Create New Dataset</h4>
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Name</label>
+                    <label className="mb-1 block text-sm font-medium">Name</label>
                     <input
                       type="text"
-                      className="w-full p-2 border rounded"
+                      className="w-full rounded border p-2"
                       value={newDatasetName}
-                      onChange={(e) => setNewDatasetName(e.target.value)}
+                      onChange={e => setNewDatasetName(e.target.value)}
                       placeholder="Enter dataset name"
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Description</label>
+                    <label className="mb-1 block text-sm font-medium">Description</label>
                     <textarea
-                      className="w-full p-2 border rounded"
+                      className="w-full rounded border p-2"
                       value={newDatasetDescription}
-                      onChange={(e) => setNewDatasetDescription(e.target.value)}
+                      onChange={e => setNewDatasetDescription(e.target.value)}
                       placeholder="Enter dataset description"
                       rows={3}
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Data Source</label>
+                    <label className="mb-1 block text-sm font-medium">Data Source</label>
                     <select
-                      className="w-full p-2 border rounded"
+                      className="w-full rounded border p-2"
                       value={newDatasetSource}
-                      onChange={(e) => setNewDatasetSource(e.target.value as 'sectors' | 'anomalies' | 'resources' | 'mixed')}
+                      onChange={e =>
+                        setNewDatasetSource(
+                          e.target.value as 'sectors' | 'anomalies' | 'resources' | 'mixed'
+                        )
+                      }
                     >
                       <option value="sectors">Sectors</option>
                       <option value="anomalies">Anomalies</option>
@@ -815,13 +828,13 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   </div>
                   <div className="flex justify-end">
                     <button
-                      className="px-3 py-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 mr-2"
+                      className="mr-2 rounded bg-gray-300 px-3 py-1 text-gray-700 hover:bg-gray-400"
                       onClick={() => setShowCreateDataset(false)}
                     >
                       Cancel
                     </button>
                     <button
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      className="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
                       onClick={handleCreateDataset}
                       disabled={!newDatasetName}
                     >
@@ -830,20 +843,20 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   </div>
                 </div>
               )}
-              
+
               {datasets.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {datasets.map((dataset) => (
+                <div className="max-h-96 space-y-2 overflow-y-auto">
+                  {datasets.map(dataset => (
                     <div
                       key={dataset.id}
-                      className={`p-2 border rounded cursor-pointer ${
+                      className={`cursor-pointer rounded border p-2 ${
                         selectedDatasetId === dataset.id
-                          ? 'bg-blue-50 border-blue-200'
+                          ? 'border-blue-200 bg-blue-50'
                           : 'hover:bg-gray-50'
                       }`}
                       onClick={() => setSelectedDatasetId(dataset.id)}
                     >
-                      <div className="flex justify-between items-center">
+                      <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">{dataset.name}</div>
                           <div className="text-xs text-gray-500">
@@ -852,7 +865,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                         </div>
                         <button
                           className="p-1 text-gray-400 hover:text-red-500"
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
                             deleteDataset(dataset.id);
                             if (selectedDatasetId === dataset.id) {
@@ -868,7 +881,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="py-8 text-center text-gray-500">
                   <Database className="mx-auto mb-2" />
                   <p>No datasets available</p>
                   <p className="text-sm">Create a dataset to begin analysis</p>
@@ -877,26 +890,26 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
             </div>
 
             {/* Dataset Details */}
-            <div className="border rounded-lg p-4 md:col-span-2">
+            <div className="rounded-lg border p-4 md:col-span-2">
               {selectedDataset ? (
                 <div>
-                  <h3 className="font-medium mb-4">{selectedDataset.name}</h3>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="border rounded p-2">
+                  <h3 className="mb-4 font-medium">{selectedDataset.name}</h3>
+                  <div className="mb-4 grid grid-cols-2 gap-4">
+                    <div className="rounded border p-2">
                       <div className="text-sm text-gray-500">Source</div>
                       <div className="font-medium capitalize">{selectedDataset.source}</div>
                     </div>
-                    <div className="border rounded p-2">
+                    <div className="rounded border p-2">
                       <div className="text-sm text-gray-500">Data Points</div>
                       <div className="font-medium">{selectedDataset.dataPoints.length}</div>
                     </div>
-                    <div className="border rounded p-2">
+                    <div className="rounded border p-2">
                       <div className="text-sm text-gray-500">Created</div>
                       <div className="font-medium">
                         {new Date(selectedDataset.createdAt).toLocaleDateString()}
                       </div>
                     </div>
-                    <div className="border rounded p-2">
+                    <div className="rounded border p-2">
                       <div className="text-sm text-gray-500">Updated</div>
                       <div className="font-medium">
                         {new Date(selectedDataset.updatedAt).toLocaleDateString()}
@@ -904,40 +917,40 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                     </div>
                   </div>
                   <div className="mb-4">
-                    <h4 className="font-medium mb-2">Description</h4>
+                    <h4 className="mb-2 font-medium">Description</h4>
                     <p className="text-sm">{selectedDataset.description}</p>
                   </div>
                   <div>
-                    <h4 className="font-medium mb-2">Data Preview</h4>
-                    <div className="border rounded overflow-x-auto">
+                    <h4 className="mb-2 font-medium">Data Preview</h4>
+                    <div className="overflow-x-auto rounded border">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                               ID
                             </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                               Name
                             </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                               Type
                             </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                               Date
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {selectedDataset.dataPoints.slice(0, 5).map((point) => (
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                          {selectedDataset.dataPoints.slice(0, 5).map(point => (
                             <tr key={point.id}>
-                              <td className="px-3 py-2 whitespace-nowrap text-xs">
+                              <td className="whitespace-nowrap px-3 py-2 text-xs">
                                 {point.id.substring(0, 8)}...
                               </td>
-                              <td className="px-3 py-2 whitespace-nowrap text-xs">{point.name}</td>
-                              <td className="px-3 py-2 whitespace-nowrap text-xs capitalize">
+                              <td className="whitespace-nowrap px-3 py-2 text-xs">{point.name}</td>
+                              <td className="whitespace-nowrap px-3 py-2 text-xs capitalize">
                                 {point.type}
                               </td>
-                              <td className="px-3 py-2 whitespace-nowrap text-xs">
+                              <td className="whitespace-nowrap px-3 py-2 text-xs">
                                 {new Date(point.date).toLocaleDateString()}
                               </td>
                             </tr>
@@ -946,14 +959,14 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                       </table>
                     </div>
                     {selectedDataset.dataPoints.length > 5 && (
-                      <div className="text-xs text-gray-500 mt-1 text-right">
+                      <div className="mt-1 text-right text-xs text-gray-500">
                         Showing 5 of {selectedDataset.dataPoints.length} data points
                       </div>
                     )}
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-16 text-gray-500">
+                <div className="py-16 text-center text-gray-500">
                   <Database className="mx-auto mb-2" />
                   <p>Select a dataset to view details</p>
                 </div>
@@ -964,53 +977,53 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
 
         {/* Analysis Tab */}
         {activeTab === 'analysis' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {/* Analysis Configurations List */}
-            <div className="border rounded-lg p-4">
-              <div className="flex justify-between items-center mb-4">
+            <div className="rounded-lg border p-4">
+              <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-medium">Analysis Configurations</h3>
                 <button
-                  className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="rounded bg-blue-500 p-1 text-white hover:bg-blue-600"
                   title="Create new analysis"
                   onClick={() => setShowCreateAnalysis(!showCreateAnalysis)}
                 >
                   <Plus size={16} />
                 </button>
               </div>
-              
+
               {/* Create Analysis Form */}
               {showCreateAnalysis && (
-                <div className="mb-4 p-3 border rounded bg-gray-50">
-                  <h4 className="font-medium mb-2">Create New Analysis</h4>
+                <div className="mb-4 rounded border bg-gray-50 p-3">
+                  <h4 className="mb-2 font-medium">Create New Analysis</h4>
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Name</label>
+                    <label className="mb-1 block text-sm font-medium">Name</label>
                     <input
                       type="text"
-                      className="w-full p-2 border rounded"
+                      className="w-full rounded border p-2"
                       value={newAnalysisName}
-                      onChange={(e) => setNewAnalysisName(e.target.value)}
+                      onChange={e => setNewAnalysisName(e.target.value)}
                       placeholder="Enter analysis name"
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Description</label>
+                    <label className="mb-1 block text-sm font-medium">Description</label>
                     <textarea
-                      className="w-full p-2 border rounded"
+                      className="w-full rounded border p-2"
                       value={newAnalysisDescription}
-                      onChange={(e) => setNewAnalysisDescription(e.target.value)}
+                      onChange={e => setNewAnalysisDescription(e.target.value)}
                       placeholder="Enter analysis description"
                       rows={2}
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Dataset</label>
+                    <label className="mb-1 block text-sm font-medium">Dataset</label>
                     <select
-                      className="w-full p-2 border rounded"
+                      className="w-full rounded border p-2"
                       value={newAnalysisDatasetId}
-                      onChange={(e) => setNewAnalysisDatasetId(e.target.value)}
+                      onChange={e => setNewAnalysisDatasetId(e.target.value)}
                     >
                       <option value="">Select a dataset</option>
-                      {datasets.map((dataset) => (
+                      {datasets.map(dataset => (
                         <option key={dataset.id} value={dataset.id}>
                           {dataset.name}
                         </option>
@@ -1018,11 +1031,11 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                     </select>
                   </div>
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Analysis Type</label>
+                    <label className="mb-1 block text-sm font-medium">Analysis Type</label>
                     <select
-                      className="w-full p-2 border rounded"
+                      className="w-full rounded border p-2"
                       value={newAnalysisType}
-                      onChange={(e) => setNewAnalysisType(e.target.value as AnalysisType)}
+                      onChange={e => setNewAnalysisType(e.target.value as AnalysisType)}
                     >
                       <option value="trend">Trend Analysis</option>
                       <option value="correlation">Correlation Analysis</option>
@@ -1037,11 +1050,13 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                     </select>
                   </div>
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Visualization Type</label>
+                    <label className="mb-1 block text-sm font-medium">Visualization Type</label>
                     <select
-                      className="w-full p-2 border rounded"
+                      className="w-full rounded border p-2"
                       value={newAnalysisVisualization}
-                      onChange={(e) => setNewAnalysisVisualization(e.target.value as VisualizationType)}
+                      onChange={e =>
+                        setNewAnalysisVisualization(e.target.value as VisualizationType)
+                      }
                     >
                       <option value="lineChart">Line Chart</option>
                       <option value="barChart">Bar Chart</option>
@@ -1059,13 +1074,13 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   </div>
                   <div className="flex justify-end">
                     <button
-                      className="px-3 py-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 mr-2"
+                      className="mr-2 rounded bg-gray-300 px-3 py-1 text-gray-700 hover:bg-gray-400"
                       onClick={() => setShowCreateAnalysis(false)}
                     >
                       Cancel
                     </button>
                     <button
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      className="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
                       onClick={handleCreateAnalysis}
                       disabled={!newAnalysisName || !newAnalysisDatasetId}
                     >
@@ -1074,20 +1089,20 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   </div>
                 </div>
               )}
-              
+
               {analysisConfigs.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {analysisConfigs.map((config) => (
+                <div className="max-h-96 space-y-2 overflow-y-auto">
+                  {analysisConfigs.map(config => (
                     <div
                       key={config.id}
-                      className={`p-2 border rounded cursor-pointer ${
+                      className={`cursor-pointer rounded border p-2 ${
                         selectedConfigId === config.id
-                          ? 'bg-blue-50 border-blue-200'
+                          ? 'border-blue-200 bg-blue-50'
                           : 'hover:bg-gray-50'
                       }`}
                       onClick={() => setSelectedConfigId(config.id)}
                     >
-                      <div className="flex justify-between items-center">
+                      <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">{config.name}</div>
                           <div className="text-xs text-gray-500">
@@ -1096,8 +1111,8 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                         </div>
                         <div className="flex">
                           <button
-                            className="p-1 text-gray-400 hover:text-green-500 mr-1"
-                            onClick={(e) => {
+                            className="mr-1 p-1 text-gray-400 hover:text-green-500"
+                            onClick={e => {
                               e.stopPropagation();
                               runAnalysis(config.id);
                             }}
@@ -1107,7 +1122,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                           </button>
                           <button
                             className="p-1 text-gray-400 hover:text-red-500"
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation();
                               deleteAnalysisConfig(config.id);
                               if (selectedConfigId === config.id) {
@@ -1124,7 +1139,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="py-8 text-center text-gray-500">
                   <Settings className="mx-auto mb-2" />
                   <p>No analysis configurations</p>
                   <p className="text-sm">Create an analysis to begin</p>
@@ -1133,26 +1148,28 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
             </div>
 
             {/* Analysis Configuration Details */}
-            <div className="border rounded-lg p-4 md:col-span-2">
+            <div className="rounded-lg border p-4 md:col-span-2">
               {selectedConfig ? (
                 <div>
-                  <h3 className="font-medium mb-4">{selectedConfig.name}</h3>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="border rounded p-2">
+                  <h3 className="mb-4 font-medium">{selectedConfig.name}</h3>
+                  <div className="mb-4 grid grid-cols-2 gap-4">
+                    <div className="rounded border p-2">
                       <div className="text-sm text-gray-500">Analysis Type</div>
                       <div className="font-medium capitalize">{selectedConfig.type}</div>
                     </div>
-                    <div className="border rounded p-2">
+                    <div className="rounded border p-2">
                       <div className="text-sm text-gray-500">Visualization</div>
-                      <div className="font-medium capitalize">{selectedConfig.visualizationType}</div>
-                    </div>
-                    <div className="border rounded p-2">
-                      <div className="text-sm text-gray-500">Dataset</div>
-                      <div className="font-medium">
-                        {datasets.find((d) => d.id === selectedConfig.datasetId)?.name || 'Unknown'}
+                      <div className="font-medium capitalize">
+                        {selectedConfig.visualizationType}
                       </div>
                     </div>
-                    <div className="border rounded p-2">
+                    <div className="rounded border p-2">
+                      <div className="text-sm text-gray-500">Dataset</div>
+                      <div className="font-medium">
+                        {datasets.find(d => d.id === selectedConfig.datasetId)?.name || 'Unknown'}
+                      </div>
+                    </div>
+                    <div className="rounded border p-2">
                       <div className="text-sm text-gray-500">Created</div>
                       <div className="font-medium">
                         {new Date(selectedConfig.createdAt).toLocaleDateString()}
@@ -1160,28 +1177,28 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                     </div>
                   </div>
                   <div className="mb-4">
-                    <h4 className="font-medium mb-2">Description</h4>
+                    <h4 className="mb-2 font-medium">Description</h4>
                     <p className="text-sm">{selectedConfig.description}</p>
                   </div>
                   <div className="mb-4">
-                    <h4 className="font-medium mb-2">Parameters</h4>
-                    <div className="border rounded p-3 bg-gray-50">
-                      <pre className="text-xs overflow-x-auto">
+                    <h4 className="mb-2 font-medium">Parameters</h4>
+                    <div className="rounded border bg-gray-50 p-3">
+                      <pre className="overflow-x-auto text-xs">
                         {JSON.stringify(selectedConfig.parameters, null, 2)}
                       </pre>
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-medium mb-2">Visualization Configuration</h4>
-                    <div className="border rounded p-3 bg-gray-50">
-                      <pre className="text-xs overflow-x-auto">
+                    <h4 className="mb-2 font-medium">Visualization Configuration</h4>
+                    <div className="rounded border bg-gray-50 p-3">
+                      <pre className="overflow-x-auto text-xs">
                         {JSON.stringify(selectedConfig.visualizationConfig, null, 2)}
                       </pre>
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end">
                     <button
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
+                      className="flex items-center rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
                       onClick={() => runAnalysis(selectedConfig.id)}
                     >
                       <Play size={16} className="mr-1" />
@@ -1190,7 +1207,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-16 text-gray-500">
+                <div className="py-16 text-center text-gray-500">
                   <Settings className="mx-auto mb-2" />
                   <p>Select an analysis configuration to view details</p>
                 </div>
@@ -1201,28 +1218,28 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
 
         {/* Results Tab */}
         {activeTab === 'results' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {/* Analysis Results List */}
-            <div className="border rounded-lg p-4">
-              <div className="flex justify-between items-center mb-4">
+            <div className="rounded-lg border p-4">
+              <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-medium">Analysis Results</h3>
               </div>
-              
+
               {analysisResults.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {analysisResults.map((result) => {
-                    const config = analysisConfigs.find((c) => c.id === result.analysisConfigId);
+                <div className="max-h-96 space-y-2 overflow-y-auto">
+                  {analysisResults.map(result => {
+                    const config = analysisConfigs.find(c => c.id === result.analysisConfigId);
                     return (
                       <div
                         key={result.id}
-                        className={`p-2 border rounded cursor-pointer ${
+                        className={`cursor-pointer rounded border p-2 ${
                           selectedResultId === result.id
-                            ? 'bg-blue-50 border-blue-200'
+                            ? 'border-blue-200 bg-blue-50'
                             : 'hover:bg-gray-50'
                         }`}
                         onClick={() => setSelectedResultId(result.id)}
                       >
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                           <div>
                             <div className="font-medium">{config?.name || 'Unknown Analysis'}</div>
                             <div className="text-xs text-gray-500">
@@ -1232,10 +1249,10 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                                   result.status === 'completed'
                                     ? 'text-green-500'
                                     : result.status === 'failed'
-                                    ? 'text-red-500'
-                                    : result.status === 'processing'
-                                    ? 'text-blue-500'
-                                    : 'text-gray-500'
+                                      ? 'text-red-500'
+                                      : result.status === 'processing'
+                                        ? 'text-blue-500'
+                                        : 'text-gray-500'
                                 }`}
                               >
                                 {result.status}
@@ -1248,7 +1265,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   })}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="py-8 text-center text-gray-500">
                   <BarChart2 className="mx-auto mb-2" />
                   <p>No analysis results</p>
                   <p className="text-sm">Run an analysis to see results</p>
@@ -1257,11 +1274,11 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
             </div>
 
             {/* Analysis Result Details */}
-            <div className="border rounded-lg p-4 md:col-span-2">
+            <div className="rounded-lg border p-4 md:col-span-2">
               {selectedResultId && selectedResult ? (
                 <ResultVisualization result={selectedResult} config={selectedResultConfig} />
               ) : (
-                <div className="text-center py-16 text-gray-500">
+                <div className="py-16 text-center text-gray-500">
                   <BarChart2 className="mx-auto mb-2" />
                   <p>Select a result to view details</p>
                 </div>
@@ -1272,4 +1289,4 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
       </div>
     </div>
   );
-} 
+}

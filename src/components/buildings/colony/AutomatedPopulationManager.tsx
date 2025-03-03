@@ -44,8 +44,8 @@ interface AutomatedPopulationManagerProps {
  * Handles growth cycles, population events, and provides controls for automation.
  */
 export function AutomatedPopulationManager({
-  colonyId,
-  colonyName,
+  colonyId: _colonyId,
+  colonyName: _colonyName,
   currentPopulation,
   maxPopulation,
   growthRate,

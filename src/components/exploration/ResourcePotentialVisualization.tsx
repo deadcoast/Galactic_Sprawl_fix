@@ -42,43 +42,72 @@ export function ResourcePotentialVisualization({
   const [showDetails, setShowDetails] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
+  // Quality settings for visualization
+  const qualitySettings = React.useMemo(() => {
+    switch (quality) {
+      case 'low':
+        return {
+          maxBars: 10,
+          animationDuration: 300,
+          decimalPrecision: 0,
+          showTooltips: false,
+          detailLevel: 'basic',
+        };
+      case 'high':
+        return {
+          maxBars: 30,
+          animationDuration: 600,
+          decimalPrecision: 2,
+          showTooltips: true,
+          detailLevel: 'comprehensive',
+        };
+      case 'medium':
+      default:
+        return {
+          maxBars: 20,
+          animationDuration: 450,
+          decimalPrecision: 1,
+          showTooltips: true,
+          detailLevel: 'standard',
+        };
+    }
+  }, [quality]);
+
   // Get the selected sector data
   const selectedSector = sectorData.find(sector => sector.sectorId === selectedSectorId);
 
   // Filter and sort sectors based on current filters
   const filteredSectors = React.useMemo(() => {
-    return sectorData
+    // Limit the number of sectors based on quality settings
+    const filtered = sectorData
       .filter(sector => {
-        if (resourceFilter === 'all') {
-          return true;
-        }
+        if (resourceFilter === 'all') return true;
         return sector.resources.some(resource => resource.type === resourceFilter);
       })
       .sort((a, b) => {
         const getValueForSector = (sector: SectorResourceData) => {
-          const resources =
-            resourceFilter === 'all'
-              ? sector.resources
-              : sector.resources.filter(r => r.type === resourceFilter);
-
-          if (resources.length === 0) {
-            return 0;
-          }
+          const totalResources = sector.resources.filter(
+            r => resourceFilter === 'all' || r.type === resourceFilter
+          );
 
           if (sortBy === 'value') {
-            return resources.reduce((sum, r) => sum + r.estimatedValue, 0);
+            return totalResources.reduce((sum, r) => sum + r.estimatedValue, 0);
           } else if (sortBy === 'amount') {
-            return resources.reduce((sum, r) => sum + r.amount, 0);
-          } else if (sortBy === 'quality') {
-            return resources.reduce((sum, r) => sum + r.quality, 0) / resources.length;
+            return totalResources.reduce((sum, r) => sum + r.amount, 0);
+          } else {
+            // quality
+            const avgQuality =
+              totalResources.reduce((sum, r) => sum + r.quality, 0) / (totalResources.length || 1);
+            return avgQuality;
           }
-
-          return 0;
         };
 
         return getValueForSector(b) - getValueForSector(a);
       });
-  }, [sectorData, resourceFilter, sortBy]);
+
+    // Limit the number of sectors shown based on quality settings
+    return filtered.slice(0, qualitySettings.maxBars);
+  }, [sectorData, resourceFilter, sortBy, qualitySettings.maxBars]);
 
   // Get resource icon
   const getResourceIcon = (type: ResourceData['type'], className = 'w-4 h-4') => {
@@ -128,14 +157,14 @@ export function ResourcePotentialVisualization({
     }
   };
 
-  // Format value as credits
+  // Format credits with precision based on quality settings
   const formatCredits = (value: number) => {
     if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1)}M`;
+      return `${(value / 1000000).toFixed(qualitySettings.decimalPrecision)}M cr`;
     } else if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}K`;
+      return `${(value / 1000).toFixed(qualitySettings.decimalPrecision)}K cr`;
     }
-    return value.toString();
+    return `${value.toFixed(qualitySettings.decimalPrecision)} cr`;
   };
 
   // Format date
@@ -179,6 +208,9 @@ export function ResourcePotentialVisualization({
                 return null;
               }
 
+              // Use index for animation delay
+              const animationDelay = index * 50;
+
               let value = 0;
               if (sortBy === 'value') {
                 value = resources.reduce((sum, r) => sum + r.estimatedValue, 0);
@@ -221,12 +253,14 @@ export function ResourcePotentialVisualization({
               return (
                 <div
                   key={sector.sectorId}
-                  className={`mx-1 flex cursor-pointer flex-col items-center ${
-                    sector.sectorId === selectedSectorId
-                      ? 'opacity-100'
-                      : 'opacity-80 hover:opacity-100'
-                  }`}
-                  onClick={() => onSectorSelect?.(sector.sectorId)}
+                  className={`relative mx-[5px] w-[${barWidth}px] cursor-pointer transition-all duration-300`}
+                  style={{
+                    height: maxBarHeight,
+                    opacity: selectedSectorId === sector.sectorId ? 1 : 0.8,
+                    transform: selectedSectorId === sector.sectorId ? 'scale(1.05)' : 'scale(1)',
+                    animationDelay: `${animationDelay}ms`,
+                  }}
+                  onClick={() => onSectorSelect && onSectorSelect(sector.sectorId)}
                 >
                   {/* Stacked bar */}
                   <div

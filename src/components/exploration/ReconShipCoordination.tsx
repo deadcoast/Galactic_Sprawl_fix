@@ -1,21 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Users,
-  Radar,
-  Shield,
-  Search,
-  Plus,
-  Trash2,
   ChevronDown,
   ChevronUp,
-  UserPlus,
+  Plus,
+  Radar,
+  Search,
+  Shield,
+  Trash2,
   UserMinus,
-  Share2,
+  UserPlus,
+  Users,
   Zap,
-  Crosshair,
-  Layers,
-  Map as MapIcon,
 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { Position } from '../../types/core/GameTypes';
 
 // Define interfaces based on ReconShipManagerImpl
@@ -70,7 +66,11 @@ interface ReconShipCoordinationProps {
   onAddShipToFormation: (formationId: string, shipId: string) => void;
   onRemoveShipFromFormation: (formationId: string, shipId: string) => void;
   onStartCoordinatedScan: (sectorId: string, shipIds: string[]) => void;
-  onShareTask: (sourceShipId: string, targetShipId: string, taskType: 'explore' | 'investigate' | 'evade') => void;
+  onShareTask?: (
+    sourceShipId: string,
+    targetShipId: string,
+    taskType: 'explore' | 'investigate' | 'evade'
+  ) => void;
   onAutoDistributeTasks: (sectorIds: string[], prioritizeFormations: boolean) => void;
   className?: string;
 }
@@ -94,27 +94,29 @@ export function ReconShipCoordination({
   const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
   const [showCreateFormation, setShowCreateFormation] = useState(false);
   const [formationName, setFormationName] = useState('');
-  const [formationType, setFormationType] = useState<'exploration' | 'survey' | 'defensive'>('exploration');
+  const [formationType, setFormationType] = useState<'exploration' | 'survey' | 'defensive'>(
+    'exploration'
+  );
   const [selectedShipIds, setSelectedShipIds] = useState<string[]>([]);
   const [selectedLeaderId, setSelectedLeaderId] = useState<string>('');
   const [prioritizeFormations, setPrioritizeFormations] = useState(true);
-  
+
   // Derived state
   const availableShips = useMemo(() => {
     return ships.filter(ship => ship.status === 'idle' && !ship.formationId);
   }, [ships]);
-  
+
   const formationShips = useMemo(() => {
     if (!selectedFormationId) return [];
     const formation = formations.find(f => f.id === selectedFormationId);
     if (!formation) return [];
     return ships.filter(ship => formation.shipIds.includes(ship.id));
   }, [ships, formations, selectedFormationId]);
-  
+
   const selectedFormation = useMemo(() => {
     return formations.find(f => f.id === selectedFormationId) || null;
   }, [formations, selectedFormationId]);
-  
+
   // Reset selected leader when selected ships change
   useEffect(() => {
     if (selectedShipIds.length > 0 && !selectedShipIds.includes(selectedLeaderId)) {
@@ -123,7 +125,7 @@ export function ReconShipCoordination({
       setSelectedLeaderId('');
     }
   }, [selectedShipIds, selectedLeaderId]);
-  
+
   // Handle form submission for creating a new formation
   const handleCreateFormation = () => {
     if (formationName && formationType && selectedShipIds.length > 0 && selectedLeaderId) {
@@ -135,7 +137,7 @@ export function ReconShipCoordination({
       setShowCreateFormation(false);
     }
   };
-  
+
   // Handle starting a coordinated scan
   const handleStartCoordinatedScan = () => {
     if (selectedFormationId && selectedSectorId) {
@@ -145,31 +147,106 @@ export function ReconShipCoordination({
       }
     }
   };
-  
+
   // Handle auto-distribution of tasks
   const handleAutoDistributeTasks = () => {
     const unmappedSectors = sectors
       .filter(sector => sector.status === 'unmapped')
       .map(sector => sector.id);
-    
+
     if (unmappedSectors.length > 0) {
       onAutoDistributeTasks(unmappedSectors, prioritizeFormations);
     }
   };
-  
+
+  // Add a function to handle task sharing
+  const handleShareTask = (
+    sourceShipId: string,
+    targetShipId: string,
+    taskType: 'explore' | 'investigate' | 'evade'
+  ) => {
+    if (onShareTask) {
+      onShareTask(sourceShipId, targetShipId, taskType);
+    }
+  };
+
+  // Add a button or UI element to use the handleShareTask function
+  const renderTaskSharingControls = () => {
+    if (activeTab !== 'coordination' || !selectedShipIds.length) return null;
+
+    return (
+      <div className="mt-4 rounded border border-gray-200 p-3">
+        <h4 className="mb-2 text-sm font-semibold">Share Tasks</h4>
+        <div className="space-y-2">
+          {selectedShipIds.map(shipId => {
+            const ship = ships.find(s => s.id === shipId);
+            if (!ship) return null;
+
+            return (
+              <div key={`share-${shipId}`} className="flex items-center justify-between">
+                <span className="text-sm">{ship.name}</span>
+                <div className="flex space-x-1">
+                  <button
+                    className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-700 hover:bg-blue-200"
+                    onClick={() =>
+                      handleShareTask(
+                        shipId,
+                        selectedShipIds.find(id => id !== shipId) || '',
+                        'explore'
+                      )
+                    }
+                    disabled={selectedShipIds.length < 2}
+                  >
+                    Explore
+                  </button>
+                  <button
+                    className="rounded bg-purple-100 px-2 py-1 text-xs text-purple-700 hover:bg-purple-200"
+                    onClick={() =>
+                      handleShareTask(
+                        shipId,
+                        selectedShipIds.find(id => id !== shipId) || '',
+                        'investigate'
+                      )
+                    }
+                    disabled={selectedShipIds.length < 2}
+                  >
+                    Investigate
+                  </button>
+                  <button
+                    className="rounded bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200"
+                    onClick={() =>
+                      handleShareTask(
+                        shipId,
+                        selectedShipIds.find(id => id !== shipId) || '',
+                        'evade'
+                      )
+                    }
+                    disabled={selectedShipIds.length < 2}
+                  >
+                    Evade
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className={`border rounded-lg shadow-sm ${className}`}>
+    <div className={`rounded-lg border shadow-sm ${className}`}>
       {/* Header */}
-      <div className="border-b p-4 bg-gray-50 dark:bg-gray-800">
-        <h2 className="text-xl font-semibold flex items-center">
+      <div className="border-b bg-gray-50 p-4 dark:bg-gray-800">
+        <h2 className="flex items-center text-xl font-semibold">
           <Users className="mr-2" />
           Recon Ship Coordination
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Manage fleet formations and coordinate recon ship operations
         </p>
       </div>
-      
+
       {/* Tabs */}
       <div className="flex border-b">
         <button
@@ -212,7 +289,7 @@ export function ReconShipCoordination({
           </div>
         </button>
       </div>
-      
+
       {/* Content */}
       <div className="p-4">
         {/* Formations Tab */}
@@ -220,10 +297,10 @@ export function ReconShipCoordination({
           <div>
             {/* Formation List */}
             <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <h3 className="text-lg font-medium">Fleet Formations</h3>
                 <button
-                  className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
+                  className="flex items-center rounded bg-blue-500 px-2 py-1 text-white hover:bg-blue-600"
                   onClick={() => setShowCreateFormation(!showCreateFormation)}
                 >
                   {showCreateFormation ? (
@@ -239,58 +316,60 @@ export function ReconShipCoordination({
                   )}
                 </button>
               </div>
-              
+
               {/* Create Formation Form */}
               {showCreateFormation && (
-                <div className="mb-4 p-4 border rounded bg-gray-50 dark:bg-gray-800">
-                  <h4 className="font-medium mb-2">Create New Formation</h4>
-                  
+                <div className="mb-4 rounded border bg-gray-50 p-4 dark:bg-gray-800">
+                  <h4 className="mb-2 font-medium">Create New Formation</h4>
+
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Formation Name</label>
+                    <label className="mb-1 block text-sm font-medium">Formation Name</label>
                     <input
                       type="text"
-                      className="w-full p-2 border rounded"
+                      className="w-full rounded border p-2"
                       value={formationName}
-                      onChange={(e) => setFormationName(e.target.value)}
+                      onChange={e => setFormationName(e.target.value)}
                       placeholder="Enter formation name"
                     />
                   </div>
-                  
+
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Formation Type</label>
+                    <label className="mb-1 block text-sm font-medium">Formation Type</label>
                     <select
-                      className="w-full p-2 border rounded"
+                      className="w-full rounded border p-2"
                       value={formationType}
-                      onChange={(e) => setFormationType(e.target.value as 'exploration' | 'survey' | 'defensive')}
+                      onChange={e =>
+                        setFormationType(e.target.value as 'exploration' | 'survey' | 'defensive')
+                      }
                     >
                       <option value="exploration">Exploration</option>
                       <option value="survey">Survey</option>
                       <option value="defensive">Defensive</option>
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="mt-1 text-xs text-gray-500">
                       {formationType === 'exploration'
                         ? 'Balanced formation for general exploration'
                         : formationType === 'survey'
-                        ? 'Specialized formation for resource discovery'
-                        : 'Defensive formation with enhanced threat detection'}
+                          ? 'Specialized formation for resource discovery'
+                          : 'Defensive formation with enhanced threat detection'}
                     </p>
                   </div>
-                  
+
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Select Ships</label>
-                    <div className="max-h-40 overflow-y-auto border rounded p-2">
+                    <label className="mb-1 block text-sm font-medium">Select Ships</label>
+                    <div className="max-h-40 overflow-y-auto rounded border p-2">
                       {availableShips.length > 0 ? (
-                        availableShips.map((ship) => (
-                          <div key={ship.id} className="flex items-center mb-1 last:mb-0">
+                        availableShips.map(ship => (
+                          <div key={ship.id} className="mb-1 flex items-center last:mb-0">
                             <input
                               type="checkbox"
                               id={`ship-${ship.id}`}
                               checked={selectedShipIds.includes(ship.id)}
-                              onChange={(e) => {
+                              onChange={e => {
                                 if (e.target.checked) {
                                   setSelectedShipIds([...selectedShipIds, ship.id]);
                                 } else {
-                                  setSelectedShipIds(selectedShipIds.filter((id) => id !== ship.id));
+                                  setSelectedShipIds(selectedShipIds.filter(id => id !== ship.id));
                                 }
                               }}
                               className="mr-2"
@@ -304,21 +383,21 @@ export function ReconShipCoordination({
                           </div>
                         ))
                       ) : (
-                        <div className="text-gray-500 text-sm">No available ships</div>
+                        <div className="text-sm text-gray-500">No available ships</div>
                       )}
                     </div>
                   </div>
-                  
+
                   {selectedShipIds.length > 0 && (
                     <div className="mb-3">
-                      <label className="block text-sm font-medium mb-1">Formation Leader</label>
+                      <label className="mb-1 block text-sm font-medium">Formation Leader</label>
                       <select
-                        className="w-full p-2 border rounded"
+                        className="w-full rounded border p-2"
                         value={selectedLeaderId}
-                        onChange={(e) => setSelectedLeaderId(e.target.value)}
+                        onChange={e => setSelectedLeaderId(e.target.value)}
                       >
-                        {selectedShipIds.map((shipId) => {
-                          const ship = ships.find((s) => s.id === shipId);
+                        {selectedShipIds.map(shipId => {
+                          const ship = ships.find(s => s.id === shipId);
                           return (
                             <option key={shipId} value={shipId}>
                               {ship?.name} ({ship?.specialization})
@@ -328,10 +407,10 @@ export function ReconShipCoordination({
                       </select>
                     </div>
                   )}
-                  
+
                   <div className="flex justify-end">
                     <button
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
+                      className="flex items-center rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
                       onClick={handleCreateFormation}
                       disabled={!formationName || selectedShipIds.length === 0 || !selectedLeaderId}
                     >
@@ -341,20 +420,20 @@ export function ReconShipCoordination({
                   </div>
                 </div>
               )}
-              
+
               {/* Formations List */}
               {formations.length > 0 ? (
-                <div className="border rounded overflow-hidden">
-                  {formations.map((formation) => (
+                <div className="overflow-hidden rounded border">
+                  {formations.map(formation => (
                     <div
                       key={formation.id}
-                      className={`border-b last:border-b-0 p-3 ${
+                      className={`border-b p-3 last:border-b-0 ${
                         selectedFormationId === formation.id ? 'bg-blue-50 dark:bg-blue-900' : ''
                       }`}
                     >
-                      <div className="flex justify-between items-center">
+                      <div className="flex items-center justify-between">
                         <div
-                          className="flex items-center cursor-pointer"
+                          className="flex cursor-pointer items-center"
                           onClick={() =>
                             setSelectedFormationId(
                               selectedFormationId === formation.id ? null : formation.id
@@ -386,7 +465,7 @@ export function ReconShipCoordination({
                             <Trash2 size={16} />
                           </button>
                           <button
-                            className="p-1 text-gray-500 hover:text-gray-700 ml-1"
+                            className="ml-1 p-1 text-gray-500 hover:text-gray-700"
                             onClick={() =>
                               setSelectedFormationId(
                                 selectedFormationId === formation.id ? null : formation.id
@@ -402,37 +481,46 @@ export function ReconShipCoordination({
                           </button>
                         </div>
                       </div>
-                      
+
                       {/* Formation Details */}
                       {selectedFormationId === formation.id && (
-                        <div className="mt-3 pt-3 border-t">
-                          <div className="grid grid-cols-3 gap-2 mb-3">
-                            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                        <div className="mt-3 border-t pt-3">
+                          <div className="mb-3 grid grid-cols-3 gap-2">
+                            <div className="rounded bg-gray-50 p-2 text-center dark:bg-gray-800">
                               <div className="text-xs text-gray-500">Scan Bonus</div>
-                              <div className="font-medium">+{Math.round(formation.scanBonus * 100)}%</div>
+                              <div className="font-medium">
+                                +{Math.round(formation.scanBonus * 100)}%
+                              </div>
                             </div>
-                            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div className="rounded bg-gray-50 p-2 text-center dark:bg-gray-800">
                               <div className="text-xs text-gray-500">Detection</div>
-                              <div className="font-medium">+{Math.round(formation.detectionBonus * 100)}%</div>
+                              <div className="font-medium">
+                                +{Math.round(formation.detectionBonus * 100)}%
+                              </div>
                             </div>
-                            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div className="rounded bg-gray-50 p-2 text-center dark:bg-gray-800">
                               <div className="text-xs text-gray-500">Stealth</div>
-                              <div className="font-medium">+{Math.round(formation.stealthBonus * 100)}%</div>
+                              <div className="font-medium">
+                                +{Math.round(formation.stealthBonus * 100)}%
+                              </div>
                             </div>
                           </div>
-                          
+
                           <div className="mb-3">
-                            <h4 className="text-sm font-medium mb-1">Ships in Formation</h4>
-                            <div className="max-h-40 overflow-y-auto border rounded p-2">
-                              {formation.shipIds.map((shipId) => {
-                                const ship = ships.find((s) => s.id === shipId);
+                            <h4 className="mb-1 text-sm font-medium">Ships in Formation</h4>
+                            <div className="max-h-40 overflow-y-auto rounded border p-2">
+                              {formation.shipIds.map(shipId => {
+                                const ship = ships.find(s => s.id === shipId);
                                 if (!ship) return null;
-                                
+
                                 return (
-                                  <div key={shipId} className="flex justify-between items-center mb-1 last:mb-0">
+                                  <div
+                                    key={shipId}
+                                    className="mb-1 flex items-center justify-between last:mb-0"
+                                  >
                                     <div className="flex items-center">
                                       {shipId === formation.leaderId && (
-                                        <span className="mr-1 text-yellow-500 text-xs">★</span>
+                                        <span className="mr-1 text-xs text-yellow-500">★</span>
                                       )}
                                       <span className="font-medium">{ship.name}</span>
                                       <span className="ml-2 text-xs text-gray-500">
@@ -441,7 +529,9 @@ export function ReconShipCoordination({
                                     </div>
                                     <button
                                       className="p-1 text-gray-500 hover:text-red-500"
-                                      onClick={() => onRemoveShipFromFormation(formation.id, shipId)}
+                                      onClick={() =>
+                                        onRemoveShipFromFormation(formation.id, shipId)
+                                      }
                                       title="Remove from formation"
                                     >
                                       <UserMinus size={14} />
@@ -451,16 +541,16 @@ export function ReconShipCoordination({
                               })}
                             </div>
                           </div>
-                          
+
                           {/* Add Ship to Formation */}
                           {availableShips.length > 0 && (
                             <div className="mb-3">
-                              <h4 className="text-sm font-medium mb-1">Add Ship to Formation</h4>
+                              <h4 className="mb-1 text-sm font-medium">Add Ship to Formation</h4>
                               <div className="flex">
                                 <select
-                                  className="flex-1 p-2 border rounded-l"
+                                  className="flex-1 rounded-l border p-2"
                                   value=""
-                                  onChange={(e) => {
+                                  onChange={e => {
                                     if (e.target.value) {
                                       onAddShipToFormation(formation.id, e.target.value);
                                       e.target.value = '';
@@ -468,16 +558,18 @@ export function ReconShipCoordination({
                                   }}
                                 >
                                   <option value="">Select a ship...</option>
-                                  {availableShips.map((ship) => (
+                                  {availableShips.map(ship => (
                                     <option key={ship.id} value={ship.id}>
                                       {ship.name} ({ship.specialization})
                                     </option>
                                   ))}
                                 </select>
                                 <button
-                                  className="px-3 py-1 bg-blue-500 text-white rounded-r hover:bg-blue-600 flex items-center"
+                                  className="flex items-center rounded-r bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
                                   onClick={() => {
-                                    const select = document.querySelector('select') as HTMLSelectElement;
+                                    const select = document.querySelector(
+                                      'select'
+                                    ) as HTMLSelectElement;
                                     if (select && select.value) {
                                       onAddShipToFormation(formation.id, select.value);
                                       select.value = '';
@@ -495,11 +587,11 @@ export function ReconShipCoordination({
                   ))}
                 </div>
               ) : (
-                <div className="text-center p-6 border rounded bg-gray-50 dark:bg-gray-800">
-                  <Users size={32} className="mx-auto text-gray-400 mb-2" />
+                <div className="rounded border bg-gray-50 p-6 text-center dark:bg-gray-800">
+                  <Users size={32} className="mx-auto mb-2 text-gray-400" />
                   <p className="text-gray-500">No formations created yet</p>
                   <button
-                    className="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center mx-auto"
+                    className="mx-auto mt-2 flex items-center rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
                     onClick={() => setShowCreateFormation(true)}
                   >
                     <Plus size={16} className="mr-1" />
@@ -510,92 +602,94 @@ export function ReconShipCoordination({
             </div>
           </div>
         )}
-        
+
         {/* Coordinated Scanning Tab */}
         {activeTab === 'coordination' && (
           <div>
             <div className="mb-4">
-              <h3 className="text-lg font-medium mb-2">Coordinated Scanning</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <h3 className="mb-2 text-lg font-medium">Coordinated Scanning</h3>
+              <p className="mb-4 text-sm text-gray-500">
                 Coordinate multiple ships to scan sectors more efficiently
               </p>
-              
+
               {/* Formation Selection */}
               <div className="mb-3">
-                <label className="block text-sm font-medium mb-1">Select Formation</label>
+                <label className="mb-1 block text-sm font-medium">Select Formation</label>
                 <select
-                  className="w-full p-2 border rounded"
+                  className="w-full rounded border p-2"
                   value={selectedFormationId || ''}
-                  onChange={(e) => setSelectedFormationId(e.target.value || null)}
+                  onChange={e => setSelectedFormationId(e.target.value || null)}
                 >
                   <option value="">Select a formation...</option>
-                  {formations.map((formation) => (
+                  {formations.map(formation => (
                     <option key={formation.id} value={formation.id}>
                       {formation.name} ({formation.type} - {formation.shipIds.length} ships)
                     </option>
                   ))}
                 </select>
               </div>
-              
+
               {/* Sector Selection */}
               <div className="mb-3">
-                <label className="block text-sm font-medium mb-1">Select Sector to Scan</label>
+                <label className="mb-1 block text-sm font-medium">Select Sector to Scan</label>
                 <select
-                  className="w-full p-2 border rounded"
+                  className="w-full rounded border p-2"
                   value={selectedSectorId || ''}
-                  onChange={(e) => setSelectedSectorId(e.target.value || null)}
+                  onChange={e => setSelectedSectorId(e.target.value || null)}
                 >
                   <option value="">Select a sector...</option>
                   {sectors
-                    .filter((sector) => sector.status === 'unmapped')
-                    .map((sector) => (
+                    .filter(sector => sector.status === 'unmapped')
+                    .map(sector => (
                       <option key={sector.id} value={sector.id}>
                         {sector.name} (Resource Potential: {sector.resourcePotential})
                       </option>
                     ))}
                 </select>
               </div>
-              
+
               {/* Formation Details */}
               {selectedFormationId && (
-                <div className="mb-3 p-3 border rounded bg-gray-50 dark:bg-gray-800">
-                  <h4 className="font-medium mb-2">Formation Details</h4>
+                <div className="mb-3 rounded border bg-gray-50 p-3 dark:bg-gray-800">
+                  <h4 className="mb-2 font-medium">Formation Details</h4>
                   {selectedFormation && (
                     <>
-                      <div className="grid grid-cols-3 gap-2 mb-3">
-                        <div className="text-center p-2 bg-white dark:bg-gray-700 rounded">
+                      <div className="mb-3 grid grid-cols-3 gap-2">
+                        <div className="rounded bg-white p-2 text-center dark:bg-gray-700">
                           <div className="text-xs text-gray-500">Scan Bonus</div>
-                          <div className="font-medium">+{Math.round(selectedFormation.scanBonus * 100)}%</div>
+                          <div className="font-medium">
+                            +{Math.round(selectedFormation.scanBonus * 100)}%
+                          </div>
                         </div>
-                        <div className="text-center p-2 bg-white dark:bg-gray-700 rounded">
+                        <div className="rounded bg-white p-2 text-center dark:bg-gray-700">
                           <div className="text-xs text-gray-500">Ships</div>
                           <div className="font-medium">{selectedFormation.shipIds.length}</div>
                         </div>
-                        <div className="text-center p-2 bg-white dark:bg-gray-700 rounded">
+                        <div className="rounded bg-white p-2 text-center dark:bg-gray-700">
                           <div className="text-xs text-gray-500">Type</div>
                           <div className="font-medium capitalize">{selectedFormation.type}</div>
                         </div>
                       </div>
-                      
+
                       <div className="text-sm">
                         <div className="mb-1">
                           <span className="font-medium">Leader:</span>{' '}
-                          {ships.find((s) => s.id === selectedFormation.leaderId)?.name || 'Unknown'}
+                          {ships.find(s => s.id === selectedFormation.leaderId)?.name || 'Unknown'}
                         </div>
                         <div>
                           <span className="font-medium">Ships:</span>{' '}
-                          {formationShips.map((s) => s.name).join(', ')}
+                          {formationShips.map(s => s.name).join(', ')}
                         </div>
                       </div>
                     </>
                   )}
                 </div>
               )}
-              
+
               {/* Start Scan Button */}
               <div className="flex justify-end">
                 <button
-                  className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
+                  className="flex items-center rounded bg-blue-500 px-3 py-2 text-white hover:bg-blue-600"
                   onClick={handleStartCoordinatedScan}
                   disabled={!selectedFormationId || !selectedSectorId}
                 >
@@ -604,59 +698,61 @@ export function ReconShipCoordination({
                 </button>
               </div>
             </div>
+
+            {renderTaskSharingControls()}
           </div>
         )}
-        
+
         {/* Auto-Distribution Tab */}
         {activeTab === 'auto' && (
           <div>
             <div className="mb-4">
-              <h3 className="text-lg font-medium mb-2">Auto-Distribution</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <h3 className="mb-2 text-lg font-medium">Auto-Distribution</h3>
+              <p className="mb-4 text-sm text-gray-500">
                 Automatically distribute exploration tasks among available ships
               </p>
-              
-              <div className="mb-4 p-4 border rounded bg-gray-50 dark:bg-gray-800">
-                <div className="flex items-center mb-3">
+
+              <div className="mb-4 rounded border bg-gray-50 p-4 dark:bg-gray-800">
+                <div className="mb-3 flex items-center">
                   <input
                     type="checkbox"
                     id="prioritize-formations"
                     checked={prioritizeFormations}
-                    onChange={(e) => setPrioritizeFormations(e.target.checked)}
+                    onChange={e => setPrioritizeFormations(e.target.checked)}
                     className="mr-2"
                   />
                   <label htmlFor="prioritize-formations" className="text-sm font-medium">
                     Prioritize ships in formations
                   </label>
                 </div>
-                
-                <p className="text-xs text-gray-500 mb-3">
+
+                <p className="mb-3 text-xs text-gray-500">
                   When enabled, ships in formations will be assigned tasks first, and will perform
                   coordinated scans when possible.
                 </p>
-                
+
                 <div className="mb-3">
-                  <div className="text-sm font-medium mb-1">Available Ships</div>
+                  <div className="mb-1 text-sm font-medium">Available Ships</div>
                   <div className="text-sm">
                     {availableShips.length} idle ships available for task assignment
                   </div>
                 </div>
-                
+
                 <div className="mb-3">
-                  <div className="text-sm font-medium mb-1">Unmapped Sectors</div>
+                  <div className="mb-1 text-sm font-medium">Unmapped Sectors</div>
                   <div className="text-sm">
-                    {sectors.filter((s) => s.status === 'unmapped').length} sectors available for
+                    {sectors.filter(s => s.status === 'unmapped').length} sectors available for
                     exploration
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end">
                   <button
-                    className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
+                    className="flex items-center rounded bg-blue-500 px-3 py-2 text-white hover:bg-blue-600"
                     onClick={handleAutoDistributeTasks}
                     disabled={
                       availableShips.length === 0 ||
-                      sectors.filter((s) => s.status === 'unmapped').length === 0
+                      sectors.filter(s => s.status === 'unmapped').length === 0
                     }
                   >
                     <Zap size={16} className="mr-1" />
@@ -670,4 +766,4 @@ export function ReconShipCoordination({
       </div>
     </div>
   );
-} 
+}
