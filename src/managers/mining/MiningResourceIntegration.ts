@@ -142,7 +142,7 @@ export class MiningResourceIntegration {
       }
 
       // Update the ship's status in the flow manager
-      const node = this.flowManager.getNode(`mining-ship-${ship.id}`);
+      const node = this.flowManager.getNodes().find(n => n.id === `mining-ship-${ship.id}`);
       if (node) {
         node.active = ship.status === 'mining';
       }
@@ -382,7 +382,7 @@ export class MiningResourceIntegration {
     node.efficiency = efficiency;
 
     // Update the node in the flow manager
-    const flowNode = this.flowManager.getNode(`mining-node-${id}`);
+    const flowNode = this.flowManager.getNodes().find(n => n.id === `mining-node-${id}`);
     if (flowNode) {
       flowNode.efficiency = efficiency;
     }

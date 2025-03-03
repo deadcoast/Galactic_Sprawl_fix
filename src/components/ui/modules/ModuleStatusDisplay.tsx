@@ -145,6 +145,51 @@ export const ModuleStatusDisplay = React.memo<ModuleStatusDisplayProps>(
           </div>
         )}
 
+        {/* Add a section to display status changes */}
+        {showHistory && (
+          <div className="module-status-display__status-transition">
+            <h4 className="module-status-display__section-title">Status Transition</h4>
+            <div className="module-status-display__transition-container">
+              {previousStatus && (
+                <>
+                  <div
+                    className="module-status-display__previous-status"
+                    style={{ backgroundColor: getStatusColor(previousStatus) }}
+                  >
+                    {previousStatus}
+                  </div>
+                  <div className="module-status-display__transition-arrow">→</div>
+                </>
+              )}
+              <div
+                className="module-status-display__current-status"
+                style={{ backgroundColor: getStatusColor(currentStatus) }}
+              >
+                {currentStatus}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add status control buttons to allow changing the module status */}
+        <div className="module-status-display__controls">
+          <h4 className="module-status-display__section-title">Status Controls</h4>
+          <div className="module-status-display__status-buttons">
+            {['offline', 'standby', 'active', 'error', 'maintenance'].map(status => (
+              <button
+                key={status}
+                className={`module-status-display__status-button ${
+                  currentStatus === status ? 'module-status-display__status-button--active' : ''
+                }`}
+                style={{ borderColor: getStatusColor(status as ExtendedModuleStatus) }}
+                onClick={() => handleStatusChange(status as ExtendedModuleStatus)}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Module Alerts */}
         {showAlerts && alerts.length > 0 && (
           <div className="module-status-display__alerts">

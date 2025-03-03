@@ -233,3 +233,55 @@ UI COMPONENTS REFERENCES
     - Provides visual feedback for resource thresholds
     - Supports multiple resource types with consistent styling
     - Integrates with notification system for resource warnings
+
+## UI Component Library
+
+- **Button Component**: src/components/ui/Button.tsx
+
+  - Purpose: Reusable button component with variant support
+  - Dependencies:
+    - class-variance-authority (for styling variants)
+    - React (for component framework)
+  - Features:
+    - Multiple style variants (default, destructive, outline, secondary, ghost, link)
+    - Size variants (default, sm, lg)
+    - Support for custom className
+    - Forward ref implementation for accessibility
+    - Polymorphic rendering via the `asChild` prop and Slot pattern
+  - Key Parts:
+    - `buttonVariants`: cva function that defines the button's visual variants
+    - `Slot`: Component that enables polymorphic rendering
+    - `mergeRefs`: Helper function for properly merging React refs
+  - Implementation Notes:
+    - Uses class-variance-authority for style composition
+    - Implements proper TypeScript typing for props
+    - Supports all standard button attributes
+    - Uses the Slot pattern to enable rendering as different elements
+  - Usage:
+    - Used throughout the application for consistent button styling
+    - Integrated with form components and interactive UI elements
+    - Can be rendered as different elements using `asChild` prop:
+      ```tsx
+      <Button asChild>
+        <a href="/some-path">Navigate</a>
+      </Button>
+      ```
+
+- **Tabs Component**: src/components/ui/Tabs.tsx
+  - Purpose: Tabbed interface component for organizing content
+  - Dependencies:
+    - @radix-ui/react-tabs (for accessible tab functionality)
+    - React (for component framework)
+  - Features:
+    - Accessible tab navigation
+    - Customizable tab triggers
+    - Content panels associated with tabs
+    - Support for custom styling
+  - Implementation Notes:
+    - Uses Radix UI for accessibility and keyboard navigation
+    - Implements proper TypeScript typing for props
+    - Supports all standard tab attributes
+  - Usage:
+    - Used in formation tactics panel for organizing different formation options
+    - Used in resource management interfaces for categorized content
+    - Used in settings panels for grouped configuration options

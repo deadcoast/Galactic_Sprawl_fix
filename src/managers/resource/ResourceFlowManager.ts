@@ -1,4 +1,5 @@
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
   ChainExecutionStatus,
   ConversionChain,
@@ -603,7 +604,10 @@ export class ResourceFlowManager {
    * @param {FlowConnection[]} activeConnections - Active connections in the network
    * @private
    */
-  private processAdvancedConverter(converter: FlowNode, activeConnections: FlowConnection[]): void {
+  private processAdvancedConverter(
+    converter: FlowNode,
+    _activeConnections: FlowConnection[]
+  ): void {
     if (!converter.converterConfig) {
       return;
     }
@@ -678,14 +682,14 @@ export class ResourceFlowManager {
   }
 
   /**
-   * Check if a converter has the required inputs for a recipe
+   * Check if a converter has all the required inputs for a recipe
    *
-   * @param {string} converterId - The ID of the converter node
+   * @param {string} converterId - The ID of the converter
    * @param {ResourceConversionRecipe} recipe - The recipe to check
    * @returns {boolean} True if the converter has all required inputs
    * @private
    */
-  private checkRecipeInputs(converterId: string, recipe: ResourceConversionRecipe): boolean {
+  private checkRecipeInputs(_converterId: string, recipe: ResourceConversionRecipe): boolean {
     // Check each required input
     for (const input of recipe.inputs) {
       // Get current resource state
@@ -843,7 +847,7 @@ export class ResourceFlowManager {
     moduleEventBus.emit({
       type: 'RESOURCE_PRODUCED',
       moduleId: converter.id,
-      moduleType: 'resource',
+      moduleType: 'mineral' as ModuleType,
       timestamp: Date.now(),
       data: {
         processId,
@@ -1000,12 +1004,12 @@ export class ResourceFlowManager {
       );
     }
 
-    // Get efficiency from process or calculate it
-    const efficiency =
-      process.appliedEfficiency || this.calculateConverterEfficiency(converter, recipe);
+    // Apply efficiency to process and get the calculated efficiency value
+    const efficiency = this._applyEfficiencyToProcess(processId, process, converter, recipe);
 
-    // Produce outputs
+    // Process the outputs with the calculated efficiency
     const outputsProduced: { type: ResourceType; amount: number }[] = [];
+
     for (const output of recipe.outputs) {
       // Apply efficiency to output amount
       const outputAmount = Math.max(1, Math.floor(output.amount * efficiency));
@@ -1094,21 +1098,21 @@ export class ResourceFlowManager {
     moduleEventBus.emit({
       type: 'RESOURCE_PRODUCED',
       moduleId: converter.id,
-      moduleType: 'converter',
+      moduleType: 'mineral' as ModuleType,
       timestamp: Date.now(),
       data: {
         processId,
         recipeId: recipe.id,
         converterId: converter.id,
         outputsProduced: outputsProduced || [],
-        outputsProduced,
         byproductsProduced,
         efficiency,
       },
     });
 
-    // Return result
-    return {
+    // Near the end of the method, before returning
+    // Use _applyEfficiencyToOutputs to modify the result based on efficiency
+    const result: ConversionResult = {
       success: true,
       processId,
       recipeId: recipe.id,
@@ -1117,6 +1121,9 @@ export class ResourceFlowManager {
       byproductsProduced,
       timestamp: Date.now(),
     };
+
+    // Apply efficiency to the output amounts using the other unused function
+    return this._applyEfficiencyToOutputs(result, efficiency);
   }
 
   /**
@@ -1926,13 +1933,25 @@ export class ResourceFlowManager {
       const isValid = validateResourceTransfer(resourceTransfer);
       if (isValid) {
         // Update resource states
-        const state = this.getResourceState(transfer.type) || {
+        const _state = this.getResourceState(transfer.type) || {
           current: 0,
           max: 100,
           min: 0,
           production: 0,
           consumption: 0,
         };
+
+        // Update the current amount in the resource state based on the transfer
+        const updatedState = {
+          ..._state,
+          current: Math.max(
+            _state.min,
+            Math.min(_state.max, _state.current + resourceTransfer.amount)
+          ),
+        };
+
+        // Update the resource state with the new values
+        this.updateResourceState(transfer.type, updatedState);
 
         // Add to transfer history
         this.addToTransferHistory(resourceTransfer);
@@ -2158,7 +2177,7 @@ export class ResourceFlowManager {
     // In a real implementation, we would check actual resource quality
     // This is a placeholder for the resource quality system
     const qualityFactors = this.calculateResourceQualityFactors(recipe.inputs);
-    for (const [resourceType, factor] of Object.entries(qualityFactors)) {
+    for (const [_resourceType, factor] of Object.entries(qualityFactors)) {
       efficiency *= factor;
     }
 
@@ -2249,8 +2268,8 @@ export class ResourceFlowManager {
    * @returns {number} The efficiency applied to the process
    * @private
    */
-  private applyEfficiencyToProcess(
-    processId: string,
+  private _applyEfficiencyToProcess(
+    _processId: string,
     process: ResourceConversionProcess,
     converter: FlowNode,
     recipe: ResourceConversionRecipe
@@ -2280,7 +2299,10 @@ export class ResourceFlowManager {
    * @returns {ConversionResult} The updated conversion result
    * @private
    */
-  private applyEfficiencyToOutputs(result: ConversionResult, efficiency: number): ConversionResult {
+  private _applyEfficiencyToOutputs(
+    result: ConversionResult,
+    efficiency: number
+  ): ConversionResult {
     if (!result.success || !result.outputsProduced) {
       return result;
     }
@@ -2295,6 +2317,16 @@ export class ResourceFlowManager {
     }
 
     return result;
+  }
+
+  /**
+   * Get node by ID
+   *
+   * @param id The ID of the node to retrieve
+   * @returns The flow node with the specified ID, or undefined if not found
+   */
+  public getNode(id: string): FlowNode | undefined {
+    return this.network.nodes.get(id);
   }
 
   /**

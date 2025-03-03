@@ -112,6 +112,8 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
   const opacities = new Float32Array(particleCount);
   const angles = new Float32Array(particleCount);
   const lifetimes = new Float32Array(particleCount);
+  const velocities = new Float32Array(particleCount * 3);
+  const colors = new Float32Array(particleCount * 3);
 
   // Initialize particles
   useEffect(() => {
@@ -128,19 +130,42 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
     for (let i = 0; i < particleCount; i++) {
       // Random angle deviation from base direction
       const angleDeviation = (Math.random() - 0.5) * Math.PI * 0.5;
-      const particleAngle = directionRad + angleDeviation;
+      // Calculate the final direction vector with deviation
+      const vectorX =
+        baseVectorX * Math.cos(angleDeviation) - baseVectorY * Math.sin(angleDeviation);
+      const vectorY =
+        baseVectorX * Math.sin(angleDeviation) + baseVectorY * Math.cos(angleDeviation);
+
+      // Use the color object to create slight variations in particle colors
+      const r = colorObj.r * (0.9 + Math.random() * 0.2); // ±10% variation
+      const g = colorObj.g * (0.9 + Math.random() * 0.2);
+      const b = colorObj.b * (0.9 + Math.random() * 0.2);
 
       // Random distance from origin
       const distance = Math.random() * intensity * 5;
 
       // Calculate position
-      const x = Math.cos(particleAngle) * distance;
-      const y = Math.sin(particleAngle) * distance;
+      const x = vectorX * distance;
+      const y = vectorY * distance;
       const z = (Math.random() - 0.5) * 2; // Small z-variation for depth
 
       positions[i * 3] = x;
       positions[i * 3 + 1] = y;
       positions[i * 3 + 2] = z;
+
+      // Store velocity for animation
+      const speed = 0.01 * intensity;
+      velocities[i * 3] = vectorX * speed * intensity;
+      velocities[i * 3 + 1] = vectorY * speed * intensity;
+      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.1; // Small z-velocity
+
+      // Store color with variation
+      colors[i * 3] = r;
+      colors[i * 3 + 1] = g;
+      colors[i * 3 + 2] = b;
+
+      // Store the direction angle for animation
+      angles[i] = Math.atan2(vectorY, vectorX);
 
       // Random sizes based on intensity
       sizes[i] = Math.random() * intensity + 0.5;
@@ -148,15 +173,24 @@ function SmokeParticles({ direction, intensity, color }: Omit<SmokeTrailProps, '
       // Random opacity
       opacities[i] = Math.random() * 0.7 + 0.3;
 
-      // Store the angle for animation
-      angles[i] = particleAngle;
-
       // Random lifetime for each particle
       lifetimes[i] = Math.random() * 2 + 1;
     }
 
     console.warn(`Initialized ${particleCount} smoke particles with base color: ${color}`);
-  }, [color, direction, intensity, particleCount, positions, sizes, opacities, angles, lifetimes]);
+  }, [
+    color,
+    direction,
+    intensity,
+    particleCount,
+    positions,
+    sizes,
+    opacities,
+    angles,
+    lifetimes,
+    velocities,
+    colors,
+  ]);
 
   // Animate particles
   useFrame(state => {

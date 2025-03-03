@@ -3,7 +3,9 @@ import {
   GlobalAutomationManager,
   GlobalRoutine,
 } from '../../../managers/automation/GlobalAutomationManager';
+import { AutomationRule } from '../../../managers/game/AutomationManager';
 import '../../../styles/automation.css';
+import AutomationRuleEditor from './AutomationRuleEditor';
 
 // Define the routine type enum to match what's in GlobalAutomationManager
 enum RoutineType {
@@ -38,6 +40,11 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
     status: 'all',
     search: '',
   });
+
+  // Add states for rule editor
+  const [showRuleEditor, setShowRuleEditor] = useState<boolean>(false);
+  const [currentRule, setCurrentRule] = useState<AutomationRule | undefined>(undefined);
+  const [selectedModuleId, setSelectedModuleId] = useState<string>('');
 
   // Get all available types and systems for filtering
   const routineTypes = Object.values(RoutineType);
@@ -165,6 +172,44 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
     }
   };
 
+  // Add function to create a new rule
+  const handleCreateRule = () => {
+    setCurrentRule(undefined);
+    setSelectedModuleId('default-module');
+    setShowRuleEditor(true);
+  };
+
+  // Add function to edit an existing rule
+  const handleEditRule = (ruleId: string) => {
+    // Assuming automationManager has a method to get rule by ID
+    if (automationManager) {
+      const rule = automationManager.getRule(ruleId);
+      if (rule) {
+        setCurrentRule(rule);
+        setSelectedModuleId(rule.moduleId);
+        setShowRuleEditor(true);
+      }
+    }
+  };
+
+  // Add function to save a rule
+  const handleSaveRule = (rule: AutomationRule) => {
+    if (automationManager) {
+      // Assuming automationManager has methods to register/update rules
+      if (rule.id && automationManager.getRule(rule.id)) {
+        automationManager.updateRule(rule.id, rule);
+      } else {
+        automationManager.registerRule(rule);
+      }
+
+      // Refresh routines list
+      loadRoutines();
+
+      // Close editor
+      setShowRuleEditor(false);
+    }
+  };
+
   // Filter routines based on current filter settings
   const filteredRoutines = routines.filter(routine => {
     const matchesType = filter.type === 'all' || routine.type === filter.type;
@@ -249,6 +294,19 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
           <div>Loading...</div>
         </div>
         <div className="automation-visualization__loading-text">Loading automation routines...</div>
+      </div>
+    );
+  }
+
+  if (showRuleEditor) {
+    return (
+      <div className={`automation-visualization ${className}`}>
+        <AutomationRuleEditor
+          rule={currentRule}
+          moduleId={selectedModuleId}
+          onSave={handleSaveRule}
+          onCancel={() => setShowRuleEditor(false)}
+        />
       </div>
     );
   }
@@ -423,6 +481,13 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
                     >
                       🗑️
                     </button>
+                    <button
+                      className="automation-visualization__routine-control automation-visualization__routine-control--edit"
+                      onClick={() => handleEditRule(routine.id)}
+                      title="Edit Rule"
+                    >
+                      ✏️
+                    </button>
                   </div>
                 </div>
               );
@@ -432,7 +497,9 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
       </div>
 
       <div className="automation-visualization__create">
-        <button className="automation-visualization__create-button">+ Create New Routine</button>
+        <button className="automation-visualization__create-button" onClick={handleCreateRule}>
+          + Create New Routine
+        </button>
       </div>
     </div>
   );

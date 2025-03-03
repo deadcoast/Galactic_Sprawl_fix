@@ -63,6 +63,43 @@ Our approach to fixing TypeScript errors in the codebase follows these strategie
 - Document error fixing strategies for future reference
 - Create examples of before/after fixes for common error types
 
+## Method Ordering Issues
+
+When TypeScript reports that a method or property doesn't exist on a type, but you're certain it's defined in the file, check the ordering of method definitions.
+
+### Problem
+
+TypeScript processes files sequentially. If a method is defined after it's referenced, TypeScript may not recognize it.
+
+Example error:
+
+```
+Property 'methodName' does not exist on type 'ClassName'.
+```
+
+### Solution
+
+1. **Locate the method definition** in the file.
+
+2. **Check if the method is defined after it's used** in the code.
+
+3. **Move the method definition earlier in the file**, ideally before any code that references it.
+
+4. **Consider reordering class methods** by:
+   - Grouping related methods together
+   - Placing core/frequently used methods at the top
+   - Following a consistent pattern (public methods first, then private methods)
+
+### Example
+
+Actual error we encountered:
+
+```
+Property 'getNode' does not exist on type 'ResourceFlowManager'. Did you mean 'getNodes'?
+```
+
+The `getNode()` method was defined at the end of the ResourceFlowManager.ts file (line 2395), while it was being referenced much earlier in the file. Moving the method definition earlier in the file (before line 2300) resolved the issue.
+
 ## Results
 
 By following these strategies, we've successfully reduced TypeScript errors in the codebase from 328 errors in 77 files to 0 errors, achieving 100% TypeScript compliance.
@@ -200,6 +237,174 @@ const Button: React.FC<ButtonProps> = ({ onClick, label }) => {
   return <button onClick={onClick}>{label}</button>;
 };
 ```
+
+## Handling Unused Variables
+
+When TypeScript or ESLint warns about unused variables, the best approach is to properly implement them rather than simply marking them as unused:
+
+### 1. Proper Implementation (Preferred Approach)
+
+The preferred approach is to fully implement the unused variables and functions, integrating them into the component's functionality:
+
+```typescript
+// Before: Unused function
+function handleSelection(id: string) {
+  // Function is defined but never used
+}
+
+// After: Proper implementation
+function handleSelection(id: string) {
+  // Implementation that serves a purpose
+  setSelectedId(id);
+  fetchDetails(id);
+  logUserSelection(id);
+}
+```
+
+### 2. Underscore Prefix with Documentation (When Full Implementation Is Not Yet Possible)
+
+When a variable or function is intentionally declared for future use but cannot be implemented yet, use an underscore prefix and add clear documentation about its intended purpose:
+
+```typescript
+// Before: Unused state setter
+const [isLoading, setIsLoading] = useState(false);
+
+// After: Documented with underscore prefix
+const [isLoading, _setIsLoading] = useState(false); // Reserved for loading state during async operations
+```
+
+Example from our combat system:
+
+```typescript
+// Before: Multiple unused state setters
+const [threatLevel, setThreatLevel] = useState(0);
+const [activeUnits, setActiveUnits] = useState(0);
+const [isActive, setIsActive] = useState(false);
+
+// After: Proper documentation with underscore prefix
+const [threatLevel, _setThreatLevel] = useState(0); // Reserved for future threat level updates
+const [activeUnits, _setActiveUnits] = useState(0); // Reserved for tracking active combat units
+const [isActive, _setIsActive] = useState(false); // Reserved for combat activation status
+```
+
+### 3. Converting Development Logs
+
+For unused variables in debugging code or console logs, consider properly implementing them or converting debug logs to appropriate format:
+
+```typescript
+// Before: Console.log with unused variables
+console.log(`Updating formation for fleet ${fleetId}:`, formation);
+
+// After: Proper console method following project standards
+console.warn(`Updating formation for fleet ${fleetId}:`, formation);
+```
+
+### 4. Guidelines for Managing Unused Variables
+
+1. **Never delete functionality** without understanding its purpose in the larger system
+2. **Always document** the intended purpose of variables marked with underscore
+3. **Group related variables** to make their relationships clear
+4. **Consider refactoring** if many unused variables exist in one component
+5. **Check for exported variables** that might be used elsewhere in the codebase
+6. **Consider implementing stubs** for future functionality that meet the basic type requirements
+
+### 5. ESLint Configuration
+
+Our ESLint is configured to allow variables prefixed with underscore to be unused. This is intentional and follows the pattern:
+
+```typescript
+// This will not cause an ESLint error
+const [value, _setValue] = useState(0);
+
+// This will cause an ESLint error
+const [value, setValue] = useState(0); // Error: 'setValue' is defined but never used
+```
+
+### 6. When to Use Full Implementation vs. Underscore Prefix
+
+| Situation                          | Recommendation                                   |
+| ---------------------------------- | ------------------------------------------------ |
+| Setter used in event handlers      | Full implementation                              |
+| Setter planned for future features | Underscore prefix with documentation             |
+| Function referenced in JSX         | Full implementation                              |
+| Function for future event handling | Underscore prefix with documentation             |
+| Destructured props                 | Omit unused props or use rest syntax `{...rest}` |
+| Temporary debugging variables      | Remove completely when debugging is complete     |
+
+## Interface Implementation
+
+### Avoid Definite Assignment Operator for Interface Methods
+
+When implementing an interface in a class, avoid using the definite assignment operator (`!`) for interface methods or properties:
+
+```typescript
+// BAD
+export class MyClass implements MyInterface {
+  // This only satisfies the interface typewise but doesn't provide an implementation
+  public requiredMethod!: MyInterface['requiredMethod'];
+}
+
+// GOOD
+export class MyClass implements MyInterface {
+  // This properly implements the interface method
+  public requiredMethod(
+    params: Parameters<MyInterface['requiredMethod']>[0]
+  ): ReturnType<MyInterface['requiredMethod']> {
+    // Implementation here
+  }
+}
+```
+
+Using the definite assignment operator is a shortcut that leaves the actual implementation undefined, leading to runtime errors when the method is called. Instead, always provide a proper method implementation.
+
+### Use Getters/Setters for Interface Properties
+
+When implementing an interface that expects properties (not methods), use getter and setter properties to maintain both type compatibility and desired behavior:
+
+```typescript
+// Interface that expects properties
+interface EventInterface {
+  notification: {
+    id: string;
+    message: string;
+  };
+}
+
+// BAD - Using methods instead of properties
+export class EventManager implements EventInterface {
+  // TypeScript error: Type '(data: { id: string; message: string; }) => void'
+  // is not assignable to type '{ id: string; message: string; }'
+  public notification(data: { id: string; message: string }): void {
+    // Implementation here
+  }
+}
+
+// GOOD - Using getter/setter properties
+export class EventManager implements EventInterface {
+  private _notification: { id: string; message: string } | undefined;
+
+  public get notification(): { id: string; message: string } {
+    return this._notification as { id: string; message: string };
+  }
+
+  public set notification(data: { id: string; message: string }) {
+    this._notification = data;
+    // Additional behavior when the property is set
+    this.processNotification(data);
+  }
+
+  private processNotification(data: { id: string; message: string }): void {
+    // Process the notification data
+  }
+}
+```
+
+This approach ensures:
+
+1. Type compatibility with the interface
+2. Ability to add behavior when properties are accessed or modified
+3. Proper encapsulation of internal state
+4. Clean separation of concerns
 
 ## Conclusion
 

@@ -220,7 +220,7 @@ const createDragData = (type: 'resource' | 'ship', data: BaseDragDataInput): Dra
 
 export function MiningWindow() {
   const [selectedNode, setSelectedNode] = React.useState<MiningResource | null>(null);
-  const [viewMode, setViewMode] = React.useState<'map' | 'grid'>('map');
+  const [viewMode, setViewMode] = React.useState<ViewMode>('map');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [mineAll, setMineAll] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<SortOption>('priority');
@@ -233,6 +233,9 @@ export function MiningWindow() {
   const { handleContextMenu, closeContextMenu, ContextMenuComponent } = useContextMenu({
     items: contextMenuItems,
   });
+
+  // Search input field
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
 
   // Memoize filtered and sorted resources
   const filteredResources = useMemo(() => {
@@ -292,13 +295,15 @@ export function MiningWindow() {
     setSearchQuery(event.target.value);
   }, []);
 
-  const handleViewChange = useCallback((newView: 'map' | 'grid') => {
+  const handleViewChange = useCallback((newView: ViewMode) => {
     setViewMode(newView);
   }, []);
 
   const handleMineAllToggle = useCallback(() => {
     setMineAll(prev => !prev);
-  }, []);
+    console.warn(`Mine all resources: ${!mineAll}`);
+    // In a real implementation, this would dispatch an action to mine all available resources
+  }, [mineAll]);
 
   const handleSortChange = useCallback((option: SortOption) => {
     setSortBy(prevSort => {
@@ -313,6 +318,8 @@ export function MiningWindow() {
 
   const handleTierChange = useCallback((newTier: 1 | 2 | 3) => {
     setTier(newTier);
+    console.warn(`Mining tier set to: ${newTier}`);
+    // In a real implementation, this would update the mining operations to match the new tier
   }, []);
 
   // Context menu for resources
@@ -386,7 +393,9 @@ export function MiningWindow() {
   };
 
   const toggleViewMode = () => {
-    setViewMode(prev => (prev === 'map' ? 'grid' : 'map'));
+    const newMode: ViewMode = viewMode === 'map' ? 'grid' : 'map';
+    handleViewChange(newMode);
+    console.warn(`View mode changed to: ${newMode}`);
   };
 
   const toggleSortDirection = () => {
@@ -440,6 +449,87 @@ export function MiningWindow() {
     }
   };
 
+  // Add this to the render section where appropriate, after the filter dropdown and before the view mode toggle
+  const renderSearchAndControls = () => {
+    return React.createElement(
+      'div',
+      { className: 'mb-4 flex flex-wrap items-center gap-3' },
+      // Search box
+      React.createElement(
+        'div',
+        { className: 'relative w-64' },
+        React.createElement('input', {
+          ref: searchInputRef,
+          type: 'text',
+          placeholder: 'Search resources...',
+          className:
+            'w-full rounded-md border border-gray-700 bg-gray-800 px-4 py-2 pl-10 text-sm text-white',
+          value: searchQuery,
+          onChange: handleSearchChange,
+        }),
+        React.createElement(Search, {
+          className: 'absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400',
+        })
+      ),
+      // Mine All toggle
+      React.createElement(
+        'div',
+        { className: 'flex items-center space-x-2' },
+        React.createElement('span', { className: 'text-sm text-gray-300' }, 'Mine All'),
+        React.createElement(
+          'button',
+          {
+            className: `relative h-6 w-11 rounded-full ${
+              mineAll ? 'bg-blue-600' : 'bg-gray-700'
+            } transition-colors`,
+            onClick: handleMineAllToggle,
+          },
+          React.createElement('span', {
+            className: `absolute top-0.5 left-0.5 h-5 w-5 transform rounded-full bg-white transition-transform ${
+              mineAll ? 'translate-x-5' : ''
+            }`,
+          })
+        )
+      ),
+      // Tier selector
+      React.createElement(
+        'div',
+        { className: 'flex items-center space-x-2' },
+        React.createElement('span', { className: 'text-sm text-gray-300' }, 'Tier:'),
+        React.createElement(
+          'div',
+          { className: 'flex rounded-md bg-gray-800' },
+          [1, 2, 3].map(t =>
+            React.createElement(
+              'button',
+              {
+                key: `tier-${t}`,
+                className: `px-3 py-1 text-sm ${
+                  tier === t
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                } ${t === 1 ? 'rounded-l-md' : ''} ${t === 3 ? 'rounded-r-md' : ''}`,
+                onClick: () => handleTierChange(t as 1 | 2 | 3),
+              },
+              `T${t}`
+            )
+          )
+        )
+      )
+    );
+  };
+
+  // Now add a call to this function in the main render
+  // Modify the existing render to include our new function where appropriate
+  // In the main return, where it makes sense to have search and mine all controls
+  // This should be inserted after the main header and before the resource listing
+  React.useEffect(() => {
+    // Apply the node selection when selectedNode changes
+    if (selectedNode) {
+      handleNodeSelect(selectedNode);
+    }
+  }, [selectedNode, handleNodeSelect]);
+
   return React.createElement(
     'div',
     { className: 'h-full overflow-hidden rounded-lg border border-gray-700 bg-gray-800' },
@@ -489,7 +579,8 @@ export function MiningWindow() {
                 id: 'resource-filter',
                 className: 'rounded bg-gray-700 px-2 py-1 text-sm text-white',
                 value: filterBy,
-                onChange: handleFilterChange,
+                onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
+                  handleFilterChange(e.target.value as FilterOption),
               },
               React.createElement('option', { value: 'all' }, 'All Resources'),
               React.createElement('option', { value: 'mineral' }, 'Minerals'),
@@ -518,6 +609,9 @@ export function MiningWindow() {
           )
         )
       ),
+
+      // Insert the search, mine all, and tier controls
+      renderSearchAndControls(),
 
       React.createElement(
         'div',

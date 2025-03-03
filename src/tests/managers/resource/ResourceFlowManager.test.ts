@@ -178,10 +178,6 @@ describe('ResourceFlowManager', () => {
   });
 
   it('should optimize flows', () => {
-    // SKIP: This test is bypassed due to implementation issues
-    // TODO: Fix the optimize flows implementation
-    return;
-
     // Register nodes
     flowManager.registerNode({
       id: 'producer-1',
@@ -382,10 +378,6 @@ describe('ResourceFlowManager', () => {
   });
 
   it('should handle batch processing for large networks', () => {
-    // SKIP: This test is bypassed due to implementation issues
-    // TODO: Fix the batch processing implementation
-    return;
-
     // Create a large number of nodes and connections
     const nodeCount = 50;
     const connectionCount = 50;

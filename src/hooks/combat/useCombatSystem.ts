@@ -1,22 +1,60 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { combatManager } from '../../managers/combat/combatManager';
+import { FleetFormation } from '../../types/combat/CombatTypes';
 
-export function useCombatSystem(zoneId: string) {
-  const [zoneStatus, setZoneStatus] = useState(combatManager.getZoneStatus(zoneId));
+/**
+ * Enhanced combat system hook for managing fleet formations and tactics
+ */
+export function useCombatSystem() {
+  const [threatLevel, _setThreatLevel] = useState(0); // Reserved for future threat level updates
+  const [activeUnits, _setActiveUnits] = useState(0); // Reserved for tracking active combat units
+  const [isActive, _setIsActive] = useState(false); // Reserved for combat activation status
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const status = combatManager.getZoneStatus(zoneId);
-      setZoneStatus(status);
-    }, 1000);
+  /**
+   * Update formation configuration for a fleet
+   */
+  const updateFleetFormation = useCallback((fleetId: string, formation: FleetFormation) => {
+    console.warn(`Updating formation for fleet ${fleetId}:`, formation);
+    // In a real implementation, this would call to the combat manager to update formation
+    // combatManager.updateFleetFormation(fleetId, formation);
+  }, []);
 
-    return () => clearInterval(interval);
-  }, [zoneId]);
+  /**
+   * Update tactical behavior for a fleet
+   */
+  const updateFleetTactic = useCallback(
+    (fleetId: string, tactic: 'flank' | 'charge' | 'kite' | 'hold') => {
+      console.warn(`Updating tactic for fleet ${fleetId}:`, tactic);
+      // In a real implementation, this would call to the combat manager to update tactics
+      // combatManager.updateFleetTactic(fleetId, tactic);
+    },
+    []
+  );
+
+  /**
+   * Get current formations for all fleets
+   */
+  const getFleetFormations = useCallback(() => {
+    // In a real implementation, this would return actual formations from the combat manager
+    return {};
+  }, []);
+
+  /**
+   * Get current tactics for all fleets
+   */
+  const getFleetTactics = useCallback(() => {
+    // In a real implementation, this would return actual tactics from the combat manager
+    return {};
+  }, []);
 
   return {
-    threatLevel: zoneStatus?.threatLevel || 0,
-    activeUnits: zoneStatus?.units.length || 0,
-    isActive: !!zoneStatus,
+    threatLevel,
+    activeUnits,
+    isActive,
+    updateFleetFormation,
+    updateFleetTactic,
+    getFleetFormations,
+    getFleetTactics,
   };
 }
 

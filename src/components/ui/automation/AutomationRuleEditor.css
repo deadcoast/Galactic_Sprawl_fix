@@ -1,0 +1,401 @@
+.automation-rule-editor {
+  display: flex;
+  flex-direction: column;
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  position: relative;
+}
+
+.automation-rule-editor__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: #181825;
+  border-bottom: 1px solid #313244;
+}
+
+.automation-rule-editor__title {
+  flex: 1;
+}
+
+.automation-rule-editor__title-input {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid #6c7086;
+  color: #cdd6f4;
+  font-size: 1.2rem;
+  padding: 8px 0;
+  width: 100%;
+  max-width: 300px;
+}
+
+.automation-rule-editor__title-input:focus {
+  outline: none;
+  border-bottom-color: #89b4fa;
+}
+
+.automation-rule-editor__interval {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.automation-rule-editor__interval input {
+  background-color: #313244;
+  border: none;
+  border-radius: 4px;
+  color: #cdd6f4;
+  padding: 4px 8px;
+  width: 100px;
+}
+
+.automation-rule-editor__toolbar {
+  display: flex;
+  padding: 12px 24px;
+  gap: 12px;
+  background-color: #1e1e2e;
+  border-bottom: 1px solid #313244;
+}
+
+.automation-rule-editor__add-condition,
+.automation-rule-editor__add-action {
+  background-color: #45475a;
+  color: #cdd6f4;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.automation-rule-editor__add-condition:hover,
+.automation-rule-editor__add-action:hover {
+  background-color: #585b70;
+}
+
+.automation-rule-editor__add-condition {
+  background-color: #89b4fa;
+  color: #1e1e2e;
+}
+
+.automation-rule-editor__add-condition:hover {
+  background-color: #74c7ec;
+}
+
+.automation-rule-editor__add-action {
+  background-color: #fab387;
+  color: #1e1e2e;
+}
+
+.automation-rule-editor__add-action:hover {
+  background-color: #f9e2af;
+}
+
+.automation-rule-editor__canvas {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background-color: #11111b;
+  min-height: 400px;
+}
+
+.automation-rule-editor__connections {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.automation-rule-editor__node {
+  position: absolute;
+  width: 200px;
+  min-height: 100px;
+  background-color: #313244;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  cursor: move;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+.automation-rule-editor__node--selected {
+  box-shadow:
+    0 0 0 2px #89b4fa,
+    0 2px 8px rgba(0, 0, 0, 0.2);
+  transform: scale(1.02);
+  z-index: 10;
+}
+
+.automation-rule-editor__node--condition {
+  background-color: #1e2030;
+  border: 1px solid #89b4fa;
+}
+
+.automation-rule-editor__node--action {
+  background-color: #2a2837;
+  border: 1px solid #fab387;
+}
+
+.automation-rule-editor__node--start {
+  background-color: #1e2030;
+  border: 1px solid #a6e3a1;
+  width: 120px;
+  height: 80px;
+  justify-content: center;
+  align-items: center;
+}
+
+.automation-rule-editor__node--end {
+  background-color: #1e2030;
+  border: 1px solid #f38ba8;
+  width: 120px;
+  height: 80px;
+  justify-content: center;
+  align-items: center;
+}
+
+.automation-rule-editor__node-header {
+  background-color: #313244;
+  padding: 8px 12px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.automation-rule-editor__node--condition .automation-rule-editor__node-header {
+  background-color: #89b4fa;
+  color: #1e1e2e;
+}
+
+.automation-rule-editor__node--action .automation-rule-editor__node-header {
+  background-color: #fab387;
+  color: #1e1e2e;
+}
+
+.automation-rule-editor__node--start .automation-rule-editor__node-header {
+  background-color: #a6e3a1;
+  color: #1e1e2e;
+}
+
+.automation-rule-editor__node--end .automation-rule-editor__node-header {
+  background-color: #f38ba8;
+  color: #1e1e2e;
+}
+
+.automation-rule-editor__node-delete {
+  background: transparent;
+  border: none;
+  color: #1e1e2e;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.automation-rule-editor__node-delete:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.automation-rule-editor__node-content {
+  padding: 12px;
+  flex: 1;
+}
+
+.automation-rule-editor__condition-node,
+.automation-rule-editor__action-node {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.automation-rule-editor__node-connectors {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px 12px;
+}
+
+.automation-rule-editor__connector {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
+}
+
+.automation-rule-editor__connector:hover {
+  transform: scale(1.2);
+}
+
+.automation-rule-editor__connector--output {
+  background-color: #89b4fa;
+}
+
+.automation-rule-editor__connector--input {
+  background-color: #fab387;
+}
+
+.automation-rule-editor__connector--active {
+  background-color: #a6e3a1;
+  box-shadow: 0 0 0 2px rgba(166, 227, 161, 0.5);
+  transform: scale(1.2);
+}
+
+.automation-rule-editor__condition-panel,
+.automation-rule-editor__action-panel {
+  position: absolute;
+  top: 120px;
+  background-color: #313244;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  z-index: 100;
+  width: 300px;
+}
+
+.automation-rule-editor__condition-panel {
+  left: 24px;
+}
+
+.automation-rule-editor__action-panel {
+  right: 24px;
+}
+
+.automation-rule-editor__condition-panel h3,
+.automation-rule-editor__action-panel h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #cdd6f4;
+}
+
+.automation-rule-editor__condition-options,
+.automation-rule-editor__action-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.automation-rule-editor__condition-option,
+.automation-rule-editor__action-option {
+  background-color: #45475a;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.automation-rule-editor__condition-option:hover {
+  background-color: #89b4fa;
+  color: #1e1e2e;
+}
+
+.automation-rule-editor__action-option:hover {
+  background-color: #fab387;
+  color: #1e1e2e;
+}
+
+.automation-rule-editor__details-panel {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 300px;
+  background-color: #181825;
+  border-left: 1px solid #313244;
+  overflow-y: auto;
+  max-height: calc(100% - 116px);
+}
+
+.node-details-panel {
+  padding: 16px;
+}
+
+.node-details-panel h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #cdd6f4;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #bac2de;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  background-color: #313244;
+  border: 1px solid #45475a;
+  border-radius: 4px;
+  color: #cdd6f4;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #89b4fa;
+}
+
+.automation-rule-editor__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 24px;
+  background-color: #181825;
+  border-top: 1px solid #313244;
+  gap: 12px;
+}
+
+.automation-rule-editor__cancel,
+.automation-rule-editor__save {
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.automation-rule-editor__cancel {
+  background-color: #45475a;
+  color: #cdd6f4;
+}
+
+.automation-rule-editor__cancel:hover {
+  background-color: #585b70;
+}
+
+.automation-rule-editor__save {
+  background-color: #a6e3a1;
+  color: #1e1e2e;
+}
+
+.automation-rule-editor__save:hover {
+  background-color: #94e2d5;
+}

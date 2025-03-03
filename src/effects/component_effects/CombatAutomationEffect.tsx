@@ -83,7 +83,9 @@ export function CombatAutomationEffect({
     }
   };
 
-  if (!isActive) return null;
+  if (!isActive) {
+    return null;
+  }
 
   const color = getEffectColor();
 

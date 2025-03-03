@@ -89,9 +89,6 @@ describe('ResourceFlowManager Batch Processing', () => {
     });
 
     it('should handle converters in batches', () => {
-      // Skip this test for now due to implementation issues
-      return;
-
       // Create test network with converters
       const converterCount = 12;
 
@@ -130,16 +127,16 @@ describe('ResourceFlowManager Batch Processing', () => {
       expect(result.updatedConnections.length).toBeGreaterThan(0);
 
       // Verify performance metrics
-      if (result.performanceMetrics) {
-        expect(result.performanceMetrics.nodesProcessed).toBe(converterCount * 2); // Converters + producers
-        expect(result.performanceMetrics.connectionsProcessed).toBe(converterCount);
-      }
+      // First check if performanceMetrics exists
+      expect(result.performanceMetrics).toBeDefined();
+
+      // Use type assertion to assure TypeScript that performanceMetrics is defined
+      const metrics = result.performanceMetrics as NonNullable<typeof result.performanceMetrics>;
+      expect(metrics.nodesProcessed).toBe(converterCount * 2); // Converters + producers
+      expect(metrics.connectionsProcessed).toBe(converterCount);
     });
 
     it('should process connections in batches', () => {
-      // Skip this test for now due to implementation issues
-      return;
-
       // Create test network with many connections
       const connectionCount = 15;
 
@@ -218,9 +215,12 @@ describe('ResourceFlowManager Batch Processing', () => {
       expect(result.updatedConnections.length).toBe(connectionCount);
 
       // Verify performance metrics
-      if (result.performanceMetrics) {
-        expect(result.performanceMetrics.connectionsProcessed).toBe(connectionCount);
-      }
+      // First check if performanceMetrics exists
+      expect(result.performanceMetrics).toBeDefined();
+
+      // Use type assertion to assure TypeScript that performanceMetrics is defined
+      const metrics = result.performanceMetrics as NonNullable<typeof result.performanceMetrics>;
+      expect(metrics.connectionsProcessed).toBe(connectionCount);
     });
 
     it('should handle large networks efficiently with different batch sizes', () => {

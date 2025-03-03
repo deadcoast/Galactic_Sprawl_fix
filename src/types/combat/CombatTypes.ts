@@ -138,3 +138,12 @@ export interface FactionCombatUnit extends CombatUnit {
     effects: string[];
   };
 }
+
+export interface FleetFormation {
+  type: 'offensive' | 'defensive' | 'balanced';
+  pattern: 'spearhead' | 'shield' | 'diamond' | 'arrow' | 'circle' | 'wedge' | 'line' | 'scattered';
+  spacing: number;
+  facing: number;
+  adaptiveSpacing: boolean;
+  transitionSpeed: number;
+}

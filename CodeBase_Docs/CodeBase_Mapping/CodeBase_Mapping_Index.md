@@ -272,6 +272,18 @@ This document serves as the main index for the Galactic Sprawl project codebase 
   - Used by weapon effects, ship abilities, and other game systems
   - Ensures consistent effect handling across the codebase
 
+### Environmental Hazard Manager
+
+- `src/managers/combat/EnvironmentalHazardManager.ts`: Manages environmental hazards in the game world, including creation, interaction, and cleanup of hazards.
+
+### Advanced Weapon Effects
+
+- `src/effects/types_effects/AdvancedWeaponEffects.ts`: Defines interfaces for advanced weapon effects, including chain effects, beam effects, status effects, and environmental interactions.
+
+- `src/managers/weapons/AdvancedWeaponEffectManager.ts`: Handles creation and management of advanced weapon effects, including visual configuration and lifecycle management.
+
+- `src/types/geometry.ts`: Core geometric types used throughout the application, including Position, Vector, Size, and Transform interfaces.
+
 ## Automation System
 
 ### Automation Manager
@@ -662,3 +674,28 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
   - `test:e2e:ui`: Runs Playwright tests with UI
   - `test:e2e:headed`: Runs Playwright tests in headed mode
   - `test:e2e:debug`: Runs Playwright tests in debug mode
+
+## Combat System Components
+
+### Formation Tactics System
+
+- `src/components/combat/formations/FormationTacticsPage.tsx` - Main page component for the formation tactics system
+  - Implements faction selection using valid FactionId values
+  - Uses factionDisplayNames mapping to maintain consistent UI
+- `src/components/combat/formations/FormationTacticsPanel.tsx` - Panel for managing fleet formations and tactical behaviors
+- `src/components/combat/formations/FormationTacticsContainer.tsx` - Container component that manages fleet formations across multiple fleets
+- `src/components/combat/formations/FormationVisualizer.tsx` - Component for visualizing fleet formations
+- `src/components/combat/formations/FormationPresetList.tsx` - Component for displaying and selecting formation presets
+- `src/components/combat/formations/FormationEditor.tsx` - Component for creating and editing custom formations
+- `src/components/combat/formations/TacticalBonusCard.tsx` - Component for displaying formation bonuses
+- `src/components/combat/formations/TacticalBehaviorSelector.tsx` - Component for selecting and configuring tactical behaviors
+
+### UI Components
+
+- `src/components/ui/Button.tsx` - Reusable button component with various styles
+- `src/components/ui/Card.tsx` - Card component for displaying content in a contained area
+- `src/components/ui/Tabs.tsx` - Tabbed interface component for organizing content
+
+### Utilities
+
+- `src/utils/cn.ts` - Utility function for merging class names with Tailwind

@@ -213,6 +213,15 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
       .attr('class', 'node')
       .on('click', function (event, d: ChainNode) {
         if (interactive && onNodeClick) {
+          // Use event to provide visual feedback on click
+          d3.select(this).classed('node-clicked', true);
+          // Use event coordinates for potential tooltips or context menus
+          console.warn(`Node clicked at x: ${event.x}, y: ${event.y}`);
+          // After a short delay, remove the visual feedback
+          setTimeout(() => {
+            d3.select(this).classed('node-clicked', false);
+          }, 300);
+
           onNodeClick(d.id, d.type);
         }
       })

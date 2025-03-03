@@ -2098,730 +2098,456 @@ When documenting unused interfaces in TypeScript (typically prefixed with unders
 
 3. **Document Extension Plans**: If the interface is intended to be extended or implemented by other interfaces, document this relationship.
 
-   ```typescript
-   /**
-    * This interface will be extended by specific event type interfaces:
-    * - ModuleUpgradeEventData
-    * - ModuleStatusEventData
-    * - ModuleAlertEventData
-    */
-   ```
-
-4. **Explain Type Safety Considerations**: Document how the interface contributes to type safety in the codebase.
-
-   ```typescript
-   /**
-    * Using this interface instead of 'any' for event data ensures that:
-    * 1. All event data objects have a moduleId property
-    * 2. Additional properties require explicit type checking before use
-    * 3. Type errors are caught at compile time rather than runtime
-    */
-   ```
-
-5. **Document Integration with Existing Systems**: Explain how the interface will integrate with existing systems and components.
-
-   ```typescript
-   /**
-    * This interface will be used in the module event system to:
-    * 1. Type event data in event handlers
-    * 2. Validate event data before processing
-    * 3. Provide auto-completion when accessing event data properties
-    * 4. Ensure consistent event data structure across the module system
-    */
-   ```
-
-6. **Provide Usage Examples**: Include examples of how the interface will be used in the future.
-
-   ```typescript
-   /**
-    * Example usage:
-    *
-    * // Type guard for module event data
-    * function isModuleEventData(data: unknown): data is _ModuleEventData {
-    *   return (
-    *     data !== null &&
-    *     typeof data === 'object' &&
-    *     'moduleId' in data &&
-    *     typeof data.moduleId === 'string'
-    *   );
-    * }
-    *
-    * // Event handler with type checking
-    * function handleModuleEvent(event: ModuleEvent): void {
-    *   if (event.data && isModuleEventData(event.data)) {
-    *     const { moduleId } = event.data;
-    *     // Safe to use moduleId
-    *   }
-    * }
-    */
-   ```
-
-By following these best practices, we ensure that unused interfaces are properly documented, making it clear why they exist and how they will be used in future implementations. This documentation helps maintain code quality and makes it easier for future developers to understand and implement the intended functionality.
-
-### Handling Parameter Type Issues
-
-When dealing with parameter type issues in TypeScript, especially implicit 'any' types and generic type parameters, we follow these best practices:
-
-1. **Add Explicit Types for Event Handlers**: Always provide explicit types for event handler parameters to avoid implicit 'any' types.
-
-   ```typescript
-   // Before: Implicit 'any' type
-   onChange: e => setSortBy(e.target.value),
-
-   // After: Explicit type with proper casting
-   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setSortBy(e.target.value as SortOption),
-   ```
-
-2. **Create Specific Interfaces for Generic Types**: Instead of using 'any' for generic type parameters, create specific interfaces that describe the expected structure.
-
-   ```typescript
-   // Before: Using 'any' for generic types
-   const handleResourceDrop = (item: DragItem<any>, storage) => {
-     // ...
-   };
-
-   // After: Creating specific interfaces
-   interface ResourceDragData {
-     id: string;
-     name: string;
-     type: 'mineral' | 'gas' | 'exotic';
-     abundance: number;
-   }
-
-   const handleResourceDrop = (item: DragItem<ResourceDragData>, storage) => {
-     // ...
-   };
-   ```
-
-3. **Use Type Assertions with Type Guards**: When receiving data from components with unknown types, use type assertions with proper type guards to ensure type safety.
-
-   ```typescript
-   // When receiving from a component with unknown type:
-   onDrop: (item: DragItem<unknown>) => {
-     // Type guard to ensure the item has the expected structure
-     if (
-       item.type === 'resource' &&
-       typeof item.data === 'object' &&
-       item.data !== null &&
-       'id' in item.data &&
-       'type' in item.data
-     ) {
-       // Safe to use type assertion after validation
-       handleResourceDrop(item as DragItem<ResourceDragData>, storage);
-     }
-   };
-   ```
-
-4. **Use Union Types for Specific Values**: When a parameter can only have specific values, use union types instead of string or number.
-
-   ```typescript
-   // Before: Using string type
-   function setFilterType(type: string) {
-     // ...
-   }
-
-   // After: Using union type
-   type FilterOption = 'all' | 'mineral' | 'gas' | 'exotic';
-   function setFilterType(type: FilterOption) {
-     // ...
-   }
-   ```
-
-5. **Handle Event Types Properly**: Use the correct event types from React for different event handlers.
-
-   ```typescript
-   // Mouse event handler
-   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-     e.preventDefault();
-     // ...
-   };
-
-   // Change event handler
-   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-     // ...
-   };
-
-   // Form event handler
-   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-     e.preventDefault();
-     // ...
-   };
-   ```
-
-6. **Document Complex Type Relationships**: Add comments explaining complex type relationships, especially when using type assertions or generic types.
-
-   ```typescript
-   // This function expects a DragItem with ResourceDragData
-   // ResourceDragData must have id, name, type, and abundance properties
-   // The type property must be one of: 'mineral', 'gas', 'exotic'
-   const handleResourceDrop = (item: DragItem<ResourceDragData>, storage) => {
-     // ...
-   };
-   ```
-
-By following these best practices, we can ensure type safety throughout the codebase, avoid implicit 'any' types, and make the code more maintainable and self-documenting.
-
-### Implementing Unused Variables
-
-When implementing previously unused variables in TypeScript, we follow these best practices to ensure they add meaningful functionality to the codebase:
-
-1. **Understand the Variable's Purpose**: Before implementing, understand the intended purpose of the variable within the component or function.
-
-   ```typescript
-   // Before: Unused variable
-   const [currentEventIndex, setCurrentEventIndex] = useState<number | null>(null);
-
-   // After: Understanding its purpose as a way to track selected events
-   // and implementing it to enhance user interaction
-   ```
-
-2. **Add Interactive Elements**: When appropriate, use the variable to create interactive UI elements.
-
-   ```typescript
-   // Adding click handlers that use the variable
-   <div
-     className={`h-2 w-2 rounded-full ${getEventColor()} hover:h-3 hover:w-3`}
-     onClick={() => {
-       // Set current event index to this event when clicked
-       setCurrentEventIndex(index);
-     }}
-   />
-   ```
-
-3. **Provide Visual Feedback**: Use the variable to provide visual feedback to users.
-
-   ```typescript
-   // Using the variable to highlight the selected item
-   <div
-     className={`h-2 w-2 rounded-full ${
-       index === currentEventIndex ? 'bg-white' : 'bg-teal-400'
-     }`}
-     // ...
-   />
-   ```
-
-4. **Display Additional Information**: Use the variable to show additional information when appropriate.
-
-   ```typescript
-   // Displaying details based on the selected item
-   {currentEventIndex !== null && currentEvents[currentEventIndex] && (
-     <div className="mb-2 text-sm text-white">
-       <span className="font-bold">{currentEvents[currentEventIndex].type}</span> event at{' '}
-       {new Date(currentEvents[currentEventIndex].timestamp).toLocaleTimeString()}
-     </div>
-   )}
-   ```
-
-5. **Ensure Type Safety**: When implementing variables, ensure proper type safety with null checks and type guards.
-
-#### TypeScript Error Fixing Strategies
-
-We've developed a comprehensive approach to fixing TypeScript errors in our codebase, which has successfully reduced errors from 328 in 77 files to 0 errors, achieving 100% TypeScript compliance. Our strategies include:
-
-1. **Prioritization by Error Type**:
-
-   - Focus first on errors that affect runtime behavior (type assertions, null checks)
-   - Then address errors that affect code maintainability (unused variables, implicit any)
-   - Finally address documentation-related errors (missing JSDoc, parameter descriptions)
-
-2. **Systematic Approach by File Category**:
-
-   - Group files by system (resource management, combat, UI, etc.)
-   - Fix errors in core systems first, then move to peripheral systems
-   - Address shared utilities and types before component-specific code
-
-3. **Implementation vs. Documentation**:
-
-   - For unused variables that serve a clear purpose, implement them with minimal functionality
-   - For unused interfaces and functions planned for future use, add comprehensive documentation
-   - For type assertion issues, use proper type guards and narrowing techniques
-
-4. **Custom Type Definitions**:
-
-   - Create custom type definitions for complex objects (e.g., `CustomElementRef` for Three.js elements)
-   - Use type guards to narrow types in conditional blocks
-   - Implement proper generic constraints for reusable components
-
-5. **Handling React and Three.js Integration**:
-
-   - Use proper type assertions for refs and elements
-   - Create wrapper components with proper type definitions
-   - Use children props correctly with appropriate typing
-
-6. **Documentation Standards**:
-
-   - Add JSDoc comments for all public functions and interfaces
-   - Document parameters with specific descriptions
-   - Include return type documentation
-   - Add examples for complex functions
-
-7. **Error Suppression Guidelines**:
-
-   - Use `@ts-expect-error` with explanatory comments for intentionally unused code
-   - Avoid using `@ts-ignore` without explanation
-   - Document all suppressed errors in the architecture documentation
-
-8. **Testing After Fixes**:
-
-   - Run TypeScript compiler after each set of fixes
-   - Verify that no new errors are introduced
-   - Run tests to ensure functionality is preserved
-
-9. **Refactoring Opportunities**:
-
-   - Identify patterns in errors that suggest deeper architectural issues
-   - Refactor code to improve type safety where appropriate
-   - Create reusable utility types for common patterns
-
-10. **Documentation Updates**:
-    - Update architecture documentation with new type patterns
-    - Document error fixing strategies for future reference
-    - Create examples of before/after fixes for common error types
-
-For a more detailed guide on our TypeScript error fixing strategies, see `CodeBase_Docs/TypeScript_Error_Fixing_Strategies.md`.
-
-#### JSX Namespace Declaration Issues
-
-When working with JSX in TypeScript, especially with custom libraries like Three.js, we encountered namespace declaration issues. Here are the best practices we established:
-
-1. **Custom Element References**: Create custom type definitions for element references.
-
-   ```typescript
-   // Custom type for Three.js element refs
-   type CustomElementRef = React.RefObject<{
-     __r3f: {
-       root: {
-         getState: () => {
-           camera: THREE.Camera;
-           scene: THREE.Scene;
-         };
-       };
-     };
-   }>;
-   ```
-
-2. **Proper Children Typing**: Ensure proper typing for children props in JSX components.
-
-   ```typescript
-   // Before (incorrect typing)
-   interface CanvasProps {
-     children: React.ReactNode;
-   }
-
-   // After (correct typing)
-   interface CanvasProps {
-     children: React.ReactNode | React.ReactNode[];
-   }
-   ```
-
-3. **Component Type Declarations**: Use proper component type declarations for JSX components.
-
-   ```typescript
-   // Using React.FC with generic props
-   const ShieldEffect: React.FC<ShieldEffectProps> = ({ position, radius, color }) => {
-     // component implementation
-   };
-   ```
-
-4. **Shader Material Properties**: Define proper types for shader material properties.
-
-   ```typescript
-   // Type definition for shader material properties
-   interface ShaderMaterialProps {
-     uniforms: {
-       [key: string]: {
-         value: any;
-       };
-     };
-     vertexShader: string;
-     fragmentShader: string;
-     transparent?: boolean;
-     side?: THREE.Side;
-   }
-   ```
-
-5. **Event Handling**: Properly type event handlers for JSX elements.
-
-   ```typescript
-   // Properly typed event handler
-   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-     e.stopPropagation();
-     // handler implementation
-   };
-   ```
-
-By following these best practices, we've successfully resolved all JSX namespace declaration issues in our codebase.
-
 ## TypeScript Best Practices
 
-### Module Syntax vs Namespaces
+### Handling Mixed Return Types
 
-- **Use ES2015 Module Syntax**: Always prefer ES2015 module syntax (`import`/`export`) over TypeScript namespaces. This aligns with modern JavaScript practices and provides better tree-shaking and code organization.
-
-- **Type Definitions for Custom Elements**: When working with libraries like Three.js that require custom JSX elements, use type definitions with interfaces or type aliases instead of declaring them in the global JSX namespace:
+When working with functions that might return different types depending on the context (for example, a function that returns a boolean or an object with a success property), use the following approach:
 
 ```typescript
-// AVOID this approach:
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      points: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        ref?: React.RefObject<THREE.Points>;
-      };
-      // other elements...
-    }
+// Example: Handling mixed return types
+function processResult(result: boolean | { success: boolean } | unknown): boolean {
+  // First check if it's an object
+  if (typeof result === 'object' && result !== null) {
+    // Use type assertion to specify the expected shape
+    const resultObj = result as { success: boolean };
+    return Boolean(resultObj.success);
   }
+
+  // Handle primitive values
+  return Boolean(result);
+}
+```
+
+#### Key Techniques
+
+1. **Type Narrowing**: Use type guards (`typeof`, `instanceof`, etc.) to narrow down the possible types before accessing properties.
+2. **Explicit Type Assertions**: When necessary, use `as` to assert the shape of an object after narrowing down its type.
+3. **Union Types**: Define functions with union types to clearly indicate multiple possible return types.
+4. **Defensive Coding**: Always assume that types might not match expectations at runtime and code defensively.
+5. **Type Predicates**: Use custom type guard functions with type predicates for complex type narrowing:
+
+```typescript
+// Type predicate example
+function isSuccessResult(value: unknown): value is { success: boolean } {
+  return typeof value === 'object' && value !== null && 'success' in value;
 }
 
-// PREFER this approach:
-type ThreePointsProps = {
-  ref?: React.RefObject<THREE.Points>;
-  [key: string]: unknown;
+// Usage
+if (isSuccessResult(result)) {
+  // TypeScript now knows result has a success property
+  return result.success;
+}
+```
+
+#### Benefits
+
+- Improved type safety with reduced TypeScript errors
+- Better runtime safety by handling all possible cases
+- Clear documentation of function behavior through types
+- Easier maintenance and debugging
+
+For more specific examples, refer to the AutomationManager's handling of ResourceManager.transferResources results in src/managers/game/AutomationManager.ts.
+
+### UI Component Library Architecture
+
+Our UI component library is designed to provide a collection of reusable, accessible, and consistent components for building interfaces in Galactic Sprawl. The components follow modern React patterns and best practices, including:
+
+1. **Composition**: Components are designed to be composed together to create more complex UI elements.
+2. **Polymorphism**: Many components support rendering as different HTML elements or custom components through the `asChild` prop pattern.
+3. **Accessibility**: Components follow accessibility best practices, including proper keyboard navigation and screen reader support.
+4. **Theming**: Components use a consistent theming system based on CSS variables and utility classes.
+5. **Type Safety**: All components are fully typed with TypeScript for better developer experience and code quality.
+
+#### Slot Pattern Implementation
+
+The Slot pattern is a core architectural pattern in our UI component library that enables polymorphic components - components that can render as different elements based on the `asChild` prop. This pattern is implemented in components like Button, but can be reused across other UI components.
+
+```tsx
+// Improved type for React elements with ref
+type ElementWithRef = React.ReactElement & {
+  ref?: React.Ref<unknown>;
 };
 
-// Then use type assertions when creating elements:
-React.createElement('points', { ref: pointsRef } as ThreePointsProps);
+// Slot component implementation
+const Slot = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
+  ({ children, ...props }, ref) => {
+    const child = React.Children.only(children) as ElementWithRef;
+    return React.cloneElement(child, {
+      ...props,
+      ...child.props,
+      ref: mergeRefs(ref, child.ref),
+    });
+  }
+);
+
+// Helper function to merge refs
+function mergeRefs<T>(...refs: (React.Ref<T> | undefined)[]) {
+  return (value: T) => {
+    refs.forEach(ref => {
+      if (typeof ref === 'function') {
+        ref(value);
+      } else if (ref != null) {
+        (ref as React.MutableRefObject<T>).current = value;
+      }
+    });
+  };
+}
 ```
 
-- **Type Assertions**: When using custom elements with React.createElement, use type assertions to provide proper typing:
+The Slot pattern enables several key features:
 
-```typescript
-React.createElement('customElement', { prop1: value1 } as CustomElementProps);
+1. **Polymorphic Components**: Components can render as different HTML elements or custom components.
+2. **Proper Ref Forwarding**: Refs are properly merged and forwarded to the underlying DOM element.
+3. **Component Composition**: Props from the parent component are properly merged with the child component's props.
+4. **Flexibility**: Developers can use UI components with their own custom components without sacrificing functionality.
+
+#### Usage Example
+
+The Button component uses the Slot pattern to enable rendering as different elements:
+
+```tsx
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    // Use the Slot component when asChild is true
+    const Comp = asChild ? Slot : 'button';
+    return (
+      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+    );
+  }
+);
 ```
 
-### Fixed Namespace Issues
+This allows flexible usage patterns:
 
-The following files had TypeScript namespace issues that were fixed by replacing namespace declarations with proper type definitions:
+```tsx
+// Regular button
+<Button>Click me</Button>
 
-1. `src/effects/component_effects/ExplosionEffect.tsx`
-2. `src/effects/component_effects/SmokeTrailEffect.tsx`
-3. `src/effects/component_effects/ThrusterEffect.tsx`
+// Button as link
+<Button asChild>
+  <a href="/some-path">Navigate</a>
+</Button>
 
-The fixes involved:
+// Button as custom component
+<Button asChild>
+  <CustomComponent onClick={handleClick}>Custom</CustomComponent>
+</Button>
+```
 
-- Removing `declare global { namespace JSX { ... } }` declarations
-- Creating proper type definitions for Three.js elements
-- Using type assertions with React.createElement
-- Ensuring proper typing for all props and attributes
+By following this pattern consistently across our UI component library, we ensure a flexible, composable, and type-safe component system.
 
-## Testing Architecture
+## Combat System
 
-### Test Utilities
+### Advanced Weapon Effects System
 
-The test utilities in `src/tests/utils/testUtils.tsx` have been enhanced to include:
+The Advanced Weapon Effects system enhances the combat experience by providing a wide variety of weapon effects beyond basic damage. The system consists of several components:
 
-1. **Mock Factories** - Consistent creation of test data
+#### Components:
 
-   - `createMockResource` - Creates resource objects with sensible defaults
-   - `createMockResourceNode` - Creates producer or consumer nodes
-   - `createMockResourceConnection` - Creates connections between nodes
-   - `createMockResources` - Creates multiple resources at once
-   - `createMockEvent` - Creates game events
+1. **AdvancedWeaponEffectManager**
 
-2. **Common Testing Patterns** - Standardized approaches for common scenarios
+   - Located at `src/managers/weapons/AdvancedWeaponEffectManager.ts`
+   - Responsible for creating, updating, and removing advanced weapon effects
+   - Handles the lifecycle of effects including setup, tracking, and cleanup
+   - Provides methods to interact with environmental hazards
 
-   - `testLoadingState` - Tests a component's loading state
-   - `testErrorState` - Tests a component's error handling
-   - `testFormSubmission` - Tests a form's validation and submission
+2. **Effect Type Definitions**
 
-3. **Performance Testing Tools** - Measuring and tracking performance
-   - `measureExecutionTime` - Measures how long a function takes to execute
-   - `measureMemoryUsage` - Measures memory usage of a function
-   - `createPerformanceReporter` - Collects and reports performance metrics
+   - Located at `src/effects/types_effects/AdvancedWeaponEffects.ts`
+   - Defines TypeScript interfaces for all effect types
+   - Includes specialized effects like:
+     - Chain effects (jumping between targets)
+     - Beam effects (continuous damage)
+     - Status effects (burn, EMP, stun, etc.)
+     - Multi-stage effects (different phases)
+     - Environmental interaction effects
+     - Tactical utility effects
 
-### Performance Benchmarking
+3. **Integration with Environmental Hazards**
+   - Effects can interact with environmental hazards
+   - Some effects can create hazards in the environment
+   - Effects can be enhanced by existing hazards
 
-We've implemented performance benchmarks for critical systems:
+#### Key Features:
 
-1. **ResourceFlowManager Benchmarks** (`src/tests/performance/ResourceFlowManager.benchmark.ts`)
+- **Weapon Category Based Effects**: Different weapon types (machine guns, energy weapons, etc.) produce different effects
+- **Weapon Variants**: Specialized ammo types or configurations result in unique effects
+- **Tiered Power Levels**: Effects scale in power based on tier (1-5)
+- **Visual Configurations**: Effects have configurable visual properties (particles, colors, etc.)
+- **Performance Scaling**: Visual and sound effects scale based on quality settings
 
-   - Tests different network sizes (50 to 500 nodes)
-   - Compares batch processing strategies
-   - Evaluates cache configurations
-   - Measures both execution time and memory usage
+#### Environmental Hazard Interaction
 
-2. **Event System Benchmarks** (`src/tests/performance/EventSystem.benchmark.ts`)
-   - Tests different event loads (100 to 10,000 events)
-   - Evaluates scaling with increasing listener count
-   - Measures event emission and history retrieval performance
-   - Benchmarks complex filtering operations
+The AdvancedWeaponEffectManager includes a comprehensive system for weapon effect interactions with environmental hazards:
 
-These benchmarks are designed to be run as part of the CI process to detect performance regressions early.
+1. **Hazard Types**:
 
-Additional documentation on these topics can be found in:
+   - **Damage**: Radiation, laser, and direct damage hazards
+   - **Field**: Gravity fields, magnetic anomalies
+   - **Weather**: Space storms, nebula effects
+   - **Anomaly**: Temporal distortions, wormholes
 
-- `CodeBase_Docs/Test_Utilities_Guide.md` - Complete guide to the enhanced test utilities
-- `CodeBase_Docs/Performance_Benchmark_Practices.md` - Best practices for performance benchmarking
+2. **Interaction Types**:
 
-## Resource Management System
-
-### Multi-Step Production Chains
-
-The ResourceFlowManager now supports multi-step production chains through the following components:
-
-1. **ResourceConversionProcess Interface**:
-
-   - Tracks the state of conversion processes with unique process IDs
-   - Includes start and end timestamps for performance monitoring
-   - Supports efficiency tracking with base and applied efficiency values
-   - Handles both primary outputs and byproducts
-
-2. **Conversion Process Lifecycle**:
-
-   - `startConversionProcess`: Initiates a conversion with input validation
-   - `updateConversionProcess`: Updates the state of an ongoing conversion
-   - `completeConversionProcess`: Finalizes conversion and produces outputs
-   - `cancelConversionProcess`: Handles graceful cancellation of conversions
-
-3. **Chain Processing**:
-   - Supports sequential processing of multiple conversion steps
-   - Handles dependencies between conversion steps
-   - Provides status tracking for the entire chain
-
-### Resource Conversion Efficiency
-
-The efficiency system has been enhanced with the following features:
-
-1. **Efficiency Calculation**:
-
-   - Base efficiency determined by converter properties
-   - Applied efficiency calculated with modifiers from various sources
-   - Compound efficiency for multi-step processes
-   - Efficiency impacts both resource consumption and production rates
-
-2. **Efficiency Modifiers**:
-
-   - Environmental factors (temperature, pressure)
-   - Module upgrades and technology levels
-   - Operator skill levels
-   - Maintenance status
+   - **Amplify**: Increases effect strength based on the hazard's properties
+   - **Redirect**: Changes directional properties of effects (particularly for homing effects)
+   - **Enhance**: Extends duration or other temporal properties
+   - **Transform**: Changes the fundamental nature of the effect, potentially creating new hazards
 
 3. **Implementation Details**:
 
-   - Efficiency values stored as decimals (0.0 to 1.0+)
-   - Values above 1.0 represent super-efficient conversions
-   - Efficiency applied to both resource consumption and production
-   - Byproduct generation rates affected by efficiency
+   - `handleHazardInteraction(effectId, hazardId)`: Main method for processing interactions
+   - `determineInteractionType(effect, hazardId)`: Determines how effects interact with specific hazards
+   - `applyHazardInteractionEffects(effect, hazardId, interactionType)`: Modifies effects based on interaction types
 
-4. **Testing Considerations**:
-   - Tests for various efficiency scenarios
-   - Edge case handling for zero or negative efficiency values
-   - Performance impact of efficiency calculations in large networks
+4. **Event System**:
+   - Interactions emit events through the \_WeaponEvents interface
+   - Other systems can listen for these events to create visual effects or gameplay responses
 
-### Converter Management UI
-
-The Converter Management UI provides a comprehensive interface for monitoring and controlling resource converters and production chains. It consists of several components that work together to create an intuitive user experience:
-
-#### 1. ConverterDashboard Component
-
-The `ConverterDashboard` (`src/components/ui/resource/ConverterDashboard.tsx`) serves as the main entry point for the converter management interface. It provides:
-
-- A dashboard-style overview of all converters in the system
-- Real-time monitoring of active conversion processes
-- Production metrics display (efficiency, throughput, energy use)
-- Controls for starting, pausing, and stopping conversion processes
-- Integration with the ChainVisualization component for visualizing production chains
-
-Key features of this component include:
-
-- **Responsive Layout**: Grid-based design that adapts to different screen sizes
-- **Real-Time Updates**: Live updates of process progress and status
-- **Interactive Controls**: Intuitive controls for managing processes and converters
-- **Efficiency Monitoring**: Visual display of efficiency factors and their impact
-
-#### 2. ChainVisualization Component
-
-The `ChainVisualization` (`src/components/ui/resource/ChainVisualization.tsx`) provides an interactive visualization of multi-step production chains using D3.js. Key features include:
-
-- **Force-Directed Graph**: Automatically arranges nodes and links to create a clear visualization
-- **Interactive Elements**: Nodes can be dragged and clicked to interact with converters and recipes
-- **Color-Coded Status**: Visual indication of step status (pending, in-progress, completed, failed)
-- **Animated Transitions**: Smooth animations when chain status changes
-
-The visualization helps players understand complex production chains by:
-
-- Showing the flow of resources between converters
-- Highlighting the current status of each step in the chain
-- Providing an interactive way to select and manage converters in the chain
-- Visualizing the progress of the overall chain
-
-#### 3. UI/UX Considerations
-
-The converter management UI implements several important UI/UX principles:
-
-1. **Consistent Visual Language**:
-
-   - Color coding for status (green for success, yellow for in-progress, red for failure)
-   - Consistent layout and interaction patterns across components
-   - Clear hierarchy of information with the most important data prominently displayed
-
-2. **Real-Time Feedback**:
-
-   - Progress bars show the current status of processes and chains
-   - Status indicators update immediately when changes occur
-   - Efficiency factors are displayed with their current values
-
-3. **Responsive Design**:
-
-   - Adapts to different screen sizes using CSS Grid
-   - Maintains usability on smaller screens with reorganized layouts
-   - Ensures all interactive elements remain accessible on mobile devices
-
-4. **Accessibility**:
-   - Proper contrast for text and UI elements
-   - Semantic HTML structure for screen readers
-   - Keyboard navigation support
-   - Alternative indicators beyond color for status (icons, text, etc.)
-
-These UI components work together to create a comprehensive and intuitive interface for managing the converter system, making complex production chains more accessible and easier to manage for players.
-
-## Testing Framework Configuration
-
-Galactic Sprawl uses a dual testing system with Vitest as the primary testing framework and Jest as a secondary framework. This setup provides maximum compatibility with different testing approaches and libraries.
-
-### Vitest Configuration
-
-Vitest is the preferred testing framework for most test cases. It offers better compatibility with our Vite-based build system and faster execution.
+#### Usage Example:
 
 ```typescript
-// vitest.config.ts
-export default defineConfig({
-  plugins: [react(), viteTsconfigPaths()],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/tests/setup.ts', './src/tests/setup/testingLibrary.setup.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html'],
-      exclude: ['node_modules/', 'src/tests/'],
+// Create an advanced weapon effect
+const effectId = advancedWeaponEffectManager.createEffect(
+  'weapon-123',
+  'beamWeapon',
+  'standard',
+  { x: 100, y: 200 },
+  45, // direction in degrees
+  {
+    targetTier: 3,
+    qualityLevel: 'high',
+    soundEnabled: true,
+    specialProperties: {
+      beamPulsating: true,
     },
-  },
-});
+  }
+);
+
+// Trigger an interaction with an environmental hazard
+advancedWeaponEffectManager.handleHazardInteraction(effectId, 'radiation-field-1');
+
+// Remove the effect when no longer needed
+advancedWeaponEffectManager.removeEffect(effectId);
 ```
 
-Vitest tests can be run using the following npm scripts:
+### Environmental Hazards System
 
-- `npm test` - Run all Vitest tests
-- `npm run test:ui` - Run tests with Vitest UI
-- `npm run coverage` - Generate test coverage report
+// ... existing code ...
 
-### Jest Configuration
+#### Implementing Unused Interfaces
 
-Jest is used as a secondary testing framework, primarily for legacy tests and compatibility with certain testing patterns.
+When dealing with interfaces that are declared but never used in our codebase, we follow these implementation practices:
 
-```javascript
-// jest.config.js
-export default {
-  preset: 'ts-jest/presets/js-with-ts-esm',
-  testEnvironment: 'node',
-  transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        useESM: true,
-      },
-    ],
-  },
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
-  },
-  testMatch: ['**/tests/**/*.test.ts', '**/tests/**/*.test.tsx'],
-  setupFilesAfterEnv: ['<rootDir>/jest-setup.js'],
-};
+1. **Proper Implementation Over Removal**: Instead of removing or silencing unused interfaces with underscores, we implement them properly in the appropriate classes.
+
+2. **Class Implementation Pattern**: Implement the interface directly in the class that should be using it:
+
+```typescript
+// Before: '_WeaponEvents' is declared but never used
+interface _WeaponEvents {
+  // event definitions
+}
+
+// After: Implementing the interface
+export class AdvancedWeaponEffectManager
+  extends EventEmitter<AdvancedWeaponEffectEvents>
+  implements _WeaponEvents {
+  // Implementation of interface properties and methods
+}
 ```
 
-Jest tests can be run using the following npm scripts:
+3. **Definite Assignment Assertion**: For interface properties that will be assigned during runtime but not in the constructor, use definite assignment assertion:
 
-- `npm run test:jest` - Run all Jest tests
-- `npm run test:jest:watch` - Run Jest tests in watch mode
-- `npm run test:jest:coverage` - Generate Jest test coverage report
-- `npm run test:jest:resource` - Run resource-specific Jest tests
-
-### Compatibility Layer
-
-To ensure compatibility between Vitest and Jest, we use a setup file (`jest-setup.js`) that maps Vitest's API to Jest's global objects:
-
-```javascript
-// jest-setup.js
-import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
-
-// Map Vitest's vi to Jest's jest global
-globalThis.vi = jest;
-
-// Add compatibility layer for Vitest functions
-globalThis.describe = describe;
-globalThis.it = test;
-globalThis.expect = expect;
-globalThis.beforeEach = beforeEach;
-globalThis.afterEach = afterEach;
+```typescript
+// Properties required by interface
+public effectCreated!: _WeaponEvents['effectCreated'];
+public effectRemoved!: _WeaponEvents['effectRemoved'];
 ```
 
-This allows tests written for Vitest to run with Jest with minimal modifications.
+4. **Index Signature Implementation**: For interfaces with index signatures, implement the signature in the class:
 
-### Testing Best Practices
-
-1. **Prefer Vitest for new tests** - Use Vitest for all new test files for better performance and compatibility with our build system.
-2. **Use React Testing Library** - For component tests, use React Testing Library with the setup provided in `testingLibrary.setup.ts`.
-3. **Organize tests by type** - Organize tests into unit, integration, and e2e directories.
-4. **Mock external dependencies** - Use `vi.mock()` (or `jest.mock()` for Jest tests) to mock external dependencies.
-5. **Use test utilities** - Leverage the test utilities in `src/tests/utils` for common testing patterns.
-
-### Testing Directory Structure
-
-```
-src/tests/
-├── components/     # Component unit tests
-├── e2e/           # End-to-end tests
-├── hooks/         # Hook tests
-├── integration/   # Integration tests
-├── managers/      # Manager module tests
-├── performance/   # Performance benchmark tests
-├── setup/         # Test setup files
-└── utils/         # Test utilities
+```typescript
+// Interface requires [key: string]: unknown
+[key: string]: unknown;
 ```
 
-When writing tests, follow the naming convention of `[filename].(test|spec).[ts|tsx]` to ensure tests are picked up by the test runner.
+5. **Bridge Method Pattern**: Create methods that connect the interface with the rest of the system:
 
-## Type Safety Best Practices
-
-### Resource Type Interfaces
-
-When working with resource-related interfaces, especially the `ResourceTotals` interface, ensure you follow these guidelines:
-
-1. **Complete Implementation**: The `ResourceTotals` interface has a specific structure that must be fully implemented:
-
-   ```typescript
-   interface ResourceTotals {
-     production: number;
-     consumption: number;
-     net: number;
-     amounts?: Record<ResourceType, number>;
-     capacities?: Record<ResourceType, number>;
-     rates?: Record<ResourceType, number>;
-   }
-   ```
-
-2. **Resource Types Coverage**: When implementing objects that use the `ResourceType` enum or string union, always include all possible resource types, even if they have zero values:
-
-   ```typescript
-   // Example of complete resource type coverage
-   const resourceAmounts = {
-     minerals: 600,
-     energy: 1000,
-     population: 50,
-     research: 200,
-     plasma: 0,
-     gas: 0,
-     exotic: 0,
-   };
-   ```
-
-3. **Mock Objects in Tests**: When creating mock objects for tests, ensure they fully implement the expected interface structure. This is especially important for complex interfaces like `ResourceTrackingResult`.
-
-4. **Consistent Structure**: Maintain consistent structure across all implementations of resource-related interfaces to prevent type errors and ensure compatibility across the codebase.
-
+```typescript
+private emitWeaponEvent<K extends keyof _WeaponEvents>(eventName: K, data: _WeaponEvents[K]): void {
+  // Convert between event systems
+  switch (eventName) {
+    case 'effectCreated':
+      this.emit('effectCreated', {
+        // Convert data
+      });
+      break;
+  }
+}
 ```
 
+By following these practices, we ensure that all interfaces in our codebase serve a meaningful purpose and are properly integrated into the system rather than being removed or silenced.
+
+## TypeScript Error Fixes
+
+### EventEmitter Generic Type Constraints
+
+// ... existing code ...
+
+### Interface Implementation Best Practices
+
+When implementing interfaces in TypeScript, avoid using the definite assignment operator (`!`) for interface methods or properties. Instead, properly implement the methods or properties according to the interface requirements.
+
+**Bad Practice:**
+
+```typescript
+export class MyManager implements SomeInterface {
+  public requiredMethod!: SomeInterface['requiredMethod'];
+}
 ```
+
+**Good Practice:**
+
+```typescript
+export class MyManager implements SomeInterface {
+  public requiredMethod(data: SomeInterface['requiredMethod']): void {
+    // Proper implementation
+  }
+}
+```
+
+When the interface expects properties instead of methods, use getter and setter methods to implement properties while maintaining the ability to add behavior:
+
+**Bad Practice (Type Error):**
+
+```typescript
+interface EventsInterface {
+  notification: { id: string; message: string };
+}
+
+class EventManager implements EventsInterface {
+  // Error: Type '(data: { id: string; message: string; }) => void' is not assignable
+  // to type '{ id: string; message: string; }'
+  public notification(data: { id: string; message: string }): void {
+    // Implementation
+  }
+}
+```
+
+**Good Practice:**
+
+```typescript
+interface EventsInterface {
+  notification: { id: string; message: string };
+}
+
+class EventManager implements EventsInterface {
+  private _notification: { id: string; message: string } | undefined;
+
+  public get notification(): { id: string; message: string } {
+    return this._notification as { id: string; message: string };
+  }
+
+  public set notification(data: { id: string; message: string }) {
+    this._notification = data;
+    // Additional behavior
+    this.logNotification(data);
+  }
+
+  private logNotification(data: { id: string; message: string }): void {
+    console.warn(`Notification received: ${data.id} - ${data.message}`);
+  }
+}
+```
+
+This pattern was implemented in the `AdvancedWeaponEffectManager` class for the properties from the `_WeaponEvents` interface, replacing the previous implementation that used methods with direct property getters and setters.
+
+// ... existing code ...
+
+### Testing Advanced Weapon Effect System
+
+We have implemented comprehensive tests for the AdvancedWeaponEffectManager located in `src/tests/managers/weapons/AdvancedWeaponEffectManager.test.ts`. These tests validate the functionality and types of the recently fixed code, focusing on:
+
+1. **Singleton Pattern**: Ensures only one instance of the manager is created
+2. **Effect Creation**: Tests creation of different types of weapon effects:
+
+   - Beam effects for beam weapons
+   - Homing effects for torpedoes
+   - Chain effects for machine guns with spark rounds
+   - Enhanced status effects for weapons with plasma rounds
+   - Tactical effects for point defense weapons
+   - Multi-stage effects for capital lasers
+
+3. **Effect Lifecycle Management**: Verifies that:
+
+   - Effects can be properly removed
+   - Effect timers work correctly for time-limited effects
+   - Cleanup works properly across all effect collections
+
+4. **Environmental Interactions**: Tests the weapon effect interactions with environmental hazards
+
+5. **Effect Updates**: Validates that continuous effects are properly updated at regular intervals:
+
+   - Beam effects
+   - Homing effects
+   - Multi-stage effects
+
+6. **Visual Configurations**: Tests that visual effects are properly configured based on quality settings
+
+7. **Interface Implementation**: Verifies the proper implementation of the `_WeaponEvents` interface:
+   - Tests the getters/setters implementation
+   - Verifies event emission through the getters/setters
+   - Ensures event data is properly passed through
+
+These tests help ensure that the TypeScript interface implementation is correct and that the code functions properly. The test also serves as documentation for how to correctly use the AdvancedWeaponEffectManager API.
+
+## Testing
+
+### Weapon System Tests
+
+#### AdvancedWeaponEffectManager Tests
+
+The `AdvancedWeaponEffectManager` has comprehensive tests that verify all key functionality:
+
+1. **Singleton Pattern**
+
+   - Ensures that only one instance of the manager is created
+
+2. **Effect Creation**
+
+   - Tests creation of different effect types based on weapon category and variant
+   - Verifies beam effects for beam weapons
+   - Verifies homing effects for torpedoes
+   - Verifies chain effects for machine guns with spark rounds
+   - Verifies enhanced status effects for weapons with plasma rounds
+   - Verifies tactical effects for point defense weapons
+   - Verifies multi-stage effects for capital lasers
+   - Confirms events are emitted when effects are created
+
+3. **Effect Lifecycle Management**
+
+   - Tests effect removal
+   - Verifies cleanup of all effects
+   - Ensures proper timer management
+
+4. **Environmental Interactions**
+
+   - Tests hazard interactions with effects
+
+5. **Effect Updates**
+
+   - Verifies beam effect updates
+   - Verifies homing effect updates
+   - Verifies multi-stage effect updates
+
+6. **Visual Configurations**
+
+   - Tests quality level settings for particle effects
+
+7. **Interface Implementation**
+   - Verifies proper implementation of the `_WeaponEvents` interface
+   - Tests getters and setters for event data
+
+These tests ensure that the `AdvancedWeaponEffectManager` functions correctly and maintains its interface contract. The tests are designed to be resilient to implementation changes while verifying the core functionality.

@@ -17,7 +17,18 @@ export type AutomationConditionType =
   | 'MODULE_INACTIVE'
   | 'TIME_ELAPSED'
   | 'EVENT_OCCURRED'
-  | 'STATUS_EQUALS';
+  | 'STATUS_EQUALS'
+  // New complex condition types
+  | 'RESOURCE_RATIO'
+  | 'MULTIPLE_RESOURCES'
+  | 'COMPLEX_EVENT'
+  | 'PERIODIC'
+  | 'COMPOUND';
+
+/**
+ * Logical operators for compound conditions
+ */
+export type LogicalOperator = 'AND' | 'OR' | 'NOT';
 
 /**
  * Automation action types
@@ -59,6 +70,43 @@ export interface StatusConditionValue {
   status: string;
 }
 
+// New complex condition value types
+export interface ResourceRatioConditionValue {
+  resourceA: ResourceType;
+  resourceB: ResourceType;
+  ratio: number;
+}
+
+export interface MultipleResourcesConditionValue {
+  resources: Array<{
+    resourceType: ResourceType;
+    amount: number;
+    operator: 'greater' | 'less' | 'equals';
+  }>;
+  combinationType: LogicalOperator;
+}
+
+export interface ComplexEventConditionValue {
+  eventSequence: Array<{
+    eventType: string;
+    eventData?: Record<string, unknown>;
+  }>;
+  timeWindow: number; // milliseconds
+  inOrder: boolean;
+}
+
+export interface PeriodicConditionValue {
+  intervalType: 'hourly' | 'daily' | 'weekly';
+  dayOfWeek?: number; // 0-6, Sunday to Saturday
+  hour?: number; // 0-23
+  minute?: number; // 0-59
+}
+
+export interface CompoundConditionValue {
+  conditions: AutomationCondition[];
+  operator: LogicalOperator;
+}
+
 // Define interfaces for action value types
 export interface TransferResourcesValue {
   from: string;
@@ -89,8 +137,15 @@ export interface AutomationCondition {
     | TimeConditionValue
     | EventConditionValue
     | StatusConditionValue
+    // New complex condition value types
+    | ResourceRatioConditionValue
+    | MultipleResourcesConditionValue
+    | ComplexEventConditionValue
+    | PeriodicConditionValue
+    | CompoundConditionValue
     | number;
   operator?: 'equals' | 'not_equals' | 'greater' | 'less' | 'contains';
+  id?: string; // Unique identifier for referencing in action chains
 }
 
 /**
@@ -101,6 +156,12 @@ export interface AutomationAction {
   target?: string;
   value?: TransferResourcesValue | ResourceActionValue | EmitEventValue | number | string;
   delay?: number;
+  id?: string; // Unique identifier for the action
+  // Action chaining properties
+  nextActions?: AutomationAction[]; // Actions to execute after this one completes
+  conditionId?: string; // Optional condition ID to check before executing next actions
+  onSuccess?: AutomationAction[]; // Actions to execute if this action succeeds
+  onFailure?: AutomationAction[]; // Actions to execute if this action fails
 }
 
 /**
@@ -240,18 +301,184 @@ export class AutomationManager {
   }
 
   /**
-   * Checks if all conditions are met
+   * Executes a series of automation actions
    */
-  private async checkConditions(conditions: AutomationCondition[]): Promise<boolean> {
-    if (!conditions.length) {
-      return true;
-    }
+  private async executeActions(actions: AutomationAction[]): Promise<void> {
+    for (const action of actions) {
+      try {
+        // Execute the current action
+        const success = await this.executeSingleAction(action);
 
-    for (const condition of conditions) {
+        // Handle chaining based on success/failure
+        if (success) {
+          // Execute onSuccess actions if they exist
+          if (action.onSuccess && action.onSuccess.length > 0) {
+            await this.executeActions(action.onSuccess);
+          }
+        } else if (action.onFailure && action.onFailure.length > 0) {
+          await this.executeActions(action.onFailure);
+        }
+
+        // Handle conditional next actions
+        if (action.nextActions && action.nextActions.length > 0) {
+          // If conditionId is specified, check that condition first
+          if (action.conditionId) {
+            // Find the condition with matching ID
+            const condition = this.findConditionById(action.conditionId);
+            if (condition && (await this.checkCondition(condition))) {
+              await this.executeActions(action.nextActions);
+            }
+          } else {
+            // No condition check needed, execute next actions
+            await this.executeActions(action.nextActions);
+          }
+        }
+
+        // Apply delay if specified
+        if (action.delay) {
+          await new Promise(resolve => setTimeout(resolve, action.delay));
+        }
+      } catch (error) {
+        console.warn(`Error executing action ${action.type}:`, error);
+
+        // Execute onFailure actions if they exist
+        if (action.onFailure && action.onFailure.length > 0) {
+          await this.executeActions(action.onFailure);
+        }
+      }
+    }
+  }
+
+  /**
+   * Executes a single automation action
+   */
+  private async executeSingleAction(action: AutomationAction): Promise<boolean> {
+    try {
+      switch (action.type) {
+        case 'ACTIVATE_MODULE':
+          if (!action.target) {
+            return false;
+          }
+          moduleManager.setModuleActive(action.target, true);
+          return true;
+
+        case 'DEACTIVATE_MODULE':
+          if (!action.target) {
+            return false;
+          }
+          moduleManager.setModuleActive(action.target, false);
+          return true;
+
+        case 'TRANSFER_RESOURCES': {
+          if (!action.target || !action.value) {
+            return false;
+          }
+          const transferValue = action.value as TransferResourcesValue;
+          const result = resourceManager.transferResources(
+            transferValue.type,
+            transferValue.amount,
+            transferValue.from,
+            transferValue.to
+          );
+
+          // Handle both boolean and object with success property return types
+          if (typeof result === 'object' && result !== null) {
+            // Use type assertion to tell TypeScript this object has a success property
+            const resultObj = result as { success: boolean };
+            return Boolean(resultObj.success);
+          }
+          // Default to the boolean result
+          return Boolean(result);
+        }
+
+        case 'PRODUCE_RESOURCES': {
+          if (!action.target || !action.value) {
+            return false;
+          }
+          const produceAmount =
+            typeof action.value === 'number'
+              ? action.value
+              : (action.value as ResourceActionValue).amount;
+          resourceManager.addResource(action.target as ResourceType, produceAmount);
+          return true;
+        }
+
+        case 'CONSUME_RESOURCES': {
+          if (!action.target || !action.value) {
+            return false;
+          }
+          const consumeAmount =
+            typeof action.value === 'number'
+              ? action.value
+              : (action.value as ResourceActionValue).amount;
+          try {
+            resourceManager.removeResource(action.target as ResourceType, consumeAmount);
+            return true;
+          } catch (error) {
+            console.warn(`Failed to consume resource: ${error}`);
+            return false;
+          }
+        }
+
+        case 'UPGRADE_MODULE':
+          if (!action.target) {
+            return false;
+          }
+          try {
+            moduleManager.upgradeModule(action.target);
+            return true;
+          } catch (error) {
+            console.warn(`Failed to upgrade module: ${error}`);
+            return false;
+          }
+
+        case 'EMIT_EVENT': {
+          if (!action.target || !action.value) {
+            return false;
+          }
+          const emitValue = action.value as EmitEventValue;
+          moduleEventBus.emit({
+            type: action.target as ModuleEventType,
+            moduleId: emitValue.moduleId,
+            moduleType: emitValue.moduleType as ModuleType,
+            timestamp: Date.now(),
+            data: emitValue.data,
+          });
+          return true;
+        }
+
+        default:
+          return false;
+      }
+    } catch (error) {
+      console.warn(`Error in executeSingleAction (${action.type}):`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Find a condition by its ID
+   */
+  private findConditionById(conditionId: string): AutomationCondition | undefined {
+    for (const rule of this.rules.values()) {
+      for (const condition of rule.conditions) {
+        if (condition.id === conditionId) {
+          return condition;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Check a single condition
+   */
+  private async checkCondition(condition: AutomationCondition): Promise<boolean> {
+    try {
       switch (condition.type) {
         case 'RESOURCE_ABOVE': {
           if (!condition.target || !condition.value) {
-            continue;
+            return false;
           }
           const currentAmount = resourceManager.getResourceAmount(condition.target as ResourceType);
           const threshold =
@@ -261,12 +488,12 @@ export class AutomationManager {
           if (currentAmount <= threshold) {
             return false;
           }
-          break;
+          return true;
         }
 
         case 'RESOURCE_BELOW': {
           if (!condition.target || !condition.value) {
-            continue;
+            return false;
           }
           const amount = resourceManager.getResourceAmount(condition.target as ResourceType);
           const threshold =
@@ -276,34 +503,34 @@ export class AutomationManager {
           if (amount >= threshold) {
             return false;
           }
-          break;
+          return true;
         }
 
         case 'MODULE_ACTIVE': {
           if (!condition.target) {
-            continue;
+            return false;
           }
           const module = moduleManager.getModule(condition.target);
           if (!module?.isActive) {
             return false;
           }
-          break;
+          return true;
         }
 
         case 'MODULE_INACTIVE': {
           if (!condition.target) {
-            continue;
+            return false;
           }
           const inactiveModule = moduleManager.getModule(condition.target);
           if (inactiveModule?.isActive) {
             return false;
           }
-          break;
+          return true;
         }
 
         case 'TIME_ELAPSED': {
           if (!condition.value) {
-            continue;
+            return false;
           }
           const now = Date.now();
           const elapsed =
@@ -313,20 +540,20 @@ export class AutomationManager {
           if (now - (condition.target ? parseInt(condition.target) : 0) < elapsed) {
             return false;
           }
-          break;
+          return true;
         }
 
         case 'EVENT_OCCURRED':
           if (!condition.target || !condition.value) {
-            continue;
+            return false;
           }
           // Check event history (assuming we have an eventManager)
           // Since we don't have eventManager yet, we'll skip this check
-          break;
+          return true;
 
         case 'STATUS_EQUALS': {
           if (!condition.target || !condition.value) {
-            continue;
+            return false;
           }
           const targetModule = moduleManager.getModule(condition.target);
 
@@ -339,105 +566,151 @@ export class AutomationManager {
           if (!targetModule || targetModule.status !== statusValue) {
             return false;
           }
-          break;
+          return true;
         }
+
+        // New cases for complex condition types
+        case 'RESOURCE_RATIO': {
+          if (!condition.value) {
+            return false;
+          }
+          const ratioValue = condition.value as ResourceRatioConditionValue;
+          const resourceAAmount = resourceManager.getResourceAmount(ratioValue.resourceA);
+          const resourceBAmount = resourceManager.getResourceAmount(ratioValue.resourceB);
+
+          // Avoid division by zero
+          if (resourceBAmount === 0) {
+            return false;
+          }
+
+          const actualRatio = resourceAAmount / resourceBAmount;
+
+          if (condition.operator === 'greater') {
+            return actualRatio > ratioValue.ratio;
+          } else if (condition.operator === 'less') {
+            return actualRatio < ratioValue.ratio;
+          } else {
+            // Default to equals
+            return Math.abs(actualRatio - ratioValue.ratio) < 0.01; // With small epsilon for float comparison
+          }
+        }
+
+        case 'MULTIPLE_RESOURCES': {
+          if (!condition.value) {
+            return false;
+          }
+          const multipleResourcesValue = condition.value as MultipleResourcesConditionValue;
+          const results: boolean[] = [];
+
+          for (const resource of multipleResourcesValue.resources) {
+            const amount = resourceManager.getResourceAmount(resource.resourceType);
+            let result = false;
+
+            if (resource.operator === 'greater') {
+              result = amount > resource.amount;
+            } else if (resource.operator === 'less') {
+              result = amount < resource.amount;
+            } else {
+              result = amount === resource.amount;
+            }
+
+            results.push(result);
+          }
+
+          if (multipleResourcesValue.combinationType === 'AND') {
+            return results.every(result => result);
+          } else if (multipleResourcesValue.combinationType === 'OR') {
+            return results.some(result => result);
+          } else {
+            // NOT
+            return !results.some(result => result);
+          }
+        }
+
+        case 'COMPLEX_EVENT': {
+          // This would require event history tracking
+          // For now, return false as a placeholder
+          console.warn('COMPLEX_EVENT condition type not fully implemented');
+          return false;
+        }
+
+        case 'PERIODIC': {
+          if (!condition.value) {
+            return false;
+          }
+          const periodicValue = condition.value as PeriodicConditionValue;
+          const now = new Date();
+
+          // Check if current time matches the periodic condition
+          switch (periodicValue.intervalType) {
+            case 'hourly':
+              return (
+                periodicValue.minute === undefined || now.getMinutes() === periodicValue.minute
+              );
+
+            case 'daily':
+              return (
+                (periodicValue.hour === undefined || now.getHours() === periodicValue.hour) &&
+                (periodicValue.minute === undefined || now.getMinutes() === periodicValue.minute)
+              );
+
+            case 'weekly':
+              return (
+                (periodicValue.dayOfWeek === undefined ||
+                  now.getDay() === periodicValue.dayOfWeek) &&
+                (periodicValue.hour === undefined || now.getHours() === periodicValue.hour) &&
+                (periodicValue.minute === undefined || now.getMinutes() === periodicValue.minute)
+              );
+
+            default:
+              return false;
+          }
+        }
+
+        case 'COMPOUND': {
+          if (!condition.value) {
+            return false;
+          }
+          const compoundValue = condition.value as CompoundConditionValue;
+          const results = await Promise.all(
+            compoundValue.conditions.map(c => this.checkCondition(c))
+          );
+
+          if (compoundValue.operator === 'AND') {
+            return results.every(result => result);
+          } else if (compoundValue.operator === 'OR') {
+            return results.some(result => result);
+          } else {
+            // NOT
+            return !results.some(result => result);
+          }
+        }
+
+        default:
+          return false;
+      }
+    } catch (error) {
+      console.warn(`Error checking condition (${condition.type}):`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Checks if all conditions are met
+   */
+  private async checkConditions(conditions: AutomationCondition[]): Promise<boolean> {
+    if (!conditions.length) {
+      return true;
+    }
+
+    for (const condition of conditions) {
+      const result = await this.checkCondition(condition);
+      if (!result) {
+        return false;
       }
     }
 
     return true;
-  }
-
-  /**
-   * Executes automation actions
-   */
-  private async executeActions(actions: AutomationAction[]): Promise<void> {
-    for (const action of actions) {
-      try {
-        switch (action.type) {
-          case 'ACTIVATE_MODULE':
-            if (!action.target) {
-              continue;
-            }
-            moduleManager.setModuleActive(action.target, true);
-            break;
-
-          case 'DEACTIVATE_MODULE':
-            if (!action.target) {
-              continue;
-            }
-            moduleManager.setModuleActive(action.target, false);
-            break;
-
-          case 'TRANSFER_RESOURCES': {
-            if (!action.target || !action.value) {
-              continue;
-            }
-            const transferValue = action.value as TransferResourcesValue;
-            resourceManager.transferResources(
-              transferValue.type,
-              transferValue.amount,
-              transferValue.from,
-              transferValue.to
-            );
-            break;
-          }
-
-          case 'PRODUCE_RESOURCES': {
-            if (!action.target || !action.value) {
-              continue;
-            }
-            const produceAmount =
-              typeof action.value === 'number'
-                ? action.value
-                : (action.value as ResourceActionValue).amount;
-            resourceManager.addResource(action.target as ResourceType, produceAmount);
-            break;
-          }
-
-          case 'CONSUME_RESOURCES': {
-            if (!action.target || !action.value) {
-              continue;
-            }
-            const consumeAmount =
-              typeof action.value === 'number'
-                ? action.value
-                : (action.value as ResourceActionValue).amount;
-            resourceManager.removeResource(action.target as ResourceType, consumeAmount);
-            break;
-          }
-
-          case 'UPGRADE_MODULE':
-            if (!action.target) {
-              continue;
-            }
-            moduleManager.upgradeModule(action.target);
-            break;
-
-          case 'EMIT_EVENT': {
-            if (!action.target || !action.value) {
-              continue;
-            }
-            const emitValue = action.value as EmitEventValue;
-            moduleEventBus.emit({
-              type: action.target as ModuleEventType,
-              moduleId: emitValue.moduleId,
-              moduleType: emitValue.moduleType as ModuleType,
-              timestamp: Date.now(),
-              data: emitValue.data,
-            });
-            break;
-          }
-        }
-
-        // Apply delay if specified
-        if (action.delay) {
-          await new Promise(resolve => setTimeout(resolve, action.delay));
-        }
-      } catch (error) {
-        console.warn(`Error executing action ${action.type}:`, error);
-        // Continue with next action even if one fails
-      }
-    }
   }
 
   /**

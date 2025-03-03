@@ -10,6 +10,7 @@ import {
   AutomationAction,
   AutomationCondition,
   AutomationManager,
+  AutomationRule,
   ResourceConditionValue,
 } from '../game/AutomationManager';
 import { gameLoopManager, UpdatePriority } from '../game/GameLoopManager';
@@ -752,6 +753,48 @@ export class GlobalAutomationManager {
    */
   public getAutomationManager(): AutomationManager | null {
     return this._automationManager || null;
+  }
+
+  /**
+   * Get a rule by ID
+   */
+  public getRule(ruleId: string): AutomationRule | undefined {
+    // Delegate to AutomationManager
+    return this._automationManager.getRule(ruleId);
+  }
+
+  /**
+   * Update an existing rule
+   */
+  public updateRule(ruleId: string, rule: AutomationRule): void {
+    // Delegate to AutomationManager
+    this._automationManager.updateRule(ruleId, rule);
+
+    // Emit event
+    moduleEventBus.emit({
+      type: 'STATUS_CHANGED', // Use a valid ModuleEventType
+      moduleId: rule.moduleId,
+      moduleType: 'resource-manager',
+      timestamp: Date.now(),
+      data: { ruleId, rule, status: 'updated' },
+    });
+  }
+
+  /**
+   * Register a new rule
+   */
+  public registerRule(rule: AutomationRule): void {
+    // Delegate to AutomationManager
+    this._automationManager.registerRule(rule);
+
+    // Emit event
+    moduleEventBus.emit({
+      type: 'AUTOMATION_STARTED', // Use a valid ModuleEventType
+      moduleId: rule.moduleId,
+      moduleType: 'resource-manager',
+      timestamp: Date.now(),
+      data: { ruleId: rule.id, rule },
+    });
   }
 }
 
