@@ -284,6 +284,13 @@ This document serves as the main index for the Galactic Sprawl project codebase 
 
 - `src/types/geometry.ts`: Core geometric types used throughout the application, including Position, Vector, Size, and Transform interfaces.
 
+### Combat System
+
+- `src/utils/combat/scanRadiusUtils.ts` - Utilities for calculating scan radius, detection probability, and target signatures in the combat system.
+- `src/managers/combat/ObjectDetectionSystem.ts` - System for detecting objects in space based on scanner capabilities and environmental factors.
+- `src/managers/combat/ThreatAssessmentManager.ts` - System for assessing threat levels of detected objects.
+- `src/managers/combat/CombatMechanicsSystem.ts` - Core combat mechanics including weapons, damage, and effects.
+
 ## Automation System
 
 ### Automation Manager
@@ -615,25 +622,6 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
    - Proper event filtering
    - Optimized event handlers
 
-### Next Steps
-
-1. **Component Rendering Performance**
-
-   - [ ] Implement React.memo for remaining pure components
-   - [ ] Add useMemo for expensive calculations in other components
-   - [ ] Optimize re-renders with proper dependency arrays
-
-2. **Testing**
-
-   - [ ] Add performance benchmarks
-   - [ ] Implement component tests
-   - [ ] Create end-to-end tests
-
-3. **Documentation**
-   - [ ] Update component documentation
-   - [ ] Document performance considerations
-   - [ ] Create usage examples
-
 ## Testing Framework and End-to-End Testing
 
 - `playwright.config.ts`: Configuration file for Playwright end-to-end testing
@@ -699,3 +687,74 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
 ### Utilities
 
 - `src/utils/cn.ts` - Utility function for merging class names with Tailwind
+
+### Tech Tree System
+
+- `src/components/ui/tech/TechVisualFeedback.tsx` - Enhanced visual feedback components for the tech tree system, including:
+  - `TechVisualFeedback` - Main component for tech node visualization with animations and tooltips
+  - `TechConnectionLine` - Component for visualizing connections between tech nodes
+  - `ResearchProgressIndicator` - Component for displaying research progress
+  - `TechSynergyIndicator` - Component for visualizing synergies between technologies
+- `src/components/ui/TechTree.tsx` - Main tech tree component, updated to use the enhanced visual feedback components
+- `src/managers/game/techTreeManager.ts` - Manager for handling tech unlocks and progression
+
+## State Management
+
+- `src/utils/state/contextSelectors.ts` - Utilities for optimizing context state access and preventing unnecessary re-renders
+
+  - `createSelector` - Creates a memoized selector function
+  - `useContextSelector` - Hook for selecting portions of context state
+  - `createContextSelector` - Creates a hook for selecting context state
+  - `createPropertySelector` - Creates a hook for selecting a specific property
+  - `createNestedPropertySelector` - Creates a hook for selecting a nested property
+  - `createMultiPropertySelector` - Creates a hook for selecting multiple properties
+
+- `src/utils/state/statePersistence.ts` - Utilities for persisting state to localStorage with versioning
+
+  - `createStatePersistence` - Creates a state persistence manager
+  - `createStatePersistenceHook` - Creates a hook-friendly state persistence manager
+  - `createLocalStorageItem` - Creates a simple localStorage getter/setter
+
+- `src/utils/state/stateMigration.ts` - Utilities for migrating state between schema versions
+  - `createMigrationManager` - Creates a migration manager
+  - `createMigrationBuilder` - Creates a migration builder
+  - `addProperty` - Helper for adding properties
+  - `renameProperty` - Helper for renaming properties
+  - `removeProperty` - Helper for removing properties
+  - `transformProperty` - Helper for transforming properties
+
+## UI Framework
+
+### Component Profiling System
+
+- `src/utils/profiling/componentProfiler.ts` - Core utilities for profiling individual components
+
+  - `createComponentProfiler` - Creates a component profiler
+  - `profileRender` - Profiles a component render
+  - `withProfiling` - HOC for profiling a component
+
+- `src/utils/profiling/applicationProfiler.ts` - Application-wide profiling system
+
+  - `createApplicationProfiler` - Creates an application profiler
+  - `applicationProfiler` - Global application profiler instance
+
+- `src/hooks/ui/useComponentProfiler.ts` - React hook for profiling components
+
+  - `useComponentProfiler` - Hook for profiling a component
+  - `useComponentProfilerWithUpdates` - Hook for profiling with state updates
+
+- `src/hooks/ui/useProfilingOverlay.ts` - Hook for controlling the profiling overlay
+
+  - `useProfilingOverlay` - Hook for controlling the overlay visibility
+
+- `src/components/ui/profiling/ProfilingOverlay.tsx` - Visual overlay for displaying profiling metrics
+
+  - `ProfilingOverlay` - Component for displaying profiling metrics
+
+- `src/types/ui/UITypes.ts` - Types for the profiling system
+  - `ComponentRenderMetrics` - Metrics for component renders
+  - `ComponentProfilingOptions` - Options for component profiling
+  - `ComponentProfilingResult` - Result of component profiling
+  - `ApplicationProfilingMetrics` - Metrics for application profiling
+  - `ApplicationProfilingOptions` - Options for application profiling
+  - `ApplicationProfilingResult` - Result of application profiling

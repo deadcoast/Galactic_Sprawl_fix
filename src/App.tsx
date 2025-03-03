@@ -13,6 +13,12 @@ import { moduleManager } from './managers/module/ModuleManager';
 import { OfficerManager } from './managers/module/OfficerManager';
 import { ShipHangarManager } from './managers/module/ShipHangarManager';
 
+// Import the GlobalErrorBoundary component
+import { GlobalErrorBoundary } from './components/ui/GlobalErrorBoundary';
+// Import error services
+import { errorLoggingService, ErrorSeverity, ErrorType } from './services/ErrorLoggingService';
+import { recoveryService } from './services/RecoveryService';
+
 // Lazy load components that aren't needed on initial render
 const GameLayout = lazy(() =>
   import('./components/ui/GameLayout').then(module => ({ default: module.GameLayout }))
@@ -132,9 +138,34 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
         dispatch({ type: 'START_GAME' });
         gameManager.start();
 
+        // Auto-save initial game state
+        recoveryService.saveSnapshot(
+          {
+            gameState: 'initial',
+            resources: {
+              minerals: 2000,
+              energy: 2000,
+              research: 0,
+              population: 100,
+            },
+          },
+          'Initial game state'
+        );
+
         console.warn('Game initialization complete');
         setIsInitialized(true);
       } catch (error) {
+        // Log the error using the error logging service
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          ErrorType.SYSTEM,
+          ErrorSeverity.HIGH,
+          {
+            action: 'game_initialization',
+            componentName: 'GameInitializer',
+          }
+        );
+
         console.error('Failed to initialize game:', error);
         setLoadingError(error instanceof Error ? error.message : 'Failed to initialize game');
       }
@@ -207,36 +238,47 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
   return children;
 };
 
+// Handler for global errors
+const handleGlobalError = (error: Error, errorInfo: React.ErrorInfo) => {
+  // Log the error using our error logging service
+  errorLoggingService.logComponentError(error, 'GlobalErrorBoundary', errorInfo);
+
+  // Log to console for development purposes
+  console.error('Global error caught:', error, errorInfo);
+};
+
 export default function App() {
   return (
-    <GameProvider>
-      <ThresholdProvider>
-        <ModuleProvider>
-          <TooltipProvider>
-            <GameInitializer>
-              <Suspense fallback={<LoadingComponent />}>
-                <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
-                  <div className="min-h-screen bg-gray-900">
-                    <div className="flex h-full flex-col items-center justify-center">
-                      <h1 className="mb-4 text-2xl text-blue-500">Mothership Control</h1>
-                      <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-                        <div className="mb-4 text-blue-400">
-                          Resources:
-                          <div className="grid grid-cols-3 gap-4">
-                            <div>Minerals: 2000</div>
-                            <div>Energy: 2000</div>
-                            <div>Population: 100</div>
+    <GlobalErrorBoundary onError={handleGlobalError} onReset={() => window.location.reload()}>
+      <GameProvider>
+        <ThresholdProvider>
+          <ModuleProvider>
+            <TooltipProvider>
+              <GameInitializer>
+                <Suspense fallback={<LoadingComponent />}>
+                  <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
+                    <div className="min-h-screen bg-gray-900">
+                      <div className="flex h-full flex-col items-center justify-center">
+                        <h1 className="mb-4 text-2xl text-blue-500">Mothership Control</h1>
+                        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
+                          <div className="mb-4 text-blue-400">
+                            Resources:
+                            <div className="grid grid-cols-3 gap-4">
+                              <div>Minerals: 2000</div>
+                              <div>Energy: 2000</div>
+                              <div>Population: 100</div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </GameLayout>
-              </Suspense>
-            </GameInitializer>
-          </TooltipProvider>
-        </ModuleProvider>
-      </ThresholdProvider>
-    </GameProvider>
+                  </GameLayout>
+                </Suspense>
+              </GameInitializer>
+            </TooltipProvider>
+          </ModuleProvider>
+        </ThresholdProvider>
+      </GameProvider>
+    </GlobalErrorBoundary>
   );
 }

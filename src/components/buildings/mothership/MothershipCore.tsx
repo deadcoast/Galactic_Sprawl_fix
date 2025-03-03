@@ -1,7 +1,10 @@
 import { GraduationCap, Radar, Rocket, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { ContextMenuItem, useContextMenu } from '../../../components/ui/ContextMenu';
 import { Draggable, DragItem, DropTarget } from '../../../components/ui/DragAndDrop';
 import { defaultModuleConfigs } from '../../../config/modules/defaultModuleConfigs';
+import { MothershipSuperstructure } from '../../../effects/component_effects/MothershipSuperstructure';
+import { ResourceFlowVisualization } from '../../../effects/component_effects/ResourceFlowVisualization';
 import {
   ModularBuilding,
   ModuleAttachmentPoint,
@@ -41,17 +44,43 @@ interface MothershipProps {
   id: string;
   level: number;
   modules: ModularBuilding['modules'];
+  resourceLevels?: {
+    energy: number;
+    materials: number;
+    research: number;
+  };
+  expansionProgress?: number;
+  quality?: 'low' | 'medium' | 'high';
   onModuleAttach?: (moduleType: ModuleType, attachmentPointId: string) => void;
   onModuleDetach?: (moduleId: string) => void;
+  onSectionClick?: (section: string) => void;
 }
 
 export function MothershipCore({
   id,
   level,
   modules,
+  resourceLevels = { energy: 50, materials: 50, research: 50 },
+  expansionProgress = 50,
+  quality = 'medium',
   onModuleAttach,
   onModuleDetach,
+  onSectionClick,
 }: MothershipProps) {
+  // State for resource flows
+  const [resourceFlows, setResourceFlows] = useState<
+    Array<{
+      id: string;
+      source: { x: number; y: number };
+      target: { x: number; y: number };
+      type: 'energy' | 'materials' | 'research' | 'population';
+      rate: number;
+    }>
+  >([]);
+
+  // Calculate tier based on level
+  const tier = level <= 3 ? 1 : level <= 7 ? 2 : 3;
+
   // Context menu for attachment points
   const getAttachmentPointMenuItems = (point: ModuleAttachmentPoint): ContextMenuItem[] => {
     const attachedModule = modules.find(
@@ -93,13 +122,82 @@ export function MothershipCore({
     }
   };
 
+  // Generate resource flows
+  useEffect(() => {
+    // Clear existing flows
+    setResourceFlows([]);
+
+    // Center position
+    const centerX = 0;
+    const centerY = 0;
+
+    // Generate flows for each attached module
+    const newFlows = modules.flatMap((module, index) => {
+      const flows = [];
+
+      // Energy flow (from center to module)
+      flows.push({
+        id: `energy-flow-${module.id}`,
+        source: { x: centerX, y: centerY },
+        target: { x: module.position.x, y: module.position.y },
+        type: 'energy' as const,
+        rate: Math.min(100, resourceLevels.energy * (0.7 + Math.random() * 0.6)),
+      });
+
+      // Materials or research flow (from module to center)
+      const resourceType = index % 2 === 0 ? ('materials' as const) : ('research' as const);
+      flows.push({
+        id: `${resourceType}-flow-${module.id}`,
+        source: { x: module.position.x, y: module.position.y },
+        target: { x: centerX, y: centerY },
+        type: resourceType,
+        rate: Math.min(100, resourceLevels[resourceType] * (0.6 + Math.random() * 0.8)),
+      });
+
+      return flows;
+    });
+
+    setResourceFlows(newFlows);
+  }, [modules, resourceLevels]);
+
   return (
     <div className="relative h-full w-full" data-mothership-id={id}>
       {/* Core Mothership Structure */}
       <div className="absolute inset-0 rounded-lg border border-gray-700 bg-gray-900/90">
         <div className="p-6">
           <h2 className="mb-4 text-xl font-bold text-white">Mothership Control</h2>
-          <div className="mb-6 text-sm text-gray-400">Level {level}</div>
+          <div className="mb-6 text-sm text-gray-400">
+            Level {level} (Tier {tier})
+          </div>
+
+          {/* Animated Superstructure */}
+          <div className="relative mb-8 flex h-96 w-full items-center justify-center">
+            <MothershipSuperstructure
+              tier={tier as 1 | 2 | 3}
+              expansionLevel={expansionProgress}
+              resourceFlow={{
+                energy: resourceLevels.energy,
+                materials: resourceLevels.materials,
+                research: resourceLevels.research,
+              }}
+              quality={quality}
+              onSectionClick={onSectionClick}
+            />
+
+            {/* Resource Flow Visualizations */}
+            <div className="pointer-events-none absolute inset-0">
+              {resourceFlows.map(flow => (
+                <ResourceFlowVisualization
+                  key={flow.id}
+                  sourcePosition={flow.source}
+                  targetPosition={flow.target}
+                  resourceType={flow.type}
+                  flowRate={flow.rate}
+                  quality={quality}
+                />
+              ))}
+            </div>
+          </div>
 
           {/* Module Attachment Points */}
           <div className="space-y-4">
@@ -159,6 +257,53 @@ export function MothershipCore({
                 </div>
               );
             })}
+          </div>
+
+          {/* Resource Levels Display */}
+          <div className="mt-8 space-y-3">
+            <h3 className="text-md font-semibold text-gray-300">Resource Levels</h3>
+
+            {/* Energy */}
+            <div>
+              <div className="mb-1 flex justify-between text-xs">
+                <span className="text-yellow-400">Energy</span>
+                <span className="text-gray-400">{resourceLevels.energy}%</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
+                <div
+                  className="h-full rounded-full bg-yellow-500"
+                  style={{ width: `${resourceLevels.energy}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Materials */}
+            <div>
+              <div className="mb-1 flex justify-between text-xs">
+                <span className="text-blue-400">Materials</span>
+                <span className="text-gray-400">{resourceLevels.materials}%</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
+                <div
+                  className="h-full rounded-full bg-blue-500"
+                  style={{ width: `${resourceLevels.materials}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Research */}
+            <div>
+              <div className="mb-1 flex justify-between text-xs">
+                <span className="text-purple-400">Research</span>
+                <span className="text-gray-400">{resourceLevels.research}%</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
+                <div
+                  className="h-full rounded-full bg-purple-500"
+                  style={{ width: `${resourceLevels.research}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

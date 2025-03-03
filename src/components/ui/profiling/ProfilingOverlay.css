@@ -1,0 +1,166 @@
+.profiling-overlay {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 400px;
+  max-height: 80vh;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  border-top-left-radius: 8px;
+  font-family: monospace;
+  font-size: 12px;
+  z-index: 9999;
+  overflow: auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.profiling-overlay__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profiling-overlay__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+  color: #00bcd4;
+}
+
+.profiling-overlay__controls {
+  display: flex;
+  gap: 8px;
+}
+
+.profiling-overlay__button {
+  background-color: rgba(0, 188, 212, 0.2);
+  border: 1px solid rgba(0, 188, 212, 0.5);
+  color: #00bcd4;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profiling-overlay__button:hover {
+  background-color: rgba(0, 188, 212, 0.3);
+}
+
+.profiling-overlay__button:active {
+  background-color: rgba(0, 188, 212, 0.4);
+}
+
+.profiling-overlay__summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profiling-overlay__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profiling-overlay__metric-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+}
+
+.profiling-overlay__metric-value {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.profiling-overlay__tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profiling-overlay__tab {
+  flex: 1;
+  background-color: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  text-align: center;
+}
+
+.profiling-overlay__tab:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.profiling-overlay__tab--active {
+  color: #00bcd4;
+  border-bottom: 2px solid #00bcd4;
+}
+
+.profiling-overlay__table-container {
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.profiling-overlay__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.profiling-overlay__table th {
+  text-align: left;
+  padding: 6px 8px;
+  color: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profiling-overlay__table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.profiling-overlay__component-name {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profiling-overlay__render-count {
+  text-align: right;
+}
+
+.profiling-overlay__render-time {
+  text-align: right;
+}
+
+.profiling-overlay__render-time--slow {
+  color: #ff5252;
+}
+
+.profiling-overlay__wasted-renders {
+  text-align: right;
+}
+
+.profiling-overlay__wasted-renders--warning {
+  color: #ffab40;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profiling-overlay {
+    width: 100%;
+    max-height: 50vh;
+    border-radius: 0;
+  }
+}

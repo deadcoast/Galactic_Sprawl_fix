@@ -119,6 +119,38 @@
 - `src/components/buildings/modules/MiningHub/ThresholdStatusIndicator.tsx` - Visual indicator for threshold status
 - `src/components/buildings/modules/MiningHub/MiningTutorial.tsx` - Tutorial component for the Mining Hub
 
+### Mothership System
+
+- `src/components/buildings/mothership/MothershipCore.tsx` - Core component for the Mothership, integrating animated superstructure expansion and resource flow visualizations
+- `src/effects/component_effects/MothershipSuperstructure.tsx` - Component for rendering an animated superstructure that expands based on the expansion level
+- `src/effects/component_effects/ResourceFlowVisualization.tsx` - Component for visualizing resource flows between different points with animated particles
+- `src/styles/components/mothership.css` - CSS styles for the Mothership components, including animations for the superstructure and resource flows
+
+### Colony System
+
+- `src/components/buildings/colony/ColonyManagementSystem.tsx` - Main component for managing a colony, integrating population growth, trade routes, and growth modifiers
+- `src/components/buildings/colony/PopulationGrowthModule.tsx` - Component for visualizing and managing population growth with growth history tracking and modifier support
+- `src/components/buildings/colony/TradeRouteVisualization.tsx` - Component for visualizing trade routes between the colony and its trade partners with resource flow animations
+- `src/components/buildings/colony/GrowthRateModifiers.tsx` - Component for managing growth rate modifiers with visual feedback on modifier effects
+- `src/components/buildings/colony/AutomatedPopulationManager.tsx` - Component for automating population growth with cycle management and event tracking
+- `src/components/buildings/colony/ColonyMap.tsx` - Interactive map component for visualizing and managing colony buildings
+- `src/components/buildings/colony/ResourceDashboard.tsx` - Dashboard component for monitoring and managing colony resources
+- `src/components/buildings/colony/SatisfactionMeter.tsx` - Component for visualizing colony satisfaction based on various factors
+- `src/components/buildings/colony/PopulationProjectionChart.tsx` - Component for projecting future population growth based on current growth rate
+- `src/config/automation/colonyRules.ts` - Configuration for colony automation rules, including population growth, resource management, and trade route establishment
+- `src/pages/ColonyManagementPage.tsx` - Page component that showcases the Colony Management System with sample data
+
+## Combat System
+
+### Components
+
+- **src/components/combat/radar/RadarSweepAnimation.tsx**: Animated radar sweep visualization with customizable appearance and performance settings.
+- **src/components/combat/radar/DetectionVisualization.tsx**: Visualizes detected objects on radar with different representations based on object type and confidence level.
+- **src/components/combat/radar/RangeIndicators.tsx**: Displays detection, weapon, and communication ranges with customizable appearance and interactive elements.
+- **src/components/combat/alerts/AlertSystemUI.tsx**: Alert system UI with different severity levels and interaction options.
+- **src/components/combat/CombatSystemDemo.tsx**: Demo component that integrates all combat system UI components.
+- **src/pages/CombatSystemPage.tsx**: Page that showcases the Combat System UI components.
+
 ## Documentation
 
 ### Architecture
@@ -172,3 +204,23 @@
 ## Recent Updates
 
 - `src/managers/weapons/AdvancedWeaponEffectManager.ts` - Implemented the `_WeaponEvents` interface properly in the `AdvancedWeaponEffectManager` class. The interface is now used for handling weapon effect events and bridges between the custom `_WeaponEvents` format and the standard `AdvancedWeaponEffectEvents` system. Added properties, index signature, and a bridging method to properly satisfy the interface requirements.
+
+## Bundle Optimization and Code Splitting
+
+- **src/utils/preload.ts** - Utility functions for intelligent preloading of lazy-loaded components using requestIdleCallback or setTimeout fallback. Provides functions to preload common and low-priority routes in the background.
+
+- **src/router/routes.tsx** - Route configuration implementing React.lazy code splitting for all route components. Implements Suspense boundaries with loading fallbacks for each route.
+
+- **src/main.tsx** - Application entry point that now triggers background preloading of common routes after initial render.
+
+- **src/App.tsx** - Main application component with lazy loading for the GameLayout component to optimize initial rendering.
+
+- **vite.config.ts** - Enhanced build configuration with optimized code splitting, tree shaking, and bundle size optimization. Implements advanced Rollup configuration with manual chunks for vendor code, aggressive tree shaking, and minification settings.
+
+## Error Handling System
+
+- `src/components/ui/GlobalErrorBoundary.tsx` - React error boundary component that wraps the entire application to catch and handle uncaught errors. Provides a user-friendly fallback UI with error details and a reload option.
+
+- `src/services/ErrorLoggingService.ts` - Singleton service that provides structured error logging with categorization by type and severity, error grouping, and support for remote error reporting. Includes utilities for tracking error occurrences and deduplicating similar errors.
+
+- `src/services/RecoveryService.ts` - Service for recovering from critical application failures through various strategies including state snapshots, application resets, and graceful degradation. Provides automatic error detection and recovery mechanisms.

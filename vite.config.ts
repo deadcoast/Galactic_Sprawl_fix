@@ -15,8 +15,14 @@ export default defineConfig({
           if (req.url?.startsWith('/.pixelArtAssets/')) {
             req.url = req.url.replace('/.pixelArtAssets/', '/');
             res.setHeader('Content-Type', 'image/png');
-            // @ts-expect-error TS2345
-            return serveStatic(resolve(__dirname, '.pixelArtAssets'))(req, res, next);
+            // Using proper type assertion for serveStatic middleware
+            return (
+              serveStatic(resolve(__dirname, '.pixelArtAssets')) as unknown as (
+                req: import('http').IncomingMessage,
+                res: import('http').ServerResponse,
+                next: () => void
+              ) => void
+            )(req, res, next);
           }
           next();
         });

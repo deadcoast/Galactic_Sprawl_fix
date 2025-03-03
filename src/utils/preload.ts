@@ -11,10 +11,10 @@ export const preloadComponents = (imports: Array<ImportableComponent>): void => 
   // Only preload in production to avoid unnecessary load during development
   if (import.meta.env.PROD) {
     // Use requestIdleCallback if available, otherwise use a short timeout
-    const schedulePreload =
-      typeof window.requestIdleCallback !== 'undefined'
-        ? window.requestIdleCallback
-        : (cb: () => void) => setTimeout(cb, 1000);
+    const schedulePreload = hasIdleCallback(window)
+      ? window.requestIdleCallback
+      : (cb: IdleRequestCallback) =>
+          setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 50 }), 1000);
 
     // Schedule preloading during browser idle time
     schedulePreload(() => {
@@ -28,12 +28,12 @@ export const preloadComponents = (imports: Array<ImportableComponent>): void => 
   }
 };
 
-// Helper for types with window.requestIdleCallback
-declare global {
-  interface Window {
-    requestIdleCallback: (callback: () => void, options?: { timeout: number }) => number;
-    cancelIdleCallback: (handle: number) => void;
-  }
+// Type guard to check if requestIdleCallback is available
+function hasIdleCallback(window: Window): window is Window & {
+  requestIdleCallback: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+  cancelIdleCallback: (handle: number) => void;
+} {
+  return typeof window.requestIdleCallback !== 'undefined';
 }
 
 // Export a function to preload common routes that are likely to be used

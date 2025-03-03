@@ -2046,3 +2046,121 @@ Parameter variables were defined in method signatures but never used within the 
 3. Document in comments why a parameter is kept but not used if it's not immediately obvious.
 4. When implementing methods from interfaces or base classes, ensure all parameters are either used or properly marked as unused.
 5. Use a linting tool like ESLint with the `no-unused-vars` rule to catch unused variables early.
+
+## TypeScript @ts-ignore vs @ts-expect-error Directive Issue (March 3, 2025)
+
+### Error
+
+ESLint warning in vite.config.ts:
+
+```
+Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free.
+```
+
+### Cause
+
+When configuring the server middleware in vite.config.ts, we were using `@ts-ignore` to suppress a TypeScript error related to the mismatched types for the serveStatic function and the middleware parameters. However, `@ts-ignore` is considered less precise than `@ts-expect-error` because it will still suppress any type checking even if the code changes and no longer produces errors.
+
+### Solution
+
+1. Replaced `@ts-ignore` with `@ts-expect-error` with the specific error code to make the directive more intentional and explicit:
+
+   ```typescript
+   // Before
+   // @ts-ignore
+   return serveStatic(resolve(__dirname, '.pixelArtAssets'))(req, res, next);
+
+   // After
+   // @ts-expect-error TS2345
+   return serveStatic(resolve(__dirname, '.pixelArtAssets'))(req, res, next);
+   ```
+
+2. However, this created a new linting error because the `@ts-expect-error` directive was unused when the types actually did produce an error. To fix this issue properly, two approaches are possible:
+
+   **Option 1: Use a proper type assertion** (preferred for most cases)
+
+   ```typescript
+   return (serveStatic(resolve(__dirname, '.pixelArtAssets')) as any)(req, res, next);
+   ```
+
+   **Option 2: Add a more specific error code with proper documentation**
+
+   ```typescript
+   // @ts-expect-error TS2345 - Type mismatch in serveStatic parameters
+   return serveStatic(resolve(__dirname, '.pixelArtAssets'))(req, res, next);
+   ```
+
+### Prevention
+
+1. **Prefer `@ts-expect-error` over `@ts-ignore`**: `@ts-expect-error` will produce an error if the annotated code doesn't actually have any type errors, encouraging more precise suppression.
+
+2. **Add error codes**: When using type suppression, add the specific error code (e.g., `TS2345`) to document exactly what error is being suppressed.
+
+3. **Add comments**: Always include a comment explaining why the suppression is necessary.
+
+4. **Consider alternatives**:
+
+   - Use proper type assertions with intermediate unknown casting
+   - Create appropriate typings for third-party libraries
+   - Use proper type declarations (`.d.ts` files) for modules
+
+5. **Regularly review suppressions**: Periodically check if type suppression is still needed, as TypeScript and libraries evolve.
+
+## Fixing TypeScript Interface Property Conflict with Window.requestIdleCallback (March 4, 2025)
+
+### Error
+
+TypeScript error in `src/utils/preload.ts`:
+
+```
+Subsequent property declarations must have the same type. Property 'requestIdleCallback' must be of type '(callback: IdleRequestCallback, options?: IdleRequestOptions | undefined) => number', but here has type '(callback: () => void, options?: { timeout: number; } | undefined) => number'.
+```
+
+### Cause
+
+The `preload.ts` file included a custom declaration of the `requestIdleCallback` property in the global `Window` interface, which conflicted with the built-in declaration already present in the DOM type definitions (`lib.dom.d.ts`). The custom declaration used simpler types (`() => void` and `{ timeout: number }`) while the DOM definition used specific types (`IdleRequestCallback` and `IdleRequestOptions`).
+
+### Solution
+
+1. **Removed the custom global interface declaration** that was conflicting with the built-in types:
+
+   ```typescript
+   // REMOVED: This was causing the conflict
+   declare global {
+     interface Window {
+       requestIdleCallback: (callback: () => void, options?: { timeout: number }) => number;
+       cancelIdleCallback: (handle: number) => void;
+     }
+   }
+   ```
+
+2. **Kept the type guard function** that uses the correct types from the DOM definitions:
+
+   ```typescript
+   // Type guard to check if requestIdleCallback is available
+   function hasIdleCallback(window: Window): window is Window & {
+     requestIdleCallback: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+     cancelIdleCallback: (handle: number) => void;
+   } {
+     return typeof window.requestIdleCallback !== 'undefined';
+   }
+   ```
+
+3. **Updated the preload usage** to utilize the type guard with proper type safety:
+
+   ```typescript
+   const schedulePreload = hasIdleCallback(window)
+     ? window.requestIdleCallback
+     : (cb: IdleRequestCallback) =>
+         setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 50 }), 1000);
+   ```
+
+### Prevention
+
+1. **Check for existing declarations**: Before declaring interfaces for global objects like `Window`, check if they're already defined in built-in TypeScript libraries to avoid conflicts.
+
+2. **Use type guards instead of redeclarations**: Instead of extending global interfaces, use type guards to safely check for and use browser APIs that might not be universally available.
+
+3. **Match existing types exactly**: If you must extend a built-in interface, make sure to match the existing property types exactly or use the exact same imported types.
+
+4. **Use augmentation judiciously**: Interface augmentation should be used sparingly and only when absolutely necessary to avoid conflicts.

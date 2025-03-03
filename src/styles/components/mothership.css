@@ -30,31 +30,148 @@
   }
 }
 
+/* New animations for superstructure */
+@keyframes expand {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes resourceFlow {
+  0% {
+    transform: translateX(0) scale(0.8);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateX(50%) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) scale(0.8);
+    opacity: 0.4;
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.8));
+  }
+}
+
 /* Tier-specific Effects */
 .mothership-tier-1 {
   --ring-count: 1;
   --glow-intensity: 4px;
+  --expansion-speed: 1.5s;
 }
 
 .mothership-tier-2 {
   --ring-count: 2;
   --glow-intensity: 8px;
+  --expansion-speed: 1.2s;
 }
 
 .mothership-tier-3 {
   --ring-count: 3;
   --glow-intensity: 12px;
+  --expansion-speed: 0.9s;
 }
 
 /* Quality-based Particle System */
 .particles-high {
-  --particle-count: 16;
+  --particle-count: 24;
+  --particle-size: 3px;
+  --particle-speed: 4s;
 }
 
 .particles-medium {
-  --particle-count: 8;
+  --particle-count: 12;
+  --particle-size: 2px;
+  --particle-speed: 5s;
 }
 
 .particles-low {
-  --particle-count: 4;
+  --particle-count: 6;
+  --particle-size: 1px;
+  --particle-speed: 6s;
+}
+
+/* Resource Flow Styles */
+.resource-flow {
+  position: absolute;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.resource-flow-energy {
+  --flow-color: rgba(255, 215, 0, 0.7);
+  --flow-glow: rgba(255, 215, 0, 0.3);
+}
+
+.resource-flow-materials {
+  --flow-color: rgba(30, 144, 255, 0.7);
+  --flow-glow: rgba(30, 144, 255, 0.3);
+}
+
+.resource-flow-research {
+  --flow-color: rgba(147, 112, 219, 0.7);
+  --flow-glow: rgba(147, 112, 219, 0.3);
+}
+
+.resource-flow-population {
+  --flow-color: rgba(50, 205, 50, 0.7);
+  --flow-glow: rgba(50, 205, 50, 0.3);
+}
+
+.resource-particle {
+  position: absolute;
+  border-radius: 50%;
+  background-color: var(--flow-color);
+  box-shadow: 0 0 var(--glow-intensity) var(--flow-glow);
+  width: var(--particle-size);
+  height: var(--particle-size);
+  animation: resourceFlow var(--particle-speed) linear infinite;
+}
+
+/* Superstructure Section Styles */
+.superstructure-section {
+  position: absolute;
+  animation: expand var(--expansion-speed) ease-out forwards;
+}
+
+.superstructure-core {
+  z-index: 10;
+  animation: glow 3s infinite ease-in-out;
+}
+
+.superstructure-ring {
+  border-radius: 50%;
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  animation: spin var(--spin-duration) linear infinite;
+}
+
+.superstructure-extension {
+  border-radius: 8px;
+  background-color: rgba(79, 70, 229, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  transition: all 0.3s ease;
+}
+
+.superstructure-extension:hover {
+  background-color: rgba(79, 70, 229, 0.4);
+  border-color: rgba(99, 102, 241, 0.6);
+  transform: scale(1.05);
 }

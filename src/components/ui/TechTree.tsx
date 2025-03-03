@@ -1,36 +1,49 @@
+import { Crosshair, Database, Radar, Rocket, Shield, Ship, Sword, Users, Zap } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { TechNode as ImportedTechNode } from '../../managers/game/techTreeManager';
 import {
-  Check,
-  Crosshair,
-  Database,
-  Lock,
-  Radar,
-  Rocket,
-  Shield,
-  Ship,
-  Sword,
-  Users,
-  Zap,
-} from 'lucide-react';
-import React, { useState } from 'react';
+  ResearchProgressIndicator,
+  TechConnectionLine,
+  TechSynergyIndicator,
+  TechVisualFeedback,
+} from './tech/TechVisualFeedback';
 
-interface TechNode {
-  id: string;
-  name: string;
-  description: string;
-  tier: 1 | 2 | 3 | 4;
+// Local TechNode interface that extends the imported one with additional properties
+interface TechNode extends Omit<ImportedTechNode, 'type'> {
   icon: keyof typeof nodeIcons;
-  requirements: string[];
-  unlocked: boolean;
-  category:
-    | 'infrastructure'
-    | 'warFleet'
-    | 'reconFleet'
-    | 'miningFleet'
-    | 'weapons'
-    | 'defense'
-    | 'special'
-    | 'synergy';
 }
+
+// Map the imported TechNode to our local TechNode
+const mapToLocalTechNode = (node: ImportedTechNode): TechNode => {
+  return {
+    ...node,
+    icon: getCategoryIcon(node.category),
+  };
+};
+
+// Get icon key based on category
+const getCategoryIcon = (category: ImportedTechNode['category']): keyof typeof nodeIcons => {
+  switch (category) {
+    case 'infrastructure':
+      return 'database';
+    case 'warFleet':
+      return 'sword';
+    case 'reconFleet':
+      return 'radar';
+    case 'miningFleet':
+      return 'ship';
+    case 'weapons':
+      return 'crosshair';
+    case 'defense':
+      return 'shield';
+    case 'special':
+      return 'rocket';
+    case 'synergy':
+      return 'zap';
+    default:
+      return 'database';
+  }
+};
 
 const nodeIcons = {
   radar: Radar,
@@ -42,6 +55,18 @@ const nodeIcons = {
   crosshair: Crosshair,
   ship: Ship,
   sword: Sword,
+};
+
+// Category icons for the TechVisualFeedback component
+export const categoryIcons = {
+  infrastructure: <Database className="h-6 w-6" />,
+  warFleet: <Sword className="h-6 w-6" />,
+  reconFleet: <Radar className="h-6 w-6" />,
+  miningFleet: <Ship className="h-6 w-6" />,
+  weapons: <Crosshair className="h-6 w-6" />,
+  defense: <Shield className="h-6 w-6" />,
+  special: <Rocket className="h-6 w-6" />,
+  synergy: <Zap className="h-6 w-6" />,
 };
 
 const techNodes: TechNode[] = [
@@ -746,129 +771,303 @@ const categories = [
 ];
 
 export function TechTree() {
-  const [selectedNode, setSelectedNode] = useState<TechNode | null>(null);
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<TechNode['category']>('infrastructure');
+  const [selectedNode, setSelectedNode] = useState<ImportedTechNode | null>(null);
+  const [researchProgress, setResearchProgress] = useState<Record<string, number>>({});
+  const [activeResearch, setActiveResearch] = useState<string | null>(null);
+  const [connections, setConnections] = useState<
+    Array<{ from: string; to: string; status: 'locked' | 'available' | 'unlocked' }>
+  >([]);
+  const nodeRefs = useRef<Record<string, { x: number; y: number }>>({});
 
-  const handleNodeClick = (node: TechNode) => {
+  // Get tech nodes from the manager
+  const [managedTechNodes, setManagedTechNodes] = useState<ImportedTechNode[]>([]);
+
+  useEffect(() => {
+    // In a real implementation, you would get these from the techTreeManager
+    // For now, we'll convert our local techNodes to the imported type
+    const convertedNodes: ImportedTechNode[] = techNodes.map(node => ({
+      id: node.id,
+      name: node.name,
+      description: node.description,
+      tier: node.tier,
+      requirements: node.requirements,
+      unlocked: node.unlocked,
+      category: node.category,
+      type: node.category, // Use category as type for simplicity
+    }));
+
+    setManagedTechNodes(convertedNodes);
+  }, []);
+
+  // Calculate connections between nodes
+  useEffect(() => {
+    const newConnections: Array<{
+      from: string;
+      to: string;
+      status: 'locked' | 'available' | 'unlocked';
+    }> = [];
+
+    managedTechNodes.forEach(node => {
+      node.requirements.forEach(reqId => {
+        const reqNode = managedTechNodes.find(n => n.id === reqId);
+        if (reqNode) {
+          const status = reqNode.unlocked
+            ? 'unlocked'
+            : canUnlockNode(reqId)
+              ? 'available'
+              : 'locked';
+
+          newConnections.push({
+            from: reqId,
+            to: node.id,
+            status,
+          });
+        }
+      });
+    });
+
+    setConnections(newConnections);
+  }, [managedTechNodes]);
+
+  // Handle node click
+  const handleNodeClick = (node: ImportedTechNode) => {
     setSelectedNode(node);
+
+    // If node is available but not unlocked, start research
+    if (canUnlockNode(node.id) && !node.unlocked && activeResearch !== node.id) {
+      startResearch(node.id);
+    }
   };
 
+  // Check if a node can be unlocked
+  const canUnlockNode = (nodeId: string): boolean => {
+    const node = managedTechNodes.find(n => n.id === nodeId);
+    if (!node) return false;
+
+    // Check if all requirements are met
+    return node.requirements.every(reqId => {
+      const reqNode = managedTechNodes.find(n => n.id === reqId);
+      return reqNode?.unlocked || false;
+    });
+  };
+
+  // Start researching a technology
+  const startResearch = (nodeId: string) => {
+    // Cancel any active research
+    if (activeResearch) {
+      // Save progress for later
+      const currentProgress = researchProgress[activeResearch] || 0;
+      setResearchProgress(prev => ({
+        ...prev,
+        [activeResearch]: currentProgress,
+      }));
+    }
+
+    // Set new active research
+    setActiveResearch(nodeId);
+
+    // Initialize progress if not already started
+    if (!researchProgress[nodeId]) {
+      setResearchProgress(prev => ({
+        ...prev,
+        [nodeId]: 0,
+      }));
+    }
+
+    // Simulate research progress
+    const interval = setInterval(() => {
+      setResearchProgress(prev => {
+        const currentProgress = prev[nodeId] || 0;
+        const newProgress = Math.min(currentProgress + 0.01, 1);
+
+        // If research is complete, unlock the node
+        if (newProgress >= 1) {
+          clearInterval(interval);
+          unlockNode(nodeId);
+          setActiveResearch(null);
+        }
+
+        return {
+          ...prev,
+          [nodeId]: newProgress,
+        };
+      });
+    }, 100);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(interval);
+  };
+
+  // Unlock a node
+  const unlockNode = (nodeId: string) => {
+    // Update the nodes
+    setManagedTechNodes(prev =>
+      prev.map(node => {
+        if (node.id === nodeId) {
+          return { ...node, unlocked: true };
+        }
+        return node;
+      })
+    );
+
+    // In a real app, you would also update the techTreeManager
+    // techTreeManager.unlockNode(nodeId);
+
+    // Reset progress
+    setResearchProgress(prev => ({
+      ...prev,
+      [nodeId]: 0,
+    }));
+
+    // Update connections
+    setConnections(prev =>
+      prev.map(conn => {
+        if (conn.to === nodeId || conn.from === nodeId) {
+          return { ...conn, status: 'unlocked' };
+        }
+        return conn;
+      })
+    );
+  };
+
+  // Get nodes for a specific tier
   const getTierNodes = (tier: number) => {
-    return techNodes.filter(node => node.tier === tier && node.category === activeCategory);
+    return managedTechNodes.filter(node => node.tier === tier);
   };
 
-  const getNodeColor = (node: TechNode) => {
-    if (node.unlocked) {
-      return 'bg-cyan-500 border-cyan-400';
-    }
-    if (node.requirements.every(req => techNodes.find(n => n.id === req)?.unlocked)) {
-      return 'bg-indigo-500 border-indigo-400';
-    }
-    return 'bg-gray-700 border-gray-600';
-  };
-
+  // Render a tier of nodes
   const renderTier = (tier: number) => {
     const nodes = getTierNodes(tier);
+
     return (
-      <div className="flex justify-center space-x-8">
-        {nodes.map(node => {
-          const Icon = nodeIcons[node.icon];
-          const colorClasses = getNodeColor(node);
-          const isHovered = hoveredNode === node.id;
-
-          return (
-            <div
-              key={node.id}
-              className="relative"
-              onMouseEnter={() => setHoveredNode(node.id)}
-              onMouseLeave={() => setHoveredNode(null)}
-            >
-              <button
-                onClick={() => handleNodeClick(node)}
-                className={`h-16 w-16 ${colorClasses} flex items-center justify-center rounded-lg border-2 transition-all duration-300 hover:scale-110`}
-              >
-                <Icon className="h-8 w-8 text-white" />
-                {!node.unlocked && (
-                  <Lock className="absolute right-1 top-1 h-4 w-4 text-gray-300/70" />
-                )}
-                {node.unlocked && (
-                  <Check className="absolute right-1 top-1 h-4 w-4 text-green-300" />
-                )}
-              </button>
-
-              {/* Hover Tooltip */}
-              {isHovered && (
-                <div className="absolute left-1/2 z-10 mt-2 w-64 -translate-x-1/2 rounded-lg border border-gray-700 bg-gray-800/95 p-4 shadow-xl backdrop-blur-sm">
-                  <h3 className="mb-1 text-lg font-bold text-white">{node.name}</h3>
-                  <p className="mb-2 text-sm text-gray-300">{node.description}</p>
-                  {node.requirements.length > 0 && (
-                    <div className="text-xs text-gray-400">
-                      Requires: {node.requirements.join(', ')}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div className="mb-16 flex justify-center space-x-16">
+        {nodes.map(node => (
+          <div
+            key={node.id}
+            ref={el => {
+              if (el) {
+                const rect = el.getBoundingClientRect();
+                nodeRefs.current[node.id] = {
+                  x: rect.left + rect.width / 2,
+                  y: rect.top + rect.height / 2,
+                };
+              }
+            }}
+          >
+            <TechVisualFeedback
+              node={node}
+              isSelected={selectedNode?.id === node.id}
+              isAvailable={canUnlockNode(node.id)}
+              onNodeClick={handleNodeClick}
+              connections={connections.filter(conn => conn.from === node.id || conn.to === node.id)}
+              showDetails={selectedNode?.id === node.id}
+            />
+          </div>
+        ))}
       </div>
     );
   };
 
+  // Render connection lines between nodes
+  const renderConnections = () => {
+    return connections.map((connection, index) => {
+      const fromPos = nodeRefs.current[connection.from];
+      const toPos = nodeRefs.current[connection.to];
+
+      if (!fromPos || !toPos) return null;
+
+      const progress =
+        connection.status === 'unlocked' ? 1 : connection.status === 'available' ? 0.5 : 0.2;
+
+      return (
+        <TechConnectionLine
+          key={`${connection.from}-${connection.to}-${index}`}
+          from={fromPos}
+          to={toPos}
+          status={connection.status}
+          progress={progress}
+        />
+      );
+    });
+  };
+
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900/95 p-8 backdrop-blur-md">
+    <div className="relative min-h-screen bg-gray-900 p-8 text-white">
       <h2 className="mb-8 text-center text-2xl font-bold text-white">Technology Tree</h2>
 
-      {/* Category Tabs */}
-      <div className="mb-8 flex justify-center space-x-4">
-        {categories.map(category => {
-          const isActive = activeCategory === category.id;
-          return (
-            <button
-              key={category.id}
-              onClick={() => setActiveCategory(category.id as TechNode['category'])}
-              className={`flex items-center space-x-2 rounded-lg px-4 py-2 transition-colors ${
-                isActive
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300'
-              }`}
-            >
-              <category.icon className="h-4 w-4" />
-              <span>{category.name}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="space-y-12">
-        {[1, 2, 3].map(tier => (
-          <div key={tier} className="relative">
-            <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-gray-700" />
-            <div className="relative">
-              <div className="mb-4 text-center text-sm font-medium text-gray-400">Tier {tier}</div>
-              {renderTier(tier)}
-            </div>
+      {/* Research progress indicator */}
+      {activeResearch && (
+        <div className="mx-auto mb-6 max-w-md">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-300">
+              Researching: {managedTechNodes.find(n => n.id === activeResearch)?.name}
+            </span>
+            <span className="text-sm text-gray-400">
+              {Math.round(researchProgress[activeResearch] * 100)}%
+            </span>
           </div>
-        ))}
+          <ResearchProgressIndicator
+            progress={researchProgress[activeResearch] || 0}
+            totalTime={10} // 10 seconds for research
+            isActive={true}
+          />
+        </div>
+      )}
+
+      {/* Tech tree visualization */}
+      <div className="relative">
+        {renderConnections()}
+
+        {/* Tier 1 */}
+        {renderTier(1)}
+
+        {/* Tier 2 */}
+        {renderTier(2)}
+
+        {/* Tier 3 */}
+        {renderTier(3)}
+
+        {/* Tier 4 */}
+        {renderTier(4)}
       </div>
 
-      {/* Selected Node Details */}
+      {/* Selected node details */}
       {selectedNode && (
-        <div className="mt-8 rounded-lg border border-gray-700 bg-gray-800/80 p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="mb-2 text-xl font-bold text-white">{selectedNode.name}</h3>
-              <p className="text-gray-300">{selectedNode.description}</p>
-            </div>
-            {nodeIcons[selectedNode.icon] && (
-              <div className={`p-3 ${getNodeColor(selectedNode)} rounded-lg`}>
-                {React.createElement(nodeIcons[selectedNode.icon], {
-                  className: 'w-6 h-6 text-white',
-                })}
+        <div className="mx-auto mt-8 max-w-2xl rounded-lg bg-gray-800 p-6">
+          <div className="flex items-start">
+            <div className="mr-4 h-16 w-16 flex-shrink-0 rounded-full bg-gray-700 p-4">
+              <div className="flex h-full w-full items-center justify-center text-gray-300">
+                {categoryIcons[selectedNode.category]}
               </div>
-            )}
+            </div>
+            <div className="flex-grow">
+              <h3 className="text-xl font-bold text-white">{selectedNode.name}</h3>
+              <div className="mb-2 flex items-center">
+                <span className="mr-2 text-sm text-gray-400">Tier {selectedNode.tier}</span>
+                <span className="mr-2 text-sm text-gray-400">•</span>
+                <span className="text-sm text-gray-400">{selectedNode.category}</span>
+              </div>
+              <p className="text-gray-300">{selectedNode.description}</p>
+
+              {/* Research button for available nodes */}
+              {canUnlockNode(selectedNode.id) && !selectedNode.unlocked && (
+                <div className="mt-4">
+                  <button
+                    className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-500"
+                    onClick={() => startResearch(selectedNode.id)}
+                    disabled={activeResearch === selectedNode.id}
+                  >
+                    {activeResearch === selectedNode.id ? 'Researching...' : 'Start Research'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Show synergies for unlocked nodes */}
+          {selectedNode.unlocked && (
+            <TechSynergyIndicator nodes={managedTechNodes} activeNodeId={selectedNode.id} />
+          )}
         </div>
       )}
     </div>

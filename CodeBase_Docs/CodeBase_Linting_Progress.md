@@ -121,6 +121,12 @@ Main issue types:
 - Approach:
   - Changed `console.debug` to `console.warn` for logging weapon upgrades
 
+### **src/utils/preload.ts** (1 error fixed)
+
+- Fixed `Subsequent property declarations must have the same type` error for `requestIdleCallback`
+- Removed conflicting Window interface declaration
+- Implemented proper type guard for feature detection instead of interface augmentation
+
 ## Metrics
 
 - Total files fixed: 47
