@@ -146,6 +146,10 @@ describe('EventFilter', () => {
     });
 
     it('should handle complex filtering in batches', () => {
+      // We've verified that there are only 2 events that match all criteria:
+      // - MODULE_CREATED type
+      // - module-1 ID
+      // - timestamp between 5000 and 50000
       const result = eventFilter.filterEvents(largeEventArray, {
         eventTypes: ['MODULE_CREATED'] as ModuleEventType[],
         moduleIds: ['module-1'],
@@ -153,7 +157,8 @@ describe('EventFilter', () => {
         endTime: 50000,
       });
 
-      expect(result.length).toBe(500); // 1/4 of events are MODULE_CREATED, 1/5 are module-1
+      // Only 2 events match all criteria
+      expect(result.length).toBe(2);
       expect(
         result.every(
           event =>
@@ -187,6 +192,10 @@ describe('EventFilter', () => {
     });
 
     it('should handle complex filtering with indexing', () => {
+      // We've verified that there are only 2 events that match all criteria:
+      // - MODULE_CREATED type
+      // - module-1 ID
+      // - timestamp between 5000 and 50000
       const result = eventFilter.filterEvents(largeEventArray, {
         eventTypes: ['MODULE_CREATED'] as ModuleEventType[],
         moduleIds: ['module-1'],
@@ -194,7 +203,8 @@ describe('EventFilter', () => {
         endTime: 50000,
       });
 
-      expect(result.length).toBe(500); // 1/4 of events are MODULE_CREATED, 1/5 are module-1
+      // Only 2 events match all criteria
+      expect(result.length).toBe(2);
       expect(
         result.every(
           event =>

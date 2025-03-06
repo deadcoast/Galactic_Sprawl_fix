@@ -248,10 +248,12 @@ describe('GameLoopManager', () => {
     });
 
     it('should handle errors in update callbacks', async () => {
+      const testError = new Error('Test error');
       const errorCallback = vi.fn().mockImplementation(() => {
-        throw new Error('Test error');
+        throw testError;
       });
 
+      // Register the error-throwing callback
       gameLoopManager.registerUpdate('error-update', errorCallback, UpdatePriority.CRITICAL);
 
       // Start the game loop
@@ -263,16 +265,27 @@ describe('GameLoopManager', () => {
       // Wait for the next frame
       await vi.advanceTimersByTimeAsync(0);
 
-      // Check that it emits an error event
+      // Check that the error callback was called
+      expect(errorCallback).toHaveBeenCalled();
+
+      // Check that it emits an error event with the correct data
       expect(moduleEventBus.emit).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'ERROR_OCCURRED',
           data: expect.objectContaining({
             updateId: 'error-update',
-            error: expect.any(Error),
+            error: testError,
           }),
         })
       );
+
+      // Ensure the game loop continues running despite the error
+      mockTime = 32;
+      await vi.advanceTimersByTimeAsync(0);
+
+      // The game loop should still be running
+      // @ts-expect-error - Accessing private property for testing
+      expect(gameLoopManager.running).toBe(true);
     });
 
     it('should respect update intervals', async () => {

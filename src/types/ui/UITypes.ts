@@ -254,4 +254,14 @@ export interface ApplicationProfilingResult {
    * Whether profiling is active
    */
   isActive: () => boolean;
+
+  /**
+   * Get or create a component profiler
+   */
+  getOrCreateProfiler: (componentName: string) => ComponentProfilingResult;
+
+  /**
+   * Check if a component should be profiled
+   */
+  shouldProfileComponent: (componentName: string) => boolean;
 }

@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
+import { Observable } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   useEventBatching,
@@ -9,32 +10,48 @@ import { ModuleEventType } from '../../../lib/modules/ModuleEvents';
 import * as EventBatcher from '../../../utils/events/EventBatcher';
 import { EventBatch } from '../../../utils/events/EventBatcher';
 
-// Mock the EventBatcher module
-vi.mock('../../../utils/events/EventBatcher', () => {
-  const mockBatchedStream = {
-    subscribe: vi.fn().mockReturnValue({
-      unsubscribe: vi.fn(),
-    }),
-  };
+// Define the type for our mock observable
+interface MockObservable<T> {
+  subscribe: (callback: (value: T) => void) => { unsubscribe: () => void };
+  next: (value: T) => void;
+  unsubscribeMock: ReturnType<typeof vi.fn>;
+}
+
+// Create a mock observable with a subscribe method
+const createMockObservable = <T,>(): MockObservable<T> => {
+  const callbacks: Array<(data: T) => void> = [];
+  const unsubscribeMock = vi.fn();
 
   return {
-    createBatchedEventStream: vi.fn().mockReturnValue(mockBatchedStream),
-    getBatchConfig: vi.fn().mockReturnValue({
-      timeWindow: 100,
-      maxBatchSize: 100,
-      emitEmptyBatches: false,
+    subscribe: vi.fn(callback => {
+      callbacks.push(callback);
+      return { unsubscribe: unsubscribeMock };
     }),
-    updateBatchConfig: vi.fn(),
-    EventBatch: vi.fn(),
-    EventBatchConfig: vi.fn(),
+    next: (data: T) => {
+      callbacks.forEach(callback => callback(data));
+    },
+    unsubscribeMock,
   };
-});
+};
 
 describe('useEventBatching', () => {
   const eventTypes = ['MODULE_CREATED', 'MODULE_ATTACHED'] as ModuleEventType[];
+  let mockObservable: MockObservable<EventBatch>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockObservable = createMockObservable<EventBatch>();
+
+    // Mock the EventBatcher functions
+    vi.spyOn(EventBatcher, 'createBatchedEventStream').mockReturnValue(
+      mockObservable as unknown as Observable<EventBatch>
+    );
+    vi.spyOn(EventBatcher, 'getBatchConfig').mockReturnValue({
+      timeWindow: 100,
+      maxBatchSize: 100,
+      emitEmptyBatches: false,
+    });
+    vi.spyOn(EventBatcher, 'updateBatchConfig').mockImplementation(() => {});
   });
 
   it('should initialize with default configuration', () => {
@@ -47,6 +64,11 @@ describe('useEventBatching', () => {
     expect(result.current.hasEvents).toBe(false);
     expect(result.current.eventCount).toBe(0);
     expect(result.current.events).toHaveLength(0);
+
+    // Verify that createBatchedEventStream was called
+    expect(EventBatcher.createBatchedEventStream).toHaveBeenCalledWith(eventTypes, undefined);
+    // Verify that subscribe was called
+    expect(mockObservable.subscribe).toHaveBeenCalled();
   });
 
   it('should update batch configuration', () => {
@@ -62,26 +84,32 @@ describe('useEventBatching', () => {
   it('should clear batch', () => {
     const { result } = renderHook(() => useEventBatching(eventTypes));
 
-    // Set a mock batch
+    // Simulate receiving a batch
+    const mockBatch = {
+      events: [
+        {
+          type: 'MODULE_CREATED' as ModuleEventType,
+          moduleId: 'module-1',
+          moduleType: 'resource-manager',
+          timestamp: Date.now(),
+        },
+      ],
+      timestamp: Date.now(),
+      size: 1,
+      timeWindow: 100,
+      eventTypes: new Set(['MODULE_CREATED'] as ModuleEventType[]),
+      moduleIds: new Set(['module-1']),
+    } as EventBatch;
+
+    // Send the batch through the mock observable
     act(() => {
-      // Directly set the batch for testing purposes
-      result.current.batch = {
-        events: [
-          {
-            type: 'MODULE_CREATED' as ModuleEventType,
-            moduleId: 'module-1',
-            moduleType: 'resource-manager',
-            timestamp: Date.now(),
-          },
-        ],
-        timestamp: Date.now(),
-        size: 1,
-        timeWindow: 100,
-        eventTypes: new Set(['MODULE_CREATED'] as ModuleEventType[]),
-        moduleIds: new Set(['module-1']),
-      } as EventBatch;
+      mockObservable.next(mockBatch);
     });
 
+    // Verify the batch was set
+    expect(result.current.batch).toBe(mockBatch);
+
+    // Clear the batch
     act(() => {
       result.current.clearBatch();
     });
@@ -95,27 +123,27 @@ describe('useEventBatching', () => {
 
     expect(EventBatcher.createBatchedEventStream).toHaveBeenCalledWith(eventTypes, config);
   });
+
+  it('should unsubscribe when unmounted', () => {
+    const { unmount } = renderHook(() => useEventBatching(eventTypes));
+
+    unmount();
+
+    expect(mockObservable.unsubscribeMock).toHaveBeenCalled();
+  });
 });
 
 describe('useEventDebouncing', () => {
   const eventTypes = ['MODULE_CREATED', 'MODULE_ATTACHED'] as ModuleEventType[];
-  const mockBatchSubject = {
-    subscribe: vi.fn().mockImplementation(callback => {
-      // Store the callback for later use
-      mockBatchSubject.callback = callback;
-      return {
-        unsubscribe: vi.fn(),
-      };
-    }),
-    // Add a property to store the callback
-    callback: null as ((batch: EventBatch) => void) | null,
-  };
+  let mockObservable: MockObservable<EventBatch>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset the mock implementation
-    (EventBatcher.createBatchedEventStream as ReturnType<typeof vi.fn>).mockReturnValue(
-      mockBatchSubject
+    mockObservable = createMockObservable<EventBatch>();
+
+    // Mock the EventBatcher functions
+    vi.spyOn(EventBatcher, 'createBatchedEventStream').mockReturnValue(
+      mockObservable as unknown as Observable<EventBatch>
     );
   });
 
@@ -126,39 +154,49 @@ describe('useEventDebouncing', () => {
     expect(result.current.hasEvent).toBe(false);
     expect(result.current.eventType).toBeNull();
     expect(result.current.moduleId).toBeNull();
+
+    // Verify that createBatchedEventStream was called
+    expect(EventBatcher.createBatchedEventStream).toHaveBeenCalledWith(eventTypes, {
+      timeWindow: 300,
+      emitEmptyBatches: false,
+    });
+    // Verify that subscribe was called
+    expect(mockObservable.subscribe).toHaveBeenCalled();
   });
 
   it('should update event when batch is received', () => {
     const { result } = renderHook(() => useEventDebouncing(eventTypes));
 
-    // Simulate receiving a batch
-    act(() => {
-      if (mockBatchSubject.callback) {
-        mockBatchSubject.callback({
-          events: [
-            {
-              type: 'MODULE_CREATED' as ModuleEventType,
-              moduleId: 'module-1',
-              moduleType: 'resource-manager',
-              timestamp: Date.now(),
-            },
-            {
-              type: 'MODULE_ATTACHED' as ModuleEventType,
-              moduleId: 'module-2',
-              moduleType: 'resource-manager',
-              timestamp: Date.now(),
-            },
-          ],
+    // Create a mock batch
+    const mockBatch = {
+      events: [
+        {
+          type: 'MODULE_CREATED' as ModuleEventType,
+          moduleId: 'module-1',
+          moduleType: 'resource-manager',
           timestamp: Date.now(),
-          size: 2,
-          timeWindow: 100,
-          eventTypes: new Set(['MODULE_CREATED', 'MODULE_ATTACHED'] as ModuleEventType[]),
-          moduleIds: new Set(['module-1', 'module-2']),
-        } as EventBatch);
-      }
+        },
+        {
+          type: 'MODULE_ATTACHED' as ModuleEventType,
+          moduleId: 'module-2',
+          moduleType: 'resource-manager',
+          timestamp: Date.now(),
+        },
+      ],
+      timestamp: Date.now(),
+      size: 2,
+      timeWindow: 100,
+      eventTypes: new Set(['MODULE_CREATED', 'MODULE_ATTACHED'] as ModuleEventType[]),
+      moduleIds: new Set(['module-1', 'module-2']),
+    } as EventBatch;
+
+    // Send the batch through the mock observable
+    act(() => {
+      mockObservable.next(mockBatch);
     });
 
-    expect(result.current.event).not.toBeNull();
+    // Verify the event was set to the last event in the batch
+    expect(result.current.event).toEqual(mockBatch.events[1]);
     expect(result.current.hasEvent).toBe(true);
     expect(result.current.eventType).toBe('MODULE_ATTACHED');
     expect(result.current.moduleId).toBe('module-2');
@@ -167,27 +205,32 @@ describe('useEventDebouncing', () => {
   it('should clear event', () => {
     const { result } = renderHook(() => useEventDebouncing(eventTypes));
 
-    // Simulate receiving a batch
-    act(() => {
-      if (mockBatchSubject.callback) {
-        mockBatchSubject.callback({
-          events: [
-            {
-              type: 'MODULE_CREATED' as ModuleEventType,
-              moduleId: 'module-1',
-              moduleType: 'resource-manager',
-              timestamp: Date.now(),
-            },
-          ],
+    // Create a mock batch
+    const mockBatch = {
+      events: [
+        {
+          type: 'MODULE_CREATED' as ModuleEventType,
+          moduleId: 'module-1',
+          moduleType: 'resource-manager',
           timestamp: Date.now(),
-          size: 1,
-          timeWindow: 100,
-          eventTypes: new Set(['MODULE_CREATED'] as ModuleEventType[]),
-          moduleIds: new Set(['module-1']),
-        } as EventBatch);
-      }
+        },
+      ],
+      timestamp: Date.now(),
+      size: 1,
+      timeWindow: 100,
+      eventTypes: new Set(['MODULE_CREATED'] as ModuleEventType[]),
+      moduleIds: new Set(['module-1']),
+    } as EventBatch;
+
+    // Send the batch through the mock observable
+    act(() => {
+      mockObservable.next(mockBatch);
     });
 
+    // Verify the event was set
+    expect(result.current.event).toEqual(mockBatch.events[0]);
+
+    // Clear the event
     act(() => {
       result.current.clearEvent();
     });
@@ -195,27 +238,27 @@ describe('useEventDebouncing', () => {
     expect(result.current.event).toBeNull();
     expect(result.current.hasEvent).toBe(false);
   });
+
+  it('should unsubscribe when unmounted', () => {
+    const { unmount } = renderHook(() => useEventDebouncing(eventTypes));
+
+    unmount();
+
+    expect(mockObservable.unsubscribeMock).toHaveBeenCalled();
+  });
 });
 
 describe('useEventThrottling', () => {
   const eventTypes = ['MODULE_CREATED', 'MODULE_ATTACHED'] as ModuleEventType[];
-  const mockBatchSubject = {
-    subscribe: vi.fn().mockImplementation(callback => {
-      // Store the callback for later use
-      mockBatchSubject.callback = callback;
-      return {
-        unsubscribe: vi.fn(),
-      };
-    }),
-    // Add a property to store the callback
-    callback: null as ((batch: EventBatch) => void) | null,
-  };
+  let mockObservable: MockObservable<EventBatch>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset the mock implementation
-    (EventBatcher.createBatchedEventStream as ReturnType<typeof vi.fn>).mockReturnValue(
-      mockBatchSubject
+    mockObservable = createMockObservable<EventBatch>();
+
+    // Mock the EventBatcher functions
+    vi.spyOn(EventBatcher, 'createBatchedEventStream').mockReturnValue(
+      mockObservable as unknown as Observable<EventBatch>
     );
   });
 
@@ -226,39 +269,49 @@ describe('useEventThrottling', () => {
     expect(result.current.hasEvent).toBe(false);
     expect(result.current.eventType).toBeNull();
     expect(result.current.moduleId).toBeNull();
+
+    // Verify that createBatchedEventStream was called
+    expect(EventBatcher.createBatchedEventStream).toHaveBeenCalledWith(eventTypes, {
+      timeWindow: 300,
+      emitEmptyBatches: false,
+    });
+    // Verify that subscribe was called
+    expect(mockObservable.subscribe).toHaveBeenCalled();
   });
 
   it('should update event when batch is received', () => {
     const { result } = renderHook(() => useEventThrottling(eventTypes));
 
-    // Simulate receiving a batch
-    act(() => {
-      if (mockBatchSubject.callback) {
-        mockBatchSubject.callback({
-          events: [
-            {
-              type: 'MODULE_CREATED' as ModuleEventType,
-              moduleId: 'module-1',
-              moduleType: 'resource-manager',
-              timestamp: Date.now(),
-            },
-            {
-              type: 'MODULE_ATTACHED' as ModuleEventType,
-              moduleId: 'module-2',
-              moduleType: 'resource-manager',
-              timestamp: Date.now(),
-            },
-          ],
+    // Create a mock batch
+    const mockBatch = {
+      events: [
+        {
+          type: 'MODULE_CREATED' as ModuleEventType,
+          moduleId: 'module-1',
+          moduleType: 'resource-manager',
           timestamp: Date.now(),
-          size: 2,
-          timeWindow: 100,
-          eventTypes: new Set(['MODULE_CREATED', 'MODULE_ATTACHED'] as ModuleEventType[]),
-          moduleIds: new Set(['module-1', 'module-2']),
-        } as EventBatch);
-      }
+        },
+        {
+          type: 'MODULE_ATTACHED' as ModuleEventType,
+          moduleId: 'module-2',
+          moduleType: 'resource-manager',
+          timestamp: Date.now(),
+        },
+      ],
+      timestamp: Date.now(),
+      size: 2,
+      timeWindow: 100,
+      eventTypes: new Set(['MODULE_CREATED', 'MODULE_ATTACHED'] as ModuleEventType[]),
+      moduleIds: new Set(['module-1', 'module-2']),
+    } as EventBatch;
+
+    // Send the batch through the mock observable
+    act(() => {
+      mockObservable.next(mockBatch);
     });
 
-    expect(result.current.event).not.toBeNull();
+    // Verify the event was set to the first event in the batch
+    expect(result.current.event).toEqual(mockBatch.events[0]);
     expect(result.current.hasEvent).toBe(true);
     expect(result.current.eventType).toBe('MODULE_CREATED');
     expect(result.current.moduleId).toBe('module-1');
@@ -267,32 +320,45 @@ describe('useEventThrottling', () => {
   it('should clear event', () => {
     const { result } = renderHook(() => useEventThrottling(eventTypes));
 
-    // Simulate receiving a batch
-    act(() => {
-      if (mockBatchSubject.callback) {
-        mockBatchSubject.callback({
-          events: [
-            {
-              type: 'MODULE_CREATED' as ModuleEventType,
-              moduleId: 'module-1',
-              moduleType: 'resource-manager',
-              timestamp: Date.now(),
-            },
-          ],
+    // Create a mock batch
+    const mockBatch = {
+      events: [
+        {
+          type: 'MODULE_CREATED' as ModuleEventType,
+          moduleId: 'module-1',
+          moduleType: 'resource-manager',
           timestamp: Date.now(),
-          size: 1,
-          timeWindow: 100,
-          eventTypes: new Set(['MODULE_CREATED'] as ModuleEventType[]),
-          moduleIds: new Set(['module-1']),
-        } as EventBatch);
-      }
+        },
+      ],
+      timestamp: Date.now(),
+      size: 1,
+      timeWindow: 100,
+      eventTypes: new Set(['MODULE_CREATED'] as ModuleEventType[]),
+      moduleIds: new Set(['module-1']),
+    } as EventBatch;
+
+    // Send the batch through the mock observable
+    act(() => {
+      mockObservable.next(mockBatch);
     });
 
+    // Verify the event was set
+    expect(result.current.event).toEqual(mockBatch.events[0]);
+
+    // Clear the event
     act(() => {
       result.current.clearEvent();
     });
 
     expect(result.current.event).toBeNull();
     expect(result.current.hasEvent).toBe(false);
+  });
+
+  it('should unsubscribe when unmounted', () => {
+    const { unmount } = renderHook(() => useEventThrottling(eventTypes));
+
+    unmount();
+
+    expect(mockObservable.unsubscribeMock).toHaveBeenCalled();
   });
 });

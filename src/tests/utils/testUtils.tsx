@@ -2,6 +2,7 @@ import { render, RenderOptions, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React, { ReactElement } from 'react';
 import { expect, vi } from 'vitest';
+import { GameProvider } from '../../contexts/GameContext';
 
 interface WrapperProps {
   children: React.ReactNode;
@@ -14,8 +15,10 @@ interface WrapperProps {
 export const AllProviders: React.FC<WrapperProps> = ({ children }) => {
   return (
     <>
-      {/* Add context providers here if needed */}
-      {children}
+      <GameProvider>
+        {/* Add context providers here if needed */}
+        {children}
+      </GameProvider>
     </>
   );
 };
@@ -229,16 +232,19 @@ export async function testLoadingState(
   // Verify loading indicator is shown
   expect(screen.getByRole('progressbar')).toBeInTheDocument();
 
-  // Finish loading
+  // Call the finishLoading callback
   finishLoading();
 
   // Rerender with loading complete
   rerender(React.cloneElement(ui, { [loadingProp]: false }));
 
   // Verify loading indicator is removed
-  await waitFor(() => {
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-  });
+  await waitFor(
+    () => {
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    },
+    { timeout: 1000 }
+  );
 }
 
 /**

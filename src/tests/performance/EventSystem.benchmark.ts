@@ -1,10 +1,7 @@
+import { bench, describe } from 'vitest';
 import { ModuleEvent, ModuleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
-import {
-  createPerformanceReporter,
-  measureExecutionTime,
-  measureMemoryUsage,
-} from '../utils/testUtils';
+import { createPerformanceReporter, measureExecutionTime } from '../utils/testUtils';
 
 /**
  * Event System Performance Benchmark
@@ -50,16 +47,139 @@ function createRandomEvents(count: number, eventTypes: ModuleEventType[]): Modul
 }
 
 /**
- * Run a single benchmark scenario
+ * Measure memory usage more accurately
  */
-async function runBenchmark(scenario: BenchmarkScenario): Promise<{
+async function measureMemoryUsageAccurately(
+  fn: () => Promise<void> | void
+): Promise<number | undefined> {
+  // Force garbage collection if available (Node.js only)
+  if (global.gc) {
+    global.gc();
+  }
+
+  // Check if we have access to memory usage API
+  const hasMemoryAPI = typeof process !== 'undefined' && typeof process.memoryUsage === 'function';
+
+  if (!hasMemoryAPI) {
+    console.warn('Memory usage API not available, skipping memory measurement');
+    return undefined;
+  }
+
+  // Measure before
+  const memoryBefore = process.memoryUsage().heapUsed;
+
+  // Run the function
+  await fn();
+
+  // Force garbage collection again if available
+  if (global.gc) {
+    global.gc();
+  }
+
+  // Measure after
+  const memoryAfter = process.memoryUsage().heapUsed;
+
+  // Calculate difference in MB
+  return (memoryAfter - memoryBefore) / (1024 * 1024);
+}
+
+/**
+ * Run a single benchmark scenario with improved metrics
+ */
+async function runBenchmarkWithImprovedMetrics(scenario: BenchmarkScenario): Promise<{
   emitTimeMs: number;
   retrievalTimeMs: number;
   memoryChangeMB?: number;
   listenersTriggered: number;
 }> {
   console.warn(`Running benchmark: ${scenario.name}`);
-  return scenario.run();
+
+  // Create a new event bus for this test
+  const eventBus = new ModuleEventBus(scenario.eventCount * 2);
+  let listenersTriggered = 0;
+
+  // Add listeners
+  const unsubscribers = [];
+  for (let i = 0; i < scenario.listenerCount; i++) {
+    // Each listener listens to all event types
+    for (const type of scenario.eventTypes) {
+      const unsubscribe = eventBus.subscribe(type, () => {
+        listenersTriggered++;
+      });
+      unsubscribers.push(unsubscribe);
+    }
+  }
+
+  // Create random events
+  const events = createRandomEvents(scenario.eventCount, scenario.eventTypes);
+
+  // Measure emission time with multiple runs for accuracy
+  const emitTimesMs: number[] = [];
+  for (let i = 0; i < 3; i++) {
+    const emitResult = await measureExecutionTime(async () => {
+      // Emit all events
+      events.forEach(event => eventBus.emit(event));
+    });
+    emitTimesMs.push(emitResult.executionTimeMs);
+
+    // Reset for next run
+    eventBus.clearHistory();
+    listenersTriggered = 0;
+
+    // Re-emit events
+    events.forEach(event => eventBus.emit(event));
+  }
+
+  // Calculate average emit time
+  const emitTimeMs = emitTimesMs.reduce((a, b) => a + b, 0) / emitTimesMs.length;
+
+  // Measure history retrieval time with multiple runs for accuracy
+  const retrievalTimesMs: number[] = [];
+  for (let i = 0; i < 3; i++) {
+    const retrievalResult = await measureExecutionTime(() => {
+      // Retrieve history in different ways
+      eventBus.getHistory();
+      eventBus.getModuleHistory('module-1');
+      eventBus.getEventTypeHistory('MODULE_CREATED');
+    });
+    retrievalTimesMs.push(retrievalResult.executionTimeMs);
+  }
+
+  // Calculate average retrieval time
+  const retrievalTimeMs = retrievalTimesMs.reduce((a, b) => a + b, 0) / retrievalTimesMs.length;
+
+  // Measure memory usage more accurately
+  const memoryChangeMB = await measureMemoryUsageAccurately(async () => {
+    // Create a new event bus with the same configuration
+    const memoryEventBus = new ModuleEventBus(scenario.eventCount * 2);
+
+    // Add the same number of listeners
+    const memoryUnsubscribers = [];
+    for (let i = 0; i < scenario.listenerCount; i++) {
+      for (const type of scenario.eventTypes) {
+        const unsubscribe = memoryEventBus.subscribe(type, () => {
+          // Do nothing in this test
+        });
+        memoryUnsubscribers.push(unsubscribe);
+      }
+    }
+
+    // Emit all events
+    events.forEach(event => memoryEventBus.emit(event));
+
+    // Clean up
+    memoryUnsubscribers.forEach(unsubscribe => unsubscribe());
+  });
+
+  // Clean up
+  unsubscribers.forEach(unsubscribe => unsubscribe());
+
+  return {
+    emitTimeMs,
+    retrievalTimeMs,
+    memoryChangeMB,
+    listenersTriggered,
+  };
 }
 
 // Small event load - baseline
@@ -75,53 +195,7 @@ const smallEventScenario: BenchmarkScenario = {
     'STATUS_CHANGED',
   ],
   run: async () => {
-    // Create a new event bus for this test
-    const eventBus = new ModuleEventBus(1000);
-    let listenersTriggered = 0;
-
-    // Add listeners
-    const unsubscribers = [];
-    for (let i = 0; i < smallEventScenario.listenerCount; i++) {
-      // Each listener listens to all event types
-      for (const type of smallEventScenario.eventTypes) {
-        const unsubscribe = eventBus.subscribe(type, () => {
-          listenersTriggered++;
-        });
-        unsubscribers.push(unsubscribe);
-      }
-    }
-
-    // Create random events
-    const events = createRandomEvents(smallEventScenario.eventCount, smallEventScenario.eventTypes);
-
-    // Measure emission time
-    const emitResult = await measureExecutionTime(async () => {
-      // Emit all events
-      events.forEach(event => eventBus.emit(event));
-    });
-
-    // Measure history retrieval time
-    const retrievalResult = await measureExecutionTime(() => {
-      // Retrieve history in different ways
-      eventBus.getHistory();
-      eventBus.getModuleHistory('module-1');
-      eventBus.getEventTypeHistory('MODULE_CREATED');
-    });
-
-    // Measure memory usage
-    const memoryResult = await measureMemoryUsage(async () => {
-      // Do nothing - just to measure baseline memory
-    });
-
-    // Clean up
-    unsubscribers.forEach(unsubscribe => unsubscribe());
-
-    return {
-      emitTimeMs: emitResult.executionTimeMs,
-      retrievalTimeMs: retrievalResult.executionTimeMs,
-      memoryChangeMB: memoryResult.memoryChangeMB,
-      listenersTriggered,
-    };
+    return runBenchmarkWithImprovedMetrics(smallEventScenario);
   },
 };
 
@@ -143,56 +217,7 @@ const mediumEventScenario: BenchmarkScenario = {
     'SUB_MODULE_CREATED',
   ],
   run: async () => {
-    // Create a new event bus for this test
-    const eventBus = new ModuleEventBus(2000);
-    let listenersTriggered = 0;
-
-    // Add listeners
-    const unsubscribers = [];
-    for (let i = 0; i < mediumEventScenario.listenerCount; i++) {
-      // Each listener listens to all event types
-      for (const type of mediumEventScenario.eventTypes) {
-        const unsubscribe = eventBus.subscribe(type, () => {
-          listenersTriggered++;
-        });
-        unsubscribers.push(unsubscribe);
-      }
-    }
-
-    // Create random events
-    const events = createRandomEvents(
-      mediumEventScenario.eventCount,
-      mediumEventScenario.eventTypes
-    );
-
-    // Measure emission time
-    const emitResult = await measureExecutionTime(async () => {
-      // Emit all events
-      events.forEach(event => eventBus.emit(event));
-    });
-
-    // Measure history retrieval time
-    const retrievalResult = await measureExecutionTime(() => {
-      // Retrieve history in different ways
-      eventBus.getHistory();
-      eventBus.getModuleHistory('module-1');
-      eventBus.getEventTypeHistory('MODULE_CREATED');
-    });
-
-    // Measure memory usage
-    const memoryResult = await measureMemoryUsage(async () => {
-      // Do nothing - just to measure baseline memory
-    });
-
-    // Clean up
-    unsubscribers.forEach(unsubscribe => unsubscribe());
-
-    return {
-      emitTimeMs: emitResult.executionTimeMs,
-      retrievalTimeMs: retrievalResult.executionTimeMs,
-      memoryChangeMB: memoryResult.memoryChangeMB,
-      listenersTriggered,
-    };
+    return runBenchmarkWithImprovedMetrics(mediumEventScenario);
   },
 };
 
@@ -224,53 +249,7 @@ const largeEventScenario: BenchmarkScenario = {
     'TECH_UNLOCKED',
   ],
   run: async () => {
-    // Create a new event bus for this test
-    const eventBus = new ModuleEventBus(20000);
-    let listenersTriggered = 0;
-
-    // Add listeners
-    const unsubscribers = [];
-    for (let i = 0; i < largeEventScenario.listenerCount; i++) {
-      // Each listener listens to all event types
-      for (const type of largeEventScenario.eventTypes) {
-        const unsubscribe = eventBus.subscribe(type, () => {
-          listenersTriggered++;
-        });
-        unsubscribers.push(unsubscribe);
-      }
-    }
-
-    // Create random events
-    const events = createRandomEvents(largeEventScenario.eventCount, largeEventScenario.eventTypes);
-
-    // Measure emission time
-    const emitResult = await measureExecutionTime(async () => {
-      // Emit all events
-      events.forEach(event => eventBus.emit(event));
-    });
-
-    // Measure history retrieval time
-    const retrievalResult = await measureExecutionTime(() => {
-      // Retrieve history in different ways
-      eventBus.getHistory();
-      eventBus.getModuleHistory('module-1');
-      eventBus.getEventTypeHistory('MODULE_CREATED');
-    });
-
-    // Measure memory usage
-    const memoryResult = await measureMemoryUsage(async () => {
-      // Do nothing - just to measure baseline memory
-    });
-
-    // Clean up
-    unsubscribers.forEach(unsubscribe => unsubscribe());
-
-    return {
-      emitTimeMs: emitResult.executionTimeMs,
-      retrievalTimeMs: retrievalResult.executionTimeMs,
-      memoryChangeMB: memoryResult.memoryChangeMB,
-      listenersTriggered,
-    };
+    return runBenchmarkWithImprovedMetrics(largeEventScenario);
   },
 };
 
@@ -287,56 +266,7 @@ const listenerScalingScenario: BenchmarkScenario = {
     'ERROR_OCCURRED',
   ],
   run: async () => {
-    // Create a new event bus for this test
-    const eventBus = new ModuleEventBus(2000);
-    let listenersTriggered = 0;
-
-    // Add listeners
-    const unsubscribers = [];
-    for (let i = 0; i < listenerScalingScenario.listenerCount; i++) {
-      // Each listener listens to all event types
-      for (const type of listenerScalingScenario.eventTypes) {
-        const unsubscribe = eventBus.subscribe(type, () => {
-          listenersTriggered++;
-        });
-        unsubscribers.push(unsubscribe);
-      }
-    }
-
-    // Create random events
-    const events = createRandomEvents(
-      listenerScalingScenario.eventCount,
-      listenerScalingScenario.eventTypes
-    );
-
-    // Measure emission time
-    const emitResult = await measureExecutionTime(async () => {
-      // Emit all events
-      events.forEach(event => eventBus.emit(event));
-    });
-
-    // Measure history retrieval time
-    const retrievalResult = await measureExecutionTime(() => {
-      // Retrieve history in different ways
-      eventBus.getHistory();
-      eventBus.getModuleHistory('module-1');
-      eventBus.getEventTypeHistory('MODULE_CREATED');
-    });
-
-    // Measure memory usage
-    const memoryResult = await measureMemoryUsage(async () => {
-      // Do nothing - just to measure baseline memory
-    });
-
-    // Clean up
-    unsubscribers.forEach(unsubscribe => unsubscribe());
-
-    return {
-      emitTimeMs: emitResult.executionTimeMs,
-      retrievalTimeMs: retrievalResult.executionTimeMs,
-      memoryChangeMB: memoryResult.memoryChangeMB,
-      listenersTriggered,
-    };
+    return runBenchmarkWithImprovedMetrics(listenerScalingScenario);
   },
 };
 
@@ -358,81 +288,7 @@ const historyRetrievalScenario: BenchmarkScenario = {
     'SUB_MODULE_CREATED',
   ],
   run: async () => {
-    // Create a new event bus for this test
-    const eventBus = new ModuleEventBus(10000);
-    let listenersTriggered = 0;
-
-    // Add a single listener for each type just to track
-    const unsubscribers = [];
-    for (const type of historyRetrievalScenario.eventTypes) {
-      const unsubscribe = eventBus.subscribe(type, () => {
-        listenersTriggered++;
-      });
-      unsubscribers.push(unsubscribe);
-    }
-
-    // Create random events with specified module IDs for testing filtering
-    const events: ModuleEvent[] = [];
-    for (let i = 0; i < historyRetrievalScenario.eventCount; i++) {
-      const typeIndex = Math.floor(Math.random() * historyRetrievalScenario.eventTypes.length);
-      const moduleId = `module-${Math.floor(i / 100)}`; // Group events by module in batches of 100
-
-      events.push({
-        type: historyRetrievalScenario.eventTypes[typeIndex],
-        moduleId,
-        moduleType: 'production' as ModuleType,
-        timestamp: Date.now() + i,
-        data: {
-          value: Math.random() * 100,
-          metadata: `Event ${i} metadata`,
-        },
-      });
-    }
-
-    // Fill the history
-    events.forEach(event => eventBus.emit(event));
-
-    // Measure complex history retrieval operations
-    const retrievalResult = await measureExecutionTime(() => {
-      // Get all history
-      const fullHistory = eventBus.getHistory();
-
-      // Get history for all modules (0-49)
-      for (let i = 0; i < 50; i++) {
-        eventBus.getModuleHistory(`module-${i}`);
-      }
-
-      // Get history for all event types
-      for (const type of historyRetrievalScenario.eventTypes) {
-        eventBus.getEventTypeHistory(type);
-      }
-
-      // Perform a complex filtering operation (would be implemented in EventDispatcher)
-      const filtered = fullHistory.filter(event => {
-        const moduleIdNum = parseInt(event.moduleId.split('-')[1]);
-        return (
-          moduleIdNum % 2 === 0 &&
-          ['MODULE_CREATED', 'RESOURCE_PRODUCED'].includes(event.type) &&
-          event.timestamp > Date.now() - 1000
-        );
-      });
-    });
-
-    // Measure memory usage
-    const memoryResult = await measureMemoryUsage(async () => {
-      // Do nothing - just to measure baseline memory
-    });
-
-    // Clean up
-    unsubscribers.forEach(unsubscribe => unsubscribe());
-
-    return {
-      // The emit time for this test is less relevant as we're focusing on retrieval
-      emitTimeMs: 0,
-      retrievalTimeMs: retrievalResult.executionTimeMs,
-      memoryChangeMB: memoryResult.memoryChangeMB,
-      listenersTriggered,
-    };
+    return runBenchmarkWithImprovedMetrics(historyRetrievalScenario);
   },
 };
 
@@ -463,7 +319,7 @@ async function runAllBenchmarks() {
 
   for (const scenario of scenarios) {
     // Run the benchmark
-    const result = await runBenchmark(scenario);
+    const result = await scenario.run();
 
     // Calculate events per second
     const eventsPerSecond =
@@ -516,11 +372,38 @@ async function runAllBenchmarks() {
 
   // Print the performance report
   reporter.printReport();
+
+  return results;
 }
 
-/**
- * Export as a benchmark that can be run with Vitest bench
- */
+// Create Vitest benchmark suite
+describe('Event System Performance Benchmarks', () => {
+  bench('Small Event Load', async () => {
+    await smallEventScenario.run();
+  });
+
+  bench('Medium Event Load', async () => {
+    await mediumEventScenario.run();
+  });
+
+  bench('Large Event Load', async () => {
+    await largeEventScenario.run();
+  });
+
+  bench('Listener Scaling', async () => {
+    await listenerScalingScenario.run();
+  });
+
+  bench('History Retrieval', async () => {
+    await historyRetrievalScenario.run();
+  });
+
+  bench('All Benchmarks', async () => {
+    await runAllBenchmarks();
+  });
+});
+
+// Legacy export for compatibility with older test runners
 export default {
   name: 'Event System Performance Benchmarks',
   async run() {

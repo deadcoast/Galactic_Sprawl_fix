@@ -157,67 +157,125 @@ TESTING FRAMEWORK REFERENCES
   Purpose: Test combat system integration
   Dependencies: Vitest, CombatSystem mocks
 
-### End-to-End Tests
+## End-to-End Tests
 
-- Game Initialization Tests: `src/tests/e2e/GameInitialization.test.ts`
-  Purpose: Test game initialization
-  Dependencies: Vitest, GameSystem mocks
-- Game Loop Tests: `src/tests/e2e/GameLoop.test.ts`
-  Purpose: Test game loop
-  Dependencies: Vitest, GameSystem mocks
-- Resource Flow Tests: `src/tests/e2e/ResourceFlow.test.ts`
-  Purpose: Test resource flow
-  Dependencies: Vitest, GameSystem mocks
-- Combat Scenario Tests: `src/tests/e2e/CombatScenario.test.ts`
-  Purpose: Test combat scenarios
-  Dependencies: Vitest, GameSystem mocks
+### Configuration
 
-### Unit Tests
+- Playwright Configuration: `playwright.config.ts`
+  Purpose: Configures Playwright for end-to-end testing
+  Features:
 
-1. Event System Tests
-   - Event Dispatcher Tests: `src/tests/utils/events/EventDispatcher.test.tsx`
-     Purpose: Test the React Context-based event dispatcher
-     Dependencies: React Testing Library, Vitest
-   - RxJS Integration Tests: `src/tests/utils/events/rxjsIntegration.test.ts`
-     Purpose: Test the RxJS integration with the event system
-     Dependencies: RxJS, Vitest
-   - Game Loop Tests: `src/tests/managers/game/GameLoopManager.test.ts`
-     Purpose: Test the centralized timer manager
-     Dependencies: Vitest
-   - Event Communication Tests: `src/tests/utils/events/EventCommunication.test.ts`
-     Purpose: Test the system-to-system communication
-     Dependencies: Vitest, moduleEventBus mock
-     Features:
-     - System-to-system messaging tests
-     - Message priority tests
-     - Acknowledgment system tests
-     - Error handling tests
-     - Observable stream tests
-     - Cleanup and resource management tests
-   - Event Filtering Tests:
-     - Basic Tests: `src/tests/utils/events/EventFilteringBasic.test.ts`
+  - Dynamic port allocation to prevent conflicts
+  - Configures browsers (Chromium, Firefox)
+  - Sets test directory to `./src/tests/e2e`
+  - Optional web server configuration
 
-### Unit Tests
+- Test Setup: `src/tests/e2e/test-setup.ts`
+  Purpose: Provides test setup and teardown utilities
+  Features:
+  - Dynamic port allocation
+  - Custom fixtures for page objects
+  - Global setup and teardown functions
+  - Error handling and logging
 
-1. Event System Tests
-   - Event Dispatcher Tests: `src/tests/utils/events/EventDispatcher.test.tsx`
-     Purpose: Test the React Context-based event dispatcher
-     Dependencies: React Testing Library, Vitest
-   - RxJS Integration Tests: `src/tests/utils/events/rxjsIntegration.test.ts`
-     Purpose: Test the RxJS integration with the event system
-     Dependencies: RxJS, Vitest
-   - Game Loop Tests: `src/tests/managers/game/GameLoopManager.test.ts`
-     Purpose: Test the centralized timer manager
-     Dependencies: Vitest
-   - Event Communication Tests: `src/tests/utils/events/EventCommunication.test.ts`
-     Purpose: Test the system-to-system communication
-     Dependencies: Vitest, moduleEventBus mock
-     Features:
-     - System-to-system messaging tests
-     - Message priority tests
-     - Acknowledgment system tests
-     - Error handling tests
-     - Observable stream tests
-     - Cleanup and resource management tests
-   - Event Filtering Tests:
-     - Basic Tests: `src/tests/utils/events/EventFilteringBasic.test.ts`
+### Page Object Models
+
+- Mining Page: `src/tests/e2e/models/MiningPage.ts`
+  Purpose: Page object model for the Mining page
+  Features:
+
+  - Element locators
+  - Navigation methods
+  - Action methods (search, filter, select)
+  - Verification methods
+
+- Exploration Page: `src/tests/e2e/models/ExplorationPage.ts`
+  Purpose: Page object model for the Exploration page
+  Features:
+  - Element locators
+  - Navigation methods
+  - Action methods (search, filter, select, explore, scan)
+  - Verification methods
+
+### Test Files
+
+- Mining Tests: `src/tests/e2e/mining-simplified.spec.ts`
+  Purpose: Tests for the Mining page
+  Features:
+
+  - Resource display tests
+  - Search functionality tests
+  - Filtering tests
+  - Resource selection tests
+
+- Mining Basic Tests: `src/tests/e2e/mining-basic.spec.ts`
+  Purpose: Self-contained tests for the Mining page that don't require a server
+  Features:
+
+  - Uses page.setContent() to create HTML content directly
+  - Includes JavaScript functionality in the HTML content
+  - Tests resource display, search, filtering, and selection
+  - Uses .first() for locators that match multiple elements
+
+- Exploration Tests: `src/tests/e2e/exploration.spec.ts`
+  Purpose: Tests for the Exploration page
+  Features:
+
+  - Interface display tests
+  - Star system display tests
+  - Star system selection tests
+
+- Exploration Basic Tests: `src/tests/e2e/exploration-basic.spec.ts`
+  Purpose: Self-contained tests for the Exploration page that don't require a server
+  Features:
+
+  - Uses page.setContent() to create HTML content directly
+  - Includes JavaScript functionality in the HTML content
+  - Tests interface display, star system display, and star system selection
+  - Uses .first() for locators that match multiple elements
+
+- Simple Test: `src/tests/e2e/simple-test.spec.ts`
+  Purpose: Simple test to verify the test setup
+  Features:
+  - Basic page interaction
+  - Element verification
+  - Screenshot capture
+
+## Documentation
+
+- Testing Framework Overview: `CodeBase_Docs/CodeBase_Architecture.md` (Testing section)
+  Purpose: Provides an overview of the testing framework and its components
+  Features:
+
+  - Unit testing approach
+  - Integration testing approach
+  - End-to-end testing approach
+  - Performance testing approach
+
+- Self-Contained Test Approach: `CodeBase_Docs/CodeBase_Architecture.md` (Self-Contained Test Approach section)
+  Purpose: Documents the self-contained test approach for E2E tests
+  Features:
+
+  - HTML content generation
+  - JavaScript functionality
+  - Test interaction
+  - Locator best practices
+  - Benefits of self-contained tests
+
+- E2E Test Issues and Solutions: `CodeBase_Docs/CodeBase_Error_Log.md` (E2E Test Self-Contained Approach section)
+  Purpose: Documents issues encountered with E2E tests and their solutions
+  Features:
+
+  - Connection errors
+  - WebSocket server conflicts
+  - Test isolation issues
+  - Page object implementation
+
+- TypeScript E2E Test Errors: `CodeBase_Docs/TypeScript_E2E_Test_Errors.md`
+  Purpose: Documents TypeScript errors in E2E tests and their solutions
+  Features:
+  - Template literal errors in JavaScript code
+  - Solutions using page.evaluate()
+  - Type assertions for DOM elements
+  - Null checks for DOM elements
+  - Object parameters for passing variables

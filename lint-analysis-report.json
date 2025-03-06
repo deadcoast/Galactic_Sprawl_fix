@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "total": 3,
+    "errors": 1,
+    "warnings": 2,
+    "files": 2
+  },
+  "topRules": [
+    [
+      "no-unused-vars",
+      {
+        "errors": 0,
+        "warnings": 2
+      }
+    ],
+    [
+      "no-console",
+      {
+        "errors": 1,
+        "warnings": 0
+      }
+    ]
+  ],
+  "topFiles": [
+    [
+      "/test/file1.js",
+      2
+    ],
+    [
+      "/test/file2.js",
+      1
+    ]
+  ],
+  "topDirs": [
+    [
+      "/test",
+      {
+        "errors": 1,
+        "warnings": 2
+      }
+    ]
+  ]
+}

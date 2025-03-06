@@ -1,52 +1,168 @@
 ## Tests
 
+All tests are now located in the `src/tests/` directory, organized by test type.
+
 ### Unit Tests
 
-- `src/tests/managers/resource/ResourceFlowManager.cache.test.ts` - Unit tests for the caching system in ResourceFlowManager
-- `src/tests/managers/resource/ResourceFlowManager.batch.test.ts` - Unit tests for batch processing in ResourceFlowManager
-- `src/tests/managers/resource/ResourceFlowManager.errors.test.ts` - Unit tests for error handling in ResourceFlowManager
-- `src/tests/managers/resource/ResourceFlowManager.chain.test.ts` - Unit tests for multi-step production chains in ResourceFlowManager
-- `src/tests/managers/resource/ResourceFlowManager.test.ts` - Core unit tests for ResourceFlowManager functionality
-- `src/tests/managers/weapons/AdvancedWeaponEffectManager.test.ts` - Comprehensive tests for the AdvancedWeaponEffectManager, including singleton pattern, effect creation for different weapon types and variants, lifecycle management, event emission, environmental interactions, effect updates, visual configurations based on quality levels, and proper interface implementation
+- **Components**: `src/tests/components/` - Tests for React components
+  - `exploration/` - Tests for exploration components
+  - `buildings/` - Tests for building components
+  - `ui/` - Tests for UI components
+- **Managers**: `src/tests/managers/` - Tests for manager classes
+  - `weapons/` - Tests for weapon managers
+  - `resource/` - Tests for resource managers
+  - `game/` - Tests for game managers
+  - `automation/` - Tests for automation managers
+  - `module/` - Tests for module managers
+- **Hooks**: `src/tests/hooks/` - Tests for custom React hooks
+- **Utils**: `src/tests/utils/` - Tests for utility functions
+- **Contexts**: `src/tests/contexts/` - Tests for React contexts
 
 ### Integration Tests
 
-- `src/tests/integration/resource/MiningResourceIntegration.test.ts` - Integration tests for the ResourceFlowManager and MiningResourceIntegration classes
-- `src/tests/integration/ui/ResourceVisualization.test.tsx` - Integration tests for the ResourceVisualization UI component with complete ResourceTrackingResult mock implementations, testing resource visualization rendering with different resource states (normal, critical, abundant)
-
-### Component Tests
-
-- `src/tests/components/ui/ResourceVisualization.snapshot.test.tsx` - Snapshot tests for the ResourceVisualization component
-- `src/tests/components/buildings/MiningWindow.test.tsx` - Component tests for the MiningWindow component with user interactions
-- `src/tests/components/exploration/ReconShipCoordination.test.tsx`: Tests for the ReconShipCoordination component, focusing on proper prop passing and callback handling. Uses component mocking to simplify testing of this complex component.
-- `src/tests/components/exploration/DataAnalysisSystem.test.tsx`: Tests for the DataAnalysisSystem component.
-- `src/tests/components/exploration/DiscoveryClassification.test.tsx`: Tests for the DiscoveryClassification component.
+- `src/tests/integration/resource/MiningResourceIntegration.test.ts` - Integration tests for the mining resource system
+  - Tests the integration between MiningResourceIntegration, MiningShipManager, and ResourceFlowManager
+  - Includes tests for mining node registration, ship assignment, and resource flow optimization
+  - Uses type guards to validate custom event types
+  - Properly implements spy objects with assertions
+- `src/tests/integration/ResourceVisualization.test.tsx` - Integration tests for the ResourceVisualization UI component with complete ResourceTrackingResult mock implementations, testing resource visualization rendering with different resource states (normal, critical, abundant)
 
 ### End-to-End Tests
 
 - `src/tests/e2e/README.md` - Documentation and setup instructions for E2E testing with Playwright
 - `src/tests/e2e/models/MiningPage.ts` - Page Object Model for the Mining page used in E2E tests
 - `src/tests/e2e/mining.spec.ts` - E2E tests for the Mining module functionality
-
-### Test Utilities
-
-- `src/tests/utils/testUtils.tsx` - Utility functions for testing, including renderWithProviders, mock factories, common testing patterns, and performance testing utilities
-- `src/tests/utils/testUtilsUsageExample.test.tsx` - Example usage of the test utilities for reference
+- `src/tests/e2e/exploration.spec.ts` - E2E tests for the Exploration module functionality
+- `src/tests/e2e/test-setup.ts` - Setup and teardown functions for E2E tests with dynamic port allocation
 
 ### Performance Tests
 
 - `src/tests/performance/ResourceFlowManager.benchmark.ts` - Performance benchmarks for the ResourceFlowManager
-- `src/tests/performance/EventSystem.benchmark.ts` - Performance benchmarks for the event processing system
+- `src/tests/performance/EventProcessing.benchmark.ts` - Performance benchmarks for the event processing system with improved memory usage measurement and metrics calculation
 
-## Core Systems
+### Tool Tests
 
-### Resource Management
+- `src/tests/tools/fix-typescript-any.test.js` - Tests for the TypeScript 'any' type fixer tool
 
-- `src/managers/resource/ResourceFlowManager.ts` - Core manager for resource flows, transfers, optimizations, and conversion processes with comprehensive JSDoc documentation
-- `src/managers/resource/ChainProcessor.ts` - Handles multi-step production chains with chain status tracking and step processing
-- `src/types/resources/ResourceTypes.ts` - Type definitions for resources, flows, transfers, conversion processes, and chain processing interfaces
-- `src/utils/resources/resourceValidation.ts` - Validation utilities for resource operations
-- `src/utils/resources/efficiencyCalculator.ts` - Utility for calculating compound efficiency for resource conversions
+  - Tests various command-line options and functionality
+  - Verifies proper handling of TypeScript files with 'any' types
+  - Uses dynamic imports and proper mocking of global objects
+
+- `src/tests/tools/setup-linting.test.js` - Tests for the ESLint and Prettier setup tool
+
+  - Completely rewritten to use proper ES module mocking
+  - Tests configuration file creation and validation
+  - Verifies proper handling of existing configuration files
+  - Uses manual mocks with both named and default exports
+
+- `src/tests/tools/run-lint-workflow.test.js` - Tests for the lint workflow runner
+
+  - Tests various command-line options and workflow steps
+  - Verifies proper handling of errors and command failures
+  - Uses dynamic imports and proper mocking of global objects
+
+- `src/tests/tools/fix-eslint-by-rule.test.js` - Tests for the ESLint rule fixer
+
+  - Tests various command-line options and rule fixing functionality
+  - Verifies proper handling of errors and progress reporting
+  - Uses dynamic imports and proper mocking of global objects
+
+- `src/tests/tools/analyze-lint-errors.test.js` - Tests for the ESLint error analyzer
+  - Tests various command-line options and error analysis functionality
+  - Verifies proper handling of invalid input and timeout options
+  - Uses dynamic imports and proper mocking of global objects
+
+### Test Documentation
+
+- `CodeBase_Docs/Test_Utilities_Guide.md` - Guide to using the enhanced test utilities
+- `CodeBase_Docs/Integration_Testing_Best_Practices.md` - Guidelines for creating effective integration tests
+- `CodeBase_Docs/ResourceFlowManager_Testing.md` - Documentation for ResourceFlowManager test implementation
+- `CodeBase_Docs/UI_Testing_Best_Practices.md` - Comprehensive guide for component, integration, and E2E UI testing
+- `CodeBase_Docs/Performance_Benchmark_Practices.md` - Best practices for performance benchmarking
+- `CodeBase_Docs/Test_Issues_March_2025.md` - Comprehensive documentation of test issues identified in March 2025 and their solutions
+  - Includes solutions for tool test mocking issues
+  - Addresses WebSocket server port conflicts in E2E tests
+  - Provides fixes for GameLoopManager error handling tests
+  - Documents ResourceFlowManager test issues and solutions
+  - Outlines next steps for improving test reliability
+
+### Test Fixtures
+
+- `src/tests/fixtures/index.ts` - Exports all fixtures for easy importing
+- `src/tests/fixtures/resourceFixtures.ts` - Common resource test data
+  - `resourceTypes` - Array of resource types
+  - `resourceStates` - Record of resource states (empty, standard, abundant)
+  - `resourcePriorities` - Array of resource priorities
+  - `flowNodes` - Record of flow nodes (powerPlant, factory, storage, converter)
+  - `flowConnections` - Array of flow connections
+  - `resourceFlows` - Array of resource flows
+- `src/tests/fixtures/explorationFixtures.ts` - Common exploration test data
+  - `reconShips` - Array of recon ships
+  - `sectors` - Array of sectors
+  - `fleetFormations` - Array of fleet formations
+  - `explorationTasks` - Array of exploration tasks
+- `src/tests/fixtures/miningFixtures.ts` - Common mining test data
+  - `miningShips` - Array of mining ships
+  - `miningNodes` - Array of mining nodes
+  - `miningHubs` - Array of mining hubs
+  - `miningOperations` - Array of mining operations
+
+### Test Utilities
+
+- `src/tests/utils/index.ts` - Unified exports of all test utilities
+- `src/tests/utils/testUtils.tsx` - Utility functions for testing React components
+
+  - Provides functions for testing loading states, resource connections, and performance
+  - Includes mock implementations of common hooks and contexts
+  - Uses proper TypeScript typing for all utility functions
+
+- `src/tests/utils/fixtureUtils.ts` - Utility functions for creating test fixtures
+
+  - Provides functions for creating resource states, resource nodes, and other test objects
+  - Uses type-specific defaults based on resource type
+  - Properly implements TypeScript interfaces for type safety
+
+- `src/tests/utils/asyncTestUtils.ts` - Utilities for testing asynchronous code
+
+  - `wait` - Waits for a specified time
+  - `waitForConditionAsync` - Waits for a condition to be true
+  - `createDeferredPromise` - Creates a promise that can be resolved externally
+  - `createMockEventEmitter` - Creates a mock event emitter
+  - `createMockTimer` - Creates a mock timer for testing time-based functionality
+  - `createMockRAF` - Creates a mock requestAnimationFrame implementation
+
+- `src/tests/utils/performanceTestUtils.ts` - Utilities for performance testing
+
+  - `measureExecTime` - Measures execution time of a function
+  - `runBenchmark` - Runs a benchmark for a function
+  - `createPerfReporter` - Creates a performance reporter for tracking metrics
+  - `measureMemory` - Measures memory usage of a function
+
+- `src/tests/utils/testUtilsUsageExample.test.tsx` - Example tests for the test utilities
+
+  - Demonstrates proper usage of the test utilities
+  - Uses CPU-intensive operations for reliable performance testing
+  - Implements proper assertions for performance metrics
+
+- `src/tests/setup.ts` - Main test setup file
+- `src/tests/setup/testingLibrary.setup.ts` - Setup for React Testing Library
+
+### NPM Scripts for Running Tests
+
+The following npm scripts have been added to package.json to run different types of tests:
+
+```json
+{
+  "scripts": {
+    "test": "vitest",
+    "test:unit": "vitest src/tests/components src/tests/utils src/tests/hooks src/tests/managers",
+    "test:integration": "vitest src/tests/integration",
+    "test:e2e": "playwright test",
+    "test:perf": "vitest src/tests/performance",
+    "test:tools": "vitest src/tests/tools"
+  }
+}
+```
 
 ### Automation System
 
@@ -195,6 +311,7 @@
 - `CodeBase_Docs/CodeBase_Error_Log.md` - Common issues encountered during development, including detailed logs of fixes for TypeScript errors like property access on mixed return types
 - `CodeBase_Docs/CodeBase_Linting_Progress.md` - Linting rules and best practices
 - `CodeBase_Docs/TypeScript_Error_Fixing_Strategies.md` - Strategies for fixing TypeScript errors
+- `CodeBase_Docs/TypeScript_Type_Guard_Best_Practices.md` - Best practices for implementing and using type guards in TypeScript, with a focus on their use in test files
 
 ## Configuration Files
 
@@ -277,3 +394,15 @@
 - `src/utils/profiling/componentProfiler.ts`: Provides utilities for profiling React component performance. Includes functions for measuring render times, tracking prop changes, and identifying wasted renders.
   - Key functions: `createComponentProfiler`, `profileRender`, `withProfiling`
   - Key interfaces: `InternalProfilerOptions`
+
+### Test Files
+
+- `src/tests/utils/events/rxjsIntegration.test.ts` - Tests for RxJS integration with the event system
+  - Tests the initialization of RxJS integration with the module event bus
+  - Includes tests for filtering events by type and module ID
+  - Uses sample events to verify event filtering functionality
+  - Implements async test patterns for proper event handling
+
+```
+
+```

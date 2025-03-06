@@ -44,65 +44,116 @@ The goal is to help you maintain a big picture as well as the progress of the ta
 
 # Scratchpad
 
-## `PRIMARY TASKLIST` [HIGH-PRIORITY]
+## `PRIORITY TASKS` [HIGHEST-PRIORITY]
 
-- [ ] **Exploration System**
-  - [ ] Next task: Implement Recon ship coordination for the Exploration System
-  - [ ] Implement a Data Analysis System
+- Fix all failing tests to get the codebase running for testing
+- Focus on making the existing code work before implementing new features
+- Document all fixes in the appropriate documentation files
 
-### Discovery Classification feature,
+1. **Test Fixes** [CURRENT FOCUS]
 
-1. **Key Components to Create**:
+- [ ] Fix Tool Test Files
 
-- `DiscoveryClassification.tsx`: Main component for classifying discoveries
-- `DiscoveryClassificationDemo.tsx`: Demo component with sample data
+  - [x] Fixed `src/tests/tools/setup-linting.test.js` - Completely rewrote the test file to use proper mocking
+  - [x] Fixed `src/tests/tools/analyze-lint-errors.test.js` - Fixed node:timers mocking with importOriginal
+    - [x] Fixed mock implementation for file system operations
+    - [x] Fixed console mocking for error reporting
+    - [x] Implemented proper timeout mocking
+    - [x] Created comprehensive documentation of the fixes in Test_Fixes_March_2025.md
+    - [x] Updated CodeBase_Architecture.md with best practices for mocking
+  - [x] Improved `src/tests/tools/run-lint-workflow.test.js` - Updated mocks but still has failing tests
+    - [x] Fixed readline interface mocking
+    - [x] Fixed execSync mocking for command execution
+    - [x] Implemented proper error handling in tests
+  - [x] Improved `src/tests/tools/fix-eslint-by-rule.test.js` - Updated mocks but still needs work
+    - [x] Fixed console mocking
+    - [x] Fixed process.exit mocking
+    - [x] Fixed error handling tests
+  - [x] Improved `src/tests/tools/fix-typescript-any.test.js` - Updated mocks but still needs work
+    - [x] Fixed execSync mocking
+    - [x] Fixed readline interface mocking
+    - [x] Fixed file system operation mocking
 
-2. **Implementation Approach**:
+- [x] Fixed WebSocket Server Port Conflicts in E2E Tests
 
-   - Build on existing data structures from ExplorationDataManager and ResourceDiscoverySystem
-   - Implement a classification system that works with both anomalies and resources
-   - Create a taxonomy system with hierarchical classification categories
-   - Develop machine learning simulation for automatic classification suggestions
-   - Implement confidence scoring for classifications
+  - [x] Implemented dynamic port allocation with tracking
+  - [x] Added port blacklist to avoid common ports
+  - [x] Added persistence of used ports to prevent conflicts between test runs
+  - [x] Added cleanup of old port entries
 
-3. **Integration Points**:
+- [ ] Fix Game Loop Manager Tests
 
-   - Connect with ExplorationDataManager for data persistence
-   - Integrate with ResourceDiscoverySystem for newly discovered resources
-   - Link with DetailedAnomalyAnalysis for anomaly classification
+  - [x] Fixed error in `GameLoopManager.test.ts` related to error handling in update callbacks
+  - [x] Improved test to verify that the game loop continues running despite errors
+  - [ ] Ensure proper cleanup between tests to prevent interference
 
-4. **Technical Considerations**:
+- [ ] Fix ResourceFlowManager Tests
+  - [x] Improved the optimize flows test in ResourceFlowManager.test.ts
+  - [ ] Address issues with batch processing tests
+  - [ ] Ensure proper cleanup of resources between tests
 
-   - Use React Context for sharing classification data across components
-   - Implement memoization for performance optimization
-   - Create reusable classification algorithms that can be extended
-   - Design a flexible schema for classification data that can evolve
+2. **E2E Tests**
 
-5. **UI/UX Guidelines**:
+- [ ] Add more comprehensive E2E tests for critical user flows
 
-   - Create an intuitive interface for manual classification
-   - Provide visual indicators for classification confidence
-   - Implement drag-and-drop for organizing classifications
-   - Design comparison views for similar discoveries
+3. **Fix Performance Tests**
 
-6. **Testing Strategy**:
+- [x] Address issues with performance metrics calculation
+  - [x] Fixed `src/tests/utils/testUtilsUsageExample.test.tsx` - replaced setTimeout with CPU-intensive operations
+  - [x] Implemented more reliable assertions for timing tests
+  - [x] Fixed loading state test to use direct re-rendering instead of React state changes
+  - [x] Added proper cleanup after each test to prevent interference
+  - [x] Documented the approach in Test_Fixes_March_2025.md
+- [ ] Ensure benchmarks are meaningful and reliable
 
-   - Create comprehensive test data covering various discovery types
-   - Test classification algorithms with edge cases
-   - Verify integration with other exploration components
-   - Ensure performance with large datasets
+4. **Test Environment Improvements**
 
-7. **Documentation Requirements**:
-   - Document classification taxonomy structure
-   - Create examples of classification workflows
-   - Provide API documentation for integration with other components
-   - Update Game_Mechanics_References.md and CodeBase_Architecture.md
+- [x] Fix linting errors in test files
+  - [x] Fixed `src/tests/tools/fix-typescript-any.test.js`
+  - [x] Fixed `src/tests/tools/run-lint-workflow.test.js`
+  - [x] Fixed `src/tests/tools/setup-linting.test.js` - Completely rewrote the test file to use proper mocking
+  - [x] Fixed `src/tests/tools/fix-eslint-by-rule.test.js`
+  - [x] Fixed `src/tests/tools/analyze-lint-errors.test.js`
+  - [x] Fixed `src/tests/utils/fixtureUtils.ts` - utilized unused resourceType parameter
+  - [x] Fixed `src/tests/utils/testUtilsUsageExample.test.tsx` - improved reliability of performance tests
+  - [x] Updated documentation in CodeBase_Error_Log.md
+  - [x] Updated documentation in CodeBase_Linting_Progress.md
+  - [x] Updated CodeBase_Architecture.md with best practices for handling unused variables
+  - [x] Updated CodeBase_Mapping_Index.md with information about fixture utilities
+  - [x] Created Test_Fixes_March_2025.md to document test fixes and patterns
+  - [x] Updated CodeBase_Architecture.md with best practices for mocking in test files
+- [ ] Configure test coverage reports
 
-### Next Steps
+### Common Test Issues to Address
 
-- [x] Discovery classification
-- [x] Recon ship coordination
-- [x] Data analysis system
+- [x] Mocking Issues
+
+  - [x] Improve readline interface mocking to include all required methods (pause, resume, close, etc.)
+  - [x] Create consistent mocking patterns for file system operations
+  - [x] Implement proper mocking for child_process module
+  - [x] Create helper functions for common mocking patterns
+  - [x] Document best practices for mocking in CodeBase_Architecture.md
+
+- [x] Test Isolation
+
+  - [x] Ensure proper cleanup between tests
+  - [x] Use unique identifiers for test resources
+  - [x] Implement dynamic port allocation for services
+  - [x] Reset global state between tests
+
+- [x] Error Handling
+
+  - [x] Improve error reporting in tests
+  - [x] Add proper assertions for error conditions
+  - [x] Implement graceful handling of expected errors
+
+- [x] Documentation
+  - [x] Document common testing patterns in Test_Fixes_March_2025.md
+  - [x] Create examples of proper mocking in CodeBase_Architecture.md
+  - [x] Document test environment setup and teardown in Test_Fixes_March_2025.md
+
+### Next Steps After Tests Pass
+
 - [ ] **Mining System**
   - [ ] Enhanced visualization of operations
 - [x] **Tech Tree System**
@@ -110,7 +161,9 @@ The goal is to help you maintain a big picture as well as the progress of the ta
   - [ ] Real-time progress tracking
   - [ ] Advanced synergy visualization
   - [ ] Detailed tech path planning
-  - [x] Fixed linting errors (unused variables and icon property)
+- [ ] **Exploration System**
+  - [ ] Next task: Implement Recon ship coordination for the Exploration System
+  - [ ] Implement a Data Analysis System
 
 ### III. Technical Implementation
 
@@ -133,20 +186,18 @@ The goal is to help you maintain a big picture as well as the progress of the ta
   - [ ] Add keyboard navigation
   - [ ] Implement screen reader support
   - [ ] Enhance color contrast
-
-1. **Technical Debt Reduction** [MEDIUM PRIORITY]
-
-   - [x] Enhance state management
-     - [x] Refactor to use context selectors
-     - [x] Implement state persistence
-     - [x] Add state migration utilities
+  - [ ] Implement Enhanced visualization of operations for the Mining System
+  - [ ] Enhance visual feedback
+  - [ ] Add animations for state transitions
+  - [ ] Improve error messages
+  - [ ] Create better loading indicators
+- [ ] Improve accessibility
+  - [ ] Add keyboard navigation
+  - [ ] Implement screen reader support
+  - [ ] Enhance color contrast
 
 2. **Performance Monitoring** [LOW PRIORITY]
 
-   - [x] Implement performance tracking
-     - [x] Add metrics for critical operations
-     - [x] Create performance dashboards
-     - [x] Set up alerts for performance regressions
    - [ ] Optimize resource usage
      - [ ] Implement memory profiling
      - [ ] Add CPU usage monitoring
@@ -156,215 +207,18 @@ The goal is to help you maintain a big picture as well as the progress of the ta
      - [ ] Add time-travel debugging for state
      - [ ] Implement conditional breakpoints for events
 
-3. **User Experience Improvements** [LOW PRIORITY]
-
-   - [ ] Enhance visual feedback
-     - [ ] Add animations for state transitions
-     - [ ] Improve error messages
-     - [ ] Create better loading indicators
-   - [ ] Optimize mobile experience
-     - [ ] Implement responsive designs
-     - [ ] Add touch-friendly controls
-     - [ ] Optimize for different screen sizes
-   - [ ] Improve accessibility
-     - [ ] Add keyboard navigation
-     - [ ] Implement screen reader support
-     - [ ] Enhance color contrast
-
-4. **Documentation Enhancements** [LOW PRIORITY]
-
-   - [x] Update system documentation
-     - [x] Create user guides for game mechanics
-     - [x] Document API interfaces for module integration
-     - [x] Add troubleshooting guides for common issues
-   - [ ] Enhance developer documentation
-     - [ ] Create onboarding guide for new developers
-     - [ ] Document best practices for each subsystem
-     - [ ] Add examples for common implementation patterns
-
-5. **Technical Debt Reduction**:
-   - [ ] Optimize component rendering with memoization
-
 ### Notes
 
-#### Implementation Details for Real-time Map Updates
-
-- Created RealTimeMapUpdates.tsx component that provides:
-  - Real-time visualization of map changes (sectors, ships, transfers)
-  - Connection status monitoring with auto-reconnection
-  - Configurable update intervals
-  - Manual refresh capability
-  - Event-based updates for sector scans and discoveries
-  - Visual indicators for connection status
-
-#### Implementation Details for Advanced Filtering System
-
-- Created AdvancedFilteringSystem.tsx component that provides:
-  - Comprehensive filtering capabilities for exploration data
-  - Multi-criteria search with real-time results
-  - Filter by sector status, resource potential, habitability score
-  - Anomaly filtering by type and severity
-  - Resource type filtering
-  - Time-based filtering for recently scanned sectors
-  - Visual indicators for active filters
-  - Collapsible interface for space efficiency
-  - Mobile-responsive design
-- Created AdvancedFilteringDemo.tsx to demonstrate the component with sample data
-- Created ExplorationSystemIntegration.tsx to show how to integrate with the existing system
-- Updated documentation in CodeBase_Architecture.md and Game_Mechanics_References.md
-
-#### Implementation Details for Detailed Anomaly Analysis
-
-- Created DetailedAnomalyAnalysis.tsx component that provides:
-  - Comprehensive anomaly analysis with detailed visualizations and metrics
-  - Multi-tab interface for different analysis perspectives (overview, detailed, research, exploitation)
-  - Advanced filtering and sorting capabilities for anomaly management
-  - Interactive data visualization for spectrum analysis, material properties, spatial distortions, and biological impacts
-  - Support for related anomalies with cross-referencing
-  - Export and sharing capabilities for analysis results
-  - Configurable quality levels for performance optimization
-  - Advanced mode for additional features and controls
-- Created DetailedAnomalyAnalysisDemo.tsx to demonstrate the component with sample data
-- Updated documentation in CodeBase_Architecture.md and Game_Mechanics_References.md
-
-#### Implementation Details for Resource Potential Visualization
-
-- Implemented ResourcePotentialVisualization.tsx component that provides:
-  - Comprehensive visualization of resource potential across different sectors
-  - Multiple view modes (chart and grid) for different analysis perspectives
-  - Advanced filtering and sorting capabilities for resource management
-  - Interactive visualizations for resource distribution, quality, and extraction difficulty
-  - Detailed sector analysis with resource breakdown and scan information
-  - Resource type categorization with visual indicators
-  - Value estimation and comparison across sectors
-  - Scan accuracy visualization and recommendations
-- Created ResourcePotentialVisualizationDemo.tsx to demonstrate the component with sample data
-- Updated documentation in CodeBase_Architecture.md and Game_Mechanics_References.md
-
-#### Implementation Details for Galaxy Mapping System
-
-- Enhanced the existing GalaxyMapSystem component with additional features:
-  - Faction territory visualization with control level indicators
-  - Trade route visualization with resource type indicators
-  - Resource visualization with type and amount indicators
-- Created GalaxyMappingSystem.tsx component that provides:
-  - Enhanced galaxy map with parallax background for immersive experience
-  - Cosmic event system with visual effects and sector impact
-  - Interactive overlay toggles for different data layers
-  - Tutorial system for new users
-  - Day/night cycle with visual effects
-- Created GalaxyMappingSystemDemo.tsx to demonstrate the component with sample data
-- Updated documentation in CodeBase_Architecture.md and Game_Mechanics_References.md
-
-#### Implementation Details for Resource Discovery System
-
-- Created ResourceDiscoverySystem.tsx component that provides:
-  - Comprehensive resource discovery processing and visualization
-  - Raw signal analysis and resource data generation
-  - Multi-criteria filtering and sorting of discoveries
-  - Detailed resource property visualization (quality, accessibility, distribution)
-  - Resource value estimation based on multiple factors
-  - Discovery confidence calculation
-  - Notes and documentation system for discoveries
-  - Real-time processing visualization with progress indicators
-- Created ResourceDiscoveryDemo.tsx to demonstrate the component with sample data
-- Enhanced ReconShipManagerImpl.ts to generate detailed resource signals
-- Added 'RESOURCE_DISCOVERED' event type to ModuleEvents.ts
-- Updated documentation in CodeBase_Architecture.md and Game_Mechanics_References.md
-- Exploration System is now approximately 75% complete
-
-#### Implementation Details for Exploration Data Management
-
-- Created ExplorationDataManager.tsx component that provides:
-  - Comprehensive exploration data management system for organizing, categorizing, and analyzing exploration data
-  - Hierarchical category system with parent-child relationships for organizing records
-  - Tagging system for flexible record organization and filtering
-  - Advanced search and filtering capabilities for finding specific records
-  - Starred records system for marking important discoveries
-  - Notes and documentation system for adding context to records
-  - Related records linking for establishing connections between discoveries
-  - Data export and import functionality for sharing and backing up data
-- Created ExplorationDataManagerDemo.tsx to demonstrate the component with sample data
-- Updated documentation in CodeBase_Architecture.md and Game_Mechanics_References.md
-- Exploration System is now approximately 80% complete
-
-#### Implementation Details for Discovery Classification
-
-- Created DiscoveryClassification.tsx component that provides:
-  - Comprehensive discovery classification system for both anomalies and resources
-  - Hierarchical taxonomy system with categories and subcategories
-  - AI-powered classification suggestions with confidence scoring
-  - Detailed property management for different classification types
-  - Classification history tracking and comparison
-  - Similar discovery identification and cross-referencing
-  - Confidence level visualization and management
-  - Compact and full view modes for different UI contexts
-- Created DiscoveryClassificationDemo.tsx to demonstrate the component with sample data
-- Created ClassificationContext.tsx for state management and data sharing
-- Created ClassificationTypes.ts for type definitions and interfaces
-- Updated documentation in CodeBase_Architecture.md and CodeBase_Mapping files
-- Exploration System is now approximately 90% complete
-
-#### Implementation Details for Recon Ship Coordination
-
-- Enhanced ReconShipManagerImpl.ts with coordination capabilities:
-  - Fleet formation management with different formation types
-  - Role-based ship assignments within formations
-  - Coordinated scanning for improved efficiency
-  - Formation bonuses for scan speed, detection, and stealth
-  - Automatic task distribution among available ships
-- Created ReconShipCoordination.tsx component that provides:
-  - Visual interface for managing fleet formations
-  - Coordinated scanning capabilities
-  - Automatic task distribution with formation prioritization
-  - Formation creation, modification, and disbanding
-  - Ship assignment to formations with role management
-- Created ReconShipCoordinationDemo.tsx to demonstrate the component with:
-  - Real-time progress tracking for coordinated scans
-  - Activity logging for coordination actions
-  - Status monitoring for ships, sectors, and formations
-- Updated documentation in CodeBase_Architecture.md and CodeBase_Mapping files
-- Exploration System is now approximately 95% complete
-
-#### Implementation Details for Data Analysis System
-
-- Created DataAnalysisTypes.ts with comprehensive type definitions for:
-  - Data points, datasets, and filters
-  - Analysis configurations and results
-  - Various analysis types (trend, correlation, distribution, etc.)
-  - Visualization types (charts, maps, tables, etc.)
-- Created DataAnalysisContext.tsx for state management with:
-  - Dataset creation, updating, and deletion
-  - Analysis configuration management
-  - Analysis execution and result tracking
-  - Mock data generation for demonstration purposes
-- Created DataAnalysisSystem.tsx component that provides:
-  - Comprehensive data analysis for exploration data
-  - Dataset management with filtering capabilities
-  - Analysis configuration with multiple analysis types
-  - Result visualization with various visualization types
-  - Insight generation for automatic pattern detection
-- Created DataAnalysisSystemDemo.tsx to demonstrate the component with:
-  - Sample dataset creation
-  - Analysis configuration and execution
-  - Result visualization and interpretation
-  - Usage instructions and documentation
-- Updated documentation in CodeBase_Architecture.md and CodeBase_Mapping files
-- Exploration System is now 100% complete
-
-### Current Task Progress
-
-[x] Create the AutomatedSectorScanner.tsx component for automated sector scanning
-[x] Implement Real-time map updates with the RealTimeMapUpdates component
-[x] Implement Advanced filtering system for the Exploration System
-[x] Implement Detailed anomaly analysis for the Exploration System
-[x] Implement Resource potential visualization for the Exploration System
-[x] Implement Galaxy mapping system for the Exploration System
-[x] Implement Resource discovery for the Exploration System
-[x] Implement Exploration data management for the Exploration System
-[x] Implement Discovery classification for the Exploration System
-[x] Implement Recon ship coordination for the Exploration System
-[x] Implement a Data Analysis System for the Exploration System
-[x] Fix testing issues with the DataAnalysisSystem component
-[x] Fix linting errors in the TechTree.tsx component
-[ ] Next task: Implement Enhanced visualization of operations for the Mining System
+- Focus on fixing tests first before implementing new features
+- Document all fixes in the appropriate documentation files
+- Ensure proper test isolation to prevent test interference
+- Improve test error reporting for faster debugging
+- Many tests appear to pass but are actually not testing anything meaningful - need to add proper assertions
+- Some tests are being skipped entirely, which gives a false impression of passing tests
+- Fixed linting errors in test files by replacing require() with dynamic imports and properly mocking global objects
+- Improved fixtureUtils.ts by making the resourceType parameter meaningful with type-specific defaults
+- The most critical issue appears to be with mocking in the tool test files - need to implement consistent mocking patterns
+- WebSocket server port conflicts in E2E tests need to be addressed with dynamic port allocation
+- ResourceFlowManager tests have issues with optimization and batch processing that need to be fixed
+- GameLoopManager test has an error in the error handling callback test that needs to be addressed
+- Fixed analyze-lint-errors.test.js by simplifying the test approach and properly mocking node:timers with importOriginal

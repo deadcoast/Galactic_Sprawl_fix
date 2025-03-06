@@ -758,3 +758,15 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
   - `ApplicationProfilingMetrics` - Metrics for application profiling
   - `ApplicationProfilingOptions` - Options for application profiling
   - `ApplicationProfilingResult` - Result of application profiling
+
+## Utils
+
+### Events
+
+- `src/utils/events/EventBus.ts`: Implementation of the event bus pattern for application-wide event handling.
+- `src/utils/events/EventTypes.ts`: Type definitions for various events used throughout the application.
+- `src/utils/events/rxjsIntegration.ts`: Integration between the module event system and RxJS for reactive programming. Provides utilities for filtering, transforming, and combining event streams.
+
+### Profiling
+
+- `src/utils/profiling/applicationProfiler.ts`: Provides application-wide performance profiling capabilities. Includes functions for measuring component render times and tracking performance metrics.

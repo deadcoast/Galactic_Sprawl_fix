@@ -152,7 +152,38 @@ export class EventFilter {
     // Process in batches to avoid blocking the main thread
     for (let i = 0; i < events.length; i += batchSize) {
       const batch = events.slice(i, i + batchSize);
-      const filteredBatch = this.filterEventsStandard(batch, criteria);
+
+      // Apply each filter criterion separately for better performance
+      let filteredBatch = batch;
+
+      // Filter by event type
+      if (criteria.eventTypes?.length) {
+        filteredBatch = filteredBatch.filter(event => criteria.eventTypes!.includes(event.type));
+      }
+
+      // Filter by module ID
+      if (criteria.moduleIds?.length) {
+        filteredBatch = filteredBatch.filter(event => criteria.moduleIds!.includes(event.moduleId));
+      }
+
+      // Filter by time range
+      if (criteria.startTime !== undefined || criteria.endTime !== undefined) {
+        filteredBatch = filteredBatch.filter(event => {
+          if (criteria.startTime !== undefined && event.timestamp < criteria.startTime) {
+            return false;
+          }
+          if (criteria.endTime !== undefined && event.timestamp > criteria.endTime) {
+            return false;
+          }
+          return true;
+        });
+      }
+
+      // Apply custom filter
+      if (criteria.customFilter) {
+        filteredBatch = filteredBatch.filter(criteria.customFilter);
+      }
+
       result.push(...filteredBatch);
     }
 
@@ -188,12 +219,29 @@ export class EventFilter {
     // Get events at the candidate indices
     const candidates = indices.map(index => events[index]);
 
-    // Apply custom filter if provided
-    if (criteria.customFilter) {
-      return candidates.filter(criteria.customFilter);
+    // Apply additional filtering for time range and custom filter
+    // This ensures we catch any events that might have been missed by the bucketed time index
+    let filteredCandidates = candidates;
+
+    // Apply time range filtering if specified
+    if (criteria.startTime !== undefined || criteria.endTime !== undefined) {
+      filteredCandidates = filteredCandidates.filter(event => {
+        if (criteria.startTime !== undefined && event.timestamp < criteria.startTime) {
+          return false;
+        }
+        if (criteria.endTime !== undefined && event.timestamp > criteria.endTime) {
+          return false;
+        }
+        return true;
+      });
     }
 
-    return candidates;
+    // Apply custom filter if provided
+    if (criteria.customFilter) {
+      filteredCandidates = filteredCandidates.filter(criteria.customFilter);
+    }
+
+    return filteredCandidates;
   }
 
   /**
@@ -317,10 +365,26 @@ export class EventFilter {
 
     // Start with the smallest set for efficiency
     const sortedSets = [...sets].sort((a, b) => a.size - b.size);
-    let result = new Set(sortedSets[0]);
+    const smallestSet = sortedSets[0];
 
-    for (let i = 1; i < sortedSets.length; i++) {
-      result = new Set([...result].filter(x => sortedSets[i].has(x)));
+    // Create a new set with elements from the smallest set that exist in all other sets
+    const result = new Set<number>();
+
+    for (const item of smallestSet) {
+      let inAllSets = true;
+
+      // Check if the item exists in all other sets
+      for (let i = 1; i < sortedSets.length; i++) {
+        if (!sortedSets[i].has(item)) {
+          inAllSets = false;
+          break;
+        }
+      }
+
+      // If the item exists in all sets, add it to the result
+      if (inAllSets) {
+        result.add(item);
+      }
     }
 
     return result;

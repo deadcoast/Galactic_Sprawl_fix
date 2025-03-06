@@ -144,12 +144,18 @@ export function createApplicationProfiler(
   };
 
   /**
-   * Gets metrics for a specific component
+   * Gets component metrics
    *
    * @param componentName The name of the component to get metrics for
    * @returns Component render metrics or null if the component is not being profiled
    */
   const getComponentMetrics = (componentName: string): ComponentRenderMetrics | null => {
+    // Use getOrCreateProfiler to ensure the component is being profiled
+    if (shouldProfileComponent(componentName)) {
+      const profiler = getOrCreateProfiler(componentName);
+      return profiler.metrics;
+    }
+
     const profiler = componentProfilers.get(componentName);
     return profiler ? profiler.metrics : null;
   };
@@ -170,6 +176,13 @@ export function createApplicationProfiler(
    * @param componentName The name of the component to reset metrics for
    */
   const resetComponent = (componentName: string): void => {
+    // Use getOrCreateProfiler to ensure the component exists before resetting
+    if (shouldProfileComponent(componentName)) {
+      const profiler = getOrCreateProfiler(componentName);
+      profiler.reset();
+      return;
+    }
+
     const profiler = componentProfilers.get(componentName);
     if (profiler) {
       profiler.reset();
@@ -196,7 +209,7 @@ export function createApplicationProfiler(
   const start = (): void => {
     isProfilingActive = true;
     profilingStartTime = Date.now();
-    console.log('[ApplicationProfiler] Started profiling');
+    console.warn('[ApplicationProfiler] Started profiling');
   };
 
   /**
@@ -204,7 +217,7 @@ export function createApplicationProfiler(
    */
   const stop = (): void => {
     isProfilingActive = false;
-    console.log('[ApplicationProfiler] Stopped profiling');
+    console.warn('[ApplicationProfiler] Stopped profiling');
   };
 
   /**
@@ -230,6 +243,9 @@ export function createApplicationProfiler(
     start,
     stop,
     isActive,
+    // Export these functions for external use
+    getOrCreateProfiler,
+    shouldProfileComponent,
   };
 }
 

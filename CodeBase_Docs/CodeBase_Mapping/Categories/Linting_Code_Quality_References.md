@@ -14,7 +14,7 @@
        - Tests the configuration to ensure everything works
      - Output files: .prettierrc.json, tools/.eslintrc.json, .vscode/settings.json
      - Usage: `node tools/setup-linting.js`
-     - Tests: tools/tests/setup-linting.test.js
+     - Tests: src/tests/tools/setup-linting.test.js
    - Linting analysis: tools/analyze-lint-errors.js
      - Purpose: Analyzes ESLint output to categorize and prioritize errors (STEP 2)
      - Features:
@@ -30,7 +30,7 @@
          - Memory-efficient processing
      - Output files: lint-analysis-report.json
      - Usage: `npx eslint src/ --format json | node tools/analyze-lint-errors.js [options]`
-     - Tests: tools/tests/analyze-lint-errors.test.js
+     - Tests: src/tests/tools/analyze-lint-errors.test.js
    - Rule-specific fixing: tools/fix-eslint-by-rule.js
      - Purpose: Fixes ESLint and Prettier issues by rule name or automatically (STEP 3)
      - Features:
@@ -43,7 +43,7 @@
        - Color-coded output with spinner for better UX
      - Output files: Updates eslint-progress.log with fix information
      - Usage: `node tools/fix-eslint-by-rule.js [rule-name] [directory] [options]`
-     - Tests: tools/tests/fix-eslint-by-rule.test.js
+     - Tests: src/tests/tools/fix-eslint-by-rule.test.js
    - Linting progress tracking: tools/track-eslint-progress.js
      - Purpose: Records linting status to track progress over time (STEP 4)
      - Features:
@@ -72,7 +72,7 @@
        - Progress indicators and color-coded output
      - Output files: typescript-any-errors.json
      - Usage: `node tools/fix-typescript-any.js [options]`
-     - Tests: tools/tests/fix-typescript-any.test.js
+     - Tests: src/tests/tools/fix-typescript-any.test.js
    - Unified linting workflow: tools/run-lint-workflow.js
      - Purpose: Runs all linting tools in the correct order (STEP 0)
      - Features:
@@ -81,8 +81,8 @@
        - Shows progress and summary of execution
        - Handles errors gracefully
      - Usage: `node tools/run-lint-workflow.js [options]`
-     - Tests: tools/tests/run-lint-workflow.test.js
-   - Test suite for linting tools: tools/tests/
+     - Tests: src/tests/tools/run-lint-workflow.test.js
+   - Test suite for linting tools: src/tests/tools/
      - Purpose: Ensures linting tools work correctly
      - Features:
        - Comprehensive tests for all linting tools
@@ -90,12 +90,12 @@
        - Tests various scenarios and edge cases
        - Verifies correct behavior with different options
      - Files:
-       - tools/tests/setup-linting.test.js
-       - tools/tests/analyze-lint-errors.test.js
-       - tools/tests/fix-eslint-by-rule.test.js
-       - tools/tests/fix-typescript-any.test.js
-       - tools/tests/run-lint-workflow.test.js
-     - Usage: `npx vitest run tools/tests/`
+       - src/tests/tools/setup-linting.test.js
+       - src/tests/tools/analyze-lint-errors.test.js
+       - src/tests/tools/fix-eslint-by-rule.test.js
+       - src/tests/tools/fix-typescript-any.test.js
+       - src/tests/tools/run-lint-workflow.test.js
+     - Usage: `npm run test:tools`
 
 2. Type Safety Improvements [~30% Complete]
 

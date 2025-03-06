@@ -27,6 +27,12 @@ GALACTIC SPRAWL SYSTEM ARCHITECTURE
     - [Type Assertion Issues](#type-assertion-issues)
     - [Map Iteration Issues](#map-iteration-issues)
 18. [Testing Framework Configuration](#testing-framework-configuration)
+19. [Test Utilities and Fixtures](#test-utilities-and-fixtures)
+    - [Resource State Fixtures](#resource-state-fixtures)
+    - [Mock Manager Creation](#mock-manager-creation)
+    - [Handling Unused Variables](#handling-unused-variables)
+    - [Mocking ES Modules in Tests](#mocking-es-modules-in-tests)
+    - [Performance Testing Best Practices](#performance-testing-best-practices)
 
 ## End-to-End Testing with Playwright
 
@@ -45,7 +51,8 @@ Galactic Sprawl uses Playwright for end-to-end testing to ensure the application
    - Test directory is set to `./src/tests/e2e`
    - Global timeout is set to 30 seconds
    - Configured browsers include Chromium and Firefox
-   - Web server is configured to run on port 3000 using `npm run start`
+   - Dynamic port allocation to prevent conflicts between test runs
+   - Web server configuration is optional to allow tests to run without a server
 
 3. **NPM Scripts**:
    - `test:e2e`: Runs all Playwright tests
@@ -111,6 +118,118 @@ End-to-end tests are organized by feature area:
      // Additional test cases...
    });
    ```
+
+### Test Isolation and WebSocket Server Conflict Resolution
+
+To ensure reliable and consistent E2E test execution, Galactic Sprawl implements a robust test isolation strategy that prevents conflicts between test runs:
+
+1. **Dynamic Port Allocation**:
+
+   - Each test run uses a unique port for the WebSocket server
+   - A utility function `getUniquePort()` generates random ports between 8000-9000
+   - The current port is stored in a module-level variable and accessed via `getCurrentPort()`
+   - This prevents the "address already in use" errors that occur when multiple tests try to use the same port
+
+2. **Test Setup and Teardown**:
+
+   - A dedicated test setup file (`src/tests/e2e/test-setup.ts`) manages the test environment
+   - `setupTest()` function configures global error handling and timeouts before each test
+   - `teardownTest()` function cleans up resources and resets state after each test
+   - These functions are called in the `beforeEach` and `afterEach` hooks of each test file
+
+3. **Playwright Configuration Integration**:
+
+   - The `playwright.config.ts` file is updated to use the dynamic port:
+
+     ```typescript
+     import { getCurrentPort } from './src/tests/e2e/test-setup';
+
+     export default defineConfig({
+       // ...
+       projects: [
+         {
+           name: 'chromium',
+           use: {
+             baseURL: `http://localhost:${getCurrentPort()}`,
+           },
+         },
+         // ...
+       ],
+       webServer: {
+         command: 'npm run dev',
+         port: getCurrentPort(),
+       },
+     });
+     ```
+
+4. **Custom Test Fixtures**:
+
+   - Custom fixtures are defined to provide page objects and other test utilities
+   - The `baseURL` fixture is overridden to use the dynamic port
+   - Page object instances (e.g., `miningPage`) are created once per test and properly typed
+
+5. **Implementation Example**:
+
+   ```typescript
+   // src/tests/e2e/test-setup.ts
+   import { test as baseTest, expect, Page } from '@playwright/test';
+   import { MiningPage } from './models/MiningPage';
+
+   // Generate a unique port for each test run
+   function getUniquePort(): number {
+     return Math.floor(Math.random() * 1000) + 8000;
+   }
+
+   // Store the current port for the test run
+   let currentPort = getUniquePort();
+
+   // Export a function to get the current port
+   export function getCurrentPort(): number {
+     return currentPort;
+   }
+
+   // Define custom fixtures
+   type CustomFixtures = {
+     miningPage: MiningPage;
+   };
+
+   // Extend the base test with custom fixtures
+   export const test = baseTest.extend<CustomFixtures>({
+     // Override baseURL to use the unique port
+     baseURL: ({ baseURL }, use) => {
+       use(`http://localhost:${getCurrentPort()}`);
+     },
+
+     // Add miningPage fixture
+     miningPage: async ({ page }, use) => {
+       const miningPage = new MiningPage(page);
+       await use(miningPage);
+     },
+   });
+
+   // Export the expect function
+   export { expect };
+
+   // Setup function to configure the test environment
+   export async function setupTest(): Promise<void> {
+     // Configure global error handling and timeouts
+   }
+
+   // Teardown function to clean up after tests
+   export async function teardownTest(): Promise<void> {
+     // Clean up resources and reset state
+   }
+   ```
+
+6. **Best Practices**:
+
+   - Always use dynamic port allocation for services in tests
+   - Implement proper setup and teardown procedures for each test
+   - Ensure resources are properly cleaned up after each test run
+   - Use unique identifiers for test resources to prevent conflicts
+   - Consider using test isolation techniques to prevent interference between tests
+
+This approach ensures that E2E tests can run reliably in various environments, including CI/CD pipelines, without conflicts between test runs or leftover state from previous tests.
 
 ### TypeScript Integration
 
@@ -2673,3 +2792,655 @@ The Exploration System components had several linting issues that were fixed:
    - Used the `index` variable in the `filteredSectors.map` function for animation effects
 
 These fixes ensure that all variables, props, and functions are either properly used or removed, improving code quality and maintainability.
+
+## Test Structure Updates
+
+### Test Directory Structure
+
+- **Unit Tests**: Organized into `src/tests/components/`, `src/tests/managers/`, `src/tests/hooks/`, and `src/tests/utils/`.
+- **Integration Tests**: Located in `src/tests/integration/`, organized by feature area.
+- **End-to-End Tests**: Found in `src/tests/e2e/`, utilizing Playwright for browser automation.
+- **Performance Tests**: Located in `src/tests/performance/`, focusing on benchmark tests.
+- **Tool Tests**: Found in `src/tests/tools/`, requiring Node.js features.
+
+### Test Naming Conventions
+
+- Unit and integration tests: `*.test.ts` or `*.test.tsx`
+- End-to-end tests: `*.spec.ts`
+- Performance tests: `*.benchmark.ts`
+- Tool tests: `*.test.js`
+
+### NPM Scripts for Running Tests
+
+```json
+{
+  "test": "vitest",
+  "test:unit": "vitest src/tests/components src/tests/utils src/tests/hooks src/tests/managers",
+  "test:integration": "vitest src/tests/integration",
+  "test:e2e": "playwright test",
+  "test:perf": "vitest src/tests/performance",
+  "test:tools": "vitest src/tests/tools"
+}
+```
+
+### Test Fixtures
+
+To improve test consistency and reduce duplication, we've added a fixtures directory with common test data:
+
+- **Resource Fixtures** (`src/tests/fixtures/resourceFixtures.ts`): Contains common resource types, states, priorities, flow nodes, connections, and flows for testing resource-related functionality.
+
+- **Exploration Fixtures** (`src/tests/fixtures/explorationFixtures.ts`): Provides test data for recon ships, sectors, fleet formations, and exploration tasks.
+
+- **Mining Fixtures** (`src/tests/fixtures/miningFixtures.ts`): Includes test data for mining ships, nodes, hubs, and operations.
+
+- **Fixture Index** (`src/tests/fixtures/index.ts`): Exports all fixtures for easy importing in tests.
+
+Example usage in tests:
+
+```typescript
+import { resourceStates, flowNodes } from '../../fixtures';
+
+describe('ResourceManager', () => {
+  it('should handle resource state updates', () => {
+    const manager = new ResourceManager();
+    manager.updateState('energy', resourceStates.standard);
+    expect(manager.getState('energy')).toEqual(resourceStates.standard);
+  });
+});
+```
+
+These fixtures help standardize test data across the test suite, making tests more consistent and easier to maintain.
+
+### Test Utilities
+
+We've enhanced the test utilities to make testing easier and more consistent:
+
+#### Fixture Utilities (`src/tests/utils/fixtureUtils.ts`)
+
+Provides utility functions for working with test fixtures:
+
+- `createResourceState`: Creates customized resource states
+- `createFlowNode`: Creates customized flow nodes
+- `createMockResourceManager`: Creates a mock resource manager
+- `createMockMiningManager`: Creates a mock mining manager
+- `createMockExplorationManager`: Creates a mock exploration manager
+- `createReconShip`, `createMiningShip`, `createSector`, `createMiningNode`: Create customized entities
+- `createBatch`: Creates multiple test items with customizations
+
+Example usage:
+
+```typescript
+import { createMockResourceManager, createFlowNode } from '../../utils/fixtureUtils';
+
+describe('ResourceFlowComponent', () => {
+  it('should render flow nodes correctly', () => {
+    const mockManager = createMockResourceManager();
+    const customNode = createFlowNode('producer', { efficiency: 0.95 });
+
+    // Test with the mock manager and custom node
+  });
+});
+```
+
+#### Async Test Utilities (`src/tests/utils/asyncTestUtils.ts`)
+
+Provides utilities for testing asynchronous code:
+
+- `wait`: Waits for a specified time
+- `waitForConditionAsync`: Waits for a condition to be true
+- `createDeferredPromise`: Creates a promise that can be resolved externally
+- `createMockEventEmitter`: Creates a mock event emitter
+- `createMockTimer`: Creates a mock timer for testing time-based functionality
+- `createMockRAF`: Creates a mock requestAnimationFrame implementation
+
+Example usage:
+
+```typescript
+import { createMockEventEmitter, waitForConditionAsync } from '../../utils';
+
+describe('EventHandler', () => {
+  it('should process events asynchronously', async () => {
+    const mockEmitter = createMockEventEmitter();
+    const handler = new EventHandler(mockEmitter);
+
+    mockEmitter.emit('data', { value: 42 });
+
+    await waitForConditionAsync(() => handler.processed === true);
+    expect(handler.result).toBe(42);
+  });
+});
+```
+
+#### Performance Test Utilities (`src/tests/utils/performanceTestUtils.ts`)
+
+Provides utilities for performance testing:
+
+- `measureExecTime`: Measures execution time of a function
+- `runBenchmark`: Runs a benchmark for a function
+- `createPerfReporter`: Creates a performance reporter for tracking metrics
+- `measureMemory`: Measures memory usage of a function
+
+Example usage:
+
+```typescript
+import { runBenchmark, createPerfReporter } from '../../utils';
+
+describe('ResourceCalculator', () => {
+  it('should perform calculations efficiently', () => {
+    const calculator = new ResourceCalculator();
+
+    const results = runBenchmark(
+      () => calculator.calculateOptimalFlow(largeResourceNetwork),
+      100 // Run 100 iterations
+    );
+
+    expect(results.average).toBeLessThan(50); // Should take less than 50ms
+  });
+});
+```
+
+#### Main Test Utilities (`src/tests/utils/testUtils.tsx`)
+
+Provides general test utilities for React components and other functionality:
+
+- `renderWithProviders`: Renders components with providers
+- `createMockElement`: Creates a mock DOM element
+- `testLoadingState`: Tests loading states in components
+- `testErrorState`: Tests error states in components
+
+#### Unified Exports (`src/tests/utils/index.ts`)
+
+All utilities are exported from a single index file, with renamed exports to avoid naming conflicts:
+
+```typescript
+import {
+  renderWithProviders,
+  createMockResourceManager,
+  waitForConditionAsync,
+  runBenchmark,
+} from '../../utils';
+```
+
+These enhanced test utilities make it easier to write consistent, reliable tests across the codebase.
+
+## Test File Best Practices
+
+### Vitest Test Structure
+
+When writing tests with Vitest, follow these best practices to ensure consistent and maintainable tests:
+
+1. **ES Module Imports**:
+
+   - Always use ES module imports instead of CommonJS `require()`
+   - For testing modules, use dynamic imports with `await import()`
+
+   ```javascript
+   // Good
+   await import('../../path/to/module.js');
+
+   // Bad
+   require('../../path/to/module.js');
+   ```
+
+2. **Mocking Global Objects**:
+
+   - Create mock objects at the top of the test file for better reusability
+
+   ```javascript
+   const mockConsole = {
+     log: vi.fn(),
+     error: vi.fn(),
+     warn: vi.fn(),
+   };
+
+   const mockProcess = {
+     argv: ['node', 'script.js'],
+     exit: vi.fn(),
+     stdout: { write: vi.fn() },
+   };
+   ```
+
+3. **Using Mock Objects**:
+
+   - Use `vi.stubGlobal()` to mock global objects
+   - Reference mock objects in assertions instead of global objects
+
+   ```javascript
+   // Setup
+   vi.stubGlobal('console', mockConsole);
+   vi.stubGlobal('process', mockProcess);
+
+   // Assertions
+   expect(mockConsole.log).toHaveBeenCalled();
+   expect(mockProcess.exit).toHaveBeenCalledWith(0);
+   ```
+
+4. **Overriding Mock Properties**:
+
+   - Use the spread operator to preserve existing mock properties when overriding specific ones
+
+   ```javascript
+   vi.stubGlobal('process', {
+     ...mockProcess,
+     argv: ['node', 'script.js', '--flag'],
+   });
+   ```
+
+5. **Async Test Functions**:
+
+   - Make test functions async when using dynamic imports
+
+   ```javascript
+   it('should test something', async () => {
+     await import('../../path/to/module.js');
+     // test assertions
+   });
+   ```
+
+6. **Resetting Mocks**:
+
+   - Reset all mocks before each test to ensure test isolation
+
+   ```javascript
+   beforeEach(() => {
+     vi.resetAllMocks();
+   });
+
+   afterEach(() => {
+     vi.resetAllMocks();
+   });
+   ```
+
+7. **Mock Implementation**:
+   - Use `mockImplementation` for complex mock behavior
+   ```javascript
+   mockFunction.mockImplementation((arg1, arg2) => {
+     if (arg1 === 'specific value') {
+       return 'special result';
+     }
+     return 'default result';
+   });
+   ```
+
+Following these practices ensures consistent test structure, proper isolation between tests, and avoids common linting errors.
+
+## Test Utilities and Fixtures
+
+### Resource State Fixtures
+
+The `fixtureUtils.ts` file provides utility functions for creating test fixtures. These utilities help maintain consistency across tests and reduce code duplication.
+
+#### Resource State Creation
+
+The `createResourceState` function creates customized resource states for testing:
+
+```typescript
+export function createResourceState(
+  resourceType: ResourceType,
+  overrides: Partial<typeof resourceStates.standard> = {}
+) {
+  // Apply resource-specific defaults based on type
+  const typeDefaults: Record<ResourceType, Partial<typeof resourceStates.standard>> = {
+    minerals: { production: 10, consumption: 5, max: 1000, current: 100, min: 0 },
+    energy: { production: 20, consumption: 15, max: 2000, current: 200, min: 0 },
+    // ... other resource types
+  };
+
+  return {
+    ...resourceStates.standard,
+    ...typeDefaults[resourceType],
+    ...overrides,
+  };
+}
+```
+
+This approach:
+
+1. Uses the `resourceType` parameter to apply type-specific defaults
+2. Starts with the standard resource state as a base
+3. Applies type-specific defaults based on the resource type
+4. Finally applies any custom overrides provided by the caller
+
+This pattern ensures that:
+
+- All resource types have sensible defaults
+- Tests can easily customize specific properties
+- The code is type-safe by using the correct properties from the ResourceState interface
+
+### Handling Unused Variables
+
+When encountering unused variables in the codebase:
+
+1. **Evaluate the intent**: Determine if the variable was meant to be used but was overlooked
+2. **Make it meaningful**: If the variable should be used, find a way to incorporate it meaningfully
+3. **Remove if unnecessary**: If the variable is truly not needed, remove it from the parameter list
+4. **Document the decision**: Update relevant documentation to explain the approach taken
+
+In the case of `resourceType` in `createResourceState`, we determined that it should be used to provide type-specific defaults, making the function more useful and eliminating the unused variable warning.
+
+### Mocking ES Modules in Tests
+
+When mocking ES modules in Vitest tests, follow these best practices:
+
+1. **Create mock functions outside vi.mock() calls**:
+
+   ```typescript
+   // Create mock functions first
+   const mockExistSync = vi.fn();
+   const mockWriteFileSync = vi.fn();
+
+   // Then use them in the mock
+   vi.mock('fs', async () => {
+     return {
+       existsSync: mockExistSync,
+       writeFileSync: mockWriteFileSync,
+       default: {
+         existsSync: mockExistSync,
+         writeFileSync: mockWriteFileSync,
+       },
+     };
+   });
+   ```
+
+2. **Always include both named exports and default exports**:
+
+   - ES modules can be imported using both named imports and default imports
+   - Ensure your mocks support both patterns by providing both formats
+
+3. **Reset modules between tests**:
+
+   ```typescript
+   beforeEach(() => {
+     vi.resetModules();
+   });
+   ```
+
+4. **Use flexible assertions for file paths**:
+
+   - Different environments may represent paths differently
+   - Use content-based assertions rather than exact path matching:
+
+   ```typescript
+   // Instead of:
+   expect(mockWriteFileSync).toHaveBeenCalledWith('.vscode/settings.json', expect.any(String));
+
+   // Use:
+   const settingsCall = mockWriteFileSync.mock.calls.find(
+     call => typeof call[1] === 'string' && call[1].includes('editor.formatOnSave')
+   );
+   expect(settingsCall).toBeDefined();
+   ```
+
+5. **Clean up global mocks after tests**:
+   ```typescript
+   afterEach(() => {
+     vi.resetAllMocks();
+     vi.unstubAllGlobals();
+   });
+   ```
+
+### Performance Testing Best Practices
+
+When writing performance tests, follow these guidelines to ensure reliable and meaningful results:
+
+1. **Avoid setTimeout for simulating slow operations**:
+
+   - setTimeout is unreliable in test environments
+   - Timing can vary significantly between runs
+   - Tests may pass or fail inconsistently
+
+2. **Use CPU-intensive operations for reliable timing**:
+
+   ```typescript
+   function cpuIntensiveFunction(iterations: number): number {
+     let result = 0;
+     for (let i = 0; i < iterations; i++) {
+       result += Math.sin(i) * Math.cos(i);
+     }
+     return result;
+   }
+
+   // Use in test
+   const { executionTimeMs } = measureExecutionTime(() => {
+     cpuIntensiveFunction(10000);
+   });
+   ```
+
+3. **Test for relative timing values, not exact values**:
+
+   ```typescript
+   // Instead of:
+   expect(executionTimeMs).toBe(100);
+
+   // Use:
+   expect(executionTimeMs).toBeGreaterThan(0);
+   ```
+
+4. **Ensure performance metrics are collected correctly**:
+
+   ```typescript
+   const reporter = new PerformanceReporter();
+
+   // Run multiple iterations
+   for (let i = 0; i < 5; i++) {
+     const result = cpuIntensiveFunction(1000);
+     reporter.recordMetric('calculation', result);
+   }
+
+   // Verify metrics
+   const metrics = reporter.getMetrics();
+   expect(metrics.calculation.iterations).toBe(5);
+   expect(metrics.calculation.min).toBeGreaterThan(0);
+   ```
+
+5. **Isolate performance tests from external factors**:
+   - Avoid network requests or file system operations
+   - Mock external dependencies
+   - Focus on measuring specific operations
+
+## Best Practices for Mocking in Test Files
+
+When writing tests that require mocking external dependencies, follow these best practices to ensure reliable and maintainable tests:
+
+### Module Mocking
+
+1. **Mock both named and default exports**:
+
+   ```javascript
+   vi.mock('fs', () => ({
+     // Named exports
+     writeFileSync: mockWriteFileSync,
+     existsSync: mockExistsSync,
+
+     // Default export
+     default: {
+       writeFileSync: mockWriteFileSync,
+       existsSync: mockExistsSync,
+     },
+   }));
+   ```
+
+2. **Use importOriginal for partial mocking**:
+
+   ```javascript
+   vi.mock('node:timers', async importOriginal => {
+     const actual = await importOriginal();
+     return {
+       ...actual,
+       setTimeout: mockSetTimeout,
+       clearTimeout: mockClearTimeout,
+       default: {
+         ...actual.default,
+         setTimeout: mockSetTimeout,
+         clearTimeout: mockClearTimeout,
+       },
+     };
+   });
+   ```
+
+3. **Create mock functions outside vi.mock() calls**:
+
+   ```javascript
+   // Define mock functions outside vi.mock() for better reuse
+   const mockWriteFileSync = vi.fn();
+   const mockExistsSync = vi.fn();
+
+   vi.mock('fs', () => ({
+     writeFileSync: mockWriteFileSync,
+     existsSync: mockExistsSync,
+   }));
+   ```
+
+### Global Object Mocking
+
+1. **Direct replacement for simple tests**:
+
+   ```javascript
+   // Store original objects
+   const originalProcess = globalThis.process;
+   const originalConsole = globalThis.console;
+
+   // Create mock objects
+   const mockProcess = {
+     /* ... */
+   };
+   const mockConsole = {
+     /* ... */
+   };
+
+   // Replace global objects
+   globalThis.process = mockProcess;
+   globalThis.console = mockConsole;
+
+   // Restore in afterEach
+   afterEach(() => {
+     globalThis.process = originalProcess;
+     globalThis.console = originalConsole;
+   });
+   ```
+
+2. **Use vi.stubGlobal for more complex tests**:
+
+   ```javascript
+   // Create mock objects
+   const mockProcess = {
+     /* ... */
+   };
+   const mockConsole = {
+     /* ... */
+   };
+
+   // Stub global objects
+   vi.stubGlobal('process', mockProcess);
+   vi.stubGlobal('console', mockConsole);
+
+   // Restore in afterEach
+   afterEach(() => {
+     vi.unstubAllGlobals();
+   });
+   ```
+
+### Event-Based API Mocking
+
+1. **Capture callbacks directly**:
+
+   ```javascript
+   // Store callbacks for later use
+   let dataCallback;
+   let endCallback;
+
+   // Mock the event registration
+   mockProcess.stdin.on.mockImplementation((event, callback) => {
+     if (event === 'data') dataCallback = callback;
+     if (event === 'end') endCallback = callback;
+     return mockProcess.stdin;
+   });
+
+   // Call the callbacks directly in the test
+   dataCallback(sampleData);
+   endCallback();
+   ```
+
+2. **Implement comprehensive interface mocks**:
+   ```javascript
+   // Mock readline interface with all required methods
+   vi.mock('readline', () => ({
+     createInterface: vi.fn(() => ({
+       question: vi.fn((query, callback) => callback('y')),
+       close: vi.fn(),
+       on: vi.fn(),
+       pause: vi.fn(),
+       resume: vi.fn(),
+       write: vi.fn(),
+       input: {
+         on: vi.fn(),
+         pause: vi.fn(),
+         resume: vi.fn(),
+       },
+       output: {
+         on: vi.fn(),
+         write: vi.fn(),
+       },
+     })),
+   }));
+   ```
+
+### Test Cleanup and Isolation
+
+1. **Reset modules between tests**:
+
+   ```javascript
+   beforeEach(() => {
+     vi.resetModules();
+     vi.resetAllMocks();
+   });
+   ```
+
+2. **Restore global objects**:
+
+   ```javascript
+   afterEach(() => {
+     globalThis.process = originalProcess;
+     globalThis.console = originalConsole;
+     // Or
+     vi.unstubAllGlobals();
+   });
+   ```
+
+3. **Clear mock state**:
+   ```javascript
+   afterEach(() => {
+     vi.clearAllMocks(); // Clears mock.mock.calls and mock.mock.results
+     vi.resetAllMocks(); // Clears mock.mock and resets implementation
+     vi.restoreAllMocks(); // Restores original implementation
+   });
+   ```
+
+### Simplifying Test Approach
+
+1. **Focus on core functionality**:
+
+   - Test the most important aspects of the code
+   - Don't try to test every detail
+   - Prioritize critical paths
+
+2. **Use simpler assertions**:
+
+   - Make assertions more flexible for timing-related values
+   - Use `expect.any(Type)` for dynamic values
+   - Use `expect.stringContaining()` for partial string matches
+
+3. **Reduce test complexity**:
+   - Break complex tests into smaller, focused tests
+   - Use helper functions for common test patterns
+   - Avoid complex setup and teardown logic
+
+### Common Pitfalls to Avoid
+
+1. **Incomplete mocks**: Missing methods or properties in mocks
+2. **Inconsistent mocking patterns**: Different approaches across files
+3. **Missing cleanup**: Not restoring global objects or resetting mocks
+4. **Over-specific assertions**: Testing implementation details rather than behavior
+5. **Complex test setup**: Making tests hard to understand and maintain
+
+By following these best practices, you can create more reliable, maintainable, and effective tests that properly isolate the code under test from its dependencies.

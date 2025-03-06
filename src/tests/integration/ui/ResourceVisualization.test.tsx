@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ResourceVisualization } from '../../../components/ui/ResourceVisualization';
+import { GameProvider } from '../../../contexts/GameContext';
 import { useResourceTracking } from '../../../hooks/resources/useResourceTracking';
 import { ModuleEvent, moduleEventBus } from '../../../lib/modules/ModuleEvents';
 import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowManager';
@@ -50,7 +51,7 @@ vi.mock('../../../hooks/resources/useResourceTracking', () => ({
 
 // Create a test wrapper component to provide context
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  return <>{children}</>;
+  return <GameProvider>{children}</GameProvider>;
 };
 
 describe('ResourceVisualization Integration', () => {

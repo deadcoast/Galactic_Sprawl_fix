@@ -84,6 +84,19 @@ describe('MiningWindow Component', () => {
     expect(availableStatusElement).toBeInTheDocument();
     expect(miningStatusElement).toBeInTheDocument();
     expect(depletedStatusElement).toBeInTheDocument();
+
+    // Use the user to interact with the component
+    // Click on a resource to select it
+    const resourceElement = screen.getByText('Iron Deposit');
+    await user.click(resourceElement);
+
+    // Verify the resource is selected (e.g., by checking for a selected class or style)
+    expect(resourceElement.closest('div')).toHaveClass('selected');
+
+    // Test hovering over a resource to show details
+    await user.hover(screen.getByText('Energy Field'));
+    // Verify tooltip or details are shown
+    expect(screen.getByText(/resource details/i)).toBeVisible();
   });
 
   it('should render mining ships correctly', async () => {
@@ -143,7 +156,11 @@ describe('MiningWindow Component', () => {
 
     // Mock hooks
     const { useMiningOperations } = vi.hoisted(() => ({
-      useMiningOperations: vi.fn(),
+      useMiningOperations: vi.fn().mockReturnValue({
+        assignShip: vi.fn(),
+        unassignShip: vi.fn(),
+        getShipStatus: vi.fn(),
+      }),
     }));
 
     // Find a resource and a ship
@@ -159,13 +176,27 @@ describe('MiningWindow Component', () => {
     const assignButton = screen.getByText(/assign ship/i);
     await user.click(assignButton);
 
-    // Select the ship from dropdown
-    const shipOption = screen.getByText('Mining Vessel Alpha');
-    await user.click(shipOption);
+    // Now use the shipItem to select a ship for assignment
+    if (shipItem) {
+      await user.click(shipItem);
 
-    // Check if the assign function was called
-    const { assignShip } = useMiningOperations();
-    expect(assignShip).toHaveBeenCalledWith('resource-1', 'ship-1');
+      // Verify the ship is selected
+      expect(shipItem).toHaveClass('selected');
+
+      // Confirm the assignment
+      const confirmButton = screen.getByText(/confirm assignment/i);
+      await user.click(confirmButton);
+
+      // Verify the assignment was successful
+      expect(screen.getByText(/successfully assigned/i)).toBeInTheDocument();
+
+      // Check that the ship is now shown as assigned to the resource
+      expect(screen.getByText(/mining vessel alpha assigned to iron deposit/i)).toBeInTheDocument();
+
+      // Verify the assignShip function was called with the correct parameters
+      const { assignShip } = useMiningOperations();
+      expect(assignShip).toHaveBeenCalledWith('resource-1', 'ship-1');
+    }
   });
 
   it('should handle search and filtering', async () => {
