@@ -2,6 +2,66 @@
 
 This document tracks system-wide errors that have been identified and fixed in the Galactic Sprawl codebase. It serves as a reference for common issues and their solutions.
 
+## Hook Duplication and Integration Issues (Current)
+
+### Error
+
+There was confusion with the useGameState hook implementation:
+
+1. The codebase previously had two similar hooks in different locations:
+
+   - `src/hooks/useGameState.ts` (now removed)
+   - `src/hooks/game/useGameState.ts` (current implementation)
+
+2. This caused confusion when creating new components, as developers were unclear about which hook to use and often created redundant implementations instead of utilizing existing hooks.
+
+### Cause
+
+1. Lack of proper documentation on the hook ecosystem
+2. Developers creating new hooks without checking for existing implementations
+3. Unclear naming conventions leading to duplicate functionality
+4. Missing cross-references between related hooks
+
+### Solution
+
+1. **Standardized hook usage**:
+
+   - Removed the duplicate hook implementation
+   - Ensured all components use the correct `useGameState` hook from `src/hooks/game/useGameState.ts`
+   - Updated GameStateMonitor to use the proper hook
+
+2. **Documentation improvements**:
+
+   - Added clear comments to the hook file explaining its purpose
+   - Updated CodeBase_Mapping_Index.md to include all hooks with their intended usage
+   - Added cross-references between related hooks
+
+3. **Best practices**:
+   - Always search for existing hooks before creating new ones
+   - Follow the established naming conventions for hooks
+   - Place hooks in the appropriate directories based on their functionality
+
+### Best Practices for Hook Integration
+
+1. **Before creating a new hook**:
+
+   - Search the codebase for existing implementations using grep or semantic search
+   - Check the CodeBase_Mapping_Index.md for similar functionality
+   - Consider extending an existing hook rather than creating a new one
+
+2. **When using existing hooks**:
+
+   - Use the most specific hook available for your use case
+   - Follow the established patterns for hook usage
+   - Contribute improvements to existing hooks rather than creating duplicates
+
+3. **Naming conventions**:
+   - General hooks should be placed in `src/hooks/`
+   - Domain-specific hooks should be placed in subdirectories (e.g., `src/hooks/game/`)
+   - Hooks should be named according to their functionality (e.g., `useGameState`, `useModuleState`)
+
+For more details, see the Hook Architecture section in `CodeBase_Docs/CodeBase_Architecture.md`.
+
 ## WebSocket Server Port Conflicts in Tests (March 2025)
 
 ### Error

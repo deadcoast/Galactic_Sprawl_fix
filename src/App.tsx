@@ -1,12 +1,14 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { SystemIntegration } from './components/core/SystemIntegration';
+import { GameStateMonitor } from './components/debug/GameStateMonitor';
 import { TooltipProvider } from './components/ui/TooltipProvider';
 import { defaultColony, defaultMothership } from './config/buildings/defaultBuildings';
 import { defaultModuleConfigs } from './config/modules/defaultModuleConfigs';
 import { GameProvider, useGame } from './contexts/GameContext';
-import { ModuleProvider } from './contexts/ModuleContext';
+import { ModuleProvider, useModules } from './contexts/ModuleContext';
+import { ResourceRatesProvider } from './contexts/ResourceRatesContext';
 import { ThresholdProvider } from './contexts/ThresholdContext';
 import { assetManager } from './managers/game/assetManager';
-import { gameManager } from './managers/game/gameManager';
 import { ResourceManager } from './managers/game/ResourceManager';
 import { TechNode, techTreeManager } from './managers/game/techTreeManager';
 import { moduleManager } from './managers/module/ModuleManager';
@@ -16,6 +18,9 @@ import { ShipHangarManager } from './managers/module/ShipHangarManager';
 // Import the GlobalErrorBoundary component
 import { GlobalErrorBoundary } from './components/ui/GlobalErrorBoundary';
 // Import error services
+import { ResourceVisualization } from './components/ui/ResourceVisualization';
+import { useComponentProfiler } from './hooks/ui/useComponentProfiler';
+import { useProfilingOverlay } from './hooks/ui/useProfilingOverlay';
 import { errorLoggingService, ErrorSeverity, ErrorType } from './services/ErrorLoggingService';
 import { recoveryService } from './services/RecoveryService';
 
@@ -67,175 +72,165 @@ const initialTechs: TechNode[] = [
   },
 ];
 
+// GameInitializer component to handle game initialization
 const GameInitializer = ({ children }: { children: React.ReactNode }) => {
-  const gameContext = useGame();
-
-  // Ensure context is available
-  if (!gameContext) {
-    return null;
-  }
-
-  const { dispatch } = gameContext;
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [loadingError, setLoadingError] = useState<string | null>(null);
-  const [resourceManager] = useState(() => new ResourceManager());
-  const [officerManager] = useState(() => new OfficerManager());
-  const [_shipHangarManager] = useState(
-    () => new ShipHangarManager(resourceManager, officerManager)
-  );
+  const { dispatch } = useGame();
+  const [isInitialized, setIsInitialized] = React.useState(false);
+  const { dispatch: moduleDispatch } = useModules();
+  const [resourceManagerInstance] = React.useState(() => new ResourceManager());
 
   useEffect(() => {
     const initializeGame = async () => {
-      try {
-        console.warn('Initializing game systems...');
+      if (!isInitialized) {
+        console.warn('Starting game initialization...');
+        try {
+          // Initialize resource manager
+          console.warn('Initializing resource manager...');
+          // ResourceManager is already initialized via useState
 
-        // Register module configurations
-        console.warn('Registering module configurations...');
-        Object.values(defaultModuleConfigs).forEach(config => {
-          moduleManager.registerModuleConfig(config);
-        });
+          // Register module configurations
+          console.warn('Registering module configurations...');
+          if (defaultModuleConfigs) {
+            Object.values(defaultModuleConfigs).forEach(config => {
+              if (config) {
+                console.warn(`Registering module config: ${config.type}`);
+                moduleManager.registerModuleConfig(config);
+              }
+            });
+          } else {
+            console.warn('defaultModuleConfigs is null or undefined');
+          }
 
-        // Register default buildings
-        console.warn('Registering default buildings...');
-        moduleManager.registerBuilding(defaultMothership);
-        moduleManager.registerBuilding(defaultColony);
+          // Register default buildings
+          console.warn('Registering default buildings...');
+          if (defaultMothership) {
+            console.warn(`Registering mothership: ${defaultMothership.id}`);
+            moduleManager.registerBuilding(defaultMothership);
 
-        // Initialize asset manager
-        console.warn('Initializing asset manager...');
-        await assetManager.initialize();
+            // Also register the building with the ModuleContext
+            moduleDispatch({
+              type: 'REGISTER_BUILDING',
+              building: defaultMothership,
+            });
+          }
 
-        // Register initial technologies
-        console.warn('Registering initial technologies...');
-        initialTechs.forEach(tech => {
-          techTreeManager.registerNode(tech);
-        });
+          if (defaultColony) {
+            console.warn(`Registering colony: ${defaultColony.id}`);
+            moduleManager.registerBuilding(defaultColony);
 
-        // Add initial resources
-        console.warn('Adding initial resources...');
-        dispatch({
-          type: 'UPDATE_RESOURCES',
-          resources: {
-            minerals: 2000, // Increased initial resources to allow for early module building
-            energy: 2000,
-            research: 0,
-            population: 100,
-          },
-        });
+            // Also register the building with the ModuleContext
+            moduleDispatch({
+              type: 'REGISTER_BUILDING',
+              building: defaultColony,
+            });
+          }
 
-        // Update systems count
-        console.warn('Updating system counts...');
-        dispatch({
-          type: 'UPDATE_SYSTEMS',
-          systems: {
-            total: 1,
-            colonized: 1,
-            explored: 1,
-          },
-        });
+          // Initialize asset manager
+          console.warn('Initializing asset manager...');
+          await assetManager.initialize();
 
-        // Start the game
-        console.warn('Starting game loop...');
-        dispatch({ type: 'START_GAME' });
-        gameManager.start();
+          // Register initial technologies
+          console.warn('Registering initial technologies...');
+          if (initialTechs) {
+            initialTechs.forEach(tech => {
+              if (tech) {
+                console.warn(`Registering tech: ${tech.id}`);
+                techTreeManager.registerNode(tech);
+              }
+            });
+          } else {
+            console.warn('initialTechs is null or undefined');
+          }
 
-        // Auto-save initial game state
-        recoveryService.saveSnapshot(
-          {
-            gameState: 'initial',
+          // Add initial resources
+          console.warn('Adding initial resources...');
+          dispatch({
+            type: 'UPDATE_RESOURCES',
             resources: {
-              minerals: 2000,
+              minerals: 2000, // Increased initial resources to allow for early module building
               energy: 2000,
               research: 0,
               population: 100,
             },
-          },
-          'Initial game state'
-        );
+          });
 
-        console.warn('Game initialization complete');
-        setIsInitialized(true);
-      } catch (error) {
-        // Log the error using the error logging service
-        errorLoggingService.logError(
-          error instanceof Error ? error : new Error(String(error)),
-          ErrorType.SYSTEM,
-          ErrorSeverity.HIGH,
-          {
-            action: 'game_initialization',
-            componentName: 'GameInitializer',
+          // Update systems count
+          console.warn('Updating system counts...');
+          dispatch({
+            type: 'UPDATE_SYSTEMS',
+            systems: {
+              total: 1,
+              colonized: 1,
+              explored: 1,
+            },
+          });
+
+          // Initialize the officer manager
+          console.warn('Initializing officer manager...');
+          const officerManager = new OfficerManager();
+
+          // Initialize the ship hangar manager
+          console.warn('Initializing ship hangar manager...');
+          const shipHangarManager = new ShipHangarManager(resourceManagerInstance, officerManager);
+
+          // Register the ship hangar manager with the global window object for development access
+          if (process.env.NODE_ENV === 'development') {
+            // Make manager available for debugging
+            (
+              window as Window & typeof globalThis & { shipHangarManager: ShipHangarManager }
+            ).shipHangarManager = shipHangarManager;
           }
-        );
 
-        console.error('Failed to initialize game:', error);
-        setLoadingError(error instanceof Error ? error.message : 'Failed to initialize game');
+          // Set initialization flag
+          console.warn('Game initialization complete!');
+
+          // Log the current state of the module manager
+          console.warn('Module manager state:', {
+            buildings: moduleManager.getBuildings(),
+            modules: moduleManager.getActiveModules(),
+            configs: 'Module configurations registered',
+          });
+
+          setIsInitialized(true);
+        } catch (error) {
+          console.error('Error during game initialization:', error);
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error(String(error)),
+            ErrorType.SYSTEM,
+            ErrorSeverity.HIGH,
+            {
+              action: 'initialization',
+            }
+          );
+
+          // Attempt recovery
+          recoveryService.saveSnapshot(
+            {
+              gameState: 'error',
+              error: error instanceof Error ? error.message : String(error),
+            },
+            'Error during initialization'
+          );
+        }
       }
     };
 
     initializeGame();
-
-    // Cleanup function
-    return () => {
-      gameManager.stop();
-      assetManager.destroy();
-    };
-  }, [dispatch]);
-
-  if (loadingError) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          color: '#ff4444',
-          padding: '20px',
-          textAlign: 'center',
-        }}
-      >
-        <h2>Failed to Initialize Game</h2>
-        <p>{loadingError}</p>
-        <button
-          onClick={() => window.location.reload()}
-          style={{
-            padding: '10px 20px',
-            marginTop: '20px',
-            background: '#444',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
+  }, [dispatch, isInitialized, moduleDispatch]);
 
   if (!isInitialized) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          color: '#fff',
-          background: '#111',
-          padding: '20px',
-          textAlign: 'center',
-        }}
-      >
-        <h2>Initializing game...</h2>
-        <p>Loading assets and preparing game systems</p>
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-gray-900 text-white">
+        <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+        <h2 className="mb-2 text-xl font-medium">Initializing Game Systems...</h2>
+        <p className="text-gray-400">Preparing galaxy for exploration</p>
       </div>
     );
   }
 
-  return children;
+  return (
+    <SystemIntegration resourceManager={resourceManagerInstance}>{children}</SystemIntegration>
+  );
 };
 
 // Handler for global errors
@@ -247,38 +242,65 @@ const handleGlobalError = (error: Error, errorInfo: React.ErrorInfo) => {
   console.error('Global error caught:', error, errorInfo);
 };
 
-export default function App() {
+// A wrapper for the GameLayout component to provide the required props
+const GameLayoutWrapper = () => {
   return (
-    <GlobalErrorBoundary onError={handleGlobalError} onReset={() => window.location.reload()}>
-      <GameProvider>
-        <ThresholdProvider>
+    <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
+      <div className="min-h-screen bg-gray-900">
+        <ResourceVisualization />
+      </div>
+    </GameLayout>
+  );
+};
+
+export default function App() {
+  // Enable app-level profiling
+  const profiler = useComponentProfiler('App', {
+    enabled: true,
+    logToConsole: false,
+    trackPropChanges: true,
+  });
+
+  // Show profiling overlay in development
+  useProfilingOverlay({
+    enabledByDefault: process.env.NODE_ENV === 'development',
+    enableInProduction: false,
+    toggleKey: 'p',
+    persistState: true,
+  });
+
+  // Make the ResourceManager accessible in development
+  const [resourceManager] = React.useState(() => new ResourceManager());
+
+  if (process.env.NODE_ENV === 'development') {
+    // Make ResourceManager available for debugging
+    (window as Window & typeof globalThis & { resourceManager: ResourceManager }).resourceManager =
+      resourceManager;
+  }
+
+  // Development mode debug tools
+  const showDebugTools = process.env.NODE_ENV === 'development';
+
+  return (
+    <div className="app-container">
+      <GlobalErrorBoundary onError={handleGlobalError}>
+        <GameProvider>
           <ModuleProvider>
-            <TooltipProvider>
-              <GameInitializer>
-                <Suspense fallback={<LoadingComponent />}>
-                  <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
-                    <div className="min-h-screen bg-gray-900">
-                      <div className="flex h-full flex-col items-center justify-center">
-                        <h1 className="mb-4 text-2xl text-blue-500">Mothership Control</h1>
-                        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-                          <div className="mb-4 text-blue-400">
-                            Resources:
-                            <div className="grid grid-cols-3 gap-4">
-                              <div>Minerals: 2000</div>
-                              <div>Energy: 2000</div>
-                              <div>Population: 100</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </GameLayout>
-                </Suspense>
-              </GameInitializer>
-            </TooltipProvider>
+            <ResourceRatesProvider>
+              <ThresholdProvider>
+                <TooltipProvider>
+                  <GameInitializer>
+                    <Suspense fallback={<LoadingComponent />}>
+                      <GameLayoutWrapper />
+                      {showDebugTools && <GameStateMonitor expanded={false} />}
+                    </Suspense>
+                  </GameInitializer>
+                </TooltipProvider>
+              </ThresholdProvider>
+            </ResourceRatesProvider>
           </ModuleProvider>
-        </ThresholdProvider>
-      </GameProvider>
-    </GlobalErrorBoundary>
+        </GameProvider>
+      </GlobalErrorBoundary>
+    </div>
   );
 }

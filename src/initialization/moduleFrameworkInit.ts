@@ -204,28 +204,30 @@ function initializeSubModuleSystem(): void {
   // Register sub-module configurations
   const subModuleConfigs = getSubModuleConfigs();
 
-  for (const [type, config] of Object.entries(subModuleConfigs)) {
-    subModuleManager.registerSubModuleConfig({
-      type: type as SubModuleType,
-      name: config.name,
-      description: config.description,
-      requirements: {
-        parentModuleLevel: 1,
-        parentModuleTypes: config.allowedParentTypes || [],
-        resourceCosts: config.resourceCost
-          ? Object.entries(config.resourceCost).map(([type, amount]) => ({
-              type,
-              amount: amount as number,
-            }))
-          : [],
-      },
-      effects: config.effects,
-      baseStats: {
-        power: 10,
-        space: 5,
-        complexity: 3,
-      },
-    });
+  if (subModuleConfigs) {
+    for (const [type, config] of Object.entries(subModuleConfigs)) {
+      subModuleManager.registerSubModuleConfig({
+        type: type as SubModuleType,
+        name: config.name,
+        description: config.description,
+        requirements: {
+          parentModuleLevel: 1,
+          parentModuleTypes: config.allowedParentTypes || [],
+          resourceCosts: config.resourceCost
+            ? Object.entries(config.resourceCost).map(([type, amount]) => ({
+                type,
+                amount: amount as number,
+              }))
+            : [],
+        },
+        effects: config.effects,
+        baseStats: {
+          power: 10,
+          space: 5,
+          complexity: 3,
+        },
+      });
+    }
   }
 }
 

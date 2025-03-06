@@ -90,9 +90,15 @@ export class ResourceManager {
     };
 
     // Initialize resources with config limits
-    Object.entries(config.defaultResourceLimits).forEach(([type, limits]) => {
-      this.initializeResource(type as ResourceType, limits.min, limits.max);
-    });
+    if (config.defaultResourceLimits) {
+      Object.entries(config.defaultResourceLimits).forEach(([type, limits]) => {
+        this.initializeResource(type as ResourceType, limits.min, limits.max);
+      });
+    } else {
+      console.warn(
+        '[ResourceManager] Warning: defaultResourceLimits is null or undefined in config'
+      );
+    }
 
     // Initialize optimization strategies
     this.initializeOptimizationStrategies();

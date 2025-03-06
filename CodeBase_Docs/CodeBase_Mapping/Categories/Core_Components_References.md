@@ -1,3 +1,47 @@
+# Core Components References
+
+This file contains references to core components in the codebase.
+
+## System Integration
+
+- `src/components/core/SystemIntegration.tsx` - Central integration component that bridges the gap between backend managers and frontend contexts
+  - **Purpose:** Synchronizes resource and module state between managers and UI contexts
+  - **Dependencies:** ResourceManager, ModuleManager, GameContext, ModuleContext, ModuleEvents
+  - **Key Features:**
+    - Real-time resource state synchronization
+    - Module state synchronization
+    - Event-based updates
+    - Performance optimization with change detection
+  - **Usage:** Wrapped around the application in App.tsx to provide seamless backend-frontend integration
+
+## App Component
+
+- `src/App.tsx` - Main application entry point
+  - **Purpose:** Sets up providers and initializes the game
+  - **Dependencies:** GameProvider, ModuleProvider, ThresholdProvider, SystemIntegration
+  - **Key Features:** Game initialization, context setup, error handling
+
+## Game Context
+
+- `src/contexts/GameContext.tsx` - Game state management
+  - **Purpose:** Provides game state and resource tracking
+  - **Dependencies:** React Context API
+  - **Key Features:** Resource management, game time tracking, event logging
+
+## Module Context
+
+- `src/contexts/ModuleContext.tsx` - Module state management
+  - **Purpose:** Manages module state and operations
+  - **Dependencies:** React Context API, ModuleManager
+  - **Key Features:** Module creation, activation, selection
+
+## Threshold Context
+
+- `src/contexts/ThresholdContext.tsx` - Resource threshold management
+  - **Purpose:** Handles resource thresholds and alerts
+  - **Dependencies:** React Context API, ResourceManager
+  - **Key Features:** Threshold configuration, alert generation
+
 ### Core Components
 
 - `src/types/buildings/ModuleTypes.ts` - Core module type definitions

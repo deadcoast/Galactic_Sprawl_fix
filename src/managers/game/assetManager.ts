@@ -111,10 +111,15 @@ export class AssetManager {
         })
         .then(assets => {
           // Process loaded assets
-          Object.entries(assets).forEach(([name, asset]) => {
-            this.loadedAssets.set(name, asset as PIXI.Texture | PIXI.Spritesheet);
-          });
-          resolve();
+          if (assets) {
+            Object.entries(assets).forEach(([name, asset]) => {
+              this.loadedAssets.set(name, asset as PIXI.Texture | PIXI.Spritesheet);
+            });
+            resolve();
+          } else {
+            console.warn('[AssetManager] Warning: loaded assets is null or undefined');
+            resolve(); // Still resolve to avoid blocking game initialization
+          }
         })
         .catch(error => {
           reject(error);

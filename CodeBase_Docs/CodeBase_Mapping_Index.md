@@ -451,3 +451,134 @@ The following npm scripts have been added to package.json to run different types
   - Key features: Dataset creation, analysis configuration, result visualization, multiple chart types
 - `src/contexts/ClassificationContext.tsx` - Context provider for the classification system
 - `src/contexts/DataAnalysisContext.tsx`
+
+## UI Component Fixes (March 2025)
+
+### Core UI Components
+
+| Component                                     | Purpose                                                  | Changes                                                                                                    |
+| --------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `src/components/ui/GameHUD.tsx`               | Main game interface for module building and management   | Enhanced UI with keyboard shortcuts, tooltips, improved resource display, better module building functions |
+| `src/components/ui/GameLayout.tsx`            | Layout component that contains GameHUD and manages views | Fixed view toggle functions, improved state management, added logging                                      |
+| `src/components/ui/ResourceVisualization.tsx` | Visualizes resource levels with thresholds               | Connected to actual game state, added threshold indicators                                                 |
+
+### UI Component Fixes
+
+| Issue                       | File             | Solution                                                                             |
+| --------------------------- | ---------------- | ------------------------------------------------------------------------------------ |
+| Module building not working | `GameHUD.tsx`    | Implemented proper module building function that accesses the ModuleContext directly |
+| Navigation issues           | `GameLayout.tsx` | Fixed view toggle functions and added proper state management                        |
+| Context usage issues        | `GameHUD.tsx`    | Implemented local versions of context functions to avoid hook usage issues           |
+| Poor user feedback          | `GameHUD.tsx`    | Added tooltips, keyboard shortcuts, and enhanced resource status displays            |
+
+### UI Component Enhancements
+
+The GameHUD component has been significantly enhanced with the following features:
+
+1. **Keyboard Shortcuts**
+
+   - Alt+M for Mining menu
+   - Alt+E for Exploration menu
+   - Alt+H for Mothership menu
+   - Alt+C for Colony menu
+   - F1 for Tech Tree
+   - F2 for Settings
+   - Escape to close active menu
+
+2. **Enhanced Resource Display**
+
+   - Added real-time extraction rate indicators (+/- per second)
+   - Resource status indicators with icons (critical, normal, abundant)
+   - Color-coded resource values based on thresholds
+
+3. **Tooltips and Improved UX**
+
+   - Implemented detailed tooltips for all menu items
+   - Enhanced resource requirement displays
+   - Added build availability status in tooltips
+   - Improved visual feedback for user interactions
+
+4. **Building Process Improvements**
+   - Fixed module building functionality to work properly with ModuleContext
+   - Added detailed resource requirement checks
+   - Improved error messages with specific resource shortage information
+   - Enhanced notifications with more detailed information
+
+### ResourceVisualization Tooltip Implementation (March 2025)
+
+The ResourceVisualization component has been enhanced with an informative tooltip system that provides detailed information about each resource:
+
+1. **Resource Information Display**
+
+   - Shows current value, capacity, and utilization percentage
+   - Displays extraction/consumption rates with color coding
+   - Includes time-to-empty calculations for resources being consumed
+   - Includes time-to-full calculations for resources being generated
+
+2. **Threshold Visualization**
+
+   - Displays low and critical thresholds with colored indicators
+   - Shows status messages based on current resource levels
+   - Provides visual feedback on resource status
+
+3. **Interactive Elements**
+
+   - Tooltips appear on hover with smooth positioning
+   - Cursor changes to indicate interactive elements
+   - Resource cards provide visual feedback on hover
+
+4. **Technical Implementation**
+   - Uses the existing tooltip context system
+   - Implements ref-based positioning for accurate tooltip placement
+   - Provides descriptive resource information for better user understanding
+   - Calculates important metrics like time until empty/full
+
+These enhancements significantly improve the user experience by providing more detailed information about resources, helping players make informed decisions about resource management.
+
+### UI Component Flow
+
+The updated UI component flow ensures proper integration between components:
+
+1. `App.tsx` - Initializes the game state and context providers
+2. `GameLayout.tsx` - Manages the overall game layout and view toggles
+3. `GameHUD.tsx` - Provides enhanced interface for module building
+4. `ResourceVisualization.tsx` - Displays resource levels with visual feedback
+
+The UI component enhancements ensure proper integration between the UI layer and the game systems, allowing module building, navigation between views, and providing clear feedback to the user.
+
+## Officer Management System
+
+The Officer Management System handles the recruitment, training, and assignment of officers to various ships and squads.
+
+### Core Files
+
+| File Path                               | Purpose                                                                                                                                      |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/types/officers/OfficerTypes.ts`    | Defines all officer-related TypeScript interfaces and types including OfficerRole, OfficerSpecialization, Officer, Squad, and related events |
+| `src/managers/module/OfficerManager.ts` | Core implementation of the OfficerManager that handles hiring, training, squad management, and experience progression                        |
+| `src/config/OfficerConfig.ts`           | Configuration settings for officer-related systems                                                                                           |
+
+### UI Components
+
+| File Path                                                     | Purpose                                                       |
+| ------------------------------------------------------------- | ------------------------------------------------------------- |
+| `src/components/buildings/modules/academy/OfficerAcademy.tsx` | Main academy UI component that displays and manages officers  |
+| `src/components/buildings/modules/academy/OfficerCard.tsx`    | Displays individual officer information in grid or list views |
+| `src/components/buildings/modules/academy/OfficerDetails.tsx` | Shows detailed officer information when selected              |
+
+## Ship Hangar System
+
+The Ship Hangar System manages ship construction, docking, deployment, and maintenance.
+
+### Core Files
+
+| File Path                                  | Purpose                                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `src/types/buildings/ShipHangarTypes.ts`   | Defines all ship hangar related TypeScript interfaces including ShipBuildQueueItem, ShipHangarBay, and events |
+| `src/managers/module/ShipHangarManager.ts` | Implementation of ship construction, bay management, repair, and deployment functionality                     |
+
+### UI Components
+
+| File Path                                                | Purpose                                                              |
+| -------------------------------------------------------- | -------------------------------------------------------------------- |
+| `src/components/buildings/modules/hangar/ShipHangar.tsx` | Main UI component for managing ships, building queue, and deployment |

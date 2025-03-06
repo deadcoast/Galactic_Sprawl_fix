@@ -4745,3 +4745,97 @@ When working with test code, you may encounter situations where parameters or va
    - Document why a variable is unused if it's not obvious
    - Be consistent with the approach across the codebase
    - Follow ESLint rules for unused variable handling
+
+## UI Component Integration
+
+### GameHUD Component Integration
+
+The GameHUD component is responsible for providing the user interface for building modules, managing resources, and navigating between different views. There were several issues with the original implementation that prevented the UI from functioning correctly:
+
+1. **Context Usage Issues**
+
+   - The original implementation imported and used functions from the ModuleContext directly (`buildModule`, `canBuildModule`), which caused issues because these functions internally used hooks outside of a component function.
+   - **Solution**: Instead of importing these functions, we implemented local versions that use the context directly from within the component function.
+
+2. **Module Building Process**
+
+   - The module building functionality didn't properly connect to the ModuleContext.
+   - **Solution**: We implemented a proper `buildModuleLocally` function that:
+     - Finds a suitable building and attachment point
+     - Dispatches the correct actions to the ModuleContext
+     - Updates resources in the game state
+     - Provides proper user feedback via notifications
+
+3. **Menu Item Actions**
+
+   - The menu item actions weren't properly implemented, causing buttons to be non-responsive.
+   - **Solution**: Implemented a `handleBuildModule` function that:
+     - Checks if the module can be built
+     - Builds the module if possible
+     - Updates resources
+     - Shows appropriate notifications
+     - Activates the correct view based on the module type
+
+4. **View Toggle Issues**
+
+   - The view toggle functions in GameLayout weren't properly implemented.
+   - **Solution**: Implemented proper handler functions with proper state management and logging.
+
+5. **Debugging Improvements**
+
+   - Added comprehensive console logging throughout the UI components to help diagnose issues.
+   - Improved error handling with detailed error messages.
+
+### GameHUD Component Enhancements (March 2025)
+
+The GameHUD component has been significantly enhanced with additional features to improve user experience and interface functionality:
+
+1. **Keyboard Shortcut System**
+
+   - Implemented a keyboard navigation system for efficient menu access:
+     - Alt+M for Mining menu
+     - Alt+E for Exploration menu
+     - Alt+H for Mothership menu
+     - Alt+C for Colony menu
+     - F1 for Tech Tree
+     - F2 for Settings
+     - Escape to close active menu
+   - Implementation uses React's `useCallback` and `useEffect` for efficient event handling
+   - Keyboard shortcuts are clearly displayed in the UI for better discoverability
+
+2. **Enhanced Resource Display**
+
+   - Added real-time extraction rate indicators that show resource flow rate
+   - Implemented status icons that visually indicate resource states:
+     - Critical (red alert triangle)
+     - Normal (no icon)
+     - Abundant (blue info icon)
+   - Color-coded resource values based on thresholds
+   - Used callbacks for efficient resource status calculations
+
+3. **Tooltip System**
+
+   - Implemented an advanced tooltip system that shows:
+     - Detailed module information
+     - Resource requirements with availability status
+     - Build availability status
+     - Module descriptions
+   - Tooltips are positioned intelligently relative to the menu item
+   - Tooltips provide immediate visual feedback on resource sufficiency
+
+4. **Improved User Feedback**
+
+   - Enhanced notification messages with specific details about resource shortages
+   - Added visual indicators for build status
+   - Improved error handling with specific error messages
+   - Enhanced visual feedback for user interactions
+
+5. **Implementation Details**
+
+   - Used React's `useState` for managing tooltip state
+   - Implemented mouse event handlers for tooltip positioning
+   - Created reusable utility functions like `getResourceStatus`
+   - Improved component rendering with conditional logic
+   - Enhanced styling with Tailwind CSS for a cohesive look and feel
+
+These enhancements significantly improve the usability of the GameHUD component, making it more intuitive and user-friendly while also fixing the underlying functional issues that prevented proper interaction with the game systems.

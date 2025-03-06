@@ -131,6 +131,38 @@ export function useVPRSystem() {
     }));
   }, []);
 
+  // Add a function to properly register new modules with the VPR system
+  const addModule = useCallback(
+    (
+      moduleId: string,
+      type: 'mothership' | 'colony' | 'planet' | 'exploration' | 'mining',
+      tier: 1 | 2 | 3 = 1,
+      status: 'active' | 'upgrading' | 'disabled' = 'active'
+    ) => {
+      setSystemState(prev => {
+        // Check if the module already exists
+        const exists = prev.modules.some(mod => mod.id === moduleId);
+        if (exists) {
+          return prev; // Don't add duplicates
+        }
+
+        return {
+          ...prev,
+          modules: [
+            ...prev.modules,
+            {
+              id: moduleId,
+              type,
+              tier,
+              status,
+            },
+          ],
+        };
+      });
+    },
+    []
+  );
+
   return {
     systemState,
     handleModuleUpdate,
@@ -138,5 +170,6 @@ export function useVPRSystem() {
     addAlert,
     clearAlert,
     handleError,
+    addModule,
   };
 }
