@@ -3107,340 +3107,1641 @@ This pattern ensures that:
 - Tests can easily customize specific properties
 - The code is type-safe by using the correct properties from the ResourceState interface
 
-### Handling Unused Variables
+### UI Library Mocking
 
-When encountering unused variables in the codebase:
+The `mockUtils.ts` file provides utilities for mocking UI libraries and components used in the application. These utilities help ensure consistent and reliable testing of UI components.
 
-1. **Evaluate the intent**: Determine if the variable was meant to be used but was overlooked
-2. **Make it meaningful**: If the variable should be used, find a way to incorporate it meaningfully
-3. **Remove if unnecessary**: If the variable is truly not needed, remove it from the parameter list
-4. **Document the decision**: Update relevant documentation to explain the approach taken
+#### Framer-Motion Mocking
 
-In the case of `resourceType` in `createResourceState`, we determined that it should be used to provide type-specific defaults, making the function more useful and eliminating the unused variable warning.
+Framer-motion is used extensively throughout the application for animations and transitions. Testing components that use framer-motion can be challenging because it relies on browser APIs like `window.matchMedia` that aren't available in the test environment.
 
-### Mocking ES Modules in Tests
+The `createFramerMotionMock` function provides a standardized way to mock framer-motion:
 
-When mocking ES modules in Vitest tests, follow these best practices:
+```typescript
+/**
+ * Creates a mock for framer-motion to avoid matchMedia issues in tests
+ *
+ * @returns A mock implementation of framer-motion
+ */
+export function createFramerMotionMock() {
+  return {
+    __esModule: true,
+    motion: {
+      div: ({ children, ...props }: MotionComponentProps) =>
+        React.createElement('div', { 'data-testid': 'motion-div', ...props }, children),
+      span: ({ children, ...props }: MotionComponentProps) =>
+        React.createElement('span', { 'data-testid': 'motion-span', ...props }, children),
+      // Additional components as needed
+    },
+    AnimatePresence: ({ children }: AnimatePresenceProps) =>
+      React.createElement(React.Fragment, null, children),
+    useAnimation: () => ({
+      start: vi.fn(),
+      stop: vi.fn(),
+      set: vi.fn(),
+    }),
+    useCycle: <T>(...args: T[]) => {
+      const [current, setCurrent] = React.useState(0);
+      const cycle = () => setCurrent(prev => (prev + 1) % args.length);
+      return [args[current], cycle] as [T, () => void];
+    },
+    // Additional hooks as needed
+  };
+}
+```
 
-1. **Create mock functions outside vi.mock() calls**:
+To use this mock in a test file:
 
-   ```typescript
-   // Create mock functions first
-   const mockExistSync = vi.fn();
-   const mockWriteFileSync = vi.fn();
+```typescript
+import { createFramerMotionMock } from '../../utils/mockUtils';
 
-   // Then use them in the mock
-   vi.mock('fs', async () => {
-     return {
-       existsSync: mockExistSync,
-       writeFileSync: mockWriteFileSync,
-       default: {
-         existsSync: mockExistSync,
-         writeFileSync: mockWriteFileSync,
-       },
-     };
-   });
-   ```
+// Mock framer-motion to avoid matchMedia issues
+vi.doMock('framer-motion', () => createFramerMotionMock());
+```
 
-2. **Always include both named exports and default exports**:
+Key benefits of this approach:
 
-   - ES modules can be imported using both named imports and default imports
-   - Ensure your mocks support both patterns by providing both formats
+1. Avoids issues with browser APIs like `window.matchMedia` that aren't available in the test environment
+2. Provides a consistent and predictable rendering of framer-motion components in tests
+3. Uses React.createElement instead of JSX syntax to avoid issues in TypeScript files
+4. Adds data-testid attributes to make it easier to select elements in tests
+5. Can be reused across all tests that use framer-motion components
 
-3. **Reset modules between tests**:
+This approach was successfully used to fix the ResourceVisualization.snapshot.test.tsx test that was failing due to framer-motion's `prefersReducedMotion` feature trying to use `window.matchMedia`.
 
-   ```typescript
-   beforeEach(() => {
-     vi.resetModules();
-   });
-   ```
+### Mock Manager Creation
 
-4. **Use flexible assertions for file paths**:
+## Testing Best Practices
 
-   - Different environments may represent paths differently
-   - Use content-based assertions rather than exact path matching:
+### Test Imports and Mocking
 
-   ```typescript
-   // Instead of:
-   expect(mockWriteFileSync).toHaveBeenCalledWith('.vscode/settings.json', expect.any(String));
+When writing tests, it's important to follow these best practices for imports and mocking:
 
-   // Use:
-   const settingsCall = mockWriteFileSync.mock.calls.find(
-     call => typeof call[1] === 'string' && call[1].includes('editor.formatOnSave')
-   );
-   expect(settingsCall).toBeDefined();
-   ```
+1. **Prefer Actual Implementations Over Local Mocks**
 
-5. **Clean up global mocks after tests**:
-   ```typescript
-   afterEach(() => {
-     vi.resetAllMocks();
-     vi.unstubAllGlobals();
-   });
-   ```
+   - Import and use actual utility functions from shared test utilities when available
+   - Only create local mock implementations when the actual implementation doesn't exist or needs to be overridden for specific test cases
+   - Example:
 
-### Performance Testing Best Practices
+     ```typescript
+     // Good: Import the actual utility function
+     import { createTestEnvironment } from '../../utils/exploration/explorationTestUtils';
 
-When writing performance tests, follow these guidelines to ensure reliable and meaningful results:
+     // Bad: Create a local mock that duplicates functionality
+     const createTestEnvironment = vi.fn(() => ({
+       // Duplicate implementation...
+     }));
+     ```
 
-1. **Avoid setTimeout for simulating slow operations**:
+2. **Centralize Mocks in Utility Files**
 
-   - setTimeout is unreliable in test environments
-   - Timing can vary significantly between runs
-   - Tests may pass or fail inconsistently
+   - Create reusable mock implementations in centralized utility files
+   - Use these shared mocks across multiple test files for consistency
+   - Example:
 
-2. **Use CPU-intensive operations for reliable timing**:
-
-   ```typescript
-   function cpuIntensiveFunction(iterations: number): number {
-     let result = 0;
-     for (let i = 0; i < iterations; i++) {
-       result += Math.sin(i) * Math.cos(i);
+     ```typescript
+     // In mockUtils.ts
+     export function createFramerMotionMock() {
+       // Implementation...
      }
-     return result;
-   }
 
-   // Use in test
-   const { executionTimeMs } = measureExecutionTime(() => {
-     cpuIntensiveFunction(10000);
+     // In test file
+     import { createFramerMotionMock } from '../../utils/mockUtils';
+     vi.doMock('framer-motion', () => createFramerMotionMock());
+     ```
+
+3. **Mock External Dependencies, Not Test Utilities**
+
+   - Mock external libraries and modules that are not part of your codebase
+   - Don't mock your own test utilities unless absolutely necessary
+   - Example:
+
+     ```typescript
+     // Good: Mock external library
+     vi.mock('framer-motion', () => ({
+       // Mock implementation...
+     }));
+
+     // Bad: Mock your own test utility
+     vi.mock('../../utils/testUtils', () => ({
+       // Mock implementation...
+     }));
+     ```
+
+4. **Use vi.doMock for Hoisted Mocks**
+
+   - Use `vi.doMock` instead of `vi.mock` when you need to avoid hoisting issues
+   - This is especially important when the mock depends on variables defined in the test file
+   - Example:
+
+     ```typescript
+     // Define variables first
+     const mockFunction = vi.fn();
+
+     // Then use doMock to avoid hoisting issues
+     vi.doMock('module-name', () => ({
+       functionName: mockFunction,
+     }));
+     ```
+
+5. **Maintain Import Statements When Refactoring**
+
+   - When refactoring test files, ensure that all necessary imports are maintained
+   - Missing imports can lead to undefined errors that are difficult to debug
+   - Example of a common error:
+     ```typescript
+     // Error: Missing import for createTestEnvironment
+     const { explorationManager } = createTestEnvironment(); // Will fail with "createTestEnvironment is not defined"
+     ```
+
+6. **Verify Mock Return Values**
+
+   - Ensure that mock functions return appropriate values for the test
+   - Use TypeScript to enforce correct return types
+   - Example:
+     ```typescript
+     // Define return type for mock function
+     const mockFunction = vi.fn<[string], boolean>().mockReturnValue(true);
+     ```
+
+7. **Clean Up Mocks Between Tests**
+
+   - Reset or clear mocks in beforeEach or afterEach hooks
+   - This prevents test interference and ensures a clean state for each test
+   - Example:
+     ```typescript
+     beforeEach(() => {
+       vi.clearAllMocks();
+     });
+     ```
+
+8. **Document Mock Behavior**
+   - Add comments explaining the behavior of complex mocks
+   - This helps other developers understand the test setup
+   - Example:
+     ```typescript
+     // Mock searchSystems to return different results based on criteria
+     searchSystems: vi.fn(criteria => {
+       // Return single system when searching by name
+       if (criteria.name) {
+         return [{ id: 'system-1', name: 'System 1' }];
+       }
+       // Return multiple systems when searching by type
+       else if (criteria.type) {
+         return Array.from({ length: 7 }, (_, i) => ({
+           id: `system-${i}`,
+           name: `System ${i}`,
+           type: criteria.type,
+         }));
+       }
+       // Return empty array for other criteria
+       return [];
+     }),
+     ```
+
+By following these best practices, you can avoid common issues with test imports and mocking, such as the undefined error encountered in the ExplorationManager.test.ts file. Proper import management and mocking strategies lead to more reliable and maintainable tests.
+
+## Testing Best Practices - Simplified Approach
+
+### Overview
+
+We've adopted a simplified testing approach that focuses on testing what users see and interact with, rather than implementation details. This approach leads to more maintainable and reliable tests that are less likely to break when the component implementation changes.
+
+### Key Principles
+
+1. **Test behavior, not implementation details**
+
+   - Focus on what components/functions do, not how they do it
+   - Test from the user's perspective
+   - Verify that components render correctly and respond to user interactions
+
+2. **Minimize mocks**
+
+   - Only mock external dependencies when absolutely necessary
+   - Use real implementations whenever possible
+   - Avoid mocking React, DOM APIs, or internal utilities
+
+3. **Keep tests simple and focused**
+
+   - Each test should verify one specific aspect of functionality
+   - Avoid complex setup and teardown procedures
+   - Use descriptive test names that clearly indicate what's being tested
+
+4. **Use flexible selectors**
+
+   - Prefer selectors that are less likely to change, such as text content, roles, and labels
+   - Avoid relying on implementation details like class names or DOM structure
+   - Use data-testid attributes sparingly and only for elements that can't be selected otherwise
+
+5. **Handle multiple matching elements gracefully**
+   - When multiple elements might match a selector, use `getAllBy` variants and filter the results
+   - Use more specific selectors to narrow down the search
+   - Check for the presence of elements rather than their exact count or structure
+
+### Example: Testing a Component with Multiple Similar Elements
+
+```typescript
+// Bad approach - might fail if multiple buttons have no accessible name
+const button = screen.getByRole('button', { name: '' });
+
+// Good approach - get all buttons and find the one with the specific icon
+const buttons = screen.getAllByRole('button');
+const targetButton = Array.from(buttons).find(button =>
+  button.querySelector('.specific-icon-class')
+);
+expect(targetButton).toBeTruthy();
+```
+
+### Example: Testing Text That Appears Multiple Times
+
+```typescript
+// Bad approach - will fail if multiple elements contain the text
+const element = screen.getByText(/common text/i);
+
+// Good approach - check that at least one element contains the text
+const elements = screen.getAllByText(/common text/i);
+expect(elements.length).toBeGreaterThan(0);
+
+// Alternative approach - use queryAllBy and check the length
+const elements = screen.queryAllByText(/common text/i);
+expect(elements.length > 0).toBeTruthy();
+```
+
+### Example: Testing Component Structure
+
+```typescript
+// Bad approach - too dependent on implementation details
+expect(screen.getByTestId('specific-container')).toHaveClass('specific-class');
+
+// Good approach - focus on what the user sees
+expect(screen.getByText('Visible Title')).toBeInTheDocument();
+expect(screen.getByRole('button', { name: 'Submit' })).toBeInTheDocument();
+```
+
+### Benefits of This Approach
+
+1. **More robust tests**: Tests are less likely to break when implementation details change
+2. **Better developer experience**: Tests are easier to write and maintain
+3. **Faster test development**: Less time spent on complex mocking and setup
+4. **More meaningful test failures**: When tests fail, it's more likely to indicate a real issue
+5. **Better representation of user experience**: Tests verify what users actually see and do
+
+By following these principles, we can create a test suite that provides confidence in our code while remaining maintainable and resilient to changes.
+
+## E2E Testing Best Practices
+
+### Key Principles
+
+1. **Test against real application**
+
+   - Use actual application routes and components
+   - Avoid simplified HTML pages with `page.setContent()`
+   - Test real user flows with proper navigation
+
+2. **Robust error handling**
+
+   - Implement checks for game initialization errors
+   - Take screenshots when errors occur for debugging
+   - Log detailed page content to diagnose issues
+
+3. **Flexible selectors**
+
+   - Use selectors that can adapt to UI changes
+   - Prefer text-based selectors when possible (e.g., `h1:has-text("Mineral Processing")`)
+   - Use longer timeouts for critical elements
+
+4. **Port configuration**
+   - Development server runs on port 3001 (configured in `vite.config.ts`)
+   - Playwright tests connect to port 3001 (configured in `playwright.config.ts`)
+   - E2E tests use `http://localhost:3001/` in their navigation
+   - Set `strictPort: false` to allow fallback ports
+
+### Example E2E Test
+
+```typescript
+test('should display exploration interface', async ({ page }) => {
+  // Navigate to the actual application
+  await page.goto('http://localhost:3001/');
+
+  try {
+    // Wait for the application to load with a generous timeout
+    await page.waitForSelector('.exploration-interface', { timeout: 30000 });
+
+    // Verify expected elements are visible
+    await expect(page.locator('.star-system-list')).toBeVisible();
+
+    // Take a screenshot for debugging
+    await page.screenshot({ path: 'exploration-interface.png' });
+
+    // Test user interaction
+    await page.fill('input[placeholder*="Search"]', 'Alpha');
+
+    // Verify search results
+    const results = page.locator('.star-system:has-text("Alpha")');
+    const count = await results.count();
+    expect(count).toBeGreaterThan(0);
+  } catch (error) {
+    // Check for initialization errors
+    const pageContent = await page.content();
+    if (pageContent.includes('Game failed to initialize')) {
+      console.error('Game initialization error detected');
+      await page.screenshot({ path: 'game-init-error.png' });
+      throw new Error('Game failed to initialize - error found in page content');
+    }
+    throw error;
+  }
+});
+```
+
+### Running E2E Tests
+
+- Use Playwright test runner, not Vitest: `npm run test:e2e`
+- For specific files: `npx playwright test src/tests/e2e/exploration.spec.ts`
+- For debugging: `npm run test:e2e:debug`, `npm run test:e2e:ui`, or `npm run test:e2e:headed`
+- The webServer configuration in playwright.config.ts automatically starts the dev server
+
+## Testing Best Practices - Removing Mocks
+
+### The Problem with Mocks
+
+Mocking in tests can lead to several issues:
+
+1. **Tests verify mock behavior, not actual behavior**: When using mocks, tests often end up verifying that the mocks work as expected, not that the actual code works correctly.
+2. **Brittle tests**: Tests with mocks can break when implementation details change, even if the behavior remains the same.
+3. **Maintenance burden**: Mocks need to be updated whenever the implementation changes, creating additional maintenance work.
+4. **False confidence**: Passing tests with mocks can give a false sense of confidence that the code works correctly.
+
+### Our Approach: Using Actual Implementations
+
+Instead of using mocks, we've adopted an approach that uses actual implementations in tests:
+
+1. **Create factory functions for test setup**: Instead of mocking dependencies, create factory functions that return actual implementations with test data.
+2. **Use actual components and services**: Test the actual components and services, not mock versions of them.
+3. **Focus on behavior, not implementation details**: Test what the code does, not how it does it.
+4. **Use proper type safety**: Ensure that tests use proper types and interfaces to catch type errors early.
+
+### Example: ExplorationManager.test.ts
+
+The ExplorationManager.test.ts file was previously using a mocked implementation of `createTestEnvironment` from a utility file. We replaced this with actual implementations:
+
+```typescript
+// Before (using mocks)
+import { createTestEnvironment } from '../../utils/exploration/explorationTestUtils';
+
+describe('ExplorationManager', () => {
+  it('should handle ship assignment', async () => {
+    const { explorationManager, shipManager } = createTestEnvironment();
+    // Test with mock implementations
+  });
+});
+
+// After (using actual implementations)
+import {
+  ExplorationManagerImpl,
+  type StarSystem,
+} from '../../../managers/exploration/ExplorationManagerImpl';
+import { ShipManagerImpl } from '../../../managers/ships/ShipManagerImpl';
+
+// Create a factory function for test setup with actual implementations
+function createTestEnvironmentWithActualImplementations() {
+  const shipManager = new ShipManagerImpl();
+  const explorationManager = new ExplorationManagerImpl(shipManager);
+
+  return {
+    explorationManager,
+    shipManager,
+  };
+}
+
+describe('ExplorationManager', () => {
+  it('should handle ship assignment', async () => {
+    const { explorationManager, shipManager } = createTestEnvironmentWithActualImplementations();
+    // Test with actual implementations
+  });
+});
+```
+
+### Benefits of This Approach
+
+1. **Tests verify actual behavior**: Tests now verify that the actual code works correctly, not just that mocks work as expected.
+2. **More robust tests**: Tests are less likely to break when implementation details change, as long as the behavior remains the same.
+3. **Reduced maintenance burden**: No need to update mocks when the implementation changes.
+4. **True confidence**: Passing tests give a true sense of confidence that the code works correctly.
+5. **Better type safety**: Using actual implementations ensures that type errors are caught early.
+
+### Guidelines for Removing Mocks
+
+1. **Identify tests using mocks**: Look for tests that use `vi.mock()`, `vi.doMock()`, or similar patterns.
+2. **Create actual implementations**: Create or identify actual implementations for the mocked dependencies.
+3. **Create factory functions**: Create factory functions that return actual implementations with test data.
+4. **Update tests**: Update tests to use the actual implementations instead of mocks.
+5. **Fix type issues**: Ensure that tests use proper types and interfaces to catch type errors early.
+6. **Document the approach**: Document the new approach in the appropriate documentation files.
+
+# Testing Context-Dependent Components Without Mocks
+
+## Rendering Components with Context
+
+When testing components that depend on React Context, we should avoid mocking the context and instead provide the actual context implementation. This ensures that our tests verify the actual behavior of the component rather than simply verifying that our mocks work correctly.
+
+### Pattern for Testing Context-Dependent Components
+
+The following pattern can be used to test components that depend on a context:
+
+1. Create a custom render function that provides the context
+2. Use a helper component to set up the context state
+3. Render the component using the custom render function
+4. Make assertions based on the rendered output
+
+#### Example: Testing Components that Use GameContext
+
+Here's an example from ResourceVisualization.snapshot.test.tsx:
+
+```typescript
+// Custom wrapper that provides a pre-configured GameContext with specific resource values
+function renderWithGameContext(
+  ui: ReactElement,
+  {
+    minerals = 100,
+    energy = 150,
+    population = 20,
+    research = 50,
+  }: {
+    minerals?: number;
+    energy?: number;
+    population?: number;
+    research?: number;
+  } = {}
+) {
+  // Create a wrapper component that provides the GameContext with specified resource values
+  const Wrapper = ({ children }: { children: ReactNode }) => {
+    return (
+      <GameProvider>
+        {/* Set the resource values using a child component that triggers dispatch */}
+        <ResourceInitializer
+          minerals={minerals}
+          energy={energy}
+          population={population}
+          research={research}
+        />
+        {children}
+      </GameProvider>
+    );
+  };
+
+  // Use the standard render function with our custom wrapper
+  return render(ui, { wrapper: Wrapper });
+}
+
+// Helper component to set initial resource values
+function ResourceInitializer({
+  minerals,
+  energy,
+  population,
+  research,
+}: {
+  minerals: number;
+  energy: number;
+  population: number;
+  research: number;
+}) {
+  const gameContext = useContext(GameContext);
+
+  // Update the resources when the component mounts
+  beforeEach(() => {
+    if (gameContext) {
+      gameContext.dispatch({
+        type: 'UPDATE_RESOURCES',
+        resources: {
+          minerals,
+          energy,
+          population,
+          research,
+        },
+      });
+    }
+  });
+
+  return null;
+}
+
+// Test case using the custom render function
+it('should render correctly with default state', () => {
+  // Render with default values
+  const { container } = renderWithGameContext(<ResourceVisualization />);
+
+  // Take a snapshot
+  expect(container).toMatchSnapshot();
+});
+
+// Test with different values
+it('should render correctly with low resources', () => {
+  // Render with low resource values
+  const { container } = renderWithGameContext(<ResourceVisualization />, {
+    minerals: 20,
+    energy: 30,
+    population: 5,
+    research: 10,
+  });
+
+  // Take a snapshot
+  expect(container).toMatchSnapshot();
+});
+```
+
+### Benefits of this Approach
+
+1. **Tests Actual Behavior**: Tests the actual behavior of the component with the real context, not a mock
+2. **More Reliable Tests**: Tests are more reliable because they use the same context implementation as the real application
+3. **Easier Maintenance**: Tests are easier to maintain because they don't depend on mock implementations that need to be updated whenever the context changes
+4. **Better Type Safety**: Uses the actual types from the context, improving type safety
+5. **Simpler Test Code**: Tests are simpler and more readable, with less setup required
+6. **Consistent Setup**: Provides a consistent way to set up context for testing across multiple test files
+
+### When to Use This Pattern
+
+Use this pattern when:
+
+- Testing components that depend on React Context
+- Testing components that use hooks that depend on Context
+- Creating snapshot tests for components that need context data
+- Testing behavior that depends on context state changes
+
+This approach is especially valuable for testing UI components that display data from global state or context, as it ensures the tests accurately reflect how the component will behave in the real application.
+
+## Testing Best Practices - Removing Mocks
+
+### Testing Components with Framer Motion
+
+When testing components that use `framer-motion`, we may encounter issues with the browser APIs that framer-motion relies on, such as `matchMedia`. Instead of creating mocks for these APIs or for framer-motion itself, we can focus our tests on the content rendered by the component rather than its animations.
+
+### Example: Testing ResourceVisualization
+
+```tsx
+describe('ResourceVisualization Component', () => {
+  it('renders with default resource values', () => {
+    render(
+      <TestGameProvider>
+        <ResourceVisualization />
+      </TestGameProvider>
+    );
+
+    // Check for resource labels
+    expect(screen.getByText('minerals')).toBeInTheDocument();
+    expect(screen.getByText('energy')).toBeInTheDocument();
+
+    // Use getAllByText for values that appear multiple times
+    const mineralValues = screen.getAllByText(/1,000/, { exact: false });
+    expect(mineralValues.length).toBeGreaterThan(0);
+  });
+});
+```
+
+### Key Principles
+
+1. **Focus on content, not animations**: Test that the correct text, values, and elements are rendered, not the animations or transitions.
+
+2. **Use flexible queries**: Use `getAllByText` with regular expressions when there might be multiple matches, and check that at least one match exists.
+
+3. **Accept matchMedia warnings**: It's okay if tests show warnings about matchMedia in the console as long as the tests pass. These warnings are related to framer-motion's animations and don't affect the core functionality we're testing.
+
+4. **Use custom test providers**: Create simplified context providers that provide only the state needed for the components under test, rather than using the full application contexts.
+
+This approach allows us to test components that use framer-motion without having to create complex mocks, while still verifying that the components render correctly and respond to different states as expected.
+
+### Test Factory Pattern - Replacing Mocks with Actual Implementations
+
+In our ongoing effort to improve test reliability and maintain our "no mocks" policy, we're implementing a Test Factory Pattern approach to replace mock implementations with actual implementations in our test suite.
+
+#### Core Principles
+
+1. **Use real implementations instead of mocks**: Tests should use the actual code that runs in production, not simplified mock versions.
+2. **Create factories for test instances**: Instead of mocks, create factory functions that return real instances configured for testing.
+3. **Isolate test state**: Ensure each test has its own isolated state to prevent cross-test contamination.
+4. **Focus on behavior testing**: Test what components and services do, not their internal implementation details.
+5. **Use type safety**: Ensure all test factories and utilities are properly typed for better maintainability.
+
+#### Implementation Strategies by Mock Type
+
+We've identified several categories of mocks in our codebase, each requiring a different replacement strategy:
+
+##### 1. Module Events and Event Bus Testing
+
+Instead of mocking the event system, we'll create a real event bus implementation specifically for testing:
+
+```typescript
+// src/tests/factories/createTestModuleEvents.ts
+import { ModuleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+
+export interface TestModuleEvents {
+  moduleEventBus: ModuleEventBus;
+  ModuleEventType: typeof ModuleEventType;
+  // Test helper methods
+  getEmittedEvents: (eventType?: string) => any[];
+  clearEvents: () => void;
+}
+
+export function createTestModuleEvents(): TestModuleEvents {
+  // Store events in memory for verification
+  const events: any[] = [];
+
+  // Create a real event bus that stores events in memory
+  const moduleEventBus: ModuleEventBus = {
+    emit: (eventType, eventData) => {
+      events.push({ eventType, eventData });
+      // Call any registered subscribers
+      const subscribers = subscriptions[eventType] || [];
+      subscribers.forEach(callback => callback(eventData));
+    },
+    subscribe: (eventType, callback) => {
+      if (!subscriptions[eventType]) {
+        subscriptions[eventType] = [];
+      }
+      subscriptions[eventType].push(callback);
+      return () => {
+        subscriptions[eventType] = subscriptions[eventType].filter(cb => cb !== callback);
+      };
+    },
+    unsubscribe: (eventType, callback) => {
+      if (subscriptions[eventType]) {
+        subscriptions[eventType] = subscriptions[eventType].filter(cb => cb !== callback);
+      }
+    },
+    getHistory: () => [...events],
+    getModuleHistory: moduleId => events.filter(e => e.eventData?.moduleId === moduleId),
+    getEventTypeHistory: eventType => events.filter(e => e.eventType === eventType),
+    clearHistory: () => {
+      events.length = 0;
+    },
+  };
+
+  // Storage for subscribers
+  const subscriptions: Record<string, Array<(data: any) => void>> = {};
+
+  return {
+    moduleEventBus,
+    ModuleEventType,
+    // Test helper methods
+    getEmittedEvents: (eventType?: string) => {
+      if (eventType) {
+        return events.filter(e => e.eventType === eventType);
+      }
+      return [...events];
+    },
+    clearEvents: () => {
+      events.length = 0;
+      Object.keys(subscriptions).forEach(key => {
+        subscriptions[key] = [];
+      });
+    },
+  };
+}
+```
+
+Usage in tests:
+
+```typescript
+import { createTestModuleEvents } from '../factories/createTestModuleEvents';
+
+describe('ModuleManager', () => {
+  let testModuleEvents;
+
+  beforeEach(() => {
+    // Create a fresh test event system for each test
+    testModuleEvents = createTestModuleEvents();
+
+    // Use vi.doMock to override the ModuleEvents import
+    vi.doMock('../../../lib/modules/ModuleEvents', () => testModuleEvents);
+  });
+
+  afterEach(() => {
+    // Clean up after each test
+    testModuleEvents.clearEvents();
+    vi.resetModules();
+  });
+
+  it('should emit MODULE_CREATED event when creating a module', () => {
+    // Test code using the real ModuleManager and our test event system
+    const moduleManager = new ModuleManager();
+    moduleManager.createModule({ id: 'test', type: 'mining' });
+
+    // Verify events using our helper methods
+    const events = testModuleEvents.getEmittedEvents(
+      testModuleEvents.ModuleEventType.MODULE_CREATED
+    );
+    expect(events.length).toBe(1);
+    expect(events[0].eventData.moduleId).toBe('test');
+  });
+});
+```
+
+##### 2. Manager Service Testing
+
+Instead of mocking manager services, create real but simplified implementations:
+
+```typescript
+// src/tests/factories/createTestResourceManager.ts
+import { Resource, ResourceManager } from '../../managers/game/ResourceManager';
+
+export function createTestResourceManager(initialResources: Resource[] = []): ResourceManager {
+  // In-memory storage for resources
+  const resources = new Map<string, Resource>();
+
+  // Initialize with any provided resources
+  initialResources.forEach(resource => {
+    resources.set(resource.id, { ...resource });
+  });
+
+  // Return a real implementation that uses in-memory storage
+  return {
+    getResource: (id: string) => resources.get(id) || null,
+    updateResource: (id: string, updates: Partial<Resource>) => {
+      const resource = resources.get(id);
+      if (!resource) return false;
+
+      resources.set(id, { ...resource, ...updates });
+      return true;
+    },
+    addResource: (resource: Resource) => {
+      if (resources.has(resource.id)) return false;
+
+      resources.set(resource.id, { ...resource });
+      return true;
+    },
+    removeResource: (id: string) => {
+      if (!resources.has(id)) return false;
+
+      resources.delete(id);
+      return true;
+    },
+    getAllResources: () => Array.from(resources.values()),
+    reset: () => {
+      resources.clear();
+      initialResources.forEach(resource => {
+        resources.set(resource.id, { ...resource });
+      });
+    },
+  };
+}
+```
+
+##### 3. Component Testing
+
+For component testing, render the actual components with controlled context providers:
+
+```typescript
+// src/tests/factories/createTestGameProvider.tsx
+import React, { ReactNode, useReducer, Dispatch } from 'react';
+import { GameContext, initialGameState, gameReducer } from '../../contexts/GameContext';
+
+interface TestGameProviderProps {
+  children: ReactNode;
+  initialState?: Partial<typeof initialGameState>;
+}
+
+export function TestGameProvider({ children, initialState = {} }: TestGameProviderProps) {
+  // Use the actual game reducer for state management
+  const [state, dispatch] = useReducer(
+    gameReducer,
+    { ...initialGameState, ...initialState }
+  );
+
+  // Create context value with actual state and simplified methods
+  const contextValue = {
+    state,
+    dispatch,
+    // Simplified versions of context methods
+    updateShip: () => {},
+    addMission: () => {},
+    updateSector: () => {},
+  };
+
+  // Provide context to children
+  return (
+    <GameContext.Provider value={contextValue}>
+      {children}
+    </GameContext.Provider>
+  );
+}
+
+// Helper to render components with the test provider
+export function renderWithGameContext(ui: React.ReactElement, initialState?: Partial<typeof initialGameState>) {
+  return render(
+    <TestGameProvider initialState={initialState}>
+      {ui}
+    </TestGameProvider>
+  );
+}
+```
+
+##### 4. Utility Function Testing
+
+Test utility functions directly without mocking:
+
+```typescript
+// src/tests/utils/resourceValidation.test.ts
+import {
+  validateResourceFlow,
+  validateResourceTransfer,
+} from '../../utils/resources/resourceValidation';
+
+describe('resourceValidation', () => {
+  describe('validateResourceFlow', () => {
+    it('should validate a valid resource flow', () => {
+      const validFlow = {
+        sourceId: 'source1',
+        targetId: 'target1',
+        resourceType: 'minerals',
+        rate: 10,
+      };
+
+      // Test the actual function with real validation
+      const result = validateResourceFlow(validFlow);
+      expect(result).toBe(true);
+    });
+
+    it('should reject an invalid resource flow', () => {
+      const invalidFlow = {
+        sourceId: 'source1',
+        targetId: 'target1',
+        resourceType: 'minerals',
+        rate: -5, // Negative rate should be invalid
+      };
+
+      // Test actual validation logic
+      const result = validateResourceFlow(invalidFlow);
+      expect(result).toBe(false);
+    });
+  });
+});
+```
+
+##### 5. External Dependencies Testing
+
+For external dependencies like framer-motion that are challenging to use directly in tests, focus on testing the rendered content rather than animations:
+
+```typescript
+// src/tests/components/ui/AnimatedComponent.test.tsx
+import { render, screen } from '@testing-library/react';
+import { AnimatedComponent } from '../../../components/ui/AnimatedComponent';
+
+describe('AnimatedComponent', () => {
+  it('should render the content correctly', () => {
+    render(<AnimatedComponent title="Test Title" content="Test Content" />);
+
+    // Focus on testing the content, not the animations
+    expect(screen.getByText('Test Title')).toBeInTheDocument();
+    expect(screen.getByText('Test Content')).toBeInTheDocument();
+  });
+
+  it('should apply the correct CSS classes', () => {
+    render(<AnimatedComponent title="Test Title" content="Test Content" variant="success" />);
+
+    // Test the resulting DOM structure and classes
+    const component = screen.getByTestId('animated-component');
+    expect(component).toHaveClass('success');
+  });
+});
+```
+
+#### Benefits of the Test Factory Pattern
+
+1. **Improved test reliability**: Tests verify real behavior, not mock behavior.
+2. **Better test coverage**: Tests interact with the actual code paths used in production.
+3. **Simplified maintenance**: When implementations change, tests using real implementations adapt automatically.
+4. **Reduced brittleness**: Tests are less likely to pass when real implementations would fail.
+5. **Easier debugging**: Test failures reflect actual issues in the code.
+
+#### Implementation Plan
+
+Our implementation of the Test Factory Pattern will proceed in phases:
+
+1. **Create core test factories**: Implement factories for commonly used services like ModuleEvents, ResourceManager, etc.
+2. **Update existing tests**: Replace mocks in existing tests with factory-created real implementations.
+3. **Document patterns**: Create documentation and examples for using the test factories.
+4. **Establish standards**: Create linting rules and code review standards to prevent the reintroduction of mocks.
+
+This approach aligns with our goal of creating more reliable and maintainable tests that verify the actual behavior users will experience.
+
+#### Example: Converting a Mocked Test to Use Real Implementations
+
+**Before (using mocks):**
+
+```typescript
+vi.mock('../../../lib/modules/ModuleEvents', () => ({
+  moduleEventBus: {
+    emit: vi.fn(),
+    subscribe: vi.fn(),
+    unsubscribe: vi.fn(),
+  },
+  ModuleEventType: {
+    MODULE_CREATED: 'MODULE_CREATED',
+  },
+}));
+
+describe('ModuleManager', () => {
+  it('should create a module', () => {
+    const moduleManager = new ModuleManager();
+    moduleManager.createModule({ id: 'test', type: 'mining' });
+
+    // This only tests that the mock was called, not actual behavior
+    expect(moduleEventBus.emit).toHaveBeenCalledWith(
+      ModuleEventType.MODULE_CREATED,
+      expect.objectContaining({ moduleId: 'test' })
+    );
+  });
+});
+```
+
+**After (using test factories):**
+
+```typescript
+import { createTestModuleEvents } from '../factories/createTestModuleEvents';
+
+describe('ModuleManager', () => {
+  let testModuleEvents;
+
+  beforeEach(() => {
+    testModuleEvents = createTestModuleEvents();
+    vi.doMock('../../../lib/modules/ModuleEvents', () => testModuleEvents);
+  });
+
+  afterEach(() => {
+    testModuleEvents.clearEvents();
+    vi.resetModules();
+  });
+
+  it('should create a module', () => {
+    const moduleManager = new ModuleManager();
+    moduleManager.createModule({ id: 'test', type: 'mining' });
+
+    // This tests actual behavior and event data
+    const events = testModuleEvents.getEmittedEvents(
+      testModuleEvents.ModuleEventType.MODULE_CREATED
+    );
+    expect(events.length).toBe(1);
+    expect(events[0].eventData.moduleId).toBe('test');
+    expect(events[0].eventData.moduleType).toBe('mining');
+  });
+});
+```
+
+By following these patterns, we can gradually replace all mocks in our test suite with real implementations that provide more reliable and maintainable tests.
+
+## Testing Best Practices - Removing Mocks
+
+### Testing Components with Framer Motion
+
+When testing components that use `framer-motion`, we may encounter issues with the browser APIs that framer-motion relies on, such as `matchMedia`. Instead of creating mocks for these APIs or for framer-motion itself, we can focus our tests on the content rendered by the component rather than its animations.
+
+### Example: Testing ResourceVisualization
+
+```tsx
+describe('ResourceVisualization Component', () => {
+  it('renders with default resource values', () => {
+    render(
+      <TestGameProvider>
+        <ResourceVisualization />
+      </TestGameProvider>
+    );
+
+    // Check for resource labels
+    expect(screen.getByText('minerals')).toBeInTheDocument();
+    expect(screen.getByText('energy')).toBeInTheDocument();
+
+    // Use getAllByText for values that appear multiple times
+    const mineralValues = screen.getAllByText(/1,000/, { exact: false });
+    expect(mineralValues.length).toBeGreaterThan(0);
+  });
+});
+```
+
+### Key Principles
+
+1. **Focus on content, not animations**: Test that the correct text, values, and elements are rendered, not the animations or transitions.
+
+2. **Use flexible queries**: Use `getAllByText` with regular expressions when there might be multiple matches, and check that at least one match exists.
+
+3. **Accept matchMedia warnings**: It's okay if tests show warnings about matchMedia in the console as long as the tests pass. These warnings are related to framer-motion's animations and don't affect the core functionality we're testing.
+
+4. **Use custom test providers**: Create simplified context providers that provide only the state needed for the components under test, rather than using the full application contexts.
+
+This approach allows us to test components that use framer-motion without having to create complex mocks, while still verifying that the components render correctly and respond to different states as expected.
+
+### Test Factory Pattern - Replacing Mocks with Actual Implementations
+
+The test factory pattern is a powerful approach to testing that replaces mocks with real implementations. This ensures that tests verify actual behavior rather than mock interactions.
+
+### Key Principles
+
+1. **Real Implementations**: Test factories create real implementations of components and services that behave like production code but are isolated for testing purposes.
+
+2. **Isolation**: Each test should create its own test factory instances to prevent cross-test contamination.
+
+3. **Verification Helpers**: Test factories provide helper methods for verifying behavior, making tests more readable and maintainable.
+
+4. **Type Safety**: Test factories are type-safe, ensuring that tests use the correct types and interfaces.
+
+### Implemented Test Factories
+
+1. **ModuleEvents Test Factory**
+
+   - Creates a real ModuleEventBus with event tracking
+   - Provides helper methods for verifying events and listeners
+   - Supports all event types and module types
+
+2. **ResourceManager Test Factory**
+
+   - Implements all ResourceManager methods with real behavior
+   - Supports resource initialization, updates, and tracking
+   - Handles production, consumption, and transfer operations
+
+3. **GameContext Test Factory**
+   - Uses the actual GameContext and reducer pattern
+   - Supports configurable initial state
+   - Provides helper methods for updating resources, ships, and sectors
+
+### Example: Testing with the GameContext Test Factory
+
+```tsx
+// Test component that uses GameContext
+it('should display resource values', async () => {
+  // Render with TestGameProvider
+  render(
+    <TestGameProvider
+      initialState={{
+        resources: { minerals: 500, energy: 1000 },
+      }}
+    >
+      <ResourceDisplay />
+    </TestGameProvider>
+  );
+
+  // Verify initial values
+  expect(screen.getByTestId('minerals')).toHaveTextContent('Minerals: 500');
+  expect(screen.getByTestId('energy')).toHaveTextContent('Energy: 1000');
+
+  // Update resources using helper methods
+  render(
+    <TestGameProvider
+      initialState={{
+        resources: { minerals: 500, energy: 1000 },
+      }}
+    >
+      <ResourceDisplay />
+      <ResourceUpdater />
+    </TestGameProvider>
+  );
+
+  // Wait for updates and verify
+  await screen.findByText('Minerals: 1000');
+  expect(screen.getByTestId('minerals')).toHaveTextContent('Minerals: 1000');
+});
+```
+
+### Benefits of Test Factories
+
+1. **Reliability**: Tests verify actual behavior rather than mock interactions
+2. **Maintainability**: Tests are less brittle and easier to maintain
+3. **Confidence**: Tests provide higher confidence that code works as expected
+4. **Simplicity**: Tests are simpler and more focused on behavior
+5. **Reusability**: Test factories can be reused across multiple tests
+
+For detailed documentation on test factories, see `CodeBase_Docs/CodeBase_Mapping/Test_Factories.md`.
+
+## WebSocket Management in Tests
+
+When testing components that rely on WebSocket communication, we've implemented a robust approach to prevent port conflicts and ensure proper test isolation:
+
+### WebSocket Server Management
+
+1. **Centralized Configuration** (src/tests/setup.ts)
+
+   - All WebSocket server creation and management is centralized in the setup.ts file
+   - Port allocation uses a defined range (8000-9000) to avoid conflicts
+   - Global flags control whether WebSocket servers are enabled or disabled for tests
+
+2. **Global Controls**
+
+   - `disableAllWebSocketServers()`: Disables all WebSocket servers for tests that don't need them
+   - `enableAllWebSocketServers()`: Re-enables WebSocket servers when needed
+   - These functions should be called in beforeAll/afterAll hooks for test suites that need to control WebSockets
+
+3. **Automatic Cleanup**
+   - WebSocket servers are automatically registered for cleanup using `registerTestWebSocketServer()`
+   - The afterEach hook ensures all servers are closed after each test
+   - A final cleanup runs in afterAll to catch any missed servers
+
+### Best Practices for Testing with WebSockets
+
+1. **Disable WebSockets When Possible**
+
+   ```typescript
+   // At the start of your test file
+   beforeAll(() => {
+     disableAllWebSocketServers();
+   });
+
+   // At the end of your test file
+   afterAll(() => {
+     enableAllWebSocketServers();
    });
    ```
 
-3. **Test for relative timing values, not exact values**:
+2. **Use Dynamic Ports**
+
+   - When WebSockets are required, use `getTestWebSocketPort()` to get a unique port
+   - Don't hardcode port numbers in tests
+
+3. **Register for Cleanup**
+
+   - Always register your WebSocket server for cleanup:
 
    ```typescript
-   // Instead of:
-   expect(executionTimeMs).toBe(100);
-
-   // Use:
-   expect(executionTimeMs).toBeGreaterThan(0);
+   const port = getTestWebSocketPort('MyService');
+   const server = createMyWebSocketServer(port);
+   registerTestWebSocketServer(port, server.close);
    ```
 
-4. **Ensure performance metrics are collected correctly**:
+4. **Component Testing**
+   - For React components that use WebSockets, use the TestGameProvider with WebSockets disabled
+   - Focus tests on component behavior rather than WebSocket communication
+
+Following these practices ensures that tests remain isolated and don't interfere with each other, even when multiple test files run in parallel.
+
+## Test Factories
+
+### Implementation Strategy
+
+The project uses a test factory pattern instead of mocks. Test factories create real implementations that behave like the actual code but are isolated for testing purposes. This approach ensures that tests verify real behavior rather than mock interactions.
+
+Examples of test factories include:
+
+#### 1. ModuleEvents Test Factory
+
+The ModuleEvents test factory creates a real implementation of the ModuleEventBus that behaves like the production code but is isolated for testing.
+
+```typescript
+export function createTestModuleEvents(): TestModuleEvents {
+  // Store events in memory for verification
+  const events: any[] = [];
+
+  // Create a real event bus that stores events in memory
+  const moduleEventBus: ModuleEventBus = {
+    emit: (eventType, eventData) => {
+      events.push({ eventType, eventData });
+      // Call any registered subscribers
+      const subscribers = subscriptions[eventType] || [];
+      subscribers.forEach(callback => callback(eventData));
+    },
+    subscribe: (eventType, callback) => {
+      if (!subscriptions[eventType]) {
+        subscriptions[eventType] = [];
+      }
+      subscriptions[eventType].push(callback);
+      return () => {
+        subscriptions[eventType] = subscriptions[eventType].filter(cb => cb !== callback);
+      };
+    },
+    // ... other methods
+  };
+
+  return {
+    moduleEventBus,
+    ModuleEventType,
+    // Test helper methods
+    getEmittedEvents: (eventType?: string) => {
+      if (eventType) {
+        return events.filter(e => e.eventType === eventType);
+      }
+      return [...events];
+    },
+    clearEvents: () => {
+      events.length = 0;
+      Object.keys(subscriptions).forEach(key => {
+        subscriptions[key] = [];
+      });
+    },
+  };
+}
+```
+
+#### 2. ResourceManager Test Factory
+
+The ResourceManager test factory creates a real ResourceManager for tests with in-memory implementation that follows the actual API.
+
+```typescript
+export function createTestResourceManager(
+  config: ResourceManagerConfig = DEFAULT_TEST_CONFIG
+): TestResourceManager {
+  // Resource state storage
+  const resources = new Map<ResourceType, ResourceState>();
+
+  // Track transfers
+  const transfers: ResourceTransfer[] = [];
+
+  // ... implementation code
+
+  return {
+    getResourceAmount(type: ResourceType): number {
+      // Implementation
+    },
+    setResourceAmount(type: ResourceType, amount: number): void {
+      // Implementation
+    },
+    addResource(type: ResourceType, amount: number): void {
+      // Implementation
+    },
+    // ... other methods
+  };
+}
+```
+
+#### 3. GameContext Test Factory
+
+The GameContext test factory creates a TestGameProvider component that provides a real GameContext for testing React components.
+
+```typescript
+export function createTestGameProvider({
+  initialState = {},
+  disableWebSocket = true,
+}: TestGameProviderProps = {}): TestGameProviderReturn {
+  // Create a real GameContext provider with test state
+  const TestProvider: React.FC<PropsWithChildren> = ({ children }) => {
+    const mergedState = {
+      ...DEFAULT_GAME_STATE,
+      ...initialState,
+    };
+
+    return (
+      <GameContextProvider initialState={mergedState} disableWebSocket={disableWebSocket}>
+        {children}
+      </GameContextProvider>
+    );
+  };
+
+  // Create helper methods for updating state
+  const helpers = {
+    // Helper methods for test state manipulation
+  };
+
+  return {
+    TestProvider,
+    helpers,
+  };
+}
+```
+
+#### 4. ModuleManager Test Factory
+
+The ModuleManager test factory creates a real ModuleManager instance for testing with isolated state.
+
+```typescript
+export function createTestModuleManager(): TestModuleManager {
+  // Create a real ModuleManager instance for testing
+  const moduleManager = new ModuleManager();
+
+  // Register default test module configs
+  Object.values(TEST_MODULE_CONFIGS).forEach(config => {
+    moduleManager.registerModuleConfig(config);
+  });
+
+  // Internal storage for tracking module configs
+  let moduleConfigs = new Map<ModuleType, ModuleConfig>();
+
+  return {
+    // Module configuration
+    registerModuleConfig(config: ModuleConfig): void {
+      moduleManager.registerModuleConfig(config);
+      moduleConfigs.set(config.type, config);
+    },
+
+    // Module lifecycle methods
+    createModule(type: ModuleType, position: Position): BaseModule {
+      return moduleManager.createModule(type, position);
+    },
+
+    // ... other methods
+
+    // Test helper methods
+    reset(): void {
+      // Reset implementation
+    },
+
+    createTestModule(
+      type: ModuleType,
+      position: Position,
+      overrides?: Partial<BaseModule>
+    ): BaseModule {
+      // Implementation
+    },
+
+    createTestBuilding(type: BuildingType, overrides?: Partial<ModularBuilding>): ModularBuilding {
+      // Implementation
+    },
+  };
+}
+```
+
+### Test Factory Benefits
+
+Using test factories instead of mocks provides several benefits:
+
+1. **Real behavior verification** - Tests verify that components work with actual implementations, not mock approximations
+2. **Reduced maintenance burden** - Tests don't break when implementation details change but behavior stays the same
+3. **Better integration testing** - Components are tested with their real dependencies
+4. **Simplified test setup** - Factories provide helper methods for common test scenarios
+5. **Improved test isolation** - Each test creates its own isolated test factory instance
+
+### Test Factory Pattern
+
+#### Core Principles
+
+The Galactic Sprawl project uses a Test Factory pattern that follows these core principles:
+
+1. **No Mocks**: Tests should NEVER use mocks. Always use actual implementations.
+2. **Isolation**: Test factories should create isolated instances of managers and services for testing.
+3. **Reset Capability**: Each factory should provide a way to reset its state between tests.
+4. **Configurability**: Test factories should allow for configuration of the system under test.
+
+#### Test Factory Implementation Example
+
+A proper test factory:
+
+1. Creates a real instance of the system under test
+2. Provides helper methods for test setup and verification
+3. Handles cleanup of resources
+4. Does NOT use vi.mock() or any other mocking mechanism
+
+Example implementation from `createTestModuleManager.ts`:
+
+```typescript
+export function createTestModuleManager(): TestModuleManager {
+  // Create a real ModuleManager instance for testing
+  let moduleManager = new ModuleManager();
+
+  // Internal storage for test-specific state
+  let nextId = 1;
+  let moduleConfigs = new Map<ModuleType, ModuleConfig>();
+
+  // Initialize with default configs
+  Object.values(TEST_MODULE_CONFIGS).forEach(config => {
+    moduleManager.registerModuleConfig(config);
+    moduleConfigs.set(config.type, config);
+  });
+
+  // Helper function to generate unique IDs
+  const generateUniqueId = (prefix: string): string => {
+    return `${prefix}-${nextId++}`;
+  };
+
+  return {
+    // Expose methods that use the real ModuleManager implementation
+    registerModuleConfig(config: ModuleConfig): void {
+      moduleManager.registerModuleConfig(config);
+      moduleConfigs.set(config.type, config);
+    },
+
+    // Real implementation methods
+    createModule(type: ModuleType, position: Position): BaseModule {
+      return moduleManager.createModule(type, position);
+    },
+
+    // Test helper methods
+    reset(): void {
+      // Create a fresh ModuleManager instance
+      moduleManager = new ModuleManager();
+
+      // Reinstall all the configurations
+      for (const config of moduleConfigs.values()) {
+        moduleManager.registerModuleConfig(config);
+      }
+
+      // Reset ID counter
+      nextId = 1;
+    },
+
+    // Additional helper methods...
+  };
+}
+```
+
+#### Benefits of Test Factories vs. Mocks
+
+1. **Real Behavior Testing**: Tests verify actual behavior, not mock behavior.
+2. **Maintainability**: When the real implementation changes, tests don't break.
+3. **Integration Testing**: Tests verify how components work together, not just in isolation.
+4. **Confidence**: Tests give confidence that the system works in production, not just in test scenarios.
+
+#### Common Test Factory Implementations
+
+The project includes these test factories:
+
+1. `createTestModuleManager`: For testing module creation, attachment, and lifecycle.
+2. `createTestModuleEvents`: For testing module event handling.
+3. `createTestResourceManager`: For testing resource management.
+4. `createTestGameProvider`: For testing game state and context.
+
+#### Accessing Internal State for Testing
+
+Sometimes it's necessary to access internal state for testing. This is achieved through type casting, not mocking:
+
+```typescript
+// Type cast to access internal properties, NOT mocking the behavior
+const manager = moduleManager as unknown as ModuleManagerInternal;
+```
+
+This should be used sparingly, only when necessary for test setup or verification.
+
+### TypeScript Integration
+
+Playwright tests are fully integrated with TypeScript:
+
+1. **Type Safety**:
+
+   - Page objects use proper type annotations for Playwright's `Page` and `Locator` types
+   - Test files import types from `@playwright/test`
+   - Custom helper methods include proper return types and parameter types
+
+2. **Common Type Issues**:
+
+   - Ensure proper imports from `@playwright/test` including `Page` type
+   - Use built-in Playwright `expect` function rather than test framework assertions
+   - Implement proper async/await patterns for all Playwright operations
+
+3. **Best Practices**:
+   - Use TypeScript interfaces for complex data structures
+   - Leverage type inference where appropriate
+   - Document complex types with JSDoc comments
+
+### Documentation
+
+Comprehensive documentation for Playwright testing is available:
+
+1. **Setup Guide**:
+
+   - Detailed setup instructions in `src/tests/e2e/README.md`
+   - Installation steps for Playwright and browsers
+   - Configuration options and examples
+
+2. **Best Practices**:
+
+   - Page Object Model implementation guidelines
+   - Test organization recommendations
+   - Performance considerations
+
+3. **CI/CD Integration**:
+   - Example GitHub Actions workflow configuration
+   - Artifact collection for test reports
+   - Parallel test execution configuration
+
+## Unit Testing Best Practices
+
+### WebSocket Server Testing
+
+When testing components or systems that use WebSocket servers, follow these principles to ensure reliable tests:
+
+1. **Proper Type Checking**:
+
+   - Always check if WebSocket server creation was successful before using the result
+   - Handle the case where WebSocket servers are disabled for testing
+   - Use proper TypeScript type guards when destructuring WebSocket server objects
+
+2. **Safe WebSocket Test Implementation**:
 
    ```typescript
-   const reporter = new PerformanceReporter();
+   // Example of proper WebSocket server testing
+   it('should create isolated WebSocket servers', () => {
+     // Create WebSocket server with null check
+     const result1 = createTestWebSocketServer();
+     const result2 = createTestWebSocketServer();
 
-   // Run multiple iterations
-   for (let i = 0; i < 5; i++) {
-     const result = cpuIntensiveFunction(1000);
-     reporter.recordMetric('calculation', result);
-   }
+     // Skip test if WebSocket servers are disabled
+     if (!result1 || !result2) {
+       console.log('WebSocket servers are disabled, skipping test');
+       return;
+     }
 
-   // Verify metrics
-   const metrics = reporter.getMetrics();
-   expect(metrics.calculation.iterations).toBe(5);
-   expect(metrics.calculation.min).toBeGreaterThan(0);
+     // Safely access server properties after null check
+     const { server: server1, port: port1 } = result1;
+     const { server: server2, port: port2 } = result2;
+
+     // Test assertions
+     expect(port1).not.toBe(port2);
+     expect(server1).not.toBe(server2);
+   });
    ```
 
-5. **Isolate performance tests from external factors**:
-   - Avoid network requests or file system operations
-   - Mock external dependencies
-   - Focus on measuring specific operations
+3. **WebSocket Server Isolation**:
 
-## Best Practices for Mocking in Test Files
+   - Use central WebSocket management through the setup file
+   - Implement dynamic port allocation to prevent conflicts
+   - Enable/disable WebSocket servers globally for different test scenarios
+   - Ensure proper cleanup after each test to prevent resource leaks
 
-When writing tests that require mocking external dependencies, follow these best practices to ensure reliable and maintainable tests:
+4. **Best Practices**:
+   - Use the `disableAllWebSocketServers()` and `enableAllWebSocketServers()` functions
+   - Register all WebSocket servers for automatic cleanup
+   - Use unique port allocation for each server
+   - Implement proper error handling for WebSocket server operations
 
-### Module Mocking
+### Test Context Providers
 
-1. **Mock both named and default exports**:
+When testing components that require React context providers, follow these guidelines:
 
-   ```javascript
-   vi.mock('fs', () => ({
-     // Named exports
-     writeFileSync: mockWriteFileSync,
-     existsSync: mockExistsSync,
+1. **Complete Context Implementation**:
 
-     // Default export
-     default: {
-       writeFileSync: mockWriteFileSync,
-       existsSync: mockExistsSync,
+   - Provide all required properties in the context value
+   - Implement actual functionality for required methods instead of using mocks
+   - Ensure type safety by satisfying the complete interface
+
+2. **Proper Context Implementation Example**:
+
+   ```typescript
+   // Example of a complete game context implementation for testing
+   const testGameContextValue: GameContextType = {
+     state: {
+       resources: {
+         minerals: 1000,
+         energy: 500,
+         population: 100,
+         research: 50,
+       },
+       isRunning: true,
+       isPaused: false,
+       gameTime: 100,
+       events: [],
+       resourceRates: {
+         minerals: 0,
+         energy: 0,
+         population: 0,
+         research: 0,
+       },
+       // Include all required state properties
+       systems: { ... },
+       missions: { ... },
+       exploration: { ... },
      },
-   }));
-   ```
-
-2. **Use importOriginal for partial mocking**:
-
-   ```javascript
-   vi.mock('node:timers', async importOriginal => {
-     const actual = await importOriginal();
-     return {
-       ...actual,
-       setTimeout: mockSetTimeout,
-       clearTimeout: mockClearTimeout,
-       default: {
-         ...actual.default,
-         setTimeout: mockSetTimeout,
-         clearTimeout: mockClearTimeout,
-       },
-     };
-   });
-   ```
-
-3. **Create mock functions outside vi.mock() calls**:
-
-   ```javascript
-   // Define mock functions outside vi.mock() for better reuse
-   const mockWriteFileSync = vi.fn();
-   const mockExistsSync = vi.fn();
-
-   vi.mock('fs', () => ({
-     writeFileSync: mockWriteFileSync,
-     existsSync: mockExistsSync,
-   }));
-   ```
-
-### Global Object Mocking
-
-1. **Direct replacement for simple tests**:
-
-   ```javascript
-   // Store original objects
-   const originalProcess = globalThis.process;
-   const originalConsole = globalThis.console;
-
-   // Create mock objects
-   const mockProcess = {
-     /* ... */
+     // Implement all required methods
+     dispatch: vi.fn(),
+     updateShip: vi.fn(),
+     addMission: vi.fn(),
+     updateSector: vi.fn(),
    };
-   const mockConsole = {
-     /* ... */
-   };
-
-   // Replace global objects
-   globalThis.process = mockProcess;
-   globalThis.console = mockConsole;
-
-   // Restore in afterEach
-   afterEach(() => {
-     globalThis.process = originalProcess;
-     globalThis.console = originalConsole;
-   });
    ```
 
-2. **Use vi.stubGlobal for more complex tests**:
+3. **Test Component Isolation**:
 
-   ```javascript
-   // Create mock objects
-   const mockProcess = {
-     /* ... */
-   };
-   const mockConsole = {
-     /* ... */
-   };
+   - Create simplified components for testing specific behavior
+   - Test behavior rather than implementation details
+   - Use proper error handling and fallbacks in test components
 
-   // Stub global objects
-   vi.stubGlobal('process', mockProcess);
-   vi.stubGlobal('console', mockConsole);
+4. **Best Practices**:
+   - Avoid type assertions with `as` when creating context values
+   - Make sure all required properties and methods are implemented
+   - Test both successful and error scenarios
+   - Ensure context values are consistent with expected behavior
 
-   // Restore in afterEach
-   afterEach(() => {
-     vi.unstubAllGlobals();
-   });
+### Handling Unused Variables in Test Code
+
+When working with test code, you may encounter situations where parameters or variables are required for interface compatibility but not used in the implementation. Follow these guidelines for handling unused variables:
+
+1. **Prefix Unused Variables with Underscore**:
+
+   ```typescript
+   // For unused parameters
+   function testFunction(_unusedParam: string, usedParam: number): void {
+     console.log(usedParam);
+   }
+
+   // For unused variables in catch blocks
+   try {
+     riskyOperation();
+   } catch (_error) {
+     // Intentionally ignoring the error
+   }
    ```
 
-### Event-Based API Mocking
+2. **Document Why Variables Are Unused**:
 
-1. **Capture callbacks directly**:
-
-   ```javascript
-   // Store callbacks for later use
-   let dataCallback;
-   let endCallback;
-
-   // Mock the event registration
-   mockProcess.stdin.on.mockImplementation((event, callback) => {
-     if (event === 'data') dataCallback = callback;
-     if (event === 'end') endCallback = callback;
-     return mockProcess.stdin;
-   });
-
-   // Call the callbacks directly in the test
-   dataCallback(sampleData);
-   endCallback();
+   ```typescript
+   // Parameter required for interface compatibility but not used in this implementation
+   setStorageEfficiency(_level: number): void {
+     // Implementation doesn't use level parameter in test version
+   }
    ```
 
-2. **Implement comprehensive interface mocks**:
-   ```javascript
-   // Mock readline interface with all required methods
-   vi.mock('readline', () => ({
-     createInterface: vi.fn(() => ({
-       question: vi.fn((query, callback) => callback('y')),
-       close: vi.fn(),
-       on: vi.fn(),
-       pause: vi.fn(),
-       resume: vi.fn(),
-       write: vi.fn(),
-       input: {
-         on: vi.fn(),
-         pause: vi.fn(),
-         resume: vi.fn(),
-       },
-       output: {
-         on: vi.fn(),
-         write: vi.fn(),
-       },
-     })),
-   }));
-   ```
+3. **Common Scenarios for Unused Variables**:
 
-### Test Cleanup and Isolation
+   - Interface compatibility requirements
+   - Event handlers that don't need the event object
+   - Catch blocks where the error is intentionally ignored
+   - Placeholder implementations for testing
+   - Parameters required for method signature matching
 
-1. **Reset modules between tests**:
-
-   ```javascript
-   beforeEach(() => {
-     vi.resetModules();
-     vi.resetAllMocks();
-   });
-   ```
-
-2. **Restore global objects**:
-
-   ```javascript
-   afterEach(() => {
-     globalThis.process = originalProcess;
-     globalThis.console = originalConsole;
-     // Or
-     vi.unstubAllGlobals();
-   });
-   ```
-
-3. **Clear mock state**:
-   ```javascript
-   afterEach(() => {
-     vi.clearAllMocks(); // Clears mock.mock.calls and mock.mock.results
-     vi.resetAllMocks(); // Clears mock.mock and resets implementation
-     vi.restoreAllMocks(); // Restores original implementation
-   });
-   ```
-
-### Simplifying Test Approach
-
-1. **Focus on core functionality**:
-
-   - Test the most important aspects of the code
-   - Don't try to test every detail
-   - Prioritize critical paths
-
-2. **Use simpler assertions**:
-
-   - Make assertions more flexible for timing-related values
-   - Use `expect.any(Type)` for dynamic values
-   - Use `expect.stringContaining()` for partial string matches
-
-3. **Reduce test complexity**:
-   - Break complex tests into smaller, focused tests
-   - Use helper functions for common test patterns
-   - Avoid complex setup and teardown logic
-
-### Common Pitfalls to Avoid
-
-1. **Incomplete mocks**: Missing methods or properties in mocks
-2. **Inconsistent mocking patterns**: Different approaches across files
-3. **Missing cleanup**: Not restoring global objects or resetting mocks
-4. **Over-specific assertions**: Testing implementation details rather than behavior
-5. **Complex test setup**: Making tests hard to understand and maintain
-
-By following these best practices, you can create more reliable, maintainable, and effective tests that properly isolate the code under test from its dependencies.
+4. **Best Practices**:
+   - Always prefix intentionally unused variables with an underscore
+   - Consider if an unused variable should actually be used
+   - Document why a variable is unused if it's not obvious
+   - Be consistent with the approach across the codebase
+   - Follow ESLint rules for unused variable handling

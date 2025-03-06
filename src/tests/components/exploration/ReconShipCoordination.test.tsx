@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ReconShipCoordination } from '../../../components/exploration/ReconShipCoordination';
 
@@ -42,7 +42,7 @@ interface FleetFormation {
 interface ReconShipCoordinationProps {
   ships: ReconShip[];
   sectors: Sector[];
-  formations: FleetFormation[];
+  formations?: FleetFormation[];
   onCreateFormation: (
     name: string,
     type: 'exploration' | 'survey' | 'defensive',
@@ -53,13 +53,19 @@ interface ReconShipCoordinationProps {
   onAddShipToFormation: (formationId: string, shipId: string) => void;
   onRemoveShipFromFormation: (formationId: string, shipId: string) => void;
   onStartCoordinatedScan: (sectorId: string, shipIds: string[]) => void;
-  onShareTask: (
+  onShareTask?: (
     sourceShipId: string,
     targetShipId: string,
     taskType: 'explore' | 'investigate' | 'evade'
   ) => void;
   onAutoDistributeTasks: (sectorIds: string[], prioritizeFormations: boolean) => void;
+  className?: string;
 }
+
+// Helper function to render the component with type checking
+const renderReconShipCoordination = (props: ReconShipCoordinationProps) => {
+  return render(<ReconShipCoordination {...props} />);
+};
 
 // Mock ships data
 const mockShips: ReconShip[] = [
@@ -131,153 +137,135 @@ const mockFormations: FleetFormation[] = [
   },
 ];
 
-// Mock event handlers
-const mockOnCreateFormation = vi.fn();
-const mockOnDisbandFormation = vi.fn();
-const mockOnAddShipToFormation = vi.fn();
-const mockOnRemoveShipFromFormation = vi.fn();
-const mockOnStartCoordinatedScan = vi.fn();
-const mockOnShareTask = vi.fn();
-const mockOnAutoDistributeTasks = vi.fn();
-
-// Create a type for the mock component props
-type MockComponentProps = {
-  mockProps?: ReconShipCoordinationProps;
-};
-
-// Extend the ReconShipCoordination type to include our mock properties
-type MockedReconShipCoordination = typeof ReconShipCoordination & MockComponentProps;
-
-// Mock the component's internal functions
-vi.mock('../../../components/exploration/ReconShipCoordination', () => ({
-  ReconShipCoordination: vi.fn((props: ReconShipCoordinationProps) => {
-    // Store the props for testing
-    (ReconShipCoordination as MockedReconShipCoordination).mockProps = props;
-
-    return (
-      <div data-testid="recon-ship-coordination">
-        <h2>Recon Ship Coordination</h2>
-        <div data-testid="formations-list">
-          {props.formations.map((formation: FleetFormation) => (
-            <div key={formation.id} data-testid={`formation-${formation.id}`}>
-              <span>{formation.name}</span>
-              <span>
-                {formation.type} • {formation.shipIds.length} ships
-              </span>
-              <button
-                data-testid={`disband-${formation.id}`}
-                onClick={() => props.onDisbandFormation(formation.id)}
-              >
-                Disband
-              </button>
-            </div>
-          ))}
-        </div>
-        <div data-testid="tabs">
-          <button data-testid="tab-formations">Formations</button>
-          <button data-testid="tab-coordination">Coordinated Scanning</button>
-          <button data-testid="tab-auto">Auto-Distribution</button>
-        </div>
-        <button
-          data-testid="new-formation-button"
-          onClick={() =>
-            props.onCreateFormation('New Formation', 'survey', ['ship-1', 'ship-2'], 'ship-1')
-          }
-        >
-          New Formation
-        </button>
-      </div>
-    );
-  }),
-}));
-
 describe('ReconShipCoordination', () => {
+  // Mock event handlers
+  const mockOnCreateFormation = vi.fn();
+  const mockOnDisbandFormation = vi.fn();
+  const mockOnAddShipToFormation = vi.fn();
+  const mockOnRemoveShipFromFormation = vi.fn();
+  const mockOnStartCoordinatedScan = vi.fn();
+  const mockOnShareTask = vi.fn();
+  const mockOnAutoDistributeTasks = vi.fn();
+
+  // Create default props for tests
+  const defaultProps: ReconShipCoordinationProps = {
+    ships: mockShips,
+    sectors: mockSectors,
+    formations: mockFormations,
+    onCreateFormation: mockOnCreateFormation,
+    onDisbandFormation: mockOnDisbandFormation,
+    onAddShipToFormation: mockOnAddShipToFormation,
+    onRemoveShipFromFormation: mockOnRemoveShipFromFormation,
+    onStartCoordinatedScan: mockOnStartCoordinatedScan,
+    onShareTask: mockOnShareTask,
+    onAutoDistributeTasks: mockOnAutoDistributeTasks,
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should render the component with correct props', () => {
-    render(
-      <ReconShipCoordination
-        ships={mockShips}
-        sectors={mockSectors}
-        formations={mockFormations}
-        onCreateFormation={mockOnCreateFormation}
-        onDisbandFormation={mockOnDisbandFormation}
-        onAddShipToFormation={mockOnAddShipToFormation}
-        onRemoveShipFromFormation={mockOnRemoveShipFromFormation}
-        onStartCoordinatedScan={mockOnStartCoordinatedScan}
-        onShareTask={mockOnShareTask}
-        onAutoDistributeTasks={mockOnAutoDistributeTasks}
-      />
-    );
+  it('should render the component with correct title', () => {
+    renderReconShipCoordination(defaultProps);
 
-    // Check if component renders
-    expect(screen.getByTestId('recon-ship-coordination')).toBeInTheDocument();
+    // Check if component renders with the correct title
+    expect(screen.getByText('Recon Ship Coordination')).toBeInTheDocument();
 
-    // Check if formations are rendered
-    expect(screen.getByTestId('formations-list')).toBeInTheDocument();
-    expect(screen.getByTestId('formation-formation-1')).toBeInTheDocument();
+    // Check if the description is present
+    expect(
+      screen.getByText('Manage fleet formations and coordinate recon ship operations')
+    ).toBeInTheDocument();
+  });
 
-    // Check if the component received the correct props
-    const mockProps = (ReconShipCoordination as MockedReconShipCoordination).mockProps;
-    expect(mockProps?.ships).toEqual(mockShips);
-    expect(mockProps?.sectors).toEqual(mockSectors);
-    expect(mockProps?.formations).toEqual(mockFormations);
-    expect(mockProps?.onCreateFormation).toBe(mockOnCreateFormation);
-    expect(mockProps?.onDisbandFormation).toBe(mockOnDisbandFormation);
+  it('should display the formations tab by default', () => {
+    renderReconShipCoordination(defaultProps);
+
+    // Check if the Formations tab is active
+    const formationsTab = screen.getByText('Formations', { selector: 'button div' });
+    expect(formationsTab).toBeInTheDocument();
+
+    // Check if the Fleet Formations heading is visible
+    expect(screen.getByText('Fleet Formations')).toBeInTheDocument();
+  });
+
+  it('should display the formation in the list', () => {
+    renderReconShipCoordination(defaultProps);
+
+    // Check if the formation name is displayed
+    expect(screen.getByText('Alpha Formation')).toBeInTheDocument();
+
+    // Check if the formation type and ship count are displayed
+    expect(screen.getByText('exploration • 2 ships')).toBeInTheDocument();
   });
 
   it('should call onDisbandFormation when disband button is clicked', () => {
-    render(
-      <ReconShipCoordination
-        ships={mockShips}
-        sectors={mockSectors}
-        formations={mockFormations}
-        onCreateFormation={mockOnCreateFormation}
-        onDisbandFormation={mockOnDisbandFormation}
-        onAddShipToFormation={mockOnAddShipToFormation}
-        onRemoveShipFromFormation={mockOnRemoveShipFromFormation}
-        onStartCoordinatedScan={mockOnStartCoordinatedScan}
-        onShareTask={mockOnShareTask}
-        onAutoDistributeTasks={mockOnAutoDistributeTasks}
-      />
-    );
+    renderReconShipCoordination(defaultProps);
 
-    // Click the disband button
-    const disbandButton = screen.getByTestId('disband-formation-1');
-    disbandButton.click();
+    // Find the disband button (Trash2 icon) and click it
+    const disbandButtons = screen.getAllByTitle('Disband formation');
+    fireEvent.click(disbandButtons[0]);
 
-    // Check if onDisbandFormation was called with the correct parameters
+    // Check if the onDisbandFormation function was called with the correct formation ID
     expect(mockOnDisbandFormation).toHaveBeenCalledWith('formation-1');
   });
 
-  it('should call onCreateFormation when new formation button is clicked', () => {
-    render(
-      <ReconShipCoordination
-        ships={mockShips}
-        sectors={mockSectors}
-        formations={mockFormations}
-        onCreateFormation={mockOnCreateFormation}
-        onDisbandFormation={mockOnDisbandFormation}
-        onAddShipToFormation={mockOnAddShipToFormation}
-        onRemoveShipFromFormation={mockOnRemoveShipFromFormation}
-        onStartCoordinatedScan={mockOnStartCoordinatedScan}
-        onShareTask={mockOnShareTask}
-        onAutoDistributeTasks={mockOnAutoDistributeTasks}
-      />
-    );
+  it('should show the new formation form when New Formation button is clicked', () => {
+    renderReconShipCoordination(defaultProps);
 
-    // Click the new formation button
-    const newFormationButton = screen.getByTestId('new-formation-button');
-    newFormationButton.click();
+    // Find the New Formation button and click it
+    const newFormationButton = screen.getByText('New Formation');
+    fireEvent.click(newFormationButton);
 
-    // Check if onCreateFormation was called with the correct parameters
-    expect(mockOnCreateFormation).toHaveBeenCalledWith(
-      'New Formation',
-      'survey',
-      ['ship-1', 'ship-2'],
-      'ship-1'
-    );
+    // Check if the form appears
+    expect(screen.getByText('Create New Formation')).toBeInTheDocument();
+
+    // Check for form fields by their text content instead of label
+    expect(screen.getByText('Formation Name')).toBeInTheDocument();
+    expect(screen.getByText('Formation Type')).toBeInTheDocument();
+    expect(screen.getByText('Select Ships')).toBeInTheDocument();
+
+    // Check for the input fields
+    expect(screen.getByPlaceholderText('Enter formation name')).toBeInTheDocument();
+    expect(screen.getByText('Exploration')).toBeInTheDocument();
+  });
+
+  it('should render without formations', () => {
+    renderReconShipCoordination({
+      ships: mockShips,
+      sectors: mockSectors,
+      onCreateFormation: mockOnCreateFormation,
+      onDisbandFormation: mockOnDisbandFormation,
+      onAddShipToFormation: mockOnAddShipToFormation,
+      onRemoveShipFromFormation: mockOnRemoveShipFromFormation,
+      onStartCoordinatedScan: mockOnStartCoordinatedScan,
+      onAutoDistributeTasks: mockOnAutoDistributeTasks,
+    });
+
+    // Check if component renders
+    expect(screen.getByText('Recon Ship Coordination')).toBeInTheDocument();
+
+    // Check if the Fleet Formations heading is visible
+    expect(screen.getByText('Fleet Formations')).toBeInTheDocument();
+
+    // Check that the formation is not in the list
+    expect(screen.queryByText('Alpha Formation')).not.toBeInTheDocument();
+  });
+
+  it('should switch to Coordinated Scanning tab when clicked', () => {
+    renderReconShipCoordination(defaultProps);
+
+    // Find the Coordinated Scanning tab and click it
+    const coordinationTab = screen.getByText('Coordinated Scanning');
+    fireEvent.click(coordinationTab);
+
+    // Check if the tab content changes - use the actual text from the component
+    expect(screen.getByText('Coordinated Scanning', { selector: 'h3' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Coordinate multiple ships to scan sectors more efficiently')
+    ).toBeInTheDocument();
+
+    // Check for the select elements
+    expect(screen.getByText('Select Formation')).toBeInTheDocument();
+    expect(screen.getByText('Select Sector to Scan')).toBeInTheDocument();
   });
 });

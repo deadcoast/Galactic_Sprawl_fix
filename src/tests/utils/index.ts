@@ -46,5 +46,46 @@ export {
   runBenchmark,
 };
 
+// Export from testPerformanceUtils
+import {
+  clearOperationCache,
+  conditionalSetup,
+  createLazyTestValue,
+  executeTestsInParallel,
+  measureMemoryUsage as measureTestMemoryUsage,
+  mockExpensiveOperations,
+  optimizeResourceIntensiveOperation,
+  parallelDescribe,
+  parallelSetup,
+} from './testPerformanceUtils';
+
+export {
+  clearOperationCache,
+  conditionalSetup,
+  createLazyTestValue,
+  executeTestsInParallel,
+  measureTestMemoryUsage,
+  mockExpensiveOperations,
+  optimizeResourceIntensiveOperation,
+  parallelDescribe,
+  parallelSetup,
+};
+
+// Export from mockUtils
+export {
+  createAutomationManagerMock,
+  createMockClass,
+  createMockComponent,
+  createMockContextProvider,
+  createMockHook,
+  createModuleEventBusMock,
+  createModuleEventsMock,
+  createModuleManagerMock,
+  createResourceManagerMock,
+  mockESModule,
+  mockModuleWithExports,
+  restoreAllMocks,
+} from './mockUtils';
+
 // Re-export fixtures for convenience
 export * from '../fixtures';

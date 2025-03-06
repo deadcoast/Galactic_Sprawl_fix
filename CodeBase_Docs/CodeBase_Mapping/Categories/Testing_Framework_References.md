@@ -279,3 +279,32 @@ TESTING FRAMEWORK REFERENCES
   - Type assertions for DOM elements
   - Null checks for DOM elements
   - Object parameters for passing variables
+
+### Test Utilities
+
+- Test Setup: `src/tests/setup.ts`
+  Purpose: Provides test setup and teardown utilities for unit and integration tests
+  Features:
+
+  - WebSocket server management with dynamic port allocation
+  - Mock localStorage implementation
+  - Global hooks for test setup and teardown
+  - WebSocket server registration and cleanup
+  - Functions to enable/disable WebSocket servers for testing
+
+- Test Isolation Examples: `src/tests/examples/testIsolationExample.test.ts`
+  Purpose: Demonstrates proper test isolation techniques
+  Features:
+
+  - Resource manager isolation between tests
+  - WebSocket server isolation with proper type checking
+  - Multiple manager isolation examples
+  - Safe destructuring pattern for potentially null objects
+
+- Simple Game Provider Test: `src/tests/factories/SimpleGameProviderTest.test.tsx`
+  Purpose: Demonstrates how to properly test React components that use contexts
+  Features:
+  - WebSocket server management using global functions
+  - Complete implementation of GameContext without mocking
+  - Proper type safety for context values
+  - Example of rendering components with and without context

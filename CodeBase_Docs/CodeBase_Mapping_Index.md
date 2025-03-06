@@ -2,12 +2,28 @@
 
 All tests are now located in the `src/tests/` directory, organized by test type.
 
+### Test Factories
+
+- **Factories**: `src/tests/factories/` - Test factory implementations for testing without mocks
+  - `createTestModuleEvents.ts` - Factory for creating real ModuleEvents instances for testing
+  - `createTestModuleEvents.test.ts` - Tests for the ModuleEvents test factory
+  - `createTestModuleManager.ts` - Factory for creating real ModuleManager instances for testing
+  - `createTestModuleManager.test.ts` - Tests for the ModuleManager test factory
+  - `createTestResourceManager.ts` - Factory for creating real ResourceManager instances for testing
+  - `createTestResourceManager.test.ts` - Tests for the ResourceManager test factory
+  - `createTestGameProvider.tsx` - Factory for creating real GameProvider components for testing
+  - `createTestGameProvider.test.tsx` - Tests for the GameProvider test factory
+  - `createTestAutomationManager.ts` - Factory for creating real AutomationManager instances for testing
+  - `createTestAutomationManager.test.ts` - Tests for the AutomationManager test factory
+
 ### Unit Tests
 
 - **Components**: `src/tests/components/` - Tests for React components
   - `exploration/` - Tests for exploration components
+    - `ExplorationManager.test.ts` - Tests for the ExplorationManager functionality, including ship assignment and search/filtering operations
   - `buildings/` - Tests for building components
   - `ui/` - Tests for UI components
+    - `ResourceVisualization.snapshot.test.tsx` - Snapshot tests for the ResourceVisualization component using mocked framer-motion components
 - **Managers**: `src/tests/managers/` - Tests for manager classes
   - `weapons/` - Tests for weapon managers
   - `resource/` - Tests for resource managers
@@ -31,8 +47,15 @@ All tests are now located in the `src/tests/` directory, organized by test type.
 
 - `src/tests/e2e/README.md` - Documentation and setup instructions for E2E testing with Playwright
 - `src/tests/e2e/models/MiningPage.ts` - Page Object Model for the Mining page used in E2E tests
-- `src/tests/e2e/mining.spec.ts` - E2E tests for the Mining module functionality
+- `src/tests/e2e/models/ExplorationPage.ts` - Page Object Model for the Exploration page used in E2E tests
+- `src/tests/e2e/mining-simplified.spec.ts` - Simplified E2E tests for the Mining module functionality
 - `src/tests/e2e/exploration.spec.ts` - E2E tests for the Exploration module functionality
+  - Uses flexible selectors to handle UI variations
+  - Implements robust error handling for game initialization issues
+  - Takes screenshots at key points for debugging
+  - Logs detailed information about page content
+  - Consolidated functionality from exploration-basic.spec.ts
+- `src/tests/e2e/mining-test.spec.ts` - Comprehensive E2E tests for the Mining module functionality
 - `src/tests/e2e/test-setup.ts` - Setup and teardown functions for E2E tests with dynamic port allocation
 
 ### Performance Tests
@@ -85,6 +108,10 @@ All tests are now located in the `src/tests/` directory, organized by test type.
   - Provides fixes for GameLoopManager error handling tests
   - Documents ResourceFlowManager test issues and solutions
   - Outlines next steps for improving test reliability
+- `CodeBase_Docs/Test_Fixes_March_2025.md` - Documentation of test fixes implemented in March 2025
+  - Includes detailed solutions for ResourceVisualization.snapshot.test.tsx
+  - Documents the fix for ExplorationManager.test.ts import issues
+  - Provides best practices for mocking and test isolation
 
 ### Test Fixtures
 
@@ -111,40 +138,94 @@ All tests are now located in the `src/tests/` directory, organized by test type.
 
 - `src/tests/utils/index.ts` - Unified exports of all test utilities
 - `src/tests/utils/testUtils.tsx` - Utility functions for testing React components
-
   - Provides functions for testing loading states, resource connections, and performance
   - Includes mock implementations of common hooks and contexts
   - Uses proper TypeScript typing for all utility functions
-
 - `src/tests/utils/fixtureUtils.ts` - Utility functions for creating test fixtures
-
   - Provides functions for creating resource states, resource nodes, and other test objects
   - Uses type-specific defaults based on resource type
   - Properly implements TypeScript interfaces for type safety
-
 - `src/tests/utils/asyncTestUtils.ts` - Utilities for testing asynchronous code
-
   - `wait` - Waits for a specified time
   - `waitForConditionAsync` - Waits for a condition to be true
   - `createDeferredPromise` - Creates a promise that can be resolved externally
   - `createMockEventEmitter` - Creates a mock event emitter
   - `createMockTimer` - Creates a mock timer for testing time-based functionality
   - `createMockRAF` - Creates a mock requestAnimationFrame implementation
-
 - `src/tests/utils/performanceTestUtils.ts` - Utilities for performance testing
-
   - `measureExecTime` - Measures execution time of a function
   - `runBenchmark` - Runs a benchmark for a function
   - `createPerfReporter` - Creates a performance reporter for tracking metrics
   - `measureMemory` - Measures memory usage of a function
-
+- `src/tests/utils/portManager.ts` - Port management utility for test environment
+  - Handles dynamic port allocation for services in tests
+  - Prevents port conflicts between tests
+  - Provides cleanup mechanisms for used ports
+  - Tracks port usage with service names and timestamps
+- `src/tests/utils/testStateReset.ts` - Utility for resetting global state between tests
+  - Provides functions for registering cleanup functions
+  - Implements global state reset for tests
+  - Handles WebSocket server cleanup
+  - Manages resource manager cleanup
+  - Provides setup and teardown functions for test environment
+- `src/tests/utils/resourceManagerCleanup.ts` - Utility for implementing proper cleanup for resource managers
+  - Provides functions for registering resource managers for cleanup
+  - Implements a registry for managing multiple resource managers
+  - Supports different cleanup methods (cleanup, reset, clear, dispose)
+  - Provides helper functions for creating cleanable managers
+- `src/tests/utils/testTeardown.ts` - Utility for adding teardown functions to test suites
+  - Provides functions for registering teardown functions
+  - Implements test isolation with automatic setup and teardown
+  - Supports objects with teardown methods
+  - Provides helper functions for creating test contexts with automatic teardown
+- `src/tests/utils/mockUtils.ts` - Centralized mocking utilities for common modules
+  - Provides standardized mocks for frequently used modules
+  - Includes utilities for mocking ES modules without hoisting issues
+  - Supports mocking both named and default exports
+  - Includes utilities for mocking React components, hooks, and context providers
+  - Provides helper functions for creating mock classes and objects
+  - Implements proper cleanup for mocks with restoreAllMocks function
+  - Contains createFramerMotionMock for mocking framer-motion components and hooks
+  - Used in ResourceVisualization.snapshot.test.tsx to avoid matchMedia issues
+  - Implements mockESModule and mockModuleWithExports for ES module mocking
+- `src/tests/utils/exploration/explorationTestUtils.ts` - Utilities for testing exploration components
+  - Contains createTestEnvironment function for setting up test environments with exploration and ship managers
+  - Used in ExplorationManager.test.ts for testing ship assignment and search/filtering
+  - Provides mock implementations for exploration-related functionality
+  - Includes utilities for creating mock star systems, ships, and other exploration entities
+- `src/tests/utils/testPerformanceUtils.ts` - Utilities for optimizing test performance
+  - Provides functions for parallel test execution with controlled concurrency
+  - Implements resource optimization for expensive operations with caching
+  - Supports lazy initialization of test resources
+  - Includes utilities for measuring memory usage during test execution
+  - Provides functions for running setup operations in parallel
+  - Implements conditional setup to skip expensive operations when not needed
+  - Supports mocking expensive operations to improve test performance
+- `src/tests/examples/mockUtilsExample.test.ts` - Example tests for the mock utilities
+  - Demonstrates proper usage of the mock utilities
+  - Shows how to create and use mocks for common modules
+  - Illustrates ES module mocking techniques
+  - Provides examples of mocking with custom implementations
+- `src/tests/examples/testPerformanceExample.test.ts` - Example tests for the test performance utilities
+  - Demonstrates parallel test execution with executeTestsInParallel and parallelDescribe
+  - Shows resource optimization with optimizeResourceIntensiveOperation
+  - Illustrates lazy initialization with createLazyTestValue
+  - Provides examples of parallel setup and conditional setup
+  - Demonstrates memory usage measurement with measureMemoryUsage
 - `src/tests/utils/testUtilsUsageExample.test.tsx` - Example tests for the test utilities
-
   - Demonstrates proper usage of the test utilities
   - Uses CPU-intensive operations for reliable performance testing
   - Implements proper assertions for performance metrics
-
+- `src/tests/examples/testIsolationExample.test.ts` - Example tests for the test isolation utilities
+  - Demonstrates proper usage of the test isolation utilities
+  - Shows how to use the resource manager registry
+  - Illustrates WebSocket server isolation
+  - Provides examples of multiple manager isolation
 - `src/tests/setup.ts` - Main test setup file
+  - Configures global mocks and test environment
+  - Provides WebSocket server management with dynamic port allocation
+  - Implements proper cleanup for test resources
+  - Exports helper functions for test setup and teardown
 - `src/tests/setup/testingLibrary.setup.ts` - Setup for React Testing Library
 
 ### NPM Scripts for Running Tests
@@ -159,7 +240,8 @@ The following npm scripts have been added to package.json to run different types
     "test:integration": "vitest src/tests/integration",
     "test:e2e": "playwright test",
     "test:perf": "vitest src/tests/performance",
-    "test:tools": "vitest src/tests/tools"
+    "test:tools": "vitest src/tests/tools",
+    "test:coverage": "vitest run --coverage"
   }
 }
 ```
@@ -368,41 +450,4 @@ The following npm scripts have been added to package.json to run different types
   - Key interfaces: `DataAnalysisSystemProps`, `ResultVisualizationProps`
   - Key features: Dataset creation, analysis configuration, result visualization, multiple chart types
 - `src/contexts/ClassificationContext.tsx` - Context provider for the classification system
-- `src/contexts/DataAnalysisContext.tsx` - Context provider for the data analysis system
-- `src/types/exploration/ClassificationTypes.ts` - Types and interfaces for the classification system
-- `src/types/exploration/DataAnalysisTypes.ts` - Types and interfaces for the data analysis system
-
-## Services
-
-### Core Services
-
-- `src/services/ErrorLoggingService.ts`: Provides structured error logging capabilities for the application. Handles logging errors with metadata, categorizing errors by type and severity, and sending errors to a remote logging service.
-
-  - Key interfaces: `ErrorMetadata`, `ErrorLogEntry`
-  - Key enums: `ErrorSeverity`, `ErrorType`
-
-- `src/services/RecoveryService.ts`: Provides mechanisms for recovering from critical application failures. Handles saving application state snapshots, restoring previous states, implementing different recovery strategies, and providing graceful degradation options.
-  - Key interfaces: `StateSnapshot`, `RecoveryConfig`
-  - Key enums: `RecoveryStrategy`
-
-### Other Services
-
-// ... existing code ...
-
-### Utilities
-
-- `src/utils/profiling/componentProfiler.ts`: Provides utilities for profiling React component performance. Includes functions for measuring render times, tracking prop changes, and identifying wasted renders.
-  - Key functions: `createComponentProfiler`, `profileRender`, `withProfiling`
-  - Key interfaces: `InternalProfilerOptions`
-
-### Test Files
-
-- `src/tests/utils/events/rxjsIntegration.test.ts` - Tests for RxJS integration with the event system
-  - Tests the initialization of RxJS integration with the module event bus
-  - Includes tests for filtering events by type and module ID
-  - Uses sample events to verify event filtering functionality
-  - Implements async test patterns for proper event handling
-
-```
-
-```
+- `src/contexts/DataAnalysisContext.tsx`

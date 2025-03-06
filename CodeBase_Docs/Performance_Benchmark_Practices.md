@@ -262,3 +262,234 @@ Planned benchmark coverage for other systems:
    - Test with different numbers of elements
    - Measure state update propagation time
    - Test with different UI complexity levels
+
+## Test Performance Optimization
+
+Optimizing test performance is crucial for maintaining a fast and efficient development workflow. Slow tests can significantly impact developer productivity and CI/CD pipeline efficiency. This section outlines strategies and utilities for optimizing test performance in the Galactic Sprawl project.
+
+### Test Performance Utilities
+
+The codebase includes dedicated utilities for test performance optimization in `src/tests/utils/testPerformanceUtils.ts`. These utilities provide various strategies for improving test execution time and resource usage.
+
+#### Parallel Test Execution
+
+Running tests in parallel can significantly reduce overall test execution time, especially for tests that involve I/O operations or timeouts.
+
+```typescript
+import { executeTestsInParallel, parallelDescribe } from '../utils/testPerformanceUtils';
+
+// Execute individual tasks in parallel
+const results = await executeTestsInParallel(
+  [
+    {
+      name: 'task1',
+      task: async () => {
+        // Task implementation
+        return result;
+      },
+    },
+    // More tasks...
+  ],
+  {
+    concurrency: 4, // Maximum number of concurrent tasks
+    continueOnError: false, // Whether to continue if a task fails
+    taskTimeout: 5000, // Timeout for each task in milliseconds
+    logProgress: false, // Whether to log progress
+  }
+);
+
+// Or use parallelDescribe for a more declarative approach
+parallelDescribe(
+  'Parallel Test Suite',
+  {
+    'test 1': async () => {
+      // Test implementation
+    },
+    'test 2': async () => {
+      // Test implementation
+    },
+    // More tests...
+  },
+  {
+    concurrency: 4,
+    logProgress: false,
+  }
+);
+```
+
+#### Resource-Intensive Operation Optimization
+
+For operations that are resource-intensive but produce the same result for the same input, caching can significantly improve performance.
+
+```typescript
+import {
+  optimizeResourceIntensiveOperation,
+  clearOperationCache,
+} from '../utils/testPerformanceUtils';
+
+// Cache the result of an expensive operation
+const result = await optimizeResourceIntensiveOperation(
+  'unique-operation-id',
+  () => expensiveOperation(),
+  {
+    cacheResult: true, // Whether to cache the result
+    cacheTTL: 60000, // Time-to-live for cached results in milliseconds
+  }
+);
+
+// Clear the cache when needed
+clearOperationCache(); // Clear all cached operations
+clearOperationCache('unique-operation-id'); // Clear a specific operation
+```
+
+#### Lazy Initialization
+
+Lazy initialization can improve performance by only creating resources when they are actually needed.
+
+```typescript
+import { createLazyTestValue } from '../utils/testPerformanceUtils';
+
+// Create a lazily initialized value
+const lazyDatabase = createLazyTestValue(() => {
+  // Expensive database setup
+  return database;
+});
+
+// Access the value only when needed
+const db = lazyDatabase.get();
+
+// Reset the value when needed
+lazyDatabase.reset();
+```
+
+#### Parallel Setup
+
+Running setup operations in parallel can reduce test initialization time.
+
+```typescript
+import { parallelSetup } from '../utils/testPerformanceUtils';
+
+// Run setup operations in parallel
+const { database, cache, auth } = await parallelSetup({
+  database: async () => setupDatabase(),
+  cache: async () => setupCache(),
+  auth: async () => setupAuth(),
+});
+```
+
+#### Conditional Setup
+
+Skip expensive setup operations when they're not needed for a particular test.
+
+```typescript
+import { conditionalSetup } from '../utils/testPerformanceUtils';
+
+// Only run setup if needed
+const database = conditionalSetup(
+  () => setupExpensiveDatabase(),
+  () => needsDatabase()
+);
+```
+
+#### Memory Usage Measurement
+
+Measure memory usage during test execution to identify memory-intensive tests.
+
+```typescript
+import { measureMemoryUsage } from '../utils/testPerformanceUtils';
+
+// Measure memory usage
+const { result, memoryUsageMB } = await measureMemoryUsage(async () => {
+  // Memory-intensive operation
+  return result;
+});
+
+console.log(`Memory usage: ${memoryUsageMB} MB`);
+```
+
+### Best Practices for Test Performance
+
+1. **Use Parallel Execution for Independent Tests**: Run independent tests in parallel to reduce overall execution time.
+2. **Cache Expensive Operations**: Cache the results of expensive operations that are used multiple times.
+3. **Use Lazy Initialization**: Only initialize resources when they are actually needed.
+4. **Mock External Dependencies**: Use mocks for external dependencies to avoid network calls and other I/O operations.
+5. **Optimize Test Data**: Use minimal test data that is sufficient for the test case.
+6. **Clean Up Resources**: Properly clean up resources after tests to avoid memory leaks.
+7. **Use Conditional Setup**: Skip expensive setup operations when they're not needed.
+8. **Measure and Monitor**: Regularly measure and monitor test performance to identify slow tests.
+
+### Vitest Configuration for Performance
+
+The Vitest configuration can be optimized for performance with the following settings:
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    // Run tests in parallel
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        // Use a pool of worker threads
+        useAtomics: true,
+        // Limit the number of threads to avoid resource contention
+        maxThreads: Math.max(1, Math.floor(os.cpus().length / 2)),
+        minThreads: 1,
+      },
+    },
+    // Improve performance by isolating tests
+    isolate: true,
+    // Avoid unnecessary file watching
+    watch: false,
+    // Optimize for CI environments
+    environment: 'node',
+    // Increase timeout for slow tests
+    testTimeout: 10000,
+    // Retry failed tests
+    retry: 1,
+    // Improve error reporting
+    logHeapUsage: true,
+  },
+});
+```
+
+### Measuring Test Performance
+
+To identify slow tests and track performance improvements, use the following approaches:
+
+1. **Use Vitest's Built-in Timing**: Vitest provides timing information for each test.
+
+```bash
+npx vitest --reporter verbose
+```
+
+2. **Use Custom Performance Reporters**: Create custom reporters to track test performance over time.
+
+```typescript
+import { createPerformanceReporter } from '../utils/testUtils';
+
+const reporter = createPerformanceReporter();
+
+beforeAll(() => {
+  reporter.clear();
+});
+
+afterAll(() => {
+  reporter.printReport();
+});
+
+it('should be fast', () => {
+  const startTime = performance.now();
+
+  // Test implementation
+
+  const endTime = performance.now();
+  reporter.record('test name', endTime - startTime);
+});
+```
+
+3. **Track Performance in CI**: Add performance tracking to CI pipelines to detect regressions.
+
+### Conclusion
+
+By implementing these test performance optimization strategies, you can significantly reduce test execution time and improve developer productivity. Remember to balance the effort spent on optimization with the actual time saved, focusing on the most impactful improvements first.

@@ -19,19 +19,40 @@ class ResizeObserverMock {
 // Set up global mocks
 global.ResizeObserver = ResizeObserverMock;
 
-// Mock window.matchMedia
+// Type for MediaQueryList listeners
+type MediaQueryListener = (this: MediaQueryList, ev: MediaQueryListEvent) => void;
+
+// Mock window.matchMedia - Enhanced for framer-motion compatibility
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
+  value: vi.fn().mockImplementation(query => {
+    const mediaQueryList = {
+      matches: false,
+      media: query,
+      onchange: null,
+      // These methods are specifically needed for framer-motion
+      addListener: vi.fn((listener: MediaQueryListener) => {
+        mediaQueryList.listeners.push(listener);
+      }),
+      removeListener: vi.fn((listener: MediaQueryListener) => {
+        mediaQueryList.listeners = mediaQueryList.listeners.filter(l => l !== listener);
+      }),
+      addEventListener: vi.fn((event: string, listener: EventListener) => {
+        if (event === 'change') {
+          mediaQueryList.listeners.push(listener as unknown as MediaQueryListener);
+        }
+      }),
+      removeEventListener: vi.fn((event: string, listener: EventListener) => {
+        if (event === 'change') {
+          mediaQueryList.listeners = mediaQueryList.listeners.filter(l => l !== listener);
+        }
+      }),
+      dispatchEvent: vi.fn(),
+      // Track listeners for proper cleanup
+      listeners: [] as MediaQueryListener[],
+    };
+    return mediaQueryList;
+  }),
 });
 
 // Helper to silence React 18 hydration warnings

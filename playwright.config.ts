@@ -1,5 +1,4 @@
 import { defineConfig } from '@playwright/test';
-import { getCurrentPort } from './src/tests/e2e/test-setup';
 
 export default defineConfig({
   testDir: './src/tests/e2e',
@@ -14,7 +13,7 @@ export default defineConfig({
       use: {
         browserName: 'chromium',
         viewport: { width: 1280, height: 720 },
-        baseURL: `http://localhost:${getCurrentPort()}`,
+        baseURL: 'http://localhost:3001',
         headless: true,
         screenshot: 'only-on-failure',
         trace: 'on-first-retry',
@@ -25,20 +24,18 @@ export default defineConfig({
       use: {
         browserName: 'firefox',
         viewport: { width: 1280, height: 720 },
-        baseURL: `http://localhost:${getCurrentPort()}`,
+        baseURL: 'http://localhost:3001',
         headless: true,
         screenshot: 'only-on-failure',
         trace: 'on-first-retry',
       },
     },
   ],
-  // Comment out the webServer section for now to run tests without it
-  /*
+  // Use a simpler webServer configuration with a fixed port
   webServer: {
     command: 'npm run dev',
-    port: getCurrentPort(),
+    port: 3001,
     reuseExistingServer: !process.env.CI,
-    timeout: 120000, // Increase timeout to 2 minutes
+    timeout: 60000, // Reduce timeout to 1 minute
   },
-  */
 });

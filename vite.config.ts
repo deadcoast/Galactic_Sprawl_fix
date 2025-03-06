@@ -38,10 +38,10 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   server: {
-    port: 3000,
+    port: 3001,
     host: true,
     open: true,
-    strictPort: true,
+    strictPort: false,
   },
   assetsInclude: ['**/*.png', '**/*.jpg', '**/*.aseprite'],
   // Copy both asset directories to public

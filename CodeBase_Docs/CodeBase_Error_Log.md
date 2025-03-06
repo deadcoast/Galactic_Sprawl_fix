@@ -2,6 +2,57 @@
 
 This document tracks system-wide errors that have been identified and fixed in the Galactic Sprawl codebase. It serves as a reference for common issues and their solutions.
 
+## WebSocket Server Port Conflicts in Tests (March 2025)
+
+### Error
+
+Tests involving WebSocket servers were failing with errors like:
+
+```
+WebSocket server error: Port is already in use
+```
+
+This error occurred in multiple test files, particularly in `createTestGameProvider.test.tsx` and other tests using WebSocket communication.
+
+### Cause
+
+1. Multiple tests were trying to use the same hardcoded ports
+2. WebSocket servers weren't being properly closed after tests
+3. There was no central management of WebSocket servers across test files
+4. The PortManager utility wasn't releasing ports properly between tests
+
+### Solution
+
+We implemented a centralized WebSocket management system in `src/tests/setup.ts`:
+
+1. **Port Management**:
+
+   - Created a port range (8000-9000) for test WebSocket servers
+   - Implemented functions to allocate unique ports for each server
+   - Added registration system to track active WebSocket servers
+
+2. **Global Controls**:
+
+   - Added functions to globally enable/disable WebSocket servers
+   - Implemented proper cleanup in afterEach and afterAll hooks
+   - Added logging to help diagnose WebSocket-related issues
+
+3. **Component Updates**:
+   - Updated TestGameProvider to respect global WebSocket settings
+   - Added explicit beforeAll/afterAll hooks in test files to control WebSockets
+   - Simplified test components to avoid unnecessary complexity
+
+### Best Practices
+
+To avoid WebSocket port conflicts:
+
+1. Use `disableAllWebSocketServers()` in beforeAll for test files that don't need WebSockets
+2. Always use `getTestWebSocketPort()` instead of hardcoding port numbers
+3. Register all WebSocket servers with `registerTestWebSocketServer()` for cleanup
+4. Focus tests on component behavior rather than WebSocket communication when possible
+
+For more details, see the WebSocket Management section in `CodeBase_Docs/CodeBase_Architecture.md`.
+
 ## Test File Mocking Issues (March 6, 2025)
 
 ### Error

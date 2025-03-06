@@ -651,17 +651,28 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
   - Tests for resource selection and view mode toggle
   - Tests for ship assignment and resource prioritization
 
-- `src/tests/components/ui/ResourceVisualization.snapshot.test.tsx`: Snapshot tests for the ResourceVisualization component
+- `src/tests/components/ui/ResourceVisualization.snapshot.test.tsx`: Tests for the ResourceVisualization component using a custom TestGameProvider that simulates different resource states. The test verifies resource values are displayed correctly and that appropriate warnings appear when resources are low or critical.
 
-  - Tests for default state rendering
-  - Tests for low resource levels rendering
-  - Tests for critical resource levels rendering
+## Test Patterns
 
-- Test configuration in package.json:
-  - `test:e2e`: Runs Playwright tests
-  - `test:e2e:ui`: Runs Playwright tests with UI
-  - `test:e2e:headed`: Runs Playwright tests in headed mode
-  - `test:e2e:debug`: Runs Playwright tests in debug mode
+### Testing Without Mocks
+
+- We've adopted a pattern of using actual implementations rather than mocks in tests
+- For context-dependent components, we create simplified context providers that use real implementation patterns
+- For components using framer-motion, we focus tests on the content being rendered rather than animations
+
+### Components with Contexts
+
+- Use a custom Provider component that provides controlled test data
+- Avoid using the actual app Provider if it has complex dependencies
+- Pass test data through the simplified provider to exercise different component states
+
+### Components with Animations
+
+- Focus tests on the rendered content, not animations
+- Use flexible query methods (`getAllByText`, `getByText` with options) to handle variations in how content is rendered
+- Accept and ignore animation-related warnings in the console as long as the tests pass
+- See `src/tests/components/ui/ResourceVisualization.snapshot.test.tsx` for an example
 
 ## Combat System Components
 
@@ -770,3 +781,209 @@ These fixes ensure that the codebase follows modern TypeScript best practices by
 ### Profiling
 
 - `src/utils/profiling/applicationProfiler.ts`: Provides application-wide performance profiling capabilities. Includes functions for measuring component render times and tracking performance metrics.
+
+### Port Configuration
+
+- `vite.config.ts` - Development server configured to run on port 3001 with `strictPort: false` to allow fallback if port is in use.
+- `playwright.config.ts` - E2E test configuration set to connect to port 3001, with webServer section to automatically start the dev server. Also updated `baseURL` to 'http://localhost:3001' in both chromium and firefox projects.
+- `src/tests/e2e/exploration.spec.ts` - E2E tests updated to use `http://localhost:3001/` for navigation.
+- `src/tests/e2e/mining-simplified.spec.ts` - E2E tests updated to use `http://localhost:3001/mining` for navigation.
+- `src/tests/e2e/mining-test.spec.ts` - E2E tests updated to use `http://localhost:3001/mining` for navigation and improved with proper error handling.
+
+### Test Configuration
+
+- `playwright.config.ts` - Configured to automatically start the dev server before running tests, with unique port to avoid conflicts.
+- `package.json` - Test scripts updated to use the correct commands for running E2E tests:
+  - `npm run test:e2e` - Run all E2E tests
+  - `npm run test:e2e:debug` - Run E2E tests in debug mode
+  - `npm run test:e2e:ui` - Run E2E tests with Playwright UI
+  - `npm run test:e2e:headed` - Run E2E tests in headed mode (visible browser)
+
+## Testing
+
+### Component Tests
+
+- `src/tests/components/buildings/MiningWindow.test.tsx` - Tests for the MiningWindow component using the simplified testing approach. Focuses on verifying the presence of key UI elements and basic functionality without complex mocks.
+- `src/tests/components/exploration/ReconShipCoordination.test.tsx` - Tests for the ReconShipCoordination component using the actual component implementation instead of mocks. Demonstrates the simplified testing approach that focuses on testing behavior and user-visible elements rather than implementation details. Uses a type-safe render function with a properly typed interface to ensure type checking during tests.
+
+## Test Factories
+
+### Overview
+
+As part of our initiative to remove mocking from tests, we're implementing a "Test Factory Pattern" that creates actual implementations for testing rather than using mocks. These factories will create controlled, isolated instances of services and components that can be used in tests.
+
+### Planned Test Factory Files
+
+| File Path                                          | Purpose                                                                                 | Status      |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------- | ----------- |
+| src/tests/factories/createTestModuleEvents.ts      | Creates a real ModuleEvents implementation for testing with event tracking capabilities | Implemented |
+| src/tests/factories/createTestResourceManager.ts   | Creates a real ResourceManager implementation with in-memory storage for testing        | Planned     |
+| src/tests/factories/createTestGameProvider.tsx     | Creates a React context provider using the actual GameContext implementation            | Planned     |
+| src/tests/factories/createTestAutomationManager.ts | Creates a real AutomationManager implementation for testing                             | Planned     |
+| src/tests/factories/createTestModuleManager.ts     | Creates a real ModuleManager implementation for testing                                 | Planned     |
+
+### Implemented Test Factories
+
+#### createTestModuleEvents.ts
+
+This factory creates a real implementation of the ModuleEvents system for testing purposes. It provides:
+
+1. A fully functional ModuleEventBus that behaves like the real implementation
+2. The complete set of ModuleEventType values as constants
+3. Helper methods for verifying events and listeners in tests
+
+**Key Features:**
+
+- Event tracking and filtering by type or module ID
+- Listener management with proper cleanup
+- Error handling that matches the real implementation
+- Helper methods for test verification
+
+**Example Usage:**
+
+```typescript
+import { createTestModuleEvents } from '../factories/createTestModuleEvents';
+
+describe('ModuleManager', () => {
+  let testModuleEvents;
+
+  beforeEach(() => {
+    testModuleEvents = createTestModuleEvents();
+    vi.doMock('../../../lib/modules/ModuleEvents', () => testModuleEvents);
+  });
+
+  afterEach(() => {
+    testModuleEvents.clearEvents();
+    vi.resetModules();
+  });
+
+  it('should emit events correctly', () => {
+    // Test using real implementation
+    const moduleEvents = require('../../../lib/modules/ModuleEvents');
+    moduleEvents.moduleEventBus.emit('TEST_EVENT', { data: 'test' });
+
+    // Verify using helper methods
+    const events = testModuleEvents.getEmittedEvents('TEST_EVENT');
+    expect(events.length).toBe(1);
+    expect(events[0].eventData.data).toBe('test');
+  });
+});
+```
+
+### Test Factory Design Principles
+
+1. **Type Compatibility**: Each factory creates objects that fully implement the actual interfaces of the system, ensuring type safety.
+2. **Controlled Environment**: Factories create isolated instances with controlled state that won't affect other tests.
+3. **Actual Behavior**: Test factories implement the actual behavior of the system, not simplified mocks.
+4. **Verification Helpers**: Test factories include helper methods for verifying the behavior and state of created objects.
+5. **Minimal Dependencies**: Test factories minimize dependencies on other parts of the system, making tests more focused.
+
+### Relationship to Current Tests
+
+These test factories will replace the mock implementations currently used in our tests. The following files will be updated to use test factories:
+
+| Test File                                                       | Current Approach                               | Planned Approach                          |
+| --------------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------- |
+| src/tests/components/ui/ResourceVisualization.snapshot.test.tsx | Using mock interfaces - FIXED                  | Using real TestGameProvider without mocks |
+| src/tests/managers/ExplorationManager.test.ts                   | Using createTestEnvironment with mocks - FIXED | Using actual implementations              |
+| src/tests/components/DataAnalysisSystem.test.tsx                | Using vi.mock() for GameContext                | Will use TestGameProvider                 |
+| src/tests/hooks/useAutomation.test.tsx                          | Using vi.mock() for AutomationManager          | Will use createTestAutomationManager      |
+| src/tests/managers/ResourceFlowManager.test.ts                  | Using vi.mock() for ResourceManager            | Will use createTestResourceManager        |
+| src/tests/managers/GlobalAutomationManager.test.ts              | Using vi.mock() for various services           | Will use multiple test factories          |
+
+### Test Factory Pattern Examples
+
+```typescript
+// Example usage for ModuleEvents testing
+import { createTestModuleEvents } from '../factories/createTestModuleEvents';
+
+describe('ModuleManager', () => {
+  let testModuleEvents;
+
+  beforeEach(() => {
+    testModuleEvents = createTestModuleEvents();
+    vi.doMock('../../../lib/modules/ModuleEvents', () => testModuleEvents);
+  });
+
+  afterEach(() => {
+    testModuleEvents.clearEvents();
+    vi.resetModules();
+  });
+
+  it('should emit events correctly', () => {
+    // Test using real implementation
+    const moduleEvents = require('../../../lib/modules/ModuleEvents');
+    moduleEvents.moduleEventBus.emit('TEST_EVENT', { data: 'test' });
+
+    // Verify using helper methods
+    const events = testModuleEvents.getEmittedEvents('TEST_EVENT');
+    expect(events.length).toBe(1);
+    expect(events[0].eventData.data).toBe('test');
+  });
+});
+
+// Example usage for component testing
+import { renderWithGameContext } from '../factories/createTestGameProvider';
+import { ResourceDisplay } from '../../components/ResourceDisplay';
+
+describe('ResourceDisplay', () => {
+  it('should display resources correctly', () => {
+    // Render with controlled context state
+    const { getByText } = renderWithGameContext(<ResourceDisplay />, {
+      resources: {
+        minerals: { value: 100, max: 500 }
+      }
+    });
+
+    // Verify rendered content
+    expect(getByText('Minerals: 100/500')).toBeInTheDocument();
+  });
+});
+```
+
+### Implementation Plan
+
+The test factories will be implemented in phases:
+
+1. Create core test factories for commonly used services
+2. Update high-priority tests to use test factories
+3. Create documentation and examples for using test factories
+4. Update remaining tests to use test factories
+5. Establish standards to prevent future use of mocks
+
+This approach will improve test reliability, maintainability, and ensure tests verify actual behavior instead of mock behavior.
+
+## Test Utilities
+
+- `src/tests/utils/mockUtils.ts` - Contains mock implementations for various services and components (DEPRECATED - Use test factories instead)
+- `src/tests/utils/testUtils.ts` - Contains utility functions for testing
+
+## Test Factories
+
+### Module Events Test Factory
+
+- **File:** `src/tests/factories/createTestModuleEvents.ts`
+- **Purpose:** Creates real ModuleEventBus implementation for testing
+- **Features:** Event tracking, listener management, history retrieval
+- **Related Files:** `src/lib/modules/ModuleEvents.ts`
+
+### Resource Manager Test Factory
+
+- **File:** `src/tests/factories/createTestResourceManager.ts`
+- **Purpose:** Creates real ResourceManager implementation for testing
+- **Features:** Resource tracking, production, consumption, transfers
+- **Related Files:** `src/managers/game/ResourceManager.ts`
+
+### Game Provider Test Factory
+
+- **File:** `src/tests/factories/createTestGameProvider.tsx`
+- **Purpose:** Creates real GameContext provider for testing components
+- **Features:** Context provision, state management, helper methods
+- **Related Files:** `src/contexts/GameContext.tsx`, `src/reducers/gameReducer.ts`
+
+### Module Manager Test Factory
+
+- **File:** `src/tests/factories/createTestModuleManager.ts`
+- **Purpose:** Creates real ModuleManager implementation for testing
+- **Features:** Module creation, building management, module activation
+- **Related Files:** `src/managers/module/ModuleManager.ts`

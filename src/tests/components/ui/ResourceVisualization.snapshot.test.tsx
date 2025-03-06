@@ -1,237 +1,157 @@
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { Dispatch, ReactNode, useCallback, useReducer } from 'react';
+import { describe, expect, it } from 'vitest';
 import { ResourceVisualization } from '../../../components/ui/ResourceVisualization';
-import { useResourceTracking } from '../../../hooks/resources/useResourceTracking';
-import { ResourceState, ResourceType } from '../../../types/resources/ResourceTypes';
-import { renderWithProviders } from '../../utils/testUtils';
+import { GameContext } from '../../../contexts/GameContext';
 
-// Mock the resource tracking hook
-vi.mock('../../../hooks/resources/useResourceTracking', () => ({
-  useResourceTracking: vi.fn(),
-}));
+// Define our own minimal types to avoid conflicts with actual GameContext types
+interface ResourceState {
+  minerals: number;
+  energy: number;
+  population: number;
+  research: number;
+}
 
-describe('ResourceVisualization Component Snapshots', () => {
-  it('should render correctly with default state', () => {
-    // Set up the mock implementation for this test
-    vi.mocked(useResourceTracking).mockReturnValue({
-      resources: new Map<ResourceType, ResourceState>([
-        ['minerals', { current: 500, max: 1000, min: 0, production: 10, consumption: 0 }],
-        ['energy', { current: 1000, max: 2000, min: 0, production: 20, consumption: 0 }],
-        ['population', { current: 50, max: 100, min: 0, production: 1, consumption: 0 }],
-        ['research', { current: 200, max: 500, min: 0, production: 5, consumption: 0 }],
-      ]),
-      resourceList: [
-        {
-          type: 'minerals',
-          state: { current: 500, max: 1000, min: 0, production: 10, consumption: 0 },
-        },
-        {
-          type: 'energy',
-          state: { current: 1000, max: 2000, min: 0, production: 20, consumption: 0 },
-        },
-        {
-          type: 'population',
-          state: { current: 50, max: 100, min: 0, production: 1, consumption: 0 },
-        },
-        {
-          type: 'research',
-          state: { current: 200, max: 500, min: 0, production: 5, consumption: 0 },
-        },
-      ],
-      getResource: vi.fn(),
-      history: [],
-      getHistoryByType: vi.fn(),
-      clearHistory: vi.fn(),
-      alerts: [],
-      getAlertsByType: vi.fn(),
-      clearAlerts: vi.fn(),
-      dismissAlert: vi.fn(),
-      setThreshold: vi.fn(),
-      removeThreshold: vi.fn(),
-      updateResource: vi.fn(),
-      incrementResource: vi.fn(),
-      decrementResource: vi.fn(),
-      transferResource: vi.fn(),
-      getTotalResources: vi.fn(),
-      getResourcePercentage: vi.fn(),
-      getResourcesAboveThreshold: vi.fn(),
-      getResourcesBelowThreshold: vi.fn(),
-      lastUpdated: Date.now(),
-      isLoading: false,
-      error: null,
-      resourceMetrics: {
-        totals: {
-          production: 36,
-          consumption: 0,
-          net: 36,
-        },
-        percentages: {
-          minerals: 50,
-          energy: 50,
-          population: 50,
-          research: 40,
-          plasma: 0,
-          gas: 0,
-          exotic: 0,
-        },
-        criticalResources: [],
-        abundantResources: ['energy'],
-      },
-    });
+interface TestGameState {
+  resources: ResourceState;
+  resourceRates: ResourceState;
+}
 
-    // Render the component
-    const { container } = renderWithProviders(<ResourceVisualization />);
+type TestGameAction = {
+  type: 'UPDATE_RESOURCES';
+  resources: Partial<ResourceState>;
+};
 
-    // Take a snapshot
-    expect(container).toMatchSnapshot();
+// Define a type that matches the GameContext value structure but with our test types
+interface TestGameContextValue {
+  state: TestGameState;
+  dispatch: Dispatch<TestGameAction>;
+  updateShip: () => void;
+  addMission: () => void;
+  updateSector: () => void;
+}
+
+// Create a simplified test provider that focuses only on what ResourceVisualization needs
+function TestGameProvider({
+  children,
+  initialResources = {
+    minerals: 1000,
+    energy: 1000,
+    population: 100,
+    research: 0,
+  },
+}: {
+  children: ReactNode;
+  initialResources?: ResourceState;
+}) {
+  // Create a simplified reducer that only handles resource updates
+  const reducer = (state: TestGameState, action: TestGameAction): TestGameState => {
+    switch (action.type) {
+      case 'UPDATE_RESOURCES':
+        return {
+          ...state,
+          resources: { ...state.resources, ...action.resources },
+        };
+      default:
+        return state;
+    }
+  };
+
+  // Create a minimal state that only includes what the ResourceVisualization needs
+  const [state, dispatch] = useReducer(reducer, {
+    resources: initialResources,
+    resourceRates: {
+      minerals: 0,
+      energy: 0,
+      population: 0,
+      research: 0,
+    },
   });
 
-  it('should render with low resource levels', () => {
-    // Mock the hook to return low resource levels
-    vi.mocked(useResourceTracking).mockReturnValue({
-      resources: new Map<ResourceType, ResourceState>([
-        ['minerals', { current: 80, max: 1000, min: 0, production: -5, consumption: 5 }],
-        ['energy', { current: 150, max: 2000, min: 0, production: 0, consumption: 10 }],
-        ['population', { current: 50, max: 100, min: 0, production: 1, consumption: 0 }],
-        ['research', { current: 200, max: 500, min: 0, production: 5, consumption: 0 }],
-      ]),
-      resourceList: [
-        {
-          type: 'minerals',
-          state: { current: 80, max: 1000, min: 0, production: -5, consumption: 5 },
-        },
-        {
-          type: 'energy',
-          state: { current: 150, max: 2000, min: 0, production: 0, consumption: 10 },
-        },
-        {
-          type: 'population',
-          state: { current: 50, max: 100, min: 0, production: 1, consumption: 0 },
-        },
-        {
-          type: 'research',
-          state: { current: 200, max: 500, min: 0, production: 5, consumption: 0 },
-        },
-      ],
-      getResource: vi.fn(),
-      history: [],
-      getHistoryByType: vi.fn(),
-      clearHistory: vi.fn(),
-      alerts: [],
-      getAlertsByType: vi.fn(),
-      clearAlerts: vi.fn(),
-      dismissAlert: vi.fn(),
-      setThreshold: vi.fn(),
-      removeThreshold: vi.fn(),
-      updateResource: vi.fn(),
-      incrementResource: vi.fn(),
-      decrementResource: vi.fn(),
-      transferResource: vi.fn(),
-      getTotalResources: vi.fn(),
-      getResourcePercentage: vi.fn(),
-      getResourcesAboveThreshold: vi.fn(),
-      getResourcesBelowThreshold: vi.fn(),
-      lastUpdated: Date.now(),
-      isLoading: false,
-      error: null,
-      resourceMetrics: {
-        totals: {
-          production: 1,
-          consumption: 15,
-          net: -14,
-        },
-        percentages: {
-          minerals: 8,
-          energy: 7.5,
-          population: 50,
-          research: 40,
-          plasma: 0,
-          gas: 0,
-          exotic: 0,
-        },
-        criticalResources: [],
-        abundantResources: [],
-      },
-    });
+  // Create stub implementations for the other context methods that aren't used by ResourceVisualization
+  const updateShip = useCallback(() => {}, []);
+  const addMission = useCallback(() => {}, []);
+  const updateSector = useCallback(() => {}, []);
 
-    // Render the component
-    const { container } = renderWithProviders(<ResourceVisualization />);
+  // Create a context value that looks like what GameContext would provide
+  // but is actually just a simple object with the minimal properties needed
+  const contextValue: TestGameContextValue = {
+    state,
+    dispatch,
+    updateShip,
+    addMission,
+    updateSector,
+  };
 
-    // Take a snapshot
-    expect(container).toMatchSnapshot();
+  // Use type assertion to bypass type checking - necessary for testing
+  return (
+    <GameContext.Provider
+      value={contextValue as unknown as Parameters<typeof GameContext.Provider>[0]['value']}
+    >
+      {children}
+    </GameContext.Provider>
+  );
+}
+
+describe('ResourceVisualization Component', () => {
+  it('renders with default resource values', () => {
+    render(
+      <TestGameProvider>
+        <ResourceVisualization />
+      </TestGameProvider>
+    );
+
+    // Check for resource labels
+    expect(screen.getByText('minerals')).toBeInTheDocument();
+    expect(screen.getByText('energy')).toBeInTheDocument();
+    expect(screen.getByText('population')).toBeInTheDocument();
+    expect(screen.getByText('research')).toBeInTheDocument();
+
+    // Use getAllByText for values that appear multiple times
+    const mineralValues = screen.getAllByText(/1,000/, { exact: false });
+    expect(mineralValues.length).toBeGreaterThan(0);
+
+    const populationValue = screen.getByText('100');
+    expect(populationValue).toBeInTheDocument();
+
+    const researchValue = screen.getByText('0');
+    expect(researchValue).toBeInTheDocument();
   });
 
-  it('should render with critical resource levels', () => {
-    // Mock the hook to return critical resource levels
-    vi.mocked(useResourceTracking).mockReturnValue({
-      resources: new Map<ResourceType, ResourceState>([
-        ['minerals', { current: 40, max: 1000, min: 0, production: 0, consumption: 5 }],
-        ['energy', { current: 90, max: 2000, min: 0, production: 0, consumption: 10 }],
-        ['population', { current: 4, max: 100, min: 0, production: 0, consumption: 1 }],
-        ['research', { current: 15, max: 500, min: 0, production: 0, consumption: 2 }],
-      ]),
-      resourceList: [
-        {
-          type: 'minerals',
-          state: { current: 40, max: 1000, min: 0, production: 0, consumption: 5 },
-        },
-        {
-          type: 'energy',
-          state: { current: 90, max: 2000, min: 0, production: 0, consumption: 10 },
-        },
-        {
-          type: 'population',
-          state: { current: 4, max: 100, min: 0, production: 0, consumption: 1 },
-        },
-        {
-          type: 'research',
-          state: { current: 15, max: 500, min: 0, production: 0, consumption: 2 },
-        },
-      ],
-      getResource: vi.fn(),
-      history: [],
-      getHistoryByType: vi.fn(),
-      clearHistory: vi.fn(),
-      alerts: [],
-      getAlertsByType: vi.fn(),
-      clearAlerts: vi.fn(),
-      dismissAlert: vi.fn(),
-      setThreshold: vi.fn(),
-      removeThreshold: vi.fn(),
-      updateResource: vi.fn(),
-      incrementResource: vi.fn(),
-      decrementResource: vi.fn(),
-      transferResource: vi.fn(),
-      getTotalResources: vi.fn(),
-      getResourcePercentage: vi.fn(),
-      getResourcesAboveThreshold: vi.fn(),
-      getResourcesBelowThreshold: vi.fn(),
-      lastUpdated: Date.now(),
-      isLoading: false,
-      error: null,
-      resourceMetrics: {
-        totals: {
-          production: 0,
-          consumption: 18,
-          net: -18,
-        },
-        percentages: {
-          minerals: 4,
-          energy: 4.5,
-          population: 4,
-          research: 3,
-          plasma: 0,
-          gas: 0,
-          exotic: 0,
-        },
-        criticalResources: ['minerals', 'energy', 'population', 'research'],
-        abundantResources: [],
-      },
-    });
+  it('renders with low resource warning', () => {
+    render(
+      <TestGameProvider
+        initialResources={{
+          minerals: 900, // Just below the low threshold (1000)
+          energy: 1000,
+          population: 100,
+          research: 0,
+        }}
+      >
+        <ResourceVisualization />
+      </TestGameProvider>
+    );
 
-    // Render the component
-    const { container } = renderWithProviders(<ResourceVisualization />);
+    // Check for low minerals warning
+    expect(screen.getByText('Low minerals levels')).toBeInTheDocument();
+  });
 
-    // Take a snapshot
-    expect(container).toMatchSnapshot();
+  it('renders with critical resource warning', () => {
+    render(
+      <TestGameProvider
+        initialResources={{
+          minerals: 400, // Below the critical threshold (500)
+          energy: 300, // Below the critical threshold (400)
+          population: 100,
+          research: 0,
+        }}
+      >
+        <ResourceVisualization />
+      </TestGameProvider>
+    );
+
+    // Check for critical resource warnings
+    expect(screen.getByText('Critical minerals levels')).toBeInTheDocument();
+    expect(screen.getByText('Critical energy levels')).toBeInTheDocument();
   });
 });

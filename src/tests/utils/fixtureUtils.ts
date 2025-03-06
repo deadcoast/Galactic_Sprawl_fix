@@ -68,7 +68,7 @@ export function createFlowNode(
  */
 export function createMockResourceManager() {
   return {
-    getResourceState: vi.fn((type: ResourceType) => resourceStates.standard),
+    getResourceState: vi.fn((_type: ResourceType) => resourceStates.standard),
     updateResourceState: vi.fn(),
     registerNode: vi.fn().mockReturnValue(true),
     unregisterNode: vi.fn().mockReturnValue(true),

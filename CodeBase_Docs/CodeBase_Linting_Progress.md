@@ -113,53 +113,12 @@ Fixed the following issues:
 
 ## Best Practices for Test Files
 
-1. **Use ES Module imports instead of CommonJS require()**
-
-   ```javascript
-   // Bad
-   const module = require('../path/to/module');
-
-   // Good
-   import module from '../path/to/module';
-   ```
-
-2. **Mock global objects properly**
-
-   ```javascript
-   // Bad
-   console.log = jest.fn();
-
-   // Good
-   const mockConsole = { log: vi.fn() };
-   vi.stubGlobal('console', mockConsole);
-   ```
-
-3. **Clean up mocks after tests**
-
-   ```javascript
-   afterEach(() => {
-     vi.resetAllMocks();
-     vi.unstubAllGlobals();
-   });
-   ```
-
-4. **Use vi.isolateModules() for testing modules with side effects**
-
-   ```javascript
-   vi.isolateModules(() => {
-     import('../path/to/module');
-   });
-   ```
-
-5. **Name mock data variables with 'mock' prefix**
-
-   ```javascript
-   // Bad
-   const sampleData = { ... };
-
-   // Good
-   const mockData = { ... };
-   ```
+1. Always use dynamic imports instead of require() for better compatibility with ESM
+2. Create proper mock objects for all external dependencies
+3. Use consistent import paths across all test files
+4. Handle errors properly in catch blocks
+5. Ensure all parameters are used or remove them if unnecessary
+6. Use the correct property names that match the interface definitions
 
 ## Current Linting Status (March 1, 2025)
 
@@ -1096,3 +1055,60 @@ We plan to:
 4. Handle errors properly in catch blocks
 5. Ensure all parameters are used or remove them if unnecessary
 6. Use the correct property names that match the interface definitions
+
+## March 2025 Linting Fixes
+
+### March 6, 2025 - Unused Variables in Test Factories
+
+Fixed unused variable linting errors in test factory files:
+
+1. **src/tests/factories/createTestModuleManager.ts**
+
+   - Fixed: Renamed unused `error` variable to `_error` in catch block
+
+2. **src/tests/factories/createTestResourceManager.ts**
+
+   - Fixed: Renamed unused `level` parameter to `_level` in setStorageEfficiency method
+   - Fixed: Renamed unused `deltaTime` parameter to `_deltaTime` in update method
+
+3. **src/tests/managers/automation/GlobalAutomationManager.test.ts**
+   - Fixed: Renamed unused `priority` parameter to `_priority` in registerUpdate method
+
+These fixes follow the project convention of prefixing intentionally unused variables with an underscore to indicate they are deliberately not used in the implementation.
+
+### March 6, 2025 - Console Statement Linting Errors in Test Setup
+
+Fixed no-console linting errors in the WebSocket server management code:
+
+1. **src/tests/setup.ts**
+   - Fixed: Replaced 9 instances of `console.log` with `console.warn` to comply with the linting rule that only allows `console.warn` and `console.error`
+   - Affected areas: WebSocket server registration, port allocation, cleanup processes, and server lifecycle management
+   - Maintained consistent logging format with clear prefixes: `[WebSocket]` for better log identification
+   - Preserved all existing logging information to ensure test debugging capabilities
+
+This change ensures that our test setup code follows the project's linting rules while maintaining the important debugging information needed during test runs. All log messages continue to clearly identify their source with the `[WebSocket]` prefix and contain the same detailed information as before.
+
+### March 6, 2025 - Unused Variables in Test Utility Files
+
+Fixed unused variable linting errors in various test utility files:
+
+1. **src/tests/utils/exploration/explorationTestUtils.ts**
+
+   - Fixed: Renamed unused parameters `shipId` and `systemId` to `_shipId` and `_systemId` in the mock implementation of `assignShipToSystem`
+   - These parameters are required for interface compatibility with the real `ExplorationManagerImpl` but are not used in the test mock
+
+2. **src/tests/utils/fixtureUtils.ts**
+
+   - Fixed: Renamed unused parameter `type` to `_type` in the mock implementation of `getResourceState`
+   - The parameter is required for API compatibility but not used in the simplified test implementation
+
+3. **src/tests/utils/testPerformanceUtils.ts**
+
+   - Fixed: Made the unused `ModuleImplementation` type useful by applying it to the parameter type of the `mockExpensiveOperations` function
+   - This properly documents the expected shape of the mock implementations and improves type safety
+
+4. **src/tests/utils/testTeardown.ts**
+   - Fixed: Renamed unused caught error variable `error` to `_error` in the catch block
+   - The catch block intentionally ignores errors as they are logged elsewhere
+
+These fixes follow the project's convention of prefixing intentionally unused variables with an underscore and ensure that declared types are properly utilized in the codebase.

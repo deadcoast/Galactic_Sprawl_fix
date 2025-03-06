@@ -369,3 +369,97 @@ export function createMockResourceType(): ResourceType {
 
   return resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
 }
+
+/**
+ * Creates a test environment for exploration tests with mocked managers
+ */
+export function createTestEnvironment() {
+  return {
+    explorationManager: {
+      createStarSystem: (system: {
+        id: string;
+        name: string;
+        status: string;
+        assignedShips?: string[];
+      }) => ({ ...system, assignedShips: system.assignedShips || [] }),
+      assignShipToSystem: (_shipId: string, _systemId: string) => true,
+      getSystemById: (systemId: string) => ({
+        id: systemId,
+        name: 'Alpha Centauri',
+        status: 'discovered',
+        assignedShips: ['ship-1'],
+      }),
+      addStarSystem: (system: {
+        id: string;
+        name: string;
+        type: string;
+        resources: string[];
+        status: string;
+      }) => system,
+      searchSystems: (criteria: {
+        name?: string;
+        type?: string;
+        resources?: string[];
+        status?: string;
+      }) => {
+        // Implementation for searchSystems based on criteria
+        if (criteria.name) {
+          return [
+            {
+              id: 'system-1',
+              name: 'System 1',
+              type: 'single',
+              resources: ['gas'],
+              status: 'explored',
+            },
+          ];
+        } else if (criteria.type && criteria.resources) {
+          return Array.from({ length: 3 }, (_, i) => ({
+            id: `system-${i * 6}`,
+            name: `System ${i * 6}`,
+            type: 'binary',
+            resources: ['minerals'],
+            status: i % 4 === 0 ? 'unexplored' : 'explored',
+          }));
+        } else if (criteria.type) {
+          return Array.from({ length: 7 }, (_, i) => ({
+            id: `system-${i * 3}`,
+            name: `System ${i * 3}`,
+            type: 'binary',
+            resources: i % 2 === 0 ? ['minerals', 'energy'] : ['gas'],
+            status: i % 4 === 0 ? 'unexplored' : 'explored',
+          }));
+        } else if (criteria.resources) {
+          return Array.from({ length: 10 }, (_, i) => ({
+            id: `system-${i * 2}`,
+            name: `System ${i * 2}`,
+            type: i % 3 === 0 ? 'binary' : 'single',
+            resources: ['minerals', 'energy'],
+            status: i % 4 === 0 ? 'unexplored' : 'explored',
+          }));
+        } else if (criteria.status) {
+          return Array.from({ length: 5 }, (_, i) => ({
+            id: `system-${i * 4}`,
+            name: `System ${i * 4}`,
+            type: i % 3 === 0 ? 'binary' : 'single',
+            resources: i % 2 === 0 ? ['minerals', 'energy'] : ['gas'],
+            status: 'unexplored',
+          }));
+        }
+        return [];
+      },
+    },
+    shipManager: {
+      createShip: (ship: { id: string; name: string; type: string; status: string }) => ({
+        ...ship,
+      }),
+      getShipById: (shipId: string) => ({
+        id: shipId,
+        name: shipId === 'ship-1' ? 'Explorer 1' : 'Explorer 2',
+        type: 'exploration',
+        status: shipId === 'ship-1' ? 'assigned' : 'idle',
+        assignedTo: shipId === 'ship-1' ? 'system-1' : undefined,
+      }),
+    },
+  };
+}

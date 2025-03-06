@@ -1,54 +1,115 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { moduleEventBus } from '../../../lib/modules/ModuleEvents';
+import { afterEach, beforeEach, describe, expect, it, SpyInstance, vi } from 'vitest';
+import { ModuleEvent, ModuleEventType } from '../../../lib/modules/ModuleEvents';
 import {
   GlobalAutomationManager,
   GlobalRoutine,
   GlobalRoutineType,
 } from '../../../managers/automation/GlobalAutomationManager';
 import { AutomationManager } from '../../../managers/game/AutomationManager';
-import { gameLoopManager } from '../../../managers/game/GameLoopManager';
+import { UpdatePriority } from '../../../managers/game/GameLoopManager';
 import { MessagePriority } from '../../../utils/events/EventCommunication';
+import { createTestModuleEvents } from '../../factories/createTestModuleEvents';
 
-// Mock dependencies
-vi.mock('../../../lib/modules/ModuleEvents', () => ({
-  moduleEventBus: {
-    emit: vi.fn(),
-    subscribe: vi.fn().mockReturnValue(() => {}),
-  },
-}));
+// Create test event system to avoid using mock
+const testModuleEvents = createTestModuleEvents();
 
-vi.mock('../../../managers/game/GameLoopManager', () => ({
-  gameLoopManager: {
-    registerUpdate: vi.fn(),
-    unregisterUpdate: vi.fn(),
-  },
-  UpdatePriority: {
-    NORMAL: 2,
-  },
-}));
+// Type definition for an update callback function
+type UpdateCallbackFunction = (deltaTime: number, elapsedTime: number) => void;
 
-vi.mock('../../../managers/game/AutomationManager', () => ({
-  AutomationManager: vi.fn().mockImplementation(() => ({
-    registerRule: vi.fn(),
-    updateRule: vi.fn(),
-    removeRule: vi.fn(),
-    getRule: vi.fn(),
-    getRulesForModule: vi.fn().mockReturnValue([]),
-  })),
-}));
+// Create a real GameLoopManager replacement for testing
+class TestGameLoopManager {
+  private updateCallbacks: Map<string, UpdateCallbackFunction> = new Map();
+
+  registerUpdate(
+    id: string,
+    callback: UpdateCallbackFunction,
+    _priority: number = UpdatePriority.NORMAL
+  ): void {
+    this.updateCallbacks.set(id, callback);
+  }
+
+  unregisterUpdate(id: string): void {
+    this.updateCallbacks.delete(id);
+  }
+
+  // Method to manually trigger updates for testing
+  triggerUpdate(deltaTime: number = 16, elapsedTime: number = 1000): void {
+    this.updateCallbacks.forEach(callback => {
+      try {
+        callback(deltaTime, elapsedTime);
+      } catch (error) {
+        console.error('Error in update callback:', error);
+      }
+    });
+  }
+
+  // Get all registered update IDs
+  getRegisteredUpdateIds(): string[] {
+    return Array.from(this.updateCallbacks.keys());
+  }
+
+  // Check if a specific update is registered
+  hasUpdate(id: string): boolean {
+    return this.updateCallbacks.has(id);
+  }
+}
+
+// Create the test game loop manager
+const testGameLoopManager = new TestGameLoopManager();
+
+// Type definition for the ModuleEventBus spy
+interface ModuleEventBusSpy {
+  subscribe: SpyInstance<
+    [type: ModuleEventType, listener: (event: ModuleEvent) => void],
+    () => void
+  >;
+  emit: SpyInstance<[event: ModuleEvent], void>;
+}
+
+// Type definition for the GameLoopManager spy
+interface GameLoopManagerSpy {
+  registerUpdate: SpyInstance<
+    [id: string, callback: UpdateCallbackFunction, priority?: number],
+    void
+  >;
+  unregisterUpdate: SpyInstance<[id: string], void>;
+}
 
 describe('GlobalAutomationManager', () => {
   let automationManager: AutomationManager;
   let globalAutomationManager: GlobalAutomationManager;
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  // Use vi.spyOn to create spies without mocking
+  let moduleEventBusSpy: ModuleEventBusSpy;
+  let gameLoopManagerSpy: GameLoopManagerSpy;
 
-    // Create a new instance of AutomationManager for each test
+  beforeEach(() => {
+    // Create spies on real objects instead of mocks
+    moduleEventBusSpy = {
+      subscribe: vi.spyOn(testModuleEvents.moduleEventBus, 'subscribe'),
+      emit: vi.spyOn(testModuleEvents.moduleEventBus, 'emit'),
+    };
+
+    gameLoopManagerSpy = {
+      registerUpdate: vi.spyOn(testGameLoopManager, 'registerUpdate'),
+      unregisterUpdate: vi.spyOn(testGameLoopManager, 'unregisterUpdate'),
+    };
+
+    // Create a new instance of real AutomationManager for each test
     automationManager = new AutomationManager();
 
     // Create a new instance of GlobalAutomationManager for each test
     globalAutomationManager = new GlobalAutomationManager(automationManager);
+
+    // Replace dependencies with test versions using a specific type assertion
+    // to avoid "any" but still allow private property access
+    const manager = globalAutomationManager as unknown as {
+      moduleEventBus: typeof testModuleEvents.moduleEventBus;
+      gameLoopManager: TestGameLoopManager;
+    };
+
+    manager.moduleEventBus = testModuleEvents.moduleEventBus;
+    manager.gameLoopManager = testGameLoopManager;
 
     // Initialize the global automation manager
     globalAutomationManager.initialize();
@@ -57,6 +118,12 @@ describe('GlobalAutomationManager', () => {
   afterEach(() => {
     // Clean up
     globalAutomationManager.cleanup();
+
+    // Clear event history
+    testModuleEvents.clearEvents();
+
+    // Clear all spies
+    vi.restoreAllMocks();
   });
 
   it('should create a new instance', () => {
@@ -65,10 +132,27 @@ describe('GlobalAutomationManager', () => {
 
   it('should initialize properly', () => {
     // Verify that the game loop update was registered
-    expect(gameLoopManager.registerUpdate).toHaveBeenCalled();
+    expect(gameLoopManagerSpy.registerUpdate).toHaveBeenCalled();
+
+    // Verify that a game loop update was registered with the expected ID
+    expect(testGameLoopManager.hasUpdate('global-automation-manager')).toBe(true);
 
     // Verify that event subscriptions were set up
-    expect(moduleEventBus.subscribe).toHaveBeenCalledTimes(3);
+    expect(moduleEventBusSpy.subscribe).toHaveBeenCalledTimes(3);
+
+    // Verify specific event types were subscribed to
+    expect(moduleEventBusSpy.subscribe).toHaveBeenCalledWith(
+      'ERROR_OCCURRED',
+      expect.any(Function)
+    );
+    expect(moduleEventBusSpy.subscribe).toHaveBeenCalledWith(
+      'RESOURCE_SHORTAGE',
+      expect.any(Function)
+    );
+    expect(moduleEventBusSpy.subscribe).toHaveBeenCalledWith(
+      'STATUS_CHANGED',
+      expect.any(Function)
+    );
   });
 
   it('should register a routine', () => {
@@ -112,6 +196,10 @@ describe('GlobalAutomationManager', () => {
     // Verify that the routine is in the list
     expect(routines.length).toBe(1);
     expect(routines[0].id).toBe('test-routine');
+
+    // Verify an event was emitted
+    const broadcastEvents = testModuleEvents.getEmittedEvents();
+    expect(broadcastEvents.length).toBeGreaterThan(0);
   });
 
   it('should unregister a routine', () => {
@@ -393,7 +481,7 @@ describe('GlobalAutomationManager', () => {
     globalAutomationManager.cleanup();
 
     // Verify that the game loop update was unregistered
-    expect(gameLoopManager.unregisterUpdate).toHaveBeenCalled();
+    expect(gameLoopManagerSpy.unregisterUpdate).toHaveBeenCalled();
 
     // Get all routines (should be empty after cleanup)
     const routines = globalAutomationManager.getAllRoutines();

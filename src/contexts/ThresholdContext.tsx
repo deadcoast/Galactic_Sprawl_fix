@@ -1,5 +1,3 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
 import * as React from 'react';
 import { ThresholdAction, ThresholdState, initialState, thresholdEvents } from './ThresholdTypes';
 
