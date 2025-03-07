@@ -142,23 +142,26 @@ export function SystemIntegration({
     // Only update if there are modules available
     if (modules.length > 0) {
       moduleDispatch({
-        type: 'UPDATE_MODULES',
+        type: 'UPDATE_ACTIVE_MODULES',
         modules,
       });
     }
 
     // Update buildings if available
     if (moduleBuildings.length > 0) {
-      moduleDispatch({
-        type: 'UPDATE_BUILDINGS',
-        buildings: moduleBuildings,
+      // Register each building individually
+      moduleBuildings.forEach(building => {
+        moduleDispatch({
+          type: 'REGISTER_BUILDING',
+          building,
+        });
       });
     }
   }, [moduleDispatch]);
 
   // Set up event listeners and sync intervals
   useEffect(() => {
-    const unsubscribes = [];
+    const unsubscribes: Array<() => void> = [];
 
     // Listen for resource events
     RESOURCE_EVENT_TYPES.forEach(eventType => {

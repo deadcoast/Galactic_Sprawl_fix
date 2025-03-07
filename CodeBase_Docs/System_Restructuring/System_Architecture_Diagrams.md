@@ -4,8 +4,82 @@ This document contains architectural diagrams for the complex systems in Galacti
 
 ## Table of Contents
 
+1. [Core Systems Architecture](#core-system-architecture)
 1. [Resource Flow System](#resource-flow-system)
-2. [Event System](#event-system)
+1. [Event System](#event-system)
+
+## Core System Architecture
+
+```
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│    UI Components    │     │  Context Providers  │     │  Manager Services   │
+├─────────────────────┤     ├─────────────────────┤     ├─────────────────────┤
+│ - GameHUD           │     │ - GameContext       │     │ - ResourceManager   │
+│ - ResourceVisual    │◄───►│ - ModuleContext     │◄───►│ - ModuleManager     │
+│ - TechTree          │     │ - ThresholdContext  │     │ - ShipManager       │
+│ - ExplorationSystem │     │ - ResourceRates     │     │ - ExplorationManager│
+│ - GameStateMonitor  │     │ - ShipContext       │     │ - ThresholdManager  │
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
+                                      ▲
+                                      │
+                                      ▼
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│    Custom Hooks     │     │  Integration Layer  │     │  Event Buses        │
+├─────────────────────┤     ├─────────────────────┤     ├─────────────────────┤
+│ - useGameState      │     │ - SystemIntegration │     │ - ModuleEventBus    │
+│ - useModuleStatus   │◄───►│ - ThresholdInteg.   │◄───►│ - GameEventBus      │
+│ - useResourceRates  │     │ - EventBatcher      │     │ - ResourceEventBus  │
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
+```
+
+## UI Components
+
+- GameHUD
+- ResourceVisual
+- TechTree
+- ExplorationSystem
+- GameStateMonitor
+
+## Context Providers
+
+- GameContext
+- ModuleContext
+- ThresholdContext
+- ResourceRates
+- ShipContext
+
+## Manager Services
+
+- ResourceManager
+- ModuleManager
+- ShipManager
+- ExplorationManager
+- ThresholdManager
+
+## Custom Hooks
+
+- useGameState
+- useModuleStatus
+- useResourceRates
+
+## Integration Layer
+
+- SystemIntegration
+- ThresholdIntegration
+- EventBatcher
+
+## Event Buses
+
+- ModuleEventBus
+- GameEventBus
+- ResourceEventBus
+
+## Connections
+
+- **UI Components ↔ Context Providers**
+- **Context Providers ↔ Manager Services**
+- **Custom Hooks ↔ Integration Layer**
+- **Integration Layer ↔ Event Buses**
 
 ## Resource Flow System
 
@@ -15,7 +89,7 @@ The Resource Flow System handles the movement of resources between producers, co
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│                      Resource Flow System                             │
+│                      Resource Flow System                            │
 │                                                                      │
 │   ┌──────────────┐          ┌──────────────┐      ┌──────────────┐   │
 │   │   Producer   │          │   Storage    │      │   Consumer   │   │
@@ -150,8 +224,8 @@ The Event System provides a communication mechanism for modules without requirin
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│                          Event System                                 │
-│                                                                      │
+│                         | Event System |                             │
+│                         '--------------'                             │
 │   ┌──────────────┐                          ┌──────────────────┐     │
 │   │    Module    │                          │ React Components │     │
 │   │    Events    │                          │                  │     │
@@ -161,8 +235,8 @@ The Event System provides a communication mechanism for modules without requirin
 │          ▼                                           ▼               │
 │   ┌──────────────┐                          ┌──────────────────┐     │
 │   │              │       References         │                  │     │
-│   │ ModuleEventBus│◀─────────────────────────│EventDispatcher   │     │
-│   │ (Singleton)   │                         │Context & Hooks    │     │
+│   │ModuleEventBus│◀─────────────────────────│ EventDispatcher  │     │
+│   │ (Singleton)  │                          │ Context & Hooks  │     │
 │   │              │                          │                  │     │
 │   └──────────────┘                          └──────────────────┘     │
 │          ▲                                           ▲               │
@@ -213,7 +287,7 @@ A React context provider that integrates the ModuleEventBus with React component
 ### Data Flow
 
 ```
-┌────────────────┐    Emit       ┌────────────────────────┐
+┌────────────────┐    Emit        ┌────────────────────────┐
 │    Modules     │───────────────▶│                        │
 └────────────────┘                │                        │
                                   │     ModuleEventBus     │

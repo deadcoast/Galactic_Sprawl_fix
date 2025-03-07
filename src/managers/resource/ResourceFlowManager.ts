@@ -5,199 +5,96 @@ import {
   ConversionChain,
   ConverterNodeConfig,
   ConverterProcessStatus,
+  FlowConnection,
+  FlowNode,
   ResourceConversionProcess,
   ResourceConversionRecipe,
   ResourceFlow,
-  ResourcePriority,
   ResourceState,
+  ResourceStateClass,
   ResourceTransfer,
   ResourceType,
-} from '../../types/resources/ResourceTypes';
+} from '../../types/resources/StandardizedResourceTypes';
 import { validateResourceTransfer } from '../../utils/resources/resourceValidation';
 
 /**
- * Types of nodes in the resource flow network
- * - producer: Generates resources (mines, power plants, etc.)
- * - consumer: Uses resources (factories, habitats, etc.)
- * - storage: Stores resources (warehouses, tanks, etc.)
- * - converter: Transforms resources (refineries, processors, etc.)
- */
-export type FlowNodeType = 'producer' | 'consumer' | 'storage' | 'converter';
-
-/**
- * Represents a node in the resource flow network
- * @interface FlowNode
- * @property {string} id - Unique identifier for the node
- * @property {FlowNodeType} type - Type of node (producer, consumer, storage, converter)
- * @property {ResourceType[]} resources - Types of resources this node can handle
- * @property {ResourcePriority} priority - Priority configuration for this node
- * @property {number} [capacity] - Maximum capacity for storage nodes
- * @property {number} [efficiency] - Efficiency multiplier for converter nodes (1.0 = 100% efficiency)
- * @property {boolean} active - Whether this node is currently active in the network
- * @property {ConverterNodeConfig} [converterConfig] - Configuration for converter nodes
- * @property {ConverterProcessStatus} [converterStatus] - Status information for converter nodes
- */
-export interface FlowNode {
-  id: string;
-  type: FlowNodeType;
-  resources: ResourceType[];
-  priority: ResourcePriority;
-  capacity?: number;
-  efficiency?: number;
-  active: boolean;
-  converterConfig?: ConverterNodeConfig;
-  converterStatus?: ConverterProcessStatus;
-}
-
-/**
- * Represents a connection between nodes in the resource flow network
- * @interface FlowConnection
- * @property {string} id - Unique identifier for the connection
- * @property {string} source - ID of the source node
- * @property {string} target - ID of the target node
- * @property {ResourceType} resourceType - Type of resource flowing through this connection
- * @property {number} maxRate - Maximum flow rate allowed through this connection
- * @property {number} currentRate - Current flow rate through this connection
- * @property {ResourcePriority} priority - Priority configuration for this connection
- * @property {boolean} active - Whether this connection is currently active
- */
-export interface FlowConnection {
-  id: string;
-  source: string;
-  target: string;
-  resourceType: ResourceType;
-  maxRate: number;
-  currentRate: number;
-  priority: ResourcePriority;
-  active: boolean;
-}
-
-/**
- * Represents the entire resource flow network
- * @interface FlowNetwork
- * @property {Map<string, FlowNode>} nodes - Map of node IDs to node objects
- * @property {Map<string, FlowConnection>} connections - Map of connection IDs to connection objects
- * @property {Map<ResourceType, ResourceState>} resourceStates - Map of resource types to resource states
- */
-export interface FlowNetwork {
-  nodes: Map<string, FlowNode>;
-  connections: Map<string, FlowConnection>;
-  resourceStates: Map<ResourceType, ResourceState>;
-}
-
-/**
- * Result of the flow optimization process
- * @interface FlowOptimizationResult
- * @property {ResourceTransfer[]} transfers - Resource transfers generated during optimization
- * @property {FlowConnection[]} updatedConnections - Connections with updated flow rates
- * @property {string[]} bottlenecks - Resource types with insufficient supply to meet demand
- * @property {string[]} underutilized - Resource types with excess supply compared to demand
- * @property {Object} [performanceMetrics] - Performance metrics for the optimization process
- * @property {number} [performanceMetrics.executionTimeMs] - Total execution time in milliseconds
- * @property {number} [performanceMetrics.nodesProcessed] - Number of nodes processed
- * @property {number} [performanceMetrics.connectionsProcessed] - Number of connections processed
- * @property {number} [performanceMetrics.transfersGenerated] - Number of transfers generated
- */
-export interface FlowOptimizationResult {
-  transfers: ResourceTransfer[];
-  updatedConnections: FlowConnection[];
-  bottlenecks: string[];
-  underutilized: string[];
-  performanceMetrics?: {
-    executionTimeMs: number;
-    nodesProcessed: number;
-    connectionsProcessed: number;
-    transfersGenerated: number;
-  };
-}
-
-/**
- * Result of a conversion process
- */
-export interface ConversionResult {
-  success: boolean;
-  processId?: string;
-  recipeId?: string;
-  converterId?: string;
-  error?: string;
-  inputsConsumed?: { type: ResourceType; amount: number }[];
-  outputsProduced?: { type: ResourceType; amount: number }[];
-  byproductsProduced?: { type: ResourceType; amount: number }[];
-  timestamp: number;
-}
-
-/**
- * Represents a cached resource state entry
- * @interface ResourceCacheEntry
- * @property {ResourceState} state - The cached resource state
- * @property {number} lastUpdated - Timestamp when the cache entry was last updated
- * @property {number} expiresAt - Timestamp when the cache entry expires
- * @private
- */
-interface ResourceCacheEntry {
-  state: ResourceState;
-  lastUpdated: number;
-  expiresAt: number;
-}
-
-/**
- * Manages the flow of resources between producers, consumers, storages, and converters.
- * Handles resource transfer, flow optimization, and network management.
- *
- * The ResourceFlowManager optimizes resource distribution based on priorities and
- * connection constraints, creating efficient resource flows throughout the network.
- * It supports various node types including converters that can transform resources.
- *
- * @class ResourceFlowManager
+ * Manager for resource flow through the game systems
+ * Responsible for:
+ * - Tracking resource nodes (producers, consumers, storage, converters)
+ * - Managing connections between nodes
+ * - Optimizing resource distribution
+ * - Processing resource conversions
  */
 export class ResourceFlowManager {
-  private network: FlowNetwork;
-  private lastOptimization: number;
-  private optimizationInterval: number;
-  private transferHistory: ResourceTransfer[];
-  private maxHistorySize: number;
-  private resourceCache: Map<ResourceType, ResourceCacheEntry>;
-  private cacheTTL: number; // Time-to-live for cache entries in milliseconds
-  private batchSize: number; // Batch size for processing large networks
-  private recipes: Map<string, ResourceConversionRecipe>; // Available conversion recipes
-  private chains: Map<string, ConversionChain>; // Available conversion chains
-  private activeProcesses: Map<string, ResourceConversionProcess>; // Active conversion processes
-  private activeChains: Map<string, ChainExecutionStatus>; // Active conversion chains
-  private processIntervalId?: number; // Interval ID for processing conversions
+  // Flow network data structures
+  private nodes: Map<string, FlowNode> = new Map();
+  private connections: Map<string, FlowConnection> = new Map();
+  private sourceConnections: Map<string, string[]> = new Map();
+  private targetConnections: Map<string, string[]> = new Map();
 
-  /**
-   * Creates a new ResourceFlowManager instance
-   *
-   * @param {number} [optimizationInterval=5000] - Interval between flow optimizations in milliseconds
-   * @param {number} [cacheTTL=2000] - Time-to-live for resource cache entries in milliseconds
-   * @param {number} [batchSize=100] - Batch size for processing large networks
-   * @param {number} [processInterval=1000] - Interval for processing conversions in milliseconds
-   */
-  constructor(
-    optimizationInterval = 5000,
-    cacheTTL = 2000,
-    batchSize = 100,
-    processInterval = 1000
-  ) {
-    this.network = {
-      nodes: new Map<string, FlowNode>(),
-      connections: new Map<string, FlowConnection>(),
-      resourceStates: new Map<ResourceType, ResourceState>(),
-    };
-    this.lastOptimization = 0;
-    this.optimizationInterval = optimizationInterval;
-    this.transferHistory = [];
-    this.maxHistorySize = 1000;
-    this.resourceCache = new Map<ResourceType, ResourceCacheEntry>();
-    this.cacheTTL = cacheTTL;
-    this.batchSize = batchSize;
-    this.recipes = new Map();
-    this.chains = new Map();
-    this.activeProcesses = new Map();
-    this.activeChains = new Map();
+  // Type-specific node registries
+  private producerNodes: Map<string, FlowNode> = new Map();
+  private consumerNodes: Map<string, FlowNode> = new Map();
+  private storageNodes: Map<string, FlowNode> = new Map();
+  private converterNodes: Map<string, FlowNode> = new Map();
 
-    // Start processing interval
-    this.startProcessingInterval(processInterval);
+  // Resource tracking
+  private resourceStates: Map<ResourceType, ResourceState> = new Map();
+  private resourceProducers: Map<ResourceType, string[]> = new Map();
+  private resourceConsumers: Map<ResourceType, string[]> = new Map();
+  private resourceStorage: Map<ResourceType, string[]> = new Map();
+
+  // Conversion recipes and chains
+  private conversionRecipes: Map<string, ResourceConversionRecipe> = new Map();
+  private conversionChains: Map<string, ConversionChain> = new Map();
+  private chainExecutions: Map<string, ChainExecutionStatus> = new Map();
+
+  // Processing state
+  private processingQueue: ResourceConversionProcess[] = [];
+  private completedProcesses: ResourceConversionProcess[] = [];
+  private lastProcessingTime = 0;
+  private processingInterval: number | null = null;
+  private optimizationInterval: number | null = null;
+
+  // Optimization settings
+  private flowOptimizationEnabled = true;
+  private optimizationIntervalMs = 5000;
+  private processingIntervalMs = 1000;
+  private resourceCapacityBuffer = 0.1; // 10% buffer for resource capacity
+
+  // Resource cache for performance optimization
+  private resourceCache: Map<
+    ResourceType,
+    {
+      state: ResourceState;
+      lastUpdated: number;
+      expiresAt: number;
+    }
+  > = new Map();
+  private cacheTTL = 2000; // Cache time-to-live in milliseconds
+
+  constructor() {
+    this.initializeResourceStates();
+
+    // Subscribe to module events that might affect resource flow
+    moduleEventBus.subscribe('MODULE_CREATED', this.handleModuleCreated);
+    moduleEventBus.subscribe('MODULE_UPDATED', this.handleModuleUpdated);
+    moduleEventBus.subscribe('MODULE_DESTROYED', this.handleModuleDestroyed);
+    moduleEventBus.subscribe('MODULE_ENABLED', this.handleModuleStateChanged);
+    moduleEventBus.subscribe('MODULE_DISABLED', this.handleModuleStateChanged);
+  }
+
+  // Initialize with default states for all resource types
+  private initializeResourceStates(): void {
+    // Initialize resource states for all resource types
+    Object.values(ResourceType).forEach(type => {
+      // Using the ResourceStateClass for proper initialization with defaults
+      const resourceState = new ResourceStateClass({ type });
+      this.resourceStates.set(type, resourceState.asObject());
+      this.resourceProducers.set(type, []);
+      this.resourceConsumers.set(type, []);
+      this.resourceStorage.set(type, []);
+    });
   }
 
   /**
@@ -225,7 +122,7 @@ export class ResourceFlowManager {
       return false;
     }
 
-    this.network.nodes.set(node.id, node);
+    this.nodes.set(node.id, node);
 
     // Invalidate cache for affected resource types
     for (const resourceType of node.resources) {
@@ -249,24 +146,24 @@ export class ResourceFlowManager {
    * flowManager.unregisterNode('mine-1');
    */
   public unregisterNode(id: string): boolean {
-    if (!this.network.nodes.has(id)) {
+    if (!this.nodes.has(id)) {
       return false;
     }
 
     // Get node resources before removing it
-    const node = this.network.nodes.get(id);
+    const node = this.nodes.get(id);
     const affectedResources = node ? [...node.resources] : [];
 
     // Remove all connections to/from this node
     // Convert Map entries to array to avoid MapIterator error
-    const connectionEntries = Array.from(this.network.connections.entries());
+    const connectionEntries = Array.from(this.connections.entries());
     for (const [connectionId, connection] of connectionEntries) {
       if (connection.source === id || connection.target === id) {
-        this.network.connections.delete(connectionId);
+        this.connections.delete(connectionId);
       }
     }
 
-    this.network.nodes.delete(id);
+    this.nodes.delete(id);
 
     // Invalidate cache for affected resource types
     for (const resourceType of affectedResources) {
@@ -312,18 +209,18 @@ export class ResourceFlowManager {
     }
 
     // Ensure source and target nodes exist
-    if (!this.network.nodes.has(connection.source)) {
+    if (!this.nodes.has(connection.source)) {
       console.warn(`Source node ${connection.source} does not exist`);
       return false;
     }
 
-    if (!this.network.nodes.has(connection.target)) {
+    if (!this.nodes.has(connection.target)) {
       console.warn(`Target node ${connection.target} does not exist`);
       return false;
     }
 
     // Ensure source node has the resource type
-    const sourceNode = this.network.nodes.get(connection.source);
+    const sourceNode = this.nodes.get(connection.source);
     if (!sourceNode?.resources.includes(connection.resourceType)) {
       console.warn(
         `Source node ${connection.source} does not have resource type ${connection.resourceType}`
@@ -331,7 +228,7 @@ export class ResourceFlowManager {
       return false;
     }
 
-    this.network.connections.set(connection.id, connection);
+    this.connections.set(connection.id, connection);
 
     // Invalidate cache for the affected resource type
     this.invalidateCache(connection.resourceType);
@@ -352,7 +249,7 @@ export class ResourceFlowManager {
    * flowManager.unregisterConnection('mine-to-factory');
    */
   public unregisterConnection(id: string): boolean {
-    const connection = this.network.connections.get(id);
+    const connection = this.connections.get(id);
     if (!connection) {
       return false;
     }
@@ -360,7 +257,7 @@ export class ResourceFlowManager {
     // Store resource type before removing the connection
     const { resourceType } = connection;
 
-    this.network.connections.delete(id);
+    this.connections.delete(id);
 
     // Invalidate cache for the affected resource type
     this.invalidateCache(resourceType);
@@ -388,7 +285,7 @@ export class ResourceFlowManager {
    * });
    */
   public updateResourceState(type: ResourceType, state: ResourceState): void {
-    this.network.resourceStates.set(type, state);
+    this.resourceStates.set(type, state);
 
     // Invalidate cache for the affected resource type
     this.invalidateCache(type);
@@ -420,7 +317,7 @@ export class ResourceFlowManager {
     }
 
     // Cache miss or expired, get from network
-    const state = this.network.resourceStates.get(type);
+    const state = this.resourceStates.get(type);
 
     // Update cache if state exists
     if (state) {
@@ -469,7 +366,7 @@ export class ResourceFlowManager {
     const startTime = Date.now();
 
     // Skip optimization if not enough time has passed
-    if (startTime - this.lastOptimization < this.optimizationInterval) {
+    if (startTime - this.lastOptimization < this.optimizationIntervalMs) {
       return {
         transfers: [],
         updatedConnections: [],
@@ -487,10 +384,8 @@ export class ResourceFlowManager {
     this.lastOptimization = startTime;
 
     // Get active nodes and connections
-    const activeNodes = Array.from(this.network.nodes.values()).filter(node => node.active);
-    const activeConnections = Array.from(this.network.connections.values()).filter(
-      conn => conn.active
-    );
+    const activeNodes = Array.from(this.nodes.values()).filter(node => node.active);
+    const activeConnections = Array.from(this.connections.values()).filter(conn => conn.active);
 
     // Performance tracking
     let nodesProcessed = 0;
@@ -590,7 +485,7 @@ export class ResourceFlowManager {
             connection.currentRate = originalRate * efficiency;
 
             // Update the connection in the network
-            this.network.connections.set(connection.id, connection);
+            this.connections.set(connection.id, connection);
           }
         }
       }
@@ -629,7 +524,7 @@ export class ResourceFlowManager {
     }
 
     // Update converter status in network
-    this.network.nodes.set(converter.id, converter);
+    this.nodes.set(converter.id, converter);
 
     // Auto-start new conversion processes if configured
     if (config.autoStart) {
@@ -658,7 +553,7 @@ export class ResourceFlowManager {
 
     // Get supported recipes
     const availableRecipes = config.supportedRecipes
-      .map(recipeId => this.recipes.get(recipeId))
+      .map(recipeId => this.conversionRecipes.get(recipeId))
       .filter(recipe => recipe !== undefined) as ResourceConversionRecipe[];
 
     // Try to start each supported recipe
@@ -678,7 +573,7 @@ export class ResourceFlowManager {
     }
 
     // Update converter in network
-    this.network.nodes.set(converter.id, converter);
+    this.nodes.set(converter.id, converter);
   }
 
   /**
@@ -714,8 +609,8 @@ export class ResourceFlowManager {
    */
   private startConversionProcess(converterId: string, recipeId: string): ConversionResult {
     // Get converter and recipe
-    const converter = this.network.nodes.get(converterId);
-    const recipe = this.recipes.get(recipeId);
+    const converter = this.nodes.get(converterId);
+    const recipe = this.conversionRecipes.get(recipeId);
 
     if (!converter || converter.type !== 'converter' || !recipe) {
       return {
@@ -835,13 +730,13 @@ export class ResourceFlowManager {
     }
 
     // Add process to active processes
-    this.activeProcesses.set(processId, process);
+    this.processingQueue.push(process);
 
     // Add process to converter's active processes
     converter.converterStatus.activeProcesses.push(process);
 
     // Update converter in network
-    this.network.nodes.set(converterId, converter);
+    this.nodes.set(converterId, converter);
 
     // Emit resource produced event
     moduleEventBus.emit({
@@ -878,12 +773,12 @@ export class ResourceFlowManager {
    */
   private startProcessingInterval(interval: number): void {
     // Clear any existing interval
-    if (this.processIntervalId) {
-      clearInterval(this.processIntervalId);
+    if (this.processingInterval) {
+      clearInterval(this.processingInterval);
     }
 
     // Set new interval
-    this.processIntervalId = setInterval(() => {
+    this.processingInterval = setInterval(() => {
       this.processConversions();
     }, interval) as unknown as number;
   }
@@ -897,7 +792,7 @@ export class ResourceFlowManager {
     const processesToComplete: string[] = [];
 
     // Check all active processes
-    for (const [processId, process] of this.activeProcesses.entries()) {
+    for (const [processId, process] of this.processingQueue.entries()) {
       // Skip paused processes
       if (process.paused) {
         continue;
@@ -920,24 +815,24 @@ export class ResourceFlowManager {
     // Complete processes
     for (const processId of processesToComplete) {
       // Get process
-      const process = this.activeProcesses.get(processId);
+      const process = this.processingQueue.find(p => p.processId === processId);
       if (!process) {
         continue;
       }
 
       // Get converter
-      const converter = this.network.nodes.get(process.sourceId);
+      const converter = this.nodes.get(process.sourceId);
       if (!converter) {
         // Converter not found, remove process from active processes
-        this.activeProcesses.delete(processId);
+        this.processingQueue = this.processingQueue.filter(p => p.processId !== processId);
         continue;
       }
 
       // Get recipe
-      const recipe = this.recipes.get(process.recipeId);
+      const recipe = this.conversionRecipes.get(process.recipeId);
       if (!recipe) {
         // Recipe not found, remove process from active processes
-        this.activeProcesses.delete(processId);
+        this.processingQueue = this.processingQueue.filter(p => p.processId !== processId);
         continue;
       }
 
@@ -945,7 +840,7 @@ export class ResourceFlowManager {
       const result = this.completeConversionProcess(processId, process, converter, recipe);
 
       // Check if this process is part of an active chain
-      for (const chainStatus of this.activeChains.values()) {
+      for (const chainStatus of this.chainExecutions.values()) {
         // Find the step that contains this process
         const stepIndex = chainStatus.stepStatus.findIndex(step => step.processId === processId);
         if (stepIndex >= 0) {
@@ -995,7 +890,7 @@ export class ResourceFlowManager {
     recipe: ResourceConversionRecipe
   ): ConversionResult {
     // Remove process from active processes
-    this.activeProcesses.delete(processId);
+    this.processingQueue = this.processingQueue.filter(p => p.processId !== processId);
 
     // Remove process from converter's active processes
     if (converter.converterStatus) {
@@ -1092,7 +987,7 @@ export class ResourceFlowManager {
     }
 
     // Update converter in network
-    this.network.nodes.set(converter.id, converter);
+    this.nodes.set(converter.id, converter);
 
     // Emit event
     moduleEventBus.emit({
@@ -1139,7 +1034,7 @@ export class ResourceFlowManager {
     }
 
     // Add to recipes map
-    this.recipes.set(recipe.id, recipe);
+    this.conversionRecipes.set(recipe.id, recipe);
     return true;
   }
 
@@ -1151,15 +1046,15 @@ export class ResourceFlowManager {
    */
   public unregisterRecipe(id: string): boolean {
     // Check if recipe exists
-    if (!this.recipes.has(id)) {
+    if (!this.conversionRecipes.has(id)) {
       return false;
     }
 
     // Remove recipe from recipes map
-    this.recipes.delete(id);
+    this.conversionRecipes.delete(id);
 
     // Also remove from any chains that use it
-    for (const chain of this.chains.values()) {
+    for (const chain of this.conversionChains.values()) {
       chain.steps = chain.steps.filter(step => step !== id);
     }
 
@@ -1180,13 +1075,13 @@ export class ResourceFlowManager {
 
     // Verify all recipes in the chain exist
     for (const recipeId of chain.steps) {
-      if (!this.recipes.has(recipeId)) {
+      if (!this.conversionRecipes.has(recipeId)) {
         return false;
       }
     }
 
     // Add to chains map
-    this.chains.set(chain.id, chain);
+    this.conversionChains.set(chain.id, chain);
     return true;
   }
 
@@ -1198,12 +1093,12 @@ export class ResourceFlowManager {
    */
   public unregisterChain(id: string): boolean {
     // Check if chain exists
-    if (!this.chains.has(id)) {
+    if (!this.conversionChains.has(id)) {
       return false;
     }
 
     // Remove chain from chains map
-    this.chains.delete(id);
+    this.conversionChains.delete(id);
     return true;
   }
 
@@ -1213,7 +1108,7 @@ export class ResourceFlowManager {
    * @returns {ResourceConversionRecipe[]} Array of all registered recipes
    */
   public getRecipes(): ResourceConversionRecipe[] {
-    return Array.from(this.recipes.values());
+    return Array.from(this.conversionRecipes.values());
   }
 
   /**
@@ -1223,7 +1118,7 @@ export class ResourceFlowManager {
    * @returns {ResourceConversionRecipe | undefined} The recipe, or undefined if not found
    */
   public getRecipe(id: string): ResourceConversionRecipe | undefined {
-    return this.recipes.get(id);
+    return this.conversionRecipes.get(id);
   }
 
   /**
@@ -1232,7 +1127,7 @@ export class ResourceFlowManager {
    * @returns {ConversionChain[]} Array of all registered chains
    */
   public getChains(): ConversionChain[] {
-    return Array.from(this.chains.values());
+    return Array.from(this.conversionChains.values());
   }
 
   /**
@@ -1242,7 +1137,7 @@ export class ResourceFlowManager {
    * @returns {ConversionChain | undefined} The chain, or undefined if not found
    */
   public getChain(id: string): ConversionChain | undefined {
-    return this.chains.get(id);
+    return this.conversionChains.get(id);
   }
 
   /**
@@ -1263,16 +1158,18 @@ export class ResourceFlowManager {
    * @returns {boolean} True if the process was successfully paused
    */
   public pauseConversion(processId: string): boolean {
-    const process = this.activeProcesses.get(processId);
+    const process = this.processingQueue.find(p => p.processId === processId);
     if (!process) {
       return false;
     }
 
     process.paused = true;
-    this.activeProcesses.set(processId, process);
+    this.processingQueue = this.processingQueue.map(p =>
+      p.processId === processId ? { ...p, paused: true } : p
+    );
 
     // Update in converter's status
-    const converter = this.network.nodes.get(process.sourceId);
+    const converter = this.nodes.get(process.sourceId);
     if (converter && converter.converterStatus) {
       const processIndex = converter.converterStatus.activeProcesses.findIndex(
         p => p.startTime === process.startTime && p.recipeId === process.recipeId
@@ -1280,7 +1177,7 @@ export class ResourceFlowManager {
 
       if (processIndex >= 0) {
         converter.converterStatus.activeProcesses[processIndex] = process;
-        this.network.nodes.set(process.sourceId, converter);
+        this.nodes.set(process.sourceId, converter);
       }
     }
 
@@ -1294,16 +1191,18 @@ export class ResourceFlowManager {
    * @returns {boolean} True if the process was successfully resumed
    */
   public resumeConversion(processId: string): boolean {
-    const process = this.activeProcesses.get(processId);
+    const process = this.processingQueue.find(p => p.processId === processId);
     if (!process) {
       return false;
     }
 
     process.paused = false;
-    this.activeProcesses.set(processId, process);
+    this.processingQueue = this.processingQueue.map(p =>
+      p.processId === processId ? { ...p, paused: false } : p
+    );
 
     // Update in converter's status
-    const converter = this.network.nodes.get(process.sourceId);
+    const converter = this.nodes.get(process.sourceId);
     if (converter && converter.converterStatus) {
       const processIndex = converter.converterStatus.activeProcesses.findIndex(
         p => p.startTime === process.startTime && p.recipeId === process.recipeId
@@ -1311,7 +1210,7 @@ export class ResourceFlowManager {
 
       if (processIndex >= 0) {
         converter.converterStatus.activeProcesses[processIndex] = process;
-        this.network.nodes.set(process.sourceId, converter);
+        this.nodes.set(process.sourceId, converter);
       }
     }
 
@@ -1325,22 +1224,22 @@ export class ResourceFlowManager {
    * @returns {boolean} True if the process was successfully cancelled
    */
   public cancelConversion(processId: string): boolean {
-    const process = this.activeProcesses.get(processId);
+    const process = this.processingQueue.find(p => p.processId === processId);
     if (!process) {
       return false;
     }
 
     // Remove from active processes
-    this.activeProcesses.delete(processId);
+    this.processingQueue = this.processingQueue.filter(p => p.processId !== processId);
 
     // Update in converter's status
-    const converter = this.network.nodes.get(process.sourceId);
+    const converter = this.nodes.get(process.sourceId);
     if (converter && converter.converterStatus) {
       converter.converterStatus.activeProcesses = converter.converterStatus.activeProcesses.filter(
         p => p.startTime !== process.startTime || p.recipeId !== process.recipeId
       );
       converter.converterStatus.failedProcesses++;
-      this.network.nodes.set(process.sourceId, converter);
+      this.nodes.set(process.sourceId, converter);
     }
 
     return true;
@@ -1352,7 +1251,7 @@ export class ResourceFlowManager {
    * @returns {ResourceConversionProcess[]} Array of all active conversion processes
    */
   public getActiveProcesses(): ResourceConversionProcess[] {
-    return Array.from(this.activeProcesses.values());
+    return this.processingQueue;
   }
 
   /**
@@ -1362,9 +1261,7 @@ export class ResourceFlowManager {
    * @returns {ResourceConversionProcess[]} Array of active conversion processes for the converter
    */
   public getConverterProcesses(converterId: string): ResourceConversionProcess[] {
-    return Array.from(this.activeProcesses.values()).filter(
-      process => process.sourceId === converterId
-    );
+    return this.processingQueue.filter(p => p.sourceId === converterId);
   }
 
   /**
@@ -1375,13 +1272,13 @@ export class ResourceFlowManager {
    * @returns {boolean} True if the configuration was successfully updated
    */
   public updateConverterConfig(converterId: string, config: ConverterNodeConfig): boolean {
-    const converter = this.network.nodes.get(converterId);
+    const converter = this.nodes.get(converterId);
     if (!converter || converter.type !== 'converter') {
       return false;
     }
 
     converter.converterConfig = config;
-    this.network.nodes.set(converterId, converter);
+    this.nodes.set(converterId, converter);
     return true;
   }
 
@@ -1392,7 +1289,7 @@ export class ResourceFlowManager {
    * @returns {ConverterProcessStatus | undefined} The converter status, or undefined if not found
    */
   public getConverterStatus(converterId: string): ConverterProcessStatus | undefined {
-    const converter = this.network.nodes.get(converterId);
+    const converter = this.nodes.get(converterId);
     if (!converter || converter.type !== 'converter') {
       return undefined;
     }
@@ -1417,7 +1314,7 @@ export class ResourceFlowManager {
     const demand: Partial<Record<ResourceType, number>> = {};
 
     // Convert Map entries to array to avoid MapIterator error
-    const resourceStateEntries = Array.from(this.network.resourceStates.entries());
+    const resourceStateEntries = Array.from(this.resourceStates.entries());
     for (const [type, _state] of resourceStateEntries) {
       availability[type] = 0;
       demand[type] = 0;
@@ -1584,7 +1481,7 @@ export class ResourceFlowManager {
         updatedConnections.push({ ...connection });
 
         // Update the actual connection in the network
-        this.network.connections.set(connection.id, connection);
+        this.connections.set(connection.id, connection);
 
         // Generate transfer if flow is positive
         if (connection.currentRate > 0) {
@@ -1634,19 +1531,19 @@ export class ResourceFlowManager {
   public cleanup(): void {
     moduleEventBus.clearHistory();
     this.resourceCache.clear();
-    this.network.connections.clear();
-    this.network.nodes.clear();
-    this.network.resourceStates.clear();
+    this.connections.clear();
+    this.nodes.clear();
+    this.resourceStates.clear();
     this.transferHistory = [];
-    this.recipes.clear();
-    this.chains.clear();
-    this.activeProcesses.clear();
-    this.activeChains.clear();
+    this.conversionRecipes.clear();
+    this.conversionChains.clear();
+    this.processingQueue = [];
+    this.chainExecutions.clear();
 
     // Clear process interval
-    if (this.processIntervalId) {
-      clearInterval(this.processIntervalId);
-      this.processIntervalId = undefined;
+    if (this.processingInterval) {
+      clearInterval(this.processingInterval);
+      this.processingInterval = undefined;
     }
   }
 
@@ -1659,7 +1556,7 @@ export class ResourceFlowManager {
    */
   public startChain(chainId: string, converterIds: string[]): ChainExecutionStatus | null {
     // Check if chain exists
-    const chain = this.chains.get(chainId);
+    const chain = this.conversionChains.get(chainId);
     if (!chain) {
       console.warn(`[ResourceFlowManager] Failed to start chain: Chain ${chainId} not found`);
       return null;
@@ -1679,7 +1576,7 @@ export class ResourceFlowManager {
       const converterId = converterIds[i];
 
       // Check if converter exists
-      const converter = this.network.nodes.get(converterId);
+      const converter = this.nodes.get(converterId);
       if (!converter || converter.type !== 'converter') {
         console.warn(
           `[ResourceFlowManager] Failed to start chain: Converter ${converterId} not found or not a converter`
@@ -1696,7 +1593,7 @@ export class ResourceFlowManager {
       }
 
       // Check if recipe exists
-      if (!this.recipes.has(recipeId)) {
+      if (!this.conversionRecipes.has(recipeId)) {
         console.warn(`[ResourceFlowManager] Failed to start chain: Recipe ${recipeId} not found`);
         return null;
       }
@@ -1708,7 +1605,7 @@ export class ResourceFlowManager {
     // Calculate estimated time
     let totalProcessingTime = 0;
     for (const recipeId of chain.steps) {
-      const recipe = this.recipes.get(recipeId);
+      const recipe = this.conversionRecipes.get(recipeId);
       if (recipe) {
         totalProcessingTime += recipe.processingTime;
       }
@@ -1738,7 +1635,7 @@ export class ResourceFlowManager {
     };
 
     // Store chain status
-    this.activeChains.set(chainId, chainStatus);
+    this.chainExecutions.set(chainId, chainStatus);
 
     // Try to start the first step
     this.processNextChainStep(chainId);
@@ -1755,7 +1652,7 @@ export class ResourceFlowManager {
    */
   private processNextChainStep(chainId: string): boolean {
     // Get chain status
-    const chainStatus = this.activeChains.get(chainId);
+    const chainStatus = this.chainExecutions.get(chainId);
     if (
       !chainStatus ||
       !chainStatus.active ||
@@ -1792,7 +1689,7 @@ export class ResourceFlowManager {
     }
 
     // Check if we have enough resources for this step
-    const recipe = this.recipes.get(recipeId);
+    const recipe = this.conversionRecipes.get(recipeId);
     if (!recipe) {
       // Recipe not found, mark step as failed
       stepStatus.status = 'failed';
@@ -1861,7 +1758,7 @@ export class ResourceFlowManager {
     toStepIndex: number
   ): boolean {
     // Get chain status
-    const chainStatus = this.activeChains.get(chainId);
+    const chainStatus = this.chainExecutions.get(chainId);
     if (!chainStatus) {
       return false;
     }
@@ -1873,8 +1770,8 @@ export class ResourceFlowManager {
     // Get recipes
     const fromRecipeId = chainStatus.recipeIds[fromStepIndex];
     const toRecipeId = chainStatus.recipeIds[toStepIndex];
-    const fromRecipe = this.recipes.get(fromRecipeId);
-    const toRecipe = this.recipes.get(toRecipeId);
+    const fromRecipe = this.conversionRecipes.get(fromRecipeId);
+    const toRecipe = this.conversionRecipes.get(toRecipeId);
 
     if (!fromRecipe || !toRecipe) {
       return false;
@@ -1883,8 +1780,8 @@ export class ResourceFlowManager {
     // Get converters
     const fromConverterId = fromStepStatus.converterId;
     const toConverterId = toStepStatus.converterId;
-    const fromConverter = this.network.nodes.get(fromConverterId);
-    const toConverter = this.network.nodes.get(toConverterId);
+    const fromConverter = this.nodes.get(fromConverterId);
+    const toConverter = this.nodes.get(toConverterId);
 
     if (!fromConverter || !toConverter) {
       return false;
@@ -1985,7 +1882,7 @@ export class ResourceFlowManager {
    * @private
    */
   private updateChainProgress(chainId: string): void {
-    const chainStatus = this.activeChains.get(chainId);
+    const chainStatus = this.chainExecutions.get(chainId);
     if (!chainStatus) {
       return;
     }
@@ -2000,7 +1897,7 @@ export class ResourceFlowManager {
         totalProgress += 1.0;
       } else if (step.status === 'in_progress' && step.processId) {
         // Get process progress
-        const process = this.activeProcesses.get(step.processId);
+        const process = this.processingQueue.find(p => p.processId === step.processId);
         if (process) {
           totalProgress += process.progress;
         }
@@ -2024,7 +1921,7 @@ export class ResourceFlowManager {
    * @returns {boolean} True if the chain was successfully paused
    */
   public pauseChain(chainId: string): boolean {
-    const chainStatus = this.activeChains.get(chainId);
+    const chainStatus = this.chainExecutions.get(chainId);
     if (
       !chainStatus ||
       !chainStatus.active ||
@@ -2057,7 +1954,7 @@ export class ResourceFlowManager {
    * @returns {boolean} True if the chain was successfully resumed
    */
   public resumeChain(chainId: string): boolean {
-    const chainStatus = this.activeChains.get(chainId);
+    const chainStatus = this.chainExecutions.get(chainId);
     if (
       !chainStatus ||
       !chainStatus.active ||
@@ -2093,7 +1990,7 @@ export class ResourceFlowManager {
    * @returns {boolean} True if the chain was successfully cancelled
    */
   public cancelChain(chainId: string): boolean {
-    const chainStatus = this.activeChains.get(chainId);
+    const chainStatus = this.chainExecutions.get(chainId);
     if (!chainStatus || chainStatus.completed) {
       return false;
     }
@@ -2120,7 +2017,7 @@ export class ResourceFlowManager {
    * @returns {ChainExecutionStatus[]} Array of all active chain execution statuses
    */
   public getActiveChains(): ChainExecutionStatus[] {
-    return Array.from(this.activeChains.values());
+    return Array.from(this.chainExecutions.values());
   }
 
   /**
@@ -2130,7 +2027,7 @@ export class ResourceFlowManager {
    * @returns {ChainExecutionStatus | undefined} The chain execution status, or undefined if not found
    */
   public getChainStatus(chainId: string): ChainExecutionStatus | undefined {
-    return this.activeChains.get(chainId);
+    return this.chainExecutions.get(chainId);
   }
 
   /**
@@ -2326,7 +2223,7 @@ export class ResourceFlowManager {
    * @returns The flow node with the specified ID, or undefined if not found
    */
   public getNode(id: string): FlowNode | undefined {
-    return this.network.nodes.get(id);
+    return this.nodes.get(id);
   }
 
   /**
@@ -2335,7 +2232,7 @@ export class ResourceFlowManager {
    * @returns {FlowNode[]} Array of all nodes in the network
    */
   public getNodes(): FlowNode[] {
-    return Array.from(this.network.nodes.values());
+    return Array.from(this.nodes.values());
   }
 
   /**
@@ -2344,7 +2241,7 @@ export class ResourceFlowManager {
    * @returns {FlowConnection[]} Array of all connections in the network
    */
   public getConnections(): FlowConnection[] {
-    return Array.from(this.network.connections.values());
+    return Array.from(this.connections.values());
   }
 
   /**
@@ -2354,7 +2251,7 @@ export class ResourceFlowManager {
    * @returns {FlowConnection | undefined} The connection if found, undefined otherwise
    */
   public getConnection(id: string): FlowConnection | undefined {
-    return this.network.connections.get(id);
+    return this.connections.get(id);
   }
 
   /**
@@ -2374,7 +2271,7 @@ export class ResourceFlowManager {
     }
 
     // Create nodes if they don't exist
-    if (!this.network.nodes.has(flow.source)) {
+    if (!this.nodes.has(flow.source)) {
       this.registerNode({
         id: flow.source,
         type: 'producer',
@@ -2384,7 +2281,7 @@ export class ResourceFlowManager {
       });
     }
 
-    if (!this.network.nodes.has(flow.target)) {
+    if (!this.nodes.has(flow.target)) {
       this.registerNode({
         id: flow.target,
         type: 'consumer',
@@ -2416,5 +2313,54 @@ export class ResourceFlowManager {
     }
 
     return success;
+  }
+
+  // Module event handlers
+  private handleModuleCreated = (data: any) => {
+    // Handle module creation
+    const { id, type } = data;
+    // Register module as appropriate node type based on module type
+    this.registerModuleAsNode(id, type as ModuleType);
+  };
+
+  private handleModuleUpdated = (data: any) => {
+    // Handle module update
+    const { id, changes } = data;
+    this.updateNodeFromModule(id, changes);
+  };
+
+  private handleModuleDestroyed = (data: any) => {
+    // Handle module destruction
+    const { id } = data;
+    this.unregisterNode(id);
+  };
+
+  private handleModuleStateChanged = (data: any) => {
+    // Handle module state change (enabled/disabled)
+    const { id, active } = data;
+    this.setNodeActive(id, active);
+  };
+
+  // Register a module as a node based on its type
+  private registerModuleAsNode(moduleId: string, moduleType: ModuleType): void {
+    // Implementation will determine node type based on module type
+    // This is a placeholder
+    console.log(`Registering module ${moduleId} of type ${moduleType} as node`);
+  }
+
+  // Update a node based on module changes
+  private updateNodeFromModule(moduleId: string, changes: any): void {
+    // Implementation will update node properties based on module changes
+    // This is a placeholder
+    console.log(`Updating node for module ${moduleId} with changes`, changes);
+  }
+
+  // Set a node's active state
+  private setNodeActive(nodeId: string, active: boolean): void {
+    const node = this.nodes.get(nodeId);
+    if (node) {
+      node.active = active;
+      this.nodes.set(nodeId, node);
+    }
   }
 }

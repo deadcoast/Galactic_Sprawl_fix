@@ -1,108 +1,10 @@
 # Directory Tree
 
-Generated for: /Users/deadcoast/CursorProjects/Galactic_Sprawl
-
-Excluded patterns: __pycache__, .git, .husky, .idea, .vscode, node_modules, dist, build, coverage, .venv, env, .env, .tox, .cache, .tmp, tmp, .npm, .yarn, .pnpm-store, out, .next, .nuxt, .jest, .pytest_cache, __tests__, __snapshots__, tests/fixtures, test-results, cypress/videos, cypress/screenshots, *.js.map, *.d.ts.map, *.tsbuildinfo, *.js.LICENSE.txt, *.chunk.js, *.pyc, *.pyo, .DS_Store, *.egg-info, *.log, *.lock, package-lock.json, yarn.lock, pnpm-lock.yaml, .eslintcache, .stylelintcache, .prettierignore, .eslintignore, .npmrc, .yarnrc, .gitignore, .gitattributes, .editorconfig, thumbs.db, desktop.ini, .git, *.config.js, *.config.ts, tsconfig*.json, jest.config.js, jest.config.ts, babel.config.js, webpack.*.js, rollup.*.js, vite.*.js, eslint-output.json, *.snap, CodeBase_Docs/CodeBase_Error_Log.md, CodeBase_Docs/CodeBase_Linting_Progress.md, .pixelArtAssets, .assets
+> /Users/deadcoast/CursorProjects/Galactic_Sprawl
 
 ```
 /Users/deadcoast/CursorProjects/Galactic_Sprawl
 ├── CodeBase_Docs/
-│   ├── CodeBase_Build_Phases/
-│   │   ├── CodeBase_PHASE1.md
-│   │   └── CodeBase_PHASE2.md
-│   ├── CodeBase_Linting_Log/
-│   │   ├── lint-analysis-report.json
-│   │   ├── lint-errors.txt
-│   │   ├── linting-fixes.txt
-│   │   └── linting_info.txt
-│   ├── CodeBase_Mapping/
-│   │   ├── Categories/
-│   │   │   ├── Automation_System_References.md
-│   │   │   ├── Build_Configuration_References.md
-│   │   │   ├── Combat_System_References.md
-│   │   │   ├── Combat_Type_Conversion_References.md
-│   │   │   ├── Core_Components_References.md
-│   │   │   ├── Core_Systems_References.md
-│   │   │   ├── Development_Tools_References.md
-│   │   │   ├── Effect_System_References.md
-│   │   │   ├── Game_Mechanics_References.md
-│   │   │   ├── index.md
-│   │   │   ├── Linting_Code_Quality_References.md
-│   │   │   ├── Module_Managers_Reference.md
-│   │   │   ├── Project_Phase_References.md
-│   │   │   ├── Resource_Management_References.md
-│   │   │   ├── Resource_Tracking_References.md
-│   │   │   ├── Ship_System_References.md
-│   │   │   ├── Testing_Framework_References.md
-│   │   │   ├── Type_Relationship_References.md
-│   │   │   ├── TypeScript_Error_Fixes.md
-│   │   │   └── UI_References.md
-│   │   ├── CodeBase_Mapping_Index.md
-│   │   ├── exploration_components.md
-│   │   ├── Index.md
-│   │   └── Test_Factories.md
-│   ├── Game_Logic/
-│   │   ├── FactionsAndAI(FAI)/
-│   │   │   ├── (index)-FactionsAndAI(FAI).md
-│   │   │   └── GS_FAI-FactionsAndAI.md
-│   │   ├── GameplayLogic(GL)/
-│   │   │   ├── (index)-GameplayLogic(GL).md
-│   │   │   ├── .roadmap
-│   │   │   ├── GS_GL-AutomationFunctions.md
-│   │   │   ├── GS_GL-CoreGameplayLogic.md
-│   │   │   ├── GS_GL-ProgressionSystem.md
-│   │   │   └── slug
-│   │   ├── ScalingAndVisuals(SV)/
-│   │   │   ├── (index)-ScalingAndVisuals(SV).md
-│   │   │   └── GS_SV-ScalingAndVisuals.md
-│   │   ├── ShipsAndCombat(SC)/
-│   │   │   ├── (index)-ShipsAndCombat(SC).md
-│   │   │   └── GS_SC-ShipsAndCombat.md
-│   │   ├── TechTree(TTR)/
-│   │   │   ├── (index)-TechTree(TTR).md
-│   │   │   └── GS_TTR-TechTree.md
-│   │   ├── UIAndMapViews(UI)-(MV)/
-│   │   │   ├── MapViews(MV)/
-│   │   │   │   ├── (index)-MapViews(MV).md
-│   │   │   │   ├── GS_MV-CivilizationSprawlView.md
-│   │   │   │   ├── GS_MV-LocalGalaxyMap.md
-│   │   │   │   └── GS_MV-VisualProgressRepresentationUIView.md
-│   │   │   ├── UIMenus(UIM)/
-│   │   │   │   ├── (index)-UIMenus(UIM).md
-│   │   │   │   ├── GS_UIM-ExplorationAndMining.md
-│   │   │   │   ├── GS_UIM-HabitableWorlds.md
-│   │   │   │   ├── GS_UIM-MothershipAndColonyUIMenu.md
-│   │   │   │   └── GS_UIM-OfficersAcademyAndShipHanger.md
-│   │   │   ├── (index)-UIAndMapViews(UI)-(MV).md
-│   │   │   └── GS_GUI-GlobalUIImplementations.md
-│   │   ├── (index)-GalaxySprawlDocs.md
-│   │   ├── directory_structure.md
-│   │   ├── generate_directory_tree.py
-│   │   ├── GS-ProjectDevPlan.md
-│   │   └── ResourceManagement.md
-│   ├── Cardinal4.md
-│   ├── CodeBase_Architecture.md
-│   ├── CodeBase_Mapping_Index.md
-│   ├── ConverterManagementUI.md
-│   ├── Core_System_Guide.md
-│   ├── Event_System_Optimizations.md
-│   ├── Game_Initialization_Error.md
-│   ├── Integration_Testing_Best_Practices.md
-│   ├── MultiStep_Production_Chains.md
-│   ├── Performance_Benchmark_Practices.md
-│   ├── Performance_Considerations.md
-│   ├── Resource_Conversion_Efficiency.md
-│   ├── ResourceFlowManager_Optimizations.md
-│   ├── ResourceFlowManager_Testing.md
-│   ├── System_Architecture_Diagrams.md
-│   ├── Test_Fixes_March_2025.md
-│   ├── Test_Issues_March_2025.md
-│   ├── Test_Utilities_Guide.md
-│   ├── TypeScript_E2E_Test_Errors.md
-│   ├── TypeScript_Error_Fixing_Strategies.md
-│   ├── TypeScript_Type_Guard_Best_Practices.md
-│   ├── UI_Testing_Best_Practices.md
-│   └── unused_variables_fix.md
 ├── playwright-report/
 │   ├── data/
 │   │   ├── 20de798276b1eee22618dad7b664602d2cd291bb.png
@@ -134,8 +36,13 @@ Excluded patterns: __pycache__, .git, .husky, .idea, .vscode, node_modules, dist
 │   │   │   ├── CombatSystemDemo.tsx
 │   │   │   ├── FleetDetails.tsx
 │   │   │   └── SalvageSystem.tsx
+│   │   ├── core/
+│   │   │   ├── IntegrationErrorHandler.tsx
+│   │   │   ├── SystemIntegration.tsx
+│   │   │   └── ThresholdIntegration.tsx
 │   │   ├── debug/
-│   │   │   └── AIDebugOverlay.tsx
+│   │   │   ├── AIDebugOverlay.tsx
+│   │   │   └── GameStateMonitor.tsx
 │   │   ├── exploration/
 │   │   │   ├── visualizations/
 │   │   │   │   └── AnalysisVisualization.tsx
@@ -255,6 +162,7 @@ Excluded patterns: __pycache__, .git, .husky, .idea, .vscode, node_modules, dist
 │   │   │   ├── GameHUD.tsx
 │   │   │   ├── GlobalErrorBoundary.tsx
 │   │   │   ├── NotificationSystem.tsx
+│   │   │   ├── ResourceEventMonitor.tsx
 │   │   │   ├── ResourceVisualization.tsx
 │   │   │   ├── ResourceVisualizationEnhanced.tsx
 │   │   │   ├── SprawlView.tsx
@@ -305,6 +213,7 @@ Excluded patterns: __pycache__, .git, .husky, .idea, .vscode, node_modules, dist
 │   │   ├── DataAnalysisContext.tsx
 │   │   ├── GameContext.tsx
 │   │   ├── ModuleContext.tsx
+│   │   ├── ResourceRatesContext.tsx
 │   │   ├── ShipContext.tsx
 │   │   ├── ThresholdContext.tsx
 │   │   └── ThresholdTypes.ts
@@ -358,7 +267,8 @@ Excluded patterns: __pycache__, .git, .husky, .idea, .vscode, node_modules, dist
 │   │   │   └── useCombatSystem.ts
 │   │   ├── events/
 │   │   │   ├── useEventBatching.ts
-│   │   │   └── useEventFiltering.ts
+│   │   │   ├── useEventFiltering.ts
+│   │   │   └── useSystemEvents.ts
 │   │   ├── factions/
 │   │   │   ├── useAdaptiveAI.ts
 │   │   │   ├── useDiplomacy.ts
@@ -385,16 +295,15 @@ Excluded patterns: __pycache__, .git, .husky, .idea, .vscode, node_modules, dist
 │   │   │   ├── useShipActions.ts
 │   │   │   ├── useShipClassManager.ts
 │   │   │   └── useShipEffects.ts
-│   │   ├── ui/
-│   │   │   ├── index.ts
-│   │   │   ├── useComponentProfiler.ts
-│   │   │   ├── useDebugOverlay.ts
-│   │   │   ├── useProfilingOverlay.ts
-│   │   │   ├── useTooltip.ts
-│   │   │   ├── useVPR.ts
-│   │   │   ├── useVPRInteractivity.ts
-│   │   │   └── useVPRSystem.ts
-│   │   └── useGameState.ts
+│   │   └── ui/
+│   │       ├── index.ts
+│   │       ├── useComponentProfiler.ts
+│   │       ├── useDebugOverlay.ts
+│   │       ├── useProfilingOverlay.ts
+│   │       ├── useTooltip.ts
+│   │       ├── useVPR.ts
+│   │       ├── useVPRInteractivity.ts
+│   │       └── useVPRSystem.ts
 │   ├── initialization/
 │   │   ├── automationSystemInit.ts
 │   │   ├── eventSystemInit.ts
@@ -487,6 +396,7 @@ Excluded patterns: __pycache__, .git, .husky, .idea, .vscode, node_modules, dist
 │   │   └── ConverterManagementPage.tsx
 │   ├── services/
 │   │   ├── ErrorLoggingService.ts
+│   │   ├── EventPropagationService.ts
 │   │   └── RecoveryService.ts
 │   ├── styles/
 │   │   ├── components/
@@ -713,5 +623,6 @@ Excluded patterns: __pycache__, .git, .husky, .idea, .vscode, node_modules, dist
 ├── test-prettier.js
 ├── typescript-any-errors.json
 └── typescript_errors.txt
-
 ```
+
+## Notes

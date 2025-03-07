@@ -1,10 +1,23 @@
 # Galactic Sprawl
 
-A modular, component-based space empire simulation game built with TypeScript and React, featuring dynamic progression, automated systems, and rich visual feedback.
-
 ## Overview
 
 Galactic Sprawl is an immersive space empire management game where players expand their influence from a central Mothership outward through colonization, resource management, and strategic development. The game emphasizes automated processes, visual progression, and interconnected systems that create a living, evolving galaxy.
+
+## Prompting to Setup files
+
+```
+1. Review the @.cursorrules file in full, it is the core of your new comprehensive workflow. It **MUST** be adhered to during the CodeBase Restructuring.
+2. Begin setting up `System Documents` with proper context from the CodeBase. The Core files you will be using as the AI Developer are: @CodeBase_Docs/System_Integration.md and @CodeBase_Docs/System_Architecture.md .
+3. Review the `System Documents` and being providing the proper context to ensure the files are using the code base specifications. Currently they are general specifications, they need to be updated with the CodeBase Context. **DO NOT** Remove any of these workflows, only implement them with our CodeBase for smooth transition and graceful handling with future implementations.
+```
+
+### Prompting A New Conversation
+
+```
+1. Review the @.cursorrules file, you must adhere to the strict workflow to ensure CodeBase consistency. Ensure you are updating and reviewing the `Cursor System Documents` and seeking Context in the `Codebase Context Documents`
+2. Continue to the next Task on the [`Scratchpad`](`System_Scratchpad`)
+```
 
 ## Key Features
 
@@ -44,29 +57,29 @@ graph TD
     A[Mothership] --> B[Colony Expansion]
     A --> C[Resource Management]
     A --> D[Fleet Operations]
-    
+
     B --> E[Habitable Worlds]
     B --> F[Star Stations]
-    
+
     C --> G[Mining Operations]
     C --> H[Trade Routes]
-    
+
     D --> I[Combat]
     D --> J[Exploration]
-    
+
     E --> K[Population Growth]
     E --> L[Infrastructure]
-    
+
     F --> M[Module Development]
     F --> N[Defense Systems]
-    
+
     G --> O[Resource Extraction]
     G --> P[Processing]
-    
+
     H --> Q[Economic Growth]
-    
+
     I --> R[Faction Encounters]
-    
+
     J --> S[Galaxy Mapping]
     J --> T[Anomaly Discovery]
 ```
@@ -81,7 +94,7 @@ flowchart LR
     D --> E[Fleet Expansion]
     E --> F[New Territories]
     F --> B
-    
+
     style A fill:#f96,stroke:#333,stroke-width:4px
     style B fill:#58f,stroke:#333,stroke-width:2px
     style C fill:#5b5,stroke:#333,stroke-width:2px
@@ -97,25 +110,25 @@ graph LR
     A[Mothership] --> B[Colony Hub]
     A[Mothership] --> C[Ship Hanger]
     A[Mothership] --> D[Research Lab]
-    
+
     B --> E[Population]
     B --> F[Resources]
-    
+
     C --> G[War Ships]
     C --> H[Recon Ships]
     C --> I[Mining Ships]
-    
+
     D --> J[Tech Tree]
-    
+
     E --> K[Growth]
     F --> L[Economy]
-    
+
     G --> M[Defense]
     H --> N[Exploration]
     I --> O[Extraction]
-    
+
     J --> P[Upgrades]
-    
+
     style A fill:#f96,stroke:#333,stroke-width:4px
     style B,C,D fill:#58f,stroke:#333,stroke-width:2px
     style E,F,G,H,I fill:#5b5,stroke:#333,stroke-width:2px
@@ -131,15 +144,15 @@ stateDiagram-v2
     Scanning --> ResourceFound: Minerals
     Scanning --> ThreatDetected: Enemies
     Scanning --> AnomalyFound: Exploration
-    
+
     ResourceFound --> Mining: Auto-mine
     ThreatDetected --> Combat: Auto-defend
     AnomalyFound --> Investigation: Auto-explore
-    
+
     Mining --> Processing: Auto-refine
     Combat --> Idle: Threat eliminated
     Investigation --> Idle: Analysis complete
-    
+
     Processing --> Storage: Auto-store
     Storage --> Distribution: Auto-trade
     Distribution --> Idle: Cycle complete
@@ -151,22 +164,22 @@ stateDiagram-v2
 graph TD
     A[Tier 1] --> B[Tier 2]
     B --> C[Tier 3]
-    
+
     subgraph "Mothership Evolution"
     A1[Basic Hub] --> B1[Advanced Station]
     B1 --> C1[Capital Complex]
     end
-    
+
     subgraph "Colony Growth"
     A2[Outpost] --> B2[Settlement]
     B2 --> C2[Metropolis]
     end
-    
+
     subgraph "Fleet Development"
     A3[Scout Ships] --> B3[Cruisers]
     B3 --> C3[Capital Ships]
     end
-    
+
     style A1,A2,A3 fill:#58f,stroke:#333,stroke-width:2px
     style B1,B2,B3 fill:#5b5,stroke:#333,stroke-width:2px
     style C1,C2,C3 fill:#f55,stroke:#333,stroke-width:2px

@@ -1,5 +1,6 @@
 import React, { lazy, Suspense, useEffect } from 'react';
 import { SystemIntegration } from './components/core/SystemIntegration';
+import { ThresholdIntegration } from './components/core/ThresholdIntegration';
 import { GameStateMonitor } from './components/debug/GameStateMonitor';
 import { TooltipProvider } from './components/ui/TooltipProvider';
 import { defaultColony, defaultMothership } from './config/buildings/defaultBuildings';
@@ -8,20 +9,24 @@ import { GameProvider, useGame } from './contexts/GameContext';
 import { ModuleProvider, useModules } from './contexts/ModuleContext';
 import { ResourceRatesProvider } from './contexts/ResourceRatesContext';
 import { ThresholdProvider } from './contexts/ThresholdContext';
+import { ModuleEventType } from './lib/modules/ModuleEvents';
 import { assetManager } from './managers/game/assetManager';
 import { ResourceManager } from './managers/game/ResourceManager';
 import { TechNode, techTreeManager } from './managers/game/techTreeManager';
 import { moduleManager } from './managers/module/ModuleManager';
 import { OfficerManager } from './managers/module/OfficerManager';
 import { ShipHangarManager } from './managers/module/ShipHangarManager';
+import { ModuleType } from './types/buildings/ModuleTypes';
 
 // Import the GlobalErrorBoundary component
 import { GlobalErrorBoundary } from './components/ui/GlobalErrorBoundary';
 // Import error services
+import { IntegrationErrorHandler } from './components/core/IntegrationErrorHandler';
 import { ResourceVisualization } from './components/ui/ResourceVisualization';
 import { useComponentProfiler } from './hooks/ui/useComponentProfiler';
 import { useProfilingOverlay } from './hooks/ui/useProfilingOverlay';
 import { errorLoggingService, ErrorSeverity, ErrorType } from './services/ErrorLoggingService';
+import { eventPropagationService } from './services/EventPropagationService';
 import { recoveryService } from './services/RecoveryService';
 
 // Lazy load components that aren't needed on initial render
@@ -181,6 +186,54 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
             ).shipHangarManager = shipHangarManager;
           }
 
+          // Initialize event propagation service
+          console.warn('Initializing event propagation service...');
+
+          // Register mappings from ModuleEvents to ThresholdEvents
+          eventPropagationService.registerModuleToThresholdMapping(
+            'RESOURCE_UPDATED',
+            'RESOURCE_STATE_CHANGED',
+            event => {
+              // Safely extract the current value if available
+              const resources =
+                event.data && typeof event.data === 'object' && 'resources' in event.data
+                  ? (event.data.resources as Record<string, unknown>)
+                  : {};
+
+              const current = typeof resources.current === 'number' ? resources.current : 0;
+
+              return {
+                resourceId: event.moduleId,
+                details: {
+                  current,
+                  type: 'below_minimum',
+                },
+                timestamp: Date.now(),
+              };
+            }
+          );
+
+          // Register mappings from ThresholdEvents to ModuleEvents
+          eventPropagationService.registerThresholdToModuleMapping(
+            'THRESHOLD_VIOLATED',
+            'RESOURCE_THRESHOLD_TRIGGERED' as ModuleEventType,
+            event => ({
+              moduleId: 'threshold-service',
+              moduleType: 'resource' as ModuleType,
+              timestamp: Date.now(),
+              data: {
+                resourceType: event.resourceId,
+                thresholdType: event.details.type === 'below_minimum' ? 'min' : 'max',
+                current: event.details.current,
+                threshold:
+                  event.details.type === 'below_minimum' ? event.details.min : event.details.max,
+              },
+            })
+          );
+
+          // Initialize the service
+          eventPropagationService.initialize();
+
           // Set initialization flag
           console.warn('Game initialization complete!');
 
@@ -229,7 +282,15 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <SystemIntegration resourceManager={resourceManagerInstance}>{children}</SystemIntegration>
+    <IntegrationErrorHandler componentName="SystemIntegration">
+      <SystemIntegration resourceManager={resourceManagerInstance}>
+        <IntegrationErrorHandler componentName="ThresholdIntegration">
+          <ThresholdIntegration resourceManager={resourceManagerInstance}>
+            {children}
+          </ThresholdIntegration>
+        </IntegrationErrorHandler>
+      </SystemIntegration>
+    </IntegrationErrorHandler>
   );
 };
 

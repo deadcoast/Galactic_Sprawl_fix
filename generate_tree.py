@@ -117,7 +117,7 @@ DEFAULT_IGNORE = [
     "CodeBase_Docs/CodeBase_Linting_Progress.md",
     ".pixelArtAssets",
     ".assets",
-
+    "CodeBase_Docs/",
 ]
 
 

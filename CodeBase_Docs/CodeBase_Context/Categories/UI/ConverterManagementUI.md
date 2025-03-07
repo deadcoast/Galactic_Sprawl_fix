@@ -22,20 +22,20 @@ The main dashboard provides an overview of all converters and active conversion 
 +---------------------------------------------------------------+
 |                    CONVERTER DASHBOARD                        |
 +---------------+-------------------------+---------------------+
-| CONVERTERS    | ACTIVE PROCESSES       | PRODUCTION METRICS  |
-| - Smelter #1  | - Iron Ore → Ingots    | Efficiency: 87%     |
-| - Smelter #2  | - Copper Ore → Ingots  | Throughput: 45/min  |
-| - Assembler   | - Ingots → Components  | Energy Use: 350kW   |
-| - Refinery    | - Crude Oil → Fuel     | Queue: 3 processes  |
+| CONVERTERS    | ACTIVE PROCESSES       | PRODUCTION METRICS   |
+| - Smelter #1  | - Iron Ore → Ingots    | Efficiency: 87%      |
+| - Smelter #2  | - Copper Ore → Ingots  | Throughput: 45/min   |
+| - Assembler   | - Ingots → Components  | Energy Use: 350kW    |
+| - Refinery    | - Crude Oil → Fuel     | Queue: 3 processes   |
 +---------------+-------------------------+---------------------+
 |                                                               |
 |                     CHAIN VISUALIZATION                       |
 |                                                               |
-|  [ORE EXTRACTOR] → [SMELTER] → [ASSEMBLER] → [STORAGE]       |
+|  [ORE EXTRACTOR] → [SMELTER] → [ASSEMBLER] → [STORAGE]        |
 |                                                               |
 +---------------------------------------------------------------+
 |              CONTROLS             |        EFFICIENCY         |
-| [START] [PAUSE] [STOP] [OPTIMIZE] | Base: 0.8  Tech: 1.2     |
+| [START] [PAUSE] [STOP] [OPTIMIZE] | Base: 0.8  Tech: 1.2      |
 |                                   | Quality: 1.1  Env: 0.95   |
 +-----------------------------------+--------------------------->
 ```
@@ -55,8 +55,8 @@ Detailed view of a selected converter with all its stats and controls:
 |                                                               |
 |                ACTIVE CONVERSION PROCESSES                    |
 |                                                               |
-| [#142] Iron Ore → Iron Ingots (76% complete) [PAUSE] [STOP]   |
-| [#143] Copper Ore → Copper Ingots (42% complete) [PAUSE] [STOP]|
+|[#142] Iron Ore → Iron Ingots (76% complete) [PAUSE] [STOP]    |
+|[#143] Copper Ore → Copper Ingots (42% complete) [PAUSE] [STOP]|
 |                                                               |
 +---------------------------------------------------------------+
 |                                                               |

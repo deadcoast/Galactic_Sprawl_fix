@@ -582,3 +582,67 @@ The Ship Hangar System manages ship construction, docking, deployment, and maint
 | File Path                                                | Purpose                                                              |
 | -------------------------------------------------------- | -------------------------------------------------------------------- |
 | `src/components/buildings/modules/hangar/ShipHangar.tsx` | Main UI component for managing ships, building queue, and deployment |
+
+## Core Components
+
+- **Core Components**: `src/components/core/` - Core system integration components
+  - `SystemIntegration.tsx` - Integrates frontend contexts with backend managers, synchronizing resource and module states
+  - `ThresholdIntegration.tsx` - Connects ThresholdContext with ResourceManager, managing resource thresholds
+  - `IntegrationErrorHandler.tsx` - Error boundary component for integration components
+
+## Debug Components
+
+- **Debug Components**: `src/components/debug/` - Debugging and monitoring components
+  - `GameStateMonitor.tsx` - Real-time visualization of game state for debugging, including resources, modules, events, and system metrics
+
+## Contexts
+
+- **Resource Contexts**: `src/contexts/` - Context providers for resource management
+  - `ResourceRatesContext.tsx` - Tracks and provides resource production and consumption rates
+  - `ThresholdContext.tsx` - Manages resource thresholds and alerts
+  - `GameContext.tsx` - Manages global game state
+  - `ModuleContext.tsx` - Manages module state
+
+## System Integration Components
+
+### Core Integration Components
+
+- `src/components/core/SystemIntegration.tsx` - Core component that bridges frontend and backend systems
+
+  - Handles resource state synchronization
+  - Connects to ModuleEvents system for real-time updates
+  - Emits resource update events to notify other systems
+
+- `src/components/core/ThresholdIntegration.tsx` - Component that integrates resource thresholds with UI
+
+  - Monitors resource levels against defined thresholds
+  - Triggers alerts when thresholds are crossed
+  - Updates UI components with threshold status
+
+- `src/components/core/IntegrationErrorHandler.tsx` - Error boundary component for integration components
+  - Catches and handles errors in integration components
+  - Provides fallback UI when errors occur
+  - Logs errors to the ErrorLoggingService
+  - Attempts recovery from non-fatal errors
+
+### Event System
+
+- `src/services/EventPropagationService.ts` - Service for mapping and propagating events between systems
+
+  - Centralizes event mapping configuration
+  - Transforms events between different event systems
+  - Ensures events are properly propagated to all interested components
+
+- `src/hooks/events/useSystemEvents.ts` - Custom hooks for UI components to register for system events
+  - `useModuleEvents`: Hook for subscribing to module events with automatic cleanup
+  - `useGlobalSystemEvents`: Hook for subscribing to global game events
+  - `useMultipleModuleEvents`: Helper hook for subscribing to multiple module events
+
+### UI Components
+
+- `src/components/ui/ResourceEventMonitor.tsx` - Component that demonstrates the use of event hooks
+  - Monitors and displays resource-related events in real-time
+  - Shows how to properly subscribe to events and handle cleanup
+  - Provides filtering and clearing of event logs
+
+## Resource Management
