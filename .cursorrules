@@ -1,191 +1,46 @@
-# CodeBase Document Index (`CDI`)
+# CURSORRULES
 
-1. It is of the utmost importance you follow the workflow in this file for codebase consistency. I Have provided extensive documentation `CDI` on the development so far in @CodeBase_Docs . Before you generate code, you should see if there is any documentation to help the implementation and generation .
+## System Reference Files - `SRF`
 
-2. For each task, Ensure you are seeking context in the `CodeBase_Docs` directory to handle the task gracefully.
+### `Agent Docs` - _Optimized Document Format for Agent Developer_
 
-3. When you are Generating Code for a Task on the `Scratchpad` Tasklist, implement it in smaller managable steps over sever responses to ensure it is consistent with the CodeBase.
+- `CodeBase_Docs/System_Architecture.md`- Phased restructuring plan with implementation priorities
+- `CodeBase_Docs/System_Integration.md` - Current state architecture reference
 
-`CodeBase_Docs/CodeBase_Architecture.md` - For Specifics on the code base structure, methods, and architecture.
-`CodeBase_Docs/CodeBase_Mapping` - A Living directory that is to be ONLY updated with specific files, their locations, and purpose to keep track of the code base.
-`CodeBase_Docs/CodeBase_Error_Log.md` - A File to log common issues while debugging, to AVOID them later in development.
-`CodeBase_Docs/CodeBase_Linting_Progress.md` - A Linter Log to document best practises, do's and donts to avoid future linting errors.
+### `Context Docs` - _Documents on prior Code Implementation_
 
----
+- `CodeBase_Docs/System_Directory_Tree.md` - An outline of the entire CodeBase for contextual awareness
+- `CodeBase_Docs/System_Development_History.md` - Comprehensive Documentation on the History of Development on each section of the code base. -`CodeBase_Docs/System_Scratchpad.md` - The Project Scratpad for TaskLists
 
-# Workflow & Instructions(`WFI`)
+## Workflow & Instructions- `WFI`
 
-- **NEVER CREATE MOCK TESTS OR USE MOCKING IN TESTS**
-- **ALWAYS USE ACTUAL IMPLEMENTATIONS INSTEAD OF MOCKS**
-- **NEVER CORRECT CODE BY COMMENTING IT OUT WITH "\_"**
-- **WHEN FINDING MOCKS IN TESTS, REPLACE THEM WITH ACTUAL IMPLEMENTATIONS**
-- **TESTS SHOULD VERIFY REAL BEHAVIOR, NOT MOCK BEHAVIOR**
-- **AVOID CREATING TEST UTILITIES THAT CREATE MOCK IMPLEMENTATIONS**
+1. **Context First**: Review `System_Integration.md` file for the next steps the code base requires. Update the `System Scratchpad` with a concise list of only Taskslist. `System_Scratchpad.md`
 
-1. During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name, or methods used), especially about a fix to a mistake you made or a correction you received, you should take note in the `CodeBase_Docs/CodeBase_Architecture.md` file so you will not make the same mistake again.
+- For Tasks on the Tasklist Review `System_Directory_Tree.md` to find relevant `Context Docs` before generating code. If you cannot find context still, provide a grep or command search on the `CodeBase_Context/` directory for relevant implementations.
 
-2. You must update the `CodeBase_Docs/CodeBase_Mapping` file as a navigation guide to easily navigate the codebase and its assets to circumvent duplication and codebase conflicts. a `CodeBase_Docs/CodeBase_Mapping` file should be ADDITIVE, not destructive. The point is to maintain a complete map of the entire code base. Do not remove entries or information from the file.
+2. **Architecture Alignment**: Ensure all implementations align with specifications in `System_integration.md` Documents. If you still cannot find proper context or current implementations, **ask the user** before generating a new implementation.
 
-3. You will operate on a sctrict workflow called `Rule of Seven` or `RO7`.
+3. **Incremental Implementation**: Take action to complete the task
+   Generate code in manageable steps, maintaining consistency with existing codebase.
 
-   1. Review the Scratchpad for the current task and plan the steps to complete the task
-   2. Search `CodeBase_Docs/CodeBase_Mapping` for existing implementations, if none found search the codebase and adjust the plan if necessary
-   3. Take action to complete the task
-   4. Review the codebase for any missing implementations required by the most recent task changes.
-   5. Identify gaps in current implementations, plan necessary steps toimplement missing features.
-   6. Update the `Scratchpad` section.
-   7. Finally, update the `CodeBase_Docs/CodeBase_Architecture.md` and `CodeBase_Docs/CodeBase_Mapping` files for code base consistency.
+- Review for missing implementations required by recent changes
+- Identify implementation gaps and plan necessary steps
 
-4. Use the `.cursorrules` file as a `Scratchpad` to organize your thoughts. Especially when you receive a new task, you should first review the content of the Scratchpad, clear old different task if necessary, first explain the task, and plan the steps you need to take to complete the task. You can use todo markers to indicate the progress, e.g.
+4. **Knowledge Management**: Document reusable components, fixes, and implementation decisions in `Sysntem_Archktecture.md` and `System_Integration.md`.
 
-```
-[X] Task 1
-[ ] Task 2
-```
+- Update System documents `System_Architecture.md` and `System_Integration` to maintain codebase consistency
+- Update the `System_Scratchpad.md`, with progress
 
-Also update the progress of the task in the Scratchpad when you finish a subtask.
-Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan. You should add only small and essential notes with the `Scratchpad` plan.
-The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
+6. **`System_Scratchpad` Usage**: Maintain a task list in `System_Scratchpad.md` file following this format:
 
-## CRITICAL TESTING RULES(`CTR`) - NO EXCEPTIONS
+   ```
+   ## Scratchpad
 
-- **NEVER CREATE MOCK TESTS OR USE MOCKING IN TESTS**
-- **ALWAYS USE ACTUAL IMPLEMENTATIONS INSTEAD OF MOCKS**
-- **NEVER CORRECT CODE BY COMMENTING IT OUT WITH "\_"**
-- **WHEN FINDING MOCKS IN TESTS, REPLACE THEM WITH ACTUAL IMPLEMENTATIONS**
-- **TESTS SHOULD VERIFY REAL BEHAVIOR, NOT MOCK BEHAVIOR**
-- **AVOID TEST UTILITIES THAT CREATE MOCK IMPLEMENTATIONS**
-- **AVOID CREATING NEW FILES WHEN ASKED TO CORRECT A FILE**
-- **NEVER CREATE ANY FUNCTIONS THAT DON'T EXIST IN THE ORIGINAL CODEBASE**
-- **ONLY CREATE ACTUAL INSTANCES OF REAL CLASSES AND USE THEIR EXISTING METHODS DIRECTLY**
-- **NEVER ADD WRAPPER FUNCTIONS AROUND EXISTING METHODS**
-- **NEVER ABSTRACT OR ALTER EXISTING FUNCTIONALITY**
-- **NEVER CREATE YOUR OWN IMPLEMENTATIONS OF EXISTING METHODS**
-- **ALWAYS EXAMINE THE ACTUAL CODEBASE BEFORE WRITING ANY TEST CODE**
-- **ONLY ADD MINIMAL SETUP/TEARDOWN FUNCTIONALITY IF ABSOLUTELY REQUIRED**
-- **NEVER MAKE ASSUMPTIONS ABOUT THE CODE - ALWAYS VERIFY FIRST**
-- **TEST FACTORIES SHOULD ONLY CREATE REAL INSTANCES OF EXISTING CLASSES**
-- **ANY ADDED METHODS MUST BE MINIMAL AND ONLY FOR SETUP/TEARDOWN/RESET**
+   [X] Task 1
+   [ ] Task 2
+   ```
 
-These rules are absolute and must be followed without exception. Mocking leads to brittle tests that don't verify actual functionality and create maintenance burdens. All tests must use real implementations to ensure they're testing what users will actually experience.
-
----
-
-# Scratchpad
-
-## Frontend-Backend Integration Progress
-
-### 1. System Architecture Analysis
-
-[X] Created System Architecture Integration Map
-[X] Identified key connection points between UI, contexts, and managers
-[X] Documented missing connections in the codebase
-[X] Prioritized integration tasks
-
-### 2. Core Integration Component
-
-[X] Created SystemIntegration component to bridge frontend and backend
-[X] Implemented resource state synchronization
-[X] Added module state synchronization
-[X] Connected to ModuleEvents system for real-time updates
-
-### 3. App Integration
-
-[X] Updated App.tsx to use SystemIntegration component
-[X] Fixed GameLayout integration
-[X] Ensured proper resource manager initialization
-[X] Added development debugging tools
-
-### 4. Debugging and Monitoring
-
-[X] Created GameStateMonitor component for real-time state visualization
-[X] Implemented resource rate display in the monitor
-[X] Added module state tracking in the monitor
-[X] Integrated event system monitoring
-[X] Added system performance metrics
-
-### 5. Next Steps
-
-[ ] Implement ResourceRates context to track resource production/consumption
-[ ] Enhance ThresholdContext integration with ResourceManager
-[ ] Implement proper event propagation for all system events
-[ ] Add comprehensive error handling for system integration
-
-## Implementation Notes
-
-1. **Resource Management**
-
-   - ResourceManager needs to expose resource rates to UI
-   - Need to implement proper threshold monitoring
-   - Should add visual indicators for resource status
-
-2. **Module Management**
-
-   - ModuleManager needs better event broadcasting
-   - UI components need to listen for module state changes
-   - Need to implement proper module activation/deactivation UI
-
-3. **Event System**
-
-   - Current event system has type mismatches
-   - Need consistent approach to event handling
-   - Should implement event batching for performance
-
-4. **UI Components**
-   - Many UI components are disconnected from backend state
-   - Need to implement proper data binding
-   - Should add loading states and error handling
-
-## Future Implementations
-
-### Technical Implementation Tasks
-
-1. [ ] **Mining System**
-
-   - [ ] Enhanced visualization of operations
-
-2. [x] **Tech Tree System**
-
-   - [x] Enhanced visual feedback
-   - [ ] Real-time progress tracking
-   - [ ] Advanced synergy visualization
-   - [ ] Detailed tech path planning
-
-3. [ ] **Exploration System**
-
-   - [ ] Next task: Implement Recon ship coordination for the Exploration System
-   - [ ] Implement a Data Analysis System
-
-4. [ ] **Visual Systems**
-
-   - [ ] Multi-layer parallax background
-   - [ ] Depth effect implementation
-   - [ ] Scroll speed variation
-   - [ ] Evolution animations
-   - [ ] Upgrade transitions
-   - [ ] Interactive elements
-   - [ ] Cosmic weather effects
-   - [ ] Day/night cycle
-   - [ ] Aurora animations
-   - [ ] Solar wind effects
-
-5. [ ] **User Experience Improvements**
-
-   - [x] Add real-time state monitoring
-   - [ ] Improve error messages
-   - [ ] Create better loading indicators
-   - [ ] Implement touch-friendly controls
-   - [ ] Add keyboard navigation
-   - [ ] Implement screen reader support
-   - [ ] Enhance color contrast
-
-6. [ ] **Performance Monitoring**
-   - [x] Create visual performance monitoring tools
-   - [ ] Optimize resource usage
-     - [ ] Implement memory profiling
-     - [ ] Add CPU usage monitoring
-     - [ ] Optimize GPU utilization for effects
-   - [ ] Enhance debugging tools
-     - [x] Create visual debuggers for complex systems
-     - [ ] Add time-travel debugging for state
-     - [ ] Implement conditional breakpoints for events
+> - Update progress markers as subtasks are completed. Use the Scratchpad to maintain implementation context and track progress.
+> - These rules are absolute and must be followed without exception.
+> - Mocking leads to brittle tests that don't verify actual functionality and create maintenance burdens.
+> - All tests must use real implementations to ensure they're testing what users will actually experience.
