@@ -1,5 +1,19 @@
-import React, { createContext, ReactNode, useCallback, useContext, useState } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  Anomaly,
+  ExplorationEvents,
+  explorationManager,
+  Sector,
+} from '../managers/exploration/ExplorationManager';
+import { BaseEvent, EventType } from '../types/events/EventTypes';
 import {
   ClassifiableDiscovery,
   Classification,
@@ -7,6 +21,8 @@ import {
   ClassificationSuggestion,
   TaxonomyCategory,
 } from '../types/exploration/ClassificationTypes';
+import { ResourceData } from '../types/exploration/DataAnalysisTypes';
+import { ResourceType } from '../types/resources/ResourceTypes';
 
 // Default taxonomy categories
 const defaultTaxonomyCategories: TaxonomyCategory[] = [
@@ -101,17 +117,71 @@ const defaultTaxonomyCategories: TaxonomyCategory[] = [
   {
     id: 'exotic-resource',
     name: 'Exotic Resources',
-    description: 'Rare or unusual resources with special properties',
+    description: 'Rare or unusual resources with unique properties',
     parentId: 'resource-root',
     level: 1,
     color: '#d946ef',
   },
+  // Anomaly subcategories
+  {
+    id: 'wormhole',
+    name: 'Wormholes',
+    description: 'Spatial anomalies connecting two points in space-time',
+    parentId: 'spatial-anomaly',
+    level: 2,
+    color: '#a78bfa',
+  },
+  {
+    id: 'gravity-well',
+    name: 'Gravity Wells',
+    description: 'Regions with abnormal gravitational properties',
+    parentId: 'spatial-anomaly',
+    level: 2,
+    color: '#818cf8',
+  },
+  {
+    id: 'time-dilation',
+    name: 'Time Dilation',
+    description: 'Regions where time flows at different rates',
+    parentId: 'temporal-anomaly',
+    level: 2,
+    color: '#60a5fa',
+  },
+  {
+    id: 'energy-vortex',
+    name: 'Energy Vortices',
+    description: 'Swirling concentrations of energy',
+    parentId: 'energy-anomaly',
+    level: 2,
+    color: '#f472b6',
+  },
+  // Resource subcategories
+  {
+    id: 'precious-metals',
+    name: 'Precious Metals',
+    description: 'Valuable metallic resources',
+    parentId: 'mineral-resource',
+    level: 2,
+    color: '#9ca3af',
+  },
+  {
+    id: 'fusion-material',
+    name: 'Fusion Materials',
+    description: 'Resources suitable for fusion energy production',
+    parentId: 'energy-resource',
+    level: 2,
+    color: '#fdba74',
+  },
 ];
 
-// Create the context with a default undefined value
+// Helper function to convert event type
+const asEventType = (event: ExplorationEvents): EventType => {
+  return event as unknown as EventType;
+};
+
+// Create the context
 const ClassificationContext = createContext<ClassificationContextType | undefined>(undefined);
 
-// Provider props interface
 interface ClassificationProviderProps {
   children: ReactNode;
   initialClassifications?: Classification[];
@@ -119,56 +189,112 @@ interface ClassificationProviderProps {
   discoveryData?: ClassifiableDiscovery[];
 }
 
-// Provider component
 export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
   children,
   initialClassifications = [],
   initialTaxonomyCategories = defaultTaxonomyCategories,
   discoveryData = [],
 }) => {
-  // State for classifications and taxonomy categories
-  const [classifications, setClassifications] = useState<Classification[]>(initialClassifications);
   const [taxonomyCategories, setTaxonomyCategories] =
     useState<TaxonomyCategory[]>(initialTaxonomyCategories);
-  const [discoveries] = useState<ClassifiableDiscovery[]>(discoveryData);
+  const [classifications, setClassifications] = useState<Classification[]>(initialClassifications);
+  const [discoveries, setDiscoveries] = useState<ClassifiableDiscovery[]>(discoveryData);
 
-  // Add a new classification
-  const addClassification = useCallback((classification: Omit<Classification, 'id'>) => {
+  // Function to convert an Anomaly to a ClassifiableDiscovery
+  const anomalyToDiscovery = useCallback(
+    (anomaly: Anomaly, sector?: Sector): ClassifiableDiscovery => {
+      const anomalyType = determineAnomalyType(anomaly.type);
+      const sectorName = sector?.name || 'Unknown Sector';
+
+      return {
+        id: anomaly.id,
+        type: 'anomaly',
+        name: `${anomaly.type} Anomaly`,
+        discoveryDate: anomaly.discoveredAt,
+        sectorId: anomaly.sectorId,
+        sectorName,
+        coordinates: anomaly.position,
+        anomalyType,
+        severity: anomaly.severity,
+        analysisResults: anomaly.data as Record<string, string | number | boolean | object>,
+      };
+    },
+    []
+  );
+
+  // Function to convert a Resource to a ClassifiableDiscovery
+  const resourceToDiscovery = useCallback(
+    (
+      resource: ResourceData,
+      sectorId: string,
+      coordinates: { x: number; y: number },
+      sectorName: string
+    ): ClassifiableDiscovery => {
+      // Convert the resource type to a proper ResourceType enum value
+      const resourceTypeMapping: Record<string, ResourceType> = {
+        minerals: 'minerals',
+        energy: 'energy',
+        gas: 'gas',
+        exotic: 'exotic',
+        plasma: 'plasma',
+        metals: 'minerals', // Map metals to minerals
+        water: 'minerals', // Map water to minerals as fallback
+      };
+
+      const resourceType = resourceTypeMapping[resource.type] || 'minerals';
+
+      return {
+        id: `${sectorId}-${resource.type}-${Date.now()}`,
+        type: 'resource',
+        name: `${resource.type} Resource`,
+        discoveryDate: Date.now(),
+        sectorId,
+        sectorName,
+        coordinates,
+        resourceType,
+        amount: resource.amount,
+        quality: resource.quality || 0,
+        distribution: 'scattered', // Default, would need proper detection
+      };
+    },
+    []
+  );
+
+  // Helper function to determine anomaly type from string
+  const determineAnomalyType = useCallback((type: string): 'artifact' | 'signal' | 'phenomenon' => {
+    const typeMapping: Record<string, 'artifact' | 'signal' | 'phenomenon'> = {
+      spatial: 'phenomenon',
+      temporal: 'phenomenon',
+      quantum: 'signal',
+      biological: 'artifact',
+      gravitational: 'phenomenon',
+      unknown: 'signal',
+      // Add more mappings as needed
+    };
+
+    return typeMapping[type] || 'phenomenon';
+  }, []);
+
+  // Add a classification
+  const addClassification = useCallback((classificationData: Omit<Classification, 'id'>) => {
     const newClassification: Classification = {
-      ...classification,
+      ...classificationData,
       id: uuidv4(),
     };
+
     setClassifications(prev => [...prev, newClassification]);
   }, []);
 
-  // Update an existing classification
+  // Update a classification
   const updateClassification = useCallback((id: string, updates: Partial<Classification>) => {
     setClassifications(prev =>
-      prev.map(classification =>
-        classification.id === id ? { ...classification, ...updates } : classification
-      )
+      prev.map(classification => {
+        if (classification.id === id) {
+          return { ...classification, ...updates };
+        }
+        return classification;
+      })
     );
-  }, []);
-
-  // Add a new taxonomy category
-  const addTaxonomyCategory = useCallback((category: Omit<TaxonomyCategory, 'id'>) => {
-    const newCategory: TaxonomyCategory = {
-      ...category,
-      id: uuidv4(),
-    };
-    setTaxonomyCategories(prev => [...prev, newCategory]);
-  }, []);
-
-  // Update an existing taxonomy category
-  const updateTaxonomyCategory = useCallback((id: string, updates: Partial<TaxonomyCategory>) => {
-    setTaxonomyCategories(prev =>
-      prev.map(category => (category.id === id ? { ...category, ...updates } : category))
-    );
-  }, []);
-
-  // Delete a taxonomy category
-  const deleteTaxonomyCategory = useCallback((id: string) => {
-    setTaxonomyCategories(prev => prev.filter(category => category.id !== id));
   }, []);
 
   // Delete a classification
@@ -184,7 +310,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
     [classifications]
   );
 
-  // Get all classifications for a discovery
+  // Get classifications for a discovery
   const getClassificationsForDiscovery = useCallback(
     (discoveryId: string) => {
       return classifications.filter(classification => classification.discoveryId === discoveryId);
@@ -200,162 +326,266 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
     [taxonomyCategories]
   );
 
-  // Get similar discoveries based on classification properties
+  // Add a taxonomy category
+  const addTaxonomyCategory = useCallback((categoryData: Omit<TaxonomyCategory, 'id'>) => {
+    const newCategory: TaxonomyCategory = {
+      ...categoryData,
+      id: uuidv4(),
+    };
+
+    setTaxonomyCategories(prev => [...prev, newCategory]);
+  }, []);
+
+  // Update a taxonomy category
+  const updateTaxonomyCategory = useCallback((id: string, updates: Partial<TaxonomyCategory>) => {
+    setTaxonomyCategories(prev =>
+      prev.map(category => {
+        if (category.id === id) {
+          return { ...category, ...updates };
+        }
+        return category;
+      })
+    );
+  }, []);
+
+  // Delete a taxonomy category
+  const deleteTaxonomyCategory = useCallback(
+    (id: string) => {
+      // Check if there are any classifications using this category
+      const usedInClassifications = classifications.some(
+        classification => classification.categoryId === id
+      );
+
+      if (usedInClassifications) {
+        console.warn('Cannot delete category that is used in classifications');
+        return;
+      }
+
+      setTaxonomyCategories(prev => prev.filter(category => category.id !== id));
+    },
+    [classifications]
+  );
+
+  // Get similar discoveries
   const getSimilarDiscoveries = useCallback(
     (discoveryId: string) => {
       const discovery = discoveries.find(d => d.id === discoveryId);
-      if (!discovery || !discovery.classification) {
+      if (!discovery) {
         return [];
       }
 
-      const targetClassification = discovery.classification;
+      // Get all discoveries of the same type
+      const sameTypeDiscoveries = discoveries.filter(
+        d => d.type === discovery.type && d.id !== discoveryId
+      );
 
-      // Find discoveries with similar classifications
-      return discoveries.filter(d => {
-        if (d.id === discoveryId || !d.classification) {
-          return false;
-        }
-
-        // Check if they share the same category
-        if (d.classification.categoryId === targetClassification.categoryId) {
-          // Calculate similarity score based on properties
-          let matchingProperties = 0;
-          let totalProperties = 0;
-
-          Object.entries(targetClassification.properties).forEach(([key, value]) => {
-            totalProperties++;
-            if (d.classification?.properties[key] === value) {
-              matchingProperties++;
-            }
-          });
-
-          // Return true if at least 50% of properties match
-          return totalProperties > 0 && matchingProperties / totalProperties >= 0.5;
-        }
-
-        return false;
-      });
+      // Simple similarity calculation based on properties
+      if (discovery.type === 'anomaly') {
+        return sameTypeDiscoveries.filter(
+          d => d.anomalyType === discovery.anomalyType || d.sectorId === discovery.sectorId
+        );
+      } else {
+        // Resource type
+        return sameTypeDiscoveries.filter(
+          d => d.resourceType === discovery.resourceType || d.sectorId === discovery.sectorId
+        );
+      }
     },
     [discoveries]
   );
 
-  // Generate classification suggestions using simulated AI
+  // Generate classification suggestions
   const generateClassificationSuggestions = useCallback(
     (discovery: ClassifiableDiscovery): ClassificationSuggestion[] => {
       const suggestions: ClassificationSuggestion[] = [];
 
-      // Determine the root category based on discovery type
-      const rootCategoryId = discovery.type === 'anomaly' ? 'anomaly-root' : 'resource-root';
-
-      // Get all primary categories under the root
-      const primaryCategories = taxonomyCategories.filter(
-        category => category.parentId === rootCategoryId
-      );
-
-      // For anomalies, use the anomaly type and analysis results to suggest categories
-      if (discovery.type === 'anomaly' && discovery.anomalyType) {
-        // Map anomaly types to likely categories
-        const typeToCategory: Record<string, string[]> = {
-          artifact: ['technological-anomaly'],
-          signal: ['energy-anomaly', 'spatial-anomaly'],
-          phenomenon: [
-            'spatial-anomaly',
-            'temporal-anomaly',
-            'energy-anomaly',
-            'biological-anomaly',
-          ],
-        };
-
-        const likelyCategoryIds = typeToCategory[discovery.anomalyType] || [];
-
-        // Generate suggestions for each likely category
-        likelyCategoryIds.forEach(categoryId => {
-          const category = getTaxonomyCategory(categoryId);
-          if (category) {
-            // Calculate confidence based on analysis results if available
-            let confidence = 0.7; // Default confidence
-
-            if (discovery.analysisResults) {
-              // Adjust confidence based on analysis results
-              // This is a simplified simulation of AI confidence calculation
-              confidence = Math.min(
-                0.9,
-                confidence + 0.1 * Object.keys(discovery.analysisResults).length
-              );
-            }
-
+      if (discovery.type === 'anomaly') {
+        // For anomalies, suggest based on anomaly type
+        switch (discovery.anomalyType) {
+          case 'artifact':
             suggestions.push({
-              categoryId,
-              confidence,
-              reasoning: `Based on the anomaly type "${discovery.anomalyType}" and available analysis data.`,
-              propertyValues: {},
-            });
-          }
-        });
-      }
-
-      // For resources, use the resource type to suggest categories
-      else if (discovery.type === 'resource' && discovery.resourceType) {
-        // Map resource types to categories
-        const typeToCategory: Record<string, string> = {
-          minerals: 'mineral-resource',
-          energy: 'energy-resource',
-          gas: 'gas-resource',
-          organic: 'organic-resource',
-          exotic: 'exotic-resource',
-        };
-
-        const categoryId = typeToCategory[discovery.resourceType];
-        if (categoryId) {
-          const category = getTaxonomyCategory(categoryId);
-          if (category) {
-            // Calculate confidence based on resource quality and amount
-            let confidence = 0.8; // Default confidence
-
-            if (discovery.quality !== undefined && discovery.amount !== undefined) {
-              // Higher quality and amount increase confidence
-              confidence = Math.min(
-                0.95,
-                confidence + 0.05 * discovery.quality + 0.01 * Math.min(discovery.amount, 10)
-              );
-            }
-
-            suggestions.push({
-              categoryId,
-              confidence,
-              reasoning: `Based on the resource type "${discovery.resourceType}" and its properties.`,
+              categoryId: 'technological-anomaly',
+              confidence: 0.85,
+              reasoning:
+                'The anomaly has characteristics consistent with artificial technology, suggesting it was created by an intelligent species.',
               propertyValues: {
-                quality: discovery.quality || 0,
-                amount: discovery.amount || 0,
-                distribution: discovery.distribution || 'scattered',
+                origin: 'unknown',
+                age: 'ancient',
+                techLevel: 'advanced',
               },
             });
-          }
+            break;
+          case 'signal':
+            suggestions.push({
+              categoryId: 'energy-anomaly',
+              confidence: 0.78,
+              reasoning:
+                'The anomaly is emitting energy patterns that suggest it is related to unusual energy behaviors.',
+              propertyValues: {
+                frequency: 'variable',
+                pattern: 'repeating',
+                intensity: 'moderate',
+              },
+            });
+            break;
+          case 'phenomenon':
+            suggestions.push({
+              categoryId: 'spatial-anomaly',
+              confidence: 0.92,
+              reasoning:
+                'The anomaly is distorting space in its vicinity, suggesting it may be a spatial phenomenon.',
+              propertyValues: {
+                radius: 'medium',
+                stability: 'unstable',
+                effect: 'distortion',
+              },
+            });
+            break;
+          default:
+            // No specific suggestions for unknown types
+            break;
+        }
+      } else {
+        // For resources, suggest based on resource type
+        switch (discovery.resourceType) {
+          case 'minerals':
+            suggestions.push({
+              categoryId: 'mineral-resource',
+              confidence: 0.88,
+              reasoning:
+                'The resource consists of solid, crystalline materials consistent with mineral composition.',
+              propertyValues: {
+                purity: 'high',
+                extraction: 'mining',
+                density: 'high',
+              },
+            });
+            break;
+          case 'gas':
+            suggestions.push({
+              categoryId: 'gas-resource',
+              confidence: 0.95,
+              reasoning:
+                'The resource exists in gaseous form, requiring specialized extraction methods.',
+              propertyValues: {
+                density: 'low',
+                extraction: 'collection',
+                stability: 'stable',
+              },
+            });
+            break;
+          case 'energy':
+            suggestions.push({
+              categoryId: 'energy-resource',
+              confidence: 0.82,
+              reasoning:
+                'The resource can be harnessed to produce energy through various conversion methods.',
+              propertyValues: {
+                output: 'high',
+                stability: 'volatile',
+                conversion: 'direct',
+              },
+            });
+            break;
+          case 'exotic':
+            suggestions.push({
+              categoryId: 'exotic-resource',
+              confidence: 0.75,
+              reasoning:
+                'The resource has unusual properties that do not match common classification patterns.',
+              propertyValues: {
+                rarity: 'very high',
+                stability: 'unknown',
+                uses: 'research',
+              },
+            });
+            break;
+          default:
+            // No specific suggestions for unknown types
+            break;
         }
       }
 
-      // If no specific suggestions were made, suggest based on primary categories with lower confidence
-      if (suggestions.length === 0) {
-        primaryCategories.forEach(category => {
-          suggestions.push({
-            categoryId: category.id,
-            confidence: 0.3, // Low confidence for generic suggestions
-            reasoning: 'Limited data available for precise classification.',
-            propertyValues: {},
-          });
-        });
-      }
-
-      // Sort suggestions by confidence (highest first)
-      return suggestions.sort((a, b) => b.confidence - a.confidence);
+      return suggestions;
     },
-    [taxonomyCategories, getTaxonomyCategory]
+    []
   );
 
-  // Provide the context value
+  // Add a new discovery
+  const addDiscovery = useCallback(
+    (discovery: ClassifiableDiscovery) => {
+      // Check if the discovery already exists
+      if (discoveries.some(d => d.id === discovery.id)) {
+        return;
+      }
+
+      setDiscoveries(prev => [...prev, discovery]);
+    },
+    [discoveries]
+  );
+
+  // Subscribe to exploration events
+  useEffect(() => {
+    // Handle anomaly detected events
+    const handleAnomalyDetected = (event: BaseEvent) => {
+      const { anomaly, sector } = event.data as { anomaly: Anomaly; sector: Sector };
+      if (!anomaly) return;
+
+      const discovery = anomalyToDiscovery(anomaly, sector);
+      addDiscovery(discovery);
+    };
+
+    // Handle resource detected events
+    const handleResourceDetected = (event: BaseEvent) => {
+      const { resource, sector } = event.data as { resource: ResourceData; sector: Sector };
+      if (!resource || !sector) return;
+
+      const discovery = resourceToDiscovery(resource, sector.id, sector.coordinates, sector.name);
+      addDiscovery(discovery);
+    };
+
+    // Subscribe to exploration events
+    const unsubscribeAnomaly = explorationManager.subscribeToEvent(
+      asEventType(ExplorationEvents.ANOMALY_DETECTED),
+      handleAnomalyDetected
+    );
+
+    const unsubscribeResource = explorationManager.subscribeToEvent(
+      asEventType(ExplorationEvents.RESOURCE_DETECTED),
+      handleResourceDetected
+    );
+
+    // Initialize discoveries from existing data in the exploration manager
+    const initializeExistingDiscoveries = () => {
+      // Get all sectors
+      const sectors = explorationManager.getAllSectors();
+
+      // Get all anomalies and convert to discoveries
+      const anomalies = explorationManager.getAllAnomalies();
+      for (const anomaly of anomalies) {
+        const sector = sectors.find(s => s.id === anomaly.sectorId);
+        const discovery = anomalyToDiscovery(anomaly, sector);
+        addDiscovery(discovery);
+      }
+
+      // Resources are harder to access directly from the manager
+      // We would need a proper way to get all resources, but for now we rely on events
+    };
+
+    // Initialize existing discoveries
+    initializeExistingDiscoveries();
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribeAnomaly();
+      unsubscribeResource();
+    };
+  }, [anomalyToDiscovery, resourceToDiscovery, addDiscovery]);
+
+  // Context value
   const contextValue: ClassificationContextType = {
-    classifications,
     taxonomyCategories,
+    classifications,
     discoveries,
     addClassification,
     updateClassification,
@@ -368,6 +598,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
     addTaxonomyCategory,
     updateTaxonomyCategory,
     deleteTaxonomyCategory,
+    addDiscovery,
   };
 
   return (
@@ -375,7 +606,6 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
   );
 };
 
-// Custom hook to use the classification context
 export const useClassification = (): ClassificationContextType => {
   const context = useContext(ClassificationContext);
   if (context === undefined) {
@@ -383,3 +613,6 @@ export const useClassification = (): ClassificationContextType => {
   }
   return context;
 };
+
+// Export the context for testing
+export { ClassificationContext };

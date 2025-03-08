@@ -1,24 +1,27 @@
 import {
   AlertTriangle,
   BarChart2,
+  Compass,
   Database,
-  // Filter,
-  // List,
+  Layers,
+  Map,
   Play,
   Plus,
+  RadioTower,
   RefreshCw,
-  // Save,
   Settings,
   Trash2,
 } from 'lucide-react';
 import * as React from 'react';
 import { useDataAnalysis } from '../../contexts/DataAnalysisContext';
+import { explorationManager } from '../../managers/exploration/ExplorationManager';
 import {
   AnalysisConfig,
   AnalysisResult,
   AnalysisType,
   DataPoint,
-  /* Dataset, */ VisualizationType,
+  Dataset,
+  VisualizationType,
 } from '../../types/exploration/DataAnalysisTypes';
 import { AnalysisVisualization } from './visualizations/AnalysisVisualization';
 
@@ -138,6 +141,86 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
   );
 }
 
+// Dataset info component
+interface DatasetInfoProps {
+  dataset: Dataset;
+}
+
+function DatasetInfo({ dataset }: DatasetInfoProps) {
+  // Count data points by type
+  const counts = React.useMemo(() => {
+    const typeCounts = {
+      sector: 0,
+      anomaly: 0,
+      resource: 0,
+    };
+
+    dataset.dataPoints.forEach(dp => {
+      if (dp.type in typeCounts) {
+        typeCounts[dp.type as keyof typeof typeCounts]++;
+      }
+    });
+
+    return typeCounts;
+  }, [dataset.dataPoints]);
+
+  // Get icon for dataset source
+  const getSourceIcon = (source: string) => {
+    switch (source) {
+      case 'sectors':
+        return <Map className="mr-2" size={16} />;
+      case 'anomalies':
+        return <RadioTower className="mr-2" size={16} />;
+      case 'resources':
+        return <Layers className="mr-2" size={16} />;
+      case 'mixed':
+        return <Compass className="mr-2" size={16} />;
+      default:
+        return <Database className="mr-2" size={16} />;
+    }
+  };
+
+  return (
+    <div className="mb-4 rounded border bg-white p-4">
+      <div className="mb-2 flex items-center">
+        {getSourceIcon(dataset.source)}
+        <h3 className="font-medium">{dataset.name}</h3>
+      </div>
+
+      <p className="mb-2 text-sm text-gray-600">{dataset.description}</p>
+
+      <div className="mb-2 grid grid-cols-3 gap-2 text-sm">
+        <div className="rounded bg-blue-50 p-2 text-center">
+          <div className="font-medium text-blue-700">{counts.sector}</div>
+          <div className="text-xs text-blue-600">Sectors</div>
+        </div>
+        <div className="rounded bg-purple-50 p-2 text-center">
+          <div className="font-medium text-purple-700">{counts.anomaly}</div>
+          <div className="text-xs text-purple-600">Anomalies</div>
+        </div>
+        <div className="rounded bg-green-50 p-2 text-center">
+          <div className="font-medium text-green-700">{counts.resource}</div>
+          <div className="text-xs text-green-600">Resources</div>
+        </div>
+      </div>
+
+      <div className="text-xs text-gray-500">
+        <div>
+          <span className="font-medium">Created:</span>{' '}
+          {new Date(dataset.createdAt).toLocaleDateString()}
+        </div>
+        <div>
+          <span className="font-medium">Updated:</span>{' '}
+          {new Date(dataset.updatedAt).toLocaleDateString()}
+        </div>
+        <div>
+          <span className="font-medium">Total Points:</span> {dataset.dataPoints.length}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) {
   // Get data and functions from context
   const {
@@ -149,7 +232,8 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     createAnalysisConfig,
     deleteAnalysisConfig,
     runAnalysis,
-    getAnalysisResultsByConfigId: _getAnalysisResultsByConfigId,
+    getAnalysisResultsByConfigId,
+    getOrCreateDatasetBySource,
   } = useDataAnalysis();
 
   // State for active tab and selected items
@@ -177,6 +261,14 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   const [newAnalysisDatasetId, setNewAnalysisDatasetId] = React.useState('');
   const [newAnalysisVisualization, setNewAnalysisVisualization] =
     React.useState<VisualizationType>('lineChart');
+
+  // State for exploration stats
+  const [explorationStats, setExplorationStats] = React.useState({
+    sectorsDiscovered: 0,
+    sectorsScanned: 0,
+    anomaliesDetected: 0,
+    resourcesDetected: 0,
+  });
 
   // Get selected items
   const selectedDataset = selectedDatasetId
@@ -208,19 +300,43 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     );
   }, [datasets, searchQuery]);
 
+  // Get auto-generated exploration datasets
+  const explorationDatasets = React.useMemo(() => {
+    return datasets.filter(dataset =>
+      ['sectors', 'anomalies', 'resources'].includes(dataset.source)
+    );
+  }, [datasets]);
+
   // Function to create a dataset from exploration data
   const handleCreateDataset = () => {
     if (!newDatasetName) {
       return;
     }
 
-    // Create sample data points based on the selected source
-    const dataPoints: DataPoint[] = generateSampleDataPoints(newDatasetSource);
+    // If we're creating from an exploration source, get or create a dataset for that source
+    if (['sectors', 'anomalies', 'resources'].includes(newDatasetSource)) {
+      const datasetId = getOrCreateDatasetBySource(
+        newDatasetSource as 'sectors' | 'anomalies' | 'resources',
+        newDatasetName
+      );
+
+      // Select the created/existing dataset
+      setSelectedDatasetId(datasetId);
+
+      // Reset form
+      setNewDatasetName('');
+      setNewDatasetDescription('');
+      setShowCreateDataset(false);
+      return;
+    }
+
+    // For mixed datasets, create a new dataset with sample data
+    const dataPoints: DataPoint[] = [];
 
     // Create the dataset
     createDataset({
       name: newDatasetName,
-      description: newDatasetDescription,
+      description: newDatasetDescription || 'Custom dataset for exploration analysis',
       dataPoints,
       source: newDatasetSource,
     });
@@ -233,6 +349,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   };
 
   // Helper function to generate sample data points
+  // Note: This is kept for backward compatibility but will be phased out
   const generateSampleDataPoints = (
     source: 'sectors' | 'anomalies' | 'resources' | 'mixed'
   ): DataPoint[] => {
@@ -494,6 +611,30 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     }
   };
 
+  // Effect to update exploration stats
+  React.useEffect(() => {
+    // Function to update stats
+    const updateStats = () => {
+      // Get stats safely without directly accessing protected property
+      const stats = explorationManager.getMetadata().stats || {};
+      setExplorationStats({
+        sectorsDiscovered: (stats.sectorsDiscovered as number) || 0,
+        sectorsScanned: (stats.sectorsScanned as number) || 0,
+        anomaliesDetected: (stats.anomaliesDetected as number) || 0,
+        resourcesDetected: (stats.resourcesDetected as number) || 0,
+      });
+    };
+
+    // Initial update
+    updateStats();
+
+    // Set up an interval to update every 5 seconds
+    const interval = setInterval(updateStats, 5000);
+
+    // Cleanup on unmount
+    return () => clearInterval(interval);
+  }, []);
+
   // Render the component
   return (
     <div className={`rounded-lg border shadow-sm ${className}`}>
@@ -506,6 +647,34 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Analyze exploration data to discover patterns and insights
         </p>
+
+        {/* Exploration stats */}
+        <div className="mt-3 grid grid-cols-4 gap-2">
+          <div className="rounded bg-blue-50 p-2 text-center">
+            <div className="text-sm font-medium text-blue-700">
+              {explorationStats.sectorsDiscovered}
+            </div>
+            <div className="text-xs text-blue-600">Sectors</div>
+          </div>
+          <div className="rounded bg-green-50 p-2 text-center">
+            <div className="text-sm font-medium text-green-700">
+              {explorationStats.sectorsScanned}
+            </div>
+            <div className="text-xs text-green-600">Scanned</div>
+          </div>
+          <div className="rounded bg-purple-50 p-2 text-center">
+            <div className="text-sm font-medium text-purple-700">
+              {explorationStats.anomaliesDetected}
+            </div>
+            <div className="text-xs text-purple-600">Anomalies</div>
+          </div>
+          <div className="rounded bg-yellow-50 p-2 text-center">
+            <div className="text-sm font-medium text-yellow-700">
+              {explorationStats.resourcesDetected}
+            </div>
+            <div className="text-xs text-yellow-600">Resources</div>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -600,16 +769,16 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   </div>
                   <div className="mb-3">
                     <label className="mb-1 block text-sm font-medium">Description</label>
-                    <textarea
+                    <input
+                      type="text"
                       className="w-full rounded border p-2"
                       value={newDatasetDescription}
                       onChange={e => setNewDatasetDescription(e.target.value)}
-                      placeholder="Enter dataset description"
-                      rows={3}
+                      placeholder="Enter description"
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="mb-1 block text-sm font-medium">Data Source</label>
+                    <label className="mb-1 block text-sm font-medium">Source</label>
                     <select
                       className="w-full rounded border p-2"
                       value={newDatasetSource}
@@ -625,150 +794,263 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                       <option value="mixed">Mixed</option>
                     </select>
                   </div>
-                  <div className="flex justify-end">
+                  <div className="flex justify-end space-x-2">
                     <button
-                      className="mr-2 rounded bg-gray-300 px-3 py-1 text-gray-700 hover:bg-gray-400"
+                      className="rounded border px-2 py-1 text-gray-600 hover:bg-gray-100"
                       onClick={() => setShowCreateDataset(false)}
                     >
                       Cancel
                     </button>
                     <button
-                      className="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+                      className="rounded bg-blue-500 px-2 py-1 text-white hover:bg-blue-600"
                       onClick={handleCreateDataset}
-                      disabled={!newDatasetName}
                     >
-                      Create Dataset
+                      Create
                     </button>
                   </div>
                 </div>
               )}
 
-              {datasets.length > 0 ? (
-                <div className="max-h-96 space-y-2 overflow-y-auto">
-                  {filteredDatasets.map(dataset => (
-                    <div
-                      key={dataset.id}
-                      className={`cursor-pointer rounded border p-2 ${
-                        selectedDatasetId === dataset.id
-                          ? 'border-blue-200 bg-blue-50'
-                          : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => setSelectedDatasetId(dataset.id)}
-                      data-testid={`dataset-${dataset.id}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">{dataset.name}</div>
-                          <div className="text-xs text-gray-500">
-                            {dataset.source} • {dataset.dataPoints.length} points
-                          </div>
+              {/* Exploration Datasets Section */}
+              {!showCreateDataset && explorationDatasets.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="mb-2 text-sm font-medium text-purple-600">
+                    <Compass className="mb-1 mr-1 inline" size={14} />
+                    Exploration Datasets
+                  </h4>
+                  <div className="space-y-1 text-sm">
+                    {explorationDatasets.map(dataset => (
+                      <div
+                        key={dataset.id}
+                        className={`cursor-pointer rounded p-2 hover:bg-gray-100 ${
+                          selectedDatasetId === dataset.id ? 'bg-blue-50' : ''
+                        }`}
+                        onClick={() => setSelectedDatasetId(dataset.id)}
+                      >
+                        <div className="flex items-center">
+                          {dataset.source === 'sectors' && <Map className="mr-2" size={14} />}
+                          {dataset.source === 'anomalies' && (
+                            <RadioTower className="mr-2" size={14} />
+                          )}
+                          {dataset.source === 'resources' && <Layers className="mr-2" size={14} />}
+                          {dataset.name}
+                          <span className="ml-auto rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">
+                            {dataset.dataPoints.length}
+                          </span>
                         </div>
-                        <button
-                          className="p-1 text-gray-400 hover:text-red-500"
-                          onClick={e => {
-                            e.stopPropagation();
-                            deleteDataset(dataset.id);
-                            if (selectedDatasetId === dataset.id) {
-                              setSelectedDatasetId(null);
-                            }
-                          }}
-                          title="Delete dataset"
-                        >
-                          <Trash2 size={14} />
-                        </button>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-8 text-center text-gray-500">
-                  <Database className="mx-auto mb-2" />
-                  <p>No datasets available</p>
-                  <p className="text-sm">Create a dataset to begin analysis</p>
+                    ))}
+                  </div>
                 </div>
               )}
+
+              {/* Other Datasets */}
+              <div className="max-h-64 overflow-y-auto">
+                <h4 className="mb-2 text-sm font-medium text-gray-600">All Datasets</h4>
+                <div className="space-y-1">
+                  {filteredDatasets.length > 0 ? (
+                    filteredDatasets.map(dataset => (
+                      <div
+                        key={dataset.id}
+                        className={`cursor-pointer rounded p-2 hover:bg-gray-100 ${
+                          selectedDatasetId === dataset.id ? 'bg-blue-50' : ''
+                        }`}
+                        onClick={() => setSelectedDatasetId(dataset.id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center overflow-hidden">
+                            {dataset.source === 'sectors' && <Map className="mr-2" size={14} />}
+                            {dataset.source === 'anomalies' && (
+                              <RadioTower className="mr-2" size={14} />
+                            )}
+                            {dataset.source === 'resources' && (
+                              <Layers className="mr-2" size={14} />
+                            )}
+                            {dataset.source === 'mixed' && <Compass className="mr-2" size={14} />}
+                            <span className="truncate">{dataset.name}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="mr-2 text-xs text-gray-500">
+                              {dataset.dataPoints.length} pts
+                            </span>
+                            <button
+                              className="text-red-500 hover:text-red-700"
+                              onClick={e => {
+                                e.stopPropagation();
+                                deleteDataset(dataset.id);
+                                if (selectedDatasetId === dataset.id) {
+                                  setSelectedDatasetId(null);
+                                }
+                              }}
+                              title="Delete dataset"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-sm text-gray-500">No datasets found</div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Dataset Details */}
-            <div className="rounded-lg border p-4 md:col-span-2">
+            <div className="col-span-2 rounded-lg border p-4">
               {selectedDataset ? (
                 <div>
-                  <h3 className="mb-4 font-medium">{selectedDataset.name}</h3>
-                  <div className="mb-4 grid grid-cols-2 gap-4">
-                    <div className="rounded border p-2">
-                      <div className="text-sm text-gray-500">Source</div>
-                      <div className="font-medium capitalize">{selectedDataset.source}</div>
-                    </div>
-                    <div className="rounded border p-2">
-                      <div className="text-sm text-gray-500">Data Points</div>
-                      <div className="font-medium">{selectedDataset.dataPoints.length}</div>
-                    </div>
-                    <div className="rounded border p-2">
-                      <div className="text-sm text-gray-500">Created</div>
-                      <div className="font-medium">
-                        {new Date(selectedDataset.createdAt).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <div className="rounded border p-2">
-                      <div className="text-sm text-gray-500">Updated</div>
-                      <div className="font-medium">
-                        {new Date(selectedDataset.updatedAt).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
+                  <DatasetInfo dataset={selectedDataset} />
+
+                  {/* Data Points */}
                   <div className="mb-4">
-                    <h4 className="mb-2 font-medium">Description</h4>
-                    <p className="text-sm">{selectedDataset.description}</p>
-                  </div>
-                  <div>
-                    <h4 className="mb-2 font-medium">Data Preview</h4>
-                    <div className="overflow-x-auto rounded border">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                              ID
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                              Name
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                              Type
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                              Date
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 bg-white">
-                          {selectedDataset.dataPoints.slice(0, 5).map(point => (
-                            <tr key={point.id}>
-                              <td className="whitespace-nowrap px-3 py-2 text-xs">
-                                {point.id.substring(0, 8)}...
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-2 text-xs">{point.name}</td>
-                              <td className="whitespace-nowrap px-3 py-2 text-xs capitalize">
-                                {point.type}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-2 text-xs">
-                                {new Date(point.date).toLocaleDateString()}
-                              </td>
+                    <h3 className="mb-2 font-medium">Data Points</h3>
+                    <div className="max-h-96 overflow-y-auto">
+                      {selectedDataset.dataPoints.length > 0 ? (
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="border p-2 text-left text-sm">ID</th>
+                              <th className="border p-2 text-left text-sm">Type</th>
+                              <th className="border p-2 text-left text-sm">Name</th>
+                              <th className="border p-2 text-left text-sm">Date</th>
+                              <th className="border p-2 text-left text-sm">Properties</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {selectedDataset.dataPoints.slice(0, 20).map(point => (
+                              <tr key={point.id} className="hover:bg-gray-50">
+                                <td className="border p-2 text-sm">
+                                  {point.id.substring(0, 8)}...
+                                </td>
+                                <td className="border p-2 text-sm">
+                                  <span
+                                    className={`rounded px-1.5 py-0.5 text-xs ${
+                                      point.type === 'sector'
+                                        ? 'bg-blue-100 text-blue-700'
+                                        : point.type === 'anomaly'
+                                          ? 'bg-purple-100 text-purple-700'
+                                          : 'bg-green-100 text-green-700'
+                                    }`}
+                                  >
+                                    {point.type}
+                                  </span>
+                                </td>
+                                <td className="border p-2 text-sm">{point.name}</td>
+                                <td className="border p-2 text-sm">
+                                  {new Date(point.date).toLocaleDateString()}
+                                </td>
+                                <td className="border p-2 text-sm">
+                                  <div className="max-h-20 overflow-y-auto">
+                                    {Object.entries(point.properties).map(([key, value]) => (
+                                      <div key={key} className="text-xs">
+                                        <span className="font-medium">{key}:</span>{' '}
+                                        {typeof value === 'object'
+                                          ? JSON.stringify(value)
+                                          : String(value)}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <div className="text-center text-sm text-gray-500">No data points</div>
+                      )}
+                      {selectedDataset.dataPoints.length > 20 && (
+                        <div className="mt-2 text-center text-xs text-gray-500">
+                          Showing 20 of {selectedDataset.dataPoints.length} data points
+                        </div>
+                      )}
                     </div>
-                    {selectedDataset.dataPoints.length > 5 && (
-                      <div className="mt-1 text-right text-xs text-gray-500">
-                        Showing 5 of {selectedDataset.dataPoints.length} data points
-                      </div>
-                    )}
+                  </div>
+
+                  {/* Available Analyses */}
+                  <div>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="font-medium">Analyses</h3>
+                      <button
+                        className="rounded bg-blue-500 p-1 text-white hover:bg-blue-600"
+                        onClick={() => {
+                          setNewAnalysisDatasetId(selectedDataset.id);
+                          setShowCreateAnalysis(true);
+                          setActiveTab('analysis');
+                        }}
+                        title="Create new analysis"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      {analysisConfigs
+                        .filter(config => config.datasetId === selectedDataset.id)
+                        .map(config => (
+                          <div
+                            key={config.id}
+                            className="cursor-pointer rounded-md border p-2 hover:bg-gray-50"
+                            onClick={() => {
+                              setSelectedConfigId(config.id);
+                              setActiveTab('analysis');
+                            }}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium">{config.name}</div>
+                                <div className="text-xs text-gray-500">{config.description}</div>
+                              </div>
+                              <div className="flex items-center">
+                                <span
+                                  className={`mr-2 rounded px-1.5 py-0.5 text-xs ${
+                                    config.type === 'trend'
+                                      ? 'bg-blue-100 text-blue-700'
+                                      : config.type === 'correlation'
+                                        ? 'bg-green-100 text-green-700'
+                                        : config.type === 'clustering'
+                                          ? 'bg-purple-100 text-purple-700'
+                                          : 'bg-gray-100 text-gray-700'
+                                  }`}
+                                >
+                                  {config.type}
+                                </span>
+                                <button
+                                  className="ml-1 text-blue-500 hover:text-blue-700"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    runAnalysis(config.id).catch(console.error);
+                                  }}
+                                  title="Run analysis"
+                                >
+                                  <Play size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      {analysisConfigs.filter(config => config.datasetId === selectedDataset.id)
+                        .length === 0 && (
+                        <div className="text-center text-gray-500">
+                          No analyses configured for this dataset
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="py-16 text-center text-gray-500">
-                  <Database className="mx-auto mb-2" />
+                <div className="flex h-full flex-col items-center justify-center p-8 text-center text-gray-500">
+                  <Database className="mb-2" size={32} />
                   <p>Select a dataset to view details</p>
+                  <p className="mt-2 text-sm">
+                    Or{' '}
+                    <button
+                      className="text-blue-500 hover:underline"
+                      onClick={() => setShowCreateDataset(true)}
+                    >
+                      create a new dataset
+                    </button>
+                  </p>
                 </div>
               )}
             </div>
@@ -778,10 +1060,10 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
         {/* Analysis Tab */}
         <div className={activeTab === 'analysis' ? 'block' : 'hidden'}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {/* Analysis Configurations List */}
+            {/* Analysis List */}
             <div className="rounded-lg border p-4">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-medium">Analysis Configurations</h3>
+                <h3 className="font-medium">Analyses</h3>
                 <button
                   className="rounded bg-blue-500 p-1 text-white hover:bg-blue-600"
                   onClick={() => setShowCreateAnalysis(true)}
@@ -807,12 +1089,12 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   </div>
                   <div className="mb-3">
                     <label className="mb-1 block text-sm font-medium">Description</label>
-                    <textarea
+                    <input
+                      type="text"
                       className="w-full rounded border p-2"
                       value={newAnalysisDescription}
                       onChange={e => setNewAnalysisDescription(e.target.value)}
-                      placeholder="Enter analysis description"
-                      rows={2}
+                      placeholder="Enter description"
                     />
                   </div>
                   <div className="mb-3">
@@ -825,7 +1107,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                       <option value="">Select a dataset</option>
                       {datasets.map(dataset => (
                         <option key={dataset.id} value={dataset.id}>
-                          {dataset.name}
+                          {dataset.name} ({dataset.source}, {dataset.dataPoints.length} points)
                         </option>
                       ))}
                     </select>
@@ -846,7 +1128,6 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                       <option value="anomalyDetection">Anomaly Detection</option>
                       <option value="resourceMapping">Resource Mapping</option>
                       <option value="sectorAnalysis">Sector Analysis</option>
-                      <option value="custom">Custom Analysis</option>
                     </select>
                   </div>
                   <div className="mb-3">
@@ -869,90 +1150,95 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                       <option value="table">Table</option>
                       <option value="map">Map</option>
                       <option value="network">Network Graph</option>
-                      <option value="custom">Custom Visualization</option>
                     </select>
                   </div>
-                  <div className="flex justify-end">
+                  <div className="flex justify-end space-x-2">
                     <button
-                      className="mr-2 rounded bg-gray-300 px-3 py-1 text-gray-700 hover:bg-gray-400"
+                      className="rounded border px-2 py-1 text-gray-600 hover:bg-gray-100"
                       onClick={() => setShowCreateAnalysis(false)}
                     >
                       Cancel
                     </button>
                     <button
-                      className="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+                      className="rounded bg-blue-500 px-2 py-1 text-white hover:bg-blue-600"
                       onClick={handleCreateAnalysis}
                       disabled={!newAnalysisName || !newAnalysisDatasetId}
                     >
-                      Create Analysis
+                      Create
                     </button>
                   </div>
                 </div>
               )}
 
-              {analysisConfigs.length > 0 ? (
-                <div className="max-h-96 space-y-2 overflow-y-auto">
-                  {analysisConfigs.map(config => (
-                    <div
-                      key={config.id}
-                      className={`cursor-pointer rounded border p-2 ${
-                        selectedConfigId === config.id
-                          ? 'border-blue-200 bg-blue-50'
-                          : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => setSelectedConfigId(config.id)}
-                      data-testid={`config-${config.id}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">{config.name}</div>
-                          <div className="text-xs text-gray-500">
-                            {config.type} • {config.visualizationType}
+              {/* Analysis List */}
+              <div className="max-h-96 overflow-y-auto">
+                {analysisConfigs.length > 0 ? (
+                  <div className="space-y-2">
+                    {analysisConfigs.map(config => (
+                      <div
+                        key={config.id}
+                        className={`cursor-pointer rounded border p-2 ${
+                          selectedConfigId === config.id
+                            ? 'border-blue-200 bg-blue-50'
+                            : 'hover:bg-gray-50'
+                        }`}
+                        onClick={() => setSelectedConfigId(config.id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">{config.name}</div>
+                            <div className="text-xs text-gray-500">
+                              {config.type} •
+                              {datasets.find(d => d.id === config.datasetId)?.name ||
+                                'Unknown dataset'}
+                            </div>
+                          </div>
+                          <div className="flex">
+                            <button
+                              className="mr-1 p-1 text-blue-500 hover:text-blue-700"
+                              onClick={e => {
+                                e.stopPropagation();
+                                runAnalysis(config.id).catch(console.error);
+                              }}
+                              title="Run analysis"
+                            >
+                              <Play size={16} />
+                            </button>
+                            <button
+                              className="p-1 text-red-500 hover:text-red-700"
+                              onClick={e => {
+                                e.stopPropagation();
+                                deleteAnalysisConfig(config.id);
+                                if (selectedConfigId === config.id) {
+                                  setSelectedConfigId(null);
+                                }
+                              }}
+                              title="Delete analysis"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
                         </div>
-                        <div className="flex">
-                          <button
-                            className="mr-1 p-1 text-gray-400 hover:text-green-500"
-                            onClick={e => {
-                              e.stopPropagation();
-                              runAnalysis(config.id);
-                            }}
-                            title="Run analysis"
-                          >
-                            <Play size={14} />
-                          </button>
-                          <button
-                            className="p-1 text-gray-400 hover:text-red-500"
-                            onClick={e => {
-                              e.stopPropagation();
-                              deleteAnalysisConfig(config.id);
-                              if (selectedConfigId === config.id) {
-                                setSelectedConfigId(null);
-                              }
-                            }}
-                            title="Delete analysis"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-8 text-center text-gray-500">
-                  <Settings className="mx-auto mb-2" />
-                  <p>No analysis configurations</p>
-                  <p className="text-sm">Create an analysis to begin</p>
-                </div>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-sm text-gray-500">
+                    No analysis configurations available
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Analysis Configuration Details */}
-            <div className="rounded-lg border p-4 md:col-span-2">
+            {/* Analysis Details */}
+            <div className="col-span-2 rounded-lg border p-4">
               {selectedConfig ? (
                 <div>
-                  <h3 className="mb-4 font-medium">{selectedConfig.name}</h3>
+                  <div className="mb-4">
+                    <h3 className="font-medium">{selectedConfig.name}</h3>
+                    <p className="text-sm text-gray-500">{selectedConfig.description}</p>
+                  </div>
+
                   <div className="mb-4 grid grid-cols-2 gap-4">
                     <div className="rounded border p-2">
                       <div className="text-sm text-gray-500">Analysis Type</div>
@@ -977,41 +1263,95 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                       </div>
                     </div>
                   </div>
-                  <div className="mb-4">
-                    <h4 className="mb-2 font-medium">Description</h4>
-                    <p className="text-sm">{selectedConfig.description}</p>
-                  </div>
+
                   <div className="mb-4">
                     <h4 className="mb-2 font-medium">Parameters</h4>
                     <div className="rounded border bg-gray-50 p-3">
-                      <pre className="overflow-x-auto text-xs">
+                      <pre className="text-xs">
                         {JSON.stringify(selectedConfig.parameters, null, 2)}
                       </pre>
                     </div>
                   </div>
-                  <div>
-                    <h4 className="mb-2 font-medium">Visualization Configuration</h4>
-                    <div className="rounded border bg-gray-50 p-3">
-                      <pre className="overflow-x-auto text-xs">
-                        {JSON.stringify(selectedConfig.visualizationConfig, null, 2)}
-                      </pre>
+
+                  <div className="mb-4">
+                    <h4 className="mb-2 font-medium">Results</h4>
+                    <div className="space-y-2">
+                      {getAnalysisResultsByConfigId(selectedConfig.id).length > 0 ? (
+                        getAnalysisResultsByConfigId(selectedConfig.id).map(result => (
+                          <div
+                            key={result.id}
+                            className={`cursor-pointer rounded border p-2 ${
+                              selectedResultId === result.id
+                                ? 'border-blue-200 bg-blue-50'
+                                : 'hover:bg-gray-50'
+                            }`}
+                            onClick={() => {
+                              setSelectedResultId(result.id);
+                              setActiveTab('results');
+                            }}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                {result.status === 'completed' && (
+                                  <span className="mr-2 h-2 w-2 rounded-full bg-green-500"></span>
+                                )}
+                                {result.status === 'processing' && (
+                                  <RefreshCw className="mr-2 animate-spin" size={14} />
+                                )}
+                                {result.status === 'failed' && (
+                                  <AlertTriangle className="mr-2 text-red-500" size={14} />
+                                )}
+                                <div>
+                                  <div className="text-sm">
+                                    Run on {new Date(result.startTime).toLocaleString()}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    Status: {result.status}
+                                  </div>
+                                </div>
+                              </div>
+                              <div>
+                                {result.status === 'completed' && (
+                                  <span className="text-xs text-gray-500">
+                                    {result.endTime &&
+                                      `${((result.endTime - result.startTime) / 1000).toFixed(2)}s`}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center text-sm text-gray-500">
+                          No results available. Run the analysis to see results.
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="mt-4 flex justify-end">
+
+                  <div className="text-center">
                     <button
-                      className="flex items-center rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
-                      onClick={() => runAnalysis(selectedConfig.id)}
-                      data-testid="run-analysis-button"
+                      className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                      onClick={() => runAnalysis(selectedConfig.id).catch(console.error)}
                     >
-                      <Play size={16} className="mr-1" />
+                      <Play className="mr-2 inline" size={14} />
                       Run Analysis
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="py-16 text-center text-gray-500">
-                  <Settings className="mx-auto mb-2" />
-                  <p>Select an analysis configuration to view details</p>
+                <div className="flex h-full flex-col items-center justify-center p-8 text-center text-gray-500">
+                  <Settings className="mb-2" size={32} />
+                  <p>Select an analysis to view details</p>
+                  <p className="mt-2 text-sm">
+                    Or{' '}
+                    <button
+                      className="text-blue-500 hover:underline"
+                      onClick={() => setShowCreateAnalysis(true)}
+                    >
+                      create a new analysis
+                    </button>
+                  </p>
                 </div>
               )}
             </div>
@@ -1020,93 +1360,15 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
 
         {/* Results Tab */}
         <div className={activeTab === 'results' ? 'block' : 'hidden'}>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {/* Analysis Results List */}
-            <div className="rounded-lg border p-4">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-medium">Analysis Results</h3>
-              </div>
-
-              {analysisResults.length > 0 ? (
-                <div className="max-h-96 space-y-2 overflow-y-auto">
-                  {analysisResults.map(result => {
-                    const config = analysisConfigs.find(c => c.id === result.analysisConfigId);
-                    return (
-                      <div
-                        key={result.id}
-                        className={`cursor-pointer rounded border p-2 ${
-                          selectedResultId === result.id
-                            ? 'border-blue-200 bg-blue-50'
-                            : 'hover:bg-gray-50'
-                        }`}
-                        onClick={() => setSelectedResultId(result.id)}
-                        data-testid={`result-${result.id}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium">
-                              {config?.name || 'Unknown Analysis'}
-                              <span className="ml-2 text-xs text-gray-500">({result.id})</span>
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {new Date(result.startTime).toLocaleString()} •{' '}
-                              <span
-                                className={`${
-                                  result.status === 'completed'
-                                    ? 'text-green-500'
-                                    : result.status === 'failed'
-                                      ? 'text-red-500'
-                                      : result.status === 'processing'
-                                        ? 'text-blue-500'
-                                        : 'text-gray-500'
-                                }`}
-                                data-testid={`result-status-${result.id}`}
-                              >
-                                {result.status}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="py-8 text-center text-gray-500">
-                  <BarChart2 className="mx-auto mb-2" />
-                  <p>No analysis results</p>
-                  <p className="text-sm">Run an analysis to see results</p>
-                </div>
-              )}
+          {selectedResult ? (
+            <ResultVisualization result={selectedResult} config={selectedResultConfig} />
+          ) : (
+            <div className="flex h-64 flex-col items-center justify-center text-center text-gray-500">
+              <BarChart2 className="mb-2" size={32} />
+              <p>No analysis result selected</p>
+              <p className="mt-2 text-sm">Run an analysis to see results here</p>
             </div>
-
-            {/* Analysis Result Details */}
-            <div className="rounded-lg border p-4 md:col-span-2">
-              {selectedResultId && selectedResult ? (
-                <ResultVisualization result={selectedResult} config={selectedResultConfig} />
-              ) : (
-                <div className="py-16 text-center text-gray-500">
-                  <BarChart2 className="mx-auto mb-2" />
-                  <p>Select a result to view details</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* For testing purposes, add hidden divs with the content that tests are looking for */}
-        <div className="hidden">
-          {/* Analysis configs for tests */}
-          {analysisConfigs.map(config => (
-            <div key={`test-${config.id}`}>{config.name}</div>
-          ))}
-
-          {/* Results for tests */}
-          {analysisResults.map(result => (
-            <div key={`test-${result.id}`}>
-              {result.id} {result.status}
-            </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

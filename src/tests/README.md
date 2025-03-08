@@ -87,3 +87,30 @@ For detailed best practices, refer to the following documentation:
 - [Integration Testing Best Practices](../../CodeBase_Docs/Integration_Testing_Best_Practices.md)
 - [Performance Benchmark Practices](../../CodeBase_Docs/Performance_Benchmark_Practices.md)
 - [Test Utilities Guide](../../CodeBase_Docs/Test_Utilities_Guide.md)
+
+## Exploration System Integration Tests
+
+### Overview
+
+The exploration system integration tests verify the connections between the ExplorationManager, DataAnalysisContext, and ClassificationContext. These tests ensure that events triggered by the exploration system properly flow through the application and update the relevant UI components.
+
+### Test Files
+
+- `src/tests/integration/exploration/ExplorationSystem.integration.test.tsx`: Tests basic connections between the ExplorationManager and context providers
+- `src/tests/integration/exploration/ExplorationDataFlow.integration.test.tsx`: Tests the end-to-end data flow from discovery to classification
+
+### Test Fixtures
+
+- `src/tests/fixtures/explorationIntegrationFixtures.ts`: Contains utility functions to create test data for sectors, anomalies, ships, and resources
+
+### Key Areas Tested
+
+1. **ExplorationManager to DataAnalysisContext Connection**: Verifies that exploration events trigger dataset creation and updates in the DataAnalysisContext
+2. **ExplorationManager to ClassificationContext Connection**: Verifies that anomaly and resource detection events trigger discovery recording and classification in the ClassificationContext
+3. **End-to-End Flow**: Tests the complete flow from sector discovery to anomaly detection and classification
+
+### Running the Tests
+
+```
+npm test -- --testPathPattern=exploration
+```

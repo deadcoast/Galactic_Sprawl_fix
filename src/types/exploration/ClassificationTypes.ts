@@ -106,4 +106,5 @@ export interface ClassificationContextType {
   addTaxonomyCategory: (category: Omit<TaxonomyCategory, 'id'>) => void;
   updateTaxonomyCategory: (id: string, updates: Partial<TaxonomyCategory>) => void;
   deleteTaxonomyCategory: (id: string) => void;
+  addDiscovery: (discovery: ClassifiableDiscovery) => void;
 }

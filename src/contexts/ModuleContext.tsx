@@ -1,162 +1,388 @@
-import React, { createContext, ReactNode, useContext, useEffect, useReducer } from 'react';
 import { useGame } from '../contexts/GameContext';
+import { BaseState, createStandardContext, ManagerConfig } from '../lib/contexts/BaseContext';
 import { moduleManager } from '../managers/module/ModuleManager';
-import { BaseModule, ModularBuilding, ModuleType } from '../types/buildings/ModuleTypes';
-import { Position } from '../types/core/GameTypes';
+import { ModularBuilding, ModuleType } from '../types/buildings/ModuleTypes';
+import { EventType } from '../types/events/EventTypes';
+import { Module, ModuleStatus } from '../types/modules/ModuleTypes';
+import { ModuleManager } from '../managers/module/ModuleManager';
 
-// State interface
-interface ModuleState {
-  activeModules: BaseModule[];
-  buildings: ModularBuilding[];
-  selectedModuleId?: string;
-  selectedBuildingId?: string;
+/**
+ * Enum for action types to ensure type safety
+ */
+export enum ModuleActionType {
+  ADD_MODULE = 'module/addModule',
+  UPDATE_MODULE = 'module/updateModule',
+  REMOVE_MODULE = 'module/removeModule',
+  SELECT_MODULE = 'module/selectModule',
+  SET_ACTIVE_MODULES = 'module/setActiveModules',
+  SET_CATEGORIES = 'module/setCategories',
+  SET_LOADING = 'module/setLoading',
+  SET_ERROR = 'module/setError',
 }
 
-// Action types
-type ModuleAction =
-  | { type: 'CREATE_MODULE'; moduleType: ModuleType; position: Position }
-  | { type: 'ATTACH_MODULE'; moduleId: string; buildingId: string; attachmentPointId: string }
-  | { type: 'UPGRADE_MODULE'; moduleId: string }
-  | { type: 'SET_MODULE_ACTIVE'; moduleId: string; active: boolean }
-  | { type: 'SELECT_MODULE'; moduleId: string }
-  | { type: 'SELECT_BUILDING'; buildingId: string }
-  | { type: 'REGISTER_BUILDING'; building: ModularBuilding }
-  | { type: 'UPDATE_ACTIVE_MODULES'; modules: BaseModule[] };
+/**
+ * Type for actions that can be dispatched to the context
+ */
+export interface ModuleAction {
+  type: ModuleActionType;
+  payload: {
+    module?: Module;
+    moduleId?: string;
+    updates?: Partial<Module>;
+    activeModuleIds?: string[];
+    selectedModuleId?: string | null;
+    categories?: string[];
+    isLoading?: boolean;
+    error?: string | null;
+  };
+}
 
-// Initial state
+/**
+ * State interface extended with BaseState for standardized properties
+ */
+export interface ModuleState extends BaseState {
+  modules: Record<string, Module>;
+  activeModuleIds: string[];
+  selectedModuleId: string | null;
+  categories: string[];
+}
+
+/**
+ * The initial state
+ */
 const initialState: ModuleState = {
-  activeModules: [],
-  buildings: [],
-  selectedModuleId: undefined,
-  selectedBuildingId: undefined,
+  modules: {},
+  activeModuleIds: [],
+  selectedModuleId: null,
+  categories: [],
+  isLoading: false,
+  error: null,
+  lastUpdated: Date.now(),
 };
 
-// Reducer
-function moduleReducer(state: ModuleState, action: ModuleAction): ModuleState {
+/**
+ * Action creators for type-safe dispatch
+ */
+export const createAddModuleAction = (module: Module): ModuleAction => ({
+  type: ModuleActionType.ADD_MODULE,
+  payload: { module },
+});
+
+export const createUpdateModuleAction = (
+  moduleId: string,
+  updates: Partial<Module>
+): ModuleAction => ({
+  type: ModuleActionType.UPDATE_MODULE,
+  payload: { moduleId, updates },
+});
+
+export const createRemoveModuleAction = (moduleId: string): ModuleAction => ({
+  type: ModuleActionType.REMOVE_MODULE,
+  payload: { moduleId },
+});
+
+export const createSelectModuleAction = (selectedModuleId: string | null): ModuleAction => ({
+  type: ModuleActionType.SELECT_MODULE,
+  payload: { selectedModuleId },
+});
+
+export const createSetActiveModulesAction = (activeModuleIds: string[]): ModuleAction => ({
+  type: ModuleActionType.SET_ACTIVE_MODULES,
+  payload: { activeModuleIds },
+});
+
+export const createSetCategoriesAction = (categories: string[]): ModuleAction => ({
+  type: ModuleActionType.SET_CATEGORIES,
+  payload: { categories },
+});
+
+export const createSetLoadingAction = (isLoading: boolean): ModuleAction => ({
+  type: ModuleActionType.SET_LOADING,
+  payload: { isLoading },
+});
+
+export const createSetErrorAction = (error: string | null): ModuleAction => ({
+  type: ModuleActionType.SET_ERROR,
+  payload: { error },
+});
+
+/**
+ * Reducer function for state updates
+ */
+export const moduleReducer = (state: ModuleState, action: ModuleAction): ModuleState => {
   switch (action.type) {
-    case 'CREATE_MODULE': {
-      const _module = moduleManager.createModule(action.moduleType, action.position);
-
-      // Log module creation for debugging and analytics
-      console.warn(
-        `[ModuleContext] Created module: ${_module.id} (${_module.type}) at position (${_module.position.x}, ${_module.position.y})`
-      );
-
+    case ModuleActionType.ADD_MODULE:
+      if (!action.payload.module) {
+        return state;
+      }
       return {
         ...state,
-        activeModules: moduleManager.getActiveModules(),
-      };
-    }
-
-    case 'ATTACH_MODULE': {
-      moduleManager.attachModule(action.moduleId, action.buildingId, action.attachmentPointId);
-      return {
-        ...state,
-        buildings: Array.from(state.buildings),
-      };
-    }
-
-    case 'UPGRADE_MODULE': {
-      moduleManager.upgradeModule(action.moduleId);
-      return {
-        ...state,
-        activeModules: moduleManager.getActiveModules(),
-      };
-    }
-
-    case 'SET_MODULE_ACTIVE': {
-      moduleManager.setModuleActive(action.moduleId, action.active);
-      return {
-        ...state,
-        activeModules: moduleManager.getActiveModules(),
-      };
-    }
-
-    case 'SELECT_MODULE':
-      return {
-        ...state,
-        selectedModuleId: action.moduleId,
+        modules: {
+          ...state.modules,
+          [action.payload.module.id]: action.payload.module,
+        },
+        lastUpdated: Date.now(),
       };
 
-    case 'SELECT_BUILDING':
+    case ModuleActionType.UPDATE_MODULE:
+      if (!action.payload.moduleId || !action.payload.updates) {
+        return state;
+      }
+
+      // Check if the module exists
+      if (!state.modules[action.payload.moduleId]) {
+        return state;
+      }
+
       return {
         ...state,
-        selectedBuildingId: action.buildingId,
+        modules: {
+          ...state.modules,
+          [action.payload.moduleId]: {
+            ...state.modules[action.payload.moduleId],
+            ...action.payload.updates,
+          },
+        },
+        lastUpdated: Date.now(),
       };
 
-    case 'REGISTER_BUILDING': {
-      moduleManager.registerBuilding(action.building);
-      return {
-        ...state,
-        buildings: [...state.buildings, action.building],
-      };
-    }
+    case ModuleActionType.REMOVE_MODULE:
+      if (!action.payload.moduleId) {
+        return state;
+      }
 
-    case 'UPDATE_ACTIVE_MODULES':
+      // Create a new modules object without the removed module
+      const { [action.payload.moduleId]: removedModule, ...remainingModules } = state.modules;
+
+      // Remove from active modules if present
+      const newActiveModuleIds = state.activeModuleIds.filter(id => id !== action.payload.moduleId);
+
+      // Clear selected module if it's the one being removed
+      const newSelectedModuleId =
+        state.selectedModuleId === action.payload.moduleId ? null : state.selectedModuleId;
+
       return {
         ...state,
-        activeModules: action.modules,
+        modules: remainingModules,
+        activeModuleIds: newActiveModuleIds,
+        selectedModuleId: newSelectedModuleId,
+        lastUpdated: Date.now(),
+      };
+
+    case ModuleActionType.SELECT_MODULE:
+      return {
+        ...state,
+        selectedModuleId: action.payload.selectedModuleId || null,
+        lastUpdated: Date.now(),
+      };
+
+    case ModuleActionType.SET_ACTIVE_MODULES:
+      if (!action.payload.activeModuleIds) {
+        return state;
+      }
+
+      return {
+        ...state,
+        activeModuleIds: action.payload.activeModuleIds,
+        lastUpdated: Date.now(),
+      };
+
+    case ModuleActionType.SET_CATEGORIES:
+      if (!action.payload.categories) {
+        return state;
+      }
+
+      return {
+        ...state,
+        categories: action.payload.categories,
+        lastUpdated: Date.now(),
+      };
+
+    case ModuleActionType.SET_LOADING:
+      return {
+        ...state,
+        isLoading: !!action.payload.isLoading,
+      };
+
+    case ModuleActionType.SET_ERROR:
+      return {
+        ...state,
+        error: action.payload.error,
+        isLoading: false,
       };
 
     default:
       return state;
   }
+};
+
+/**
+ * Memoized selectors for performance optimization
+ */
+export const selectModules = (state: ModuleState) => state.modules;
+export const selectModuleById = (state: ModuleState, id: string) => state.modules[id];
+export const selectActiveModules = (state: ModuleState) => {
+  return state.activeModuleIds.map(id => state.modules[id]).filter(Boolean);
+};
+export const selectSelectedModule = (state: ModuleState) => {
+  return state.selectedModuleId ? state.modules[state.selectedModuleId] : null;
+};
+export const selectCategories = (state: ModuleState) => state.categories;
+export const selectModulesByType = (state: ModuleState, type: ModuleType) => {
+  return Object.values(state.modules).filter(module => module.type === type);
+};
+export const selectModulesByStatus = (state: ModuleState, status: ModuleStatus) => {
+  return Object.values(state.modules).filter(module => module.status === status);
+};
+
+// Define module-specific event types
+enum ModuleEventType {
+  MODULE_CREATED = 'MODULE_CREATED',
+  MODULE_UPDATED = 'MODULE_UPDATED',
+  MODULE_REMOVED = 'MODULE_REMOVED',
+  MODULE_STATUS_CHANGED = 'MODULE_STATUS_CHANGED'
 }
 
-// Context
-interface ModuleContextType {
-  state: ModuleState;
-  dispatch: React.Dispatch<ModuleAction>;
-}
-
-const ModuleContext = createContext<ModuleContextType | undefined>(undefined);
-
-// Provider
-interface ModuleProviderProps {
-  children: ReactNode;
-}
-
-export function ModuleProvider({ children }: ModuleProviderProps) {
-  const [state, dispatch] = useReducer(moduleReducer, initialState);
-
-  // Initialize state with default buildings
-  useEffect(() => {
-    const buildings = moduleManager.getBuildings();
-    if (buildings.length > 0) {
-      buildings.forEach(building => {
-        dispatch({
-          type: 'REGISTER_BUILDING',
-          building,
-        });
-      });
-    }
-  }, []);
-
-  return <ModuleContext.Provider value={{ state, dispatch }}>{children}</ModuleContext.Provider>;
-}
-
-// Hook
-export function useModules() {
-  const context = useContext(ModuleContext);
-  if (context === undefined) {
-    throw new Error('useModules must be used within a ModuleProvider');
+/**
+ * Configuration for connecting with ModuleManager
+ */
+const managerConfig: ManagerConfig<ModuleState, ModuleManager> = {
+  connect: (manager: ModuleManager, dispatch: (action: ModuleAction) => void) => {
+    // Subscribe to module events
+    const unsubscribeModuleCreated = manager.subscribeToEvent(
+      ModuleEventType.MODULE_CREATED as unknown as EventType,
+      (event: any) => {
+        if (event.data && event.data.module) {
+          dispatch(createAddModuleAction(event.data.module));
+        }
+      }
+    );
+    
+    const unsubscribeModuleUpdated = manager.subscribeToEvent(
+      ModuleEventType.MODULE_UPDATED as unknown as EventType,
+      (event: any) => {
+        if (event.data && event.data.moduleId && event.data.updates) {
+          dispatch(createUpdateModuleAction(event.data.moduleId, event.data.updates));
+        }
+      }
+    );
+    
+    const unsubscribeModuleRemoved = manager.subscribeToEvent(
+      ModuleEventType.MODULE_REMOVED as unknown as EventType,
+      (event: any) => {
+        if (event.data && event.data.moduleId) {
+          dispatch(createRemoveModuleAction(event.data.moduleId));
+        }
+      }
+    );
+    
+    const unsubscribeModuleStatusChanged = manager.subscribeToEvent(
+      ModuleEventType.MODULE_STATUS_CHANGED as unknown as EventType,
+      (event: any) => {
+        if (event.data && event.data.moduleId && event.data.status) {
+          dispatch(createUpdateModuleAction(event.data.moduleId, { status: event.data.status }));
+        }
+      }
+    );
+    
+    // Return cleanup function
+    return () => {
+      unsubscribeModuleCreated();
+      unsubscribeModuleUpdated();
+      unsubscribeModuleRemoved();
+      unsubscribeModuleStatusChanged();
+    };
+  },
+  
+  getInitialState: (manager: ModuleManager) => {
+    // Get initial modules and state
+    const modules = manager.getAllModules?.() || [];
+    const moduleMap = modules.reduce(
+      (acc, module) => {
+        acc[module.id] = module;
+        return acc;
+      },
+      {} as Record<string, Module>
+    );
+    
+    return {
+      modules: moduleMap,
+      activeModuleIds: manager.getActiveModuleIds?.() || [],
+      selectedModuleId: null,
+      categories: manager.getModuleCategories?.() || [],
+      isLoading: false,
+      error: null,
+      lastUpdated: Date.now(),
+    };
   }
-  return context;
-}
+};
+
+/**
+ * Create the context provider and hook using the standard template
+ */
+export const [ModuleProvider, useModulesBase] = createStandardContext<
+  ModuleState,
+  ModuleAction,
+  ModuleManager
+>({
+  name: 'Module',
+  reducer: moduleReducer,
+  initialState,
+  managerConfig,
+});
+
+/**
+ * Enhanced hook with selectors
+ */
+export const useModules = useModulesBase;
+
+/**
+ * Specialized hooks for specific module data
+ */
+export const useModule = (moduleId: string): Module | undefined => {
+  return useModules(state => selectModuleById(state, moduleId));
+};
+
+export const useActiveModules = (): Module[] => {
+  return useModules(selectActiveModules);
+};
+
+export const useSelectedModule = (): Module | null => {
+  return useModules(selectSelectedModule);
+};
+
+export const useModuleCategories = (): string[] => {
+  return useModules(selectCategories);
+};
+
+export const useModulesByType = (type: ModuleType): Module[] => {
+  return useModules(state => selectModulesByType(state, type));
+};
+
+export const useModulesByStatus = (status: ModuleStatus): Module[] => {
+  return useModules(state => selectModulesByStatus(state, status));
+};
+
+/**
+ * Hook for module actions
+ */
+export const useModuleActions = () => {
+  const dispatch = useModules(state => state.dispatch);
+  
+  return {
+    addModule: (module: Module) => dispatch(createAddModuleAction(module)),
+    updateModule: (moduleId: string, updates: Partial<Module>) => 
+      dispatch(createUpdateModuleAction(moduleId, updates)),
+    removeModule: (moduleId: string) => dispatch(createRemoveModuleAction(moduleId)),
+    selectModule: (moduleId: string | null) => dispatch(createSelectModuleAction(moduleId)),
+    setActiveModules: (moduleIds: string[]) => dispatch(createSetActiveModulesAction(moduleIds)),
+  };
+};
 
 // Helper hooks
-export function useSelectedModule() {
-  const { state } = useModules();
-  return state.selectedModuleId ? moduleManager.getModule(state.selectedModuleId) : undefined;
-}
-
 export function useSelectedBuilding() {
   const { state } = useModules();
-  return state.selectedBuildingId ? moduleManager.getBuilding(state.selectedBuildingId) : undefined;
-}
-
-export function useModulesByType(type: ModuleType) {
-  return moduleManager.getModulesByType(type);
+  return state.selectedModuleId ? moduleManager.getModule(state.selectedModuleId) : undefined;
 }
 
 export function useBuildingModules(buildingId: string) {

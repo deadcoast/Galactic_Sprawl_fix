@@ -1200,3 +1200,289 @@ Recent fixes focused on resolving type inconsistencies in the mining system:
    - Using existing tests in src/tests/managers/resource/ResourceFlowManager.test.ts to verify changes
    - Reviewing console output for type errors after each component update
    - Ensuring all components render correctly with the updated types
+
+## Core Systems
+
+### Exploration System
+
+```json
+{
+  "id": "exploration_system",
+  "version": "1.0.0",
+  "description": "System for space exploration, discovery and analysis",
+  "components": [
+    {
+      "id": "exploration_manager",
+      "type": "manager",
+      "implementation_status": "complete",
+      "file_path": "src/managers/exploration/ExplorationManager.ts",
+      "description": "Central manager for exploration operations, sector discovery, and anomaly detection",
+      "implements": ["BaseManager"],
+      "connections": [
+        {
+          "to": "event_bus",
+          "type": "publishes_events",
+          "events": [
+            "SECTOR_DISCOVERED",
+            "ANOMALY_DETECTED",
+            "RESOURCE_DETECTED",
+            "SCAN_STARTED",
+            "SCAN_COMPLETED"
+          ]
+        },
+        {
+          "to": "recon_ship_manager",
+          "type": "uses_service",
+          "description": "Coordinates ship assignments with scan operations"
+        },
+        {
+          "to": "data_analysis_context",
+          "type": "provides_data",
+          "description": "Exploration data is consumed by analysis system"
+        }
+      ]
+    },
+    {
+      "id": "recon_ship_manager",
+      "type": "manager",
+      "implementation_status": "complete",
+      "file_path": "src/managers/exploration/ReconShipManagerImpl.ts",
+      "description": "Manages reconnaissance ships for exploration operations",
+      "connections": [
+        {
+          "to": "exploration_manager",
+          "type": "provides_service",
+          "description": "Handles ship operations requested by ExplorationManager"
+        }
+      ]
+    },
+    {
+      "id": "data_analysis_context",
+      "type": "context_provider",
+      "implementation_status": "complete",
+      "file_path": "src/contexts/DataAnalysisContext.tsx",
+      "description": "Context provider for analysis of exploration data, automatically processes discoveries",
+      "connections": [
+        {
+          "to": "exploration_manager",
+          "type": "subscribes_to_events",
+          "events": ["SECTOR_DISCOVERED", "ANOMALY_DETECTED", "RESOURCE_DETECTED"]
+        },
+        {
+          "to": "data_analysis_system",
+          "type": "provides_context",
+          "description": "Supplies processed exploration data to UI"
+        }
+      ]
+    },
+    {
+      "id": "data_analysis_system",
+      "type": "ui_component",
+      "implementation_status": "complete",
+      "file_path": "src/components/exploration/DataAnalysisSystem.tsx",
+      "description": "UI component for visualizing and analyzing exploration data",
+      "connections": [
+        {
+          "to": "data_analysis_context",
+          "type": "consumes_context",
+          "description": "Displays analysis of exploration discoveries"
+        },
+        {
+          "to": "exploration_manager",
+          "type": "retrieves_metadata",
+          "description": "Shows real-time exploration statistics"
+        }
+      ]
+    },
+    {
+      "id": "discovery_classification",
+      "type": "ui_component",
+      "implementation_status": "planned",
+      "file_path": "src/components/exploration/DiscoveryClassification.tsx",
+      "description": "Component for classification of anomalies and resources",
+      "connections": [
+        {
+          "to": "data_analysis_context",
+          "type": "consumes_context",
+          "description": "Uses analysis data for classification algorithms"
+        }
+      ]
+    }
+  ],
+  "integration_points": [
+    {
+      "from": "exploration_system",
+      "to": "resource_system",
+      "type": "data_flow",
+      "description": "Discovered resources are added to the resource system for extraction and processing",
+      "status": "implemented"
+    },
+    {
+      "from": "exploration_system",
+      "to": "tech_system",
+      "type": "data_flow",
+      "description": "Anomalies may unlock new research opportunities in the tech system",
+      "status": "planned"
+    }
+  ]
+}
+```
+
+### Exploration System Integration Details
+
+The Exploration System has been integrated with the core architecture following standardized patterns:
+
+#### Manager Implementation
+
+The ExplorationManager implements the BaseManager interface to provide consistent behavior with other system managers:
+
+1. **Lifecycle Management**: Implements `initialize()`, `update()`, and `dispose()` methods for standard lifecycle
+2. **Event Communication**: Uses the EventBus for publishing standardized events
+3. **Dependency Management**: Receives dependencies through the ServiceRegistry
+4. **Performance Monitoring**: Exposes statistics through the getMetadata() interface
+
+```typescript
+/**
+ * ExplorationManager extends AbstractBaseManager to integrate with the core systems
+ * - Implements standardized lifecycle methods
+ * - Uses EventBus for event-based communication
+ * - Provides performance metrics
+ */
+export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
+  constructor(eventBus: EventBus<BaseEvent>, shipManager: ReconShipManagerImpl) {
+    super('ExplorationManager', eventBus);
+    this.shipManager = shipManager;
+  }
+
+  // Lifecycle methods
+  protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
+    // Initialization logic with dependency injection
+    this.subscribeToEvent(EventType.STATUS_CHANGED, this.handleShipStatusChange);
+  }
+
+  protected onUpdate(deltaTime: number): void {
+    // Update logic for active scan operations
+    this.updateScanOperations(deltaTime);
+  }
+
+  // Event publishing
+  private completeScanOperation(operationId: string): void {
+    // Operation completion logic
+    this.publishEvent(
+      this.createEvent(ExplorationEvents.SCAN_COMPLETED, {
+        sector,
+        operation,
+      })
+    );
+  }
+}
+```
+
+#### Context Provider Integration
+
+The DataAnalysisContext connects with the ExplorationManager through event subscriptions:
+
+1. **Automated Dataset Creation**: Automatically creates datasets from exploration events
+2. **Data Transformation**: Converts exploration entities to standardized DataPoints
+3. **Type Safety**: Uses strongly-typed interfaces for all data transformations
+4. **Resource Optimization**: Implements efficient data storage and retrieval
+
+```typescript
+/**
+ * DataAnalysisContext integrates with ExplorationManager through event subscriptions
+ * - Creates datasets automatically from exploration events
+ * - Provides custom hooks for UI components
+ */
+export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
+  children,
+  initialDatasets = [],
+  initialAnalysisConfigs = [],
+  initialAnalysisResults = [],
+}) => {
+  // Event subscriptions
+  useEffect(() => {
+    // Subscribe to exploration events
+    const unsubscribeSector = explorationManager.subscribeToEvent(
+      asEventType(ExplorationEvents.SECTOR_DISCOVERED),
+      handleSectorDiscovered
+    );
+
+    // More subscriptions...
+
+    // Cleanup
+    return () => {
+      unsubscribeSector();
+      // More unsubscriptions...
+    };
+  }, [dependencies]);
+
+  // Context value
+  const contextValue: DataAnalysisContextType = {
+    // Context data and methods...
+  };
+
+  return <DataAnalysisContext.Provider value={contextValue}>{children}</DataAnalysisContext.Provider>;
+};
+```
+
+#### UI Component Integration
+
+The DataAnalysisSystem UI component integrates with the ExplorationManager through the DataAnalysisContext:
+
+1. **Real-time Data Display**: Shows live exploration statistics
+2. **Automatic Updates**: Periodically refreshes data from ExplorationManager
+3. **Dataset Visualization**: Displays datasets generated from exploration events
+4. **Interaction Patterns**: Follows standardized UI patterns for consistency
+
+```typescript
+/**
+ * DataAnalysisSystem integrates with exploration data through:
+ * - DataAnalysisContext for datasets and analysis results
+ * - ExplorationManager.getMetadata() for statistics
+ */
+export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) {
+  // Context usage
+  const {
+    datasets,
+    analysisConfigs,
+    analysisResults,
+    // More context values...
+  } = useDataAnalysis();
+
+  // Get exploration-specific datasets
+  const explorationDatasets = React.useMemo(() => {
+    return datasets.filter(dataset =>
+      ['sectors', 'anomalies', 'resources'].includes(dataset.source)
+    );
+  }, [datasets]);
+
+  // Statistics update
+  React.useEffect(() => {
+    const updateStats = () => {
+      const stats = explorationManager.getMetadata().stats || {};
+      setExplorationStats({
+        // Mapping stats...
+      });
+    };
+
+    // Update interval
+    const interval = setInterval(updateStats, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Render UI with exploration data
+  return (
+    // Component JSX...
+  );
+}
+```
+
+### Planned Integration Enhancements
+
+Future integration work for the Exploration System includes:
+
+1. **Resource System Integration**: Connect discovered resources to the resource extraction system
+2. **Technology System Integration**: Link anomalies to the research and technology tree
+3. **Mission System Integration**: Generate exploration missions based on discovered sectors
+4. **Ship Management Integration**: Enhance ship assignment and management capabilities
+5. **Classification Algorithm Integration**: Implement AI-based classification of discoveries
