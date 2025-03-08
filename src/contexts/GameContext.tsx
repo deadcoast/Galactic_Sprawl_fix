@@ -1,13 +1,13 @@
-import React, { ReactNode, useCallback } from 'react';
-import {
-  BaseAction,
-  BaseState,
-  ContextOptions,
-  createPropertySelector,
-  createSelector,
-  createStandardContext,
-  ManagerConfig,
-} from '../lib/contexts/BaseContext';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+} from 'react';
+import { BaseState } from '../lib/contexts/BaseContext';
 import { EventBus } from '../lib/events/EventBus';
 import {
   gameManager,
@@ -16,7 +16,7 @@ import {
   GameManagerEventType,
 } from '../managers/game/gameManager';
 import { GameEvent } from '../types/core/GameTypes';
-import { BaseEvent, EventType } from '../types/events/EventTypes';
+import { BaseEvent } from '../types/events/EventTypes';
 
 // Type definitions
 interface SectorData {
@@ -26,6 +26,27 @@ interface SectorData {
   habitabilityScore: number;
   lastScanned?: number;
   heatMapValue?: number;
+}
+
+/**
+ * Game Action Types as an enum for type safety and intellisense
+ */
+export enum GameActionType {
+  START_GAME = 'game/startGame',
+  PAUSE_GAME = 'game/pauseGame',
+  RESUME_GAME = 'game/resumeGame',
+  STOP_GAME = 'game/stopGame',
+  ADD_EVENT = 'game/addEvent',
+  UPDATE_RESOURCES = 'game/updateResources',
+  UPDATE_RESOURCE_RATES = 'game/updateResourceRates',
+  UPDATE_SYSTEMS = 'game/updateSystems',
+  UPDATE_GAME_TIME = 'game/updateGameTime',
+  ADD_MISSION = 'game/addMission',
+  UPDATE_MISSION_STATS = 'game/updateMissionStats',
+  UPDATE_SECTOR = 'game/updateSector',
+  UPDATE_SHIP = 'game/updateShip',
+  SET_LOADING = 'game/setLoading',
+  SET_ERROR = 'game/setError',
 }
 
 /**
@@ -95,29 +116,38 @@ interface GameState extends BaseState {
 }
 
 /**
- * Action Types
+ * Define typed payload interfaces for each action
  */
-type GameActionType =
-  | 'START_GAME'
-  | 'PAUSE_GAME'
-  | 'RESUME_GAME'
-  | 'STOP_GAME'
-  | 'ADD_EVENT'
-  | 'UPDATE_RESOURCES'
-  | 'UPDATE_RESOURCE_RATES'
-  | 'UPDATE_SYSTEMS'
-  | 'UPDATE_GAME_TIME'
-  | 'ADD_MISSION'
-  | 'UPDATE_MISSION_STATS'
-  | 'UPDATE_SECTOR'
-  | 'UPDATE_SHIP';
+interface GamePayloads {
+  [GameActionType.START_GAME]: undefined;
+  [GameActionType.PAUSE_GAME]: undefined;
+  [GameActionType.RESUME_GAME]: undefined;
+  [GameActionType.STOP_GAME]: undefined;
+  [GameActionType.ADD_EVENT]: GameEvent;
+  [GameActionType.UPDATE_RESOURCES]: Partial<GameState['resources']>;
+  [GameActionType.UPDATE_RESOURCE_RATES]: Partial<GameState['resourceRates']>;
+  [GameActionType.UPDATE_SYSTEMS]: Partial<GameState['systems']>;
+  [GameActionType.UPDATE_GAME_TIME]: number;
+  [GameActionType.ADD_MISSION]: GameState['missions']['history'][0];
+  [GameActionType.UPDATE_MISSION_STATS]: Partial<GameState['missions']['statistics']>;
+  [GameActionType.UPDATE_SECTOR]: { sectorId: string; data: Partial<SectorData> };
+  [GameActionType.UPDATE_SHIP]: {
+    shipId: string;
+    data: Partial<GameState['exploration']['ships'][string]>;
+  };
+  [GameActionType.SET_LOADING]: { isLoading: boolean };
+  [GameActionType.SET_ERROR]: { error: string | null };
+}
 
 /**
- * Game Action Interface
+ * Game Action Interface with strongly typed payloads
  */
-interface GameAction extends BaseAction<GameActionType> {
-  payload?: unknown;
-}
+export type GameAction = {
+  [K in keyof GamePayloads]: {
+    type: K;
+    payload: GamePayloads[K];
+  };
+}[keyof GamePayloads];
 
 /**
  * Initial State
@@ -166,37 +196,129 @@ const initialState: GameState = {
 };
 
 /**
+ * Type-safe action creators
+ */
+export const createStartGameAction = (): GameAction => ({
+  type: GameActionType.START_GAME,
+  payload: undefined,
+});
+
+export const createPauseGameAction = (): GameAction => ({
+  type: GameActionType.PAUSE_GAME,
+  payload: undefined,
+});
+
+export const createResumeGameAction = (): GameAction => ({
+  type: GameActionType.RESUME_GAME,
+  payload: undefined,
+});
+
+export const createStopGameAction = (): GameAction => ({
+  type: GameActionType.STOP_GAME,
+  payload: undefined,
+});
+
+export const createAddEventAction = (event: GameEvent): GameAction => ({
+  type: GameActionType.ADD_EVENT,
+  payload: event,
+});
+
+export const createUpdateResourcesAction = (
+  resources: Partial<GameState['resources']>
+): GameAction => ({
+  type: GameActionType.UPDATE_RESOURCES,
+  payload: resources,
+});
+
+export const createUpdateResourceRatesAction = (
+  rates: Partial<GameState['resourceRates']>
+): GameAction => ({
+  type: GameActionType.UPDATE_RESOURCE_RATES,
+  payload: rates,
+});
+
+export const createUpdateSystemsAction = (systems: Partial<GameState['systems']>): GameAction => ({
+  type: GameActionType.UPDATE_SYSTEMS,
+  payload: systems,
+});
+
+export const createUpdateGameTimeAction = (gameTime: number): GameAction => ({
+  type: GameActionType.UPDATE_GAME_TIME,
+  payload: gameTime,
+});
+
+export const createAddMissionAction = (
+  mission: GameState['missions']['history'][0]
+): GameAction => ({
+  type: GameActionType.ADD_MISSION,
+  payload: mission,
+});
+
+export const createUpdateMissionStatsAction = (
+  stats: Partial<GameState['missions']['statistics']>
+): GameAction => ({
+  type: GameActionType.UPDATE_MISSION_STATS,
+  payload: stats,
+});
+
+export const createUpdateSectorAction = (
+  sectorId: string,
+  data: Partial<SectorData>
+): GameAction => ({
+  type: GameActionType.UPDATE_SECTOR,
+  payload: { sectorId, data },
+});
+
+export const createUpdateShipAction = (
+  shipId: string,
+  data: Partial<GameState['exploration']['ships'][string]>
+): GameAction => ({
+  type: GameActionType.UPDATE_SHIP,
+  payload: { shipId, data },
+});
+
+export const createSetLoadingAction = (isLoading: boolean): GameAction => ({
+  type: GameActionType.SET_LOADING,
+  payload: { isLoading },
+});
+
+export const createSetErrorAction = (error: string | null): GameAction => ({
+  type: GameActionType.SET_ERROR,
+  payload: { error },
+});
+
+/**
  * Game Reducer
  */
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
-    case 'START_GAME':
+    case GameActionType.START_GAME:
       return { ...state, isRunning: true, lastUpdated: Date.now() };
 
-    case 'PAUSE_GAME':
+    case GameActionType.PAUSE_GAME:
       return { ...state, isPaused: true, lastUpdated: Date.now() };
 
-    case 'RESUME_GAME':
+    case GameActionType.RESUME_GAME:
       return { ...state, isPaused: false, lastUpdated: Date.now() };
 
-    case 'STOP_GAME':
+    case GameActionType.STOP_GAME:
       return { ...state, isRunning: false, isPaused: false, lastUpdated: Date.now() };
 
-    case 'ADD_EVENT':
+    case GameActionType.ADD_EVENT:
       return {
         ...state,
         events: [...state.events, action.payload as GameEvent],
         lastUpdated: Date.now(),
       };
 
-    case 'UPDATE_RESOURCES':
+    case GameActionType.UPDATE_RESOURCES:
       return {
         ...state,
         resources: { ...state.resources, ...(action.payload as Partial<GameState['resources']>) },
         lastUpdated: Date.now(),
       };
 
-    case 'UPDATE_RESOURCE_RATES':
+    case GameActionType.UPDATE_RESOURCE_RATES:
       return {
         ...state,
         resourceRates: {
@@ -206,21 +328,21 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         lastUpdated: Date.now(),
       };
 
-    case 'UPDATE_SYSTEMS':
+    case GameActionType.UPDATE_SYSTEMS:
       return {
         ...state,
         systems: { ...state.systems, ...(action.payload as Partial<GameState['systems']>) },
         lastUpdated: Date.now(),
       };
 
-    case 'UPDATE_GAME_TIME':
+    case GameActionType.UPDATE_GAME_TIME:
       return {
         ...state,
         gameTime: action.payload as number,
         lastUpdated: Date.now(),
       };
 
-    case 'ADD_MISSION':
+    case GameActionType.ADD_MISSION:
       return {
         ...state,
         missions: {
@@ -233,7 +355,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         lastUpdated: Date.now(),
       };
 
-    case 'UPDATE_MISSION_STATS':
+    case GameActionType.UPDATE_MISSION_STATS:
       return {
         ...state,
         missions: {
@@ -246,8 +368,11 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         lastUpdated: Date.now(),
       };
 
-    case 'UPDATE_SECTOR': {
-      const { sectorId, data } = action.payload as { sectorId: string; data: Partial<SectorData> };
+    case GameActionType.UPDATE_SECTOR: {
+      const { sectorId, data } = action.payload as {
+        sectorId: string;
+        data: Partial<SectorData>;
+      };
       return {
         ...state,
         exploration: {
@@ -264,8 +389,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       };
     }
 
-    case 'UPDATE_SHIP': {
-      const { shipId, data } = action.payload as {
+    case GameActionType.UPDATE_SHIP: {
+      const { shipId, data: shipData } = action.payload as {
         shipId: string;
         data: Partial<GameState['exploration']['ships'][string]>;
       };
@@ -277,7 +402,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
             ...state.exploration.ships,
             [shipId]: {
               ...state.exploration.ships[shipId],
-              ...data,
+              ...shipData,
             },
           },
         },
@@ -285,276 +410,69 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       };
     }
 
+    case GameActionType.SET_LOADING:
+      return {
+        ...state,
+        isLoading: action.payload.isLoading,
+      };
+
+    case GameActionType.SET_ERROR:
+      return {
+        ...state,
+        error: action.payload.error,
+        isLoading: false,
+      };
+
     default:
       return state;
   }
 };
 
-/**
- * Context creation options
- */
-const gameContextOptions: ContextOptions<GameState, GameAction> = {
-  name: 'GameContext',
-  initialState,
-  reducer: gameReducer,
-  performanceMonitoring: {
-    enabled: true,
-    reducerThreshold: 5, // Warn if reducer takes more than 5ms
-    selectorThreshold: 2, // Warn if selector takes more than 2ms
-  },
-  debug: {
-    logStateChanges: process.env.NODE_ENV === 'development',
-    logActions: process.env.NODE_ENV === 'development',
-  },
+// Create selectors as functions
+export const selectIsRunning = (state: GameState) => state.isRunning;
+export const selectIsPaused = (state: GameState) => state.isPaused;
+export const selectGameTime = (state: GameState) => state.gameTime;
+export const selectResources = (state: GameState) => state.resources;
+export const selectResourceRates = (state: GameState) => state.resourceRates;
+export const selectSystems = (state: GameState) => state.systems;
+export const selectMissions = (state: GameState) => state.missions;
+export const selectExplorationData = (state: GameState) => state.exploration;
+export const selectSectors = (state: GameState) => state.exploration.sectors;
+export const selectShips = (state: GameState) => state.exploration.ships;
+export const selectCompletedMissions = (state: GameState) => state.missions.completed;
+export const selectMissionsInProgress = (state: GameState) => state.missions.inProgress;
+
+// Event handlers for game events
+const handleGameStarted = (event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
+  dispatch(createStartGameAction());
 };
 
-// Create the context
-const {
-  Context: GameContext,
-  Provider: BaseGameProvider,
-  useContextState: useGameState,
-  useContextDispatch: useGameDispatch,
-  useContextSelector: useGameSelector,
-  connectToManager: connectGameToManager,
-} = createStandardContext<GameState, GameAction, GameManager>(gameContextOptions);
-
-// Create selectors for various parts of the state
-export const selectIsRunning = createPropertySelector<GameState, 'isRunning'>('isRunning');
-export const selectIsPaused = createPropertySelector<GameState, 'isPaused'>('isPaused');
-export const selectGameTime = createPropertySelector<GameState, 'gameTime'>('gameTime');
-export const selectResources = createPropertySelector<GameState, 'resources'>('resources');
-export const selectResourceRates = createPropertySelector<GameState, 'resourceRates'>(
-  'resourceRates'
-);
-export const selectSystems = createPropertySelector<GameState, 'systems'>('systems');
-export const selectMissions = createPropertySelector<GameState, 'missions'>('missions');
-export const selectExplorationData = createPropertySelector<GameState, 'exploration'>(
-  'exploration'
-);
-
-export const selectSectors = createSelector<GameState, Record<string, SectorData>>(
-  state => state.exploration.sectors
-);
-
-export const selectShips = createSelector<GameState, GameState['exploration']['ships']>(
-  state => state.exploration.ships
-);
-
-export const selectCompletedMissions = createSelector<GameState, number>(
-  state => state.missions.completed
-);
-
-export const selectMissionsInProgress = createSelector<GameState, number>(
-  state => state.missions.inProgress
-);
-
-// Action creators
-export const gameActions = {
-  startGame: () => ({ type: 'START_GAME' as const }),
-  pauseGame: () => ({ type: 'PAUSE_GAME' as const }),
-  resumeGame: () => ({ type: 'RESUME_GAME' as const }),
-  stopGame: () => ({ type: 'STOP_GAME' as const }),
-  addEvent: (event: GameEvent) => ({ type: 'ADD_EVENT' as const, payload: event }),
-  updateResources: (resources: Partial<GameState['resources']>) => ({
-    type: 'UPDATE_RESOURCES' as const,
-    payload: resources,
-  }),
-  updateResourceRates: (rates: Partial<GameState['resourceRates']>) => ({
-    type: 'UPDATE_RESOURCE_RATES' as const,
-    payload: rates,
-  }),
-  updateSystems: (systems: Partial<GameState['systems']>) => ({
-    type: 'UPDATE_SYSTEMS' as const,
-    payload: systems,
-  }),
-  updateGameTime: (gameTime: number) => ({
-    type: 'UPDATE_GAME_TIME' as const,
-    payload: gameTime,
-  }),
-  addMission: (mission: GameState['missions']['history'][0]) => ({
-    type: 'ADD_MISSION' as const,
-    payload: mission,
-  }),
-  updateMissionStats: (stats: Partial<GameState['missions']['statistics']>) => ({
-    type: 'UPDATE_MISSION_STATS' as const,
-    payload: stats,
-  }),
-  updateSector: (sectorId: string, data: Partial<SectorData>) => ({
-    type: 'UPDATE_SECTOR' as const,
-    payload: { sectorId, data },
-  }),
-  updateShip: (shipId: string, data: Partial<GameState['exploration']['ships'][string]>) => ({
-    type: 'UPDATE_SHIP' as const,
-    payload: { shipId, data },
-  }),
+const handleGamePaused = (event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
+  dispatch(createPauseGameAction());
 };
 
-// Custom hook to get game actions
-export const useGameActions = () => {
-  const dispatch = useGameDispatch();
-
-  return {
-    startGame: useCallback(() => {
-      dispatch(gameActions.startGame());
-      gameManager.start();
-    }, [dispatch]),
-
-    pauseGame: useCallback(() => {
-      dispatch(gameActions.pauseGame());
-      gameManager.pause();
-    }, [dispatch]),
-
-    resumeGame: useCallback(() => {
-      dispatch(gameActions.resumeGame());
-      gameManager.resume();
-    }, [dispatch]),
-
-    stopGame: useCallback(() => {
-      dispatch(gameActions.stopGame());
-      gameManager.stop();
-    }, [dispatch]),
-
-    addEvent: useCallback((event: GameEvent) => dispatch(gameActions.addEvent(event)), [dispatch]),
-
-    updateResources: useCallback(
-      (resources: Partial<GameState['resources']>) =>
-        dispatch(gameActions.updateResources(resources)),
-      [dispatch]
-    ),
-
-    updateResourceRates: useCallback(
-      (rates: Partial<GameState['resourceRates']>) =>
-        dispatch(gameActions.updateResourceRates(rates)),
-      [dispatch]
-    ),
-
-    updateSystems: useCallback(
-      (systems: Partial<GameState['systems']>) => dispatch(gameActions.updateSystems(systems)),
-      [dispatch]
-    ),
-
-    addMission: useCallback(
-      (mission: GameState['missions']['history'][0]) => dispatch(gameActions.addMission(mission)),
-      [dispatch]
-    ),
-
-    updateMissionStats: useCallback(
-      (stats: Partial<GameState['missions']['statistics']>) =>
-        dispatch(gameActions.updateMissionStats(stats)),
-      [dispatch]
-    ),
-
-    updateSector: useCallback(
-      (sectorId: string, updates: Partial<SectorData>) =>
-        dispatch(gameActions.updateSector(sectorId, updates)),
-      [dispatch]
-    ),
-
-    updateShip: useCallback(
-      (shipId: string, updates: Partial<GameState['exploration']['ships'][string]>) =>
-        dispatch(gameActions.updateShip(shipId, updates)),
-      [dispatch]
-    ),
-  };
+const handleGameResumed = (event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
+  dispatch(createResumeGameAction());
 };
 
-// Configure connection to GameManager
-const configureGameManager = (manager: GameManager): ManagerConfig<GameManager> => {
-  // Create a Record with all required EventType keys
-  const subscriptions: Record<EventType, (event: BaseEvent, draft: unknown) => void> = {} as Record<
-    EventType,
-    (event: BaseEvent, draft: unknown) => void
-  >;
-
-  // Add our specific handlers
-  subscriptions[GameManagerEventType.TIME_UPDATED as unknown as EventType] = (
-    event: BaseEvent,
-    dispatch: React.Dispatch<GameAction>
-  ) => {
-    const gameEvent = event as GameManagerEvent;
-    if (gameEvent.gameTime !== undefined) {
-      dispatch(gameActions.updateGameTime(gameEvent.gameTime));
-    }
-  };
-
-  subscriptions[GameManagerEventType.GAME_STARTED as unknown as EventType] = (
-    event: BaseEvent,
-    dispatch: React.Dispatch<GameAction>
-  ) => {
-    dispatch(gameActions.startGame());
-  };
-
-  subscriptions[GameManagerEventType.GAME_PAUSED as unknown as EventType] = (
-    event: BaseEvent,
-    dispatch: React.Dispatch<GameAction>
-  ) => {
-    dispatch(gameActions.pauseGame());
-  };
-
-  subscriptions[GameManagerEventType.GAME_RESUMED as unknown as EventType] = (
-    event: BaseEvent,
-    dispatch: React.Dispatch<GameAction>
-  ) => {
-    dispatch(gameActions.resumeGame());
-  };
-
-  subscriptions[GameManagerEventType.GAME_STOPPED as unknown as EventType] = (
-    event: BaseEvent,
-    dispatch: React.Dispatch<GameAction>
-  ) => {
-    dispatch(gameActions.stopGame());
-  };
-
-  return {
-    manager,
-    methods: {
-      getGameTime: manager => manager.getGameTime(),
-      isGameRunning: manager => manager.isGameRunning(),
-      isGamePaused: manager => manager.isGamePaused(),
-    },
-    events: {
-      eventBus: manager.eventBus as unknown as EventBus<BaseEvent>,
-      subscriptions: {
-        [GameManagerEventType.TIME_UPDATED as unknown as EventType]: (
-          event: BaseEvent,
-          dispatch: React.Dispatch<GameAction>
-        ) => {
-          const gameEvent = event as GameManagerEvent;
-          if (gameEvent.gameTime !== undefined) {
-            dispatch(gameActions.updateGameTime(gameEvent.gameTime));
-          }
-        },
-        [GameManagerEventType.GAME_STARTED as unknown as EventType]: (
-          event: BaseEvent,
-          dispatch: React.Dispatch<GameAction>
-        ) => {
-          dispatch(gameActions.startGame());
-        },
-        [GameManagerEventType.GAME_PAUSED as unknown as EventType]: (
-          event: BaseEvent,
-          dispatch: React.Dispatch<GameAction>
-        ) => {
-          dispatch(gameActions.pauseGame());
-        },
-        [GameManagerEventType.GAME_RESUMED as unknown as EventType]: (
-          event: BaseEvent,
-          dispatch: React.Dispatch<GameAction>
-        ) => {
-          dispatch(gameActions.resumeGame());
-        },
-        [GameManagerEventType.GAME_STOPPED as unknown as EventType]: (
-          event: BaseEvent,
-          dispatch: React.Dispatch<GameAction>
-        ) => {
-          dispatch(gameActions.stopGame());
-        },
-      },
-    },
-  };
+const handleGameStopped = (event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
+  dispatch(createStopGameAction());
 };
 
-// Connect the game context to the game manager
-connectGameToManager(configureGameManager(gameManager));
+const handleTimeUpdated = (event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
+  if (event.gameTime !== undefined) {
+    dispatch(createUpdateGameTimeAction(event.gameTime));
+  }
+};
+
+// Create context
+type GameContextType = {
+  state: GameState;
+  dispatch: React.Dispatch<GameAction>;
+  manager?: GameManager;
+};
+
+const GameContext = createContext<GameContextType | undefined>(undefined);
 
 // Create wrapper provider for additional functionality
 interface GameProviderProps {
@@ -568,11 +486,222 @@ export const GameProvider: React.FC<GameProviderProps> = ({
   manager = gameManager,
   initialGameState,
 }) => {
-  return (
-    <BaseGameProvider manager={manager} initialState={initialGameState}>
-      {children}
-    </BaseGameProvider>
+  // Get initial state from GameManager if available
+  const effectiveInitialState = useMemo(() => {
+    if (manager) {
+      try {
+        return {
+          ...initialState,
+          gameTime: manager.getGameTime(),
+          isRunning: manager.isGameRunning(),
+          isPaused: manager.isGamePaused(),
+          ...(initialGameState || {}),
+        };
+      } catch (error) {
+        console.error('Error getting game state from manager:', error);
+      }
+    }
+    return { ...initialState, ...(initialGameState || {}) };
+  }, [manager, initialGameState]);
+
+  // Create reducer
+  const [state, dispatch] = useReducer(gameReducer, effectiveInitialState);
+
+  // Set up event subscriptions with the manager when provided
+  useEffect(() => {
+    if (manager) {
+      // Get the event bus from the manager
+      // Use type assertion to make TypeScript treat this as a more generic EventBus type
+      const gameEvents = manager.eventBus as EventBus<BaseEvent>;
+
+      // Use separate handlers for each event type to match test expectations
+      // Cast event types to string to avoid type errors with EventBus
+      const startedEventType = String(GameManagerEventType.GAME_STARTED);
+      const pausedEventType = String(GameManagerEventType.GAME_PAUSED);
+      const resumedEventType = String(GameManagerEventType.GAME_RESUMED);
+      const stoppedEventType = String(GameManagerEventType.GAME_STOPPED);
+      const timeUpdatedEventType = String(GameManagerEventType.TIME_UPDATED);
+
+      // Create type-safe wrapper for each handler
+      const createSafeHandler = (handler: (event: GameManagerEvent) => void) => {
+        return (event: BaseEvent) => handler(event as GameManagerEvent);
+      };
+
+      /**
+       * IMPORTANT: The use of 'any' in the subscribe calls is intentional and necessary
+       * due to a type incompatibility between GameManagerEventType and EventType.
+       *
+       * The proper solution would be to:
+       * 1. Refactor the event system to use a single EventType enum
+       * 2. Fix the GameManagerEvent interface to ensure compatibility with BaseEvent
+       *
+       * Until then, this type assertion is a necessary workaround.
+       * This has been documented in the System_Scratchpad.md file.
+       */
+
+      // Subscribe to individual event types - this approach works with the test mocks
+      const unsubStarted = gameEvents.subscribe(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        startedEventType as any,
+        createSafeHandler(event => handleGameStarted(event, dispatch))
+      );
+
+      const unsubPaused = gameEvents.subscribe(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pausedEventType as any,
+        createSafeHandler(event => handleGamePaused(event, dispatch))
+      );
+
+      const unsubResumed = gameEvents.subscribe(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        resumedEventType as any,
+        createSafeHandler(event => handleGameResumed(event, dispatch))
+      );
+
+      const unsubStopped = gameEvents.subscribe(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        stoppedEventType as any,
+        createSafeHandler(event => handleGameStopped(event, dispatch))
+      );
+
+      const unsubTimeUpdated = gameEvents.subscribe(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        timeUpdatedEventType as any,
+        createSafeHandler(event => handleTimeUpdated(event, dispatch))
+      );
+
+      // Clean up subscriptions
+      return () => {
+        if (typeof unsubStarted === 'function') unsubStarted();
+        if (typeof unsubPaused === 'function') unsubPaused();
+        if (typeof unsubResumed === 'function') unsubResumed();
+        if (typeof unsubStopped === 'function') unsubStopped();
+        if (typeof unsubTimeUpdated === 'function') unsubTimeUpdated();
+      };
+    }
+    return undefined;
+  }, [manager]);
+
+  // Create context value
+  const contextValue = useMemo(
+    () => ({
+      state,
+      dispatch,
+      manager, // Include manager in context value
+    }),
+    [state, manager]
   );
+
+  return <GameContext.Provider value={contextValue}>{children}</GameContext.Provider>;
+};
+
+// Hook to use the context
+export const useGameState = <T,>(selector: (state: GameState) => T): T => {
+  const context = useContext(GameContext);
+  if (!context) {
+    throw new Error('useGameState must be used within a GameProvider');
+  }
+  return selector(context.state);
+};
+
+// Hook to use the dispatch function
+export const useGameDispatch = (): React.Dispatch<GameAction> => {
+  const context = useContext(GameContext);
+  if (!context) {
+    throw new Error('useGameDispatch must be used within a GameProvider');
+  }
+  return context.dispatch;
+};
+
+// Hook for selecting specific state parts
+export const useGameSelector = <T,>(selector: (state: GameState) => T): T => {
+  return useGameState(selector);
+};
+
+/**
+ * Custom hook to get game actions
+ */
+export const useGameActions = () => {
+  const dispatch = useGameDispatch();
+  const context = useContext(GameContext);
+  if (!context) {
+    throw new Error('useGameActions must be used within a GameProvider');
+  }
+
+  // Safely get the manager reference
+  const managerRef = useMemo(() => {
+    /**
+     * IMPORTANT: Using type assertion here is necessary due to TypeScript's limitations
+     * with discriminated union types. We know the context has a manager property but
+     * TypeScript cannot infer this properly from the union type.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (context as any).manager || gameManager;
+  }, [context]);
+
+  return {
+    startGame: useCallback(() => {
+      dispatch(createStartGameAction());
+      managerRef?.start?.();
+    }, [dispatch, managerRef]),
+
+    pauseGame: useCallback(() => {
+      dispatch(createPauseGameAction());
+      managerRef?.pause?.();
+    }, [dispatch, managerRef]),
+
+    resumeGame: useCallback(() => {
+      dispatch(createResumeGameAction());
+      managerRef?.resume?.();
+    }, [dispatch, managerRef]),
+
+    stopGame: useCallback(() => {
+      dispatch(createStopGameAction());
+      managerRef?.stop?.();
+    }, [dispatch, managerRef]),
+
+    addEvent: useCallback((event: GameEvent) => dispatch(createAddEventAction(event)), [dispatch]),
+
+    updateResources: useCallback(
+      (resources: Partial<GameState['resources']>) =>
+        dispatch(createUpdateResourcesAction(resources)),
+      [dispatch]
+    ),
+
+    updateResourceRates: useCallback(
+      (rates: Partial<GameState['resourceRates']>) =>
+        dispatch(createUpdateResourceRatesAction(rates)),
+      [dispatch]
+    ),
+
+    updateSystems: useCallback(
+      (systems: Partial<GameState['systems']>) => dispatch(createUpdateSystemsAction(systems)),
+      [dispatch]
+    ),
+
+    addMission: useCallback(
+      (mission: GameState['missions']['history'][0]) => dispatch(createAddMissionAction(mission)),
+      [dispatch]
+    ),
+
+    updateMissionStats: useCallback(
+      (stats: Partial<GameState['missions']['statistics']>) =>
+        dispatch(createUpdateMissionStatsAction(stats)),
+      [dispatch]
+    ),
+
+    updateSector: useCallback(
+      (sectorId: string, updates: Partial<SectorData>) =>
+        dispatch(createUpdateSectorAction(sectorId, updates)),
+      [dispatch]
+    ),
+
+    updateShip: useCallback(
+      (shipId: string, updates: Partial<GameState['exploration']['ships'][string]>) =>
+        dispatch(createUpdateShipAction(shipId, updates)),
+      [dispatch]
+    ),
+  };
 };
 
 // Export hooks for accessing specific parts of state
@@ -585,6 +714,3 @@ export const useSystemsState = () => useGameSelector(selectSystems);
 export const useMissionsState = () => useGameSelector(selectMissions);
 export const useSectorsState = () => useGameSelector(selectSectors);
 export const useShipsState = () => useGameSelector(selectShips);
-
-// Export the context for direct use
-export { GameContext, useGameDispatch, useGameSelector, useGameState };

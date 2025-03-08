@@ -1486,3 +1486,616 @@ Future integration work for the Exploration System includes:
 3. **Mission System Integration**: Generate exploration missions based on discovered sectors
 4. **Ship Management Integration**: Enhance ship assignment and management capabilities
 5. **Classification Algorithm Integration**: Implement AI-based classification of discoveries
+
+## Context Implementation
+
+### Current Implementation
+
+We have moved away from using the `createStandardContext` utility to a direct React context implementation using hooks. This approach:
+
+1. Eliminates circular dependencies that were causing issues in tests
+2. Provides more control over context creation and subscription management
+3. Improves type safety and reduces reliance on utility functions
+
+The contexts that have been refactored to use this new pattern are:
+
+- ResourceRatesContext
+- GameContext
+
+### Benefits of the New Pattern
+
+- No circular dependencies between contexts and their consumers
+- Better test compatibility with mocking frameworks
+- Improved type safety with explicit state and action types
+- More explicit control over subscriptions and event handling
+- Easier to understand and maintain
+
+### Integration with Managers
+
+The new context pattern maintains the same integration with managers as before:
+
+- Managers are passed to the context provider as props
+- The context subscribes to manager events and updates state accordingly
+- Actions in the context can trigger manager methods
+- The manager is included in the context value for direct access when needed
+
+### Event Handling
+
+Event handling has been improved with:
+
+- Better type safety for event subscriptions
+- Safer cleanup of event subscriptions
+- More explicit error handling for subscription failures
+
+### Future Improvements
+
+- Fix type compatibility issues between different event type systems
+- Standardize this pattern across all contexts
+- Create better documentation for how to properly test these contexts
+- Improve error handling and logging for context operations
+
+## Success Metrics and Verification
+
+```json
+{
+  "type_safety": {
+    "metrics": [
+      {
+        "name": "TypeScript Error Reduction",
+        "target": "90% reduction in TypeScript errors",
+        "measurement": "Compiler error count before vs. after"
+      },
+      {
+        "name": "Any Type Reduction",
+        "target": "95% reduction in 'any' type usage",
+        "measurement": "Count of 'any' types before vs. after"
+      }
+    ]
+  },
+  "component_connections": {
+    "metrics": [
+      {
+        "name": "UI-Backend Connection",
+        "target": "100% of UI components properly connected",
+        "measurement": "Static analysis of component-context connections"
+      },
+      {
+        "name": "State Update Reliability",
+        "target": "Zero stale state issues",
+        "measurement": "Automated tests for state propagation"
+      }
+    ]
+  },
+  "code_quality": {
+    "metrics": [
+      {
+        "name": "Test Coverage",
+        "target": "85% test coverage for critical systems",
+        "measurement": "Test coverage reports"
+      },
+      {
+        "name": "Pattern Consistency",
+        "target": "95% adherence to standardized patterns",
+        "measurement": "Static analysis of pattern usage"
+      }
+    ]
+  },
+  "performance": {
+    "metrics": [
+      {
+        "name": "Rendering Performance",
+        "target": "60 FPS for complex UI components",
+        "measurement": "Performance profiling"
+      },
+      {
+        "name": "Resource Flow Optimization",
+        "target": "50% reduction in computation time",
+        "measurement": "Benchmark comparisons"
+      }
+    ]
+  }
+}
+```
+
+## Implementation Notes for Cursor
+
+1. This plan is structured for machine parsing and execution. Each component has a unique implementation ID for reference.
+
+2. Implementation priorities are explicitly specified to guide execution order.
+3. Type definitions and interfaces are provided as templates for code generation.
+4. Success metrics are quantifiable and measurable through automated means.
+5. The plan assumes an iterative implementation approach with continuous validation against architecture specifications.
+
+## Cursor-Specific Instructions
+
+1. Parse each component section to extract implementation tasks.
+2. Generate comprehensive analysis reports before beginning implementation.
+3. Create standardized patterns based on the specifications in each component section.
+4. Prioritize implementation based on the specified order and dependencies.
+5. Validate each implementation against the success metrics before proceeding to the next component.
+6. Generate documentation for implemented patterns and components to ensure knowledge transfer.
+7. Utilize the specified AI capabilities for analysis, generation, and verification throughout the implementation process.
+
+### Resource System Visualization
+
+**Implementation Status**:
+
+- ResourceVisualizationEnhanced: Fully implemented
+- ResourceThresholdVisualization: Fully implemented
+- ResourceFlowDiagram: Fully implemented
+- Resource Management Dashboard: Not yet implemented
+- Resource Forecasting Visualization: Not yet implemented
+- Resource Optimization Suggestions: Not yet implemented
+
+**Implementation Details for ResourceThresholdVisualization**:
+
+- Shows resource levels relative to defined thresholds (critical, low, normal, high, maximum)
+- Provides real-time predictions for when thresholds will be reached based on current rates
+- Visualizes progress towards next threshold with color-coded indicators
+- Integrates with the component registration system for lifecycle management
+- Subscribes to resource events for automatic updates
+- Efficiently re-renders only when relevant resource data changes
+
+**Implementation Details for ResourceFlowDiagram**:
+
+- Visualizes the full resource flow network using D3.js force-directed graph
+- Shows different node types (producer, consumer, storage, converter) with distinct visuals
+- Displays resource flow connections with animated paths indicating rate and direction
+- Provides interactive features: zoom, pan, node dragging, and selection
+- Integrates with component registration system for automatic updates
+- Includes detailed resource type indicators and comprehensive legend
+- Updates in real-time based on resource flow events
+- Supports focusing on specific resource types and nodes
+
+**Integration Points**:
+
+- Connects to resource threshold definitions from ResourceManager
+- Receives real-time updates from the ModuleEvents system
+- Registered with ComponentRegistryService for performance tracking
+- Can be used within any resource management interface
+- ResourceFlowDiagram provides visualization of ResourceFlowManager's network
+
+**Next Steps**:
+
+- Create a comprehensive Resource Management Dashboard combining all visualization components
+- Implement resource forecasting with trend line visualization and projections
+- Develop resource optimization suggestions based on production/consumption patterns
+- Enhance ResourceFlowDiagram with detailed node statistics and optimization indicators
+
+## Resource System Standardization
+
+### Standardized Resource Types
+
+- **File:** `src/types/resources/StandardizedResourceTypes.ts`
+- **Description:** Provides standardized type definitions for the resource management system to ensure consistency across the codebase.
+- **Dependencies:**
+  - TypeScript Enum support
+- **Key Components:**
+  - **ResourceType Enum:** Replaces string literals with enum values
+  - **ResourceStateClass:** Manages resource state with proper validation
+  - **ResourceTypeHelpers:** Provides utilities for working with resource types
+  - **Type Interfaces:** Standardized interfaces for the resource flow system
+- **Integration Points:**
+
+  - **ResourceFlowManager:** Core manager updated to use standardized types
+  - **UI Components:** All UI components updated to use standardized types
+  - **ResourceRatesContext:** Updated to use ResourceType enum
+  - **ThresholdContext:** Updated to use ResourceType enum
+  - **Mining System:** Mining components updated to use ResourceType enum
+
+- **Implementation Status:**
+  - Phase 1 (Complete): Core type definitions and ResourceFlowManager
+  - Phase 2 (Complete): UI component and context provider updates
+  - Phase 3 (Complete): Mining system integration with standardized types
+  - Phase 4 (Pending): Comprehensive testing
+  - Phase 5 (Pending): Legacy code deprecation
+
+### Component Updates
+
+#### UI Components
+
+The following UI components have been migrated to use the standardized resource types:
+
+- **ResourceManagementDashboard**
+  - Uses ResourceType enum for type references
+  - Uses ResourceTypeHelpers for display name generation
+- **ResourceFlowDiagram**
+  - Updated to use ResourceType enum for node and connection resource types
+  - Uses standardized interfaces for network nodes and links
+- **ResourceThresholdVisualization**
+  - Updated to use ResourceType enum for resource identification
+  - Uses ResourceTypeHelpers for UI display names
+- **ResourceVisualizationEnhanced**
+  - Updated resource mappings to use ResourceType enum
+  - Improved type safety in resource displays
+- **ResourceForecastingVisualization**
+  - Uses ResourceType enum for resource types
+  - Improved forecast calculations with standardized types
+- **ResourceOptimizationSuggestions**
+  - Updated suggestion filtering to use ResourceType enum
+  - Improved type handling for optimization suggestions
+
+#### Context Providers
+
+Context providers have been updated to use standardized resource types:
+
+- **ResourceRatesContext**
+  - Updated from string-based CoreResourceType to ResourceType enum
+  - Added compatibility layer for legacy string-based resource references
+  - Improved type-safety in rate calculation methods
+- **ThresholdContext**
+  - Updated Resource interface to use ResourceType enum
+  - Improved consistency in threshold management
+
+#### Mining System Integration
+
+The mining system components have been updated to use standardized resource types:
+
+- **MiningTypes.ts**
+
+  - Updated `MiningResource` interface to use ResourceType enum instead of string literals
+  - Added new `MiningShip` interface for consistent type definitions
+  - Standardized property naming conventions
+
+- **MineralProcessingCentre.tsx**
+
+  - Updated to use ResourceType enum for resource identification
+  - Improved type safety in resource processing logic
+
+- **MiningControls.tsx**
+
+  - Replaced string literal comparisons with ResourceType enum values
+  - Fixed type inconsistencies in conditional rendering based on resource types
+  - Improved UI consistency for different resource types
+
+- **MiningMap.tsx**
+
+  - Updated to use the standardized MiningResource type
+  - Enhanced type safety in resource mapping functions
+
+- **ThresholdManager and ThresholdIntegration**
+  - Updated to handle ResourceType enum values
+  - Fixed type compatibility issues with threshold monitoring
+
+### Type Migration Strategy
+
+The standardized type system has been successfully integrated into all resource-related components:
+
+1. **Core System Components:**
+
+   - ResourceFlowManager has been updated to use the standardized types
+   - String literal types have been replaced with enums
+   - ResourceStateClass is used for state management
+
+2. **UI Components:**
+
+   - All UI components have been updated to use standardized types
+   - Component-specific helpers use ResourceTypeHelpers for display
+
+3. **Context Providers:**
+
+   - Context providers now use ResourceType enum for improved type-safety
+   - Backward compatibility maintained for interoperating with legacy code
+
+4. **Mining System:**
+
+   - Mining components updated to use ResourceType enum
+   - Type inconsistencies resolved across the mining subsystem
+   - String literal comparisons replaced with type-safe enum comparisons
+
+5. **Backward Compatibility:**
+   - ResourceTypeString type for string literal compatibility
+   - ResourceTypeHelpers.stringToEnum for string to enum conversion
+   - ResourceStateClass.fromResourceState for legacy state conversion
+
+### Implementation Fixes and Progress
+
+Recent fixes focused on resolving type inconsistencies in the mining system:
+
+1. **Type Comparison Issues:**
+
+   - Fixed type comparison errors in MiningControls.tsx by replacing string literal comparisons with enum values
+   - Updated conditional rendering logic to use ResourceType enum values throughout
+
+2. **Interface Standardization:**
+
+   - Updated MiningResource interface in MiningTypes.ts to use ResourceType enum
+   - Added MiningShip interface to centralize type definitions
+   - Standardized property access patterns across mining components
+
+3. **Integration Consistency:**
+
+   - Fixed TypeScript errors related to incompatible comparisons between enum and string types
+   - Ensured consistent enum usage across mining and resource management subsystems
+   - Maintained backward compatibility where needed through helper methods
+
+4. **Testing Strategy:**
+   - Using existing tests in src/tests/managers/resource/ResourceFlowManager.test.ts to verify changes
+   - Reviewing console output for type errors after each component update
+   - Ensuring all components render correctly with the updated types
+
+## Core Systems
+
+### Exploration System
+
+```json
+{
+  "id": "exploration_system",
+  "version": "1.0.0",
+  "description": "System for space exploration, discovery and analysis",
+  "components": [
+    {
+      "id": "exploration_manager",
+      "type": "manager",
+      "implementation_status": "complete",
+      "file_path": "src/managers/exploration/ExplorationManager.ts",
+      "description": "Central manager for exploration operations, sector discovery, and anomaly detection",
+      "implements": ["BaseManager"],
+      "connections": [
+        {
+          "to": "event_bus",
+          "type": "publishes_events",
+          "events": [
+            "SECTOR_DISCOVERED",
+            "ANOMALY_DETECTED",
+            "RESOURCE_DETECTED",
+            "SCAN_STARTED",
+            "SCAN_COMPLETED"
+          ]
+        },
+        {
+          "to": "recon_ship_manager",
+          "type": "uses_service",
+          "description": "Coordinates ship assignments with scan operations"
+        },
+        {
+          "to": "data_analysis_context",
+          "type": "provides_data",
+          "description": "Exploration data is consumed by analysis system"
+        }
+      ]
+    },
+    {
+      "id": "recon_ship_manager",
+      "type": "manager",
+      "implementation_status": "complete",
+      "file_path": "src/managers/exploration/ReconShipManagerImpl.ts",
+      "description": "Manages reconnaissance ships for exploration operations",
+      "connections": [
+        {
+          "to": "exploration_manager",
+          "type": "provides_service",
+          "description": "Handles ship operations requested by ExplorationManager"
+        }
+      ]
+    },
+    {
+      "id": "data_analysis_context",
+      "type": "context_provider",
+      "implementation_status": "complete",
+      "file_path": "src/contexts/DataAnalysisContext.tsx",
+      "description": "Context provider for analysis of exploration data, automatically processes discoveries",
+      "connections": [
+        {
+          "to": "exploration_manager",
+          "type": "subscribes_to_events",
+          "events": ["SECTOR_DISCOVERED", "ANOMALY_DETECTED", "RESOURCE_DETECTED"]
+        },
+        {
+          "to": "data_analysis_system",
+          "type": "provides_context",
+          "description": "Supplies processed exploration data to UI"
+        }
+      ]
+    },
+    {
+      "id": "data_analysis_system",
+      "type": "ui_component",
+      "implementation_status": "complete",
+      "file_path": "src/components/exploration/DataAnalysisSystem.tsx",
+      "description": "UI component for visualizing and analyzing exploration data",
+      "connections": [
+        {
+          "to": "data_analysis_context",
+          "type": "consumes_context",
+          "description": "Displays analysis of exploration discoveries"
+        },
+        {
+          "to": "exploration_manager",
+          "type": "retrieves_metadata",
+          "description": "Shows real-time exploration statistics"
+        }
+      ]
+    },
+    {
+      "id": "discovery_classification",
+      "type": "ui_component",
+      "implementation_status": "planned",
+      "file_path": "src/components/exploration/DiscoveryClassification.tsx",
+      "description": "Component for classification of anomalies and resources",
+      "connections": [
+        {
+          "to": "data_analysis_context",
+          "type": "consumes_context",
+          "description": "Uses analysis data for classification algorithms"
+        }
+      ]
+    }
+  ],
+  "integration_points": [
+    {
+      "from": "exploration_system",
+      "to": "resource_system",
+      "type": "data_flow",
+      "description": "Discovered resources are added to the resource system for extraction and processing",
+      "status": "implemented"
+    },
+    {
+      "from": "exploration_system",
+      "to": "tech_system",
+      "type": "data_flow",
+      "description": "Anomalies may unlock new research opportunities in the tech system",
+      "status": "planned"
+    }
+  ]
+}
+```
+
+### Exploration System Integration Details
+
+The Exploration System has been integrated with the core architecture following standardized patterns:
+
+#### Manager Implementation
+
+The ExplorationManager implements the BaseManager interface to provide consistent behavior with other system managers:
+
+1. **Lifecycle Management**: Implements `initialize()`, `update()`, and `dispose()` methods for standard lifecycle
+2. **Event Communication**: Uses the EventBus for publishing standardized events
+3. **Dependency Management**: Receives dependencies through the ServiceRegistry
+4. **Performance Monitoring**: Exposes statistics through the getMetadata() interface
+
+```typescript
+/**
+ * ExplorationManager extends AbstractBaseManager to integrate with the core systems
+ * - Implements standardized lifecycle methods
+ * - Uses EventBus for event-based communication
+ * - Provides performance metrics
+ */
+export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
+  constructor(eventBus: EventBus<BaseEvent>, shipManager: ReconShipManagerImpl) {
+    super('ExplorationManager', eventBus);
+    this.shipManager = shipManager;
+  }
+
+  // Lifecycle methods
+  protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
+    // Initialization logic with dependency injection
+    this.subscribeToEvent(EventType.STATUS_CHANGED, this.handleShipStatusChange);
+  }
+
+  protected onUpdate(deltaTime: number): void {
+    // Update logic for active scan operations
+    this.updateScanOperations(deltaTime);
+  }
+
+  // Event publishing
+  private completeScanOperation(operationId: string): void {
+    // Operation completion logic
+    this.publishEvent(
+      this.createEvent(ExplorationEvents.SCAN_COMPLETED, {
+        sector,
+        operation,
+      })
+    );
+  }
+}
+```
+
+#### Context Provider Integration
+
+The DataAnalysisContext connects with the ExplorationManager through event subscriptions:
+
+1. **Automated Dataset Creation**: Automatically creates datasets from exploration events
+2. **Data Transformation**: Converts exploration entities to standardized DataPoints
+3. **Type Safety**: Uses strongly-typed interfaces for all data transformations
+4. **Resource Optimization**: Implements efficient data storage and retrieval
+
+```typescript
+/**
+ * DataAnalysisContext integrates with ExplorationManager through event subscriptions
+ * - Creates datasets automatically from exploration events
+ * - Provides custom hooks for UI components
+ */
+export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
+  children,
+  initialDatasets = [],
+  initialAnalysisConfigs = [],
+  initialAnalysisResults = [],
+}) => {
+  // Event subscriptions
+  useEffect(() => {
+    // Subscribe to exploration events
+    const unsubscribeSector = explorationManager.subscribeToEvent(
+      asEventType(ExplorationEvents.SECTOR_DISCOVERED),
+      handleSectorDiscovered
+    );
+
+    // More subscriptions...
+
+    // Cleanup
+    return () => {
+      unsubscribeSector();
+      // More unsubscriptions...
+    };
+  }, [dependencies]);
+
+  // Context value
+  const contextValue: DataAnalysisContextType = {
+    // Context data and methods...
+  };
+
+  return <DataAnalysisContext.Provider value={contextValue}>{children}</DataAnalysisContext.Provider>;
+};
+```
+
+#### UI Component Integration
+
+The DataAnalysisSystem UI component integrates with the ExplorationManager through the DataAnalysisContext:
+
+1. **Real-time Data Display**: Shows live exploration statistics
+2. **Automatic Updates**: Periodically refreshes data from ExplorationManager
+3. **Dataset Visualization**: Displays datasets generated from exploration events
+4. **Interaction Patterns**: Follows standardized UI patterns for consistency
+
+```typescript
+/**
+ * DataAnalysisSystem integrates with exploration data through:
+ * - DataAnalysisContext for datasets and analysis results
+ * - ExplorationManager.getMetadata() for statistics
+ */
+export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) {
+  // Context usage
+  const {
+    datasets,
+    analysisConfigs,
+    analysisResults,
+    // More context values...
+  } = useDataAnalysis();
+
+  // Get exploration-specific datasets
+  const explorationDatasets = React.useMemo(() => {
+    return datasets.filter(dataset =>
+      ['sectors', 'anomalies', 'resources'].includes(dataset.source)
+    );
+  }, [datasets]);
+
+  // Statistics update
+  React.useEffect(() => {
+    const updateStats = () => {
+      const stats = explorationManager.getMetadata().stats || {};
+      setExplorationStats({
+        // Mapping stats...
+      });
+    };
+
+    // Update interval
+    const interval = setInterval(updateStats, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Render UI with exploration data
+  return (
+    // Component JSX...
+  );
+}
+```
+
+### Planned Integration Enhancements
+
+Future integration work for the Exploration System includes:
+
+1. **Resource System Integration**: Connect discovered resources to the resource extraction system
+2. **Technology System Integration**: Link anomalies to the research and technology tree
+3. **Mission System Integration**: Generate exploration missions based on discovered sectors
+4. **Ship Management Integration**: Enhance ship assignment and management capabilities
+5. **Classification Algorithm Integration**: Implement AI-based classification of discoveries

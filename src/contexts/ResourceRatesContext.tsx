@@ -1,7 +1,8 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { ModuleEvent, moduleEventBus } from '../lib/modules/ModuleEvents';
+import React, { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
+import { BaseState } from '../lib/contexts/BaseContext';
+import { ResourceManager } from '../managers/game/ResourceManager';
+import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { ResourceType } from '../types/resources/StandardizedResourceTypes';
-import { useModules } from './ModuleContext';
 
 /**
  * We're focusing only on the core resources for this context
@@ -23,222 +24,286 @@ interface ResourceRateDetail {
 }
 
 /**
- * State interface for ResourceRatesContext
+ * Enum for action types to ensure type safety
  */
-interface ResourceRatesState {
-  [ResourceType.MINERALS]: ResourceRateDetail;
-  [ResourceType.ENERGY]: ResourceRateDetail;
-  [ResourceType.POPULATION]: ResourceRateDetail;
-  [ResourceType.RESEARCH]: ResourceRateDetail;
-  lastUpdated: number;
+export enum ResourceRatesActionType {
+  UPDATE_RESOURCE_RATE = 'resourceRates/updateResourceRate',
+  UPDATE_ALL_RATES = 'resourceRates/updateAllRates',
+  RESET_RATES = 'resourceRates/resetRates',
+  SET_LOADING = 'resourceRates/setLoading',
+  SET_ERROR = 'resourceRates/setError',
+}
+
+/**
+ * Type for actions that can be dispatched to the context
+ */
+export interface ResourceRatesAction {
+  type: ResourceRatesActionType;
+  payload: {
+    resourceType?: ResourceType;
+    rates?: ResourceRateDetail;
+    allRates?: Record<ResourceType, ResourceRateDetail>;
+    isLoading?: boolean;
+    error?: string | null;
+  };
+}
+
+/**
+ * State interface extended with BaseState for standardized properties
+ */
+export interface ResourceRatesState extends BaseState {
+  resourceRates: Record<ResourceType, ResourceRateDetail>;
 }
 
 /**
  * Default state with all rates at zero
  */
-const defaultResourceRates: ResourceRatesState = {
+const defaultResourceRates: Record<ResourceType, ResourceRateDetail> = {
   [ResourceType.MINERALS]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.ENERGY]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.POPULATION]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.RESEARCH]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.PLASMA]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.GAS]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.EXOTIC]: { production: 0, consumption: 0, net: 0 },
+};
+
+/**
+ * The initial state including BaseState properties
+ */
+const initialState: ResourceRatesState = {
+  resourceRates: defaultResourceRates,
+  isLoading: false,
+  error: null,
   lastUpdated: Date.now(),
 };
 
 /**
- * Context type including the state and update methods
+ * Action creators for type-safe dispatch
  */
-interface ResourceRatesContextType {
-  state: ResourceRatesState;
-  updateRates: (type: CoreResourceType, production: number, consumption: number) => void;
-  resetRates: () => void;
-}
+export const createUpdateRateAction = (
+  resourceType: ResourceType,
+  rates: ResourceRateDetail
+): ResourceRatesAction => ({
+  type: ResourceRatesActionType.UPDATE_RESOURCE_RATE,
+  payload: { resourceType, rates },
+});
 
-// Create the context
+export const createUpdateAllRatesAction = (
+  allRates: Record<ResourceType, ResourceRateDetail>
+): ResourceRatesAction => ({
+  type: ResourceRatesActionType.UPDATE_ALL_RATES,
+  payload: { allRates },
+});
+
+export const createResetRatesAction = (): ResourceRatesAction => ({
+  type: ResourceRatesActionType.RESET_RATES,
+  payload: {},
+});
+
+export const createSetLoadingAction = (isLoading: boolean): ResourceRatesAction => ({
+  type: ResourceRatesActionType.SET_LOADING,
+  payload: { isLoading },
+});
+
+export const createSetErrorAction = (error: string | null): ResourceRatesAction => ({
+  type: ResourceRatesActionType.SET_ERROR,
+  payload: { error },
+});
+
+/**
+ * Helper function to calculate resource rates from event data
+ */
+const calculateRatesFromEvent = (event: BaseEvent): ResourceRateDetail => {
+  // Extract resource rate data from event
+  // This implementation would depend on the event structure
+  const { production = 0, consumption = 0 } =
+    (event.data as { production?: number; consumption?: number }) || {};
+
+  return {
+    production,
+    consumption,
+    net: production - consumption,
+  };
+};
+
+/**
+ * Reducer function for state updates
+ */
+export const resourceRatesReducer = (
+  state: ResourceRatesState,
+  action: ResourceRatesAction
+): ResourceRatesState => {
+  switch (action.type) {
+    case ResourceRatesActionType.UPDATE_RESOURCE_RATE:
+      if (!action.payload.resourceType || !action.payload.rates) {
+        return state;
+      }
+      return {
+        ...state,
+        resourceRates: {
+          ...state.resourceRates,
+          [action.payload.resourceType]: action.payload.rates,
+        },
+        lastUpdated: Date.now(),
+      };
+
+    case ResourceRatesActionType.UPDATE_ALL_RATES:
+      if (!action.payload.allRates) {
+        return state;
+      }
+      return {
+        ...state,
+        resourceRates: action.payload.allRates,
+        lastUpdated: Date.now(),
+      };
+
+    case ResourceRatesActionType.RESET_RATES:
+      return {
+        ...state,
+        resourceRates: defaultResourceRates,
+        isLoading: false,
+        error: null,
+        lastUpdated: Date.now(),
+      };
+
+    case ResourceRatesActionType.SET_LOADING:
+      return {
+        ...state,
+        isLoading: !!action.payload.isLoading,
+      };
+
+    case ResourceRatesActionType.SET_ERROR:
+      return {
+        ...state,
+        error: action.payload.error || null,
+        isLoading: false,
+      };
+
+    default:
+      return state;
+  }
+};
+
+// Create context
+type ResourceRatesContextType = {
+  state: ResourceRatesState;
+  dispatch: React.Dispatch<ResourceRatesAction>;
+};
+
 const ResourceRatesContext = createContext<ResourceRatesContextType | undefined>(undefined);
 
-/**
- * Provider component for resource rates
- */
-export function ResourceRatesProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<ResourceRatesState>(defaultResourceRates);
-  const { modules } = useModules();
-
-  // Update rates for a specific resource type
-  const updateRates = (type: CoreResourceType, production: number, consumption: number) => {
-    setState(prevState => ({
-      ...prevState,
-      [type]: {
-        production,
-        consumption,
-        net: production - consumption,
-      },
-      lastUpdated: Date.now(),
-    }));
-  };
-
-  // Reset all rates to zero
-  const resetRates = () => {
-    setState(defaultResourceRates);
-  };
-
-  // Subscribe to resource update events
-  useEffect(() => {
-    const handleResourceUpdate = (event: ModuleEvent) => {
-      const { data } = event;
-
-      if (data && data.resourceType) {
-        // Check if this is a core resource type we're tracking
-        const resourceType = data.resourceType as CoreResourceType;
-
-        // For compatibility with legacy code that might use string types
-        if (typeof resourceType === 'string') {
-          // Convert string type to enum if needed (this would be handled by ResourceTypeHelpers
-          // but we're keeping this simple for this example)
-          let enumType: CoreResourceType | undefined;
-
-          switch (resourceType) {
-            case 'minerals':
-              enumType = ResourceType.MINERALS;
-              break;
-            case 'energy':
-              enumType = ResourceType.ENERGY;
-              break;
-            case 'population':
-              enumType = ResourceType.POPULATION;
-              break;
-            case 'research':
-              enumType = ResourceType.RESEARCH;
-              break;
-          }
-
-          if (enumType && state[enumType]) {
-            let production = state[enumType].production;
-            let consumption = state[enumType].consumption;
-
-            if (data.production !== undefined) {
-              production = data.production;
-            }
-            if (data.consumption !== undefined) {
-              consumption = data.consumption;
-            }
-
-            updateRates(enumType, production, consumption);
-          }
-        }
-        // If it's already an enum type
-        else if (state[resourceType]) {
-          let production = state[resourceType].production;
-          let consumption = state[resourceType].consumption;
-
-          if (data.production !== undefined) {
-            production = data.production;
-          }
-          if (data.consumption !== undefined) {
-            consumption = data.consumption;
-          }
-
-          updateRates(resourceType, production, consumption);
-        }
+// Provider component
+export const ResourceRatesProvider: React.FC<{
+  children: React.ReactNode;
+  manager?: ResourceManager;
+  initialState?: Partial<ResourceRatesState>;
+}> = ({ children, manager, initialState: initialStateOverride }) => {
+  // Get initial state from ResourceManager if available
+  const effectiveInitialState = useMemo(() => {
+    if (manager) {
+      try {
+        const rates = manager.getAllResourceRates?.() || defaultResourceRates;
+        return {
+          ...initialState,
+          resourceRates: rates,
+          ...(initialStateOverride || {}),
+        };
+      } catch (error) {
+        console.error('Error getting resource rates from manager:', error);
       }
-    };
+    }
+    return { ...initialState, ...(initialStateOverride || {}) };
+  }, [manager, initialStateOverride]);
 
-    moduleEventBus.subscribe('RESOURCE_UPDATED', handleResourceUpdate);
-    moduleEventBus.subscribe('RESOURCE_PRODUCED', handleResourceUpdate);
-    moduleEventBus.subscribe('RESOURCE_CONSUMED', handleResourceUpdate);
+  // Create reducer
+  const [state, dispatch] = useReducer(resourceRatesReducer, effectiveInitialState);
 
-    return () => {
-      moduleEventBus.unsubscribe('RESOURCE_UPDATED', handleResourceUpdate);
-      moduleEventBus.unsubscribe('RESOURCE_PRODUCED', handleResourceUpdate);
-      moduleEventBus.unsubscribe('RESOURCE_CONSUMED', handleResourceUpdate);
-    };
-  }, [state]);
-
-  // Calculate initial rates from modules
+  // Set up event subscriptions with the manager when provided
   useEffect(() => {
-    const calculateInitialRates = () => {
-      // Map to hold the calculated rates
-      const rates: Partial<Record<CoreResourceType, ResourceRateDetail>> = {};
-
-      // Initialize with zeros
-      rates[ResourceType.MINERALS] = { production: 0, consumption: 0, net: 0 };
-      rates[ResourceType.ENERGY] = { production: 0, consumption: 0, net: 0 };
-      rates[ResourceType.POPULATION] = { production: 0, consumption: 0, net: 0 };
-      rates[ResourceType.RESEARCH] = { production: 0, consumption: 0, net: 0 };
-
-      // Calculate rates from active modules
-      if (modules) {
-        modules.forEach(module => {
-          if (module.active) {
-            // Process production
-            if (module.production) {
-              module.production.forEach(production => {
-                const resourceType = production.type as unknown as CoreResourceType;
-                if (rates[resourceType]) {
-                  rates[resourceType]!.production += production.amount;
-                }
-              });
-            }
-
-            // Process consumption
-            if (module.consumption) {
-              module.consumption.forEach(consumption => {
-                const resourceType = consumption.type as unknown as CoreResourceType;
-                if (rates[resourceType]) {
-                  rates[resourceType]!.consumption += consumption.amount;
-                }
-              });
-            }
-          }
-        });
-      }
-
-      // Calculate net rates and update state
-      Object.entries(rates).forEach(([type, detail]) => {
-        if (detail) {
-          detail.net = detail.production - detail.consumption;
-          updateRates(type as CoreResourceType, detail.production, detail.consumption);
+    if (manager) {
+      // Create event handler with dispatch
+      const eventHandler = (event: BaseEvent) => {
+        if (event.data && typeof event.data === 'object' && 'resourceType' in event.data) {
+          const resourceType = event.data.resourceType as ResourceType;
+          const rates = calculateRatesFromEvent(event);
+          dispatch(createUpdateRateAction(resourceType, rates));
         }
-      });
-    };
+      };
 
-    calculateInitialRates();
-  }, [modules]);
+      // Set up event subscriptions
+      const unsubscribeResourceUpdated = manager.subscribeToEvent(
+        EventType.RESOURCE_UPDATED,
+        eventHandler
+      );
+
+      const unsubscribeResourceProduced = manager.subscribeToEvent(
+        EventType.RESOURCE_PRODUCED,
+        eventHandler
+      );
+
+      const unsubscribeResourceConsumed = manager.subscribeToEvent(
+        EventType.RESOURCE_CONSUMED,
+        eventHandler
+      );
+
+      // Clean up subscriptions
+      return () => {
+        unsubscribeResourceUpdated();
+        unsubscribeResourceProduced();
+        unsubscribeResourceConsumed();
+      };
+    }
+    return undefined;
+  }, [manager]);
+
+  // Create context value
+  const contextValue = useMemo(() => ({ state, dispatch }), [state]);
 
   return (
-    <ResourceRatesContext.Provider value={{ state, updateRates, resetRates }}>
-      {children}
-    </ResourceRatesContext.Provider>
+    <ResourceRatesContext.Provider value={contextValue}>{children}</ResourceRatesContext.Provider>
   );
-}
+};
 
-/**
- * Hook to access the resource rates context
- */
-export function useResourceRates(): ResourceRatesContextType {
+// Hook to use the context
+export const useResourceRates = <T,>(selector: (state: ResourceRatesState) => T): T => {
   const context = useContext(ResourceRatesContext);
   if (!context) {
     throw new Error('useResourceRates must be used within a ResourceRatesProvider');
   }
-  return context;
-}
+  return selector(context.state);
+};
 
-/**
- * Hook to get net resource rates as a simple record
- */
-export function useNetResourceRates(): Record<CoreResourceType, number> {
-  const { state } = useResourceRates();
-  return {
-    [ResourceType.MINERALS]: state[ResourceType.MINERALS].net,
-    [ResourceType.ENERGY]: state[ResourceType.ENERGY].net,
-    [ResourceType.POPULATION]: state[ResourceType.POPULATION].net,
-    [ResourceType.RESEARCH]: state[ResourceType.RESEARCH].net,
-  };
-}
+// Hook to use the dispatch function
+export const useResourceRatesDispatch = (): React.Dispatch<ResourceRatesAction> => {
+  const context = useContext(ResourceRatesContext);
+  if (!context) {
+    throw new Error('useResourceRatesDispatch must be used within a ResourceRatesProvider');
+  }
+  return context.dispatch;
+};
 
-/**
- * Hook to get detailed rates for a specific resource type
- */
-export function useResourceRateDetails(type: CoreResourceType): ResourceRateDetail {
-  const { state } = useResourceRates();
-  return state[type];
-}
+// Specialized hooks for specific resource types
+export const useResourceRate = (resourceType: ResourceType): ResourceRateDetail => {
+  return useResourceRates((state: ResourceRatesState) => state.resourceRates[resourceType]);
+};
+
+export const useNetResourceRate = (resourceType: ResourceType): number => {
+  return useResourceRates((state: ResourceRatesState) => {
+    const rates = state.resourceRates[resourceType];
+    return rates ? rates.net : 0;
+  });
+};
+
+// Hook to access all resource rates at once
+export const useAllResourceRates = () => {
+  return useResourceRates((state: ResourceRatesState) => ({
+    minerals: state.resourceRates[ResourceType.MINERALS],
+    energy: state.resourceRates[ResourceType.ENERGY],
+    population: state.resourceRates[ResourceType.POPULATION],
+    research: state.resourceRates[ResourceType.RESEARCH],
+    plasma: state.resourceRates[ResourceType.PLASMA],
+    gas: state.resourceRates[ResourceType.GAS],
+    exotic: state.resourceRates[ResourceType.EXOTIC],
+  }));
+};

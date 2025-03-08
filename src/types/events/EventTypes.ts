@@ -45,6 +45,7 @@ export enum EventType {
   MODULE_UPDATED = 'MODULE_UPDATED',
   MODULE_STATUS_CHANGED = 'MODULE_STATUS_CHANGED',
   MODULE_ALERT_ADDED = 'MODULE_ALERT_ADDED',
+  MODULE_REMOVED = 'MODULE_REMOVED',
 
   // Attachment events
   ATTACHMENT_STARTED = 'ATTACHMENT_STARTED',
@@ -130,6 +131,7 @@ export const EVENT_CATEGORY_MAP: Record<EventType, EventCategory> = {
   [EventType.MODULE_UPDATED]: EventCategory.LIFECYCLE,
   [EventType.MODULE_STATUS_CHANGED]: EventCategory.LIFECYCLE,
   [EventType.MODULE_ALERT_ADDED]: EventCategory.LIFECYCLE,
+  [EventType.MODULE_REMOVED]: EventCategory.LIFECYCLE,
 
   // Attachment events
   [EventType.ATTACHMENT_STARTED]: EventCategory.ATTACHMENT,

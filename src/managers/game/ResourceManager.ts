@@ -1113,16 +1113,53 @@ export class ResourceManager extends AbstractBaseManager<BaseEvent> {
 
   public getAllResourceStates(): Record<ResourceType, ResourceState> {
     const states: Record<ResourceType, ResourceState> = {} as Record<ResourceType, ResourceState>;
-
-    // Convert Map entries to array to avoid MapIterator error
-    const resourceEntries = Array.from(this.resources.entries());
-    for (const [type, state] of resourceEntries) {
+    this.resources.forEach((state, type) => {
       states[type] = { ...state };
-    }
-
+    });
     return states;
   }
 
+  /**
+   * Get production and consumption rates for all resources
+   * @returns Record of resource rates by type
+   */
+  public getAllResourceRates(): Record<
+    ResourceType,
+    { production: number; consumption: number; net: number }
+  > {
+    const rates: Record<ResourceType, { production: number; consumption: number; net: number }> =
+      {} as Record<ResourceType, { production: number; consumption: number; net: number }>;
+
+    // Initialize with default rates for all resource types
+    // Use string keys and then cast to ResourceType to avoid TS error
+    const resourceTypes = [
+      'minerals',
+      'energy',
+      'population',
+      'research',
+      'plasma',
+      'gas',
+      'exotic',
+    ];
+
+    // Set rates for each resource type
+    resourceTypes.forEach(typeKey => {
+      const type = typeKey as ResourceType;
+      const state = this.getResourceState(type);
+      rates[type] = {
+        production: state?.production || 0,
+        consumption: state?.consumption || 0,
+        net: (state?.production || 0) - (state?.consumption || 0),
+      };
+    });
+
+    return rates;
+  }
+
+  /**
+   * Get all resource flows
+   * @returns Array of all registered resource flows
+   */
   public getAllResourceFlows(): ResourceFlow[] {
     const flows: ResourceFlow[] = [];
 

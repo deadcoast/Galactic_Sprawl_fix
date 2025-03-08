@@ -1633,3 +1633,107 @@ The next steps in completing the Exploration System integration are:
 3. Develop integration tests for exploration system
 4. Optimize performance for large datasets
 5. Implement user feedback mechanisms for classification accuracy
+
+## Context Implementation Pattern
+
+### Direct React Context Implementation
+
+We have moved away from using the `createStandardContext` utility to a direct React context implementation using hooks. This approach:
+
+1. Eliminates circular dependencies that were causing issues in tests
+2. Provides more control over context creation and subscription management
+3. Improves type safety and reduces reliance on utility functions
+
+The new context pattern follows this structure:
+
+```typescript
+// 1. Define state and action types
+interface ContextState extends BaseState {
+  // Context-specific state properties
+}
+
+enum ActionType {
+  // Enum of action types
+}
+
+// 2. Define action interfaces with proper typing
+interface ContextAction {
+  type: ActionType;
+  payload: PayloadType;
+}
+
+// 3. Create the reducer function
+const contextReducer = (state: ContextState, action: ContextAction): ContextState => {
+  switch (action.type) {
+    // Handle each action type
+    default:
+      return state;
+  }
+};
+
+// 4. Create the context with proper TypeScript typing
+type ContextType = {
+  state: ContextState;
+  dispatch: React.Dispatch<ContextAction>;
+  manager?: ManagerType; // Optional manager reference
+};
+
+const Context = createContext<ContextType | undefined>(undefined);
+
+// 5. Create the provider component
+export const ContextProvider: React.FC<ProviderProps> = ({ children, manager, initialState }) => {
+  const [state, dispatch] = useReducer(contextReducer, mergedInitialState);
+
+  // Set up subscriptions and cleanup
+  useEffect(() => {
+    // Subscribe to events
+    return () => {
+      // Clean up subscriptions
+    };
+  }, [manager]);
+
+  // Create and memoize the context value
+  const contextValue = useMemo(() => ({
+    state,
+    dispatch,
+    manager
+  }), [state, manager]);
+
+  return <Context.Provider value={contextValue}>{children}</Context.Provider>;
+};
+
+// 6. Create hooks for accessing the context
+export const useContextState = <T,>(selector: (state: ContextState) => T): T => {
+  const context = useContext(Context);
+  if (!context) throw new Error('Must be used within Provider');
+  return selector(context.state);
+};
+
+export const useContextDispatch = (): React.Dispatch<ContextAction> => {
+  const context = useContext(Context);
+  if (!context) throw new Error('Must be used within Provider');
+  return context.dispatch;
+};
+
+// 7. Create specific selectors and utility hooks
+export const useSpecificStateValue = () => useContextState(state => state.specificValue);
+```
+
+### Implemented in These Contexts
+
+- ResourceRatesContext.tsx
+- GameContext.tsx
+
+### Benefits
+
+- No circular dependencies
+- Better test compatibility
+- Improved type safety
+- More explicit state and action types
+- Better control over subscriptions and event handling
+
+### Future Improvements
+
+- Fix type compatibility issues between different event type systems
+- Standardize this pattern across all contexts
+- Create better documentation for how to properly test these contexts
