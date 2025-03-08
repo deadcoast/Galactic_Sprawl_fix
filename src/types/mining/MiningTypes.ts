@@ -1,3 +1,5 @@
+import { ResourceType } from '../resources/StandardizedResourceTypes';
+
 /**
  * Mining experience interface
  */
@@ -20,7 +22,7 @@ export interface MiningExperience {
 export interface MiningResource {
   id: string;
   name: string;
-  type: 'mineral' | 'gas' | 'exotic';
+  type: ResourceType;
   abundance: number;
   distance: number;
   extractionRate: number;
@@ -30,6 +32,20 @@ export interface MiningResource {
     min: number;
     max: number;
   };
+}
+
+/**
+ * Mining ship interface
+ */
+export interface MiningShip {
+  id: string;
+  name: string;
+  type: 'rockBreaker' | 'voidDredger';
+  status: 'idle' | 'mining' | 'returning' | 'maintenance';
+  capacity: number;
+  currentLoad: number;
+  targetNode?: string;
+  efficiency: number;
 }
 
 /**

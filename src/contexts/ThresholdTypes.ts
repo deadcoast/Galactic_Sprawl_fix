@@ -1,10 +1,11 @@
 import { Subject } from 'rxjs';
+import { ResourceType } from '../types/resources/StandardizedResourceTypes';
 
 // Types
 export interface Resource {
   id: string;
   name: string;
-  type: 'mineral' | 'gas' | 'exotic';
+  type: ResourceType;
   currentAmount: number;
   maxCapacity: number;
   thresholds: {

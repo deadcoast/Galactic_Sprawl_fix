@@ -1,11 +1,20 @@
 import * as React from 'react';
-import { createContext, ReactNode, useCallback, useContext, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  Anomaly,
+  ExplorationEvents,
+  explorationManager,
+  Sector,
+} from '../managers/exploration/ExplorationManager';
+import { BaseEvent, EventType } from '../types/events/EventTypes';
 import {
   AnalysisConfig,
   AnalysisResult,
   DataAnalysisContextType,
+  DataPoint,
   Dataset,
+  ResourceData,
 } from '../types/exploration/DataAnalysisTypes';
 
 // Create the context with a default undefined value
@@ -99,7 +108,185 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     []
   );
 
-  // Update an existing analysis configuration
+  // Add a data point to a dataset
+  const addDataPointToDataset = useCallback((datasetId: string, dataPoint: DataPoint): void => {
+    setDatasets(prev =>
+      prev.map(dataset => {
+        if (dataset.id === datasetId) {
+          // Check if the data point already exists
+          const exists = dataset.dataPoints.some(dp => dp.id === dataPoint.id);
+          if (exists) return dataset;
+
+          return {
+            ...dataset,
+            dataPoints: [...dataset.dataPoints, dataPoint],
+            updatedAt: Date.now(),
+          };
+        }
+        return dataset;
+      })
+    );
+  }, []);
+
+  // Find a dataset by source type, or create one if it doesn't exist
+  const getOrCreateDatasetBySource = useCallback(
+    (source: 'sectors' | 'anomalies' | 'resources' | 'mixed', name?: string): string => {
+      // Look for an existing dataset with the specified source
+      const existingDataset = datasets.find(ds => ds.source === source);
+      if (existingDataset) {
+        return existingDataset.id;
+      }
+
+      // Create a new dataset if one doesn't exist
+      const newDatasetName = name || `${source.charAt(0).toUpperCase() + source.slice(1)} Dataset`;
+      return createDataset({
+        name: newDatasetName,
+        description: `Automatically generated dataset for ${source}`,
+        dataPoints: [],
+        source,
+      });
+    },
+    [datasets, createDataset]
+  );
+
+  // Convert a sector to a data point
+  const sectorToDataPoint = useCallback((sector: Sector): DataPoint => {
+    return {
+      id: sector.id,
+      type: 'sector',
+      name: sector.name,
+      date: sector.discoveredAt || Date.now(),
+      coordinates: sector.coordinates,
+      properties: {
+        status: sector.status,
+        resourcePotential: sector.resourcePotential,
+        habitabilityScore: sector.habitabilityScore,
+        anomalyCount: sector.anomalies?.length || 0,
+        resourceCount: sector.resources?.length || 0,
+        lastScanned: sector.lastScanned || 0,
+      },
+    };
+  }, []);
+
+  // Convert an anomaly to a data point
+  const anomalyToDataPoint = useCallback((anomaly: Anomaly): DataPoint => {
+    return {
+      id: anomaly.id,
+      type: 'anomaly',
+      name: `${anomaly.type} Anomaly`,
+      date: anomaly.discoveredAt,
+      coordinates: anomaly.position,
+      properties: {
+        type: anomaly.type,
+        severity: anomaly.severity,
+        description: anomaly.description,
+        sectorId: anomaly.sectorId,
+        investigated: anomaly.investigatedAt !== undefined,
+      },
+    };
+  }, []);
+
+  // Convert a resource to a data point
+  const resourceToDataPoint = useCallback(
+    (
+      resource: ResourceData,
+      sectorId: string,
+      coordinates: { x: number; y: number }
+    ): DataPoint => {
+      return {
+        id: `${sectorId}-${resource.type}-${Date.now()}`,
+        type: 'resource',
+        name: `${resource.type} Resource`,
+        date: Date.now(),
+        coordinates,
+        properties: {
+          type: resource.type,
+          amount: resource.amount,
+          quality: resource.quality || 0,
+          sectorId,
+        },
+      };
+    },
+    []
+  );
+
+  // Subscribe to exploration events
+  useEffect(() => {
+    // Handle sector discovered events
+    const handleSectorDiscovered = (event: BaseEvent) => {
+      const { sector } = event.data as { sector: Sector };
+      if (!sector) return;
+
+      // Get or create the sectors dataset
+      const sectorsDatasetId = getOrCreateDatasetBySource('sectors', 'Explored Sectors');
+
+      // Add the sector as a data point
+      const dataPoint = sectorToDataPoint(sector);
+      addDataPointToDataset(sectorsDatasetId, dataPoint);
+    };
+
+    // Handle anomaly detected events
+    const handleAnomalyDetected = (event: BaseEvent) => {
+      const { anomaly, sector } = event.data as { anomaly: Anomaly; sector: Sector };
+      if (!anomaly) return;
+
+      // Get or create the anomalies dataset
+      const anomaliesDatasetId = getOrCreateDatasetBySource('anomalies', 'Detected Anomalies');
+
+      // Add the anomaly as a data point
+      const dataPoint = anomalyToDataPoint(anomaly);
+      addDataPointToDataset(anomaliesDatasetId, dataPoint);
+    };
+
+    // Handle resource detected events
+    const handleResourceDetected = (event: BaseEvent) => {
+      const { resource, sector } = event.data as { resource: ResourceData; sector: Sector };
+      if (!resource || !sector) return;
+
+      // Get or create the resources dataset
+      const resourcesDatasetId = getOrCreateDatasetBySource('resources', 'Discovered Resources');
+
+      // Add the resource as a data point
+      const dataPoint = resourceToDataPoint(resource, sector.id, sector.coordinates);
+      addDataPointToDataset(resourcesDatasetId, dataPoint);
+    };
+
+    // Helper function to convert ExplorationEvents to EventType
+    const asEventType = (event: ExplorationEvents): EventType => {
+      return event as unknown as EventType;
+    };
+
+    // Subscribe to exploration events
+    const unsubscribeSector = explorationManager.subscribeToEvent(
+      asEventType(ExplorationEvents.SECTOR_DISCOVERED),
+      handleSectorDiscovered
+    );
+
+    const unsubscribeAnomaly = explorationManager.subscribeToEvent(
+      asEventType(ExplorationEvents.ANOMALY_DETECTED),
+      handleAnomalyDetected
+    );
+
+    const unsubscribeResource = explorationManager.subscribeToEvent(
+      asEventType(ExplorationEvents.RESOURCE_DETECTED),
+      handleResourceDetected
+    );
+
+    // Unsubscribe when component unmounts
+    return () => {
+      unsubscribeSector();
+      unsubscribeAnomaly();
+      unsubscribeResource();
+    };
+  }, [
+    getOrCreateDatasetBySource,
+    sectorToDataPoint,
+    anomalyToDataPoint,
+    resourceToDataPoint,
+    addDataPointToDataset,
+  ]);
+
+  // Update analysis configuration
   const updateAnalysisConfig = useCallback(
     (
       id: string,
@@ -134,42 +321,43 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     [analysisConfigs]
   );
 
-  // Run an analysis based on a configuration
+  // Run an analysis
   const runAnalysis = useCallback(
     async (configId: string): Promise<string> => {
-      const config = analysisConfigs.find(c => c.id === configId);
+      // Get the configuration
+      const config = analysisConfigs.find(config => config.id === configId);
       if (!config) {
         throw new Error(`Analysis configuration with ID ${configId} not found`);
       }
 
-      const dataset = datasets.find(d => d.id === config.datasetId);
+      // Get the dataset
+      const dataset = datasets.find(dataset => dataset.id === config.datasetId);
       if (!dataset) {
         throw new Error(`Dataset with ID ${config.datasetId} not found`);
       }
 
       // Create a new analysis result
       const resultId = uuidv4();
-      const startTime = Date.now();
-
+      const now = Date.now();
       const newResult: AnalysisResult = {
         id: resultId,
         analysisConfigId: configId,
         status: 'processing',
-        startTime,
+        startTime: now,
         data: {},
       };
 
+      // Add the result to state
       setAnalysisResults(prev => [...prev, newResult]);
 
       try {
-        // Simulate analysis processing
-        // In a real implementation, this would call analysis algorithms
+        // Simulate analysis (this would be replaced with actual analysis logic)
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Generate mock result data based on analysis type
-        const resultData = generateMockResultData(config, dataset);
+        // Generate mock data for the analysis result based on the type
+        const resultData = generateMockAnalysisData(config, dataset);
 
-        // Update the analysis result
+        // Update the result with the new data
         setAnalysisResults(prev =>
           prev.map(result => {
             if (result.id === resultId) {
@@ -178,8 +366,8 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
                 status: 'completed',
                 endTime: Date.now(),
                 data: resultData,
-                summary: `Analysis of ${dataset.name} completed successfully.`,
-                insights: generateMockInsights(config, dataset),
+                summary: generateAnalysisSummary(config, resultData),
+                insights: generateAnalysisInsights(config, resultData),
               };
             }
             return result;
@@ -188,7 +376,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
 
         return resultId;
       } catch (error) {
-        // Update the analysis result with error information
+        // Update the result with the error
         setAnalysisResults(prev =>
           prev.map(result => {
             if (result.id === resultId) {
@@ -196,7 +384,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
                 ...result,
                 status: 'failed',
                 endTime: Date.now(),
-                error: error instanceof Error ? error.message : 'Unknown error',
+                error: error instanceof Error ? error.message : String(error),
               };
             }
             return result;
@@ -217,7 +405,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     [analysisResults]
   );
 
-  // Get analysis results by configuration ID
+  // Get analysis results by config ID
   const getAnalysisResultsByConfigId = useCallback(
     (configId: string): AnalysisResult[] => {
       return analysisResults.filter(result => result.analysisConfigId === configId);
@@ -225,132 +413,63 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     [analysisResults]
   );
 
-  // Helper function to generate mock result data
-  const generateMockResultData = (
+  // Generate mock analysis data (would be replaced with actual analysis logic)
+  const generateMockAnalysisData = (
     config: AnalysisConfig,
     dataset: Dataset
   ): Record<string, unknown> => {
-    // This is a placeholder implementation that would be replaced with actual analysis algorithms
+    // This is a placeholder that would be replaced with actual analysis logic
     switch (config.type) {
       case 'trend':
         return {
-          trendData: dataset.dataPoints.map((point, index) => ({
-            x: index,
-            y: Math.random() * 100,
-            name: point.name,
-          })),
+          xAxis: Array.from({ length: 10 }, (_, i) => i),
+          yAxis: Array.from({ length: 10 }, () => Math.random() * 100),
         };
       case 'correlation':
         return {
           correlationMatrix: [
-            [1, 0.7, 0.3],
+            [1, 0.7, 0.2],
             [0.7, 1, 0.5],
-            [0.3, 0.5, 1],
+            [0.2, 0.5, 1],
           ],
-          variables: ['var1', 'var2', 'var3'],
-        };
-      case 'distribution':
-        return {
-          distribution: Array.from({ length: 10 }, (_, i) => ({
-            bin: i,
-            count: Math.floor(Math.random() * 100),
-          })),
+          variables: ['resourcePotential', 'habitabilityScore', 'anomalyCount'],
         };
       case 'clustering':
         return {
-          clusters: dataset.dataPoints.map(point => ({
-            id: point.id,
-            cluster: Math.floor(Math.random() * 3),
-          })),
-        };
-      case 'prediction':
-        return {
-          predictions: dataset.dataPoints.map(point => ({
-            id: point.id,
-            actual: Math.random() * 100,
-            predicted: Math.random() * 100,
-          })),
-          accuracy: 0.85,
-          rmse: 12.3,
-        };
-      case 'comparison':
-        return {
-          groupComparisons: [
-            { group: 'Group A', value: 75 },
-            { group: 'Group B', value: 85 },
-            { group: 'Group C', value: 65 },
+          clusters: [
+            { centroid: [0.2, 0.3], points: 5 },
+            { centroid: [0.7, 0.8], points: 3 },
+            { centroid: [0.5, 0.5], points: 7 },
           ],
         };
-      case 'anomalyDetection':
-        return {
-          anomalies: dataset.dataPoints
-            .filter(() => Math.random() > 0.9)
-            .map(point => ({
-              id: point.id,
-              score: Math.random(),
-              isAnomaly: true,
-            })),
-        };
-      case 'resourceMapping':
-        return {
-          resourceMap: dataset.dataPoints.map(point => ({
-            id: point.id,
-            coordinates: point.coordinates,
-            value: Math.random() * 100,
-          })),
-        };
-      case 'sectorAnalysis':
-        return {
-          sectorMetrics: dataset.dataPoints.map(point => ({
-            id: point.id,
-            name: point.name,
-            resourcePotential: Math.random() * 100,
-            habitabilityScore: Math.random() * 100,
-            anomalyCount: Math.floor(Math.random() * 10),
-            resourceCount: Math.floor(Math.random() * 20),
-          })),
-        };
       default:
-        return { data: 'Custom analysis result' };
+        return { message: 'Mock analysis data' };
     }
   };
 
-  // Helper function to generate mock insights
-  const generateMockInsights = (config: AnalysisConfig, dataset: Dataset): string[] => {
-    const insights: string[] = [];
-
-    // Use dataset to generate more relevant insights
-    switch (config.type) {
-      case 'trend':
-        insights.push(`Detected an upward trend in ${dataset.name} over the last period.`);
-        insights.push(`The rate of change is approximately 15% per unit time.`);
-        insights.push(`Seasonal patterns detected with peaks every 4 units.`);
-        break;
-      case 'correlation':
-        insights.push(
-          `Strong positive correlation (0.87) found between variables in ${dataset.source} data.`
-        );
-        insights.push(`Weak negative correlation (-0.32) found between secondary variables.`);
-        break;
-      case 'distribution':
-        insights.push(
-          `Data in ${dataset.name} follows a normal distribution with slight right skew.`
-        );
-        insights.push(`Outliers detected at the 95th percentile.`);
-        break;
-      case 'clustering':
-        insights.push(`Identified 3 distinct clusters in the ${dataset.source} dataset.`);
-        insights.push(`Cluster 1 contains 45% of data points and is characterized by high values.`);
-        break;
-      default:
-        insights.push(`Analysis completed successfully on ${dataset.name}.`);
-        insights.push(`${dataset.dataPoints.length} data points were analyzed.`);
-    }
-
-    return insights;
+  // Generate a summary for the analysis (would be replaced with actual summary generation)
+  const generateAnalysisSummary = (
+    config: AnalysisConfig,
+    data: Record<string, unknown>
+  ): string => {
+    // This is a placeholder that would be replaced with actual summary generation
+    return `Analysis of type ${config.type} completed successfully`;
   };
 
-  // Provide the context value
+  // Generate insights for the analysis (would be replaced with actual insight generation)
+  const generateAnalysisInsights = (
+    config: AnalysisConfig,
+    data: Record<string, unknown>
+  ): string[] => {
+    // This is a placeholder that would be replaced with actual insight generation
+    return [
+      'This is a mock insight',
+      'This is another mock insight',
+      'This is a third mock insight',
+    ];
+  };
+
+  // Create the context value object
   const contextValue: DataAnalysisContextType = {
     datasets,
     analysisConfigs,
@@ -366,6 +485,9 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     runAnalysis,
     getAnalysisResultById,
     getAnalysisResultsByConfigId,
+    // Add the new functions
+    addDataPointToDataset,
+    getOrCreateDatasetBySource,
   };
 
   return (
@@ -383,3 +505,6 @@ export const useDataAnalysis = (): DataAnalysisContextType => {
   }
   return context;
 };
+
+// Export the context for testing
+export { DataAnalysisContext };

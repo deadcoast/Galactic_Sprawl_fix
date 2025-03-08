@@ -107,7 +107,7 @@ Interface for creating and managing multi-step production chains:
 |  Step 2: [ASSEMBLER] [IRON INGOTS → IRON PLATES] [▼]          |
 |  Step 3: [FABRICATOR] [IRON PLATES → COMPONENTS] [▼]          |
 |                                                               |
-|  [+ ADD STEP]                  [SAVE AS TEMPLATE] [START CHAIN]|
+|  [+ ADD STEP]                 [SAVE AS TEMPLATE] [START CHAIN]|
 |                                                               |
 +---------------------------------------------------------------+
 |                                                               |

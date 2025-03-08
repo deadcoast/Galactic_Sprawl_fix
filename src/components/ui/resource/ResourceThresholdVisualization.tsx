@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
-import { ModuleEventType } from '../../../lib/modules/ModuleEvents';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import {
+  ResourceType,
+  ResourceTypeHelpers,
+} from '../../../types/resources/StandardizedResourceTypes';
 
 interface ResourceThresholdVisualizationProps {
   resourceType: ResourceType;
@@ -187,6 +189,16 @@ const formatTime = (minutes?: number): string => {
   return `${hours}h ${mins}m`;
 };
 
+/**
+ * Get title for the resource type
+ */
+const getResourceTitle = (resourceType: ResourceType): string => {
+  return ResourceTypeHelpers.getDisplayName(resourceType);
+};
+
+/**
+ * ResourceThresholdVisualization component
+ */
 const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationProps> = ({
   resourceType,
   currentValue,
@@ -202,44 +214,45 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
   // Convert cycle rate to per-minute rate for easier understanding
   const ratePerMinute = rate * (60000 / cycleTime);
 
-  // Register component with the registry service
-  useComponentRegistration({
+  // Register with component registry
+  const componentId = useComponentRegistration({
     type: 'ResourceThresholdVisualization',
-    eventSubscriptions: [
-      'RESOURCE_UPDATED',
-      'RESOURCE_THRESHOLD_TRIGGERED',
-      'RESOURCE_THRESHOLD_RESOLVED',
-    ],
-    updatePriority: 'high',
+    eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_THRESHOLD_CHANGED'],
+    updatePriority: 'medium',
   });
 
-  // Handle component lifecycle
+  // Subscribe to events
   useComponentLifecycle({
     onMount: () => {
-      console.log(`ResourceThresholdVisualization for ${resourceType} mounted`);
+      // Initialization code if needed
     },
     onUnmount: () => {
-      console.log(`ResourceThresholdVisualization for ${resourceType} unmounted`);
+      // Cleanup code if needed
     },
     eventSubscriptions: [
       {
-        eventType: 'RESOURCE_UPDATED' as ModuleEventType,
+        eventType: 'RESOURCE_UPDATED',
         handler: event => {
+          // Only update if this event is for our resource type
           if (event.data?.resourceType === resourceType) {
-            setStatus(getResourceStatus(currentValue, maxValue, rate, thresholds));
+            // Update logic here
           }
         },
       },
       {
-        eventType: 'RESOURCE_THRESHOLD_TRIGGERED' as ModuleEventType,
+        eventType: 'RESOURCE_THRESHOLD_CHANGED',
         handler: event => {
+          // Only update if this event is for our resource type
           if (event.data?.resourceType === resourceType) {
-            console.log(`Threshold triggered for ${resourceType}`);
+            // Update logic here
           }
         },
       },
     ],
   });
+
+  // Get status based on current value and thresholds
+  const status = getResourceStatus(currentValue, maxValue, rate, thresholds);
 
   // Update status when resource values change
   useEffect(() => {
@@ -251,7 +264,7 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
       className={`resource-threshold-visualization ${status.level}`}
       style={{ borderColor: status.color }}
     >
-      <h3>{resourceType} Threshold Monitor</h3>
+      <h3>{getResourceTitle(resourceType)} Threshold Monitor</h3>
 
       <div className="status-section">
         <p>

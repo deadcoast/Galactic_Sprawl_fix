@@ -33,7 +33,14 @@ export interface Dataset {
 export interface DataFilter {
   id: string;
   field: string;
-  operator: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan' | 'contains' | 'notContains' | 'between';
+  operator:
+    | 'equals'
+    | 'notEquals'
+    | 'greaterThan'
+    | 'lessThan'
+    | 'contains'
+    | 'notContains'
+    | 'between';
   value: string | number | boolean | string[] | [number, number];
   active: boolean;
 }
@@ -217,6 +224,17 @@ export interface SectorAnalysisConfig extends AnalysisConfig {
 }
 
 /**
+ * Interface representing resource data from exploration
+ */
+export interface ResourceData {
+  type: string;
+  amount: number;
+  quality?: number;
+  sectorId?: string;
+  [key: string]: unknown;
+}
+
+/**
  * Context for the data analysis system
  */
 export interface DataAnalysisContextType {
@@ -224,14 +242,26 @@ export interface DataAnalysisContextType {
   analysisConfigs: AnalysisConfig[];
   analysisResults: AnalysisResult[];
   createDataset: (dataset: Omit<Dataset, 'id' | 'createdAt' | 'updatedAt'>) => string;
-  updateDataset: (id: string, updates: Partial<Omit<Dataset, 'id' | 'createdAt' | 'updatedAt'>>) => void;
+  updateDataset: (
+    id: string,
+    updates: Partial<Omit<Dataset, 'id' | 'createdAt' | 'updatedAt'>>
+  ) => void;
   deleteDataset: (id: string) => void;
   getDatasetById: (id: string) => Dataset | undefined;
   createAnalysisConfig: (config: Omit<AnalysisConfig, 'id' | 'createdAt' | 'updatedAt'>) => string;
-  updateAnalysisConfig: (id: string, updates: Partial<Omit<AnalysisConfig, 'id' | 'createdAt' | 'updatedAt'>>) => void;
+  updateAnalysisConfig: (
+    id: string,
+    updates: Partial<Omit<AnalysisConfig, 'id' | 'createdAt' | 'updatedAt'>>
+  ) => void;
   deleteAnalysisConfig: (id: string) => void;
   getAnalysisConfigById: (id: string) => AnalysisConfig | undefined;
   runAnalysis: (configId: string) => Promise<string>;
   getAnalysisResultById: (id: string) => AnalysisResult | undefined;
   getAnalysisResultsByConfigId: (configId: string) => AnalysisResult[];
-} 
+  // New functions for handling exploration data
+  addDataPointToDataset: (datasetId: string, dataPoint: DataPoint) => void;
+  getOrCreateDatasetBySource: (
+    source: 'sectors' | 'anomalies' | 'resources' | 'mixed',
+    name?: string
+  ) => string;
+}

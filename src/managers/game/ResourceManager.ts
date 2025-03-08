@@ -8,8 +8,10 @@ import {
   STORAGE_EFFICIENCY,
   TRANSFER_CONFIG,
 } from '../../config/resource/ResourceConfig';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { EventBus } from '../../lib/events/EventBus';
+import { AbstractBaseManager } from '../../lib/managers/BaseManager';
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import {
   ResourceConsumption,
   ResourceFlow,
@@ -49,9 +51,27 @@ interface OptimizationStrategy {
 }
 
 /**
+ * Resource manager event interface
+ */
+export interface ResourceManagerEvent extends BaseEvent {
+  type: EventType;
+  resourceType?: ResourceType;
+  amount?: number;
+  source?: string;
+  target?: string;
+  details?: Record<string, unknown>;
+}
+
+// We need a workaround for the type issue with EventBus
+// Create a type that maps ResourceManagerEventType to EventType for the AbstractBaseManager
+type ResourceEventMap = {
+  [K in EventType]: EventType;
+};
+
+/**
  * Manages game resources
  */
-export class ResourceManager {
+export class ResourceManager extends AbstractBaseManager<BaseEvent> {
   private resources: Map<ResourceType, ResourceState>;
   private transfers: ResourceTransfer[];
   private maxTransferHistory: number;
@@ -70,7 +90,13 @@ export class ResourceManager {
     lastOptimizationTime: number;
   };
 
-  constructor(maxTransferHistory = 1000, config: ResourceManagerConfig = RESOURCE_MANAGER_CONFIG) {
+  constructor(
+    maxTransferHistory = 1000,
+    config: ResourceManagerConfig = RESOURCE_MANAGER_CONFIG,
+    eventBus?: EventBus<BaseEvent>
+  ) {
+    super('ResourceManager', eventBus || new EventBus<BaseEvent>());
+
     this.resources = new Map();
     this.transfers = [];
     this.maxTransferHistory = maxTransferHistory;
@@ -89,9 +115,16 @@ export class ResourceManager {
       lastOptimizationTime: Date.now(),
     };
 
+    console.warn('[ResourceManager] Created with config:', config);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
     // Initialize resources with config limits
-    if (config.defaultResourceLimits) {
-      Object.entries(config.defaultResourceLimits).forEach(([type, limits]) => {
+    if (this.config.defaultResourceLimits) {
+      Object.entries(this.config.defaultResourceLimits).forEach(([type, limits]) => {
         this.initializeResource(type as ResourceType, limits.min, limits.max);
       });
     } else {
@@ -103,7 +136,89 @@ export class ResourceManager {
     // Initialize optimization strategies
     this.initializeOptimizationStrategies();
 
-    console.warn('[ResourceManager] Initialized with config:', config);
+    // Publish initialization event
+    this.publishEvent({
+      type: EventType.SYSTEM_STARTUP,
+      moduleId: this.id,
+      moduleType: 'resource-manager',
+      timestamp: Date.now(),
+      data: { config: this.config },
+    });
+
+    console.warn('[ResourceManager] Initialized with config:', this.config);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected onUpdate(deltaTime: number): void {
+    // Process optimizations every 5 seconds
+    if (Date.now() - this.optimizationMetrics.lastOptimizationTime > 5000) {
+      this.runOptimizations();
+      this.optimizationMetrics.lastOptimizationTime = Date.now();
+    }
+
+    // Other time-based updates can be added here
+
+    // Publish update event with current resource states
+    this.publishEvent({
+      type: EventType.RESOURCE_UPDATED,
+      moduleId: this.id,
+      moduleType: 'resource-manager',
+      timestamp: Date.now(),
+      data: {
+        resources: this.getAllResourceStates(),
+        deltaTime,
+      },
+    });
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected async onDispose(): Promise<void> {
+    // Stop all production intervals
+    for (const [id, interval] of this.productionIntervals.entries()) {
+      clearInterval(interval);
+    }
+    this.productionIntervals.clear();
+
+    // Save state before disposing
+    this.saveState();
+
+    // Clear all maps
+    this.resources.clear();
+    this.transfers = [];
+    this.productions.clear();
+    this.consumptions.clear();
+    this.flows.clear();
+    this.errors.clear();
+    this.optimizationStrategies.clear();
+
+    console.warn('[ResourceManager] Disposed');
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected getVersion(): string {
+    return '1.0.0';
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected getStats(): Record<string, number | string> {
+    return {
+      resourceCount: this.resources.size,
+      transferCount: this.transfers.length,
+      productionCount: this.productions.size,
+      consumptionCount: this.consumptions.size,
+      flowCount: this.flows.size,
+      productionEfficiency: this.optimizationMetrics.productionEfficiency,
+      consumptionEfficiency: this.optimizationMetrics.consumptionEfficiency,
+      transferEfficiency: this.optimizationMetrics.transferEfficiency,
+    };
   }
 
   /**
@@ -146,10 +261,29 @@ export class ResourceManager {
     state.current = Math.max(state.min, Math.min(amount, state.max));
 
     // Emit resource event
+    const eventType =
+      state.current > oldAmount ? EventType.RESOURCE_PRODUCED : EventType.RESOURCE_CONSUMED;
+
+    this.publishEvent({
+      type: eventType,
+      moduleId: this.id,
+      moduleType: 'resource-manager',
+      timestamp: Date.now(),
+      resourceType: type,
+      amount: Math.abs(state.current - oldAmount),
+      data: {
+        resourceType: type,
+        oldAmount,
+        newAmount: state.current,
+        delta: state.current - oldAmount,
+      },
+    } as ResourceManagerEvent);
+
+    // Also publish to legacy moduleEventBus for backward compatibility
     moduleEventBus.emit({
-      type: state.current > oldAmount ? 'RESOURCE_PRODUCED' : 'RESOURCE_CONSUMED',
-      moduleId: 'resource-manager',
-      moduleType: 'radar', // Default type
+      type: eventType === EventType.RESOURCE_PRODUCED ? 'RESOURCE_PRODUCED' : 'RESOURCE_CONSUMED',
+      moduleId: this.id,
+      moduleType: 'resource-manager',
       timestamp: Date.now(),
       data: {
         resourceType: type,
@@ -181,23 +315,27 @@ export class ResourceManager {
       return false;
     }
 
-    const oldAmount = state.current;
-    state.current = Math.max(state.min, Math.min(oldAmount - amount, state.max));
-
-    // Emit resource event
-    moduleEventBus.emit({
-      type: state.current < oldAmount ? 'RESOURCE_PRODUCED' : 'RESOURCE_CONSUMED',
-      moduleId: 'resource-manager',
-      moduleType: 'radar', // Default type
-      timestamp: Date.now(),
-      data: {
+    // Check if we have enough
+    if (state.current < amount) {
+      // Emit shortage event
+      this.publishEvent({
+        type: EventType.RESOURCE_SHORTAGE,
+        moduleId: this.id,
+        moduleType: 'resource-manager',
+        timestamp: Date.now(),
         resourceType: type,
-        oldAmount,
-        newAmount: state.current,
-        delta: state.current - oldAmount,
-      },
-    });
+        amount: amount,
+        data: {
+          resourceType: type,
+          requiredAmount: amount,
+          availableAmount: state.current,
+          deficit: amount - state.current,
+        },
+      } as ResourceManagerEvent);
+      return false;
+    }
 
+    this.setResourceAmount(type, state.current - amount);
     return true;
   }
 
@@ -244,9 +382,9 @@ export class ResourceManager {
       }
     }
 
-    moduleEventBus.emit({
-      type: 'STATUS_CHANGED',
-      moduleId: 'resource-manager',
+    this.publishEvent({
+      type: EventType.RESOURCE_THRESHOLD_CHANGED,
+      moduleId: this.id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
       data: {
@@ -254,7 +392,7 @@ export class ResourceManager {
         oldValue: oldEfficiency,
         newValue: this.storageEfficiency,
       },
-    });
+    } as ResourceManagerEvent);
   }
 
   /**
@@ -264,13 +402,13 @@ export class ResourceManager {
     this.errors.set(id, error);
     console.error(`[ResourceManager] Error in ${id}:`, error.message);
 
-    moduleEventBus.emit({
-      type: 'ERROR_OCCURRED',
+    this.publishEvent({
+      type: EventType.ERROR_OCCURRED,
       moduleId: id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
       data: error,
-    });
+    } as ResourceManagerEvent);
   }
 
   /**
@@ -344,13 +482,13 @@ export class ResourceManager {
       }
 
       // Emit transfer event
-      moduleEventBus.emit({
-        type: 'RESOURCE_TRANSFERRED',
+      this.publishEvent({
+        type: EventType.RESOURCE_TRANSFERRED,
         moduleId: source,
         moduleType: 'resource-manager',
         timestamp: Date.now(),
         data: { transfer },
-      });
+      } as ResourceManagerEvent);
 
       console.warn(
         `[ResourceManager] Transferred ${transferAmount.toFixed(2)} ${type} from ${source} to ${target}`
@@ -412,8 +550,8 @@ export class ResourceManager {
     this.productions.set(id, production);
 
     // Emit production registration event
-    moduleEventBus.emit({
-      type: 'RESOURCE_PRODUCTION_REGISTERED',
+    this.publishEvent({
+      type: EventType.RESOURCE_PRODUCTION_REGISTERED,
       moduleId: id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
@@ -421,7 +559,7 @@ export class ResourceManager {
         production,
         oldProduction,
       },
-    });
+    } as ResourceManagerEvent);
 
     console.warn(
       `[ResourceManager] Registered production for ${production.type}: ${production.amount}/tick every ${production.interval}ms`
@@ -436,8 +574,8 @@ export class ResourceManager {
     this.consumptions.set(id, consumption);
 
     // Emit consumption registration event
-    moduleEventBus.emit({
-      type: 'RESOURCE_CONSUMPTION_REGISTERED',
+    this.publishEvent({
+      type: EventType.RESOURCE_CONSUMPTION_REGISTERED,
       moduleId: id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
@@ -445,7 +583,7 @@ export class ResourceManager {
         consumption,
         oldConsumption,
       },
-    });
+    } as ResourceManagerEvent);
 
     console.warn(
       `[ResourceManager] Registered consumption for ${consumption.type}: ${consumption.amount}/tick every ${consumption.interval}ms`
@@ -460,8 +598,8 @@ export class ResourceManager {
     this.flows.set(id, flow);
 
     // Emit flow registration event
-    moduleEventBus.emit({
-      type: 'RESOURCE_FLOW_REGISTERED',
+    this.publishEvent({
+      type: EventType.RESOURCE_FLOW_REGISTERED,
       moduleId: id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
@@ -469,7 +607,7 @@ export class ResourceManager {
         flow,
         oldFlow,
       },
-    });
+    } as ResourceManagerEvent);
 
     console.warn(
       `[ResourceManager] Registered flow from ${flow.source} to ${flow.target} for ${flow.resources.length} resource types`
@@ -483,13 +621,13 @@ export class ResourceManager {
     const production = this.productions.get(id);
     if (production) {
       this.productions.delete(id);
-      moduleEventBus.emit({
-        type: 'RESOURCE_PRODUCTION_UNREGISTERED',
+      this.publishEvent({
+        type: EventType.RESOURCE_PRODUCTION_UNREGISTERED,
         moduleId: id,
         moduleType: 'resource-manager',
         timestamp: Date.now(),
         data: { production },
-      });
+      } as ResourceManagerEvent);
     }
   }
 
@@ -500,13 +638,13 @@ export class ResourceManager {
     const consumption = this.consumptions.get(id);
     if (consumption) {
       this.consumptions.delete(id);
-      moduleEventBus.emit({
-        type: 'RESOURCE_CONSUMPTION_UNREGISTERED',
+      this.publishEvent({
+        type: EventType.RESOURCE_CONSUMPTION_UNREGISTERED,
         moduleId: id,
         moduleType: 'resource-manager',
         timestamp: Date.now(),
         data: { consumption },
-      });
+      } as ResourceManagerEvent);
     }
   }
 
@@ -517,13 +655,13 @@ export class ResourceManager {
     const flow = this.flows.get(id);
     if (flow) {
       this.flows.delete(id);
-      moduleEventBus.emit({
-        type: 'RESOURCE_FLOW_UNREGISTERED',
+      this.publishEvent({
+        type: EventType.RESOURCE_FLOW_UNREGISTERED,
         moduleId: id,
         moduleType: 'resource-manager',
         timestamp: Date.now(),
         data: { flow },
-      });
+      } as ResourceManagerEvent);
     }
   }
 
@@ -709,16 +847,18 @@ export class ResourceManager {
     this.optimizationMetrics.lastOptimizationTime = Date.now();
 
     // Emit optimization metrics
-    moduleEventBus.emit({
-      type: 'STATUS_CHANGED',
-      moduleId: 'resource-manager',
+    this.publishEvent({
+      type: EventType.RESOURCE_FLOW_OPTIMIZATION_COMPLETED,
+      moduleId: this.id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
       data: {
-        type: 'optimization',
+        productionEfficiency: this.optimizationMetrics.productionEfficiency,
+        consumptionEfficiency: this.optimizationMetrics.consumptionEfficiency,
+        transferEfficiency: this.optimizationMetrics.transferEfficiency,
         metrics: this.optimizationMetrics,
       },
-    });
+    } as ResourceManagerEvent);
   }
 
   /**
@@ -1055,19 +1195,19 @@ export class ResourceManager {
       localStorage.setItem('resourceManagerState', JSON.stringify(completeState));
 
       // Emit an event to notify that the state has been saved
-      moduleEventBus.emit({
-        type: 'RESOURCE_STATE_SAVED' as ModuleEventType,
-        moduleId: 'resource-manager',
-        moduleType: 'resource-manager' as ModuleType,
+      this.publishEvent({
+        type: EventType.SYSTEM_STARTUP,
+        moduleId: this.id,
+        moduleType: 'resource-manager',
         timestamp: Date.now(),
         data: {
-          timestamp: completeState.timestamp,
-          resourceCount: Object.keys(resourceData).length,
+          action: 'state_saved',
+          resourceCount: this.resources.size,
           productionCount: Object.keys(productionData).length,
           consumptionCount: Object.keys(consumptionData).length,
           flowCount: Object.keys(flowData).length,
         },
-      });
+      } as ResourceManagerEvent);
 
       console.warn(
         `[ResourceManager] State saved with ${Object.keys(resourceData).length} resources`
@@ -1139,19 +1279,19 @@ export class ResourceManager {
       }
 
       // Emit an event to notify that the state has been loaded
-      moduleEventBus.emit({
-        type: 'RESOURCE_STATE_LOADED' as ModuleEventType,
-        moduleId: 'resource-manager',
-        moduleType: 'resource-manager' as ModuleType,
+      this.publishEvent({
+        type: EventType.SYSTEM_STARTUP,
+        moduleId: this.id,
+        moduleType: 'resource-manager',
         timestamp: Date.now(),
         data: {
-          originalTimestamp: parsedState.timestamp,
-          resourceCount: Object.keys(parsedState.resources).length,
+          action: 'state_loaded',
+          resourceCount: this.resources.size,
           productionCount: Object.keys(parsedState.productions).length,
           consumptionCount: Object.keys(parsedState.consumptions).length,
           flowCount: Object.keys(parsedState.flows).length,
         },
-      });
+      } as ResourceManagerEvent);
 
       console.warn(
         `[ResourceManager] State loaded with ${Object.keys(parsedState.resources).length} resources`

@@ -1,156 +1,183 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { moduleManager } from '../../managers/module/ModuleManager';
 import {
   ExtendedModuleStatus,
-  ModuleStatusDetails,
+  ModuleAlert,
   moduleStatusManager,
+  StatusHistoryEntry,
 } from '../../managers/module/ModuleStatusManager';
+import { BaseModule, ModuleType } from '../../types/buildings/ModuleTypes';
+import { BaseEvent, EventType } from '../../types/events/EventTypes';
+
+// Interface for module status hook result
+interface UseModuleStatusResult {
+  statusDetails: {
+    currentStatus: ExtendedModuleStatus;
+    previousStatus?: ExtendedModuleStatus;
+    history: StatusHistoryEntry[];
+    lastUpdated: number;
+    metrics: {
+      uptime: number;
+      efficiency: number;
+      reliability: number;
+      performance: number;
+    };
+    alerts: ModuleAlert[];
+  } | null;
+  isLoading: boolean;
+  error: string | null;
+  module: BaseModule | null;
+  currentStatus: ExtendedModuleStatus;
+  previousStatus?: ExtendedModuleStatus;
+  history: StatusHistoryEntry[];
+  metrics: Record<string, number> | null;
+  alerts: ModuleAlert[];
+  updateStatus: (status: ExtendedModuleStatus, reason?: string) => void;
+  acknowledgeAlert: (alertIndex: number) => void;
+  getStatusColor: (status: ExtendedModuleStatus) => string;
+  getAlertColor: (level: 'info' | 'warning' | 'error' | 'critical') => string;
+  formatUptime: (ms: number) => string;
+}
 
 /**
- * Hook for tracking and managing module status
+ * Hook for accessing and managing module status
+ * This connects to both the ModuleManager and ModuleStatusManager
  */
-export function useModuleStatus(moduleId?: string) {
-  const [statusDetails, setStatusDetails] = useState<ModuleStatusDetails | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export function useModuleStatus(moduleId: string): UseModuleStatusResult {
+  const [statusDetails, setStatusDetails] = useState<UseModuleStatusResult['statusDetails']>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [module, setModule] = useState<BaseModule | null>(null);
 
-  // Load status details
+  // Fetch module status on mount
   useEffect(() => {
-    if (!moduleId) {
-      setStatusDetails(null);
-      setIsLoading(false);
-      return;
-    }
+    const fetchModuleStatus = async () => {
+      try {
+        setIsLoading(true);
 
-    try {
-      const details = moduleStatusManager.getModuleStatusDetails(moduleId);
+        // Get the module from ModuleManager
+        const moduleData = moduleManager.getModule(moduleId);
+        if (!moduleData) {
+          throw new Error(`Module not found: ${moduleId}`);
+        }
+        setModule(moduleData);
 
-      if (details) {
+        // Get status details from ModuleStatusManager
+        const details = moduleStatusManager.getModuleStatusDetails(moduleId);
+        if (!details) {
+          throw new Error(`Status details not found for module: ${moduleId}`);
+        }
         setStatusDetails(details);
-      } else {
-        // Initialize status tracking if not already done
-        moduleStatusManager.initializeModuleStatus(moduleId);
-        const newDetails = moduleStatusManager.getModuleStatusDetails(moduleId);
-        setStatusDetails(newDetails || null);
-      }
-
-      setIsLoading(false);
-    } catch (err) {
-      setError(`Error loading module status: ${err}`);
-      setIsLoading(false);
-    }
-  }, [moduleId]);
-
-  // Subscribe to status events
-  useEffect(() => {
-    if (!moduleId) {
-      return;
-    }
-
-    const handleStatusChanged = (event: ModuleEvent) => {
-      if (event.moduleId === moduleId) {
-        const details = moduleStatusManager.getModuleStatusDetails(moduleId);
-        setStatusDetails(details || null);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const handleErrorOccurred = (event: ModuleEvent) => {
-      if (event.moduleId === moduleId) {
-        const details = moduleStatusManager.getModuleStatusDetails(moduleId);
-        setStatusDetails(details || null);
-      }
-    };
+    fetchModuleStatus();
 
-    // Subscribe to events
-    const unsubscribeStatus = moduleEventBus.subscribe(
-      'STATUS_CHANGED' as ModuleEventType,
-      handleStatusChanged
-    );
-    const unsubscribeError = moduleEventBus.subscribe(
-      'ERROR_OCCURRED' as ModuleEventType,
-      handleErrorOccurred
+    // Subscribe to module status events
+    const unsubscribe = moduleManager.subscribeToEvent(
+      EventType.MODULE_STATUS_CHANGED,
+      (event: BaseEvent) => {
+        if (event.moduleId === moduleId) {
+          // Refresh module status when it changes
+          fetchModuleStatus();
+        }
+      }
     );
 
     return () => {
-      if (typeof unsubscribeStatus === 'function') {
-        unsubscribeStatus();
-      }
-      if (typeof unsubscribeError === 'function') {
-        unsubscribeError();
-      }
+      // Cleanup subscription
+      unsubscribe();
     };
   }, [moduleId]);
 
   // Update module status
   const updateStatus = useCallback(
     (status: ExtendedModuleStatus, reason?: string) => {
-      if (!moduleId) {
-        return false;
-      }
-      return moduleStatusManager.updateModuleStatus(moduleId, status, reason);
-    },
-    [moduleId]
-  );
+      try {
+        const success = moduleStatusManager.updateModuleStatus(moduleId, status, reason);
+        if (!success) {
+          throw new Error(`Failed to update status for module: ${moduleId}`);
+        }
 
-  // Add an alert
-  const addAlert = useCallback(
-    (level: 'info' | 'warning' | 'error' | 'critical', message: string) => {
-      if (!moduleId) {
-        return;
+        // Trigger a status changed event through the module manager
+        moduleManager.publishEvent({
+          type: EventType.MODULE_STATUS_CHANGED,
+          moduleId,
+          moduleType: module?.type || ('unknown' as ModuleType),
+          timestamp: Date.now(),
+          data: {
+            status,
+            reason,
+            previousStatus: statusDetails?.currentStatus,
+          },
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
       }
-      moduleStatusManager.addAlert(moduleId, level, message);
     },
-    [moduleId]
+    [moduleId, module, statusDetails]
   );
 
   // Acknowledge an alert
   const acknowledgeAlert = useCallback(
     (alertIndex: number) => {
-      if (!moduleId) {
-        return false;
+      try {
+        const success = moduleStatusManager.acknowledgeAlert(moduleId, alertIndex);
+        if (!success) {
+          throw new Error(`Failed to acknowledge alert for module: ${moduleId}`);
+        }
+        // Refresh status after acknowledging alert
+        const updatedDetails = moduleStatusManager.getModuleStatusDetails(moduleId);
+        if (updatedDetails) {
+          setStatusDetails(updatedDetails);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
       }
-      return moduleStatusManager.acknowledgeAlert(moduleId, alertIndex);
     },
     [moduleId]
   );
 
   // Get status color
-  const getStatusColor = useCallback((status?: ExtendedModuleStatus): string => {
-    if (!status) {
-      return 'gray';
-    }
-
+  const getStatusColor = useCallback((status: ExtendedModuleStatus): string => {
     switch (status) {
       case 'active':
-        return 'green';
-      case 'constructing':
-        return 'yellow';
-      case 'inactive':
-        return 'gray';
-      case 'optimized':
-        return 'blue';
-      case 'boost':
-        return 'purple';
-      case 'degraded':
-        return 'orange';
-      case 'overloaded':
-        return 'orange';
-      case 'maintenance':
-      case 'upgrading':
-      case 'repairing':
-        return 'yellow';
-      case 'error':
-        return 'red';
-      case 'critical':
-        return 'darkred';
-      case 'offline':
-        return 'black';
+        return '#4CAF50'; // Green
       case 'standby':
-        return 'lightblue';
+        return '#2196F3'; // Blue
+      case 'constructing':
+        return '#FF9800'; // Orange
+      case 'inactive':
+        return '#9E9E9E'; // Gray
+      case 'maintenance':
+        return '#FFEB3B'; // Yellow
+      case 'error':
+        return '#F44336'; // Red
+      case 'critical':
+        return '#D32F2F'; // Dark Red
+      case 'offline':
+        return '#000000'; // Black
+      case 'optimized':
+        return '#00C853'; // Light Green
+      case 'degraded':
+        return '#FFD600'; // Amber
+      case 'overloaded':
+        return '#FF6D00'; // Deep Orange
+      case 'upgrading':
+        return '#673AB7'; // Deep Purple
+      case 'repairing':
+        return '#00BCD4'; // Cyan
       case 'powersave':
-        return 'teal';
+        return '#3F51B5'; // Indigo
+      case 'boost':
+        return '#E91E63'; // Pink
       default:
-        return 'gray';
+        return '#9E9E9E'; // Default Gray
     }
   }, []);
 
@@ -158,21 +185,21 @@ export function useModuleStatus(moduleId?: string) {
   const getAlertColor = useCallback((level: 'info' | 'warning' | 'error' | 'critical'): string => {
     switch (level) {
       case 'info':
-        return 'blue';
+        return '#2196F3'; // Blue
       case 'warning':
-        return 'orange';
+        return '#FF9800'; // Orange
       case 'error':
-        return 'red';
+        return '#F44336'; // Red
       case 'critical':
-        return 'darkred';
+        return '#D32F2F'; // Dark Red
       default:
-        return 'gray';
+        return '#9E9E9E'; // Gray
     }
   }, []);
 
   // Format uptime
-  const formatUptime = useCallback((uptime: number): string => {
-    const seconds = Math.floor(uptime / 1000);
+  const formatUptime = useCallback((ms: number): string => {
+    const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
@@ -180,37 +207,27 @@ export function useModuleStatus(moduleId?: string) {
     if (days > 0) {
       return `${days}d ${hours % 24}h`;
     }
-
     if (hours > 0) {
       return `${hours}h ${minutes % 60}m`;
     }
-
     if (minutes > 0) {
       return `${minutes}m ${seconds % 60}s`;
     }
-
     return `${seconds}s`;
   }, []);
 
   return {
-    // State
     statusDetails,
     isLoading,
     error,
-
-    // Current status
-    currentStatus: statusDetails?.currentStatus,
+    module,
+    currentStatus: statusDetails?.currentStatus || 'inactive',
     previousStatus: statusDetails?.previousStatus,
     history: statusDetails?.history || [],
-    metrics: statusDetails?.metrics,
+    metrics: statusDetails?.metrics || null,
     alerts: statusDetails?.alerts || [],
-
-    // Actions
     updateStatus,
-    addAlert,
     acknowledgeAlert,
-
-    // Utilities
     getStatusColor,
     getAlertColor,
     formatUptime,
@@ -218,95 +235,112 @@ export function useModuleStatus(moduleId?: string) {
 }
 
 /**
- * Hook for tracking modules with specific status or alerts
+ * Hook to get all modules with their status
  */
-export function useModulesWithStatus(
-  status?: ExtendedModuleStatus,
-  alertLevel?: 'info' | 'warning' | 'error' | 'critical'
-) {
-  const [moduleIds, setModuleIds] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export function useModulesWithStatus() {
+  const [modules, setModules] = useState<BaseModule[]>([]);
+  const [statusMap, setStatusMap] = useState<Record<string, ExtendedModuleStatus>>({});
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load modules with status or alerts
   useEffect(() => {
-    try {
-      let ids: string[] = [];
-
-      if (status) {
-        ids = moduleStatusManager.getModulesByStatus(status);
-      } else if (alertLevel) {
-        ids = moduleStatusManager.getModulesWithAlerts(alertLevel);
-      } else {
-        // Get all modules with any alerts
-        ids = moduleStatusManager.getModulesWithAlerts();
-      }
-
-      setModuleIds(ids);
-      setIsLoading(false);
-    } catch (err) {
-      setError(`Error loading modules: ${err}`);
-      setIsLoading(false);
-    }
-  }, [status, alertLevel]);
-
-  // Subscribe to status events
-  useEffect(() => {
-    const handleStatusChanged = () => {
+    const fetchModulesWithStatus = () => {
       try {
-        let ids: string[] = [];
+        setIsLoading(true);
 
-        if (status) {
-          ids = moduleStatusManager.getModulesByStatus(status);
-        } else if (alertLevel) {
-          ids = moduleStatusManager.getModulesWithAlerts(alertLevel);
-        } else {
-          // Get all modules with any alerts
-          ids = moduleStatusManager.getModulesWithAlerts();
-        }
+        // Get all active modules
+        const allModules = moduleManager.getActiveModules();
+        setModules(allModules);
 
-        setModuleIds(ids);
+        // Get status for each module
+        const statusMapping: Record<string, ExtendedModuleStatus> = {};
+        allModules.forEach(module => {
+          const status = moduleStatusManager.getModuleStatus(module.id);
+          if (status) {
+            statusMapping[module.id] = status;
+          }
+        });
+
+        setStatusMap(statusMapping);
+        setError(null);
       } catch (err) {
-        setError(`Error updating modules: ${err}`);
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const handleErrorOccurred = () => {
-      if (alertLevel || !status) {
-        try {
-          const ids = alertLevel
-            ? moduleStatusManager.getModulesWithAlerts(alertLevel)
-            : moduleStatusManager.getModulesWithAlerts();
+    fetchModulesWithStatus();
 
-          setModuleIds(ids);
-        } catch (err) {
-          setError(`Error updating modules: ${err}`);
-        }
-      }
-    };
-
-    // Subscribe to events
-    const unsubscribeStatus = moduleEventBus.subscribe(
-      'STATUS_CHANGED' as ModuleEventType,
-      handleStatusChanged
-    );
-    const unsubscribeError = moduleEventBus.subscribe(
-      'ERROR_OCCURRED' as ModuleEventType,
-      handleErrorOccurred
-    );
+    // Subscribe to module status changes
+    const unsubscribe = moduleManager.subscribeToEvent(EventType.MODULE_STATUS_CHANGED, () => {
+      // Refresh all modules when any module status changes
+      fetchModulesWithStatus();
+    });
 
     return () => {
-      if (typeof unsubscribeStatus === 'function') {
-        unsubscribeStatus();
-      }
-      if (typeof unsubscribeError === 'function') {
-        unsubscribeError();
+      unsubscribe();
+    };
+  }, []);
+
+  return {
+    modules,
+    statusMap,
+    isLoading,
+    error,
+  };
+}
+
+/**
+ * Hook to get modules with alerts
+ */
+export function useModuleAlerts(alertLevel?: 'info' | 'warning' | 'error' | 'critical') {
+  const [moduleIds, setModuleIds] = useState<string[]>([]);
+  const [alertCounts, setAlertCounts] = useState<Record<string, number>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchModuleAlerts = () => {
+      try {
+        setIsLoading(true);
+
+        // Get modules with alerts
+        const modulesWithAlerts = moduleStatusManager.getModulesWithAlerts(alertLevel);
+        setModuleIds(modulesWithAlerts);
+
+        // Count alerts for each module
+        const counts: Record<string, number> = {};
+        modulesWithAlerts.forEach(moduleId => {
+          const alerts = moduleStatusManager.getModuleAlerts(moduleId, true);
+          counts[moduleId] = alerts.length;
+        });
+
+        setAlertCounts(counts);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setIsLoading(false);
       }
     };
-  }, [status, alertLevel]);
+
+    fetchModuleAlerts();
+
+    // Subscribe to error events
+    const unsubscribe = moduleManager.subscribeToEvent(EventType.ERROR_OCCURRED, () => {
+      // Refresh alerts when any error occurs
+      fetchModuleAlerts();
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [alertLevel]);
 
   return {
     moduleIds,
+    alertCounts,
     isLoading,
     error,
   };

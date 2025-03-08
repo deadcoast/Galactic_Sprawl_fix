@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../../../contexts/GameContext';
 import { useComponentLifecycle, useComponentRegistration } from '../../../hooks/ui';
 import { ModuleEvent } from '../../../lib/modules/ModuleEvents';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import {
+  ResourceType,
+  ResourceTypeHelpers,
+} from '../../../types/resources/StandardizedResourceTypes';
 import { useTooltipContext } from '../tooltip-context';
 
 /**
@@ -29,53 +32,53 @@ interface ResourceDisplayProps {
 }
 
 const resourceIcons = {
-  minerals: Database,
-  energy: Zap,
-  population: Users,
-  research: Beaker,
-  plasma: Beaker, // Using Beaker for plasma as well
-  gas: Beaker, // Using Beaker for gas as well
-  exotic: Beaker, // Using Beaker for exotic as well
+  [ResourceType.MINERALS]: Database,
+  [ResourceType.ENERGY]: Zap,
+  [ResourceType.POPULATION]: Users,
+  [ResourceType.RESEARCH]: Beaker,
+  [ResourceType.PLASMA]: Beaker, // Using Beaker for plasma as well
+  [ResourceType.GAS]: Beaker, // Using Beaker for gas as well
+  [ResourceType.EXOTIC]: Beaker, // Using Beaker for exotic as well
 };
 
 const resourceColors = {
-  minerals: {
+  [ResourceType.MINERALS]: {
     base: 'text-amber-400',
     bg: 'bg-amber-900/20',
     border: 'border-amber-700/30',
     fill: 'bg-amber-500',
   },
-  energy: {
+  [ResourceType.ENERGY]: {
     base: 'text-cyan-400',
     bg: 'bg-cyan-900/20',
     border: 'border-cyan-700/30',
     fill: 'bg-cyan-500',
   },
-  population: {
+  [ResourceType.POPULATION]: {
     base: 'text-green-400',
     bg: 'bg-green-900/20',
     border: 'border-green-700/30',
     fill: 'bg-green-500',
   },
-  research: {
+  [ResourceType.RESEARCH]: {
     base: 'text-purple-400',
     bg: 'bg-purple-900/20',
     border: 'border-purple-700/30',
     fill: 'bg-purple-500',
   },
-  plasma: {
+  [ResourceType.PLASMA]: {
+    base: 'text-red-400',
+    bg: 'bg-red-900/20',
+    border: 'border-red-700/30',
+    fill: 'bg-red-500',
+  },
+  [ResourceType.GAS]: {
     base: 'text-blue-400',
     bg: 'bg-blue-900/20',
     border: 'border-blue-700/30',
     fill: 'bg-blue-500',
   },
-  gas: {
-    base: 'text-teal-400',
-    bg: 'bg-teal-900/20',
-    border: 'border-teal-700/30',
-    fill: 'bg-teal-500',
-  },
-  exotic: {
+  [ResourceType.EXOTIC]: {
     base: 'text-pink-400',
     bg: 'bg-pink-900/20',
     border: 'border-pink-700/30',
@@ -85,13 +88,13 @@ const resourceColors = {
 
 // Resource descriptions for tooltips
 const resourceDescriptions = {
-  minerals: 'Raw materials used for construction and manufacturing.',
-  energy: 'Powers all modules, buildings, and operations.',
-  population: 'Citizens of your empire who can be assigned to various tasks.',
-  research: 'Scientific knowledge used to unlock new technologies.',
-  plasma: 'High-energy matter used for advanced technology.',
-  gas: 'Various gases used for life support and manufacturing.',
-  exotic: 'Rare materials with unique properties for special projects.',
+  [ResourceType.MINERALS]: 'Raw materials used for construction and manufacturing.',
+  [ResourceType.ENERGY]: 'Powers all modules, buildings, and operations.',
+  [ResourceType.POPULATION]: 'Citizens of your empire who can be assigned to various tasks.',
+  [ResourceType.RESEARCH]: 'Scientific knowledge used to unlock new technologies.',
+  [ResourceType.PLASMA]: 'High-energy matter used for advanced technology.',
+  [ResourceType.GAS]: 'Various gases used for life support and manufacturing.',
+  [ResourceType.EXOTIC]: 'Rare materials with unique properties for special projects.',
 };
 
 // Resource status icons and messages
@@ -127,14 +130,20 @@ const ResourceTooltip = ({ type, value, rate, capacity, thresholds }: ResourceDi
   return (
     <div className="w-64 rounded-md border border-gray-700 bg-gray-800 p-3 shadow-lg">
       <div className="mb-2 flex items-center">
-        <div className={`mr-2 rounded p-1 ${resourceColors[type]?.bg || resourceColors.exotic.bg}`}>
+        <div
+          className={`mr-2 rounded p-1 ${resourceColors[type]?.bg || resourceColors[ResourceType.EXOTIC].bg}`}
+        >
           {resourceIcons[type]
             ? resourceIcons[type]({
-                className: `h-4 w-4 ${resourceColors[type]?.base || resourceColors.exotic.base}`,
+                className: `h-4 w-4 ${resourceColors[type]?.base || resourceColors[ResourceType.EXOTIC].base}`,
               })
-            : resourceIcons.exotic({ className: `h-4 w-4 ${resourceColors.exotic.base}` })}
+            : resourceIcons[ResourceType.EXOTIC]({
+                className: `h-4 w-4 ${resourceColors[ResourceType.EXOTIC].base}`,
+              })}
         </div>
-        <h3 className="flex-1 text-lg font-bold capitalize text-white">{type}</h3>
+        <h3 className="flex-1 text-lg font-bold capitalize text-white">
+          {ResourceTypeHelpers.getDisplayName(type)}
+        </h3>
         {status?.icon}
       </div>
 
@@ -145,7 +154,7 @@ const ResourceTooltip = ({ type, value, rate, capacity, thresholds }: ResourceDi
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-gray-400">Current:</span>
-          <span className={resourceColors[type]?.base || resourceColors.exotic.base}>
+          <span className={resourceColors[type]?.base || resourceColors[ResourceType.EXOTIC].base}>
             {value.toLocaleString()}
           </span>
         </div>
@@ -214,8 +223,8 @@ function EnhancedResourceDisplay({
 }: ResourceDisplayProps) {
   const [value, setValue] = useState(initialValue);
   const [rate, setRate] = useState(initialRate);
-  const Icon = resourceIcons[type] || resourceIcons.exotic;
-  const colors = resourceColors[type] || resourceColors.exotic;
+  const Icon = resourceIcons[type] || resourceIcons[ResourceType.EXOTIC];
+  const colors = resourceColors[type] || resourceColors[ResourceType.EXOTIC];
   const percentage = capacity ? (value / capacity) * 100 : 100;
   const isLow = thresholds && value <= thresholds.low;
   const isCritical = thresholds && value <= thresholds.critical;
@@ -238,10 +247,14 @@ function EnhancedResourceDisplay({
   // Set up event handling
   useComponentLifecycle({
     onMount: () => {
-      console.warn(`EnhancedResourceDisplay mounted for ${type}`);
+      console.warn(
+        `EnhancedResourceDisplay mounted for ${ResourceTypeHelpers.getDisplayName(type)}`
+      );
     },
     onUnmount: () => {
-      console.warn(`EnhancedResourceDisplay unmounted for ${type}`);
+      console.warn(
+        `EnhancedResourceDisplay unmounted for ${ResourceTypeHelpers.getDisplayName(type)}`
+      );
     },
     eventSubscriptions: [
       {
@@ -325,7 +338,9 @@ function EnhancedResourceDisplay({
           <Icon className={`h-4 w-4 ${colors.base}`} />
         </div>
         <div className="flex-1">
-          <div className="text-sm font-medium capitalize text-gray-300">{type}</div>
+          <div className="text-sm font-medium capitalize text-gray-300">
+            {ResourceTypeHelpers.getDisplayName(type)}
+          </div>
           <div className={`text-lg font-bold ${colors.base}`}>
             {Math.floor(value).toLocaleString()}
             {capacity && ` / ${capacity.toLocaleString()}`}
@@ -367,7 +382,7 @@ function EnhancedResourceDisplay({
             exit={{ opacity: 0, height: 0 }}
             className={`mt-2 text-xs ${isCritical ? 'text-red-400' : 'text-yellow-400'}`}
           >
-            {isCritical ? 'Critical' : 'Low'} {type} levels
+            {isCritical ? 'Critical' : 'Low'} {ResourceTypeHelpers.getDisplayName(type)} levels
           </motion.div>
         )}
       </AnimatePresence>
@@ -391,18 +406,23 @@ export function ResourceVisualizationEnhanced() {
 
   // Set up thresholds based on resource types - these could come from a config or context
   const resourceThresholds = {
-    minerals: { low: 1000, critical: 500 },
-    energy: { low: 800, critical: 400 },
-    population: { low: 50, critical: 25 },
-    research: { low: 20, critical: 10 },
+    [ResourceType.MINERALS]: { low: 1000, critical: 500 },
+    [ResourceType.ENERGY]: { low: 800, critical: 400 },
+    [ResourceType.POPULATION]: { low: 50, critical: 25 },
+    [ResourceType.RESEARCH]: { low: 20, critical: 10 },
   };
 
   // Set up capacities - these could come from a resource manager
   const resourceCapacities = {
-    minerals: 10000,
-    energy: 8000,
-    population: 1000,
-    research: 1000,
+    [ResourceType.MINERALS]: 10000,
+    [ResourceType.ENERGY]: 8000,
+    [ResourceType.POPULATION]: 1000,
+    [ResourceType.RESEARCH]: 1000,
+  };
+
+  // Add helper function to get resource name
+  const getResourceName = (resourceType: ResourceType): string => {
+    return ResourceTypeHelpers.getDisplayName(resourceType);
   };
 
   return (
@@ -415,28 +435,28 @@ export function ResourceVisualizationEnhanced() {
 
       <div className="grid grid-cols-2 gap-4">
         <EnhancedResourceDisplay
-          type="minerals"
+          type={ResourceType.MINERALS}
           value={resources.minerals}
           rate={resourceRates.minerals}
           capacity={resourceCapacities.minerals}
           thresholds={resourceThresholds.minerals}
         />
         <EnhancedResourceDisplay
-          type="energy"
+          type={ResourceType.ENERGY}
           value={resources.energy}
           rate={resourceRates.energy}
           capacity={resourceCapacities.energy}
           thresholds={resourceThresholds.energy}
         />
         <EnhancedResourceDisplay
-          type="population"
+          type={ResourceType.POPULATION}
           value={resources.population}
           rate={resourceRates.population}
           capacity={resourceCapacities.population}
           thresholds={resourceThresholds.population}
         />
         <EnhancedResourceDisplay
-          type="research"
+          type={ResourceType.RESEARCH}
           value={resources.research}
           rate={resourceRates.research}
           capacity={resourceCapacities.research}

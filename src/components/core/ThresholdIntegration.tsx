@@ -1,170 +1,173 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useThreshold } from '../../contexts/ThresholdContext';
-import { ThresholdEvent, thresholdEvents } from '../../contexts/ThresholdTypes';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ResourceManager } from '../../managers/game/ResourceManager';
-import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { BaseEvent, EventType } from '../../types/events/EventTypes';
+import { ResourceType } from '../../types/resources/StandardizedResourceTypes';
 
 interface ThresholdIntegrationProps {
   resourceManager: ResourceManager;
-  updateInterval?: number;
-  children?: React.ReactNode;
+  children: React.ReactNode;
 }
 
 /**
  * ThresholdIntegration component
  *
- * This component connects the ThresholdContext with the ResourceManager,
- * ensuring that resource thresholds are respected and appropriate actions
- * are taken when thresholds are crossed.
- *
- * It listens to resource updates from the ResourceManager and updates the ThresholdContext,
- * and also listens to threshold events from the ThresholdContext and triggers appropriate
- * actions in the ResourceManager.
+ * Connects the ResourceManager to the ThresholdContext, enabling:
+ * - Synchronization of resource amounts from ResourceManager to ThresholdContext
+ * - Propagation of threshold violations from ThresholdContext to ResourceManager
+ * - Automatic resource management based on threshold settings
  */
-export function ThresholdIntegration({
-  resourceManager,
-  updateInterval = 1000,
-  children,
-}: ThresholdIntegrationProps) {
+export function ThresholdIntegration({ resourceManager, children }: ThresholdIntegrationProps) {
   const { state, dispatch } = useThreshold();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const lastResourceState = useRef<Record<string, number>>({});
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Sync resource states from ResourceManager to ThresholdContext
+  // Initialize connection between ResourceManager and ThresholdContext
   useEffect(() => {
-    const syncResourceStates = () => {
-      // Get current resources from manager
-      const currentResources = resourceManager.getAllResources();
+    const setupConnection = async () => {
+      try {
+        // Register for resource update events from ResourceManager
+        const unsubscribe = resourceManager.subscribeToEvent(
+          EventType.RESOURCE_UPDATED,
+          handleResourceUpdate
+        );
 
-      // Get resource states with more details if available
-      if (resourceManager.getAllResourceStates) {
-        const states = resourceManager.getAllResourceStates();
+        // Initial synchronization of all resources
+        synchronizeAllResources();
 
-        // For each resource type, update the corresponding resource in ThresholdContext
-        Object.entries(states).forEach(([type, details]) => {
-          if (details && type in currentResources) {
-            const resourceType = type as ResourceType;
-            const currentAmount = currentResources[resourceType] || 0;
+        setIsInitialized(true);
 
-            // Skip if the amount hasn't changed
-            if (lastResourceState.current[resourceType] === currentAmount) {
-              return;
-            }
+        // Cleanup on unmount
+        return () => {
+          unsubscribe();
+        };
+      } catch (error) {
+        console.error('Failed to connect ThresholdContext to ResourceManager:', error);
+      }
+    };
 
-            // Update the lastResourceState ref
-            lastResourceState.current[resourceType] = currentAmount;
+    setupConnection();
+  }, [resourceManager]);
 
-            // Prepare resource data for ThresholdContext if it exists in state
-            if (state.resources[resourceType]) {
-              // Update the amount in ThresholdContext
-              dispatch({
-                type: 'UPDATE_AMOUNT',
-                payload: {
-                  resourceId: resourceType,
-                  amount: currentAmount,
-                },
-              });
-            } else {
-              // Resource doesn't exist in ThresholdContext yet, add it with default thresholds
-              // Use a reasonable default capacity or estimate from current amount
-              const maxCapacity = details.max || currentAmount * 2;
-              const minThreshold = Math.round(maxCapacity * 0.2); // 20% of capacity
-              const maxThreshold = Math.round(maxCapacity * 0.8); // 80% of capacity
+  // Synchronize all resources from ResourceManager to ThresholdContext
+  const synchronizeAllResources = () => {
+    const resourceStates = resourceManager.getAllResourceStates();
 
-              dispatch({
-                type: 'ADD_RESOURCE',
-                payload: {
-                  id: resourceType,
-                  name: resourceType.charAt(0).toUpperCase() + resourceType.slice(1),
-                  type: 'mineral', // Default type, should be updated based on resource
-                  currentAmount: currentAmount,
-                  maxCapacity: maxCapacity,
-                  thresholds: {
-                    min: minThreshold,
-                    max: maxThreshold,
-                  },
-                  autoMine: true,
-                },
-              });
-            }
-          }
+    if (!resourceStates) {
+      return;
+    }
+
+    // Update each resource in the ThresholdContext
+    Object.entries(resourceStates).forEach(([type, state]) => {
+      if (state) {
+        dispatch({
+          type: 'UPDATE_AMOUNT',
+          payload: {
+            resourceId: type,
+            amount: state.current,
+          },
         });
       }
-    };
+    });
+  };
 
-    // Set up periodic synchronization
-    intervalRef.current = setInterval(syncResourceStates, updateInterval);
+  // Handle resource update events from ResourceManager
+  const handleResourceUpdate = (event: BaseEvent) => {
+    if (!event.data || typeof event.data !== 'object') return;
 
-    // Initial sync
-    syncResourceStates();
+    const resources = 'resources' in event.data ? event.data.resources : null;
 
-    // Cleanup
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+    if (!resources || typeof resources !== 'object') return;
+
+    // Update each resource in the ThresholdContext
+    Object.entries(resources).forEach(([type, data]) => {
+      if (typeof data === 'object' && data !== null && 'current' in data) {
+        const current = data.current as number;
+        dispatch({
+          type: 'UPDATE_AMOUNT',
+          payload: {
+            resourceId: type,
+            amount: current,
+          },
+        });
       }
-    };
-  }, [resourceManager, dispatch, state.resources, updateInterval]);
+    });
+  };
 
-  // Subscribe to threshold events from ThresholdContext and take appropriate actions
+  // Listen for threshold changes and handle threshold violations
   useEffect(() => {
-    const handleThresholdEvent = (event: ThresholdEvent) => {
-      const { type, resourceId, details } = event;
+    if (!isInitialized) return;
 
-      // Handle threshold violations
-      if (type === 'THRESHOLD_VIOLATED') {
-        console.log(`Threshold violated for ${resourceId}:`, details);
+    // Setup automatic resource management based on thresholds
+    const checkThresholds = () => {
+      Object.entries(state.resources).forEach(([resourceId, resource]) => {
+        const { currentAmount, thresholds, autoMine } = resource;
 
-        // If resource is below minimum, emit an event that might trigger production
-        if (details.type === 'below_minimum') {
-          moduleEventBus.emit({
-            type: 'STATUS_CHANGED' as ModuleEventType,
-            moduleId: 'threshold-integration',
-            moduleType: 'resource' as ModuleType,
+        // Handle threshold violations
+        if (currentAmount < thresholds.min) {
+          // Publish threshold violation event
+          resourceManager.publishEvent({
+            type: EventType.RESOURCE_THRESHOLD_TRIGGERED,
+            moduleId: resourceManager.id,
+            moduleType: 'resource-manager',
             timestamp: Date.now(),
             data: {
-              resourceType: resourceId,
+              resourceType: resourceId as ResourceType,
               thresholdType: 'min',
-              current: details.current,
-              threshold: details.min,
+              current: currentAmount,
+              threshold: thresholds.min,
+              violation: true,
             },
           });
-        }
-      }
 
-      // Handle storage full events
-      else if (type === 'STORAGE_FULL') {
-        console.log(`Storage nearly full for ${resourceId}:`, details);
-
-        // If resource is above maximum, emit an event that might reduce production
-        if (details.type === 'above_maximum') {
-          moduleEventBus.emit({
-            type: 'STATUS_CHANGED' as ModuleEventType,
-            moduleId: 'threshold-integration',
-            moduleType: 'resource' as ModuleType,
+          // If auto-mining is enabled, try to produce more of this resource
+          if (autoMine) {
+            // Here we would implement logic to automatically produce more of this resource
+            console.log(`Auto-mining resource ${resourceId} due to threshold violation`);
+          }
+        } else if (currentAmount > thresholds.max) {
+          // Publish threshold violation event
+          resourceManager.publishEvent({
+            type: EventType.RESOURCE_THRESHOLD_TRIGGERED,
+            moduleId: resourceManager.id,
+            moduleType: 'resource-manager',
             timestamp: Date.now(),
             data: {
-              resourceType: resourceId,
+              resourceType: resourceId as ResourceType,
               thresholdType: 'max',
-              current: details.current,
-              threshold: details.max,
+              current: currentAmount,
+              threshold: thresholds.max,
+              violation: true,
             },
           });
+
+          // Stop production if we're over the maximum
+          if (autoMine) {
+            console.log(
+              `Stopping resource ${resourceId} production due to max threshold violation`
+            );
+          }
         }
-      }
+      });
     };
 
-    // Subscribe to threshold events
-    const subscription = thresholdEvents.subscribe(handleThresholdEvent);
+    // Check thresholds when the state changes
+    checkThresholds();
 
-    // Cleanup
+    // Also set up an interval to regularly check thresholds
+    const intervalId = setInterval(checkThresholds, 10000); // Check every 10 seconds
+
     return () => {
-      subscription.unsubscribe();
+      clearInterval(intervalId);
     };
-  }, []);
+  }, [state, isInitialized, resourceManager]);
 
-  // This component doesn't render anything itself
-  return <>{children}</>;
+  return (
+    <>
+      {!isInitialized ? (
+        <div className="threshold-integration-loading">Connecting resource thresholds...</div>
+      ) : (
+        children
+      )}
+    </>
+  );
 }

@@ -7,6 +7,7 @@ import {
   MiningResource,
   MiningTechBonuses,
 } from '../../../../types/mining/MiningTypes';
+import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
 
 interface MiningControlsProps {
   resource: MiningResource;
@@ -106,16 +107,16 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
           <div className="flex items-center space-x-3">
             <div
               className={`rounded-lg p-2 ${
-                resource.type === 'mineral'
+                resource.type === ResourceType.MINERALS
                   ? 'bg-cyan-500/20'
-                  : resource.type === 'gas'
+                  : resource.type === ResourceType.GAS
                     ? 'bg-purple-500/20'
                     : 'bg-amber-500/20'
               }`}
             >
-              {resource.type === 'mineral' ? (
+              {resource.type === ResourceType.MINERALS ? (
                 <Pickaxe className="h-5 w-5 text-cyan-400" />
-              ) : resource.type === 'gas' ? (
+              ) : resource.type === ResourceType.GAS ? (
                 <Database className="h-5 w-5 text-purple-400" />
               ) : (
                 <Star className="h-5 w-5 text-amber-400" />
@@ -124,8 +125,9 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
             <div>
               <h3 className="font-medium text-white">{resource.name}</h3>
               <div className="text-sm text-gray-400">
-                {resource.type.charAt(0).toUpperCase() + resource.type.slice(1)} •{' '}
-                {resource.distance}ly
+                {resource.type.toString().charAt(0).toUpperCase() +
+                  resource.type.toString().slice(1)}{' '}
+                • {resource.distance}ly
               </div>
             </div>
           </div>
@@ -141,14 +143,14 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
           <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
               className={`h-full rounded-full transition-all ${
-                resource.type === 'mineral'
+                resource.type === ResourceType.MINERALS
                   ? 'bg-cyan-500'
-                  : resource.type === 'gas'
+                  : resource.type === ResourceType.GAS
                     ? 'bg-purple-500'
                     : 'bg-amber-500'
               }`}
               style={{ width: `${miningProgress}%` }}
-            />
+            ></div>
           </div>
         </div>
 

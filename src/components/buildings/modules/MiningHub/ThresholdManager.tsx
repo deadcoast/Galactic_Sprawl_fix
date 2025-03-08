@@ -4,13 +4,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Bookmark, Database, Settings } from 'lucide-react';
 import * as React from 'react';
 import { useThreshold } from '../../../../contexts/ThresholdContext';
+import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
 import { ThresholdPresetsPanel } from './ThresholdPresetsPanel';
 import { ThresholdStatusIndicator } from './ThresholdStatusIndicator';
 
 interface ThresholdManagerProps {
   resourceId: string;
   resourceName: string;
-  resourceType: 'mineral' | 'gas' | 'exotic';
+  resourceType: ResourceType;
   currentAmount: number;
   maxCapacity: number;
 }

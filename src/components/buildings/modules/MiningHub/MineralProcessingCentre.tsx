@@ -7,24 +7,26 @@ import { ThresholdProvider, useThreshold } from '../../../../contexts/ThresholdC
 import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { ResourceTransferManager } from '../../../../managers/resource/ResourceTransferManager';
+import { MiningResource, MiningTechBonuses } from '../../../../types/mining/MiningTypes';
+import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
 import { AutomationMonitor } from './AutomationMonitor';
 import { MiningControls } from './MiningControls';
 import { MiningMap } from './MiningMap';
 import { ResourceStorage } from './ResourceStorage';
 import { ThresholdManager } from './ThresholdManager';
 
-interface Resource {
+interface TechUpgrade {
   id: string;
   name: string;
-  type: 'mineral' | 'gas' | 'exotic';
-  abundance: number;
-  distance: number;
-  extractionRate: number;
-  depletion: number;
-  priority: number;
-  thresholds: {
-    min: number;
-    max: number;
+  description: string;
+  level: number;
+  maxLevel: number;
+  bonuses: MiningTechBonuses;
+  requirements: {
+    experience: number;
+    credits?: number;
+    resources?: Record<string, number>;
+    prerequisites?: string[];
   };
 }
 
@@ -33,7 +35,7 @@ interface MineralProcessingCentreProps {
 }
 
 function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) {
-  const [selectedNode, setSelectedNode] = React.useState<Resource | null>(null);
+  const [selectedNode, setSelectedNode] = React.useState<MiningResource | null>(null);
   const [filter, setFilter] = React.useState<'all' | 'mineral' | 'gas' | 'exotic'>('all');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [view, setView] = React.useState<'map' | 'grid'>('map');
@@ -51,44 +53,41 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
     scaling.performance.fps > 45 ? 'high' : scaling.performance.fps > 30 ? 'medium' : 'low';
 
   // Mock data for demonstration
-  const mockResources = React.useMemo<Resource[]>(
-    () => [
-      {
-        id: 'iron-belt-1',
-        name: 'Iron Belt Alpha',
-        type: 'mineral',
-        abundance: 0.8,
-        distance: 150,
-        extractionRate: 25,
-        depletion: 0.2,
-        priority: 1,
-        thresholds: { min: 3000, max: 10000 },
-      },
-      {
-        id: 'helium-cloud-1',
-        name: 'Helium Cloud Beta',
-        type: 'gas',
-        abundance: 0.6,
-        distance: 300,
-        extractionRate: 15,
-        depletion: 0.1,
-        priority: 2,
-        thresholds: { min: 1000, max: 5000 },
-      },
-      {
-        id: 'dark-matter-1',
-        name: 'Dark Matter Cluster',
-        type: 'exotic',
-        abundance: 0.3,
-        distance: 500,
-        extractionRate: 5,
-        depletion: 0.05,
-        priority: 3,
-        thresholds: { min: 100, max: 1000 },
-      },
-    ],
-    []
-  ); // Empty dependency array since this data is static
+  const mockResources: MiningResource[] = [
+    {
+      id: 'iron-belt-1',
+      name: 'Iron Belt Alpha',
+      type: ResourceType.MINERALS,
+      abundance: 0.8,
+      distance: 150,
+      extractionRate: 25,
+      depletion: 0.2,
+      priority: 1,
+      thresholds: { min: 3000, max: 10000 },
+    },
+    {
+      id: 'helium-cloud-1',
+      name: 'Helium Cloud Beta',
+      type: ResourceType.GAS,
+      abundance: 0.6,
+      distance: 300,
+      extractionRate: 15,
+      depletion: 0.1,
+      priority: 2,
+      thresholds: { min: 1000, max: 5000 },
+    },
+    {
+      id: 'dark-matter-1',
+      name: 'Dark Matter Cluster',
+      type: ResourceType.EXOTIC,
+      abundance: 0.3,
+      distance: 500,
+      extractionRate: 5,
+      depletion: 0.05,
+      priority: 3,
+      thresholds: { min: 100, max: 1000 },
+    },
+  ];
 
   // Initialize resources in threshold state
   React.useEffect(() => {

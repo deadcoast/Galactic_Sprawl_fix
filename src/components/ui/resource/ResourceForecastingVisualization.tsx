@@ -16,7 +16,10 @@ import { useResourceRates } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import {
+  ResourceType,
+  ResourceTypeHelpers,
+} from '../../../types/resources/StandardizedResourceTypes';
 import './ResourceForecastingVisualization.css';
 
 // Register the Chart.js components
@@ -45,6 +48,11 @@ interface ForecastPoint {
   status: 'critical' | 'low' | 'normal' | 'high' | 'maximum';
 }
 
+// Add helper function to get resource name
+const getResourceName = (resourceType: ResourceType): string => {
+  return ResourceTypeHelpers.getDisplayName(resourceType);
+};
+
 /**
  * Component that visualizes forecasted resource levels based on current rates
  * and consumption patterns.
@@ -59,20 +67,19 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
   dataPoints = 12, // Default to 12 data points
   thresholds,
 }) => {
-  // Register component with system
-  useComponentRegistration({
+  // Calculate rate per minute for easier forecasting
+  const ratePerMinute = rate * (60000 / cycleTime);
+
+  // Register component
+  const componentId = useComponentRegistration({
     type: 'ResourceForecastingVisualization',
-    eventSubscriptions: [
-      'RESOURCE_UPDATED',
-      'RESOURCE_THRESHOLD_CHANGED',
-      'RESOURCE_PRODUCED',
-      'RESOURCE_CONSUMED',
-      'RESOURCE_FLOW_UPDATED',
-    ],
-    updatePriority: 'medium',
+    eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_THRESHOLD_CHANGED', 'RESOURCE_FLOW_UPDATED'],
+    updatePriority: 'low', // Forecasting is less critical than actual resource displays
   });
 
+  // Initialize with current state
   const [forecast, setForecast] = useState<ForecastPoint[]>([]);
+  const [criticalPoint, setCriticalPoint] = useState<number | null>(null);
   const resourceRates = useResourceRates();
   const { state: thresholdState } = useThreshold();
 
@@ -188,7 +195,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
     labels: forecast.map(point => point.time),
     datasets: [
       {
-        label: `${resourceType} Forecast`,
+        label: `${getResourceName(resourceType)} Forecast`,
         data: forecast.map(point => point.value),
         borderColor: getLineColor(forecast),
         backgroundColor: getBackgroundColor(forecast),
@@ -253,7 +260,12 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
       },
       title: {
         display: true,
-        text: `${resourceType} Forecast (${formatTime(forecastPeriod)})`,
+        text: `${getResourceName(resourceType)} Forecast (${forecastPeriod} minutes)`,
+        color: '#e0e0e0',
+        font: {
+          size: 14,
+          weight: 'bold',
+        },
       },
       tooltip: {
         callbacks: {

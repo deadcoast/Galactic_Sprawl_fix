@@ -2,37 +2,13 @@
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database, Truck, ZoomIn, ZoomOut } from 'lucide-react';
 import * as React from 'react';
-
-interface Resource {
-  id: string;
-  name: string;
-  type: 'mineral' | 'gas' | 'exotic';
-  abundance: number;
-  distance: number;
-  extractionRate: number;
-  depletion: number;
-  priority: number;
-  thresholds: {
-    min: number;
-    max: number;
-  };
-}
-
-interface MiningShip {
-  id: string;
-  name: string;
-  type: 'rockBreaker' | 'voidDredger';
-  status: 'idle' | 'mining' | 'returning' | 'maintenance';
-  capacity: number;
-  currentLoad: number;
-  targetNode?: string;
-  efficiency: number;
-}
+import { MiningResource, MiningShip } from '../../../../types/mining/MiningTypes';
+import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
 
 interface MiningMapProps {
-  resources: Resource[];
-  selectedNode: Resource | null;
-  onSelectNode: (resource: Resource) => void;
+  resources: MiningResource[];
+  selectedNode: MiningResource | null;
+  onSelectNode: (resource: MiningResource) => void;
   techBonuses: {
     extractionRate: number;
     storageCapacity: number;
@@ -86,16 +62,16 @@ export function MiningMap({
     setZoom(prev => Math.max(0.5, Math.min(2, prev + delta)));
   };
 
-  const getTypeColor = (type: Resource['type']) => {
+  const getTypeColor = (type: ResourceType) => {
     switch (type) {
-      case 'mineral':
-        return 'cyan';
-      case 'gas':
-        return 'purple';
-      case 'exotic':
-        return 'amber';
+      case ResourceType.MINERALS:
+        return 'rgb(59, 130, 246)'; // blue-500
+      case ResourceType.GAS:
+        return 'rgb(16, 185, 129)'; // green-500
+      case ResourceType.EXOTIC:
+        return 'rgb(236, 72, 153)'; // pink-500
       default:
-        return 'blue';
+        return 'rgb(156, 163, 175)'; // gray-400
     }
   };
 

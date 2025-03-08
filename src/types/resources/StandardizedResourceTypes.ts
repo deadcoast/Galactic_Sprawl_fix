@@ -18,6 +18,7 @@ export enum ResourceType {
 
 /**
  * For backward compatibility with string-based resource types
+ * @deprecated Use ResourceType enum instead for better type safety and intellisense support
  */
 export type ResourceTypeString =
   | 'minerals'
@@ -127,6 +128,8 @@ export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
 export const ResourceTypeHelpers = {
   /**
    * Convert string to enum
+   * @param type String representation of resource type
+   * @returns ResourceType enum value
    */
   stringToEnum(type: ResourceTypeString): ResourceType {
     return ResourceType[type.toUpperCase() as keyof typeof ResourceType] || ResourceType.MINERALS;
@@ -134,6 +137,8 @@ export const ResourceTypeHelpers = {
 
   /**
    * Convert enum to string
+   * @param type ResourceType enum value
+   * @returns String representation of resource type
    */
   enumToString(type: ResourceType): ResourceTypeString {
     return type.toString() as ResourceTypeString;
@@ -141,9 +146,18 @@ export const ResourceTypeHelpers = {
 
   /**
    * Get metadata for a resource type
+   * @param type ResourceType enum or string
+   * @returns Metadata for the resource type
    */
   getMetadata(type: ResourceType | ResourceTypeString): ResourceTypeMetadata {
     if (typeof type === 'string') {
+      // Log deprecation warning in development mode
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          `[DEPRECATED] Using string literal '${type}' for resource type is deprecated. ` +
+            `Use ResourceType.${type.toUpperCase()} instead for better type safety.`
+        );
+      }
       return ResourceTypeInfo[this.stringToEnum(type as ResourceTypeString)];
     }
     return ResourceTypeInfo[type];
@@ -151,6 +165,8 @@ export const ResourceTypeHelpers = {
 
   /**
    * Get display name for a resource type
+   * @param type ResourceType enum or string
+   * @returns Display name for the resource type
    */
   getDisplayName(type: ResourceType | ResourceTypeString): string {
     return this.getMetadata(type).displayName;
@@ -507,4 +523,35 @@ export interface ChainExecutionStatus {
   completed: boolean;
   failed: boolean;
   errorMessage?: string;
+}
+
+// For backward compatibility
+/**
+ * @deprecated Use ResourceStateClass instead for better type safety and validation
+ */
+export function createResourceState(
+  type: ResourceType | ResourceTypeString,
+  current: number = 0,
+  max: number = 100,
+  min: number = 0,
+  production: number = 0,
+  consumption: number = 0
+): ResourceState {
+  // Log deprecation warning in development mode
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      '[DEPRECATED] createResourceState function is deprecated. ' +
+        'Use new ResourceStateClass() instead for better type safety and validation.'
+    );
+  }
+
+  return {
+    current,
+    max,
+    min,
+    production,
+    consumption,
+    rate: production - consumption,
+    value: current,
+  };
 }

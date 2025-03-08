@@ -4,7 +4,10 @@ import { useResourceRates } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import {
+  ResourceType,
+  ResourceTypeHelpers,
+} from '../../../types/resources/StandardizedResourceTypes';
 import './ResourceOptimizationSuggestions.css';
 
 interface OptimizationSuggestion {
@@ -26,6 +29,12 @@ interface ResourceOptimizationSuggestionsProps {
   onImplementSuggestion?: (suggestion: OptimizationSuggestion) => void;
 }
 
+// Helper function to get resource name for display
+const getResourceName = (resourceType: ResourceType | 'all'): string => {
+  if (resourceType === 'all') return 'All Resources';
+  return ResourceTypeHelpers.getDisplayName(resourceType);
+};
+
 /**
  * Component that analyzes resource flows and provides optimization suggestions
  * to improve efficiency. It integrates with the ResourceFlowManager to identify
@@ -38,7 +47,7 @@ const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSuggestionsP
   onImplementSuggestion,
 }) => {
   // Register component with system
-  useComponentRegistration({
+  const componentId = useComponentRegistration({
     type: 'ResourceOptimizationSuggestions',
     eventSubscriptions: [
       'RESOURCE_UPDATED',
@@ -254,10 +263,19 @@ const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSuggestionsP
     }
   };
 
+  // Update suggestion filtering to use ResourceType
+  const filteredSuggestions = suggestions.filter(suggestion => {
+    if (!focusedResource) return true;
+    return suggestion.resourceType === focusedResource || suggestion.resourceType === 'all';
+  });
+
   return (
     <div className="resource-optimization-suggestions">
       <div className="suggestions-header">
-        <h3>Resource Optimization Suggestions</h3>
+        <h3 className="suggestions-title">
+          Optimization Suggestions
+          {focusedResource && ` for ${getResourceName(focusedResource)}`}
+        </h3>
         <div className="suggestions-controls">
           {lastUpdated && (
             <span className="last-updated">Updated: {lastUpdated.toLocaleTimeString()}</span>
@@ -281,7 +299,7 @@ const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSuggestionsP
         </div>
       ) : (
         <div className="suggestions-list">
-          {suggestions.map(suggestion => (
+          {filteredSuggestions.map(suggestion => (
             <div
               key={suggestion.id}
               className={`suggestion-card ${suggestion.impact} ${

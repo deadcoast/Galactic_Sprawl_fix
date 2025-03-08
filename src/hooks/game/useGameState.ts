@@ -1,9 +1,41 @@
-import { useContext, useEffect } from 'react';
-import { GameContext } from '../../contexts/GameContext';
+/**
+ * @file useGameState.ts
+ * Provides standardized hooks for accessing GameContext with selector pattern.
+ *
+ * This implementation:
+ * 1. Uses selector pattern for better performance
+ * 2. Provides type safety for game state data
+ * 3. Maintains the same functionality as the previous implementation
+ * 4. Follows the standardized context access pattern
+ * 5. Includes performance monitoring for selectors and computations
+ */
+
+import { useCallback, useEffect } from 'react';
+import {
+  selectGameTime,
+  selectIsPaused,
+  selectIsRunning,
+  selectMissions,
+  selectResourceRates,
+  selectResources,
+  selectSectors,
+  selectShips,
+  selectSystems,
+  useGameDispatch,
+  useGameSelector,
+} from '../../contexts/GameContext';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { gameManager } from '../../managers/game/gameManager';
 import { GameEvent } from '../../types/core/GameTypes';
+import {
+  HookPerformanceConfig,
+  defaultPerformanceConfig,
+  measureComputationTime,
+  measureSelectorTime,
+  trackHookRender,
+} from '../../utils/performance/hookPerformanceMonitor';
 
+// Type guards
 interface Resource {
   type: string;
   amount: number;
@@ -79,12 +111,90 @@ function isSectorUpdateEventData(data: unknown): data is SectorUpdateEventData {
   return hasHeatMapValue && isTaskObject && hasTarget && isTargetObject && hasId && isIdString;
 }
 
+// Performance monitoring configuration
+const gameStatePerformanceConfig: HookPerformanceConfig = {
+  ...defaultPerformanceConfig,
+  hookName: 'useGameState',
+};
+
+/**
+ * Hook to access game state with selector pattern for performance optimization
+ *
+ * @returns The game state with action methods
+ */
 export function useGameState() {
-  const context = useContext(GameContext);
-  if (!context) {
-    throw new Error('useGameState must be used within a GameProvider');
-  }
-  const { state, dispatch } = context;
+  // Track hook render
+  trackHookRender(gameStatePerformanceConfig);
+
+  // Use selectors for individual pieces of state to prevent unnecessary re-renders
+  const isRunning = measureSelectorTime(
+    'isRunning',
+    () => useGameSelector(selectIsRunning),
+    gameStatePerformanceConfig
+  );
+
+  const isPaused = measureSelectorTime(
+    'isPaused',
+    () => useGameSelector(selectIsPaused),
+    gameStatePerformanceConfig
+  );
+
+  const gameTime = measureSelectorTime(
+    'gameTime',
+    () => useGameSelector(selectGameTime),
+    gameStatePerformanceConfig
+  );
+
+  const resources = measureSelectorTime(
+    'resources',
+    () => useGameSelector(selectResources),
+    gameStatePerformanceConfig
+  );
+
+  const resourceRates = measureSelectorTime(
+    'resourceRates',
+    () => useGameSelector(selectResourceRates),
+    gameStatePerformanceConfig
+  );
+
+  const systems = measureSelectorTime(
+    'systems',
+    () => useGameSelector(selectSystems),
+    gameStatePerformanceConfig
+  );
+
+  const missions = measureSelectorTime(
+    'missions',
+    () => useGameSelector(selectMissions),
+    gameStatePerformanceConfig
+  );
+
+  const sectors = measureSelectorTime(
+    'sectors',
+    () => useGameSelector(selectSectors),
+    gameStatePerformanceConfig
+  );
+
+  const ships = measureSelectorTime(
+    'ships',
+    () => useGameSelector(selectShips),
+    gameStatePerformanceConfig
+  );
+
+  // Get dispatch function for actions
+  const dispatch = useGameDispatch();
+
+  // Action creators with standardized pattern
+  const startGame = useCallback(() => dispatch({ type: 'START_GAME' }), [dispatch]);
+  const pauseGame = useCallback(() => dispatch({ type: 'PAUSE_GAME' }), [dispatch]);
+  const resumeGame = useCallback(() => dispatch({ type: 'RESUME_GAME' }), [dispatch]);
+  const dispatchEvent = useCallback(
+    (event: GameEvent) => {
+      gameManager.dispatchEvent(event);
+      dispatch({ type: 'ADD_EVENT', event });
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
     // Sync game manager state with context
@@ -132,19 +242,18 @@ export function useGameState() {
         dispatch({
           type: 'UPDATE_MISSION_STATS',
           stats: {
-            totalXP: state.missions.statistics.totalXP + (missionData.xpGained || 0),
+            totalXP: missions.statistics.totalXP + (missionData.xpGained || 0),
             discoveries:
-              state.missions.statistics.discoveries + (missionData.type === 'discovery' ? 1 : 0),
-            anomalies:
-              state.missions.statistics.anomalies + (missionData.type === 'anomaly' ? 1 : 0),
+              missions.statistics.discoveries + (missionData.type === 'discovery' ? 1 : 0),
+            anomalies: missions.statistics.anomalies + (missionData.type === 'anomaly' ? 1 : 0),
             resourcesFound:
-              state.missions.statistics.resourcesFound +
+              missions.statistics.resourcesFound +
               (missionData.resourcesFound?.reduce(
                 (sum: number, r: Resource) => sum + r.amount,
                 0
               ) || 0),
             highPriorityCompleted:
-              state.missions.statistics.highPriorityCompleted +
+              missions.statistics.highPriorityCompleted +
               (missionData.importance === 'high' ? 1 : 0),
           },
         });
@@ -178,13 +287,13 @@ export function useGameState() {
     );
 
     // Sync running state
-    if (state.isRunning && !gameManager.isGameRunning()) {
+    if (isRunning && !gameManager.isGameRunning()) {
       gameManager.start();
     }
 
     // Sync pause state
-    if (state.isPaused !== gameManager.isGamePaused()) {
-      if (state.isPaused) {
+    if (isPaused !== gameManager.isGamePaused()) {
+      if (isPaused) {
         gameManager.pause();
       } else {
         gameManager.resume();
@@ -197,16 +306,111 @@ export function useGameState() {
       unsubscribeMissionEvents();
       unsubscribeSectorUpdates();
     };
-  }, [state.isRunning, state.isPaused, state.missions.statistics, dispatch]);
+  }, [isRunning, isPaused, missions.statistics, dispatch]);
 
-  return {
-    ...state,
-    startGame: () => dispatch({ type: 'START_GAME' }),
-    pauseGame: () => dispatch({ type: 'PAUSE_GAME' }),
-    resumeGame: () => dispatch({ type: 'RESUME_GAME' }),
-    dispatchEvent: (event: GameEvent) => {
-      gameManager.dispatchEvent(event);
-      dispatch({ type: 'ADD_EVENT', event });
-    },
+  // Return the game state with action methods - measure computation time for complex derived state
+  return measureComputationTime(
+    'returnStateObject',
+    () => ({
+      isRunning,
+      isPaused,
+      gameTime,
+      resources,
+      resourceRates,
+      systems,
+      missions,
+      exploration: {
+        sectors,
+        ships,
+      },
+      startGame,
+      pauseGame,
+      resumeGame,
+      dispatchEvent,
+    }),
+    gameStatePerformanceConfig
+  );
+}
+
+/**
+ * Hook to select only the resources from game state
+ * Example of a specialized selector hook
+ */
+export function useGameResources() {
+  // Track hook render with a specific config for this specialized hook
+  const performanceConfig: HookPerformanceConfig = {
+    ...defaultPerformanceConfig,
+    hookName: 'useGameResources',
   };
+  trackHookRender(performanceConfig);
+
+  return measureSelectorTime(
+    'resources',
+    () => useGameSelector(selectResources),
+    performanceConfig
+  );
+}
+
+/**
+ * Hook to select only the resource rates from game state
+ * Example of a specialized selector hook
+ */
+export function useGameResourceRates() {
+  // Track hook render with a specific config for this specialized hook
+  const performanceConfig: HookPerformanceConfig = {
+    ...defaultPerformanceConfig,
+    hookName: 'useGameResourceRates',
+  };
+  trackHookRender(performanceConfig);
+
+  return measureSelectorTime(
+    'resourceRates',
+    () => useGameSelector(selectResourceRates),
+    performanceConfig
+  );
+}
+
+/**
+ * Hook to select only the missions from game state
+ * Example of a specialized selector hook
+ */
+export function useGameMissions() {
+  // Track hook render with a specific config for this specialized hook
+  const performanceConfig: HookPerformanceConfig = {
+    ...defaultPerformanceConfig,
+    hookName: 'useGameMissions',
+  };
+  trackHookRender(performanceConfig);
+
+  return measureSelectorTime('missions', () => useGameSelector(selectMissions), performanceConfig);
+}
+
+/**
+ * Hook to select only the exploration data from game state
+ * Example of a specialized selector hook
+ */
+export function useGameExploration() {
+  // Track hook render with a specific config for this specialized hook
+  const performanceConfig: HookPerformanceConfig = {
+    ...defaultPerformanceConfig,
+    hookName: 'useGameExploration',
+  };
+  trackHookRender(performanceConfig);
+
+  const sectors = measureSelectorTime(
+    'sectors',
+    () => useGameSelector(selectSectors),
+    performanceConfig
+  );
+
+  const ships = measureSelectorTime('ships', () => useGameSelector(selectShips), performanceConfig);
+
+  return measureComputationTime(
+    'returnExplorationObject',
+    () => ({
+      sectors,
+      ships,
+    }),
+    performanceConfig
+  );
 }

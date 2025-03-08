@@ -1,37 +1,40 @@
-import { ReactNode, useCallback, useEffect, useRef } from 'react';
-import { useGame } from '../../contexts/GameContext';
-import { useModules } from '../../contexts/ModuleContext';
-import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { GameContext } from '../../contexts/GameContext';
+import { ModuleContext } from '../../contexts/ModuleContext';
+import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { GameLoopManager, UpdatePriority } from '../../managers/game/GameLoopManager';
 import { ResourceManager } from '../../managers/game/ResourceManager';
 import { moduleManager } from '../../managers/module/ModuleManager';
-import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { BaseEvent, EventType } from '../../types/events/EventTypes';
+
+// Get the contexts directly instead of via hooks that might not be exported
+const useGame = () => useContext(GameContext);
+const useModules = () => useContext(ModuleContext);
 
 // Types of resource events to listen for
 const RESOURCE_EVENT_TYPES = [
-  'RESOURCE_PRODUCED',
-  'RESOURCE_CONSUMED',
-  'RESOURCE_TRANSFERRED',
-  'RESOURCE_SHORTAGE',
-  'RESOURCE_PRODUCTION_REGISTERED',
-  'RESOURCE_CONSUMPTION_REGISTERED',
+  EventType.RESOURCE_PRODUCED,
+  EventType.RESOURCE_CONSUMED,
+  EventType.RESOURCE_TRANSFERRED,
+  EventType.RESOURCE_SHORTAGE,
+  EventType.RESOURCE_PRODUCTION_REGISTERED,
+  EventType.RESOURCE_CONSUMPTION_REGISTERED,
 ];
 
 // Types of module events to listen for
 const MODULE_EVENT_TYPES = [
-  'MODULE_CREATED',
-  'MODULE_ATTACHED',
-  'MODULE_DETACHED',
-  'MODULE_UPGRADED',
-  'MODULE_ACTIVATED',
-  'MODULE_DEACTIVATED',
+  EventType.MODULE_CREATED,
+  EventType.MODULE_ATTACHED,
+  EventType.MODULE_DETACHED,
+  EventType.MODULE_UPGRADED,
+  EventType.MODULE_ACTIVATED,
+  EventType.MODULE_DEACTIVATED,
 ];
-
-type ResourceEventType = (typeof RESOURCE_EVENT_TYPES)[number];
-type ModuleEventTypeList = (typeof MODULE_EVENT_TYPES)[number];
 
 interface SystemIntegrationProps {
   children: ReactNode;
   resourceManager: ResourceManager;
+  gameLoopManager?: GameLoopManager;
   updateInterval?: number;
 }
 
@@ -45,15 +48,58 @@ interface SystemIntegrationProps {
 export function SystemIntegration({
   children,
   resourceManager,
+  gameLoopManager,
   updateInterval = 1000,
 }: SystemIntegrationProps) {
-  const { dispatch: gameDispatch } = useGame();
-  const { dispatch: moduleDispatch } = useModules();
+  const game = useGame();
+  const modules = useModules();
+  const gameDispatch = game?.dispatch;
+  const moduleDispatch = modules?.dispatch;
+
   const lastResourceState = useRef<Record<string, number>>({});
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  // Initialize managers
+  useEffect(() => {
+    const initializeManagers = async () => {
+      try {
+        // Initialize the resource manager
+        await resourceManager.initialize();
+
+        // Connect resource manager to game loop if provided
+        if (gameLoopManager) {
+          gameLoopManager.registerUpdate(
+            resourceManager.id,
+            deltaTime => resourceManager.update(deltaTime),
+            UpdatePriority.NORMAL
+          );
+        }
+
+        setIsInitialized(true);
+        console.log('Managers initialized successfully');
+      } catch (err) {
+        console.error('Failed to initialize managers:', err);
+        setError(err instanceof Error ? err : new Error(String(err)));
+      }
+    };
+
+    initializeManagers();
+
+    // Cleanup on unmount
+    return () => {
+      if (gameLoopManager) {
+        gameLoopManager.unregisterUpdate(resourceManager.id);
+      }
+      resourceManager.dispose();
+    };
+  }, [resourceManager, gameLoopManager]);
 
   // Sync resource state from ResourceManager to GameContext
   const syncResourceState = useCallback(() => {
+    if (!gameDispatch) return;
+
     // Get current resources from manager
     const currentResources = resourceManager.getAllResources();
     const lastResourceStateValue = lastResourceState.current;
@@ -115,27 +161,13 @@ export function SystemIntegration({
       });
 
       lastResourceState.current = { ...currentResources };
-
-      // Emit an event to notify other systems of the resource update
-      moduleEventBus.emit({
-        type: 'RESOURCE_UPDATED' as ModuleEventType,
-        moduleId: 'resource-manager',
-        moduleType: 'resource' as ModuleType,
-        timestamp: Date.now(),
-        data: {
-          resources: {
-            ...currentResources,
-            ...resourceRates,
-            ...production, // Add detailed production data
-            ...consumption, // Add detailed consumption data
-          },
-        },
-      });
     }
   }, [gameDispatch, resourceManager]);
 
   // Sync module state from ModuleManager to ModuleContext
   const syncModuleState = useCallback(() => {
+    if (!moduleDispatch) return;
+
     const moduleBuildings = moduleManager.getBuildings();
     const modules = moduleManager.getActiveModules();
 
@@ -161,29 +193,38 @@ export function SystemIntegration({
 
   // Set up event listeners and sync intervals
   useEffect(() => {
+    if (!isInitialized || !gameDispatch || !moduleDispatch) return;
+
     const unsubscribes: Array<() => void> = [];
 
-    // Listen for resource events
+    // Subscribe to resource events from the resource manager
     RESOURCE_EVENT_TYPES.forEach(eventType => {
-      const unsubscribe = moduleEventBus.subscribe(eventType as ModuleEventType, () => {
+      const unsubscribe = resourceManager.subscribeToEvent(eventType, (event: BaseEvent) => {
         syncResourceState();
       });
       unsubscribes.push(unsubscribe);
     });
 
-    // Listen for module events
+    // Listen for module events (still using moduleEventBus for backward compatibility)
     MODULE_EVENT_TYPES.forEach(eventType => {
-      const unsubscribe = moduleEventBus.subscribe(eventType as ModuleEventType, () => {
+      // Use string type for backward compatibility
+      const unsubscribe = moduleEventBus.subscribe(String(eventType), () => {
         syncModuleState();
       });
       unsubscribes.push(unsubscribe);
     });
 
-    // Set up interval for periodic updates
-    intervalRef.current = setInterval(() => {
-      syncResourceState();
-      syncModuleState();
-    }, updateInterval);
+    // Only set up interval if we don't have a game loop manager
+    if (!gameLoopManager) {
+      // Set up interval for periodic updates
+      intervalRef.current = setInterval(() => {
+        syncResourceState();
+        syncModuleState();
+
+        // Manually call update on resource manager since we don't have a game loop
+        resourceManager.update(updateInterval);
+      }, updateInterval);
+    }
 
     // Initial sync
     syncResourceState();
@@ -196,8 +237,35 @@ export function SystemIntegration({
       }
       unsubscribes.forEach(unsubscribe => unsubscribe());
     };
-  }, [syncResourceState, syncModuleState, updateInterval]);
+  }, [
+    syncResourceState,
+    syncModuleState,
+    updateInterval,
+    isInitialized,
+    resourceManager,
+    gameLoopManager,
+    gameDispatch,
+    moduleDispatch,
+  ]);
 
-  // Return children since this component doesn't render anything itself
+  // Show loading state while initializing
+  if (!isInitialized) {
+    return (
+      <div className="flex h-20 items-center justify-center rounded bg-gray-100 p-4 shadow-sm">
+        <span className="text-gray-700">Initializing game systems...</span>
+      </div>
+    );
+  }
+
+  // Show error state if initialization failed
+  if (error) {
+    return (
+      <div className="flex h-20 items-center justify-center rounded bg-red-100 p-4 shadow-sm">
+        <span className="text-red-700">Error initializing systems: {error.message}</span>
+      </div>
+    );
+  }
+
+  // Return children since this component doesn't render anything itself when initialized
   return <>{children}</>;
 }

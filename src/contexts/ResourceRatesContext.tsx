@@ -1,11 +1,17 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { ModuleEvent, moduleEventBus } from '../lib/modules/ModuleEvents';
+import { ResourceType } from '../types/resources/StandardizedResourceTypes';
 import { useModules } from './ModuleContext';
 
 /**
  * We're focusing only on the core resources for this context
  */
-type CoreResourceType = 'minerals' | 'energy' | 'population' | 'research';
+// Replace string-based type with enum
+type CoreResourceType =
+  | ResourceType.MINERALS
+  | ResourceType.ENERGY
+  | ResourceType.POPULATION
+  | ResourceType.RESEARCH;
 
 /**
  * Interface for resource rates, including production, consumption and net rate
@@ -20,10 +26,10 @@ interface ResourceRateDetail {
  * State interface for ResourceRatesContext
  */
 interface ResourceRatesState {
-  minerals: ResourceRateDetail;
-  energy: ResourceRateDetail;
-  population: ResourceRateDetail;
-  research: ResourceRateDetail;
+  [ResourceType.MINERALS]: ResourceRateDetail;
+  [ResourceType.ENERGY]: ResourceRateDetail;
+  [ResourceType.POPULATION]: ResourceRateDetail;
+  [ResourceType.RESEARCH]: ResourceRateDetail;
   lastUpdated: number;
 }
 
@@ -31,10 +37,10 @@ interface ResourceRatesState {
  * Default state with all rates at zero
  */
 const defaultResourceRates: ResourceRatesState = {
-  minerals: { production: 0, consumption: 0, net: 0 },
-  energy: { production: 0, consumption: 0, net: 0 },
-  population: { production: 0, consumption: 0, net: 0 },
-  research: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.MINERALS]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.ENERGY]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.POPULATION]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.RESEARCH]: { production: 0, consumption: 0, net: 0 },
   lastUpdated: Date.now(),
 };
 
@@ -55,32 +61,22 @@ const ResourceRatesContext = createContext<ResourceRatesContextType | undefined>
  */
 export function ResourceRatesProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ResourceRatesState>(defaultResourceRates);
-  const { state: moduleState } = useModules();
+  const { modules } = useModules();
 
-  // Method to update resource rates
+  // Update rates for a specific resource type
   const updateRates = (type: CoreResourceType, production: number, consumption: number) => {
-    setState(prevState => {
-      // Only update if values have changed to avoid unnecessary renders
-      if (
-        prevState[type]?.production === production &&
-        prevState[type]?.consumption === consumption
-      ) {
-        return prevState;
-      }
-
-      return {
-        ...prevState,
-        [type]: {
-          production,
-          consumption,
-          net: production - consumption,
-        },
-        lastUpdated: Date.now(),
-      };
-    });
+    setState(prevState => ({
+      ...prevState,
+      [type]: {
+        production,
+        consumption,
+        net: production - consumption,
+      },
+      lastUpdated: Date.now(),
+    }));
   };
 
-  // Reset rates to default
+  // Reset all rates to zero
   const resetRates = () => {
     setState(defaultResourceRates);
   };
@@ -88,104 +84,137 @@ export function ResourceRatesProvider({ children }: { children: ReactNode }) {
   // Subscribe to resource update events
   useEffect(() => {
     const handleResourceUpdate = (event: ModuleEvent) => {
-      if (
-        event.type === 'RESOURCE_UPDATED' &&
-        event.data &&
-        typeof event.data === 'object' &&
-        'resources' in event.data &&
-        event.data.resources
-      ) {
-        const resources = event.data.resources as Record<string, number>;
+      const { data } = event;
 
-        // Update rates from event data if available
-        if (resources.mineralRate !== undefined) {
-          updateRates(
-            'minerals',
-            (resources.mineralProduction as number) || 0,
-            (resources.mineralConsumption as number) || 0
-          );
+      if (data && data.resourceType) {
+        // Check if this is a core resource type we're tracking
+        const resourceType = data.resourceType as CoreResourceType;
+
+        // For compatibility with legacy code that might use string types
+        if (typeof resourceType === 'string') {
+          // Convert string type to enum if needed (this would be handled by ResourceTypeHelpers
+          // but we're keeping this simple for this example)
+          let enumType: CoreResourceType | undefined;
+
+          switch (resourceType) {
+            case 'minerals':
+              enumType = ResourceType.MINERALS;
+              break;
+            case 'energy':
+              enumType = ResourceType.ENERGY;
+              break;
+            case 'population':
+              enumType = ResourceType.POPULATION;
+              break;
+            case 'research':
+              enumType = ResourceType.RESEARCH;
+              break;
+          }
+
+          if (enumType && state[enumType]) {
+            let production = state[enumType].production;
+            let consumption = state[enumType].consumption;
+
+            if (data.production !== undefined) {
+              production = data.production;
+            }
+            if (data.consumption !== undefined) {
+              consumption = data.consumption;
+            }
+
+            updateRates(enumType, production, consumption);
+          }
         }
+        // If it's already an enum type
+        else if (state[resourceType]) {
+          let production = state[resourceType].production;
+          let consumption = state[resourceType].consumption;
 
-        if (resources.energyRate !== undefined) {
-          updateRates(
-            'energy',
-            (resources.energyProduction as number) || 0,
-            (resources.energyConsumption as number) || 0
-          );
-        }
+          if (data.production !== undefined) {
+            production = data.production;
+          }
+          if (data.consumption !== undefined) {
+            consumption = data.consumption;
+          }
 
-        if (resources.populationRate !== undefined) {
-          updateRates(
-            'population',
-            (resources.populationProduction as number) || 0,
-            (resources.populationConsumption as number) || 0
-          );
-        }
-
-        if (resources.researchRate !== undefined) {
-          updateRates(
-            'research',
-            (resources.researchProduction as number) || 0,
-            (resources.researchConsumption as number) || 0
-          );
+          updateRates(resourceType, production, consumption);
         }
       }
     };
 
-    // Subscribe to module events - returns an unsubscribe function
-    const unsubscribe = moduleEventBus.subscribe('RESOURCE_UPDATED', handleResourceUpdate);
+    moduleEventBus.subscribe('RESOURCE_UPDATED', handleResourceUpdate);
+    moduleEventBus.subscribe('RESOURCE_PRODUCED', handleResourceUpdate);
+    moduleEventBus.subscribe('RESOURCE_CONSUMED', handleResourceUpdate);
 
-    // Calculate initial rates based on active modules
-    // This is a simplified calculation just to initialize rates
-    // The real values will come from resource events
+    return () => {
+      moduleEventBus.unsubscribe('RESOURCE_UPDATED', handleResourceUpdate);
+      moduleEventBus.unsubscribe('RESOURCE_PRODUCED', handleResourceUpdate);
+      moduleEventBus.unsubscribe('RESOURCE_CONSUMED', handleResourceUpdate);
+    };
+  }, [state]);
+
+  // Calculate initial rates from modules
+  useEffect(() => {
     const calculateInitialRates = () => {
-      // Default production values based on active modules
-      // This is just a simple initialization and will be overridden by real events
-      const production = {
-        minerals: moduleState.activeModules.filter(m => m.type === 'mineral').length * 0.5,
-        energy: moduleState.activeModules.filter(m => m.type === 'infrastructure').length * 0.6,
-        population: moduleState.activeModules.filter(m => m.type === 'population').length * 0.2,
-        research: moduleState.activeModules.filter(m => m.type === 'research').length * 0.4,
-      };
+      // Map to hold the calculated rates
+      const rates: Partial<Record<CoreResourceType, ResourceRateDetail>> = {};
 
-      // Default consumption values
-      const consumption = {
-        minerals: moduleState.activeModules.length * 0.1,
-        energy: moduleState.activeModules.length * 0.3,
-        population: moduleState.activeModules.filter(m => m.isActive).length * 0.05,
-        research: 0,
-      };
+      // Initialize with zeros
+      rates[ResourceType.MINERALS] = { production: 0, consumption: 0, net: 0 };
+      rates[ResourceType.ENERGY] = { production: 0, consumption: 0, net: 0 };
+      rates[ResourceType.POPULATION] = { production: 0, consumption: 0, net: 0 };
+      rates[ResourceType.RESEARCH] = { production: 0, consumption: 0, net: 0 };
 
-      // Update all rates
-      updateRates('minerals', production.minerals, consumption.minerals);
-      updateRates('energy', production.energy, consumption.energy);
-      updateRates('population', production.population, consumption.population);
-      updateRates('research', production.research, consumption.research);
+      // Calculate rates from active modules
+      if (modules) {
+        modules.forEach(module => {
+          if (module.active) {
+            // Process production
+            if (module.production) {
+              module.production.forEach(production => {
+                const resourceType = production.type as unknown as CoreResourceType;
+                if (rates[resourceType]) {
+                  rates[resourceType]!.production += production.amount;
+                }
+              });
+            }
+
+            // Process consumption
+            if (module.consumption) {
+              module.consumption.forEach(consumption => {
+                const resourceType = consumption.type as unknown as CoreResourceType;
+                if (rates[resourceType]) {
+                  rates[resourceType]!.consumption += consumption.amount;
+                }
+              });
+            }
+          }
+        });
+      }
+
+      // Calculate net rates and update state
+      Object.entries(rates).forEach(([type, detail]) => {
+        if (detail) {
+          detail.net = detail.production - detail.consumption;
+          updateRates(type as CoreResourceType, detail.production, detail.consumption);
+        }
+      });
     };
 
-    // Initialize with rough estimates
     calculateInitialRates();
-
-    // Cleanup subscription
-    return unsubscribe;
-  }, [moduleState.activeModules]);
-
-  // Create the context value
-  const contextValue: ResourceRatesContextType = {
-    state,
-    updateRates,
-    resetRates,
-  };
+  }, [modules]);
 
   return (
-    <ResourceRatesContext.Provider value={contextValue}>{children}</ResourceRatesContext.Provider>
+    <ResourceRatesContext.Provider value={{ state, updateRates, resetRates }}>
+      {children}
+    </ResourceRatesContext.Provider>
   );
 }
 
 /**
- * Custom hook to use the ResourceRatesContext
+ * Hook to access the resource rates context
  */
-export function useResourceRates() {
+export function useResourceRates(): ResourceRatesContextType {
   const context = useContext(ResourceRatesContext);
   if (!context) {
     throw new Error('useResourceRates must be used within a ResourceRatesProvider');
@@ -194,20 +223,20 @@ export function useResourceRates() {
 }
 
 /**
- * Specialized hook to get just the net rates for core resources
+ * Hook to get net resource rates as a simple record
  */
 export function useNetResourceRates(): Record<CoreResourceType, number> {
   const { state } = useResourceRates();
   return {
-    minerals: state.minerals.net,
-    energy: state.energy.net,
-    population: state.population.net,
-    research: state.research.net,
+    [ResourceType.MINERALS]: state[ResourceType.MINERALS].net,
+    [ResourceType.ENERGY]: state[ResourceType.ENERGY].net,
+    [ResourceType.POPULATION]: state[ResourceType.POPULATION].net,
+    [ResourceType.RESEARCH]: state[ResourceType.RESEARCH].net,
   };
 }
 
 /**
- * Hook to get detailed rates for a specific resource
+ * Hook to get detailed rates for a specific resource type
  */
 export function useResourceRateDetails(type: CoreResourceType): ResourceRateDetail {
   const { state } = useResourceRates();

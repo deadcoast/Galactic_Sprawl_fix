@@ -1,11 +1,12 @@
 import * as React from 'react';
+import { ResourceType, ResourceTypeHelpers } from '../types/resources/StandardizedResourceTypes';
 import { ThresholdAction, ThresholdState, initialState, thresholdEvents } from './ThresholdTypes';
 
 // Types
 export interface Resource {
   id: string;
   name: string;
-  type: 'mineral' | 'gas' | 'exotic';
+  type: ResourceType;
   currentAmount: number;
   maxCapacity: number;
   thresholds: {
@@ -38,6 +39,11 @@ interface ThresholdContextType {
   state: ThresholdState;
   dispatch: React.Dispatch<ThresholdAction>;
 }
+
+// Helper function to get resource name for display
+const getResourceName = (resourceType: ResourceType): string => {
+  return ResourceTypeHelpers.getDisplayName(resourceType);
+};
 
 // Reducer
 function thresholdReducer(state: ThresholdState, action: ThresholdAction): ThresholdState {
