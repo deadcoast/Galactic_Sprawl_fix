@@ -264,4 +264,21 @@ export interface DataAnalysisContextType {
     source: 'sectors' | 'anomalies' | 'resources' | 'mixed',
     name?: string
   ) => string;
+  // Enhanced data management functions
+  refreshData: () => void;
+  filterDataset: (
+    datasetId: string,
+    filters: Array<{
+      field: string;
+      operator:
+        | 'equals'
+        | 'notEquals'
+        | 'greaterThan'
+        | 'lessThan'
+        | 'contains'
+        | 'notContains'
+        | 'between';
+      value: string | number | boolean | string[] | [number, number];
+    }>
+  ) => DataPoint[];
 }

@@ -15,6 +15,7 @@ import { ResourceThresholdManager } from '../managers/resource/ResourceThreshold
 import { ModuleType } from '../types/buildings/ModuleTypes';
 import { getSystemCommunication, SystemMessage } from '../utils/events/EventCommunication';
 import { EventPriorityQueue } from '../utils/events/EventFiltering';
+import { getService } from '../utils/services/ServiceAccess';
 
 // Define types for message payloads
 interface ResourceUpdatePayload {
@@ -58,14 +59,14 @@ export function integrateWithGameSystems(): () => void {
 
   // ===== Resource System Integration =====
 
-  // Get resource system instances
-  const { resourceManager } = window as unknown as { resourceManager?: ResourceManager };
-  const { thresholdManager } = window as unknown as { thresholdManager?: ResourceThresholdManager };
-  const { flowManager } = window as unknown as { flowManager?: ResourceFlowManager };
-  const { storageManager } = window as unknown as { storageManager?: ResourceStorageManager };
-  const { costManager } = window as unknown as { costManager?: ResourceCostManager };
-  const { exchangeManager } = window as unknown as { exchangeManager?: ResourceExchangeManager };
-  const { poolManager } = window as unknown as { poolManager?: ResourcePoolManager };
+  // Get resource system instances using type-safe access pattern
+  const resourceManager = getService<ResourceManager>('resourceManager');
+  const thresholdManager = getService<ResourceThresholdManager>('thresholdManager');
+  const flowManager = getService<ResourceFlowManager>('flowManager');
+  const storageManager = getService<ResourceStorageManager>('storageManager');
+  const costManager = getService<ResourceCostManager>('costManager');
+  const exchangeManager = getService<ResourceExchangeManager>('exchangeManager');
+  const poolManager = getService<ResourcePoolManager>('poolManager');
 
   if (resourceManager) {
     // Make sure all required managers are available
@@ -128,12 +129,14 @@ export function integrateWithGameSystems(): () => void {
     } else {
       console.warn('Some resource managers are missing, skipping resource integration');
     }
+  } else {
+    console.warn('Resource Manager not available. Resource system integration skipped.');
   }
 
   // ===== Mining System Integration =====
 
-  // Get mining system instance
-  const { miningManager } = window as unknown as { miningManager?: MiningShipManagerImpl };
+  // Get mining system instance using type-safe access pattern
+  const miningManager = getService<MiningShipManagerImpl>('miningManager');
 
   if (miningManager && thresholdManager && flowManager) {
     // Create mining resource integration
@@ -180,12 +183,14 @@ export function integrateWithGameSystems(): () => void {
     });
 
     console.warn('Mining System integrated with Event System');
+  } else {
+    console.warn('Mining Manager not available. Mining system integration skipped.');
   }
 
   // ===== Combat System Integration =====
 
-  // Get combat system instance
-  const { combatManager } = window as unknown as { combatManager?: CombatManager };
+  // Get combat system instance using type-safe access pattern
+  const combatManager = getService<CombatManager>('combatManager');
 
   if (combatManager) {
     // Create a priority queue for combat events
@@ -263,6 +268,8 @@ export function integrateWithGameSystems(): () => void {
     });
 
     console.warn('Combat System integrated with Event System');
+  } else {
+    console.warn('Combat Manager not available. Combat system integration skipped.');
   }
 
   // ===== Tech Tree System Integration =====
@@ -364,7 +371,7 @@ export function integrateWithGameSystems(): () => void {
     console.warn('Tech Tree System integrated with Event System');
   }
 
-  // Return combined cleanup function
+  // Return a cleanup function
   return () => {
     console.warn('Cleaning up Game Systems Integration...');
 

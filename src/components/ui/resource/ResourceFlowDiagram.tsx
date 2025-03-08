@@ -8,6 +8,7 @@ import {
   ResourceType,
   ResourceTypeHelpers,
 } from '../../../types/resources/StandardizedResourceTypes';
+import { d3Accessors, SimulationNodeDatum } from '../../../types/visualizations/D3Types';
 
 interface ResourceFlowDiagramProps {
   width?: number;
@@ -26,22 +27,20 @@ interface FlowNetworkData {
   links: NetworkLink[];
 }
 
-interface NetworkNode {
+// Enhanced NetworkNode with proper D3 simulation node types
+interface NetworkNode extends SimulationNodeDatum {
   id: string;
   type: FlowNodeType;
   resources: ResourceType[];
   active: boolean;
   efficiency?: number;
-  x?: number;
-  y?: number;
-  fx?: number | null;
-  fy?: number | null;
 }
 
+// Enhanced NetworkLink with proper D3 simulation link types
 interface NetworkLink {
   id: string;
-  source: string;
-  target: string;
+  source: string | NetworkNode;
+  target: string | NetworkNode;
   resourceType: ResourceType;
   rate: number;
   maxRate: number;
@@ -232,19 +231,20 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
     }
   };
 
-  // Initialize and update D3 visualization
+  // Render visualization using D3
   useEffect(() => {
-    if (!svgRef.current || loading || networkData.nodes.length === 0) return;
+    if (!svgRef.current || loading || networkData.nodes.length === 0) {
+      return;
+    }
 
+    // Clear any existing visualization
     const svg = d3.select(svgRef.current);
-
-    // Clear previous content
     svg.selectAll('*').remove();
 
-    // Add container for zoom/pan
+    // Add container group for zooming
     const container = svg.append('g').attr('class', 'container');
 
-    // Setup zoom behavior
+    // Add zoom behavior
     if (interactive) {
       const zoom = d3
         .zoom<SVGSVGElement, unknown>()
@@ -456,28 +456,43 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       });
     }
 
-    // Update function for force simulation
+    // Update function for force simulation (with type-safe access)
     simulation.on('tick', () => {
       link.attr('d', d => {
-        // Find source and target nodes safely using type guards
-        const source = typeof d.source === 'string' ? d.source : d.source.id;
-        const target = typeof d.target === 'string' ? d.target : d.target.id;
-
-        const sourceNode = networkData.nodes.find(node => node.id === source);
-        const targetNode = networkData.nodes.find(node => node.id === target);
+        // Type-safe access to source and target coordinates
+        const sourceNode = findNode(d.source);
+        const targetNode = findNode(d.target);
 
         if (!sourceNode || !targetNode) return '';
 
-        // Create curved paths between nodes
-        const dx = targetNode.x! - sourceNode.x!;
-        const dy = targetNode.y! - sourceNode.y!;
+        // Create curved paths between nodes using safe accessors
+        const sourceX = d3Accessors.getX(sourceNode);
+        const sourceY = d3Accessors.getY(sourceNode);
+        const targetX = d3Accessors.getX(targetNode);
+        const targetY = d3Accessors.getY(targetNode);
+
+        const dx = targetX - sourceX;
+        const dy = targetY - sourceY;
         const dr = Math.sqrt(dx * dx + dy * dy) * 2;
 
-        return `M${sourceNode.x!},${sourceNode.y!}A${dr},${dr} 0 0,1 ${targetNode.x!},${targetNode.y!}`;
+        return `M${sourceX},${sourceY}A${dr},${dr} 0 0,1 ${targetX},${targetY}`;
       });
 
-      node.attr('transform', d => `translate(${d.x || 0},${d.y || 0})`);
+      // Type-safe node position updates
+      node.attr('transform', d => {
+        const x = d3Accessors.getX(d);
+        const y = d3Accessors.getY(d);
+        return `translate(${x},${y})`;
+      });
     });
+
+    // Helper function to safely find a node from source/target reference
+    function findNode(nodeRef: string | NetworkNode): NetworkNode | null {
+      if (typeof nodeRef === 'string') {
+        return networkData.nodes.find(node => node.id === nodeRef) || null;
+      }
+      return nodeRef;
+    }
 
     // Run simulation
     simulation.alpha(1).restart();
@@ -559,6 +574,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
     return nameMap[node.id] || node.id;
   };
 
+  // Render component
   return (
     <div className="resource-flow-diagram">
       <div className="diagram-header">

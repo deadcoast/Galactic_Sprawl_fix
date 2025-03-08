@@ -1,5 +1,13 @@
 import * as React from 'react';
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Anomaly,
@@ -7,6 +15,8 @@ import {
   explorationManager,
   Sector,
 } from '../managers/exploration/ExplorationManager';
+import { AnalysisAlgorithmService } from '../services/AnalysisAlgorithmService';
+import { DataCollectionService } from '../services/DataCollectionService';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import {
   AnalysisConfig,
@@ -42,18 +52,63 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   const [analysisConfigs, setAnalysisConfigs] = useState<AnalysisConfig[]>(initialAnalysisConfigs);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>(initialAnalysisResults);
 
+  // Create references to the services for persistence across renders
+  const dataCollectionServiceRef = useRef<DataCollectionService | null>(null);
+  const analysisAlgorithmServiceRef = useRef<AnalysisAlgorithmService | null>(null);
+
+  // Initialize services
+  useEffect(() => {
+    if (explorationManager) {
+      // Initialize data collection service
+      const dataCollectionService = new DataCollectionService(explorationManager);
+      dataCollectionServiceRef.current = dataCollectionService;
+
+      // Initialize analysis algorithm service
+      const analysisAlgorithmService = new AnalysisAlgorithmService();
+      analysisAlgorithmServiceRef.current = analysisAlgorithmService;
+
+      // Initialize the data collection service
+      dataCollectionService.initialize();
+
+      // Set up callback for data updates
+      dataCollectionService.setOnDataUpdated((type, dataPoint) => {
+        // Map the DataCollectionService type to the context type
+        const sourceMap: Record<string, 'sectors' | 'anomalies' | 'resources' | 'mixed'> = {
+          sector: 'sectors',
+          anomaly: 'anomalies',
+          resource: 'resources',
+        };
+        const mappedType = sourceMap[type] || 'mixed';
+
+        // When a new data point is collected, add it to the appropriate dataset
+        const datasetId = getOrCreateDatasetBySource(mappedType);
+        if (datasetId) {
+          addDataPointToDataset(datasetId, dataPoint);
+        }
+      });
+
+      // Return cleanup function
+      return () => {
+        if (dataCollectionService) {
+          dataCollectionService.dispose();
+        }
+      };
+    }
+  }, [explorationManager]);
+
   // Create a new dataset
   const createDataset = useCallback(
     (dataset: Omit<Dataset, 'id' | 'createdAt' | 'updatedAt'>): string => {
+      const id = uuidv4();
       const now = Date.now();
       const newDataset: Dataset = {
         ...dataset,
-        id: uuidv4(),
+        id,
         createdAt: now,
         updatedAt: now,
       };
       setDatasets(prev => [...prev, newDataset]);
-      return newDataset.id;
+      return id;
     },
     []
   );
@@ -95,15 +150,16 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   // Create a new analysis configuration
   const createAnalysisConfig = useCallback(
     (config: Omit<AnalysisConfig, 'id' | 'createdAt' | 'updatedAt'>): string => {
+      const id = uuidv4();
       const now = Date.now();
       const newConfig: AnalysisConfig = {
         ...config,
-        id: uuidv4(),
+        id,
         createdAt: now,
         updatedAt: now,
       };
       setAnalysisConfigs(prev => [...prev, newConfig]);
-      return newConfig.id;
+      return id;
     },
     []
   );
@@ -131,8 +187,8 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   // Find a dataset by source type, or create one if it doesn't exist
   const getOrCreateDatasetBySource = useCallback(
     (source: 'sectors' | 'anomalies' | 'resources' | 'mixed', name?: string): string => {
-      // Look for an existing dataset with the specified source
-      const existingDataset = datasets.find(ds => ds.source === source);
+      // Find an existing dataset for this source
+      const existingDataset = datasets.find(dataset => dataset.source === source);
       if (existingDataset) {
         return existingDataset.id;
       }
@@ -324,78 +380,226 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   // Run an analysis
   const runAnalysis = useCallback(
     async (configId: string): Promise<string> => {
-      // Get the configuration
       const config = analysisConfigs.find(config => config.id === configId);
       if (!config) {
         throw new Error(`Analysis configuration with ID ${configId} not found`);
       }
 
-      // Get the dataset
       const dataset = datasets.find(dataset => dataset.id === config.datasetId);
       if (!dataset) {
         throw new Error(`Dataset with ID ${config.datasetId} not found`);
       }
 
-      // Create a new analysis result
-      const resultId = uuidv4();
-      const now = Date.now();
-      const newResult: AnalysisResult = {
-        id: resultId,
+      // Create a pending result
+      const pendingResultId = uuidv4();
+      const pendingResult: AnalysisResult = {
+        id: pendingResultId,
         analysisConfigId: configId,
-        status: 'processing',
-        startTime: now,
+        status: 'pending',
+        startTime: Date.now(),
         data: {},
       };
 
-      // Add the result to state
-      setAnalysisResults(prev => [...prev, newResult]);
+      setAnalysisResults(prev => [...prev, pendingResult]);
 
       try {
-        // Simulate analysis (this would be replaced with actual analysis logic)
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        let result: AnalysisResult;
 
-        // Generate mock data for the analysis result based on the type
-        const resultData = generateMockAnalysisData(config, dataset);
+        // Use the analysis algorithm service if available
+        if (analysisAlgorithmServiceRef.current) {
+          result = await analysisAlgorithmServiceRef.current.runAnalysis(config, dataset);
+        } else {
+          // Fallback to a basic implementation
+          result = await runBasicAnalysis(config, dataset);
+        }
 
-        // Update the result with the new data
-        setAnalysisResults(prev =>
-          prev.map(result => {
-            if (result.id === resultId) {
-              return {
-                ...result,
-                status: 'completed',
-                endTime: Date.now(),
-                data: resultData,
-                summary: generateAnalysisSummary(config, resultData),
-                insights: generateAnalysisInsights(config, resultData),
-              };
-            }
-            return result;
-          })
-        );
+        // Update the analysis results
+        setAnalysisResults(prev => prev.map(r => (r.id === pendingResultId ? result : r)));
 
-        return resultId;
+        return result.id;
       } catch (error) {
-        // Update the result with the error
-        setAnalysisResults(prev =>
-          prev.map(result => {
-            if (result.id === resultId) {
-              return {
-                ...result,
-                status: 'failed',
-                endTime: Date.now(),
-                error: error instanceof Error ? error.message : String(error),
-              };
-            }
-            return result;
-          })
-        );
+        // Create a failed result
+        const failedResult: AnalysisResult = {
+          id: pendingResultId,
+          analysisConfigId: configId,
+          status: 'failed',
+          startTime: pendingResult.startTime,
+          endTime: Date.now(),
+          data: {},
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+
+        // Update the analysis results
+        setAnalysisResults(prev => prev.map(r => (r.id === pendingResultId ? failedResult : r)));
 
         throw error;
       }
     },
     [analysisConfigs, datasets]
   );
+
+  // Add a function to run basic analysis if the service is not available
+  const runBasicAnalysis = async (
+    config: AnalysisConfig,
+    dataset: Dataset
+  ): Promise<AnalysisResult> => {
+    // Simulate analysis by delaying for a short time
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    return {
+      id: uuidv4(),
+      analysisConfigId: config.id,
+      status: 'completed',
+      startTime: Date.now() - 500, // Started 500ms ago
+      endTime: Date.now(),
+      data: {
+        config,
+        datasetSize: dataset.dataPoints.length,
+        message: 'Basic analysis completed without the analysis service',
+      },
+      summary: `Analyzed ${dataset.dataPoints.length} data points using the ${config.type} analysis type.`,
+    };
+  };
+
+  // Fix the refreshData function
+  const refreshData = useCallback(() => {
+    if (!dataCollectionServiceRef.current) return;
+
+    // Get all data from the collection service
+    const sectorData = dataCollectionServiceRef.current.getSectorData();
+    const anomalyData = dataCollectionServiceRef.current.getAnomalyData();
+    const resourceData = dataCollectionServiceRef.current.getResourceData();
+
+    // Create or update datasets for each data type with correct mapping
+    const sectorDatasetId = getOrCreateDatasetBySource('sectors');
+    const anomalyDatasetId = getOrCreateDatasetBySource('anomalies');
+    const resourceDatasetId = getOrCreateDatasetBySource('resources');
+
+    // Add data points to datasets
+    if (sectorDatasetId) {
+      for (const dataPoint of sectorData) {
+        addDataPointToDataset(sectorDatasetId, dataPoint);
+      }
+    }
+
+    if (anomalyDatasetId) {
+      for (const dataPoint of anomalyData) {
+        addDataPointToDataset(anomalyDatasetId, dataPoint);
+      }
+    }
+
+    if (resourceDatasetId) {
+      for (const dataPoint of resourceData) {
+        addDataPointToDataset(resourceDatasetId, dataPoint);
+      }
+    }
+  }, [getOrCreateDatasetBySource, addDataPointToDataset]);
+
+  // Add a function to filter data points in a dataset
+  const filterDataset = useCallback(
+    (
+      datasetId: string,
+      filters: Array<{
+        field: string;
+        operator:
+          | 'equals'
+          | 'notEquals'
+          | 'greaterThan'
+          | 'lessThan'
+          | 'contains'
+          | 'notContains'
+          | 'between';
+        value: string | number | boolean | string[] | [number, number];
+      }>
+    ): DataPoint[] => {
+      const dataset = datasets.find(ds => ds.id === datasetId);
+      if (!dataset) return [];
+
+      if (!dataCollectionServiceRef.current) {
+        // Simple filtering if the service is not available
+        return dataset.dataPoints.filter(dataPoint =>
+          filters.every(filter => {
+            // Treat DataPoint as a Record with unknown values for filtering
+            const value = getNestedProperty(
+              dataPoint as unknown as Record<string, unknown>,
+              filter.field
+            );
+
+            switch (filter.operator) {
+              case 'equals':
+                return value === filter.value;
+              case 'notEquals':
+                return value !== filter.value;
+              case 'greaterThan':
+                return (
+                  typeof value === 'number' &&
+                  typeof filter.value === 'number' &&
+                  value > filter.value
+                );
+              case 'lessThan':
+                return (
+                  typeof value === 'number' &&
+                  typeof filter.value === 'number' &&
+                  value < filter.value
+                );
+              case 'contains':
+                if (typeof value === 'string' && typeof filter.value === 'string') {
+                  return value.toLowerCase().includes(filter.value.toLowerCase());
+                }
+                if (Array.isArray(value)) {
+                  return value.includes(filter.value);
+                }
+                return false;
+              case 'notContains':
+                if (typeof value === 'string' && typeof filter.value === 'string') {
+                  return !value.toLowerCase().includes(filter.value.toLowerCase());
+                }
+                if (Array.isArray(value)) {
+                  return !value.includes(filter.value);
+                }
+                return false;
+              case 'between':
+                if (
+                  typeof value === 'number' &&
+                  Array.isArray(filter.value) &&
+                  filter.value.length === 2
+                ) {
+                  const [min, max] = filter.value as [number, number];
+                  return value >= min && value <= max;
+                }
+                return false;
+              default:
+                return false;
+            }
+          })
+        );
+      }
+
+      // Use the data collection service's filtering capability
+      return dataCollectionServiceRef.current.filterData(dataset.dataPoints, filters);
+    },
+    [datasets]
+  );
+
+  // Fix the getNestedProperty function with proper typing
+  const getNestedProperty = (obj: Record<string, unknown>, path: string): unknown => {
+    const parts = path.split('.');
+    let current: unknown = obj;
+
+    for (const part of parts) {
+      if (current === undefined || current === null) {
+        return undefined;
+      }
+
+      if (typeof current === 'object' && part in current) {
+        current = (current as Record<string, unknown>)[part];
+      } else {
+        return undefined;
+      }
+    }
+
+    return current;
+  };
 
   // Get an analysis result by ID
   const getAnalysisResultById = useCallback(
@@ -485,9 +689,10 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     runAnalysis,
     getAnalysisResultById,
     getAnalysisResultsByConfigId,
-    // Add the new functions
-    addDataPointToDataset,
     getOrCreateDatasetBySource,
+    addDataPointToDataset,
+    refreshData,
+    filterDataset,
   };
 
   return (

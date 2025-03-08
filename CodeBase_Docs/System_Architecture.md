@@ -1737,3 +1737,412 @@ export const useSpecificStateValue = () => useContextState(state => state.specif
 - Fix type compatibility issues between different event type systems
 - Standardize this pattern across all contexts
 - Create better documentation for how to properly test these contexts
+
+## Type-Safe Configuration Framework
+
+We've developed a comprehensive type safety framework for application configuration, focusing on runtime validation, feature flags, and type-safe access.
+
+### 1. Configuration Type System
+
+#### 1.1 Core Configuration Types
+
+The TypeSafeConfig framework provides rich typing for configuration values:
+
+```typescript
+export type ConfigValuePrimitive = string | number | boolean | null;
+export type ConfigValue =
+  | ConfigValuePrimitive
+  | ConfigValuePrimitive[]
+  | Record<string, ConfigValuePrimitive>
+  | Record<string, ConfigValuePrimitive>[];
+
+export interface ConfigItem<T extends z.ZodType = z.ZodType> {
+  key: string;
+  name: string;
+  description: string;
+  schema: T;
+  defaultValue: z.infer<T>;
+  category?: string;
+  tags?: string[];
+  metadata?: Record<string, ConfigValue>;
+  isSecret?: boolean;
+  isRequired?: boolean;
+  source?: string;
+}
+```
+
+This ensures:
+
+- Configuration values have proper type constraints
+- Configuration items include runtime validation schemas
+- Default values are type-checked against their schemas
+- Comprehensive metadata for all configuration settings
+
+#### 1.2 Feature Flag System
+
+The framework includes a powerful feature flag system:
+
+```typescript
+export enum FeatureStatus {
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+  PREVIEW = 'preview',
+  EXPERIMENTAL = 'experimental',
+  BETA = 'beta',
+  DEPRECATED = 'deprecated',
+}
+
+export interface FeatureTargeting {
+  userRoles?: string[];
+  environments?: string[];
+  percentageRollout?: number;
+  dateRange?: {
+    start?: string;
+    end?: string;
+  };
+  customRules?: Record<string, any>;
+}
+
+export interface FeatureFlag {
+  key: string;
+  name: string;
+  description: string;
+  status: FeatureStatus;
+  defaultValue: boolean;
+  targeting?: FeatureTargeting;
+  metadata?: Record<string, ConfigValue>;
+}
+```
+
+This provides:
+
+- Type-safe feature flag definitions
+- Rich targeting rules with proper typing
+- Status information for feature lifecycle management
+- Strongly typed context-based activation
+
+### 2. Configuration Manager
+
+#### 2.1 Type-Safe Access and Validation
+
+The TypeSafeConfigManager class provides type-safe configuration management:
+
+```typescript
+export class TypeSafeConfigManager {
+  // Registration methods
+  registerConfig<T extends z.ZodType>(config: ConfigItem<T>): void;
+  registerFeature(feature: FeatureFlag): void;
+  registerCategory(category: ConfigCategory): void;
+
+  // Type-safe access methods
+  get<T extends z.ZodType>(key: string): z.infer<T> | undefined;
+  isFeatureEnabled(key: string): boolean;
+
+  // Validation methods
+  set<T extends z.ZodType>(key: string, value: z.infer<T>): ConfigValidationResult;
+  validateAllConfigs(): ConfigValidationResult;
+
+  // Import/export methods
+  exportConfig(): Record<string, any>;
+  exportFeatures(): Record<string, boolean>;
+  importConfig(config: Record<string, any>): ConfigValidationResult;
+}
+```
+
+#### 2.2 Runtime Validation
+
+The framework includes comprehensive runtime validation:
+
+```typescript
+// Validation result types
+export interface ConfigValidationError {
+  key: string;
+  message: string;
+  path?: string[];
+  value?: any;
+}
+
+export interface ConfigValidationResult {
+  valid: boolean;
+  errors: ConfigValidationError[];
+}
+
+// Example validation in the get method
+if (this.options.validateOnAccess) {
+  const validation = config.schema.safeParse(value);
+  if (!validation.success) {
+    const errors = this.formatZodErrors(key, validation.error);
+    // Handle validation error...
+  }
+}
+```
+
+This ensures:
+
+- All configuration values are validated before use
+- Type safety between schema and value is enforced
+- Detailed error information for validation failures
+- Safe import/export of configuration values
+
+### 3. React Integration
+
+#### 3.1 Configuration Hooks
+
+The framework includes React hooks for type-safe configuration access:
+
+```typescript
+export function useTypedConfig<T extends z.ZodType>(
+  configManager: TypeSafeConfigManager,
+  key: string,
+  defaultValue?: z.infer<T>
+): z.infer<T> {
+  const value = configManager.get<T>(key);
+  return value !== undefined ? value : (defaultValue as z.infer<T>);
+}
+
+export function useFeatureFlag(
+  configManager: TypeSafeConfigManager,
+  key: string,
+  defaultValue = false
+): boolean {
+  return configManager.isFeatureEnabled(key) || defaultValue;
+}
+```
+
+This provides:
+
+- Type-safe configuration access in React components
+- Proper type checking for configuration values
+- Safe fallback to default values
+- Simple API for feature flag checks
+
+#### 3.2 User Context Integration
+
+The framework supports user context for targeting rules:
+
+```typescript
+// Setting user context for feature targeting
+configManager.setUserContext({
+  role: 'admin',
+  environment: 'development',
+  id: 'user-123',
+});
+
+// Automatic evaluation based on context
+if (
+  feature.targeting.userRoles &&
+  feature.targeting.userRoles.length > 0 &&
+  this.userContext.role
+) {
+  if (!feature.targeting.userRoles.includes(this.userContext.role)) {
+    return false;
+  }
+}
+```
+
+This enables:
+
+- Role-based feature access
+- Environment-specific configuration
+- Percentage-based feature rollouts
+- Date-based feature activation
+
+### 4. Configuration Categories and Organization
+
+The framework includes support for organizing configuration:
+
+```typescript
+export interface ConfigCategory {
+  id: string;
+  name: string;
+  description: string;
+  items: ConfigItem[];
+}
+
+// Registration method
+registerCategory(category: ConfigCategory): void;
+
+// Helper methods
+getCategories(): ConfigCategory[];
+getConfigItems(): ConfigItem[];
+getFeatureFlags(): FeatureFlag[];
+```
+
+This provides:
+
+- Logical grouping of configuration settings
+- Hierarchical organization of settings
+- Better discoverability and management
+- Type-safe relationships between settings and categories
+
+### 5. Helper Utilities
+
+The framework includes helper utilities for creating configuration items:
+
+```typescript
+export function createConfigItem<T extends z.ZodType>(
+  key: string,
+  schema: T,
+  defaultValue: z.infer<T>,
+  options: Omit<ConfigItem<T>, 'key' | 'schema' | 'defaultValue'> = {}
+): ConfigItem<T> {
+  return {
+    key,
+    schema,
+    defaultValue,
+    name: options.name || key,
+    description: options.description || '',
+    // Other properties...
+  };
+}
+
+export function createFeatureFlag(
+  key: string,
+  defaultValue: boolean,
+  options: Omit<FeatureFlag, 'key' | 'defaultValue'> = {} as any
+): FeatureFlag {
+  return {
+    key,
+    defaultValue,
+    name: options.name || key,
+    // Other properties...
+  };
+}
+```
+
+This ensures:
+
+- Type-safe creation of configuration items
+- Default values for optional properties
+- Consistent configuration patterns
+- Reduced boilerplate code
+
+### 6. Demonstration Component
+
+The `TypeSafeConfigDemo.tsx` component showcases the configuration framework:
+
+- Interactive configuration management UI
+- Feature flag visualization with targeting rules
+- Live editing of configuration values with validation
+- User context manipulation for feature flag testing
+- Import/export functionality
+- Theme switching based on configuration
+
+### 7. Schema-Based Validation
+
+The framework leverages Zod schemas for validation:
+
+```typescript
+// Example schemas for configuration
+const themeSchema = z.enum(['light', 'dark', 'system']);
+const pageSizeSchema = z.number().int().min(5).max(100);
+const apiEndpointSchema = z.string().url();
+const notificationSchema = z.object({
+  enabled: z.boolean(),
+  sound: z.boolean().optional(),
+  frequency: z.enum(['immediately', 'batched', 'daily']).optional(),
+});
+
+// Configuration creation with schemas
+createConfigItem('theme', themeSchema, 'system', {
+  name: 'Theme',
+  description: 'Application color theme',
+});
+```
+
+This provides:
+
+- Rich validation rules with clear error messages
+- Type inference from validation schema to TypeScript types
+- Custom validation for complex configuration values
+- Composition of validation rules
+
+### 8. Benefits and Impact
+
+#### 8.1 Development Benefits
+
+- Prevents configuration-related type errors
+- Improves IDE autocompletion for configuration values
+- Ensures consistent configuration patterns
+- Makes refactoring safer with type checking
+
+#### 8.2 Runtime Benefits
+
+- Catches invalid configuration values before they cause issues
+- Provides helpful error messages for troubleshooting
+- Ensures feature flags are correctly evaluated
+- Simplifies context-based feature activation
+
+#### 8.3 User Experience Benefits
+
+- Enables safer feature rollouts with targeting rules
+- Supports gradual feature adoption through percentage rollouts
+- Allows for customized experiences based on user context
+- Provides better error handling for misconfiguration
+
+### 9. Best Practices
+
+#### 9.1 Schema Definition
+
+Define schemas for configuration values with appropriate constraints:
+
+```typescript
+// Good: Schema with appropriate constraints
+const connectionSchema = z.object({
+  host: z.string().min(1),
+  port: z.number().int().min(1).max(65535),
+  timeoutMs: z.number().int().min(0).max(60000),
+  retryCount: z.number().int().min(0).max(10),
+});
+
+// Bad: Loose schema without constraints
+const looseConnectionSchema = z.object({
+  host: z.string(),
+  port: z.number(),
+  timeoutMs: z.number(),
+  retryCount: z.number(),
+});
+```
+
+#### 9.2 Feature Flag Organization
+
+Organize feature flags with clear status and targeting rules:
+
+```typescript
+// Good: Clear organization and targeting
+const featureFlags = [
+  createFeatureFlag('newDashboard', false, {
+    name: 'New Dashboard',
+    description: 'Enable the new dashboard interface',
+    status: FeatureStatus.PREVIEW,
+    targeting: {
+      userRoles: ['admin', 'beta-tester'],
+      percentageRollout: 20,
+    },
+  }),
+  // Other flags...
+];
+
+// Bad: Lack of organization and documentation
+const poorFeatureFlags = {
+  newDashboard: true,
+  advancedCharts: false,
+  // Other flags without documentation or targeting...
+};
+```
+
+#### 9.3 Access Patterns
+
+Use type-safe access patterns for configuration values:
+
+```typescript
+// Good: Type-safe access with hooks
+const theme = useTypedConfig<typeof themeSchema>(configManager, 'theme', 'system');
+const isNewDashboardEnabled = useFeatureFlag(configManager, 'newDashboard');
+
+// Bad: Untyped access without validation
+const theme = config.theme || 'system';
+const isNewDashboardEnabled = features.newDashboard === true;
+```
+
+This type-safe configuration framework ensures that our application is correctly configured at both development time and runtime, with proper validation, organization, and type checking throughout the configuration lifecycle.

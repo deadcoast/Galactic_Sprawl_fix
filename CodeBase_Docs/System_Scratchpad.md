@@ -1,907 +1,169 @@
-# Scratchpad
+# Type Safety Implementation Plan
 
-## Comprehensive Integration and Implementation Plan
+## 1. Current Focus: D3 Visualization Component Type Safety
 
-### Completed Work
+### 1.1. Component Implementation Progress
 
-- ✅ Exploration system integration tests implemented and passing
-- ✅ BaseContext template created with standardized patterns
-- ✅ Event system standardization with proper type definitions
-- ✅ Component Registration System implemented
-- ✅ Resource system visualization components (ResourceVisualizationEnhanced, ResourceThresholdVisualization, ResourceFlowDiagram)
-- ✅ Standardized resource types with ResourceType enum implementation
-- ✅ Mining system integration with standardized resource types
-- ✅ Module system refactoring and integration
-- ✅ ExplorationManager in src/managers/exploration/ExplorationManager.ts implementing AbstractBaseManager
-- ✅ ResourceManager implementing BaseManager with proper event emission
-- ✅ ResourceRatesContext refactored to fix circular dependency issues and tests passing
-- ✅ GameContext refactored to follow the same pattern as ResourceRatesContext with all tests passing
-- ✅ ClassificationContext tests fixed and passing
+| Component                     | Status      | Notes                                                                                                                                                                                                                                                                                                           |
+| ----------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ResourceFlowDiagram.tsx       | ✓ Completed | - Enhanced NetworkNode to extend SimulationNodeDatum interface<br>- Updated NetworkLink to use proper D3 typing<br>- Replaced direct coordinate access with safe d3Accessors<br>- Added type-safe node reference handling with findNode helper<br>- Improved simulation tick function with type-safe transforms |
+| ResourceDistributionChart.tsx | ✓ Completed | - Created new component with proper SimulationNodeDatum interface<br>- Implemented typed ResourceNode with D3 compatibility<br>- Added type-safe accessors for coordinates<br>- Used proper generic typing for D3 simulation and events<br>- Created demo component with typed state and props                  |
+| TemporalAnalysisView.tsx      | ✓ Completed | - Implemented type-safe time scales and accessors<br>- Created TimeNode interface extending SimulationNodeDatum<br>- Added proper typing for D3 transitions and animations<br>- Implemented type-safe animation configuration<br>- Used d3.timer with proper typings for smooth animations                      |
+| FlowDiagram.tsx               | ✓ Completed | - Implemented flow data models with strong typing<br>- Created type-safe conversion functions for D3 compatibility<br>- Added proper typing for D3 force simulations and events<br>- Used d3Accessors for safe coordinate handling<br>- Implemented animated transitions with proper typing                     |
 
-### Implementation Priority Matrix
+### 1.2. Implementation Strategy Used
 
-| Priority | Component                         | Status             | Critical Integrations           | Estimated Complexity |
-| -------- | --------------------------------- | ------------------ | ------------------------------- | -------------------- |
-| 1        | Context Provider Refactoring      | In Progress        | UI components, Manager services | High                 |
-| 2        | Exploration System Implementation | Partially Complete | Resource system, Data analysis  | Medium               |
-| 3        | Performance Optimization          | Not Started        | All systems                     | High                 |
-| 4        | Testing and Quality Assurance     | In Progress        | All systems                     | Medium               |
-| 5        | Resource Management Dashboard     | Not Started        | Resource system                 | Medium               |
+All components successfully implemented the following strategies:
 
-## Phase 1: Context Provider Refactoring
+1. Eliminated all `as unknown as` type assertions
+2. Applied the `d3Accessors` functions for coordinate access
+3. Implemented type-safe data conversion functions
+4. Added proper interface extensions for D3 datum types
+5. Created well-documented props interfaces with JSDoc comments
 
-### ResourceRatesContext Refactoring - Detailed Implementation Plan
+Adapter function pattern implemented across components:
 
-#### 1. Action Type Definition
-
-- [x] Create ResourceRatesActionType enum:
-  ```typescript
-  export enum ResourceRatesActionType {
-    UPDATE_RESOURCE_RATE = 'resourceRates/updateResourceRate',
-    UPDATE_ALL_RATES = 'resourceRates/updateAllRates',
-    RESET_RATES = 'resourceRates/resetRates',
-    SET_LOADING = 'resourceRates/setLoading',
-    SET_ERROR = 'resourceRates/setError',
-  }
-  ```
-
-#### 2. Action Creator Implementation
-
-- [x] Create typed action creators:
-
-  ```typescript
-  export const createUpdateRateAction = (
-    resourceType: ResourceType,
-    rates: ResourceRateDetail
-  ): ResourceRatesAction => ({
-    type: ResourceRatesActionType.UPDATE_RESOURCE_RATE,
-    payload: { resourceType, rates },
-  });
-
-  export const createUpdateAllRatesAction = (
-    rates: Record<ResourceType, ResourceRateDetail>
-  ): ResourceRatesAction => ({
-    type: ResourceRatesActionType.UPDATE_ALL_RATES,
-    payload: { rates },
-  });
-  ```
-
-#### 3. State Interface Extension
-
-- [x] Extend ResourceRatesState with BaseState:
-  ```typescript
-  export interface ResourceRatesState extends BaseState {
-    resourceRates: Record<ResourceType, ResourceRateDetail>;
-  }
-  ```
-
-#### 4. Reducer Implementation
-
-- [x] Create reducer function:
-  ```typescript
-  export const resourceRatesReducer = (
-    state: ResourceRatesState,
-    action: ResourceRatesAction
-  ): ResourceRatesState => {
-    switch (action.type) {
-      case ResourceRatesActionType.UPDATE_RESOURCE_RATE:
-        return {
-          ...state,
-          resourceRates: {
-            ...state.resourceRates,
-            [action.payload.resourceType]: action.payload.rates,
-          },
-          lastUpdated: Date.now(),
-        };
-      case ResourceRatesActionType.UPDATE_ALL_RATES:
-        return {
-          ...state,
-          resourceRates: action.payload.allRates,
-          lastUpdated: Date.now(),
-        };
-      case ResourceRatesActionType.RESET_RATES:
-        return {
-          ...state,
-          resourceRates: defaultResourceRates,
-          isLoading: false,
-          error: null,
-          lastUpdated: Date.now(),
-        };
-      case ResourceRatesActionType.SET_LOADING:
-        return {
-          ...state,
-          isLoading: action.payload.isLoading,
-        };
-      case ResourceRatesActionType.SET_ERROR:
-        return {
-          ...state,
-          error: action.payload.error,
-          isLoading: false,
-        };
-      default:
-        return state;
-    }
-  };
-  ```
-
-#### 5. Event Handler Implementation
-
-- [x] Create event handlers for resource updates:
-
-  ```typescript
-  const createEventHandler = (dispatch: React.Dispatch<ResourceRatesAction>) => {
-    return (event: BaseEvent) => {
-      if (event.data && typeof event.data === 'object' && 'resourceType' in event.data) {
-        const resourceType = event.data.resourceType as ResourceType;
-        const rates = calculateRatesFromEvent(event);
-        dispatch(createUpdateRateAction(resourceType, rates));
-      }
+```typescript
+const convertNodesToD3Format = (nodes: DataNode[]): D3Node[] => {
+  return nodes.map(node => {
+    // Create a properly typed node with no type assertions
+    const d3Node: D3Node = {
+      id: node.id,
+      // Other properties...
+      // Store original data for reference
+      data: node,
     };
-  };
-  ```
 
-#### 6. Context Selector Implementation
-
-- [x] Create memoized selectors:
-
-  ```typescript
-  export const selectResourceRates = (state: ResourceRatesState) => state.resourceRates;
-
-  export const selectResourceRate = (state: ResourceRatesState, resourceType: ResourceType) =>
-    state.resourceRates[resourceType];
-
-  export const selectNetRate = (state: ResourceRatesState, resourceType: ResourceType) => {
-    const rates = state.resourceRates[resourceType];
-    return rates ? rates.net : 0;
-  };
-  ```
-
-#### 7. ResourceRatesProvider Implementation
-
-- [x] Implement ResourceRatesProvider using createContext and useReducer:
-
-  ```typescript
-  // Create context
-  type ResourceRatesContextType = {
-    state: ResourceRatesState;
-    dispatch: React.Dispatch<ResourceRatesAction>;
-  };
-
-  const ResourceRatesContext = createContext<ResourceRatesContextType | undefined>(undefined);
-
-  // Provider component
-  export const ResourceRatesProvider: React.FC<{
-    children: React.ReactNode;
-    manager?: ResourceManager;
-    initialState?: Partial<ResourceRatesState>;
-  }> = ({ children, manager, initialState: initialStateOverride }) => {
-    // Get initial state from ResourceManager if available
-    const effectiveInitialState = useMemo(() => {
-      if (manager) {
-        try {
-          const rates = manager.getAllResourceRates?.() || defaultResourceRates;
-          return {
-            ...initialState,
-            resourceRates: rates,
-            ...(initialStateOverride || {}),
-          };
-        } catch (error) {
-          console.error('Error getting resource rates from manager:', error);
-        }
-      }
-      return { ...initialState, ...(initialStateOverride || {}) };
-    }, [manager, initialStateOverride]);
-
-    // Create reducer
-    const [state, dispatch] = useReducer(resourceRatesReducer, effectiveInitialState);
-
-    // Set up event subscriptions with the manager when provided
-    useEffect(() => {
-      if (manager) {
-        // Create event handler with dispatch
-        const eventHandler = (event: BaseEvent) => {
-          if (event.data && typeof event.data === 'object' && 'resourceType' in event.data) {
-            const resourceType = event.data.resourceType as ResourceType;
-            const rates = calculateRatesFromEvent(event);
-            dispatch(createUpdateRateAction(resourceType, rates));
-          }
-        };
-
-        // Set up event subscriptions
-        const unsubscribeResourceUpdated = manager.subscribeToEvent(
-          EventType.RESOURCE_UPDATED,
-          eventHandler
-        );
-
-        const unsubscribeResourceProduced = manager.subscribeToEvent(
-          EventType.RESOURCE_PRODUCED,
-          eventHandler
-        );
-
-        const unsubscribeResourceConsumed = manager.subscribeToEvent(
-          EventType.RESOURCE_CONSUMED,
-          eventHandler
-        );
-
-        // Clean up subscriptions
-        return () => {
-          unsubscribeResourceUpdated();
-          unsubscribeResourceProduced();
-          unsubscribeResourceConsumed();
-        };
-      }
-      return undefined;
-    }, [manager]);
-
-    // Create context value
-    const contextValue = useMemo(() => ({ state, dispatch }), [state]);
-
-    return (
-      <ResourceRatesContext.Provider value={contextValue}>
-        {children}
-      </ResourceRatesContext.Provider>
-    );
-  };
-  ```
-
-#### 8. ResourceManager Integration
-
-- [x] Add getAllResourceRates method to ResourceManager:
-
-  ```typescript
-  public getAllResourceRates(): Record<ResourceType, { production: number; consumption: number; net: number }> {
-    const rates: Record<ResourceType, { production: number; consumption: number; net: number }> = {} as Record<
-      ResourceType,
-      { production: number; consumption: number; net: number }
-    >;
-
-    // Initialize with default rates for all resource types
-    const resourceTypes = ['minerals', 'energy', 'population', 'research', 'plasma', 'gas', 'exotic'];
-
-    // Set rates for each resource type
-    resourceTypes.forEach(typeKey => {
-      const type = typeKey as ResourceType;
-      const state = this.getResourceState(type);
-      rates[type] = {
-        production: state?.production || 0,
-        consumption: state?.consumption || 0,
-        net: (state?.production || 0) - (state?.consumption || 0)
-      };
-    });
-
-    return rates;
-  }
-  ```
-
-#### 9. useResourceRates Hook Enhancement
-
-- [x] Enhance hook with selectors:
-
-  ```typescript
-  // Hook to use the context
-  export const useResourceRates = <T>(selector: (state: ResourceRatesState) => T): T => {
-    const context = useContext(ResourceRatesContext);
-    if (!context) {
-      throw new Error('useResourceRates must be used within a ResourceRatesProvider');
-    }
-    return selector(context.state);
-  };
-
-  // Hook to use the dispatch function
-  export const useResourceRatesDispatch = (): React.Dispatch<ResourceRatesAction> => {
-    const context = useContext(ResourceRatesContext);
-    if (!context) {
-      throw new Error('useResourceRatesDispatch must be used within a ResourceRatesProvider');
-    }
-    return context.dispatch;
-  };
-
-  // Specialized hooks for specific resource types
-  export const useResourceRate = (resourceType: ResourceType): ResourceRateDetail => {
-    return useResourceRates((state: ResourceRatesState) => state.resourceRates[resourceType]);
-  };
-
-  export const useNetResourceRate = (resourceType: ResourceType): number => {
-    return useResourceRates((state: ResourceRatesState) => {
-      const rates = state.resourceRates[resourceType];
-      return rates ? rates.net : 0;
-    });
-  };
-  ```
-
-#### 10. Testing
-
-- [x] Create comprehensive tests:
-  - Verify resource rate calculations match expected values
-  - Test event subscriptions and cleanup
-  - Verify context updates when ResourceManager emits events
-  - Test selectors return correct values
-- [x] Fix circular dependency issue in ResourceRatesProvider
-  - Replaced createStandardContext with direct React context implementation
-  - Removed dependency on useContextDispatch within the provider
-  - All tests now pass successfully
-
-### ModuleContext Refactoring - Detailed Implementation Plan
-
-#### 1. Action Type Definition
-
-- [x] Create ModuleActionType enum:
-  ```typescript
-  export enum ModuleActionType {
-    ADD_MODULE = 'module/addModule',
-    UPDATE_MODULE = 'module/updateModule',
-    REMOVE_MODULE = 'module/removeModule',
-    SELECT_MODULE = 'module/selectModule',
-    SET_ACTIVE_MODULES = 'module/setActiveModules',
-    SET_LOADING = 'module/setLoading',
-    SET_ERROR = 'module/setError',
-  }
-  ```
-
-#### 2. State Interface Definition
-
-- [x] Define ModuleState interface:
-  ```typescript
-  export interface ModuleState extends BaseState {
-    modules: Record<string, Module>;
-    activeModuleIds: string[];
-    selectedModuleId: string | null;
-    categories: string[];
-  }
-  ```
-
-#### 3. Reducer Implementation
-
-- [x] Create moduleReducer:
-  ```typescript
-  export const moduleReducer = (state: ModuleState, action: ModuleAction): ModuleState => {
-    switch (action.type) {
-      case ModuleActionType.ADD_MODULE:
-        return {
-          ...state,
-          modules: {
-            ...state.modules,
-            [action.payload.module.id]: action.payload.module,
-          },
-          lastUpdated: Date.now(),
-        };
-      case ModuleActionType.UPDATE_MODULE:
-        return {
-          ...state,
-          modules: {
-            ...state.modules,
-            [action.payload.moduleId]: {
-              ...state.modules[action.payload.moduleId],
-              ...action.payload.updates,
-            },
-          },
-          lastUpdated: Date.now(),
-        };
-      // Additional cases for other actions
-      default:
-        return state;
-    }
-  };
-  ```
-
-#### 4. Manager Configuration
-
-- [x] Create ModuleManager configuration:
-
-  ```typescript
-  const managerConfig: ManagerConfig<ModuleState, ModuleManager> = {
-    connect: (manager: ModuleManager, dispatch) => {
-      // Event subscriptions
-      const unsubscribeModuleCreated = manager.subscribeToEvent(
-        ModuleEventType.MODULE_CREATED,
-        event => {
-          dispatch({
-            type: ModuleActionType.ADD_MODULE,
-            payload: { module: event.data.module },
-          });
-        }
-      );
-
-      // Additional subscriptions
-
-      return () => {
-        unsubscribeModuleCreated();
-        // Cleanup other subscriptions
-      };
-    },
-
-    getInitialState: (manager: ModuleManager) => {
-      // Get initial modules and state
-      const modules = manager.getAllModules();
-      const moduleMap = modules.reduce(
-        (acc, module) => {
-          acc[module.id] = module;
-          return acc;
-        },
-        {} as Record<string, Module>
-      );
-
-      return {
-        modules: moduleMap,
-        activeModuleIds: manager.getActiveModuleIds(),
-        selectedModuleId: null,
-        categories: manager.getModuleCategories(),
-        isLoading: false,
-        error: null,
-        lastUpdated: Date.now(),
-      };
-    },
-  };
-  ```
-
-#### 5. Context Selectors
-
-- [x] Create performance-optimized selectors:
-  ```typescript
-  export const selectModules = (state: ModuleState) => state.modules;
-  export const selectModuleById = (state: ModuleState, id: string) => state.modules[id];
-  export const selectActiveModules = (state: ModuleState) => {
-    return state.activeModuleIds.map(id => state.modules[id]).filter(Boolean);
-  };
-  export const selectSelectedModule = (state: ModuleState) => {
-    return state.selectedModuleId ? state.modules[state.selectedModuleId] : null;
-  };
-  ```
-
-#### 6. Provider Implementation
-
-- [x] Implement ModuleProvider using createStandardContext:
-  ```typescript
-  export const [ModuleProvider, useModules] = createStandardContext<
-    ModuleState,
-    ModuleAction,
-    ModuleManager
-  >({
-    name: 'Module',
-    reducer: moduleReducer,
-    initialState: {
-      modules: {},
-      activeModuleIds: [],
-      selectedModuleId: null,
-      categories: [],
-      isLoading: false,
-      error: null,
-      lastUpdated: Date.now(),
-    },
-    managerConfig,
+    return d3Node;
   });
-  ```
-
-#### 7. Enhanced Hooks
-
-- [x] Create specialized hooks:
-
-  ```typescript
-  export const useModule = (moduleId: string) => {
-    return useModules(state => selectModuleById(state, moduleId));
-  };
-
-  export const useActiveModules = () => {
-    return useModules(selectActiveModules);
-  };
-
-  export const useSelectedModule = () => {
-    return useModules(selectSelectedModule);
-  };
-  ```
-
-### GameContext Refactoring - Detailed Implementation Plan
-
-#### 1. Action Type Definition
-
-- [x] Create GameActionType enum:
-  ```typescript
-  export enum GameActionType {
-    START_GAME = 'game/startGame',
-    PAUSE_GAME = 'game/pauseGame',
-    RESUME_GAME = 'game/resumeGame',
-    END_GAME = 'game/endGame',
-    UPDATE_GAME_STATE = 'game/updateGameState',
-    SET_LOADING = 'game/setLoading',
-    SET_ERROR = 'game/setError',
-  }
-  ```
-
-#### 2. Action Creator Implementation
-
-- [x] Create typed action creators
-- [x] Implement reducer function
-- [x] Create context selectors
-- [ ] Fix circular dependency issue in GameProvider (similar to ResourceRatesContext fix)
-
-### Next Steps
-
-1. Complete ModuleContext refactoring
-
-   - Implement direct React context implementation similar to ResourceRatesContext
-   - Fix any circular dependencies
-   - Ensure proper event subscription handling
-   - Create comprehensive tests for ModuleContext
-
-2. Implement ResourceRatesContext integration with UI components
-
-   - Create resource rate visualization components
-   - Implement resource trend displays
-   - Add forecasting capabilities based on current rates
-   - Ensure responsive updates when rates change
-
-3. Begin performance monitoring implementation
-   - Create baseline performance metrics
-   - Implement component render time tracking
-   - Add event processing monitoring
-   - Create visualization tools for performance metrics
-
-## Phase 2: Exploration System Implementation
-
-### ExplorationManager Enhancement
-
-- [x] Complete ExplorationManager implementation according to BaseManager interface
-- [x] Add proper event emission for exploration events
-- [x] Connect with ReconShipManager for ship coordination
-- [ ] Implement sector discovery algorithms
-- [ ] Add anomaly and resource detection logic
-- [ ] Integrate with data analysis system
-
-### Data Analysis System
-
-- [x] Complete DataAnalysisContext integration with ExplorationManager
-- [x] Enhance automatic dataset creation from exploration events
-- [ ] Implement advanced filtering and analysis algorithms
-- [ ] Optimize data transformation and storage
-- [ ] Add real-time visualization updates
-
-### Discovery Classification
-
-- [x] Complete DiscoveryClassification component implementation
-- [ ] Implement classification algorithms for anomalies and resources
-- [ ] Connect classification system to resource system
-- [ ] Add visualization for classification results
-- [ ] Implement user feedback mechanisms for classification
-
-## Phase 3: Performance Optimization
-
-### Monitoring and Profiling
-
-- [ ] Implement performance monitoring for critical paths
-  - Resource flow optimization
-  - Event distribution
-  - UI rendering
-- [ ] Create performance profiling tools with metrics
-- [ ] Add runtime performance visualization
-- [ ] Implement warning system for performance issues
-
-### Optimization Implementations
-
-- [ ] Optimize ResourceFlowManager calculation algorithm
-  - Implement incremental updates
-  - Add caching for expensive calculations
-  - Optimize node and edge traversal
-- [x] Enhance event system performance
-  - [x] Implement event batching for high-frequency events
-  - [ ] Add priority queue for event processing
-  - [x] Create event filtering to reduce unnecessary processing
-- [ ] Improve rendering performance
-  - [ ] Use React.memo for list components
-  - [ ] Implement specialized equality checks
-  - [ ] Use useMemo for derived data calculations
-  - [ ] Add virtualization for long lists
-
-## Phase 4: Testing and Quality Assurance
-
-### Unit Test Expansion
-
-- [x] Expand unit test coverage for core systems
-  - [x] ResourceFlowManager
-  - [x] EventSystem
-  - [ ] ExplorationManager
-  - [x] ModuleManager
-- [ ] Implement component unit tests
-- [ ] Create service tests for manager implementations
-
-### Integration Testing
-
-- [x] Complete integration tests for system boundaries
-  - [ ] ResourceManager-GameContext
-  - [ ] ModuleManager-ModuleContext
-  - [ ] ThresholdContext-ResourceManager
-  - [x] ExplorationManager-DataAnalysisContext
-- [ ] Create end-to-end tests for core gameplay flows
-- [ ] Test boundary interactions between systems
-- [ ] Implement module lifecycle tests
-
-### Simulation Testing
-
-- [ ] Create simulation tests for complex system interactions
-  - Resource flow optimization
-  - Module upgrade chains
-  - Exploration and discovery
-- [ ] Implement automated architectural validation
-- [ ] Add performance regression testing
-
-## Phase 5: User Interface Enhancement
-
-### Resource Management Dashboard
-
-- [ ] Create comprehensive Resource Management Dashboard
-  - Combine all resource visualization components
-  - Add resource forecasting with trend visualization
-  - Implement resource optimization suggestions
-- [x] Enhance ResourceFlowDiagram
-  - [x] Add detailed node statistics
-  - [ ] Implement optimization indicators
-  - [ ] Create interactive optimization controls
-
-### Exploration Interface
-
-- [ ] Create unified exploration interface
-  - Integrate sector scanning controls
-  - Add anomaly analysis visualization
-  - Implement classification interface
-  - Display resource potential visualization
-- [ ] Enhance map visualization
-  - Add real-time updates for discoveries
-  - Implement heat maps for resource concentration
-  - Create visual indicators for anomalies
-
-### System Integration UI
-
-- [ ] Implement central system integration dashboard
-  - Create system status visualization
-  - Add performance monitoring interface
-  - Implement system connection visualization
-- [ ] Enhance error handling and user feedback
-  - Add detailed error messages
-  - Implement recovery suggestions
-  - Create system health indicators
-
-## Implementation Approach
-
-### For Each Component Implementation:
-
-1. **Analysis Phase:**
-
-   - Review existing code in the component directory
-   - Identify dependencies and integration points
-   - Map event flow and state management patterns
-   - Catalog type definitions and interfaces
-
-2. **Design Phase:**
-
-   - Define clear interfaces and types
-   - Create component architecture diagram
-   - Identify reusable patterns and utilities
-   - Plan testing strategy
-
-3. **Implementation Phase:**
-
-   - Start with core functionality
-   - Implement using standardized patterns
-   - Follow type-safe practices
-   - Add proper event handling and context integration
-
-4. **Testing Phase:**
-
-   - Create unit tests for core functionality
-   - Implement integration tests for system boundaries
-   - Test performance characteristics
-   - Verify error handling and edge cases
-
-5. **Documentation Phase:**
-   - Update component documentation
-   - Add implementation notes
-   - Document integration points
-   - Create usage examples
-
-## Type Standardization Approach
-
-For each system being implemented or refactored:
-
-1. Define core types and interfaces in dedicated type files
-2. Use enums instead of string literals for defined types
-3. Create helper utilities for type conversion and validation
-4. Implement strict type checking and avoid "any" types
-5. Use generics for reusable components and functions
-6. Document type interfaces with JSDoc comments
-7. Add runtime validation for external data
-
-## Action Items and Progress
-
-| Task                                   | Status | Notes                                                    |
-| -------------------------------------- | ------ | -------------------------------------------------------- |
-| GameContext Refactoring                | ✅     | Completed with proper React context implementation       |
-| ResourceRatesContext Refactoring       | ✅     | Completed with proper React context implementation       |
-| ModuleContext Refactoring              | ✅     | Completed with proper React context implementation       |
-| ModuleContext Tests                    | 🔄     | In progress - Type compatibility issues mostly fixed     |
-| Data Analysis System Enhancements      | 🔄     | In progress - implementing data collection pipeline      |
-| Performance Monitoring                 | 🔄     | Planning phase - defining metrics and collection methods |
-| Resource Management Dashboard          | 🔄     | Design phase - wireframes created                        |
-| Unified Exploration Interface          | 🔄     | Research phase - evaluating component structure          |
-| Expand Integration Test Coverage       | 🔄     | In progress - focusing on critical paths                 |
-| Optimize ResourceFlowManager Algorithm | 🔄     | Analysis phase - profiling performance bottlenecks       |
-
-### Next Immediate Tasks
-
-#### ModuleContext Tests Completion
-
-- ✅ Fixed hook usage with proper selector functions
-- ✅ Added missing `moduleType` property to event data objects
-- ✅ Updated TestModule to use proper Position type from GameTypes
-- ✅ Fixed ServiceContext initialization with empty object instead of null
-- ✅ Made isActive a required boolean in TestModule
-- 🔄 Need to resolve remaining type compatibility issues with Module interface
-
-#### Event System Standardization
-
-- ✅ Created EventDataTypes.ts with proper type mapping
-- ✅ Fixed event type compatibility issues between different event systems
-- ✅ Fixed BaseEvent compatibility with event data types
-- 🔄 Standardize event validation across the application
-- 🔄 Implement proper error handling for invalid events
-
-#### ResourceRatesContext UI Integration
-
-- 🔄 Create ResourceRatesDisplay component
-- 🔄 Implement ResourceRatesTrends visualization
-- 🔄 Add resource rate filtering capabilities
-
-#### ExplorationManagerImpl Refactoring
-
-- 🔄 Identify circular dependencies
-- 🔄 Implement proper event handling
-- 🔄 Create comprehensive tests
-
-### ModuleContext Test Improvements
-
-We've made substantial progress in fixing the ModuleContext test implementation:
-
-1. **Fixed Type Compatibility Issues**:
-
-   - Added missing `moduleType` property to all event data objects to comply with BaseEvent interface
-   - Updated TestModule interface to use proper Position type from GameTypes
-   - Made isActive a required boolean property instead of optional
-   - Fixed ServiceContext initialization with empty object instead of null
-   - Properly typed service registry to avoid use of `any`
-
-2. **Fixed Hook Usage**:
-
-   - Corrected useModules to properly accept selector functions
-   - Used the correct API pattern for useModule and useModuleActions
-   - Fixed component implementations to match the actual hook usage
-
-3. **Improved Event Emissions**:
-   - Added proper type annotations for event data
-   - Ensured all events contain required properties
-   - Implemented correct event emission pattern
-
-### Remaining Issues in ModuleContext Tests
-
-1. **Module vs TestModule Compatibility**:
-
-   - There are still some incompatibilities between our TestModule interface and the actual Module interface:
-     - The `level` property in TestModule is optional, but required in Module
-     - May need to fully align our test types with production types
-
-2. **Event Validation**:
-   - Need to implement comprehensive event validation logic
-   - Consider using validation functions from EventDataTypes.ts
-
-### Next Steps for Testing
-
-1. Resolve remaining type compatibility issues between TestModule and Module
-2. Create helper utilities for generating test modules with valid properties
-3. Implement proper event validation in test modules
-4. Consider extracting common testing patterns to a reusable utility file
-
-# ModuleContext Testing - Implementation Summary
-
-We've significantly improved the ModuleContext test implementation by:
-
-## 1. Creating Properly Typed Test Modules
-
-- Implemented a `TestModule` interface that fully matches the actual `Module` interface
-- Added all required properties to prevent type compatibility issues
-- Created a `createTestModule` factory function that ensures all modules have required fields
-
-```typescript
-interface TestModule {
-  id: string;
-  name: string;
-  type: ModuleType;
-  status: ModuleStatus;
-  position: Position;
-  level: number; // Required property
-  isActive: boolean;
-  buildingId?: string;
-  attachmentPointId?: string;
-  progress?: number;
-  subModules?: Array<unknown>;
-  parentModuleId?: string;
-}
-
-function createTestModule(overrides: Partial<TestModule> = {}): TestModule {
-  return {
-    id: `module-${Date.now()}`,
-    name: 'Test Module',
-    type: 'radar' as ModuleType,
-    status: ModuleStatus.ACTIVE,
-    position: { x: 0, y: 0 },
-    level: 1,
-    isActive: true,
-    ...overrides,
-  };
-}
+};
 ```
 
-## 2. Adding Building Support
+## 2. Previously Completed Implementation Work
 
-- Created a `TestBuilding` interface compatible with `ModularBuilding`
-- Added proper building type handling with `BuildingType` enum
-- Implemented building-module association tracking
+### 2.1. D3 Type Safety Framework
 
-```typescript
-interface TestBuilding {
-  id: string;
-  type: BuildingType;
-  name?: string;
-  level: number;
-  modules: TestModule[];
-  status: 'active' | 'constructing' | 'inactive';
-  attachmentPoints: Array<{
-    id: string;
-    position: Position;
-    allowedTypes: ModuleType[];
-    occupied: boolean;
-    currentModule?: string;
-  }>;
-}
-```
+1. **Type Definitions**
 
-## 3. Implementing Proper Event Validation
+   - Created `D3Types.ts` with generic interfaces for D3 data structures
+   - Implemented type-safe simulation object references
+   - Defined proper type constraints for D3 simulations
+   - Added safe accessor functions for node properties
 
-- Added event data validation to ensure correct structure
-- Made event emission type-safe by validating before emitting
-- Created reusable validation utility
+2. **Utility Functions**
 
-```typescript
-function validateAndEmitEvent<T extends EventType>(
-  eventBus: EventBus<BaseEvent>,
-  eventType: T,
-  eventData: BaseEvent
-): void {
-  if (!validateEventData(eventType, eventData)) {
-    console.error(`Invalid event data for ${eventType}`, eventData);
-    throw new Error(`Invalid event data for ${eventType}`);
-  }
+   - Implemented `d3Accessors.getX()` and `d3Accessors.getY()` for safe coordinate access
+   - Created `d3Converters.dataPointsToD3Format<T>()` for type-safe data conversion
 
-  eventBus.emit(eventData);
-}
-```
+3. **Component Updates**
 
-## 4. Making ModuleManagerWrapper Fully IModuleManager Compatible
+   - Refactored `ChainVisualization.tsx` to eliminate type assertions
+   - Updated `RealTimeVisualizationDemo.tsx` to use type-safe conversion
 
-- Implemented all required IModuleManager interface methods
-- Added support for module categorization and filtering
-- Handled building-module associations properly
-- Updated event emission to match production behavior
+4. **Testing**
+   - Added `D3Types.test.ts` with comprehensive test cases
+   - Validated safe accessor functions in various scenarios
+   - Verified data conversion functions maintain proper structure
 
-### Remaining Issues
+### 2.2. Other Type Safety Improvements
 
-While we've made significant progress, there are still type compatibility issues to resolve:
+#### ModuleEventBus Type Safety
 
-1. `TestModule` vs `BaseModule` status compatibility (enum vs string literal)
-2. Building attachment point type compatibility
-3. Array type compatibility between string arrays and object arrays
+- Implemented robust `toEventType()` conversion function
+- Added type guards with `isValidEvent()` and `isEventOfType()`
+- Enhanced methods with proper type checking and validation
+- Created generic typed event emitters and subscribers
 
-### Next Steps
+#### DataCollectionService Type Safety
 
-To complete the ModuleContext test implementation:
+- Implemented type-safe event mapping system
+- Added comprehensive type guard functions
+- Created strongly typed event handler methods
+- Developed safe data transformation and aggregation methods
 
-1. Align `TestModule.status` with `BaseModule.status` by ensuring compatible types
-2. Fix attachment point compatibility by providing all required fields
-3. Properly handle module references in buildings (using IDs vs. objects)
-4. Add more specific tests for type validation and error handling
+#### GameSystemsIntegration Type Safety
+
+- Extended Window interface in `global.d.ts` for game services
+- Implemented type-safe service access utilities
+- Created centralized service registration system
+- Updated integration code to use new type-safe patterns
+
+## 3. Current Focus: Runtime Validation Enhancements
+
+### 3.1. Runtime Validation Tasks
+
+| Task                                               | Status      | Notes                                                                                                                                                                                                                                                                                                                                            |
+| -------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Schema-based validators for D3 data structures     | ✓ Completed | - Created D3Validators.ts with comprehensive schema validation<br>- Implemented type-safe validation functions for nodes and links<br>- Added support for custom schemas and extensions<br>- Created test suite to verify validation functionality<br>- Used unknown type instead of any for better type safety                                  |
+| Validation hooks for critical data transformations | ✓ Completed | - Created D3ValidationHooks.ts with higher-order validation functions<br>- Implemented withSchemaValidation, withNodeValidation, and withLinkValidation<br>- Added multi-step validation with withStepValidation<br>- Created utility functions for schema creation and extension<br>- Integrated validation hooks with FlowDiagram component    |
+| Error boundaries for visualization components      | ✓ Completed | - Created D3VisualizationErrorBoundary component with type-safe error handling<br>- Implemented specialized error boundaries for D3 visualization components<br>- Added support for custom error fallbacks and error context<br>- Developed error boundary demo showcasing error recovery<br>- Integrated with existing visualization components |
+
+### 3.2. Performance Optimizations (Next Priority)
+
+| Task                                                  | Status      | Notes                                                                                                                                                                                                                                                                                                                                                                         |
+| ----------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Benchmark D3 simulations with type-safe accessors     | ✓ Completed | - Created D3AccessorBenchmark.ts with comprehensive benchmark utilities<br>- Implemented performance testing across multiple scenarios and data sizes<br>- Added visualization component to run and display benchmark results<br>- Compared safe accessors vs. direct property access<br>- Generated detailed performance reports with recommendations                        |
+| Identify and address performance bottlenecks          | ✓ Completed | - Created D3PerformanceProfiler.ts with detailed profiling capabilities<br>- Implemented ForceSimulationProfiler for identifying bottlenecks in force simulations<br>- Added profiling for coordinate access and DOM operations<br>- Created D3PerformanceOptimizations.ts with optimized simulation handling<br>- Developed OptimizedFlowDiagram with performance monitoring |
+| Implement optimizations for high-frequency operations | ✓ Completed | - Implemented memoizedD3Accessors for better coordinate access performance<br>- Added optimizeForceSimulation for better simulation performance<br>- Created createOptimizedTicker for throttled rendering<br>- Implemented optimizeSelectionUpdates for batched DOM updates                                                                                                  |
+| Memoization for accessor results                      | ✓ Completed | - Added WeakMap caching for accessor results<br>- Implemented coordinate caching with createCoordinateCache<br>- Added data transformation memoization with memoizeTransform                                                                                                                                                                                                  |
+
+### 3.3. User Interaction Type Safety (Next Priority)
+
+| Task                                            | Status      | Notes                                                                                                                                                                                                                                                                                                                                                |
+| ----------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Create type-safe wrappers for D3 drag behaviors | ✓ Completed | - Created D3DragTypes.ts with comprehensive drag behavior wrappers<br>- Implemented TypedDragEvent interface with proper generic typing<br>- Created type-safe createTypedDragBehavior function<br>- Added specialized createSimulationDragBehavior for force layouts<br>- Implemented type-safe constraints and configuration options               |
+| Implement properly typed zoom behaviors         | ✓ Completed | - Created D3ZoomTypes.ts with zoom behavior wrappers<br>- Implemented TypedZoomEvent interface with proper generic typing<br>- Created type-safe zoom behavior creation functions<br>- Added specialized createSvgZoomBehavior for SVG visualizations<br>- Implemented type-safe pan constraints, scale limits and transform utilities               |
+| Add type-safe selection utilities               | ✓ Completed | - Created D3SelectionTypes.ts with comprehensive selection utilities<br>- Implemented type-safe selection creation functions<br>- Added utilities for fluent data binding and element creation<br>- Created builder pattern for type-safe selection and transition chaining<br>- Implemented specialized utilities for SVG creation and manipulation |
+
+### 3.4. Integrated Demonstrations
+
+| Task                                   | Status      | Notes                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Type-Safe Visualization Demo Component | ✓ Completed | - Created TypeSafeVisualizationDemo.tsx to showcase integration<br>- Implemented interactive force-directed graph with drag, zoom, and selection<br>- Demonstrated fluent builder pattern for D3 operations<br>- Included examples of constraints and configuration options<br>- Showcased performance optimization alongside type safety<br>- Added interactive controls |
+
+## 4. Future Type Safety Areas
+
+### 4.1. State Management Type Safety (Next Priority)
+
+| Task                                             | Status      | Notes                                                                                                                                                                                                                                                                                                                         |
+| ------------------------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Improve typing for complex state transitions     | ✓ Completed | - Created TypeSafeStateManagement.ts with type-safe state utilities<br>- Implemented StateTransitionFn type and useTypedTransitions hook<br>- Added support for multi-step state changes with async operations<br>- Maintained full type safety throughout transition process<br>- Added typed selectors                      |
+| Add type-safe reducers with proper action typing | ✓ Completed | - Implemented Action and PayloadAction interfaces for type discrimination<br>- Created ReducerBuilder class for type-safe case handling<br>- Added createReducer utility for type-safe reducer creation<br>- Created typed action creator utilities<br>- Implemented useTypedReducer hook for strongly typed dispatch binding |
+
+### 4.2. API Integration Type Safety
+
+| Task                                               | Status    | Notes                                                                                                                                                                |
+| -------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [✓] Create end-to-end type-safe API client         | Completed | Implemented `TypeSafeApiClient.ts` with Zod schema validation for both requests and responses, comprehensive error handling, and type-safe method helpers.           |
+| [✓] Implement runtime validation for API responses | Completed | Added runtime validation using Zod schemas in the API client, with proper error types and validation result metadata.                                                |
+| [✓] Add type-safe API hooks                        | Completed | Created React hooks in `useTypedApi.ts` with features like caching, automatic retries, and dependency tracking. Implemented demo component in `TypeSafeApiDemo.tsx`. |
+
+### 4.3. Dynamic Configuration Type Safety
+
+| Task                                                      | Status    | Notes                                                                                                                                                                                                          |
+| --------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [✓] Create type-safe configuration objects                | Completed | Created `TypeSafeConfig.ts` with comprehensive configuration management system including strongly typed config items, feature flags, and categories. Used generic type parameters for type safety.             |
+| [✓] Implement runtime validation for configuration values | Completed | Implemented Zod schema validation for config values, with proper error reporting, validation on access, and import/export validation. Added support for validation error handling and custom validation rules. |
+| [✓] Add proper typing for feature flags                   | Completed | Created feature flag system with typed targeting rules, status types, and context-aware enabling logic. Implemented support for user roles, environments, percentage rollout, and date-based activation.       |
+| [✓] Create type-safe configuration demo component         | Completed | Created `TypeSafeConfigDemo.tsx` with interactive configuration management, feature flag visualization, and example usage of type-safe configuration hooks.                                                    |
+
+### 4.4. Animation and Transitions
+
+- Improve type safety for animation libraries
+- Add proper typing for transition states and interpolators
+
+## 5. Implementation Principles
+
+### 5.1. Type Safety Best Practices
+
+- Avoid `as unknown as` type assertions
+- Use generic constraints to ensure type compatibility
+- Add runtime validation for dynamic data
+- Test edge cases thoroughly
+
+### 5.2. D3 Type Safety Patterns
+
+- Use `SimulationNodeDatum<T>` for D3 node types
+- Use accessor functions instead of direct property access
+- Implement proper converters for data transformation
+- Create component-specific adapter functions as needed

@@ -1,7 +1,8 @@
 import * as d3 from 'd3';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FlowNode } from '../../../managers/resource/ResourceFlowManager';
 import { ResourceConversionRecipe } from '../../../types/resources/ResourceTypes';
+import { FlowNode } from '../../../types/resources/StandardizedResourceTypes';
+import { d3Accessors } from '../../../types/visualizations/D3Types';
 
 // Define the ChainStatus interface since it's missing from ResourceTypes
 interface ChainStatus {
@@ -45,7 +46,7 @@ interface ChainVisualizationProps {
 }
 
 // Node type for D3 visualization
-interface ChainNode {
+interface ChainNode extends d3.SimulationNodeDatum {
   id: string;
   type: 'converter' | 'recipe';
   name: string;
@@ -57,18 +58,10 @@ interface ChainNode {
   fy?: number | null;
 }
 
-// D3 Simulation Link type
-interface SimulationLinkDatum extends d3.SimulationLinkDatum<ChainNode> {
+// Link type for D3 visualization
+interface ChainLink extends d3.SimulationLinkDatum<ChainNode> {
   source: string | ChainNode;
   target: string | ChainNode;
-  value: number;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
-}
-
-// Link type for D3 visualization
-interface ChainLink extends SimulationLinkDatum {
-  source: string;
-  target: string;
   value: number;
   status: 'pending' | 'in_progress' | 'completed' | 'failed';
 }
@@ -166,7 +159,7 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
       .force(
         'link',
         d3
-          .forceLink<ChainNode, SimulationLinkDatum>(links)
+          .forceLink<ChainNode, d3.SimulationLinkDatum<ChainNode>>(links)
           .id(d => d.id)
           .distance(100)
       )
@@ -259,23 +252,19 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
 
     // Update node and link positions on simulation tick
     simulation.on('tick', () => {
-      // Type assertion for link elements with source and target as objects with x,y properties
+      // Use safe accessors for link elements with source and target properties
       link
         .attr('x1', function (d) {
-          const source = d.source as unknown as { x: number; y: number };
-          return source.x;
+          return d3Accessors.getX(d.source);
         })
         .attr('y1', function (d) {
-          const source = d.source as unknown as { x: number; y: number };
-          return source.y;
+          return d3Accessors.getY(d.source);
         })
         .attr('x2', function (d) {
-          const target = d.target as unknown as { x: number; y: number };
-          return target.x;
+          return d3Accessors.getX(d.target);
         })
         .attr('y2', function (d) {
-          const target = d.target as unknown as { x: number; y: number };
-          return target.y;
+          return d3Accessors.getY(d.target);
         });
 
       node.attr('transform', (d: ChainNode) => `translate(${d.x},${d.y})`);
@@ -305,12 +294,12 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
   }, [nodes, links, width, height, interactive, onNodeClick]);
 
   // Helper function to get color based on status
-  const getStatusColor = (status: string): string => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
         return '#48bb78'; // Green
       case 'in_progress':
-        return '#ecc94b'; // Yellow
+        return '#f6ad55'; // Orange
       case 'failed':
         return '#f56565'; // Red
       case 'pending':
@@ -319,24 +308,35 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
     }
   };
 
-  // Helper function to capitalize first letter
-  const capitalizeFirstLetter = (string: string): string => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+  // Utility function to capitalize the first letter of a string
+  const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
-  // Generate graph data when chain, converters, or recipes change
+  // Generate graph data on component initialization or when dependencies change
   useEffect(() => {
     generateGraphData();
-  }, [chain, converters, recipes, generateGraphData]);
+  }, [generateGraphData]);
 
   // Render visualization when nodes or links change
   useEffect(() => {
     renderVisualization();
-  }, [nodes, links, renderVisualization]);
+  }, [renderVisualization, nodes, links]);
+
+  // If no chain is provided, render an empty placeholder
+  if (!chain) {
+    return <div>No chain data available</div>;
+  }
 
   return (
-    <div className="chain-visualization-container">
-      <svg ref={svgRef} width={width} height={height} className="chain-visualization"></svg>
+    <div className="chain-visualization">
+      <svg
+        ref={svgRef}
+        width={width}
+        height={height}
+        className="chain-visualization-svg"
+        style={{ overflow: 'visible' }}
+      />
     </div>
   );
 };
