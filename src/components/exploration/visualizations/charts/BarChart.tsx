@@ -2,25 +2,73 @@ import { useMemo } from 'react';
 import {
   Bar,
   CartesianGrid,
+  LabelList,
+  LabelProps,
   Legend,
   BarChart as RechartsBarChart,
-  ResponsiveContainer,
+  ReferenceLine,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
-import { DataPoint } from '../../../../types/exploration/DataAnalysisTypes';
+import {
+  BaseChart,
+  BaseChartProps,
+  DefaultTooltip,
+  formatAxisTick,
+  getColor,
+  processChartData,
+  ReferenceLine as ReferenceLineType,
+} from './BaseChart';
 
-interface BarChartProps {
-  data: DataPoint[] | Record<string, unknown>[];
+// Define the click event interface
+interface BarClickEvent {
+  payload: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface BarChartProps extends BaseChartProps {
+  /** Key for X-axis values */
   xAxisKey: string;
+
+  /** Keys for Y-axis values */
   yAxisKeys: string[];
-  width?: number | string;
-  height?: number | string;
-  title?: string;
-  colors?: string[];
+
+  /** Whether to stack the bars */
   stacked?: boolean;
-  customTooltip?: React.FC<unknown>;
+
+  /** Whether to show grid lines */
+  showGrid?: boolean;
+
+  /** Whether to show the legend */
+  showLegend?: boolean;
+
+  /** Bar width in pixels (auto by default) */
+  barSize?: number;
+
+  /** Gap between bar groups (as percentage) */
+  barGap?: number;
+
+  /** X-axis label */
+  xAxisLabel?: string;
+
+  /** Y-axis label */
+  yAxisLabel?: string;
+
+  /** X-axis tick angle to prevent overlapping (e.g., -45) */
+  xAxisTickAngle?: number;
+
+  /** Whether to show values on the bars */
+  showValues?: boolean;
+
+  /** Layout direction ('vertical' or 'horizontal') */
+  layout?: 'vertical' | 'horizontal';
+
+  /** Whether to display the x-axis at the top (default: bottom) */
+  xAxisAtTop?: boolean;
+
+  /** Reference lines to display (e.g., thresholds) */
+  referenceLines?: ReferenceLineType[];
 }
 
 /**
@@ -33,70 +81,183 @@ export function BarChart({
   width = '100%',
   height = 400,
   title,
-  colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'],
+  colors = [],
   stacked = false,
   customTooltip,
+  theme = 'light',
+  showGrid = true,
+  showLegend = true,
+  barSize,
+  barGap,
+  xAxisLabel,
+  yAxisLabel,
+  xAxisTickAngle = -45,
+  showValues = false,
+  layout = 'vertical',
+  xAxisAtTop = false,
+  referenceLines = [],
+  className = '',
+  animate = true,
+  onElementClick,
+  errorMessage,
 }: BarChartProps) {
   // Process data for the chart
-  const processedData = useMemo(() => {
-    if (!data || data.length === 0) return [];
+  const processedData = useMemo(
+    () => processChartData(data, xAxisKey, yAxisKeys, false),
+    [data, xAxisKey, yAxisKeys]
+  );
 
-    return data.map(item => {
-      // Handle DataPoint objects
-      if ('properties' in item && 'metadata' in item) {
-        const dataPoint = item as DataPoint;
-        const properties = { ...dataPoint.properties };
-        const metadata = dataPoint.metadata || {};
-
-        // Create a new object with flattened structure for chart
-        return {
-          ...properties,
-          ...metadata,
-          // Include the id for reference
-          id: dataPoint.id,
-          // Use the name as the display label if appropriate
-          label: dataPoint.name,
-        };
-      }
-
-      // Handle regular record objects
-      return {
-        ...item,
-      };
-    });
-  }, [data]);
-
-  // Generate unique colors for each bar
-  const getBarColor = (index: number) => {
-    return colors[index % colors.length];
-  };
-
+  // If no data, show error
   if (!data || data.length === 0) {
-    return <div className="chart-empty">No data available</div>;
+    return (
+      <BaseChart
+        width={width}
+        height={height}
+        title={title}
+        theme={theme}
+        className={className}
+        errorMessage={errorMessage || 'No data available'}
+      >
+        <RechartsBarChart data={[]} />
+      </BaseChart>
+    );
   }
 
-  return (
-    <div className="chart-container">
-      {title && <h3 className="chart-title">{title}</h3>}
-      <ResponsiveContainer width={width} height={height}>
-        <RechartsBarChart data={processedData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={xAxisKey} angle={-45} textAnchor="end" height={70} />
-          <YAxis />
-          <Tooltip content={customTooltip} />
-          <Legend />
+  // Handle click events
+  const handleBarClick = (event: BarClickEvent, index: number) => {
+    if (onElementClick && event && event.payload) {
+      onElementClick(event.payload, index);
+    }
+  };
 
-          {yAxisKeys.map((key, index) => (
-            <Bar
-              key={key}
-              dataKey={key}
-              fill={getBarColor(index)}
-              name={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
-              stackId={stacked ? 'stack' : undefined}
+  // Set up layout props for horizontal/vertical layout
+  const layoutProps =
+    layout === 'horizontal'
+      ? {
+          layout: 'horizontal' as const,
+          xAxis: (
+            <XAxis
+              type="number"
+              label={
+                xAxisLabel
+                  ? { value: xAxisLabel, position: 'insideBottom', offset: -10 }
+                  : undefined
+              }
             />
-          ))}
-        </RechartsBarChart>
-      </ResponsiveContainer>
-    </div>
+          ),
+          yAxis: (
+            <YAxis
+              type="category"
+              dataKey={xAxisKey}
+              label={
+                yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined
+              }
+            />
+          ),
+        }
+      : {
+          layout: 'vertical' as const,
+          xAxis: (
+            <XAxis
+              type="category"
+              dataKey={xAxisKey}
+              tickFormatter={value => formatAxisTick(value, false)}
+              angle={xAxisTickAngle}
+              textAnchor="end"
+              height={70}
+              orientation={xAxisAtTop ? 'top' : 'bottom'}
+              label={
+                xAxisLabel
+                  ? { value: xAxisLabel, position: 'insideBottom', offset: -10 }
+                  : undefined
+              }
+            />
+          ),
+          yAxis: (
+            <YAxis
+              type="number"
+              label={
+                yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined
+              }
+            />
+          ),
+        };
+
+  // Create the chart content
+  const chartContent = (
+    <RechartsBarChart
+      data={processedData}
+      margin={{
+        top: 20,
+        right: 30,
+        left: 20,
+        bottom: layout === 'vertical' && xAxisTickAngle !== 0 ? 70 : 20,
+      }}
+      layout={layoutProps.layout}
+      barGap={barGap}
+      onClick={chartData => chartData && handleBarClick(chartData as BarClickEvent, 0)}
+    >
+      {showGrid && <CartesianGrid strokeDasharray="3 3" />}
+
+      {layoutProps.xAxis}
+      {layoutProps.yAxis}
+
+      <Tooltip content={customTooltip || <DefaultTooltip />} />
+
+      {showLegend && <Legend />}
+
+      {/* Reference lines for thresholds or important values */}
+      {referenceLines.map((line, i) => (
+        <ReferenceLine
+          key={`ref-line-${i}`}
+          x={line.axis === 'x' ? line.value : undefined}
+          y={line.axis === 'y' ? line.value : undefined}
+          stroke={line.color || '#ff7300'}
+          label={
+            line.label
+              ? ({
+                  value: line.label,
+                  position: line.position || 'center',
+                } as LabelProps)
+              : undefined
+          }
+        />
+      ))}
+
+      {/* Render each data series as a bar */}
+      {yAxisKeys.map((key, index) => (
+        <Bar
+          key={key}
+          dataKey={key}
+          fill={getColor(index, colors)}
+          stackId={stacked ? 'stack' : undefined}
+          name={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+          onClick={(e: BarClickEvent) => handleBarClick(e, index)}
+          barSize={barSize}
+          isAnimationActive={animate}
+        >
+          {showValues && (
+            <LabelList
+              dataKey={key}
+              position={layout === 'horizontal' ? 'right' : 'top'}
+              formatter={(value: number) => value.toLocaleString()}
+            />
+          )}
+        </Bar>
+      ))}
+    </RechartsBarChart>
+  );
+
+  return (
+    <BaseChart
+      width={width}
+      height={height}
+      title={title}
+      theme={theme}
+      className={className}
+      errorMessage={errorMessage}
+    >
+      {chartContent}
+    </BaseChart>
   );
 }

@@ -1,6 +1,6 @@
 import { Activity, Battery, Shield, Target, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useGame } from '../../../../contexts/GameContext';
+import { useGameState } from '../../../../contexts/GameContext';
 
 interface ShipStatusMonitorProps {
   shipIds: string[];
@@ -8,6 +8,9 @@ interface ShipStatusMonitorProps {
 }
 
 interface ShipStatus {
+  id: string;
+  status: 'idle' | 'scanning' | 'investigating' | 'returning';
+  stealthActive: boolean;
   health: number;
   energy: number;
   shield: number;
@@ -17,16 +20,36 @@ interface ShipStatus {
   lastUpdate: number;
 }
 
+interface GameState {
+  exploration: {
+    ships: Record<string, ShipStatus>;
+  };
+}
+
+const selectGameState = (state: unknown): GameState => {
+  if (
+    typeof state === 'object' &&
+    state !== null &&
+    'exploration' in state &&
+    typeof state.exploration === 'object' &&
+    state.exploration !== null &&
+    'ships' in state.exploration &&
+    typeof state.exploration.ships === 'object'
+  ) {
+    return state as GameState;
+  }
+  return { exploration: { ships: {} } };
+};
+
 export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorProps) {
   const [shipStatuses, setShipStatuses] = useState<Record<string, ShipStatus>>({});
-  const context = useGame();
-  if (!context) {
+  const gameState = useGameState(selectGameState);
+  if (!gameState) {
     throw new Error('ShipStatusMonitor must be used within a GameProvider');
   }
-  const { state } = context;
   const ships = shipIds
-    .map(id => state.exploration.ships[id])
-    .filter((ship): ship is NonNullable<typeof ship> => ship !== undefined);
+    .map(id => gameState.exploration.ships[id])
+    .filter((ship): ship is ShipStatus => ship !== undefined);
 
   // Update ship statuses
   useEffect(() => {
@@ -40,6 +63,9 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
         const shieldRecharge = ship.currentTask ? 0 : 0.002 * timeSinceLastUpdate;
 
         newStatuses[ship.id] = {
+          id: ship.id,
+          status: ship.status,
+          stealthActive: ship.stealthActive,
           health: Math.max(0, Math.min(100, shipStatuses[ship.id]?.health || 100)),
           energy: Math.max(0, Math.min(100, (shipStatuses[ship.id]?.energy || 100) - energyDrain)),
           shield: Math.max(
@@ -60,7 +86,7 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
   }, [ships, shipStatuses]);
 
   const calculateStealthLevel = (
-    ship: NonNullable<(typeof state.exploration.ships)[string]>
+    ship: NonNullable<(typeof gameState.exploration.ships)[string]>
   ): number => {
     // Calculate stealth based on ship status and stealthActive flag
     const baseStealthLevel = ship.stealthActive ? 80 : 50;

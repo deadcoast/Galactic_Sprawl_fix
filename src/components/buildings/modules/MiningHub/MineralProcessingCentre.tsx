@@ -7,7 +7,7 @@ import { ThresholdProvider, useThreshold } from '../../../../contexts/ThresholdC
 import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { ResourceTransferManager } from '../../../../managers/resource/ResourceTransferManager';
-import { MiningResource, MiningTechBonuses } from '../../../../types/mining/MiningTypes';
+import { MiningResource } from '../../../../types/mining/MiningTypes';
 import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
 import { AutomationMonitor } from './AutomationMonitor';
 import { MiningControls } from './MiningControls';
@@ -15,28 +15,15 @@ import { MiningMap } from './MiningMap';
 import { ResourceStorage } from './ResourceStorage';
 import { ThresholdManager } from './ThresholdManager';
 
-interface TechUpgrade {
-  id: string;
-  name: string;
-  description: string;
-  level: number;
-  maxLevel: number;
-  bonuses: MiningTechBonuses;
-  requirements: {
-    experience: number;
-    credits?: number;
-    resources?: Record<string, number>;
-    prerequisites?: string[];
-  };
-}
-
 interface MineralProcessingCentreProps {
   tier: 1 | 2 | 3;
 }
 
+type ResourceFilter = 'all' | 'mineral' | 'gas' | 'exotic';
+
 function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) {
   const [selectedNode, setSelectedNode] = React.useState<MiningResource | null>(null);
-  const [filter, setFilter] = React.useState<'all' | 'mineral' | 'gas' | 'exotic'>('all');
+  const [filter, setFilter] = React.useState<ResourceFilter>('all');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [view, setView] = React.useState<'map' | 'grid'>('map');
   const [mineAll, setMineAll] = React.useState(false);
@@ -57,7 +44,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
     {
       id: 'iron-belt-1',
       name: 'Iron Belt Alpha',
-      type: ResourceType.MINERALS,
+      type: ResourceType.IRON,
       abundance: 0.8,
       distance: 150,
       extractionRate: 25,
@@ -68,7 +55,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
     {
       id: 'helium-cloud-1',
       name: 'Helium Cloud Beta',
-      type: ResourceType.GAS,
+      type: ResourceType.HELIUM,
       abundance: 0.6,
       distance: 300,
       extractionRate: 15,
@@ -79,7 +66,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
     {
       id: 'dark-matter-1',
       name: 'Dark Matter Cluster',
-      type: ResourceType.EXOTIC,
+      type: ResourceType.DARK_MATTER,
       abundance: 0.3,
       distance: 500,
       extractionRate: 5,
@@ -143,8 +130,25 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
     if (searchQuery && !resource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
-    if (filter !== 'all' && resource.type !== filter) {
-      return false;
+    if (filter !== 'all') {
+      if (
+        filter === 'mineral' &&
+        ![ResourceType.IRON, ResourceType.COPPER, ResourceType.TITANIUM].includes(resource.type)
+      ) {
+        return false;
+      }
+      if (
+        filter === 'gas' &&
+        ![ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(resource.type)
+      ) {
+        return false;
+      }
+      if (
+        filter === 'exotic' &&
+        ![ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(resource.type)
+      ) {
+        return false;
+      }
     }
     return true;
   });
@@ -173,6 +177,21 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
       });
     };
   }, []);
+
+  // Update the resource type comparison
+  const resourcesByType = mockResources.reduce(
+    (acc, resource) => {
+      if ([ResourceType.IRON, ResourceType.COPPER, ResourceType.TITANIUM].includes(resource.type)) {
+        acc.minerals.push(resource);
+      } else if ([ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(resource.type)) {
+        acc.gas.push(resource);
+      } else if ([ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(resource.type)) {
+        acc.exotic.push(resource);
+      }
+      return acc;
+    },
+    { minerals: [], gas: [], exotic: [] } as Record<string, MiningResource[]>
+  );
 
   return (
     <div className="fixed inset-4 flex overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md">
@@ -237,7 +256,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setFilter(id as 'all' | 'mineral' | 'gas' | 'exotic')}
+              onClick={() => setFilter(id as ResourceFilter)}
               className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                 filter === id
                   ? 'bg-indigo-600 text-white'

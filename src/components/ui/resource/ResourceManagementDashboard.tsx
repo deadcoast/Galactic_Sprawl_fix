@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 // Temporarily comment out antd and icons imports until dependencies are installed
 // import { Button, Tabs } from 'antd';
 // import {
@@ -132,7 +132,7 @@ type CustomEventType =
  * - Production chain management
  * - Resource forecasting (future)
  */
-export const ResourceManagementDashboard: React.FC = () => {
+const ResourceManagementDashboardBase: React.FC = () => {
   const { state: resourceRates } = useResourceRates();
   const { state: thresholdState, dispatch: thresholdDispatch } = useThreshold();
   const [activeTab, setActiveTab] = useState<string>('overview');
@@ -182,10 +182,10 @@ export const ResourceManagementDashboard: React.FC = () => {
     ],
   });
 
-  // Initialize resource data from contexts
-  useEffect(() => {
+  // Initialize resource data from contexts - convert to useMemo
+  const mockResourceData = useMemo(() => {
     // Mock data for demonstration - in a real implementation, this would come from the ResourceManager
-    const mockResourceData: Record<ResourceType, ResourceData> = {
+    return {
       minerals: {
         type: ResourceType.MINERALS,
         value: 2500,
@@ -284,13 +284,16 @@ export const ResourceManagementDashboard: React.FC = () => {
           maximum: 0.9,
         },
       },
-    };
-
-    setResourceData(mockResourceData);
+    } as Record<ResourceType, ResourceData>;
   }, [resourceRates]);
 
-  // Update resource data when events are received
-  const updateResourceData = (type: ResourceType, data: Record<string, unknown>) => {
+  // Update resource data when resourceRates change
+  useEffect(() => {
+    setResourceData(mockResourceData);
+  }, [mockResourceData]);
+
+  // Create memoized callback functions
+  const updateResourceData = useCallback((type: ResourceType, data: Record<string, unknown>) => {
     setResourceData(prev => ({
       ...prev,
       [type]: {
@@ -298,37 +301,48 @@ export const ResourceManagementDashboard: React.FC = () => {
         ...data,
       },
     }));
-  };
+  }, []);
 
-  // Handle threshold changes
-  const handleThresholdChange = (resourceType: ResourceType, min: number, max: number) => {
-    // When using ResourceTypeHelpers to get the display name
-    console.log(
-      `Setting thresholds for ${ResourceTypeHelpers.getDisplayName(resourceType)}: min=${min}, max=${max}`
-    );
+  const handleThresholdChange = useCallback(
+    (resourceType: ResourceType, min: number, max: number) => {
+      // When using ResourceTypeHelpers to get the display name
+      console.log(
+        `Setting thresholds for ${ResourceTypeHelpers.getDisplayName(resourceType)}: min=${min}, max=${max}`
+      );
 
-    thresholdDispatch({
-      type: 'SET_THRESHOLD',
-      payload: {
-        resourceId: resourceType,
-        min,
-        max,
-      },
-    });
-  };
+      thresholdDispatch({
+        type: 'SET_THRESHOLD',
+        payload: {
+          resourceId: resourceType,
+          min,
+          max,
+        },
+      });
+    },
+    [thresholdDispatch]
+  );
 
-  // Handle auto-mine toggle
-  const handleAutoMineToggle = (resourceType: ResourceType) => {
-    // When using ResourceTypeHelpers to get the display name
-    console.log(`Toggling auto-mine for ${ResourceTypeHelpers.getDisplayName(resourceType)}`);
+  const handleAutoMineToggle = useCallback(
+    (resourceType: ResourceType) => {
+      // When using ResourceTypeHelpers to get the display name
+      console.log(`Toggling auto-mine for ${ResourceTypeHelpers.getDisplayName(resourceType)}`);
 
-    thresholdDispatch({
-      type: 'TOGGLE_AUTO_MINE',
-      payload: {
-        resourceId: resourceType,
-      },
-    });
-  };
+      thresholdDispatch({
+        type: 'TOGGLE_AUTO_MINE',
+        payload: {
+          resourceId: resourceType,
+        },
+      });
+    },
+    [thresholdDispatch]
+  );
+
+  const handleResourceSelect = useCallback(
+    (resource: ResourceType | null) => {
+      setSelectedResource(resource === selectedResource ? null : resource);
+    },
+    [selectedResource]
+  );
 
   // Render resource overview cards
   const renderResourceOverview = () => {
@@ -340,7 +354,7 @@ export const ResourceManagementDashboard: React.FC = () => {
             <div
               key={type}
               className="resource-card"
-              onClick={() => setSelectedResource(type === selectedResource ? null : type)}
+              onClick={() => handleResourceSelect(type === selectedResource ? null : type)}
             >
               {/* @ts-expect-error - Ignoring prop type issues for demo */}
               <ResourceVisualizationEnhanced
@@ -364,7 +378,7 @@ export const ResourceManagementDashboard: React.FC = () => {
             <div
               key={type}
               className="resource-card"
-              onClick={() => setSelectedResource(type === selectedResource ? null : type)}
+              onClick={() => handleResourceSelect(type === selectedResource ? null : type)}
             >
               {/* @ts-expect-error - Ignoring prop type issues for demo */}
               <ResourceVisualizationEnhanced
@@ -434,7 +448,7 @@ export const ResourceManagementDashboard: React.FC = () => {
               <Button
                 key={type}
                 type={selectedResource === type ? 'primary' : 'default'}
-                onClick={() => setSelectedResource(type === selectedResource ? null : type)}
+                onClick={() => handleResourceSelect(type === selectedResource ? null : type)}
               >
                 {type}
               </Button>
@@ -563,7 +577,7 @@ export const ResourceManagementDashboard: React.FC = () => {
               <Button
                 key={type}
                 type={selectedResource === type ? 'primary' : 'default'}
-                onClick={() => setSelectedResource(type === selectedResource ? null : type)}
+                onClick={() => handleResourceSelect(type === selectedResource ? null : type)}
               >
                 {type}
               </Button>
@@ -610,7 +624,7 @@ export const ResourceManagementDashboard: React.FC = () => {
             <span>Filter suggestions by resource:</span>
             <Button
               type={selectedResource === null ? 'primary' : 'default'}
-              onClick={() => setSelectedResource(null)}
+              onClick={() => handleResourceSelect(null)}
             >
               All Resources
             </Button>
@@ -618,7 +632,7 @@ export const ResourceManagementDashboard: React.FC = () => {
               <Button
                 key={type}
                 type={selectedResource === type ? 'primary' : 'default'}
-                onClick={() => setSelectedResource(type)}
+                onClick={() => handleResourceSelect(type)}
               >
                 {type}
               </Button>
@@ -691,3 +705,6 @@ export const ResourceManagementDashboard: React.FC = () => {
     </div>
   );
 };
+
+// Export a memoized version of the component
+export const ResourceManagementDashboard = React.memo(ResourceManagementDashboardBase);

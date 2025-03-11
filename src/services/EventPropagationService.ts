@@ -1,128 +1,153 @@
-import { ThresholdEvent, thresholdEvents } from '../contexts/ThresholdTypes';
-import { ModuleEvent, moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
-import { componentRegistry } from './ComponentRegistryService';
+import { AbstractBaseService } from '../lib/services/BaseService';
+import { componentRegistryService } from './ComponentRegistryService';
 
-/**
- * Central event hub for propagating events throughout the application
- * This service bridges different event systems and ensures consistent event flow
- */
-export class EventPropagationService {
-  // Track registered event transformations
-  private moduleToThresholdMappings: Map<
-    string,
-    Array<{
-      targetType: string;
-      transform: (event: ModuleEvent) => Partial<ThresholdEvent>;
-    }>
-  > = new Map();
+export interface EventSubscription {
+  eventType: string;
+  priority: number;
+  callback: (eventData: unknown) => void;
+}
 
-  private thresholdToModuleMappings: Map<
-    string,
-    Array<{
-      targetType: ModuleEventType;
-      transform: (event: ThresholdEvent) => Partial<ModuleEvent>;
-    }>
-  > = new Map();
+class EventPropagationServiceImpl extends AbstractBaseService {
+  private static instance: EventPropagationServiceImpl;
+  private subscriptions: Map<string, EventSubscription[]> = new Map();
+  private eventQueue: Array<{ type: string; data: unknown }> = [];
+  private isProcessing = false;
 
-  /**
-   * Register a mapping from ModuleEvents to ThresholdEvents
-   */
-  public registerModuleToThresholdMapping(
-    sourceType: string,
-    targetType: string,
-    transform: (event: ModuleEvent) => Partial<ThresholdEvent>
-  ): void {
-    if (!this.moduleToThresholdMappings.has(sourceType)) {
-      this.moduleToThresholdMappings.set(sourceType, []);
+  private constructor() {
+    super('EventPropagationService', '1.0.0');
+  }
+
+  public static getInstance(): EventPropagationServiceImpl {
+    if (!EventPropagationServiceImpl.instance) {
+      EventPropagationServiceImpl.instance = new EventPropagationServiceImpl();
+    }
+    return EventPropagationServiceImpl.instance;
+  }
+
+  protected async onInitialize(): Promise<void> {
+    // No initialization needed
+  }
+
+  protected async onDispose(): Promise<void> {
+    // Clear all subscriptions and queued events
+    this.subscriptions.clear();
+    this.eventQueue = [];
+  }
+
+  public subscribe(subscription: EventSubscription): () => void {
+    const { eventType } = subscription;
+
+    if (!this.subscriptions.has(eventType)) {
+      this.subscriptions.set(eventType, []);
     }
 
-    const mappings = this.moduleToThresholdMappings.get(sourceType)!;
-    mappings.push({ targetType, transform });
-  }
+    const subscribers = this.subscriptions.get(eventType)!;
+    subscribers.push(subscription);
 
-  /**
-   * Register a mapping from ThresholdEvents to ModuleEvents
-   */
-  public registerThresholdToModuleMapping(
-    sourceType: string,
-    targetType: ModuleEventType,
-    transform: (event: ThresholdEvent) => Partial<ModuleEvent>
-  ): void {
-    if (!this.thresholdToModuleMappings.has(sourceType)) {
-      this.thresholdToModuleMappings.set(sourceType, []);
-    }
+    // Sort by priority (higher numbers first)
+    subscribers.sort((a, b) => b.priority - a.priority);
 
-    const mappings = this.thresholdToModuleMappings.get(sourceType)!;
-    mappings.push({ targetType, transform });
-  }
+    // Update metrics
+    const metrics = this.metadata.metrics || {};
+    metrics.total_subscriptions = Array.from(this.subscriptions.values()).reduce(
+      (sum, subs) => sum + subs.length,
+      0
+    );
+    metrics.total_event_types = this.subscriptions.size;
+    this.metadata.metrics = metrics;
 
-  /**
-   * Initialize event propagation by setting up event subscriptions
-   */
-  public initialize(): void {
-    // Set up ModuleEvent subscriptions
-    moduleEventBus.subscribe('*' as ModuleEventType, (event: ModuleEvent) => {
-      this.propagateModuleEvent(event);
+    // Return unsubscribe function
+    return () => {
+      const index = subscribers.indexOf(subscription);
+      if (index !== -1) {
+        subscribers.splice(index, 1);
+        if (subscribers.length === 0) {
+          this.subscriptions.delete(eventType);
+        }
 
-      // Notify registered UI components about this event
-      componentRegistry.notifyComponentsOfEvent(event.type, event);
-    });
-
-    // Set up ThresholdEvent subscriptions
-    thresholdEvents.subscribe((event: ThresholdEvent) => {
-      this.propagateThresholdEvent(event);
-
-      // Notify registered UI components about threshold events
-      componentRegistry.notifyComponentsOfEvent(`THRESHOLD_${event.type}`, event);
-    });
-
-    console.warn('EventPropagationService initialized');
-  }
-
-  /**
-   * Propagate a ModuleEvent to ThresholdEvents
-   */
-  private propagateModuleEvent(event: ModuleEvent): void {
-    const mappings = this.moduleToThresholdMappings.get(event.type) || [];
-
-    for (const mapping of mappings) {
-      try {
-        const transformedData = mapping.transform(event);
-        thresholdEvents.next({
-          ...transformedData,
-          type: mapping.targetType,
-        } as ThresholdEvent);
-      } catch (error) {
-        console.error(
-          `Error propagating ModuleEvent to ThresholdEvent: ${event.type} -> ${mapping.targetType}`,
-          error
+        // Update metrics
+        const metrics = this.metadata.metrics || {};
+        metrics.total_subscriptions = Array.from(this.subscriptions.values()).reduce(
+          (sum, subs) => sum + subs.length,
+          0
         );
+        metrics.total_event_types = this.subscriptions.size;
+        this.metadata.metrics = metrics;
+      }
+    };
+  }
+
+  public emit(eventType: string, eventData: unknown): void {
+    // Add event to queue
+    this.eventQueue.push({ type: eventType, data: eventData });
+
+    // Update metrics
+    const metrics = this.metadata.metrics || {};
+    metrics.total_events_emitted = (metrics.total_events_emitted || 0) + 1;
+    metrics.last_event_timestamp = Date.now();
+    this.metadata.metrics = metrics;
+
+    // Process queue if not already processing
+    if (!this.isProcessing) {
+      this.processEventQueue();
+    }
+  }
+
+  private async processEventQueue(): Promise<void> {
+    if (this.isProcessing || this.eventQueue.length === 0) {
+      return;
+    }
+
+    this.isProcessing = true;
+
+    try {
+      while (this.eventQueue.length > 0) {
+        const event = this.eventQueue.shift()!;
+        await this.processEvent(event.type, event.data);
+      }
+    } catch (error) {
+      this.handleError(error as Error);
+    } finally {
+      this.isProcessing = false;
+    }
+  }
+
+  private async processEvent(eventType: string, eventData: unknown): Promise<void> {
+    // Get subscribers for this event type
+    const subscribers = this.subscriptions.get(eventType) || [];
+
+    // Notify component registry
+    componentRegistryService.notifyComponentsOfEvent(eventType, eventData);
+
+    // Call subscribers in priority order
+    for (const subscriber of subscribers) {
+      try {
+        await subscriber.callback(eventData);
+      } catch (error) {
+        this.handleError(error as Error);
       }
     }
+
+    // Update metrics
+    const metrics = this.metadata.metrics || {};
+    metrics.total_events_processed = (metrics.total_events_processed || 0) + 1;
+    metrics.last_processed_timestamp = Date.now();
+    this.metadata.metrics = metrics;
   }
 
-  /**
-   * Propagate a ThresholdEvent to ModuleEvents
-   */
-  private propagateThresholdEvent(event: ThresholdEvent): void {
-    const mappings = this.thresholdToModuleMappings.get(event.type) || [];
+  public override handleError(error: Error): void {
+    // Update error metrics
+    const metrics = this.metadata.metrics || {};
+    metrics.total_errors = (metrics.total_errors || 0) + 1;
+    metrics.last_error_timestamp = Date.now();
+    this.metadata.metrics = metrics;
 
-    for (const mapping of mappings) {
-      try {
-        const transformedData = mapping.transform(event);
-        moduleEventBus.emit({
-          ...transformedData,
-          type: mapping.targetType,
-        } as ModuleEvent);
-      } catch (error) {
-        console.error(
-          `Error propagating ThresholdEvent to ModuleEvent: ${event.type} -> ${mapping.targetType}`,
-          error
-        );
-      }
+    // Log error in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[EventPropagationService] Error:', error);
     }
   }
 }
 
-// Singleton instance
-export const eventPropagationService = new EventPropagationService();
+// Export singleton instance
+export const eventPropagationService = EventPropagationServiceImpl.getInstance();

@@ -248,6 +248,63 @@ export class GameLoopManager {
   }
 
   /**
+   * Adjust update frequency based on performance requirements
+   * Used by the adaptive performance system to optimize resource usage
+   *
+   * @param factor - Adjustment factor (0.1-1.0) where:
+   *   - 1.0 = full speed (target FPS)
+   *   - 0.5 = half speed
+   *   - etc.
+   */
+  public adjustUpdateFrequency(factor: number): void {
+    if (factor <= 0 || factor > 1) {
+      console.warn('[GameLoopManager] Invalid adjustment factor, must be between 0.1 and 1.0');
+      return;
+    }
+
+    // Adjust target FPS based on the factor
+    const baseTargetFPS = 60; // Default target
+    const adjustedFPS = Math.max(15, Math.round(baseTargetFPS * factor)); // Don't go below 15 FPS
+
+    // Update the configuration
+    this.updateConfig({
+      targetFPS: adjustedFPS,
+      priorityThrottling: factor < 0.8, // Enable priority throttling for significant adjustments
+    });
+
+    // Update which priorities get throttled based on the factor
+    const throttlePriorities = [];
+
+    // As factor decreases, add more priority levels to throttle
+    if (factor < 0.9) throttlePriorities.push(UpdatePriority.BACKGROUND);
+    if (factor < 0.7) throttlePriorities.push(UpdatePriority.LOW);
+    if (factor < 0.5) throttlePriorities.push(UpdatePriority.NORMAL);
+    if (factor < 0.3) throttlePriorities.push(UpdatePriority.HIGH);
+
+    // Update throttle priorities if changed
+    if (throttlePriorities.length > 0) {
+      this.updateConfig({ throttlePriorities });
+    }
+
+    // Emit adjustment event
+    moduleEventBus.emit({
+      type: 'GAME_LOOP_ADJUSTED' as ModuleEventType,
+      moduleId: 'game-loop-manager',
+      moduleType: 'resource-manager',
+      timestamp: Date.now(),
+      data: {
+        factor,
+        adjustedFPS: adjustedFPS,
+        throttlePriorities,
+      },
+    });
+
+    console.log(
+      `[GameLoopManager] Adjusted to ${Math.round(factor * 100)}% speed (${adjustedFPS} FPS)`
+    );
+  }
+
+  /**
    * The main game loop
    */
   private gameLoop = (timestamp: number): void => {

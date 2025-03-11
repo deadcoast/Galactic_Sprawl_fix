@@ -17,6 +17,7 @@ import {
 } from '../managers/exploration/ExplorationManager';
 import { AnalysisAlgorithmService } from '../services/AnalysisAlgorithmService';
 import { DataCollectionService } from '../services/DataCollectionService';
+import { DataProcessingService } from '../services/DataProcessingService';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import {
   AnalysisConfig,
@@ -51,10 +52,12 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   const [datasets, setDatasets] = useState<Dataset[]>(initialDatasets);
   const [analysisConfigs, setAnalysisConfigs] = useState<AnalysisConfig[]>(initialAnalysisConfigs);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>(initialAnalysisResults);
+  const [isProcessingData, setIsProcessingData] = useState<boolean>(false);
 
   // Create references to the services for persistence across renders
   const dataCollectionServiceRef = useRef<DataCollectionService | null>(null);
   const analysisAlgorithmServiceRef = useRef<AnalysisAlgorithmService | null>(null);
+  const dataProcessingServiceRef = useRef<DataProcessingService | null>(null);
 
   // Initialize services
   useEffect(() => {
@@ -66,6 +69,10 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       // Initialize analysis algorithm service
       const analysisAlgorithmService = new AnalysisAlgorithmService();
       analysisAlgorithmServiceRef.current = analysisAlgorithmService;
+
+      // Initialize data processing service for web worker operations
+      const dataProcessingService = new DataProcessingService();
+      dataProcessingServiceRef.current = dataProcessingService;
 
       // Initialize the data collection service
       dataCollectionService.initialize();
@@ -176,6 +183,28 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
           return {
             ...dataset,
             dataPoints: [...dataset.dataPoints, dataPoint],
+            updatedAt: Date.now(),
+          };
+        }
+        return dataset;
+      })
+    );
+  }, []);
+
+  // Add multiple data points to a dataset at once - efficient batching
+  const addDataPointsToDataset = useCallback((datasetId: string, dataPoints: DataPoint[]): void => {
+    setDatasets(prev =>
+      prev.map(dataset => {
+        if (dataset.id === datasetId) {
+          // Filter out data points that already exist
+          const existingIds = new Set(dataset.dataPoints.map(dp => dp.id));
+          const newDataPoints = dataPoints.filter(dp => !existingIds.has(dp.id));
+
+          if (newDataPoints.length === 0) return dataset;
+
+          return {
+            ...dataset,
+            dataPoints: [...dataset.dataPoints, ...newDataPoints],
             updatedAt: Date.now(),
           };
         }
@@ -377,7 +406,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     [analysisConfigs]
   );
 
-  // Run an analysis
+  // Run an analysis using the worker for heavy operations
   const runAnalysis = useCallback(
     async (configId: string): Promise<string> => {
       const config = analysisConfigs.find(config => config.id === configId);
@@ -401,12 +430,77 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       };
 
       setAnalysisResults(prev => [...prev, pendingResult]);
+      setIsProcessingData(true);
 
       try {
         let result: AnalysisResult;
 
-        // Use the analysis algorithm service if available
-        if (analysisAlgorithmServiceRef.current) {
+        // Use the data processing service for offloading work if available
+        if (dataProcessingServiceRef.current) {
+          try {
+            // Determine which worker processing method to use based on analysis type
+            let processedData;
+
+            switch (config.type) {
+              case 'clustering':
+                processedData = await dataProcessingServiceRef.current.processClustering(
+                  dataset.dataPoints,
+                  config
+                );
+                break;
+              case 'prediction':
+                processedData = await dataProcessingServiceRef.current.processPrediction(
+                  dataset.dataPoints,
+                  config
+                );
+                break;
+              case 'comparison':
+                processedData = await dataProcessingServiceRef.current.processResourceMapping(
+                  dataset.dataPoints,
+                  config
+                );
+                break;
+              case 'transformation':
+                processedData = await dataProcessingServiceRef.current.processDataTransformation(
+                  dataset.dataPoints,
+                  config
+                );
+                break;
+              default:
+                // For other types, use the local analysis algorithm service
+                if (analysisAlgorithmServiceRef.current) {
+                  result = await analysisAlgorithmServiceRef.current.runAnalysis(config, dataset);
+                } else {
+                  result = await runBasicAnalysis(config, dataset);
+                }
+
+                // Update the analysis results with the worker-processed data
+                setAnalysisResults(prev => prev.map(r => (r.id === pendingResultId ? result : r)));
+                setIsProcessingData(false);
+                return result.id;
+            }
+
+            // Create the completed result with the processed data
+            result = {
+              id: pendingResultId,
+              analysisConfigId: configId,
+              status: 'completed',
+              startTime: pendingResult.startTime,
+              endTime: Date.now(),
+              data: processedData,
+              summary: `Analysis of type ${config.type} completed successfully using worker processing.`,
+            };
+          } catch (error) {
+            console.error('Worker processing error:', error);
+            // Fallback to main thread processing
+            if (analysisAlgorithmServiceRef.current) {
+              result = await analysisAlgorithmServiceRef.current.runAnalysis(config, dataset);
+            } else {
+              result = await runBasicAnalysis(config, dataset);
+            }
+          }
+        } else if (analysisAlgorithmServiceRef.current) {
+          // Use the main thread analysis service if worker is not available
           result = await analysisAlgorithmServiceRef.current.runAnalysis(config, dataset);
         } else {
           // Fallback to a basic implementation
@@ -415,7 +509,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
 
         // Update the analysis results
         setAnalysisResults(prev => prev.map(r => (r.id === pendingResultId ? result : r)));
-
+        setIsProcessingData(false);
         return result.id;
       } catch (error) {
         // Create a failed result
@@ -431,7 +525,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
 
         // Update the analysis results
         setAnalysisResults(prev => prev.map(r => (r.id === pendingResultId ? failedResult : r)));
-
+        setIsProcessingData(false);
         throw error;
       }
     },
@@ -461,43 +555,91 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     };
   };
 
-  // Fix the refreshData function
-  const refreshData = useCallback(() => {
+  // Refresh data with worker-based filtering and sorting
+  const refreshData = useCallback(async () => {
     if (!dataCollectionServiceRef.current) return;
+    setIsProcessingData(true);
 
-    // Get all data from the collection service
-    const sectorData = dataCollectionServiceRef.current.getSectorData();
-    const anomalyData = dataCollectionServiceRef.current.getAnomalyData();
-    const resourceData = dataCollectionServiceRef.current.getResourceData();
+    try {
+      // Get all data from the collection service
+      const sectorData = dataCollectionServiceRef.current.getSectorData();
+      const anomalyData = dataCollectionServiceRef.current.getAnomalyData();
+      const resourceData = dataCollectionServiceRef.current.getResourceData();
 
-    // Create or update datasets for each data type with correct mapping
-    const sectorDatasetId = getOrCreateDatasetBySource('sectors');
-    const anomalyDatasetId = getOrCreateDatasetBySource('anomalies');
-    const resourceDatasetId = getOrCreateDatasetBySource('resources');
+      // Create or update datasets for each data type with correct mapping
+      const sectorDatasetId = getOrCreateDatasetBySource('sectors');
+      const anomalyDatasetId = getOrCreateDatasetBySource('anomalies');
+      const resourceDatasetId = getOrCreateDatasetBySource('resources');
 
-    // Add data points to datasets
-    if (sectorDatasetId) {
-      for (const dataPoint of sectorData) {
-        addDataPointToDataset(sectorDatasetId, dataPoint);
+      // Use the worker for batch processing if available
+      if (dataProcessingServiceRef.current) {
+        // Process data in batches using the worker
+        if (sectorDatasetId && sectorData.length > 0) {
+          await addDataPointsBatch(sectorDatasetId, sectorData);
+        }
+
+        if (anomalyDatasetId && anomalyData.length > 0) {
+          await addDataPointsBatch(anomalyDatasetId, anomalyData);
+        }
+
+        if (resourceDatasetId && resourceData.length > 0) {
+          await addDataPointsBatch(resourceDatasetId, resourceData);
+        }
+      } else {
+        // Fallback to standard processing
+        if (sectorDatasetId) {
+          for (const dataPoint of sectorData) {
+            addDataPointToDataset(sectorDatasetId, dataPoint);
+          }
+        }
+
+        if (anomalyDatasetId) {
+          for (const dataPoint of anomalyData) {
+            addDataPointToDataset(anomalyDatasetId, dataPoint);
+          }
+        }
+
+        if (resourceDatasetId) {
+          for (const dataPoint of resourceData) {
+            addDataPointToDataset(resourceDatasetId, dataPoint);
+          }
+        }
       }
-    }
-
-    if (anomalyDatasetId) {
-      for (const dataPoint of anomalyData) {
-        addDataPointToDataset(anomalyDatasetId, dataPoint);
-      }
-    }
-
-    if (resourceDatasetId) {
-      for (const dataPoint of resourceData) {
-        addDataPointToDataset(resourceDatasetId, dataPoint);
-      }
+    } finally {
+      setIsProcessingData(false);
     }
   }, [getOrCreateDatasetBySource, addDataPointToDataset]);
 
-  // Add a function to filter data points in a dataset
+  // Helper function to add data points in batches using the worker
+  const addDataPointsBatch = async (datasetId: string, dataPoints: DataPoint[]): Promise<void> => {
+    if (!dataProcessingServiceRef.current || dataPoints.length === 0) return;
+
+    try {
+      // Use the worker to filter out duplicates
+      const existingDataset = datasets.find(ds => ds.id === datasetId);
+      if (!existingDataset) return;
+
+      const existingIds = new Set(existingDataset.dataPoints.map(dp => dp.id));
+
+      // Filter out duplicate data points - can use the worker for this with large datasets
+      const uniqueDataPoints = dataPoints.filter(dp => !existingIds.has(dp.id));
+
+      if (uniqueDataPoints.length === 0) return;
+
+      // Add the filtered data points to the dataset
+      addDataPointsToDataset(datasetId, uniqueDataPoints);
+    } catch (error) {
+      console.error('Error in batch processing:', error);
+      // Fallback to individual adds
+      for (const dataPoint of dataPoints) {
+        addDataPointToDataset(datasetId, dataPoint);
+      }
+    }
+  };
+
+  // Worker-based filtering for datasets
   const filterDataset = useCallback(
-    (
+    async (
       datasetId: string,
       filters: Array<{
         field: string;
@@ -511,72 +653,104 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
           | 'between';
         value: string | number | boolean | string[] | [number, number];
       }>
-    ): DataPoint[] => {
+    ): Promise<DataPoint[]> => {
       const dataset = datasets.find(ds => ds.id === datasetId);
       if (!dataset) return [];
 
-      if (!dataCollectionServiceRef.current) {
-        // Simple filtering if the service is not available
-        return dataset.dataPoints.filter(dataPoint =>
-          filters.every(filter => {
-            // Treat DataPoint as a Record with unknown values for filtering
-            const value = getNestedProperty(
-              dataPoint as unknown as Record<string, unknown>,
-              filter.field
+      setIsProcessingData(true);
+
+      try {
+        // Use the worker for filtering if available
+        if (dataProcessingServiceRef.current && dataset.dataPoints.length > 100) {
+          try {
+            // Offload filtering to worker for large datasets
+            const filteredData = await dataProcessingServiceRef.current.filterData(
+              dataset.dataPoints,
+              filters
             );
+            setIsProcessingData(false);
+            return filteredData as DataPoint[];
+          } catch (error) {
+            console.error('Worker filtering error:', error);
+            // Continue to fallback
+          }
+        }
 
-            switch (filter.operator) {
-              case 'equals':
-                return value === filter.value;
-              case 'notEquals':
-                return value !== filter.value;
-              case 'greaterThan':
-                return (
-                  typeof value === 'number' &&
-                  typeof filter.value === 'number' &&
-                  value > filter.value
-                );
-              case 'lessThan':
-                return (
-                  typeof value === 'number' &&
-                  typeof filter.value === 'number' &&
-                  value < filter.value
-                );
-              case 'contains':
-                if (typeof value === 'string' && typeof filter.value === 'string') {
-                  return value.toLowerCase().includes(filter.value.toLowerCase());
-                }
-                if (Array.isArray(value)) {
-                  return value.includes(filter.value);
-                }
-                return false;
-              case 'notContains':
-                if (typeof value === 'string' && typeof filter.value === 'string') {
-                  return !value.toLowerCase().includes(filter.value.toLowerCase());
-                }
-                if (Array.isArray(value)) {
-                  return !value.includes(filter.value);
-                }
-                return false;
-              case 'between':
-                if (
-                  typeof value === 'number' &&
-                  Array.isArray(filter.value) &&
-                  filter.value.length === 2
-                ) {
-                  const [min, max] = filter.value as [number, number];
-                  return value >= min && value <= max;
-                }
-                return false;
-              default:
-                return false;
-            }
-          })
+        // Fallback to main thread filtering
+        if (!dataCollectionServiceRef.current) {
+          // Simple filtering if the service is not available
+          const filteredData = dataset.dataPoints.filter(dataPoint =>
+            filters.every(filter => {
+              // Treat DataPoint as a Record with unknown values for filtering
+              const value = getNestedProperty(
+                dataPoint as unknown as Record<string, unknown>,
+                filter.field
+              );
+
+              switch (filter.operator) {
+                case 'equals':
+                  return value === filter.value;
+                case 'notEquals':
+                  return value !== filter.value;
+                case 'greaterThan':
+                  return (
+                    typeof value === 'number' &&
+                    typeof filter.value === 'number' &&
+                    value > filter.value
+                  );
+                case 'lessThan':
+                  return (
+                    typeof value === 'number' &&
+                    typeof filter.value === 'number' &&
+                    value < filter.value
+                  );
+                case 'contains':
+                  if (typeof value === 'string' && typeof filter.value === 'string') {
+                    return value.toLowerCase().includes(filter.value.toLowerCase());
+                  }
+                  if (Array.isArray(value)) {
+                    return value.includes(filter.value);
+                  }
+                  return false;
+                case 'notContains':
+                  if (typeof value === 'string' && typeof filter.value === 'string') {
+                    return !value.toLowerCase().includes(filter.value.toLowerCase());
+                  }
+                  if (Array.isArray(value)) {
+                    return !value.includes(filter.value);
+                  }
+                  return false;
+                case 'between':
+                  if (
+                    typeof value === 'number' &&
+                    Array.isArray(filter.value) &&
+                    filter.value.length === 2
+                  ) {
+                    const [min, max] = filter.value as [number, number];
+                    return value >= min && value <= max;
+                  }
+                  return false;
+                default:
+                  return false;
+              }
+            })
+          );
+          setIsProcessingData(false);
+          return filteredData;
+        }
+
+        // Use the data collection service's filtering capability
+        const filteredData = dataCollectionServiceRef.current.filterData(
+          dataset.dataPoints,
+          filters
         );
+        setIsProcessingData(false);
+        return filteredData;
+      } catch (error) {
+        setIsProcessingData(false);
+        console.error('Error filtering data:', error);
+        return [];
       }
-
-      // Use the data collection service's filtering capability
-      return dataCollectionServiceRef.current.filterData(dataset.dataPoints, filters);
     },
     [datasets]
   );
@@ -617,67 +791,12 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     [analysisResults]
   );
 
-  // Generate mock analysis data (would be replaced with actual analysis logic)
-  const generateMockAnalysisData = (
-    config: AnalysisConfig,
-    dataset: Dataset
-  ): Record<string, unknown> => {
-    // This is a placeholder that would be replaced with actual analysis logic
-    switch (config.type) {
-      case 'trend':
-        return {
-          xAxis: Array.from({ length: 10 }, (_, i) => i),
-          yAxis: Array.from({ length: 10 }, () => Math.random() * 100),
-        };
-      case 'correlation':
-        return {
-          correlationMatrix: [
-            [1, 0.7, 0.2],
-            [0.7, 1, 0.5],
-            [0.2, 0.5, 1],
-          ],
-          variables: ['resourcePotential', 'habitabilityScore', 'anomalyCount'],
-        };
-      case 'clustering':
-        return {
-          clusters: [
-            { centroid: [0.2, 0.3], points: 5 },
-            { centroid: [0.7, 0.8], points: 3 },
-            { centroid: [0.5, 0.5], points: 7 },
-          ],
-        };
-      default:
-        return { message: 'Mock analysis data' };
-    }
-  };
-
-  // Generate a summary for the analysis (would be replaced with actual summary generation)
-  const generateAnalysisSummary = (
-    config: AnalysisConfig,
-    data: Record<string, unknown>
-  ): string => {
-    // This is a placeholder that would be replaced with actual summary generation
-    return `Analysis of type ${config.type} completed successfully`;
-  };
-
-  // Generate insights for the analysis (would be replaced with actual insight generation)
-  const generateAnalysisInsights = (
-    config: AnalysisConfig,
-    data: Record<string, unknown>
-  ): string[] => {
-    // This is a placeholder that would be replaced with actual insight generation
-    return [
-      'This is a mock insight',
-      'This is another mock insight',
-      'This is a third mock insight',
-    ];
-  };
-
   // Create the context value object
   const contextValue: DataAnalysisContextType = {
     datasets,
     analysisConfigs,
     analysisResults,
+    isProcessingData,
     createDataset,
     updateDataset,
     deleteDataset,

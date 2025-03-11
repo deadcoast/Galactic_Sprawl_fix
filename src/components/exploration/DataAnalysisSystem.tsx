@@ -20,6 +20,7 @@ import {
 } from '../../types/exploration/DataAnalysisTypes';
 import AnalysisConfigManager from './AnalysisConfigManager';
 import DataFilterPanel from './DataFilterPanel';
+import DataPointVirtualList from './DataPointVirtualList';
 import DatasetManager from './DatasetManager';
 import ResultsPanel from './ResultsPanel';
 import { AnalysisVisualization } from './visualizations/AnalysisVisualization';
@@ -81,7 +82,10 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
         </Box>
       )}
 
-      <AnalysisVisualization result={result} config={config} />
+      {config && <AnalysisVisualization result={result} config={config} />}
+      {!config && (
+        <Typography variant="body2">No configuration available for visualization</Typography>
+      )}
     </Box>
   );
 }
@@ -203,6 +207,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   >([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [lastRefresh, setLastRefresh] = React.useState<number>(Date.now());
+  const [selectedDataPoint, setSelectedDataPoint] = React.useState<DataPoint | null>(null);
 
   // Effect to handle initial data loading
   React.useEffect(() => {
@@ -295,187 +300,202 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     }
   };
 
+  // New handler for selecting a data point
+  const handleSelectDataPoint = (dataPoint: DataPoint) => {
+    setSelectedDataPoint(dataPoint);
+  };
+
   return (
-    <Grid container spacing={3}>
-      <Grid item xs={12}>
-        <Typography variant="h4" gutterBottom>
-          Data Analysis System
-        </Typography>
-        <Typography variant="body1" paragraph>
-          Analyze exploration data to discover patterns, correlations, and insights.
-        </Typography>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={refreshDatasets}
-          disabled={isLoading}
-          sx={{ mr: 1 }}
-        >
-          {isLoading ? <CircularProgress size={20} /> : 'Refresh Data'}
-        </Button>
-      </Grid>
+    <Box className={className}>
+      <Typography variant="h6" gutterBottom>
+        Data Analysis System
+      </Typography>
 
-      <Grid item xs={12}>
-        <Paper elevation={2} sx={{ p: 2 }}>
-          <Tabs value={activeTab} onChange={handleTabChange} centered>
-            <Tab label="Datasets" />
-            <Tab label="Analysis" />
-            <Tab label="Results" />
-          </Tabs>
-        </Paper>
-      </Grid>
+      <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 2 }}>
+        <Tab label="Datasets" />
+        <Tab label="Analysis" />
+        <Tab label="Results" />
+      </Tabs>
 
-      {/* Datasets Tab */}
-      {activeTab === 0 && (
-        <>
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom>
-                Available Datasets
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
+      <Grid container spacing={2}>
+        {/* Left Panel */}
+        <Grid item xs={12} md={3}>
+          {activeTab === 0 && (
+            <Paper sx={{ p: 2 }}>
               <DatasetManager
                 datasets={datasets}
-                onSelectDataset={handleSelectDataset}
                 selectedDataset={selectedDataset}
+                onSelectDataset={handleSelectDataset}
                 onCreateDataset={createDataset}
                 onUpdateDataset={updateDataset}
                 onDeleteDataset={deleteDataset}
               />
             </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom>
-                Data Explorer
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              {selectedDataset ? (
-                <>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Dataset: {selectedDataset.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Points: {filteredData.length} of {selectedDataset.dataPoints.length}
-                    </Typography>
-                  </Box>
-
-                  <DataFilterPanel
-                    datasetId={selectedDataset.id}
-                    onFilterChange={handleFilterChange}
-                    filters={filters}
-                  />
-                </>
-              ) : (
-                <Typography variant="body1">Select a dataset to explore its data</Typography>
-              )}
-            </Paper>
-          </Grid>
-        </>
-      )}
-
-      {/* Analysis Configuration Tab */}
-      {activeTab === 1 && (
-        <>
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom>
-                Analysis Configurations
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
+          )}
+          {activeTab === 1 && (
+            <Paper sx={{ p: 2 }}>
               <AnalysisConfigManager
                 configs={analysisConfigs}
-                datasets={datasets}
-                onSelectConfig={handleSelectConfig}
                 selectedConfig={selectedConfig}
+                onSelectConfig={handleSelectConfig}
                 onCreateConfig={createAnalysisConfig}
                 onUpdateConfig={updateAnalysisConfig}
                 onDeleteConfig={deleteAnalysisConfig}
+                datasets={datasets}
               />
             </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom>
-                Run Analysis
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              {selectedConfig ? (
-                <>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body1">{selectedConfig.name}</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Type: {selectedConfig.type}
-                    </Typography>
-                  </Box>
-
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleRunAnalysis}
-                    disabled={isLoading}
-                    fullWidth
-                    sx={{ mb: 2 }}
-                  >
-                    {isLoading ? <CircularProgress size={24} /> : 'Run Analysis'}
-                  </Button>
-
-                  <Typography variant="body2" color="text.secondary">
-                    {currentResults.length > 0
-                      ? `This analysis has been run ${currentResults.length} times.`
-                      : 'This analysis has not been run yet.'}
-                  </Typography>
-                </>
-              ) : (
-                <Typography variant="body1">Select an analysis configuration to run</Typography>
-              )}
-            </Paper>
-          </Grid>
-        </>
-      )}
-
-      {/* Results Tab */}
-      {activeTab === 2 && (
-        <>
-          <Grid item xs={12} md={4}>
-            <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom>
-                Analysis Results
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
+          )}
+          {activeTab === 2 && (
+            <Paper sx={{ p: 2 }}>
               <ResultsPanel
                 results={analysisResults}
                 configs={analysisConfigs}
                 onSelectResult={result => {
+                  // Find and select the config that was used for this result
                   const config = analysisConfigs.find(c => c.id === result.analysisConfigId);
                   if (config) {
                     setSelectedConfig(config);
-                    setActiveTab(2);
+                    setActiveTab(1); // Switch to Analysis tab
                   }
                 }}
               />
             </Paper>
-          </Grid>
+          )}
+        </Grid>
 
-          <Grid item xs={12} md={8}>
-            <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
-              <Typography variant="h6" gutterBottom>
-                Result Visualization
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              {selectedConfig && latestResult ? (
+        {/* Center Panel */}
+        <Grid item xs={12} md={activeTab === 0 ? 5 : 9}>
+          {activeTab === 0 && selectedDataset && (
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="h6">{selectedDataset.name}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {selectedDataset.description}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                  <Button
+                    size="small"
+                    onClick={refreshDatasets}
+                    disabled={isLoading}
+                    sx={{ mr: 1 }}
+                  >
+                    {isLoading ? <CircularProgress size={20} /> : 'Refresh'}
+                  </Button>
+                  <Typography variant="caption" color="text.secondary">
+                    {filteredData.length} data points
+                    {filters.length > 0
+                      ? ` (filtered from ${selectedDataset.dataPoints.length})`
+                      : ''}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              {/* Replace static list with virtualized list */}
+              <Box sx={{ height: 400 }}>
+                <DataPointVirtualList
+                  dataPoints={filteredData}
+                  isLoading={isLoading}
+                  onSelectDataPoint={handleSelectDataPoint}
+                  selectedDataPointId={selectedDataPoint?.id}
+                  height="100%"
+                />
+              </Box>
+            </Paper>
+          )}
+
+          {activeTab === 1 && selectedConfig && (
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="h6">{selectedConfig.name}</Typography>
+                <Typography variant="body2">{selectedConfig.description}</Typography>
+                <Box sx={{ mt: 2 }}>
+                  <Button variant="contained" onClick={handleRunAnalysis} disabled={isLoading}>
+                    {isLoading ? <CircularProgress size={24} /> : 'Run Analysis'}
+                  </Button>
+                </Box>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              {/* Results visualization */}
+              {latestResult && (
                 <ResultVisualization result={latestResult} config={selectedConfig} />
-              ) : (
-                <Typography variant="body1">Select a result to view its visualization</Typography>
+              )}
+            </Paper>
+          )}
+        </Grid>
+
+        {/* Right Panel - only visible in dataset tab */}
+        {activeTab === 0 && (
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Filters
+              </Typography>
+              <DataFilterPanel
+                datasetId={selectedDataset?.id || ''}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+              />
+
+              {selectedDataPoint && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom>
+                    Selected Data Point
+                  </Typography>
+                  <Box sx={{ p: 1, bgcolor: 'background.default', borderRadius: 1 }}>
+                    <Typography variant="subtitle1">{selectedDataPoint.name}</Typography>
+                    <Typography variant="caption" display="block" color="text.secondary">
+                      Type: {selectedDataPoint.type} | ID: {selectedDataPoint.id}
+                    </Typography>
+                    <Typography variant="caption" display="block" color="text.secondary">
+                      Coordinates: ({selectedDataPoint.coordinates.x},{' '}
+                      {selectedDataPoint.coordinates.y})
+                    </Typography>
+                    <Typography variant="caption" display="block" color="text.secondary">
+                      Date: {new Date(selectedDataPoint.date).toLocaleString()}
+                    </Typography>
+
+                    <Typography variant="overline" display="block" sx={{ mt: 1 }}>
+                      Properties
+                    </Typography>
+
+                    <Box sx={{ ml: 1 }}>
+                      {Object.entries(selectedDataPoint.properties).map(([key, value]) => (
+                        <Typography key={key} variant="body2">
+                          <strong>{key}:</strong>{' '}
+                          {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                        </Typography>
+                      ))}
+                    </Box>
+
+                    {selectedDataPoint.metadata &&
+                      Object.keys(selectedDataPoint.metadata).length > 0 && (
+                        <>
+                          <Typography variant="overline" display="block" sx={{ mt: 1 }}>
+                            Metadata
+                          </Typography>
+                          <Box sx={{ ml: 1 }}>
+                            {Object.entries(selectedDataPoint.metadata).map(([key, value]) => (
+                              <Typography key={key} variant="body2">
+                                <strong>{key}:</strong>{' '}
+                                {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                              </Typography>
+                            ))}
+                          </Box>
+                        </>
+                      )}
+                  </Box>
+                </>
               )}
             </Paper>
           </Grid>
-        </>
-      )}
-    </Grid>
+        )}
+      </Grid>
+    </Box>
   );
 }
 

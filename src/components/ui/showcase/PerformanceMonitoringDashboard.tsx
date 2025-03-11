@@ -1,3 +1,4 @@
+import * as d3 from 'd3';
 import React, { useEffect, useRef, useState } from 'react';
 
 // Import optimization utilities
@@ -390,29 +391,750 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
   // Update the FPS chart
   const updateFpsChart = () => {
     if (!fpsChartRef.current) return;
-    console.log('Updating FPS chart...');
-    // TODO: Implement FPS chart visualization
+
+    const svg = d3.select(fpsChartRef.current);
+    const data = performanceMetrics.fps;
+    if (data.length === 0) return;
+
+    // Clear previous chart
+    svg.selectAll('*').remove();
+
+    // Determine dimensions
+    const margin = { top: 10, right: 20, bottom: 30, left: 40 };
+    const chartWidth = svg.node()?.getBoundingClientRect().width ?? 300;
+    const chartHeight = svg.node()?.getBoundingClientRect().height ?? 200;
+    const width = chartWidth - margin.left - margin.right;
+    const height = chartHeight - margin.top - margin.bottom;
+
+    // Create chart group
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Determine time domain
+    const now = Date.now();
+    const xDomain = [now - timeWindow, now];
+
+    // Create scales
+    const x = d3.scaleTime().domain(xDomain).range([0, width]);
+
+    // Set y-domain based on FPS (0 to max, or at least 60)
+    const maxFps = Math.max(60, d3.max(data, d => d.value) ?? 60);
+    const y = d3
+      .scaleLinear()
+      .domain([0, maxFps * 1.1])
+      .range([height, 0]);
+
+    // Create line generator
+    const line = d3
+      .line<MetricPoint>()
+      .x(d => x(d.timestamp))
+      .y(d => y(d.value))
+      .curve(d3.curveMonotoneX);
+
+    // Add reference line for target FPS (60)
+    g.append('line')
+      .attr('x1', 0)
+      .attr('x2', width)
+      .attr('y1', y(60))
+      .attr('y2', y(60))
+      .attr('stroke', '#aaa')
+      .attr('stroke-dasharray', '3,3')
+      .attr('stroke-width', 1);
+
+    g.append('text')
+      .attr('x', width)
+      .attr('y', y(60) - 5)
+      .attr('text-anchor', 'end')
+      .attr('font-size', '10px')
+      .attr('fill', '#aaa')
+      .text('60 FPS');
+
+    // Add reference line for acceptable FPS (30)
+    g.append('line')
+      .attr('x1', 0)
+      .attr('x2', width)
+      .attr('y1', y(30))
+      .attr('y2', y(30))
+      .attr('stroke', '#ffa000')
+      .attr('stroke-dasharray', '3,3')
+      .attr('stroke-width', 1);
+
+    g.append('text')
+      .attr('x', width)
+      .attr('y', y(30) - 5)
+      .attr('text-anchor', 'end')
+      .attr('font-size', '10px')
+      .attr('fill', '#ffa000')
+      .text('30 FPS');
+
+    // Add problem area (< 30 FPS)
+    g.append('rect')
+      .attr('x', 0)
+      .attr('y', y(0))
+      .attr('width', width)
+      .attr('height', y(30) - y(0))
+      .attr('fill', 'rgba(244, 67, 54, 0.1)');
+
+    // Add axes
+    g.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .ticks(5)
+          .tickFormat(d => {
+            const date = new Date(d as number);
+            return date.getSeconds().toString();
+          })
+      )
+      .call(g => g.select('.domain').remove());
+
+    g.append('g')
+      .call(d3.axisLeft(y).ticks(5))
+      .call(g => g.select('.domain').remove());
+
+    // Add grid lines
+    g.append('g')
+      .attr('class', 'grid')
+      .attr('opacity', 0.1)
+      .call(
+        d3
+          .axisLeft(y)
+          .ticks(5)
+          .tickSize(-width)
+          .tickFormat(() => '')
+      );
+
+    // Add the line path
+    g.append('path')
+      .datum(data)
+      .attr('fill', 'none')
+      .attr('stroke', '#2196F3')
+      .attr('stroke-width', 2)
+      .attr('d', line);
+
+    // Add points for the most recent data
+    const recentData = data.slice(-5); // Last 5 points
+
+    g.selectAll('.data-point')
+      .data(recentData)
+      .enter()
+      .append('circle')
+      .attr('class', 'data-point')
+      .attr('cx', d => x(d.timestamp))
+      .attr('cy', d => y(d.value))
+      .attr('r', (d, i) => (i === recentData.length - 1 ? 4 : 2)) // Larger circle for most recent point
+      .attr('fill', d => {
+        if (d.value < 30) return '#f44336'; // Red
+        if (d.value < 60) return '#ffa000'; // Orange
+        return '#4CAF50'; // Green
+      });
+
+    // Add line for current FPS value
+    if (data.length > 0) {
+      const lastPoint = data[data.length - 1];
+
+      g.append('line')
+        .attr('x1', 0)
+        .attr('x2', width)
+        .attr('y1', y(lastPoint.value))
+        .attr('y2', y(lastPoint.value))
+        .attr('stroke', '#2196F3')
+        .attr('stroke-dasharray', '2,2')
+        .attr('stroke-width', 1);
+    }
   };
 
   // Update the CPU usage chart
   const updateCpuChart = () => {
     if (!cpuChartRef.current) return;
-    console.log('Updating CPU chart...');
-    // TODO: Implement CPU usage chart visualization
+
+    const svg = d3.select(cpuChartRef.current);
+    const data = performanceMetrics.cpuTime;
+    if (data.length === 0) return;
+
+    // Clear previous chart
+    svg.selectAll('*').remove();
+
+    // Determine dimensions
+    const margin = { top: 10, right: 20, bottom: 30, left: 40 };
+    const chartWidth = svg.node()?.getBoundingClientRect().width ?? 300;
+    const chartHeight = svg.node()?.getBoundingClientRect().height ?? 200;
+    const width = chartWidth - margin.left - margin.right;
+    const height = chartHeight - margin.top - margin.bottom;
+
+    // Create chart group
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Determine time domain
+    const now = Date.now();
+    const xDomain = [now - timeWindow, now];
+
+    // Create scales
+    const x = d3.scaleTime().domain(xDomain).range([0, width]);
+
+    // Set y-domain based on data (0 to max, or at least frameBudget*2)
+    const maxCpuTime = Math.max(frameBudget * 2, d3.max(data, d => d.value) ?? frameBudget * 2);
+    const y = d3
+      .scaleLinear()
+      .domain([0, maxCpuTime * 1.1])
+      .range([height, 0]);
+
+    // Create line generator
+    const line = d3
+      .line<MetricPoint>()
+      .x(d => x(d.timestamp))
+      .y(d => y(d.value))
+      .curve(d3.curveMonotoneX);
+
+    // Add budget reference line
+    g.append('line')
+      .attr('x1', 0)
+      .attr('x2', width)
+      .attr('y1', y(frameBudget))
+      .attr('y2', y(frameBudget))
+      .attr('stroke', '#ff9800')
+      .attr('stroke-dasharray', '3,3')
+      .attr('stroke-width', 1);
+
+    g.append('text')
+      .attr('x', width)
+      .attr('y', y(frameBudget) - 5)
+      .attr('text-anchor', 'end')
+      .attr('font-size', '10px')
+      .attr('fill', '#ff9800')
+      .text(`${frameBudget.toFixed(1)}ms`);
+
+    // Add problem area (> frameBudget)
+    g.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', width)
+      .attr('height', y(frameBudget))
+      .attr('fill', 'rgba(244, 67, 54, 0.1)');
+
+    // Add axes
+    g.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .ticks(5)
+          .tickFormat(d => {
+            const date = new Date(d as number);
+            return date.getSeconds().toString();
+          })
+      )
+      .call(g => g.select('.domain').remove());
+
+    g.append('g')
+      .call(d3.axisLeft(y).ticks(5))
+      .call(g => g.select('.domain').remove());
+
+    // Add grid lines
+    g.append('g')
+      .attr('class', 'grid')
+      .attr('opacity', 0.1)
+      .call(
+        d3
+          .axisLeft(y)
+          .ticks(5)
+          .tickSize(-width)
+          .tickFormat(() => '')
+      );
+
+    // Add the line path
+    g.append('path')
+      .datum(data)
+      .attr('fill', 'none')
+      .attr('stroke', '#ff5722')
+      .attr('stroke-width', 2)
+      .attr('d', line);
+
+    // Add points for the most recent data
+    const recentData = data.slice(-5); // Last 5 points
+
+    g.selectAll('.data-point')
+      .data(recentData)
+      .enter()
+      .append('circle')
+      .attr('class', 'data-point')
+      .attr('cx', d => x(d.timestamp))
+      .attr('cy', d => y(d.value))
+      .attr('r', (d, i) => (i === recentData.length - 1 ? 4 : 2)) // Larger circle for most recent point
+      .attr('fill', d => {
+        if (d.value > frameBudget * 1.5) return '#f44336'; // Red
+        if (d.value > frameBudget) return '#ffa000'; // Orange
+        return '#4CAF50'; // Green
+      });
+
+    // Add line for current CPU value
+    if (data.length > 0) {
+      const lastPoint = data[data.length - 1];
+
+      g.append('line')
+        .attr('x1', 0)
+        .attr('x2', width)
+        .attr('y1', y(lastPoint.value))
+        .attr('y2', y(lastPoint.value))
+        .attr('stroke', '#ff5722')
+        .attr('stroke-dasharray', '2,2')
+        .attr('stroke-width', 1);
+    }
   };
 
   // Update the memory usage chart
   const updateMemoryChart = () => {
     if (!memoryChartRef.current) return;
-    console.log('Updating memory chart...');
-    // TODO: Implement memory usage chart visualization
+
+    const svg = d3.select(memoryChartRef.current);
+    const data = performanceMetrics.memoryUsage;
+    if (data.length === 0) return;
+
+    // Clear previous chart
+    svg.selectAll('*').remove();
+
+    // Determine dimensions
+    const margin = { top: 10, right: 20, bottom: 30, left: 40 };
+    const chartWidth = svg.node()?.getBoundingClientRect().width ?? 300;
+    const chartHeight = svg.node()?.getBoundingClientRect().height ?? 200;
+    const width = chartWidth - margin.left - margin.right;
+    const height = chartHeight - margin.top - margin.bottom;
+
+    // Create chart group
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Determine time domain
+    const now = Date.now();
+    const xDomain = [now - timeWindow, now];
+
+    // Create scales
+    const x = d3.scaleTime().domain(xDomain).range([0, width]);
+
+    // Find min and max values for better visualization
+    const maxMemory = d3.max(data, d => d.value) ?? 100;
+    const minMemory = d3.min(data, d => d.value) ?? 0;
+    const padding = (maxMemory - minMemory) * 0.1; // 10% padding
+
+    // Use a more precise domain for better visualization
+    const y = d3
+      .scaleLinear()
+      .domain([Math.max(0, minMemory - padding), maxMemory + padding])
+      .range([height, 0]);
+
+    // Create line generator
+    const line = d3
+      .line<MetricPoint>()
+      .x(d => x(d.timestamp))
+      .y(d => y(d.value))
+      .curve(d3.curveMonotoneX);
+
+    // Create area generator for filled area under the line
+    const area = d3
+      .area<MetricPoint>()
+      .x(d => x(d.timestamp))
+      .y0(height)
+      .y1(d => y(d.value))
+      .curve(d3.curveMonotoneX);
+
+    // Add axes
+    g.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .ticks(5)
+          .tickFormat(d => {
+            const date = new Date(d as number);
+            return date.getSeconds().toString();
+          })
+      )
+      .call(g => g.select('.domain').remove());
+
+    g.append('g')
+      .call(d3.axisLeft(y).ticks(5))
+      .call(g => g.select('.domain').remove());
+
+    // Add grid lines
+    g.append('g')
+      .attr('class', 'grid')
+      .attr('opacity', 0.1)
+      .call(
+        d3
+          .axisLeft(y)
+          .ticks(5)
+          .tickSize(-width)
+          .tickFormat(() => '')
+      );
+
+    // Add the area
+    g.append('path').datum(data).attr('fill', 'rgba(76, 175, 80, 0.2)').attr('d', area);
+
+    // Add the line path
+    g.append('path')
+      .datum(data)
+      .attr('fill', 'none')
+      .attr('stroke', '#4CAF50')
+      .attr('stroke-width', 2)
+      .attr('d', line);
+
+    // Add points for the most recent data
+    const recentData = data.slice(-5); // Last 5 points
+
+    g.selectAll('.data-point')
+      .data(recentData)
+      .enter()
+      .append('circle')
+      .attr('class', 'data-point')
+      .attr('cx', d => x(d.timestamp))
+      .attr('cy', d => y(d.value))
+      .attr('r', (d, i) => (i === recentData.length - 1 ? 4 : 2)) // Larger circle for most recent point
+      .attr('fill', '#4CAF50');
+
+    // Add line for current memory value
+    if (data.length > 0) {
+      const lastPoint = data[data.length - 1];
+
+      g.append('line')
+        .attr('x1', 0)
+        .attr('x2', width)
+        .attr('y1', y(lastPoint.value))
+        .attr('y2', y(lastPoint.value))
+        .attr('stroke', '#4CAF50')
+        .attr('stroke-dasharray', '2,2')
+        .attr('stroke-width', 1);
+    }
   };
 
   // Update the timeline chart
   const updateTimelineChart = () => {
     if (!timelineChartRef.current) return;
-    console.log('Updating timeline chart...');
-    // TODO: Implement timeline chart visualization
+
+    const svg = d3.select(timelineChartRef.current);
+
+    // Clear previous chart
+    svg.selectAll('*').remove();
+
+    // Get data for the selected metric
+    const data = performanceMetrics[selectedMetric];
+    if (data.length === 0) return;
+
+    // Determine dimensions
+    const margin = { top: 10, right: 20, bottom: 30, left: 40 };
+    const chartWidth = svg.node()?.getBoundingClientRect().width ?? 600;
+    const chartHeight = svg.node()?.getBoundingClientRect().height ?? 100;
+    const width = chartWidth - margin.left - margin.right;
+    const height = chartHeight - margin.top - margin.bottom;
+
+    // Create chart group
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Determine time domain
+    const now = Date.now();
+    const xDomain = [now - timeWindow, now];
+
+    // Create scales
+    const x = d3.scaleTime().domain(xDomain).range([0, width]);
+
+    // Set y-domain based on the selected metric
+    let yDomain: [number, number];
+    let colorScale: d3.ScaleOrdinal<string, string>;
+
+    // Configure scales and thresholds based on metric type
+    let maxValue: number;
+    let minValue: number;
+    let padding: number;
+
+    switch (selectedMetric) {
+      case 'fps':
+        yDomain = [0, Math.max(60, d3.max(data, d => d.value) ?? 60) * 1.1];
+        colorScale = d3
+          .scaleOrdinal<string>()
+          .domain(['low', 'medium', 'high'])
+          .range(['#f44336', '#ffa000', '#4CAF50']);
+        break;
+
+      case 'cpuTime':
+        yDomain = [
+          0,
+          Math.max(frameBudget * 2, d3.max(data, d => d.value) ?? frameBudget * 2) * 1.1,
+        ];
+        colorScale = d3
+          .scaleOrdinal<string>()
+          .domain(['low', 'medium', 'high'])
+          .range(['#4CAF50', '#ffa000', '#f44336']);
+        break;
+
+      case 'layoutThrashing':
+        yDomain = [0, Math.max(5, d3.max(data, d => d.value) ?? 5) * 1.1];
+        colorScale = d3
+          .scaleOrdinal<string>()
+          .domain(['low', 'medium', 'high'])
+          .range(['#4CAF50', '#ffa000', '#f44336']);
+        break;
+
+      case 'cacheHitRate':
+        yDomain = [0, 100];
+        colorScale = d3
+          .scaleOrdinal<string>()
+          .domain(['low', 'medium', 'high'])
+          .range(['#f44336', '#ffa000', '#4CAF50']);
+        break;
+
+      case 'animationSmoothness':
+        yDomain = [0, 100];
+        colorScale = d3
+          .scaleOrdinal<string>()
+          .domain(['low', 'medium', 'high'])
+          .range(['#f44336', '#ffa000', '#4CAF50']);
+        break;
+
+      default:
+        // For other metrics, use the min/max of data with padding
+        maxValue = d3.max(data, d => d.value) ?? 100;
+        minValue = d3.min(data, d => d.value) ?? 0;
+        padding = (maxValue - minValue) * 0.1;
+        yDomain = [Math.max(0, minValue - padding), maxValue + padding];
+        colorScale = d3
+          .scaleOrdinal<string>()
+          .domain(['low', 'medium', 'high'])
+          .range(['#f44336', '#ffa000', '#4CAF50']);
+    }
+
+    const y = d3.scaleLinear().domain(yDomain).range([height, 0]);
+
+    // Create line generator
+    const line = d3
+      .line<MetricPoint>()
+      .x(d => x(d.timestamp))
+      .y(d => y(d.value))
+      .curve(d3.curveMonotoneX);
+
+    // Create area generator for filled area under the line
+    const area = d3
+      .area<MetricPoint>()
+      .x(d => x(d.timestamp))
+      .y0(height)
+      .y1(d => y(d.value))
+      .curve(d3.curveMonotoneX);
+
+    // Add reference lines based on metric type
+    if (selectedMetric === 'fps') {
+      // FPS reference lines
+      g.append('line')
+        .attr('x1', 0)
+        .attr('x2', width)
+        .attr('y1', y(60))
+        .attr('y2', y(60))
+        .attr('stroke', '#aaa')
+        .attr('stroke-dasharray', '3,3')
+        .attr('stroke-width', 1);
+
+      g.append('text')
+        .attr('x', 5)
+        .attr('y', y(60) - 5)
+        .attr('font-size', '10px')
+        .attr('fill', '#aaa')
+        .text('60 FPS');
+
+      g.append('line')
+        .attr('x1', 0)
+        .attr('x2', width)
+        .attr('y1', y(30))
+        .attr('y2', y(30))
+        .attr('stroke', '#ffa000')
+        .attr('stroke-dasharray', '3,3')
+        .attr('stroke-width', 1);
+
+      g.append('text')
+        .attr('x', 5)
+        .attr('y', y(30) - 5)
+        .attr('font-size', '10px')
+        .attr('fill', '#ffa000')
+        .text('30 FPS');
+    } else if (selectedMetric === 'cpuTime') {
+      // CPU time reference line
+      g.append('line')
+        .attr('x1', 0)
+        .attr('x2', width)
+        .attr('y1', y(frameBudget))
+        .attr('y2', y(frameBudget))
+        .attr('stroke', '#ff9800')
+        .attr('stroke-dasharray', '3,3')
+        .attr('stroke-width', 1);
+
+      g.append('text')
+        .attr('x', 5)
+        .attr('y', y(frameBudget) - 5)
+        .attr('font-size', '10px')
+        .attr('fill', '#ff9800')
+        .text(`${frameBudget.toFixed(1)}ms`);
+    }
+
+    // Add axes
+    g.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .ticks(10)
+          .tickFormat(d => {
+            const date = new Date(d as number);
+            return `${date.getMinutes()}:${date.getSeconds().toString().padStart(2, '0')}`;
+          })
+      )
+      .call(g => g.select('.domain').remove());
+
+    g.append('g')
+      .call(d3.axisLeft(y).ticks(5))
+      .call(g => g.select('.domain').remove());
+
+    // Add grid lines
+    g.append('g')
+      .attr('class', 'grid')
+      .attr('opacity', 0.1)
+      .call(
+        d3
+          .axisLeft(y)
+          .ticks(5)
+          .tickSize(-width)
+          .tickFormat(() => '')
+      );
+
+    // Add problem areas with colored backgrounds based on metric type
+    if (selectedMetric === 'fps') {
+      // Red area for FPS < 30
+      g.append('rect')
+        .attr('x', 0)
+        .attr('y', y(0))
+        .attr('width', width)
+        .attr('height', y(30) - y(0))
+        .attr('fill', 'rgba(244, 67, 54, 0.1)');
+
+      // Yellow area for 30 <= FPS < 60
+      g.append('rect')
+        .attr('x', 0)
+        .attr('y', y(30))
+        .attr('width', width)
+        .attr('height', y(60) - y(30))
+        .attr('fill', 'rgba(255, 160, 0, 0.1)');
+    } else if (selectedMetric === 'cpuTime') {
+      // Red area for CPU > frameBudget
+      g.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', width)
+        .attr('height', y(frameBudget))
+        .attr('fill', 'rgba(244, 67, 54, 0.1)');
+    }
+
+    // Plot detected issues on the timeline
+    const relatedIssues = detectedIssues.filter(issue =>
+      issue.relatedMetrics.includes(selectedMetric)
+    );
+
+    g.selectAll('.issue-marker')
+      .data(relatedIssues)
+      .enter()
+      .append('circle')
+      .attr('class', 'issue-marker')
+      .attr('cx', d => x(d.timestamp))
+      .attr('cy', 10) // Fixed position at the top
+      .attr('r', 5)
+      .attr('fill', d => getSeverityColor(d.severity))
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 1)
+      .style('cursor', 'pointer')
+      .append('title')
+      .text(d => `${d.description} (${formatTimestamp(d.timestamp)})`);
+
+    // Add the area under the line
+    const areaColor =
+      selectedMetric === 'fps'
+        ? 'rgba(33, 150, 243, 0.2)'
+        : selectedMetric === 'cpuTime'
+          ? 'rgba(255, 87, 34, 0.2)'
+          : 'rgba(76, 175, 80, 0.2)';
+
+    g.append('path').datum(data).attr('fill', areaColor).attr('d', area);
+
+    // Add the line path with appropriate color
+    const lineColor =
+      selectedMetric === 'fps' ? '#2196F3' : selectedMetric === 'cpuTime' ? '#ff5722' : '#4CAF50';
+
+    g.append('path')
+      .datum(data)
+      .attr('fill', 'none')
+      .attr('stroke', lineColor)
+      .attr('stroke-width', 2)
+      .attr('d', line);
+
+    // Add points for the recent data
+    const recentData = data.slice(-10); // Last 10 points
+
+    g.selectAll('.data-point')
+      .data(recentData)
+      .enter()
+      .append('circle')
+      .attr('class', 'data-point')
+      .attr('cx', d => x(d.timestamp))
+      .attr('cy', d => y(d.value))
+      .attr('r', (d, i) => (i === recentData.length - 1 ? 4 : 2)) // Larger circle for most recent point
+      .attr('fill', d => {
+        // Color based on metric type and value
+        if (selectedMetric === 'fps') {
+          if (d.value < 30) return '#f44336'; // Red
+          if (d.value < 60) return '#ffa000'; // Orange
+          return '#4CAF50'; // Green
+        } else if (selectedMetric === 'cpuTime') {
+          if (d.value > frameBudget * 1.5) return '#f44336'; // Red
+          if (d.value > frameBudget) return '#ffa000'; // Orange
+          return '#4CAF50'; // Green
+        } else if (selectedMetric === 'cacheHitRate' || selectedMetric === 'animationSmoothness') {
+          if (d.value < 50) return '#f44336'; // Red
+          if (d.value < 80) return '#ffa000'; // Orange
+          return '#4CAF50'; // Green
+        }
+        return lineColor;
+      });
+
+    // Add a vertical line for the current time
+    g.append('line')
+      .attr('x1', x(now))
+      .attr('x2', x(now))
+      .attr('y1', 0)
+      .attr('y2', height)
+      .attr('stroke', '#757575')
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '5,3');
+
+    // Add tooltip interaction
+    const tooltip = d3
+      .select('body')
+      .append('div')
+      .attr('class', 'performance-tooltip')
+      .style('position', 'absolute')
+      .style('visibility', 'hidden')
+      .style('background', 'rgba(0, 0, 0, 0.8)')
+      .style('color', 'white')
+      .style('padding', '5px 10px')
+      .style('border-radius', '4px')
+      .style('font-size', '12px')
+      .style('pointer-events', 'none');
+
+    g.selectAll('.data-point')
+      .on('mouseover', function (event: MouseEvent, d: unknown) {
+        const dataPoint = d as MetricPoint;
+        tooltip.style('visibility', 'visible').html(`
+            <div>Time: ${formatTimestamp(dataPoint.timestamp)}</div>
+            <div>Value: ${dataPoint.value.toFixed(1)}</div>
+          `);
+      })
+      .on('mousemove', function (event: MouseEvent) {
+        tooltip.style('top', event.pageY - 10 + 'px').style('left', event.pageX + 10 + 'px');
+      })
+      .on('mouseout', function () {
+        tooltip.style('visibility', 'hidden');
+      });
   };
 
   // Handle animation selection

@@ -1,10 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react';
+import * as d3 from 'd3';
+import { Feature } from 'geojson';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 // Import optimization utilities
 import {
   animationQualityManager,
   QualitySettings,
 } from '../../../utils/performance/D3AnimationQualityManager';
+
+// Import type-safe D3 utilities
+import { AnimationConfig } from '../../../types/visualizations/D3AnimationTypes';
+import { createSimulationDragBehavior } from '../../../types/visualizations/D3DragTypes';
+import {
+  d3Accessors,
+  SimulationLinkDatum,
+  SimulationNodeDatum,
+} from '../../../types/visualizations/D3Types';
+import {
+  createSvgZoomBehavior,
+  getFitToViewportTransform,
+} from '../../../types/visualizations/D3ZoomTypes';
 
 // Type definitions
 interface DataDashboardAppProps {
@@ -51,12 +66,150 @@ interface HierarchyNode extends BaseDataPoint {
   size: number;
 }
 
+// D3 simulation node interface with proper typing
+interface D3NetworkNode extends SimulationNodeDatum<NetworkNode> {
+  id: string;
+  value: number;
+  category: string;
+  group: string;
+  size: number;
+  color?: string;
+  radius?: number;
+  // Reference to original data
+  data?: NetworkNode;
+}
+
+// D3 simulation link interface with proper typing
+interface D3NetworkLink extends SimulationLinkDatum<D3NetworkNode> {
+  source: string | D3NetworkNode;
+  target: string | D3NetworkNode;
+  value: number;
+  type: string;
+  width?: number;
+  color?: string;
+}
+
+// D3 time series chart types with proper type safety
+interface D3TimeSeriesPoint {
+  id: string;
+  date: Date;
+  value: number;
+  category: string;
+  color?: string;
+  originalData?: TimeSeriesPoint; // Reference to original data
+}
+
+// Interface for grouped time series data
+interface CategorySeries {
+  category: string;
+  color: string;
+  points: D3TimeSeriesPoint[];
+}
+
+// Animation configuration for time series
+interface TimeSeriesAnimationConfig extends AnimationConfig {
+  // Additional animation settings specific to time series
+  staggerDelay?: number; // Delay between animating different series
+  pointDelay?: number; // Delay between animating different points
+  lineAnimationType?: 'grow' | 'fade' | 'draw'; // How the line should animate
+}
+
 // Enums
 enum VisualizationType {
   NETWORK = 'network',
   TIMESERIES = 'timeseries',
   GEOSPATIAL = 'geospatial',
   HIERARCHY = 'hierarchy',
+}
+
+// Extended quality settings for all visualization types
+interface ExtendedQualitySettings extends QualitySettings {
+  // Node rendering settings
+  nodeDetailLevel: number;
+  linkDetailLevel: number;
+  showLabels: boolean;
+  textScaleFactor: number;
+  
+  // Time series visualization settings
+  lineWidth: number;
+  pointRadius: number;
+  animationsEnabled: boolean;
+  animationDuration: number;
+  showGridLines: boolean;
+  maxDataPointsPerSeries: number;
+  downsampling: boolean;
+  
+  // Geographic visualization settings
+  mapProjection: 'mercator' | 'equalEarth' | 'orthographic' | 'naturalEarth';
+  mapDetailLevel: 'low' | 'medium' | 'high';
+  showGraticules: boolean;
+  pointSizeScale: number;
+  showTooltips: boolean;
+  
+  // Hierarchical visualization settings
+  hierarchyLayout: 'tree' | 'treemap' | 'cluster' | 'radial';
+  treeOrientation: 'vertical' | 'horizontal' | 'radial';
+  nodeColor: 'byCategory' | 'byValue' | 'byDepth';
+  linkStyle: 'straight' | 'curved' | 'diagonal' | 'step';
+  treemapTiling: 'binary' | 'squarify' | 'slice' | 'dice' | 'sliceDice';
+  includeSizeEncoding: boolean;
+}
+
+// Type for drag behavior with SVG circles
+type CircleDragBehavior = d3.DragBehavior<SVGCircleElement, D3NetworkNode, unknown>;
+
+// D3 geo data types with proper type safety
+interface D3GeoPoint {
+  id: string;
+  coordinates: [number, number]; // [longitude, latitude]
+  value: number;
+  category: string;
+  color?: string;
+  radius?: number;
+  region: string;
+  population: number;
+  originalData?: GeoDataPoint; // Reference to original data
+}
+
+// Interface for grouped geographic data
+interface GeoCategory {
+  category: string;
+  color: string;
+  points: D3GeoPoint[];
+}
+
+// GeoJSON world map type
+interface WorldMapData {
+  features: Feature[];
+  type: string;
+}
+
+// D3 hierarchical data types with proper type safety
+interface D3HierarchyNode {
+  id: string;
+  name: string;
+  value: number;
+  size: number;
+  category: string;
+  depth?: number;
+  color?: string;
+  children?: D3HierarchyNode[];
+  originalData?: HierarchyNode; // Reference to original data
+}
+
+// Type definition for d3.hierarchy result with proper typing
+interface HierarchyDatum extends d3.HierarchyNode<D3HierarchyNode> {
+  x?: number;
+  y?: number;
+  x0?: number;
+  y0?: number;
+  x1?: number;
+  y1?: number;
+  depth: number;
+  height: number;
+  parent?: HierarchyDatum;
+  children?: HierarchyDatum[];
+  data: D3HierarchyNode;
 }
 
 /**
@@ -80,6 +233,9 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
   const timeSeriesRef = useRef<SVGSVGElement>(null);
   const geoMapRef = useRef<SVGSVGElement>(null);
   const hierarchyRef = useRef<SVGSVGElement>(null);
+
+  // Simulation state reference for force-directed graph
+  const simulationRef = useRef<d3.Simulation<D3NetworkNode, D3NetworkLink> | null>(null);
 
   // State
   const [currentView, setCurrentView] = useState<VisualizationType>(VisualizationType.NETWORK);
@@ -107,38 +263,67 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
     animationQualityManager.getCurrentSettings()
   );
 
+  // World map GeoJSON data reference
+  const [worldMapData, setWorldMapData] = useState<WorldMapData | null>(null);
+
+  // State for hierarchical visualization layout type
+  const [hierarchyLayoutType, setHierarchyLayoutType] = useState<ExtendedQualitySettings['hierarchyLayout']>('tree');
+
+  // Event handlers
+  const handleViewChange = (view: VisualizationType) => {
+    setCurrentView(view);
+  };
+
+  const toggleAnimation = () => {
+    setIsAnimating(!isAnimating);
+  };
+
+  const toggleOptimizations = () => {
+    setOptimizationsEnabled(!optimizationsEnabled);
+  };
+
+  // Define entity selection handler here before it's used in the visualization functions
+  const handleEntitySelection = (entityId: string) => {
+    setSelectedEntities(prev => {
+      if (prev.includes(entityId)) {
+        return prev.filter(id => id !== entityId);
+      } else {
+        return [...prev, entityId];
+      }
+    });
+  };
+
+  const handleTimeRangeChange = (range: [Date, Date]) => {
+    setTimeRange(range);
+  };
+
+  const handleFilterChange = (value: number) => {
+    setFilterValue(value);
+  };
+
   // Load data
   useEffect(() => {
     // In a real application, this would be an API call
     // For now, we'll generate synthetic data
 
-    // TODO: Implement data generation functions
-    const generateData = async () => {
-      try {
-        // Generate network data
-        const networkData = generateNetworkData(50, 100);
-        setNetworkData(networkData);
+    // Generate network data
+    const networkData = generateNetworkData(50, 100);
+    setNetworkData(networkData);
 
-        // Generate time series data
-        const timeSeriesData = generateTimeSeriesData(100);
-        setTimeSeriesData(timeSeriesData);
+    // Generate time series data
+    const timeSeriesData = generateTimeSeriesData(100);
+    setTimeSeriesData(timeSeriesData);
 
-        // Generate geo data
-        const geoData = generateGeoData(200);
-        setGeoData(geoData);
+    // Generate geo data
+    const geoData = generateGeoData(200);
+    setGeoData(geoData);
 
-        // Generate hierarchy data
-        const hierarchyData = generateHierarchyData(100);
-        setHierarchyData(hierarchyData);
+    // Generate hierarchy data
+    const hierarchyData = generateHierarchyData(100);
+    setHierarchyData(hierarchyData);
 
-        // Mark data as loaded
-        setDataLoaded(true);
-      } catch (error) {
-        console.error('Error generating data:', error);
-      }
-    };
-
-    generateData();
+    // Mark data as loaded
+    setDataLoaded(true);
   }, []);
 
   // Register with animation quality manager
@@ -153,6 +338,888 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
       animationQualityManager.unregisterAnimation('data-dashboard');
     };
   }, [optimizationsEnabled]);
+
+  /**
+   * Converts network data to D3-compatible format with proper typing
+   * This creates new objects with additional properties needed for D3
+   * while maintaining references to the original data
+   */
+  const convertNetworkDataToD3Format = useCallback(() => {
+    // Create node map for quick lookups
+    const nodeMap = new Map<string, D3NetworkNode>();
+
+    // Convert nodes with proper typing
+    const nodes: D3NetworkNode[] = networkData.nodes.map(node => {
+      // Create a color based on the group
+      let color = '';
+      switch (node.group) {
+        case 'A':
+          color = '#4285F4';
+          break; // Blue
+        case 'B':
+          color = '#EA4335';
+          break; // Red
+        case 'C':
+          color = '#FBBC05';
+          break; // Yellow
+        case 'D':
+          color = '#34A853';
+          break; // Green
+        default:
+          color = '#9AA0A6'; // Grey
+      }
+
+      // Calculate radius based on size and current quality settings
+      const baseRadius = Math.sqrt(node.size) * 3;
+      // Cast to ExtendedQualitySettings to use the additional properties
+      const extendedSettings = qualitySettings as ExtendedQualitySettings;
+      const nodeDetailLevel = extendedSettings.nodeDetailLevel || 1; // Default to 1 if not defined
+      const radius = optimizationsEnabled ? baseRadius * nodeDetailLevel : baseRadius;
+
+      // Create D3 node with proper typing
+      const d3Node: D3NetworkNode = {
+        id: node.id,
+        value: node.value,
+        category: node.category,
+        group: node.group,
+        size: node.size,
+        color,
+        radius,
+        // Store reference to original data
+        data: node,
+      };
+
+      // Add to map for quick lookups when creating links
+      nodeMap.set(node.id, d3Node);
+
+      return d3Node;
+    });
+
+    // Convert links with proper typing
+    const links: D3NetworkLink[] = networkData.links.map(link => {
+      // Calculate link width based on value and quality settings
+      const baseWidth = Math.sqrt(link.value) * 1.5;
+      // Cast to ExtendedQualitySettings to use the additional properties
+      const extendedSettings = qualitySettings as ExtendedQualitySettings;
+      const linkDetailLevel = extendedSettings.linkDetailLevel || 1; // Default to 1 if not defined
+      const width = optimizationsEnabled ? baseWidth * linkDetailLevel : baseWidth;
+
+      // Create color based on link type
+      const color = link.type === 'direct' ? '#4285F4' : '#9AA0A6';
+
+      // Create D3 link with proper typing
+      const d3Link: D3NetworkLink = {
+        source: link.source,
+        target: link.target,
+        value: link.value,
+        type: link.type,
+        width,
+        color,
+      };
+
+      return d3Link;
+    });
+
+    return { nodes, links, nodeMap };
+  }, [networkData, optimizationsEnabled, qualitySettings]);
+
+  /**
+   * Initialize the network visualization with a force-directed graph
+   * This uses D3's force layout with type-safe implementation
+   */
+  const initializeNetworkVisualization = useCallback(() => {
+    if (!networkRef.current || networkData.nodes.length === 0) return;
+
+    console.log('Initializing network visualization with force-directed graph');
+
+    // Clear previous visualization
+    d3.select(networkRef.current).selectAll('*').remove();
+
+    // Get the container dimensions
+    const svgWidth = width;
+    const svgHeight = height * 0.8; // 80% of total height for the visualization
+
+    // Convert data to D3 format with proper typing
+    const { nodes, links, nodeMap } = convertNetworkDataToD3Format();
+
+    // Create the SVG container
+    const svg = d3
+      .select(networkRef.current)
+      .attr('width', svgWidth)
+      .attr('height', svgHeight)
+      .attr('viewBox', [0, 0, svgWidth, svgHeight])
+      .attr('style', 'max-width: 100%; height: auto; font: 10px sans-serif;');
+
+    // Create a group for zoom/pan transformations
+    const g = svg.append('g').attr('class', 'network-container');
+
+    // Create the zoom behavior with type safety
+    const zoom = createSvgZoomBehavior<SVGSVGElement>({
+      scaleExtentMin: 0.1,
+      scaleExtentMax: 5,
+      targetElement: g,
+      constrainPan: true,
+    });
+
+    // Apply zoom to the SVG
+    svg.call(zoom);
+
+    // Initial transform to fit content
+    const initialTransform = getFitToViewportTransform(
+      svgWidth,
+      svgHeight,
+      svgWidth,
+      svgHeight,
+      50
+    );
+    svg.call(zoom.transform, initialTransform);
+
+    // Create link elements
+    const link = g
+      .append('g')
+      .attr('class', 'links')
+      .selectAll('line')
+      .data(links)
+      .enter()
+      .append('line')
+      .attr('stroke', d => d.color || '#999')
+      .attr('stroke-opacity', 0.6)
+      .attr('stroke-width', d => d.width || 1);
+
+    // Create node elements
+    const node = g
+      .append('g')
+      .attr('class', 'nodes')
+      .selectAll('circle')
+      .data(nodes)
+      .enter()
+      .append('circle')
+      .attr('r', d => d.radius || 5)
+      .attr('fill', d => d.color || '#666')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 1.5)
+      .classed('selected', d => selectedEntities.includes(d.id));
+
+    // Add titles for tooltips
+    node.append('title').text(d => `${d.id} (${d.group})\nValue: ${d.value}`);
+
+    // Cast to ExtendedQualitySettings to use the additional properties
+    const extendedSettings = qualitySettings as ExtendedQualitySettings;
+    const showLabels =
+      extendedSettings.showLabels !== undefined ? extendedSettings.showLabels : true; // Default to true
+    const textScaleFactor = extendedSettings.textScaleFactor || 1; // Default to 1
+
+    // Create text labels based on quality settings
+    if (showLabels) {
+      const labels = g
+        .append('g')
+        .attr('class', 'labels')
+        .selectAll('text')
+        .data(nodes.filter(n => n.value > filterValue)) // Only label significant nodes
+        .enter()
+        .append('text')
+        .attr('dx', 12)
+        .attr('dy', '.35em')
+        .text(d => d.id)
+        .style('font-size', `${10 * textScaleFactor}px`)
+        .style('fill', '#333');
+    }
+
+    // Create the force simulation with proper typing
+    const simulation = d3
+      .forceSimulation<D3NetworkNode>(nodes)
+      .force(
+        'link',
+        d3
+          .forceLink<D3NetworkNode, D3NetworkLink>(links)
+          .id(d => d.id)
+          .distance(d => 30 + d.value)
+      )
+      .force(
+        'charge',
+        d3.forceManyBody().strength(d => {
+          // Safely access the size property by casting to D3NetworkNode
+          const node = d as D3NetworkNode;
+          return -30 * (node.size || 1);
+        })
+      )
+      .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2))
+      .force(
+        'collision',
+        d3.forceCollide<D3NetworkNode>().radius(d => (d.radius || 5) + 2)
+      );
+
+    // Create drag behavior with type safety
+    const drag = createSimulationDragBehavior<D3NetworkNode, SVGCircleElement>(simulation);
+
+    // Apply the drag behavior with proper type casting
+    node.call(drag as CircleDragBehavior);
+
+    // Node click handler
+    node.on('click', (event, d) => {
+      event.stopPropagation(); // Prevent triggering container click
+      handleEntitySelection(d.id);
+    });
+
+    // Update function for the simulation
+    simulation.on('tick', () => {
+      // Use safe accessors to prevent type errors
+      link
+        .attr('x1', d =>
+          d3Accessors.getX(typeof d.source === 'string' ? nodeMap.get(d.source) : d.source)
+        .attr('y1', d =>
+          d3Accessors.getY(typeof d.source === 'string' ? nodeMap.get(d.source) : d.source)
+        )
+        .attr('x2', d =>
+          d3Accessors.getX(typeof d.target === 'string' ? nodeMap.get(d.target) : d.target)
+        )
+        .attr('y2', d =>
+          d3Accessors.getY(typeof d.target === 'string' ? nodeMap.get(d.target) : d.target)
+        );
+
+      node.attr('cx', d => d3Accessors.getX(d)).attr('cy', d => d3Accessors.getY(d));
+
+      // Update labels position if they exist
+      if (showLabels) {
+        g.selectAll('.labels text')
+          .attr('x', d => d3Accessors.getX(d))
+          .attr('y', d => d3Accessors.getY(d));
+      }
+    });
+
+    // Store simulation reference for cleanup
+    simulationRef.current = simulation;
+
+    // Animation toggle
+    if (!isAnimating) {
+      simulation.alpha(0).stop();
+    }
+
+    // Cleanup function for when component unmounts or view changes
+    return () => {
+      if (simulationRef.current) {
+        simulationRef.current.stop();
+        simulationRef.current = null;
+      }
+    };
+  }, [
+    networkData,
+    width,
+    height,
+    selectedEntities,
+    filterValue,
+    isAnimating,
+    optimizationsEnabled,
+    qualitySettings,
+    convertNetworkDataToD3Format,
+    handleEntitySelection,
+  ]);
+
+  /**
+   * Converts time series data to D3-compatible format with proper typing
+   * Creates points and series objects needed for D3 visualization
+   */
+  const convertTimeSeriesDataToD3Format = useCallback(() => {
+    // Create color mapping for consistent colors per category
+    const categoryColors: Record<string, string> = {
+      revenue: '#4285F4', // Blue
+      expenses: '#EA4335', // Red
+      profit: '#34A853', // Green
+      users: '#FBBC05', // Yellow
+    };
+
+    // Convert points with proper typing
+    const points: D3TimeSeriesPoint[] = timeSeriesData.map(point => {
+      // Get color based on category
+      const color = categoryColors[point.category] || '#9AA0A6';
+
+      // Create D3 point with proper typing
+      const d3Point: D3TimeSeriesPoint = {
+        id: point.id,
+        date: point.timestamp,
+        value: point.value,
+        category: point.category,
+        color,
+        originalData: point,
+      };
+
+      return d3Point;
+    });
+
+    // Group points by category for line generation
+    const categories = Array.from(new Set(points.map(p => p.category)));
+    const series: CategorySeries[] = categories.map(category => {
+      return {
+        category,
+        color: categoryColors[category] || '#9AA0A6',
+        points: points
+          .filter(p => p.category === category)
+          .sort((a, b) => a.date.getTime() - b.date.getTime()),
+      };
+    });
+
+    return { points, series };
+  }, [timeSeriesData]);
+
+  /**
+   * Converts geographic data to D3-compatible format with proper typing
+   * This creates points objects needed for D3 geo visualization
+   */
+  const convertGeoDataToD3Format = useCallback(() => {
+    // Create color mapping for consistent colors per category
+    const categoryColors: Record<string, string> = {
+      customers: '#4285F4', // Blue
+      sales: '#EA4335', // Red
+      partners: '#34A853', // Green
+    };
+
+    // Convert points with proper typing
+    const points: D3GeoPoint[] = geoData.map(point => {
+      // Get color based on category
+      const color = categoryColors[point.category] || '#9AA0A6';
+
+      // Create D3 geo point with proper typing
+      const d3Point: D3GeoPoint = {
+        id: point.id,
+        coordinates: [point.longitude, point.latitude], // GeoJSON uses [longitude, latitude]
+        value: point.value,
+        category: point.category,
+        color,
+        region: point.region,
+        population: point.population,
+        originalData: point,
+      };
+
+      return d3Point;
+    });
+
+    // Group points by category for styling and filtering
+    const categories = Array.from(new Set(points.map(p => p.category)));
+    const geoCategories: GeoCategory[] = categories.map(category => {
+      return {
+        category,
+        color: categoryColors[category] || '#9AA0A6',
+        points: points.filter(p => p.category === category),
+      };
+    });
+
+    return { points, geoCategories };
+  }, [geoData]);
+
+  /**
+   * Converts flat hierarchy data to a proper hierarchical structure with proper typing
+   * This creates a tree structure suitable for D3 hierarchical layouts
+   */
+  const convertHierarchyDataToD3Format = useCallback(() => {
+    // Create a map to store nodes by ID for quick lookup
+    const nodeMap = new Map<string, D3HierarchyNode>();
+    
+    // Define category colors
+    const categoryColors: Record<string, string> = {
+      'category-A': '#4285F4', // Blue
+      'category-B': '#EA4335', // Red
+      'category-C': '#34A853', // Green
+      'subcategory-1': '#9AA0A6', // Gray
+      'subcategory-2': '#FBBC05', // Yellow
+      'subcategory-3': '#DADCE0', // Light gray
+      'root': '#5F6368', // Dark gray
+    };
+    
+    // First pass: create D3HierarchyNode objects for all nodes
+    hierarchyData.forEach(node => {
+      const color = categoryColors[node.category] || '#9AA0A6';
+      
+      const d3Node: D3HierarchyNode = {
+        id: node.id,
+        name: node.id, // Use ID as name
+        value: node.value,
+        size: node.size,
+        category: node.category,
+        color,
+        children: [],
+        originalData: node,
+      };
+      
+      nodeMap.set(node.id, d3Node);
+    });
+    
+    // Second pass: build the tree structure
+    const rootNodes: D3HierarchyNode[] = [];
+    
+    hierarchyData.forEach(node => {
+      const d3Node = nodeMap.get(node.id);
+      
+      if (node.parentId === null) {
+        // This is a root node
+        rootNodes.push(d3Node!);
+      } else {
+        // This node has a parent, add it to the parent's children
+        const parentNode = nodeMap.get(node.parentId);
+        if (parentNode) {
+          if (!parentNode.children) {
+            parentNode.children = [];
+          }
+          parentNode.children.push(d3Node!);
+        }
+      }
+    });
+    
+    // Return the root of the hierarchy (should be only one)
+    return rootNodes[0];
+  }, [hierarchyData]);
+  
+  /**
+   * Creates a hierarchical visualization with tree or treemap layout
+   * Uses D3's hierarchical layouts with proper type safety
+   */
+  const initializeHierarchyVisualization = useCallback(() => {
+    if (!hierarchyRef.current || hierarchyData.length === 0) return;
+    
+    console.log(`Initializing hierarchical visualization with ${hierarchyLayoutType} layout`);
+    
+    // Clear previous visualization
+    d3.select(hierarchyRef.current).selectAll('*').remove();
+    
+    // Get the container dimensions
+    const svgWidth = width;
+    const svgHeight = height * 0.8; // 80% of total height for the visualization
+    
+    // Cast quality settings
+    const extendedSettings = qualitySettings as ExtendedQualitySettings;
+    
+    // Default settings with fallbacks
+    const animationsEnabled = extendedSettings.animationsEnabled !== undefined 
+      ? extendedSettings.animationsEnabled 
+      : true;
+    const animationDuration = extendedSettings.animationDuration || 1000;
+    const showLabels = extendedSettings.showLabels !== undefined 
+      ? extendedSettings.showLabels 
+      : true;
+    const textScaleFactor = extendedSettings.textScaleFactor || 1;
+    const nodeColor = extendedSettings.nodeColor || 'byCategory';
+    const linkStyle = extendedSettings.linkStyle || 'diagonal';
+    const treemapTiling = extendedSettings.treemapTiling || 'squarify';
+    const includeSizeEncoding = extendedSettings.includeSizeEncoding !== undefined
+      ? extendedSettings.includeSizeEncoding
+      : true;
+    const treeOrientation = extendedSettings.treeOrientation || 'vertical';
+    
+    // Convert hierarchy data to D3 format (proper tree structure)
+    const rootNode = convertHierarchyDataToD3Format();
+    
+    // Create the SVG container
+    const svg = d3.select(hierarchyRef.current)
+      .attr('width', svgWidth)
+      .attr('height', svgHeight)
+      .attr('viewBox', [0, 0, svgWidth, svgHeight])
+      .attr('style', 'max-width: 100%; height: auto; font: 10px sans-serif;');
+    
+    // Set up margins and visualization dimensions
+    const margin = { top: 40, right: 40, bottom: 40, left: 120 };
+    const visWidth = svgWidth - margin.left - margin.right;
+    const visHeight = svgHeight - margin.top - margin.bottom;
+    
+    // Create visualization area with margin
+    const g = svg.append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`)
+      .attr('class', 'hierarchy-container');
+    
+    // Main visualization title
+    svg.append('text')
+      .attr('class', 'hierarchy-title')
+      .attr('text-anchor', 'middle')
+      .attr('x', svgWidth / 2)
+      .attr('y', 20)
+      .attr('font-size', '16px')
+      .attr('font-weight', 'bold')
+      .text(`Hierarchical Data Visualization (${hierarchyLayoutType.charAt(0).toUpperCase() + hierarchyLayoutType.slice(1)})`);
+    
+    // Create a group for zoom/pan transformations
+    const zoomG = g.append('g');
+    
+    // Apply category filter if selected entities exist
+    const filterByCategory = (node: D3HierarchyNode): boolean => {
+      if (selectedEntities.length === 0) return true;
+      if (selectedEntities.includes(node.category)) return true;
+      if (node.children) {
+        // Include if any children match the filter
+        return node.children.some(filterByCategory);
+      }
+      return false;
+    };
+    
+    // Create a value scale for node size
+    const valueExtent = d3.extent(hierarchyData, d => d.value) as [number, number];
+    const sizeScale = d3.scaleSqrt()
+      .domain(valueExtent)
+      .range([5, 20]);
+    
+    // Create color scales
+    const categoryScale = (category: string): string => {
+      const colorMap: Record<string, string> = {
+        'category-A': '#4285F4',
+        'category-B': '#EA4335',
+        'category-C': '#34A853',
+        'subcategory-1': '#9AA0A6',
+        'subcategory-2': '#FBBC05',
+        'subcategory-3': '#DADCE0',
+        'root': '#5F6368',
+      };
+      return colorMap[category] || '#9AA0A6';
+    };
+    
+    const valueColorScale = d3.scaleSequential(d3.interpolateViridis)
+      .domain(valueExtent);
+    
+    const depthColorScale = d3.scaleOrdinal(d3.schemeCategory10);
+    
+    // Function to determine node color based on settings
+    const getNodeColor = (d: HierarchyDatum): string => {
+      switch (nodeColor) {
+        case 'byValue':
+          return valueColorScale(d.data.value);
+        case 'byDepth':
+          return depthColorScale(d.depth.toString());
+        case 'byCategory':
+        default:
+          return d.data.color || categoryScale(d.data.category);
+      }
+    };
+    
+    // Create hierarchy from the rootNode using d3.hierarchy
+    const root = d3.hierarchy<D3HierarchyNode>(rootNode) as unknown as HierarchyDatum;
+    
+    // Apply filtering if needed
+    // Apply filter to only include nodes that match selectedEntities
+    if (selectedEntities.length > 0) {
+      root.descendants().forEach(node => {
+        if (node.children) {
+          node.children = node.children.filter(child => 
+            selectedEntities.length === 0 || 
+            selectedEntities.includes(child.data.category) ||
+            (child.children && child.children.some(grandchild => 
+              selectedEntities.includes(grandchild.data.category)
+            ))
+          );
+        }
+      });
+    }
+    
+    // Size the hierarchy based on values
+    root.sum(d => includeSizeEncoding ? d.value : 1);
+    
+    // Implement different layouts based on the selected type
+    if (hierarchyLayoutType === 'treemap') {
+      // TREEMAP LAYOUT
+      
+      // Create the treemap layout
+      let tilingMethod: d3.TreemapTiling;
+      switch (treemapTiling) {
+        case 'binary': tilingMethod = d3.treemapBinary; break;
+        case 'slice': tilingMethod = d3.treemapSlice; break;
+        case 'dice': tilingMethod = d3.treemapDice; break;
+        case 'sliceDice': tilingMethod = d3.treemapSliceDice; break;
+        case 'squarify':
+        default: tilingMethod = d3.treemapSquarify; break;
+      }
+      
+      const treemap = d3.treemap<D3HierarchyNode>()
+        .size([visWidth, visHeight])
+        .padding(3)
+        .round(true)
+        .tile(tilingMethod);
+      
+      // Compute the treemap layout
+      treemap(root);
+      
+      // Create the treemap cells
+      const nodes = zoomG.selectAll('g')
+        .data(root.descendants())
+        .enter()
+        .append('g')
+        .attr('transform', d => `translate(${d.x0},${d.y0})`)
+        .attr('class', 'node')
+        .classed('selected', d => selectedEntities.includes(d.data.category));
+      
+      // Add rectangles for each node
+      const rects = nodes.append('rect')
+        .attr('width', d => Math.max(0, d.x1 - d.x0))
+        .attr('height', d => Math.max(0, d.y1 - d.y0))
+        .attr('fill', getNodeColor)
+        .attr('stroke', '#fff')
+        .attr('opacity', 0.8)
+        .attr('cursor', 'pointer');
+      
+      // Add labels if enabled and there's enough space
+      if (showLabels) {
+        nodes.append('text')
+          .attr('x', 3)
+          .attr('y', 13)
+          .text(d => {
+            const width = d.x1 - d.x0;
+            const name = d.data.name;
+            // Only show text if there's enough space
+            return width > 50 ? name : (width > 30 ? name.substring(0, 3) + '...' : '');
+          })
+          .attr('fill', '#fff')
+          .attr('font-size', `${10 * textScaleFactor}px`)
+          .attr('font-weight', 'bold')
+          .attr('pointer-events', 'none'); // Don't interfere with click events
+      }
+      
+      // Add tooltips
+      nodes.append('title')
+        .text(d => `${d.data.name}\nCategory: ${d.data.category}\nValue: ${d.data.value.toFixed(2)}\nSize: ${d.data.size}`);
+      
+      // Add click handlers for selection
+      nodes.on('click', (event, d) => {
+        event.stopPropagation();
+        handleEntitySelection(d.data.category);
+      });
+      
+      // Add zoom behavior
+      const zoom = createSvgZoomBehavior<SVGSVGElement>({
+        scaleExtentMin: 0.5,
+        scaleExtentMax: 8,
+        targetElement: zoomG,
+        constrainPan: true
+      });
+      
+      // Apply zoom to the SVG
+      svg.call(zoom);
+      
+      // Add animations if enabled
+      if (animationsEnabled && isAnimating) {
+        // Animate the nodes appearing
+        rects.attr('opacity', 0)
+          .transition()
+          .duration(animationDuration)
+          .delay((d, i) => 100 + i * 10)
+          .attr('opacity', 0.8)
+          .ease(d3.easeBackOut);
+      }
+      
+    } else {
+      // TREE LAYOUT
+      
+      // Determine tree orientation
+      let treeLayout: d3.TreeLayout<D3HierarchyNode>;
+      
+      if (treeOrientation === 'horizontal') {
+        // Horizontal tree (left to right)
+        treeLayout = d3.tree<D3HierarchyNode>()
+          .size([visHeight, visWidth]);
+        
+        // Swap x and y in the resulting layout
+        root.descendants().forEach(d => {
+          const temp = d.x;
+          d.x = d.y;
+          d.y = temp;
+        });
+      } else if (treeOrientation === 'radial') {
+        // Radial tree
+        treeLayout = d3.tree<D3HierarchyNode>()
+          .size([2 * Math.PI, Math.min(visWidth, visHeight) / 2 - 40]);
+        
+        // Apply layout without transforming yet
+        treeLayout(root);
+        
+        // Convert from polar to Cartesian coordinates
+        root.descendants().forEach(d => {
+          const radius = d.y;
+          const angle = d.x;
+          d.x = radius * Math.cos(angle - Math.PI / 2) + visWidth / 2;
+          d.y = radius * Math.sin(angle - Math.PI / 2) + visHeight / 2;
+        });
+      } else {
+        // Default: Vertical tree (top to bottom)
+        treeLayout = d3.tree<D3HierarchyNode>()
+          .size([visWidth, visHeight]);
+      }
+      
+      // Apply the tree layout if not already applied
+      if (treeOrientation !== 'radial') {
+        treeLayout(root);
+      }
+      
+      // Create the link generator based on the selected style
+      const linkGenerator = (d: d3.HierarchyPointLink<D3HierarchyNode>) => {
+        const source = { x: d.source.x as number, y: d.source.y as number };
+        const target = { x: d.target.x as number, y: d.target.y as number };
+        
+        switch (linkStyle) {
+          case 'straight':
+            return d3.linkHorizontal<{}, d3.HierarchyPointLink<D3HierarchyNode>>()
+              .x(d => d.y) // Swap x and y for left-to-right tree
+              .y(d => d.x)
+              ({
+                source,
+                target
+              });
+          case 'step':
+            return `M${source.x},${source.y} V${target.y} H${target.x}`;
+          case 'diagonal':
+          default:
+            return d3.linkHorizontal<any, any>()
+              .x(d => d.y)
+              .y(d => d.x)
+              ({
+                source,
+                target
+              });
+        }
+      };
+      
+      // Draw links
+      const links = zoomG.append('g')
+        .attr('class', 'links')
+        .selectAll('path')
+        .data(root.links())
+        .enter()
+        .append('path')
+        .attr('d', linkGenerator)
+        .attr('fill', 'none')
+        .attr('stroke', '#ccc')
+        .attr('stroke-width', 1.5)
+        .attr('opacity', 0.5);
+      
+      // Draw nodes
+      const nodes = zoomG.append('g')
+        .attr('class', 'nodes')
+        .selectAll('g')
+        .data(root.descendants())
+        .enter()
+        .append('g')
+        .attr('class', 'node')
+        .attr('transform', d => `translate(${d.x},${d.y})`)
+        .classed('selected', d => selectedEntities.includes(d.data.category));
+      
+      // Add circles for each node
+      const circles = nodes.append('circle')
+        .attr('r', d => includeSizeEncoding ? sizeScale(d.data.value) : 6)
+        .attr('fill', getNodeColor)
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 1.5)
+        .attr('cursor', 'pointer');
+      
+      // Add labels if enabled
+      if (showLabels) {
+        nodes.append('text')
+          .attr('dy', '.31em')
+          .attr('x', d => (d.children ? -8 : 8))
+          .style('text-anchor', d => (d.children ? 'end' : 'start'))
+          .text(d => d.data.name)
+          .attr('font-size', `${10 * textScaleFactor}px`)
+          .attr('pointer-events', 'none'); // Don't interfere with click events
+      }
+      
+      // Add tooltips
+      nodes.append('title')
+        .text(d => `${d.data.name}\nCategory: ${d.data.category}\nValue: ${d.data.value.toFixed(2)}\nSize: ${d.data.size}`);
+      
+      // Add click handlers for selection
+      nodes.on('click', (event, d) => {
+        event.stopPropagation();
+        handleEntitySelection(d.data.category);
+      });
+      
+      // Add zoom behavior
+      const zoom = createSvgZoomBehavior<SVGSVGElement>({
+        scaleExtentMin: 0.5,
+        scaleExtentMax: 8,
+        targetElement: zoomG,
+        constrainPan: true
+      });
+      
+      // Apply zoom to the SVG
+      svg.call(zoom);
+      
+      // Add initial transform to center the root node
+      if (treeOrientation === 'horizontal') {
+        const initialTransform = d3.zoomIdentity
+          .translate(margin.left, visHeight / 2);
+        svg.call(zoom.transform, initialTransform);
+      }
+      
+      // Add animations if enabled
+      if (animationsEnabled && isAnimating) {
+        // Animate the links
+        links
+          .attr('stroke-dasharray', function() {
+            const length = this.getTotalLength();
+            return `${length} ${length}`;
+          })
+          .attr('stroke-dashoffset', function() {
+            return this.getTotalLength();
+          })
+          .transition()
+          .duration(animationDuration)
+          .attr('stroke-dashoffset', 0)
+          .ease(d3.easeLinear);
+        
+        // Animate the nodes appearing
+        circles.attr('r', 0)
+          .transition()
+          .duration(animationDuration)
+          .delay((d, i) => d.depth * 300 + i * 10)
+          .attr('r', d => includeSizeEncoding ? sizeScale(d.data.value) : 6)
+          .ease(d3.easeElastic);
+      }
+    }
+    
+    // Add layout toggle buttons
+    const buttonGroup = svg.append('g')
+      .attr('class', 'layout-buttons')
+      .attr('transform', `translate(${svgWidth - 180}, ${margin.top - 20})`);
+    
+    const layouts = ['tree', 'treemap', 'cluster', 'radial'];
+    
+    layouts.forEach((layout, i) => {
+      const button = buttonGroup.append('g')
+        .attr('class', 'layout-button')
+        .attr('transform', `translate(${i * 45}, 0)`)
+        .style('cursor', 'pointer')
+        .on('click', () => {
+          setHierarchyLayoutType(layout as ExtendedQualitySettings['hierarchyLayout']);
+        });
+      
+      button.append('rect')
+        .attr('width', 40)
+        .attr('height', 20)
+        .attr('rx', 5)
+        .attr('ry', 5)
+        .attr('fill', layout === hierarchyLayoutType ? '#4285F4' : '#e0e0e0');
+      
+      button.append('text')
+        .attr('x', 20)
+        .attr('y', 14)
+        .attr('text-anchor', 'middle')
+        .attr('fill', layout === hierarchyLayoutType ? '#fff' : '#333')
+        .attr('font-size', '10px')
+        .text(layout.charAt(0).toUpperCase() + layout.slice(1));
+    });
+    
+    // Reset selection when clicking on the background
+    svg.on('click', (event) => {
+      // Prevent triggering if clicking on nodes
+      if (event.target === svg.node()) {
+        setSelectedEntities([]);
+      }
+    });
+    
+  }, [
+    hierarchyData,
+    hierarchyRef.current,
+    width,
+    height,
+    hierarchyLayoutType,
+    isAnimating,
+    optimizationsEnabled,
+    qualitySettings,
+    selectedEntities,
+    convertHierarchyDataToD3Format,
+    handleEntitySelection
+  ]);
 
   // Initialize visualizations once data is loaded
   useEffect(() => {
@@ -184,6 +1251,11 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
     timeRange,
     optimizationsEnabled,
     qualitySettings,
+    initializeNetworkVisualization,
+    initializeTimeSeriesVisualization,
+    initializeGeoVisualization,
+    initializeHierarchyVisualization,
+    hierarchyLayoutType
   ]);
 
   // Generate mock network data
@@ -374,63 +1446,25 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
     return data;
   };
 
-  // Visualization initialization functions
-  // These will be replaced with actual D3 visualizations in future steps
-
-  const initializeNetworkVisualization = () => {
-    if (!networkRef.current) return;
-    console.log('Initializing network visualization');
-    // TODO: Implement network visualization
-  };
-
-  const initializeTimeSeriesVisualization = () => {
-    if (!timeSeriesRef.current) return;
-    console.log('Initializing time series visualization');
-    // TODO: Implement time series visualization
-  };
-
-  const initializeGeoVisualization = () => {
-    if (!geoMapRef.current) return;
-    console.log('Initializing geo visualization');
-    // TODO: Implement geo visualization
-  };
-
-  const initializeHierarchyVisualization = () => {
-    if (!hierarchyRef.current) return;
-    console.log('Initializing hierarchy visualization');
-    // TODO: Implement hierarchy visualization
-  };
-
-  // Event handlers
-  const handleViewChange = (view: VisualizationType) => {
-    setCurrentView(view);
-  };
-
-  const toggleAnimation = () => {
-    setIsAnimating(!isAnimating);
-  };
-
-  const toggleOptimizations = () => {
-    setOptimizationsEnabled(!optimizationsEnabled);
-  };
-
-  const handleEntitySelection = (entityId: string) => {
-    setSelectedEntities(prev => {
-      if (prev.includes(entityId)) {
-        return prev.filter(id => id !== entityId);
-      } else {
-        return [...prev, entityId];
+  // Load world map data once
+  useEffect(() => {
+    // In a real application, this would load from an API or local file
+    // For this demo, we'll use a simplified world map in GeoJSON format
+    const fetchWorldMap = async () => {
+      try {
+        // Simplified world map in GeoJSON format (low resolution for performance)
+        const response = await fetch('https://unpkg.com/world-atlas@2.0.2/countries-110m.json');
+        const data = await response.json();
+        setWorldMapData(data);
+      } catch (error) {
+        console.error('Error loading world map data:', error);
+        // Fallback to null if fetch fails
+        setWorldMapData(null);
       }
-    });
-  };
+    };
 
-  const handleTimeRangeChange = (range: [Date, Date]) => {
-    setTimeRange(range);
-  };
-
-  const handleFilterChange = (value: number) => {
-    setFilterValue(value);
-  };
+    fetchWorldMap();
+  }, []);
 
   // Rendering
   return (

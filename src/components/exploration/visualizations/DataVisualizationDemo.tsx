@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { DataPoint } from '../../../types/exploration/DataAnalysisTypes';
-import { BarChart } from './charts/BarChart';
-import { HeatMap } from './charts/HeatMap';
-import { LineChart } from './charts/LineChart';
-import { ScatterPlot } from './charts/ScatterPlot';
+import { BarChart, HeatMap, LineChart, ReferenceLine, ScatterPlot } from './charts';
 
 /**
  * DataVisualizationDemo component for showcasing the various visualization components
  */
 export function DataVisualizationDemo() {
   const [activeTab, setActiveTab] = useState('line');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   // Sample time series data for LineChart
   const timeSeriesData: DataPoint[] = Array.from({ length: 10 }, (_, i) => ({
@@ -132,109 +130,205 @@ export function DataVisualizationDemo() {
     }
   }
 
+  // Reference lines for charts
+  const referenceLines: ReferenceLine[] = [
+    { value: 50, label: 'Average', color: '#ff7300', axis: 'y' },
+  ];
+
+  // Handle chart element click
+  const handleElementClick = (data: Record<string, unknown>, index: number) => {
+    console.log('Element clicked:', data, 'Index:', index);
+    alert(`Clicked element: ${JSON.stringify(data)}`);
+  };
+
   return (
     <div className="data-visualization-demo">
       <h2 className="mb-4 text-xl font-bold">Data Visualization Components</h2>
 
-      <div className="tabs mb-4">
-        <button
-          className={`mr-2 px-4 py-2 ${activeTab === 'line' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveTab('line')}
-        >
-          Line Chart
-        </button>
-        <button
-          className={`mr-2 px-4 py-2 ${activeTab === 'bar' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveTab('bar')}
-        >
-          Bar Chart
-        </button>
-        <button
-          className={`mr-2 px-4 py-2 ${activeTab === 'scatter' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveTab('scatter')}
-        >
-          Scatter Plot
-        </button>
-        <button
-          className={`px-4 py-2 ${activeTab === 'heatmap' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveTab('heatmap')}
-        >
-          Heat Map
-        </button>
+      <div className="mb-4 flex justify-between">
+        <div className="tabs">
+          <button
+            className={`mr-2 px-4 py-2 ${activeTab === 'line' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setActiveTab('line')}
+          >
+            Line Chart
+          </button>
+          <button
+            className={`mr-2 px-4 py-2 ${activeTab === 'bar' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setActiveTab('bar')}
+          >
+            Bar Chart
+          </button>
+          <button
+            className={`mr-2 px-4 py-2 ${activeTab === 'scatter' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setActiveTab('scatter')}
+          >
+            Scatter Plot
+          </button>
+          <button
+            className={`px-4 py-2 ${activeTab === 'heatmap' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setActiveTab('heatmap')}
+          >
+            Heat Map
+          </button>
+        </div>
+
+        <div className="theme-toggle">
+          <button
+            className={`px-4 py-2 ${theme === 'light' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setTheme('light')}
+          >
+            Light
+          </button>
+          <button
+            className={`px-4 py-2 ${theme === 'dark' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setTheme('dark')}
+          >
+            Dark
+          </button>
+        </div>
       </div>
 
       <div className="chart-container rounded border border-gray-300 p-4">
         {activeTab === 'line' && (
           <>
-            <h3 className="mb-2 text-lg font-semibold">Time Series Data Visualization</h3>
-            <p className="mb-4">This line chart shows multiple time series over a 10-day period.</p>
             <LineChart
               data={timeSeriesData}
               xAxisKey="date"
               yAxisKeys={['value1', 'value2', 'value3']}
               dateFormat={true}
               title="Resource Values Over Time"
+              theme={theme}
+              xAxisLabel="Date"
+              yAxisLabel="Value"
+              showGrid={true}
+              fillArea={true}
+              curveType="monotone"
+              showDots={true}
+              showLegend={true}
+              referenceLines={referenceLines}
+              onElementClick={handleElementClick}
+              animate={true}
             />
+            <div className="mt-4 text-sm">
+              <h3 className="font-bold">Line Chart Features:</h3>
+              <ul className="list-disc pl-5">
+                <li>Date formatting for time series data</li>
+                <li>Area fill option for better visualization</li>
+                <li>Multiple curve types (linear, monotone, step, etc.)</li>
+                <li>Reference lines for thresholds or averages</li>
+                <li>Interactive tooltips and click events</li>
+              </ul>
+            </div>
           </>
         )}
 
         {activeTab === 'bar' && (
           <>
-            <h3 className="mb-2 text-lg font-semibold">Categorical Data Visualization</h3>
-            <p className="mb-4">
-              This bar chart compares different properties across resource types.
-            </p>
             <BarChart
               data={categoricalData}
               xAxisKey="name"
               yAxisKeys={['amount', 'quality', 'accessibility']}
               title="Resource Properties Comparison"
+              theme={theme}
+              xAxisLabel="Resource Type"
+              yAxisLabel="Value"
+              showGrid={true}
+              showLegend={true}
+              stacked={false}
+              showValues={true}
+              xAxisTickAngle={-45}
+              referenceLines={referenceLines}
+              onElementClick={handleElementClick}
+              animate={true}
             />
+            <div className="mt-4 text-sm">
+              <h3 className="font-bold">Bar Chart Features:</h3>
+              <ul className="list-disc pl-5">
+                <li>Stacked or grouped bar options</li>
+                <li>Value labels on bars</li>
+                <li>Horizontal or vertical layout</li>
+                <li>Customizable bar size and gap</li>
+                <li>Angled labels for better readability</li>
+              </ul>
+            </div>
           </>
         )}
 
         {activeTab === 'scatter' && (
           <>
-            <h3 className="mb-2 text-lg font-semibold">Correlation Data Visualization</h3>
-            <p className="mb-4">
-              This scatter plot shows the relationship between resource potential and habitability.
-            </p>
             <ScatterPlot
               data={correlationData}
               xAxisKey="resourcePotential"
               yAxisKey="habitabilityScore"
               title="Resource Potential vs. Habitability Score"
+              theme={theme}
               xAxisLabel="Resource Potential"
               yAxisLabel="Habitability Score"
+              showGrid={true}
+              showLegend={true}
+              color="#8884d8"
+              pointSize={10}
+              showQuadrants={true}
+              referenceLines={referenceLines}
+              onElementClick={handleElementClick}
+              animate={true}
             />
+            <div className="mt-4 text-sm">
+              <h3 className="font-bold">Scatter Plot Features:</h3>
+              <ul className="list-disc pl-5">
+                <li>Quadrant division with customizable labels</li>
+                <li>Optional Z-axis for bubble size</li>
+                <li>Reference lines for correlation analysis</li>
+                <li>Customizable point size and color</li>
+                <li>Interactive tooltips with point details</li>
+              </ul>
+            </div>
           </>
         )}
 
         {activeTab === 'heatmap' && (
           <>
-            <h3 className="mb-2 text-lg font-semibold">Density Data Visualization</h3>
-            <p className="mb-4">This heat map shows the intensity distribution across a grid.</p>
             <HeatMap
               data={heatmapData}
               valueKey="value"
               title="Resource Intensity Distribution"
+              theme={theme}
               cellSize={35}
+              showValues={true}
+              showLegend={true}
+              valueDecimals={1}
+              cellBorder={{
+                width: 1,
+                color: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                radius: 0,
+              }}
+              onElementClick={handleElementClick}
             />
+            <div className="mt-4 text-sm">
+              <h3 className="font-bold">Heat Map Features:</h3>
+              <ul className="list-disc pl-5">
+                <li>Customizable color gradient</li>
+                <li>Value display in cells</li>
+                <li>Adjustable cell size and border</li>
+                <li>Color scale legend</li>
+                <li>Interactive cell tooltips and clicks</li>
+              </ul>
+            </div>
           </>
         )}
       </div>
 
-      <div className="mt-4 rounded bg-gray-100 p-4">
-        <h3 className="mb-2 text-lg font-semibold">Usage Notes</h3>
+      <div className="mt-4 rounded bg-gray-100 p-4 dark:bg-gray-800 dark:text-gray-200">
+        <h3 className="mb-2 text-lg font-semibold">Common Features Across All Charts</h3>
         <ul className="ml-5 list-disc">
-          <li>
-            All visualization components can handle both DataPoint objects and regular objects.
-          </li>
-          <li>Charts are responsive and will adjust to container size.</li>
-          <li>LineChart supports time series data with automatic date formatting.</li>
-          <li>BarChart supports stacked bar configuration for comparison data.</li>
-          <li>ScatterPlot can visualize correlations with optional Z-axis (bubble size).</li>
-          <li>HeatMap works best with grid-like data to show intensity distribution.</li>
+          <li>Light and dark theme support</li>
+          <li>Consistent styling and behavior</li>
+          <li>Error handling and loading states</li>
+          <li>Interactive tooltips and click events</li>
+          <li>Animation support for data changes</li>
+          <li>Reference lines for thresholds or important values</li>
+          <li>Responsive layout that adapts to container size</li>
         </ul>
       </div>
     </div>

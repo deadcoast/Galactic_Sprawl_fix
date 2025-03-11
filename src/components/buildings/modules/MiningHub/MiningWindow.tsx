@@ -14,10 +14,11 @@ import {
   Target,
 } from 'lucide-react';
 import * as React from 'react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
 import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
 import { MiningResource } from '../../../../types/mining/MiningTypes';
+import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
 import { MiningMap } from './MiningMap';
 import { MiningTutorial } from './MiningTutorial';
 import { ResourceNode } from './ResourceNode';
@@ -218,18 +219,61 @@ const createDragData = (type: 'resource' | 'ship', data: BaseDragDataInput): Dra
   }
 };
 
+// Add helper functions to convert between types
+const convertToMiningResource = (resource: Resource): MiningResource => {
+  // Map the string type to ResourceType enum
+  let resourceType: ResourceType;
+  switch (resource.type) {
+    case 'mineral':
+      resourceType = ResourceType.IRON; // Default to IRON for minerals
+      break;
+    case 'gas':
+      resourceType = ResourceType.HELIUM; // Default to HELIUM for gas
+      break;
+    case 'exotic':
+      resourceType = ResourceType.EXOTIC_MATTER; // Map to EXOTIC_MATTER for exotic
+      break;
+    default:
+      resourceType = ResourceType.IRON; // Default fallback
+  }
+
+  return {
+    ...resource,
+    type: resourceType,
+  };
+};
+
+const convertToResource = (resource: MiningResource): Resource => {
+  // Map the ResourceType enum to string type
+  let type: 'mineral' | 'gas' | 'exotic';
+  if ([ResourceType.IRON, ResourceType.COPPER, ResourceType.TITANIUM].includes(resource.type)) {
+    type = 'mineral';
+  } else if ([ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(resource.type)) {
+    type = 'gas';
+  } else if ([ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(resource.type)) {
+    type = 'exotic';
+  } else {
+    type = 'mineral'; // Default fallback
+  }
+
+  return {
+    ...resource,
+    type,
+  };
+};
+
 export function MiningWindow() {
-  const [selectedNode, setSelectedNode] = React.useState<MiningResource | null>(null);
-  const [viewMode, setViewMode] = React.useState<ViewMode>('map');
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [mineAll, setMineAll] = React.useState(false);
-  const [sortBy, setSortBy] = React.useState<SortOption>('priority');
-  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc');
-  const [tier, setTier] = React.useState<1 | 2 | 3>(1);
-  const [filterBy, setFilterBy] = React.useState<'all' | 'mineral' | 'gas' | 'exotic'>('all');
-  const [showTutorial, setShowTutorial] = React.useState(false);
-  const [showSettings, setShowSettings] = React.useState(false);
-  const [contextMenuItems, setContextMenuItems] = React.useState<ContextMenuItem[]>([]);
+  const [selectedNode, setSelectedNode] = useState<Resource | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('map');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mineAll, setMineAll] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('priority');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [tier, setTier] = useState<1 | 2 | 3>(1);
+  const [filterBy, setFilterBy] = useState<FilterOption>('all');
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [contextMenuItems, setContextMenuItems] = useState<ContextMenuItem[]>([]);
   const { handleContextMenu, closeContextMenu, ContextMenuComponent } = useContextMenu({
     items: contextMenuItems,
   });
@@ -283,7 +327,7 @@ export function MiningWindow() {
   }, [tier]);
 
   // Memoize handlers
-  const handleNodeSelect = useCallback((node: MiningResource) => {
+  const handleNodeSelect = useCallback((node: Resource) => {
     setSelectedNode(node);
   }, []);
 
@@ -433,7 +477,7 @@ export function MiningWindow() {
         console.warn(`Setting thresholds for resource: ${resource.name}`);
         break;
       case 'view-details':
-        setSelectedNode(resource as MiningResource);
+        setSelectedNode(resource);
         break;
       case 'scan-deposits':
         console.warn(`Scanning for deposits around resource: ${resource.name}`);
@@ -649,9 +693,12 @@ export function MiningWindow() {
           React.Fragment,
           null,
           React.createElement(MiningMap, {
-            resources: filteredResources,
-            selectedNode: selectedNode,
-            onSelectNode: setSelectedNode,
+            resources: filteredResources.map(r => convertToMiningResource(r)),
+            selectedNode: selectedNode ? convertToMiningResource(selectedNode) : null,
+            onSelectNode: (resource: MiningResource) => {
+              const converted = convertToResource(resource);
+              setSelectedNode(converted);
+            },
             techBonuses: techBonuses,
             ships: mockShips,
             quality: 'high',
@@ -704,7 +751,7 @@ export function MiningWindow() {
                       resource: resource,
                       isSelected: selectedNode?.id === resource.id,
                       techBonuses: techBonuses,
-                      onClick: () => setSelectedNode(resource as MiningResource),
+                      onClick: () => setSelectedNode(resource as Resource),
                       assignedShip:
                         mockShips.find(ship => ship.targetNode === resource.id)?.id || '',
                     })

@@ -1,6 +1,6 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
-import { AlertTriangle, Database, Truck, ZoomIn, ZoomOut } from 'lucide-react';
+import { AlertTriangle, Database, ZoomIn, ZoomOut } from 'lucide-react';
 import * as React from 'react';
 import { MiningResource, MiningShip } from '../../../../types/mining/MiningTypes';
 import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
@@ -62,16 +62,37 @@ export function MiningMap({
     setZoom(prev => Math.max(0.5, Math.min(2, prev + delta)));
   };
 
-  const getTypeColor = (type: ResourceType) => {
+  const getResourceColor = (type: ResourceType): string => {
     switch (type) {
-      case ResourceType.MINERALS:
-        return 'rgb(59, 130, 246)'; // blue-500
-      case ResourceType.GAS:
-        return 'rgb(16, 185, 129)'; // green-500
-      case ResourceType.EXOTIC:
-        return 'rgb(236, 72, 153)'; // pink-500
+      case ResourceType.IRON:
+      case ResourceType.COPPER:
+      case ResourceType.TITANIUM:
+        return 'text-blue-400';
+      case ResourceType.HELIUM:
+      case ResourceType.DEUTERIUM:
+        return 'text-teal-400';
+      case ResourceType.DARK_MATTER:
+      case ResourceType.EXOTIC_MATTER:
+        return 'text-purple-400';
       default:
-        return 'rgb(156, 163, 175)'; // gray-400
+        return 'text-gray-400';
+    }
+  };
+
+  const getResourceBackground = (type: ResourceType): string => {
+    switch (type) {
+      case ResourceType.IRON:
+      case ResourceType.COPPER:
+      case ResourceType.TITANIUM:
+        return 'bg-blue-900/30';
+      case ResourceType.HELIUM:
+      case ResourceType.DEUTERIUM:
+        return 'bg-teal-900/30';
+      case ResourceType.DARK_MATTER:
+      case ResourceType.EXOTIC_MATTER:
+        return 'bg-purple-900/30';
+      default:
+        return 'bg-gray-900/30';
     }
   };
 
@@ -116,7 +137,8 @@ export function MiningMap({
         >
           {/* Resource Nodes */}
           {resources.map(resource => {
-            const color = getTypeColor(resource.type);
+            const color = getResourceColor(resource.type);
+            const background = getResourceBackground(resource.type);
             const isSelected = selectedNode?.id === resource.id;
             const angle = Math.random() * Math.PI * 2; // Random angle for position
             const x = Math.cos(angle) * resource.distance;
@@ -135,19 +157,17 @@ export function MiningMap({
                 <button onClick={() => onSelectNode(resource)} className="group relative">
                   {/* Resource Node Visualization */}
                   <div
-                    className={`h-16 w-16 rounded-full bg-${color}-500/20 relative animate-pulse ${
-                      isSelected
-                        ? `ring-2 ring-${color}-400 ring-offset-2 ring-offset-gray-900`
-                        : ''
+                    className={`h-16 w-16 rounded-full ${background} relative animate-pulse ${
+                      isSelected ? `ring-2 ${color} ring-offset-2 ring-offset-gray-900` : ''
                     }`}
                   >
                     <div
-                      className={`absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${color}-400/30`}
+                      className={`absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full ${background}`}
                     >
                       <div
-                        className={`absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-${color}-300/40 flex items-center justify-center`}
+                        className={`absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full ${background} flex items-center justify-center`}
                       >
-                        <Database className={`h-4 w-4 text-${color}-200`} />
+                        <Database className={color} />
                       </div>
                     </div>
 
@@ -159,8 +179,8 @@ export function MiningMap({
 
                   {/* Resource Label */}
                   <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-center">
-                    <div className={`text-${color}-200 text-sm font-medium`}>{resource.name}</div>
-                    <div className={`text-${color}-300/70 text-xs`}>
+                    <div className={`${color} text-sm font-medium`}>{resource.name}</div>
+                    <div className={`${color.replace('400', '300')}/70 text-xs`}>
                       {Math.round(resource.abundance * 100)}% • {resource.distance}ly
                     </div>
                   </div>
@@ -168,56 +188,7 @@ export function MiningMap({
               </div>
             );
           })}
-
-          {/* Mining Ships */}
-          {ships.map(ship => {
-            const targetResource = resources.find(r => r.id === ship.targetNode);
-            if (!targetResource) {
-              return null;
-            }
-
-            const angle = Math.random() * Math.PI * 2;
-            const x = Math.cos(angle) * targetResource.distance;
-            const y = Math.sin(angle) * targetResource.distance;
-
-            return (
-              <div
-                key={ship.id}
-                className="absolute"
-                style={{
-                  left: `calc(50% + ${x}px)`,
-                  top: `calc(50% + ${y}px)`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-              >
-                <div className="group relative">
-                  <Truck
-                    className={`h-5 w-5 ${
-                      ship.status === 'mining'
-                        ? 'text-green-400'
-                        : ship.status === 'returning'
-                          ? 'text-yellow-400'
-                          : 'text-gray-400'
-                    }`}
-                  />
-
-                  {/* Ship Info Tooltip */}
-                  <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100">
-                    <div className="whitespace-nowrap rounded-lg border border-gray-700 bg-gray-800/95 px-3 py-2 backdrop-blur-sm">
-                      <div className="text-sm font-medium text-white">{ship.name}</div>
-                      <div className="text-xs text-gray-400">
-                        {ship.status.charAt(0).toUpperCase() + ship.status.slice(1)} •{' '}
-                        {Math.round((ship.currentLoad / ship.capacity) * 100)}% Full • Efficiency:{' '}
-                        {Math.round((ship.efficiency + techBonuses.efficiency) * 100)}%
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
         </div>
-        {children}
       </div>
     </div>
   );

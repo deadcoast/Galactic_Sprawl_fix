@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useModules } from '../../contexts/ModuleContext';
+import { selectActiveModules, useModules } from '../../contexts/ModuleContext';
 import { useGameState } from '../../hooks/game/useGameState';
 import { ModuleEvent } from '../../lib/modules/ModuleEvents';
 import { BaseModule } from '../../types/buildings/ModuleTypes';
+import { ModuleStatus } from '../../types/modules/ModuleTypes';
 import { createBatchedEventStream } from '../../utils/events/EventBatcher';
 
 type TabType = 'resources' | 'modules' | 'events' | 'system';
@@ -27,7 +28,16 @@ export function GameStateMonitor({
   expanded = false,
 }: GameStateMonitorProps) {
   const gameState = useGameState();
-  const { state: moduleState } = useModules();
+  const moduleState = useModules(state => ({
+    ...state,
+    activeModules: selectActiveModules(state).map(
+      module =>
+        ({
+          ...module,
+          status: module.status === ModuleStatus.ERROR ? 'inactive' : module.status,
+        }) as BaseModule
+    ),
+  }));
   const [currentTab, setCurrentTab] = useState<TabType>(initialTab);
   const [isExpanded, setIsExpanded] = useState(expanded);
   const [recentEvents, setRecentEvents] = useState<ModuleEvent[]>([]);

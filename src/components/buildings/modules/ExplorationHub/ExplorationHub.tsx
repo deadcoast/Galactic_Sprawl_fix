@@ -16,7 +16,10 @@ import { ContextMenuItem, useContextMenu } from '../../../../components/ui/Conte
 import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
 import { useTooltipContext } from '../../../../components/ui/tooltip-context';
 import { explorationRules } from '../../../../config/automation/explorationRules';
-import { ReconShipManagerImpl } from '../../../../managers/exploration/ReconShipManagerImpl';
+import {
+  ReconShipManagerImpl,
+  ShipEvent,
+} from '../../../../managers/exploration/ReconShipManagerImpl';
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { Position } from '../../../../types/core/GameTypes';
 import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
@@ -815,7 +818,9 @@ export function ExplorationHub() {
 
   // Listen for ReconShipManager events
   useEffect(() => {
-    const handleTaskCompleted = ({ shipId, task }: { shipId: string; task: ExplorationTask }) => {
+    const handleTaskCompleted = ({ shipId, task }: ShipEvent) => {
+      if (!task) return; // Skip if no task is provided
+
       setShips(prevShips =>
         prevShips.map(ship =>
           ship.id === shipId

@@ -1,31 +1,70 @@
 import { Pause, Play, SkipBack, SkipForward, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { useGame } from '../../../../contexts/GameContext';
-import { GameEvent } from '../../../../types/core/GameTypes';
+import { useGameState } from '../../../../contexts/GameContext';
+import { GameEvent, GameEventType, Position } from '../../../../types/core/GameTypes';
 
 interface MissionReplayProps {
   missionId: string;
   onClose: () => void;
 }
 
-export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
-  const gameContext = useGame();
+interface EventPosition {
+  x: number;
+  y: number;
+}
 
-  // Ensure context is available
-  if (!gameContext) {
+interface Mission {
+  id: string;
+  timestamp: number;
+  description: string;
+}
+
+interface GameState {
+  missions: {
+    history: Mission[];
+  };
+  events: GameEvent[];
+}
+
+const selectGameState = (state: unknown): GameState => {
+  if (
+    typeof state === 'object' &&
+    state !== null &&
+    'missions' in state &&
+    'events' in state &&
+    typeof state.missions === 'object' &&
+    state.missions !== null &&
+    'history' in state.missions &&
+    Array.isArray(state.missions.history) &&
+    Array.isArray(state.events)
+  ) {
+    return state as GameState;
+  }
+  return {
+    missions: {
+      history: [],
+    },
+    events: [],
+  };
+};
+
+export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
+  const gameState = useGameState(selectGameState);
+
+  // Ensure state is available
+  if (!gameState) {
     return null;
   }
 
-  const { state } = gameContext;
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [currentEventIndex, setCurrentEventIndex] = useState<number | null>(null);
 
   // Find the mission and related events
-  const mission = state.missions.history.find((m: { id: string }) => m.id === missionId);
-  const events = state.events.filter(
-    (e: GameEvent) =>
+  const mission = gameState.missions.history.find(m => m.id === missionId);
+  const events = gameState.events.filter(
+    e =>
       e.timestamp >= (mission?.timestamp || 0) && e.timestamp <= (mission?.timestamp || 0) + 3600000 // 1 hour window
   );
 
@@ -78,6 +117,68 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
     (e: GameEvent) => e.timestamp <= events[0].timestamp + currentTime
   );
 
+  // Render map with ship paths and events
+  const renderEvents = (events: GameEvent[]) => {
+    return events.map((event: GameEvent, index: number) => {
+      // Calculate position based on event data or use random positioning as fallback
+      const eventPosition: EventPosition = {
+        x:
+          typeof event.data === 'object' &&
+          event.data !== null &&
+          'position' in event.data &&
+          typeof event.data.position === 'object' &&
+          event.data.position !== null &&
+          'x' in event.data.position
+            ? (event.data.position as Position).x
+            : Math.random() * 100,
+        y:
+          typeof event.data === 'object' &&
+          event.data !== null &&
+          'position' in event.data &&
+          typeof event.data.position === 'object' &&
+          event.data.position !== null &&
+          'y' in event.data.position
+            ? (event.data.position as Position).y
+            : Math.random() * 100,
+      };
+
+      // Determine event marker appearance based on event type
+      const getEventColor = (type: GameEventType) => {
+        switch (type) {
+          case 'exploration':
+            return 'bg-teal-400';
+          case 'combat':
+            return 'bg-red-400';
+          case 'trade':
+            return 'bg-amber-400';
+          case 'diplomacy':
+            return 'bg-purple-400';
+          default:
+            return 'bg-teal-400';
+        }
+      };
+
+      // Check if this is the current event being viewed
+      const isCurrentEvent = index === currentEventIndex;
+
+      return (
+        <div
+          key={`event-${index}`}
+          className="absolute h-2 w-2 rounded-full"
+          style={{
+            left: `${eventPosition.x}%`,
+            top: `${eventPosition.y}%`,
+            backgroundColor: getEventColor(event.type),
+          }}
+          onClick={() => {
+            // Set current event index to this event when clicked
+            setCurrentEventIndex(index);
+          }}
+        />
+      );
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="mx-4 w-full max-w-4xl rounded-lg border border-gray-700 bg-gray-900 p-6">
@@ -99,75 +200,7 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
         {/* Replay Visualization */}
         <div className="relative mb-6 h-96 overflow-hidden rounded-lg bg-gray-800/50">
           {/* Map View */}
-          <div className="absolute inset-0">
-            {/* Render map with ship paths and events */}
-            {currentEvents.map((event, index) => {
-              // Calculate position based on event data or use random positioning as fallback
-              const eventPosition = {
-                x:
-                  typeof event.data === 'object' &&
-                  event.data !== null &&
-                  'position' in event.data &&
-                  typeof event.data.position === 'object' &&
-                  event.data.position !== null &&
-                  'x' in event.data.position &&
-                  typeof event.data.position.x === 'number'
-                    ? event.data.position.x
-                    : Math.random() * 100,
-                y:
-                  typeof event.data === 'object' &&
-                  event.data !== null &&
-                  'position' in event.data &&
-                  typeof event.data.position === 'object' &&
-                  event.data.position !== null &&
-                  'y' in event.data.position &&
-                  typeof event.data.position.y === 'number'
-                    ? event.data.position.y
-                    : Math.random() * 100,
-              };
-
-              // Determine event marker appearance based on event type
-              const getEventColor = () => {
-                switch (event.type) {
-                  case 'exploration':
-                    return 'bg-teal-400';
-                  case 'combat':
-                    return 'bg-red-400';
-                  case 'trade':
-                    return 'bg-amber-400';
-                  case 'diplomacy':
-                    return 'bg-purple-400';
-                  default:
-                    return 'bg-teal-400';
-                }
-              };
-
-              // Check if this is the current event being viewed
-              const isCurrentEvent = index === currentEventIndex;
-
-              return (
-                <div
-                  key={index}
-                  className="absolute"
-                  style={{
-                    left: `${eventPosition.x}%`,
-                    top: `${eventPosition.y}%`,
-                    transition: 'all 0.5s ease-out',
-                    zIndex: isCurrentEvent ? 10 : 1, // Bring current event to front
-                  }}
-                  title={`${event.type} event at ${new Date(event.timestamp).toLocaleTimeString()}`}
-                >
-                  <div
-                    className={`${isCurrentEvent ? 'h-4 w-4 ring-2 ring-white' : 'h-2 w-2'} rounded-full ${getEventColor()} hover:h-3 hover:w-3`}
-                    onClick={() => {
-                      // Set current event index to this event when clicked
-                      setCurrentEventIndex(index);
-                    }}
-                  />
-                </div>
-              );
-            })}
-          </div>
+          <div className="absolute inset-0">{renderEvents(currentEvents)}</div>
 
           {/* Event Timeline */}
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-gray-900/90 to-transparent p-4">

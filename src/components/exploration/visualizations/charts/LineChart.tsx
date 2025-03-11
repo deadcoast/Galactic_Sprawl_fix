@@ -1,26 +1,91 @@
 import { useMemo } from 'react';
 import {
   CartesianGrid,
+  LabelProps,
   Legend,
   Line,
   LineChart as RechartsLineChart,
-  ResponsiveContainer,
+  ReferenceLine,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
-import { DataPoint } from '../../../../types/exploration/DataAnalysisTypes';
+import {
+  BaseChart,
+  BaseChartProps,
+  DefaultTooltip,
+  formatAxisTick,
+  getColor,
+  processChartData,
+  ReferenceLine as ReferenceLineType,
+} from './BaseChart';
 
-interface LineChartProps {
-  data: DataPoint[] | Record<string, unknown>[];
+// Define allowed positions for reference line labels
+type ReferenceLinePosition =
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'insideTop'
+  | 'insideBottom'
+  | 'insideLeft'
+  | 'insideRight'
+  | 'insideTopRight'
+  | 'insideTopLeft'
+  | 'insideBottomRight'
+  | 'insideBottomLeft'
+  | 'center';
+
+// Define the dot click event interface
+interface DotClickEvent {
+  payload: Record<string, unknown>;
+  index?: number;
+  dataKey?: string;
+  cx?: number;
+  cy?: number;
+  r?: number;
+  [key: string]: unknown;
+}
+
+export interface LineChartProps extends BaseChartProps {
+  /** Key for X-axis values */
   xAxisKey: string;
+
+  /** Keys for Y-axis values (multiple series) */
   yAxisKeys: string[];
-  width?: number | string;
-  height?: number | string;
-  title?: string;
-  colors?: string[];
+
+  /** Whether to apply date formatting to x-axis values */
   dateFormat?: boolean;
-  customTooltip?: React.FC<unknown>;
+
+  /** Whether to connect null data points */
+  connectNulls?: boolean;
+
+  /** Curve type for the lines */
+  curveType?: 'linear' | 'monotone' | 'step' | 'stepAfter' | 'stepBefore' | 'natural';
+
+  /** Whether to show grid lines */
+  showGrid?: boolean;
+
+  /** Whether to fill area under lines */
+  fillArea?: boolean;
+
+  /** Stroke width for the lines */
+  strokeWidth?: number;
+
+  /** X-axis label */
+  xAxisLabel?: string;
+
+  /** Y-axis label */
+  yAxisLabel?: string;
+
+  /** Whether to show dots on data points */
+  showDots?: boolean;
+
+  /** Whether to show the legend */
+  showLegend?: boolean;
+
+  /** Reference lines to display (e.g., thresholds) */
+  referenceLines?: ReferenceLineType[];
 }
 
 /**
@@ -33,91 +98,141 @@ export function LineChart({
   width = '100%',
   height = 400,
   title,
-  colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'],
+  colors = [],
   dateFormat = false,
   customTooltip,
+  theme = 'light',
+  connectNulls = true,
+  curveType = 'monotone',
+  showGrid = true,
+  fillArea = false,
+  strokeWidth = 2,
+  xAxisLabel,
+  yAxisLabel,
+  showDots = true,
+  showLegend = true,
+  referenceLines = [],
+  className = '',
+  animate = true,
+  onElementClick,
+  errorMessage,
 }: LineChartProps) {
   // Process data for the chart
-  const processedData = useMemo(() => {
-    if (!data || data.length === 0) return [];
+  const processedData = useMemo(
+    () => processChartData(data, xAxisKey, yAxisKeys, dateFormat),
+    [data, xAxisKey, yAxisKeys, dateFormat]
+  );
 
-    return data.map(item => {
-      // Handle DataPoint objects
-      if ('properties' in item && 'metadata' in item) {
-        const dataPoint = item as DataPoint;
-        const properties = { ...dataPoint.properties };
-        const metadata = dataPoint.metadata || {};
-
-        // Create a new object with flattened structure for chart
-        return {
-          ...properties,
-          ...metadata,
-          // Include the id and date for reference
-          id: dataPoint.id,
-          date: dataPoint.date,
-          // Format date if it's being used as the x-axis
-          formattedDate:
-            dateFormat && xAxisKey === 'date'
-              ? new Date(dataPoint.date).toLocaleDateString()
-              : undefined,
-        };
-      }
-
-      // Handle record objects
-      return {
-        ...item,
-        // Format date if it's a timestamp and dateFormat is true
-        formattedDate:
-          dateFormat && xAxisKey === 'date' && typeof item.date === 'number'
-            ? new Date(item.date as number).toLocaleDateString()
-            : undefined,
-      };
-    });
-  }, [data, xAxisKey, dateFormat]);
-
-  // Format tick values for the X axis if they're dates
-  const formatXAxisTick = (value: number | string) => {
-    if (dateFormat && xAxisKey === 'date' && typeof value === 'number') {
-      return new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    }
-    return String(value);
-  };
-
-  // Generate unique colors for each line
-  const getLineColor = (index: number) => {
-    return colors[index % colors.length];
-  };
-
+  // If no data, show error
   if (!data || data.length === 0) {
-    return <div className="chart-empty">No data available</div>;
+    return (
+      <BaseChart
+        width={width}
+        height={height}
+        title={title}
+        theme={theme}
+        className={className}
+        errorMessage={errorMessage || 'No data available'}
+      >
+        <RechartsLineChart data={[]} />
+      </BaseChart>
+    );
   }
 
-  return (
-    <div className="chart-container">
-      {title && <h3 className="chart-title">{title}</h3>}
-      <ResponsiveContainer width={width} height={height}>
-        <RechartsLineChart data={processedData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey={dateFormat && xAxisKey === 'date' ? 'formattedDate' : xAxisKey}
-            tickFormatter={formatXAxisTick}
-          />
-          <YAxis />
-          <Tooltip content={customTooltip} />
-          <Legend />
+  // Handle chart click
+  const handleChartClick = (chartData: Record<string, unknown> | undefined, index: number) => {
+    if (onElementClick && chartData) {
+      onElementClick(chartData, index);
+    }
+  };
 
-          {yAxisKeys.map((key, index) => (
-            <Line
-              key={key}
-              type="monotone"
-              dataKey={key}
-              stroke={getLineColor(index)}
-              activeDot={{ r: 8 }}
-              name={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
-            />
-          ))}
-        </RechartsLineChart>
-      </ResponsiveContainer>
-    </div>
+  // Handle dot click event
+  const handleDotClick = (event: DotClickEvent, index: number) => {
+    if (onElementClick && event && event.payload) {
+      onElementClick(event.payload, index);
+    }
+  };
+
+  // Create the chart content
+  const chartContent = (
+    <RechartsLineChart
+      data={processedData}
+      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+      onClick={chartData => chartData && handleChartClick(chartData as Record<string, unknown>, 0)}
+    >
+      {showGrid && <CartesianGrid strokeDasharray="3 3" />}
+
+      <XAxis
+        dataKey={dateFormat && xAxisKey === 'date' ? 'formattedDate' : xAxisKey}
+        tickFormatter={value => formatAxisTick(value, dateFormat)}
+        label={
+          xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -10 } : undefined
+        }
+      />
+
+      <YAxis
+        label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
+      />
+
+      <Tooltip content={customTooltip || <DefaultTooltip />} />
+
+      {showLegend && <Legend />}
+
+      {/* Reference lines for thresholds or important values */}
+      {referenceLines.map((line, i) => (
+        <ReferenceLine
+          key={`ref-line-${i}`}
+          x={line.axis === 'x' ? line.value : undefined}
+          y={line.axis === 'y' ? line.value : undefined}
+          stroke={line.color || '#ff7300'}
+          label={
+            line.label
+              ? ({
+                  value: line.label,
+                  position: line.position || 'center',
+                } as LabelProps)
+              : undefined
+          }
+        />
+      ))}
+
+      {/* Render each data series as a line */}
+      {yAxisKeys.map((key, index) => (
+        <Line
+          key={key}
+          type={curveType}
+          dataKey={key}
+          stroke={getColor(index, colors)}
+          activeDot={
+            showDots
+              ? {
+                  r: 6,
+                  onClick: (e: DotClickEvent) => handleDotClick(e, index),
+                }
+              : false
+          }
+          dot={showDots}
+          strokeWidth={strokeWidth}
+          connectNulls={connectNulls}
+          name={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+          fill={fillArea ? getColor(index, colors) + '33' : undefined} // Add transparency for fill
+          fillOpacity={fillArea ? 0.2 : 0}
+          isAnimationActive={animate}
+        />
+      ))}
+    </RechartsLineChart>
+  );
+
+  return (
+    <BaseChart
+      width={width}
+      height={height}
+      title={title}
+      theme={theme}
+      className={className}
+      errorMessage={errorMessage}
+    >
+      {chartContent}
+    </BaseChart>
   );
 }

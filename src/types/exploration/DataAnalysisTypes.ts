@@ -11,6 +11,12 @@ export interface DataPoint {
   coordinates: { x: number; y: number };
   properties: Record<string, string | number | boolean | string[]>;
   metadata?: Record<string, string | number | boolean | string[]>;
+
+  /**
+   * Index signature to allow direct property access
+   * This helps with using dot notation for properties that are dynamically added
+   */
+  [key: string]: unknown;
 }
 
 /**
@@ -177,13 +183,11 @@ export interface PredictionAnalysisConfig extends AnalysisConfig {
 export interface ComparisonAnalysisConfig extends AnalysisConfig {
   type: 'comparison';
   parameters: {
-    groups: Array<{
-      id: string;
-      name: string;
-      filterId: string;
-    }>;
-    variables: string[];
-    method?: 'absolute' | 'relative' | 'percentile';
+    baseVariable: string;
+    comparisonVariables: string[];
+    normalizeValues?: boolean;
+    timeRange?: [number, number];
+    groupBy?: string;
   };
 }
 
@@ -219,7 +223,8 @@ export interface SectorAnalysisConfig extends AnalysisConfig {
   parameters: {
     metrics: Array<'resourcePotential' | 'habitabilityScore' | 'anomalyCount' | 'resourceCount'>;
     sectorIds?: string[];
-    compareWith?: string[];
+    includeNeighbors?: boolean;
+    timeRange?: [number, number];
   };
 }
 

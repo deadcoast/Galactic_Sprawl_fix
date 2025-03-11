@@ -6,7 +6,9 @@
  * functionality used by the ExplorationManager.
  */
 
+import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
+import { Position } from '../../types/core/GameTypes';
 
 /**
  * Interface for exploration ship data
@@ -20,20 +22,70 @@ export interface Ship {
   speed?: number;
   efficiency?: number;
   sectorId?: string;
-  position?: { x: number; y: number };
+  position?: Position;
+  capabilities?: {
+    canScan: boolean;
+    canSalvage: boolean;
+    canMine: boolean;
+    canJump: boolean;
+  };
+  stealth?: {
+    active: boolean;
+    level: number;
+    cooldown: number;
+  };
+  sensors?: {
+    range: number;
+    accuracy: number;
+    anomalyDetection: number;
+  };
+  discoveries?: {
+    mappedSectors: number;
+    anomaliesFound: number;
+    resourcesLocated: number;
+  };
   [key: string]: unknown;
 }
+
+export interface ExplorationTask {
+  id: string;
+  type: 'explore' | 'investigate' | 'evade';
+  target: {
+    id: string;
+    position: Position;
+  };
+  priority: number;
+  assignedAt: number;
+  specialization: 'mapping' | 'anomaly' | 'resource';
+  status: 'queued' | 'in-progress' | 'completed' | 'failed';
+  progress?: number;
+  threatLevel?: number;
+}
+
+export type ShipEvent = {
+  shipId: string;
+  task?: ExplorationTask;
+  progress?: number;
+};
+
+export type EventCallback = (event: ShipEvent) => void;
 
 /**
  * Implementation of the ship manager for exploration ships
  */
-export class ReconShipManagerImpl {
+export class ReconShipManagerImpl extends EventEmitter {
   private ships: Map<string, Ship> = new Map();
+  private tasks: Map<string, ExplorationTask> = new Map();
+  private lastUpdate: number = Date.now();
 
   /**
    * Create a new ReconShipManagerImpl
    */
   constructor() {
+    super();
+    this.ships = new Map();
+    this.tasks = new Map();
+
     // Add some sample ships
     this.addShip({
       id: uuidv4(),
@@ -76,6 +128,7 @@ export class ReconShipManagerImpl {
    */
   public addShip(ship: Ship): Ship {
     this.ships.set(ship.id, ship);
+    this.emit('shipRegistered', { shipId: ship.id });
     return ship;
   }
 
@@ -146,5 +199,68 @@ export class ReconShipManagerImpl {
     delete ship.sectorId;
     ship.status = 'idle';
     return true;
+  }
+
+  public registerShip(ship: Ship): void {
+    this.ships.set(ship.id, ship);
+    this.emit('shipRegistered', { shipId: ship.id });
+  }
+
+  public unregisterShip(shipId: string): void {
+    this.ships.delete(shipId);
+    this.emit('shipUnregistered', { shipId });
+  }
+
+  public assignExplorationTask(
+    shipId: string,
+    sectorId: string,
+    position: Position,
+    specialization: 'mapping' | 'anomaly' | 'resource'
+  ): void {
+    const task: ExplorationTask = {
+      id: uuidv4(),
+      type: 'explore',
+      target: {
+        id: sectorId,
+        position,
+      },
+      priority: 1,
+      assignedAt: Date.now(),
+      specialization,
+      status: 'queued',
+    };
+
+    this.tasks.set(task.id, task);
+    this.emit('taskAssigned', { shipId, task });
+  }
+
+  public update(deltaTime: number): void {
+    const now = Date.now();
+    const dt = now - this.lastUpdate;
+    this.lastUpdate = now;
+
+    // Update all active tasks
+    for (const [taskId, task] of this.tasks) {
+      if (task.status === 'in-progress') {
+        // Simulate task progress
+        const progress = (task.progress || 0) + (deltaTime / 1000) * 0.1; // 10% per second
+        if (progress >= 1) {
+          task.status = 'completed';
+          this.emit('taskCompleted', { shipId: taskId, task });
+          this.tasks.delete(taskId);
+        } else {
+          task.progress = progress;
+          this.emit('taskProgress', { shipId: taskId, task, progress });
+        }
+      }
+    }
+  }
+
+  public on(event: string, listener: EventCallback): this {
+    return super.on(event, listener);
+  }
+
+  public off(event: string, listener: EventCallback): this {
+    return super.off(event, listener);
   }
 }

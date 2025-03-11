@@ -9,268 +9,206 @@
  * 4. Implements performance optimizations for smooth visualizations
  */
 
-import { v4 as uuidv4 } from 'uuid';
-import { DataPoint } from '../types/exploration/DataAnalysisTypes';
+import { AbstractBaseService } from '../lib/services/BaseService';
+import { apiService } from './APIService';
+import { ErrorType, errorLoggingService } from './ErrorLoggingService';
 
-// Define a type for data callbacks
-export type DataCallback<T> = (data: T[]) => void;
-
-// Define types for data streams
-export interface DataStream<T> {
-  id: string;
-  type: string;
-  name: string;
-  isActive: boolean;
-  frequency: number; // milliseconds
-  bufferSize: number;
-  buffer: T[];
-  subscribers: Array<{
-    id: string;
-    callback: DataCallback<T>;
-  }>;
-  start: () => void;
-  stop: () => void;
-  addSubscriber: (callback: DataCallback<T>) => string;
-  removeSubscriber: (id: string) => void;
+export interface DataBuffer<T> {
+  data: T[];
+  capacity: number;
+  head: number;
+  tail: number;
+  isFull: boolean;
 }
 
-// Define types for data generators
+export interface TimeWindow {
+  duration: number; // in milliseconds
+  resolution: number; // data points per window
+}
+
+export interface StreamConfig {
+  bufferSize: number;
+  batchSize: number;
+  timeWindow?: TimeWindow;
+  updateInterval: number;
+}
+
 export interface DataGenerator<T> {
-  generateData: () => T | T[];
+  generateData: () => T;
   configureGenerator: (config: Record<string, unknown>) => void;
 }
 
-/**
- * Service for managing real-time data streams and processing
- */
-export class RealTimeDataService {
-  private streams: Map<string, DataStream<unknown>> = new Map();
+class RealTimeDataServiceImpl extends AbstractBaseService {
+  private static instance: RealTimeDataServiceImpl;
+  private dataBuffers: Map<string, DataBuffer<unknown>> = new Map();
+  private streamConfigs: Map<string, StreamConfig> = new Map();
+  private streamIds: Map<string, string> = new Map();
+  private listeners: Map<string, Set<(data: unknown[]) => void>> = new Map();
   private generators: Map<string, DataGenerator<unknown>> = new Map();
 
-  /**
-   * Create a new data stream with specified type and update frequency
-   */
-  public createDataStream<T>(
-    type: string,
-    name: string,
-    frequency: number = 1000,
-    bufferSize: number = 100,
-    initialData: T[] = []
-  ): string {
-    const streamId = uuidv4();
+  private constructor() {
+    super('RealTimeDataService', '1.0.0');
+  }
 
-    // Create a new stream object
-    const stream: DataStream<T> = {
-      id: streamId,
-      type,
-      name,
-      isActive: false,
-      frequency,
-      bufferSize,
-      buffer: [...initialData],
-      subscribers: [],
+  public static getInstance(): RealTimeDataServiceImpl {
+    if (!RealTimeDataServiceImpl.instance) {
+      RealTimeDataServiceImpl.instance = new RealTimeDataServiceImpl();
+    }
+    return RealTimeDataServiceImpl.instance;
+  }
 
-      // Method to start the stream
-      start: () => {
-        if (stream.isActive) return;
-
-        stream.isActive = true;
-        this.startStreamInterval(streamId);
-      },
-
-      // Method to stop the stream
-      stop: () => {
-        stream.isActive = false;
-      },
-
-      // Method to add a subscriber
-      addSubscriber: (callback: DataCallback<T>) => {
-        const subscriberId = uuidv4();
-        stream.subscribers.push({
-          id: subscriberId,
-          callback,
-        });
-
-        // Start stream automatically when first subscriber is added
-        if (stream.subscribers.length === 1 && !stream.isActive) {
-          stream.start();
-        }
-
-        // Send initial data to the new subscriber
-        if (stream.buffer.length > 0) {
-          callback([...stream.buffer]);
-        }
-
-        return subscriberId;
-      },
-
-      // Method to remove a subscriber
-      removeSubscriber: (id: string) => {
-        const index = stream.subscribers.findIndex(s => s.id === id);
-        if (index !== -1) {
-          stream.subscribers.splice(index, 1);
-
-          // Stop stream if no subscribers left
-          if (stream.subscribers.length === 0) {
-            stream.stop();
-          }
-        }
-      },
+  protected async onInitialize(): Promise<void> {
+    this.metadata.metrics = {
+      active_streams: 0,
+      total_data_points: 0,
+      buffer_utilization: 0,
+      update_rate: 0,
+      generators_active: 0,
     };
-
-    // Store the stream
-    this.streams.set(streamId, stream as DataStream<unknown>);
-
-    return streamId;
   }
 
-  /**
-   * Get a list of all data streams
-   */
-  public getDataStreams(): Array<{
-    id: string;
-    type: string;
-    name: string;
-    isActive: boolean;
-    frequency: number;
-    bufferSize: number;
-    subscribers: number;
-  }> {
-    return Array.from(this.streams.values()).map(stream => ({
-      id: stream.id,
-      type: stream.type,
-      name: stream.name,
-      isActive: stream.isActive,
-      frequency: stream.frequency,
-      bufferSize: stream.bufferSize,
-      subscribers: stream.subscribers.length,
-    }));
+  protected async onDispose(): Promise<void> {
+    const streamIds = Array.from(this.streamIds.values());
+    await Promise.all(streamIds.map(id => this.stopStream(id)));
+
+    this.dataBuffers.clear();
+    this.streamConfigs.clear();
+    this.streamIds.clear();
+    this.listeners.clear();
+    this.generators.clear();
   }
 
-  /**
-   * Register a data generator for a stream
-   */
-  public registerDataGenerator<T>(streamId: string, generator: DataGenerator<T>): void {
-    this.generators.set(streamId, generator as DataGenerator<unknown>);
+  public createBuffer<T>(id: string, capacity: number): DataBuffer<T> {
+    const buffer: DataBuffer<T> = {
+      data: new Array(capacity),
+      capacity,
+      head: 0,
+      tail: 0,
+      isFull: false,
+    };
+    this.dataBuffers.set(id, buffer);
+    return buffer;
   }
 
-  /**
-   * Remove a data generator
-   */
-  public removeDataGenerator(streamId: string): void {
-    this.generators.delete(streamId);
-  }
-
-  /**
-   * Subscribe to a data stream
-   */
-  public subscribeToStream<T>(streamId: string, callback: DataCallback<T>): (() => void) | null {
-    const stream = this.streams.get(streamId) as DataStream<T> | undefined;
-
-    if (!stream) {
-      console.error(`Stream with ID ${streamId} not found.`);
-      return null;
+  public appendData<T>(bufferId: string, newData: T[]): void {
+    const buffer = this.dataBuffers.get(bufferId) as DataBuffer<T>;
+    if (!buffer) {
+      throw new Error(`Buffer '${bufferId}' not found`);
     }
 
-    const subscriberId = stream.addSubscriber(callback);
+    for (const item of newData) {
+      buffer.data[buffer.tail] = item;
+      buffer.tail = (buffer.tail + 1) % buffer.capacity;
 
-    // Return unsubscribe function
+      if (buffer.tail === buffer.head) {
+        buffer.head = (buffer.head + 1) % buffer.capacity;
+        buffer.isFull = true;
+      }
+    }
+
+    const metrics = this.metadata.metrics || {};
+    metrics.total_data_points += newData.length;
+    metrics.buffer_utilization = this.calculateBufferUtilization(buffer);
+    this.metadata.metrics = metrics;
+
+    this.notifyListeners(bufferId);
+  }
+
+  public async startStream<T>(
+    endpoint: string,
+    bufferId: string,
+    config: Partial<StreamConfig> = {}
+  ): Promise<void> {
+    const defaultConfig: StreamConfig = {
+      bufferSize: 1000,
+      batchSize: 100,
+      updateInterval: 1000,
+    };
+
+    const streamConfig = { ...defaultConfig, ...config };
+    this.streamConfigs.set(bufferId, streamConfig);
+
+    if (!this.dataBuffers.has(bufferId)) {
+      this.createBuffer<T>(bufferId, streamConfig.bufferSize);
+    }
+
+    // Start API stream or generator stream
+    const generator = this.generators.get(bufferId);
+    if (generator) {
+      this.startGeneratorStream(bufferId, streamConfig.updateInterval);
+    } else {
+      const streamId = await apiService.startStream(
+        endpoint,
+        data => this.handleStreamData(bufferId, data as T[]),
+        {
+          batchSize: streamConfig.batchSize,
+          interval: streamConfig.updateInterval,
+          maxRetries: 3,
+        }
+      );
+      this.streamIds.set(bufferId, streamId);
+    }
+
+    const metrics = this.metadata.metrics || {};
+    metrics.active_streams = this.streamIds.size;
+    this.metadata.metrics = metrics;
+  }
+
+  public async stopStream(bufferId: string): Promise<void> {
+    const streamId = this.streamIds.get(bufferId);
+    if (streamId) {
+      await apiService.stopStream(streamId);
+      this.streamIds.delete(bufferId);
+    }
+
+    // Stop generator if exists
+    if (this.generators.has(bufferId)) {
+      this.generators.delete(bufferId);
+    }
+
+    const metrics = this.metadata.metrics || {};
+    metrics.active_streams = this.streamIds.size;
+    metrics.generators_active = this.generators.size;
+    this.metadata.metrics = metrics;
+  }
+
+  public subscribe<T>(bufferId: string, callback: (data: T[]) => void): () => void {
+    if (!this.listeners.has(bufferId)) {
+      this.listeners.set(bufferId, new Set());
+    }
+
+    const listeners = this.listeners.get(bufferId)!;
+    listeners.add(callback as (data: unknown[]) => void);
+
     return () => {
-      stream.removeSubscriber(subscriberId);
+      listeners.delete(callback as (data: unknown[]) => void);
+      if (listeners.size === 0) {
+        this.listeners.delete(bufferId);
+      }
     };
   }
 
-  /**
-   * Add data to a stream
-   */
-  public addDataToStream<T>(streamId: string, data: T | T[]): void {
-    const stream = this.streams.get(streamId);
-
-    if (!stream) {
-      console.error(`Stream with ID ${streamId} not found.`);
-      return;
+  public getBufferData<T>(bufferId: string): T[] {
+    const buffer = this.dataBuffers.get(bufferId) as DataBuffer<T>;
+    if (!buffer) {
+      throw new Error(`Buffer '${bufferId}' not found`);
     }
 
-    // Add data to buffer
-    const dataArray = Array.isArray(data) ? data : [data];
-
-    // Add to buffer respecting buffer size limit
-    const typedStream = stream as DataStream<T>;
-    typedStream.buffer = [...typedStream.buffer, ...dataArray].slice(-typedStream.bufferSize);
-
-    // Notify subscribers
-    typedStream.subscribers.forEach(subscriber => {
-      subscriber.callback([...typedStream.buffer]);
-    });
-  }
-
-  /**
-   * Clear a stream's buffer
-   */
-  public clearStreamBuffer(streamId: string): void {
-    const stream = this.streams.get(streamId);
-
-    if (!stream) {
-      console.error(`Stream with ID ${streamId} not found.`);
-      return;
+    if (buffer.head <= buffer.tail) {
+      return buffer.data.slice(buffer.head, buffer.tail) as T[];
+    } else {
+      return [...buffer.data.slice(buffer.head), ...buffer.data.slice(0, buffer.tail)] as T[];
     }
-
-    stream.buffer = [];
   }
 
-  /**
-   * Delete a data stream
-   */
-  public deleteStream(streamId: string): void {
-    const stream = this.streams.get(streamId);
+  public registerGenerator<T>(bufferId: string, generator: DataGenerator<T>): void {
+    this.generators.set(bufferId, generator as DataGenerator<unknown>);
 
-    if (!stream) {
-      console.error(`Stream with ID ${streamId} not found.`);
-      return;
-    }
-
-    // Stop the stream
-    stream.stop();
-
-    // Remove stream and its generator
-    this.streams.delete(streamId);
-    this.generators.delete(streamId);
+    const metrics = this.metadata.metrics || {};
+    metrics.generators_active = this.generators.size;
+    this.metadata.metrics = metrics;
   }
 
-  /**
-   * Start interval for a stream
-   */
-  private startStreamInterval(streamId: string): void {
-    const stream = this.streams.get(streamId);
-
-    if (!stream) {
-      console.error(`Stream with ID ${streamId} not found.`);
-      return;
-    }
-
-    // Create interval
-    const intervalId = setInterval(() => {
-      // Check if stream is still active
-      if (!stream.isActive) {
-        clearInterval(intervalId);
-        return;
-      }
-
-      // Generate data if a generator is registered
-      const generator = this.generators.get(streamId);
-
-      if (generator) {
-        const generatedData = generator.generateData();
-        this.addDataToStream(streamId, generatedData);
-      }
-    }, stream.frequency);
-  }
-
-  // Common data generators
-
-  /**
-   * Create a sine wave data generator
-   */
   public createSineWaveGenerator(
     amplitude: number = 50,
     offset: number = 50,
@@ -283,9 +221,7 @@ export class RealTimeDataService {
       generateData: () => {
         const value = Math.sin((step / period) * 2 * Math.PI) * amplitude + offset;
         const noisyValue = value + (Math.random() * 2 - 1) * noise;
-
         step++;
-
         return noisyValue;
       },
       configureGenerator: (config: Record<string, unknown>) => {
@@ -293,16 +229,11 @@ export class RealTimeDataService {
         if (typeof config.offset === 'number') offset = config.offset;
         if (typeof config.period === 'number') period = config.period;
         if (typeof config.noise === 'number') noise = config.noise;
-
-        // Reset step if requested
         if (config.resetStep) step = 0;
       },
     };
   }
 
-  /**
-   * Create a random walk data generator
-   */
   public createRandomWalkGenerator(
     initialValue: number = 50,
     step: number = 1,
@@ -312,12 +243,8 @@ export class RealTimeDataService {
 
     return {
       generateData: () => {
-        // Random step between -step and +step
         const randomStep = (Math.random() * 2 - 1) * step;
-
-        // Update value and apply bounds
         currentValue = Math.max(bounds[0], Math.min(bounds[1], currentValue + randomStep));
-
         return currentValue;
       },
       configureGenerator: (config: Record<string, unknown>) => {
@@ -330,119 +257,58 @@ export class RealTimeDataService {
     };
   }
 
-  /**
-   * Create a data point generator for exploration data
-   */
-  public createExplorationDataGenerator(
-    type: 'sector' | 'anomaly' | 'resource',
-    baseCoordinates: { x: number; y: number } = { x: 0, y: 0 },
-    radius: number = 10
-  ): DataGenerator<DataPoint> {
-    let idCounter = 0;
+  private handleStreamData<T>(bufferId: string, data: T[]): void {
+    this.appendData(bufferId, data);
 
-    return {
-      generateData: () => {
-        idCounter++;
-
-        // Random position within radius
-        const angle = Math.random() * 2 * Math.PI;
-        const distance = Math.random() * radius;
-        const x = baseCoordinates.x + Math.cos(angle) * distance;
-        const y = baseCoordinates.y + Math.sin(angle) * distance;
-
-        // Generate basic data point
-        const dataPoint: DataPoint = {
-          id: `${type}-${idCounter}`,
-          type,
-          name: `${type.charAt(0).toUpperCase() + type.slice(1)} ${idCounter}`,
-          date: Date.now(),
-          coordinates: { x, y },
-          properties: {},
-        };
-
-        // Add type-specific properties
-        switch (type) {
-          case 'sector':
-            dataPoint.properties = {
-              status: ['unexplored', 'explored', 'surveyed'][Math.floor(Math.random() * 3)],
-              resourcePotential: Math.random() * 100,
-              habitabilityScore: Math.random() * 100,
-              anomalyCount: Math.floor(Math.random() * 5),
-              resourceCount: Math.floor(Math.random() * 10),
-            };
-            break;
-
-          case 'anomaly':
-            dataPoint.properties = {
-              type: ['spatial', 'temporal', 'gravitational', 'magnetic', 'radiation'][
-                Math.floor(Math.random() * 5)
-              ],
-              severity: Math.random() * 10,
-              description: `Anomaly description ${idCounter}`,
-              investigatedAt: Math.random() > 0.5 ? Date.now() - Math.random() * 1000000 : 0,
-              sectorId: `sector-${Math.floor(Math.random() * 100)}`,
-            };
-            break;
-
-          case 'resource':
-            dataPoint.properties = {
-              type: ['minerals', 'energy', 'gas', 'exotic', 'biomass'][
-                Math.floor(Math.random() * 5)
-              ],
-              amount: Math.random() * 1000,
-              quality: Math.random() * 10,
-              accessibility: Math.random() * 10,
-              sectorId: `sector-${Math.floor(Math.random() * 100)}`,
-            };
-
-            // Add metadata
-            dataPoint.metadata = {
-              estimatedValue:
-                (dataPoint.properties.amount as number) * (dataPoint.properties.quality as number),
-              purityGrade: ['Impure', 'Low-Grade', 'Standard', 'Premium', 'Ultra-Pure'][
-                Math.floor(Math.random() * 5)
-              ],
-            };
-            break;
-        }
-
-        return dataPoint;
-      },
-      configureGenerator: (config: Record<string, unknown>) => {
-        if (typeof config.baseX === 'number' && typeof config.baseY === 'number') {
-          baseCoordinates = { x: config.baseX, y: config.baseY };
-        }
-        if (typeof config.radius === 'number') radius = config.radius;
-        if (config.resetCounter) idCounter = 0;
-      },
-    };
+    const metrics = this.metadata.metrics || {};
+    const config = this.streamConfigs.get(bufferId);
+    if (config) {
+      metrics.update_rate = data.length / (config.updateInterval / 1000);
+    }
+    this.metadata.metrics = metrics;
   }
 
-  /**
-   * Start a data stream
-   */
-  public startStream(streamId: string): void {
-    const stream = this.streams.get(streamId);
+  private startGeneratorStream(bufferId: string, interval: number): void {
+    const generator = this.generators.get(bufferId);
+    if (!generator) return;
 
-    if (!stream) {
-      console.error(`Stream with ID ${streamId} not found.`);
-      return;
-    }
+    const intervalId = setInterval(() => {
+      const data = generator.generateData();
+      this.appendData(bufferId, [data]);
+    }, interval);
 
-    stream.start();
+    // Store interval ID for cleanup
+    this.streamIds.set(bufferId, intervalId.toString());
   }
 
-  /**
-   * Stop a data stream
-   */
-  public stopStream(streamId: string): void {
-    const stream = this.streams.get(streamId);
+  private notifyListeners(bufferId: string): void {
+    const listeners = this.listeners.get(bufferId);
+    if (!listeners) return;
 
-    if (!stream) {
-      console.error(`Stream with ID ${streamId} not found.`);
-      return;
-    }
+    const data = this.getBufferData(bufferId);
+    listeners.forEach(callback => {
+      try {
+        callback(data);
+      } catch (error) {
+        this.handleError(error as Error);
+      }
+    });
+  }
 
-    stream.stop();
+  private calculateBufferUtilization(buffer: DataBuffer<unknown>): number {
+    if (buffer.isFull) return 1;
+    return buffer.tail >= buffer.head
+      ? (buffer.tail - buffer.head) / buffer.capacity
+      : (buffer.capacity - buffer.head + buffer.tail) / buffer.capacity;
+  }
+
+  public override handleError(error: Error): void {
+    errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
+      service: 'RealTimeDataService',
+    });
   }
 }
+
+export const realTimeDataService = RealTimeDataServiceImpl.getInstance();
+
+export default realTimeDataService;

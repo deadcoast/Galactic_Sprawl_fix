@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useModulesWithStatus } from '../../../hooks/modules/useModuleStatus';
 import { moduleManager } from '../../../managers/module/ModuleManager';
 import { ExtendedModuleStatus } from '../../../managers/module/ModuleStatusManager';
 import { BaseModule, ModuleType } from '../../../types/buildings/ModuleTypes';
-import { EventType } from '../../../types/events/EventTypes';
 import { ModuleCard } from './ModuleCard';
 import './ModuleGrid.css';
 
@@ -38,34 +37,15 @@ export function ModuleGrid({
   // Get modules data using our standardized hook
   const { modules, statusMap, isLoading, error } = useModulesWithStatus();
 
-  const [filteredModules, setFilteredModules] = useState<BaseModule[]>([]);
+  // Local state for grid display
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // Set up event listener for module changes
-  useEffect(() => {
-    const handleModuleEvent = () => {
-      // This will automatically refresh the modules through the useModulesWithStatus hook
-    };
-
-    // Subscribe to relevant module events
-    const unsubscribe = moduleManager.subscribeToEvent(EventType.MODULE_CREATED, handleModuleEvent);
-
-    // Additional event subscriptions for module updates
-    const unsubscribe2 = moduleManager.subscribeToEvent(
-      EventType.MODULE_UPGRADED,
-      handleModuleEvent
-    );
-
-    return () => {
-      unsubscribe();
-      unsubscribe2();
-    };
-  }, []);
+  const [filteredModules, setFilteredModules] = useState<BaseModule[]>([]);
 
   // Filter and sort modules based on current filters
-  useEffect(() => {
+  // Convert this to useMemo to avoid unnecessary recalculations
+  const computedFilteredModules = useMemo(() => {
     let filtered = [...modules];
 
     // Filter by module type if specified
@@ -134,7 +114,7 @@ export function ModuleGrid({
       filtered = filtered.slice(0, maxItems);
     }
 
-    setFilteredModules(filtered);
+    return filtered;
   }, [
     modules,
     moduleType,
@@ -147,16 +127,38 @@ export function ModuleGrid({
     maxItems,
   ]);
 
-  const handleSort = (option: SortOption) => {
-    if (sortBy === option) {
-      // Toggle direction
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      // New sort option
-      setSortBy(option);
-      setSortDirection('asc');
-    }
-  };
+  // Update filtered modules when computed value changes
+  useEffect(() => {
+    setFilteredModules(computedFilteredModules);
+  }, [computedFilteredModules]);
+
+  // Memoize handler functions to prevent unnecessary rerenders
+  const handleSort = useCallback(
+    (option: SortOption) => {
+      if (sortBy === option) {
+        // Toggle direction
+        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      } else {
+        // New sort option
+        setSortBy(option);
+        setSortDirection('asc');
+      }
+    },
+    [sortBy, sortDirection]
+  );
+
+  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  }, []);
+
+  const handleModuleSelect = useCallback(
+    (moduleId: string) => {
+      if (onModuleSelect) {
+        onModuleSelect(moduleId);
+      }
+    },
+    [onModuleSelect]
+  );
 
   // Loading state
   if (isLoading) {
@@ -204,7 +206,7 @@ export function ModuleGrid({
               type="text"
               placeholder="Search modules..."
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={handleSearch}
               className="module-grid__search-input"
             />
           </div>
@@ -239,7 +241,7 @@ export function ModuleGrid({
           <ModuleCard
             key={module.id}
             moduleId={module.id}
-            onSelect={onModuleSelect}
+            onSelect={handleModuleSelect}
             isSelected={selectedModuleId === module.id}
             compact={compact}
           />
@@ -248,6 +250,9 @@ export function ModuleGrid({
     </div>
   );
 }
+
+// Export a memoized version of the component to prevent unnecessary renders
+export const MemoizedModuleGrid = React.memo(ModuleGrid);
 
 const styles = `
 .module-grid {

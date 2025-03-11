@@ -50,7 +50,6 @@ export class IntegrationErrorHandler extends Component<
   IntegrationErrorHandlerState
 > {
   private errorCount = 0;
-  private lastErrorTime = 0;
   private resetTimeout: NodeJS.Timeout | null = null;
 
   constructor(props: IntegrationErrorHandlerProps) {
@@ -78,7 +77,6 @@ export class IntegrationErrorHandler extends Component<
 
     const now = Date.now();
     this.errorCount += 1;
-    this.lastErrorTime = now;
 
     // Determine error severity based on frequency
     let severity = ErrorSeverity.LOW;
@@ -89,17 +87,25 @@ export class IntegrationErrorHandler extends Component<
     }
 
     // Log the error to our service
-    errorLoggingService.logComponentError(error, componentName, info);
+    errorLoggingService.logError(error, ErrorType.INTEGRATION, severity, {
+      componentName,
+      errorInfo: info,
+      errorCount: this.errorCount,
+    });
 
     // Create a recovery snapshot if errors are frequent
     if (this.errorCount > 3) {
-      recoveryService.saveSnapshot(
+      recoveryService.createSnapshot(
         {
           component: componentName,
           error: error.message,
           timestamp: now,
         },
-        `Error recovery for ${componentName}`
+        {
+          recoveryReason: 'frequent_errors',
+          componentName,
+          errorCount: this.errorCount,
+        }
       );
     }
 
@@ -115,7 +121,6 @@ export class IntegrationErrorHandler extends Component<
 
     this.resetTimeout = setTimeout(() => {
       this.errorCount = 0;
-      this.lastErrorTime = 0;
     }, 60000);
   }
 
@@ -135,7 +140,7 @@ export class IntegrationErrorHandler extends Component<
     // Log the recovery attempt
     errorLoggingService.logError(
       new Error(`Recovery attempt for ${componentName}`),
-      ErrorType.SYSTEM,
+      ErrorType.INTEGRATION,
       ErrorSeverity.MEDIUM,
       {
         componentName,

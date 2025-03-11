@@ -5,11 +5,10 @@ import { GameStateMonitor } from './components/debug/GameStateMonitor';
 import { TooltipProvider } from './components/ui/TooltipProvider';
 import { defaultColony, defaultMothership } from './config/buildings/defaultBuildings';
 import { defaultModuleConfigs } from './config/modules/defaultModuleConfigs';
-import { GameProvider, useGame } from './contexts/GameContext';
-import { ModuleProvider, useModules } from './contexts/ModuleContext';
+import { GameActionType, GameProvider, useGameDispatch } from './contexts/GameContext';
+import { ModuleActionType, ModuleProvider, useModuleDispatch } from './contexts/ModuleContext';
 import { ResourceRatesProvider } from './contexts/ResourceRatesContext';
 import { ThresholdProvider } from './contexts/ThresholdContext';
-import { ModuleEventType } from './lib/modules/ModuleEvents';
 import { assetManager } from './managers/game/assetManager';
 import { ResourceManager } from './managers/game/ResourceManager';
 import { TechNode, techTreeManager } from './managers/game/techTreeManager';
@@ -17,6 +16,7 @@ import { moduleManager } from './managers/module/ModuleManager';
 import { OfficerManager } from './managers/module/OfficerManager';
 import { ShipHangarManager } from './managers/module/ShipHangarManager';
 import { ModuleType } from './types/buildings/ModuleTypes';
+import { ModuleStatus } from './types/modules/ModuleTypes';
 
 // Import the GlobalErrorBoundary component
 import { GlobalErrorBoundary } from './components/ui/GlobalErrorBoundary';
@@ -28,6 +28,7 @@ import { useProfilingOverlay } from './hooks/ui/useProfilingOverlay';
 import { errorLoggingService, ErrorSeverity, ErrorType } from './services/ErrorLoggingService';
 import { eventPropagationService } from './services/EventPropagationService';
 import { recoveryService } from './services/RecoveryService';
+import { BaseEvent } from './types/events/EventTypes';
 
 // Lazy load components that aren't needed on initial render
 const GameLayout = lazy(() =>
@@ -77,11 +78,31 @@ const initialTechs: TechNode[] = [
   },
 ];
 
+interface ResourceEvent extends BaseEvent {
+  moduleId: string;
+  data: {
+    resources: {
+      current: number;
+      [key: string]: unknown;
+    };
+  };
+}
+
+interface ThresholdEvent extends BaseEvent {
+  resourceId: string;
+  details: {
+    type: 'below_minimum' | 'above_maximum';
+    current: number;
+    min?: number;
+    max?: number;
+  };
+}
+
 // GameInitializer component to handle game initialization
 const GameInitializer = ({ children }: { children: React.ReactNode }) => {
-  const { dispatch } = useGame();
+  const dispatch = useGameDispatch();
   const [isInitialized, setIsInitialized] = React.useState(false);
-  const { dispatch: moduleDispatch } = useModules();
+  const moduleDispatch = useModuleDispatch();
   const [resourceManagerInstance] = React.useState(() => new ResourceManager());
 
   useEffect(() => {
@@ -114,8 +135,17 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
 
             // Also register the building with the ModuleContext
             moduleDispatch({
-              type: 'REGISTER_BUILDING',
-              building: defaultMothership,
+              type: ModuleActionType.ADD_MODULE,
+              payload: {
+                module: {
+                  ...defaultMothership,
+                  name: 'Mothership',
+                  position: { x: 0, y: 0 },
+                  isActive: true,
+                  status: ModuleStatus.ACTIVE,
+                  type: 'resource-manager' as ModuleType,
+                },
+              },
             });
           }
 
@@ -125,8 +155,17 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
 
             // Also register the building with the ModuleContext
             moduleDispatch({
-              type: 'REGISTER_BUILDING',
-              building: defaultColony,
+              type: ModuleActionType.ADD_MODULE,
+              payload: {
+                module: {
+                  ...defaultColony,
+                  name: 'Colony',
+                  position: { x: 0, y: 0 },
+                  isActive: true,
+                  status: ModuleStatus.ACTIVE,
+                  type: 'resource-manager' as ModuleType,
+                },
+              },
             });
           }
 
@@ -150,8 +189,8 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
           // Add initial resources
           console.warn('Adding initial resources...');
           dispatch({
-            type: 'UPDATE_RESOURCES',
-            resources: {
+            type: GameActionType.UPDATE_RESOURCES,
+            payload: {
               minerals: 2000, // Increased initial resources to allow for early module building
               energy: 2000,
               research: 0,
@@ -162,8 +201,8 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
           // Update systems count
           console.warn('Updating system counts...');
           dispatch({
-            type: 'UPDATE_SYSTEMS',
-            systems: {
+            type: GameActionType.UPDATE_SYSTEMS,
+            payload: {
               total: 1,
               colonized: 1,
               explored: 1,
@@ -189,18 +228,14 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
           // Initialize event propagation service
           console.warn('Initializing event propagation service...');
 
-          // Register mappings from ModuleEvents to ThresholdEvents
-          eventPropagationService.registerModuleToThresholdMapping(
-            'RESOURCE_UPDATED',
-            'RESOURCE_STATE_CHANGED',
-            event => {
-              // Safely extract the current value if available
-              const resources =
-                event.data && typeof event.data === 'object' && 'resources' in event.data
-                  ? (event.data.resources as Record<string, unknown>)
-                  : {};
-
-              const current = typeof resources.current === 'number' ? resources.current : 0;
+          // Register event mappings
+          eventPropagationService.subscribe({
+            eventType: 'RESOURCE_UPDATED',
+            priority: 1,
+            callback: (eventData: unknown) => {
+              const event = eventData as ResourceEvent;
+              const resources = event.data.resources;
+              const current = resources.current;
 
               return {
                 resourceId: event.moduleId,
@@ -210,26 +245,29 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
                 },
                 timestamp: Date.now(),
               };
-            }
-          );
+            },
+          });
 
-          // Register mappings from ThresholdEvents to ModuleEvents
-          eventPropagationService.registerThresholdToModuleMapping(
-            'THRESHOLD_VIOLATED',
-            'RESOURCE_THRESHOLD_TRIGGERED' as ModuleEventType,
-            event => ({
-              moduleId: 'threshold-service',
-              moduleType: 'resource' as ModuleType,
-              timestamp: Date.now(),
-              data: {
-                resourceType: event.resourceId,
-                thresholdType: event.details.type === 'below_minimum' ? 'min' : 'max',
-                current: event.details.current,
-                threshold:
-                  event.details.type === 'below_minimum' ? event.details.min : event.details.max,
-              },
-            })
-          );
+          // Register threshold to module mappings
+          eventPropagationService.subscribe({
+            eventType: 'THRESHOLD_VIOLATED',
+            priority: 1,
+            callback: (eventData: unknown) => {
+              const event = eventData as ThresholdEvent;
+              return {
+                moduleId: 'threshold-service',
+                moduleType: 'resource' as ModuleType,
+                timestamp: Date.now(),
+                data: {
+                  resourceType: event.resourceId,
+                  thresholdType: event.details.type === 'below_minimum' ? 'min' : 'max',
+                  current: event.details.current,
+                  threshold:
+                    event.details.type === 'below_minimum' ? event.details.min : event.details.max,
+                },
+              };
+            },
+          });
 
           // Initialize the service
           eventPropagationService.initialize();
@@ -249,7 +287,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
           console.error('Error during game initialization:', error);
           errorLoggingService.logError(
             error instanceof Error ? error : new Error(String(error)),
-            ErrorType.SYSTEM,
+            ErrorType.INITIALIZATION,
             ErrorSeverity.HIGH,
             {
               action: 'initialization',
@@ -257,13 +295,11 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
           );
 
           // Attempt recovery
-          recoveryService.saveSnapshot(
-            {
-              gameState: 'error',
-              error: error instanceof Error ? error.message : String(error),
-            },
-            'Error during initialization'
-          );
+          const snapshot = {
+            gameState: 'error',
+            error: error instanceof Error ? error.message : String(error),
+          };
+          recoveryService.createSnapshot(snapshot, { reason: 'Error during initialization' });
         }
       }
     };
@@ -297,7 +333,10 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
 // Handler for global errors
 const handleGlobalError = (error: Error, errorInfo: React.ErrorInfo) => {
   // Log the error using our error logging service
-  errorLoggingService.logComponentError(error, 'GlobalErrorBoundary', errorInfo);
+  errorLoggingService.logError(error, ErrorType.RUNTIME, ErrorSeverity.HIGH, {
+    componentName: 'GlobalErrorBoundary',
+    errorInfo,
+  });
 
   // Log to console for development purposes
   console.error('Global error caught:', error, errorInfo);

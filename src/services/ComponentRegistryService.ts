@@ -1,3 +1,5 @@
+import { AbstractBaseService } from '../lib/services/BaseService';
+
 /**
  * Metadata for a registered UI component
  *
@@ -14,276 +16,182 @@ export interface ComponentMetadata {
   totalRenderTime?: number;
 }
 
-/**
- * Service for registering UI components with the system
- *
- * This service enables components to:
- * - Register themselves in a centralized registry
- * - Subscribe to relevant events
- * - Track performance metrics
- * - Get notified of system changes
- */
-export class ComponentRegistryService {
-  /**
-   * Component registry indexed by component ID
-   * @private
-   */
-  private components: Map<string, ComponentMetadata> = new Map();
+export interface ComponentRegistration {
+  id: string;
+  type: string;
+  eventSubscriptions: string[];
+  updatePriority: 'high' | 'medium' | 'low';
+  lastRenderTime?: number;
+  renderCount?: number;
+}
 
-  /**
-   * Event subscriptions map:
-   * - Key: Event type
-   * - Value: Set of component IDs interested in this event
-   * @private
-   */
-  private eventSubscriptions: Map<string, Set<string>> = new Map();
+class ComponentRegistryServiceImpl extends AbstractBaseService {
+  private static instance: ComponentRegistryServiceImpl;
+  private components: Map<string, ComponentRegistration> = new Map();
+  private typeIndex: Map<string, Set<string>> = new Map();
+  private eventIndex: Map<string, Set<string>> = new Map();
 
-  /**
-   * Performance monitoring configuration
-   * @private
-   */
-  private performanceThresholds = {
-    renderTime: 16, // ms (targeting 60fps)
-    renderCount: 10, // per minute
-  };
-
-  /**
-   * Registers a UI component with the system
-   *
-   * @param metadata Component metadata
-   * @returns Function to unregister the component (for cleanup)
-   */
-  public registerComponent(metadata: ComponentMetadata): () => void {
-    console.warn(`[ComponentRegistry] Registering component: ${metadata.id} (${metadata.type})`);
-
-    // Store component metadata
-    this.components.set(metadata.id, {
-      ...metadata,
-      renderCount: 0,
-      averageRenderTime: 0,
-      totalRenderTime: 0,
-      lastUpdated: Date.now(),
-    });
-
-    // Register event subscriptions
-    metadata.eventSubscriptions.forEach(eventType => {
-      if (!this.eventSubscriptions.has(eventType)) {
-        this.eventSubscriptions.set(eventType, new Set());
-      }
-
-      this.eventSubscriptions.get(eventType)!.add(metadata.id);
-    });
-
-    // Return unregister function for cleanup
-    return () => {
-      this.unregisterComponent(metadata.id);
-    };
+  private constructor() {
+    super('ComponentRegistryService', '1.0.0');
   }
 
-  /**
-   * Unregisters a component
-   *
-   * @param componentId ID of the component to unregister
-   */
-  private unregisterComponent(componentId: string): void {
-    console.warn(`[ComponentRegistry] Unregistering component: ${componentId}`);
-
-    // Get component metadata
-    const component = this.components.get(componentId);
-    if (!component) {
-      return;
+  public static getInstance(): ComponentRegistryServiceImpl {
+    if (!ComponentRegistryServiceImpl.instance) {
+      ComponentRegistryServiceImpl.instance = new ComponentRegistryServiceImpl();
     }
+    return ComponentRegistryServiceImpl.instance;
+  }
 
-    // Remove from event subscriptions
-    component.eventSubscriptions.forEach(eventType => {
-      const subscribers = this.eventSubscriptions.get(eventType);
-      if (subscribers) {
-        subscribers.delete(componentId);
+  protected async onInitialize(): Promise<void> {
+    // No initialization needed
+  }
 
-        // Clean up empty subscription sets
-        if (subscribers.size === 0) {
-          this.eventSubscriptions.delete(eventType);
-        }
+  protected async onDispose(): Promise<void> {
+    // Clear all registrations
+    this.components.clear();
+    this.typeIndex.clear();
+    this.eventIndex.clear();
+  }
+
+  public registerComponent(registration: Omit<ComponentRegistration, 'id'>): string {
+    const id = crypto.randomUUID();
+    const fullRegistration: ComponentRegistration = {
+      ...registration,
+      id,
+      renderCount: 0,
+    };
+
+    // Store in main registry
+    this.components.set(id, fullRegistration);
+
+    // Update type index
+    if (!this.typeIndex.has(registration.type)) {
+      this.typeIndex.set(registration.type, new Set());
+    }
+    this.typeIndex.get(registration.type)!.add(id);
+
+    // Update event index
+    for (const event of registration.eventSubscriptions) {
+      if (!this.eventIndex.has(event)) {
+        this.eventIndex.set(event, new Set());
       }
-    });
-
-    // Remove from components map
-    this.components.delete(componentId);
-  }
-
-  /**
-   * Gets all components that have subscribed to a specific event type
-   *
-   * @param eventType The event type to check
-   * @returns Array of component metadata for interested components
-   */
-  public getComponentsByEvent(eventType: string): ComponentMetadata[] {
-    const componentIds = this.eventSubscriptions.get(eventType) || new Set();
-    return Array.from(componentIds)
-      .map(id => this.components.get(id))
-      .filter((metadata): metadata is ComponentMetadata => metadata !== undefined);
-  }
-
-  /**
-   * Updates component performance metrics
-   *
-   * @param id Component ID
-   * @param renderTime Render time in milliseconds
-   */
-  public updateComponentMetrics(id: string, renderTime: number): void {
-    const component = this.components.get(id);
-    if (!component) {
-      return;
+      this.eventIndex.get(event)!.add(id);
     }
 
     // Update metrics
-    const renderCount = (component.renderCount || 0) + 1;
-    const totalRenderTime = (component.totalRenderTime || 0) + renderTime;
-    const averageRenderTime = totalRenderTime / renderCount;
+    const metrics = this.metadata.metrics || {};
+    metrics.total_components = this.components.size;
+    metrics.total_types = this.typeIndex.size;
+    metrics.total_event_types = this.eventIndex.size;
+    this.metadata.metrics = metrics;
 
-    // Save updated metrics
-    this.components.set(id, {
-      ...component,
-      renderCount,
-      totalRenderTime,
-      averageRenderTime,
-      lastUpdated: Date.now(),
-    });
+    return id;
   }
 
-  /**
-   * Gets all registered components
-   *
-   * @returns Array of all registered component metadata
-   */
-  public getAllComponents(): ComponentMetadata[] {
-    return Array.from(this.components.values());
-  }
-
-  /**
-   * Gets a component by ID
-   *
-   * @param id Component ID
-   * @returns Component metadata or undefined if not found
-   */
-  public getComponentById(id: string): ComponentMetadata | undefined {
-    return this.components.get(id);
-  }
-
-  /**
-   * Gets all components of a specific type
-   *
-   * @param type Component type
-   * @returns Array of component metadata matching the type
-   */
-  public getComponentsByType(type: string): ComponentMetadata[] {
-    return Array.from(this.components.values()).filter(component => component.type === type);
-  }
-
-  /**
-   * Generates a performance report for all registered components
-   *
-   * @returns Performance report object
-   */
-  public getPerformanceReport(): {
-    componentsExceedingRenderTime: ComponentMetadata[];
-    componentsExceedingRenderCount: ComponentMetadata[];
-    totalComponents: number;
-    averageRenderTime: number;
-    slowestComponents: Array<{ id: string; type: string; averageRenderTime: number }>;
-  } {
-    const components = this.getAllComponents();
-
-    // No components to report on
-    if (components.length === 0) {
-      return {
-        componentsExceedingRenderTime: [],
-        componentsExceedingRenderCount: [],
-        totalComponents: 0,
-        averageRenderTime: 0,
-        slowestComponents: [],
-      };
-    }
-
-    // Calculate the minute timeframe for render count threshold
-    const oneMinuteAgo = Date.now() - 60000;
-
-    // Identify components exceeding thresholds
-    const componentsExceedingRenderTime = components.filter(
-      component => (component.averageRenderTime || 0) > this.performanceThresholds.renderTime
-    );
-
-    const componentsExceedingRenderCount = components.filter(component => {
-      // Skip components without render count
-      if (!component.renderCount) return false;
-
-      // Skip components that haven't been updated recently
-      if (!component.lastUpdated || component.lastUpdated < oneMinuteAgo) return false;
-
-      // Check if render count exceeds threshold
-      return component.renderCount > this.performanceThresholds.renderCount;
-    });
-
-    // Calculate overall average render time
-    const totalRenderTime = components.reduce(
-      (sum, component) => sum + (component.totalRenderTime || 0),
-      0
-    );
-    const totalRenderCount = components.reduce(
-      (sum, component) => sum + (component.renderCount || 0),
-      0
-    );
-    const averageRenderTime = totalRenderCount ? totalRenderTime / totalRenderCount : 0;
-
-    // Get slowest components (top 5)
-    const slowestComponents = [...components]
-      .filter(component => component.averageRenderTime !== undefined)
-      .sort((a, b) => {
-        const aTime = a.averageRenderTime || 0;
-        const bTime = b.averageRenderTime || 0;
-        return bTime - aTime;
-      })
-      .slice(0, 5)
-      .map(component => ({
-        id: component.id,
-        type: component.type,
-        averageRenderTime: component.averageRenderTime || 0,
-      }));
-
-    return {
-      componentsExceedingRenderTime,
-      componentsExceedingRenderCount,
-      totalComponents: components.length,
-      averageRenderTime,
-      slowestComponents,
-    };
-  }
-
-  /**
-   * Notifies components about an event
-   *
-   * This method is intended to be called by the EventPropagationService
-   *
-   * @param eventType Type of the event
-   * @param eventData Event data
-   */
-  public notifyComponentsOfEvent(eventType: string, eventData: unknown): void {
-    const components = this.getComponentsByEvent(eventType);
-
-    // Skip if no components are interested in this event
-    if (components.length === 0) {
+  public unregisterComponent(id: string): void {
+    const registration = this.components.get(id);
+    if (!registration) {
       return;
     }
 
-    console.warn(
-      `[ComponentRegistry] Notifying ${components.length} components of event: ${eventType}`
-    );
+    // Remove from type index
+    this.typeIndex.get(registration.type)?.delete(id);
+    if (this.typeIndex.get(registration.type)?.size === 0) {
+      this.typeIndex.delete(registration.type);
+    }
 
-    // We would notify components here
-    // The actual implementation depends on how components receive updates
-    // For now, we just log the notification
+    // Remove from event index
+    for (const event of registration.eventSubscriptions) {
+      this.eventIndex.get(event)?.delete(id);
+      if (this.eventIndex.get(event)?.size === 0) {
+        this.eventIndex.delete(event);
+      }
+    }
+
+    // Remove from main registry
+    this.components.delete(id);
+
+    // Update metrics
+    const metrics = this.metadata.metrics || {};
+    metrics.total_components = this.components.size;
+    metrics.total_types = this.typeIndex.size;
+    metrics.total_event_types = this.eventIndex.size;
+    this.metadata.metrics = metrics;
+  }
+
+  public getComponent(id: string): ComponentRegistration | undefined {
+    return this.components.get(id);
+  }
+
+  public getComponentsByType(type: string): ComponentRegistration[] {
+    const ids = this.typeIndex.get(type);
+    if (!ids) {
+      return [];
+    }
+
+    return Array.from(ids)
+      .map(id => this.components.get(id)!)
+      .filter(Boolean);
+  }
+
+  public getComponentsByEvent(event: string): ComponentRegistration[] {
+    const ids = this.eventIndex.get(event);
+    if (!ids) {
+      return [];
+    }
+
+    return Array.from(ids)
+      .map(id => this.components.get(id)!)
+      .filter(Boolean);
+  }
+
+  public trackRender(id: string): void {
+    const registration = this.components.get(id);
+    if (!registration) {
+      return;
+    }
+
+    registration.lastRenderTime = Date.now();
+    registration.renderCount = (registration.renderCount || 0) + 1;
+
+    // Update metrics
+    const metrics = this.metadata.metrics || {};
+    metrics.total_renders = (metrics.total_renders || 0) + 1;
+    metrics.last_render_timestamp = registration.lastRenderTime;
+    this.metadata.metrics = metrics;
+  }
+
+  public notifyComponentsOfEvent(eventType: string, eventData: unknown): void {
+    const components = this.getComponentsByEvent(eventType);
+
+    // Update metrics
+    const metrics = this.metadata.metrics || {};
+    metrics.total_notifications = (metrics.total_notifications || 0) + 1;
+    metrics.last_notification_timestamp = Date.now();
+    metrics.components_notified = components.length;
+    this.metadata.metrics = metrics;
+
+    // Log in development
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(
+        `[ComponentRegistryService] Notifying ${components.length} components of event: ${eventType}`
+      );
+    }
+  }
+
+  public override handleError(error: Error): void {
+    // Update error metrics
+    const metrics = this.metadata.metrics || {};
+    metrics.total_errors = (metrics.total_errors || 0) + 1;
+    metrics.last_error_timestamp = Date.now();
+    this.metadata.metrics = metrics;
+
+    // Log error in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[ComponentRegistryService] Error:', error);
+    }
   }
 }
 
-// Singleton instance
-export const componentRegistry = new ComponentRegistryService();
+// Export singleton instance
+export const componentRegistryService = ComponentRegistryServiceImpl.getInstance();

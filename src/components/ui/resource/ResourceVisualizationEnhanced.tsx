@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Beaker, Database, Info, Users, Zap } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGame } from '../../../contexts/GameContext';
 import { useComponentLifecycle, useComponentRegistration } from '../../../hooks/ui';
 import { ModuleEvent } from '../../../lib/modules/ModuleEvents';
@@ -121,100 +121,108 @@ const getResourceStatus = (value: number, low: number, critical: number) => {
 };
 
 // Tooltip content for resources
-const ResourceTooltip = ({ type, value, rate, capacity, thresholds }: ResourceDisplayProps) => {
-  const status = thresholds ? getResourceStatus(value, thresholds.low, thresholds.critical) : null;
-  const percentFilled = capacity ? ((value / capacity) * 100).toFixed(1) : 'N/A';
-  const timeUntilEmpty = rate < 0 ? Math.abs(value / rate).toFixed(1) : 'N/A';
-  const timeUntilFull = rate > 0 && capacity ? ((capacity - value) / rate).toFixed(1) : 'N/A';
+const ResourceTooltip = React.memo(
+  ({ type, value, rate, capacity, thresholds }: ResourceDisplayProps) => {
+    const status = thresholds
+      ? getResourceStatus(value, thresholds.low, thresholds.critical)
+      : null;
+    const percentFilled = capacity ? ((value / capacity) * 100).toFixed(1) : 'N/A';
+    const timeUntilEmpty = rate < 0 ? Math.abs(value / rate).toFixed(1) : 'N/A';
+    const timeUntilFull = rate > 0 && capacity ? ((capacity - value) / rate).toFixed(1) : 'N/A';
 
-  return (
-    <div className="w-64 rounded-md border border-gray-700 bg-gray-800 p-3 shadow-lg">
-      <div className="mb-2 flex items-center">
-        <div
-          className={`mr-2 rounded p-1 ${resourceColors[type]?.bg || resourceColors[ResourceType.EXOTIC].bg}`}
-        >
-          {resourceIcons[type]
-            ? resourceIcons[type]({
-                className: `h-4 w-4 ${resourceColors[type]?.base || resourceColors[ResourceType.EXOTIC].base}`,
-              })
-            : resourceIcons[ResourceType.EXOTIC]({
-                className: `h-4 w-4 ${resourceColors[ResourceType.EXOTIC].base}`,
-              })}
-        </div>
-        <h3 className="flex-1 text-lg font-bold capitalize text-white">
-          {ResourceTypeHelpers.getDisplayName(type)}
-        </h3>
-        {status?.icon}
-      </div>
-
-      <p className="mb-3 text-sm text-gray-300">
-        {resourceDescriptions[type] || 'Resource used in the empire.'}
-      </p>
-
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-gray-400">Current:</span>
-          <span className={resourceColors[type]?.base || resourceColors[ResourceType.EXOTIC].base}>
-            {value.toLocaleString()}
-          </span>
-        </div>
-
-        {capacity && (
-          <div className="flex justify-between">
-            <span className="text-gray-400">Capacity:</span>
-            <span className="text-white">
-              {capacity.toLocaleString()} ({percentFilled}%)
-            </span>
-          </div>
-        )}
-
-        <div className="flex justify-between">
-          <span className="text-gray-400">Rate:</span>
-          <span
-            className={rate > 0 ? 'text-green-400' : rate < 0 ? 'text-red-400' : 'text-gray-400'}
+    return (
+      <div className="w-64 rounded-md border border-gray-700 bg-gray-800 p-3 shadow-lg">
+        <div className="mb-2 flex items-center">
+          <div
+            className={`mr-2 rounded p-1 ${resourceColors[type]?.bg || resourceColors[ResourceType.EXOTIC].bg}`}
           >
-            {rate > 0 ? '+' : ''}
-            {rate}/sec
-          </span>
+            {resourceIcons[type]
+              ? resourceIcons[type]({
+                  className: `h-4 w-4 ${resourceColors[type]?.base || resourceColors[ResourceType.EXOTIC].base}`,
+                })
+              : resourceIcons[ResourceType.EXOTIC]({
+                  className: `h-4 w-4 ${resourceColors[ResourceType.EXOTIC].base}`,
+                })}
+          </div>
+          <h3 className="flex-1 text-lg font-bold capitalize text-white">
+            {ResourceTypeHelpers.getDisplayName(type)}
+          </h3>
+          {status?.icon}
         </div>
 
-        {rate !== 0 && (
+        <p className="mb-3 text-sm text-gray-300">
+          {resourceDescriptions[type] || 'Resource used in the empire.'}
+        </p>
+
+        <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-gray-400">
-              {rate < 0 ? 'Time until empty:' : 'Time until full:'}
+            <span className="text-gray-400">Current:</span>
+            <span
+              className={resourceColors[type]?.base || resourceColors[ResourceType.EXOTIC].base}
+            >
+              {value.toLocaleString()}
             </span>
-            <span className="text-white">{rate < 0 ? timeUntilEmpty : timeUntilFull} seconds</span>
+          </div>
+
+          {capacity && (
+            <div className="flex justify-between">
+              <span className="text-gray-400">Capacity:</span>
+              <span className="text-white">
+                {capacity.toLocaleString()} ({percentFilled}%)
+              </span>
+            </div>
+          )}
+
+          <div className="flex justify-between">
+            <span className="text-gray-400">Rate:</span>
+            <span
+              className={rate > 0 ? 'text-green-400' : rate < 0 ? 'text-red-400' : 'text-gray-400'}
+            >
+              {rate > 0 ? '+' : ''}
+              {rate}/sec
+            </span>
+          </div>
+
+          {rate !== 0 && (
+            <div className="flex justify-between">
+              <span className="text-gray-400">
+                {rate < 0 ? 'Time until empty:' : 'Time until full:'}
+              </span>
+              <span className="text-white">
+                {rate < 0 ? timeUntilEmpty : timeUntilFull} seconds
+              </span>
+            </div>
+          )}
+
+          {thresholds && (
+            <>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Low threshold:</span>
+                <span className="text-yellow-400">{thresholds.low.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Critical threshold:</span>
+                <span className="text-red-400">{thresholds.critical.toLocaleString()}</span>
+              </div>
+            </>
+          )}
+        </div>
+
+        {status && (
+          <div
+            className={`mt-3 flex items-center rounded border border-gray-700 bg-gray-900 p-2 ${status.color}`}
+          >
+            {status.icon}
+            <span className="ml-2 text-sm">{status.message}</span>
           </div>
         )}
-
-        {thresholds && (
-          <>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Low threshold:</span>
-              <span className="text-yellow-400">{thresholds.low.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Critical threshold:</span>
-              <span className="text-red-400">{thresholds.critical.toLocaleString()}</span>
-            </div>
-          </>
-        )}
       </div>
-
-      {status && (
-        <div
-          className={`mt-3 flex items-center rounded border border-gray-700 bg-gray-900 p-2 ${status.color}`}
-        >
-          {status.icon}
-          <span className="ml-2 text-sm">{status.message}</span>
-        </div>
-      )}
-    </div>
-  );
-};
+    );
+  }
+);
 
 // Enhanced ResourceDisplay with component registration
-function EnhancedResourceDisplay({
+const EnhancedResourceDisplay = React.memo(function EnhancedResourceDisplayBase({
   type,
   value: initialValue,
   rate: initialRate,
@@ -225,9 +233,9 @@ function EnhancedResourceDisplay({
   const [rate, setRate] = useState(initialRate);
   const Icon = resourceIcons[type] || resourceIcons[ResourceType.EXOTIC];
   const colors = resourceColors[type] || resourceColors[ResourceType.EXOTIC];
-  const percentage = capacity ? (value / capacity) * 100 : 100;
-  const isLow = thresholds && value <= thresholds.low;
-  const isCritical = thresholds && value <= thresholds.critical;
+  const percentage = useMemo(() => (capacity ? (value / capacity) * 100 : 100), [value, capacity]);
+  const isLow = useMemo(() => thresholds && value <= thresholds.low, [value, thresholds]);
+  const isCritical = useMemo(() => thresholds && value <= thresholds.critical, [value, thresholds]);
   const { showTooltip, hideTooltip } = useTooltipContext();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -310,7 +318,32 @@ function EnhancedResourceDisplay({
     return () => clearInterval(intervalId);
   }, [rate, capacity]);
 
-  const handleMouseEnter = () => {
+  // Update component when props change
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  useEffect(() => {
+    setRate(initialRate);
+  }, [initialRate]);
+
+  // Create status classnames based on resource status
+  const statusClasses = useMemo(() => {
+    if (isCritical) {
+      return 'animate-pulse bg-red-900 bg-opacity-25';
+    }
+    if (isLow) {
+      return 'bg-yellow-900 bg-opacity-20';
+    }
+    return '';
+  }, [isCritical, isLow]);
+
+  // Format progress bar width
+  const progressWidth = useMemo(() => {
+    return `${Math.min(100, Math.max(0, percentage))}%`;
+  }, [percentage]);
+
+  const handleMouseEnter = useCallback(() => {
     if (ref.current) {
       const rect = ref.current.getBoundingClientRect();
       showTooltip(
@@ -324,12 +357,12 @@ function EnhancedResourceDisplay({
         { x: rect.left + rect.width / 2, y: rect.top }
       );
     }
-  };
+  }, [type, value, rate, capacity, thresholds, showTooltip]);
 
   return (
     <div
       ref={ref}
-      className={`p-3 ${colors.bg} rounded-lg border ${colors.border} cursor-help transition-colors hover:border-opacity-50`}
+      className={`p-3 ${colors.bg} rounded-lg border ${colors.border} cursor-help transition-colors hover:border-opacity-50 ${statusClasses}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={hideTooltip}
     >
@@ -362,121 +395,109 @@ function EnhancedResourceDisplay({
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1.5 overflow-hidden rounded-full bg-gray-800">
-        <motion.div
-          className={`h-full ${colors.fill} transition-all duration-500`}
-          initial={{ width: 0 }}
-          animate={{ width: `${Math.min(percentage, 100)}%` }}
-          style={{
-            opacity: isCritical ? 0.5 : isLow ? 0.7 : 1,
-          }}
-        />
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-700">
+        <div className={`h-full ${colors.bar}`} style={{ width: progressWidth }}></div>
       </div>
-
-      {/* Warning Indicator */}
-      <AnimatePresence>
-        {(isLow || isCritical) && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className={`mt-2 text-xs ${isCritical ? 'text-red-400' : 'text-yellow-400'}`}
-          >
-            {isCritical ? 'Critical' : 'Low'} {ResourceTypeHelpers.getDisplayName(type)} levels
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
-}
+});
 
-export function ResourceVisualizationEnhanced() {
-  const { state } = useGame();
+// Memoize the main component
+export const ResourceVisualizationEnhanced = React.memo(
+  function ResourceVisualizationEnhancedBase() {
+    const { state } = useGame();
 
-  // Register this container component
-  useComponentRegistration({
-    type: 'ResourceVisualizationEnhanced',
-    eventSubscriptions: ['RESOURCE_RATES_UPDATED', 'RESOURCE_LIMITS_UPDATED'],
-    updatePriority: 'medium',
-  });
+    // Register this container component
+    useComponentRegistration({
+      type: 'ResourceVisualizationEnhanced',
+      eventSubscriptions: ['RESOURCE_RATES_UPDATED', 'RESOURCE_LIMITS_UPDATED'],
+      updatePriority: 'medium',
+    });
 
-  // Get the resources and rates from the game state
-  const resources = state.resources;
-  const resourceRates = state.resourceRates;
+    // Get the resources and rates from the game state
+    const resources = state.resources;
+    const resourceRates = state.resourceRates;
 
-  // Set up thresholds based on resource types - these could come from a config or context
-  const resourceThresholds = {
-    [ResourceType.MINERALS]: { low: 1000, critical: 500 },
-    [ResourceType.ENERGY]: { low: 800, critical: 400 },
-    [ResourceType.POPULATION]: { low: 50, critical: 25 },
-    [ResourceType.RESEARCH]: { low: 20, critical: 10 },
-  };
+    // Set up thresholds based on resource types - these could come from a config or context
+    const resourceThresholds = useMemo(
+      () => ({
+        [ResourceType.MINERALS]: { low: 1000, critical: 500 },
+        [ResourceType.ENERGY]: { low: 800, critical: 400 },
+        [ResourceType.POPULATION]: { low: 50, critical: 25 },
+        [ResourceType.RESEARCH]: { low: 20, critical: 10 },
+      }),
+      []
+    );
 
-  // Set up capacities - these could come from a resource manager
-  const resourceCapacities = {
-    [ResourceType.MINERALS]: 10000,
-    [ResourceType.ENERGY]: 8000,
-    [ResourceType.POPULATION]: 1000,
-    [ResourceType.RESEARCH]: 1000,
-  };
+    // Set up capacities - these could come from a resource manager
+    const resourceCapacities = useMemo(
+      () => ({
+        [ResourceType.MINERALS]: 10000,
+        [ResourceType.ENERGY]: 8000,
+        [ResourceType.POPULATION]: 1000,
+        [ResourceType.RESEARCH]: 1000,
+      }),
+      []
+    );
 
-  // Add helper function to get resource name
-  const getResourceName = (resourceType: ResourceType): string => {
-    return ResourceTypeHelpers.getDisplayName(resourceType);
-  };
+    // Add helper function to get resource name
+    const getResourceName = (resourceType: ResourceType): string => {
+      return ResourceTypeHelpers.getDisplayName(resourceType);
+    };
 
-  return (
-    <div className="space-y-4">
-      <h2 className="mb-4 text-xl font-bold">Enhanced Resource Visualization</h2>
-      <p className="mb-4 text-gray-400">
-        These components use the component registration system for automatic event subscriptions and
-        performance tracking.
-      </p>
-
-      <div className="grid grid-cols-2 gap-4">
-        <EnhancedResourceDisplay
-          type={ResourceType.MINERALS}
-          value={resources.minerals}
-          rate={resourceRates.minerals}
-          capacity={resourceCapacities.minerals}
-          thresholds={resourceThresholds.minerals}
-        />
-        <EnhancedResourceDisplay
-          type={ResourceType.ENERGY}
-          value={resources.energy}
-          rate={resourceRates.energy}
-          capacity={resourceCapacities.energy}
-          thresholds={resourceThresholds.energy}
-        />
-        <EnhancedResourceDisplay
-          type={ResourceType.POPULATION}
-          value={resources.population}
-          rate={resourceRates.population}
-          capacity={resourceCapacities.population}
-          thresholds={resourceThresholds.population}
-        />
-        <EnhancedResourceDisplay
-          type={ResourceType.RESEARCH}
-          value={resources.research}
-          rate={resourceRates.research}
-          capacity={resourceCapacities.research}
-          thresholds={resourceThresholds.research}
-        />
-      </div>
-
-      <div className="mt-4 rounded-lg border border-gray-700 bg-gray-800 p-4">
-        <h3 className="mb-2 text-lg font-bold">About Component Registration</h3>
-        <p className="mb-2 text-gray-300">
-          Each resource display above is registered with the ComponentRegistryService and responds
-          to resource events. This allows for:
+    return (
+      <div className="space-y-4">
+        <h2 className="mb-4 text-xl font-bold">Enhanced Resource Visualization</h2>
+        <p className="mb-4 text-gray-400">
+          These components use the component registration system for automatic event subscriptions
+          and performance tracking.
         </p>
-        <ul className="list-disc space-y-1 pl-5 text-gray-300">
-          <li>Automatic performance monitoring</li>
-          <li>Targeted event delivery to only relevant components</li>
-          <li>Runtime discovery of UI components by the system</li>
-          <li>Centralized component lifecycle management</li>
-        </ul>
+
+        <div className="grid grid-cols-2 gap-4">
+          <EnhancedResourceDisplay
+            type={ResourceType.MINERALS}
+            value={resources.minerals}
+            rate={resourceRates.minerals}
+            capacity={resourceCapacities[ResourceType.MINERALS]}
+            thresholds={resourceThresholds[ResourceType.MINERALS]}
+          />
+          <EnhancedResourceDisplay
+            type={ResourceType.ENERGY}
+            value={resources.energy}
+            rate={resourceRates.energy}
+            capacity={resourceCapacities[ResourceType.ENERGY]}
+            thresholds={resourceThresholds[ResourceType.ENERGY]}
+          />
+          <EnhancedResourceDisplay
+            type={ResourceType.POPULATION}
+            value={resources.population}
+            rate={resourceRates.population}
+            capacity={resourceCapacities[ResourceType.POPULATION]}
+            thresholds={resourceThresholds[ResourceType.POPULATION]}
+          />
+          <EnhancedResourceDisplay
+            type={ResourceType.RESEARCH}
+            value={resources.research}
+            rate={resourceRates.research}
+            capacity={resourceCapacities[ResourceType.RESEARCH]}
+            thresholds={resourceThresholds[ResourceType.RESEARCH]}
+          />
+        </div>
+
+        <div className="mt-4 rounded-lg border border-gray-700 bg-gray-800 p-4">
+          <h3 className="mb-2 text-lg font-bold">About Component Registration</h3>
+          <p className="mb-2 text-gray-300">
+            Each resource display above is registered with the ComponentRegistryService and responds
+            to resource events. This allows for:
+          </p>
+          <ul className="list-disc space-y-1 pl-5 text-gray-300">
+            <li>Automatic performance monitoring</li>
+            <li>Targeted event delivery to only relevant components</li>
+            <li>Runtime discovery of UI components by the system</li>
+            <li>Centralized component lifecycle management</li>
+          </ul>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+);

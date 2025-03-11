@@ -7,13 +7,16 @@
  * ResourceType as an enum for better type safety and intellisense support
  */
 export enum ResourceType {
-  MINERALS = 'minerals',
-  ENERGY = 'energy',
-  POPULATION = 'population',
-  RESEARCH = 'research',
-  PLASMA = 'plasma',
-  GAS = 'gas',
-  EXOTIC = 'exotic',
+  IRON = 'IRON',
+  COPPER = 'COPPER',
+  TITANIUM = 'TITANIUM',
+  URANIUM = 'URANIUM',
+  WATER = 'WATER',
+  HELIUM = 'HELIUM',
+  DEUTERIUM = 'DEUTERIUM',
+  ANTIMATTER = 'ANTIMATTER',
+  DARK_MATTER = 'DARK_MATTER',
+  EXOTIC_MATTER = 'EXOTIC_MATTER',
 }
 
 /**
@@ -64,22 +67,35 @@ export interface ResourceTypeMetadata {
  * Lookup object for resource metadata
  */
 export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
-  [ResourceType.MINERALS]: {
-    id: ResourceType.MINERALS,
-    displayName: 'Minerals',
-    description: 'Basic building materials',
-    icon: 'mineral-icon',
+  [ResourceType.IRON]: {
+    id: ResourceType.IRON,
+    displayName: 'Iron',
+    description: 'Basic building material',
+    icon: 'iron-icon',
     category: ResourceCategory.BASIC,
     defaultMax: 1000,
   },
-  [ResourceType.ENERGY]: {
-    id: ResourceType.ENERGY,
-    displayName: 'Energy',
-    description: 'Power for modules and systems',
-    icon: 'energy-icon',
+  [ResourceType.COPPER]: {
+    id: ResourceType.COPPER,
+    displayName: 'Copper',
+    description: 'Basic building material',
+    icon: 'copper-icon',
     category: ResourceCategory.BASIC,
     defaultMax: 1000,
   },
+  [ResourceType.TITANIUM]: {
+    id: ResourceType.TITANIUM,
+    displayName: 'Titanium',
+    description: 'Basic building material',
+    icon: 'titanium-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.URANIUM]: {
+    id: ResourceType.URANIUM,
+    displayName: 'Uranium',
+    description: 'Basic building material',
+    icon: 'uranium-icon',
   [ResourceType.POPULATION]: {
     id: ResourceType.POPULATION,
     displayName: 'Population',

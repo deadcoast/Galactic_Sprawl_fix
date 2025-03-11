@@ -1,6 +1,6 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
-import { ChevronRight, Database, Pickaxe, Settings, Star } from 'lucide-react';
+import { ChevronRight, Database, Settings, Wind, Zap } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   MiningExperience,
@@ -34,7 +34,13 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
     const experience: MiningExperience = {
       baseAmount: 10,
       bonusFactors: {
-        resourceRarity: resource.type === 'exotic' ? 3 : resource.type === 'gas' ? 2 : 1,
+        resourceRarity: [ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(
+          resource.type
+        )
+          ? 3
+          : [ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(resource.type)
+            ? 2
+            : 1,
         extractionEfficiency: effectiveEfficiency,
         resourceQuality: resource.abundance,
         distanceModifier: Math.min(2, resource.distance / 500),
@@ -65,7 +71,7 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
     }
 
     return experience;
-  }, [resource.type, resource.abundance, resource.distance, effectiveEfficiency, techBonuses]);
+  }, [resource.type, resource.abundance, resource.distance, techBonuses, effectiveEfficiency]);
 
   // Effect for mining progress
   useEffect(() => {
@@ -99,28 +105,53 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
     onExperienceGained,
   ]);
 
+  const getResourceTypeIcon = (type: ResourceType) => {
+    if ([ResourceType.IRON, ResourceType.COPPER, ResourceType.TITANIUM].includes(type)) {
+      return <Database className="h-5 w-5 text-blue-400" />;
+    }
+    if ([ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(type)) {
+      return <Wind className="h-5 w-5 text-teal-400" />;
+    }
+    if ([ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(type)) {
+      return <Zap className="h-5 w-5 text-purple-400" />;
+    }
+    return <Database className="h-5 w-5 text-gray-400" />;
+  };
+
+  const getResourceTypeColor = (type: ResourceType) => {
+    if ([ResourceType.IRON, ResourceType.COPPER, ResourceType.TITANIUM].includes(type)) {
+      return 'text-blue-400';
+    }
+    if ([ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(type)) {
+      return 'text-teal-400';
+    }
+    if ([ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(type)) {
+      return 'text-purple-400';
+    }
+    return 'text-gray-400';
+  };
+
+  const getResourceTypeBackground = (type: ResourceType) => {
+    if ([ResourceType.IRON, ResourceType.COPPER, ResourceType.TITANIUM].includes(type)) {
+      return 'bg-blue-900/30';
+    }
+    if ([ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(type)) {
+      return 'bg-teal-900/30';
+    }
+    if ([ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(type)) {
+      return 'bg-purple-900/30';
+    }
+    return 'bg-gray-900/30';
+  };
+
   return (
     <div className="space-y-6">
       {/* Resource Info */}
       <div className="rounded-lg bg-gray-800/50 p-4">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div
-              className={`rounded-lg p-2 ${
-                resource.type === ResourceType.MINERALS
-                  ? 'bg-cyan-500/20'
-                  : resource.type === ResourceType.GAS
-                    ? 'bg-purple-500/20'
-                    : 'bg-amber-500/20'
-              }`}
-            >
-              {resource.type === ResourceType.MINERALS ? (
-                <Pickaxe className="h-5 w-5 text-cyan-400" />
-              ) : resource.type === ResourceType.GAS ? (
-                <Database className="h-5 w-5 text-purple-400" />
-              ) : (
-                <Star className="h-5 w-5 text-amber-400" />
-              )}
+            <div className={`rounded-lg p-2 ${getResourceTypeBackground(resource.type)}`}>
+              {getResourceTypeIcon(resource.type)}
             </div>
             <div>
               <h3 className="font-medium text-white">{resource.name}</h3>
@@ -142,13 +173,7 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-gray-700">
             <div
-              className={`h-full rounded-full transition-all ${
-                resource.type === ResourceType.MINERALS
-                  ? 'bg-cyan-500'
-                  : resource.type === ResourceType.GAS
-                    ? 'bg-purple-500'
-                    : 'bg-amber-500'
-              }`}
+              className={`h-full rounded-full transition-all ${getResourceTypeBackground(resource.type)}`}
               style={{ width: `${miningProgress}%` }}
             ></div>
           </div>
