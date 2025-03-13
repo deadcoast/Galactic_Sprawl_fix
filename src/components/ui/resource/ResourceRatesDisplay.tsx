@@ -9,7 +9,10 @@ import {
 import { useTooltipContext } from '../tooltip-context';
 
 // Resource type colors matching existing styles
-const resourceColors = {
+const resourceColors: Record<
+  ResourceType,
+  { base: string; bg: string; border: string; fill: string }
+> = {
   [ResourceType.MINERALS]: {
     base: 'text-amber-400',
     bg: 'bg-amber-900/20',
@@ -51,6 +54,67 @@ const resourceColors = {
     bg: 'bg-pink-900/20',
     border: 'border-pink-700/30',
     fill: 'bg-pink-500',
+  },
+  // Add default colors for other resource types
+  [ResourceType.IRON]: {
+    base: 'text-gray-400',
+    bg: 'bg-gray-900/20',
+    border: 'border-gray-700/30',
+    fill: 'bg-gray-500',
+  },
+  [ResourceType.COPPER]: {
+    base: 'text-orange-400',
+    bg: 'bg-orange-900/20',
+    border: 'border-orange-700/30',
+    fill: 'bg-orange-500',
+  },
+  [ResourceType.TITANIUM]: {
+    base: 'text-slate-400',
+    bg: 'bg-slate-900/20',
+    border: 'border-slate-700/30',
+    fill: 'bg-slate-500',
+  },
+  [ResourceType.URANIUM]: {
+    base: 'text-lime-400',
+    bg: 'bg-lime-900/20',
+    border: 'border-lime-700/30',
+    fill: 'bg-lime-500',
+  },
+  [ResourceType.WATER]: {
+    base: 'text-sky-400',
+    bg: 'bg-sky-900/20',
+    border: 'border-sky-700/30',
+    fill: 'bg-sky-500',
+  },
+  [ResourceType.HELIUM]: {
+    base: 'text-indigo-400',
+    bg: 'bg-indigo-900/20',
+    border: 'border-indigo-700/30',
+    fill: 'bg-indigo-500',
+  },
+  [ResourceType.DEUTERIUM]: {
+    base: 'text-violet-400',
+    bg: 'bg-violet-900/20',
+    border: 'border-violet-700/30',
+    fill: 'bg-violet-500',
+  },
+  [ResourceType.ANTIMATTER]: {
+    base: 'text-fuchsia-400',
+    bg: 'bg-fuchsia-900/20',
+    border: 'border-fuchsia-700/30',
+    fill: 'bg-fuchsia-500',
+  },
+  [ResourceType.DARK_MATTER]: {
+    base: 'text-rose-400',
+    bg: 'bg-rose-900/20',
+    border: 'border-rose-700/30',
+    fill: 'bg-rose-500',
+  },
+  [ResourceType.EXOTIC_MATTER]: {
+    base: 'text-emerald-400',
+    bg: 'bg-emerald-900/20',
+    border: 'border-emerald-700/30',
+    fill: 'bg-emerald-500',
   },
 };
 

@@ -39,10 +39,12 @@
     "lint:fix-top": "node tools/fix-eslint-by-rule.js --auto",
     "lint:fix-critical": "npm run lint:fix-rule -- no-unused-vars --auto && npm run lint:fix-rule -- prefer-const --auto && npm run lint:fix-rule -- eqeqeq --auto",
     "format:prettier": "node tools/fix-eslint-by-rule.js --prettier",
-    "lint:workflow": "node tools/run-lint-workflow.js",
-    "lint:workflow:interactive": "node tools/run-lint-workflow.js --interactive",
-    "lint:workflow:auto-fix": "node tools/run-lint-workflow.js --auto-fix",
-    "lint:workflow:analyze": "node tools/run-lint-workflow.js --skip-fix"
+    "lint:workflow": "node tools/run-lint-workflow.mjs",
+    "lint:workflow:interactive": "node tools/run-lint-workflow.mjs --interactive",
+    "lint:workflow:auto-fix": "node tools/run-lint-workflow.mjs --auto-fix",
+    "lint:workflow:analyze": "node tools/run-lint-workflow.mjs --skip-fix",
+    "typecheck": "node tools/run-typecheck.mjs",
+    "typecheck:specific": "node tools/run-typecheck.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",

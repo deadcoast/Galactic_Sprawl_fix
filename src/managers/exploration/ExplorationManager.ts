@@ -142,11 +142,11 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
   /**
    * Creates a new ExplorationManager
    *
-   * @param eventBus The event bus to use for events
    * @param shipManager The ship manager to use for ship operations
+   * @param id Optional ID for the manager
    */
-  constructor(eventBus: EventBus<BaseEvent>, shipManager: ReconShipManagerImpl) {
-    super('ExplorationManager', eventBus);
+  constructor(shipManager: ReconShipManagerImpl, id?: string) {
+    super('ExplorationManager', id);
     this.shipManager = shipManager;
   }
 
@@ -172,7 +172,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
   /**
    * Initialize the exploration manager
    */
-  protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
+  protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
     console.log('ExplorationManager initialized');
 
     // Subscribe to ship-related events to update exploration data
@@ -182,9 +182,9 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
   /**
    * Handle updates on each tick
    */
-  protected onUpdate(deltaTime: number): void {
+  protected onUpdate(_deltaTime: number): void {
     // Update active scan operations
-    this.updateScanOperations(deltaTime);
+    this.updateScanOperations(_deltaTime);
   }
 
   /**
@@ -213,7 +213,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
   /**
    * Update active scan operations
    */
-  private updateScanOperations(deltaTime: number): void {
+  private updateScanOperations(_deltaTime: number): void {
     // Calculate progress for active scan operations
     for (const [id, operation] of this.scanOperations.entries()) {
       if (operation.status === 'active') {
@@ -392,7 +392,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
    * Cancel scan operations for a ship
    */
   private cancelScanOperationsForShip(shipId: string): void {
-    for (const [id, operation] of this.scanOperations.entries()) {
+    for (const [_id, operation] of this.scanOperations.entries()) {
       if (operation.shipId === shipId && operation.status === 'active') {
         operation.status = 'cancelled';
         this.stats.activeScans--;
@@ -609,4 +609,4 @@ const explorationEventBus = new EventBus<BaseEvent>();
 const shipManager = new ReconShipManagerImpl();
 
 // Export a singleton instance of the ExplorationManager
-export const explorationManager = new ExplorationManager(explorationEventBus, shipManager);
+export const explorationManager = new ExplorationManager(shipManager);

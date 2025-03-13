@@ -365,11 +365,9 @@ export function createTypedContext<
     const [state, dispatch] = useReducer(reducer, initialState);
 
     return (
-      <StateContext.Provider value={state}>
-        <DispatchContext.Provider value={dispatch}>
-          {children}
-        </DispatchContext.Provider>
-      </StateContext.Provider>
+      React.createElement(StateContext.Provider, { value: state },
+        React.createElement(DispatchContext.Provider, { value: dispatch }, children)
+      )
     );
   };
 

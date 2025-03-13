@@ -8,43 +8,95 @@ import {
 } from '../../../types/resources/StandardizedResourceTypes';
 
 // Resource type colors matching existing styles
-const resourceColors = {
-  [ResourceType.MINERALS]: {
-    base: 'text-amber-400',
-    bgLight: 'bg-amber-500/10',
-    bgSelected: 'bg-amber-500/30',
-  },
-  [ResourceType.ENERGY]: {
-    base: 'text-cyan-400',
-    bgLight: 'bg-cyan-500/10',
-    bgSelected: 'bg-cyan-500/30',
-  },
-  [ResourceType.POPULATION]: {
-    base: 'text-green-400',
-    bgLight: 'bg-green-500/10',
-    bgSelected: 'bg-green-500/30',
-  },
-  [ResourceType.RESEARCH]: {
-    base: 'text-purple-400',
-    bgLight: 'bg-purple-500/10',
-    bgSelected: 'bg-purple-500/30',
-  },
-  [ResourceType.PLASMA]: {
-    base: 'text-red-400',
-    bgLight: 'bg-red-500/10',
-    bgSelected: 'bg-red-500/30',
-  },
-  [ResourceType.GAS]: {
-    base: 'text-blue-400',
-    bgLight: 'bg-blue-500/10',
-    bgSelected: 'bg-blue-500/30',
-  },
-  [ResourceType.EXOTIC]: {
-    base: 'text-pink-400',
-    bgLight: 'bg-pink-500/10',
-    bgSelected: 'bg-pink-500/30',
-  },
-};
+const resourceColors: Record<ResourceType, { base: string; bgLight: string; bgSelected: string }> =
+  {
+    [ResourceType.MINERALS]: {
+      base: 'text-amber-400',
+      bgLight: 'bg-amber-500/10',
+      bgSelected: 'bg-amber-500/30',
+    },
+    [ResourceType.ENERGY]: {
+      base: 'text-cyan-400',
+      bgLight: 'bg-cyan-500/10',
+      bgSelected: 'bg-cyan-500/30',
+    },
+    [ResourceType.POPULATION]: {
+      base: 'text-green-400',
+      bgLight: 'bg-green-500/10',
+      bgSelected: 'bg-green-500/30',
+    },
+    [ResourceType.RESEARCH]: {
+      base: 'text-purple-400',
+      bgLight: 'bg-purple-500/10',
+      bgSelected: 'bg-purple-500/30',
+    },
+    [ResourceType.PLASMA]: {
+      base: 'text-red-400',
+      bgLight: 'bg-red-500/10',
+      bgSelected: 'bg-red-500/30',
+    },
+    [ResourceType.GAS]: {
+      base: 'text-blue-400',
+      bgLight: 'bg-blue-500/10',
+      bgSelected: 'bg-blue-500/30',
+    },
+    [ResourceType.EXOTIC]: {
+      base: 'text-pink-400',
+      bgLight: 'bg-pink-500/10',
+      bgSelected: 'bg-pink-500/30',
+    },
+    // Add default colors for other resource types
+    [ResourceType.IRON]: {
+      base: 'text-gray-400',
+      bgLight: 'bg-gray-500/10',
+      bgSelected: 'bg-gray-500/30',
+    },
+    [ResourceType.COPPER]: {
+      base: 'text-orange-400',
+      bgLight: 'bg-orange-500/10',
+      bgSelected: 'bg-orange-500/30',
+    },
+    [ResourceType.TITANIUM]: {
+      base: 'text-slate-400',
+      bgLight: 'bg-slate-500/10',
+      bgSelected: 'bg-slate-500/30',
+    },
+    [ResourceType.URANIUM]: {
+      base: 'text-lime-400',
+      bgLight: 'bg-lime-500/10',
+      bgSelected: 'bg-lime-500/30',
+    },
+    [ResourceType.WATER]: {
+      base: 'text-sky-400',
+      bgLight: 'bg-sky-500/10',
+      bgSelected: 'bg-sky-500/30',
+    },
+    [ResourceType.HELIUM]: {
+      base: 'text-indigo-400',
+      bgLight: 'bg-indigo-500/10',
+      bgSelected: 'bg-indigo-500/30',
+    },
+    [ResourceType.DEUTERIUM]: {
+      base: 'text-violet-400',
+      bgLight: 'bg-violet-500/10',
+      bgSelected: 'bg-violet-500/30',
+    },
+    [ResourceType.ANTIMATTER]: {
+      base: 'text-fuchsia-400',
+      bgLight: 'bg-fuchsia-500/10',
+      bgSelected: 'bg-fuchsia-500/30',
+    },
+    [ResourceType.DARK_MATTER]: {
+      base: 'text-rose-400',
+      bgLight: 'bg-rose-500/10',
+      bgSelected: 'bg-rose-500/30',
+    },
+    [ResourceType.EXOTIC_MATTER]: {
+      base: 'text-emerald-400',
+      bgLight: 'bg-emerald-500/10',
+      bgSelected: 'bg-emerald-500/30',
+    },
+  };
 
 // Filter type to categorize resource rates
 export enum RateFilterType {
@@ -126,9 +178,15 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
   // Check if a resource passes the current filter
   const passesFilter = (resourceType: string): boolean => {
     const resType = resourceType as ResourceType;
-    if (!allResourceRates || !allResourceRates[resType]) return true;
 
-    const netRate = allResourceRates[resType].net;
+    // Check if the resource type exists in allResourceRates
+    if (!allResourceRates) return true;
+
+    // Convert the enum value to a string that matches the keys in allResourceRates
+    const resourceKey = getResourceKey(resType);
+    if (!resourceKey || !allResourceRates[resourceKey]) return true;
+
+    const netRate = allResourceRates[resourceKey].net;
 
     switch (filterType) {
       case RateFilterType.POSITIVE:
@@ -138,9 +196,26 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
       case RateFilterType.NEUTRAL:
         return netRate === 0;
       case RateFilterType.ALL:
+        return true;
       default:
         return true;
     }
+  };
+
+  // Helper function to convert ResourceType enum to a key in allResourceRates
+  const getResourceKey = (resourceType: ResourceType): keyof typeof allResourceRates | null => {
+    // Map ResourceType enum values to keys in allResourceRates
+    const mapping: Partial<Record<ResourceType, keyof typeof allResourceRates>> = {
+      [ResourceType.MINERALS]: 'minerals',
+      [ResourceType.ENERGY]: 'energy',
+      [ResourceType.POPULATION]: 'population',
+      [ResourceType.RESEARCH]: 'research',
+      [ResourceType.PLASMA]: 'plasma',
+      [ResourceType.GAS]: 'gas',
+      [ResourceType.EXOTIC]: 'exotic',
+    };
+
+    return mapping[resourceType] || null;
   };
 
   // Get available resources after filtering

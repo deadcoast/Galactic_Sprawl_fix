@@ -1,45 +1,64 @@
-import React, { ButtonHTMLAttributes } from 'react';
+import React, { ButtonHTMLAttributes, forwardRef } from 'react';
+import { Button as NewButton } from '../../../ui/components/Button';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface LegacyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'success';
   size?: 'small' | 'medium' | 'large';
 }
 
 /**
+ * @deprecated Use the new Button component from ui/components/Button instead
+ * This is an adapter component for backward compatibility.
+ * 
  * Button component
  *
  * A reusable button component with different variants and sizes.
  */
-export const Button: React.FC<ButtonProps> = ({
+export const Button = forwardRef<HTMLButtonElement, LegacyButtonProps>(({
   children,
   variant = 'primary',
   size = 'medium',
   className = '',
   ...props
-}) => {
-  // Base classes
-  const baseClasses = 'font-medium rounded focus:outline-none transition-colors';
-
-  // Variant classes
-  const variantClasses = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800',
-    danger: 'bg-red-600 hover:bg-red-700 text-white',
-    success: 'bg-green-600 hover:bg-green-700 text-white',
-  };
-
-  // Size classes
-  const sizeClasses = {
-    small: 'text-xs py-1 px-2',
-    medium: 'text-sm py-2 px-4',
-    large: 'text-base py-3 px-6',
-  };
-
-  const buttonClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
-
+}, ref) => {
+  // Map old sizes to new sizes
+  const sizeMap = {
+    'small': 'sm',
+    'medium': 'md',
+    'large': 'lg'
+  } as const;
+  
+  // Map old variants to new variants
+  const variantMap = {
+    'primary': 'primary',
+    'secondary': 'secondary',
+    'danger': 'danger',
+    'success': 'success'
+  } as const;
+  
+  // Convert props to new format
+  const newSize = sizeMap[size];
+  const newVariant = variantMap[variant];
+  
   return (
-    <button className={buttonClasses} {...props}>
+    <NewButton 
+      ref={ref}
+      variant={newVariant} 
+      size={newSize} 
+      className={className}
+      {...props}
+    >
       {children}
-    </button>
+    </NewButton>
   );
-};
+});
+
+Button.displayName = 'Button';
+
+// Add deprecation notice to console in development
+if (process.env.NODE_ENV === 'development') {
+  console.warn(
+    'The Button component from components/ui/common/Button is deprecated. ' +
+    'Please use the new Button component from ui/components/Button instead.'
+  );
+}

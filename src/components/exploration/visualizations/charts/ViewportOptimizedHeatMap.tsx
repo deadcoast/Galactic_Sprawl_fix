@@ -10,8 +10,8 @@ export interface HeatMapCell {
   xIndex: number;
   yIndex: number;
   value: number;
-  originalX: number;
-  originalY: number;
+  originalX: string | number;
+  originalY: string | number;
   [key: string]: unknown;
 }
 
@@ -66,33 +66,33 @@ export interface ViewportOptimizedHeatMapProps {
 
   /** Border style for cells */
   cellBorder?: {
-    width?: number;
-    color?: string;
-    radius?: number;
+    width: number;
+    color: string;
+    radius: number;
   };
+
+  /** Array of colors for the gradient */
+  colors?: string[];
 
   /** Theme for the chart (light or dark) */
   theme?: 'light' | 'dark';
 
-  /** Colors to use for the heat map gradient */
-  colors?: string[];
-
-  /** CSS class name */
+  /** Additional CSS class name */
   className?: string;
 
-  /** Function to call when a cell is clicked */
-  onElementClick?: (data: Record<string, unknown>, index: number) => void;
+  /** Custom click handler for cells */
+  onElementClick?: (data: ChartDataRecord, index: number) => void;
 
-  /** Error message to display if there's an error */
+  /** Error message to display if chart fails to render */
   errorMessage?: string;
 
-  /** Maximum grid cells to render before applying viewport optimization */
+  /** Maximum number of cells to render before applying optimizations */
   maxCellsBeforeOptimization?: number;
 
   /** Whether to show a legend */
   showLegend?: boolean;
 
-  /** Function to determine the color of cells based on the data */
+  /** Custom function to determine cell color */
   colorAccessor?: (item: ChartDataRecord) => string;
 }
 
@@ -148,197 +148,173 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
   showLegend = true,
   colorAccessor,
 }: ViewportOptimizedHeatMapProps) {
-  // Keep track of the visible viewport
-  const [visibleViewport, setVisibleViewport] = useState<{
-    xMin: number;
-    xMax: number;
-    yMin: number;
-    yMax: number;
-  } | null>(null);
-
-  // Track whether initial data processing has finished
-  const [dataProcessed, setDataProcessed] = useState(false);
-
-  // Reference to the heatmap container for scroll tracking
+  // Refs for container and canvas
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Process data for rendering
-  const { processedData, xValues, yValues, dataMinValue, dataMaxValue, xIndices, yIndices } =
-    useMemo(() => {
-      console.log('Processing heat map data');
-      if (!data || data.length === 0) {
-        return {
-          processedData: [],
-          xValues: [],
-          yValues: [],
-          dataMinValue: 0,
-          dataMaxValue: 0,
-          xIndices: new Map(),
-          yIndices: new Map(),
-        };
-      }
-
-      // Extract unique x and y coordinates
-      const xCoords = new Set<number>();
-      const yCoords = new Set<number>();
-
-      // Keep track of min and max values
-      let minVal = Infinity;
-      let maxVal = -Infinity;
-
-      // Map to hold data by coordinates
-      const dataByCoords = new Map<string, number>();
-
-      data.forEach(item => {
-        let x: number | undefined;
-        let y: number | undefined;
-
-        // Get x and y coordinates from the data point
-        if (typeof item[xKey] === 'number') {
-          x = item[xKey] as number;
-        } else if (xKey.includes('.')) {
-          const parts = xKey.split('.');
-          let current = item;
-          for (const part of parts) {
-            if (
-              current &&
-              typeof current === 'object' &&
-              part in (current as Record<string, unknown>)
-            ) {
-              current = (current as Record<string, unknown>)[part] as Record<string, unknown>;
-            } else {
-              current = undefined;
-              break;
-            }
-          }
-          if (typeof current === 'number') {
-            x = current;
-          }
-        }
-
-        if (typeof item[yKey] === 'number') {
-          y = item[yKey] as number;
-        } else if (yKey.includes('.')) {
-          const parts = yKey.split('.');
-          let current = item;
-          for (const part of parts) {
-            if (
-              current &&
-              typeof current === 'object' &&
-              part in (current as Record<string, unknown>)
-            ) {
-              current = (current as Record<string, unknown>)[part] as Record<string, unknown>;
-            } else {
-              current = undefined;
-              break;
-            }
-          }
-          if (typeof current === 'number') {
-            y = current;
-          }
-        }
-
-        // Get the value to visualize
-        let value: number | undefined;
-        if (typeof item[valueKey] === 'number') {
-          value = item[valueKey] as number;
-        } else if (valueKey.includes('.')) {
-          const parts = valueKey.split('.');
-          let current = item;
-          for (const part of parts) {
-            if (
-              current &&
-              typeof current === 'object' &&
-              part in (current as Record<string, unknown>)
-            ) {
-              current = (current as Record<string, unknown>)[part] as Record<string, unknown>;
-            } else {
-              current = undefined;
-              break;
-            }
-          }
-          if (typeof current === 'number') {
-            value = current;
-          }
-        }
-
-        if (x !== undefined && y !== undefined && value !== undefined) {
-          xCoords.add(x);
-          yCoords.add(y);
-          const key = `${x},${y}`;
-          dataByCoords.set(key, value);
-
-          // Update min and max values
-          minVal = Math.min(minVal, value);
-          maxVal = Math.max(maxVal, value);
-        }
-      });
-
-      // Sort coordinates
-      const sortedXCoords = Array.from(xCoords).sort((a, b) => a - b);
-      const sortedYCoords = Array.from(yCoords).sort((a, b) => a - b);
-
-      // Create indices for fast lookup
-      const xIndexMap = new Map<number, number>();
-      const yIndexMap = new Map<number, number>();
-
-      sortedXCoords.forEach((x, idx) => xIndexMap.set(x, idx));
-      sortedYCoords.forEach((y, idx) => yIndexMap.set(y, idx));
-
-      // Create a 2D grid from the data
-      const rows: HeatMapCell[] = [];
-
-      sortedYCoords.forEach((y, yIndex) => {
-        sortedXCoords.forEach((x, xIndex) => {
-          const key = `${x},${y}`;
-          const value = dataByCoords.get(key) || 0;
-
-          rows.push({
-            x: xIndex,
-            y: yIndex,
-            xIndex,
-            yIndex,
-            value,
-            originalX: x,
-            originalY: y,
-          });
-        });
-      });
-
-      return {
-        processedData: rows,
-        xValues: sortedXCoords,
-        yValues: sortedYCoords,
-        dataMinValue: minVal !== Infinity ? minVal : 0,
-        dataMaxValue: maxVal !== -Infinity ? maxVal : 0,
-        xIndices: xIndexMap,
-        yIndices: yIndexMap,
-      };
-    }, [data, xKey, yKey, valueKey]);
-
-  // Initialize viewport to show the full grid
-  useEffect(() => {
-    if (!visibleViewport && xValues.length > 0 && yValues.length > 0) {
-      setVisibleViewport({
-        xMin: 0,
-        xMax: xValues.length - 1,
-        yMin: 0,
-        yMax: yValues.length - 1,
-      });
-      setDataProcessed(true);
-    }
-  }, [xValues, yValues, visibleViewport]);
-
-  // Calculate effective min and max values
-  const effectiveMinValue = minValue !== undefined ? minValue : dataMinValue;
-  const effectiveMaxValue = maxValue !== undefined ? maxValue : dataMaxValue;
-  const valueRange = effectiveMaxValue - effectiveMinValue;
+  // State for viewport and rendering
+  const [visibleViewport, setVisibleViewport] = useState({
+    xMin: 0,
+    xMax: 0,
+    yMin: 0,
+    yMax: 0,
+  });
 
   // Calculate cell dimensions
   const cellWidth = cellSize;
   const cellHeight = cellSize;
-  const gridWidth = xValues.length * cellWidth;
-  const gridHeight = yValues.length * cellHeight;
+
+  // Extract unique X and Y values from data
+  const { xValues, yValues, valueRange, effectiveMinValue, effectiveMaxValue } = useMemo(() => {
+    if (!data || data.length === 0) {
+      return {
+        xValues: [],
+        yValues: [],
+        valueRange: 0,
+        effectiveMinValue: 0,
+        effectiveMaxValue: 0,
+      };
+    }
+
+    // Extract unique X and Y values
+    const xSet = new Set<number | string>();
+    const ySet = new Set<number | string>();
+    let minVal = typeof minValue === 'number' ? minValue : Number.MAX_VALUE;
+    let maxVal = typeof maxValue === 'number' ? maxValue : Number.MIN_VALUE;
+
+    data.forEach(item => {
+      const x = item[xKey];
+      const y = item[yKey];
+      const value = Number(item[valueKey]);
+
+      if (x !== undefined && (typeof x === 'string' || typeof x === 'number')) xSet.add(x);
+      if (y !== undefined && (typeof y === 'string' || typeof y === 'number')) ySet.add(y);
+
+      if (!isNaN(value)) {
+        if (typeof minValue !== 'number' && value < minVal) minVal = value;
+        if (typeof maxValue !== 'number' && value > maxVal) maxVal = value;
+      }
+    });
+
+    const xValueArray = Array.from(xSet).sort((a, b) => {
+      if (typeof a === 'number' && typeof b === 'number') return a - b;
+      return String(a).localeCompare(String(b));
+    });
+
+    const yValueArray = Array.from(ySet).sort((a, b) => {
+      if (typeof a === 'number' && typeof b === 'number') return a - b;
+      return String(a).localeCompare(String(b));
+    });
+
+    return {
+      xValues: xValueArray,
+      yValues: yValueArray,
+      valueRange: maxVal - minVal,
+      effectiveMinValue: minVal,
+      effectiveMaxValue: maxVal,
+    };
+  }, [data, xKey, yKey, valueKey, minValue, maxValue]);
+
+  // Process data into a grid format
+  const processedData = useMemo(() => {
+    if (!data || data.length === 0 || xValues.length === 0 || yValues.length === 0) {
+      return [];
+    }
+
+    const result: HeatMapCell[] = [];
+
+    // Create a map for faster lookups
+    const dataMap = new Map<string, ChartDataRecord>();
+    data.forEach(item => {
+      const x = item[xKey];
+      const y = item[yKey];
+      if (
+        x !== undefined &&
+        y !== undefined &&
+        (typeof x === 'string' || typeof x === 'number') &&
+        (typeof y === 'string' || typeof y === 'number')
+      ) {
+        dataMap.set(`${x}-${y}`, item);
+      }
+    });
+
+    // Create grid cells
+    xValues.forEach((x, xIndex) => {
+      yValues.forEach((y, yIndex) => {
+        const key = `${x}-${y}`;
+        const item = dataMap.get(key);
+
+        if (item) {
+          const value = Number(item[valueKey]);
+          result.push({
+            x: xIndex,
+            y: yIndex,
+            xIndex,
+            yIndex,
+            value: isNaN(value) ? 0 : value,
+            originalX: x,
+            originalY: y,
+          });
+        }
+      });
+    });
+
+    return result;
+  }, [data, xValues, yValues, xKey, yKey, valueKey]);
+
+  // Flag to track if data processing is complete
+  const dataProcessed = processedData.length > 0;
+
+  // Calculate visible cells based on viewport
+  const visibleCells = useMemo(() => {
+    if (!processedData || !visibleViewport) return [];
+
+    // If we have fewer cells than the optimization threshold, return all cells
+    if (processedData.length <= maxCellsBeforeOptimization) {
+      return processedData;
+    }
+
+    // Otherwise, return only cells in the visible viewport
+    return processedData.filter(
+      cell =>
+        cell.xIndex >= visibleViewport.xMin &&
+        cell.xIndex <= visibleViewport.xMax &&
+        cell.yIndex >= visibleViewport.yMin &&
+        cell.yIndex <= visibleViewport.yMax
+    );
+  }, [processedData, visibleViewport, maxCellsBeforeOptimization]);
+
+  // Function to get color for a value
+  const getColorForValue = useCallback(
+    (value: number) => {
+      if (colorAccessor && data && processedData) {
+        // Find the original data point for this cell
+        const cell = processedData.find(c => c.value === value);
+        if (cell) {
+          // Find the original data item
+          const originalItem = data.find(
+            item =>
+              (item[xKey] === cell.originalX ||
+                (typeof item[xKey] === 'object' &&
+                  (item[xKey] as Record<string, unknown>).x === cell.originalX)) &&
+              (item[yKey] === cell.originalY ||
+                (typeof item[yKey] === 'object' &&
+                  (item[yKey] as Record<string, unknown>).y === cell.originalY))
+          );
+          if (originalItem && colorAccessor) {
+            return colorAccessor(originalItem);
+          }
+        }
+      }
+
+      // Use gradient if no colorAccessor or original item not found
+      if (valueRange === 0) return colors[Math.floor(colors.length / 2)];
+      const normalizedValue = Math.max(0, Math.min(1, (value - effectiveMinValue) / valueRange));
+      const colorIndex = Math.min(colors.length - 1, Math.floor(normalizedValue * colors.length));
+      return colors[colorIndex];
+    },
+    [colorAccessor, data, processedData, xKey, yKey, valueRange, colors, effectiveMinValue]
+  );
 
   // Track scroll position for viewport calculation
   const handleScroll = useCallback(() => {
@@ -346,29 +322,64 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
 
     const container = containerRef.current;
     const rect = container.getBoundingClientRect();
-    const visibleLeft = Math.max(0, -container.scrollLeft / cellWidth);
-    const visibleTop = Math.max(0, -container.scrollTop / cellHeight);
+
+    // Calculate visible area based on scroll position
+    const scrollLeft = container.scrollLeft;
+    const scrollTop = container.scrollTop;
+
+    const visibleLeft = Math.max(0, Math.floor(scrollLeft / cellWidth));
+    const visibleTop = Math.max(0, Math.floor(scrollTop / cellHeight));
     const visibleRight = Math.min(
       xValues.length - 1,
-      (-container.scrollLeft + rect.width) / cellWidth
+      Math.ceil((scrollLeft + rect.width) / cellWidth)
     );
     const visibleBottom = Math.min(
       yValues.length - 1,
-      (-container.scrollTop + rect.height) / cellHeight
+      Math.ceil((scrollTop + rect.height) / cellHeight)
     );
 
     // Add padding to prevent popping at edges
     const padding = 2; // Cells of padding
     setVisibleViewport({
-      xMin: Math.max(0, Math.floor(visibleLeft) - padding),
-      xMax: Math.min(xValues.length - 1, Math.ceil(visibleRight) + padding),
-      yMin: Math.max(0, Math.floor(visibleTop) - padding),
-      yMax: Math.min(yValues.length - 1, Math.ceil(visibleBottom) + padding),
+      xMin: Math.max(0, visibleLeft - padding),
+      xMax: Math.min(xValues.length - 1, visibleRight + padding),
+      yMin: Math.max(0, visibleTop - padding),
+      yMax: Math.min(yValues.length - 1, visibleBottom + padding),
     });
   }, [cellWidth, cellHeight, xValues.length, yValues.length, dataProcessed]);
 
   // Create a debounced version of the scroll handler
   const debouncedHandleScroll = useMemo(() => debounce(handleScroll, 50), [handleScroll]);
+
+  // Handle click on a cell
+  const handleCellClick = useCallback(
+    (cell: HeatMapCell) => {
+      if (onElementClick) {
+        const originalItem = data.find(
+          item =>
+            (item[xKey] === cell.originalX ||
+              (typeof item[xKey] === 'object' &&
+                (item[xKey] as Record<string, unknown>).x === cell.originalX)) &&
+            (item[yKey] === cell.originalY ||
+              (typeof item[yKey] === 'object' &&
+                (item[yKey] as Record<string, unknown>).y === cell.originalY))
+        );
+
+        if (originalItem) {
+          onElementClick(originalItem, cell.xIndex * yValues.length + cell.yIndex);
+        } else {
+          // Create a ChartDataRecord from the cell data
+          const cellDataRecord: ChartDataRecord = {
+            [xKey]: cell.originalX,
+            [yKey]: cell.originalY,
+            [valueKey]: cell.value,
+          };
+          onElementClick(cellDataRecord, cell.xIndex * yValues.length + cell.yIndex);
+        }
+      }
+    },
+    [onElementClick, data, xKey, yKey, yValues.length, valueKey]
+  );
 
   // Attach scroll event listener
   useEffect(() => {
@@ -386,75 +397,70 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
     };
   }, [debouncedHandleScroll, handleScroll]);
 
-  // Filter data to only include cells in the current viewport
-  const visibleCells = useMemo(() => {
-    if (!visibleViewport || !dataProcessed || processedData.length <= maxCellsBeforeOptimization) {
-      return processedData; // Show all cells if it's a small grid or viewport not yet set
+  // Initialize viewport when data is loaded
+  useEffect(() => {
+    if (xValues.length > 0 && yValues.length > 0) {
+      setVisibleViewport({
+        xMin: 0,
+        xMax: Math.min(20, xValues.length - 1), // Start with a reasonable initial view
+        yMin: 0,
+        yMax: Math.min(20, yValues.length - 1),
+      });
+    }
+  }, [xValues, yValues]);
+
+  // Use canvas for rendering large datasets
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !dataProcessed || processedData.length <= maxCellsBeforeOptimization) {
+      return; // Only use canvas for large datasets
     }
 
-    return processedData.filter(
-      cell =>
-        cell.xIndex >= visibleViewport.xMin &&
-        cell.xIndex <= visibleViewport.xMax &&
-        cell.yIndex >= visibleViewport.yMin &&
-        cell.yIndex <= visibleViewport.yMax
-    );
-  }, [processedData, visibleViewport, dataProcessed, maxCellsBeforeOptimization]);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-  // Function to get color for a value
-  const getColorForValue = useCallback(
-    (value: number) => {
-      if (colorAccessor && data && processedData) {
-        // Find the original data point for this cell
-        const cell = processedData.find(c => c.value === value);
-        if (cell) {
-          // Find the original data item
-          const originalItem = data.find(
-            item =>
-              (item[xKey] === cell.originalX ||
-                (typeof item[xKey] === 'object' && (item[xKey] as any).x === cell.originalX)) &&
-              (item[yKey] === cell.originalY ||
-                (typeof item[yKey] === 'object' && (item[yKey] as any).y === cell.originalY))
-          );
-          if (originalItem && colorAccessor) {
-            return colorAccessor(originalItem);
-          }
-        }
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw only visible cells
+    visibleCells.forEach(cell => {
+      const x = cell.x * cellWidth;
+      const y = cell.y * cellHeight;
+
+      // Set cell background color
+      ctx.fillStyle = getColorForValue(cell.value);
+      ctx.fillRect(x, y, cellWidth, cellHeight);
+
+      // Draw cell border
+      if (cellBorder.width > 0) {
+        ctx.strokeStyle = cellBorder.color;
+        ctx.lineWidth = cellBorder.width;
+        ctx.strokeRect(x, y, cellWidth, cellHeight);
       }
 
-      // Use gradient if no colorAccessor or original item not found
-      if (valueRange === 0) return colors[Math.floor(colors.length / 2)];
-      const normalizedValue = Math.max(0, Math.min(1, (value - effectiveMinValue) / valueRange));
-      const colorIndex = Math.min(colors.length - 1, Math.floor(normalizedValue * colors.length));
-      return colors[colorIndex];
-    },
-    [colorAccessor, data, processedData, xKey, yKey, valueRange, colors, effectiveMinValue]
-  );
-
-  // Handle click on a cell
-  const handleCellClick = useCallback(
-    (cell: HeatMapCell) => {
-      if (onElementClick) {
-        const originalItem = data.find(
-          item =>
-            (item[xKey] === cell.originalX ||
-              (typeof item[xKey] === 'object' && (item[xKey] as any).x === cell.originalX)) &&
-            (item[yKey] === cell.originalY ||
-              (typeof item[yKey] === 'object' && (item[yKey] as any).y === cell.originalY))
-        );
-
-        if (originalItem) {
-          onElementClick(originalItem, cell.xIndex * yValues.length + cell.yIndex);
-        } else {
-          onElementClick(
-            cell as unknown as Record<string, unknown>,
-            cell.xIndex * yValues.length + cell.yIndex
-          );
-        }
+      // Draw cell value if needed
+      if (showValues) {
+        ctx.fillStyle = theme === 'light' ? '#000000' : '#ffffff';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const formattedValue = valueFormatter(cell.value);
+        ctx.fillText(formattedValue, x + cellWidth / 2, y + cellHeight / 2);
       }
-    },
-    [onElementClick, data, xKey, yKey, yValues.length]
-  );
+    });
+  }, [
+    visibleCells,
+    cellWidth,
+    cellHeight,
+    cellBorder,
+    showValues,
+    valueFormatter,
+    getColorForValue,
+    theme,
+    dataProcessed,
+    processedData.length,
+    maxCellsBeforeOptimization,
+  ]);
 
   // Track rendering stats
   const totalCells = processedData.length;
@@ -477,14 +483,17 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
       : optimizationMetrics
     : subtitle;
 
-  if (data.length === 0) {
+  // Calculate grid dimensions
+  const gridWidth = xValues.length * cellSize;
+  const gridHeight = yValues.length * cellSize;
+
+  if (!data || data.length === 0) {
     return (
       <BaseChart
         width={width}
         height={height}
         title={title}
         subtitle={subtitle}
-        theme={theme}
         className={`heatmap-chart ${className}`}
         errorMessage={errorMessage || 'No data available'}
       >
@@ -499,135 +508,204 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
       height={height}
       title={title}
       subtitle={displaySubtitle}
-      theme={theme}
-      className={`heatmap-chart ${className}`}
-      errorMessage={errorMessage}
+      className={`viewport-optimized-heatmap ${className}`}
     >
       <div
-        className="heat-map-container"
+        className="heatmap-container"
+        ref={containerRef}
         style={{
           position: 'relative',
           width: '100%',
           height: '100%',
           overflow: 'auto',
         }}
-        ref={containerRef}
       >
-        <div
-          style={{
-            position: 'relative',
-            width: gridWidth,
-            height: gridHeight,
-          }}
-        >
-          {/* Render heat map cells */}
-          {visibleCells.map(cell => {
-            const cellColor = getColorForValue(cell.value);
-            return (
+        {processedData.length > maxCellsBeforeOptimization ? (
+          // Use canvas for large datasets
+          <canvas
+            ref={canvasRef}
+            width={gridWidth}
+            height={gridHeight}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+            onClick={e => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = Math.floor((e.clientX - rect.left) / cellWidth);
+              const y = Math.floor((e.clientY - rect.top) / cellHeight);
+
+              const cell = processedData.find(c => c.x === x && c.y === y);
+              if (cell) {
+                handleCellClick(cell);
+              }
+            }}
+          />
+        ) : (
+          // Use DOM elements for smaller datasets
+          <div
+            className="heatmap-grid"
+            style={{
+              position: 'relative',
+              width: gridWidth,
+              height: gridHeight,
+            }}
+          >
+            {visibleCells.map(cell => (
               <div
                 key={`${cell.x}-${cell.y}`}
-                className="heat-map-cell"
+                className="heatmap-cell"
                 style={{
                   position: 'absolute',
-                  left: cell.x * cellWidth,
-                  top: cell.y * cellHeight,
-                  width: cellWidth,
-                  height: cellHeight,
-                  backgroundColor: cellColor,
-                  border: `${cellBorder.width}px solid ${cellBorder.color}`,
-                  borderRadius: cellBorder.radius,
+                  left: `${cell.x * cellSize}px`,
+                  top: `${cell.y * cellSize}px`,
+                  width: `${cellSize}px`,
+                  height: `${cellSize}px`,
+                  backgroundColor: getColorForValue(cell.value),
+                  borderWidth: `${cellBorder.width}px`,
+                  borderColor: cellBorder.color,
+                  borderRadius: `${cellBorder.radius}px`,
+                  borderStyle: 'solid',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: onElementClick ? 'pointer' : 'default',
                 }}
                 onClick={() => handleCellClick(cell)}
-                data-testid={`cell-${cell.x}-${cell.y}`}
               >
                 {showValues && (
                   <span
+                    className="cell-value"
                     style={{
                       color: theme === 'light' ? '#000000' : '#ffffff',
                       fontSize: '12px',
                       fontWeight: 'bold',
-                      textShadow:
-                        theme === 'light' ? '0 0 2px #ffffff' : '0 0 2px #000000, 0 0 3px #000000',
+                      textShadow: theme === 'light' ? '0 0 2px #ffffff' : '0 0 2px #000000',
                     }}
                   >
-                    {valueFormatter(cell.value)}
+                    {valueFormatter
+                      ? valueFormatter(cell.value)
+                      : cell.value.toFixed(valueDecimals)}
                   </span>
                 )}
               </div>
-            );
-          })}
+            ))}
+          </div>
+        )}
 
-          {/* X-axis labels */}
-          {xLabels &&
-            xLabels.map((label, index) => (
+        {/* X-axis labels */}
+        {xLabels && (
+          <div
+            className="x-axis-labels"
+            style={{
+              position: 'absolute',
+              bottom: -25,
+              left: 0,
+              width: gridWidth,
+              display: 'flex',
+            }}
+          >
+            {xValues.map((value, index) => (
               <div
-                key={`x-label-${index}`}
+                key={`x-${index}`}
+                className="axis-label x-label"
                 style={{
-                  position: 'absolute',
-                  left: index * cellWidth + cellWidth / 2,
-                  top: gridHeight + 5,
-                  transform: 'translateX(-50%)',
+                  width: `${cellSize}px`,
+                  textAlign: 'center',
                   fontSize: '12px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}
               >
-                {label}
+                {xLabels[index] || String(value)}
               </div>
             ))}
+          </div>
+        )}
 
-          {/* Y-axis labels */}
-          {yLabels &&
-            yLabels.map((label, index) => (
+        {/* Y-axis labels */}
+        {yLabels && (
+          <div
+            className="y-axis-labels"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: -60,
+              height: gridHeight,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {yValues.map((value, index) => (
               <div
-                key={`y-label-${index}`}
+                key={`y-${index}`}
+                className="axis-label y-label"
                 style={{
-                  position: 'absolute',
-                  top: index * cellHeight + cellHeight / 2,
-                  left: -5,
-                  transform: 'translateX(-100%) translateY(-50%)',
+                  height: `${cellSize}px`,
+                  lineHeight: `${cellSize}px`,
                   fontSize: '12px',
                   textAlign: 'right',
+                  width: '50px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}
               >
-                {label}
+                {yLabels[index] || String(value)}
               </div>
             ))}
+          </div>
+        )}
 
-          {/* Legend */}
-          {showLegend && (
+        {/* Legend */}
+        {showLegend && (
+          <div
+            className="heatmap-legend"
+            style={{
+              position: 'absolute',
+              bottom: -50,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
             <div
-              className="heat-map-legend"
+              className="legend-gradient"
               style={{
-                position: 'absolute',
-                bottom: -40,
-                left: 0,
-                right: 0,
-                height: 20,
                 display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
+                width: '80%',
+                height: '10px',
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  width: '80%',
-                  height: '10px',
-                  background: `linear-gradient(to right, ${colors.join(', ')})`,
-                  borderRadius: '2px',
-                  marginRight: '10px',
-                }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', width: '80%' }}>
-                <span style={{ fontSize: '10px' }}>{effectiveMinValue.toFixed(valueDecimals)}</span>
-                <span style={{ fontSize: '10px' }}>{effectiveMaxValue.toFixed(valueDecimals)}</span>
-              </div>
+              {colors.map((color, index) => (
+                <div
+                  key={`legend-${index}`}
+                  className="legend-color"
+                  style={{
+                    backgroundColor: color,
+                    flex: 1,
+                    height: '100%',
+                  }}
+                />
+              ))}
             </div>
-          )}
-        </div>
+            <div
+              className="legend-labels"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                width: '80%',
+                marginTop: '5px',
+              }}
+            >
+              <span style={{ fontSize: '10px' }}>{effectiveMinValue.toFixed(valueDecimals)}</span>
+              <span style={{ fontSize: '10px' }}>{effectiveMaxValue.toFixed(valueDecimals)}</span>
+            </div>
+          </div>
+        )}
       </div>
     </BaseChart>
   );

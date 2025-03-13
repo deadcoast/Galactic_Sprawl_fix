@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { componentRegistry } from '../../services/ComponentRegistryService';
+import { componentRegistryService } from '../../services/ComponentRegistryService';
 import { useComponentProfiler } from './useComponentProfiler';
 
 /**
@@ -50,40 +50,34 @@ export interface ComponentRegistrationOptions {
  * }
  */
 export function useComponentRegistration(options: ComponentRegistrationOptions): string {
-  // Generate a unique component ID that remains stable across renders
-  const componentId = useRef<string>(
-    `${options.type}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
-  ).current;
+  const componentId = useRef<string>('');
+  const profiler = useComponentProfiler(options.type);
 
-  // Set up component profiling
-  const profiler = useComponentProfiler(componentId);
-
-  // Register with the component registry
   useEffect(() => {
     // Register component with registry
-    const unregister = componentRegistry.registerComponent({
-      id: componentId,
+    const id = componentRegistryService.registerComponent({
       type: options.type,
       eventSubscriptions: options.eventSubscriptions,
       updatePriority: options.updatePriority || 'medium',
     });
 
-    // Clean up on unmount
-    return unregister;
-  }, [componentId, options.type, options.eventSubscriptions, options.updatePriority]);
+    componentId.current = id;
 
-  // Update performance metrics after each render
-  useEffect(() => {
-    return () => {
-      // This is called after the render is complete
+    // Track render with profiler
+    if (profiler) {
       const renderTime = profiler.metrics.lastRenderTime;
       if (renderTime !== undefined) {
-        componentRegistry.updateComponentMetrics(componentId, renderTime);
+        componentRegistryService.trackRender(id);
       }
-    };
-  });
+    }
 
-  return componentId;
+    // Return cleanup function
+    return () => {
+      componentRegistryService.unregisterComponent(id);
+    };
+  }, [options.type, options.updatePriority, profiler]);
+
+  return componentId.current;
 }
 
 /**
@@ -103,7 +97,7 @@ export function useComponentRegistrationWithManualUpdates(options: ComponentRegi
 
   // Function to manually update metrics
   const updateMetrics = (renderTime: number) => {
-    componentRegistry.updateComponentMetrics(componentId, renderTime);
+    componentRegistryService.trackRender(componentId);
   };
 
   return { componentId, updateMetrics };

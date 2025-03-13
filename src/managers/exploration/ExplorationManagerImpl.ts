@@ -105,10 +105,10 @@ export class ExplorationManagerImpl extends AbstractBaseManager<BaseEvent> {
    * @param shipManager The ship manager implementation
    */
   constructor(
-    eventBus: EventBus<BaseEvent>,
+    private eventBus: EventBus<BaseEvent>,
     private shipManager: IShipManager
   ) {
-    super('ExplorationManagerImpl', eventBus);
+    super('ExplorationManagerImpl');
   }
 
   /**
@@ -131,8 +131,8 @@ export class ExplorationManagerImpl extends AbstractBaseManager<BaseEvent> {
   /**
    * Initialize the exploration manager
    */
-  protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
-    console.log('ExplorationManagerImpl initialized');
+  protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
+    console.warn('ExplorationManagerImpl initialized');
 
     // No initialization needed at this time
     return Promise.resolve();
@@ -141,7 +141,7 @@ export class ExplorationManagerImpl extends AbstractBaseManager<BaseEvent> {
   /**
    * Handle updates on each tick
    */
-  protected onUpdate(deltaTime: number): void {
+  protected onUpdate(_deltaTime: number): void {
     // Currently no time-based updates needed
   }
 

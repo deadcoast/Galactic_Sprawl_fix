@@ -453,19 +453,19 @@ export class MultitabPerformanceTest {
     try {
       switch (this.testConfig.testType) {
         case 'resourceContention':
-          await this.runResourceContentionTest(this.testConfig.parameters);
+          await this._runResourceContentionTest(this.testConfig.parameters);
           break;
 
         case 'uiResponsiveness':
-          await this.runUIResponsivenessTest(this.testConfig.parameters);
+          await this._runUIResponsivenessTest(this.testConfig.parameters);
           break;
 
         case 'domOperations':
-          await this.runDOMOperationsTest(this.testConfig.parameters);
+          await this._runDOMOperationsTest(this.testConfig.parameters);
           break;
 
         case 'memoryUsage':
-          await this.runMemoryUsageTest(this.testConfig.parameters);
+          await this._runMemoryUsageTest(this.testConfig.parameters);
           break;
 
         default:
@@ -531,7 +531,7 @@ export class MultitabPerformanceTest {
    * Run a resource contention test
    * Tests performance when multiple tabs are competing for shared resources
    */
-  private async runResourceContentionTest(parameters: Record<string, unknown>): Promise<void> {
+  private async _runResourceContentionTest(parameters: Record<string, unknown>): Promise<void> {
     const options: ResourceContentionTestOptions = {
       resourceCount: 20,
       operationsPerSecond: 50,
@@ -605,12 +605,12 @@ export class MultitabPerformanceTest {
 
   /**
    * Run a UI responsiveness test
-   * Tests UI performance when multiple tabs are active
+   * Tests how responsive the UI remains when multiple tabs are active
    */
-  private async runUIResponsivenessTest(parameters: Record<string, unknown>): Promise<void> {
+  private async _runUIResponsivenessTest(parameters: Record<string, unknown>): Promise<void> {
     const options: UIResponsivenessTestOptions = {
       interactionCount: 100,
-      interactionTypes: ['click', 'scroll'],
+      interactionTypes: ['click', 'drag', 'scroll', 'type'],
       interactionDelayMs: 100,
       durationMs: 10000,
       ...parameters,
@@ -717,9 +717,9 @@ export class MultitabPerformanceTest {
 
   /**
    * Run a DOM operations test
-   * Tests performance when creating and updating many DOM elements
+   * Tests performance when performing intensive DOM operations across multiple tabs
    */
-  private async runDOMOperationsTest(parameters: Record<string, unknown>): Promise<void> {
+  private async _runDOMOperationsTest(parameters: Record<string, unknown>): Promise<void> {
     const options: DOMOperationTestOptions = {
       elementCount: 500,
       updateFrequency: 10,
@@ -795,9 +795,9 @@ export class MultitabPerformanceTest {
 
   /**
    * Run a memory usage test
-   * Tests memory growth over time with multiple tabs
+   * Tests memory consumption patterns when multiple tabs are active
    */
-  private async runMemoryUsageTest(parameters: Record<string, unknown>): Promise<void> {
+  private async _runMemoryUsageTest(parameters: Record<string, unknown>): Promise<void> {
     const options: MemoryUsageTestOptions = {
       durationMs: 20000,
       samplingIntervalMs: 1000,

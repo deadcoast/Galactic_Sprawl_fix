@@ -148,8 +148,8 @@ export class TypeSafeConfigManager {
   /**
    * Register multiple configuration items
    */
-  registerConfigs<T extends z.ZodType>(configs: ConfigItem<T>[]): void {
-    configs.forEach(config => this.registerConfig(config));
+  registerConfigs(configs: ConfigItem[]): void {
+    configs.forEach(config => this.registerConfig(config as any));
   }
 
   /**
@@ -448,7 +448,7 @@ export class TypeSafeConfigManager {
       key,
       message: err.message,
       path: err.path.map(p => p.toString()),
-      value: err.input,
+      value: undefined,
     }));
   }
 
@@ -480,7 +480,7 @@ export function createConfigItem<T extends z.ZodType>(
   key: string,
   schema: T,
   defaultValue: z.infer<T>,
-  options: Omit<ConfigItem<T>, 'key' | 'schema' | 'defaultValue'> = {}
+  options: Omit<ConfigItem<T>, 'key' | 'schema' | 'defaultValue'> = { name: '', description: '' }
 ): ConfigItem<T> {
   return {
     key,

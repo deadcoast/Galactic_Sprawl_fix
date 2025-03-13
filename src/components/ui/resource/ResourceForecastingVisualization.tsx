@@ -12,7 +12,7 @@ import {
 } from 'chart.js';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Line } from 'react-chartjs-2';
-import { useResourceRates } from '../../../contexts/ResourceRatesContext';
+import { useResourceRate } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
@@ -68,10 +68,10 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
   thresholds,
 }) => {
   // Calculate rate per minute for easier forecasting
-  const ratePerMinute = rate * (60000 / cycleTime);
+  const _ratePerMinute = rate * (60000 / cycleTime);
 
   // Register component
-  const componentId = useComponentRegistration({
+  const _componentId = useComponentRegistration({
     type: 'ResourceForecastingVisualization',
     eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_THRESHOLD_CHANGED', 'RESOURCE_FLOW_UPDATED'],
     updatePriority: 'low', // Forecasting is less critical than actual resource displays
@@ -79,17 +79,17 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
 
   // Initialize with current state
   const [forecast, setForecast] = useState<ForecastPoint[]>([]);
-  const [criticalPoint, setCriticalPoint] = useState<number | null>(null);
-  const resourceRates = useResourceRates();
-  const { state: thresholdState } = useThreshold();
+  const [_criticalPoint, _setCriticalPoint] = useState<number | null>(null);
+  const _resourceRates = useResourceRate(resourceType);
+  const { state: _thresholdState } = useThreshold();
 
   // Component lifecycle tracking for performance monitoring
   useComponentLifecycle({
     onMount: () => {
-      console.log('ResourceForecastingVisualization mounted');
+      console.warn('ResourceForecastingVisualization mounted');
     },
     onUnmount: () => {
-      console.log('ResourceForecastingVisualization unmounted');
+      console.warn('ResourceForecastingVisualization unmounted');
     },
   });
 

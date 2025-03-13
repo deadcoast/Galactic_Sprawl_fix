@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "baseUrl": "."
+  },
+  "include": [
+    "src/components/ui/performance/D3PerformanceProfilerView.tsx",
+    "src/types/visualizations/FlowTypes.ts",
+    "src/components/exploration/visualizations/charts/PredictionVisualization.tsx"
+  ],
+  "exclude": ["node_modules", "**/node_modules/*", "node_modules/@types/css-font-loading-module"]
+}

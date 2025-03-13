@@ -30,6 +30,8 @@ const postSchema = z.object({
   body: z.string(),
 });
 
+const postListSchema = z.array(postSchema);
+
 const createPostSchema = z.object({
   userId: z.number(),
   title: z.string(),
@@ -82,7 +84,7 @@ const TypeSafeApiDemo: React.FC = () => {
     isError: usersError,
     error: usersErrorDetails,
     refetch: refetchUsers,
-  } = useQuery('/users', userListSchema, {
+  } = useQuery<z.infer<typeof userListSchema>, typeof userListSchema>('/users', userListSchema, {
     ...apiOptions,
   });
 
@@ -92,11 +94,15 @@ const TypeSafeApiDemo: React.FC = () => {
     isLoading: todosLoading,
     isError: todosError,
     refetch: refetchTodos,
-  } = useQuery(`/todos?userId=${selectedUserId}`, todoListSchema, {
-    ...apiOptions,
-    skip: !selectedUserId || !showTodos,
-    dependencies: [selectedUserId, showTodos],
-  });
+  } = useQuery<z.infer<typeof todoListSchema>, typeof todoListSchema>(
+    `/todos?userId=${selectedUserId}`,
+    todoListSchema,
+    {
+      ...apiOptions,
+      skip: !selectedUserId || !showTodos,
+      dependencies: [selectedUserId, showTodos],
+    }
+  );
 
   // Conditional query for posts based on selected user
   const {
@@ -104,11 +110,15 @@ const TypeSafeApiDemo: React.FC = () => {
     isLoading: postsLoading,
     isError: postsError,
     refetch: refetchPosts,
-  } = useQuery(`/posts?userId=${selectedUserId}`, todoListSchema, {
-    ...apiOptions,
-    skip: !selectedUserId || !showPosts,
-    dependencies: [selectedUserId, showPosts],
-  });
+  } = useQuery<z.infer<typeof postListSchema>, typeof postListSchema>(
+    `/posts?userId=${selectedUserId}`,
+    postListSchema,
+    {
+      ...apiOptions,
+      skip: !selectedUserId || !showPosts,
+      dependencies: [selectedUserId, showPosts],
+    }
+  );
 
   // Mutation for creating new posts
   const {
@@ -146,6 +156,10 @@ const TypeSafeApiDemo: React.FC = () => {
     setSelectedUserId(userId === selectedUserId ? null : userId);
   };
 
+  // Prefix unused type declarations with underscore to avoid linter warnings
+  type _User = z.infer<typeof userSchema>;
+  type _Todo = z.infer<typeof todoSchema>;
+
   return (
     <div className="type-safe-api-demo">
       <h1>Type-Safe API Demo</h1>
@@ -166,26 +180,28 @@ const TypeSafeApiDemo: React.FC = () => {
         )}
 
         <div className="user-list">
-          {users?.map(user => (
-            <div
-              key={user.id}
-              className={`user-item ${selectedUserId === user.id ? 'selected' : ''}`}
-              onClick={() => handleUserSelect(user.id)}
-            >
-              <h3>{user.name}</h3>
-              <p>
-                <strong>Email:</strong> {user.email}
-              </p>
-              <p>
-                <strong>Username:</strong> {user.username}
-              </p>
-              {user.website && (
+          {users &&
+            users.length > 0 &&
+            users.map(user => (
+              <div
+                key={user.id}
+                className={`user-item ${selectedUserId === user.id ? 'selected' : ''}`}
+                onClick={() => handleUserSelect(user.id)}
+              >
+                <h3>{user.name}</h3>
                 <p>
-                  <strong>Website:</strong> {user.website}
+                  <strong>Email:</strong> {user.email}
                 </p>
-              )}
-            </div>
-          ))}
+                <p>
+                  <strong>Username:</strong> {user.username}
+                </p>
+                {user.website && (
+                  <p>
+                    <strong>Website:</strong> {user.website}
+                  </p>
+                )}
+              </div>
+            ))}
         </div>
       </div>
 
@@ -210,12 +226,14 @@ const TypeSafeApiDemo: React.FC = () => {
                 <p className="error">Error loading todos</p>
               ) : (
                 <ul className="todo-list">
-                  {todos?.map(todo => (
-                    <li key={todo.id} className={todo.completed ? 'completed' : ''}>
-                      <input type="checkbox" checked={todo.completed} readOnly />
-                      <span>{todo.title}</span>
-                    </li>
-                  ))}
+                  {todos &&
+                    todos.length > 0 &&
+                    todos.map(todo => (
+                      <li key={todo.id} className={todo.completed ? 'completed' : ''}>
+                        <input type="checkbox" checked={todo.completed} readOnly />
+                        <span>{todo.title}</span>
+                      </li>
+                    ))}
                 </ul>
               )}
               <button onClick={() => refetchTodos()} disabled={todosLoading}>
@@ -233,12 +251,14 @@ const TypeSafeApiDemo: React.FC = () => {
                 <p className="error">Error loading posts</p>
               ) : (
                 <div className="post-list">
-                  {posts?.map(post => (
-                    <div key={post.id} className="post-item">
-                      <h4>{post.title}</h4>
-                      <p>{post.body}</p>
-                    </div>
-                  ))}
+                  {posts &&
+                    posts.length > 0 &&
+                    posts.map(post => (
+                      <div key={post.id} className="post-item">
+                        <h4>{post.title}</h4>
+                        <p>{post.body}</p>
+                      </div>
+                    ))}
                 </div>
               )}
               <button onClick={() => refetchPosts()} disabled={postsLoading}>

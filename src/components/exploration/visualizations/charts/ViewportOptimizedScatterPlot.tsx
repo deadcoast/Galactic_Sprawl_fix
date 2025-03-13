@@ -86,7 +86,7 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
   } | null>(null);
 
   // Reference to the chart element for getting dimensions
-  const chartRef = useRef<any>(null);
+  const chartRef = useRef<HTMLDivElement | null>(null);
 
   // Track whether initial data processing has finished
   const [dataProcessed, setDataProcessed] = useState(false);
@@ -250,16 +250,53 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
     [colorKey, colors, dataBounds]
   );
 
+  // Fix the pointSizeValue possibly undefined error
+  const pointSizeValue = useMemo(() => {
+    // Use the pointSize prop to determine the default size for points
+    return colorKey ? undefined : pointSize || 60; // Provide default value
+  }, [colorKey, pointSize]);
+
+  // Fix the expected 2 arguments error for useCallback by adding proper dependencies
+  const getPointColor = useCallback(
+    (point: ChartDataRecord, index: number) => {
+      // Use the colorAccessor if provided, otherwise use the default color logic
+      if (colorAccessor) {
+        return colorAccessor(point, index);
+      }
+
+      if (colorKey && point[colorKey] !== undefined) {
+        // Map the color value to the color scale
+        const colorValue = Number(point[colorKey]);
+        // Normalize to 0-1 range for color mapping
+        const normalizedValue =
+          (colorValue - dataBounds.yMin) / (dataBounds.yMax - dataBounds.yMin);
+        // Get color index based on the normalized value
+        const colorIndex = Math.floor(normalizedValue * (colors.length - 1));
+        return getColor(colorIndex, colors);
+      }
+      // Default color based on index
+      return getColor(index % colors.length, colors);
+    },
+    [colorKey, colors, dataBounds, colorAccessor]
+  );
+
   // Create chart content
   const chartContent = (
     <ResponsiveContainer width="100%" height="100%" ref={chartRef}>
       <ScatterChart
         margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
         onMouseUp={e => {
-          if (e && e.xAxis && e.yAxis && e.xAxis[0] && e.yAxis[0]) {
+          // The recharts library doesn't export proper types for chart events
+          // We need to access the domain information from the event
+          const event = e as unknown as {
+            xAxis?: Array<{ domain: [number, number] }>;
+            yAxis?: Array<{ domain: [number, number] }>;
+          };
+
+          if (event && event.xAxis && event.yAxis && event.xAxis[0] && event.yAxis[0]) {
             const domain = {
-              x: e.xAxis[0].domain as [number, number],
-              y: e.yAxis[0].domain as [number, number],
+              x: event.xAxis[0].domain,
+              y: event.yAxis[0].domain,
             };
             debouncedViewportChange(domain);
           }
@@ -294,10 +331,46 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
         <Scatter
           name={`${xAxisLabel || xAxisKey} vs ${yAxisLabel || yAxisKey}`}
           data={visibleData}
-          fill={colors[0]}
-          shape="circle"
+          fill={colors[0] || '#8884d8'}
+          stroke={colors[0] || '#8884d8'}
+          isAnimationActive={animate}
           onClick={handlePointClick}
-          isAnimationActive={animate && visibleData.length < 500}
+          shape={(props: {
+            cx?: number;
+            cy?: number;
+            r?: number;
+            fill?: string;
+            stroke?: string;
+            payload?: ChartDataRecord;
+            index?: number;
+          }) => {
+            // Define a proper type for the props
+            interface ScatterProps {
+              cx?: number;
+              cy?: number;
+              r?: number;
+              fill?: string;
+              stroke?: string;
+              payload?: ChartDataRecord;
+              index?: number;
+            }
+
+            const typedProps = props as ScatterProps;
+
+            return (
+              <circle
+                cx={typedProps.cx}
+                cy={typedProps.cy}
+                r={zAxisKey ? typedProps.r : (pointSizeValue || 30) / 2}
+                fill={
+                  typedProps.payload
+                    ? getPointColor(typedProps.payload, typedProps.index || 0)
+                    : typedProps.fill || '#8884d8'
+                }
+                stroke={typedProps.stroke}
+              />
+            );
+          }}
         />
       </ScatterChart>
     </ResponsiveContainer>

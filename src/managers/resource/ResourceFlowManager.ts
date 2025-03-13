@@ -17,11 +17,31 @@ import {
 } from '../../types/resources/StandardizedResourceTypes';
 import { validateResourceTransfer } from '../../utils/resources/resourceValidation';
 // Import new utility classes
+import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
+import { AbstractBaseManager, ManagerStatus } from '../../lib/managers/BaseManager';
 import { SpatialIndex, SpatialObject } from '../../utils/spatial/SpatialPartitioning';
 import {
   FlowOptimizationResult,
   ResourceFlowWorkerUtil,
 } from '../../utils/workers/ResourceFlowWorkerUtil';
+
+// Define ConversionResult interface
+interface ConversionResult {
+  success: boolean;
+  processId: string;
+  recipeId: string;
+  outputsProduced?: { type: ResourceType; amount: number }[];
+  byproductsProduced?: { type: ResourceType; amount: number }[];
+  error?: string;
+}
+
+// Extend ResourceConversionProcess to include processId
+interface ExtendedResourceConversionProcess extends ResourceConversionProcess {
+  processId: string;
+}
+
+// Re-export FlowNode interface for use in other components
+export type { FlowNode } from '../../types/resources/StandardizedResourceTypes';
 
 /**
  * Extended FlowNode with spatial coordinates for geographical networks
@@ -33,6 +53,30 @@ interface GeoFlowNode extends FlowNode, SpatialObject {
 }
 
 /**
+ * Resource flow events
+ */
+export interface ResourceFlowEvent extends BaseEvent {
+  type:
+    | 'RESOURCE_FLOW_INITIALIZED'
+    | 'RESOURCE_FLOW_OPTIMIZED'
+    | 'RESOURCE_NODE_REGISTERED'
+    | 'RESOURCE_NODE_UPDATED'
+    | 'RESOURCE_NODE_UNREGISTERED'
+    | 'RESOURCE_CONNECTION_REGISTERED'
+    | 'RESOURCE_CONNECTION_UPDATED'
+    | 'RESOURCE_CONNECTION_UNREGISTERED'
+    | 'RESOURCE_CONVERSION_STARTED'
+    | 'RESOURCE_CONVERSION_COMPLETED'
+    | 'RESOURCE_CONVERSION_FAILED'
+    | 'RESOURCE_TRANSFER_COMPLETED';
+  nodeId?: string;
+  connectionId?: string;
+  resourceType?: ResourceType;
+  processId?: string;
+  data?: unknown;
+}
+
+/**
  * Manager for resource flow through the game systems
  * Responsible for:
  * - Tracking resource nodes (producers, consumers, storage, converters)
@@ -40,7 +84,7 @@ interface GeoFlowNode extends FlowNode, SpatialObject {
  * - Optimizing resource distribution
  * - Processing resource conversions
  */
-export class ResourceFlowManager {
+export class ResourceFlowManager extends AbstractBaseManager<ResourceFlowEvent> {
   // Flow network data structures
   private nodes: Map<string, FlowNode> = new Map();
   private connections: Map<string, FlowConnection> = new Map();
@@ -65,11 +109,15 @@ export class ResourceFlowManager {
   private chainExecutions: Map<string, ChainExecutionStatus> = new Map();
 
   // Processing state
-  private processingQueue: ResourceConversionProcess[] = [];
-  private completedProcesses: ResourceConversionProcess[] = [];
+  private processingQueue: ExtendedResourceConversionProcess[] = [];
+  private completedProcesses: ExtendedResourceConversionProcess[] = [];
   private lastProcessingTime = 0;
   private processingInterval: number | null = null;
-  private optimizationInterval: number | null = null;
+  private optimizationInterval: NodeJS.Timeout | null = null;
+
+  // Transfer history
+  private transferHistory: ResourceTransfer[] = [];
+  private maxHistorySize = 1000;
 
   // Optimization settings
   private flowOptimizationEnabled = true;
@@ -98,6 +146,19 @@ export class ResourceFlowManager {
   private isOptimizing = false;
   private lastOptimizationResult: FlowOptimizationResult | null = null;
 
+  private static instance: ResourceFlowManager;
+
+  /**
+   * Get the singleton instance of ResourceFlowManager
+   * @returns The singleton instance
+   */
+  public static getInstance(): ResourceFlowManager {
+    if (!ResourceFlowManager.instance) {
+      ResourceFlowManager.instance = new ResourceFlowManager();
+    }
+    return ResourceFlowManager.instance;
+  }
+
   /**
    * Create a new ResourceFlowManager
    *
@@ -107,19 +168,30 @@ export class ResourceFlowManager {
    * @param useWorkerOffloading - Whether to use Web Worker offloading for large networks
    * @param useSpatialPartitioning - Whether to use spatial partitioning for geographical networks
    */
-  constructor(
+  protected constructor(
     optimizationIntervalMs = 5000,
     cacheTTL = 2000,
     batchSize = 50,
     useWorkerOffloading = true,
     useSpatialPartitioning = true
   ) {
+    super('ResourceFlowManager');
+
     this.optimizationIntervalMs = optimizationIntervalMs;
     this.cacheTTL = cacheTTL;
     this.batchSize = batchSize;
     this.useWorkerOffloading = useWorkerOffloading;
     this.useSpatialPartitioning = useSpatialPartitioning;
 
+    // Other initializations will be done in onInitialize
+  }
+
+  /**
+   * Implementation of abstract method from AbstractBaseManager
+   * Initialize the manager
+   */
+  protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
+    // Initialize resource states
     this.initializeResourceStates();
 
     // Initialize Web Worker utility if enabled
@@ -127,7 +199,9 @@ export class ResourceFlowManager {
       try {
         this.workerUtil = new ResourceFlowWorkerUtil();
       } catch (error) {
-        console.error('Failed to initialize ResourceFlowWorkerUtil:', error);
+        this.handleError(error instanceof Error ? error : new Error(String(error)), {
+          context: 'initializeWorker',
+        });
         this.useWorkerOffloading = false;
       }
     }
@@ -138,11 +212,115 @@ export class ResourceFlowManager {
     }
 
     // Subscribe to module events that might affect resource flow
-    moduleEventBus.subscribe('MODULE_CREATED', this.handleModuleCreated);
-    moduleEventBus.subscribe('MODULE_UPDATED', this.handleModuleUpdated);
-    moduleEventBus.subscribe('MODULE_DESTROYED', this.handleModuleDestroyed);
-    moduleEventBus.subscribe('MODULE_ENABLED', this.handleModuleStateChanged);
-    moduleEventBus.subscribe('MODULE_DISABLED', this.handleModuleStateChanged);
+    this.subscribeToModuleEvents();
+
+    // Start optimization and processing intervals
+    this.startAsyncOptimizationInterval();
+    this.startProcessingInterval(this.processingIntervalMs);
+
+    // Publish initialization event
+    this.publish({
+      type: 'RESOURCE_FLOW_INITIALIZED',
+      timestamp: Date.now(),
+      data: {
+        optimizationIntervalMs: this.optimizationIntervalMs,
+        cacheTTL: this.cacheTTL,
+        batchSize: this.batchSize,
+        useWorkerOffloading: this.useWorkerOffloading,
+        useSpatialPartitioning: this.useSpatialPartitioning,
+      },
+    });
+  }
+
+  /**
+   * Implementation of abstract method from AbstractBaseManager
+   * Update the manager state
+   */
+  protected onUpdate(deltaTime: number): void {
+    // Process any pending conversions
+    this.processConversions();
+
+    // Update any active chains
+    for (const [chainId, chainStatus] of this.chainExecutions.entries()) {
+      if (chainStatus.active && !chainStatus.paused) {
+        this.updateChainProgress(chainId);
+      }
+    }
+
+    // Update metrics
+    this.updateMetric('nodesCount', this.nodes.size);
+    this.updateMetric('connectionsCount', this.connections.size);
+    this.updateMetric('activeProcessesCount', this.processingQueue.length);
+    this.updateMetric('deltaTime', deltaTime);
+  }
+
+  /**
+   * Implementation of abstract method from AbstractBaseManager
+   * Dispose of the manager's resources
+   */
+  protected async onDispose(): Promise<void> {
+    // Clean up intervals
+    if (this.processingInterval !== null) {
+      clearInterval(this.processingInterval);
+      this.processingInterval = null;
+    }
+
+    if (this.optimizationInterval !== null) {
+      clearInterval(this.optimizationInterval);
+      this.optimizationInterval = null;
+    }
+
+    // Cleanup Web Worker
+    if (this.workerUtil) {
+      this.workerUtil.terminate();
+      this.workerUtil = null;
+    }
+
+    // Clear spatial index
+    if (this.spatialIndex) {
+      this.spatialIndex.clear();
+    }
+
+    // Unsubscribe from module events
+    this.unsubscribeFromModuleEvents();
+
+    // Clear data structures
+    this.nodes.clear();
+    this.connections.clear();
+    this.sourceConnections.clear();
+    this.targetConnections.clear();
+
+    this.producerNodes.clear();
+    this.consumerNodes.clear();
+    this.storageNodes.clear();
+    this.converterNodes.clear();
+
+    this.resourceCache.clear();
+    this.transferHistory = [];
+    this.processingQueue = [];
+    this.completedProcesses = [];
+    this.conversionRecipes.clear();
+    this.conversionChains.clear();
+    this.chainExecutions.clear();
+  }
+
+  /**
+   * Subscribe to module events that might affect resource flow
+   */
+  private subscribeToModuleEvents(): void {
+    // Use the subscribe method from AbstractBaseManager to keep track of subscriptions
+    this.subscribe('MODULE_CREATED', this.handleModuleCreated);
+    this.subscribe('MODULE_UPDATED', this.handleModuleUpdated);
+    this.subscribe('MODULE_DESTROYED', this.handleModuleDestroyed);
+    this.subscribe('MODULE_ENABLED', this.handleModuleStateChanged);
+    this.subscribe('MODULE_DISABLED', this.handleModuleStateChanged);
+  }
+
+  /**
+   * Unsubscribe from module events
+   */
+  private unsubscribeFromModuleEvents(): void {
+    // The AbstractBaseManager.dispose() method will handle unsubscribing from all events
   }
 
   // Initialize with default states for all resource types
@@ -179,7 +357,7 @@ export class ResourceFlowManager {
    */
   public registerNode(node: FlowNode): boolean {
     if (!node.id || !node.resources || node.resources.length === 0) {
-      console.warn('Invalid flow node:', node);
+      this.handleError(new Error('Invalid flow node'), { node });
       return false;
     }
 
@@ -189,6 +367,14 @@ export class ResourceFlowManager {
     for (const resourceType of node.resources) {
       this.invalidateCache(resourceType);
     }
+
+    // Publish event
+    this.publish({
+      type: 'RESOURCE_NODE_REGISTERED',
+      timestamp: Date.now(),
+      nodeId: node.id,
+      data: { node },
+    });
 
     return true;
   }
@@ -218,9 +404,12 @@ export class ResourceFlowManager {
     // Remove all connections to/from this node
     // Convert Map entries to array to avoid MapIterator error
     const connectionEntries = Array.from(this.connections.entries());
+    const removedConnections: FlowConnection[] = [];
+
     for (const [connectionId, connection] of connectionEntries) {
       if (connection.source === id || connection.target === id) {
         this.connections.delete(connectionId);
+        removedConnections.push(connection);
       }
     }
 
@@ -230,6 +419,17 @@ export class ResourceFlowManager {
     for (const resourceType of affectedResources) {
       this.invalidateCache(resourceType);
     }
+
+    // Publish event
+    this.publish({
+      type: 'RESOURCE_NODE_UNREGISTERED',
+      timestamp: Date.now(),
+      nodeId: id,
+      data: {
+        node,
+        removedConnections,
+      },
+    });
 
     return true;
   }
@@ -514,6 +714,25 @@ export class ResourceFlowManager {
       };
 
       this.lastOptimizationResult = result;
+
+      // Update metrics
+      this.updateMetric('lastOptimizationTimeMs', result.performanceMetrics?.executionTimeMs || 0);
+      this.updateMetric('bottlenecksCount', bottlenecks.length);
+      this.updateMetric('underutilizedCount', underutilized.length);
+      this.updateMetric('transfersCount', transfers.length);
+
+      // Publish optimization completed event
+      this.publish({
+        type: 'RESOURCE_FLOW_OPTIMIZED',
+        timestamp: Date.now(),
+        data: {
+          metrics: result.performanceMetrics,
+          bottlenecksCount: bottlenecks.length,
+          underutilizedCount: underutilized.length,
+          transfersCount: transfers.length,
+        },
+      });
+
       return result;
     } finally {
       this.isOptimizing = false;
@@ -542,105 +761,27 @@ export class ResourceFlowManager {
     converters: FlowNode[],
     activeConnections: FlowConnection[]
   ): Promise<void> {
-    // If using spatial partitioning and network is large, process by geographical regions
-    if (this.useSpatialPartitioning && this.spatialIndex && converters.length > this.batchSize) {
-      await this.processConvertersByRegion(converters as GeoFlowNode[], activeConnections);
-      return;
-    }
-
-    // Process in batches
-    const batchCount = Math.ceil(converters.length / this.batchSize);
+    // Process converters in batches to avoid blocking the main thread
+    const batchSize = this.batchSize;
+    const batchCount = Math.ceil(converters.length / batchSize);
 
     for (let i = 0; i < batchCount; i++) {
-      const batchStart = i * this.batchSize;
-      const batchEnd = Math.min((i + 1) * this.batchSize, converters.length);
-      const batch = converters.slice(batchStart, batchEnd);
+      const start = i * batchSize;
+      const end = Math.min(start + batchSize, converters.length);
+      const batch = converters.slice(start, end);
 
-      // If using worker offloading, process batch in worker
-      if (this.useWorkerOffloading && this.workerUtil && batch.length > 10) {
-        try {
-          await this.workerUtil.processBatch(batch, activeConnections, this.batchSize);
-        } catch (error) {
-          console.warn('Worker batch processing failed, falling back to main thread:', error);
-          // Fall back to main thread processing
-          for (const converter of batch) {
-            // Original converter processing logic
-            if (converter.config?.type === 'advanced') {
-              this.processAdvancedConverter(converter, activeConnections);
-            } else {
-              this.tryStartConversions(converter);
-            }
-          }
-        }
-      } else {
-        // Process batch in main thread
-        for (const converter of batch) {
-          // Original converter processing logic
-          if (converter.config?.type === 'advanced') {
-            this.processAdvancedConverter(converter, activeConnections);
-          } else {
-            this.tryStartConversions(converter);
-          }
+      // Process each converter in the batch
+      for (const converter of batch) {
+        // Original converter processing logic
+        if (converter.converterConfig && converter.converterConfig.type === 'advanced') {
+          this.processAdvancedConverter(converter, activeConnections);
+        } else {
+          this.tryStartConversions(converter);
         }
       }
 
       // If we have multiple batches, yield to the event loop to prevent blocking
       if (batchCount > 1 && i < batchCount - 1) {
-        await new Promise(resolve => setTimeout(resolve, 0));
-      }
-    }
-  }
-
-  /**
-   * Process converters based on geographical regions using spatial partitioning
-   */
-  private async processConvertersByRegion(
-    converters: GeoFlowNode[],
-    activeConnections: FlowConnection[]
-  ): Promise<void> {
-    if (!this.spatialIndex) return;
-
-    // Ensure all converters are in the spatial index
-    for (const converter of converters) {
-      if (!this.spatialIndex.getAll().some(node => node.id === converter.id)) {
-        this.spatialIndex.add(converter);
-      }
-    }
-
-    // Define regions for processing
-    // This is a simplified approach - in a real implementation, you might
-    // define regions based on actual node distribution
-    const regionSize = 1000; // Size of each region
-    const regionsX = Math.ceil(this.worldBounds.maxX / regionSize);
-    const regionsY = Math.ceil(this.worldBounds.maxY / regionSize);
-
-    // Process each region
-    for (let x = 0; x < regionsX; x++) {
-      for (let y = 0; y < regionsY; y++) {
-        const regionX = x * regionSize + regionSize / 2;
-        const regionY = y * regionSize + regionSize / 2;
-
-        // Find converters in this region
-        const regionConverters = this.spatialIndex.findNearby(
-          regionX,
-          regionY,
-          (regionSize * Math.SQRT2) / 2
-        );
-
-        // Skip empty regions
-        if (regionConverters.length === 0) continue;
-
-        // Process converters in this region
-        for (const converter of regionConverters) {
-          // Original converter processing logic
-          if (converter.config?.type === 'advanced') {
-            this.processAdvancedConverter(converter, activeConnections);
-          } else {
-            this.tryStartConversions(converter);
-          }
-        }
-
-        // Yield to the event loop to prevent blocking
         await new Promise(resolve => setTimeout(resolve, 0));
       }
     }
@@ -685,17 +826,17 @@ export class ResourceFlowManager {
     const demand: Partial<Record<ResourceType, number>> = {};
 
     // Calculate production capacity
-    for (const producer of producers) {
+    for (const _producer of producers) {
       // ... existing production capacity calculation code ...
     }
 
     // Calculate consumer demand
-    for (const consumer of consumers) {
+    for (const _consumer of consumers) {
       // ... existing consumer demand calculation code ...
     }
 
     // Factor in storage capacity
-    for (const storage of storages) {
+    for (const _storage of storages) {
       // ... existing storage capacity calculation code ...
     }
 
@@ -784,53 +925,28 @@ export class ResourceFlowManager {
 
     // Use setInterval for regular optimization
     this.optimizationInterval = setInterval(() => {
-      if (this.flowOptimizationEnabled) {
+      if (this.flowOptimizationEnabled && this.getStatus() === ManagerStatus.READY) {
         // Call async optimize without waiting (fire and forget)
         this.optimizeFlows().catch(error => {
-          console.error('Error in async optimization interval:', error);
+          this.handleError(error instanceof Error ? error : new Error(String(error)), {
+            context: 'asyncOptimizationInterval',
+          });
         });
       }
     }, this.optimizationIntervalMs);
   }
 
   /**
-   * Clean up resources, including worker
+   * Deprecated: Use dispose() instead
+   * This method is kept for backward compatibility
    */
   public cleanup(): void {
-    // Original cleanup code
-    if (this.processingInterval !== null) {
-      clearInterval(this.processingInterval);
-      this.processingInterval = null;
-    }
-
-    if (this.optimizationInterval !== null) {
-      clearInterval(this.optimizationInterval);
-      this.optimizationInterval = null;
-    }
-
-    // Cleanup Web Worker
-    if (this.workerUtil) {
-      this.workerUtil.terminate();
-      this.workerUtil = null;
-    }
-
-    // Clear spatial index
-    if (this.spatialIndex) {
-      this.spatialIndex.clear();
-    }
-
-    // Clear data structures
-    this.nodes.clear();
-    this.connections.clear();
-    this.sourceConnections.clear();
-    this.targetConnections.clear();
-
-    this.producerNodes.clear();
-    this.consumerNodes.clear();
-    this.storageNodes.clear();
-    this.converterNodes.clear();
-
-    this.resourceCache.clear();
+    // Call dispose() which includes all cleanup logic
+    this.dispose().catch(error => {
+      this.handleError(error instanceof Error ? error : new Error(String(error)), {
+        context: 'cleanup',
+      });
+    });
   }
 
   /**
@@ -956,8 +1072,8 @@ export class ResourceFlowManager {
     if (!converter || converter.type !== 'converter' || !recipe) {
       return {
         success: false,
-        error: 'Invalid converter or recipe',
-        timestamp: Date.now(),
+        processId: '',
+        recipeId: '',
       };
     }
 
@@ -982,8 +1098,8 @@ export class ResourceFlowManager {
     ) {
       return {
         success: false,
-        error: 'Recipe not supported by this converter',
-        timestamp: Date.now(),
+        processId: '',
+        recipeId: '',
       };
     }
 
@@ -995,8 +1111,8 @@ export class ResourceFlowManager {
     ) {
       return {
         success: false,
-        error: 'Maximum concurrent processes reached',
-        timestamp: Date.now(),
+        processId: '',
+        recipeId: '',
       };
     }
 
@@ -1005,8 +1121,8 @@ export class ResourceFlowManager {
     if (!hasInputs) {
       return {
         success: false,
-        error: 'Insufficient inputs',
-        timestamp: Date.now(),
+        processId: '',
+        recipeId: '',
       };
     }
 
@@ -1051,7 +1167,7 @@ export class ResourceFlowManager {
     const processId = `${converterId}-${recipeId}-${now}`;
     const processEndTime = now + recipe.processingTime;
 
-    const process: ResourceConversionProcess = {
+    const process: ResourceConversionProcess & { processId: string } = {
       recipeId,
       progress: 0,
       startTime: now,
@@ -1061,6 +1177,7 @@ export class ResourceFlowManager {
       paused: false,
       inputsProvided: true,
       appliedEfficiency: efficiency,
+      processId: processId,
     };
 
     // Apply efficiency to processing time
@@ -1100,9 +1217,7 @@ export class ResourceFlowManager {
       success: true,
       processId,
       recipeId: recipe.id,
-      converterId: converter.id,
-      inputsConsumed,
-      timestamp: now,
+      outputsProduced: inputsConsumed,
     };
   }
 
@@ -1130,10 +1245,10 @@ export class ResourceFlowManager {
    */
   private processConversions(): void {
     // Array to collect processes to complete
-    const processesToComplete: string[] = [];
+    const processesToComplete: ExtendedResourceConversionProcess[] = [];
 
     // Check all active processes
-    for (const [processId, process] of this.processingQueue.entries()) {
+    for (const process of this.processingQueue) {
       // Skip paused processes
       if (process.paused) {
         continue;
@@ -1149,23 +1264,17 @@ export class ResourceFlowManager {
 
       // Check if process is complete
       if (now >= process.endTime) {
-        processesToComplete.push(processId);
+        processesToComplete.push(process);
       }
     }
 
     // Complete processes
-    for (const processId of processesToComplete) {
-      // Get process
-      const process = this.processingQueue.find(p => p.processId === processId);
-      if (!process) {
-        continue;
-      }
-
+    for (const process of processesToComplete) {
       // Get converter
       const converter = this.nodes.get(process.sourceId);
       if (!converter) {
         // Converter not found, remove process from active processes
-        this.processingQueue = this.processingQueue.filter(p => p.processId !== processId);
+        this.processingQueue = this.processingQueue.filter(p => p.processId !== process.processId);
         continue;
       }
 
@@ -1173,17 +1282,19 @@ export class ResourceFlowManager {
       const recipe = this.conversionRecipes.get(process.recipeId);
       if (!recipe) {
         // Recipe not found, remove process from active processes
-        this.processingQueue = this.processingQueue.filter(p => p.processId !== processId);
+        this.processingQueue = this.processingQueue.filter(p => p.processId !== process.processId);
         continue;
       }
 
       // Complete the process
-      const result = this.completeConversionProcess(processId, process, converter, recipe);
+      const result = this.completeConversionProcess(process.processId, process, converter, recipe);
 
       // Check if this process is part of an active chain
       for (const chainStatus of this.chainExecutions.values()) {
         // Find the step that contains this process
-        const stepIndex = chainStatus.stepStatus.findIndex(step => step.processId === processId);
+        const stepIndex = chainStatus.stepStatus.findIndex(
+          step => step.processId === process.processId
+        );
         if (stepIndex >= 0) {
           // Found a matching step
           const step = chainStatus.stepStatus[stepIndex];
@@ -1352,10 +1463,8 @@ export class ResourceFlowManager {
       success: true,
       processId,
       recipeId: recipe.id,
-      converterId: converter.id,
       outputsProduced,
       byproductsProduced,
-      timestamp: Date.now(),
     };
 
     // Apply efficiency to the output amounts using the other unused function
@@ -1624,9 +1733,6 @@ export class ResourceFlowManager {
   }
 
   /**
-   * Get converter status
-   *
-   * @param {string} converterId - The ID of the converter
    * @returns {ConverterProcessStatus | undefined} The converter status, or undefined if not found
    */
   public getConverterStatus(converterId: string): ConverterProcessStatus | undefined {
@@ -1760,12 +1866,16 @@ export class ResourceFlowManager {
     const bottlenecks: string[] = [];
     const underutilized: string[] = [];
 
-    for (const [type, availableAmount] of Object.entries(availability)) {
-      const demandAmount = demand[type as ResourceType] || 0;
+    // Find bottlenecks (resources where demand exceeds availability)
+    for (const type in demand) {
+      const demandValue = demand[type] || 0;
+      const availabilityValue = availability[type] || 0;
 
-      if (availableAmount < demandAmount * 0.9) {
+      if (demandValue > availabilityValue * 1.1) {
+        // 10% threshold to avoid minor imbalances
         bottlenecks.push(type);
-      } else if (availableAmount > demandAmount * 1.5) {
+      } else if (availabilityValue > demandValue * 1.5) {
+        // 50% threshold for underutilization
         underutilized.push(type);
       }
     }
@@ -2144,27 +2254,80 @@ export class ResourceFlowManager {
     return success;
   }
 
+  /**
+   * Update the progress of a conversion chain
+   */
+  private updateChainProgress(chainId: string): void {
+    const chainStatus = this.chainExecutions.get(chainId);
+    if (!chainStatus) return;
+
+    // Calculate overall progress
+    const completedSteps = 0;
+    let totalProgress = 0;
+
+    for (const step of chainStatus.stepStatus) {
+      if (step.status === 'completed') {
+        // Prefix with underscore to indicate it's unused
+        let _completedSteps = completedSteps;
+        _completedSteps++;
+        totalProgress += 1;
+      } else if (step.status === 'in_progress') {
+        // Calculate step progress based on process progress
+        const process = this.processingQueue.find(p => p.processId === step.processId);
+        if (process) {
+          const stepProgress = process.progress || 0;
+          totalProgress += stepProgress;
+        }
+      }
+    }
+
+    // Update chain progress
+    const totalSteps = chainStatus.stepStatus.length;
+    chainStatus.progress = totalSteps > 0 ? totalProgress / totalSteps : 0;
+
+    // Update chain in map
+    this.chainExecutions.set(chainId, chainStatus);
+
+    // Update metrics
+    this.updateMetric(
+      'activeChains',
+      Array.from(this.chainExecutions.values()).filter(c => c.active).length
+    );
+    this.updateMetric(
+      'completedChains',
+      Array.from(this.chainExecutions.values()).filter(c => c.completed).length
+    );
+  }
+
+  /**
+   * Get the version of this manager implementation (for compatibility)
+   * @override
+   */
+  protected getVersion(): string {
+    return '2.0.0';
+  }
+
   // Module event handlers
-  private handleModuleCreated = (data: any) => {
+  private handleModuleCreated = (data: unknown) => {
     // Handle module creation
     const { id, type } = data;
     // Register module as appropriate node type based on module type
     this.registerModuleAsNode(id, type as ModuleType);
   };
 
-  private handleModuleUpdated = (data: any) => {
+  private handleModuleUpdated = (data: unknown) => {
     // Handle module update
     const { id, changes } = data;
     this.updateNodeFromModule(id, changes);
   };
 
-  private handleModuleDestroyed = (data: any) => {
+  private handleModuleDestroyed = (data: unknown) => {
     // Handle module destruction
     const { id } = data;
     this.unregisterNode(id);
   };
 
-  private handleModuleStateChanged = (data: any) => {
+  private handleModuleStateChanged = (data: unknown) => {
     // Handle module state change (enabled/disabled)
     const { id, active } = data;
     this.setNodeActive(id, active);
@@ -2174,14 +2337,14 @@ export class ResourceFlowManager {
   private registerModuleAsNode(moduleId: string, moduleType: ModuleType): void {
     // Implementation will determine node type based on module type
     // This is a placeholder
-    console.log(`Registering module ${moduleId} of type ${moduleType} as node`);
+    console.warn(`Registering module ${moduleId} of type ${moduleType} as node`);
   }
 
   // Update a node based on module changes
-  private updateNodeFromModule(moduleId: string, changes: any): void {
+  private updateNodeFromModule(moduleId: string, changes: unknown): void {
     // Implementation will update node properties based on module changes
     // This is a placeholder
-    console.log(`Updating node for module ${moduleId} with changes`, changes);
+    console.warn(`Updating node for module ${moduleId} with changes`, changes);
   }
 
   // Set a node's active state
@@ -2191,5 +2354,106 @@ export class ResourceFlowManager {
       node.active = active;
       this.nodes.set(nodeId, node);
     }
+  }
+
+  /**
+   * Process the next step in a conversion chain
+   *
+   * @param chainId The ID of the chain to process
+   * @private
+   */
+  private processNextChainStep(chainId: string): void {
+    const chainStatus = this.chainExecutions.get(chainId);
+    if (!chainStatus || !chainStatus.active || chainStatus.paused) {
+      return;
+    }
+
+    // Get the current step
+    const currentStepIndex = chainStatus.currentStepIndex;
+    if (currentStepIndex >= chainStatus.stepStatus.length) {
+      // Chain is complete
+      chainStatus.completed = true;
+      chainStatus.active = false;
+      return;
+    }
+
+    const step = chainStatus.stepStatus[currentStepIndex];
+    if (step.status !== 'pending') {
+      // Step is already in progress or completed
+      return;
+    }
+
+    // Get the recipe for this step
+    const recipeId = step.recipeId;
+    const recipe = this.conversionRecipes.get(recipeId);
+    if (!recipe) {
+      // Recipe not found
+      step.status = 'failed';
+      chainStatus.failed = true;
+      chainStatus.active = false;
+      chainStatus.errorMessage = `Recipe ${recipeId} not found`;
+      return;
+    }
+
+    // Find a converter that can process this recipe
+    const converters = Array.from(this.nodes.values()).filter(
+      node =>
+        node.type === 'converter' &&
+        node.active &&
+        node.converterConfig?.supportedRecipes.includes(recipeId)
+    );
+
+    if (converters.length === 0) {
+      // No converter found
+      step.status = 'failed';
+      chainStatus.failed = true;
+      chainStatus.active = false;
+      chainStatus.errorMessage = `No converter found for recipe ${recipeId}`;
+      return;
+    }
+
+    // Sort converters by priority
+    converters.sort((a, b) => {
+      const aEfficiency = a.efficiency || 1;
+      const bEfficiency = b.efficiency || 1;
+      return bEfficiency - aEfficiency; // Higher efficiency first
+    });
+
+    // Try to start the conversion on the first available converter
+    let started = false;
+    for (const converter of converters) {
+      // Check if converter has capacity
+      if (
+        converter.converterStatus &&
+        converter.converterConfig &&
+        converter.converterStatus.activeProcesses.length >=
+          converter.converterConfig.maxConcurrentProcesses
+      ) {
+        continue;
+      }
+
+      // Try to start the conversion
+      const result = this.startConversionProcess(converter.id, recipeId);
+      if (result.success) {
+        // Update step status
+        step.status = 'in_progress';
+        step.startTime = Date.now();
+        step.processId = result.processId;
+        step.converterId = converter.id;
+        started = true;
+        break;
+      }
+    }
+
+    if (!started) {
+      // Could not start conversion
+      step.status = 'failed';
+      chainStatus.failed = true;
+      chainStatus.active = false;
+      chainStatus.errorMessage = `Could not start conversion for recipe ${recipeId}`;
+    }
+
+    // Update chain status
+    this.chainExecutions.set(chainId, chainStatus);
   }
 }

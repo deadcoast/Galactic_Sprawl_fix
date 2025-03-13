@@ -1,74 +1,64 @@
-import { BaseEvent, EventType } from '../../types/events/EventTypes';
+import { ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
+import { EventType, BaseEvent as LegacyBaseEvent } from '../../types/events/EventTypes';
 import { EventBus } from '../events/EventBus';
+import { BaseEvent, eventSystem } from '../events/UnifiedEventSystem';
+import { Singleton } from '../patterns/Singleton';
 
 /**
- * Standard interface for all manager services in the application.
- * Managers handle core game logic and state, communicating with the UI
- * through contexts and events.
+ * Base interface for all manager classes
  */
-export interface BaseManager<TEvent extends BaseEvent = BaseEvent> {
+export interface IBaseManager {
   /**
-   * Unique identifier for this manager instance
-   */
-  readonly id: string;
-
-  /**
-   * The manager's name for identification and debugging
-   */
-  readonly name: string;
-
-  /**
-   * The event bus used by this manager for publishing events
-   */
-  readonly eventBus: EventBus<TEvent>;
-
-  /**
-   * Initialize the manager. Called by the ServiceRegistry during startup.
-   * @param dependencies Optional map of dependencies provided by the ServiceRegistry
-   * @returns Promise that resolves when initialization is complete
+   * Initialize the manager
    */
   initialize(dependencies?: Record<string, unknown>): Promise<void>;
 
   /**
-   * Update method called on each game tick for time-based updates
-   * @param deltaTime Time in milliseconds since the last update
-   */
-  update(deltaTime: number): void;
-
-  /**
-   * Clean up resources used by this manager. Called during shutdown
-   * or when the manager is removed from the ServiceRegistry.
-   * @returns Promise that resolves when cleanup is complete
+   * Dispose of the manager's resources
    */
   dispose(): Promise<void>;
 
   /**
-   * Subscribe to an event
-   * @param eventType The type of event to subscribe to
-   * @param handler The function to call when the event is dispatched
-   * @returns A function to unsubscribe from the event
+   * Update method called on each game tick for time-based updates
    */
-  subscribeToEvent(eventType: EventType, handler: (event: TEvent) => void): () => void;
+  update(deltaTime: number): void;
 
   /**
-   * Publish an event to the event bus
-   * @param event The event to publish
+   * Get the manager's name
    */
-  publishEvent(event: TEvent): void;
+  getName(): string;
 
   /**
-   * Check if the manager is initialized
+   * Get the manager's status
    */
-  isInitialized(): boolean;
+  getStatus(): ManagerStatus;
 
   /**
-   * Get metadata about this manager (for debugging and monitoring)
+   * Handle errors that occur within the manager
    */
-  getMetadata(): ManagerMetadata;
+  handleError(error: Error, context?: Record<string, unknown>): void;
 }
 
 /**
- * Metadata interface for manager information
+ * Manager status
+ */
+export enum ManagerStatus {
+  UNINITIALIZED = 'uninitialized',
+  INITIALIZING = 'initializing',
+  READY = 'ready',
+  ERROR = 'error',
+  DISPOSED = 'disposed',
+}
+
+/**
+ * Manager metrics
+ */
+export interface ManagerMetrics {
+  [key: string]: number;
+}
+
+/**
+ * Legacy Manager Metadata for backward compatibility
  */
 export interface ManagerMetadata {
   id: string;
@@ -83,112 +73,340 @@ export interface ManagerMetadata {
 }
 
 /**
- * Base implementation of the BaseManager interface with common functionality
+ * Standard interface for all manager services in the application.
+ * This interface is maintained for backward compatibility.
  */
-export abstract class AbstractBaseManager<TEvent extends BaseEvent = BaseEvent>
-  implements BaseManager<TEvent>
+export interface BaseManager<TEvent extends LegacyBaseEvent = LegacyBaseEvent> {
+  readonly id: string;
+  readonly name: string;
+  readonly eventBus: EventBus<TEvent>;
+  initialize(dependencies?: Record<string, unknown>): Promise<void>;
+  update(deltaTime: number): void;
+  dispose(): Promise<void>;
+  subscribeToEvent(eventType: EventType, handler: (event: TEvent) => void): () => void;
+  publishEvent(event: TEvent): void;
+  isInitialized(): boolean;
+  getMetadata(): ManagerMetadata;
+}
+
+/**
+ * Base manager implementation that all managers should extend
+ */
+export abstract class AbstractBaseManager<T extends BaseEvent = BaseEvent>
+  extends Singleton<AbstractBaseManager<T>>
+  implements IBaseManager
 {
   public readonly id: string;
-  public readonly eventBus: EventBus<TEvent>;
-  private _isInitialized = false;
-  private _status: ManagerMetadata['status'] = 'initializing';
-  private _errorMessage?: string;
-  private _lastUpdateTime?: number;
-  private _dependencies: string[] = [];
+  protected managerName: string;
+  protected status: ManagerStatus = ManagerStatus.UNINITIALIZED;
+  protected metrics: ManagerMetrics = {};
+  protected lastError: Error | null = null;
+  protected unsubscribeFunctions: (() => void)[] = [];
+  protected dependencies: string[] = [];
+  protected lastUpdateTime?: number;
 
-  constructor(
-    public readonly name: string,
-    eventBus: EventBus<TEvent>,
-    id?: string
-  ) {
+  /**
+   * Constructor for the base manager
+   * @param name The name of the manager
+   * @param id Optional ID for the manager
+   */
+  protected constructor(name: string, id?: string) {
+    super();
+    this.managerName = name;
     this.id = id || `${name}_${Date.now()}`;
-    this.eventBus = eventBus;
   }
 
-  async initialize(dependencies?: Record<string, unknown>): Promise<void> {
+  /**
+   * Initialize the manager
+   */
+  public async initialize(dependencies?: Record<string, unknown>): Promise<void> {
+    if (this.status === ManagerStatus.READY) {
+      return;
+    }
+
     try {
+      this.status = ManagerStatus.INITIALIZING;
+
+      // Store dependencies if provided
       if (dependencies) {
-        this._dependencies = Object.keys(dependencies);
+        this.dependencies = Object.keys(dependencies);
       }
 
+      // Call the implementation-specific initialization
       await this.onInitialize(dependencies);
-      this._isInitialized = true;
-      this._status = 'active';
+
+      this.status = ManagerStatus.READY;
+
+      // Publish initialization event
+      this.publish({
+        type: 'MANAGER_INITIALIZED',
+        managerId: this.managerName,
+        timestamp: Date.now(),
+      });
     } catch (error) {
-      this._status = 'error';
-      this._errorMessage = error instanceof Error ? error.message : String(error);
-      throw error;
+      this.status = ManagerStatus.ERROR;
+      this.lastError = error instanceof Error ? error : new Error(String(error));
+
+      this.handleError(this.lastError, { context: 'initialize' });
+      throw this.lastError;
     }
   }
 
-  update(deltaTime: number): void {
-    this._lastUpdateTime = Date.now();
-    if (this._isInitialized) {
+  /**
+   * Update method called on each game tick
+   */
+  public update(deltaTime: number): void {
+    this.lastUpdateTime = Date.now();
+    if (this.status === ManagerStatus.READY) {
       this.onUpdate(deltaTime);
     }
   }
 
-  async dispose(): Promise<void> {
+  /**
+   * Dispose of the manager's resources
+   */
+  public async dispose(): Promise<void> {
+    if (this.status === ManagerStatus.DISPOSED) {
+      return;
+    }
+
     try {
+      // Unsubscribe from all events
+      for (const unsubscribe of this.unsubscribeFunctions) {
+        unsubscribe();
+      }
+
+      // Clear the unsubscribe functions array
+      this.unsubscribeFunctions = [];
+
+      // Call the implementation-specific disposal
       await this.onDispose();
-      this._status = 'disposed';
+
+      this.status = ManagerStatus.DISPOSED;
+
+      // Publish disposal event
+      this.publish({
+        type: 'MANAGER_DISPOSED',
+        managerId: this.managerName,
+        timestamp: Date.now(),
+      });
     } catch (error) {
-      this._status = 'error';
-      this._errorMessage = error instanceof Error ? error.message : String(error);
+      this.handleError(error instanceof Error ? error : new Error(String(error)), {
+        context: 'dispose',
+      });
       throw error;
     }
   }
 
-  subscribeToEvent(eventType: EventType, handler: (event: TEvent) => void): () => void {
-    return this.eventBus.subscribe(eventType, handler);
+  /**
+   * Get the manager's name
+   */
+  public getName(): string {
+    return this.managerName;
   }
 
-  publishEvent(event: TEvent): void {
-    this.eventBus.emit(event);
+  /**
+   * Get the manager's status
+   */
+  public getStatus(): ManagerStatus {
+    return this.status;
   }
 
-  isInitialized(): boolean {
-    return this._isInitialized;
+  /**
+   * Check if the manager is initialized (for compatibility)
+   */
+  public isInitialized(): boolean {
+    return this.status === ManagerStatus.READY;
   }
 
-  getMetadata(): ManagerMetadata {
+  /**
+   * Get manager metadata (for compatibility)
+   */
+  public getMetadata(): ManagerMetadata {
     return {
       id: this.id,
-      name: this.name,
+      name: this.managerName,
       version: this.getVersion(),
-      isInitialized: this._isInitialized,
-      dependencies: this._dependencies,
-      status: this._status,
-      lastUpdateTime: this._lastUpdateTime,
-      errorMessage: this._errorMessage,
+      isInitialized: this.isInitialized(),
+      dependencies: this.dependencies,
+      status: this.mapStatusToLegacy(this.status),
+      lastUpdateTime: this.lastUpdateTime,
+      errorMessage: this.lastError?.message,
       stats: this.getStats(),
     };
   }
 
   /**
-   * Get the version of this manager implementation
+   * Handle errors that occur within the manager
    */
-  protected abstract getVersion(): string;
+  public handleError(error: Error, context?: Record<string, unknown>): void {
+    this.lastError = error;
 
-  /**
-   * Get statistics for this manager (for monitoring)
-   */
-  protected getStats(): Record<string, number | string> {
-    return {};
+    // Log the error
+    errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
+      manager: this.managerName,
+      status: this.status,
+      ...context,
+    });
+
+    // Publish error event
+    this.publish({
+      type: 'MANAGER_ERROR',
+      managerId: this.managerName,
+      error: error.message,
+      timestamp: Date.now(),
+      context,
+    });
   }
 
   /**
-   * Initialization logic to be implemented by concrete managers
+   * Reset the manager to its initial state
+   * This is primarily useful for testing
+   */
+  public reset(): void {
+    this.status = ManagerStatus.UNINITIALIZED;
+    this.metrics = {};
+    this.lastError = null;
+    this.lastUpdateTime = undefined;
+
+    // Unsubscribe from all events
+    for (const unsubscribe of this.unsubscribeFunctions) {
+      unsubscribe();
+    }
+
+    // Clear the unsubscribe functions array
+    this.unsubscribeFunctions = [];
+  }
+
+  /**
+   * Get manager metrics
+   */
+  public getMetrics(): ManagerMetrics {
+    return { ...this.metrics };
+  }
+
+  /**
+   * Update a specific metric
+   */
+  protected updateMetric(key: string, value: number): void {
+    this.metrics[key] = value;
+  }
+
+  /**
+   * Increment a metric
+   */
+  protected incrementMetric(key: string, increment = 1): void {
+    this.metrics[key] = (this.metrics[key] || 0) + increment;
+  }
+
+  /**
+   * Publish an event
+   */
+  protected publish<E extends BaseEvent>(event: E): void {
+    eventSystem.publish(event);
+  }
+
+  /**
+   * Legacy method for publishing events (for backward compatibility)
+   */
+  public publishEvent(event: LegacyBaseEvent): void {
+    // Convert legacy event to new format
+    this.publish({
+      ...event,
+    });
+  }
+
+  /**
+   * Subscribe to an event
+   */
+  protected subscribe<E extends BaseEvent>(
+    eventType: string,
+    handler: (event: E) => void
+  ): () => void {
+    const unsubscribe = eventSystem.subscribe(eventType, handler);
+    this.unsubscribeFunctions.push(unsubscribe);
+    return unsubscribe;
+  }
+
+  /**
+   * Legacy method for subscribing to events (for backward compatibility)
+   */
+  public subscribeToEvent(
+    eventType: EventType,
+    handler: (event: LegacyBaseEvent) => void
+  ): () => void {
+    // Adapt legacy subscription to new event system
+    return this.subscribe(eventType, event => handler(event as unknown as LegacyBaseEvent));
+  }
+
+  /**
+   * Start a batched event publishing session
+   */
+  protected startEventBatch(): void {
+    eventSystem.startBatch();
+  }
+
+  /**
+   * End a batched event publishing session
+   */
+  protected async endEventBatch(async = false): Promise<void> {
+    await eventSystem.endBatch(async);
+  }
+
+  /**
+   * Get the version of this manager implementation (for compatibility)
+   */
+  protected getVersion(): string {
+    return '1.0.0';
+  }
+
+  /**
+   * Get statistics for this manager (for compatibility)
+   */
+  protected getStats(): Record<string, number | string> {
+    const result: Record<string, number | string> = {};
+
+    // Convert numeric metrics to stats
+    for (const [key, value] of Object.entries(this.metrics)) {
+      result[key] = value;
+    }
+
+    return result;
+  }
+
+  /**
+   * Map new status enum to legacy status string (for compatibility)
+   */
+  private mapStatusToLegacy(status: ManagerStatus): ManagerMetadata['status'] {
+    switch (status) {
+      case ManagerStatus.INITIALIZING:
+        return 'initializing';
+      case ManagerStatus.READY:
+        return 'active';
+      case ManagerStatus.ERROR:
+        return 'error';
+      case ManagerStatus.DISPOSED:
+        return 'disposed';
+      default:
+        return 'initializing';
+    }
+  }
+
+  /**
+   * Manager-specific initialization logic
+   * To be implemented by subclasses
    */
   protected abstract onInitialize(dependencies?: Record<string, unknown>): Promise<void>;
 
   /**
-   * Update logic to be implemented by concrete managers
+   * Manager-specific update logic
+   * To be implemented by subclasses
    */
   protected abstract onUpdate(deltaTime: number): void;
 
   /**
-   * Cleanup logic to be implemented by concrete managers
+   * Manager-specific disposal logic
+   * To be implemented by subclasses
    */
   protected abstract onDispose(): Promise<void>;
 }

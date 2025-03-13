@@ -19,7 +19,7 @@ import {
 const MAX_HISTORY_POINTS = 30;
 
 // Colors for each resource type, matching our existing color scheme
-const resourceColors = {
+const resourceColors: Record<ResourceType, string> = {
   [ResourceType.MINERALS]: '#f59e0b', // amber
   [ResourceType.ENERGY]: '#06b6d4', // cyan
   [ResourceType.POPULATION]: '#10b981', // green
@@ -27,6 +27,17 @@ const resourceColors = {
   [ResourceType.PLASMA]: '#ef4444', // red
   [ResourceType.GAS]: '#3b82f6', // blue
   [ResourceType.EXOTIC]: '#ec4899', // pink
+  // Add missing resource types
+  [ResourceType.IRON]: '#94a3b8', // slate
+  [ResourceType.COPPER]: '#f97316', // orange
+  [ResourceType.TITANIUM]: '#64748b', // slate
+  [ResourceType.URANIUM]: '#84cc16', // lime
+  [ResourceType.WATER]: '#0ea5e9', // sky
+  [ResourceType.HELIUM]: '#6366f1', // indigo
+  [ResourceType.DEUTERIUM]: '#8b5cf6', // violet
+  [ResourceType.ANTIMATTER]: '#d946ef', // fuchsia
+  [ResourceType.DARK_MATTER]: '#f43f5e', // rose
+  [ResourceType.EXOTIC_MATTER]: '#10b981', // emerald
 };
 
 // Interface for resource rate history data point
@@ -84,6 +95,22 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
       window.clearInterval(historyIntervalRef.current);
     }
 
+    // Helper function to convert ResourceType enum to a key in allResourceRates
+    const getResourceKey = (resourceType: ResourceType): keyof typeof allResourceRates | null => {
+      // Map ResourceType enum values to keys in allResourceRates
+      const mapping: Partial<Record<ResourceType, keyof typeof allResourceRates>> = {
+        [ResourceType.MINERALS]: 'minerals',
+        [ResourceType.ENERGY]: 'energy',
+        [ResourceType.POPULATION]: 'population',
+        [ResourceType.RESEARCH]: 'research',
+        [ResourceType.PLASMA]: 'plasma',
+        [ResourceType.GAS]: 'gas',
+        [ResourceType.EXOTIC]: 'exotic',
+      };
+
+      return mapping[resourceType] || null;
+    };
+
     // Function to collect current rate data
     const collectRateData = () => {
       if (!allResourceRates) return;
@@ -92,8 +119,9 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
 
       // Collect net rates for all displayed resources
       displayedResources.forEach(resourceType => {
-        if (allResourceRates[resourceType]) {
-          newDataPoint[resourceType] = allResourceRates[resourceType].net;
+        const resourceKey = getResourceKey(resourceType);
+        if (resourceKey && allResourceRates[resourceKey]) {
+          newDataPoint[resourceType] = allResourceRates[resourceKey].net;
         }
       });
 
@@ -170,7 +198,7 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
       const resourceType = name as ResourceType;
       const displayName = ResourceTypeHelpers.getDisplayName(resourceType);
       return [`${value.toFixed(1)}/tick`, displayName];
-    } catch (e) {
+    } catch (_) {
       return [value.toFixed(1), name];
     }
   };
@@ -189,7 +217,7 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
             key={resourceType}
             className={`rounded-full border px-2 py-1 text-xs transition-colors ${
               displayedResources.includes(resourceType)
-                ? `border-opacity-50 bg-opacity-20 bg-${resourceColors[resourceType].slice(1)} border-${resourceColors[resourceType].slice(1)} text-${resourceColors[resourceType].slice(1)}`
+                ? 'border-opacity-50 bg-opacity-20'
                 : 'border-gray-700 bg-gray-800 text-gray-400'
             }`}
             style={{
@@ -228,17 +256,17 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
                 tick={{ fill: '#9ca3af', fontSize: 12 }}
               />
               <Tooltip
-                formatter={formatTooltip as any}
+                formatter={(value: number, name: string) => formatTooltip(value, name)}
                 contentStyle={{
                   backgroundColor: '#1f2937',
                   border: '1px solid #374151',
                   borderRadius: '4px',
                   color: '#e5e7eb',
                 }}
-                labelFormatter={(timestamp: any) => `Time: ${formatTimestamp(timestamp as number)}`}
+                labelFormatter={(timestamp: number) => `Time: ${formatTimestamp(timestamp)}`}
               />
               <Legend
-                formatter={(value: any) => {
+                formatter={(value: string) => {
                   try {
                     const resourceType = value as ResourceType;
                     return ResourceTypeHelpers.getDisplayName(resourceType);

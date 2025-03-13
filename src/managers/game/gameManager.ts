@@ -1,24 +1,14 @@
 import { EventBus } from '../../lib/events/EventBus';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { GameEvent } from '../../types/core/GameTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-
-/**
- * Game events specific to the game manager
- */
-export enum GameManagerEventType {
-  GAME_STARTED = 'GAME_STARTED',
-  GAME_PAUSED = 'GAME_PAUSED',
-  GAME_RESUMED = 'GAME_RESUMED',
-  GAME_STOPPED = 'GAME_STOPPED',
-  TIME_UPDATED = 'TIME_UPDATED',
-}
 
 /**
  * Game manager event
  */
 export interface GameManagerEvent extends BaseEvent {
-  type: GameManagerEventType | EventType;
+  type: EventType; // Using only EventType for type safety
   gameTime?: number;
 }
 
@@ -31,11 +21,13 @@ export class GameManager extends AbstractBaseManager<GameManagerEvent> {
   private gameTime: number = 0;
   private lastUpdate: number = 0;
   private frameId: number | null = null;
-  private subscribers: Set<(gameTime: number) => void> = new Set();
+  private timeSubscribers: Set<(gameTime: number) => void> = new Set();
   private eventListeners: Map<string, Set<(event: GameEvent) => void>> = new Map();
+  private eventBus: EventBus<GameManagerEvent>;
 
   constructor(eventBus: EventBus<GameManagerEvent>) {
-    super('GameManager', eventBus);
+    super('GameManager');
+    this.eventBus = eventBus;
   }
 
   /**
@@ -47,30 +39,30 @@ export class GameManager extends AbstractBaseManager<GameManagerEvent> {
     this.isPaused = false;
     this.gameTime = 0;
     this.lastUpdate = 0;
-
-    // Register event handlers if needed
-    console.log('GameManager initialized');
   }
 
   /**
    * @inheritdoc
    */
   protected onUpdate(deltaTime: number): void {
-    if (this.isRunning && !this.isPaused) {
-      // Directly update game time with the provided delta
-      this.gameTime += deltaTime;
+    if (!this.isRunning || this.isPaused) return;
 
-      // Notify subscribers
-      this.subscribers.forEach(callback => {
-        callback(this.gameTime);
-      });
+    // Update game time
+    this.gameTime += deltaTime;
 
-      // Publish time updated event
-      this.publishEvent({
-        type: GameManagerEventType.TIME_UPDATED,
-        gameTime: this.gameTime,
-      });
-    }
+    // Publish time update event
+    this.publishEvent({
+      type: EventType.TIME_UPDATED,
+      timestamp: Date.now(),
+      moduleId: this.id,
+      moduleType: 'command' as ModuleType,
+      gameTime: this.gameTime,
+    });
+
+    // Notify subscribers
+    this.timeSubscribers.forEach(callback => {
+      callback(this.gameTime);
+    });
   }
 
   /**
@@ -78,7 +70,7 @@ export class GameManager extends AbstractBaseManager<GameManagerEvent> {
    */
   protected async onDispose(): Promise<void> {
     this.stop();
-    this.subscribers.clear();
+    this.timeSubscribers.clear();
   }
 
   /**
@@ -96,97 +88,130 @@ export class GameManager extends AbstractBaseManager<GameManagerEvent> {
       gameTime: this.gameTime,
       isRunning: this.isRunning ? 1 : 0,
       isPaused: this.isPaused ? 1 : 0,
-      subscriberCount: this.subscribers.size,
+      subscriberCount: this.timeSubscribers.size,
     };
   }
 
   /**
-   * Start the game loop
+   * Start the game
    */
   start(): void {
-    if (!this.isRunning) {
-      this.isRunning = true;
-      this.lastUpdate = performance.now();
-      this.frameId = requestAnimationFrame(this.update.bind(this));
+    if (this.isRunning) return;
 
-      this.publishEvent({
-        type: GameManagerEventType.GAME_STARTED,
-        gameTime: this.gameTime,
-      });
-    }
+    this.isRunning = true;
+    this.isPaused = false;
+    this.lastUpdate = performance.now();
+
+    // Start game loop
+    this.updateGameLoop(this.lastUpdate);
+
+    // Publish event
+    this.publishEvent({
+      type: EventType.GAME_STARTED,
+      timestamp: Date.now(),
+      moduleId: this.id,
+      moduleType: 'command' as ModuleType,
+      gameTime: this.gameTime,
+    });
   }
 
   /**
    * Pause the game
    */
   pause(): void {
-    if (!this.isPaused && this.isRunning) {
-      this.isPaused = true;
+    if (!this.isRunning || this.isPaused) return;
 
-      this.publishEvent({
-        type: GameManagerEventType.GAME_PAUSED,
-        gameTime: this.gameTime,
-      });
-    }
+    this.isPaused = true;
+
+    // Publish event
+    this.publishEvent({
+      type: EventType.GAME_PAUSED,
+      timestamp: Date.now(),
+      moduleId: this.id,
+      moduleType: 'command' as ModuleType,
+      gameTime: this.gameTime,
+    });
   }
 
   /**
    * Resume the game
    */
   resume(): void {
-    if (this.isPaused && this.isRunning) {
-      this.isPaused = false;
-      this.lastUpdate = performance.now();
+    if (!this.isRunning || !this.isPaused) return;
 
-      this.publishEvent({
-        type: GameManagerEventType.GAME_RESUMED,
-        gameTime: this.gameTime,
-      });
-    }
+    this.isPaused = false;
+    this.lastUpdate = performance.now();
+
+    // Publish event
+    this.publishEvent({
+      type: EventType.GAME_RESUMED,
+      timestamp: Date.now(),
+      moduleId: this.id,
+      moduleType: 'command' as ModuleType,
+      gameTime: this.gameTime,
+    });
   }
 
   /**
-   * Stop the game loop
+   * Stop the game
    */
   stop(): void {
-    if (this.isRunning) {
-      this.isRunning = false;
-      this.isPaused = false;
+    if (!this.isRunning) return;
 
-      if (this.frameId !== null) {
-        cancelAnimationFrame(this.frameId);
-        this.frameId = null;
-      }
+    this.isRunning = false;
+    this.isPaused = false;
 
-      this.publishEvent({
-        type: GameManagerEventType.GAME_STOPPED,
-        gameTime: this.gameTime,
-      });
+    // Cancel animation frame
+    if (this.frameId !== null) {
+      cancelAnimationFrame(this.frameId);
+      this.frameId = null;
     }
+
+    // Publish event
+    this.publishEvent({
+      type: EventType.GAME_STOPPED,
+      timestamp: Date.now(),
+      moduleId: this.id,
+      moduleType: 'command' as ModuleType,
+      gameTime: this.gameTime,
+    });
   }
 
   /**
-   * Subscribe to game updates
-   * @param callback Function to call on each update
-   * @returns Function to unsubscribe
+   * Subscribe to game time updates
+   * @param callback Function to call with updated game time
+   * @returns Unsubscribe function
    */
-  subscribe(callback: (gameTime: number) => void): () => void {
-    this.subscribers.add(callback);
+  public subscribeToGameTime(callback: (gameTime: number) => void): () => void {
+    this.timeSubscribers.add(callback);
     return () => {
-      this.subscribers.delete(callback);
+      this.timeSubscribers.delete(callback);
     };
   }
 
   /**
-   * Add event listener
+   * Add event listener for game events
+   * @param type Event type to listen for
+   * @param callback Function to call when event is dispatched
+   * @returns Unsubscribe function
    */
-  addEventListener(type: string, callback: (event: GameEvent) => void) {
+  addEventListener(type: string, callback: (event: GameEvent) => void): () => void {
     if (!this.eventListeners.has(type)) {
       this.eventListeners.set(type, new Set());
     }
+
     this.eventListeners.get(type)?.add(callback);
+
+    // Return unsubscribe function
     return () => {
-      this.eventListeners.get(type)?.delete(callback);
+      const listeners = this.eventListeners.get(type);
+      if (listeners) {
+        listeners.delete(callback);
+        // Clean up empty listener sets
+        if (listeners.size === 0) {
+          this.eventListeners.delete(type);
+        }
+      }
     };
   }
 
@@ -194,35 +219,51 @@ export class GameManager extends AbstractBaseManager<GameManagerEvent> {
    * Dispatch game event
    */
   dispatchEvent(event: GameEvent) {
-    this.eventListeners.get(event.type)?.forEach(callback => {
-      callback(event);
-    });
+    const listeners = this.eventListeners.get(event.type);
+    if (listeners) {
+      listeners.forEach(callback => callback(event));
+    }
   }
 
   /**
-   * Main update loop
+   * Update game state - this is the game loop
+   * This is public to match the AbstractBaseManager interface
    */
-  private update(timestamp: number): void {
+  public update(deltaTime: number): void {
+    // This is the public method required by AbstractBaseManager
+    // We delegate to onUpdate which contains our actual implementation
+    this.onUpdate(deltaTime);
+  }
+
+  /**
+   * Internal update method for the game loop
+   */
+  private updateGameLoop(timestamp: number): void {
     if (!this.isRunning) return;
 
-    if (!this.isPaused) {
-      const deltaTime = timestamp - this.lastUpdate;
-      this.gameTime += deltaTime;
-
-      // Notify subscribers
-      this.subscribers.forEach(callback => {
-        callback(this.gameTime);
-      });
-
-      // Publish time updated event
-      this.publishEvent({
-        type: GameManagerEventType.TIME_UPDATED,
-        gameTime: this.gameTime,
-      });
-    }
-
+    // Calculate delta time
+    const deltaTime = (timestamp - this.lastUpdate) / 1000;
     this.lastUpdate = timestamp;
-    this.frameId = requestAnimationFrame(this.update.bind(this));
+
+    // Update game state
+    this.onUpdate(deltaTime);
+
+    // Publish time update event
+    this.publishEvent({
+      type: EventType.TIME_UPDATED,
+      timestamp: Date.now(),
+      moduleId: this.id,
+      moduleType: 'command' as ModuleType,
+      gameTime: this.gameTime,
+    });
+
+    // Notify subscribers
+    this.timeSubscribers.forEach(callback => {
+      callback(this.gameTime);
+    });
+
+    // Schedule next update
+    this.frameId = requestAnimationFrame(this.updateGameLoop.bind(this));
   }
 
   /**

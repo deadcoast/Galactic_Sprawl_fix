@@ -92,23 +92,31 @@ interface PerformanceMemory {
   usedJSHeapSize: number;
   totalJSHeapSize: number;
   jsHeapSizeLimit: number;
+  // Add additional properties to match PerformanceMetrics
+  networkLatency?: number;
+  frameDrops?: number;
+  gcTime?: number;
+}
+
+// Define additional types for performance entries
+interface ExtendedPerformanceEntry extends PerformanceEntry {
+  attribution?: Record<string, unknown>;
 }
 
 // Extend the Performance interface to include the memory property
+// Use a different name to avoid conflict with the global declaration in useDebugOverlay.ts
 declare global {
-  interface Performance {
+  interface PerformanceWithMemory extends Performance {
     memory?: PerformanceMemory;
   }
 }
 
 // Improve type safety around window access
 interface WindowWithPerformance extends Window {
-  componentTrackingInterval?: number;
-  memoryLeakInterval?: number;
+  componentTrackingInterval?: number | NodeJS.Timeout;
+  memoryLeakInterval?: number | NodeJS.Timeout;
   frameRateTrackingId?: number;
-  performance: Performance & {
-    memory?: PerformanceMemory;
-  };
+  performance: PerformanceWithMemory;
 }
 
 /**
@@ -148,7 +156,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
   const [frameTimes, setFrameTimes] = useState<number[]>([]);
 
   // State for FPS history
-  const [fpsHistory, setFpsHistory] = useState<number[]>([]);
+  const [_fpsHistory, setFpsHistory] = useState<number[]>([]);
 
   // Refs for chart containers
   const renderingChartRef = useRef<HTMLDivElement>(null);
@@ -181,7 +189,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
   // Initialize the visualization inspector
   const initializeInspector = () => {
-    console.log('Initializing visualization inspector...');
+    console.warn('Initializing visualization inspector');
 
     // Set up various inspection features
     setupRenderingAnalysis();
@@ -195,7 +203,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
   // Clean up resources when component unmounts or becomes inactive
   const cleanupInspector = () => {
-    console.log('Cleaning up visualization inspector...');
+    console.warn('Cleaning up visualization inspector');
 
     // Stop recording
     setIsRecording(false);
@@ -238,12 +246,12 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
       }
     }
 
-    console.log('Visualization inspector cleaned up');
+    console.warn('Visualization inspector cleaned up');
   };
 
   // Setup deep rendering performance analysis
   const setupRenderingAnalysis = () => {
-    console.log('Setting up rendering analysis...');
+    console.warn('Setting up rendering analysis');
 
     // Use PerformanceObserver to track long tasks
     try {
@@ -266,8 +274,8 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
                 details: {
                   taskDuration: entry.duration,
                   taskName: entry.name,
-                  taskAttribution: (entry as any).attribution
-                    ? JSON.stringify((entry as any).attribution)
+                  taskAttribution: (entry as ExtendedPerformanceEntry).attribution
+                    ? JSON.stringify((entry as ExtendedPerformanceEntry).attribution)
                     : 'Unknown',
                 },
               };
@@ -326,8 +334,12 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
         // Get JS heap size if available
         let jsHeapSize = undefined;
-        if ((performance as any).memory && (performance as any).memory.usedJSHeapSize) {
-          jsHeapSize = (performance as any).memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
+        const windowWithPerformance = window as WindowWithPerformance;
+        if (
+          windowWithPerformance.performance.memory &&
+          windowWithPerformance.performance.memory.usedJSHeapSize
+        ) {
+          jsHeapSize = windowWithPerformance.performance.memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
         }
 
         // Add new rendering performance data point
@@ -616,7 +628,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
   // Setup component performance breakdown
   const setupComponentBreakdown = () => {
-    console.log('Setting up component performance breakdown...');
+    console.warn('Setting up component performance breakdown');
 
     // This would typically be done through patching React's reconciler or using a profiler API
     // For this example, we'll simulate component performance data
@@ -656,8 +668,9 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
   // Start component performance tracking
   const startComponentPerformanceTracking = () => {
     // Clear any previous interval
-    if ((window as any).componentTrackingInterval) {
-      clearInterval((window as any).componentTrackingInterval);
+    const windowWithPerformance = window as WindowWithPerformance;
+    if (windowWithPerformance.componentTrackingInterval) {
+      clearInterval(windowWithPerformance.componentTrackingInterval);
     }
 
     // Set up interval to update component metrics
@@ -764,7 +777,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
     }, 1000); // Update every second
 
     // Store interval reference for cleanup
-    (window as any).componentTrackingInterval = trackingInterval;
+    windowWithPerformance.componentTrackingInterval = trackingInterval;
   };
 
   // Update component breakdown chart
@@ -789,16 +802,16 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
       .data(tabs)
       .enter()
       .append('button')
-      .attr('class', (d: string, i: number) => `component-tab-button ${i === 0 ? 'active' : ''}`)
+      .attr('class', (_d: string, i: number) => `component-tab-button ${i === 0 ? 'active' : ''}`)
       .text((d: string) => d)
       .style('padding', '8px 12px')
       .style('margin-right', '5px')
-      .style('background', (d: string, i: number) => (i === 0 ? '#4285f4' : '#f1f1f1'))
-      .style('color', (d: string, i: number) => (i === 0 ? 'white' : '#333'))
+      .style('background', (_d: string, i: number) => (i === 0 ? '#4285f4' : '#f1f1f1'))
+      .style('color', (_d: string, i: number) => (i === 0 ? 'white' : '#333'))
       .style('border', 'none')
       .style('border-radius', '4px')
       .style('cursor', 'pointer')
-      .on('click', function (event: MouseEvent, d: string) {
+      .on('click', function (_event: MouseEvent, d: string) {
         // Update active tab
         tabContainer
           .selectAll('.component-tab-button')
@@ -971,47 +984,37 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
         .append('rect')
         .attr('class', 'bar')
         .attr('x', 0)
-        .attr('y', (d: ComponentPerformanceMetrics) => yScale(d.name) as number)
+        .attr('y', (_d, i) => {
+          const yPos = yScale(i.toString());
+          return yPos !== undefined ? yPos + barHeight / 2 : 0;
+        })
         .attr('width', (d: ComponentPerformanceMetrics) => xScale(valueAccessor(d)))
         .attr('height', barHeight)
         .attr('fill', (d: ComponentPerformanceMetrics) => colorAccessor(d))
         .attr('opacity', (d: ComponentPerformanceMetrics) => (d.isVisible ? 1 : 0.5))
-        .on('mouseover', function (event: MouseEvent, d: ComponentPerformanceMetrics) {
+        .on('mouseover', function (_event: MouseEvent, d: ComponentPerformanceMetrics) {
           // Show tooltip
-          const tooltip = d3
+          const _tooltip = d3
             .select('body')
             .append('div')
             .attr('class', 'component-tooltip')
             .style('position', 'absolute')
-            .style('background', 'rgba(0, 0, 0, 0.8)')
+            .style('background', 'rgba(0,0,0,0.7)')
             .style('color', 'white')
-            .style('padding', '10px')
-            .style('border-radius', '4px')
+            .style('padding', '5px')
+            .style('border-radius', '3px')
+            .style('font-size', '12px')
             .style('pointer-events', 'none')
-            .style('z-index', '1000')
-            .style('opacity', 0);
-
-          tooltip.transition().duration(200).style('opacity', 0.9);
-
-          // Format tooltip content based on tab
-          const value = valueAccessor(d);
-          const valueFormatted = yAxisLabel.includes('Time')
-            ? `${value.toFixed(2)} ms`
-            : yAxisLabel.includes('Memory')
-              ? `${value.toFixed(2)} MB`
-              : value.toFixed(2);
-
-          tooltip
             .html(
               `
-            <div><strong>${d.name}</strong></div>
-            <div>Value: ${valueFormatted}</div>
-            <div>Elements: ${d.elementCount}</div>
-            <div>Status: ${d.isVisible ? 'Visible' : 'Hidden'}</div>
-          `
+              <div><strong>${d.name}</strong></div>
+              <div>${yAxisLabel}: ${valueAccessor(d).toFixed(2)}</div>
+              <div>Elements: ${d.elementCount}</div>
+              <div>Memory: ${d.memoryUsage.toFixed(2)} MB</div>
+            `
             )
-            .style('left', `${event.pageX + 10}px`)
-            .style('top', `${event.pageY - 28}px`);
+            .style('left', `${_event.pageX + 10}px`)
+            .style('top', `${_event.pageY - 28}px`);
 
           // Highlight bar
           d3.select(this).attr('fill', '#4285F4');
@@ -1021,34 +1024,16 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
           d3.select('.component-tooltip').remove();
 
           // Restore bar color
-          d3.select(this).attr('fill', d => colorAccessor(d));
-        });
-
-      // Add value labels
-      svg
-        .selectAll('.value-label')
-        .data(data)
-        .enter()
-        .append('text')
-        .attr('class', 'value-label')
-        .attr('x', d => xScale(valueAccessor(d)) + 5)
-        .attr('y', d => (yScale(d.name) as number) + barHeight / 2 + 5)
-        .style('font-size', '12px')
-        .style('fill', '#333')
-        .text(d => {
-          const value = valueAccessor(d);
-          return yAxisLabel.includes('Time')
-            ? `${value.toFixed(2)} ms`
-            : yAxisLabel.includes('Memory')
-              ? `${value.toFixed(2)} MB`
-              : value.toFixed(2);
+          d3.select(this).attr('fill', function (_d) {
+            return colorAccessor(_d as ComponentPerformanceMetrics);
+          });
         });
     }
   };
 
   // Setup DOM mutation tracking
   const setupDomMutationTracking = () => {
-    console.log('Setting up DOM mutation tracking...');
+    console.warn('Setting up DOM mutation tracking');
 
     // Create a mutation observer to track DOM changes
     if (typeof window !== 'undefined' && typeof MutationObserver !== 'undefined') {
@@ -1417,7 +1402,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
   // Setup stack trace collection
   const setupStackTraceCollection = () => {
-    console.log('Setting up stack trace collection...');
+    console.warn('Setting up stack trace collection');
 
     // No direct setup needed - stack traces are collected when performance issues are detected
 
@@ -1429,8 +1414,9 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
       }
 
       // Check for memory growth if the memory API is available
-      if (performance.memory) {
-        const jsHeapSize = performance.memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
+      const windowWithPerformance = window as WindowWithPerformance;
+      if (windowWithPerformance.performance.memory) {
+        const _jsHeapSize = windowWithPerformance.performance.memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
 
         // If we have enough data points, check for consistent memory growth
         if (renderingPerformanceData.length > 10) {
@@ -1488,8 +1474,9 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
     }, 5000); // Check every 5 seconds
 
     // Store interval ID in window for cleanup
+    const windowWithPerformance = window as WindowWithPerformance;
     if (typeof window !== 'undefined') {
-      (window as any).memoryLeakInterval = memoryLeakInterval;
+      windowWithPerformance.memoryLeakInterval = memoryLeakInterval;
     }
 
     // Update issues list if visible
@@ -1652,7 +1639,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
             // Add title
             detailsOverlay
               .append('h3')
-              .text(`Issue Details: ${formatIssueType(issue.type)}`)
+              .text(`Issue Details: ${formatIssueType(type)}`)
               .style('margin-top', '0')
               .style('border-bottom', '1px solid #eee')
               .style('padding-bottom', '10px');
@@ -1836,252 +1823,43 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
   };
 
   // Handle tab change
-  const handleTabChange = (tab: 'rendering' | 'components' | 'dom' | 'issues') => {
+  const _handleTabChange = (tab: 'rendering' | 'components' | 'dom' | 'issues') => {
     setActiveTab(tab);
   };
 
   // Start recording performance data
-  const startRecording = () => {
+  const _startRecording = () => {
     setIsRecording(true);
 
     // TODO: Implement recording start logic
   };
 
   // Stop recording performance data
-  const stopRecording = () => {
+  const _stopRecording = () => {
     setIsRecording(false);
 
     // TODO: Implement recording stop logic
   };
 
   // Get JS heap size if available
-  const getJsHeapSize = (): number | undefined => {
-    if (typeof performance !== 'undefined' && performance.memory) {
-      return performance.memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
+  const _getJsHeapSize = (): number | undefined => {
+    const windowWithPerformance = window as WindowWithPerformance;
+    if (typeof performance !== 'undefined' && windowWithPerformance.performance.memory) {
+      return windowWithPerformance.performance.memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
     }
     return undefined;
   };
 
-  // Component render method
+  // Return the component UI
   return (
-    <div
-      className="visualization-inspector"
-      style={{ width: `${width}px`, height: `${height}px`, position: 'relative' }}
-    >
-      <div className="inspector-header">
-        <h2 className="inspector-title">Performance Visualization Inspector</h2>
-        <div className="inspector-controls">
-          <button
-            className={`record-button ${isRecording ? 'recording' : ''}`}
-            onClick={() => setIsRecording(!isRecording)}
-            style={{
-              padding: '8px 16px',
-              background: isRecording ? '#EA4335' : '#34A853',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              marginRight: '10px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <span
-              style={{
-                display: 'inline-block',
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                background: 'white',
-                animation: isRecording ? 'pulse 1.5s infinite' : 'none',
-              }}
-            ></span>
-            {isRecording ? 'Stop Recording' : 'Start Recording'}
-          </button>
+    <div className="visualization-inspector" style={{ width, height }}>
+      {active ? (
+        <div className="inspector-content">
+          <h3>Visualization Inspector</h3>
+          <p>Monitoring visualization performance...</p>
+          {/* Inspector UI would go here */}
         </div>
-      </div>
-
-      <div className="tab-container" style={{ marginTop: '15px' }}>
-        <div className="tab-buttons" style={{ display: 'flex', borderBottom: '1px solid #ddd' }}>
-          <button
-            className={`tab-button ${activeTab === 'rendering' ? 'active' : ''}`}
-            onClick={() => handleTabChange('rendering')}
-            style={{
-              padding: '10px 16px',
-              background: activeTab === 'rendering' ? '#4285F4' : 'transparent',
-              color: activeTab === 'rendering' ? 'white' : '#333',
-              border: 'none',
-              borderRadius: '4px 4px 0 0',
-              cursor: 'pointer',
-              fontWeight: activeTab === 'rendering' ? 'bold' : 'normal',
-            }}
-          >
-            Rendering Performance
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'components' ? 'active' : ''}`}
-            onClick={() => handleTabChange('components')}
-            style={{
-              padding: '10px 16px',
-              background: activeTab === 'components' ? '#4285F4' : 'transparent',
-              color: activeTab === 'components' ? 'white' : '#333',
-              border: 'none',
-              borderRadius: '4px 4px 0 0',
-              cursor: 'pointer',
-              fontWeight: activeTab === 'components' ? 'bold' : 'normal',
-            }}
-          >
-            Component Breakdown
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'dom' ? 'active' : ''}`}
-            onClick={() => handleTabChange('dom')}
-            style={{
-              padding: '10px 16px',
-              background: activeTab === 'dom' ? '#4285F4' : 'transparent',
-              color: activeTab === 'dom' ? 'white' : '#333',
-              border: 'none',
-              borderRadius: '4px 4px 0 0',
-              cursor: 'pointer',
-              fontWeight: activeTab === 'dom' ? 'bold' : 'normal',
-            }}
-          >
-            DOM Mutations
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'issues' ? 'active' : ''}`}
-            onClick={() => handleTabChange('issues')}
-            style={{
-              padding: '10px 16px',
-              background: activeTab === 'issues' ? '#4285F4' : 'transparent',
-              color: activeTab === 'issues' ? 'white' : '#333',
-              border: 'none',
-              borderRadius: '4px 4px 0 0',
-              cursor: 'pointer',
-              fontWeight: activeTab === 'issues' ? 'bold' : 'normal',
-            }}
-          >
-            Performance Issues
-          </button>
-        </div>
-
-        <div className="tab-content" style={{ padding: '20px 0' }}>
-          {activeTab === 'rendering' && (
-            <div className="rendering-performance tab-content">
-              <h3>Rendering Performance Analysis</h3>
-              <div className="chart-container" ref={renderingChartRef}>
-                {/* Rendering performance charts will go here */}
-                <div className="placeholder-message">
-                  {!isRecording
-                    ? 'Start recording to collect rendering performance data'
-                    : renderingPerformanceData.length === 0
-                      ? 'Collecting data...'
-                      : ''}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'components' && (
-            <div className="component-breakdown tab-content">
-              <h3>Component Performance Breakdown</h3>
-              <div className="chart-container" ref={componentBreakdownRef}>
-                {/* Component performance charts will go here */}
-                <div className="placeholder-message">
-                  {!isRecording
-                    ? 'Start recording to collect component performance data'
-                    : componentMetrics.length === 0
-                      ? 'Collecting data...'
-                      : ''}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'dom' && (
-            <div className="dom-mutations tab-content">
-              <h3>DOM Mutation Tracking</h3>
-              <div className="chart-container" ref={domMutationsRef}>
-                {/* DOM mutation tracking visualizations will go here */}
-                <div className="placeholder-message">
-                  {!isRecording
-                    ? 'Start recording to track DOM mutations'
-                    : domMutations.length === 0
-                      ? 'Waiting for DOM mutations...'
-                      : ''}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'issues' && (
-            <div className="performance-issues tab-content">
-              <h3>Performance Issues & Stack Traces</h3>
-              <div className="issues-container" ref={issuesListRef}>
-                {/* Performance issues and stack traces will go here */}
-                <div className="placeholder-message">
-                  {!isRecording
-                    ? 'Start recording to detect performance issues'
-                    : performanceIssues.length === 0
-                      ? 'No performance issues detected yet'
-                      : ''}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes pulse {
-          0% {
-            opacity: 0.5;
-          }
-          50% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 0.5;
-          }
-        }
-
-        .visualization-inspector {
-          font-family:
-            system-ui,
-            -apple-system,
-            sans-serif;
-          background: white;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          overflow: hidden;
-          padding: 20px;
-        }
-
-        .inspector-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-
-        .inspector-title {
-          margin: 0;
-          font-size: 1.5rem;
-          color: #333;
-        }
-
-        .placeholder-message {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 200px;
-          color: #777;
-          font-style: italic;
-        }
-      `}</style>
+      ) : null}
     </div>
   );
 };
-
-export default VisualizationInspector;

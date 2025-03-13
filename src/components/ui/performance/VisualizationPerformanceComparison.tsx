@@ -8,10 +8,10 @@
 
 import React, { useCallback, useState } from 'react';
 import { PerformanceOptimizationConfig } from '../../../utils/performance/D3PerformanceOptimizations';
-import OptimizedFlowDiagram from './OptimizedFlowDiagram';
+import OptimizedFlowDiagram, { FlowData, FlowNode } from './OptimizedFlowDiagram';
 
 // Generate test data with configurable size
-const generateTestData = (nodeCount: number, linkCount: number) => {
+const generateTestData = (nodeCount: number, linkCount: number): FlowData => {
   // Create nodes
   const nodes = Array.from({ length: nodeCount }, (_, i) => ({
     id: `node-${i}`,
@@ -19,7 +19,7 @@ const generateTestData = (nodeCount: number, linkCount: number) => {
     type: i % 3 === 0 ? 'source' : i % 3 === 1 ? 'processor' : 'sink',
     value: Math.random() * 100,
     description: `Description for node ${i}`,
-  }));
+  })) as FlowNode[]; // Cast to the correct type
 
   // Create links
   const links = Array.from({ length: linkCount }, (_, i) => {

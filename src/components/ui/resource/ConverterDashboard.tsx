@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { FlowNode } from '../../../managers/resource/ResourceFlowManager';
 import { ResourceConversionRecipe } from '../../../types/resources/ResourceTypes';
+import { FlowNode } from '../../../types/resources/StandardizedResourceTypes';
 import ChainVisualization from './ChainVisualization';
 import './ConverterDashboard.css';
 

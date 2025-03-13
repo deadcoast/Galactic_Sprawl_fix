@@ -409,8 +409,8 @@ class ModuleManagerWrapper implements IModuleManager {
     building.modules = building.modules.filter(id => id !== moduleId);
 
     // Store old values to emit with event
-    const oldBuildingId = module.buildingId;
-    const oldAttachPointId = module.attachmentPointId;
+    const _oldBuildingId = module.buildingId;
+    const _oldAttachPointId = module.attachmentPointId;
 
     // Update module
     module.buildingId = undefined;
@@ -444,7 +444,7 @@ class ModuleManagerWrapper implements IModuleManager {
   }
 
   // Legacy action dispatch method
-  dispatch(action: { type: string; payload?: Record<string, unknown> }): void {
+  dispatch(_action: { type: string; payload?: Record<string, unknown> }): void {
     // No-op for testing
   }
 
@@ -1192,8 +1192,11 @@ describe('ModuleContext', () => {
 
       // Check that event was properly validated and emitted
       expect(receivedEvent).not.toBeNull();
-      expect(receivedEvent?.type).toBe(EventType.MODULE_UPDATED);
-      expect(receivedEvent?.moduleId).toBe('module1');
+      if (receivedEvent) {
+        const event = receivedEvent as unknown as ModuleEventDataMap[EventType.MODULE_UPDATED];
+        expect(event.type).toBe(EventType.MODULE_UPDATED);
+        expect(event.moduleId).toBe('module1');
+      }
       expect(mockConsoleError).not.toHaveBeenCalled();
 
       // Reset for next test

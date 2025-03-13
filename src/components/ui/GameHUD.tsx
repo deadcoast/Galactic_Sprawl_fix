@@ -10,13 +10,15 @@ import {
   X,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useGame } from '../../contexts/GameContext';
-import { useModules } from '../../contexts/ModuleContext';
+import { v4 as uuidv4 } from 'uuid';
+import { GameActionType, useGameDispatch, useGameState } from '../../contexts/GameContext';
+import { ModuleActionType, useModuleDispatch, useModules } from '../../contexts/ModuleContext';
 import { useVPRSystem } from '../../hooks/ui/useVPRSystem';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
+import { Module } from '../../types/modules/ModuleTypes';
 import { NotificationSystem, notificationManager } from './NotificationSystem';
 import { ResourceVisualization } from './ResourceVisualization';
 
@@ -118,17 +120,20 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
   const [showTooltip, setShowTooltip] = useState<{ id: string; x: number; y: number } | null>(null);
 
   // Get contexts
-  const gameContext = useGame();
-  const moduleContext = useModules();
+  const gameState = useGameState(state => state);
+  const gameDispatch = useGameDispatch();
+  const moduleState = useModules(state => state);
+  const moduleDispatch = useModuleDispatch();
   const vprSystem = useVPRSystem();
 
   // Ensure contexts are available
-  if (!gameContext || !moduleContext) {
+  if (!gameState || !moduleState) {
     return null;
   }
 
-  const { state: gameState, dispatch: gameDispatch } = gameContext;
-  const { state: moduleState, dispatch: moduleDispatch } = moduleContext;
+  // Combine contexts for backward compatibility
+  const gameContext = { state: gameState, dispatch: gameDispatch };
+  const moduleContext = { state: moduleState, dispatch: moduleDispatch };
 
   // Check if a module can be built based on resources and available attachment points
   const canBuildModule = (
@@ -207,10 +212,21 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
 
     try {
       // Create the module
-      moduleDispatch({
-        type: 'CREATE_MODULE',
-        moduleType,
+      const module: Module = {
+        id: uuidv4(),
+        name: `${moduleType} Module`,
+        type: moduleType,
         position,
+        status: 'active',
+        isActive: true,
+        level: 1,
+      };
+
+      moduleDispatch({
+        type: ModuleActionType.ADD_MODULE,
+        payload: {
+          module,
+        },
       });
 
       // Get the newly created module's ID (it will be the last one created)
@@ -224,17 +240,22 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
 
       // Attach the module
       moduleDispatch({
-        type: 'ATTACH_MODULE',
-        moduleId: newModule.id,
-        buildingId: targetBuilding.id,
-        attachmentPointId: targetPoint,
+        type: ModuleActionType.UPDATE_MODULE,
+        payload: {
+          moduleId: newModule.id,
+          updates: {
+            buildingId: targetBuilding.id,
+            attachmentPointId: targetPoint,
+          },
+        },
       });
 
       // Activate the module
       moduleDispatch({
-        type: 'SET_MODULE_ACTIVE',
-        moduleId: newModule.id,
-        active: true,
+        type: ModuleActionType.SET_ACTIVE_MODULES,
+        payload: {
+          activeModuleIds: [...moduleState.activeModuleIds, newModule.id],
+        },
       });
 
       // Register with VPR system for visualization if it's a relevant type
@@ -566,8 +587,8 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
               if (success) {
                 // Update resources in game state
                 gameDispatch({
-                  type: 'UPDATE_RESOURCES',
-                  resources: {
+                  type: GameActionType.UPDATE_RESOURCES,
+                  payload: {
                     minerals: gameState.resources.minerals - (item.cost?.minerals || 0),
                     energy: gameState.resources.energy - (item.cost?.energy || 0),
                   },

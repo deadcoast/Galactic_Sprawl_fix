@@ -29,11 +29,11 @@ export function convertToModule(baseModule: BaseModule | undefined): Module | un
 
   // Extract optional properties with type safety
   // Some properties exist in the runtime but not in the type definition
-  const buildingId = (baseModule as any).buildingId;
-  const attachmentPointId = (baseModule as any).attachmentPointId;
+  const buildingId = (baseModule as unknown).buildingId;
+  const attachmentPointId = (baseModule as unknown).attachmentPointId;
 
   // Convert status from string to ModuleStatus enum if needed
-  let status: ModuleStatus | 'active' | 'constructing' | 'inactive' = baseModule.status;
+  const status: ModuleStatus | 'active' | 'constructing' | 'inactive' = baseModule.status;
 
   return {
     id: baseModule.id,
@@ -179,7 +179,7 @@ export class ModuleManagerWrapper implements IModuleManager {
    * Type guard to check if manager has dispatchAction method
    */
   private hasDispatchAction(
-    manager: any
+    manager: unknown
   ): manager is { dispatchAction: (action: unknown) => void } {
     return manager && typeof manager.dispatchAction === 'function';
   }
@@ -187,7 +187,7 @@ export class ModuleManagerWrapper implements IModuleManager {
   /**
    * Type guard to check if manager has dispatch method
    */
-  private hasDispatch(manager: any): manager is { dispatch: (action: unknown) => void } {
+  private hasDispatch(manager: unknown): manager is { dispatch: (action: unknown) => void } {
     return manager && typeof manager.dispatch === 'function';
   }
 }

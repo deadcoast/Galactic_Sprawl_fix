@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
 import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChartDataRecord } from '../../../../types/exploration/AnalysisComponentTypes';
@@ -114,6 +114,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [hoveredPoint, setHoveredPoint] = useState<ChartDataRecord | null>(null);
+  const [mouseDataPosition, setMouseDataPosition] = useState<{ x: number; y: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -661,51 +662,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
     gl.deleteBuffer(colorBuffer);
   }, [data, domains, scales, sizeRange, colorRange, sizeKey, colorKey, xAxisKey, yAxisKey]);
 
-  // Handle mouse move for point hovering
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!data || !canvasRef.current || isDragging) return;
-
-      const rect = canvasRef.current.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      // Find closest point
-      let closestPoint: Record<string, unknown> | null = null;
-      let closestDistance = Infinity;
-
-      // Only check points within a certain radius in high performance mode
-      const checkRadius = highPerformanceMode ? 10 : 50;
-
-      data.forEach(item => {
-        const itemX = Number(item[xAxisKey] || 0);
-        const itemY = Number(item[yAxisKey] || 0);
-
-        // Calculate distance in pixel space
-        const pixelX = scales.x(itemX);
-        const pixelY = scales.y(itemY);
-
-        const distance = Math.sqrt(Math.pow(pixelX - mouseX, 2) + Math.pow(pixelY - mouseY, 2));
-
-        if (distance < closestDistance && distance < checkRadius) {
-          closestDistance = distance;
-          closestPoint = item;
-        }
-      });
-
-      setHoveredPoint(closestPoint);
-
-      // Update cursor style
-      if (canvasRef.current) {
-        canvasRef.current.style.cursor = closestPoint ? 'pointer' : 'default';
-      }
-    },
-    [data, scales, xAxisKey, yAxisKey, isDragging, highPerformanceMode]
-  );
-
   // Handle canvas click for point selection
   const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
+    (_e: React.MouseEvent<HTMLCanvasElement>) => {
       if (!onElementClick || !hoveredPoint) return;
       onElementClick(hoveredPoint, 0);
     },
@@ -731,15 +690,72 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   // Handle mouse move for panning
   const handleMouseMoveForPan = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!isDragging || !interactive) return;
+      if (!canvasRef.current) return;
 
-      const dx = e.clientX - dragStart.x;
-      const dy = e.clientY - dragStart.y;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
-      setPan(prev => ({ x: prev.x + dx, y: prev.y + dy }));
-      setDragStart({ x: e.clientX, y: e.clientY });
+      // Convert canvas coordinates to data values using inverseScales
+      const dataX = inverseScales.x(mouseX);
+      const dataY = inverseScales.y(mouseY);
+
+      // Store the current mouse position in data coordinates
+      setMouseDataPosition({ x: dataX, y: dataY });
+
+      // If dragging, handle panning
+      if (isDragging && interactive) {
+        const dx = e.clientX - dragStart.x;
+        const dy = e.clientY - dragStart.y;
+
+        setPan(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+        setDragStart({ x: e.clientX, y: e.clientY });
+        return;
+      }
+
+      // If not dragging, find the closest point for hover effects
+      if (!isDragging && data) {
+        let closestPoint: Record<string, unknown> | null = null;
+        let closestDistance = Infinity;
+
+        // Only check points within a certain radius in high performance mode
+        const checkRadius = highPerformanceMode ? 10 : 50;
+
+        data.forEach(item => {
+          const itemX = Number(item[xAxisKey] || 0);
+          const itemY = Number(item[yAxisKey] || 0);
+
+          // Calculate distance in pixel space
+          const pixelX = scales.x(itemX);
+          const pixelY = scales.y(itemY);
+
+          const distance = Math.sqrt(Math.pow(pixelX - mouseX, 2) + Math.pow(pixelY - mouseY, 2));
+
+          if (distance < closestDistance && distance < checkRadius) {
+            closestDistance = distance;
+            closestPoint = item;
+          }
+        });
+
+        setHoveredPoint(closestPoint);
+
+        // Update cursor style
+        if (canvasRef.current) {
+          canvasRef.current.style.cursor = closestPoint ? 'pointer' : 'default';
+        }
+      }
     },
-    [isDragging, dragStart, interactive]
+    [
+      isDragging,
+      dragStart,
+      interactive,
+      data,
+      scales,
+      xAxisKey,
+      yAxisKey,
+      highPerformanceMode,
+      inverseScales,
+    ]
   );
 
   // Handle wheel for zooming
@@ -774,64 +790,55 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   // If no data, show error
   if (!data || data.length === 0) {
     return (
-      <Box
-        sx={{
+      <div
+        className={`${className} flex flex-col items-center justify-center rounded border border-solid border-opacity-10`}
+        style={{
           width: typeof width === 'number' ? `${width}px` : width,
           height: typeof height === 'number' ? `${height}px` : height,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          border: '1px solid rgba(0,0,0,0.1)',
-          borderRadius: 1,
         }}
-        className={className}
       >
         <Typography variant="body1" color="text.secondary">
           {errorMessage || 'No data available'}
         </Typography>
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box
-      sx={{
+    <div
+      className={className}
+      style={{
         width: typeof width === 'number' ? `${width}px` : width,
         height: typeof height === 'number' ? `${height}px` : height,
         display: 'flex',
         flexDirection: 'column',
       }}
-      className={className}
     >
-      {/* Title and subtitle */}
+      {/* Chart title and subtitle */}
       {(title || subtitle) && (
-        <Box sx={{ mb: 1 }}>
+        <div className="mb-2 text-center">
           {title && <Typography variant="h6">{title}</Typography>}
           {subtitle && (
             <Typography variant="body2" color="text.secondary">
               {subtitle}
             </Typography>
           )}
-        </Box>
+        </div>
       )}
 
       {/* Performance mode notification */}
       {highPerformanceMode && (
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+        <Typography variant="caption" color="text.secondary" className="mb-1">
           High performance mode: {data.length.toLocaleString()} data points
         </Typography>
       )}
 
       {/* Canvas container */}
-      <Box
+      <div
         ref={containerRef}
-        sx={{
-          position: 'relative',
-          flex: 1,
+        className="relative flex-1 overflow-hidden rounded"
+        style={{
           border: '1px solid rgba(0,0,0,0.1)',
-          borderRadius: 1,
-          overflow: 'hidden',
         }}
       >
         {/* Main canvas (2D rendering) */}
@@ -902,19 +909,26 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
                 <strong>{colorKey}:</strong> {Number(hoveredPoint[colorKey] || 0).toFixed(2)}
               </div>
             )}
+            {mouseDataPosition && (
+              <div className="mt-2 border-t border-gray-300 pt-1 text-xs">
+                <div>Mouse position:</div>
+                <div>x: {mouseDataPosition.x.toFixed(2)}</div>
+                <div>y: {mouseDataPosition.y.toFixed(2)}</div>
+              </div>
+            )}
           </div>
         )}
-      </Box>
+      </div>
 
       {/* Controls for interactive mode */}
       {interactive && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+        <div className="mt-1 flex justify-center">
           <Typography variant="caption" color="text.secondary">
             Scroll to zoom, drag to pan, click to select
           </Typography>
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 

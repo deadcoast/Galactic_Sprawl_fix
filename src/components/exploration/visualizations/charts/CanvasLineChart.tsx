@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
 import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseChartProps } from './BaseChart';
@@ -156,6 +156,7 @@ export interface CanvasLineChartProps extends BaseChartProps {
   formatXAxisDate?: (value: number) => string;
 }
 
+// Define the HoveredPoint type more explicitly
 interface HoveredPoint {
   data: Record<string, unknown>;
   x: number;
@@ -210,6 +211,12 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
   const [animationProgress, setAnimationProgress] = useState(animate ? 0 : 1);
   const [animationFrame, setAnimationFrame] = useState<number | null>(null);
   const [downsampledData, setDownsampledData] = useState<Array<Record<string, unknown>>>(data);
+  const [tooltipContent, setTooltipContent] = useState<{
+    title: string;
+    value: string;
+    dataX: number;
+    dataY: number;
+  } | null>(null);
 
   // Default series colors
   const defaultColors = [
@@ -348,8 +355,8 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
       y: (pixelY: number) => {
         const canvasHeight = dimensions.height - layout.padding.top - layout.padding.bottom;
         // Note: Y is inverted in canvas coordinates (0 is top)
-        const normalizedValue = 1 - (pixelY - layout.padding.top - pan.y) / (canvasHeight * zoom);
-        return domains.y[0] + normalizedValue * (domains.y[1] - domains.y[0]);
+        const normalizedValue = (pixelY - layout.padding.top - pan.y) / (canvasHeight * zoom);
+        return domains.y[0] + (1 - normalizedValue) * (domains.y[1] - domains.y[0]);
       },
     };
   }, [dimensions, domains, zoom, pan, layout]);
@@ -719,54 +726,14 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
     hoveredPoint,
   ]);
 
-  // Handle mouse move for point hovering
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!downsampledData || !canvasRef.current || isDragging || !showDataPoints) return;
-
-      const rect = canvasRef.current.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      let closestPoint: HoveredPoint | null = null;
-      let minDistance = Infinity;
-
-      downsampledData.forEach((series, seriesIndex) => {
-        const x = scales.x(Number(series[xAxisKey]));
-        const y = scales.y(Number(series[yAxisKeys[seriesIndex]]));
-        const distance = Math.sqrt(Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2));
-
-        if (distance < minDistance && distance < 10) {
-          minDistance = distance;
-          closestPoint = {
-            data: series,
-            x,
-            y,
-            seriesIndex,
-          };
-        }
-      });
-
-      if (closestPoint) {
-        setHoveredPoint(closestPoint);
-        if (canvasRef.current) {
-          canvasRef.current.style.cursor = 'pointer';
-        }
-      } else {
-        setHoveredPoint(null);
-        if (canvasRef.current) {
-          canvasRef.current.style.cursor = 'default';
-        }
-      }
-    },
-    [downsampledData, scales, xAxisKey, yAxisKeys, isDragging, showDataPoints]
-  );
-
   // Handle canvas click for point selection
   const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
+    (_event: React.MouseEvent<HTMLCanvasElement>) => {
       if (!onElementClick || !hoveredPoint) return;
-      onElementClick(hoveredPoint.data, hoveredPoint.seriesIndex);
+
+      // Type assertion to ensure TypeScript knows the structure
+      const point = hoveredPoint as HoveredPoint;
+      onElementClick(point.data, point.seriesIndex);
     },
     [onElementClick, hoveredPoint]
   );
@@ -788,17 +755,91 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
   }, []);
 
   // Handle mouse move for panning
-  const handleMouseMove2 = useCallback(
+  const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!isDragging || !interactive) return;
+      if (!canvasRef.current) return;
 
-      const dx = e.clientX - dragStart.x;
-      const dy = e.clientY - dragStart.y;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
-      setPan(prev => ({ x: prev.x + dx, y: prev.y + dy }));
-      setDragStart({ x: e.clientX, y: e.clientY });
+      // Convert canvas coordinates to data values using inverseScales
+      const dataX = inverseScales.x(x);
+      const dataY = inverseScales.y(y);
+
+      // If dragging, handle panning
+      if (isDragging && interactive) {
+        const dx = e.clientX - dragStart.x;
+        const dy = e.clientY - dragStart.y;
+
+        setPan(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+        setDragStart({ x: e.clientX, y: e.clientY });
+        return;
+      }
+
+      // Otherwise, handle hover effects
+      // Find the closest point in the data
+      let closestPoint: HoveredPoint | null = null;
+      let minDistance = Number.MAX_VALUE;
+
+      if (showDataPoints) {
+        downsampledData.forEach((item, seriesIndex) => {
+          const itemX = scales.x(Number(item[xAxisKey]));
+          const itemY = scales.y(Number(item[yAxisKeys[seriesIndex]]));
+          const distance = Math.sqrt((x - itemX) ** 2 + (y - itemY) ** 2);
+
+          if (distance < minDistance && distance < 20) {
+            minDistance = distance;
+            closestPoint = {
+              data: item,
+              x: itemX,
+              y: itemY,
+              seriesIndex,
+            };
+          }
+        });
+      }
+
+      setHoveredPoint(closestPoint);
+
+      // Update tooltip content with data values
+      if (closestPoint) {
+        // Type assertion to ensure TypeScript knows the structure
+        const point = closestPoint as HoveredPoint;
+        const xValue = point.data[xAxisKey];
+        const yValue = point.data[yAxisKeys[point.seriesIndex]];
+
+        // Format the tooltip content using the actual data values
+        // and the converted coordinates from inverseScales
+        setTooltipContent({
+          title: `${xAxisKey}: ${formatXAxisDate ? formatXAxisDate(Number(xValue)) : xValue}`,
+          value: `${yAxisKeys[point.seriesIndex]}: ${yValue}`,
+          dataX,
+          dataY,
+        });
+
+        if (canvasRef.current) {
+          canvasRef.current.style.cursor = 'pointer';
+        }
+      } else {
+        setTooltipContent(null);
+        if (canvasRef.current) {
+          canvasRef.current.style.cursor = 'default';
+        }
+      }
     },
-    [isDragging, dragStart, interactive]
+    [
+      downsampledData,
+      scales,
+      xAxisKey,
+      yAxisKeys,
+      isDragging,
+      showDataPoints,
+      inverseScales,
+      formatXAxisDate,
+      interactive,
+      dragStart,
+    ]
   );
 
   // Handle wheel for zooming
@@ -822,125 +863,131 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
   // If no data, show error
   if (!data || data.length === 0) {
     return (
-      <Box
-        sx={{
+      <div
+        className={`${className} flex flex-col items-center justify-center rounded border border-solid border-opacity-10`}
+        style={{
           width: typeof width === 'number' ? `${width}px` : width,
           height: typeof height === 'number' ? `${height}px` : height,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          border: '1px solid rgba(0,0,0,0.1)',
-          borderRadius: 1,
         }}
-        className={className}
       >
         <Typography variant="body1" color="text.secondary">
           {errorMessage || 'No data available'}
         </Typography>
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box
-      sx={{
+    <div
+      className={`${className} flex flex-col`}
+      style={{
         width: typeof width === 'number' ? `${width}px` : width,
         height: typeof height === 'number' ? `${height}px` : height,
-        display: 'flex',
-        flexDirection: 'column',
       }}
-      className={className}
     >
-      {/* Title and subtitle */}
+      {/* Chart title and subtitle */}
       {(title || subtitle) && (
-        <Box sx={{ mb: 1 }}>
+        <div className="mb-2 text-center">
           {title && <Typography variant="h6">{title}</Typography>}
           {subtitle && (
             <Typography variant="body2" color="text.secondary">
               {subtitle}
             </Typography>
           )}
-        </Box>
+        </div>
+      )}
+
+      {/* Legend */}
+      {legendPosition !== 'none' && (
+        <div
+          className={`flex flex-wrap justify-center gap-4 ${
+            legendPosition === 'bottom' ? 'order-last mt-2' : 'mb-2'
+          }`}
+        >
+          {yAxisKeys.map((key, index) => (
+            <div key={key} className="flex items-center">
+              <div
+                className="mr-1 h-3 w-3 rounded-full"
+                style={{
+                  backgroundColor:
+                    seriesColors?.[index] || defaultColors[index % defaultColors.length],
+                }}
+              />
+              <Typography variant="caption">{key}</Typography>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Canvas container */}
-      <Box
-        ref={containerRef}
-        sx={{
-          position: 'relative',
-          flex: 1,
-          border: '1px solid rgba(0,0,0,0.1)',
-          borderRadius: 1,
-          overflow: 'hidden',
-        }}
-      >
+      <div className="relative flex-1" ref={containerRef} style={{ position: 'relative', flex: 1 }}>
         <canvas
           ref={canvasRef}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-          }}
+          width={dimensions.width}
+          height={dimensions.height}
           onMouseMove={handleMouseMove}
-          onClick={handleClick}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
-          onMouseOut={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onClick={handleClick}
           onWheel={handleWheel}
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'block',
+          }}
         />
 
-        {/* Tooltip for hovered point */}
-        {hoveredPoint && (
+        {/* Tooltip */}
+        {tooltipContent && hoveredPoint && (
           <div
+            className="absolute z-10 rounded bg-white p-2 shadow-md"
             style={{
-              position: 'absolute',
-              top: hoveredPoint.y - 10,
               left: hoveredPoint.x + 10,
-              backgroundColor:
-                theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)',
-              border: '1px solid rgba(0,0,0,0.2)',
-              borderRadius: 4,
-              padding: 8,
+              top: hoveredPoint.y - 40,
               pointerEvents: 'none',
-              zIndex: 1000,
-              maxWidth: 200,
-              fontSize: 12,
             }}
           >
-            <div>
-              <strong>{xAxisKey}:</strong>{' '}
-              {formatXAxisDate
-                ? formatXAxisDate(Number(hoveredPoint.data[xAxisKey] || 0))
-                : Number(hoveredPoint.data[xAxisKey] || 0).toFixed(2)}
-            </div>
-            <div>
-              <strong>{yAxisKeys[hoveredPoint.seriesIndex]}:</strong>{' '}
-              {Number(hoveredPoint.data[yAxisKeys[hoveredPoint.seriesIndex]] || 0).toFixed(2)}
-            </div>
+            <Typography variant="caption" component="div" fontWeight="bold">
+              {tooltipContent.title}
+            </Typography>
+            <Typography variant="caption" component="div">
+              {tooltipContent.value}
+            </Typography>
           </div>
         )}
-      </Box>
 
-      {/* Controls for interactive mode */}
-      {interactive && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-          <Typography variant="caption" color="text.secondary">
-            Scroll to zoom, drag to pan, click to select
-          </Typography>
-        </Box>
-      )}
-
-      {/* Data point count information */}
-      {downsampledData.length < data.length && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.5 }}>
-          <Typography variant="caption" color="text.secondary">
-            Showing {downsampledData.length.toLocaleString()} of {data.length.toLocaleString()}{' '}
-            points (downsampled)
-          </Typography>
-        </Box>
-      )}
-    </Box>
+        {/* Controls for interactive mode */}
+        {interactive && (
+          <div className="absolute bottom-2 right-2 flex gap-1">
+            <button
+              className="flex h-8 w-8 items-center justify-center rounded bg-white/80 text-gray-700 shadow hover:bg-white"
+              onClick={() => setZoom(prev => Math.min(prev * 1.2, 10))}
+              title="Zoom In"
+            >
+              +
+            </button>
+            <button
+              className="flex h-8 w-8 items-center justify-center rounded bg-white/80 text-gray-700 shadow hover:bg-white"
+              onClick={() => setZoom(prev => Math.max(prev / 1.2, 0.1))}
+              title="Zoom Out"
+            >
+              -
+            </button>
+            <button
+              className="flex h-8 w-8 items-center justify-center rounded bg-white/80 text-gray-700 shadow hover:bg-white"
+              onClick={() => {
+                setPan({ x: 0, y: 0 });
+                setZoom(1);
+              }}
+              title="Reset View"
+            >
+              ↺
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

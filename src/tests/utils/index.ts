@@ -1,91 +1,75 @@
 // src/tests/utils/index.ts
+/**
+ * Unified Test Utilities
+ * 
+ * This file provides a centralized export for all test utilities.
+ * It standardizes test rendering, mocking, and performance measurement
+ * to ensure consistent testing patterns across the codebase.
+ */
 
-// Export from testUtils
-export * from './testUtils';
+// Export standardized utilities
+export * from './renderUtils';
+export * from './mockUtils';
+export * from './performanceUtils';
 
-// Export from fixtureUtils
+// Export existing utilities
 export * from './fixtureUtils';
+export * from './asyncTestUtils';
 
-// Export from asyncTestUtils with renamed exports to avoid conflicts
-import {
-  createDeferredPromise,
-  createMockEventEmitter,
-  createMockRAF,
-  createMockTimer,
-  wait,
-  waitForCondition as waitForConditionAsync,
-} from './asyncTestUtils';
-
-export {
-  createDeferredPromise,
-  createMockEventEmitter,
-  createMockRAF,
-  createMockTimer,
-  wait,
-  waitForConditionAsync,
-};
-
-// Export from performanceTestUtils with renamed exports to avoid conflicts
-import {
-  createPerformanceReporter as createPerfReporter,
-  measureAsyncExecutionTime,
-  measureAsyncMemoryUsage,
-  measureExecutionTime as measureExecTime,
-  measureMemoryUsage as measureMemory,
-  runAsyncBenchmark,
-  runBenchmark,
-} from './performanceTestUtils';
-
-export {
-  createPerfReporter,
-  measureAsyncExecutionTime,
-  measureAsyncMemoryUsage,
-  measureExecTime,
-  measureMemory,
-  runAsyncBenchmark,
-  runBenchmark,
-};
-
-// Export from testPerformanceUtils
-import {
-  clearOperationCache,
-  conditionalSetup,
-  createLazyTestValue,
-  executeTestsInParallel,
-  measureMemoryUsage as measureTestMemoryUsage,
-  mockExpensiveOperations,
-  optimizeResourceIntensiveOperation,
-  parallelDescribe,
-  parallelSetup,
-} from './testPerformanceUtils';
-
-export {
-  clearOperationCache,
-  conditionalSetup,
-  createLazyTestValue,
-  executeTestsInParallel,
-  measureTestMemoryUsage,
-  mockExpensiveOperations,
-  optimizeResourceIntensiveOperation,
-  parallelDescribe,
-  parallelSetup,
-};
-
-// Export from mockUtils
-export {
-  createAutomationManagerMock,
-  createMockClass,
-  createMockComponent,
-  createMockContextProvider,
-  createMockHook,
-  createModuleEventBusMock,
-  createModuleEventsMock,
-  createModuleManagerMock,
-  createResourceManagerMock,
-  mockESModule,
-  mockModuleWithExports,
-  restoreAllMocks,
-} from './mockUtils';
+// Export from testUtils (legacy exports will be gradually migrated)
+export * from './testUtils';
 
 // Re-export fixtures for convenience
 export * from '../fixtures';
+
+// Add deprecation warnings for older utility functions that have been standardized
+import { 
+  createPerformanceReporter,
+  measureExecutionTime,
+  measureMemoryUsage,
+  runBenchmark,
+  measureAsyncExecutionTime,
+  measureAsyncMemoryUsage,
+  runAsyncBenchmark
+} from './performanceUtils';
+
+/**
+ * @deprecated Use createPerformanceReporter from performanceUtils instead
+ */
+export const createPerfReporter = (message = 'createPerfReporter is deprecated. Use createPerformanceReporter instead.') => {
+  console.warn(message);
+  return createPerformanceReporter();
+};
+
+/**
+ * @deprecated Use measureExecutionTime from performanceUtils instead
+ */
+export const measureExecTime = <T, Args extends unknown[]>(
+  fn: (...args: Args) => T,
+  ...args: Args
+) => {
+  console.warn('measureExecTime is deprecated. Use measureExecutionTime instead.');
+  return measureExecutionTime(fn, ...args);
+};
+
+/**
+ * @deprecated Use measureMemoryUsage from performanceUtils instead
+ */
+export const measureMemory = <T, Args extends unknown[]>(
+  fn: (...args: Args) => T,
+  ...args: Args
+) => {
+  console.warn('measureMemory is deprecated. Use measureMemoryUsage instead.');
+  return measureMemoryUsage(fn, ...args);
+};
+
+/**
+ * @deprecated Use measureMemoryUsage from performanceUtils instead
+ */
+export const measureTestMemoryUsage = <T, Args extends unknown[]>(
+  fn: (...args: Args) => T,
+  ...args: Args
+) => {
+  console.warn('measureTestMemoryUsage is deprecated. Use measureMemoryUsage instead.');
+  return measureMemoryUsage(fn, ...args);
+};

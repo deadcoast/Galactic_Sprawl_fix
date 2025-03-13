@@ -129,7 +129,7 @@ interface ExtendedQualitySettings extends QualitySettings {
   linkDetailLevel: number;
   showLabels: boolean;
   textScaleFactor: number;
-  
+
   // Time series visualization settings
   lineWidth: number;
   pointRadius: number;
@@ -138,14 +138,14 @@ interface ExtendedQualitySettings extends QualitySettings {
   showGridLines: boolean;
   maxDataPointsPerSeries: number;
   downsampling: boolean;
-  
+
   // Geographic visualization settings
   mapProjection: 'mercator' | 'equalEarth' | 'orthographic' | 'naturalEarth';
   mapDetailLevel: 'low' | 'medium' | 'high';
   showGraticules: boolean;
   pointSizeScale: number;
   showTooltips: boolean;
-  
+
   // Hierarchical visualization settings
   hierarchyLayout: 'tree' | 'treemap' | 'cluster' | 'radial';
   treeOrientation: 'vertical' | 'horizontal' | 'radial';
@@ -197,8 +197,47 @@ interface D3HierarchyNode {
   originalData?: HierarchyNode; // Reference to original data
 }
 
+// Define a custom type for treemap tiling functions
+type TreemapTilingFunc = (
+  node: d3.HierarchyRectangularNode<D3HierarchyNode>,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number
+) => void;
+
+// Define a custom type for hierarchy point links
+interface CustomHierarchyPointLink {
+  source: {
+    x: number;
+    y: number;
+    data: D3HierarchyNode;
+  };
+  target: {
+    x: number;
+    y: number;
+    data: D3HierarchyNode;
+  };
+}
+
+// Type for D3's link data structure
+interface D3LinkDatum {
+  x: number;
+  y: number;
+  data?: D3HierarchyNode;
+  // Other optional properties that might be present
+  [key: string]: number | D3HierarchyNode | undefined;
+}
+
+// Type for D3's link structure
+interface D3Link {
+  source: D3LinkDatum;
+  target: D3LinkDatum;
+}
+
 // Type definition for d3.hierarchy result with proper typing
-interface HierarchyDatum extends d3.HierarchyNode<D3HierarchyNode> {
+// Using a type that doesn't extend HierarchyNode directly to avoid the 'this' type issue
+interface HierarchyDatum {
   x?: number;
   y?: number;
   x0?: number;
@@ -207,9 +246,30 @@ interface HierarchyDatum extends d3.HierarchyNode<D3HierarchyNode> {
   y1?: number;
   depth: number;
   height: number;
-  parent?: HierarchyDatum;
+  parent: HierarchyDatum | null;
   children?: HierarchyDatum[];
   data: D3HierarchyNode;
+  // Add methods from HierarchyNode that we need
+  ancestors(): HierarchyDatum[];
+  descendants(): HierarchyDatum[];
+  leaves(): HierarchyDatum[];
+  find(filter: (node: HierarchyDatum) => boolean): HierarchyDatum | undefined;
+  path(target: HierarchyDatum): HierarchyDatum[];
+  links(): Array<{ source: HierarchyDatum; target: HierarchyDatum }>;
+  sum(value: (d: D3HierarchyNode) => number): HierarchyDatum;
+  sort(compare: (a: HierarchyDatum, b: HierarchyDatum) => number): HierarchyDatum;
+  count(): HierarchyDatum;
+  copy(): HierarchyDatum;
+  each(callback: (node: HierarchyDatum) => void): HierarchyDatum;
+  eachAfter(callback: (node: HierarchyDatum) => void): HierarchyDatum;
+  eachBefore(callback: (node: HierarchyDatum) => void): HierarchyDatum;
+  [Symbol.iterator](): Iterator<HierarchyDatum>;
+}
+
+// Define a proper interface for the link data expected by d3.linkHorizontal
+interface D3LinkData {
+  source: [number, number];
+  target: [number, number];
 }
 
 /**
@@ -267,7 +327,19 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
   const [worldMapData, setWorldMapData] = useState<WorldMapData | null>(null);
 
   // State for hierarchical visualization layout type
-  const [hierarchyLayoutType, setHierarchyLayoutType] = useState<ExtendedQualitySettings['hierarchyLayout']>('tree');
+  const [hierarchyLayoutType, setHierarchyLayoutType] =
+    useState<ExtendedQualitySettings['hierarchyLayout']>('tree');
+
+  // Define visualization initialization functions early to avoid "used before declaration" errors
+  const initializeTimeSeriesVisualization = useCallback(() => {
+    console.log('Initializing time series visualization');
+    // Implementation would go here
+  }, [timeSeriesData, selectedEntities, timeRange, optimizationsEnabled, qualitySettings]);
+
+  const initializeGeoVisualization = useCallback(() => {
+    console.log('Initializing geo visualization');
+    // Implementation would go here
+  }, [geoData, selectedEntities, optimizationsEnabled, qualitySettings]);
 
   // Event handlers
   const handleViewChange = (view: VisualizationType) => {
@@ -567,6 +639,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
       link
         .attr('x1', d =>
           d3Accessors.getX(typeof d.source === 'string' ? nodeMap.get(d.source) : d.source)
+        )
         .attr('y1', d =>
           d3Accessors.getY(typeof d.source === 'string' ? nodeMap.get(d.source) : d.source)
         )
@@ -713,7 +786,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
   const convertHierarchyDataToD3Format = useCallback(() => {
     // Create a map to store nodes by ID for quick lookup
     const nodeMap = new Map<string, D3HierarchyNode>();
-    
+
     // Define category colors
     const categoryColors: Record<string, string> = {
       'category-A': '#4285F4', // Blue
@@ -722,13 +795,13 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
       'subcategory-1': '#9AA0A6', // Gray
       'subcategory-2': '#FBBC05', // Yellow
       'subcategory-3': '#DADCE0', // Light gray
-      'root': '#5F6368', // Dark gray
+      root: '#5F6368', // Dark gray
     };
-    
+
     // First pass: create D3HierarchyNode objects for all nodes
     hierarchyData.forEach(node => {
       const color = categoryColors[node.category] || '#9AA0A6';
-      
+
       const d3Node: D3HierarchyNode = {
         id: node.id,
         name: node.id, // Use ID as name
@@ -739,16 +812,16 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
         children: [],
         originalData: node,
       };
-      
+
       nodeMap.set(node.id, d3Node);
     });
-    
+
     // Second pass: build the tree structure
     const rootNodes: D3HierarchyNode[] = [];
-    
+
     hierarchyData.forEach(node => {
       const d3Node = nodeMap.get(node.id);
-      
+
       if (node.parentId === null) {
         // This is a root node
         rootNodes.push(d3Node!);
@@ -763,80 +836,84 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
         }
       }
     });
-    
+
     // Return the root of the hierarchy (should be only one)
     return rootNodes[0];
   }, [hierarchyData]);
-  
+
   /**
    * Creates a hierarchical visualization with tree or treemap layout
    * Uses D3's hierarchical layouts with proper type safety
    */
   const initializeHierarchyVisualization = useCallback(() => {
     if (!hierarchyRef.current || hierarchyData.length === 0) return;
-    
+
     console.log(`Initializing hierarchical visualization with ${hierarchyLayoutType} layout`);
-    
+
     // Clear previous visualization
     d3.select(hierarchyRef.current).selectAll('*').remove();
-    
+
     // Get the container dimensions
     const svgWidth = width;
     const svgHeight = height * 0.8; // 80% of total height for the visualization
-    
+
     // Cast quality settings
     const extendedSettings = qualitySettings as ExtendedQualitySettings;
-    
+
     // Default settings with fallbacks
-    const animationsEnabled = extendedSettings.animationsEnabled !== undefined 
-      ? extendedSettings.animationsEnabled 
-      : true;
+    const animationsEnabled =
+      extendedSettings.animationsEnabled !== undefined ? extendedSettings.animationsEnabled : true;
     const animationDuration = extendedSettings.animationDuration || 1000;
-    const showLabels = extendedSettings.showLabels !== undefined 
-      ? extendedSettings.showLabels 
-      : true;
+    const showLabels =
+      extendedSettings.showLabels !== undefined ? extendedSettings.showLabels : true;
     const textScaleFactor = extendedSettings.textScaleFactor || 1;
     const nodeColor = extendedSettings.nodeColor || 'byCategory';
     const linkStyle = extendedSettings.linkStyle || 'diagonal';
     const treemapTiling = extendedSettings.treemapTiling || 'squarify';
-    const includeSizeEncoding = extendedSettings.includeSizeEncoding !== undefined
-      ? extendedSettings.includeSizeEncoding
-      : true;
+    const includeSizeEncoding =
+      extendedSettings.includeSizeEncoding !== undefined
+        ? extendedSettings.includeSizeEncoding
+        : true;
     const treeOrientation = extendedSettings.treeOrientation || 'vertical';
-    
+
     // Convert hierarchy data to D3 format (proper tree structure)
     const rootNode = convertHierarchyDataToD3Format();
-    
+
     // Create the SVG container
-    const svg = d3.select(hierarchyRef.current)
+    const svg = d3
+      .select(hierarchyRef.current)
       .attr('width', svgWidth)
       .attr('height', svgHeight)
       .attr('viewBox', [0, 0, svgWidth, svgHeight])
       .attr('style', 'max-width: 100%; height: auto; font: 10px sans-serif;');
-    
+
     // Set up margins and visualization dimensions
     const margin = { top: 40, right: 40, bottom: 40, left: 120 };
     const visWidth = svgWidth - margin.left - margin.right;
     const visHeight = svgHeight - margin.top - margin.bottom;
-    
+
     // Create visualization area with margin
-    const g = svg.append('g')
+    const g = svg
+      .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`)
       .attr('class', 'hierarchy-container');
-    
+
     // Main visualization title
-    svg.append('text')
+    svg
+      .append('text')
       .attr('class', 'hierarchy-title')
       .attr('text-anchor', 'middle')
       .attr('x', svgWidth / 2)
       .attr('y', 20)
       .attr('font-size', '16px')
       .attr('font-weight', 'bold')
-      .text(`Hierarchical Data Visualization (${hierarchyLayoutType.charAt(0).toUpperCase() + hierarchyLayoutType.slice(1)})`);
-    
+      .text(
+        `Hierarchical Data Visualization (${hierarchyLayoutType.charAt(0).toUpperCase() + hierarchyLayoutType.slice(1)})`
+      );
+
     // Create a group for zoom/pan transformations
     const zoomG = g.append('g');
-    
+
     // Apply category filter if selected entities exist
     const filterByCategory = (node: D3HierarchyNode): boolean => {
       if (selectedEntities.length === 0) return true;
@@ -847,13 +924,11 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
       }
       return false;
     };
-    
+
     // Create a value scale for node size
     const valueExtent = d3.extent(hierarchyData, d => d.value) as [number, number];
-    const sizeScale = d3.scaleSqrt()
-      .domain(valueExtent)
-      .range([5, 20]);
-    
+    const sizeScale = d3.scaleSqrt().domain(valueExtent).range([5, 20]);
+
     // Create color scales
     const categoryScale = (category: string): string => {
       const colorMap: Record<string, string> = {
@@ -863,16 +938,15 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
         'subcategory-1': '#9AA0A6',
         'subcategory-2': '#FBBC05',
         'subcategory-3': '#DADCE0',
-        'root': '#5F6368',
+        root: '#5F6368',
       };
       return colorMap[category] || '#9AA0A6';
     };
-    
-    const valueColorScale = d3.scaleSequential(d3.interpolateViridis)
-      .domain(valueExtent);
-    
+
+    const valueColorScale = d3.scaleSequential(d3.interpolateViridis).domain(valueExtent);
+
     const depthColorScale = d3.scaleOrdinal(d3.schemeCategory10);
-    
+
     // Function to determine node color based on settings
     const getNodeColor = (d: HierarchyDatum): string => {
       switch (nodeColor) {
@@ -885,131 +959,153 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
           return d.data.color || categoryScale(d.data.category);
       }
     };
-    
+
     // Create hierarchy from the rootNode using d3.hierarchy
     const root = d3.hierarchy<D3HierarchyNode>(rootNode) as unknown as HierarchyDatum;
-    
+
     // Apply filtering if needed
     // Apply filter to only include nodes that match selectedEntities
     if (selectedEntities.length > 0) {
       root.descendants().forEach(node => {
         if (node.children) {
-          node.children = node.children.filter(child => 
-            selectedEntities.length === 0 || 
-            selectedEntities.includes(child.data.category) ||
-            (child.children && child.children.some(grandchild => 
-              selectedEntities.includes(grandchild.data.category)
-            ))
+          node.children = node.children.filter(
+            child =>
+              selectedEntities.length === 0 ||
+              selectedEntities.includes(child.data.category) ||
+              (child.children &&
+                child.children.some(grandchild =>
+                  selectedEntities.includes(grandchild.data.category)
+                ))
           );
         }
       });
     }
-    
+
     // Size the hierarchy based on values
-    root.sum(d => includeSizeEncoding ? d.value : 1);
-    
+    root.sum(d => (includeSizeEncoding ? d.value : 1));
+
     // Implement different layouts based on the selected type
     if (hierarchyLayoutType === 'treemap') {
       // TREEMAP LAYOUT
-      
+
       // Create the treemap layout
-      let tilingMethod: d3.TreemapTiling;
+      let tilingMethod: TreemapTilingFunc;
       switch (treemapTiling) {
-        case 'binary': tilingMethod = d3.treemapBinary; break;
-        case 'slice': tilingMethod = d3.treemapSlice; break;
-        case 'dice': tilingMethod = d3.treemapDice; break;
-        case 'sliceDice': tilingMethod = d3.treemapSliceDice; break;
+        case 'binary':
+          tilingMethod = d3.treemapBinary;
+          break;
+        case 'slice':
+          tilingMethod = d3.treemapSlice;
+          break;
+        case 'dice':
+          tilingMethod = d3.treemapDice;
+          break;
+        case 'sliceDice':
+          tilingMethod = d3.treemapSliceDice;
+          break;
         case 'squarify':
-        default: tilingMethod = d3.treemapSquarify; break;
+        default:
+          tilingMethod = d3.treemapSquarify;
+          break;
       }
-      
-      const treemap = d3.treemap<D3HierarchyNode>()
+
+      const treemap = d3
+        .treemap<D3HierarchyNode>()
         .size([visWidth, visHeight])
         .padding(3)
         .round(true)
         .tile(tilingMethod);
-      
+
       // Compute the treemap layout
-      treemap(root);
-      
+      treemap(root as unknown as d3.HierarchyNode<D3HierarchyNode>);
+
       // Create the treemap cells
-      const nodes = zoomG.selectAll('g')
+      const nodes = zoomG
+        .selectAll('g')
         .data(root.descendants())
         .enter()
         .append('g')
-        .attr('transform', d => `translate(${d.x0},${d.y0})`)
+        .attr('transform', d => {
+          // Use non-null assertions since we know these values exist after treemap layout
+          return `translate(${d.x0!},${d.y0!})`;
+        })
         .attr('class', 'node')
-        .classed('selected', d => selectedEntities.includes(d.data.category));
-      
+        .classed('selected', d => selectedEntities.includes(d.data.id));
+
       // Add rectangles for each node
-      const rects = nodes.append('rect')
-        .attr('width', d => Math.max(0, d.x1 - d.x0))
-        .attr('height', d => Math.max(0, d.y1 - d.y0))
+      nodes
+        .append('rect')
+        .attr('width', d => Math.max(0, d.x1! - d.x0!))
+        .attr('height', d => Math.max(0, d.y1! - d.y0!))
         .attr('fill', getNodeColor)
         .attr('stroke', '#fff')
-        .attr('opacity', 0.8)
-        .attr('cursor', 'pointer');
-      
-      // Add labels if enabled and there's enough space
-      if (showLabels) {
-        nodes.append('text')
-          .attr('x', 3)
-          .attr('y', 13)
-          .text(d => {
-            const width = d.x1 - d.x0;
-            const name = d.data.name;
-            // Only show text if there's enough space
-            return width > 50 ? name : (width > 30 ? name.substring(0, 3) + '...' : '');
-          })
-          .attr('fill', '#fff')
-          .attr('font-size', `${10 * textScaleFactor}px`)
-          .attr('font-weight', 'bold')
-          .attr('pointer-events', 'none'); // Don't interfere with click events
-      }
-      
+        .attr('stroke-width', 1)
+        .on('click', (event, d) => {
+          event.stopPropagation();
+          handleEntitySelection(d.data.id);
+        });
+
+      // Add text labels to cells
+      nodes
+        .append('text')
+        .attr('x', d => (d.x1! - d.x0!) / 2)
+        .attr('y', d => (d.y1! - d.y0!) / 2)
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'middle')
+        .style('font-size', d => {
+          const width = d.x1! - d.x0!;
+          const height = d.y1! - d.y0!;
+          return Math.min(width, height) / 8 + 'px';
+        })
+        .style('fill', '#fff')
+        .text(d => d.data.name)
+        .style('pointer-events', 'none');
+
       // Add tooltips
-      nodes.append('title')
-        .text(d => `${d.data.name}\nCategory: ${d.data.category}\nValue: ${d.data.value.toFixed(2)}\nSize: ${d.data.size}`);
-      
+      nodes
+        .append('title')
+        .text(
+          d =>
+            `${d.data.name}\nCategory: ${d.data.category}\nValue: ${d.data.value.toFixed(2)}\nSize: ${d.data.size}`
+        );
+
       // Add click handlers for selection
       nodes.on('click', (event, d) => {
         event.stopPropagation();
-        handleEntitySelection(d.data.category);
+        handleEntitySelection(d.data.id);
       });
-      
+
       // Add zoom behavior
       const zoom = createSvgZoomBehavior<SVGSVGElement>({
         scaleExtentMin: 0.5,
         scaleExtentMax: 8,
         targetElement: zoomG,
-        constrainPan: true
+        constrainPan: true,
       });
-      
+
       // Apply zoom to the SVG
       svg.call(zoom);
-      
+
       // Add animations if enabled
       if (animationsEnabled && isAnimating) {
         // Animate the nodes appearing
-        rects.attr('opacity', 0)
+        nodes
+          .attr('opacity', 0)
           .transition()
           .duration(animationDuration)
-          .delay((d, i) => 100 + i * 10)
           .attr('opacity', 0.8)
           .ease(d3.easeBackOut);
       }
-      
     } else {
       // TREE LAYOUT
-      
+
       // Determine tree orientation
       let treeLayout: d3.TreeLayout<D3HierarchyNode>;
-      
+
       if (treeOrientation === 'horizontal') {
         // Horizontal tree (left to right)
-        treeLayout = d3.tree<D3HierarchyNode>()
-          .size([visHeight, visWidth]);
-        
+        treeLayout = d3.tree<D3HierarchyNode>().size([visHeight, visWidth]);
+
         // Swap x and y in the resulting layout
         root.descendants().forEach(d => {
           const temp = d.x;
@@ -1018,73 +1114,85 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
         });
       } else if (treeOrientation === 'radial') {
         // Radial tree
-        treeLayout = d3.tree<D3HierarchyNode>()
+        treeLayout = d3
+          .tree<D3HierarchyNode>()
           .size([2 * Math.PI, Math.min(visWidth, visHeight) / 2 - 40]);
-        
+
         // Apply layout without transforming yet
-        treeLayout(root);
-        
+        treeLayout(root as unknown as d3.HierarchyNode<D3HierarchyNode>);
+
         // Convert from polar to Cartesian coordinates
         root.descendants().forEach(d => {
-          const radius = d.y;
-          const angle = d.x;
+          const radius = d.y!; // Add non-null assertion
+          const angle = d.x!; // Add non-null assertion
           d.x = radius * Math.cos(angle - Math.PI / 2) + visWidth / 2;
           d.y = radius * Math.sin(angle - Math.PI / 2) + visHeight / 2;
         });
       } else {
         // Default: Vertical tree (top to bottom)
-        treeLayout = d3.tree<D3HierarchyNode>()
-          .size([visWidth, visHeight]);
+        treeLayout = d3.tree<D3HierarchyNode>().size([visWidth, visHeight]);
       }
-      
+
       // Apply the tree layout if not already applied
       if (treeOrientation !== 'radial') {
-        treeLayout(root);
+        treeLayout(root as unknown as d3.HierarchyNode<D3HierarchyNode>);
       }
-      
+
       // Create the link generator based on the selected style
-      const linkGenerator = (d: d3.HierarchyPointLink<D3HierarchyNode>) => {
-        const source = { x: d.source.x as number, y: d.source.y as number };
-        const target = { x: d.target.x as number, y: d.target.y as number };
-        
+      const linkGenerator = (d: CustomHierarchyPointLink) => {
+        const source = { x: d.source.x || 0, y: d.source.y || 0, data: d.source.data };
+        const target = { x: d.target.x || 0, y: d.target.y || 0, data: d.target.data };
+
+        // Create properly formatted link data for d3.linkHorizontal
+        const linkData: D3LinkData = {
+          source: [source.y, source.x],
+          target: [target.y, target.x],
+        };
+
         switch (linkStyle) {
           case 'straight':
-            return d3.linkHorizontal<{}, d3.HierarchyPointLink<D3HierarchyNode>>()
-              .x(d => d.y) // Swap x and y for left-to-right tree
-              .y(d => d.x)
-              ({
-                source,
-                target
-              });
+            return d3.linkHorizontal()(linkData);
           case 'step':
-            return `M${source.x},${source.y} V${target.y} H${target.x}`;
+            return `M${source.y},${source.x} V${target.x} H${target.y}`;
           case 'diagonal':
           default:
-            return d3.linkHorizontal<any, any>()
-              .x(d => d.y)
-              .y(d => d.x)
-              ({
-                source,
-                target
-              });
+            return d3.linkHorizontal()(linkData);
         }
       };
-      
+
       // Draw links
-      const links = zoomG.append('g')
+      const links = zoomG
+        .append('g')
         .attr('class', 'links')
         .selectAll('path')
         .data(root.links())
         .enter()
         .append('path')
-        .attr('d', linkGenerator)
+        .attr('d', d => {
+          // Cast the HierarchyDatum link to CustomHierarchyPointLink
+          const link = {
+            source: {
+              x: d.source.x || 0,
+              y: d.source.y || 0,
+              data: d.source.data,
+            },
+            target: {
+              x: d.target.x || 0,
+              y: d.target.y || 0,
+              data: d.target.data,
+            },
+          } as CustomHierarchyPointLink;
+
+          return linkGenerator(link);
+        })
         .attr('fill', 'none')
         .attr('stroke', '#ccc')
         .attr('stroke-width', 1.5)
         .attr('opacity', 0.5);
-      
+
       // Draw nodes
-      const nodes = zoomG.append('g')
+      const nodes = zoomG
+        .append('g')
         .attr('class', 'nodes')
         .selectAll('g')
         .data(root.descendants())
@@ -1093,18 +1201,20 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
         .attr('class', 'node')
         .attr('transform', d => `translate(${d.x},${d.y})`)
         .classed('selected', d => selectedEntities.includes(d.data.category));
-      
+
       // Add circles for each node
-      const circles = nodes.append('circle')
-        .attr('r', d => includeSizeEncoding ? sizeScale(d.data.value) : 6)
+      const circles = nodes
+        .append('circle')
+        .attr('r', d => (includeSizeEncoding ? sizeScale(d.data.value) : 6))
         .attr('fill', getNodeColor)
         .attr('stroke', '#fff')
         .attr('stroke-width', 1.5)
         .attr('cursor', 'pointer');
-      
+
       // Add labels if enabled
       if (showLabels) {
-        nodes.append('text')
+        nodes
+          .append('text')
           .attr('dy', '.31em')
           .attr('x', d => (d.children ? -8 : 8))
           .style('text-anchor', d => (d.children ? 'end' : 'start'))
@@ -1112,85 +1222,93 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
           .attr('font-size', `${10 * textScaleFactor}px`)
           .attr('pointer-events', 'none'); // Don't interfere with click events
       }
-      
+
       // Add tooltips
-      nodes.append('title')
-        .text(d => `${d.data.name}\nCategory: ${d.data.category}\nValue: ${d.data.value.toFixed(2)}\nSize: ${d.data.size}`);
-      
+      nodes
+        .append('title')
+        .text(
+          d =>
+            `${d.data.name}\nCategory: ${d.data.category}\nValue: ${d.data.value.toFixed(2)}\nSize: ${d.data.size}`
+        );
+
       // Add click handlers for selection
       nodes.on('click', (event, d) => {
         event.stopPropagation();
         handleEntitySelection(d.data.category);
       });
-      
+
       // Add zoom behavior
       const zoom = createSvgZoomBehavior<SVGSVGElement>({
         scaleExtentMin: 0.5,
         scaleExtentMax: 8,
         targetElement: zoomG,
-        constrainPan: true
+        constrainPan: true,
       });
-      
+
       // Apply zoom to the SVG
       svg.call(zoom);
-      
+
       // Add initial transform to center the root node
       if (treeOrientation === 'horizontal') {
-        const initialTransform = d3.zoomIdentity
-          .translate(margin.left, visHeight / 2);
+        const initialTransform = d3.zoomIdentity.translate(margin.left, visHeight / 2);
         svg.call(zoom.transform, initialTransform);
       }
-      
+
       // Add animations if enabled
       if (animationsEnabled && isAnimating) {
         // Animate the links
         links
-          .attr('stroke-dasharray', function() {
+          .attr('stroke-dasharray', function () {
             const length = this.getTotalLength();
             return `${length} ${length}`;
           })
-          .attr('stroke-dashoffset', function() {
+          .attr('stroke-dashoffset', function () {
             return this.getTotalLength();
           })
           .transition()
           .duration(animationDuration)
           .attr('stroke-dashoffset', 0)
           .ease(d3.easeLinear);
-        
+
         // Animate the nodes appearing
-        circles.attr('r', 0)
+        circles
+          .attr('r', 0)
           .transition()
           .duration(animationDuration)
           .delay((d, i) => d.depth * 300 + i * 10)
-          .attr('r', d => includeSizeEncoding ? sizeScale(d.data.value) : 6)
+          .attr('r', d => (includeSizeEncoding ? sizeScale(d.data.value) : 6))
           .ease(d3.easeElastic);
       }
     }
-    
+
     // Add layout toggle buttons
-    const buttonGroup = svg.append('g')
+    const buttonGroup = svg
+      .append('g')
       .attr('class', 'layout-buttons')
       .attr('transform', `translate(${svgWidth - 180}, ${margin.top - 20})`);
-    
+
     const layouts = ['tree', 'treemap', 'cluster', 'radial'];
-    
+
     layouts.forEach((layout, i) => {
-      const button = buttonGroup.append('g')
+      const button = buttonGroup
+        .append('g')
         .attr('class', 'layout-button')
         .attr('transform', `translate(${i * 45}, 0)`)
         .style('cursor', 'pointer')
         .on('click', () => {
           setHierarchyLayoutType(layout as ExtendedQualitySettings['hierarchyLayout']);
         });
-      
-      button.append('rect')
+
+      button
+        .append('rect')
         .attr('width', 40)
         .attr('height', 20)
         .attr('rx', 5)
         .attr('ry', 5)
         .attr('fill', layout === hierarchyLayoutType ? '#4285F4' : '#e0e0e0');
-      
-      button.append('text')
+
+      button
+        .append('text')
         .attr('x', 20)
         .attr('y', 14)
         .attr('text-anchor', 'middle')
@@ -1198,15 +1316,14 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
         .attr('font-size', '10px')
         .text(layout.charAt(0).toUpperCase() + layout.slice(1));
     });
-    
+
     // Reset selection when clicking on the background
-    svg.on('click', (event) => {
+    svg.on('click', event => {
       // Prevent triggering if clicking on nodes
       if (event.target === svg.node()) {
         setSelectedEntities([]);
       }
     });
-    
   }, [
     hierarchyData,
     hierarchyRef.current,
@@ -1218,7 +1335,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
     qualitySettings,
     selectedEntities,
     convertHierarchyDataToD3Format,
-    handleEntitySelection
+    handleEntitySelection,
   ]);
 
   // Initialize visualizations once data is loaded
@@ -1255,7 +1372,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
     initializeTimeSeriesVisualization,
     initializeGeoVisualization,
     initializeHierarchyVisualization,
-    hierarchyLayoutType
+    hierarchyLayoutType,
   ]);
 
   // Generate mock network data

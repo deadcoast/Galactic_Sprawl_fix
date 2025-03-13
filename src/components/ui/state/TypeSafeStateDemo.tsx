@@ -235,7 +235,7 @@ const TypeSafeStateDemo: React.FC = () => {
   });
 
   // Use our typed transitions
-  const [transitionState, setTransitionState, runTransition] =
+  const [transitionState, _setTransitionState, runTransition] =
     useTypedTransitions<CounterState>(initialState);
 
   // Use our async reducer
@@ -253,7 +253,7 @@ const TypeSafeStateDemo: React.FC = () => {
   // Run a complex transition when button is clicked
   const handleRunTransition = async () => {
     const result = await runTransition(complexOperation(complexAmount, 1000));
-    console.log('Transition completed with result:', result);
+    console.warn('Transition completed with result:', result);
   };
 
   // Trigger the async action
@@ -397,7 +397,7 @@ const TypeSafeStateDemo: React.FC = () => {
                     dispatch({
                       type: 'UPDATE_FACTOR',
                       payload: parseInt(e.target.value) || 1,
-                    })
+                    } as PayloadAction<string, number>)
                   }
                   className="number-input"
                 />

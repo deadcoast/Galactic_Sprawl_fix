@@ -9,14 +9,9 @@ import React, {
 } from 'react';
 import { BaseState } from '../lib/contexts/BaseContext';
 import { EventBus } from '../lib/events/EventBus';
-import {
-  gameManager,
-  GameManager,
-  GameManagerEvent,
-  GameManagerEventType,
-} from '../managers/game/gameManager';
+import { gameManager, GameManager, GameManagerEvent } from '../managers/game/gameManager';
 import { GameEvent } from '../types/core/GameTypes';
-import { BaseEvent } from '../types/events/EventTypes';
+import { BaseEvent, EventType } from '../types/events/EventTypes';
 
 // Type definitions
 interface SectorData {
@@ -443,19 +438,19 @@ export const selectCompletedMissions = (state: GameState) => state.missions.comp
 export const selectMissionsInProgress = (state: GameState) => state.missions.inProgress;
 
 // Event handlers for game events
-const handleGameStarted = (event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
+const handleGameStarted = (_event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
   dispatch(createStartGameAction());
 };
 
-const handleGamePaused = (event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
+const handleGamePaused = (_event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
   dispatch(createPauseGameAction());
 };
 
-const handleGameResumed = (event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
+const handleGameResumed = (_event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
   dispatch(createResumeGameAction());
 };
 
-const handleGameStopped = (event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
+const handleGameStopped = (_event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
   dispatch(createStopGameAction());
 };
 
@@ -511,16 +506,16 @@ export const GameProvider: React.FC<GameProviderProps> = ({
   useEffect(() => {
     if (manager) {
       // Get the event bus from the manager
-      // Use type assertion to make TypeScript treat this as a more generic EventBus type
-      const gameEvents = manager.eventBus as EventBus<BaseEvent>;
+      // Use a safer approach to access the eventBus property
+      const gameEvents = (manager as unknown as { eventBus: EventBus<BaseEvent> }).eventBus;
 
       // Use separate handlers for each event type to match test expectations
       // Cast event types to string to avoid type errors with EventBus
-      const startedEventType = String(GameManagerEventType.GAME_STARTED);
-      const pausedEventType = String(GameManagerEventType.GAME_PAUSED);
-      const resumedEventType = String(GameManagerEventType.GAME_RESUMED);
-      const stoppedEventType = String(GameManagerEventType.GAME_STOPPED);
-      const timeUpdatedEventType = String(GameManagerEventType.TIME_UPDATED);
+      const startedEventType = String(EventType.GAME_STARTED);
+      const pausedEventType = String(EventType.GAME_PAUSED);
+      const resumedEventType = String(EventType.GAME_RESUMED);
+      const stoppedEventType = String(EventType.GAME_STOPPED);
+      const timeUpdatedEventType = String(EventType.TIME_UPDATED);
 
       // Create type-safe wrapper for each handler
       const createSafeHandler = (handler: (event: GameManagerEvent) => void) => {

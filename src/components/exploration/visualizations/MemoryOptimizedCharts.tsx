@@ -1,3 +1,5 @@
+import { ComponentType } from 'react';
+import { BaseChartProps } from './charts/BaseChart';
 import { ViewportOptimizedHeatMap } from './charts/ViewportOptimizedHeatMap';
 import { ViewportOptimizedScatterPlot } from './charts/ViewportOptimizedScatterPlot';
 import { VirtualizedLineChart } from './charts/VirtualizedLineChart';
@@ -39,18 +41,21 @@ export const MemoryOptimizedScatterPlot = withMemoryManagement(ViewportOptimized
 /**
  * Memory-optimized version of ViewportOptimizedHeatMap with memory management
  */
-export const MemoryOptimizedHeatMap = withMemoryManagement(ViewportOptimizedHeatMap, {
-  // Log memory usage to console during development
-  enableLogging: process.env.NODE_ENV === 'development',
-  // Show memory stats in the UI during development
-  showMemoryStats: process.env.NODE_ENV === 'development',
-  // Set memory threshold to 30MB (heat maps can be large)
-  memoryThreshold: 30 * 1024 * 1024,
-  // Set auto cleanup level to medium
-  autoCleanupLevel: 'medium',
-  // Cache expiration time (5 minutes)
-  cacheExpirationTime: 5 * 60 * 1000,
-});
+export const MemoryOptimizedHeatMap = withMemoryManagement(
+  ViewportOptimizedHeatMap as unknown as ComponentType<BaseChartProps>,
+  {
+    // Log memory usage to console during development
+    enableLogging: process.env.NODE_ENV === 'development',
+    // Show memory stats in the UI during development
+    showMemoryStats: process.env.NODE_ENV === 'development',
+    // Set memory threshold to 30MB (heat maps can be large)
+    memoryThreshold: 30 * 1024 * 1024,
+    // Set auto cleanup level to medium
+    autoCleanupLevel: 'medium',
+    // Cache expiration time (5 minutes)
+    cacheExpirationTime: 5 * 60 * 1000,
+  }
+);
 
 /**
  * Helper function to reduce SVG nodes in chart data
@@ -115,10 +120,10 @@ export function cleanupChartSvgNodes(containerSelector: string): void {
     });
 
     // Force garbage collection hint (this doesn't actually force GC)
-    // @ts-ignore
-    if (window.gc) {
-      // @ts-ignore
-      window.gc();
+    // window.gc is not a standard property, but some browsers support it
+    if (typeof window !== 'undefined' && 'gc' in window) {
+      // Call the garbage collector if available
+      (window as { gc: () => void }).gc();
     }
   } catch (e) {
     console.error('Error cleaning up chart SVG nodes:', e);

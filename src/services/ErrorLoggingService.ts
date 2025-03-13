@@ -61,19 +61,11 @@ export interface ErrorLogEntry {
 }
 
 class ErrorLoggingServiceImpl extends AbstractBaseService {
-  private static instance: ErrorLoggingServiceImpl;
   private errorLog: ErrorLogEntry[] = [];
   private maxLogSize = 1000;
 
-  private constructor() {
+  protected constructor() {
     super('ErrorLoggingService', '1.0.0');
-  }
-
-  public static getInstance(): ErrorLoggingServiceImpl {
-    if (!ErrorLoggingServiceImpl.instance) {
-      ErrorLoggingServiceImpl.instance = new ErrorLoggingServiceImpl();
-    }
-    return ErrorLoggingServiceImpl.instance;
   }
 
   protected async onInitialize(): Promise<void> {

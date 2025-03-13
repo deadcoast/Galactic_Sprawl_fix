@@ -1,6 +1,6 @@
 import { Database, Map, Menu, Radar, Ship, Users } from 'lucide-react';
 import React from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGameState } from '../../contexts/GameContext';
 import { useComponentProfiler } from '../../hooks/ui/useComponentProfiler';
 import { GalaxyMap } from './GalaxyMap';
 import { GameHUD } from './GameHUD';
@@ -15,7 +15,7 @@ export function GameLayout({ empireName, bannerColor, children }: GameLayoutProp
   const [showSprawlView, setShowSprawlView] = React.useState(false);
   const [showVPRView, setShowVPRView] = React.useState(false);
   const [showGalaxyMap, setShowGalaxyMap] = React.useState(false);
-  const { state } = useGame();
+  const state = useGameState(state => state);
 
   // Add component profiling to monitor performance
   const profiler = useComponentProfiler('GameLayout', {

@@ -30,7 +30,6 @@ export interface TimeSeriesAggregation {
 }
 
 class APIServiceImpl extends AbstractBaseService {
-  private static instance: APIServiceImpl;
   private activeStreams: Map<string, AbortController> = new Map();
   private streamListeners: Map<string, Set<(data: unknown) => void>> = new Map();
 
@@ -40,15 +39,8 @@ class APIServiceImpl extends AbstractBaseService {
     maxRetries: 3,
   };
 
-  private constructor() {
+  protected constructor() {
     super('APIService', '1.0.0');
-  }
-
-  public static getInstance(): APIServiceImpl {
-    if (!APIServiceImpl.instance) {
-      APIServiceImpl.instance = new APIServiceImpl();
-    }
-    return APIServiceImpl.instance;
   }
 
   protected async onInitialize(): Promise<void> {

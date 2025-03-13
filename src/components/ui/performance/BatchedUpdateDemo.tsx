@@ -1,11 +1,29 @@
 import * as d3 from 'd3';
 import React, { useEffect, useRef, useState } from 'react';
-import { animationFrameManager } from '../../../utils/performance/D3AnimationFrameManager';
+import {
+  animationFrameManager,
+  AnimationPriority,
+} from '../../../utils/performance/D3AnimationFrameManager';
 import {
   BatchOperationPriority,
   batchUpdateManager,
   optimizeWithBatchedUpdates,
 } from '../../../utils/performance/D3BatchedUpdates';
+
+// Define D3 selection type
+type D3SVGSelection = d3.Selection<SVGSVGElement, unknown, null, undefined>;
+
+interface CircleElement {
+  id: number;
+  x: number;
+  y: number;
+  radius: number;
+  color: string;
+  velocity?: {
+    x: number;
+    y: number;
+  };
+}
 
 interface BatchedUpdateDemoProps {
   width?: number;
@@ -52,9 +70,10 @@ const BatchedUpdateDemo: React.FC<BatchedUpdateDemoProps> = ({ width = 900, heig
   });
 
   // Animation state (shared)
-  const [elements, setElements] = useState<
-    { id: number; x: number; y: number; radius: number; color: string }[]
-  >([]);
+  type ElementType = { id: number; x: number; y: number; radius: number; color: string };
+
+  const [elements, setElements] = useState<ElementType[]>([]);
+  const [animationId, setAnimationId] = useState<string | null>(null);
 
   // Initialize elements
   useEffect(() => {
@@ -81,15 +100,16 @@ const BatchedUpdateDemo: React.FC<BatchedUpdateDemoProps> = ({ width = 900, heig
     svg.selectAll('*').remove();
 
     // Create circles for each element
-    const circles = svg
-      .selectAll('circle')
-      .data(elements, (d: any) => d.id)
+    // Using type assertions to handle D3's complex typing
+    (svg as D3SVGSelection)
+      .selectAll<SVGCircleElement, CircleElement>('circle')
+      .data<CircleElement>(elements, (d: CircleElement) => d.id)
       .enter()
       .append('circle')
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y)
-      .attr('r', d => d.radius)
-      .attr('fill', d => d.color)
+      .attr('cx', (d: CircleElement) => d.x)
+      .attr('cy', (d: CircleElement) => d.y)
+      .attr('r', (d: CircleElement) => d.radius)
+      .attr('fill', (d: CircleElement) => d.color)
       .attr('stroke', '#333')
       .attr('stroke-width', 1);
 
@@ -115,15 +135,15 @@ const BatchedUpdateDemo: React.FC<BatchedUpdateDemoProps> = ({ width = 900, heig
         });
 
         // Standard D3 update (potential layout thrashing)
-        svg
-          .selectAll('circle')
-          .data(updatedElements, (d: any) => d.id)
+        (svg as D3SVGSelection)
+          .selectAll<SVGCircleElement, CircleElement>('circle')
+          .data<CircleElement>(updatedElements, (d: CircleElement) => d.id)
           .transition()
           .duration(updateFrequency * 0.8)
-          .attr('cx', d => d.x)
-          .attr('cy', d => d.y)
-          .attr('r', d => d.radius)
-          .attr('fill', d => d.color);
+          .attr('cx', (d: CircleElement) => d.x)
+          .attr('cy', (d: CircleElement) => d.y)
+          .attr('r', (d: CircleElement) => d.radius)
+          .attr('fill', (d: CircleElement) => d.color);
 
         // Update elements state
         setElements(updatedElements);
@@ -167,30 +187,35 @@ const BatchedUpdateDemo: React.FC<BatchedUpdateDemoProps> = ({ width = 900, heig
 
     // Create a batched selection for better performance
     const batchedSvg = batchingEnabled
-      ? optimizeWithBatchedUpdates(svg, 'batched-demo', { priority: priorityLevel })
+      ? optimizeWithBatchedUpdates(
+          // Use a double type assertion to bypass type checking
+          svg as unknown as d3.Selection<SVGSVGElement, unknown, Element, undefined>,
+          'batched-demo',
+          { priority: priorityLevel }
+        )
       : svg;
 
     // Create circles for each element
-    const circles = batchedSvg
-      .selectAll('circle')
-      .data(elements, (d: any) => d.id)
+    (batchedSvg as D3SVGSelection)
+      .selectAll<SVGCircleElement, CircleElement>('circle')
+      .data<CircleElement>(elements, (d: CircleElement) => d.id)
       .enter()
       .append('circle')
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y)
-      .attr('r', d => d.radius)
-      .attr('fill', d => d.color)
+      .attr('cx', (d: CircleElement) => d.x)
+      .attr('cy', (d: CircleElement) => d.y)
+      .attr('r', (d: CircleElement) => d.radius)
+      .attr('fill', (d: CircleElement) => d.color)
       .attr('stroke', '#333')
       .attr('stroke-width', 1);
 
     // Set up animation if active
     if (isAnimating) {
-      // Register the animation with our frame manager
-      animationFrameManager.registerAnimation(
+      // Register animation with the animation frame manager
+      const id = animationFrameManager.registerAnimation(
         {
           id: 'batched-demo-animation',
           name: 'Batched Demo',
-          priority: 'normal',
+          priority: 'medium' as AnimationPriority,
           type: 'custom',
           duration: 0, // Runs indefinitely
           loop: true,
@@ -198,11 +223,12 @@ const BatchedUpdateDemo: React.FC<BatchedUpdateDemoProps> = ({ width = 900, heig
         (_elapsed, _deltaTime) => {
           // Update batch stats once per frame
           setBatchStats(batchUpdateManager.getStats());
-          return false; // Never completes
+          return false; // Continue animation
         }
       );
 
-      animationFrameManager.startAnimation('batched-demo-animation');
+      setAnimationId(id);
+      animationFrameManager.startAnimation(id);
 
       const updateInterval = setInterval(() => {
         // Create new positions for each element - similar to the standard side
@@ -226,15 +252,15 @@ const BatchedUpdateDemo: React.FC<BatchedUpdateDemoProps> = ({ width = 900, heig
         });
 
         // Batched D3 update (prevents layout thrashing)
-        batchedSvg
-          .selectAll('circle')
-          .data(updatedElements, (d: any) => d.id)
+        (batchedSvg as D3SVGSelection)
+          .selectAll<SVGCircleElement, CircleElement>('circle')
+          .data<CircleElement>(updatedElements, (d: CircleElement) => d.id)
           .transition()
           .duration(updateFrequency * 0.8)
-          .attr('cx', d => d.x)
-          .attr('cy', d => d.y)
-          .attr('r', d => d.radius)
-          .attr('fill', d => d.color);
+          .attr('cx', (d: CircleElement) => d.x)
+          .attr('cy', (d: CircleElement) => d.y)
+          .attr('r', (d: CircleElement) => d.radius)
+          .attr('fill', (d: CircleElement) => d.color);
 
         // Note: we don't update elements state here since
         // this would trigger a re-render of both sides
@@ -263,7 +289,9 @@ const BatchedUpdateDemo: React.FC<BatchedUpdateDemoProps> = ({ width = 900, heig
 
       return () => {
         clearInterval(updateInterval);
-        animationFrameManager.stopAnimation('batched-demo-animation');
+        if (id) {
+          animationFrameManager.cancelAnimation(id);
+        }
       };
     }
   }, [
@@ -280,7 +308,16 @@ const BatchedUpdateDemo: React.FC<BatchedUpdateDemoProps> = ({ width = 900, heig
 
   // Toggle animation state
   const toggleAnimation = () => {
-    setIsAnimating(!isAnimating);
+    if (isAnimating) {
+      // Stop animation
+      if (animationId) {
+        animationFrameManager.cancelAnimation(animationId);
+      }
+      setIsAnimating(false);
+    } else {
+      // Start animation
+      setIsAnimating(true);
+    }
   };
 
   return (

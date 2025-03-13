@@ -54,7 +54,7 @@ export class WebGLShaderManager {
   private textures: Map<string, WebGLTexture> = new Map();
   private framebuffers: Map<string, WebGLFramebuffer> = new Map();
   private animationFrame: number | null = null;
-  private lastTimestamp: number = 0;
+  private _lastTimestamp: number = 0;
 
   /**
    * Initialize the WebGL context
@@ -81,6 +81,52 @@ export class WebGLShaderManager {
       console.error('[WebGLShaderManager] Initialization failed', error);
       return false;
     }
+  }
+
+  /**
+   * Initialize default shaders for each visualization type
+   */
+  private initializeDefaultShaders(): void {
+    // Set up standard shaders for each visualization type
+    Object.values(DataVisualizationShaderType).forEach(type => {
+      if (typeof type === 'string') {
+        // Create a default shader with a predefined color array
+        this.createDataVisualizationShader({
+          type: type as DataVisualizationShaderType,
+          colors: [
+            '#3366cc', // Blue
+            '#cc6633', // Orange
+            '#33cc66', // Green
+            '#cc33cc', // Purple
+          ],
+        });
+      }
+    });
+  }
+
+  /**
+   * Convert hex color string to RGB array
+   * @param hex Hex color string (e.g. "#ff0000" or "#f00")
+   * @returns Array of RGB values [r, g, b] in range 0-1
+   */
+  private hexToRgb(hex: string): [number, number, number] {
+    // Remove # if present
+    hex = hex.replace(/^#/, '');
+
+    // Handle shorthand hex (e.g. #f00 -> #ff0000)
+    if (hex.length === 3) {
+      hex = hex
+        .split('')
+        .map(c => c + c)
+        .join('');
+    }
+
+    // Parse the hex values
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+    return [r, g, b];
   }
 
   /**
@@ -285,11 +331,14 @@ export class WebGLShaderManager {
     // Highlight range
     const highlightRange = config.highlightRange || [0.7, 1.0];
     const highlightRangeLocation = this.gl.getUniformLocation(program, 'u_highlightRange');
-    this.gl.uniform2f(highlightRangeLocation, highlightRange[0], highlightRange[1]);
+    if (highlightRangeLocation !== null) {
+      this.gl.uniform2f(highlightRangeLocation, highlightRange[0], highlightRange[1]);
+    }
 
     // Custom uniforms
     if (config.customUniforms) {
       Object.entries(config.customUniforms).forEach(([name, uniform]) => {
+        if (!this.gl) return;
         const location = this.gl.getUniformLocation(program, name);
         if (location) {
           this.setUniform(location, uniform);
@@ -506,9 +555,16 @@ export class WebGLShaderManager {
 
       case DataVisualizationShaderType.TRANSITION:
         code = `
-          // For transitions, use animation based on time
+          float dist = length(gl_PointCoord - vec2(0.5));
           float transitionFactor = 0.5 + 0.5 * sin(v_time * 2.0 + v_data * 5.0);
-          gl_PointSize = mix(5.0, 15.0, transitionFactor) * highlightFactor;
+          
+          alpha *= smoothstep(0.5, 0.0, dist) * mix(0.5, 1.0, transitionFactor);
+          color = mix(color, color * vec3(1.2, 1.1, 0.9), transitionFactor);
+          
+          if (transitionFactor > 0.7) {
+            float glow = smoothstep(0.5, 0.0, dist) * (transitionFactor - 0.7) * 3.0;
+            color += glow * vec3(1.0, 0.9, 0.7);
+          }
         `;
         break;
 
@@ -601,12 +657,15 @@ export class WebGLShaderManager {
       case DataVisualizationShaderType.TRANSITION:
         effects = `
           float dist = length(gl_PointCoord - vec2(0.5));
-          float fade = smoothstep(0.5, 0.0, dist);
+          float transitionFactor = 0.5 + 0.5 * sin(v_time * 2.0 + v_data * 5.0);
           
-          float wave = 0.5 + 0.5 * sin(v_time * 3.0 + v_data * 10.0 + dist * 5.0);
-          color = mix(color, getColor(wave), 0.3);
+          alpha *= smoothstep(0.5, 0.0, dist) * mix(0.5, 1.0, transitionFactor);
+          color = mix(color, color * vec3(1.2, 1.1, 0.9), transitionFactor);
           
-          alpha *= fade * (0.7 + 0.3 * wave);
+          if (transitionFactor > 0.7) {
+            float glow = smoothstep(0.5, 0.0, dist) * (transitionFactor - 0.7) * 3.0;
+            color += glow * vec3(1.0, 0.9, 0.7);
+          }
         `;
         break;
 
@@ -618,33 +677,32 @@ export class WebGLShaderManager {
   }
 
   /**
-   * Initialize default shaders
+   * Start animation loop for continuous rendering
+   * @param renderCallback Function to call on each animation frame
    */
-  private initializeDefaultShaders(): void {
-    // Setup standard shaders for each visualization type
-    Object.values(DataVisualizationShaderType).forEach(type => {
-      this.createDataVisualizationShader({
-        type: type as DataVisualizationShaderType,
-        colors: ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099'],
-      });
-    });
-  }
+  public startAnimationLoop(renderCallback: () => void): void {
+    // Stop any existing animation loop
+    this.stopAnimationLoop();
 
-  /**
-   * Start animation loop
-   */
-  public startAnimationLoop(renderCallback: (timestamp: number) => void): void {
+    // Animation frame handler
     const animate = (timestamp: number) => {
-      renderCallback(timestamp);
-      this.lastTimestamp = timestamp;
+      // Calculate delta time
+      const deltaTime = this._lastTimestamp ? timestamp - this._lastTimestamp : 0;
+      this._lastTimestamp = timestamp;
+
+      // Call render callback
+      renderCallback();
+
+      // Request next frame
       this.animationFrame = requestAnimationFrame(animate);
     };
 
+    // Start the animation loop
     this.animationFrame = requestAnimationFrame(animate);
   }
 
   /**
-   * Stop animation loop
+   * Stop the animation loop
    */
   public stopAnimationLoop(): void {
     if (this.animationFrame !== null) {
@@ -654,65 +712,43 @@ export class WebGLShaderManager {
   }
 
   /**
-   * Convert hex color to RGB values
-   */
-  private hexToRgb(hex: string): number[] {
-    // Remove # if present
-    hex = hex.replace(/^#/, '');
-
-    // Parse hex
-    if (hex.length === 3) {
-      // Short notation
-      const r = parseInt(hex.charAt(0) + hex.charAt(0), 16) / 255;
-      const g = parseInt(hex.charAt(1) + hex.charAt(1), 16) / 255;
-      const b = parseInt(hex.charAt(2) + hex.charAt(2), 16) / 255;
-      return [r, g, b];
-    } else {
-      // Standard notation
-      const r = parseInt(hex.substring(0, 2), 16) / 255;
-      const g = parseInt(hex.substring(2, 4), 16) / 255;
-      const b = parseInt(hex.substring(4, 6), 16) / 255;
-      return [r, g, b];
-    }
-  }
-
-  /**
-   * Clean up WebGL resources
+   * Dispose of WebGL resources
    */
   public dispose(): void {
-    if (!this.gl) return;
-
-    // Stop animation
+    // Stop any running animation
     this.stopAnimationLoop();
 
-    // Delete shaders
-    this.shaders.forEach(shader => {
-      this.gl?.deleteShader(shader);
-    });
+    // Clean up WebGL resources
+    if (this.gl) {
+      // Delete shaders
+      this.shaders.forEach(shader => {
+        this.gl?.deleteShader(shader);
+      });
+      this.shaders.clear();
 
-    // Delete programs
-    this.programs.forEach(program => {
-      this.gl?.deleteProgram(program);
-    });
+      // Delete programs
+      this.programs.forEach(program => {
+        this.gl?.deleteProgram(program);
+      });
+      this.programs.clear();
 
-    // Delete textures
-    this.textures.forEach(texture => {
-      this.gl?.deleteTexture(texture);
-    });
+      // Delete textures
+      this.textures.forEach(texture => {
+        this.gl?.deleteTexture(texture);
+      });
+      this.textures.clear();
 
-    // Delete framebuffers
-    this.framebuffers.forEach(framebuffer => {
-      this.gl?.deleteFramebuffer(framebuffer);
-    });
+      // Delete framebuffers
+      this.framebuffers.forEach(framebuffer => {
+        this.gl?.deleteFramebuffer(framebuffer);
+      });
+      this.framebuffers.clear();
 
-    // Clear maps
-    this.shaders.clear();
-    this.programs.clear();
-    this.textures.clear();
-    this.framebuffers.clear();
+      // Reset context
+      this.gl = null;
+      this.canvas = null;
+    }
 
-    // Reset properties
-    this.gl = null;
-    this.canvas = null;
+    console.warn('[WebGLShaderManager] Resources disposed');
   }
 }

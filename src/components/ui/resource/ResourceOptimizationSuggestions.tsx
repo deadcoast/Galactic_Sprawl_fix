@@ -10,6 +10,13 @@ import {
 } from '../../../types/resources/StandardizedResourceTypes';
 import './ResourceOptimizationSuggestions.css';
 
+// Define the ResourceRateDetail interface locally since it's not exported
+interface ResourceRateDetail {
+  production: number;
+  consumption: number;
+  net: number; // net rate (production - consumption)
+}
+
 interface OptimizationSuggestion {
   id: string;
   resourceType: ResourceType | 'all';
@@ -49,22 +56,14 @@ const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSuggestionsP
   // Register component with system
   const componentId = useComponentRegistration({
     type: 'ResourceOptimizationSuggestions',
-    eventSubscriptions: [
-      'RESOURCE_UPDATED',
-      'RESOURCE_THRESHOLD_CHANGED',
-      'RESOURCE_PRODUCED',
-      'RESOURCE_CONSUMED',
-      'RESOURCE_FLOW_UPDATED',
-      'FLOW_OPTIMIZATION_COMPLETED',
-      'CONVERTER_STATUS_CHANGED',
-    ],
-    updatePriority: 'low', // Lower priority since this is not critical for gameplay
+    eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_FLOW_UPDATED'],
+    updatePriority: 'low',
   });
 
   const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const resourceRates = useResourceRates();
+  const { resourceRates } = useResourceRates(state => ({ resourceRates: state.resourceRates }));
   const { state: thresholdState } = useThreshold();
 
   // Component lifecycle tracking for performance monitoring
@@ -88,8 +87,10 @@ const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSuggestionsP
       const newSuggestions: OptimizationSuggestion[] = [];
 
       // Analyze resource rates for negative trends
-      Object.entries(resourceRates).forEach(([type, rate]) => {
-        const resourceType = type as ResourceType;
+      Object.entries(resourceRates).forEach(([typeKey, rateDetail]) => {
+        const resourceType = typeKey as ResourceType;
+        // Type assertion for rateDetail to access the net property
+        const rate = (rateDetail as ResourceRateDetail).net;
 
         // Only include suggestions for the focused resource if specified
         if (focusedResource && resourceType !== focusedResource) {
@@ -114,14 +115,14 @@ const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSuggestionsP
         // Check for extremely high positive rates (potential waste)
         if (
           rate > 20 &&
-          thresholdState?.resources[resourceType]?.value >
-            0.9 * (thresholdState?.resources[resourceType]?.max || 1000)
+          thresholdState?.resources[resourceType]?.currentAmount >
+            0.9 * (thresholdState?.resources[resourceType]?.maxCapacity || 1000)
         ) {
           newSuggestions.push({
-            id: `excess-production-${resourceType}-${Date.now()}`,
+            id: `excess-rate-${resourceType}-${Date.now()}`,
             resourceType,
             title: `Excess ${resourceType} production`,
-            description: `You're producing more ${resourceType} than you can store, leading to waste.`,
+            description: `You're producing more ${resourceType} than you can store, which may lead to waste.`,
             impact: 'medium',
             category: 'efficiency',
             actionable: true,
@@ -134,8 +135,8 @@ const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSuggestionsP
         if (
           rate > 0 &&
           rate < 3 &&
-          thresholdState?.resources[resourceType]?.value >
-            0.6 * (thresholdState?.resources[resourceType]?.max || 1000)
+          thresholdState?.resources[resourceType]?.currentAmount >
+            0.6 * (thresholdState?.resources[resourceType]?.maxCapacity || 1000)
         ) {
           newSuggestions.push({
             id: `underutilized-${resourceType}-${Date.now()}`,
@@ -155,14 +156,13 @@ const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSuggestionsP
       newSuggestions.push({
         id: `balance-production-${Date.now()}`,
         resourceType: 'all',
-        title: 'Balance production chains',
-        description:
-          'Your production chains could be more balanced to improve overall resource utilization.',
+        title: 'Balance resource production',
+        description: 'Balancing production across all resources could improve overall efficiency.',
         impact: 'medium',
-        category: 'efficiency',
+        category: 'allocation',
         actionable: true,
         implemented: false,
-        suggestedAction: 'Adjust converter ratios to match input/output rates',
+        suggestedAction: 'Run production balancing algorithm',
       });
 
       newSuggestions.push({
@@ -179,13 +179,13 @@ const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSuggestionsP
 
       // Add prediction-based suggestions
       // Safe access to mineralsRate and energyRate
-      const mineralRate = resourceRates.minerals !== undefined ? resourceRates.minerals : 0;
-      const energyRate = resourceRates.energy !== undefined ? resourceRates.energy : 0;
+      const mineralRate = (resourceRates[ResourceType.MINERALS] as ResourceRateDetail)?.net ?? 0;
+      const energyRate = (resourceRates[ResourceType.ENERGY] as ResourceRateDetail)?.net ?? 0;
 
       if (mineralRate < 5 && energyRate > 10) {
         newSuggestions.push({
           id: `reallocate-energy-${Date.now()}`,
-          resourceType: 'minerals',
+          resourceType: ResourceType.MINERALS,
           title: 'Reallocate energy to mining',
           description: 'You have excess energy that could be used to boost mineral production.',
           impact: 'medium',

@@ -1,4 +1,4 @@
-import { Box, Chip, Divider, List, ListItem, Typography } from '@mui/material';
+import { Chip, Divider, List, ListItem, Typography } from '@mui/material';
 import React from 'react';
 import { AnalysisConfig, AnalysisResult } from '../../types/exploration/DataAnalysisTypes';
 
@@ -8,12 +8,22 @@ interface ResultsPanelProps {
   onSelectResult: (result: AnalysisResult) => void;
 }
 
+/**
+ * Utility function to determine the status color for a result
+ * Using underscore prefix to indicate it's a private function
+ */
+const _getStatusColor = (status: string): 'success' | 'error' | 'primary' => {
+  if (status === 'completed') return 'success';
+  if (status === 'failed') return 'error';
+  return 'primary';
+};
+
 const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, configs, onSelectResult }) => {
   // Sort results by start time (newest first)
   const sortedResults = [...results].sort((a, b) => b.startTime - a.startTime);
 
   return (
-    <Box>
+    <div className="results-panel">
       {sortedResults.length === 0 ? (
         <Typography variant="body2" color="text.secondary" align="center">
           No analysis results available. Run an analysis to see results here.
@@ -35,32 +45,22 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, configs, onSelectR
                     p: 2,
                   }}
                 >
-                  <Box
-                    sx={{ display: 'flex', width: '100%', justifyContent: 'space-between', mb: 1 }}
-                  >
+                  <div className="mb-1 flex w-full justify-between">
                     <Typography variant="subtitle2">
                       {config ? config.name : 'Unknown Analysis'}
                     </Typography>
                     <Chip
                       label={result.status}
-                      color={
-                        result.status === 'completed'
-                          ? 'success'
-                          : result.status === 'failed'
-                            ? 'error'
-                            : 'primary'
-                      }
+                      color={_getStatusColor(result.status)}
                       size="small"
                     />
-                  </Box>
+                  </div>
 
                   <Typography variant="body2" color="text.secondary">
                     {config?.type || 'Unknown Type'} analysis
                   </Typography>
 
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mt: 1 }}
-                  >
+                  <div className="mt-1 flex w-full justify-between">
                     <Typography variant="caption" color="text.secondary">
                       Started: {new Date(result.startTime).toLocaleString()}
                     </Typography>
@@ -69,7 +69,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, configs, onSelectR
                         Duration: {((result.endTime - result.startTime) / 1000).toFixed(2)}s
                       </Typography>
                     )}
-                  </Box>
+                  </div>
 
                   {result.summary && (
                     <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
@@ -83,7 +83,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, configs, onSelectR
           })}
         </List>
       )}
-    </Box>
+    </div>
   );
 };
 

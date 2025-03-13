@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   DataPoint,
   EasingFunction,
+  Particle,
   ParticleBlendMode,
   ParticlePath,
   ParticleSystem,
@@ -334,7 +335,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
 
     // Start animation loop
     const renderLoop = (timestamp: number) => {
-      const deltaTime = timestamp - lastFrameTimeRef.current;
+      const _deltaTime = timestamp - lastFrameTimeRef.current;
       lastFrameTimeRef.current = timestamp;
 
       renderFrame();
@@ -375,7 +376,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
 
   // Canvas rendering
   const renderCanvasFrame = useCallback(
-    (particles: any[]) => {
+    (particles: Particle[]) => {
       if (!canvasRef.current) return;
 
       const canvas = canvasRef.current;
@@ -429,7 +430,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
 
   // SVG rendering
   const renderSvgFrame = useCallback(
-    (particles: any[]) => {
+    (particles: Particle[]) => {
       const particleElements: JSX.Element[] = particles.map(particle => {
         // Prepare trail if enabled
         let trail: JSX.Element | null = null;
@@ -444,7 +445,9 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
               stroke={particle.color}
               strokeWidth={particle.size * 0.7}
               strokeOpacity={particle.opacity * 0.5}
-              style={{ mixBlendMode: blendMode.toLowerCase() }}
+              style={{
+                mixBlendMode: blendMode.toLowerCase() as React.CSSProperties['mixBlendMode'],
+              }}
             />
           );
         }
@@ -458,7 +461,9 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
               r={particle.size / 2}
               fill={particle.color}
               fillOpacity={particle.opacity}
-              style={{ mixBlendMode: blendMode.toLowerCase() }}
+              style={{
+                mixBlendMode: blendMode.toLowerCase() as React.CSSProperties['mixBlendMode'],
+              }}
             />
           </React.Fragment>
         );
@@ -471,7 +476,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
 
   // DOM rendering
   const renderDomFrame = useCallback(
-    (particles: any[]) => {
+    (particles: Particle[]) => {
       const particleElements: JSX.Element[] = particles.map(particle => (
         <div
           key={particle.id}
@@ -485,7 +490,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
             backgroundColor: particle.color,
             opacity: particle.opacity,
             transform: 'translate(-50%, -50%)',
-            mixBlendMode: blendMode.toLowerCase(),
+            mixBlendMode: blendMode.toLowerCase() as React.CSSProperties['mixBlendMode'],
             transition: 'none',
             pointerEvents: 'none',
           }}

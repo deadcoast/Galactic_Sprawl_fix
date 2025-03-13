@@ -16,7 +16,7 @@ import {
 import { memoizedD3Accessors } from '../../../utils/performance/D3PerformanceProfiler';
 
 // Interface for flow diagram nodes
-interface FlowNode extends SimulationNodeDatum {
+export interface FlowNode extends SimulationNodeDatum {
   id: string;
   name: string;
   type: 'source' | 'processor' | 'sink';
@@ -25,7 +25,7 @@ interface FlowNode extends SimulationNodeDatum {
 }
 
 // Interface for flow diagram links
-interface FlowLink {
+export interface FlowLink {
   id: string;
   source: string;
   target: string;
@@ -34,7 +34,7 @@ interface FlowLink {
 }
 
 // Flow data structure
-interface FlowData {
+export interface FlowData {
   nodes: FlowNode[];
   links: FlowLink[];
 }
@@ -193,14 +193,19 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
       .selectAll('g')
       .data(nodes)
       .enter()
-      .append('g')
-      .call(
-        d3
-          .drag<SVGGElement, d3.SimulationNodeDatum>()
-          .on('start', dragStarted)
-          .on('drag', dragging)
-          .on('end', dragEnded)
-      );
+      .append('g');
+
+    // Apply drag behavior with type assertion to avoid type errors
+    const dragBehavior = d3
+      .drag<SVGGElement, d3.SimulationNodeDatum>()
+      .on('start', dragStarted)
+      .on('drag', dragging)
+      .on('end', dragEnded);
+
+    // Use a more specific type assertion to bypass the complex type checking
+    (node as d3.Selection<SVGGElement, FlowNode, SVGGElement, unknown>).call(
+      dragBehavior as unknown as d3.DragBehavior<SVGGElement, FlowNode, unknown>
+    );
 
     // Add circles to nodes
     node

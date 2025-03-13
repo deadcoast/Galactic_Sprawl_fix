@@ -115,6 +115,13 @@ export enum EventType {
   SYSTEM_STARTUP = 'SYSTEM_STARTUP',
   SYSTEM_SHUTDOWN = 'SYSTEM_SHUTDOWN',
   SYSTEM_ALERT = 'SYSTEM_ALERT',
+
+  // Game manager events
+  GAME_STARTED = 'GAME_STARTED',
+  GAME_PAUSED = 'GAME_PAUSED',
+  GAME_RESUMED = 'GAME_RESUMED',
+  GAME_STOPPED = 'GAME_STOPPED',
+  TIME_UPDATED = 'TIME_UPDATED',
 }
 
 /**
@@ -201,6 +208,13 @@ export const EVENT_CATEGORY_MAP: Record<EventType, EventCategory> = {
   [EventType.SYSTEM_STARTUP]: EventCategory.SYSTEM,
   [EventType.SYSTEM_SHUTDOWN]: EventCategory.SYSTEM,
   [EventType.SYSTEM_ALERT]: EventCategory.SYSTEM,
+
+  // Game manager events
+  [EventType.GAME_STARTED]: EventCategory.SYSTEM,
+  [EventType.GAME_PAUSED]: EventCategory.SYSTEM,
+  [EventType.GAME_RESUMED]: EventCategory.SYSTEM,
+  [EventType.GAME_STOPPED]: EventCategory.SYSTEM,
+  [EventType.TIME_UPDATED]: EventCategory.SYSTEM,
 };
 
 /**
@@ -212,6 +226,7 @@ export interface BaseEvent {
   moduleId: string;
   moduleType: ModuleType;
   data?: Record<string, unknown>;
+  [key: string]: unknown; // Add index signature for compatibility with UnifiedEventSystem.BaseEvent
 }
 
 /**

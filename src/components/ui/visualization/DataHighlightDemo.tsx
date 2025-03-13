@@ -165,6 +165,7 @@ export const DataHighlightDemo: React.FC<DataHighlightDemoProps> = ({
         '#cc00cc',
         '#ff00ff',
       ],
+      [DataVisualizationShaderType.CUSTOM]: ['#444444', '#777777', '#aaaaaa', '#dddddd', '#ffffff'],
     }),
     []
   );

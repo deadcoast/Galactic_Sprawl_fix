@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Beaker, Database, Info, Users, Zap } from 'lucide-react';
 import { useRef } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGameState } from '../../contexts/GameContext';
 import { useTooltipContext } from './tooltip-context';
 
 interface ResourceDisplayProps {
@@ -247,11 +247,8 @@ function ResourceDisplay({ type, value, rate, capacity, thresholds }: ResourceDi
 }
 
 export function ResourceVisualization() {
-  const { state } = useGame();
-
-  // Get the resources and rates from the game state
-  const resources = state.resources;
-  const resourceRates = state.resourceRates;
+  const resources = useGameState(state => state.resources);
+  const resourceRates = useGameState(state => state.resourceRates);
 
   // Set up thresholds based on resource types - these could come from a config or context
   const resourceThresholds = {

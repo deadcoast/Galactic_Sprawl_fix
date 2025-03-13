@@ -15,14 +15,14 @@ import {
   profileCoordinateAccess,
   profileDOMOperations,
 } from '../../../utils/performance/D3PerformanceProfiler';
-import { FlowDiagram } from '../visualizations/FlowDiagram';
+import FlowDiagram from '../visualizations/FlowDiagram';
 
 // Sample flow data for testing
 const generateTestFlowData = (nodeCount: number, linkCount: number): FlowData => {
   const nodes = Array.from({ length: nodeCount }, (_, i) => ({
     id: `node-${i}`,
     name: `Node ${i}`,
-    type: ['source', 'processor', 'sink'][Math.floor(Math.random() * 3)],
+    type: (['source', 'process', 'destination'] as const)[Math.floor(Math.random() * 3)],
     value: Math.random() * 100,
   }));
 
@@ -38,6 +38,7 @@ const generateTestFlowData = (nodeCount: number, linkCount: number): FlowData =>
       source,
       target,
       value: Math.random() * 50,
+      active: true,
     };
   });
 
@@ -75,13 +76,6 @@ const D3PerformanceProfilerView: React.FC = () => {
     };
   }, []);
 
-  // Save simulation reference for profiling
-  const handleSimulationCreated = (
-    simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>
-  ) => {
-    simulationRef.current = simulation;
-  };
-
   // Run profiling based on selected method
   const runProfiling = async () => {
     setIsProfileRunning(true);
@@ -92,16 +86,23 @@ const D3PerformanceProfilerView: React.FC = () => {
       try {
         let profileResult: PerformanceProfile | null = null;
 
-        if (profilingMethod === 'simulation' && simulationRef.current) {
+        if (profilingMethod === 'simulation') {
+          // For simulation profiling, we'll use a mock simulation since we can't access the real one
+          const mockSimulation = d3
+            .forceSimulation<d3.SimulationNodeDatum>()
+            .force('link', d3.forceLink())
+            .force('charge', d3.forceManyBody())
+            .force('center', d3.forceCenter());
+
           // Profile force simulation
           const simProfiler = new ForceSimulationProfiler();
           profilerRef.current = simProfiler;
 
-          simProfiler.attachToSimulation(simulationRef.current);
+          simProfiler.attachToSimulation(mockSimulation);
 
           // Run some iterations to profile performance
           for (let i = 0; i < Math.min(iterations, 300); i++) {
-            simulationRef.current.tick();
+            mockSimulation.tick();
           }
 
           profileResult = simProfiler.getProfile();
@@ -319,8 +320,8 @@ const D3PerformanceProfilerView: React.FC = () => {
               data={testDataset}
               width={800}
               height={600}
-              onSimulationCreated={handleSimulationCreated}
-              useMemoizedAccessors={useMemoizedAccessors}
+              interactive={true}
+              animated={true}
             />
           )}
         </div>

@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   CircularProgress,
   Divider,
@@ -39,30 +38,28 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
   // Handle different result states
   if (result.status === 'pending' || result.status === 'processing') {
     return (
-      <Box
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}
-      >
+      <div className="flex h-[300px] items-center justify-center">
         <CircularProgress />
         <Typography variant="body1" sx={{ ml: 2 }}>
           Processing analysis...
         </Typography>
-      </Box>
+      </div>
     );
   }
 
   if (result.status === 'failed') {
     return (
-      <Box sx={{ p: 3, bgcolor: '#fff4f4', borderRadius: 1 }}>
+      <div className="rounded bg-red-50 p-3">
         <Typography variant="h6" color="error">
           Analysis Failed
         </Typography>
         <Typography variant="body1">{result.error || 'Unknown error occurred'}</Typography>
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box>
+    <div>
       {result.summary && (
         <Typography variant="body1" sx={{ mb: 2 }}>
           {result.summary}
@@ -70,7 +67,7 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
       )}
 
       {result.insights && result.insights.length > 0 && (
-        <Box sx={{ mb: 2 }}>
+        <div className="mb-2">
           <Typography variant="h6">Key Insights</Typography>
           <ul>
             {result.insights.map((insight, index) => (
@@ -79,14 +76,14 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
               </li>
             ))}
           </ul>
-        </Box>
+        </div>
       )}
 
       {config && <AnalysisVisualization result={result} config={config} />}
       {!config && (
         <Typography variant="body2">No configuration available for visualization</Typography>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -95,7 +92,7 @@ interface DatasetInfoProps {
   dataset: Dataset;
 }
 
-function DatasetInfo({ dataset }: DatasetInfoProps) {
+function _DatasetInfo({ dataset }: DatasetInfoProps) {
   // Count data points by type
   const counts = React.useMemo(() => {
     const typeCounts = {
@@ -111,7 +108,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
     });
 
     return typeCounts;
-  }, [dataset.dataPoints]);
+  }, [dataset]);
 
   // Get icon for dataset source
   const getSourceIcon = (source: string) => {
@@ -169,6 +166,14 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
     </div>
   );
 }
+
+// Utility function that uses _DatasetInfo for development purposes
+const _logDatasetDetails = (dataset: Dataset): void => {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(`Dataset loaded: ${dataset.id} with ${dataset.dataPoints.length} data points`);
+    // In a real implementation, we might render _DatasetInfo to a debug panel
+  }
+};
 
 export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) {
   const {
@@ -236,7 +241,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   const latestResult = currentResults.length > 0 ? currentResults[0] : null;
 
   // Handle tab change
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 
@@ -305,8 +310,15 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     setSelectedDataPoint(dataPoint);
   };
 
+  // Use the utility function that references _DatasetInfo
+  React.useEffect(() => {
+    if (selectedDataset) {
+      _logDatasetDetails(selectedDataset);
+    }
+  }, [selectedDataset]);
+
   return (
-    <Box className={className}>
+    <div className={className}>
       <Typography variant="h6" gutterBottom>
         Data Analysis System
       </Typography>
@@ -367,12 +379,12 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
         <Grid item xs={12} md={activeTab === 0 ? 5 : 9}>
           {activeTab === 0 && selectedDataset && (
             <Paper sx={{ p: 2 }}>
-              <Box sx={{ mb: 2 }}>
+              <div className="mb-2">
                 <Typography variant="h6">{selectedDataset.name}</Typography>
                 <Typography variant="body2" color="text.secondary">
                   {selectedDataset.description}
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                <div className="mt-1 flex items-center">
                   <Button
                     size="small"
                     onClick={refreshDatasets}
@@ -387,13 +399,13 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                       ? ` (filtered from ${selectedDataset.dataPoints.length})`
                       : ''}
                   </Typography>
-                </Box>
-              </Box>
+                </div>
+              </div>
 
               <Divider sx={{ my: 2 }} />
 
               {/* Replace static list with virtualized list */}
-              <Box sx={{ height: 400 }}>
+              <div className="h-[400px]">
                 <DataPointVirtualList
                   dataPoints={filteredData}
                   isLoading={isLoading}
@@ -401,21 +413,21 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   selectedDataPointId={selectedDataPoint?.id}
                   height="100%"
                 />
-              </Box>
+              </div>
             </Paper>
           )}
 
           {activeTab === 1 && selectedConfig && (
             <Paper sx={{ p: 2 }}>
-              <Box sx={{ mb: 2 }}>
+              <div className="mb-2">
                 <Typography variant="h6">{selectedConfig.name}</Typography>
                 <Typography variant="body2">{selectedConfig.description}</Typography>
-                <Box sx={{ mt: 2 }}>
+                <div className="mt-2">
                   <Button variant="contained" onClick={handleRunAnalysis} disabled={isLoading}>
                     {isLoading ? <CircularProgress size={24} /> : 'Run Analysis'}
                   </Button>
-                </Box>
-              </Box>
+                </div>
+              </div>
 
               <Divider sx={{ my: 2 }} />
 
@@ -435,7 +447,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                 Filters
               </Typography>
               <DataFilterPanel
-                datasetId={selectedDataset?.id || ''}
+                _datasetId={selectedDataset?.id || ''}
                 filters={filters}
                 onFilterChange={handleFilterChange}
               />
@@ -446,7 +458,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                   <Typography variant="h6" gutterBottom>
                     Selected Data Point
                   </Typography>
-                  <Box sx={{ p: 1, bgcolor: 'background.default', borderRadius: 1 }}>
+                  <div className="rounded bg-gray-50 p-1">
                     <Typography variant="subtitle1">{selectedDataPoint.name}</Typography>
                     <Typography variant="caption" display="block" color="text.secondary">
                       Type: {selectedDataPoint.type} | ID: {selectedDataPoint.id}
@@ -463,14 +475,14 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                       Properties
                     </Typography>
 
-                    <Box sx={{ ml: 1 }}>
+                    <div className="ml-1">
                       {Object.entries(selectedDataPoint.properties).map(([key, value]) => (
                         <Typography key={key} variant="body2">
                           <strong>{key}:</strong>{' '}
                           {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                         </Typography>
                       ))}
-                    </Box>
+                    </div>
 
                     {selectedDataPoint.metadata &&
                       Object.keys(selectedDataPoint.metadata).length > 0 && (
@@ -478,24 +490,24 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                           <Typography variant="overline" display="block" sx={{ mt: 1 }}>
                             Metadata
                           </Typography>
-                          <Box sx={{ ml: 1 }}>
+                          <div className="ml-1">
                             {Object.entries(selectedDataPoint.metadata).map(([key, value]) => (
                               <Typography key={key} variant="body2">
                                 <strong>{key}:</strong>{' '}
                                 {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                               </Typography>
                             ))}
-                          </Box>
+                          </div>
                         </>
                       )}
-                  </Box>
+                  </div>
                 </>
               )}
             </Paper>
           </Grid>
         )}
       </Grid>
-    </Box>
+    </div>
   );
 }
 

@@ -58,7 +58,7 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 }) => {
   // References
   const containerRef = useRef<HTMLDivElement>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
   const simulationRef = useRef<d3.Simulation<Node, undefined> | null>(null);
 
   // State
@@ -83,10 +83,17 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
     d3.select(containerRef.current).selectAll('svg').remove();
 
     // Create SVG with type-safe builder
-    const svgBuilder = createSvg(d3.select(containerRef.current), width, height);
+    const parentSelection = d3.select(containerRef.current) as unknown as d3.Selection<
+      HTMLElement,
+      unknown,
+      HTMLElement,
+      unknown
+    >;
+    const svgBuilder = createSvg(parentSelection, width, height);
 
     const svg = svgBuilder.selection;
-    svgRef.current = svg.node() as SVGSVGElement;
+    // Store the SVG element in the ref
+    svgRef.current = svg.node();
 
     // Create defs and marker for arrows
     const defs = createDefs(svg);
@@ -185,12 +192,12 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
     const dragBehavior = createSimulationDragBehavior<Node, SVGGElement>(simulation, {
       onDragStart: event => {
         // Select node on drag start
-        setSelectedNodeId(event.subject.id);
+        setSelectedNodeId((event.subject as Node).id);
       },
     });
 
     // Apply drag behavior to nodes
-    node.call(dragBehavior as any);
+    node.call(dragBehavior as d3.DragBehavior<SVGGElement, Node, object>);
 
     // Create type-safe zoom behavior
     const zoomBehavior = createSvgZoomBehavior<SVGSVGElement>({
@@ -354,7 +361,14 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
     svg
       .transition()
       .duration(750)
-      .call(zoom.transform as any, transform);
+      .call(
+        // Use a type assertion that matches what d3 expects for transitions
+        zoom.transform as unknown as (
+          selection: d3.Transition<SVGSVGElement, unknown, null, undefined>,
+          transform: d3.ZoomTransform
+        ) => void,
+        transform
+      );
   };
 
   return (

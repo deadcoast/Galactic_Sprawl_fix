@@ -162,7 +162,7 @@ const configManager = createConfigManager({
 
 // Initialize the config manager
 categories.forEach(category => configManager.registerCategory(category));
-configItems.forEach(item => configManager.registerConfig(item));
+configManager.registerConfigs(configItems);
 featureFlags.forEach(flag => configManager.registerFeature(flag));
 
 // User roles for demo

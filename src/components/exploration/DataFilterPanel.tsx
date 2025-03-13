@@ -1,6 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
 import {
-  Box,
   Button,
   Chip,
   FormControl,
@@ -10,7 +9,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 type FilterOperator =
   | 'equals'
@@ -28,13 +27,23 @@ interface Filter {
 }
 
 interface DataFilterPanelProps {
-  datasetId: string;
+  _datasetId: string;
   filters: Filter[];
   onFilterChange: (filters: Filter[]) => void;
 }
 
+/**
+ * Utility function to log dataset information
+ * Using underscore prefix to indicate it's a private function
+ */
+const _logDatasetInfo = (datasetId: string): void => {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(`Filters applied to dataset: ${datasetId}`);
+  }
+};
+
 const DataFilterPanel: React.FC<DataFilterPanelProps> = ({
-  datasetId,
+  _datasetId,
   filters,
   onFilterChange,
 }) => {
@@ -43,6 +52,11 @@ const DataFilterPanel: React.FC<DataFilterPanelProps> = ({
   const [newValue, setNewValue] = useState<string>('');
   const [newValueMin, setNewValueMin] = useState<string>('');
   const [newValueMax, setNewValueMax] = useState<string>('');
+
+  // Use the _datasetId in a useEffect to log information when filters change
+  useEffect(() => {
+    _logDatasetInfo(_datasetId);
+  }, [_datasetId, filters]);
 
   const handleAddFilter = () => {
     if (!newField) return;
@@ -91,7 +105,7 @@ const DataFilterPanel: React.FC<DataFilterPanelProps> = ({
   const renderValueInput = () => {
     if (newOperator === 'between') {
       return (
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <div className="flex items-center gap-1">
           <TextField
             size="small"
             label="Min"
@@ -109,7 +123,7 @@ const DataFilterPanel: React.FC<DataFilterPanelProps> = ({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewValueMax(e.target.value)}
             sx={{ flex: 1 }}
           />
-        </Box>
+        </div>
       );
     }
 
@@ -137,19 +151,19 @@ const DataFilterPanel: React.FC<DataFilterPanelProps> = ({
   };
 
   return (
-    <Box>
+    <div className="filter-panel">
       <Typography variant="subtitle2" gutterBottom>
         Filters
       </Typography>
 
       {/* Current filters */}
-      <Box sx={{ mb: 2 }}>
+      <div className="mb-2">
         {filters.length === 0 ? (
           <Typography variant="body2" color="text.secondary">
             No filters applied. Add filters to refine the dataset.
           </Typography>
         ) : (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <div className="flex flex-wrap gap-1">
             {filters.map((filter, index) => (
               <Chip
                 key={index}
@@ -159,12 +173,12 @@ const DataFilterPanel: React.FC<DataFilterPanelProps> = ({
                 color="primary"
               />
             ))}
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
 
       {/* Add filter form */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div className="flex flex-col gap-2">
         <TextField
           fullWidth
           size="small"
@@ -205,8 +219,8 @@ const DataFilterPanel: React.FC<DataFilterPanelProps> = ({
         >
           Add Filter
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 

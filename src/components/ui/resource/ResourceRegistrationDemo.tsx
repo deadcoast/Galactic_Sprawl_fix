@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { moduleEventBus, ModuleEventType } from '../../../lib/modules/ModuleEvents';
-import { componentRegistry } from '../../../services/ComponentRegistryService';
+import {
+  ComponentRegistration,
+  componentRegistryService,
+} from '../../../services/ComponentRegistryService';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { ResourceDisplay } from './ResourceDisplay';
 
@@ -48,18 +51,26 @@ export const ResourceRegistrationDemo: React.FC = () => {
 
   // Function to update registry info
   const updateRegistryInfo = () => {
-    const components = componentRegistry.getAllComponents();
+    // Get components of all types we're interested in
+    const components = [
+      ...componentRegistryService.getComponentsByType('ResourceDisplay'),
+      ...componentRegistryService.getComponentsByType('ResourceThresholdVisualization'),
+      ...componentRegistryService.getComponentsByType('ResourceFlowDiagram'),
+      ...componentRegistryService.getComponentsByType('ResourceRegistrationDemo'),
+    ];
 
     // Count event subscriptions
     const eventSubs: Record<string, number> = {};
-    components.forEach(comp => {
-      comp.eventSubscriptions.forEach(eventType => {
+    components.forEach((comp: ComponentRegistration) => {
+      comp.eventSubscriptions.forEach((eventType: string) => {
         eventSubs[eventType] = (eventSubs[eventType] || 0) + 1;
       });
     });
 
     // Calculate component types
-    const compTypes = Array.from(new Set(components.map(c => c.type)));
+    const compTypes = Array.from(
+      new Set(components.map((c: ComponentRegistration) => c.type))
+    ) as string[];
 
     setRegistryInfo({
       totalComponents: components.length,

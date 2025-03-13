@@ -1,5 +1,4 @@
 import {
-  Box,
   Paper,
   Table,
   TableBody,
@@ -259,6 +258,7 @@ export const VirtualizedDataTable = React.memo(
 
     // Handle empty data case
     if (!data.length) {
+      // Use style prop instead of sx to avoid complex union type
       return (
         <Paper sx={{ width: '100%', overflow: 'hidden' }} className={className}>
           {title && (
@@ -266,8 +266,8 @@ export const VirtualizedDataTable = React.memo(
               {title}
             </Typography>
           )}
-          <Box
-            sx={{
+          <div
+            style={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
@@ -277,7 +277,7 @@ export const VirtualizedDataTable = React.memo(
             <Typography variant="body2" color="text.secondary">
               No data to display
             </Typography>
-          </Box>
+          </div>
         </Paper>
       );
     }

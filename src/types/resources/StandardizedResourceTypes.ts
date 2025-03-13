@@ -17,6 +17,13 @@ export enum ResourceType {
   ANTIMATTER = 'ANTIMATTER',
   DARK_MATTER = 'DARK_MATTER',
   EXOTIC_MATTER = 'EXOTIC_MATTER',
+  POPULATION = 'POPULATION',
+  RESEARCH = 'RESEARCH',
+  PLASMA = 'PLASMA',
+  GAS = 'GAS',
+  EXOTIC = 'EXOTIC',
+  MINERALS = 'MINERALS',
+  ENERGY = 'ENERGY',
 }
 
 /**
@@ -96,6 +103,57 @@ export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
     displayName: 'Uranium',
     description: 'Basic building material',
     icon: 'uranium-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.WATER]: {
+    id: ResourceType.WATER,
+    displayName: 'Water',
+    description: 'Essential resource for life support',
+    icon: 'water-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.HELIUM]: {
+    id: ResourceType.HELIUM,
+    displayName: 'Helium',
+    description: 'Used for advanced propulsion',
+    icon: 'helium-icon',
+    category: ResourceCategory.ADVANCED,
+    defaultMax: 500,
+  },
+  [ResourceType.DEUTERIUM]: {
+    id: ResourceType.DEUTERIUM,
+    displayName: 'Deuterium',
+    description: 'Fuel for fusion reactors',
+    icon: 'deuterium-icon',
+    category: ResourceCategory.ADVANCED,
+    defaultMax: 500,
+  },
+  [ResourceType.ANTIMATTER]: {
+    id: ResourceType.ANTIMATTER,
+    displayName: 'Antimatter',
+    description: 'Extremely powerful energy source',
+    icon: 'antimatter-icon',
+    category: ResourceCategory.SPECIAL,
+    defaultMax: 100,
+  },
+  [ResourceType.DARK_MATTER]: {
+    id: ResourceType.DARK_MATTER,
+    displayName: 'Dark Matter',
+    description: 'Exotic material with unique properties',
+    icon: 'dark-matter-icon',
+    category: ResourceCategory.SPECIAL,
+    defaultMax: 50,
+  },
+  [ResourceType.EXOTIC_MATTER]: {
+    id: ResourceType.EXOTIC_MATTER,
+    displayName: 'Exotic Matter',
+    description: 'Rare material with extraordinary properties',
+    icon: 'exotic-matter-icon',
+    category: ResourceCategory.SPECIAL,
+    defaultMax: 25,
+  },
   [ResourceType.POPULATION]: {
     id: ResourceType.POPULATION,
     displayName: 'Population',
@@ -135,6 +193,22 @@ export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
     icon: 'exotic-icon',
     category: ResourceCategory.SPECIAL,
     defaultMax: 250,
+  },
+  [ResourceType.MINERALS]: {
+    id: ResourceType.MINERALS,
+    displayName: 'Minerals',
+    description: 'Basic building materials',
+    icon: 'minerals-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.ENERGY]: {
+    id: ResourceType.ENERGY,
+    displayName: 'Energy',
+    description: 'Essential resource for various systems',
+    icon: 'energy-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
   },
 };
 
@@ -482,6 +556,7 @@ export interface ConverterNodeConfig {
   efficiencyModifiers?: Record<string, number>;
   tier?: 1 | 2 | 3;
   chainBonus?: number;
+  type?: string;
 }
 
 /**

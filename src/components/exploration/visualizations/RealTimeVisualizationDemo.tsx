@@ -1,132 +1,109 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useGeneratedDataStream, useMultiSeriesDataStream } from '../../../hooks/useRealTimeData';
-import { RealTimeDataService } from '../../../services/RealTimeDataService';
+import { useRealTimeData } from '../../../hooks/useRealTimeData';
+import { ChartDataRecord } from '../../../types/exploration/AnalysisComponentTypes';
 import { DataPoint } from '../../../types/exploration/DataAnalysisTypes';
-import { d3Converters } from '../../../types/visualizations/D3Types';
 import { BarChart } from './charts/BarChart';
 import { HeatMap } from './charts/HeatMap';
 import { LineChart } from './charts/LineChart';
 import { ScatterPlot } from './charts/ScatterPlot';
 
 /**
+ * Custom hook for generated data stream
+ */
+function useGeneratedDataStream(bufferId: string, interval: number = 1000) {
+  const { data, isStreaming, startStream, stopStream } = useRealTimeData({
+    bufferId,
+    config: {
+      updateInterval: interval,
+    },
+  });
+
+  return { data, isStreaming, startStream, stopStream };
+}
+
+/**
  * RealTimeVisualizationDemo component for showcasing real-time data visualization
  */
 export function RealTimeVisualizationDemo() {
   const [activeTab, setActiveTab] = useState('time-series');
-  const [dataService] = useState(() => new RealTimeDataService());
   const [updateInterval, setUpdateInterval] = useState(1000);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Create sine wave generators with different parameters
-  const timeSeriesGenerators = useMemo(() => {
-    return {
-      wave1: dataService.createSineWaveGenerator(30, 50, 20, 5),
-      wave2: dataService.createSineWaveGenerator(40, 60, 30, 3),
-      wave3: dataService.createSineWaveGenerator(20, 40, 15, 8),
-    };
-  }, [dataService]);
+  // Use custom hooks for data streams
+  const {
+    data: timeSeriesData,
+    isStreaming: isTimeSeriesStreaming,
+    startStream: startTimeSeriesStream,
+    stopStream: stopTimeSeriesStream,
+  } = useGeneratedDataStream('time-series', updateInterval);
 
-  // Use the multi-series data stream hook for time series data
-  const [timeSeriesData, timeSeriesStreamId, isTimeSeriesActive, timeSeriesError] =
-    useMultiSeriesDataStream(
-      dataService,
-      'time-series',
-      'Real-time Wave Data',
-      timeSeriesGenerators,
-      updateInterval,
-      50 // buffer size
-    );
-
-  // Create a resource data generator for the scatter plot
-  const resourceGenerator = useMemo(() => {
-    return dataService.createExplorationDataGenerator('resource', { x: 50, y: 50 }, 40);
-  }, [dataService]);
-
-  // Use the generated data stream hook for resource data
-  const [resourceData, resourceStreamId, isResourceActive, resourceError] = useGeneratedDataStream(
-    dataService,
-    'resources',
-    'Resource Discovery',
-    resourceGenerator,
-    updateInterval * 2,
-    30 // buffer size
-  );
+  const {
+    data: resourceData,
+    isStreaming: isResourceStreaming,
+    startStream: startResourceStream,
+    stopStream: stopResourceStream,
+  } = useGeneratedDataStream('resources', updateInterval);
 
   // Pause/resume data generation
   useEffect(() => {
     if (isPaused) {
-      if (timeSeriesStreamId) {
-        const stream = dataService.getDataStreams().find(s => s.id === timeSeriesStreamId);
-        if (stream && stream.isActive) {
-          dataService.stopStream(timeSeriesStreamId);
-        }
+      if (isTimeSeriesStreaming) {
+        stopTimeSeriesStream();
       }
-
-      if (resourceStreamId) {
-        const stream = dataService.getDataStreams().find(s => s.id === resourceStreamId);
-        if (stream && stream.isActive) {
-          dataService.stopStream(resourceStreamId);
-        }
+      if (isResourceStreaming) {
+        stopResourceStream();
       }
     } else {
-      if (timeSeriesStreamId) {
-        const stream = dataService.getDataStreams().find(s => s.id === timeSeriesStreamId);
-        if (stream && !stream.isActive) {
-          dataService.startStream(timeSeriesStreamId);
-        }
+      if (!isTimeSeriesStreaming) {
+        startTimeSeriesStream();
       }
-
-      if (resourceStreamId) {
-        const stream = dataService.getDataStreams().find(s => s.id === resourceStreamId);
-        if (stream && !stream.isActive) {
-          dataService.startStream(resourceStreamId);
-        }
+      if (!isResourceStreaming) {
+        startResourceStream();
       }
     }
-  }, [isPaused, dataService, timeSeriesStreamId, resourceStreamId]);
+  }, [
+    isPaused,
+    isTimeSeriesStreaming,
+    isResourceStreaming,
+    startTimeSeriesStream,
+    startResourceStream,
+    stopTimeSeriesStream,
+    stopResourceStream,
+  ]);
 
   // Format time series data for the line chart
   const formattedTimeSeriesData = useMemo(() => {
-    return timeSeriesData.map(dataPoint => ({
+    return (timeSeriesData as DataPoint[]).map((dataPoint: DataPoint) => ({
       ...dataPoint,
       // Format the timestamp as a date string for display
-      formattedTime: new Date(dataPoint.timestamp).toLocaleTimeString(),
+      date: dataPoint.date ? new Date(dataPoint.date).toLocaleString() : '',
+      // Extract values for the chart
+      value1: dataPoint.properties?.value1 || 0,
+      value2: dataPoint.properties?.value2 || 0,
+      value3: dataPoint.properties?.value3 || 0,
     }));
   }, [timeSeriesData]);
 
-  // Convert resource data to properly typed format for charts
+  // Convert resource data to ChartDataRecord format for HeatMap
   const typedResourceData = useMemo(() => {
-    // Ensure resourceData is treated as DataPoint[] for conversion
-    const dataPoints = resourceData as DataPoint[];
-    return d3Converters.dataPointsToD3Format<Record<string, unknown>>(dataPoints);
-  }, [resourceData]);
-
-  // Extract quality and quantity data for the bar chart
-  const resourceQualityData = useMemo(() => {
-    // Group resources by type and calculate average quality
-    const typeGroups: Record<string, { count: number; totalQuality: number }> = {};
-
-    typedResourceData.forEach(resource => {
-      if (resource && typeof resource.type === 'string') {
-        const resourceType = resource.type;
-        if (!typeGroups[resourceType]) {
-          typeGroups[resourceType] = { count: 0, totalQuality: 0 };
+    return (resourceData as Record<string, unknown>[]).map(item => {
+      const chartRecord: ChartDataRecord = {};
+      // Copy properties from the original item
+      Object.entries(item).forEach(([key, value]) => {
+        // Only include properties that match the VisualizationValue type
+        if (
+          typeof value === 'string' ||
+          typeof value === 'number' ||
+          typeof value === 'boolean' ||
+          value === null ||
+          value === undefined
+        ) {
+          chartRecord[key] = value;
         }
-
-        typeGroups[resourceType].count++;
-        if (typeof resource.quality === 'number') {
-          typeGroups[resourceType].totalQuality += resource.quality;
-        }
-      }
+      });
+      return chartRecord;
     });
-
-    // Convert to array format for the bar chart
-    return Object.entries(typeGroups).map(([type, data]) => ({
-      type,
-      averageQuality: data.totalQuality / data.count,
-      count: data.count,
-    }));
-  }, [typedResourceData]);
+  }, [resourceData]);
 
   return (
     <div className="real-time-visualization-demo">
@@ -146,7 +123,7 @@ export function RealTimeVisualizationDemo() {
             value={updateInterval}
             onChange={e => setUpdateInterval(Number(e.target.value))}
             className="rounded border px-2 py-1"
-            disabled={isTimeSeriesActive || isResourceActive}
+            disabled={isTimeSeriesStreaming || isResourceStreaming}
           >
             <option value={200}>200ms (Fast)</option>
             <option value={500}>500ms (Medium)</option>
@@ -196,15 +173,10 @@ export function RealTimeVisualizationDemo() {
               This chart displays simulated sensor readings updated every {updateInterval}ms. Each
               line represents a different sensor.
             </p>
-            {timeSeriesError && (
-              <div className="error-message mb-4 rounded bg-red-100 p-2 text-red-700">
-                Error: {timeSeriesError}
-              </div>
-            )}
             <LineChart
               data={formattedTimeSeriesData}
-              xAxisKey="timestamp"
-              yAxisKeys={['wave1', 'wave2', 'wave3']}
+              xAxisKey="date"
+              yAxisKeys={['value1', 'value2', 'value3']}
               dateFormat={true}
               title="Real-Time Sensor Readings"
             />
@@ -219,32 +191,25 @@ export function RealTimeVisualizationDemo() {
               quality.
             </p>
             <BarChart
-              data={resourceQualityData}
+              data={typedResourceData}
               xAxisKey="type"
-              yAxisKeys={['averageQuality', 'count']}
-              title="Resource Types and Quality"
+              yAxisKeys={['amount']}
+              title="Resource Types and Quantity"
             />
           </>
         )}
 
         {activeTab === 'scatter-plot' && (
           <>
-            <h3 className="mb-2 text-lg font-semibold">Resource Quality vs Quantity</h3>
+            <h3 className="mb-2 text-lg font-semibold">Resource Distribution</h3>
             <p className="mb-4">
               This scatter plot shows the relationship between resource quantity and quality.
             </p>
-            {resourceError && (
-              <div className="error-message mb-4 rounded bg-red-100 p-2 text-red-700">
-                Error: {resourceError}
-              </div>
-            )}
             <ScatterPlot
               data={typedResourceData}
-              xAxisKey="amount"
-              yAxisKey="quality"
-              title="Resource Quantity vs Quality"
-              xAxisLabel="Quantity"
-              yAxisLabel="Quality"
+              xAxisKey="x"
+              yAxisKey="y"
+              title="Resource Distribution"
             />
           </>
         )}
@@ -258,6 +223,8 @@ export function RealTimeVisualizationDemo() {
             <HeatMap
               data={typedResourceData}
               valueKey="amount"
+              xKey="x"
+              yKey="y"
               title="Resource Density"
               cellSize={35}
             />

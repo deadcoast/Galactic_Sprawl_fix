@@ -34,7 +34,6 @@ const AnimationQualityDemo: React.FC<AnimationQualityDemoProps> = ({
 }) => {
   // References
   const visualizationContainerRef = useRef<HTMLDivElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
 
   // State for visualization
   const [nodeCount, setNodeCount] = useState(500);
@@ -44,9 +43,7 @@ const AnimationQualityDemo: React.FC<AnimationQualityDemoProps> = ({
   const [currentSettings, setCurrentSettings] = useState<QualitySettings>(
     animationQualityManager.getCurrentSettings()
   );
-  const [deviceCapabilities, setDeviceCapabilities] = useState(
-    animationQualityManager.getDeviceCapabilities()
-  );
+  const deviceCapabilities = useState(animationQualityManager.getDeviceCapabilities())[0];
   const [performanceState, setPerformanceState] = useState(
     animationQualityManager.getPerformanceState()
   );
@@ -60,13 +57,9 @@ const AnimationQualityDemo: React.FC<AnimationQualityDemoProps> = ({
 
     // Create adaptive visualization
     const container = visualizationContainerRef.current;
-    const svg = createQualityAdaptiveVisualization(
-      container,
-      'quality-demo',
-      (selection, settings) => {
-        setupVisualization(selection, settings);
-      }
-    );
+    createQualityAdaptiveVisualization(container, 'quality-demo', (selection, settings) => {
+      setupVisualization(selection, settings);
+    });
 
     // Update state with current settings
     setCurrentSettings(animationQualityManager.getCurrentSettings());
@@ -111,7 +104,10 @@ const AnimationQualityDemo: React.FC<AnimationQualityDemoProps> = ({
       .force('center', d3.forceCenter(width / 2, (height - 200) / 2))
       .force(
         'collision',
-        d3.forceCollide().radius(d => (d as any).radius)
+        d3.forceCollide().radius(d => {
+          const node = d as { radius: number };
+          return node.radius;
+        })
       );
 
     if (settings.enablePhysics) {
@@ -122,8 +118,10 @@ const AnimationQualityDemo: React.FC<AnimationQualityDemoProps> = ({
     }
 
     // Bind data with quality adjustment (may limit node count)
-    const nodeElements = bindDataWithQualityAdjustment(svgContainer.selectAll('circle'), nodes, d =>
-      d.id.toString()
+    const nodeElements = bindDataWithQualityAdjustment(
+      svgContainer.selectAll('circle') as d3.Selection<Element, unknown, SVGSVGElement, unknown>,
+      nodes,
+      d => d.id.toString()
     );
 
     // Enter new nodes
@@ -263,7 +261,7 @@ const AnimationQualityDemo: React.FC<AnimationQualityDemoProps> = ({
   };
 
   // Update user preference
-  const updateUserPreference = (key: keyof QualitySettings, value: any) => {
+  const updateUserPreference = (key: keyof QualitySettings, value: unknown) => {
     const newOverrides = { ...userOverrides, [key]: value };
     setUserOverrides(newOverrides);
 

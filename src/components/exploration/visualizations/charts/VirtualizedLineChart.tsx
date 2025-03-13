@@ -100,9 +100,6 @@ export interface VirtualizedLineChartProps extends BaseChartProps {
   /** Enables progressive loading of points as user zooms in */
   enableProgressiveLoading?: boolean;
 
-  /** Minimum distance between points before they're combined */
-  minPointDistance?: number;
-
   /** Subtitle to display additional information */
   subtitle?: string;
 }
@@ -138,7 +135,6 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
   errorMessage,
   maxDisplayedPoints = 1000,
   enableProgressiveLoading = true,
-  minPointDistance = 1,
   subtitle,
 }: VirtualizedLineChartProps) {
   // State for tracking visible domain (for zooming/panning)
@@ -150,39 +146,68 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
   // State for tracking the detail level based on zoom
   const [detailLevel, setDetailLevel] = useState<number>(1); // 1 = most downsampled
 
-  // Process and downsample data for the chart
+  // Format the processed data for chart rendering
+  const formatDataForRendering = useCallback(
+    (processedData: ChartDataRecord[]) => {
+      return processedData.map(item => {
+        // Use a type that matches ChartDataRecord's index signature
+        const result = {
+          [xAxisKey]: item[xAxisKey],
+        } as Record<string, VisualizationValue>;
+
+        if (dateFormat && typeof item[xAxisKey] === 'number') {
+          result.formattedDate = new Date(item[xAxisKey] as number).toLocaleDateString();
+        }
+
+        // Extract all y-axis values
+        yAxisKeys.forEach(key => {
+          if (
+            typeof item[key] === 'number' ||
+            typeof item[key] === 'string' ||
+            typeof item[key] === 'boolean' ||
+            item[key] === null ||
+            item[key] === undefined
+          ) {
+            result[key] = item[key] as VisualizationValue;
+          }
+        });
+
+        return result;
+      });
+    },
+    [xAxisKey, yAxisKeys, dateFormat]
+  );
+
+  // Process data for visualization
   const processedData = useMemo(() => {
-    if (!data || data.length === 0) return [];
+    if (!data || data.length === 0) {
+      return [];
+    }
 
-    console.log(`Processing ${data.length} data points`);
+    // Convert data to the expected format
+    const processedData = data.map(item => {
+      // Create a new object with the required structure
+      const record: ChartDataRecord = {};
 
-    // Extract and sort data by x-axis
-    let processedData = [...data].sort((a, b) => {
-      const aValue = Number(a[xAxisKey] || 0);
-      const bValue = Number(b[xAxisKey] || 0);
-      return aValue - bValue;
+      // Copy all properties from the original item
+      Object.entries(item).forEach(([key, value]) => {
+        // Only copy properties that match the VisualizationValue type
+        if (
+          typeof value === 'number' ||
+          typeof value === 'string' ||
+          typeof value === 'boolean' ||
+          value === null ||
+          value === undefined
+        ) {
+          record[key] = value;
+        }
+      });
+
+      return record;
     });
 
-    // Apply visible domain filter if set
-    if (visibleDomain.x) {
-      const [min, max] = visibleDomain.x;
-      processedData = processedData.filter(item => {
-        const xValue = Number(item[xAxisKey] || 0);
-        return xValue >= min && xValue <= max;
-      });
-    }
-
-    // Determine how much to downsample based on number of points
-    let downsampleFactor = 1;
-    if (processedData.length > maxDisplayedPoints) {
-      downsampleFactor = Math.ceil(processedData.length / maxDisplayedPoints);
-      console.log(`Downsampling by factor ${downsampleFactor}`);
-    }
-
-    // Apply adaptive downsampling based on detail level
-    if (enableProgressiveLoading) {
-      downsampleFactor = Math.max(1, Math.ceil(downsampleFactor / detailLevel));
-    }
+    // Calculate how many points to display based on available space
+    const downsampleFactor = Math.ceil(processedData.length / maxDisplayedPoints);
 
     // No downsampling needed
     if (downsampleFactor === 1) {
@@ -200,30 +225,8 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
     detailLevel,
     maxDisplayedPoints,
     enableProgressiveLoading,
+    formatDataForRendering,
   ]);
-
-  // Format the processed data for chart rendering
-  const formatDataForRendering = useCallback(
-    (processedData: ChartDataRecord[]) => {
-      return processedData.map(item => {
-        const result: Record<string, VisualizationValue> = {
-          [xAxisKey]: item[xAxisKey],
-        };
-
-        if (dateFormat && typeof item[xAxisKey] === 'number') {
-          result.formattedDate = new Date(item[xAxisKey] as number).toLocaleDateString();
-        }
-
-        // Extract all y-axis values
-        yAxisKeys.forEach(key => {
-          result[key] = item[key] as VisualizationValue;
-        });
-
-        return result;
-      });
-    },
-    [xAxisKey, yAxisKeys, dateFormat]
-  );
 
   // Largest Triangle Three Buckets (LTTB) downsampling algorithm
   const downsampleLTTB = useCallback(
@@ -365,7 +368,21 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
           chartData && handleChartClick(chartData as Record<string, unknown>, 0)
         }
         onMouseDown={() => console.log('Starting zoom/pan')}
-        onMouseUp={() => console.log('Ending zoom/pan')}
+        onMouseUp={e => {
+          // The recharts library doesn't export proper types for chart events
+          const event = e as unknown as {
+            xAxis?: Array<{ domain: [number, number] }>;
+            yAxis?: Array<{ domain: [number, number] }>;
+          };
+
+          if (event && event.xAxis && event.yAxis && event.xAxis[0] && event.yAxis[0]) {
+            const domain = {
+              x: event.xAxis[0].domain,
+              y: event.yAxis[0].domain,
+            };
+            handleZoom(domain);
+          }
+        }}
       >
         {showGrid && <CartesianGrid strokeDasharray="3 3" />}
 
@@ -445,7 +462,7 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
       height={height}
       title={title}
       theme={theme}
-      className={className}
+      className={`virtualized-line-chart ${className}`}
       errorMessage={errorMessage}
       subtitle={displaySubtitle}
     >

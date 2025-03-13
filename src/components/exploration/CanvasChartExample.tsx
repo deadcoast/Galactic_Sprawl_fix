@@ -1,5 +1,4 @@
 import {
-  Box,
   FormControl,
   FormControlLabel,
   Grid,
@@ -102,7 +101,7 @@ const CanvasChartExample: React.FC = () => {
 
   // Handle point click events
   const handlePointClick = (data: Record<string, unknown>, index: number) => {
-    console.log('Clicked point:', data, 'Series index:', index);
+    console.warn('Clicked point:', data, 'Series index:', index);
   };
 
   // Get series keys for time series chart
@@ -111,7 +110,7 @@ const CanvasChartExample: React.FC = () => {
   };
 
   return (
-    <Box sx={{ padding: 3 }}>
+    <div className="p-6">
       <Typography variant="h4" gutterBottom>
         Canvas Chart Examples
       </Typography>
@@ -193,13 +192,13 @@ const CanvasChartExample: React.FC = () => {
               valueLabelFormat={x => x.toLocaleString()}
             />
 
-            <Box sx={{ mt: 2 }}>
+            <div className="mt-4">
               <Typography variant="body2" color="text.secondary">
                 This demonstrates rendering efficiency for large scatter plots. Try increasing the
                 point count to see how the canvas renderer handles thousands or even tens of
                 thousands of points.
               </Typography>
-            </Box>
+            </div>
           </Paper>
         </Grid>
 
@@ -236,77 +235,72 @@ const CanvasChartExample: React.FC = () => {
               valueLabelDisplay="auto"
             />
 
-            <Box sx={{ mt: 2 }}>
+            <div className="mt-4">
               <Typography variant="body2" color="text.secondary">
                 The time series chart uses the LTTB algorithm to intelligently downsample the data
                 while preserving visual characteristics. It can efficiently render millions of data
                 points across multiple series.
               </Typography>
-            </Box>
+            </div>
           </Paper>
         </Grid>
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} lg={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Scatter Plot Example
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Scatter Plot Demo
             </Typography>
-
-            <Box sx={{ height: 500 }}>
+            <div className="h-[500px]">
               <CanvasChartFactory
-                data={scatterData}
                 chartType={chartType === 'auto' ? 'scatter' : chartType}
+                data={scatterData}
                 xAxisKey="x"
                 yAxisKeys="y"
                 sizeKey="size"
                 colorKey="category"
-                xAxisLabel="X Axis Value"
-                yAxisLabel="Y Axis Value"
-                title="High-Performance Scatter Plot"
+                title="Scatter Plot Performance Demo"
                 subtitle={`Rendering ${scatterPointCount.toLocaleString()} data points`}
+                width="100%"
+                height="100%"
                 useWebGL={useWebGL}
                 showPerformanceStats={showPerformanceStats}
                 enableMemoryOptimization={enableMemoryManagement}
-                memoryKey="scatter-plot-example"
+                memoryKey="scatter-plot-demo"
                 onElementClick={handlePointClick}
-                height={450}
               />
-            </Box>
+            </div>
           </Paper>
         </Grid>
 
-        <Grid item xs={12} lg={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Time Series Example
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Time Series Demo
             </Typography>
-
-            <Box sx={{ height: 500 }}>
+            <div className="h-[500px]">
               <CanvasChartFactory
-                data={timeSeriesData}
                 chartType={chartType === 'auto' ? 'timeSeries' : chartType}
+                data={timeSeriesData}
                 xAxisKey="timestamp"
                 yAxisKeys={getSeriesKeys(seriesCount)}
-                xAxisLabel="Date"
-                yAxisLabel="Value"
-                title="High-Performance Time Series"
-                subtitle={`Rendering ${timeSeriesPointCount.toLocaleString()} data points in ${seriesCount} series`}
+                title="Time Series Performance Demo"
+                subtitle={`Rendering ${timeSeriesPointCount.toLocaleString()} data points across ${seriesCount} series`}
+                width="100%"
+                height="100%"
                 useWebGL={useWebGL}
                 showPerformanceStats={showPerformanceStats}
                 enableMemoryOptimization={enableMemoryManagement}
-                maxPoints={2000}
-                memoryKey="time-series-example"
+                memoryKey="time-series-demo"
                 formatXAxisDate={formatDate}
                 onElementClick={handlePointClick}
-                height={450}
               />
-            </Box>
+            </div>
           </Paper>
         </Grid>
       </Grid>
-    </Box>
+    </div>
   );
 };
 

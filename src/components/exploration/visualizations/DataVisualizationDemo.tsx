@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { ChartDataRecord } from '../../../types/exploration/AnalysisComponentTypes';
 import { DataPoint } from '../../../types/exploration/DataAnalysisTypes';
 import { BarChart, HeatMap, LineChart, ReferenceLine, ScatterPlot } from './charts';
 
@@ -107,28 +108,22 @@ export function DataVisualizationDemo() {
     };
   });
 
-  // Sample heatmap data for HeatMap
-  const heatmapData: DataPoint[] = [];
-
-  // Generate grid data
-  for (let x = 0; x < 10; x++) {
-    for (let y = 0; y < 10; y++) {
-      // Create a pattern with some hot spots
-      const distanceFromCenter = Math.sqrt((x - 5) ** 2 + (y - 5) ** 2);
-      const value = 100 - distanceFromCenter * 10 + Math.random() * 20 - 10; // Add some noise
-
-      heatmapData.push({
-        id: `cell-${x}-${y}`,
-        type: 'sector',
-        name: `Cell (${x}, ${y})`,
-        date: Date.now(),
-        coordinates: { x, y },
-        properties: {
-          value: Math.max(0, Math.min(100, value)), // Clamp between 0-100
-        },
-      });
+  // Generate heat map data
+  const heatmapData = useMemo(() => {
+    const data: ChartDataRecord[] = [];
+    for (let x = 0; x < 10; x++) {
+      for (let y = 0; y < 10; y++) {
+        const value = Math.random() * 100;
+        data.push({
+          x,
+          y,
+          value,
+          label: `Cell (${x},${y})`,
+        });
+      }
     }
-  }
+    return data;
+  }, []);
 
   // Reference lines for charts
   const referenceLines: ReferenceLine[] = [
@@ -137,8 +132,12 @@ export function DataVisualizationDemo() {
 
   // Handle chart element click
   const handleElementClick = (data: Record<string, unknown>, index: number) => {
-    console.log('Element clicked:', data, 'Index:', index);
     alert(`Clicked element: ${JSON.stringify(data)}`);
+  };
+
+  // Create a wrapper for HeatMap's onElementClick that matches its expected signature
+  const handleHeatMapElementClick = (data: ChartDataRecord) => {
+    handleElementClick(data as Record<string, unknown>, 0);
   };
 
   return (
@@ -292,6 +291,8 @@ export function DataVisualizationDemo() {
             <HeatMap
               data={heatmapData}
               valueKey="value"
+              xKey="x"
+              yKey="y"
               title="Resource Intensity Distribution"
               theme={theme}
               cellSize={35}
@@ -303,7 +304,7 @@ export function DataVisualizationDemo() {
                 color: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
                 radius: 0,
               }}
-              onElementClick={handleElementClick}
+              onElementClick={handleHeatMapElementClick}
             />
             <div className="mt-4 text-sm">
               <h3 className="font-bold">Heat Map Features:</h3>

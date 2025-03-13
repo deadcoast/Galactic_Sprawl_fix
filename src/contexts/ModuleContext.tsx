@@ -271,22 +271,19 @@ interface ModuleProviderProps {
 // Type-safe helper for event subscriptions that accepts any event bus type
 function subscribeToModuleEvent(
   eventBus: {
-    subscribe: (
-      eventType: string | EventType | ModuleEventType,
-      handler: (event: BaseEvent) => void
-    ) => () => void;
+    subscribe: (eventType: EventType | '*', handler: (event: BaseEvent) => void) => () => void;
   },
   eventType: ModuleEventType,
   handler: (event: BaseEvent) => void
 ): () => void {
   // Convert ModuleEventType to EventType using our helper function
-  const convertedType = moduleEventToEventType(eventType);
+  const convertedType = moduleEventToEventType(eventType) as EventType;
   // Safely subscribe with any event bus type
   return eventBus.subscribe(convertedType, handler);
 }
 
 // Helper for type-safe dispatch of legacy actions
-function dispatchLegacyAction(manager: IModuleManager, action: LegacyModuleAction): void {
+function _dispatchLegacyAction(manager: IModuleManager, action: LegacyModuleAction): void {
   if (manager.dispatch) {
     manager.dispatch(action as unknown as { type: string });
   } else {
@@ -551,7 +548,7 @@ export function useBuildingModules(buildingId: string) {
 }
 
 export function canBuildModule(
-  moduleType: ModuleType,
+  _moduleType: ModuleType,
   cost: { minerals?: number; energy?: number }
 ) {
   const mineralCost = cost.minerals || 0;
@@ -582,7 +579,7 @@ export function canBuildModule(
   }
 
   if (currentMinerals < mineralCost || currentEnergy < energyCost) {
-    console.log(
+    console.warn(
       `Cannot build module: not enough resources. Needs ${mineralCost} minerals and ${energyCost} energy.`
     );
     return false;

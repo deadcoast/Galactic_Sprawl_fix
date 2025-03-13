@@ -1,7 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Beaker, Database, Info, Users, Zap } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useGame } from '../../../contexts/GameContext';
+import {
+  createUpdateResourcesAction,
+  useGameDispatch,
+  useResourceRatesState,
+  useResourcesState,
+} from '../../../contexts/GameContext';
 import { useComponentLifecycle, useComponentRegistration } from '../../../hooks/ui';
 import { ModuleEvent } from '../../../lib/modules/ModuleEvents';
 import {
@@ -31,7 +36,7 @@ interface ResourceDisplayProps {
   };
 }
 
-const resourceIcons = {
+const resourceIcons: Record<ResourceType, React.FC<{ className?: string }>> = {
   [ResourceType.MINERALS]: Database,
   [ResourceType.ENERGY]: Zap,
   [ResourceType.POPULATION]: Users,
@@ -39,9 +44,23 @@ const resourceIcons = {
   [ResourceType.PLASMA]: Beaker, // Using Beaker for plasma as well
   [ResourceType.GAS]: Beaker, // Using Beaker for gas as well
   [ResourceType.EXOTIC]: Beaker, // Using Beaker for exotic as well
+  // Add missing resource types
+  [ResourceType.IRON]: Database,
+  [ResourceType.COPPER]: Database,
+  [ResourceType.TITANIUM]: Database,
+  [ResourceType.URANIUM]: Database,
+  [ResourceType.WATER]: Database,
+  [ResourceType.HELIUM]: Database,
+  [ResourceType.DEUTERIUM]: Database,
+  [ResourceType.ANTIMATTER]: Beaker,
+  [ResourceType.DARK_MATTER]: Beaker,
+  [ResourceType.EXOTIC_MATTER]: Beaker,
 };
 
-const resourceColors = {
+const resourceColors: Record<
+  ResourceType,
+  { base: string; bg: string; border: string; fill: string }
+> = {
   [ResourceType.MINERALS]: {
     base: 'text-amber-400',
     bg: 'bg-amber-900/20',
@@ -84,10 +103,71 @@ const resourceColors = {
     border: 'border-pink-700/30',
     fill: 'bg-pink-500',
   },
+  // Add missing resource types
+  [ResourceType.IRON]: {
+    base: 'text-gray-400',
+    bg: 'bg-gray-900/20',
+    border: 'border-gray-700/30',
+    fill: 'bg-gray-500',
+  },
+  [ResourceType.COPPER]: {
+    base: 'text-orange-400',
+    bg: 'bg-orange-900/20',
+    border: 'border-orange-700/30',
+    fill: 'bg-orange-500',
+  },
+  [ResourceType.TITANIUM]: {
+    base: 'text-slate-400',
+    bg: 'bg-slate-900/20',
+    border: 'border-slate-700/30',
+    fill: 'bg-slate-500',
+  },
+  [ResourceType.URANIUM]: {
+    base: 'text-lime-400',
+    bg: 'bg-lime-900/20',
+    border: 'border-lime-700/30',
+    fill: 'bg-lime-500',
+  },
+  [ResourceType.WATER]: {
+    base: 'text-sky-400',
+    bg: 'bg-sky-900/20',
+    border: 'border-sky-700/30',
+    fill: 'bg-sky-500',
+  },
+  [ResourceType.HELIUM]: {
+    base: 'text-indigo-400',
+    bg: 'bg-indigo-900/20',
+    border: 'border-indigo-700/30',
+    fill: 'bg-indigo-500',
+  },
+  [ResourceType.DEUTERIUM]: {
+    base: 'text-violet-400',
+    bg: 'bg-violet-900/20',
+    border: 'border-violet-700/30',
+    fill: 'bg-violet-500',
+  },
+  [ResourceType.ANTIMATTER]: {
+    base: 'text-fuchsia-400',
+    bg: 'bg-fuchsia-900/20',
+    border: 'border-fuchsia-700/30',
+    fill: 'bg-fuchsia-500',
+  },
+  [ResourceType.DARK_MATTER]: {
+    base: 'text-rose-400',
+    bg: 'bg-rose-900/20',
+    border: 'border-rose-700/30',
+    fill: 'bg-rose-500',
+  },
+  [ResourceType.EXOTIC_MATTER]: {
+    base: 'text-emerald-400',
+    bg: 'bg-emerald-900/20',
+    border: 'border-emerald-700/30',
+    fill: 'bg-emerald-500',
+  },
 };
 
 // Resource descriptions for tooltips
-const resourceDescriptions = {
+const resourceDescriptions: Record<ResourceType, string> = {
   [ResourceType.MINERALS]: 'Raw materials used for construction and manufacturing.',
   [ResourceType.ENERGY]: 'Powers all modules, buildings, and operations.',
   [ResourceType.POPULATION]: 'Citizens of your empire who can be assigned to various tasks.',
@@ -95,6 +175,16 @@ const resourceDescriptions = {
   [ResourceType.PLASMA]: 'High-energy matter used for advanced technology.',
   [ResourceType.GAS]: 'Various gases used for life support and manufacturing.',
   [ResourceType.EXOTIC]: 'Rare materials with unique properties for special projects.',
+  [ResourceType.IRON]: 'Basic building material for structures and components.',
+  [ResourceType.COPPER]: 'Conductive material used in electronics and wiring.',
+  [ResourceType.TITANIUM]: 'Strong, lightweight metal used for advanced construction.',
+  [ResourceType.URANIUM]: 'Radioactive material used for nuclear power and weapons.',
+  [ResourceType.WATER]: 'Essential resource for life support and various processes.',
+  [ResourceType.HELIUM]: 'Light gas used for cooling and propulsion systems.',
+  [ResourceType.DEUTERIUM]: 'Isotope of hydrogen used in fusion reactors.',
+  [ResourceType.ANTIMATTER]: 'Exotic material with immense energy potential.',
+  [ResourceType.DARK_MATTER]: 'Mysterious substance with unique gravitational properties.',
+  [ResourceType.EXOTIC_MATTER]: 'Extremely rare material with extraordinary properties.',
 };
 
 // Resource status icons and messages
@@ -396,7 +486,10 @@ const EnhancedResourceDisplay = React.memo(function EnhancedResourceDisplayBase(
 
       {/* Progress Bar */}
       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-700">
-        <div className={`h-full ${colors.bar}`} style={{ width: progressWidth }}></div>
+        <div
+          className="h-full"
+          style={{ width: progressWidth, backgroundColor: colors.fill }}
+        ></div>
       </div>
     </div>
   );
@@ -405,45 +498,42 @@ const EnhancedResourceDisplay = React.memo(function EnhancedResourceDisplayBase(
 // Memoize the main component
 export const ResourceVisualizationEnhanced = React.memo(
   function ResourceVisualizationEnhancedBase() {
-    const { state } = useGame();
+    // Use the specific selectors for resources and rates
+    const resources = useResourcesState();
+    const resourceRates = useResourceRatesState();
+    const dispatch = useGameDispatch();
+
+    // Example of properly using the dispatch function with the correct action creator
+    const updateResourceManually = useCallback(
+      (resourceType: keyof typeof resources, amount: number) => {
+        // Create an update object with the specific resource to update
+        const resourceUpdate = {
+          [resourceType]: resources[resourceType] + amount,
+        };
+
+        // Dispatch the action using the correct action creator
+        dispatch(createUpdateResourcesAction(resourceUpdate));
+      },
+      [dispatch, resources]
+    );
 
     // Register this container component
     useComponentRegistration({
       type: 'ResourceVisualizationEnhanced',
-      eventSubscriptions: ['RESOURCE_RATES_UPDATED', 'RESOURCE_LIMITS_UPDATED'],
+      eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_PRODUCED', 'RESOURCE_CONSUMED'],
       updatePriority: 'medium',
     });
 
-    // Get the resources and rates from the game state
-    const resources = state.resources;
-    const resourceRates = state.resourceRates;
-
     // Set up thresholds based on resource types - these could come from a config or context
-    const resourceThresholds = useMemo(
+    const thresholds = useMemo(
       () => ({
-        [ResourceType.MINERALS]: { low: 1000, critical: 500 },
-        [ResourceType.ENERGY]: { low: 800, critical: 400 },
-        [ResourceType.POPULATION]: { low: 50, critical: 25 },
-        [ResourceType.RESEARCH]: { low: 20, critical: 10 },
+        minerals: { low: 100, critical: 50, capacity: 1000 },
+        energy: { low: 200, critical: 100, capacity: 2000 },
+        population: { low: 20, critical: 10, capacity: 500 },
+        research: { low: 50, critical: 25, capacity: 1000 },
       }),
       []
     );
-
-    // Set up capacities - these could come from a resource manager
-    const resourceCapacities = useMemo(
-      () => ({
-        [ResourceType.MINERALS]: 10000,
-        [ResourceType.ENERGY]: 8000,
-        [ResourceType.POPULATION]: 1000,
-        [ResourceType.RESEARCH]: 1000,
-      }),
-      []
-    );
-
-    // Add helper function to get resource name
-    const getResourceName = (resourceType: ResourceType): string => {
-      return ResourceTypeHelpers.getDisplayName(resourceType);
-    };
 
     return (
       <div className="space-y-4">
@@ -458,30 +548,46 @@ export const ResourceVisualizationEnhanced = React.memo(
             type={ResourceType.MINERALS}
             value={resources.minerals}
             rate={resourceRates.minerals}
-            capacity={resourceCapacities[ResourceType.MINERALS]}
-            thresholds={resourceThresholds[ResourceType.MINERALS]}
+            capacity={thresholds.minerals.capacity}
+            thresholds={thresholds.minerals}
           />
           <EnhancedResourceDisplay
             type={ResourceType.ENERGY}
             value={resources.energy}
             rate={resourceRates.energy}
-            capacity={resourceCapacities[ResourceType.ENERGY]}
-            thresholds={resourceThresholds[ResourceType.ENERGY]}
+            capacity={thresholds.energy.capacity}
+            thresholds={thresholds.energy}
           />
           <EnhancedResourceDisplay
             type={ResourceType.POPULATION}
             value={resources.population}
             rate={resourceRates.population}
-            capacity={resourceCapacities[ResourceType.POPULATION]}
-            thresholds={resourceThresholds[ResourceType.POPULATION]}
+            capacity={thresholds.population.capacity}
+            thresholds={thresholds.population}
           />
           <EnhancedResourceDisplay
             type={ResourceType.RESEARCH}
             value={resources.research}
             rate={resourceRates.research}
-            capacity={resourceCapacities[ResourceType.RESEARCH]}
-            thresholds={resourceThresholds[ResourceType.RESEARCH]}
+            capacity={thresholds.research.capacity}
+            thresholds={thresholds.research}
           />
+        </div>
+
+        {/* Add buttons that demonstrate using the dispatch function properly */}
+        <div className="mt-4 flex space-x-4">
+          <button
+            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            onClick={() => updateResourceManually('minerals', 100)}
+          >
+            Add 100 Minerals
+          </button>
+          <button
+            className="rounded bg-cyan-600 px-4 py-2 text-white hover:bg-cyan-700"
+            onClick={() => updateResourceManually('energy', 100)}
+          >
+            Add 100 Energy
+          </button>
         </div>
 
         <div className="mt-4 rounded-lg border border-gray-700 bg-gray-800 p-4">

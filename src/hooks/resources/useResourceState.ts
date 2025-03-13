@@ -11,7 +11,12 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { useResourceRates } from '../../contexts/ResourceRatesContext';
+import {
+  createResetRatesAction,
+  createUpdateRateAction,
+  useResourceRates,
+  useResourceRatesDispatch,
+} from '../../contexts/ResourceRatesContext';
 import { ResourceType, ResourceTypeInfo } from '../../types/resources/StandardizedResourceTypes';
 import {
   HookPerformanceConfig,
@@ -50,35 +55,61 @@ export function useResourceState() {
   // Track hook render
   trackHookRender(resourceStatePerformanceConfig);
 
-  const { state, updateRates, resetRates } = useResourceRates();
+  // Get state and dispatch
+  const resourceRates = useResourceRates(state => state.resourceRates);
+  const dispatch = useResourceRatesDispatch();
+
+  // Create action dispatchers
+  const updateRates = useCallback(
+    (type: ResourceType, production: number, consumption: number) => {
+      dispatch(
+        createUpdateRateAction(type, {
+          production,
+          consumption,
+          net: production - consumption,
+        })
+      );
+    },
+    [dispatch]
+  );
+
+  const resetRates = useCallback(() => {
+    dispatch(createResetRatesAction());
+  }, [dispatch]);
 
   // Memoized selectors for individual resource types - with performance tracking
   const minerals = measureSelectorTime(
     'minerals',
-    () => useMemo(() => state[ResourceType.MINERALS], [state[ResourceType.MINERALS]]),
+    () =>
+      useMemo(() => resourceRates[ResourceType.MINERALS], [resourceRates[ResourceType.MINERALS]]),
     resourceStatePerformanceConfig
   );
 
   const energy = measureSelectorTime(
     'energy',
-    () => useMemo(() => state[ResourceType.ENERGY], [state[ResourceType.ENERGY]]),
+    () => useMemo(() => resourceRates[ResourceType.ENERGY], [resourceRates[ResourceType.ENERGY]]),
     resourceStatePerformanceConfig
   );
 
   const population = measureSelectorTime(
     'population',
-    () => useMemo(() => state[ResourceType.POPULATION], [state[ResourceType.POPULATION]]),
+    () =>
+      useMemo(
+        () => resourceRates[ResourceType.POPULATION],
+        [resourceRates[ResourceType.POPULATION]]
+      ),
     resourceStatePerformanceConfig
   );
 
   const research = measureSelectorTime(
     'research',
-    () => useMemo(() => state[ResourceType.RESEARCH], [state[ResourceType.RESEARCH]]),
+    () =>
+      useMemo(() => resourceRates[ResourceType.RESEARCH], [resourceRates[ResourceType.RESEARCH]]),
     resourceStatePerformanceConfig
   );
 
   // Memoized aggregate data - with performance tracking
-  const netRates = measureComputationTime(
+  const _netRates = measureComputationTime(
     'netRates',
     () =>
       useMemo(
@@ -93,7 +124,7 @@ export function useResourceState() {
     resourceStatePerformanceConfig
   );
 
-  const totalProduction = measureComputationTime(
+  const _totalProduction = measureComputationTime(
     'totalProduction',
     () =>
       useMemo(
@@ -103,7 +134,7 @@ export function useResourceState() {
     resourceStatePerformanceConfig
   );
 
-  const totalConsumption = measureComputationTime(
+  const _totalConsumption = measureComputationTime(
     'totalConsumption',
     () =>
       useMemo(
@@ -114,24 +145,12 @@ export function useResourceState() {
     resourceStatePerformanceConfig
   );
 
-  // Action creators with standardized pattern
-  const updateResourceRates = useCallback(
-    (type: CoreResourceType, production: number, consumption: number) => {
-      updateRates(type, production, consumption);
-    },
-    [updateRates]
-  );
-
-  const resetResourceRates = useCallback(() => {
-    resetRates();
-  }, [resetRates]);
-
   // Utility function to get rate details for a specific resource type
   const getRateDetails = useCallback(
     (type: CoreResourceType): ResourceRateDetail => {
-      return state[type];
+      return resourceRates[type];
     },
-    [state]
+    [resourceRates]
   );
 
   // Utility function to get resource metadata
@@ -142,47 +161,37 @@ export function useResourceState() {
   // Utility function to check if a resource is in deficit
   const isResourceDeficit = useCallback(
     (type: CoreResourceType): boolean => {
-      return state[type].net < 0;
+      return resourceRates[type].net < 0;
     },
-    [state]
+    [resourceRates]
   );
 
   // Return structured state and actions - measure computation time for the final object assembly
   return measureComputationTime(
     'returnStateObject',
     () => ({
-      // Individual resource data
-      resources: {
-        minerals,
-        energy,
-        population,
-        research,
-      },
+      state: resourceRates,
 
-      // Resource access by enum type
-      resourcesByType: {
-        [ResourceType.MINERALS]: minerals,
-        [ResourceType.ENERGY]: energy,
-        [ResourceType.POPULATION]: population,
-        [ResourceType.RESEARCH]: research,
-      },
-
-      // Aggregated data
-      netRates,
-      totalProduction,
-      totalConsumption,
-
-      // Metadata
-      lastUpdated: state.lastUpdated,
-
-      // Actions
-      updateResourceRates,
-      resetResourceRates,
+      // Resource rate details
+      minerals,
+      energy,
+      population,
+      research,
+      plasma: resourceRates[ResourceType.PLASMA],
+      gas: resourceRates[ResourceType.GAS],
+      exotic: resourceRates[ResourceType.EXOTIC],
 
       // Utility functions
       getRateDetails,
       getResourceInfo,
       isResourceDeficit,
+
+      // Metadata
+      lastUpdated: Date.now(),
+
+      // Actions
+      updateRates,
+      resetRates,
     }),
     resourceStatePerformanceConfig
   );
@@ -192,125 +201,43 @@ export function useResourceState() {
  * Hook to select only the minerals rate data
  */
 export function useMineralsRate(): ResourceRateDetail {
-  // Performance tracking configuration
-  const performanceConfig: HookPerformanceConfig = {
-    ...defaultPerformanceConfig,
-    hookName: 'useMineralsRate',
-  };
-
-  // Track hook render
-  trackHookRender(performanceConfig);
-
-  // Get and measure state
-  return measureSelectorTime(
-    'minerals',
-    () => {
-      const { state } = useResourceRates();
-      return state[ResourceType.MINERALS];
-    },
-    performanceConfig
-  );
+  return useResourceRates(state => state.resourceRates[ResourceType.MINERALS]);
 }
 
 /**
  * Hook to select only the energy rate data
  */
 export function useEnergyRate(): ResourceRateDetail {
-  // Performance tracking configuration
-  const performanceConfig: HookPerformanceConfig = {
-    ...defaultPerformanceConfig,
-    hookName: 'useEnergyRate',
-  };
-
-  // Track hook render
-  trackHookRender(performanceConfig);
-
-  // Get and measure state
-  return measureSelectorTime(
-    'energy',
-    () => {
-      const { state } = useResourceRates();
-      return state[ResourceType.ENERGY];
-    },
-    performanceConfig
-  );
+  return useResourceRates(state => state.resourceRates[ResourceType.ENERGY]);
 }
 
 /**
  * Hook to select only the population rate data
  */
 export function usePopulationRate(): ResourceRateDetail {
-  // Performance tracking configuration
-  const performanceConfig: HookPerformanceConfig = {
-    ...defaultPerformanceConfig,
-    hookName: 'usePopulationRate',
-  };
-
-  // Track hook render
-  trackHookRender(performanceConfig);
-
-  // Get and measure state
-  return measureSelectorTime(
-    'population',
-    () => {
-      const { state } = useResourceRates();
-      return state[ResourceType.POPULATION];
-    },
-    performanceConfig
-  );
+  return useResourceRates(state => state.resourceRates[ResourceType.POPULATION]);
 }
 
 /**
  * Hook to select only the research rate data
  */
 export function useResearchRate(): ResourceRateDetail {
-  // Performance tracking configuration
-  const performanceConfig: HookPerformanceConfig = {
-    ...defaultPerformanceConfig,
-    hookName: 'useResearchRate',
-  };
-
-  // Track hook render
-  trackHookRender(performanceConfig);
-
-  // Get and measure state
-  return measureSelectorTime(
-    'research',
-    () => {
-      const { state } = useResourceRates();
-      return state[ResourceType.RESEARCH];
-    },
-    performanceConfig
-  );
+  return useResourceRates(state => state.resourceRates[ResourceType.RESEARCH]);
 }
 
 /**
  * Hook to get all net resource rates
  */
 export function useNetRates(): Record<CoreResourceType, number> {
-  // Performance tracking configuration
-  const performanceConfig: HookPerformanceConfig = {
-    ...defaultPerformanceConfig,
-    hookName: 'useNetRates',
-  };
-
-  // Track hook render
-  trackHookRender(performanceConfig);
-
-  // Get and measure state calculation
-  return measureComputationTime(
-    'netRates',
-    () => {
-      const { state } = useResourceRates();
-      return {
-        [ResourceType.MINERALS]: state[ResourceType.MINERALS].net,
-        [ResourceType.ENERGY]: state[ResourceType.ENERGY].net,
-        [ResourceType.POPULATION]: state[ResourceType.POPULATION].net,
-        [ResourceType.RESEARCH]: state[ResourceType.RESEARCH].net,
-      };
-    },
-    performanceConfig
-  );
+  return useResourceRates(state => {
+    const rates = state.resourceRates;
+    return {
+      [ResourceType.MINERALS]: rates[ResourceType.MINERALS].net,
+      [ResourceType.ENERGY]: rates[ResourceType.ENERGY].net,
+      [ResourceType.POPULATION]: rates[ResourceType.POPULATION].net,
+      [ResourceType.RESEARCH]: rates[ResourceType.RESEARCH].net,
+    };
+  });
 }
 
 /**
@@ -332,10 +259,7 @@ export function useResourceTypeRate(type: CoreResourceType): ResourceRateDetail 
   // Get and measure state access
   return measureSelectorTime(
     `type:${type}`,
-    () => {
-      const { state } = useResourceRates();
-      return state[type];
-    },
+    () => useResourceRates(state => state.resourceRates[type]),
     performanceConfig
   );
 }
@@ -357,11 +281,14 @@ export function usePositiveNetResources(): CoreResourceType[] {
   return measureComputationTime(
     'positiveResources',
     () => {
-      const { state } = useResourceRates();
-
-      return Object.entries(state)
-        .filter(([key, value]) => key !== 'lastUpdated' && value.net > 0)
-        .map(([key]) => key as CoreResourceType);
+      return useResourceRates(state => {
+        return Object.entries(state.resourceRates)
+          .filter(([key, value]) => {
+            if (key === 'lastUpdated') return false;
+            return (value as ResourceRateDetail).net > 0;
+          })
+          .map(([key]) => key as CoreResourceType);
+      });
     },
     performanceConfig
   );
@@ -384,11 +311,14 @@ export function useResourceDeficits(): CoreResourceType[] {
   return measureComputationTime(
     'deficitResources',
     () => {
-      const { state } = useResourceRates();
-
-      return Object.entries(state)
-        .filter(([key, value]) => key !== 'lastUpdated' && value.net < 0)
-        .map(([key]) => key as CoreResourceType);
+      return useResourceRates(state => {
+        return Object.entries(state.resourceRates)
+          .filter(([key, value]) => {
+            if (key === 'lastUpdated') return false;
+            return (value as ResourceRateDetail).net < 0;
+          })
+          .map(([key]) => key as CoreResourceType);
+      });
     },
     performanceConfig
   );

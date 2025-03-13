@@ -17,9 +17,11 @@ import {
 import React, { useMemo, useState } from 'react';
 import {
   ChartDataRecord,
-  ResourceMappingVisualizationProps,
+  ColorAccessorFn,
+  ResourceGridCell,
   TooltipRenderer,
 } from '../../../../types/exploration/AnalysisComponentTypes';
+import { DataPoint } from '../../../../types/exploration/DataAnalysisTypes';
 import { ResourceType } from '../../../../types/resources/ResourceTypes';
 import { BaseChart } from './BaseChart';
 import { HeatMap } from './HeatMap';
@@ -57,6 +59,29 @@ interface ResourceHeatMapCell extends ChartDataRecord {
   dominantType: string;
 }
 
+/**
+ * Interface for the data structure passed to ResourceMappingVisualization
+ */
+interface ResourceMappingData {
+  resourcePoints: DataPoint[];
+  gridCells?: ResourceGridCell[];
+  resourceTypes: ResourceType[];
+  valueMetric: 'amount' | 'quality' | 'accessibility' | 'estimatedValue';
+  regionSize: number;
+  xRange: [number, number];
+  yRange: [number, number];
+  density?: Record<string, number>;
+  insights?: string[];
+  summary?: string;
+}
+
+interface ResourceMappingVisualizationProps {
+  data: ResourceMappingData;
+  width?: number | string;
+  height?: number;
+  title?: string;
+}
+
 // Color mapping for different resource types
 const resourceTypeColors: Record<ResourceType, string> = {
   minerals: '#3D85C6', // Blue
@@ -68,9 +93,14 @@ const resourceTypeColors: Record<ResourceType, string> = {
   exotic: '#CC0000', // Red
 };
 
+// Define a function to get color for a resource type
+const getResourceColor = (resourceType: string): string => {
+  return (resourceTypeColors as Record<string, string>)[resourceType] || '#999999';
+};
+
 /**
- * ResourceMappingVisualization component
- * Displays spatial distribution of resources in a map-like visualization
+ * ResourceMappingVisualization Component
+ * Displays resource distribution across a 2D map with various visualization options
  */
 export const ResourceMappingVisualization: React.FC<ResourceMappingVisualizationProps> = ({
   data,
@@ -88,29 +118,26 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
   const heatMapData = useMemo(() => {
     if (!data.gridCells || data.gridCells.length === 0) return [];
 
-    return data.gridCells.map(cell => {
+    return data.gridCells.map((cell: ResourceGridCell) => {
       let value = 0;
 
       if (selectedResourceType === 'all') {
         value = cell.totalValue;
       } else {
-        const resourceData = cell.resources.find(r => r.type === selectedResourceType);
+        const resourceData = cell.resources.find(
+          (r: { type: ResourceType }) => r.type === selectedResourceType
+        );
         if (resourceData) {
-          value = resourceData[data.valueMetric] || resourceData.amount;
+          value =
+            (resourceData[data.valueMetric as keyof typeof resourceData] as number) ||
+            resourceData.amount;
         }
       }
 
       return {
-        x: cell.x,
-        y: cell.y,
+        ...cell,
         value,
-        resources: cell.resources,
-        totalValue: cell.totalValue,
-        dominantResource: cell.dominantResource,
-        dominantPercentage: cell.dominantPercentage || 0,
-        totalResourceCount: cell.totalResourceCount,
-        dominantType: cell.dominantResource || 'none',
-      } as ResourceHeatMapCell;
+      };
     });
   }, [data.gridCells, selectedResourceType, data.valueMetric]);
 
@@ -118,27 +145,11 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
   const scatterData = useMemo(() => {
     if (!data.resourcePoints || data.resourcePoints.length === 0) return [];
 
-    return data.resourcePoints.map(point => {
+    return data.resourcePoints.map((point: DataPoint) => {
       // Safely extract resource data from properties
       const properties = point.properties || {};
       const resourceType = properties.resourceType || properties.type || 'unknown';
-      const amount = typeof properties.amount === 'number' ? properties.amount : 1;
-
-      // Determine the value based on the selected metric
-      let value = amount;
-      if (data.valueMetric === 'quality' && typeof properties.quality === 'number') {
-        value = properties.quality;
-      } else if (
-        data.valueMetric === 'accessibility' &&
-        typeof properties.accessibility === 'number'
-      ) {
-        value = properties.accessibility;
-      } else if (
-        data.valueMetric === 'estimatedValue' &&
-        typeof properties.estimatedValue === 'number'
-      ) {
-        value = properties.estimatedValue;
-      }
+      const value = properties[data.valueMetric] || properties.amount || 1;
 
       return {
         id: point.id,
@@ -148,7 +159,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
         value,
         type: resourceType,
         coordinates: point.coordinates || { x: 0, y: 0 },
-      } as ResourceChartPoint;
+      };
     });
   }, [data.resourcePoints, data.valueMetric]);
 
@@ -174,46 +185,47 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
   };
 
   // Tooltip for heatmap cells
-  const renderCellTooltip: TooltipRenderer<ResourceHeatMapCell> = cell => {
-    if (!cell) return null;
+  const renderCellTooltip: TooltipRenderer<ResourceHeatMapCell> = heatMapCell => {
+    if (!heatMapCell) return null;
 
-    const resources = cell.resources || [];
-    const sortedResources = [...resources].sort(
-      (a, b) => (b[data.valueMetric] || b.amount) - (a[data.valueMetric] || a.amount)
-    );
+    const resources = heatMapCell.resources || [];
+    const sortedResources = [...resources].sort((a, b) => {
+      const aValue = (a[data.valueMetric as keyof typeof a] as number) || a.amount;
+      const bValue = (b[data.valueMetric as keyof typeof b] as number) || b.amount;
+      return bValue - aValue;
+    });
 
     return (
-      <Paper sx={{ p: 1, maxWidth: 300 }}>
+      <Paper sx={{ p: 1.5, maxWidth: 300 }}>
         <Typography variant="subtitle2">
-          Region ({cell.x}, {cell.y})
+          Region ({heatMapCell.x}, {heatMapCell.y})
         </Typography>
-        <Typography variant="body2">Total value: {cell.totalValue.toFixed(2)}</Typography>
-        <Typography variant="body2">Resources: {cell.totalResourceCount}</Typography>
-        {cell.dominantResource && (
+        <Typography variant="body2">Total value: {heatMapCell.totalValue.toFixed(2)}</Typography>
+        <Typography variant="body2">Resources: {heatMapCell.totalResourceCount}</Typography>
+        {heatMapCell.dominantResource && typeof heatMapCell.dominantPercentage === 'number' && (
           <Typography variant="body2">
-            Dominant: {cell.dominantResource} ({(cell.dominantPercentage * 100).toFixed(1)}%)
+            Dominant: {heatMapCell.dominantResource} (
+            {(heatMapCell.dominantPercentage * 100).toFixed(1)}%)
           </Typography>
         )}
-        <Box sx={{ mt: 1 }}>
+        <div style={{ marginTop: 8 }}>
           {sortedResources.map((res, idx) => (
-            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-              <Box
-                sx={{
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+              <div
+                style={{
                   width: 12,
                   height: 12,
-                  backgroundColor: resourceTypeColors[res.type] || '#888888',
-                  mr: 1,
-                  borderRadius: '50%',
+                  backgroundColor: getResourceColor(res.type),
+                  marginRight: 8,
                 }}
               />
               <Typography variant="body2">
-                {res.type}: {(res[data.valueMetric] || res.amount).toFixed(2)}
-                {data.valueMetric === 'quality' && ' (quality)'}
-                {data.valueMetric === 'accessibility' && ' (access)'}
+                {res.type}: {res.amount.toFixed(1)}{' '}
+                {res.quality ? `(Q: ${res.quality.toFixed(1)})` : ''}
               </Typography>
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       </Paper>
     );
   };
@@ -232,34 +244,42 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
     </Paper>
   );
 
-  // Create React component versions of our tooltip renderers using the adapter
-  const CellTooltipComponent = useMemo(
-    () => createTooltipComponent(renderCellTooltip),
-    [renderCellTooltip]
-  );
+  // Create tooltip components using adapter
   const PointTooltipComponent = useMemo(
     () => createTooltipComponent(renderPointTooltip),
     [renderPointTooltip]
   );
 
+  // Create cell tooltip component using adapter
+  const CellTooltipComponentFromRenderer = useMemo(
+    () => createTooltipComponent(renderCellTooltip),
+    [renderCellTooltip]
+  );
+
   // Legend for resource types
   const renderLegend = () => (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2, justifyContent: 'center' }}>
-      {data.resourceTypes.map(type => (
-        <Box key={type} sx={{ display: 'flex', alignItems: 'center' }}>
-          <Box
-            sx={{
-              width: 16,
-              height: 16,
+    <Paper
+      sx={{
+        p: 2,
+        mt: 2,
+        backgroundColor: theme => theme.palette.background.paper,
+      }}
+    >
+      {data.resourceTypes.map((type: ResourceType) => (
+        <div key={type} style={{ display: 'flex', alignItems: 'center' }}>
+          <div
+            style={{
+              width: '16px',
+              height: '16px',
               backgroundColor: resourceTypeColors[type],
-              mr: 1,
+              marginRight: '8px',
               borderRadius: '50%',
             }}
           />
           <Typography variant="body2">{type}</Typography>
-        </Box>
+        </div>
       ))}
-    </Box>
+    </Paper>
   );
 
   // Insights display
@@ -274,11 +294,11 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
 
     return (
       <Paper sx={{ p: 2, mt: 2, backgroundColor: theme => theme.palette.background.paper }}>
-        <Typography variant="h6" gutterBottom>
-          Resource Analysis Insights
+        <Typography variant="h6" sx={{ mb: 1 }}>
+          Key Insights
         </Typography>
         <Box component="ul" sx={{ ml: 2, mt: 1 }}>
-          {data.insights.map((insight, index) => (
+          {data.insights.map((insight: string, index: number) => (
             <Typography component="li" key={index} variant="body2" sx={{ mb: 1 }}>
               {insight}
             </Typography>
@@ -292,138 +312,153 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
   const renderHeatMap = () => {
     if (heatMapData.length === 0) {
       return (
-        <Box sx={{ p: 2, textAlign: 'center' }}>
+        <div style={{ padding: '16px', textAlign: 'center' }}>
           <Typography variant="body1">
             No grid data available for heat map visualization.
           </Typography>
-        </Box>
+        </div>
       );
     }
 
-    // Create a color array from resource colors if in overlay mode
+    // Process colors for heat map
     const heatMapColors =
       overlayMode && selectedResourceType === 'all' ? Object.values(resourceTypeColors) : undefined;
 
     return (
-      <Box sx={{ height: 'calc(100% - 120px)', minHeight: 400 }}>
+      <div style={{ height: 'calc(100% - 120px)', minHeight: '400px' }}>
         <HeatMap
           data={heatMapData}
-          valueKey="value"
           xKey="x"
           yKey="y"
+          valueKey="value"
           width="100%"
           height="100%"
           showValues={false}
           showLegend={true}
           cellTooltip={true}
-          customTooltip={CellTooltipComponent}
+          customTooltip={CellTooltipComponentFromRenderer}
           colors={heatMapColors}
-          colorAccessor={
-            overlayMode && selectedResourceType === 'all' ? getHeatMapCellColor : undefined
-          }
           cellBorder={{
             width: 1,
             color: 'rgba(255,255,255,0.3)',
             radius: 0,
           }}
         />
-      </Box>
+      </div>
     );
   };
 
   // Scatter plot for individual resource points
   const renderScatterPlot = () => {
-    if (scatterData.length === 0) {
+    // Use the pre-processed scatter data
+    const filteredScatterData =
+      selectedResourceType === 'all'
+        ? scatterData
+        : scatterData.filter(point => point.type === selectedResourceType);
+
+    if (filteredScatterData.length === 0) {
       return (
-        <Box sx={{ p: 2, textAlign: 'center' }}>
-          <Typography variant="body1">
-            No resource points available for scatter plot visualization.
-          </Typography>
-        </Box>
+        <div
+          style={{
+            width: '100%',
+            height: 400,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Typography variant="body1">No resources to display</Typography>
+        </div>
       );
     }
 
-    return (
-      <Box sx={{ height: 'calc(100% - 120px)', minHeight: 400 }}>
-        <ScatterPlot
-          data={scatterData}
-          xKey="x"
-          yKey="y"
-          width="100%"
-          height="100%"
-          sizeKey="value"
-          colorAccessor={getPointColor}
-          showLabels={showResourceLabels}
-          labelKey="name"
-          customTooltip={PointTooltipComponent}
-        />
-      </Box>
-    );
+    // Set up props for ScatterPlot
+    const scatterPlotProps = {
+      data: filteredScatterData,
+      xAxisKey: 'x',
+      yAxisKey: 'y',
+      width: typeof width === 'number' ? width : 800,
+      height: 400,
+      sizeKey: 'value',
+      colorAccessor: getPointColor as ColorAccessorFn<ChartDataRecord>,
+      showLabels: true,
+      labelKey: 'name',
+      customTooltip: PointTooltipComponent,
+    };
+
+    return <ScatterPlot {...scatterPlotProps} />;
   };
 
   return (
     <BaseChart title={title} width={width} height={height}>
-      <Box sx={{ width: '100%', mb: 2 }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          <Tab label="Heat Map" />
-          <Tab label="Resource Points" />
-          <Tab label="Insights" />
-        </Tabs>
-      </Box>
+      <>
+        <div style={{ width: '100%', marginBottom: '16px' }}>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+          >
+            <Tab label="Heat Map" />
+            <Tab label="Scatter Plot" />
+            <Tab label="Insights" />
+          </Tabs>
+        </div>
 
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2, alignItems: 'center' }}>
-        <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-          <Select value={selectedResourceType} onChange={handleResourceTypeChange} displayEmpty>
-            <MenuItem value="all">All Resources</MenuItem>
-            {data.resourceTypes.map(type => (
-              <MenuItem key={type} value={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center' }}>
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <Select
+              value={selectedResourceType}
+              onChange={handleResourceTypeChange}
+              displayEmpty
+              size="small"
+            >
+              <MenuItem value="all">All Resources</MenuItem>
+              {data.resourceTypes.map((type: ResourceType) => (
+                <MenuItem key={type} value={type}>
+                  {type}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <FormControlLabel
-          control={
-            <Switch
-              checked={showResourceLabels}
-              onChange={e => setShowResourceLabels(e.target.checked)}
-              color="primary"
-            />
-          }
-          label="Show Labels"
-        />
-
-        {activeTab === 0 && (
           <FormControlLabel
             control={
               <Switch
                 checked={overlayMode}
                 onChange={e => setOverlayMode(e.target.checked)}
-                color="primary"
+                size="small"
               />
             }
-            label="Resource Type Overlay"
+            label="Overlay Mode"
           />
-        )}
 
-        <Tooltip title="The resource mapping visualization shows the distribution of resources across the analyzed region. Heat map displays resource concentration while the scatter plot shows individual resource points.">
-          <IconButton size="small">
-            <InfoIcon />
-          </IconButton>
-        </Tooltip>
-      </Box>
+          {activeTab === 1 && (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showResourceLabels}
+                  onChange={e => setShowResourceLabels(e.target.checked)}
+                  size="small"
+                />
+              }
+              label="Show Labels"
+            />
+          )}
 
-      {activeTab === 0 && renderHeatMap()}
-      {activeTab === 1 && renderScatterPlot()}
-      {activeTab === 2 && renderInsights()}
+          <Tooltip title="Overlay mode shows resource types with different colors. For heat maps, it colors cells by dominant resource type.">
+            <IconButton size="small">
+              <InfoIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </div>
 
-      {renderLegend()}
+        {overlayMode && selectedResourceType === 'all' && renderLegend()}
+
+        {activeTab === 0 && renderHeatMap()}
+        {activeTab === 1 && renderScatterPlot()}
+        {activeTab === 2 && renderInsights()}
+      </>
     </BaseChart>
   );
 };

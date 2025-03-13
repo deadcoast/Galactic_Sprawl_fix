@@ -1,258 +1,1308 @@
 [
   {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/combat/combatManager.ts",
-    "relativePath": "src/managers/combat/combatManager.ts",
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3BatchedUpdates.ts",
+    "relativePath": "src/utils/performance/D3BatchedUpdates.ts",
     "errors": [
       {
-        "line": 110,
-        "column": 39,
+        "line": 498,
+        "column": 46,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       },
       {
-        "line": 126,
-        "column": 34,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 139,
-        "column": 37,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 153,
-        "column": 35,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 164,
-        "column": 34,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 193,
-        "column": 31,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 6
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/managers/resource/ResourceThresholdManager.test.ts",
-    "relativePath": "src/tests/managers/resource/ResourceThresholdManager.test.ts",
-    "errors": [
-      {
-        "line": 140,
-        "column": 63,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 156,
-        "column": 26,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 198,
-        "column": 26,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 201,
-        "column": 26,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 223,
-        "column": 26,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 226,
-        "column": 26,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 6
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/colony/ColonyManagerImpl.ts",
-    "relativePath": "src/managers/colony/ColonyManagerImpl.ts",
-    "errors": [
-      {
-        "line": 24,
-        "column": 69,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 128,
-        "column": 53,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 160,
-        "column": 50,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 190,
-        "column": 77,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 245,
-        "column": 72,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 5
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/events/EventCommunication.test.ts",
-    "relativePath": "src/tests/utils/events/EventCommunication.test.ts",
-    "errors": [
-      {
-        "line": 35,
-        "column": 27,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 36,
-        "column": 30,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 257,
-        "column": 48,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 296,
-        "column": 48,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 4
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/events/rxjsIntegration.test.ts",
-    "relativePath": "src/tests/utils/events/rxjsIntegration.test.ts",
-    "errors": [
-      {
-        "line": 183,
-        "column": 24,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 286,
-        "column": 57,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 294,
-        "column": 19,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 301,
-        "column": 31,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 4
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/combat/useCombatAI.ts",
-    "relativePath": "src/hooks/combat/useCombatAI.ts",
-    "errors": [
-      {
-        "line": 82,
-        "column": 59,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 83,
-        "column": 58,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 97,
-        "column": 36,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 3
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/modules/useModuleUpgrade.ts",
-    "relativePath": "src/hooks/modules/useModuleUpgrade.ts",
-    "errors": [
-      {
-        "line": 43,
-        "column": 42,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 54,
-        "column": 42,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 65,
-        "column": 44,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 3
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/combat/WarShipManagerImpl.ts",
-    "relativePath": "src/managers/combat/WarShipManagerImpl.ts",
-    "errors": [
-      {
-        "line": 120,
+        "line": 498,
         "column": 54,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       },
       {
-        "line": 133,
+        "line": 516,
+        "column": 8,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 519,
+        "column": 47,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 519,
+        "column": 55,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 537,
+        "column": 8,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 540,
+        "column": 50,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 540,
+        "column": 58,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 558,
+        "column": 8,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 561,
+        "column": 46,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 561,
+        "column": 54,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 579,
+        "column": 8,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 582,
+        "column": 46,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 582,
+        "column": 54,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 600,
+        "column": 8,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 611,
+        "column": 46,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 635,
+        "column": 45,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 635,
+        "column": 53,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 643,
+        "column": 55,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 643,
+        "column": 61,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 675,
+        "column": 10,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 678,
+        "column": 56,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 678,
+        "column": 81,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 710,
+        "column": 10,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 713,
+        "column": 8,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 25
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/visualizations/D3SelectionTypes.ts",
+    "relativePath": "src/types/visualizations/D3SelectionTypes.ts",
+    "errors": [
+      {
+        "line": 19,
+        "column": 54,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 31,
+        "column": 52,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 45,
+        "column": 42,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 59,
+        "column": 42,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 71,
+        "column": 54,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 83,
+        "column": 52,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 97,
+        "column": 42,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 110,
+        "column": 55,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 114,
+        "column": 38,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 144,
+        "column": 47,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 277,
+        "column": 36,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 300,
+        "column": 37,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 320,
+        "column": 31,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 328,
+        "column": 31,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 375,
+        "column": 22,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 445,
+        "column": 40,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 464,
+        "column": 37,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 475,
+        "column": 38,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 506,
+        "column": 68,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 529,
+        "column": 83,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 542,
+        "column": 60,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 21
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3PerformanceProfiler.ts",
+    "relativePath": "src/utils/performance/D3PerformanceProfiler.ts",
+    "errors": [
+      {
+        "line": 288,
+        "column": 67,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 307,
+        "column": 21,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 311,
+        "column": 23,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 315,
+        "column": 23,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 319,
+        "column": 26,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 344,
+        "column": 63,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 362,
         "column": 49,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       },
       {
-        "line": 167,
+        "line": 371,
+        "column": 21,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 375,
+        "column": 23,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 379,
+        "column": 23,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 383,
+        "column": 26,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 408,
+        "column": 52,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 602,
+        "column": 32,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 603,
+        "column": 32,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 604,
+        "column": 31,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 617,
+        "column": 32,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 618,
+        "column": 32,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 619,
+        "column": 31,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 633,
+        "column": 32,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 634,
+        "column": 32,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 20
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3InterpolationCache.ts",
+    "relativePath": "src/utils/performance/D3InterpolationCache.ts",
+    "errors": [
+      {
+        "line": 137,
+        "column": 24,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 146,
+        "column": 47,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 441,
+        "column": 50,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 564,
+        "column": 28,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 564,
+        "column": 36,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 565,
+        "column": 6,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 566,
+        "column": 6,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 680,
         "column": 45,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 680,
+        "column": 53,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 688,
+        "column": 61,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 688,
+        "column": 67,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 690,
+        "column": 65,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 693,
+        "column": 48,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 702,
+        "column": 62,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 702,
+        "column": 68,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 704,
+        "column": 65,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 707,
+        "column": 48,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 717,
+        "column": 8,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 18
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/visualizations/D3ZoomTypes.ts",
+    "relativePath": "src/types/visualizations/D3ZoomTypes.ts",
+    "errors": [
+      {
+        "line": 19,
+        "column": 12,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 28,
+        "column": 74,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 93,
+        "column": 78,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 127,
+        "column": 36,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 167,
+        "column": 91,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 173,
+        "column": 47,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 173,
+        "column": 52,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 173,
+        "column": 57,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 200,
+        "column": 29,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 217,
+        "column": 29,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 236,
+        "column": 29,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 289,
+        "column": 11,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 295,
+        "column": 42,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 295,
+        "column": 47,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 295,
+        "column": 52,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 15
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/config/TypeSafeConfig.ts",
+    "relativePath": "src/types/config/TypeSafeConfig.ts",
+    "errors": [
+      {
+        "line": 36,
+        "column": 32,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 86,
+        "column": 11,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 105,
+        "column": 44,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 105,
+        "column": 59,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 114,
+        "column": 37,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 117,
+        "column": 39,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 152,
+        "column": 61,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 185,
+        "column": 42,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 368,
+        "column": 34,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 369,
+        "column": 34,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 390,
+        "column": 39,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 506,
+        "column": 62,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 12
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/state/TypeSafeStateManagement.ts",
+    "relativePath": "src/types/state/TypeSafeStateManagement.ts",
+    "errors": [
+      {
+        "line": 30,
+        "column": 60,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 72,
+        "column": 28,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 75,
+        "column": 56,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 98,
+        "column": 66,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 111,
+        "column": 38,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 162,
+        "column": 39,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 171,
+        "column": 34,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 174,
+        "column": 31,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 193,
+        "column": 39,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 211,
+        "column": 36,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 214,
+        "column": 33,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 11
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3AnimationProfiler.ts",
+    "relativePath": "src/utils/performance/D3AnimationProfiler.ts",
+    "errors": [
+      {
+        "line": 525,
+        "column": 47,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 525,
+        "column": 55,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 534,
+        "column": 10,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 537,
+        "column": 41,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 537,
+        "column": 49,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 546,
+        "column": 10,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 549,
+        "column": 42,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 549,
+        "column": 50,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 558,
+        "column": 10,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 665,
+        "column": 40,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 10
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3PerformanceOptimizations.ts",
+    "relativePath": "src/utils/performance/D3PerformanceOptimizations.ts",
+    "errors": [
+      {
+        "line": 66,
+        "column": 19,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 164,
+        "column": 65,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 164,
+        "column": 70,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 164,
+        "column": 75,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 164,
+        "column": 80,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 243,
+        "column": 21,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 243,
+        "column": 61,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 284,
+        "column": 25,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 291,
+        "column": 27,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 295,
+        "column": 27,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 10
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/network/NetworkDegradationSimulator.ts",
+    "relativePath": "src/utils/performance/network/NetworkDegradationSimulator.ts",
+    "errors": [
+      {
+        "line": 387,
+        "column": 76,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 389,
+        "column": 14,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 394,
+        "column": 76,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 395,
+        "column": 42,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 424,
+        "column": 74,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 469,
+        "column": 26,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 555,
+        "column": 43,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 699,
+        "column": 60,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 699,
+        "column": 70,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 9
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/useMemoryManager.ts",
+    "relativePath": "src/hooks/useMemoryManager.ts",
+    "errors": [
+      {
+        "line": 70,
+        "column": 35,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 75,
+        "column": 34,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 96,
+        "column": 37,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 150,
+        "column": 9,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 160,
+        "column": 38,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 225,
+        "column": 46,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 237,
+        "column": 45,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 7
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/dataTransforms/chartTransforms.ts",
+    "relativePath": "src/utils/dataTransforms/chartTransforms.ts",
+    "errors": [
+      {
+        "line": 137,
+        "column": 16,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 300,
+        "column": 13,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 312,
+        "column": 44,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 365,
+        "column": 12,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 366,
+        "column": 17,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 382,
+        "column": 26,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 6
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/factory/createStateHook.ts",
+    "relativePath": "src/hooks/factory/createStateHook.ts",
+    "errors": [
+      {
+        "line": 6,
+        "column": 46,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 14,
+        "column": 36,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 42,
+        "column": 33,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 43,
+        "column": 57,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 4
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource/AdaptivePerformanceManager.ts",
+    "relativePath": "src/managers/resource/AdaptivePerformanceManager.ts",
+    "errors": [
+      {
+        "line": 416,
+        "column": 34,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 417,
+        "column": 38,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 439,
+        "column": 30,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 440,
+        "column": 21,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 4
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/events/EventBatchingRxJS.ts",
+    "relativePath": "src/utils/events/EventBatchingRxJS.ts",
+    "errors": [
+      {
+        "line": 49,
+        "column": 21,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 151,
+        "column": 17,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 161,
+        "column": 17,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 218,
+        "column": 52,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 4
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3AnimationQualityManager.ts",
+    "relativePath": "src/utils/performance/D3AnimationQualityManager.ts",
+    "errors": [
+      {
+        "line": 364,
+        "column": 45,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 398,
+        "column": 40,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 434,
+        "column": 42,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 775,
+        "column": 70,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 4
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/visualizations/D3DragTypes.ts",
+    "relativePath": "src/types/visualizations/D3DragTypes.ts",
+    "errors": [
+      {
+        "line": 100,
+        "column": 25,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 209,
+        "column": 29,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 213,
+        "column": 29,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 267,
+        "column": 41,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 4
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/integration/OptimizationComponents.test.ts",
+    "relativePath": "src/tests/integration/OptimizationComponents.test.ts",
+    "errors": [
+      {
+        "line": 22,
+        "column": 31,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 145,
+        "column": 43,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 145,
+        "column": 48,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 145,
+        "column": 53,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 4
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/performance/AdvancedPerformanceScenarios.ts",
+    "relativePath": "src/tests/performance/AdvancedPerformanceScenarios.ts",
+    "errors": [
+      {
+        "line": 190,
+        "column": 26,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 253,
+        "column": 22,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 253,
+        "column": 79,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 308,
+        "column": 22,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 4
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/events/UnifiedEventSystem.ts",
+    "relativePath": "src/lib/events/UnifiedEventSystem.ts",
+    "errors": [
+      {
+        "line": 11,
+        "column": 18,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 61,
+        "column": 63,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 62,
+        "column": 39,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       }
@@ -260,18 +1310,18 @@
     "errorCount": 3
   },
   {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/modules/useModuleStatus.ts",
-    "relativePath": "src/hooks/modules/useModuleStatus.ts",
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/performance/useSessionPerformance.ts",
+    "relativePath": "src/hooks/performance/useSessionPerformance.ts",
     "errors": [
       {
-        "line": 50,
-        "column": 41,
+        "line": 83,
+        "column": 56,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       },
       {
-        "line": 57,
-        "column": 41,
+        "line": 83,
+        "column": 66,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       }
@@ -279,17 +1329,36 @@
     "errorCount": 2
   },
   {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module/ModuleUpgradeManager.ts",
-    "relativePath": "src/managers/module/ModuleUpgradeManager.ts",
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/useTypedApi.ts",
+    "relativePath": "src/hooks/useTypedApi.ts",
     "errors": [
       {
-        "line": 545,
-        "column": 41,
+        "line": 48,
+        "column": 45,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       },
       {
-        "line": 552,
+        "line": 178,
+        "column": 24,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 2
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/longsession/LongSessionMemoryTracker.ts",
+    "relativePath": "src/utils/performance/longsession/LongSessionMemoryTracker.ts",
+    "errors": [
+      {
+        "line": 233,
+        "column": 68,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 349,
         "column": 42,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
@@ -298,75 +1367,18 @@
     "errorCount": 2
   },
   {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourcePoolTypes.ts",
-    "relativePath": "src/types/resources/ResourcePoolTypes.ts",
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/contexts/ResourceRatesContext.test.tsx",
+    "relativePath": "src/tests/contexts/ResourceRatesContext.test.tsx",
     "errors": [
       {
-        "line": 86,
-        "column": 45,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 103,
-        "column": 45,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 2
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/utils/EventEmitter.ts",
-    "relativePath": "src/lib/utils/EventEmitter.ts",
-    "errors": [
-      {
-        "line": 4,
-        "column": 52,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 4,
-        "column": 74,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 2
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/hooks/automation/useAutomation.test.tsx",
-    "relativePath": "src/tests/hooks/automation/useAutomation.test.tsx",
-    "errors": [
-      {
-        "line": 110,
-        "column": 23,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      },
-      {
-        "line": 111,
-        "column": 23,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 2
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/managers/resource/ResourceFlowManager.test.ts",
-    "relativePath": "src/tests/managers/resource/ResourceFlowManager.test.ts",
-    "errors": [
-      {
-        "line": 152,
+        "line": 14,
         "column": 30,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       },
       {
-        "line": 207,
-        "column": 21,
+        "line": 103,
+        "column": 49,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       }
@@ -374,12 +1386,31 @@
     "errorCount": 2
   },
   {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/exploration/ReconShipManagerImpl.ts",
-    "relativePath": "src/managers/exploration/ReconShipManagerImpl.ts",
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/performanceUtils.ts",
+    "relativePath": "src/tests/utils/performanceUtils.ts",
     "errors": [
       {
-        "line": 336,
-        "column": 41,
+        "line": 292,
+        "column": 47,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      },
+      {
+        "line": 347,
+        "column": 47,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 2
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/factory/createDataFetchHook.ts",
+    "relativePath": "src/hooks/factory/createDataFetchHook.ts",
+    "errors": [
+      {
+        "line": 50,
+        "column": 50,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       }
@@ -387,12 +1418,12 @@
     "errorCount": 1
   },
   {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module/OfficerManager.ts",
-    "relativePath": "src/managers/module/OfficerManager.ts",
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/visualization/CommonTypes.ts",
+    "relativePath": "src/types/visualization/CommonTypes.ts",
     "errors": [
       {
-        "line": 644,
-        "column": 56,
+        "line": 364,
+        "column": 18,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       }
@@ -400,12 +1431,12 @@
     "errorCount": 1
   },
   {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource/ResourcePoolManager.ts",
-    "relativePath": "src/managers/resource/ResourcePoolManager.ts",
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/patterns/Singleton.ts",
+    "relativePath": "src/lib/patterns/Singleton.ts",
     "errors": [
       {
-        "line": 428,
-        "column": 67,
+        "line": 24,
+        "column": 46,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       }
@@ -413,63 +1444,11 @@
     "errorCount": 1
   },
   {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/weapons/WeaponUpgradeManager.ts",
-    "relativePath": "src/managers/weapons/WeaponUpgradeManager.ts",
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/helpers/ResourceNetworkGenerator.ts",
+    "relativePath": "src/tests/helpers/ResourceNetworkGenerator.ts",
     "errors": [
       {
-        "line": 281,
-        "column": 28,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 1
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/officers/OfficerTypes.ts",
-    "relativePath": "src/types/officers/OfficerTypes.ts",
-    "errors": [
-      {
-        "line": 119,
-        "column": 10,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 1
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/automation/ConditionChecker.ts",
-    "relativePath": "src/lib/automation/ConditionChecker.ts",
-    "errors": [
-      {
-        "line": 160,
-        "column": 31,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 1
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/modules/ModuleEvents.ts",
-    "relativePath": "src/lib/modules/ModuleEvents.ts",
-    "errors": [
-      {
-        "line": 68,
-        "column": 10,
-        "message": "Unexpected any. Specify a different type.",
-        "severity": 2
-      }
-    ],
-    "errorCount": 1
-  },
-  {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/optimization/RenderBatcher.d.ts",
-    "relativePath": "src/lib/optimization/RenderBatcher.d.ts",
-    "errors": [
-      {
-        "line": 20,
+        "line": 22,
         "column": 29,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
@@ -478,12 +1457,25 @@
     "errorCount": 1
   },
   {
-    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/optimization/RenderBatcher.ts",
-    "relativePath": "src/lib/optimization/RenderBatcher.ts",
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/lib/managers/BaseManager.test.ts",
+    "relativePath": "src/tests/lib/managers/BaseManager.test.ts",
     "errors": [
       {
         "line": 20,
-        "column": 29,
+        "column": 13,
+        "message": "Unexpected any. Specify a different type.",
+        "severity": 2
+      }
+    ],
+    "errorCount": 1
+  },
+  {
+    "filePath": "/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/performance/MultitabPerformanceTestSuite.ts",
+    "relativePath": "src/tests/performance/MultitabPerformanceTestSuite.ts",
+    "errors": [
+      {
+        "line": 288,
+        "column": 44,
         "message": "Unexpected any. Specify a different type.",
         "severity": 2
       }

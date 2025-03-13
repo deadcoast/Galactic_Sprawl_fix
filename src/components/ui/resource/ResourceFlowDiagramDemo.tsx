@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
-import { FlowNodeType } from '../../../managers/resource/ResourceFlowManager';
-import { componentRegistry } from '../../../services/ComponentRegistryService';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { componentRegistryService } from '../../../services/ComponentRegistryService';
+import { FlowNodeType, ResourceType } from '../../../types/resources/StandardizedResourceTypes';
 import ResourceFlowDiagram from './ResourceFlowDiagram';
 
 /**
@@ -43,11 +42,12 @@ const ResourceFlowDiagramDemo: React.FC = () => {
 
   // Update registry information
   const updateRegistryInfo = () => {
-    const allComponents = componentRegistry.getAllComponents();
-    const flowDiagramComponents = componentRegistry.getComponentsByType('ResourceFlowDiagram');
+    // Since there's no getAllComponents method, we'll just use the components by type
+    const flowDiagramComponents =
+      componentRegistryService.getComponentsByType('ResourceFlowDiagram');
 
     setRegistryInfo({
-      componentCount: allComponents.length,
+      componentCount: flowDiagramComponents.length, // Just count the flow diagram components
       flowDiagramComponents: flowDiagramComponents.length,
     });
   };
@@ -98,11 +98,11 @@ const ResourceFlowDiagramDemo: React.FC = () => {
               }}
             >
               <option value="">All Resources</option>
-              <option value="minerals">Minerals</option>
-              <option value="energy">Energy</option>
-              <option value="plasma">Plasma</option>
-              <option value="gas">Gas</option>
-              <option value="research">Research</option>
+              <option value={ResourceType.MINERALS}>Minerals</option>
+              <option value={ResourceType.ENERGY}>Energy</option>
+              <option value={ResourceType.PLASMA}>Plasma</option>
+              <option value={ResourceType.GAS}>Gas</option>
+              <option value={ResourceType.RESEARCH}>Research</option>
             </select>
           </div>
         </div>

@@ -6,7 +6,8 @@
  * and provides insights for performance optimization.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import * as React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   LongSessionMemoryTracker,
   MemorySnapshot,
@@ -79,6 +80,24 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
   const [selectedSnapshot, setSelectedSnapshot] = useState<MemorySnapshot | null>(null);
   const [timeRange, setTimeRange] = useState<'all' | 'hour' | 'day'>('all');
 
+  /**
+   * Convert time range string to milliseconds
+   */
+  const timeRangeToMs = (range: string): number => {
+    switch (range) {
+      case 'hour':
+        return 60 * 60 * 1000;
+      case 'day':
+        return 24 * 60 * 60 * 1000;
+      case 'week':
+        return 7 * 24 * 60 * 60 * 1000;
+      case 'month':
+        return 30 * 24 * 60 * 60 * 1000;
+      default:
+        return 24 * 60 * 60 * 1000; // Default to a day
+    }
+  };
+
   // Set up auto-updating if enabled
   useEffect(() => {
     if (autoUpdate && memoryTracker) {
@@ -149,28 +168,32 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
     let filteredSnapshots = [...snapshots];
     if (timeRange !== 'all') {
       const now = Date.now();
-      const timeRangeMs = timeRange === 'hour' ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
-      filteredSnapshots = snapshots.filter(s => now - s.timestamp < timeRangeMs);
+      const rangeMs = timeRangeToMs(timeRange);
+      filteredSnapshots = snapshots.filter(s => s.timestamp >= now - rangeMs);
     }
 
     if (filteredSnapshots.length < 2) {
-      drawNoDataMessage(ctx);
+      // Not enough data to render
+      ctx.font = '14px Arial';
+      ctx.fillStyle = '#666';
+      ctx.textAlign = 'center';
+      ctx.fillText('Not enough data to display chart', canvas.width / 2, canvas.height / 2);
       return;
     }
 
+    // Calculate chart dimensions
+    const padding = { top: 30, right: 30, bottom: 50, left: 60 };
+    const chartWidth = canvas.width - padding.left - padding.right;
+    const chartHeight = canvas.height - padding.top - padding.bottom;
+
     // Calculate min/max values
     const memoryValues = filteredSnapshots.map(s => s.usedHeapSizeMB);
-    const minMemory = Math.max(0, Math.min(...memoryValues) * 0.9);
-    const maxMemory = Math.max(...memoryValues) * 1.1;
+    const minMemory = Math.floor(Math.min(...memoryValues) * 0.9);
+    const maxMemory = Math.ceil(Math.max(...memoryValues) * 1.1);
 
     // Calculate time range
     const startTime = filteredSnapshots[0].timestamp;
     const endTime = filteredSnapshots[filteredSnapshots.length - 1].timestamp;
-
-    // Set up chart dimensions
-    const padding = { top: 30, right: 30, bottom: 50, left: 60 };
-    const chartWidth = canvas.width - padding.left - padding.right;
-    const chartHeight = canvas.height - padding.top - padding.bottom;
 
     // Draw axes
     drawAxes(ctx, padding, chartWidth, chartHeight, minMemory, maxMemory, startTime, endTime);
@@ -306,7 +329,10 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
     // X-axis title
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Time', padding.left + chartWidth / 2, canvas.height - 15);
+    const canvasElement = canvasRef.current;
+    if (canvasElement) {
+      ctx.fillText('Time', padding.left + chartWidth / 2, canvasElement.height - 15);
+    }
   };
 
   /**
@@ -383,31 +409,30 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
 
     if (!firstSnapshot || !lastSnapshot) return;
 
-    // Calculate trend line start and end points
-    const x1 = padding.left;
-    const y1 =
-      padding.top +
-      chartHeight -
-      ((firstSnapshot.usedHeapSizeMB - minMemory) / (maxMemory - minMemory)) * chartHeight;
+    // Calculate trend line start and end points using startTime and endTime
+    const timeRange = endTime - startTime;
 
-    // Use the trend slope to calculate the end point
-    const timeSpanMs = lastSnapshot.timestamp - firstSnapshot.timestamp;
-    const projectedGrowth = analysis.overallTrend * timeSpanMs;
-    const projectedEndValue = firstSnapshot.usedHeapSizeMB + projectedGrowth;
+    // Calculate x coordinates based on timestamps
+    const x1 = padding.left + ((firstSnapshot.timestamp - startTime) / timeRange) * chartWidth;
+    const x2 = padding.left + ((lastSnapshot.timestamp - startTime) / timeRange) * chartWidth;
 
-    const x2 = padding.left + chartWidth;
-    const y2 =
-      padding.top +
-      chartHeight -
-      ((projectedEndValue - minMemory) / (maxMemory - minMemory)) * chartHeight;
-
-    // Draw trend line
+    // Calculate trend line
     ctx.beginPath();
     ctx.strokeStyle = analysis.suspectedLeak ? '#d93025' : '#fbbc04';
     ctx.lineWidth = 2;
     ctx.setLineDash([5, 3]);
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
+    ctx.moveTo(
+      x1,
+      padding.top +
+        chartHeight -
+        ((firstSnapshot.usedHeapSizeMB - minMemory) / (maxMemory - minMemory)) * chartHeight
+    );
+    ctx.lineTo(
+      x2,
+      padding.top +
+        chartHeight -
+        ((lastSnapshot.usedHeapSizeMB - minMemory) / (maxMemory - minMemory)) * chartHeight
+    );
     ctx.stroke();
     ctx.setLineDash([]);
 
@@ -486,8 +511,8 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
   /**
    * Format marker name for display
    */
-  const formatMarkerName = (markerName: string): string => {
-    return markerName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const formatMarkerName = (name: string): string => {
+    return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   /**
@@ -566,10 +591,8 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
 
   return (
     <div className="long-session-memory-visualizer" style={{ width, maxWidth: '100%' }}>
-      <div className="memory-visualizer-header">
-        <h3>Long Session Memory Tracking</h3>
-
-        {/* Time range selector */}
+      {/* Controls */}
+      <div className="controls">
         <div className="time-range-selector">
           <span>Time Range:</span>
           <button
@@ -666,7 +689,7 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
         <div className="detailed-metrics">
           <h4>Detailed Metrics</h4>
 
-          <div className="metrics-summary">
+          <div className="metrics-grid">
             <div className="metric">
               <div className="metric-label">Session Duration</div>
               <div className="metric-value">
@@ -704,20 +727,25 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
         <div className="session-markers">
           <h4>Session Events</h4>
           <ul>
-            {sessionMarkers.map((marker, index) => (
-              <li key={index} className={`marker-${marker.name}`}>
-                <span className="marker-time">
-                  {new Date(marker.timestamp).toLocaleTimeString()}
-                </span>
-                <span className="marker-name">{formatMarkerName(marker.name)}</span>
-                {marker.name === 'leak_detected' && marker.metadata && (
-                  <span className="marker-details">
-                    (Growth: {(marker.metadata.growthRatePerMinute as number).toFixed(2)} MB/min,
-                    Severity: {marker.metadata.severity})
+            {sessionMarkers.map(
+              (
+                marker: { timestamp: number; name: string; metadata?: Record<string, unknown> },
+                index: number
+              ) => (
+                <li key={index} className={`marker-${marker.name}`}>
+                  <span className="marker-time">
+                    {new Date(marker.timestamp).toLocaleTimeString()}
                   </span>
-                )}
-              </li>
-            ))}
+                  <span className="marker-name">{formatMarkerName(marker.name)}</span>
+                  {marker.name === 'leak_detected' && marker.metadata && (
+                    <span className="marker-details">
+                      (Growth: {(marker.metadata.growthRatePerMinute as number).toFixed(2)} MB/min,
+                      Severity: {String(marker.metadata.severity)})
+                    </span>
+                  )}
+                </li>
+              )
+            )}
           </ul>
         </div>
       )}
@@ -730,24 +758,23 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
             BlinkMacSystemFont,
             'Segoe UI',
             Roboto,
-            Arial,
+            Oxygen,
+            Ubuntu,
+            Cantarell,
+            'Open Sans',
+            'Helvetica Neue',
             sans-serif;
-          background: #f8f9fa;
-          border-radius: 8px;
           padding: 20px;
+          background-color: #fff;
+          border-radius: 8px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
-        .memory-visualizer-header {
+        .controls {
           display: flex;
           justify-content: space-between;
           align-items: center;
           margin-bottom: 15px;
-        }
-
-        .memory-visualizer-header h3 {
-          margin: 0;
-          color: #202124;
         }
 
         .time-range-selector {
@@ -882,7 +909,7 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
           color: #202124;
         }
 
-        .metrics-summary {
+        .metrics-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
           gap: 15px;

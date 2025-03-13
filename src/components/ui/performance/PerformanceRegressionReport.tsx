@@ -301,7 +301,8 @@ export const PerformanceRegressionReport: React.FC<PerformanceRegressionReportPr
       while ((word = words.pop())) {
         line.push(word);
         tspan.text(line.join(' '));
-        if (tspan.node()?.getComputedTextLength() > width) {
+        const tspanNode = tspan.node();
+        if (tspanNode && tspanNode.getComputedTextLength() > width) {
           line.pop();
           tspan.text(line.join(' '));
           line = [word];

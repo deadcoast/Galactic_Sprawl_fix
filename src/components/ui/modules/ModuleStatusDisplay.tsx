@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useModuleStatus, useModulesWithStatus } from '../../../hooks/modules/useModuleStatus';
+import { useModuleAlerts, useModuleStatus } from '../../../hooks/modules/useModuleStatus';
 import { moduleManager } from '../../../managers/module/ModuleManager';
 import { ExtendedModuleStatus } from '../../../managers/module/ModuleStatusManager';
 import { BaseModule } from '../../../types/buildings/ModuleTypes';
@@ -373,7 +373,7 @@ interface ModuleAlertListProps {
  */
 export const ModuleAlertList = React.memo<ModuleAlertListProps>(
   ({ alertLevel, onSelectModule }) => {
-    const { moduleIds, isLoading, error } = useModulesWithStatus(undefined, alertLevel);
+    const { moduleIds, isLoading, error } = useModuleAlerts(alertLevel);
 
     // Render loading state
     if (isLoading) {
@@ -397,7 +397,7 @@ export const ModuleAlertList = React.memo<ModuleAlertListProps>(
         </h4>
 
         <div className="module-alert-list__list">
-          {moduleIds.map(moduleId => (
+          {moduleIds.map((moduleId: string) => (
             <ModuleAlertItem
               key={moduleId}
               moduleId={moduleId}

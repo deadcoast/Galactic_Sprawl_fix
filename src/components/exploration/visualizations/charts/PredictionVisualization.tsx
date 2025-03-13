@@ -1,5 +1,4 @@
 import {
-  Box,
   FormControl,
   InputLabel,
   MenuItem,
@@ -97,7 +96,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
 
     // Prepare time series data for date-based visualization
     const timeSeriesData = useMemo<TimeSeriesDataPoint[]>(() => {
-      console.log('Computing time series data'); // Helpful for debugging
+      console.warn('Computing time series data'); // Helpful for debugging
       const result: TimeSeriesDataPoint[] = [];
       // Add historical data points
       for (const point of data.predictions) {
@@ -397,7 +396,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
     const featureComparisonChart = useMemo(
       () => (
         <>
-          <Box sx={{ mb: 2 }}>
+          <div className="mb-2">
             <FormControl fullWidth size="small">
               <InputLabel>Feature</InputLabel>
               <Select
@@ -414,7 +413,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                 ))}
               </Select>
             </FormControl>
-          </Box>
+          </div>
 
           {selectedFeature ? (
             <ResponsiveContainer width="100%" height={300}>
@@ -537,7 +536,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
         const featureImportance = modelDetails.featureImportance;
 
         return (
-          <Box>
+          <div>
             <Typography variant="h6" gutterBottom>
               Linear Regression Model
             </Typography>
@@ -583,13 +582,13 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                 </TableContainer>
               </>
             )}
-          </Box>
+          </div>
         );
       } else if (data.model === 'neuralNetwork' && isNeuralNetworkModel(data.modelDetails)) {
         const modelDetails = data.modelDetails;
 
         return (
-          <Box>
+          <div>
             <Typography variant="h6" gutterBottom>
               Neural Network Model
             </Typography>
@@ -645,7 +644,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                 </TableBody>
               </Table>
             </TableContainer>
-          </Box>
+          </div>
         );
       }
 
@@ -657,7 +656,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
     }, [data.model, data.modelDetails, data.targetVariable, data.features]);
 
     return (
-      <Box sx={{ width: width, height: height, overflow: 'auto' }}>
+      <div className="h-full w-full overflow-auto" style={{ width, height }}>
         {title && (
           <Typography variant="h6" gutterBottom>
             {title}
@@ -677,7 +676,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
         {activeTab === 1 && featureComparisonChart}
         {activeTab === 2 && residualPlot}
         {activeTab === 3 && modelDetails}
-      </Box>
+      </div>
     );
   }
 );

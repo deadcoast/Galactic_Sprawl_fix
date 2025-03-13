@@ -111,7 +111,7 @@ describe('ModuleManagerWrapper', () => {
         eventBus: { subscribe: vi.fn() } as unknown as EventBus<BaseEvent>,
       };
 
-      wrapper = new ModuleManagerWrapper(mockModuleManager as any);
+      wrapper = new ModuleManagerWrapper(mockModuleManager as unknown);
     });
 
     it('should convert modules when calling getModules', () => {
@@ -176,7 +176,7 @@ describe('ModuleManagerWrapper', () => {
       };
 
       const wrapperWithDispatchAction = new ModuleManagerWrapper(
-        mockManagerWithDispatchAction as any
+        mockManagerWithDispatchAction as unknown
       );
 
       // Create action
@@ -196,7 +196,7 @@ describe('ModuleManagerWrapper', () => {
         dispatch: vi.fn(),
       };
 
-      const wrapperWithDispatch = new ModuleManagerWrapper(mockManagerWithDispatch as any);
+      const wrapperWithDispatch = new ModuleManagerWrapper(mockManagerWithDispatch as unknown);
 
       // Create action
       const action = { type: 'TEST_ACTION', moduleId: 'module-1' };

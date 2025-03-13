@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
-import { BaseState } from '../lib/contexts/BaseContext';
 import { ResourceManager } from '../managers/game/ResourceManager';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { ResourceType } from '../types/resources/StandardizedResourceTypes';
@@ -8,7 +7,7 @@ import { ResourceType } from '../types/resources/StandardizedResourceTypes';
  * We're focusing only on the core resources for this context
  */
 // Replace string-based type with enum
-type CoreResourceType =
+type _CoreResourceType =
   | ResourceType.MINERALS
   | ResourceType.ENERGY
   | ResourceType.POPULATION
@@ -51,8 +50,11 @@ export interface ResourceRatesAction {
 /**
  * State interface extended with BaseState for standardized properties
  */
-export interface ResourceRatesState extends BaseState {
+export interface ResourceRatesState {
   resourceRates: Record<ResourceType, ResourceRateDetail>;
+  isLoading: boolean;
+  error: string | null;
+  lastUpdated: number;
 }
 
 /**
@@ -66,6 +68,17 @@ const defaultResourceRates: Record<ResourceType, ResourceRateDetail> = {
   [ResourceType.PLASMA]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.GAS]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.EXOTIC]: { production: 0, consumption: 0, net: 0 },
+  // Add missing resource types
+  [ResourceType.IRON]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.COPPER]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.TITANIUM]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.URANIUM]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.WATER]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.HELIUM]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.DEUTERIUM]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.ANTIMATTER]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.DARK_MATTER]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.EXOTIC_MATTER]: { production: 0, consumption: 0, net: 0 },
 };
 
 /**
@@ -200,20 +213,23 @@ export const ResourceRatesProvider: React.FC<{
   initialState?: Partial<ResourceRatesState>;
 }> = ({ children, manager, initialState: initialStateOverride }) => {
   // Get initial state from ResourceManager if available
-  const effectiveInitialState = useMemo(() => {
+  const effectiveInitialState = useMemo((): ResourceRatesState => {
     if (manager) {
       try {
-        const rates = manager.getAllResourceRates?.() || defaultResourceRates;
+        // Ensure we have a complete set of resource rates
+        const managerRates = manager.getAllResourceRates?.() || {};
+        const rates = { ...defaultResourceRates, ...managerRates };
+
         return {
           ...initialState,
           resourceRates: rates,
           ...(initialStateOverride || {}),
-        };
+        } as ResourceRatesState;
       } catch (error) {
         console.error('Error getting resource rates from manager:', error);
       }
     }
-    return { ...initialState, ...(initialStateOverride || {}) };
+    return { ...initialState, ...(initialStateOverride || {}) } as ResourceRatesState;
   }, [manager, initialStateOverride]);
 
   // Create reducer

@@ -1,4 +1,3 @@
-import { Box, Button } from '@mui/material';
 import { useMemo, useState } from 'react';
 import {
   ChartDataRecord,
@@ -442,7 +441,7 @@ export function AnalysisVisualization({
     // If showing raw data, render the data table instead of a chart
     if (showRawData) {
       return (
-        <Box sx={{ mt: 2 }}>
+        <div className="mt-2">
           <VirtualizedDataTable
             data={allData}
             columns={tableColumns}
@@ -451,7 +450,7 @@ export function AnalysisVisualization({
             enableSorting
             zebraStripes
           />
-        </Box>
+        </div>
       );
     }
 
@@ -509,6 +508,9 @@ export function AnalysisVisualization({
     if (analysisType === 'resourceMapping' && config.type === 'resourceMapping') {
       const resourceMappingConfig = config as ResourceMappingAnalysisConfig;
 
+      // Use the config for any specific settings from the config
+      const configTitle = resourceMappingConfig.name || 'Resource Mapping Analysis';
+
       // Safely extract resource mapping data with proper type checking
       const {
         resourcePoints,
@@ -538,8 +540,8 @@ export function AnalysisVisualization({
             summary,
           }}
           width={width}
-          height={height}
-          title={config.name}
+          height={typeof height === 'string' ? parseInt(height, 10) : height}
+          title={configTitle}
         />
       );
     }
@@ -734,11 +736,14 @@ export function AnalysisVisualization({
   return (
     <div className="analysis-visualization" data-testid="visualization">
       {/* View toggle button */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <Button variant="outlined" size="small" onClick={toggleRawDataView}>
+      <div className="mb-4 flex justify-end">
+        <button
+          className="rounded border border-gray-300 px-3 py-1 text-sm hover:bg-gray-100"
+          onClick={toggleRawDataView}
+        >
           {showRawData ? 'Show Chart View' : 'Show Raw Data'}
-        </Button>
-      </Box>
+        </button>
+      </div>
 
       {renderVisualization()}
       {renderPagination()}

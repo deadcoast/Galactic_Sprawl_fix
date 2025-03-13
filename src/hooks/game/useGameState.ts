@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect } from 'react';
 import {
+  GameActionType,
   selectGameTime,
   selectIsPaused,
   selectIsRunning,
@@ -34,12 +35,6 @@ import {
   measureSelectorTime,
   trackHookRender,
 } from '../../utils/performance/hookPerformanceMonitor';
-
-// Type guards
-interface Resource {
-  type: string;
-  amount: number;
-}
 
 // Define interfaces for event data types
 interface MissionCompletedEventData {
@@ -185,32 +180,41 @@ export function useGameState() {
   const dispatch = useGameDispatch();
 
   // Action creators with standardized pattern
-  const startGame = useCallback(() => dispatch({ type: 'START_GAME' }), [dispatch]);
-  const pauseGame = useCallback(() => dispatch({ type: 'PAUSE_GAME' }), [dispatch]);
-  const resumeGame = useCallback(() => dispatch({ type: 'RESUME_GAME' }), [dispatch]);
+  const startGame = useCallback(
+    () => dispatch({ type: GameActionType.START_GAME, payload: undefined }),
+    [dispatch]
+  );
+  const pauseGame = useCallback(
+    () => dispatch({ type: GameActionType.PAUSE_GAME, payload: undefined }),
+    [dispatch]
+  );
+  const resumeGame = useCallback(
+    () => dispatch({ type: GameActionType.RESUME_GAME, payload: undefined }),
+    [dispatch]
+  );
   const dispatchEvent = useCallback(
     (event: GameEvent) => {
       gameManager.dispatchEvent(event);
-      dispatch({ type: 'ADD_EVENT', event });
+      dispatch({ type: GameActionType.ADD_EVENT, payload: event });
     },
     [dispatch]
   );
 
   useEffect(() => {
     // Sync game manager state with context
-    const unsubscribe = gameManager.subscribe(gameTime => {
+    const unsubscribe = gameManager.subscribeToGameTime(gameTime => {
       // Update game time in context
       dispatch({
-        type: 'UPDATE_GAME_TIME',
-        gameTime,
+        type: GameActionType.UPDATE_GAME_TIME,
+        payload: gameTime,
       });
     });
 
     // Listen for game events
     const unsubscribeEvents = gameManager.addEventListener('*', (event: GameEvent) => {
       dispatch({
-        type: 'ADD_EVENT',
-        event,
+        type: GameActionType.ADD_EVENT,
+        payload: event,
       });
     });
 
@@ -224,8 +228,8 @@ export function useGameState() {
 
         const missionData = event.data;
         dispatch({
-          type: 'ADD_MISSION',
-          mission: {
+          type: GameActionType.ADD_MISSION,
+          payload: {
             id: `mission-${Date.now()}`,
             type: missionData.type,
             timestamp: event.timestamp,
@@ -240,18 +244,14 @@ export function useGameState() {
 
         // Update mission statistics
         dispatch({
-          type: 'UPDATE_MISSION_STATS',
-          stats: {
+          type: GameActionType.UPDATE_MISSION_STATS,
+          payload: {
             totalXP: missions.statistics.totalXP + (missionData.xpGained || 0),
             discoveries:
               missions.statistics.discoveries + (missionData.type === 'discovery' ? 1 : 0),
             anomalies: missions.statistics.anomalies + (missionData.type === 'anomaly' ? 1 : 0),
             resourcesFound:
-              missions.statistics.resourcesFound +
-              (missionData.resourcesFound?.reduce(
-                (sum: number, r: Resource) => sum + r.amount,
-                0
-              ) || 0),
+              missions.statistics.resourcesFound + (missionData.resourcesFound?.length || 0),
             highPriorityCompleted:
               missions.statistics.highPriorityCompleted +
               (missionData.importance === 'high' ? 1 : 0),
@@ -272,14 +272,16 @@ export function useGameState() {
 
           const sectorData = event.data;
           dispatch({
-            type: 'UPDATE_SECTOR',
-            sectorId: sectorData.task.target.id,
-            data: {
-              status: 'mapped' as const,
-              resourcePotential: sectorData.resourcePotential || 0,
-              habitabilityScore: sectorData.habitabilityScore || 0,
-              lastScanned: event.timestamp,
-              heatMapValue: sectorData.heatMapValue,
+            type: GameActionType.UPDATE_SECTOR,
+            payload: {
+              sectorId: sectorData.task.target.id,
+              data: {
+                status: 'mapped' as const,
+                resourcePotential: sectorData.resourcePotential || 0,
+                habitabilityScore: sectorData.habitabilityScore || 0,
+                heatMapValue: sectorData.heatMapValue || 0,
+                lastScanned: Date.now(),
+              },
             },
           });
         }
