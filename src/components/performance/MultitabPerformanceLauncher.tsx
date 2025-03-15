@@ -9,7 +9,8 @@
  * - Viewing test results
  */
 
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import {
   DOMOperationTestOptions,
   MemoryUsageTestOptions,

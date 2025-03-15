@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   FlowNode,
@@ -13,8 +14,8 @@ describe('ResourceFlowManager - Conversion Chains', () => {
   const converter1: FlowNode = {
     id: 'converter-1',
     type: 'converter' as FlowNodeType,
-    resources: ['minerals', 'plasma'],
-    priority: { type: 'minerals', priority: 1, consumers: [] },
+    resources: [ResourceType.MINERALS, ResourceType.PLASMA],
+    priority: { type: ResourceType.MINERALS, priority: 1, consumers: [] },
     active: true,
     converterConfig: {
       supportedRecipes: ['minerals-to-plasma'],
@@ -27,8 +28,8 @@ describe('ResourceFlowManager - Conversion Chains', () => {
   const converter2: FlowNode = {
     id: 'converter-2',
     type: 'converter' as FlowNodeType,
-    resources: ['plasma', 'energy'],
-    priority: { type: 'plasma', priority: 1, consumers: [] },
+    resources: [ResourceType.PLASMA, ResourceType.ENERGY],
+    priority: { type: ResourceType.PLASMA, priority: 1, consumers: [] },
     active: true,
     converterConfig: {
       supportedRecipes: ['plasma-to-energy'],
@@ -41,8 +42,8 @@ describe('ResourceFlowManager - Conversion Chains', () => {
   const recipe1: ResourceConversionRecipe = {
     id: 'minerals-to-plasma',
     name: 'Convert Minerals to Plasma',
-    inputs: [{ type: 'minerals', amount: 10 }],
-    outputs: [{ type: 'plasma', amount: 5 }],
+    inputs: [{ type: ResourceType.MINERALS, amount: 10 }],
+    outputs: [{ type: ResourceType.PLASMA, amount: 5 }],
     processingTime: 1000,
     baseEfficiency: 1.0,
   };
@@ -50,8 +51,8 @@ describe('ResourceFlowManager - Conversion Chains', () => {
   const recipe2: ResourceConversionRecipe = {
     id: 'plasma-to-energy',
     name: 'Convert Plasma to Energy',
-    inputs: [{ type: 'plasma', amount: 5 }],
-    outputs: [{ type: 'energy', amount: 20 }],
+    inputs: [{ type: ResourceType.PLASMA, amount: 5 }],
+    outputs: [{ type: ResourceType.ENERGY, amount: 20 }],
     processingTime: 1500,
     baseEfficiency: 1.0,
   };
@@ -119,7 +120,7 @@ describe('ResourceFlowManager - Conversion Chains', () => {
     return;
 
     // Mock necessary resource states
-    flowManager.updateResourceState('minerals', {
+    flowManager.updateResourceState(ResourceType.MINERALS, {
       current: 100,
       max: 1000,
       min: 0,
@@ -201,7 +202,7 @@ describe('ResourceFlowManager - Conversion Chains', () => {
 
     // Verify resource type and amount
     const transfer = chainStatus?.resourceTransfers[0];
-    expect(transfer?.type).toBe('plasma');
+    expect(transfer?.type).toBe(ResourceType.PLASMA);
     expect(transfer?.fromStep).toBe(0);
     expect(transfer?.toStep).toBe(1);
   });

@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { afterEach, beforeEach, describe, expect, it, SpyInstance, vi } from 'vitest';
 import { ModuleEvent, ModuleEventType } from '../../../lib/modules/ModuleEvents';
 import {
@@ -168,7 +169,7 @@ describe('GlobalAutomationManager', () => {
       conditions: [
         {
           type: 'RESOURCE_BELOW',
-          target: 'energy',
+          target: ResourceType.ENERGY,
           value: 100,
           operator: 'less',
         },
@@ -176,12 +177,12 @@ describe('GlobalAutomationManager', () => {
       actions: [
         {
           type: 'PRODUCE_RESOURCES',
-          target: 'energy',
+          target: ResourceType.ENERGY,
           value: 50,
         },
       ],
       systems: ['resource-system'],
-      tags: ['test', 'energy'],
+      tags: ['test', ResourceType.ENERGY],
     };
 
     // Register the routine

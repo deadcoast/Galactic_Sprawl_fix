@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useEventSubscription } from '../../lib/events/UnifiedEventSystem';
-import { resourceSystem, ResourceSystem } from '../../resource/ResourceSystem';
-import { ResourceState, ResourceType, ResourceTransfer } from '../../types/resources/ResourceTypes';
+import { resourceSystem } from '../../resource/ResourceSystem';
+import { FlowConnection, FlowNode } from '../../resource/subsystems/ResourceFlowSubsystem';
 import { StorageContainerConfig } from '../../resource/subsystems/ResourceStorageSubsystem';
-import { FlowNode, FlowConnection } from '../../resource/subsystems/ResourceFlowSubsystem';
 import { ResourceThreshold } from '../../resource/subsystems/ResourceThresholdSubsystem';
+import { ResourceState, ResourceTransfer } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // Make sure ResourceSystem is initialized
 resourceSystem.initialize().catch(error => {
@@ -13,7 +14,7 @@ resourceSystem.initialize().catch(error => {
 
 /**
  * Hook to access the resource system
- * 
+ *
  * Provides methods to interact with the unified resource system
  * and subscribes to relevant resource events.
  */
@@ -23,8 +24,9 @@ export function useResourceSystem() {
   // Initialize the resource system when the hook is first used
   useEffect(() => {
     let isMounted = true;
-    
-    resourceSystem.initialize()
+
+    resourceSystem
+      .initialize()
       .then(() => {
         if (isMounted) {
           setIsReady(true);
@@ -33,18 +35,18 @@ export function useResourceSystem() {
       .catch(error => {
         console.error('Failed to initialize ResourceSystem in hook:', error);
       });
-      
+
     return () => {
       isMounted = false;
     };
   }, []);
 
   // Subscribe to resource events
-  useEventSubscription('RESOURCE_THRESHOLD_REACHED', (event) => {
+  useEventSubscription('RESOURCE_THRESHOLD_REACHED', event => {
     console.log('Resource threshold reached:', event);
   });
 
-  useEventSubscription('RESOURCE_TRANSFERRED', (event) => {
+  useEventSubscription('RESOURCE_TRANSFERRED', event => {
     console.log('Resource transferred:', event);
   });
 
@@ -218,43 +220,47 @@ export function useResourceSystem() {
     registerResourceFlow,
     convertResources,
     getTransferHistory,
-    
+
     // Storage subsystem
     registerContainer,
     getContainer,
     getAllContainers: () => resourceSystem.getStorageSubsystem().getAllContainers(),
-    getContainersByResourceType: (type: ResourceType) => 
+    getContainersByResourceType: (type: ResourceType) =>
       resourceSystem.getStorageSubsystem().getContainersByResourceType(type),
-    transferBetweenContainers: (sourceId: string, targetId: string, type: ResourceType, amount: number) =>
-      resourceSystem.getStorageSubsystem().transferBetweenContainers(sourceId, targetId, type, amount),
-    
+    transferBetweenContainers: (
+      sourceId: string,
+      targetId: string,
+      type: ResourceType,
+      amount: number
+    ) =>
+      resourceSystem
+        .getStorageSubsystem()
+        .transferBetweenContainers(sourceId, targetId, type, amount),
+
     // Flow subsystem
     registerNode,
     getNode,
     getAllNodes: () => resourceSystem.getFlowSubsystem().getNodes(),
-    registerConnection: (connection: FlowConnection) => 
+    registerConnection: (connection: FlowConnection) =>
       resourceSystem.getFlowSubsystem().registerConnection(connection),
     getConnection: (id: string) => resourceSystem.getFlowSubsystem().getConnection(id),
     getAllConnections: () => resourceSystem.getFlowSubsystem().getConnections(),
     optimizeFlows,
-    
+
     // Threshold subsystem
     registerThreshold,
     getThreshold,
     getAllThresholds: () => resourceSystem.getThresholdSubsystem().getAllThresholds(),
-    getThresholdsByResourceType: (type: ResourceType) => 
+    getThresholdsByResourceType: (type: ResourceType) =>
       resourceSystem.getThresholdSubsystem().getThresholdsByResourceType(type),
     enableThreshold: (id: string) => resourceSystem.getThresholdSubsystem().enableThreshold(id),
     disableThreshold: (id: string) => resourceSystem.getThresholdSubsystem().disableThreshold(id),
-    
+
     // Direct access to subsystems (for advanced use cases)
-    getStorageSubsystem: () => resourceSystem.getStorageSubsystem(),
-    getFlowSubsystem: () => resourceSystem.getFlowSubsystem(),
-    getTransferSubsystem: () => resourceSystem.getTransferSubsystem(),
-    getThresholdSubsystem: () => resourceSystem.getThresholdSubsystem(),
-    
-    // Access to the raw resource system
-    system: resourceSystem,
+    storageSubsystem: resourceSystem.getStorageSubsystem(),
+    flowSubsystem: resourceSystem.getFlowSubsystem(),
+    thresholdSubsystem: resourceSystem.getThresholdSubsystem(),
+    transferSubsystem: resourceSystem.getTransferSubsystem(),
   };
 }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from "react";
 import { ResourceManagementDashboard } from '../components/ui/resource/ResourceManagementDashboard';
 import { ResourceRatesProvider } from '../contexts/ResourceRatesContext';
 import { ThresholdProvider } from '../contexts/ThresholdContext';

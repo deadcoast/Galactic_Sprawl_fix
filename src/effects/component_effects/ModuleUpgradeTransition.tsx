@@ -1,7 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { ArrowUp, Zap } from 'lucide-react';
-import * as React from 'react';
+import * as React from "react";
 import { useEffect, useState } from 'react';
 
 interface ModuleUpgradeTransitionProps {

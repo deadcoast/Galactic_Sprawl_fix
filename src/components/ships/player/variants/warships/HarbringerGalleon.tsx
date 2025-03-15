@@ -1,6 +1,7 @@
+import * as React from "react";
+import { useEffect, useRef } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import * as PIXI from 'pixi.js';
-import { useEffect, useRef } from 'react';
 import { ThrusterEffect } from '../../../../../effects/component_effects/ThrusterEffect';
 import { useAnimation } from '../../../../../hooks/game/useAnimation';
 import { useAssets } from '../../../../../hooks/game/useAssets';

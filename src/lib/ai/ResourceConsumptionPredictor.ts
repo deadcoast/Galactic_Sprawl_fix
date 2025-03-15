@@ -7,7 +7,7 @@
  */
 
 import { PerformanceMetrics } from '../../managers/resource/ResourcePerformanceMonitor';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 /**
  * Data point for model training and prediction

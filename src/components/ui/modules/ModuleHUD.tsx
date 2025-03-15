@@ -1,6 +1,6 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
-import * as React from 'react';
+import * as React from "react";
 import { useCallback, useEffect, useState } from 'react';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../../lib/modules/ModuleEvents';
 import { moduleManager } from '../../../managers/module/ModuleManager';

@@ -1,7 +1,7 @@
-export interface Ship {
+import { ResourceType } from "./../resources/ResourceTypes";export interface Ship {
   id: string;
   name: string;
-  type: 'recon' | 'mining' | 'war' | 'energy';
+  type: 'recon' | 'mining' | 'war' | ResourceType.ENERGY;
   currentTask?: string;
   completedMissions?: number;
   capabilities: {

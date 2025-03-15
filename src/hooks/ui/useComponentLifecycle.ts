@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ModuleEvent, moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { EventType } from '../../types/events/EventTypes';
 
 /**
  * Options for component lifecycle management
@@ -22,7 +23,7 @@ export interface ComponentLifecycleOptions {
     /**
      * Type of the event to subscribe to
      */
-    eventType: ModuleEventType;
+    eventType: EventType;
 
     /**
      * Handler function for the event
@@ -50,7 +51,7 @@ export interface ComponentLifecycleOptions {
  *     onUnmount: () => console.warn('ResourceDisplay unmounted'),
  *     eventSubscriptions: [
  *       {
- *         eventType: 'RESOURCE_PRODUCED',
+ *         eventType: EventType.RESOURCE_PRODUCED,
  *         handler: (event) => {
  *           if (event.data.resourceType === resourceType) {
  *             setAmount(prev => prev + event.data.amount);
@@ -169,7 +170,7 @@ export function useStableCallback<T extends (...args: unknown[]) => unknown>(cal
  *   useDynamicComponentLifecycle({
  *     eventSubscriptions: [
  *       {
- *         eventType: 'RESOURCE_PRODUCED',
+ *         eventType: EventType.RESOURCE_PRODUCED,
  *         handler: (event) => {
  *           if (event.data.resourceType === resourceType) {
  *             setAmount(prev => prev + event.data.amount);
@@ -254,5 +255,5 @@ export function useDynamicComponentLifecycle(
         }
       });
     };
-  }, deps); // Dependency array ensures this reruns when deps change
+  }, deps); // Re-run when dependencies change
 }

@@ -1,4 +1,5 @@
-import React, { ButtonHTMLAttributes, forwardRef } from 'react';
+import * as React from "react";
+import { ButtonHTMLAttributes, forwardRef } from 'react';
 import { Button as NewButton } from '../../../ui/components/Button';
 
 interface LegacyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

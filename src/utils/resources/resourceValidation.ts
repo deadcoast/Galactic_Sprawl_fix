@@ -1,34 +1,83 @@
 import {
-  AdvancedResource,
-  BasicResource,
   ResourceConsumption,
-  ResourceContainer,
   ResourceCost,
   ResourceFlow,
-  ResourcePool,
   ResourceProduction,
   ResourceState,
-  ResourceStorage,
   ResourceThreshold,
   ResourceTransfer,
   ResourceType,
-  SpecialResource,
+  ResourceTypeString,
 } from '../../types/resources/ResourceTypes';
+import { ResourceTypeConverter } from '../ResourceTypeConverter';
+
+// Define interfaces for resource types that are missing from ResourceTypes.ts
+export interface BasicResource {
+  id: string;
+  type: ResourceType;
+  name: string;
+  category: 'basic';
+}
+
+export interface AdvancedResource {
+  id: string;
+  type: ResourceType;
+  name: string;
+  category: 'advanced';
+}
+
+export interface SpecialResource {
+  id: string;
+  type: ResourceType;
+  name: string;
+  category: 'special';
+}
+
+export interface ResourceContainer {
+  id: string;
+  resources: Record<ResourceType, ResourceState>;
+}
+
+export interface ResourcePool {
+  id: string;
+  resources: Record<ResourceType, number>;
+}
+
+export interface ResourceStorage {
+  id: string;
+  capacity: Record<ResourceType, number>;
+  stored: Record<ResourceType, number>;
+}
 
 /**
- * Type guard for ResourceType
+ * Type guard for enum ResourceType
  */
-export function isResourceType(value: unknown): value is ResourceType {
-  const validTypes: ResourceType[] = [
-    'minerals',
-    'energy',
-    'population',
-    'research',
-    'plasma',
-    'gas',
-    'exotic',
-  ];
-  return typeof value === 'string' && validTypes.includes(value as ResourceType);
+export function isEnumResourceType(value: unknown): value is ResourceType {
+  return typeof value === 'string' && Object.values(ResourceType).includes(value as ResourceType);
+}
+
+/**
+ * Type guard for string ResourceType
+ */
+export function isStringResourceType(value: unknown): value is ResourceTypeString {
+  return typeof value === 'string' && ResourceTypeConverter.isValidStringType(value);
+}
+
+/**
+ * Type guard for ResourceType (supports both string and enum types)
+ */
+export function isResourceType(value: unknown): value is ResourceTypeString | ResourceType {
+  // Check if it's an enum ResourceType
+  if (isEnumResourceType(value)) {
+    return true;
+  }
+
+  // Check if it's a string ResourceType
+  if (isStringResourceType(value)) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -77,7 +126,7 @@ export function validateResourceThreshold(threshold: ResourceThreshold): boolean
   }
 
   // Type must be valid
-  if (!isResourceType(threshold.type)) {
+  if (!isResourceType(threshold.resourceId)) {
     return false;
   }
 
@@ -248,7 +297,7 @@ export function validateResourceCost(cost: ResourceCost): boolean {
     return false;
   }
 
-  return isResourceType(cost.type) && typeof cost.amount === 'number' && cost.amount >= 0;
+  return isResourceType(cost.type) && typeof cost.amount === 'number' && cost.amount > 0;
 }
 
 /**
@@ -276,12 +325,12 @@ export function isBasicResource(resource: unknown): resource is BasicResource {
     return false;
   }
 
+  const basicResource = resource as BasicResource;
   return (
-    'id' in resource &&
-    'name' in resource &&
-    'type' in resource &&
-    'category' in resource &&
-    resource.category === 'basic'
+    typeof basicResource.id === 'string' &&
+    isResourceType(basicResource.type) &&
+    typeof basicResource.name === 'string' &&
+    basicResource.category === 'basic'
   );
 }
 
@@ -293,14 +342,12 @@ export function isAdvancedResource(resource: unknown): resource is AdvancedResou
     return false;
   }
 
+  const advancedResource = resource as AdvancedResource;
   return (
-    'id' in resource &&
-    'name' in resource &&
-    'type' in resource &&
-    'category' in resource &&
-    'components' in resource &&
-    resource.category === 'advanced' &&
-    Array.isArray(resource.components)
+    typeof advancedResource.id === 'string' &&
+    isResourceType(advancedResource.type) &&
+    typeof advancedResource.name === 'string' &&
+    advancedResource.category === 'advanced'
   );
 }
 
@@ -312,13 +359,12 @@ export function isSpecialResource(resource: unknown): resource is SpecialResourc
     return false;
   }
 
+  const specialResource = resource as SpecialResource;
   return (
-    'id' in resource &&
-    'name' in resource &&
-    'type' in resource &&
-    'category' in resource &&
-    'rarity' in resource &&
-    resource.category === 'special'
+    typeof specialResource.id === 'string' &&
+    isResourceType(specialResource.type) &&
+    typeof specialResource.name === 'string' &&
+    specialResource.category === 'special'
   );
 }
 
@@ -330,45 +376,76 @@ export function isResourceContainer(container: unknown): container is ResourceCo
     return false;
   }
 
-  return (
-    'id' in container &&
-    'name' in container &&
-    'capacity' in container &&
-    typeof container.capacity === 'number' &&
-    container.capacity > 0
-  );
+  const resourceContainer = container as ResourceContainer;
+  if (typeof resourceContainer.id !== 'string' || typeof resourceContainer.resources !== 'object') {
+    return false;
+  }
+
+  // Check that all resources are valid ResourceState objects
+  for (const resourceType in resourceContainer.resources) {
+    if (
+      !validateResourceState(resourceContainer.resources[resourceType as unknown as ResourceType])
+    ) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
  * Type guard for ResourcePool
  */
 export function isResourcePool(pool: unknown): pool is ResourcePool {
-  if (!isResourceContainer(pool)) {
+  if (typeof pool !== 'object' || pool === null) {
     return false;
   }
 
-  return (
-    'type' in pool &&
-    'poolType' in pool &&
-    (pool.poolType === 'global' || pool.poolType === 'module')
-  );
+  const resourcePool = pool as ResourcePool;
+  if (typeof resourcePool.id !== 'string' || typeof resourcePool.resources !== 'object') {
+    return false;
+  }
+
+  // Check that all resources are numbers
+  for (const resourceType in resourcePool.resources) {
+    if (typeof resourcePool.resources[resourceType as unknown as ResourceType] !== 'number') {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
  * Type guard for ResourceStorage
  */
 export function isResourceStorage(storage: unknown): storage is ResourceStorage {
-  if (!isResourceContainer(storage)) {
+  if (typeof storage !== 'object' || storage === null) {
     return false;
   }
 
-  return (
-    'type' in storage &&
-    'storageType' in storage &&
-    (storage.storageType === 'basic' || storage.storageType === 'advanced') &&
-    'efficiency' in storage &&
-    typeof storage.efficiency === 'number' &&
-    storage.efficiency > 0 &&
-    storage.efficiency <= 1
-  );
+  const resourceStorage = storage as ResourceStorage;
+  if (
+    typeof resourceStorage.id !== 'string' ||
+    typeof resourceStorage.capacity !== 'object' ||
+    typeof resourceStorage.stored !== 'object'
+  ) {
+    return false;
+  }
+
+  // Check that all capacity values are numbers
+  for (const resourceType in resourceStorage.capacity) {
+    if (typeof resourceStorage.capacity[resourceType as unknown as ResourceType] !== 'number') {
+      return false;
+    }
+  }
+
+  // Check that all stored values are numbers
+  for (const resourceType in resourceStorage.stored) {
+    if (typeof resourceStorage.stored[resourceType as unknown as ResourceType] !== 'number') {
+      return false;
+    }
+  }
+
+  return true;
 }

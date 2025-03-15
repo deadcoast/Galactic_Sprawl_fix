@@ -1,5 +1,5 @@
 import { Position } from '../core/GameTypes';
-
+import { ResourceType } from "./../resources/ResourceTypes";
 // Base module interface that all modules share
 export interface BaseModule {
   id: string;
@@ -24,9 +24,9 @@ export type ModuleType =
   | 'exploration'
   | 'mineral'
   | 'trading'
-  | 'population'
+  | ResourceType.POPULATION
   | 'infrastructure'
-  | 'research'
+  | ResourceType.RESEARCH
   | 'food'
   | 'defense'
   // System modules

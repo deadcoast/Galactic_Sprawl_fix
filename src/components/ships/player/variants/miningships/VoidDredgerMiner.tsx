@@ -1,3 +1,4 @@
+import * as React from "react";
 import { AlertTriangle, Database, Truck, Zap } from 'lucide-react';
 
 interface VoidDredgerProps {

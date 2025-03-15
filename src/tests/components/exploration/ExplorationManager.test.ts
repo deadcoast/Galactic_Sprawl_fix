@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Remove import of the mock utility
 // import { createTestEnvironment } from '../../utils/exploration/explorationTestUtils';
@@ -82,7 +83,7 @@ describe('ExplorationManager', () => {
       id: `system-${i}`,
       name: `System ${i}`,
       type: i % 3 === 0 ? 'binary' : 'single',
-      resources: i % 2 === 0 ? ['minerals', 'energy'] : ['gas'],
+      resources: i % 2 === 0 ? [ResourceType.MINERALS, ResourceType.ENERGY] : [ResourceType.GAS],
       status: i % 4 === 0 ? 'unexplored' : 'explored',
     }));
 
@@ -108,9 +109,9 @@ describe('ExplorationManager', () => {
     typeResults.forEach(system => expect(system.type).toBe('binary'));
 
     // Test filtering by resource
-    const resourceResults = explorationManager.searchSystems({ resources: ['minerals'] });
+    const resourceResults = explorationManager.searchSystems({ resources: [ResourceType.MINERALS] });
     expect(resourceResults.length).toBeGreaterThan(0);
-    resourceResults.forEach(system => expect(system.resources).toContain('minerals'));
+    resourceResults.forEach(system => expect(system.resources).toContain(ResourceType.MINERALS));
 
     // Test filtering by status
     const statusResults = explorationManager.searchSystems({ status: 'unexplored' });
@@ -120,12 +121,12 @@ describe('ExplorationManager', () => {
     // Test combined filters
     const combinedResults = explorationManager.searchSystems({
       type: 'binary',
-      resources: ['minerals'],
+      resources: [ResourceType.MINERALS],
     });
     expect(combinedResults.length).toBeGreaterThanOrEqual(0);
     combinedResults.forEach(system => {
       expect(system.type).toBe('binary');
-      expect(system.resources).toContain('minerals');
+      expect(system.resources).toContain(ResourceType.MINERALS);
     });
   }, 10000); // Increase timeout to 10 seconds
 });

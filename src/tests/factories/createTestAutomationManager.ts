@@ -21,7 +21,7 @@ import {
 } from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { createTestModuleEvents } from './createTestModuleEvents';
 import { createTestModuleManager } from './createTestModuleManager';
 
@@ -132,7 +132,7 @@ export function createTestAutomationManager(): TestAutomationManager {
       enabled: options?.enabled !== undefined ? options.enabled : true,
       conditions: options?.conditions || [
         automationManager.createTestCondition('RESOURCE_ABOVE', {
-          target: 'energy',
+          target: ResourceType.ENERGY,
           value: { amount: 100 } as ResourceConditionValue,
         }),
       ],
@@ -143,7 +143,7 @@ export function createTestAutomationManager(): TestAutomationManager {
             from: moduleId,
             to: 'target-module',
             amount: 50,
-            type: 'energy' as ResourceType,
+            type: ResourceType.ENERGY as ResourceType,
           } as TransferResourcesValue,
         }),
       ],
@@ -173,7 +173,7 @@ export function createTestAutomationManager(): TestAutomationManager {
         case 'RESOURCE_ABOVE':
         case 'RESOURCE_BELOW':
           condition.value = { amount: 100 } as ResourceConditionValue;
-          condition.target = options?.target || 'energy';
+          condition.target = options?.target || ResourceType.ENERGY;
           break;
         case 'TIME_ELAPSED':
           condition.value = { milliseconds: 5000 } as TimeConditionValue;
@@ -181,7 +181,7 @@ export function createTestAutomationManager(): TestAutomationManager {
         case 'EVENT_OCCURRED':
           condition.value = {
             eventType: 'RESOURCE_PRODUCED',
-            eventData: { resourceType: 'energy' },
+            eventData: { resourceType: ResourceType.ENERGY },
           } as EventConditionValue;
           break;
         case 'STATUS_EQUALS':
@@ -194,16 +194,16 @@ export function createTestAutomationManager(): TestAutomationManager {
           break;
         case 'RESOURCE_RATIO':
           condition.value = {
-            resourceA: 'energy' as ResourceType,
-            resourceB: 'minerals' as ResourceType,
+            resourceA: ResourceType.ENERGY as ResourceType,
+            resourceB: ResourceType.MINERALS as ResourceType,
             ratio: 2.0,
           } as ResourceRatioConditionValue;
           break;
         case 'MULTIPLE_RESOURCES':
           condition.value = {
             resources: [
-              { resourceType: 'energy' as ResourceType, amount: 100, operator: 'greater' },
-              { resourceType: 'minerals' as ResourceType, amount: 50, operator: 'greater' },
+              { resourceType: ResourceType.ENERGY as ResourceType, amount: 100, operator: 'greater' },
+              { resourceType: ResourceType.MINERALS as ResourceType, amount: 50, operator: 'greater' },
             ],
             combinationType: 'AND' as LogicalOperator,
           } as MultipleResourcesConditionValue;
@@ -211,7 +211,7 @@ export function createTestAutomationManager(): TestAutomationManager {
         case 'COMPLEX_EVENT':
           condition.value = {
             eventSequence: [
-              { eventType: 'RESOURCE_PRODUCED', eventData: { resourceType: 'energy' } },
+              { eventType: 'RESOURCE_PRODUCED', eventData: { resourceType: ResourceType.ENERGY } },
               { eventType: 'RESOURCE_TRANSFERRED' },
             ],
             timeWindow: 10000,
@@ -229,12 +229,12 @@ export function createTestAutomationManager(): TestAutomationManager {
             conditions: [
               {
                 type: 'RESOURCE_ABOVE',
-                target: 'energy',
+                target: ResourceType.ENERGY,
                 value: { amount: 100 } as ResourceConditionValue,
               },
               {
                 type: 'RESOURCE_BELOW',
-                target: 'minerals',
+                target: ResourceType.MINERALS,
                 value: { amount: 50 } as ResourceConditionValue,
               },
             ],
@@ -282,13 +282,13 @@ export function createTestAutomationManager(): TestAutomationManager {
             from: 'source-module',
             to: 'target-module',
             amount: 50,
-            type: 'energy' as ResourceType,
+            type: ResourceType.ENERGY as ResourceType,
           } as TransferResourcesValue;
           break;
         case 'PRODUCE_RESOURCES':
         case 'CONSUME_RESOURCES':
           action.value = { amount: 50 } as ResourceActionValue;
-          action.target = options?.target || 'energy';
+          action.target = options?.target || ResourceType.ENERGY;
           break;
         case 'ACTIVATE_MODULE':
         case 'DEACTIVATE_MODULE':
@@ -300,7 +300,7 @@ export function createTestAutomationManager(): TestAutomationManager {
             moduleId: options?.target || 'test-module',
             moduleType: 'radar',
             eventType: 'RESOURCE_PRODUCED',
-            data: { resourceType: 'energy', amount: 50 },
+            data: { resourceType: ResourceType.ENERGY, amount: 50 },
           } as EmitEventValue;
           break;
       }

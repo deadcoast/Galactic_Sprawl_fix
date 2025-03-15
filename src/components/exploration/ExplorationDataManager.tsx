@@ -15,8 +15,9 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react';
-import React, { useState } from 'react';
-
+import * as React from "react";
+import { useState } from 'react';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 // Types from other components
 interface Anomaly {
   id: string;
@@ -42,7 +43,7 @@ interface Sector {
 }
 
 interface ResourceData {
-  type: 'minerals' | 'gas' | 'energy' | 'organic' | 'exotic';
+  type: ResourceType.MINERALS | ResourceType.GAS | ResourceType.ENERGY | 'organic' | ResourceType.EXOTIC;
   name: string;
   amount: number;
   quality: number;

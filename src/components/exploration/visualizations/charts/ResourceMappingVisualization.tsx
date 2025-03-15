@@ -14,7 +14,8 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import React, { useMemo, useState } from 'react';
+import * as React from 'react';
+import { useMemo, useState } from 'react';
 import {
   ChartDataRecord,
   ColorAccessorFn,
@@ -22,7 +23,13 @@ import {
   TooltipRenderer,
 } from '../../../../types/exploration/AnalysisComponentTypes';
 import { DataPoint } from '../../../../types/exploration/DataAnalysisTypes';
-import { ResourceType } from '../../../../types/resources/ResourceTypes';
+import {
+  ensureEnumResourceType,
+  ensureStringResourceType,
+  isEnumResourceType,
+  isStringResourceType,
+} from '../../../../utils/resources/ResourceTypeMigration';
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 import { BaseChart } from './BaseChart';
 import { HeatMap } from './HeatMap';
 import { ScatterPlot } from './ScatterPlot';
@@ -84,18 +91,36 @@ interface ResourceMappingVisualizationProps {
 
 // Color mapping for different resource types
 const resourceTypeColors: Record<ResourceType, string> = {
-  minerals: '#3D85C6', // Blue
-  energy: '#F1C232', // Yellow/gold
-  population: '#6AA84F', // Green
-  research: '#9FC5E8', // Light blue
-  plasma: '#D5A6BD', // Purple
-  gas: '#C27BA0', // Pink
-  exotic: '#CC0000', // Red
+  [ResourceType.MINERALS]: '#3D85C6', // Blue
+  [ResourceType.ENERGY]: '#F1C232', // Yellow/gold
+  [ResourceType.POPULATION]: '#6AA84F', // Green
+  [ResourceType.RESEARCH]: '#9FC5E8', // Light blue
+  [ResourceType.PLASMA]: '#D5A6BD', // Purple
+  [ResourceType.GAS]: '#C27BA0', // Pink
+  [ResourceType.EXOTIC]: '#CC0000', // Red
+  [ResourceType.IRON]: '#8B8B8B', // Gray
+  [ResourceType.COPPER]: '#CD7F32', // Bronze
+  [ResourceType.TITANIUM]: '#B5B5B5', // Silver
+  [ResourceType.URANIUM]: '#7CFC00', // Bright green
+  [ResourceType.WATER]: '#1E90FF', // Dodger blue
+  [ResourceType.HELIUM]: '#FFD700', // Gold
+  [ResourceType.DEUTERIUM]: '#00FFFF', // Cyan
+  [ResourceType.ANTIMATTER]: '#FF00FF', // Magenta
+  [ResourceType.DARK_MATTER]: '#800080', // Purple
+  [ResourceType.EXOTIC_MATTER]: '#FF1493', // Deep pink
 };
 
 // Define a function to get color for a resource type
-const getResourceColor = (resourceType: string): string => {
-  return (resourceTypeColors as Record<string, string>)[resourceType] || '#999999';
+const getResourceColor = (resourceType: ResourceType | string): string => {
+  // Handle both string and enum resource types
+  if (isEnumResourceType(resourceType)) {
+    return resourceTypeColors[resourceType as ResourceType] || '#999999';
+  } else if (isStringResourceType(resourceType)) {
+    // Convert string to enum and get color
+    const enumType = ensureEnumResourceType(resourceType as any);
+    return resourceTypeColors[enumType] || '#999999';
+  }
+  return '#999999'; // Default color
 };
 
 /**
@@ -110,7 +135,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
 }) => {
   // Component state
   const [activeTab, setActiveTab] = useState(0);
-  const [selectedResourceType, setSelectedResourceType] = useState<string>('all');
+  const [selectedResourceType, setSelectedResourceType] = useState<string | ResourceType>('all');
   const [showResourceLabels, setShowResourceLabels] = useState(false);
   const [overlayMode, setOverlayMode] = useState(false);
 
@@ -124,9 +149,20 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
       if (selectedResourceType === 'all') {
         value = cell.totalValue;
       } else {
-        const resourceData = cell.resources.find(
-          (r: { type: ResourceType }) => r.type === selectedResourceType
-        );
+        // Fix the type mismatch by using a more generic approach
+        const resourceData = cell.resources.find(r => {
+          // Convert both to string for comparison to avoid type mismatches
+          const resourceTypeStr = isEnumResourceType(r.type)
+            ? ensureStringResourceType(r.type)
+            : String(r.type);
+
+          const selectedTypeStr = isEnumResourceType(selectedResourceType)
+            ? ensureStringResourceType(selectedResourceType)
+            : String(selectedResourceType);
+
+          return resourceTypeStr === selectedTypeStr;
+        });
+
         if (resourceData) {
           value =
             (resourceData[data.valueMetric as keyof typeof resourceData] as number) ||
@@ -174,14 +210,12 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
 
   // Color function for scatter plot points
   const getPointColor = (point: ResourceChartPoint): string => {
-    const resourceType = point.type as ResourceType;
-    return resourceTypeColors[resourceType] || '#888888';
+    return getResourceColor(point.type as any);
   };
 
   // Color function for heat map cells in overlay mode
   const getHeatMapCellColor = (cell: ResourceHeatMapCell): string => {
-    const dominantType = cell.dominantType as ResourceType;
-    return resourceTypeColors[dominantType] || '#888888';
+    return getResourceColor(cell.dominantType as any);
   };
 
   // Tooltip for heatmap cells
@@ -408,14 +442,21 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
         <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center' }}>
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <Select
-              value={selectedResourceType}
+              value={
+                typeof selectedResourceType === 'string'
+                  ? selectedResourceType
+                  : ensureStringResourceType(selectedResourceType)
+              }
               onChange={handleResourceTypeChange}
               displayEmpty
               size="small"
             >
               <MenuItem value="all">All Resources</MenuItem>
               {data.resourceTypes.map((type: ResourceType) => (
-                <MenuItem key={type} value={type}>
+                <MenuItem
+                  key={type}
+                  value={isEnumResourceType(type) ? ensureStringResourceType(type) : type}
+                >
                   {type}
                 </MenuItem>
               ))}

@@ -5,7 +5,7 @@
  * This component provides sample data and configuration for the GalaxyExplorationSystem.
  */
 
-import * as React from 'react';
+import * as React from "react";
 import { useState } from 'react';
 import { GalaxyExplorationSystem } from '../';
 import {
@@ -21,7 +21,7 @@ import {
   StarType,
   TradeRoute,
 } from '../../../../types/exploration/unified/ExplorationTypes';
-import { ResourceType as ResourceTypeString } from '../../../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 
 /**
  * Generate sample exploration data
@@ -181,7 +181,7 @@ function generateSampleData() {
       name: `Route ${i + 1}`,
       sourceId: source.id,
       targetId: target.id,
-      resourceTypes: ['minerals', 'energy'] as ResourceTypeString[],
+      resourceTypes: [ResourceType.MINERALS, ResourceType.ENERGY] as ResourceTypeString[],
       volume: Math.floor(Math.random() * 100),
       security: Math.floor(Math.random() * 100),
       distance: Math.floor(Math.random() * 1000),

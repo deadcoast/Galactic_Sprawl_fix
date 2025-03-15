@@ -1,4 +1,5 @@
-import React, { forwardRef, ButtonHTMLAttributes, ReactNode } from 'react';
+import * as React from "react";
+import { forwardRef, ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '../../../utils/cn';
 
 /**

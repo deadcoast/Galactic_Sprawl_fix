@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 /**
  * Environmental Hazard Manager
  *
@@ -451,16 +452,16 @@ export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
     let damageType: DamageHazardEffect['damageType'] = 'physical';
 
     if (theme === 'solarFlare') {
-      damageType = Math.random() < 0.8 ? 'thermal' : 'energy';
+      damageType = Math.random() < 0.8 ? 'thermal' : ResourceType.ENERGY;
     } else if (theme === 'nebula') {
-      damageType = Math.random() < 0.7 ? 'corrosive' : 'energy';
+      damageType = Math.random() < 0.7 ? 'corrosive' : ResourceType.ENERGY;
     } else if (theme === 'blackHole') {
-      damageType = Math.random() < 0.8 ? 'energy' : 'physical';
+      damageType = Math.random() < 0.8 ? ResourceType.ENERGY : 'physical';
     } else {
       // Random selection for default case
       const types: DamageHazardEffect['damageType'][] = [
         'physical',
-        'energy',
+        ResourceType.ENERGY,
         'corrosive',
         'thermal',
       ];
@@ -469,7 +470,7 @@ export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
 
     // Calculate penetration based on damage type and difficulty
     let penetration = 0.1; // Base penetration
-    if (damageType === 'energy') {
+    if (damageType === ResourceType.ENERGY) {
       penetration += 0.2;
     }
     if (damageType === 'corrosive') {

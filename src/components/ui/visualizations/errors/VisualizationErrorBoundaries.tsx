@@ -1,4 +1,5 @@
-import React, { ErrorInfo } from 'react';
+import * as React from "react";
+import { ErrorInfo } from 'react';
 import ResourceDistributionChart from '../../resource/ResourceDistributionChart';
 import FlowDiagram from '../FlowDiagram';
 import TemporalAnalysisView from '../TemporalAnalysisView';

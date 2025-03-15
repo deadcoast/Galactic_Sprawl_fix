@@ -1,3 +1,4 @@
+import * as React from "react";
 import { CommonShip } from '../../../../types/ships/CommonShipTypes';
 import { WeaponCategory } from '../../../../types/weapons/WeaponTypes';
 import { WarShip } from '../variants/warships/WarShip';

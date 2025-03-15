@@ -1,7 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { Crosshair, Zap } from 'lucide-react';
-import * as React from 'react';
+import * as React from "react";
 
 interface CapitalShipEffectProps {
   type: 'harbringerGalleon' | 'midwayCarrier' | 'motherEarthRevenge';

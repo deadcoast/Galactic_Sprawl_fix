@@ -1,6 +1,6 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
-import * as React from 'react';
+import * as React from "react";
 // Mock the @react-three/fiber imports if they can't be found
 // This allows TypeScript to compile without errors while preserving the component's structure
 // In a real environment with @react-three/fiber installed, these will be overridden by the actual imports

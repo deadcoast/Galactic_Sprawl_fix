@@ -5,7 +5,8 @@
  * with an emphasis on properly typed reducers and safe state transitions.
  */
 
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import {
   Action,
   createAction,

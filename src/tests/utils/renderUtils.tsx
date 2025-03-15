@@ -1,6 +1,7 @@
 import { render, RenderOptions, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React, { ReactElement } from 'react';
+import * as React from "react";
+import { ReactElement } from 'react';
 import { GameProvider } from '../../contexts/GameContext';
 import { ServiceProvider } from '../../components/providers/ServiceProvider';
 import { ThresholdProvider } from '../../contexts/ThresholdContext';

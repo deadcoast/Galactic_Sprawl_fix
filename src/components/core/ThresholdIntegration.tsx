@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { useThreshold } from '../../contexts/ThresholdContext';
 import { ResourceManager } from '../../managers/game/ResourceManager';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import { ResourceType } from '../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 interface ThresholdIntegrationProps {
   resourceManager: ResourceManager;

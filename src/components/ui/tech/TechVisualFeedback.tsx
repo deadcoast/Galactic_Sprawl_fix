@@ -1,5 +1,6 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import * as React from "react";
 import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { TechNode } from '../../../managers/game/techTreeManager';
 import { cn } from '../../../utils/cn';
 

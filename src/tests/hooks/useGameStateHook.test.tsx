@@ -8,7 +8,7 @@
  * 3. Verifying hook behavior and reactivity to state changes
  */
 
-import React from 'react';
+import * as React from "react";
 import { useGameResources, useGameState } from '../../hooks/game/useGameState';
 import {
   MockContextStates,

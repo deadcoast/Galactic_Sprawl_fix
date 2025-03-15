@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 // src/tests/fixtures/resourceFixtures.ts
 import type {
   FlowConnection,
@@ -15,13 +16,13 @@ import {
  * Common resource types used in tests
  */
 export const resourceTypes: ResourceType[] = [
-  'minerals',
-  'energy',
-  'population',
-  'research',
-  'plasma',
-  'gas',
-  'exotic',
+  ResourceType.MINERALS,
+  ResourceType.ENERGY,
+  ResourceType.POPULATION,
+  ResourceType.RESEARCH,
+  ResourceType.PLASMA,
+  ResourceType.GAS,
+  ResourceType.EXOTIC,
 ];
 
 /**
@@ -55,9 +56,9 @@ export const resourceStates: Record<string, Partial<ResourceState>> = {
  * Resource priorities for testing
  */
 export const resourcePriorities: ResourcePriority[] = [
-  { type: 'energy', priority: 1, consumers: ['powerPlant', 'researchLab'] },
-  { type: 'minerals', priority: 2, consumers: ['factory', 'constructionYard'] },
-  { type: 'population', priority: 3, consumers: ['habitat', 'lifeSupportSystem'] },
+  { type: ResourceType.ENERGY, priority: 1, consumers: ['powerPlant', 'researchLab'] },
+  { type: ResourceType.MINERALS, priority: 2, consumers: ['factory', 'constructionYard'] },
+  { type: ResourceType.POPULATION, priority: 3, consumers: ['habitat', 'lifeSupportSystem'] },
 ];
 
 /**
@@ -67,30 +68,30 @@ export const flowNodes: Record<string, Partial<FlowNode>> = {
   powerPlant: {
     id: 'powerPlant1',
     type: 'producer' as FlowNodeType,
-    resources: ['energy'],
-    priority: { type: 'energy', priority: 1, consumers: [] },
+    resources: [ResourceType.ENERGY],
+    priority: { type: ResourceType.ENERGY, priority: 1, consumers: [] },
     active: true,
   },
   factory: {
     id: 'factory1',
     type: 'consumer' as FlowNodeType,
-    resources: ['energy', 'minerals'],
-    priority: { type: 'energy', priority: 2, consumers: [] },
+    resources: [ResourceType.ENERGY, ResourceType.MINERALS],
+    priority: { type: ResourceType.ENERGY, priority: 2, consumers: [] },
     active: true,
   },
   storage: {
     id: 'storage1',
     type: 'storage' as FlowNodeType,
-    resources: ['energy', 'minerals'],
-    priority: { type: 'energy', priority: 1, consumers: [] },
+    resources: [ResourceType.ENERGY, ResourceType.MINERALS],
+    priority: { type: ResourceType.ENERGY, priority: 1, consumers: [] },
     capacity: 5000,
     active: true,
   },
   converter: {
     id: 'converter1',
     type: 'converter' as FlowNodeType,
-    resources: ['energy', 'minerals'],
-    priority: { type: 'minerals', priority: 1, consumers: [] },
+    resources: [ResourceType.ENERGY, ResourceType.MINERALS],
+    priority: { type: ResourceType.MINERALS, priority: 1, consumers: [] },
     efficiency: 0.9,
     active: true,
     converterConfig: {
@@ -110,30 +111,30 @@ export const flowConnections: Partial<FlowConnection>[] = [
     id: 'conn1',
     source: 'powerPlant1',
     target: 'storage1',
-    resourceType: 'energy',
+    resourceType: ResourceType.ENERGY,
     maxRate: 10,
     currentRate: 10,
-    priority: { type: 'energy', priority: 1, consumers: [] },
+    priority: { type: ResourceType.ENERGY, priority: 1, consumers: [] },
     active: true,
   },
   {
     id: 'conn2',
     source: 'storage1',
     target: 'factory1',
-    resourceType: 'energy',
+    resourceType: ResourceType.ENERGY,
     maxRate: 5,
     currentRate: 5,
-    priority: { type: 'energy', priority: 2, consumers: [] },
+    priority: { type: ResourceType.ENERGY, priority: 2, consumers: [] },
     active: true,
   },
   {
     id: 'conn3',
     source: 'storage1',
     target: 'converter1',
-    resourceType: 'energy',
+    resourceType: ResourceType.ENERGY,
     maxRate: 2,
     currentRate: 2,
-    priority: { type: 'energy', priority: 3, consumers: [] },
+    priority: { type: ResourceType.ENERGY, priority: 3, consumers: [] },
     active: true,
   },
 ];
@@ -147,7 +148,7 @@ export const resourceFlows: ResourceFlow[] = [
     target: 'storage1',
     resources: [
       {
-        type: 'energy',
+        type: ResourceType.ENERGY,
         amount: 10,
         interval: 1000,
       },
@@ -158,7 +159,7 @@ export const resourceFlows: ResourceFlow[] = [
     target: 'factory1',
     resources: [
       {
-        type: 'energy',
+        type: ResourceType.ENERGY,
         amount: 5,
         interval: 1000,
       },

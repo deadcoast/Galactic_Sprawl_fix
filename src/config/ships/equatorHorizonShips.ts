@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { DamageEffect } from '../../effects/types_effects/WeaponEffects';
 import {
   DAMAGE_BOOST_EFFECT,
@@ -27,7 +28,7 @@ const _TEMPORAL_EFFECT = {
   active: true,
   cooldown: 3.0,
   damage: 80,
-  damageType: 'energy',
+  damageType: ResourceType.ENERGY,
   penetration: 0.3,
   strength: 80,
 } as DamageEffect;
@@ -42,7 +43,7 @@ const _QUANTUM_EFFECT = {
   active: true,
   cooldown: 4.0,
   damage: 100,
-  damageType: 'energy',
+  damageType: ResourceType.ENERGY,
   penetration: 0.4,
   strength: 100,
 } as DamageEffect;
@@ -57,7 +58,7 @@ const _HARMONIC_EFFECT = {
   active: true,
   cooldown: 2.5,
   damage: 60,
-  damageType: 'energy',
+  damageType: ResourceType.ENERGY,
   penetration: 0.25,
   strength: 60,
 } as DamageEffect;

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { act, renderHook } from '@testing-library/react';
 import { Observable } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

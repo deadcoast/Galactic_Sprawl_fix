@@ -1,5 +1,6 @@
-import { Target } from 'lucide-react';
+import * as React from "react";
 import { useEffect, useState } from 'react';
+import { Target } from 'lucide-react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
 import { ShipStatus } from '../../../../types/ships/ShipTypes';

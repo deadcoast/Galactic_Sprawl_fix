@@ -1,4 +1,4 @@
-import { EventEmitter } from '../../lib/utils/EventEmitter';
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
 
 /**
  * Tech tree node interface
@@ -22,10 +22,14 @@ export interface TechNode {
     | 'synergy';
 }
 
+interface TechTreeEvents {
+  nodeUnlocked: { nodeId: string; node: TechNode };
+}
+
 /**
  * Tech tree manager for handling tech unlocks and progression
  */
-class TechTreeManager extends EventEmitter {
+class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
   private unlockedNodes: Set<string> = new Set();
   private techNodes: Map<string, TechNode> = new Map();
 

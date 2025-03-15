@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import * as React from "react";
+import { useEffect, useRef, useState } from 'react';
 import { animationFrameManager } from '../../../utils/performance/animationFrameManagerInstance';
 import { FrameInfo } from '../../../utils/performance/D3AnimationFrameManager';
 import { AnimationPerformanceReport } from '../../../utils/performance/D3AnimationProfiler';

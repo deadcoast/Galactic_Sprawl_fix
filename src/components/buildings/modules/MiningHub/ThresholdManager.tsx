@@ -2,9 +2,9 @@
 /** @jsxFrag React.Fragment */
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bookmark, Database, Settings } from 'lucide-react';
-import * as React from 'react';
+import * as React from "react";
 import { useThreshold } from '../../../../contexts/ThresholdContext';
-import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 import { ThresholdPresetsPanel } from './ThresholdPresetsPanel';
 import { ThresholdStatusIndicator } from './ThresholdStatusIndicator';
 

@@ -6,7 +6,7 @@
  * that can be extended by specialized visualization components.
  */
 import * as React from 'react';
-import { ResourceType } from '../resources/ResourceTypes';
+import { ResourceType } from "./../resources/ResourceTypes";
 
 // =========================================
 // Base Visualization Data Types

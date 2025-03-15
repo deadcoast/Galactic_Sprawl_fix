@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useEffect, useMemo, useState } from 'react';
 import { useRealTimeData } from '../../../hooks/useRealTimeData';
 import { ChartDataRecord } from '../../../types/exploration/AnalysisComponentTypes';

@@ -1,5 +1,5 @@
 import { Tier } from '../types/core/GameTypes';
-import { ResourceType } from '../types/resources/ResourceTypes';
+import { ResourceType } from "./../types/resources/ResourceTypes";
 import { PlayerShipCategory, PlayerShipClass } from '../types/ships/PlayerShipTypes';
 
 export interface ShipBlueprint {
@@ -67,8 +67,8 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     requirements: {
       tier: 1,
       resourceCost: [
-        { type: 'minerals', amount: 100 },
-        { type: 'energy', amount: 50 },
+        { type: ResourceType.MINERALS, amount: 100 },
+        { type: ResourceType.ENERGY, amount: 50 },
       ],
       buildTime: 60000, // 1 minute
     },
@@ -98,8 +98,8 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     requirements: {
       tier: 1,
       resourceCost: [
-        { type: 'minerals', amount: 150 },
-        { type: 'energy', amount: 30 },
+        { type: ResourceType.MINERALS, amount: 150 },
+        { type: ResourceType.ENERGY, amount: 30 },
       ],
       buildTime: 90000, // 1.5 minutes
     },
@@ -120,8 +120,8 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     requirements: {
       tier: 1,
       resourceCost: [
-        { type: 'minerals', amount: 80 },
-        { type: 'energy', amount: 70 },
+        { type: ResourceType.MINERALS, amount: 80 },
+        { type: ResourceType.ENERGY, amount: 70 },
       ],
       buildTime: 45000, // 45 seconds
     },
@@ -144,9 +144,9 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     requirements: {
       tier: 2,
       resourceCost: [
-        { type: 'minerals', amount: 180 },
-        { type: 'energy', amount: 150 },
-        { type: 'plasma', amount: 50 },
+        { type: ResourceType.MINERALS, amount: 180 },
+        { type: ResourceType.ENERGY, amount: 150 },
+        { type: ResourceType.PLASMA, amount: 50 },
       ],
       buildTime: 120000, // 2 minutes
       prerequisites: {
@@ -181,9 +181,9 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     requirements: {
       tier: 2,
       resourceCost: [
-        { type: 'minerals', amount: 300 },
-        { type: 'energy', amount: 200 },
-        { type: 'plasma', amount: 100 },
+        { type: ResourceType.MINERALS, amount: 300 },
+        { type: ResourceType.ENERGY, amount: 200 },
+        { type: ResourceType.PLASMA, amount: 100 },
       ],
       buildTime: 180000, // 3 minutes
       prerequisites: {
@@ -226,10 +226,10 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     requirements: {
       tier: 3,
       resourceCost: [
-        { type: 'minerals', amount: 600 },
-        { type: 'energy', amount: 400 },
-        { type: 'plasma', amount: 200 },
-        { type: 'exotic', amount: 50 },
+        { type: ResourceType.MINERALS, amount: 600 },
+        { type: ResourceType.ENERGY, amount: 400 },
+        { type: ResourceType.PLASMA, amount: 200 },
+        { type: ResourceType.EXOTIC, amount: 50 },
       ],
       buildTime: 300000, // 5 minutes
       prerequisites: {
@@ -278,10 +278,10 @@ export const SHIP_BLUEPRINTS: ShipBlueprint[] = [
     requirements: {
       tier: 3,
       resourceCost: [
-        { type: 'minerals', amount: 800 },
-        { type: 'energy', amount: 500 },
-        { type: 'plasma', amount: 300 },
-        { type: 'exotic', amount: 100 },
+        { type: ResourceType.MINERALS, amount: 800 },
+        { type: ResourceType.ENERGY, amount: 500 },
+        { type: ResourceType.PLASMA, amount: 300 },
+        { type: ResourceType.EXOTIC, amount: 100 },
       ],
       buildTime: 360000, // 6 minutes
       prerequisites: {

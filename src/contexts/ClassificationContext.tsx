@@ -1,3 +1,4 @@
+import * as React from "react";
 import React, {
   createContext,
   ReactNode,
@@ -22,7 +23,7 @@ import {
   TaxonomyCategory,
 } from '../types/exploration/ClassificationTypes';
 import { ResourceData } from '../types/exploration/DataAnalysisTypes';
-import { ResourceType } from '../types/resources/ResourceTypes';
+import { ResourceType } from "./../types/resources/ResourceTypes";
 
 // Default taxonomy categories
 const defaultTaxonomyCategories: TaxonomyCategory[] = [
@@ -232,16 +233,16 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
     ): ClassifiableDiscovery => {
       // Convert the resource type to a proper ResourceType enum value
       const resourceTypeMapping: Record<string, ResourceType> = {
-        minerals: 'minerals',
-        energy: 'energy',
-        gas: 'gas',
-        exotic: 'exotic',
-        plasma: 'plasma',
-        metals: 'minerals', // Map metals to minerals
-        water: 'minerals', // Map water to minerals as fallback
+        minerals: ResourceType.MINERALS,
+        energy: ResourceType.ENERGY,
+        gas: ResourceType.GAS,
+        exotic: ResourceType.EXOTIC,
+        plasma: ResourceType.PLASMA,
+        metals: ResourceType.MINERALS, // Map metals to minerals
+        water: ResourceType.MINERALS, // Map water to minerals as fallback
       };
 
-      const resourceType = resourceTypeMapping[resource.type] || 'minerals';
+      const resourceType = resourceTypeMapping[resource.type] || ResourceType.MINERALS;
 
       return {
         id: `${sectorId}-${resource.type}-${Date.now()}`,
@@ -448,7 +449,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
       } else {
         // For resources, suggest based on resource type
         switch (discovery.resourceType) {
-          case 'minerals':
+          case ResourceType.MINERALS:
             suggestions.push({
               categoryId: 'mineral-resource',
               confidence: 0.88,
@@ -461,7 +462,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
               },
             });
             break;
-          case 'gas':
+          case ResourceType.GAS:
             suggestions.push({
               categoryId: 'gas-resource',
               confidence: 0.95,
@@ -474,7 +475,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
               },
             });
             break;
-          case 'energy':
+          case ResourceType.ENERGY:
             suggestions.push({
               categoryId: 'energy-resource',
               confidence: 0.82,
@@ -487,7 +488,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
               },
             });
             break;
-          case 'exotic':
+          case ResourceType.EXOTIC:
             suggestions.push({
               categoryId: 'exotic-resource',
               confidence: 0.75,
@@ -496,7 +497,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
               propertyValues: {
                 rarity: 'very high',
                 stability: 'unknown',
-                uses: 'research',
+                uses: ResourceType.RESEARCH,
               },
             });
             break;

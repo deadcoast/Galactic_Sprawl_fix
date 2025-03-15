@@ -1,5 +1,7 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { Filter, Search, ZoomIn, ZoomOut } from 'lucide-react';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import * as React from "react";
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 interface Sector {
   id: string;
@@ -36,7 +38,7 @@ interface TradeRoute {
   id: string;
   sourceSectorId: string;
   targetSectorId: string;
-  resourceType: string;
+  resourceType: ResourceType;
   volume: number; // 0-1 scale for line thickness
   active: boolean;
 }
@@ -76,17 +78,17 @@ const getSectorColor = (sector: Sector): string => {
   }
 };
 
-const getResourceColor = (resourceType: string): string => {
+const getResourceColor = (resourceType: ResourceType): string => {
   switch (resourceType) {
-    case 'minerals':
+    case ResourceType.MINERALS:
       return 'rgba(59, 130, 246, 0.8)'; // blue-500
-    case 'gas':
+    case ResourceType.GAS:
       return 'rgba(16, 185, 129, 0.8)'; // emerald-500
-    case 'energy':
+    case ResourceType.ENERGY:
       return 'rgba(245, 158, 11, 0.8)'; // amber-500
     case 'organic':
       return 'rgba(139, 92, 246, 0.8)'; // purple-500
-    case 'exotic':
+    case ResourceType.EXOTIC:
       return 'rgba(236, 72, 153, 0.8)'; // pink-500
     default:
       return 'rgba(156, 163, 175, 0.8)'; // gray-400

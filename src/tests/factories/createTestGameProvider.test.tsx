@@ -1,5 +1,7 @@
+import * as React from "react";
 import { act, render, screen } from '@testing-library/react';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { disableAllWebSocketServers, enableAllWebSocketServers } from '../setup';
 import {
   createTestGameProvider,
@@ -23,8 +25,8 @@ afterAll(() => {
 function ResourceDisplay() {
   return (
     <div>
-      <div data-testid="minerals">Minerals: {}</div>
-      <div data-testid="energy">Energy: {}</div>
+      <div data-testid={ResourceType.MINERALS}>Minerals: {}</div>
+      <div data-testid={ResourceType.ENERGY}>Energy: {}</div>
     </div>
   );
 }
@@ -69,8 +71,8 @@ describe('TestGameProvider', () => {
       );
 
       // Basic assertions - just checking if the component renders without errors
-      expect(screen.getByTestId('minerals')).toBeInTheDocument();
-      expect(screen.getByTestId('energy')).toBeInTheDocument();
+      expect(screen.getByTestId(ResourceType.MINERALS)).toBeInTheDocument();
+      expect(screen.getByTestId(ResourceType.ENERGY)).toBeInTheDocument();
       console.log('[TEST COMPLETED] Default values test passed');
     });
 
@@ -92,8 +94,8 @@ describe('TestGameProvider', () => {
       );
 
       // Basic assertions - just checking if the component renders without errors
-      expect(screen.getByTestId('minerals')).toBeInTheDocument();
-      expect(screen.getByTestId('energy')).toBeInTheDocument();
+      expect(screen.getByTestId(ResourceType.MINERALS)).toBeInTheDocument();
+      expect(screen.getByTestId(ResourceType.ENERGY)).toBeInTheDocument();
       console.log('[TEST COMPLETED] Initial state values test passed');
     });
   });
@@ -141,8 +143,8 @@ describe('TestGameProvider', () => {
       render(wrapper(<ResourceDisplay />));
 
       // Basic assertions - just checking if the component renders without errors
-      expect(screen.getByTestId('minerals')).toBeInTheDocument();
-      expect(screen.getByTestId('energy')).toBeInTheDocument();
+      expect(screen.getByTestId(ResourceType.MINERALS)).toBeInTheDocument();
+      expect(screen.getByTestId(ResourceType.ENERGY)).toBeInTheDocument();
       console.log('[TEST COMPLETED] Factory test passed');
     });
   });

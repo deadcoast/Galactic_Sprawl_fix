@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowManager';
 import {
@@ -32,7 +33,7 @@ vi.mock('../../../utils/resources/resourceValidation', () => ({
 describe('ResourceFlowManager', () => {
   let flowManager: ResourceFlowManager;
   // Create a default priority value for tests
-  const defaultPriority: ResourcePriority = { type: 'energy', priority: 1, consumers: [] };
+  const defaultPriority: ResourcePriority = { type: ResourceType.ENERGY, priority: 1, consumers: [] };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -67,7 +68,7 @@ describe('ResourceFlowManager', () => {
     const node: FlowNode = {
       id: 'test-node',
       type: 'producer' as FlowNodeType,
-      resources: ['energy' as ResourceType],
+      resources: [ResourceType.ENERGY as ResourceType],
       priority: defaultPriority,
       active: true,
     };
@@ -84,7 +85,7 @@ describe('ResourceFlowManager', () => {
     const invalidNode: FlowNode = {
       id: '',
       type: 'producer' as FlowNodeType,
-      resources: ['energy' as ResourceType],
+      resources: [ResourceType.ENERGY as ResourceType],
       priority: defaultPriority,
       active: true,
     };
@@ -101,7 +102,7 @@ describe('ResourceFlowManager', () => {
     flowManager.registerNode({
       id: 'source-node',
       type: 'producer' as FlowNodeType,
-      resources: ['energy' as ResourceType],
+      resources: [ResourceType.ENERGY as ResourceType],
       priority: defaultPriority,
       active: true,
     });
@@ -109,7 +110,7 @@ describe('ResourceFlowManager', () => {
     flowManager.registerNode({
       id: 'target-node',
       type: 'consumer' as FlowNodeType,
-      resources: ['energy' as ResourceType],
+      resources: [ResourceType.ENERGY as ResourceType],
       priority: defaultPriority,
       active: true,
     });
@@ -118,7 +119,7 @@ describe('ResourceFlowManager', () => {
       id: 'test-connection',
       source: 'source-node',
       target: 'target-node',
-      resourceType: 'energy' as ResourceType,
+      resourceType: ResourceType.ENERGY as ResourceType,
       maxRate: 10,
       currentRate: 0,
       priority: defaultPriority,
@@ -138,7 +139,7 @@ describe('ResourceFlowManager', () => {
       id: '',
       source: 'source-node',
       target: 'target-node',
-      resourceType: 'energy' as ResourceType,
+      resourceType: ResourceType.ENERGY as ResourceType,
       maxRate: 10,
       currentRate: 0,
       priority: defaultPriority,
@@ -158,7 +159,7 @@ describe('ResourceFlowManager', () => {
       target: 'target-node',
       resources: [
         {
-          type: 'energy' as ResourceType,
+          type: ResourceType.ENERGY as ResourceType,
           amount: 10,
           interval: 1000,
         },
@@ -174,7 +175,7 @@ describe('ResourceFlowManager', () => {
 
     const connections = flowManager.getConnections();
     expect(connections.length).toBe(1);
-    expect(connections[0].resourceType).toBe('energy');
+    expect(connections[0].resourceType).toBe(ResourceType.ENERGY);
     expect(connections[0].maxRate).toBe(10);
   });
 
@@ -207,7 +208,7 @@ describe('ResourceFlowManager', () => {
     customFlowManager.registerNode({
       id: 'producer-1',
       type: 'producer' as FlowNodeType,
-      resources: ['energy' as ResourceType],
+      resources: [ResourceType.ENERGY as ResourceType],
       priority: defaultPriority,
       efficiency: 1.0,
       active: true,
@@ -216,7 +217,7 @@ describe('ResourceFlowManager', () => {
     customFlowManager.registerNode({
       id: 'consumer-1',
       type: 'consumer' as FlowNodeType,
-      resources: ['energy' as ResourceType],
+      resources: [ResourceType.ENERGY as ResourceType],
       priority: defaultPriority,
       active: true,
     });
@@ -226,7 +227,7 @@ describe('ResourceFlowManager', () => {
       id: 'connection-1',
       source: 'producer-1',
       target: 'consumer-1',
-      resourceType: 'energy' as ResourceType,
+      resourceType: ResourceType.ENERGY as ResourceType,
       maxRate: 10,
       currentRate: 5, // Set a non-zero current rate
       priority: defaultPriority,
@@ -244,7 +245,7 @@ describe('ResourceFlowManager', () => {
 
     // Use a private method accessor to set the resource state
     // @ts-expect-error - Accessing private method for testing
-    customFlowManager.network.resourceStates.set('energy', resourceState);
+    customFlowManager.network.resourceStates.set(ResourceType.ENERGY, resourceState);
 
     // Force the optimization to run by setting lastOptimization to a time in the past
     // @ts-expect-error - Accessing private property for testing
@@ -293,17 +294,17 @@ describe('ResourceFlowManager', () => {
       consumption: 5,
     };
 
-    flowManager.updateResourceState('energy', resourceState);
+    flowManager.updateResourceState(ResourceType.ENERGY, resourceState);
 
     // First call should retrieve from network and cache
-    const firstResult = flowManager.getResourceState('energy');
+    const firstResult = flowManager.getResourceState(ResourceType.ENERGY);
     expect(firstResult).toEqual(resourceState);
 
     // Modify the original state (this shouldn't affect the cached value)
     resourceState.current = 200;
 
     // Second call should retrieve from cache
-    const secondResult = flowManager.getResourceState('energy');
+    const secondResult = flowManager.getResourceState(ResourceType.ENERGY);
     expect(secondResult).toEqual({
       current: 100,
       max: 1000,
@@ -316,10 +317,10 @@ describe('ResourceFlowManager', () => {
     vi.advanceTimersByTime(600);
 
     // Update the resource state
-    flowManager.updateResourceState('energy', resourceState);
+    flowManager.updateResourceState(ResourceType.ENERGY, resourceState);
 
     // After cache expiration, should get the updated value
-    const thirdResult = flowManager.getResourceState('energy');
+    const thirdResult = flowManager.getResourceState(ResourceType.ENERGY);
     expect(thirdResult).toEqual({
       current: 200,
       max: 1000,
@@ -339,17 +340,17 @@ describe('ResourceFlowManager', () => {
       consumption: 5,
     };
 
-    flowManager.updateResourceState('energy', resourceState);
+    flowManager.updateResourceState(ResourceType.ENERGY, resourceState);
 
     // First call should retrieve from network and cache
-    const firstResult = flowManager.getResourceState('energy');
+    const firstResult = flowManager.getResourceState(ResourceType.ENERGY);
     expect(firstResult).toEqual(resourceState);
 
     // Register a node with the same resource type
     flowManager.registerNode({
       id: 'new-producer',
       type: 'producer' as FlowNodeType,
-      resources: ['energy' as ResourceType],
+      resources: [ResourceType.ENERGY as ResourceType],
       priority: defaultPriority,
       active: true,
     });
@@ -363,10 +364,10 @@ describe('ResourceFlowManager', () => {
       consumption: 5,
     };
 
-    flowManager.updateResourceState('energy', updatedState);
+    flowManager.updateResourceState(ResourceType.ENERGY, updatedState);
 
     // Should get the updated value because cache was invalidated
-    const secondResult = flowManager.getResourceState('energy');
+    const secondResult = flowManager.getResourceState(ResourceType.ENERGY);
     expect(secondResult).toEqual(updatedState);
   });
 
@@ -382,7 +383,7 @@ describe('ResourceFlowManager', () => {
     customFlowManager.registerNode({
       id: 'converter-1',
       type: 'converter' as FlowNodeType,
-      resources: ['energy' as ResourceType, 'minerals' as ResourceType],
+      resources: [ResourceType.ENERGY as ResourceType, ResourceType.MINERALS as ResourceType],
       priority: defaultPriority,
       efficiency: 0.8,
       active: true,
@@ -392,7 +393,7 @@ describe('ResourceFlowManager', () => {
     customFlowManager.registerNode({
       id: 'producer-1',
       type: 'producer' as FlowNodeType,
-      resources: ['minerals' as ResourceType],
+      resources: [ResourceType.MINERALS as ResourceType],
       priority: defaultPriority,
       efficiency: 1.0,
       active: true,
@@ -402,7 +403,7 @@ describe('ResourceFlowManager', () => {
     customFlowManager.registerNode({
       id: 'consumer-1',
       type: 'consumer' as FlowNodeType,
-      resources: ['energy' as ResourceType],
+      resources: [ResourceType.ENERGY as ResourceType],
       priority: defaultPriority,
       active: true,
     });
@@ -412,7 +413,7 @@ describe('ResourceFlowManager', () => {
       id: 'connection-input',
       source: 'producer-1',
       target: 'converter-1',
-      resourceType: 'minerals' as ResourceType,
+      resourceType: ResourceType.MINERALS as ResourceType,
       maxRate: 10,
       currentRate: 10,
       priority: defaultPriority,
@@ -424,7 +425,7 @@ describe('ResourceFlowManager', () => {
       id: 'connection-output',
       source: 'converter-1',
       target: 'consumer-1',
-      resourceType: 'energy' as ResourceType,
+      resourceType: ResourceType.ENERGY as ResourceType,
       maxRate: 10,
       currentRate: 5,
       priority: defaultPriority,
@@ -449,9 +450,9 @@ describe('ResourceFlowManager', () => {
     };
 
     // @ts-expect-error - Accessing private method for testing
-    customFlowManager.network.resourceStates.set('minerals', mineralsState);
+    customFlowManager.network.resourceStates.set(ResourceType.MINERALS, mineralsState);
     // @ts-expect-error - Accessing private method for testing
-    customFlowManager.network.resourceStates.set('energy', energyState);
+    customFlowManager.network.resourceStates.set(ResourceType.ENERGY, energyState);
 
     // Force the optimization to run by setting lastOptimization to a time in the past
     // @ts-expect-error - Accessing private property for testing
@@ -511,7 +512,7 @@ describe('ResourceFlowManager', () => {
       customFlowManager.registerNode({
         id: `producer-${i}`,
         type: 'producer' as FlowNodeType,
-        resources: ['energy' as ResourceType],
+        resources: [ResourceType.ENERGY as ResourceType],
         priority: defaultPriority,
         efficiency: 1.0,
         active: true,
@@ -523,7 +524,7 @@ describe('ResourceFlowManager', () => {
       customFlowManager.registerNode({
         id: `consumer-${i}`,
         type: 'consumer' as FlowNodeType,
-        resources: ['energy' as ResourceType],
+        resources: [ResourceType.ENERGY as ResourceType],
         priority: defaultPriority,
         active: true,
       });
@@ -535,7 +536,7 @@ describe('ResourceFlowManager', () => {
         id: `connection-${i}`,
         source: `producer-${i % nodeCount}`,
         target: `consumer-${i % nodeCount}`,
-        resourceType: 'energy' as ResourceType,
+        resourceType: ResourceType.ENERGY as ResourceType,
         maxRate: 10,
         currentRate: 5, // Set a non-zero current rate
         priority: defaultPriority,
@@ -544,7 +545,7 @@ describe('ResourceFlowManager', () => {
     }
 
     // Set resource state
-    customFlowManager.updateResourceState('energy', {
+    customFlowManager.updateResourceState(ResourceType.ENERGY, {
       current: 1000,
       max: 10000,
       min: 0,

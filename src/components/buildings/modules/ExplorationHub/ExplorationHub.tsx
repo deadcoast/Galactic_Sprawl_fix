@@ -11,7 +11,8 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as React from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
 import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
 import { useTooltipContext } from '../../../../components/ui/tooltip-context';
@@ -23,6 +24,7 @@ import {
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { Position } from '../../../../types/core/GameTypes';
 import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 import { ExplorationControls } from './ExplorationControls';
 import { ExplorationTutorial } from './ExplorationTutorial';
 import { MissionLog } from './MissionLog';
@@ -144,7 +146,7 @@ const mockExplorationTransfers = [
     id: 'discovery-1',
     sourceId: 'alpha-sector',
     targetId: 'storage',
-    resourceType: 'Dark Matter',
+    resourceType: ResourceType.DARK_MATTER,
     amount: 100,
     progress: 0.5,
   },

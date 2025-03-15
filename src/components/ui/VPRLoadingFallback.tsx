@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Loader } from 'lucide-react';
 
 interface VPRLoadingFallbackProps {

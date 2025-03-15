@@ -1,10 +1,16 @@
+import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ResourceManager } from '../../managers/game/ResourceManager';
 import {
   ResourceIntegration,
   createResourceIntegration,
 } from '../../managers/resource/ResourceIntegration';
-import { ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
+import {
+  ResourceState,
+  ResourceType as StringResourceType,
+} from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // Create an instance of ResourceManager
 const resourceManager = new ResourceManager();
@@ -31,7 +37,9 @@ function getResourceIntegration(): ResourceIntegration {
  * Hook for accessing the resource management system
  */
 export function useResourceManagement() {
-  const [resourceStates, setResourceStates] = useState<Map<ResourceType, ResourceState>>(new Map());
+  const [resourceStates, setResourceStates] = useState<Map<StringResourceType, ResourceState>>(
+    new Map()
+  );
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Get or create the resource integration
@@ -40,10 +48,10 @@ export function useResourceManagement() {
   // Initialize the resource states
   useEffect(() => {
     // Get all resource types
-    const resourceTypes = Array.from(resourceManager['resources'].keys()) as ResourceType[];
+    const resourceTypes = Array.from(resourceManager['resources'].keys()) as StringResourceType[];
 
     // Create a map of resource states
-    const states = new Map<ResourceType, ResourceState>();
+    const states = new Map<StringResourceType, ResourceState>();
     resourceTypes.forEach(type => {
       const state = resourceManager.getResourceState(type);
       if (state) {
@@ -82,29 +90,32 @@ export function useResourceManagement() {
 
   // Get a resource state
   const getResourceState = useCallback(
-    (type: ResourceType): ResourceState | undefined => {
-      return resourceStates.get(type);
+    (type: StringResourceType | ResourceType): ResourceState | undefined => {
+      const stringType = ensureStringResourceType(type);
+      return resourceStates.get(stringType);
     },
     [resourceStates]
   );
 
   // Get all resource states
-  const getAllResourceStates = useCallback((): Map<ResourceType, ResourceState> => {
+  const getAllResourceStates = useCallback((): Map<StringResourceType, ResourceState> => {
     return resourceStates;
   }, [resourceStates]);
 
   // Get resource amount
   const getResourceAmount = useCallback(
-    (type: ResourceType): number => {
-      return resourceStates.get(type)?.current || 0;
+    (type: StringResourceType | ResourceType): number => {
+      const stringType = ensureStringResourceType(type);
+      return resourceStates.get(stringType)?.current || 0;
     },
     [resourceStates]
   );
 
   // Check if a resource is available
   const hasResource = useCallback(
-    (type: ResourceType, amount: number): boolean => {
-      const state = resourceStates.get(type);
+    (type: StringResourceType | ResourceType, amount: number): boolean => {
+      const stringType = ensureStringResourceType(type);
+      const state = resourceStates.get(stringType);
       return state ? state.current >= amount : false;
     },
     [resourceStates]
@@ -112,7 +123,7 @@ export function useResourceManagement() {
 
   // Check if multiple resources are available
   const hasResources = useCallback(
-    (resources: Array<{ type: ResourceType; amount: number }>): boolean => {
+    (resources: Array<{ type: StringResourceType | ResourceType; amount: number }>): boolean => {
       return resources.every(({ type, amount }) => hasResource(type, amount));
     },
     [hasResource]
@@ -120,12 +131,13 @@ export function useResourceManagement() {
 
   // Consume a resource
   const consumeResource = useCallback(
-    (type: ResourceType, amount: number): boolean => {
+    (type: StringResourceType | ResourceType, amount: number): boolean => {
       if (!hasResource(type, amount)) {
         return false;
       }
 
-      resourceManager.removeResource(type, amount);
+      const stringType = ensureStringResourceType(type);
+      resourceManager.removeResource(stringType, amount);
       return true;
     },
     [hasResource]
@@ -133,13 +145,14 @@ export function useResourceManagement() {
 
   // Consume multiple resources
   const consumeResources = useCallback(
-    (resources: Array<{ type: ResourceType; amount: number }>): boolean => {
+    (resources: Array<{ type: StringResourceType | ResourceType; amount: number }>): boolean => {
       if (!hasResources(resources)) {
         return false;
       }
 
       resources.forEach(({ type, amount }) => {
-        resourceManager.removeResource(type, amount);
+        const stringType = ensureStringResourceType(type);
+        resourceManager.removeResource(stringType, amount);
       });
 
       return true;
@@ -148,15 +161,20 @@ export function useResourceManagement() {
   );
 
   // Add a resource
-  const addResource = useCallback((type: ResourceType, amount: number): void => {
-    resourceManager.addResource(type, amount);
-  }, []);
+  const addResource = useCallback(
+    (type: StringResourceType | ResourceType, amount: number): void => {
+      const stringType = ensureStringResourceType(type);
+      resourceManager.addResource(stringType, amount);
+    },
+    []
+  );
 
   // Add multiple resources
   const addResources = useCallback(
-    (resources: Array<{ type: ResourceType; amount: number }>): void => {
+    (resources: Array<{ type: StringResourceType | ResourceType; amount: number }>): void => {
       resources.forEach(({ type, amount }) => {
-        resourceManager.addResource(type, amount);
+        const stringType = ensureStringResourceType(type);
+        resourceManager.addResource(stringType, amount);
       });
     },
     []
@@ -164,42 +182,54 @@ export function useResourceManagement() {
 
   // Get resource production rate
   const getProductionRate = useCallback(
-    (type: ResourceType): number => {
-      return resourceStates.get(type)?.production || 0;
+    (type: StringResourceType | ResourceType): number => {
+      const stringType = ensureStringResourceType(type);
+      return resourceStates.get(stringType)?.production || 0;
     },
     [resourceStates]
   );
 
   // Get resource consumption rate
   const getConsumptionRate = useCallback(
-    (type: ResourceType): number => {
-      return resourceStates.get(type)?.consumption || 0;
+    (type: StringResourceType | ResourceType): number => {
+      const stringType = ensureStringResourceType(type);
+      return resourceStates.get(stringType)?.consumption || 0;
     },
     [resourceStates]
   );
 
   // Set resource production rate
-  const setProductionRate = useCallback((type: ResourceType, rate: number): void => {
-    resourceManager.setResourceProduction(type, rate);
-  }, []);
+  const setProductionRate = useCallback(
+    (type: StringResourceType | ResourceType, rate: number): void => {
+      const stringType = ensureStringResourceType(type);
+      resourceManager.setResourceProduction(stringType, rate);
+    },
+    []
+  );
 
   // Set resource consumption rate
-  const setConsumptionRate = useCallback((type: ResourceType, rate: number): void => {
-    resourceManager.setResourceConsumption(type, rate);
-  }, []);
+  const setConsumptionRate = useCallback(
+    (type: StringResourceType | ResourceType, rate: number): void => {
+      const stringType = ensureStringResourceType(type);
+      resourceManager.setResourceConsumption(stringType, rate);
+    },
+    []
+  );
 
   // Get resource capacity
   const getResourceCapacity = useCallback(
-    (type: ResourceType): number => {
-      return resourceStates.get(type)?.max || 0;
+    (type: StringResourceType | ResourceType): number => {
+      const stringType = ensureStringResourceType(type);
+      return resourceStates.get(stringType)?.max || 0;
     },
     [resourceStates]
   );
 
   // Get resource percentage
   const getResourcePercentage = useCallback(
-    (type: ResourceType): number => {
-      const state = resourceStates.get(type);
+    (type: StringResourceType | ResourceType): number => {
+      const stringType = ensureStringResourceType(type);
+      const state = resourceStates.get(stringType);
       if (!state || state.max === 0) {
         return 0;
       }

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useEffect, useState } from 'react';
 import { Position } from '../../types/core/GameTypes';
 import { ReconShipCoordination } from './ReconShipCoordination';

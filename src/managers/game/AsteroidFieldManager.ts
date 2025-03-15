@@ -2,7 +2,7 @@ import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 interface Hazard {
   id: string;
@@ -184,7 +184,7 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     };
 
     // Generate initial resources
-    const resourceTypes: ResourceType[] = ['minerals', 'gas', 'exotic'];
+    const resourceTypes: ResourceType[] = [ResourceType.MINERALS, ResourceType.GAS, ResourceType.EXOTIC];
     resourceTypes.forEach(type => {
       const amount = Math.floor(1000 + Math.random() * 4000 * density);
       field.resources.set(type, amount);

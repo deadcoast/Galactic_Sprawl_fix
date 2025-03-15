@@ -1,5 +1,10 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
-import { ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
+import {
+  ResourceState as StringResourceState,
+  ResourceType as StringResourceType,
+} from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
 
 /**
@@ -36,12 +41,12 @@ export enum ThresholdAction {
  */
 export interface ResourceThreshold {
   id: string;
-  resourceType: ResourceType;
+  resourceType: StringResourceType | ResourceType;
   thresholdType: ThresholdType;
   comparison: ThresholdComparison;
   value: number;
   action: ThresholdAction;
-  actionData?: any;
+  actionData?: Record<string, unknown>;
   enabled: boolean;
   cooldownMs?: number;
   lastTriggered?: number;
@@ -51,12 +56,12 @@ export interface ResourceThreshold {
 
 /**
  * ResourceThresholdSubsystem
- * 
+ *
  * Monitors resource levels and triggers actions when thresholds are reached
  */
 export class ResourceThresholdSubsystem {
   private thresholds: Map<string, ResourceThreshold> = new Map();
-  private resourceTypeThresholds: Map<ResourceType, string[]> = new Map();
+  private resourceTypeThresholds: Map<StringResourceType, string[]> = new Map();
   private entityThresholds: Map<string, string[]> = new Map();
   private parentSystem: ResourceSystem;
   private config: ResourceSystemConfig;
@@ -78,7 +83,7 @@ export class ResourceThresholdSubsystem {
     try {
       // Initialize default thresholds if needed
       this.initializeDefaultThresholds();
-      
+
       this.isInitialized = true;
     } catch (error) {
       console.error('Failed to initialize ResourceThresholdSubsystem:', error);
@@ -99,7 +104,7 @@ export class ResourceThresholdSubsystem {
       this.thresholds.clear();
       this.resourceTypeThresholds.clear();
       this.entityThresholds.clear();
-      
+
       this.isInitialized = false;
     } catch (error) {
       console.error('Failed to dispose ResourceThresholdSubsystem:', error);
@@ -111,31 +116,37 @@ export class ResourceThresholdSubsystem {
    * Initialize default thresholds
    */
   private initializeDefaultThresholds(): void {
-    // Example: Add a low energy threshold
+    // Add default low energy threshold
     this.registerThreshold({
-      id: 'default-energy-low',
-      resourceType: 'energy',
+      id: 'default-low-energy',
+      resourceType: ResourceType.ENERGY,
       thresholdType: ThresholdType.PERCENTAGE,
       comparison: ThresholdComparison.LESS_THAN,
-      value: 0.1, // 10%
+      value: 0.2, // 20%
       action: ThresholdAction.ALERT,
-      actionData: { message: 'Energy levels critically low!' },
+      actionData: {
+        message: 'Low energy levels detected',
+        severity: 'warning',
+      },
       enabled: true,
       cooldownMs: 60000, // 1 minute cooldown
       repeat: true,
     });
 
-    // Example: Add a high minerals threshold
+    // Add default low minerals threshold
     this.registerThreshold({
-      id: 'default-minerals-high',
-      resourceType: 'minerals',
+      id: 'default-low-minerals',
+      resourceType: ResourceType.MINERALS,
       thresholdType: ThresholdType.PERCENTAGE,
-      comparison: ThresholdComparison.GREATER_THAN,
-      value: 0.9, // 90%
+      comparison: ThresholdComparison.LESS_THAN,
+      value: 0.15, // 15%
       action: ThresholdAction.ALERT,
-      actionData: { message: 'Mineral storage nearly full!' },
+      actionData: {
+        message: 'Low mineral levels detected',
+        severity: 'warning',
+      },
       enabled: true,
-      cooldownMs: 120000, // 2 minute cooldown
+      cooldownMs: 60000, // 1 minute cooldown
       repeat: true,
     });
   }
@@ -145,16 +156,25 @@ export class ResourceThresholdSubsystem {
    */
   public registerThreshold(threshold: ResourceThreshold): boolean {
     if (!threshold.id || !threshold.resourceType) {
-      console.warn('Invalid threshold:', threshold);
+      console.error('Invalid threshold configuration:', threshold);
       return false;
     }
 
+    // Convert resource type to string for internal storage
+    const stringType = ensureStringResourceType(threshold.resourceType);
+
+    // Create a copy with the string resource type
+    const internalThreshold = {
+      ...threshold,
+      resourceType: ResourceTypeType,
+    };
+
     // Store the threshold
-    this.thresholds.set(threshold.id, threshold);
-    
+    this.thresholds.set(threshold.id, internalThreshold);
+
     // Add to resource type index
-    this.addToArray(this.resourceTypeThresholds, threshold.resourceType, threshold.id);
-    
+    this.addToArray(this.resourceTypeThresholds, stringType, threshold.id);
+
     // Add to entity index if entity-specific
     if (threshold.entityId) {
       this.addToArray(this.entityThresholds, threshold.entityId, threshold.id);
@@ -172,14 +192,17 @@ export class ResourceThresholdSubsystem {
       return false;
     }
 
+    // Get the string resource type
+    const stringType = ensureStringResourceType(threshold.resourceType);
+
     // Remove from resource type index
-    this.removeFromArray(this.resourceTypeThresholds, threshold.resourceType, id);
-    
+    this.removeFromArray(this.resourceTypeThresholds, stringType, id);
+
     // Remove from entity index if entity-specific
     if (threshold.entityId) {
       this.removeFromArray(this.entityThresholds, threshold.entityId, id);
     }
-    
+
     // Remove the threshold
     this.thresholds.delete(id);
 
@@ -203,11 +226,12 @@ export class ResourceThresholdSubsystem {
   /**
    * Get thresholds for a specific resource type
    */
-  public getThresholdsByResourceType(type: ResourceType): ResourceThreshold[] {
-    const thresholdIds = this.resourceTypeThresholds.get(type) || [];
-    return thresholdIds
-      .map(id => this.thresholds.get(id))
-      .filter(Boolean) as ResourceThreshold[];
+  public getThresholdsByResourceType(type: StringResourceType | ResourceType): ResourceThreshold[] {
+    // Convert to string resource type for internal use
+    const stringType = ensureStringResourceType(type);
+
+    const thresholdIds = this.resourceTypeThresholds.get(stringType) || [];
+    return thresholdIds.map(id => this.thresholds.get(id)!).filter(Boolean);
   }
 
   /**
@@ -215,57 +239,85 @@ export class ResourceThresholdSubsystem {
    */
   public getThresholdsByEntity(entityId: string): ResourceThreshold[] {
     const thresholdIds = this.entityThresholds.get(entityId) || [];
-    return thresholdIds
-      .map(id => this.thresholds.get(id))
-      .filter(Boolean) as ResourceThreshold[];
+    return thresholdIds.map(id => this.thresholds.get(id)!).filter(Boolean);
+  }
+
+  /**
+   * Update a threshold
+   */
+  public updateThreshold(id: string, updates: Partial<ResourceThreshold>): boolean {
+    const threshold = this.thresholds.get(id);
+    if (!threshold) {
+      return false;
+    }
+
+    // Handle resource type change
+    if (updates.resourceType && updates.resourceType !== threshold.resourceType) {
+      // Remove from old resource type index
+      this.removeFromArray(
+        this.resourceTypeThresholds,
+        ensureStringResourceType(threshold.resourceType),
+        id
+      );
+
+      // Add to new resource type index
+      this.addToArray(
+        this.resourceTypeThresholds,
+        ensureStringResourceType(updates.resourceType),
+        id
+      );
+    }
+
+    // Handle entity ID change
+    if ('entityId' in updates && updates.entityId !== threshold.entityId) {
+      // Remove from old entity index if it existed
+      if (threshold.entityId) {
+        this.removeFromArray(this.entityThresholds, threshold.entityId, id);
+      }
+
+      // Add to new entity index if it exists
+      if (updates.entityId) {
+        this.addToArray(this.entityThresholds, updates.entityId, id);
+      }
+    }
+
+    // Update the threshold
+    this.thresholds.set(id, { ...threshold, ...updates });
+
+    return true;
   }
 
   /**
    * Enable a threshold
    */
   public enableThreshold(id: string): boolean {
-    const threshold = this.thresholds.get(id);
-    if (!threshold) {
-      return false;
-    }
-
-    threshold.enabled = true;
-    this.thresholds.set(id, threshold);
-    return true;
+    return this.updateThreshold(id, { enabled: true });
   }
 
   /**
    * Disable a threshold
    */
   public disableThreshold(id: string): boolean {
-    const threshold = this.thresholds.get(id);
-    if (!threshold) {
-      return false;
-    }
-
-    threshold.enabled = false;
-    this.thresholds.set(id, threshold);
-    return true;
+    return this.updateThreshold(id, { enabled: false });
   }
 
   /**
-   * Check if a threshold is triggered for a given resource state
+   * Check if a threshold is triggered
    */
-  private isThresholdTriggered(threshold: ResourceThreshold, state: ResourceState): boolean {
-    // Skip disabled thresholds
+  private isThresholdTriggered(threshold: ResourceThreshold, state: StringResourceState): boolean {
     if (!threshold.enabled) {
       return false;
     }
 
     // Check cooldown
-    if (threshold.cooldownMs && threshold.lastTriggered) {
+    if (threshold.lastTriggered && threshold.cooldownMs) {
       const timeSinceLastTrigger = Date.now() - threshold.lastTriggered;
       if (timeSinceLastTrigger < threshold.cooldownMs) {
         return false;
       }
     }
 
-    // If one-time and already triggered, skip
+    // If it's a one-time threshold and has been triggered before, don't trigger again
     if (!threshold.repeat && threshold.lastTriggered) {
       return false;
     }
@@ -277,21 +329,16 @@ export class ResourceThresholdSubsystem {
         actualValue = state.current;
         break;
       case ThresholdType.PERCENTAGE:
-        actualValue = state.current / state.max;
+        actualValue = state.max > 0 ? state.current / state.max : 0;
         break;
       case ThresholdType.RATE:
-        // For rate, we compare production rate or consumption rate
-        if (threshold.value >= 0) {
-          actualValue = state.production;
-        } else {
-          actualValue = state.consumption;
-        }
+        actualValue = state.production - state.consumption;
         break;
       default:
         return false;
     }
 
-    // Perform the comparison
+    // Compare with the threshold value
     switch (threshold.comparison) {
       case ThresholdComparison.LESS_THAN:
         return actualValue < threshold.value;
@@ -311,10 +358,17 @@ export class ResourceThresholdSubsystem {
   /**
    * Check thresholds for a specific resource type
    */
-  public checkThresholds(type: ResourceType, state: ResourceState, entityId?: string): void {
+  public checkThresholds(
+    type: StringResourceType | ResourceType,
+    state: StringResourceState,
+    entityId?: string
+  ): void {
+    // Convert to string resource type for internal use
+    const stringType = ensureStringResourceType(type);
+
     // Get thresholds for this resource type
-    const thresholdIds = this.resourceTypeThresholds.get(type) || [];
-    
+    const thresholdIds = this.resourceTypeThresholds.get(stringType) || [];
+
     // If entity ID is provided, also include entity-specific thresholds
     if (entityId) {
       const entityThresholdIds = this.entityThresholds.get(entityId) || [];
@@ -325,10 +379,10 @@ export class ResourceThresholdSubsystem {
     for (const id of thresholdIds) {
       const threshold = this.thresholds.get(id);
       if (!threshold) continue;
-      
+
       // Skip if resource type doesn't match
-      if (threshold.resourceType !== type) continue;
-      
+      if (ensureStringResourceType(threshold.resourceType) !== stringType) continue;
+
       // Skip if entity ID doesn't match (for entity-specific thresholds)
       if (threshold.entityId && threshold.entityId !== entityId) continue;
 
@@ -337,7 +391,7 @@ export class ResourceThresholdSubsystem {
         // Update last triggered time
         threshold.lastTriggered = Date.now();
         this.thresholds.set(id, threshold);
-        
+
         // Handle the action
         this.handleThresholdAction(threshold, state);
       }
@@ -347,64 +401,96 @@ export class ResourceThresholdSubsystem {
   /**
    * Handle a threshold action
    */
-  private handleThresholdAction(threshold: ResourceThreshold, state: ResourceState): void {
+  private handleThresholdAction(threshold: ResourceThreshold, state: StringResourceState): void {
     switch (threshold.action) {
       case ThresholdAction.ALERT:
-        // Emit alert event
-        eventSystem.publish({
-          type: 'RESOURCE_THRESHOLD_REACHED',
-          threshold,
-          state,
-          message: threshold.actionData?.message || `Resource threshold reached for ${threshold.resourceType}`,
-          timestamp: Date.now(),
-        });
+        this.handleAlertAction(threshold, state);
         break;
-        
       case ThresholdAction.AUTOMATE:
-        // Trigger automation
-        eventSystem.publish({
-          type: 'RESOURCE_AUTOMATION_TRIGGERED',
-          threshold,
-          state,
-          automationData: threshold.actionData,
-          timestamp: Date.now(),
-        });
+        this.handleAutomateAction(threshold, state);
         break;
-        
       case ThresholdAction.TRIGGER_EVENT:
-        // Trigger custom event
-        eventSystem.publish({
-          type: threshold.actionData?.eventType || 'CUSTOM_RESOURCE_EVENT',
-          threshold,
-          state,
-          data: threshold.actionData?.data || {},
-          timestamp: Date.now(),
-        });
+        this.handleTriggerEventAction(threshold, state);
         break;
     }
   }
 
   /**
-   * Add an item to an array in a map
+   * Handle an alert action
+   */
+  private handleAlertAction(threshold: ResourceThreshold, state: StringResourceState): void {
+    // Publish alert event
+    eventSystem.publish({
+      type: 'RESOURCE_THRESHOLD_ALERT',
+      threshold: { ...threshold },
+      resourceState: { ...state },
+      message:
+        threshold.actionData?.message || `Resource threshold reached for ${threshold.resourceType}`,
+      severity: threshold.actionData?.severity || 'info',
+      timestamp: Date.now(),
+    });
+  }
+
+  /**
+   * Handle an automate action
+   */
+  private handleAutomateAction(threshold: ResourceThreshold, state: StringResourceState): void {
+    // Publish automation event
+    eventSystem.publish({
+      type: 'RESOURCE_THRESHOLD_AUTOMATE',
+      threshold: { ...threshold },
+      resourceState: { ...state },
+      automationAction: threshold.actionData?.automationAction || 'default',
+      parameters: threshold.actionData?.parameters || {},
+      timestamp: Date.now(),
+    });
+  }
+
+  /**
+   * Handle a trigger event action
+   */
+  private handleTriggerEventAction(threshold: ResourceThreshold, state: StringResourceState): void {
+    // Publish custom event
+    eventSystem.publish({
+      type: (threshold.actionData?.eventType as string) || 'RESOURCE_THRESHOLD_TRIGGERED',
+      threshold: { ...threshold },
+      resourceState: { ...state },
+      data: threshold.actionData?.eventData || {},
+      timestamp: Date.now(),
+    });
+  }
+
+  /**
+   * Utility function to add an item to an array in a map
    */
   private addToArray<K, V>(map: Map<K, V[]>, key: K, value: V): void {
-    const array = map.get(key) || [];
+    if (!map.has(key)) {
+      map.set(key, []);
+    }
+
+    const array = map.get(key)!;
     if (!array.includes(value)) {
       array.push(value);
-      map.set(key, array);
     }
   }
 
   /**
-   * Remove an item from an array in a map
+   * Utility function to remove an item from an array in a map
    */
   private removeFromArray<K, V>(map: Map<K, V[]>, key: K, value: V): void {
-    const array = map.get(key);
-    if (array) {
-      const index = array.indexOf(value);
-      if (index >= 0) {
-        array.splice(index, 1);
-        map.set(key, array);
+    if (!map.has(key)) {
+      return;
+    }
+
+    const array = map.get(key)!;
+    const index = array.indexOf(value);
+
+    if (index !== -1) {
+      array.splice(index, 1);
+
+      // Remove the key if the array is empty
+      if (array.length === 0) {
+        map.delete(key);
       }
     }
   }

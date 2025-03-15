@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 /**
  * ResourceFlowWorkerUtil.ts
  *

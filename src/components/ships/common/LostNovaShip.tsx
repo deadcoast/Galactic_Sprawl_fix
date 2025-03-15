@@ -1,3 +1,5 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import React from "react";
 import { ReactNode } from 'react';
 import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
@@ -107,7 +109,7 @@ export function LostNovaShip({
             duration: 8,
             strength: 1.0,
             magnitude: 1.0,
-            damageType: 'energy',
+            damageType: ResourceType.ENERGY,
             penetration: 0.5,
           };
           mount.currentWeapon.state.effects.push(weaponEffect);

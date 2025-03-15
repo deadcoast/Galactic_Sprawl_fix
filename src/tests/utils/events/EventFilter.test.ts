@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ModuleEvent, ModuleEventType } from '../../../lib/modules/ModuleEvents';
 import { EventFilter } from '../../../utils/events/EventFilter';
@@ -22,14 +23,14 @@ describe('EventFilter', () => {
       moduleId: 'module-1',
       moduleType: 'resource-manager',
       timestamp: 3000,
-      data: { resourceType: 'energy', amount: 100 },
+      data: { resourceType: ResourceType.ENERGY, amount: 100 },
     },
     {
       type: 'RESOURCE_CONSUMED' as ModuleEventType,
       moduleId: 'module-2',
       moduleType: 'radar',
       timestamp: 4000,
-      data: { resourceType: 'energy', amount: 50 },
+      data: { resourceType: ResourceType.ENERGY, amount: 50 },
     },
     {
       type: 'MODULE_CREATED' as ModuleEventType,
@@ -57,7 +58,7 @@ describe('EventFilter', () => {
         moduleId: moduleIds[i % moduleIds.length],
         moduleType: moduleTypes[i % moduleTypes.length] as 'resource-manager' | 'radar' | 'defense',
         timestamp: i * 1000,
-        data: i % 2 === 0 ? { resourceType: 'energy', amount: i * 10 } : undefined,
+        data: i % 2 === 0 ? { resourceType: ResourceType.ENERGY, amount: i * 10 } : undefined,
       });
     }
 
@@ -107,7 +108,7 @@ describe('EventFilter', () => {
 
     it('should apply custom filter function', () => {
       const result = eventFilter.filterEvents(mockEvents, {
-        customFilter: event => event.data?.resourceType === 'energy',
+        customFilter: event => event.data?.resourceType === ResourceType.ENERGY,
       });
       expect(result).toHaveLength(2);
       expect(result[0].type).toBe('RESOURCE_PRODUCED');

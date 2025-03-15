@@ -5,7 +5,8 @@
  * in a user-friendly format, including charts and metrics.
  */
 
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { MultitabPerformanceResult } from '../../tests/performance/MultitabPerformanceTestSuite';
 
 type ResultSet = MultitabPerformanceResult[] | Record<string, MultitabPerformanceResult[]>;

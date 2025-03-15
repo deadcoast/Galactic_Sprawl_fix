@@ -5,7 +5,7 @@ import { ResourceManager } from '../../managers/game/ResourceManager';
 import { ModuleManager } from '../../managers/module/ModuleManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import { ResourceType } from '../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // Mock timers for testing time-based functionality
 jest.useFakeTimers();

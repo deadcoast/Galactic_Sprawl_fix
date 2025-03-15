@@ -1,5 +1,5 @@
 import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
-import { CombatManager } from '../managers/combat/combatManager';
+import { CombatManager } from '../managers/ManagerRegistry';
 import { gameLoopManager, UpdatePriority } from '../managers/game/GameLoopManager';
 import { ResourceManager } from '../managers/game/ResourceManager';
 import { techTreeManager } from '../managers/game/techTreeManager';
@@ -16,10 +16,11 @@ import { ModuleType } from '../types/buildings/ModuleTypes';
 import { getSystemCommunication, SystemMessage } from '../utils/events/EventCommunication';
 import { EventPriorityQueue } from '../utils/events/EventFiltering';
 import { getService } from '../utils/services/ServiceAccess';
+import { ResourceType } from './../types/resources/ResourceTypes';
 
 // Define types for message payloads
 interface ResourceUpdatePayload {
-  resourceType: string;
+  resourceType: ResourceType;
   [key: string]: unknown;
 }
 
@@ -289,7 +290,7 @@ export function integrateWithGameSystems(): () => void {
         moduleEventBus.emit({
           type: 'TECH_UNLOCKED' as ModuleEventType,
           moduleId: 'tech-system',
-          moduleType: 'research' as ModuleType, // Using a valid ModuleType for tech
+          moduleType: ResourceType.RESEARCH as ModuleType, // Using a valid ModuleType for tech
           timestamp: Date.now(),
           data: {
             nodeId: techData.nodeId,
@@ -326,8 +327,8 @@ export function integrateWithGameSystems(): () => void {
       }
     };
 
-    // Register the listener
-    techTreeManager.on('nodeUnlocked', techUnlockedListener);
+    // Register the listener using subscribe
+    techTreeManager.subscribe('nodeUnlocked', techUnlockedListener);
 
     // Register tech system event handlers
     const unregisterTechHandler = techSystemComm.registerHandler(
@@ -346,7 +347,7 @@ export function integrateWithGameSystems(): () => void {
           moduleEventBus.emit({
             type: 'TECH_UPDATED' as ModuleEventType,
             moduleId: 'tech-system',
-            moduleType: 'research' as ModuleType, // Using a valid ModuleType for tech
+            moduleType: ResourceType.RESEARCH as ModuleType, // Using a valid ModuleType for tech
             timestamp: Date.now(),
             data: payload,
           });
@@ -363,7 +364,7 @@ export function integrateWithGameSystems(): () => void {
 
     // Add cleanup function
     cleanupFunctions.push(() => {
-      techTreeManager.off('nodeUnlocked', techUnlockedListener);
+      techTreeManager.unsubscribe('nodeUnlocked', techUnlockedListener);
       unregisterTechHandler();
       // Additional tech system cleanup if needed
     });

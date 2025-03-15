@@ -1,6 +1,8 @@
 import { Database, Droplet, Leaf, Loader, Search, Sparkles, Zap } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import * as React from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ensureStringResourceType } from '../../utils/resources/ResourceTypeMigration';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Interfaces
 interface ResourceDiscovery {
@@ -19,7 +21,13 @@ interface ResourceDiscovery {
 
 interface RawResourceData {
   signalStrength: number; // 0-1 scale
-  signalType: 'mineral' | 'energy' | 'gas' | 'organic' | 'exotic' | 'unknown';
+  signalType:
+    | 'mineral'
+    | ResourceType.ENERGY
+    | ResourceType.GAS
+    | 'organic'
+    | ResourceType.EXOTIC
+    | 'unknown';
   signalPattern: 'concentrated' | 'scattered' | 'veins' | 'unknown';
   signalDepth: number; // 0-1 scale (deeper = harder to access)
   coordinates: { x: number; y: number }; // Relative to sector center
@@ -56,9 +64,9 @@ interface ResourceDiscoverySystemProps {
   quality?: 'low' | 'medium' | 'high';
 }
 
-// Resource name generators by type
+// Resource name generators by type - updated to use enum values
 const resourceNames: Record<string, string[]> = {
-  minerals: [
+  [ResourceType.MINERALS]: [
     'Iron Deposits',
     'Copper Veins',
     'Titanium Ore',
@@ -75,7 +83,7 @@ const resourceNames: Record<string, string[]> = {
     'Manganese Nodules',
     'Zirconium Crystals',
   ],
-  energy: [
+  [ResourceType.ENERGY]: [
     'Thermal Vents',
     'Solar Radiation Pockets',
     'Plasma Streams',
@@ -89,7 +97,7 @@ const resourceNames: Record<string, string[]> = {
     'Tachyon Emissions',
     'Zero-Point Fields',
   ],
-  gas: [
+  [ResourceType.GAS]: [
     'Hydrogen Clouds',
     'Helium Pockets',
     'Methane Reservoirs',
@@ -118,7 +126,7 @@ const resourceNames: Record<string, string[]> = {
     'RNA Strands',
     'Cellular Structures',
   ],
-  exotic: [
+  [ResourceType.EXOTIC]: [
     'Quantum Crystals',
     'Dark Matter Nodes',
     'Temporal Anomalies',
@@ -132,7 +140,7 @@ const resourceNames: Record<string, string[]> = {
     'Monopole Magnets',
     'Quark-Gluon Plasma',
   ],
-  population: [
+  [ResourceType.POPULATION]: [
     'Settlement Sites',
     'Habitable Zones',
     'Colony Locations',
@@ -140,7 +148,7 @@ const resourceNames: Record<string, string[]> = {
     'Shelter Regions',
     'Expansion Areas',
   ],
-  research: [
+  [ResourceType.RESEARCH]: [
     'Ancient Ruins',
     'Alien Artifacts',
     'Scientific Phenomena',
@@ -148,7 +156,7 @@ const resourceNames: Record<string, string[]> = {
     'Research Specimens',
     'Data Caches',
   ],
-  plasma: [
+  [ResourceType.PLASMA]: [
     'Plasma Clouds',
     'Ionized Gas Pockets',
     'Charged Particle Fields',
@@ -157,6 +165,23 @@ const resourceNames: Record<string, string[]> = {
     'Plasma Storms',
   ],
 };
+
+// For backward compatibility - maintain string keys for resourceNames
+// This will be removed in a future update
+Object.entries(resourceNames).forEach(([key, value]) => {
+  if (typeof key === 'string' && key !== 'organic') {
+    try {
+      const enumKey = Object.values(ResourceType).find(
+        enumValue => enumValue.toString() === key.toUpperCase()
+      );
+      if (enumKey && !resourceNames[enumKey]) {
+        resourceNames[enumKey] = value;
+      }
+    } catch (e) {
+      console.warn(`Failed to create enum key for ${key}`);
+    }
+  }
+});
 
 export function ResourceDiscoverySystem({
   discoveries,
@@ -285,20 +310,41 @@ export function ResourceDiscoverySystem({
       let type: ResourceType;
       if (raw.signalType === 'unknown') {
         // Select a random resource type from the valid ResourceType values
-        const resourceTypes: ResourceType[] = ['minerals', 'energy', 'gas', 'plasma', 'exotic'];
+        const resourceTypes: ResourceType[] = [
+          ResourceType.MINERALS,
+          ResourceType.ENERGY,
+          ResourceType.GAS,
+          ResourceType.PLASMA,
+          ResourceType.EXOTIC,
+        ];
         type = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
       } else if (raw.signalType === 'mineral') {
-        type = 'minerals'; // Convert 'mineral' to 'minerals'
+        type = ResourceType.MINERALS; // Convert 'mineral' to ResourceType.MINERALS
       } else if (raw.signalType === 'organic') {
         // Handle 'organic' which is not in ResourceType
-        type = 'minerals'; // Map to a valid ResourceType
+        type = ResourceType.MINERALS; // Map to a valid ResourceType
+      } else if (raw.signalType === ResourceType.GAS) {
+        type = ResourceType.GAS;
+      } else if (raw.signalType === ResourceType.ENERGY) {
+        type = ResourceType.ENERGY;
+      } else if (raw.signalType === ResourceType.EXOTIC) {
+        type = ResourceType.EXOTIC;
       } else {
-        // Convert other signal types to ResourceType
-        type = raw.signalType as ResourceType;
+        // Default case
+        type = ResourceType.MINERALS;
       }
 
       // Generate resource name based on type
-      const nameOptions = resourceNames[type] || resourceNames.minerals;
+      const typeString = ensureStringResourceType(type);
+
+      // Try to get names directly from the enum key first
+      let nameOptions = resourceNames[type] || resourceNames[typeString];
+
+      // Fallback to minerals if no names found
+      if (!nameOptions) {
+        nameOptions = resourceNames[ResourceType.MINERALS];
+      }
+
       const name = nameOptions[Math.floor(Math.random() * nameOptions.length)];
 
       // Calculate resource properties based on raw data and add some randomness
@@ -322,25 +368,25 @@ export function ResourceDiscoverySystem({
       // Calculate estimated value based on type, quality, amount, and accessibility
       let baseValue = 0;
       switch (type) {
-        case 'minerals':
+        case ResourceType.MINERALS:
           baseValue = 1000;
           break;
-        case 'energy':
+        case ResourceType.ENERGY:
           baseValue = 1500;
           break;
-        case 'gas':
+        case ResourceType.GAS:
           baseValue = 1200;
           break;
-        case 'plasma':
+        case ResourceType.PLASMA:
           baseValue = 2500;
           break;
-        case 'exotic':
+        case ResourceType.EXOTIC:
           baseValue = 5000;
           break;
-        case 'population':
+        case ResourceType.POPULATION:
           baseValue = 3000;
           break;
-        case 'research':
+        case ResourceType.RESEARCH:
           baseValue = 4000;
           break;
         default:
@@ -388,21 +434,31 @@ export function ResourceDiscoverySystem({
     }
   };
 
-  // Get resource type icon
-  const getResourceTypeIcon = (type: string) => {
-    switch (type) {
-      case 'minerals':
+  // Get resource type icon - updated to handle enum values directly
+  const getResourceTypeIcon = (type: ResourceType | string) => {
+    // If it's a string, emit a deprecation warning
+    if (typeof type === 'string') {
+      console.warn(
+        `Using string resource type '${type}' is deprecated. Use ResourceType enum instead.`
+      );
+    }
+
+    // Convert to string if it's an enum
+    const typeString = typeof type === 'string' ? type : ensureStringResourceType(type);
+
+    switch (typeString) {
+      case ResourceType.MINERALS:
         return <Database className="h-4 w-4 text-blue-400" />;
-      case 'energy':
+      case ResourceType.ENERGY:
         return <Zap className="h-4 w-4 text-yellow-400" />;
-      case 'gas':
+      case ResourceType.GAS:
         return <Droplet className="h-4 w-4 text-cyan-400" />;
       case 'organic':
         return <Leaf className="h-4 w-4 text-green-400" />;
-      case 'exotic':
+      case ResourceType.EXOTIC:
         return <Sparkles className="h-4 w-4 text-purple-400" />;
       default:
-        return <Database className="h-4 w-4 text-gray-400" />;
+        return <Search className="h-4 w-4 text-gray-400" />;
     }
   };
 
@@ -510,13 +566,13 @@ export function ResourceDiscoverySystem({
                         className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs ${
                           raw.signalType === 'mineral'
                             ? 'bg-blue-900/50 text-blue-200'
-                            : raw.signalType === 'energy'
+                            : raw.signalType === ResourceType.ENERGY
                               ? 'bg-yellow-900/50 text-yellow-200'
-                              : raw.signalType === 'gas'
+                              : raw.signalType === ResourceType.GAS
                                 ? 'bg-cyan-900/50 text-cyan-200'
                                 : raw.signalType === 'organic'
                                   ? 'bg-green-900/50 text-green-200'
-                                  : raw.signalType === 'exotic'
+                                  : raw.signalType === ResourceType.EXOTIC
                                     ? 'bg-purple-900/50 text-purple-200'
                                     : 'bg-gray-700 text-gray-300'
                         }`}

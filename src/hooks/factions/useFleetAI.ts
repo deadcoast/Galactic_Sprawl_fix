@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { combatManager } from '../../managers/combat/combatManager';
+import { getCombatManager } from '../../managers/ManagerRegistry';
 import { factionManager } from '../../managers/factions/factionManager';
 import { Position } from '../../types/core/GameTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
@@ -212,7 +212,7 @@ export function useFleetAI(fleetId: string, factionId: FactionId) {
 
   useEffect(() => {
     const updateInterval = setInterval(() => {
-      const fleet = combatManager.getFleetStatus(fleetId);
+      const fleet = getCombatManager().getFleetStatus(fleetId);
       const faction = factionManager.getFactionState(factionId);
 
       if (!fleet || !faction) {
@@ -340,7 +340,7 @@ function calculateThreatLevel(
   fleet: { units: CombatUnit[] },
   faction: { fleetStrength: number }
 ): number {
-  const nearbyThreats = combatManager.getThreatsInRange(getFleetCenter(fleet), 1500);
+  const nearbyThreats = getCombatManager().getThreatsInRange(getFleetCenter(fleet), 1500);
   let threatLevel = 0;
 
   nearbyThreats.forEach(threat => {
@@ -489,7 +489,7 @@ function applyFleetFormation(fleet: { units: CombatUnit[] }, formation: FleetFor
 
   fleet.units.forEach((unit, index) => {
     if (index < positions.length) {
-      combatManager.moveUnit(unit.id, positions[index]);
+      getCombatManager().moveUnit(unit.id, positions[index]);
     }
   });
 }
@@ -665,7 +665,7 @@ function getFleetCenter(fleet: { units: CombatUnit[] }): {
 }
 
 function calculateThreatDirection(fleet: { units: CombatUnit[] }): number {
-  const threats = combatManager.getThreatsInRange(getFleetCenter(fleet), 1500);
+  const threats = getCombatManager().getThreatsInRange(getFleetCenter(fleet), 1500);
   if (threats.length === 0) {
     return 0;
   }
@@ -819,7 +819,7 @@ function generateVisualFeedback(
   } as const;
 
   // Generate threat indicators
-  const threats = combatManager.getThreatsInRange(center, 1500);
+  const threats = getCombatManager().getThreatsInRange(center, 1500);
   const threatIndicators = threats.map(threat => ({
     position: threat.position,
     severity: threat.severity,

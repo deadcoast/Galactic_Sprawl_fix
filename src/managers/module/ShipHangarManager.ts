@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { v4 as uuidv4 } from 'uuid';
 import { SHIP_BLUEPRINTS, ShipBlueprint } from '../../config/ShipBlueprints';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
@@ -166,8 +167,8 @@ export class ShipHangarManager
           efficiency: 1.0,
           lastMaintenance: Date.now(),
           maintenanceCost: [
-            { type: 'energy', amount: 10 },
-            { type: 'minerals', amount: 5 },
+            { type: ResourceType.ENERGY, amount: 10 },
+            { type: ResourceType.MINERALS, amount: 5 },
           ],
         },
       ],
@@ -211,8 +212,8 @@ export class ShipHangarManager
         efficiency: 1.0,
         lastMaintenance: Date.now(),
         maintenanceCost: [
-          { type: 'energy', amount: 10 * tier },
-          { type: 'minerals', amount: 5 * tier },
+          { type: ResourceType.ENERGY, amount: 10 * tier },
+          { type: ResourceType.MINERALS, amount: 5 * tier },
         ],
       };
       this.state.bays.push(newBay);
@@ -583,13 +584,13 @@ export class ShipHangarManager
 
     // Calculate upgrade costs
     const upgradeCosts: ResourceCost[] = [
-      { type: 'minerals', amount: 100 * bay.tier },
-      { type: 'energy', amount: 50 * bay.tier },
+      { type: ResourceType.MINERALS, amount: 100 * bay.tier },
+      { type: ResourceType.ENERGY, amount: 50 * bay.tier },
     ];
 
     // Add plasma cost for higher tiers
     if (bay.tier >= 2) {
-      upgradeCosts.push({ type: 'plasma', amount: 25 * bay.tier });
+      upgradeCosts.push({ type: ResourceType.PLASMA, amount: 25 * bay.tier });
     }
 
     // Check if we can afford upgrade
@@ -615,8 +616,8 @@ export class ShipHangarManager
     bay.status = bay.ships.length >= newCapacity ? 'full' : 'available';
     bay.efficiency = Math.min(1.0, bay.efficiency + 0.2); // Bonus efficiency from upgrade
     bay.maintenanceCost = [
-      { type: 'energy', amount: 10 * newTier },
-      { type: 'minerals', amount: 5 * newTier },
+      { type: ResourceType.ENERGY, amount: 10 * newTier },
+      { type: ResourceType.MINERALS, amount: 5 * newTier },
     ];
 
     // Reset maintenance timer with new values
@@ -1047,14 +1048,14 @@ export class ShipHangarManager
     const totalDamage = healthDamage + shieldDamage;
 
     const resourceCost: ResourceCost[] = [
-      { type: 'minerals', amount: Math.ceil(totalDamage * 0.5) }, // Base mineral cost
-      { type: 'energy', amount: Math.ceil(totalDamage * 0.3) }, // Base energy cost
+      { type: ResourceType.MINERALS, amount: Math.ceil(totalDamage * 0.5) }, // Base mineral cost
+      { type: ResourceType.ENERGY, amount: Math.ceil(totalDamage * 0.3) }, // Base energy cost
     ];
 
     // Add plasma cost for higher tier ships
     if (targetShip.stats.maxHealth >= 200) {
       // Higher tier ships have more health
-      resourceCost.push({ type: 'plasma', amount: Math.ceil(totalDamage * 0.2) });
+      resourceCost.push({ type: ResourceType.PLASMA, amount: Math.ceil(totalDamage * 0.2) });
     }
 
     // Check if we have enough resources
@@ -1226,14 +1227,14 @@ export class ShipHangarManager
 
     // Calculate resource costs
     const resourceCost: ResourceCost[] = [
-      { type: 'minerals', amount: Math.floor(targetShip.stats.health * 0.5) },
-      { type: 'energy', amount: Math.floor(targetShip.stats.shield * 0.5) },
+      { type: ResourceType.MINERALS, amount: Math.floor(targetShip.stats.health * 0.5) },
+      { type: ResourceType.ENERGY, amount: Math.floor(targetShip.stats.shield * 0.5) },
     ];
 
     // Add plasma cost for higher tier upgrades
     if (targetBay.tier >= 2) {
       resourceCost.push({
-        type: 'plasma',
+        type: ResourceType.PLASMA,
         amount: Math.floor((targetShip.stats.health + targetShip.stats.shield) * 0.2),
       });
     }

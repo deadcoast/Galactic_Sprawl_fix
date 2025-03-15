@@ -1,29 +1,54 @@
-import React, { useEffect, useRef, useState } from 'react';
+import * as React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
-import { useModuleEvents, useMultipleModuleEvents } from '../../hooks/events/useSystemEvents';
-import { ModuleEvent, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { useEventCategorySubscription } from '../../hooks/events/useEventSubscription';
+import { EventBus } from '../../lib/events/EventBus';
+import { ModuleEvent, moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { EventCategory, EventType } from '../../types/events/EventTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 
 // Resource-related event types to monitor
-const RESOURCE_EVENT_TYPES: ModuleEventType[] = [
-  'RESOURCE_PRODUCED',
-  'RESOURCE_CONSUMED',
-  'RESOURCE_TRANSFERRED',
-  'RESOURCE_PRODUCTION_REGISTERED',
-  'RESOURCE_CONSUMPTION_REGISTERED',
+const RESOURCE_EVENT_TYPES = [
+  EventType.RESOURCE_PRODUCED,
+  EventType.RESOURCE_CONSUMED,
+  EventType.RESOURCE_TRANSFERRED,
+  EventType.RESOURCE_PRODUCTION_REGISTERED,
+  EventType.RESOURCE_CONSUMPTION_REGISTERED,
 ];
+
+interface ResourceEventData {
+  resourceType: ResourceType;
+  amount: number;
+  source?: string;
+  target?: string;
+}
+
+// Type guard for resource events
+function isResourceEvent(event: ModuleEvent): event is ModuleEvent & { data: ResourceEventData } {
+  if (!event.data) return false;
+  const data = event.data as Partial<ResourceEventData>;
+  return (
+    'resourceType' in data &&
+    'amount' in data &&
+    typeof data.resourceType === 'string' &&
+    typeof data.amount === 'number'
+  );
+}
 
 interface ResourceEventLog {
   id: string;
-  type: ModuleEventType;
+  type: EventType;
   moduleId: string;
   timestamp: number;
-  resourceName?: string;
-  amount?: number;
+  resourceType: ResourceType;
+  amount: number;
+  source?: string;
+  target?: string;
 }
 
 /**
  * Component that monitors and displays resource-related events in real-time.
- * Demonstrates the use of the useModuleEvents hook for UI components.
+ * Uses the standardized event system with proper type safety and event filtering.
  * Uses virtualization for efficient rendering of large event logs.
  */
 export const ResourceEventMonitor: React.FC = () => {
@@ -33,67 +58,33 @@ export const ResourceEventMonitor: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
-  // Handle a single resource event type as an example
-  useModuleEvents(
-    'RESOURCE_PRODUCED',
+  // Subscribe to all resource events using category subscription
+  const { latestEvents, receivedCount } = useEventCategorySubscription(
+    moduleEventBus as unknown as EventBus<ModuleEvent>,
+    EventCategory.RESOURCE,
     (event: ModuleEvent) => {
-      const resourceName = event.data?.resourceName as string;
-      const amount = event.data?.amount as number;
-
-      // Add the event to our logs
-      addEventToLog({
-        id: `${event.type}-${event.moduleId}-${event.timestamp}`,
-        type: event.type,
-        moduleId: event.moduleId,
-        timestamp: event.timestamp,
-        resourceName,
-        amount,
-      });
+      if (isResourceEvent(event)) {
+        addEventToLog({
+          id: `${event.type}-${event.moduleId}-${event.timestamp}`,
+          type: event.type,
+          moduleId: event.moduleId,
+          timestamp: event.timestamp,
+          resourceType: event.data.resourceType,
+          amount: event.data.amount,
+          source: event.data.source,
+          target: event.data.target,
+        });
+      }
     },
-    [] // No dependencies
+    {
+      trackLatest: true,
+      filter: (event: ModuleEvent) => RESOURCE_EVENT_TYPES.includes(event.type as EventType),
+    }
   );
-
-  // Example of using the multiple events hook
-  useMultipleModuleEvents([
-    {
-      eventType: 'RESOURCE_CONSUMED',
-      handler: event => {
-        const resourceName = event.data?.resourceName as string;
-        const amount = event.data?.amount as number;
-
-        addEventToLog({
-          id: `${event.type}-${event.moduleId}-${event.timestamp}`,
-          type: event.type,
-          moduleId: event.moduleId,
-          timestamp: event.timestamp,
-          resourceName,
-          amount,
-        });
-      },
-    },
-    {
-      eventType: 'RESOURCE_TRANSFERRED',
-      handler: event => {
-        const resourceName = event.data?.resourceName as string;
-        const amount = event.data?.amount as number;
-
-        addEventToLog({
-          id: `${event.type}-${event.moduleId}-${event.timestamp}`,
-          type: event.type,
-          moduleId: event.moduleId,
-          timestamp: event.timestamp,
-          resourceName,
-          amount,
-        });
-      },
-    },
-  ]);
 
   // Helper function to add events to the log
   const addEventToLog = (eventLog: ResourceEventLog) => {
     setEventLogs(prevLogs => {
-      // Instead of limiting to 50 events, now we'll keep up to 1000 since virtualization
-      // efficiently renders only what's visible
       const newLogs = [eventLog, ...prevLogs];
       return newLogs.slice(0, 1000);
     });
@@ -115,7 +106,7 @@ export const ResourceEventMonitor: React.FC = () => {
         log =>
           log.type.toLowerCase().includes(filter.toLowerCase()) ||
           log.moduleId.toLowerCase().includes(filter.toLowerCase()) ||
-          (log.resourceName && log.resourceName.toLowerCase().includes(filter.toLowerCase()))
+          log.resourceType.toLowerCase().includes(filter.toLowerCase())
       )
     : eventLogs;
 
@@ -153,10 +144,8 @@ export const ResourceEventMonitor: React.FC = () => {
         </div>
         <div className="min-w-[150px] flex-1 px-4 py-2">{log.type}</div>
         <div className="min-w-[120px] flex-1 px-4 py-2">{log.moduleId}</div>
-        <div className="min-w-[100px] flex-1 px-4 py-2">{log.resourceName || 'N/A'}</div>
-        <div className="min-w-[80px] flex-1 px-4 py-2">
-          {log.amount !== undefined ? log.amount.toFixed(2) : 'N/A'}
-        </div>
+        <div className="min-w-[100px] flex-1 px-4 py-2">{log.resourceType}</div>
+        <div className="min-w-[80px] flex-1 px-4 py-2">{log.amount.toFixed(2)}</div>
       </div>
     );
   };

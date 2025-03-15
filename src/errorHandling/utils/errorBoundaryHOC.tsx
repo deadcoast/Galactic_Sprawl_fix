@@ -1,4 +1,5 @@
-import React, { ComponentType, ErrorInfo, ReactNode } from 'react';
+import * as React from "react";
+import { ComponentType, ErrorInfo, ReactNode } from 'react';
 import { ErrorBoundary, ErrorBoundaryProps } from '../ErrorBoundary';
 
 /**

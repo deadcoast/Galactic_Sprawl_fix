@@ -1,5 +1,7 @@
-import { AlertTriangle, Database, Download, Filter, List, Search, Settings } from 'lucide-react';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import * as React from "react";
 import { useState } from 'react';
+import { AlertTriangle, Database, Download, Filter, List, Search, Settings } from 'lucide-react';
 import { ClassificationProvider } from '../../contexts/ClassificationContext';
 import { ClassifiableDiscovery, Classification } from '../../types/exploration/ClassificationTypes';
 import { DiscoveryClassification } from './DiscoveryClassification';
@@ -31,7 +33,7 @@ const sampleDiscoveries: ClassifiableDiscovery[] = [
     sectorId: 'sector-8',
     sectorName: 'Helios Cluster',
     coordinates: { x: 85, y: 42 },
-    resourceType: 'minerals',
+    resourceType: ResourceType.MINERALS,
     amount: 78,
     quality: 0.85,
     distribution: 'veins',
@@ -61,7 +63,7 @@ const sampleDiscoveries: ClassifiableDiscovery[] = [
     sectorId: 'sector-9',
     sectorName: 'Taurus Expanse',
     coordinates: { x: 112, y: 78 },
-    resourceType: 'gas',
+    resourceType: ResourceType.GAS,
     amount: 92,
     quality: 0.76,
     distribution: 'scattered',
@@ -80,7 +82,7 @@ const sampleDiscoveries: ClassifiableDiscovery[] = [
       dimensionalStability: 0.31,
       expansionRate: 'increasing',
       gravitationalEffects: 'significant',
-      radiationSignature: 'exotic',
+      radiationSignature: ResourceType.EXOTIC,
     },
   },
 ];

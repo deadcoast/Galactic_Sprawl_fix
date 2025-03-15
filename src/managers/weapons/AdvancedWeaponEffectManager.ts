@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 /**
  * Advanced Weapon Effect Manager
  *
@@ -414,7 +415,7 @@ export class AdvancedWeaponEffectManager
       duration,
       name: `Shield Bypass Mk${config.targetTier}`,
       description: `Penetrates ${Math.round(bypassRatio * 100)}% of shield protection`,
-      damageType: 'energy',
+      damageType: ResourceType.ENERGY,
       penetration,
       bypassRatio,
       directHullDamage: 0.2 * config.targetTier,
@@ -576,7 +577,7 @@ export class AdvancedWeaponEffectManager
       duration,
       name: `Energy Beam Mk${config.targetTier}`,
       description: `Continuous energy beam that deals ${strength} damage per second`,
-      damageType: 'energy',
+      damageType: ResourceType.ENERGY,
       penetration: 0.3 + 0.1 * config.targetTier,
       beamWidth,
       isPenetrating,

@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import * as React from "react";
+import { useEffect, useRef, useState } from 'react';
 import {
   CartesianGrid,
   Legend,
@@ -99,13 +101,13 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
     const getResourceKey = (resourceType: ResourceType): keyof typeof allResourceRates | null => {
       // Map ResourceType enum values to keys in allResourceRates
       const mapping: Partial<Record<ResourceType, keyof typeof allResourceRates>> = {
-        [ResourceType.MINERALS]: 'minerals',
-        [ResourceType.ENERGY]: 'energy',
-        [ResourceType.POPULATION]: 'population',
-        [ResourceType.RESEARCH]: 'research',
-        [ResourceType.PLASMA]: 'plasma',
-        [ResourceType.GAS]: 'gas',
-        [ResourceType.EXOTIC]: 'exotic',
+        [ResourceType.MINERALS]: ResourceType.MINERALS,
+        [ResourceType.ENERGY]: ResourceType.ENERGY,
+        [ResourceType.POPULATION]: ResourceType.POPULATION,
+        [ResourceType.RESEARCH]: ResourceType.RESEARCH,
+        [ResourceType.PLASMA]: ResourceType.PLASMA,
+        [ResourceType.GAS]: ResourceType.GAS,
+        [ResourceType.EXOTIC]: ResourceType.EXOTIC,
       };
 
       return mapping[resourceType] || null;

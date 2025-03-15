@@ -1,5 +1,5 @@
 import { Database, Map, Menu, Radar, Ship, Users } from 'lucide-react';
-import React from 'react';
+import * as React from "react";
 import { useGameState } from '../../contexts/GameContext';
 import { useComponentProfiler } from '../../hooks/ui/useComponentProfiler';
 import { GalaxyMap } from './GalaxyMap';

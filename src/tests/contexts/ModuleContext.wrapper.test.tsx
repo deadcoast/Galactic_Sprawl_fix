@@ -1,3 +1,5 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import * as React from "react";
 import '@testing-library/jest-dom';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import {
@@ -50,7 +52,7 @@ const createMockModuleManagerWrapper = () => {
     getBuildings: jest
       .fn()
       .mockReturnValue([{ id: 'building-1', type: 'colony', attachmentPoints: [], modules: [] }]),
-    getModuleCategories: jest.fn().mockReturnValue(['production', 'utility', 'research']),
+    getModuleCategories: jest.fn().mockReturnValue(['production', 'utility', ResourceType.RESEARCH]),
     getModulesByBuildingId: jest.fn().mockReturnValue([]),
     activateModule: jest.fn(),
     deactivateModule: jest.fn(),
@@ -142,7 +144,7 @@ const ModuleActionsComponent = () => {
     const newModule: Module = {
       id: 'module-3',
       name: 'New Test Module',
-      type: 'research' as ModuleType,
+      type: ResourceType.RESEARCH as ModuleType,
       status: ModuleStatus.CONSTRUCTING,
       level: 1,
       isActive: false,

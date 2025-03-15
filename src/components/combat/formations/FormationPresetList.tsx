@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useMemo } from 'react';
 import { FleetFormation } from '../../../types/combat/CombatTypes';
 

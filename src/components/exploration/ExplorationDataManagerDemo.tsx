@@ -1,7 +1,8 @@
+import * as React from "react";
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ExplorationDataManager } from './ExplorationDataManager';
-
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 // Types from ExplorationDataManager
 interface Anomaly {
   id: string;
@@ -27,7 +28,7 @@ interface Sector {
 }
 
 interface ResourceData {
-  type: 'minerals' | 'gas' | 'energy' | 'organic' | 'exotic';
+  type: ResourceType.MINERALS | ResourceType.GAS | ResourceType.ENERGY | 'organic' | ResourceType.EXOTIC;
   name: string;
   amount: number;
   quality: number;
@@ -143,7 +144,7 @@ const getAnomalyDescription = (type: Anomaly['type'], severity: Anomaly['severit
 
 const generateSampleResources = (count: number): ResourceData[] => {
   const resources: ResourceData[] = [];
-  const types: ResourceData['type'][] = ['minerals', 'gas', 'energy', 'organic', 'exotic'];
+  const types: ResourceData['type'][] = [ResourceType.MINERALS, ResourceType.GAS, ResourceType.ENERGY, 'organic', ResourceType.EXOTIC];
   const distributions: ResourceData['distribution'][] = ['concentrated', 'scattered', 'veins'];
   const resourceNames = {
     minerals: ['Iron', 'Copper', 'Titanium', 'Platinum', 'Uranium'],
@@ -228,10 +229,10 @@ const generateSampleCategories = (): ExplorationCategory[] => {
       name: 'Resources',
       color: '#3b82f6', // Blue
       recordCount: 0,
-      subCategories: ['minerals', 'gases', 'energy', 'organics', 'exotics'],
+      subCategories: [ResourceType.MINERALS, 'gases', ResourceType.ENERGY, 'organics', 'exotics'],
     },
     {
-      id: 'minerals',
+      id: ResourceType.MINERALS,
       name: 'Minerals',
       color: '#60a5fa', // Light blue
       recordCount: 0,
@@ -245,7 +246,7 @@ const generateSampleCategories = (): ExplorationCategory[] => {
       parentId: 'resources',
     },
     {
-      id: 'energy',
+      id: ResourceType.ENERGY,
       name: 'Energy',
       color: '#2563eb', // Dark blue
       recordCount: 0,
@@ -359,9 +360,9 @@ const generateSampleRecords = (
     const sector = sectors[sectorIndex];
 
     const categoryMap = {
-      minerals: 'minerals',
+      minerals: ResourceType.MINERALS,
       gas: 'gases',
-      energy: 'energy',
+      energy: ResourceType.ENERGY,
       organic: 'organics',
       exotic: 'exotics',
     };
@@ -648,9 +649,9 @@ export function ExplorationDataManagerDemo() {
                 const sector = sectors[sectorIndex];
 
                 const categoryMap = {
-                  minerals: 'minerals',
+                  minerals: ResourceType.MINERALS,
                   gas: 'gases',
-                  energy: 'energy',
+                  energy: ResourceType.ENERGY,
                   organic: 'organics',
                   exotic: 'exotics',
                 };
@@ -680,13 +681,13 @@ export function ExplorationDataManagerDemo() {
                   }
 
                   if (
-                    ['minerals', 'gases', 'energy', 'organics', 'exotics'].includes(category.id)
+                    [ResourceType.MINERALS, 'gases', ResourceType.ENERGY, 'organics', 'exotics'].includes(category.id)
                   ) {
                     const count = newResources.filter(r => {
                       const categoryMap = {
-                        minerals: 'minerals',
+                        minerals: ResourceType.MINERALS,
                         gas: 'gases',
-                        energy: 'energy',
+                        energy: ResourceType.ENERGY,
                         organic: 'organics',
                         exotic: 'exotics',
                       };

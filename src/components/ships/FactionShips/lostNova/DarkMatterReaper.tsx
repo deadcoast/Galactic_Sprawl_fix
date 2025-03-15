@@ -1,5 +1,7 @@
-import { Zap } from 'lucide-react';
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import * as React from "react";
 import { useEffect, useState } from 'react';
+import { Zap } from 'lucide-react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
 import { ShipStatus } from '../../../../types/ships/ShipTypes';
@@ -37,7 +39,7 @@ const _baseFireRate = 1.2;
 const _primaryWeapon = {
   id: 'dark-matter-cannon',
   name: 'Dark Matter Cannon',
-  type: 'energy',
+  type: ResourceType.ENERGY,
   damage: _baseDamage,
   range: _baseRange,
   fireRate: _baseFireRate,

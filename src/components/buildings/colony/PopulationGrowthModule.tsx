@@ -1,13 +1,14 @@
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Droplet, Leaf, TrendingUp, Users, Zap } from 'lucide-react';
-import { useEffect, useState } from 'react';
-
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 interface GrowthModifier {
   id: string;
   name: string;
   description: string;
   effect: number; // Percentage modifier (e.g., 1.1 = +10%)
-  type: 'food' | 'housing' | 'healthcare' | 'environment' | 'energy';
+  type: 'food' | 'housing' | 'healthcare' | 'environment' | ResourceType.ENERGY;
   active: boolean;
 }
 
@@ -142,7 +143,7 @@ export function PopulationGrowthModule({
         return <AlertTriangle className="h-4 w-4 text-red-400" />;
       case 'environment':
         return <Leaf className="h-4 w-4 text-green-400" />;
-      case 'energy':
+      case ResourceType.ENERGY:
         return <Zap className="h-4 w-4 text-yellow-400" />;
     }
   };

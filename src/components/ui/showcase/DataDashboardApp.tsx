@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { Feature } from 'geojson';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import * as React from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Import optimization utilities
 import {

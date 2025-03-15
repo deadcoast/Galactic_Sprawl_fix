@@ -1,6 +1,8 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Beaker, Database, Info, Users, Zap } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   createUpdateResourcesAction,
   useGameDispatch,
@@ -578,13 +580,13 @@ export const ResourceVisualizationEnhanced = React.memo(
         <div className="mt-4 flex space-x-4">
           <button
             className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            onClick={() => updateResourceManually('minerals', 100)}
+            onClick={() => updateResourceManually(ResourceType.MINERALS, 100)}
           >
             Add 100 Minerals
           </button>
           <button
             className="rounded bg-cyan-600 px-4 py-2 text-white hover:bg-cyan-700"
-            onClick={() => updateResourceManually('energy', 100)}
+            onClick={() => updateResourceManually(ResourceType.ENERGY, 100)}
           >
             Add 100 Energy
           </button>

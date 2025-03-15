@@ -1,7 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { TrendingUp, Users } from 'lucide-react';
-import * as React from 'react';
+import * as React from "react";
 
 interface PopulationIndicatorProps {
   population: number;

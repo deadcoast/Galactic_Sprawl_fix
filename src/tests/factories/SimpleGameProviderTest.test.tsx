@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
-import React from 'react';
+import * as React from "react";
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { GameContext, GameProvider } from '../../contexts/GameContext';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { disableAllWebSocketServers, enableAllWebSocketServers } from '../setup';
 
 // Completely disable WebSocket servers for all tests in this file
@@ -33,8 +34,10 @@ function SimpleResourceDisplay() {
 
   return (
     <div>
-      <div data-testid="minerals">Minerals: {gameContext.state.resources.minerals}</div>
-      <div data-testid="energy">Energy: {gameContext.state.resources.energy}</div>
+      <div data-testid={ResourceType.MINERALS}>
+        Minerals: {gameContext.state.resources.minerals}
+      </div>
+      <div data-testid={ResourceType.ENERGY}>Energy: {gameContext.state.resources.energy}</div>
     </div>
   );
 }
@@ -48,8 +51,8 @@ describe('Simple Game Provider Test', () => {
     );
 
     // Check that minerals and energy are displayed with values from the actual GameProvider
-    expect(screen.getByTestId('minerals')).toHaveTextContent('Minerals: 1000');
-    expect(screen.getByTestId('energy')).toHaveTextContent('Energy: 1000');
+    expect(screen.getByTestId(ResourceType.MINERALS)).toHaveTextContent('Minerals: 1000');
+    expect(screen.getByTestId(ResourceType.ENERGY)).toHaveTextContent('Energy: 1000');
   });
 
   it('should handle undefined context gracefully', () => {

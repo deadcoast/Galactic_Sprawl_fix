@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
+import * as React from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
 import { ResourceManager } from '../managers/game/ResourceManager';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
-import { ResourceType } from '../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../types/resources/ResourceTypes";
 
 /**
  * We're focusing only on the core resources for this context

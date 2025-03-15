@@ -1,3 +1,4 @@
+import * as React from "react";
 import { AlertTriangle, Crosshair, Rocket, Shield, Users, Zap } from 'lucide-react';
 
 interface Fighter {

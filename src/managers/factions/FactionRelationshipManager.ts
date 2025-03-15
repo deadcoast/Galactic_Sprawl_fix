@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { factionConfigs } from '../../config/factions/factions';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
@@ -29,7 +30,7 @@ interface RelationshipEvents {
   tradeEstablished: {
     factionId: FactionId;
     targetFactionId: FactionId;
-    resourceType: string;
+    resourceType: ResourceType;
     amount: number;
   };
   conflictRecorded: {
@@ -87,7 +88,7 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   private isResourceTransferEventData(data: unknown): data is {
     sourceFaction: FactionId;
     targetFaction: FactionId;
-    resourceType: string;
+    resourceType: ResourceType;
     amount: number;
   } {
     if (!data || typeof data !== 'object') {
@@ -306,7 +307,7 @@ export class FactionRelationshipManager extends EventEmitter<RelationshipEvents>
   public recordTrade(
     factionId: FactionId,
     targetId: FactionId,
-    resourceType: string,
+    resourceType: ResourceType,
     amount: number
   ): void {
     const key = this.getRelationshipKey(factionId, targetId);

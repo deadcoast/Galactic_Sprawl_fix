@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { ModuleEventType } from '../../../lib/modules/ModuleEvents';

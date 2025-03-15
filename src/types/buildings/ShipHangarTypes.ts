@@ -1,3 +1,4 @@
+import { ResourceType } from "./../resources/ResourceTypes";
 import { Effect, Tier } from '../core/GameTypes';
 import { ResourceCost } from '../resources/ResourceTypes';
 import { CommonShip } from '../ships/CommonShipTypes';

@@ -2,6 +2,16 @@ import js from '@eslint/js';
 import prettierConfig from 'eslint-config-prettier';
 import tseslint from 'typescript-eslint';
 
+// Import the custom rule
+let noStringResourceTypes;
+try {
+  const ruleModule = await import('./src/eslint-rules/no-string-resource-types.js');
+  noStringResourceTypes = ruleModule.default;
+} catch {
+  // If the rule can't be loaded, use an empty object
+  noStringResourceTypes = {};
+}
+
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -11,6 +21,13 @@ export default tseslint.config(
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
+    plugins: {
+      'galactic-sprawl': {
+        rules: {
+          'no-string-resource-types': noStringResourceTypes,
+        },
+      },
+    },
     rules: {
       'no-var': 'error',
       'prefer-const': 'warn',
@@ -24,6 +41,7 @@ export default tseslint.config(
         },
       ],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'galactic-sprawl/no-string-resource-types': 'warn',
     },
   },
   {

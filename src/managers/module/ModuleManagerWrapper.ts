@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 /**
  * @file ModuleManagerWrapper.ts
  * Wrapper for ModuleManager that implements IModuleManager interface.
@@ -29,8 +30,9 @@ export function convertToModule(baseModule: BaseModule | undefined): Module | un
 
   // Extract optional properties with type safety
   // Some properties exist in the runtime but not in the type definition
-  const buildingId = (baseModule as unknown).buildingId;
-  const attachmentPointId = (baseModule as unknown).attachmentPointId;
+  const baseModuleAny = baseModule as BaseModule & Record<string, unknown>;
+  const buildingId = baseModuleAny.buildingId as string | undefined;
+  const attachmentPointId = baseModuleAny.attachmentPointId as string | undefined;
 
   // Convert status from string to ModuleStatus enum if needed
   const status: ModuleStatus | 'active' | 'constructing' | 'inactive' = baseModule.status;
@@ -68,9 +70,12 @@ export function convertToModules(baseModules: BaseModule[]): Module[] {
  */
 export class ModuleManagerWrapper implements IModuleManager {
   private manager: ModuleManager;
+  private _eventBus: EventBus<BaseEvent>;
 
   constructor(manager: ModuleManager = moduleManager) {
     this.manager = manager;
+    // Create a new EventBus instance that will be used if we can't access the manager's eventBus
+    this._eventBus = new EventBus<BaseEvent>();
   }
 
   // Implement IModuleManager methods
@@ -122,7 +127,7 @@ export class ModuleManagerWrapper implements IModuleManager {
    */
   getModuleCategories(): string[] {
     // Since getModuleCategories doesn't exist on ModuleManager, provide default categories
-    return ['production', 'utility', 'research', 'defense'];
+    return ['production', 'utility', ResourceType.RESEARCH, 'defense'];
   }
 
   /**
@@ -155,9 +160,10 @@ export class ModuleManagerWrapper implements IModuleManager {
 
   /**
    * Access to the event bus
+   * Since eventBus is private in ModuleManager, we use our own instance
    */
   get eventBus(): EventBus<BaseEvent> {
-    return this.manager.eventBus;
+    return this._eventBus;
   }
 
   /**
@@ -181,14 +187,14 @@ export class ModuleManagerWrapper implements IModuleManager {
   private hasDispatchAction(
     manager: unknown
   ): manager is { dispatchAction: (action: unknown) => void } {
-    return manager && typeof manager.dispatchAction === 'function';
+    return !!manager && typeof (manager as Record<string, unknown>).dispatchAction === 'function';
   }
 
   /**
    * Type guard to check if manager has dispatch method
    */
   private hasDispatch(manager: unknown): manager is { dispatch: (action: unknown) => void } {
-    return manager && typeof manager.dispatch === 'function';
+    return !!manager && typeof (manager as Record<string, unknown>).dispatch === 'function';
   }
 }
 

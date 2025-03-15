@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { selectActiveModules, useModules } from '../../contexts/ModuleContext';
 import { useGameState } from '../../hooks/game/useGameState';
 import { ModuleEvent } from '../../lib/modules/ModuleEvents';

@@ -1,10 +1,10 @@
 import { colonyRules } from '../../config/automation/colonyRules';
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
-import { EventEmitter } from '../../utils/EventEmitter';
+import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { automationManager } from '../game/AutomationManager';
 import { ResourceManager } from '../game/ResourceManager';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Create an instance of ResourceManager
 const resourceManager = new ResourceManager();
@@ -28,18 +28,53 @@ export interface ResearchBenefits {
   [key: string]: unknown;
 }
 
-interface ColonyEvents extends Record<string, unknown> {
-  statsUpdated: { colonyId: string; stats: ColonyStats };
-  resourcesDistributed: { colonyId: string; resources: Record<string, number> };
-  infrastructureBuilt: { colonyId: string; type: string; level: number };
-  populationGrew: { colonyId: string; amount: number };
-  tradeRouteEstablished: { colonyId: string; partnerId: string; resources: string[] };
-  defenseActivated: { colonyId: string; threatLevel: number };
-  researchCompleted: { colonyId: string; project: string; benefits: ResearchBenefits };
-  emergencyProtocolActivated: { colonyId: string; type: string };
+/**
+ * Colony event interface extending BaseEvent
+ */
+export interface ColonyEvent extends BaseEvent {
+  type: EventType;
+  moduleId: string;
+  moduleType: ModuleType;
+  data: ColonyEventData;
 }
 
-export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
+/**
+ * Colony event data interface
+ */
+export interface ColonyEventData extends Record<string, unknown> {
+  colonyId?: string;
+  stats?: ColonyStats;
+  resourceAmounts?: Record<string, number>;
+  type?: string;
+  level?: number;
+  amount?: number;
+  partnerId?: string;
+  tradeResources?: string[];
+  threatLevel?: number;
+  project?: string;
+  benefits?: ResearchBenefits;
+  protocol?: string;
+}
+
+/**
+ * Type guard for ColonyEvent
+ */
+export function isColonyEvent(event: unknown): event is ColonyEvent {
+  if (!event || typeof event !== 'object') return false;
+  const e = event as ColonyEvent;
+  return (
+    'type' in e &&
+    'moduleId' in e &&
+    'moduleType' in e &&
+    'data' in e &&
+    typeof e.type === 'string' &&
+    typeof e.moduleId === 'string' &&
+    typeof e.moduleType === 'string' &&
+    typeof e.data === 'object'
+  );
+}
+
+export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
   private colonies: Map<
     string,
     {
@@ -54,8 +89,77 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
   > = new Map();
 
   constructor() {
-    super();
+    super('ColonyManager');
+    this.initializeEventHandlers();
     this.initializeAutomationRules();
+  }
+
+  /**
+   * Initialize event handlers for colony-related events
+   */
+  private initializeEventHandlers(): void {
+    // Subscribe to relevant events
+    this.unsubscribeFunctions.push(
+      this.subscribe(EventType.RESOURCE_UPDATED, this.handleResourceUpdate.bind(this)),
+      this.subscribe(EventType.RESOURCE_SHORTAGE, this.handleResourceShortage.bind(this)),
+      this.subscribe(EventType.TECH_UNLOCKED, this.handleTechUnlock.bind(this))
+    );
+  }
+
+  private handleResourceUpdate(event: ColonyEvent): void {
+    if (!isColonyEvent(event)) return;
+    // Handle resource updates
+    const { colonyId, resourceAmounts } = event.data;
+    if (colonyId && resourceAmounts) {
+      this.updateColonyResources(colonyId, resourceAmounts);
+    }
+  }
+
+  private handleResourceShortage(event: ColonyEvent): void {
+    if (!isColonyEvent(event)) return;
+    // Handle resource shortages
+    const { colonyId } = event.data;
+    if (colonyId) {
+      this.activateEmergencyProtocol(colonyId, 'resource_shortage');
+    }
+  }
+
+  private handleTechUnlock(event: ColonyEvent): void {
+    if (!isColonyEvent(event)) return;
+    // Handle tech unlocks
+    const { colonyId, project } = event.data;
+    if (colonyId && project) {
+      this.applyTechBenefits(colonyId, project as string);
+    }
+  }
+
+  private updateColonyResources(colonyId: string, resources: Record<string, number>): void {
+    const colony = this.colonies.get(colonyId);
+    if (!colony) return;
+
+    // Update colony stats based on resources
+    this.updateStats(colonyId, {
+      foodProduction: resources.food || colony.stats.foodProduction,
+      energyProduction: resources.energy || colony.stats.energyProduction,
+    });
+  }
+
+  private applyTechBenefits(colonyId: string, project: string): void {
+    const colony = this.colonies.get(colonyId);
+    if (!colony) return;
+
+    // Apply tech benefits
+    this.publish({
+      type: EventType.TECH_UPDATED,
+      moduleId: colonyId,
+      moduleType: 'colony' as ModuleType,
+      timestamp: Date.now(),
+      data: {
+        project,
+        colonyId,
+        stats: colony.stats,
+      },
+    });
   }
 
   private initializeAutomationRules(): void {
@@ -85,8 +189,8 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
     });
 
     // Emit initialization event
-    moduleEventBus.emit({
-      type: 'MODULE_ACTIVATED',
+    this.publish({
+      type: EventType.MODULE_ACTIVATED,
       moduleId: id,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -101,7 +205,13 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
     }
 
     colony.stats = { ...colony.stats, ...updates };
-    this.emit('statsUpdated', { colonyId, stats: colony.stats });
+    this.publish({
+      type: EventType.MODULE_UPDATED,
+      moduleId: colonyId,
+      moduleType: 'colony' as ModuleType,
+      timestamp: Date.now(),
+      data: { colonyId, stats: colony.stats },
+    });
 
     // Check for level up
     this.checkForLevelUp(colonyId);
@@ -118,8 +228,8 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
     if (newLevel > colony.level) {
       colony.level = newLevel;
-      moduleEventBus.emit({
-        type: 'MODULE_UPGRADED',
+      this.publish({
+        type: EventType.MODULE_UPGRADED,
         moduleId: colonyId,
         moduleType: 'colony' as ModuleType,
         timestamp: Date.now(),
@@ -139,10 +249,31 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
     // Distribute resources
     Object.entries(resourceNeeds).forEach(([resource, amount]) => {
-      resourceManager.transferResources(resource as ResourceType, amount, 'storage', colonyId);
+      // Convert string resource to ResourceType enum
+      let resourceType: ResourceType;
+      switch (resource) {
+        case 'food':
+          resourceType = ResourceType.POPULATION; // Using POPULATION as a proxy for food
+          break;
+        case ResourceType.ENERGY:
+          resourceType = ResourceType.ENERGY;
+          break;
+        case ResourceType.MINERALS:
+          resourceType = ResourceType.MINERALS;
+          break;
+        default:
+          resourceType = ResourceType.MINERALS; // Default case
+      }
+      resourceManager.transferResources(resourceType, amount, 'storage', colonyId);
     });
 
-    this.emit('resourcesDistributed', { colonyId, resources: resourceNeeds });
+    this.publish({
+      type: EventType.RESOURCE_TRANSFERRED,
+      moduleId: colonyId,
+      moduleType: 'colony' as ModuleType,
+      timestamp: Date.now(),
+      data: { colonyId, resourceAmounts: resourceNeeds },
+    });
   }
 
   private calculateResourceNeeds(
@@ -171,15 +302,33 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
     // Consume resources
     Object.entries(requirements).forEach(([resource, amount]) => {
-      resourceManager.removeResource(resource as ResourceType, amount);
+      // Convert string resource to ResourceType enum
+      let resourceType: ResourceType;
+      switch (resource) {
+        case ResourceType.MINERALS:
+          resourceType = ResourceType.MINERALS;
+          break;
+        case ResourceType.ENERGY:
+          resourceType = ResourceType.ENERGY;
+          break;
+        default:
+          resourceType = ResourceType.MINERALS; // Default case
+      }
+      resourceManager.removeResource(resourceType, amount);
     });
 
     // Update infrastructure
     colony.stats.infrastructure += 1;
-    this.emit('infrastructureBuilt', {
-      colonyId,
-      type,
-      level: colony.stats.infrastructure,
+    this.publish({
+      type: EventType.MODULE_UPDATED,
+      moduleId: colonyId,
+      moduleType: 'colony' as ModuleType,
+      timestamp: Date.now(),
+      data: {
+        colonyId,
+        type,
+        level: colony.stats.infrastructure,
+      },
     });
   }
 
@@ -200,9 +349,21 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
   }
 
   private hasRequiredResources(requirements: Record<string, number>): boolean {
-    return Object.entries(requirements).every(
-      ([resource, amount]) => resourceManager.getResourceAmount(resource as ResourceType) >= amount
-    );
+    return Object.entries(requirements).every(([resource, amount]) => {
+      // Convert string resource to ResourceType enum
+      let resourceType: ResourceType;
+      switch (resource) {
+        case ResourceType.MINERALS:
+          resourceType = ResourceType.MINERALS;
+          break;
+        case ResourceType.ENERGY:
+          resourceType = ResourceType.ENERGY;
+          break;
+        default:
+          resourceType = ResourceType.MINERALS; // Default case
+      }
+      return resourceManager.getResourceAmount(resourceType) >= amount;
+    });
   }
 
   public establishTradeRoute(colonyId: string, partnerId: string, resources: string[]): void {
@@ -212,14 +373,12 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
     }
 
     colony.tradeRoutes.add(partnerId);
-    this.emit('tradeRouteEstablished', { colonyId, partnerId, resources });
-
-    moduleEventBus.emit({
-      type: 'AUTOMATION_STARTED',
+    this.publish({
+      type: EventType.AUTOMATION_STARTED,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
-      data: { type: 'trade', partnerId, resources },
+      data: { type: 'trade', partnerId, tradeResources: resources },
     });
   }
 
@@ -229,10 +388,8 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
       return;
     }
 
-    this.emit('defenseActivated', { colonyId, threatLevel });
-
-    moduleEventBus.emit({
-      type: 'AUTOMATION_STARTED',
+    this.publish({
+      type: EventType.AUTOMATION_STARTED,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -247,12 +404,12 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
     }
 
     colony.activeResearch.add(project);
-    moduleEventBus.emit({
-      type: 'AUTOMATION_STARTED',
+    this.publish({
+      type: EventType.AUTOMATION_STARTED,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
-      data: { type: 'research', project },
+      data: { type: ResourceType.RESEARCH, project },
     });
   }
 
@@ -263,14 +420,12 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
     }
 
     colony.activeResearch.delete(project);
-    this.emit('researchCompleted', { colonyId, project, benefits });
-
-    moduleEventBus.emit({
-      type: 'AUTOMATION_CYCLE_COMPLETE',
+    this.publish({
+      type: EventType.AUTOMATION_CYCLE_COMPLETE,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
-      data: { type: 'research', project, benefits },
+      data: { type: ResourceType.RESEARCH, project, benefits },
     });
   }
 
@@ -281,10 +436,8 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
     }
 
     colony.emergencyProtocols.add(type);
-    this.emit('emergencyProtocolActivated', { colonyId, type });
-
-    moduleEventBus.emit({
-      type: 'AUTOMATION_STARTED',
+    this.publish({
+      type: EventType.AUTOMATION_STARTED,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -299,8 +452,8 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
     }
 
     colony.emergencyProtocols.delete(type);
-    moduleEventBus.emit({
-      type: 'AUTOMATION_STOPPED',
+    this.publish({
+      type: EventType.AUTOMATION_STOPPED,
       moduleId: colonyId,
       moduleType: 'colony' as ModuleType,
       timestamp: Date.now(),
@@ -322,6 +475,92 @@ export class ColonyManagerImpl extends EventEmitter<ColonyEvents> {
 
   public getActiveEmergencyProtocols(colonyId: string): string[] {
     return Array.from(this.colonies.get(colonyId)?.emergencyProtocols || []);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected async onInitialize(_dependencies?: unknown): Promise<void> {
+    console.log('ColonyManager initialized');
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected onUpdate(_deltaTime: number): void {
+    // Update colony stats and check for events
+    this.colonies.forEach((colony, id) => {
+      this.updateColonyState(id);
+    });
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected async onDispose(): Promise<void> {
+    // Clear all colonies and their data
+    this.colonies.clear();
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected getVersion(): string {
+    return '1.0.0';
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected getStats(): Record<string, number | string> {
+    return {
+      colonyCount: this.colonies.size,
+      totalPopulation: Array.from(this.colonies.values()).reduce(
+        (sum, c) => sum + c.stats.population,
+        0
+      ),
+      totalInfrastructure: Array.from(this.colonies.values()).reduce(
+        (sum, c) => sum + c.stats.infrastructure,
+        0
+      ),
+      activeResearch: Array.from(this.colonies.values()).reduce(
+        (sum, c) => sum + c.activeResearch.size,
+        0
+      ),
+      activeTradeRoutes: Array.from(this.colonies.values()).reduce(
+        (sum, c) => sum + c.tradeRoutes.size,
+        0
+      ),
+    };
+  }
+
+  private updateColonyState(colonyId: string): void {
+    const colony = this.colonies.get(colonyId);
+    if (!colony) return;
+
+    // Update population based on food production
+    const populationGrowth = Math.floor(colony.stats.foodProduction * 0.1);
+    if (populationGrowth > 0) {
+      this.updateStats(colonyId, {
+        population: colony.stats.population + populationGrowth,
+      });
+    }
+
+    // Update happiness based on resource availability
+    const resourceNeeds = this.calculateResourceNeeds(colony);
+    const resourceAvailability = Object.entries(resourceNeeds).every(([resource, amount]) => {
+      const resourceType =
+        resource === 'food'
+          ? ResourceType.POPULATION
+          : ResourceType[resource.toUpperCase() as keyof typeof ResourceType];
+      return resourceManager.getResourceAmount(resourceType) >= amount;
+    });
+
+    if (!resourceAvailability) {
+      this.updateStats(colonyId, {
+        happiness: Math.max(0, colony.stats.happiness - 5),
+      });
+    }
   }
 }
 

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { AlertTriangle, Crosshair, Shield } from 'lucide-react';
 
 interface DockingBay {

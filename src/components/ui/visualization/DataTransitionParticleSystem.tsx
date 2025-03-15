@@ -1,9 +1,10 @@
+import * as React from "react";
 import { useEffect, useRef, useState } from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { ParticleSystemManager } from '../../../managers/effects/ParticleSystemManager';
 import { Position } from '../../../types/core/Position';
-import { ResourceType } from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 export interface DataPoint {
   id: string;

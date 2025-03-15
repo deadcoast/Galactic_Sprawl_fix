@@ -1,13 +1,14 @@
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { ArrowRight } from 'lucide-react';
-import * as React from 'react';
+import * as React from "react";
 
 interface TransferAnimation {
   id: string;
   sourceId: string;
   targetId: string;
-  resourceType: string;
+  resourceType: ResourceType;
   amount: number;
   progress: number;
 }

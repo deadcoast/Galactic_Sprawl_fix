@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowManager';
 import { ResourceFlow, ResourcePriority } from '../../../types/resources/ResourceTypes';
@@ -17,7 +18,7 @@ vi.mock('../../../utils/resources/resourceValidation', () => ({
 
 describe('ResourceFlowManager Error Handling and Edge Cases', () => {
   let flowManager: ResourceFlowManager;
-  const defaultPriority: ResourcePriority = { type: 'energy', priority: 1, consumers: [] };
+  const defaultPriority: ResourcePriority = { type: ResourceType.ENERGY, priority: 1, consumers: [] };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -39,7 +40,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       const invalidNode1: FlowNode = {
         id: '',
         type: 'producer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       };
@@ -66,7 +67,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'source',
         type: 'producer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -74,7 +75,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'target',
         type: 'consumer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -84,7 +85,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: '',
         source: 'source',
         target: 'target',
-        resourceType: 'energy',
+        resourceType: ResourceType.ENERGY,
         maxRate: 10,
         currentRate: 0,
         priority: defaultPriority,
@@ -96,7 +97,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: 'test-connection',
         source: 'non-existent',
         target: 'target',
-        resourceType: 'energy',
+        resourceType: ResourceType.ENERGY,
         maxRate: 10,
         currentRate: 0,
         priority: defaultPriority,
@@ -108,7 +109,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: 'test-connection',
         source: 'source',
         target: 'non-existent',
-        resourceType: 'energy',
+        resourceType: ResourceType.ENERGY,
         maxRate: 10,
         currentRate: 0,
         priority: defaultPriority,
@@ -120,7 +121,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: 'test-connection',
         source: 'source',
         target: 'target',
-        resourceType: 'energy',
+        resourceType: ResourceType.ENERGY,
         maxRate: -5,
         currentRate: 0,
         priority: defaultPriority,
@@ -174,7 +175,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'inactive-producer',
         type: 'producer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: false,
       });
@@ -182,7 +183,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'inactive-consumer',
         type: 'consumer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: false,
       });
@@ -192,7 +193,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: 'inactive-connection',
         source: 'inactive-producer',
         target: 'inactive-consumer',
-        resourceType: 'energy',
+        resourceType: ResourceType.ENERGY,
         maxRate: 10,
         currentRate: 0,
         priority: defaultPriority,
@@ -214,7 +215,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'producer',
         type: 'producer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -222,7 +223,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'consumer',
         type: 'consumer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -231,7 +232,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: 'connection',
         source: 'producer',
         target: 'consumer',
-        resourceType: 'energy',
+        resourceType: ResourceType.ENERGY,
         maxRate: 10,
         currentRate: 0,
         priority: defaultPriority,
@@ -239,7 +240,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       });
 
       // Set resource state with zero values (should be handled gracefully)
-      flowManager.updateResourceState('energy', {
+      flowManager.updateResourceState(ResourceType.ENERGY, {
         current: 0,
         max: 100,
         min: 0,
@@ -252,7 +253,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       expect(result.transfers.length).toBe(0);
 
       // Set resource state with negative values (should be handled gracefully)
-      flowManager.updateResourceState('energy', {
+      flowManager.updateResourceState(ResourceType.ENERGY, {
         current: -10, // Negative current (should be clamped to min)
         max: 100,
         min: 0,
@@ -266,7 +267,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       expect(result2.transfers.length).toBe(0);
 
       // Get the resource state to verify it was clamped
-      const state = flowManager.getResourceState('energy');
+      const state = flowManager.getResourceState(ResourceType.ENERGY);
       expect(state?.current).toBe(0); // Should be clamped to min
     });
 
@@ -275,7 +276,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'node-a',
         type: 'producer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -283,7 +284,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'node-b',
         type: 'converter',
-        resources: ['energy', 'minerals'],
+        resources: [ResourceType.ENERGY, ResourceType.MINERALS],
         priority: defaultPriority,
         active: true,
       });
@@ -291,7 +292,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'node-c',
         type: 'converter',
-        resources: ['minerals', 'energy'],
+        resources: [ResourceType.MINERALS, ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -301,7 +302,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: 'connection-a-b',
         source: 'node-a',
         target: 'node-b',
-        resourceType: 'energy',
+        resourceType: ResourceType.ENERGY,
         maxRate: 10,
         currentRate: 0,
         priority: defaultPriority,
@@ -313,10 +314,10 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: 'connection-b-c',
         source: 'node-b',
         target: 'node-c',
-        resourceType: 'minerals',
+        resourceType: ResourceType.MINERALS,
         maxRate: 8,
         currentRate: 0,
-        priority: { type: 'minerals', priority: 1, consumers: [] },
+        priority: { type: ResourceType.MINERALS, priority: 1, consumers: [] },
         active: true,
       });
 
@@ -325,7 +326,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: 'connection-c-a',
         source: 'node-c',
         target: 'node-a',
-        resourceType: 'energy',
+        resourceType: ResourceType.ENERGY,
         maxRate: 5,
         currentRate: 0,
         priority: defaultPriority,
@@ -333,7 +334,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       });
 
       // Set resource states
-      flowManager.updateResourceState('energy', {
+      flowManager.updateResourceState(ResourceType.ENERGY, {
         current: 100,
         max: 1000,
         min: 0,
@@ -341,7 +342,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         consumption: 10,
       });
 
-      flowManager.updateResourceState('minerals', {
+      flowManager.updateResourceState(ResourceType.MINERALS, {
         current: 50,
         max: 500,
         min: 0,
@@ -363,7 +364,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'producer',
         type: 'producer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -371,7 +372,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'consumer',
         type: 'consumer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -380,7 +381,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: 'connection',
         source: 'producer',
         target: 'consumer',
-        resourceType: 'energy',
+        resourceType: ResourceType.ENERGY,
         maxRate: 10,
         currentRate: 0,
         priority: defaultPriority,
@@ -388,7 +389,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       });
 
       // Set resource state with sufficient resources
-      flowManager.updateResourceState('energy', {
+      flowManager.updateResourceState(ResourceType.ENERGY, {
         current: 50,
         max: 100,
         min: 0,
@@ -416,7 +417,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'producer',
         type: 'producer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -424,7 +425,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       flowManager.registerNode({
         id: 'consumer',
         type: 'consumer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -434,7 +435,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
         id: 'connection',
         source: 'producer',
         target: 'consumer',
-        resourceType: 'energy',
+        resourceType: ResourceType.ENERGY,
         maxRate: 10,
         currentRate: 0,
         priority: defaultPriority,
@@ -442,7 +443,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       });
 
       // Initial resource state
-      flowManager.updateResourceState('energy', {
+      flowManager.updateResourceState(ResourceType.ENERGY, {
         current: 100,
         max: 1000,
         min: 0,
@@ -455,7 +456,7 @@ describe('ResourceFlowManager Error Handling and Edge Cases', () => {
       expect(firstResult.transfers.length).toBeGreaterThan(0);
 
       // Change resource state dramatically
-      flowManager.updateResourceState('energy', {
+      flowManager.updateResourceState(ResourceType.ENERGY, {
         current: 10, // Much lower
         max: 1000,
         min: 0,

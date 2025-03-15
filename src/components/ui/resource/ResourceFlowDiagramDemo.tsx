@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import * as React from "react";
+import { useState } from 'react';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { componentRegistryService } from '../../../services/ComponentRegistryService';
-import { FlowNodeType, ResourceType } from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import ResourceFlowDiagram from './ResourceFlowDiagram';
 
 /**

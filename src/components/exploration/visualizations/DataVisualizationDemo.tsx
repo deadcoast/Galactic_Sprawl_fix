@@ -1,3 +1,5 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import * as React from "react";
 import { useMemo, useState } from 'react';
 import { ChartDataRecord } from '../../../types/exploration/AnalysisComponentTypes';
 import { DataPoint } from '../../../types/exploration/DataAnalysisTypes';
@@ -27,7 +29,7 @@ export function DataVisualizationDemo() {
   // Sample categorical data for BarChart
   const categoricalData: DataPoint[] = [
     {
-      id: 'minerals',
+      id: ResourceType.MINERALS,
       type: 'resource',
       name: 'Minerals',
       date: Date.now(),
@@ -39,7 +41,7 @@ export function DataVisualizationDemo() {
       },
     },
     {
-      id: 'energy',
+      id: ResourceType.ENERGY,
       type: 'resource',
       name: 'Energy',
       date: Date.now(),
@@ -51,7 +53,7 @@ export function DataVisualizationDemo() {
       },
     },
     {
-      id: 'gas',
+      id: ResourceType.GAS,
       type: 'resource',
       name: 'Gas',
       date: Date.now(),
@@ -63,7 +65,7 @@ export function DataVisualizationDemo() {
       },
     },
     {
-      id: 'exotic',
+      id: ResourceType.EXOTIC,
       type: 'resource',
       name: 'Exotic',
       date: Date.now(),

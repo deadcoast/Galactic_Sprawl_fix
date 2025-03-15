@@ -1,3 +1,4 @@
+import * as React from "react";
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ModuleCard } from '../../components/ui/modules/ModuleCard';
 import { ModuleGrid } from '../../components/ui/modules/ModuleGrid';
@@ -6,6 +7,7 @@ import { moduleManager } from '../../managers/module/ModuleManager';
 import { moduleStatusManager } from '../../managers/module/ModuleStatusManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // Mock the required modules
 jest.mock('../../managers/module/ModuleManager', () => ({
@@ -174,7 +176,7 @@ describe('Module System Integration Tests', () => {
       });
 
       // Re-render with different type
-      render(<ModuleGrid moduleType="energy" />);
+      render(<ModuleGrid moduleType={ResourceType.ENERGY} />);
 
       // Should show empty state message
       expect(screen.getByText('No modules match the current filters')).toBeInTheDocument();

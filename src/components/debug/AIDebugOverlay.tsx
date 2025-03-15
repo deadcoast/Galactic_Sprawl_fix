@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Brain, Target } from 'lucide-react';
 
 interface DebugState {

@@ -15,7 +15,8 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import * as React from "react";
+import { useEffect, useRef, useState } from 'react';
 import { GameLayout } from './GameLayout';
 
 interface EmpireDetails {

@@ -1,5 +1,6 @@
+import { ResourceType } from "./../types/resources/ResourceTypes";
 import { act, render, screen } from '@testing-library/react';
-import React from 'react';
+import * as React from "react";
 import { EventBus, EventListener } from '../lib/events/EventBus';
 import { BuildingType, ModularBuilding, ModuleType } from '../types/buildings/ModuleTypes';
 import { Position } from '../types/core/GameTypes';
@@ -237,7 +238,7 @@ class ModuleManagerWrapper implements IModuleManager {
   private activeModuleIds: string[] = [];
   private buildings: Record<string, TestBuilding> = {};
   public eventBus: EventBus<BaseEvent>;
-  private moduleCategories: string[] = ['radar', 'hangar', 'exploration', 'research'];
+  private moduleCategories: string[] = ['radar', 'hangar', 'exploration', ResourceType.RESEARCH];
 
   constructor(
     initialModules: Record<string, TestModule> = {},

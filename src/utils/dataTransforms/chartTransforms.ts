@@ -18,7 +18,7 @@ import {
   DataPoint,
   AnalysisType
 } from '../../types/exploration/DataAnalysisTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 //=============================================================================
 // Type Guards
@@ -236,7 +236,7 @@ export function createColorScale(
  * @param defaultColor Default color if resource type is not recognized
  */
 export function getResourceTypeColor(
-  resourceType: string | ResourceType,
+  resourceType: ResourceType | ResourceType,
   defaultColor = '#888888'
 ): string {
   const resourceTypeColors: Record<ResourceType, string> = {

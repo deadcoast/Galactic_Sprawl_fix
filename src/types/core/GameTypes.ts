@@ -1,6 +1,7 @@
 /**
  * Core game types used throughout the project
  */
+import { ResourceType } from "./../resources/ResourceTypes";
 
 // Base Types
 export type Quality = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
@@ -19,7 +20,7 @@ export type AIBehavior = 'aggressive' | 'defensive' | 'hit-and-run' | 'support';
 export type CombatTactic = 'flank' | 'charge' | 'kite' | 'hold';
 
 // Resource Types
-export type ResourceType = 'minerals' | 'energy' | 'population' | 'research';
+// Using standardized ResourceType enum from StandardizedResourceTypes.ts
 export type ResourceAmount = {
   type: ResourceType;
   amount: number;

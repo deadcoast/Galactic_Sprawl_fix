@@ -1,5 +1,6 @@
+import * as React from "react";
 import { useEffect, useState } from 'react';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ResourceDiscoverySystem } from './ResourceDiscoverySystem';
 
 // Interfaces
@@ -19,7 +20,7 @@ interface ResourceDiscovery {
 
 interface RawResourceData {
   signalStrength: number; // 0-1 scale
-  signalType: 'mineral' | 'energy' | 'gas' | 'organic' | 'exotic' | 'unknown';
+  signalType: 'mineral' | ResourceType.ENERGY | ResourceType.GAS | 'organic' | ResourceType.EXOTIC | 'unknown';
   signalPattern: 'concentrated' | 'scattered' | 'veins' | 'unknown';
   signalDepth: number; // 0-1 scale (deeper = harder to access)
   coordinates: { x: number; y: number }; // Relative to sector center
@@ -111,12 +112,12 @@ const generateSampleSectors = (count: number): Sector[] => {
 // Generate sample raw resource data
 const generateRawResourceData = (count: number): RawResourceData[] => {
   const rawData: RawResourceData[] = [];
-  const signalTypes: ('mineral' | 'energy' | 'gas' | 'organic' | 'exotic' | 'unknown')[] = [
+  const signalTypes: ('mineral' | ResourceType.ENERGY | ResourceType.GAS | 'organic' | ResourceType.EXOTIC | 'unknown')[] = [
     'mineral',
-    'energy',
-    'gas',
+    ResourceType.ENERGY,
+    ResourceType.GAS,
     'organic',
-    'exotic',
+    ResourceType.EXOTIC,
     'unknown',
   ];
   const signalPatterns: ('concentrated' | 'scattered' | 'veins' | 'unknown')[] = [

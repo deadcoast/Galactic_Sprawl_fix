@@ -1,4 +1,4 @@
-/**
+import { ResourceType } from "./../../types/resources/ResourceTypes";/**
  * Advanced weapon effect types and interfaces
  * @module AdvancedWeaponEffects
  */
@@ -37,7 +37,7 @@ export interface ChainEffect extends BaseAdvancedWeaponEffect {
  */
 export interface ShieldBypassEffect extends BaseAdvancedWeaponEffect {
   type: 'damage';
-  damageType: 'energy' | 'kinetic' | 'explosive';
+  damageType: ResourceType.ENERGY | 'kinetic' | 'explosive';
   penetration: number; // Penetration value (0-1)
   bypassRatio: number; // How much shield protection is bypassed (0-1)
   directHullDamage: number; // Direct damage to hull regardless of shields (0-1)
@@ -89,7 +89,7 @@ export interface EnhancedStatusEffect extends BaseAdvancedWeaponEffect {
  */
 export interface BeamEffect extends BaseAdvancedWeaponEffect {
   type: 'damage';
-  damageType: 'energy' | 'kinetic' | 'explosive';
+  damageType: ResourceType.ENERGY | 'kinetic' | 'explosive';
   penetration: number; // Penetration value (0-1)
   beamWidth: number; // Width of the beam
   isPenetrating: boolean; // Whether it penetrates multiple targets

@@ -1,15 +1,28 @@
+import React from "react";
 import { render, screen } from '@testing-library/react';
-import { Dispatch, ReactNode, useCallback, useReducer } from 'react';
-import { describe, expect, it } from 'vitest';
-import { ResourceVisualization } from '../../../components/ui/ResourceVisualization';
-import { GameContext } from '../../../contexts/GameContext';
+import { createContext, Dispatch, ReactNode, useCallback, useReducer } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import ResourceVisualization from '../../../components/ui/ResourceVisualization';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+
+// Create a mock GameContext since we can't import it directly
+interface GameContextType {
+  state: TestGameState;
+  dispatch: Dispatch<TestGameAction>;
+  updateShip: () => void;
+  addMission: () => void;
+  updateSector: () => void;
+}
+
+const GameContext = createContext<GameContextType | null>(null);
 
 // Define our own minimal types to avoid conflicts with actual GameContext types
 interface ResourceState {
-  minerals: number;
-  energy: number;
-  population: number;
-  research: number;
+  [ResourceType.MINERALS]: number;
+  [ResourceType.ENERGY]: number;
+  [ResourceType.POPULATION]: number;
+  [ResourceType.RESEARCH]: number;
 }
 
 interface TestGameState {
@@ -35,10 +48,10 @@ interface TestGameContextValue {
 function TestGameProvider({
   children,
   initialResources = {
-    minerals: 1000,
-    energy: 1000,
-    population: 100,
-    research: 0,
+    [ResourceType.MINERALS]: 1000,
+    [ResourceType.ENERGY]: 1000,
+    [ResourceType.POPULATION]: 100,
+    [ResourceType.RESEARCH]: 0,
   },
 }: {
   children: ReactNode;
@@ -61,10 +74,10 @@ function TestGameProvider({
   const [state, dispatch] = useReducer(reducer, {
     resources: initialResources,
     resourceRates: {
-      minerals: 0,
-      energy: 0,
-      population: 0,
-      research: 0,
+      [ResourceType.MINERALS]: 0,
+      [ResourceType.ENERGY]: 0,
+      [ResourceType.POPULATION]: 0,
+      [ResourceType.RESEARCH]: 0,
     },
   });
 
@@ -84,14 +97,21 @@ function TestGameProvider({
   };
 
   // Use type assertion to bypass type checking - necessary for testing
-  return (
-    <GameContext.Provider
-      value={contextValue as unknown as Parameters<typeof GameContext.Provider>[0]['value']}
-    >
-      {children}
-    </GameContext.Provider>
-  );
+  return <GameContext.Provider value={contextValue}>{children}</GameContext.Provider>;
 }
+
+// Mock the useGameState hook that ResourceVisualization uses
+vi.mock('../../../contexts/GameContext', () => ({
+  useGameState: (selector: (state: TestGameState) => unknown) => {
+    // This mock implementation assumes the selector is extracting resources or resourceRates
+    return {
+      [ResourceType.MINERALS]: 1000,
+      [ResourceType.ENERGY]: 1000,
+      [ResourceType.POPULATION]: 100,
+      [ResourceType.RESEARCH]: 0,
+    };
+  },
+}));
 
 describe('ResourceVisualization Component', () => {
   it('renders with default resource values', () => {
@@ -102,10 +122,10 @@ describe('ResourceVisualization Component', () => {
     );
 
     // Check for resource labels
-    expect(screen.getByText('minerals')).toBeInTheDocument();
-    expect(screen.getByText('energy')).toBeInTheDocument();
-    expect(screen.getByText('population')).toBeInTheDocument();
-    expect(screen.getByText('research')).toBeInTheDocument();
+    expect(screen.getByText(ensureStringResourceType(ResourceType.MINERALS))).toBeInTheDocument();
+    expect(screen.getByText(ensureStringResourceType(ResourceType.ENERGY))).toBeInTheDocument();
+    expect(screen.getByText(ensureStringResourceType(ResourceType.POPULATION))).toBeInTheDocument();
+    expect(screen.getByText(ensureStringResourceType(ResourceType.RESEARCH))).toBeInTheDocument();
 
     // Use getAllByText for values that appear multiple times
     const mineralValues = screen.getAllByText(/1,000/, { exact: false });
@@ -122,10 +142,10 @@ describe('ResourceVisualization Component', () => {
     render(
       <TestGameProvider
         initialResources={{
-          minerals: 900, // Just below the low threshold (1000)
-          energy: 1000,
-          population: 100,
-          research: 0,
+          [ResourceType.MINERALS]: 900, // Just below the low threshold (1000)
+          [ResourceType.ENERGY]: 1000,
+          [ResourceType.POPULATION]: 100,
+          [ResourceType.RESEARCH]: 0,
         }}
       >
         <ResourceVisualization />
@@ -133,17 +153,19 @@ describe('ResourceVisualization Component', () => {
     );
 
     // Check for low minerals warning
-    expect(screen.getByText('Low minerals levels')).toBeInTheDocument();
+    expect(
+      screen.getByText(`Low ${ensureStringResourceType(ResourceType.MINERALS)} levels`)
+    ).toBeInTheDocument();
   });
 
   it('renders with critical resource warning', () => {
     render(
       <TestGameProvider
         initialResources={{
-          minerals: 400, // Below the critical threshold (500)
-          energy: 300, // Below the critical threshold (400)
-          population: 100,
-          research: 0,
+          [ResourceType.MINERALS]: 400, // Below the critical threshold (500)
+          [ResourceType.ENERGY]: 300, // Below the critical threshold (400)
+          [ResourceType.POPULATION]: 100,
+          [ResourceType.RESEARCH]: 0,
         }}
       >
         <ResourceVisualization />
@@ -151,7 +173,11 @@ describe('ResourceVisualization Component', () => {
     );
 
     // Check for critical resource warnings
-    expect(screen.getByText('Critical minerals levels')).toBeInTheDocument();
-    expect(screen.getByText('Critical energy levels')).toBeInTheDocument();
+    expect(
+      screen.getByText(`Critical ${ensureStringResourceType(ResourceType.MINERALS)} levels`)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(`Critical ${ensureStringResourceType(ResourceType.ENERGY)} levels`)
+    ).toBeInTheDocument();
   });
 });

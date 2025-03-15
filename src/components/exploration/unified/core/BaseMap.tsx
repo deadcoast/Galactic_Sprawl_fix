@@ -9,7 +9,7 @@
  * - Configurable visual settings
  */
 
-import * as React from 'react';
+import * as React from "react";
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { 
   MapViewport, 
@@ -359,7 +359,7 @@ export const BaseMap: React.FC<BaseMapProps> = ({
     const [worldX, worldY] = screenToWorld(x, y);
     
     // Check if clicked on an entity
-    let entityClicked = false;
+    const entityClicked = false;
     
     // Call onMapClick if no entity was clicked
     if (!entityClicked && onMapClick) {

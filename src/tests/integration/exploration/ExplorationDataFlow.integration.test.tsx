@@ -1,3 +1,5 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import * as React from "react";
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ClassificationProvider, useClassification } from '../../../contexts/ClassificationContext';
@@ -131,7 +133,7 @@ const ClassificationDisplay = () => {
             sectorId: 'test-sector-2',
             sectorName: 'Test Sector Beta',
             coordinates: { x: 5, y: 15 },
-            resourceType: 'minerals',
+            resourceType: ResourceType.MINERALS,
             amount: 500,
             quality: 0.85,
             distribution: 'concentrated',

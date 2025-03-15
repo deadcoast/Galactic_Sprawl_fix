@@ -1,4 +1,5 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import * as React from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { SystemIntegration } from './components/core/SystemIntegration';
 import { ThresholdIntegration } from './components/core/ThresholdIntegration';
 import { GameStateMonitor } from './components/debug/GameStateMonitor';
@@ -17,12 +18,13 @@ import { OfficerManager } from './managers/module/OfficerManager';
 import { ShipHangarManager } from './managers/module/ShipHangarManager';
 import { ModuleType } from './types/buildings/ModuleTypes';
 import { ModuleStatus } from './types/modules/ModuleTypes';
+import { ResourceType } from "./../types/resources/ResourceTypes";
 
 // Import the GlobalErrorBoundary component
 import { GlobalErrorBoundary } from './components/ui/GlobalErrorBoundary';
 // Import error services
 import { IntegrationErrorHandler } from './components/core/IntegrationErrorHandler';
-import { ResourceVisualization } from './components/ui/ResourceVisualization';
+import ResourceVisualization from './components/ui/ResourceVisualization';
 import { useComponentProfiler } from './hooks/ui/useComponentProfiler';
 import { useProfilingOverlay } from './hooks/ui/useProfilingOverlay';
 import { errorLoggingService, ErrorSeverity, ErrorType } from './services/ErrorLoggingService';
@@ -347,7 +349,7 @@ const GameLayoutWrapper = () => {
   return (
     <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
       <div className="min-h-screen bg-gray-900">
-        <ResourceVisualization />
+        <ResourceVisualization resourceType={ResourceType.ENERGY} amount={100} />
       </div>
     </GameLayout>
   );

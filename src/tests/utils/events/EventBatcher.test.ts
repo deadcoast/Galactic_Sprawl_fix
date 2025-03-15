@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ModuleEventType } from '../../../lib/modules/ModuleEvents';
 import {
@@ -63,14 +64,14 @@ describe('EventBatcher', () => {
           moduleId: 'module-2',
           moduleType: 'resource-manager',
           timestamp: Date.now(),
-          data: { resourceType: 'energy', amount: 100 },
+          data: { resourceType: ResourceType.ENERGY, amount: 100 },
         },
         {
           type: 'RESOURCE_CONSUMED' as ModuleEventType,
           moduleId: 'module-2',
           moduleType: 'resource-manager',
           timestamp: Date.now(),
-          data: { resourceType: 'energy', amount: 50 },
+          data: { resourceType: ResourceType.ENERGY, amount: 50 },
         },
       ],
       timestamp: Date.now(),

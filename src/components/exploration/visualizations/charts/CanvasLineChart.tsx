@@ -1,6 +1,7 @@
 import { Typography, useTheme } from '@mui/material';
 import { debounce } from 'lodash';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseChartProps } from './BaseChart';
 
 // LTTB (Largest Triangle Three Buckets) algorithm for downsampling time series data

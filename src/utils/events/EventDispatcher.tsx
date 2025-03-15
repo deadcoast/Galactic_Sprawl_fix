@@ -1,4 +1,6 @@
-import React, { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import * as React from "react";
+import { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 
 /**

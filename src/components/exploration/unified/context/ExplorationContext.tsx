@@ -6,7 +6,7 @@
  * including sectors, systems, anomalies, resources, and analysis results.
  */
 
-import * as React from 'react';
+import * as React from "react";
 import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import {
   ExplorationState,

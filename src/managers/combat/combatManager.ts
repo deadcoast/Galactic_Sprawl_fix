@@ -1,610 +1,479 @@
-import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { factionManager } from '../../managers/factions/factionManager';
+/**
+ * CombatManager.ts
+ *
+ * This manager handles combat operations using the standardized event system.
+ */
 
-export interface Fleet {
-  units: CombatUnit[];
-}
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { Position } from '../../types/core/GameTypes';
+import { CombatEvents, CombatUnitStatus } from '../../types/events/CombatEvents';
+import { FactionId } from '../../types/ships/FactionTypes';
 
-export interface CombatManager {
-  getFleetStatus: (fleetId: string) => Fleet | undefined;
-  getUnitsInRange: (position: { x: number; y: number }, range: number) => CombatUnit[];
-  getThreatsInRange: (position: { x: number; y: number }, range: number) => Threat[];
-  moveUnit: (unitId: string, position: { x: number; y: number }) => void;
-  removeUnit: (unitId: string) => void;
-}
-
-export interface Threat {
-  id: string;
-  position: { x: number; y: number };
-  severity: 'low' | 'medium' | 'high';
-  type: string;
-}
-
+/**
+ * Combat unit interface
+ */
 export interface CombatUnit {
   id: string;
-  faction: string;
-  type:
-    | 'spitflare'
-    | 'starSchooner'
-    | 'orionFrigate'
-    | 'harbringerGalleon'
-    | 'midwayCarrier'
-    | 'motherEarthRevenge';
-  tier: 1 | 2 | 3;
-  position: { x: number; y: number };
-  status: 'idle' | 'patrolling' | 'engaging' | 'returning' | 'damaged' | 'retreating' | 'disabled';
-  health: number;
-  maxHealth: number;
-  shield: number;
-  maxShield: number;
-  target?: string;
-  weapons: {
+  type: string;
+  faction: FactionId;
+  position: Position;
+  rotation: number;
+  status: CombatUnitStatus;
+  stats: {
+    health: number;
+    maxHealth: number;
+    shield: number;
+    maxShield: number;
+    speed: number;
+    turnRate: number;
+  };
+  weapons: CombatWeapon[];
+  target?: {
     id: string;
-    type: 'machineGun' | 'gaussCannon' | 'railGun' | 'mgss' | 'rockets';
-    range: number;
-    damage: number;
-    cooldown: number;
-    status: 'ready' | 'charging' | 'cooling';
-    lastFired?: number;
-  }[];
-  specialAbilities?: {
-    name: string;
-    description: string;
-    cooldown: number;
-    active: boolean;
-  }[];
+    position: Position;
+  };
 }
 
-interface CombatZone {
+/**
+ * Combat weapon interface
+ */
+export interface CombatWeapon {
   id: string;
-  position: { x: number; y: number };
-  radius: number;
-  units: CombatUnit[];
-  threatLevel: number;
+  type: string;
+  damage: number;
+  range: number;
+  cooldown: number;
+  status: 'ready' | 'charging' | 'cooling';
+  lastFired?: number;
 }
 
-interface FormationUpdateData {
-  position: { x: number; y: number };
-  units: string[];
-}
-
-interface EngagementData {
-  targetId: string;
-  units: string[];
-}
-
-interface UnitActionData {
-  unitId: string;
-}
-
-interface WeaponFireData extends UnitActionData {
-  targetId: string;
-}
-
-class CombatManagerImpl implements CombatManager {
-  private combatZones: Map<string, CombatZone> = new Map();
+/**
+ * Combat manager class that uses standardized types and events
+ */
+export class CombatManager extends BaseTypedEventEmitter<CombatEvents> {
   private units: Map<string, CombatUnit> = new Map();
-  private autoDispatchEnabled: boolean = true;
-  private threats: Map<string, Threat> = new Map();
 
-  // Combat Thresholds
-  private readonly ENGAGEMENT_RANGE = 500; // Units within this range will engage
-  private readonly RETREAT_HEALTH_THRESHOLD = 0.3; // Units retreat at 30% health
-  private readonly REINFORCEMENT_THRESHOLD = 0.5; // Call reinforcements at 50% fleet strength
-  private readonly MAX_UNITS_PER_ZONE = 10; // Maximum units in a combat zone
-
+  /**
+   * Constructor
+   */
   constructor() {
-    this.startCombatLoop();
-    this.initializeAutomationHandlers();
+    super();
   }
 
-  private initializeAutomationHandlers(): void {
-    moduleEventBus.subscribe('AUTOMATION_STARTED', (event: ModuleEvent) => {
-      if (event.moduleType === 'hangar') {
-        switch (event.data?.type) {
-          case 'formation':
-            if (this.isFormationUpdateData(event.data)) {
-              this.handleFormationUpdate(event.data);
-            }
-            break;
-          case 'engagement':
-            if (this.isEngagementData(event.data)) {
-              this.handleEngagement(event.data);
-            }
-            break;
-          case 'repair':
-            if (this.isUnitActionData(event.data)) {
-              this.handleDamageControl(event.data);
-            }
-            break;
-          case 'shield':
-            if (this.isUnitActionData(event.data)) {
-              this.handleShieldBoost(event.data);
-            }
-            break;
-          case 'attack':
-            if (this.isWeaponFireData(event.data)) {
-              this.handleWeaponFire(event.data);
-            }
-            break;
-          case 'retreat':
-            if (this.isUnitActionData(event.data)) {
-              this.handleRetreat(event.data);
-            }
-            break;
-        }
-      }
+  /**
+   * Get all units
+   * @returns An array of all units
+   */
+  public getAllUnits(): CombatUnit[] {
+    return Array.from(this.units.values());
+  }
+
+  /**
+   * Get a unit by ID
+   * @param unitId The ID of the unit to get
+   * @returns The unit, or undefined if not found
+   */
+  public getUnitStatus(unitId: string): CombatUnit | undefined {
+    return this.units.get(unitId);
+  }
+
+  /**
+   * Get units in range of a position
+   * @param position The position to check
+   * @param range The range to check
+   * @returns An array of units in range
+   */
+  public getUnitsInRange(position: Position, range: number): CombatUnit[] {
+    return this.getAllUnits().filter(unit => {
+      const distance = Math.sqrt(
+        Math.pow(unit.position.x - position.x, 2) + Math.pow(unit.position.y - position.y, 2)
+      );
+      return distance <= range;
     });
   }
 
-  // Type guards for event data
-  private isFormationUpdateData(data: unknown): data is FormationUpdateData {
-    return (
-      typeof data === 'object' &&
-      data !== null &&
-      'position' in data &&
-      'units' in data &&
-      Array.isArray((data as FormationUpdateData).units)
-    );
-  }
+  /**
+   * Spawn a unit
+   * @param unitType The type of unit to spawn
+   * @param position The position to spawn at
+   * @param faction The faction the unit belongs to
+   * @returns The spawned unit
+   */
+  public spawnUnit(unitType: string, position: Position, faction: FactionId): CombatUnit {
+    const id = `unit-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-  private isEngagementData(data: unknown): data is EngagementData {
-    return (
-      typeof data === 'object' &&
-      data !== null &&
-      'targetId' in data &&
-      'units' in data &&
-      Array.isArray((data as EngagementData).units)
-    );
-  }
-
-  private isUnitActionData(data: unknown): data is UnitActionData {
-    return (
-      typeof data === 'object' &&
-      data !== null &&
-      'unitId' in data &&
-      typeof (data as UnitActionData).unitId === 'string'
-    );
-  }
-
-  private isWeaponFireData(data: unknown): data is WeaponFireData {
-    return (
-      this.isUnitActionData(data) &&
-      'targetId' in data &&
-      typeof (data as WeaponFireData).targetId === 'string'
-    );
-  }
-
-  private handleFormationUpdate(data: FormationUpdateData): void {
-    const { position, units } = data;
-    if (position && units) {
-      units.forEach((unitId: string) => {
-        const unit = this.units.get(unitId);
-        if (unit) {
-          // Update unit position in formation
-          this.moveUnit(unitId, {
-            x: position.x + (Math.random() - 0.5) * 50, // Add some variation
-            y: position.y + (Math.random() - 0.5) * 50,
-          });
-        }
-      });
-    }
-  }
-
-  private handleEngagement(data: EngagementData): void {
-    const { targetId, units } = data;
-    if (targetId && units) {
-      units.forEach((unitId: string) => {
-        const unit = this.units.get(unitId);
-        if (unit && unit.status !== 'disabled') {
-          unit.status = 'engaging';
-          unit.target = targetId;
-        }
-      });
-    }
-  }
-
-  private handleDamageControl(data: UnitActionData): void {
-    const { unitId } = data;
-    if (unitId) {
-      const unit = this.units.get(unitId);
-      if (unit) {
-        // Apply repair effect
-        unit.health = Math.min(unit.maxHealth, unit.health + unit.maxHealth * 0.2);
-        if (unit.health > unit.maxHealth * this.RETREAT_HEALTH_THRESHOLD) {
-          unit.status = 'engaging';
-        }
-      }
-    }
-  }
-
-  private handleShieldBoost(data: UnitActionData): void {
-    const { unitId } = data;
-    if (unitId) {
-      const unit = this.units.get(unitId);
-      if (unit) {
-        // Boost shields
-        unit.shield = Math.min(unit.maxShield, unit.shield + unit.maxShield * 0.3);
-      }
-    }
-  }
-
-  private handleWeaponFire(data: WeaponFireData): void {
-    const { unitId, targetId } = data;
-    if (unitId && targetId) {
-      const unit = this.units.get(unitId);
-      const target = this.units.get(targetId);
-      if (unit && target) {
-        // Find ready weapon
-        const weapon = unit.weapons.find(w => w.status === 'ready');
-        if (weapon) {
-          weapon.status = 'cooling';
-          weapon.lastFired = Date.now();
-          // Apply damage
-          if (target.shield > 0) {
-            const shieldDamage = Math.min(target.shield, weapon.damage * 0.7);
-            target.shield -= shieldDamage;
-            target.health -= (weapon.damage - shieldDamage) * 0.3;
-          } else {
-            target.health -= weapon.damage;
-          }
-          // Check for disabled state
-          if (target.health <= 0) {
-            target.status = 'disabled';
-            target.target = undefined;
-          }
-        }
-      }
-    }
-  }
-
-  private handleRetreat(data: UnitActionData): void {
-    const { unitId } = data;
-    if (unitId) {
-      const unit = this.units.get(unitId);
-      if (unit) {
-        unit.status = 'retreating';
-        unit.target = undefined;
-      }
-    }
-  }
-
-  private startCombatLoop(): void {
-    setInterval(() => {
-      // Update combat zones
-      Array.from(this.combatZones.values()).forEach(zone => {
-        // Process each zone individually
-        this.updateCombatZone(zone);
-      });
-
-      // Update unit behaviors
-      Array.from(this.units.values()).forEach(unit => {
-        // Process each unit individually
-        this.updateUnitBehavior(unit);
-      });
-
-      // Process auto dispatch for reinforcements
-      this.processAutoDispatch();
-    }, 1000);
-  }
-
-  private updateCombatZone(zone: CombatZone): void {
-    // Update threat level based on hostile units
-    zone.threatLevel = this.calculateZoneThreatLevel(zone);
-
-    // Check for overlapping zones and merge if necessary
-    Array.from(this.combatZones.values())
-      .filter(otherZone => otherZone.id !== zone.id && this.zonesOverlap(zone, otherZone))
-      .forEach(overlappingZone => {
-        this.mergeZones(zone, overlappingZone);
-      });
-  }
-
-  private updateUnitBehavior(unit: CombatUnit): void {
-    // Update unit status based on health
-    if (this.shouldRetreat(unit) && unit.status !== 'retreating') {
-      this.initiateRetreat(unit);
-      return;
-    }
-
-    // Find targets for units in combat
-    if (unit.status === 'engaging' && unit.target) {
-      const target = this.units.get(unit.target);
-      if (target) {
-        this.updateCombat(unit, target);
-      } else {
-        // Target no longer exists, reset status
-        unit.status = 'idle';
-        unit.target = undefined;
-      }
-    }
-  }
-
-  private calculateZoneThreatLevel(zone: CombatZone): number {
-    let threat = 0;
-    const hostileUnits = zone.units.filter(
-      unit => factionManager.getFactionBehavior(unit.faction)?.isHostile
-    );
-
-    hostileUnits.forEach(unit => {
-      threat +=
-        (unit.health / unit.maxHealth) * (unit.weapons.reduce((sum, w) => sum + w.damage, 0) / 100);
-    });
-
-    return Math.min(1, threat / this.MAX_UNITS_PER_ZONE);
-  }
-
-  private zonesOverlap(zone1: CombatZone, zone2: CombatZone): boolean {
-    const dx = zone1.position.x - zone2.position.x;
-    const dy = zone1.position.y - zone2.position.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    return distance < zone1.radius + zone2.radius;
-  }
-
-  private mergeZones(zone1: CombatZone, zone2: CombatZone) {
-    // Create new zone encompassing both
-    const newZone: CombatZone = {
-      id: `merged-${Date.now()}`,
-      position: {
-        x: (zone1.position.x + zone2.position.x) / 2,
-        y: (zone1.position.y + zone2.position.y) / 2,
+    const unit: CombatUnit = {
+      id,
+      type: unitType,
+      faction,
+      position,
+      rotation: 0,
+      status: 'idle',
+      stats: {
+        health: 100,
+        maxHealth: 100,
+        shield: 100,
+        maxShield: 100,
+        speed: 10,
+        turnRate: 5,
       },
-      radius: Math.max(
-        zone1.radius,
-        zone2.radius,
-        this.getDistance(zone1.position, zone2.position) / 2
-      ),
-      units: [...zone1.units, ...zone2.units],
-      threatLevel: Math.max(zone1.threatLevel, zone2.threatLevel),
+      weapons: [],
     };
 
-    this.combatZones.delete(zone1.id);
-    this.combatZones.delete(zone2.id);
-    this.combatZones.set(newZone.id, newZone);
-  }
+    this.units.set(id, unit);
 
-  private processAutoDispatch() {
-    if (!this.autoDispatchEnabled) {
-      return;
-    }
-
-    this.combatZones.forEach(zone => {
-      if (zone.threatLevel > this.REINFORCEMENT_THRESHOLD) {
-        const nearbyAllies = this.findNearbyAllies(zone);
-        nearbyAllies.forEach(ally => {
-          if (this.shouldDispatchUnit(ally, zone)) {
-            this.dispatchUnitToZone(ally, zone);
-          }
-        });
-      }
+    this.emit('combat:unit-spawned', {
+      unitId: id,
+      unitType,
+      position,
+      faction,
+      timestamp: Date.now(),
     });
+
+    return unit;
   }
 
-  private findNearbyAllies(zone: CombatZone): CombatUnit[] {
-    return Array.from(this.units.values()).filter(unit => {
-      if (unit.status !== 'idle') {
-        return false;
-      }
-      const distance = this.getDistance(unit.position, zone.position);
-      return distance <= this.ENGAGEMENT_RANGE;
-    });
-  }
-
-  private shouldDispatchUnit(unit: CombatUnit, zone: CombatZone): boolean {
-    // Check if unit is available and healthy
-    if (unit.status !== 'idle' || unit.health < unit.maxHealth * 0.8) {
+  /**
+   * Destroy a unit
+   * @param unitId The ID of the unit to destroy
+   * @param destroyedBy Optional ID of the unit that destroyed this unit
+   * @returns True if the unit was destroyed, false if not found
+   */
+  public destroyUnit(unitId: string, destroyedBy?: string): boolean {
+    const unit = this.units.get(unitId);
+    if (!unit) {
       return false;
     }
 
-    // Check if zone needs reinforcements
-    const alliedUnits = zone.units.filter(u => u.faction === unit.faction);
-    if (alliedUnits.length >= this.MAX_UNITS_PER_ZONE / 2) {
-      return false;
-    }
+    this.units.delete(unitId);
+
+    this.emit('combat:unit-destroyed', {
+      unitId,
+      destroyedBy,
+      timestamp: Date.now(),
+    });
 
     return true;
   }
 
-  private dispatchUnitToZone(unit: CombatUnit, zone: CombatZone) {
-    unit.status = 'engaging';
-    zone.units.push(unit);
-
-    // Find suitable target
-    const target = this.findBestTarget(unit, zone);
-    if (target) {
-      unit.target = target.id;
-    }
-  }
-
-  private findBestTarget(unit: CombatUnit, zone: CombatZone): CombatUnit | null {
-    const hostileUnits = zone.units.filter(
-      u => factionManager.getFactionBehavior(u.faction)?.isHostile
-    );
-
-    if (hostileUnits.length === 0) {
-      return null;
+  /**
+   * Move a unit
+   * @param unitId The ID of the unit to move
+   * @param position The position to move to
+   * @returns True if the unit was moved, false if not found
+   */
+  public moveUnit(unitId: string, position: Position): boolean {
+    const unit = this.units.get(unitId);
+    if (!unit) {
+      return false;
     }
 
-    // Prioritize targets based on threat and distance
-    return hostileUnits.reduce(
-      (best, current) => {
-        if (!best) {
-          return current;
-        }
+    const previousPosition = { ...unit.position };
+    unit.position = position;
 
-        const bestScore = this.calculateTargetScore(unit, best);
-        const currentScore = this.calculateTargetScore(unit, current);
+    // Update status if it was idle
+    if (unit.status === 'idle') {
+      const previousStatus = unit.status;
+      unit.status = 'moving';
 
-        return currentScore > bestScore ? current : best;
-      },
-      null as CombatUnit | null
-    );
-  }
-
-  private calculateTargetScore(unit: CombatUnit, target: CombatUnit): number {
-    const distance = this.getDistance(unit.position, target.position);
-    const healthFactor = target.health / target.maxHealth;
-    const threatFactor = target.weapons.reduce((sum, w) => sum + w.damage, 0) / 100;
-
-    return (threatFactor * 0.4 + (1 - healthFactor) * 0.3) / (distance * 0.3);
-  }
-
-  private shouldRetreat(unit: CombatUnit): boolean {
-    // Check health threshold
-    if (unit.health < unit.maxHealth * this.RETREAT_HEALTH_THRESHOLD) {
-      return true;
+      this.emit('combat:unit-status-changed', {
+        unitId,
+        status: 'moving',
+        previousStatus,
+        timestamp: Date.now(),
+      });
     }
 
-    // Check if outnumbered significantly
-    const zone = this.findUnitZone(unit);
-    if (zone) {
-      const allies = zone.units.filter(u => u.faction === unit.faction).length;
-      const enemies = zone.units.filter(u => u.faction !== unit.faction).length;
-      if (enemies > allies * 2) {
-        return true;
+    this.units.set(unitId, unit);
+
+    this.emit('combat:unit-moved', {
+      unitId,
+      position,
+      previousPosition,
+      timestamp: Date.now(),
+    });
+
+    return true;
+  }
+
+  /**
+   * Rotate a unit
+   * @param unitId The ID of the unit to rotate
+   * @param rotation The rotation angle in degrees
+   * @returns True if the unit was rotated, false if not found
+   */
+  public rotateUnit(unitId: string, rotation: number): boolean {
+    const unit = this.units.get(unitId);
+    if (!unit) {
+      return false;
+    }
+
+    const previousRotation = unit.rotation;
+    unit.rotation = rotation;
+    this.units.set(unitId, unit);
+
+    this.emit('combat:unit-rotated', {
+      unitId,
+      rotation,
+      previousRotation,
+      timestamp: Date.now(),
+    });
+
+    return true;
+  }
+
+  /**
+   * Change a unit's status
+   * @param unitId The ID of the unit
+   * @param status The new status
+   * @returns True if the status was changed, false if not found
+   */
+  public changeUnitStatus(unitId: string, status: CombatUnitStatus): boolean {
+    const unit = this.units.get(unitId);
+    if (!unit) {
+      return false;
+    }
+
+    const previousStatus = unit.status;
+    unit.status = status;
+    this.units.set(unitId, unit);
+
+    this.emit('combat:unit-status-changed', {
+      unitId,
+      status,
+      previousStatus,
+      timestamp: Date.now(),
+    });
+
+    return true;
+  }
+
+  /**
+   * Damage a unit
+   * @param unitId The ID of the unit to damage
+   * @param damageAmount The amount of damage to apply
+   * @param damageSource Optional source of the damage
+   * @param damageType Optional type of damage
+   * @returns True if the unit was damaged, false if not found
+   */
+  public damageUnit(
+    unitId: string,
+    damageAmount: number,
+    damageSource?: string,
+    damageType?: string
+  ): boolean {
+    const unit = this.units.get(unitId);
+    if (!unit) {
+      return false;
+    }
+
+    // Apply damage to shield first, then health
+    let remainingDamage = damageAmount;
+    if (unit.stats.shield > 0) {
+      const shieldDamage = Math.min(unit.stats.shield, remainingDamage);
+      unit.stats.shield -= shieldDamage;
+      remainingDamage -= shieldDamage;
+
+      this.emit('combat:unit-shield-changed', {
+        unitId,
+        shieldAmount: -shieldDamage,
+        currentShield: unit.stats.shield,
+        maxShield: unit.stats.maxShield,
+        timestamp: Date.now(),
+      });
+    }
+
+    if (remainingDamage > 0) {
+      unit.stats.health = Math.max(0, unit.stats.health - remainingDamage);
+
+      // Change status if health reaches 0
+      if (unit.stats.health === 0 && unit.status !== 'destroyed') {
+        const previousStatus = unit.status;
+        unit.status = 'destroyed';
+
+        this.emit('combat:unit-status-changed', {
+          unitId,
+          status: 'destroyed',
+          previousStatus,
+          timestamp: Date.now(),
+        });
+      }
+      // Change status to damaged if not already
+      else if (
+        unit.stats.health < unit.stats.maxHealth * 0.5 &&
+        unit.status !== 'damaged' &&
+        unit.status !== 'destroyed'
+      ) {
+        const previousStatus = unit.status;
+        unit.status = 'damaged';
+
+        this.emit('combat:unit-status-changed', {
+          unitId,
+          status: 'damaged',
+          previousStatus,
+          timestamp: Date.now(),
+        });
       }
     }
 
-    return false;
+    this.units.set(unitId, unit);
+
+    this.emit('combat:unit-damaged', {
+      unitId,
+      damageAmount,
+      currentHealth: unit.stats.health,
+      maxHealth: unit.stats.maxHealth,
+      damageSource,
+      damageType,
+      timestamp: Date.now(),
+    });
+
+    return true;
   }
 
-  private initiateRetreat(unit: CombatUnit) {
-    unit.status = 'retreating';
+  /**
+   * Fire a weapon
+   * @param unitId The ID of the unit firing the weapon
+   * @param weaponId The ID of the weapon to fire
+   * @param targetId Optional ID of the target
+   * @param targetPosition Optional position to fire at
+   * @returns True if the weapon was fired, false if not found or on cooldown
+   */
+  public fireWeapon(
+    unitId: string,
+    weaponId: string,
+    targetId?: string,
+    targetPosition?: Position
+  ): boolean {
+    const unit = this.units.get(unitId);
+    if (!unit) {
+      return false;
+    }
+
+    const weapon = unit.weapons.find(w => w.id === weaponId);
+    if (!weapon || weapon.status !== 'ready') {
+      return false;
+    }
+
+    weapon.status = 'cooling';
+    weapon.lastFired = Date.now();
+    this.units.set(unitId, unit);
+
+    this.emit('combat:unit-weapon-fired', {
+      unitId,
+      weaponId,
+      targetId,
+      targetPosition,
+      timestamp: Date.now(),
+    });
+
+    return true;
+  }
+
+  /**
+   * Engage a target
+   * @param unitId The ID of the unit engaging
+   * @param targetId The ID of the target
+   * @returns True if the target was engaged, false if not found
+   */
+  public engageTarget(unitId: string, targetId: string): boolean {
+    const unit = this.units.get(unitId);
+    const target = this.units.get(targetId);
+    if (!unit || !target) {
+      return false;
+    }
+
+    unit.target = {
+      id: targetId,
+      position: target.position,
+    };
+
+    // Change status to attacking if not already
+    if (unit.status !== 'attacking') {
+      const previousStatus = unit.status;
+      unit.status = 'attacking';
+
+      this.emit('combat:unit-status-changed', {
+        unitId,
+        status: 'attacking',
+        previousStatus,
+        timestamp: Date.now(),
+      });
+    }
+
+    this.units.set(unitId, unit);
+
+    this.emit('combat:unit-target-acquired', {
+      unitId,
+      targetId,
+      targetPosition: target.position,
+      timestamp: Date.now(),
+    });
+
+    return true;
+  }
+
+  /**
+   * Lose target
+   * @param unitId The ID of the unit losing target
+   * @returns True if the target was lost, false if not found or no target
+   */
+  public loseTarget(unitId: string): boolean {
+    const unit = this.units.get(unitId);
+    if (!unit || !unit.target) {
+      return false;
+    }
+
+    const targetId = unit.target.id;
+    const targetPosition = unit.target.position;
     unit.target = undefined;
 
-    // Remove from combat zone
-    const zone = this.findUnitZone(unit);
-    if (zone) {
-      zone.units = zone.units.filter(u => u.id !== unit.id);
-    }
-  }
+    // Change status to idle if attacking
+    if (unit.status === 'attacking') {
+      const previousStatus = unit.status;
+      unit.status = 'idle';
 
-  private updateCombat(unit: CombatUnit, target: CombatUnit) {
-    // Check if weapons are in range and ready
-    unit.weapons.forEach(weapon => {
-      const distance = this.getDistance(unit.position, target.position);
-      if (distance <= weapon.range && this.canFireWeapon(weapon)) {
-        this.fireWeapon(unit, target, weapon);
-      }
+      this.emit('combat:unit-status-changed', {
+        unitId,
+        status: 'idle',
+        previousStatus,
+        timestamp: Date.now(),
+      });
+    }
+
+    this.units.set(unitId, unit);
+
+    this.emit('combat:unit-target-lost', {
+      unitId,
+      targetId,
+      targetPosition,
+      timestamp: Date.now(),
     });
-  }
 
-  private canFireWeapon(weapon: CombatUnit['weapons'][0]): boolean {
-    const now = Date.now();
-    return (
-      weapon.status === 'ready' &&
-      (!weapon.lastFired || now - weapon.lastFired >= weapon.cooldown * 1000)
-    );
-  }
-
-  private updateWeaponStatus(weapon: CombatUnit['weapons'][0]): void {
-    if (this.canFireWeapon(weapon)) {
-      weapon.status = 'charging';
-      weapon.lastFired = Date.now();
-    }
-  }
-
-  private fireWeapon(unit: CombatUnit, target: CombatUnit, weapon: CombatUnit['weapons'][0]) {
-    // Skip if unit is disabled
-    if (unit.status === 'disabled') {
-      return;
-    }
-
-    weapon.lastFired = Date.now();
-    this.updateWeaponStatus(weapon);
-
-    // Calculate damage considering shields
-    let { damage } = weapon;
-    if (target.shield > 0) {
-      const shieldDamage = Math.min(target.shield, damage * 0.7);
-      target.shield -= shieldDamage;
-      damage -= shieldDamage;
-    }
-
-    target.health = Math.max(0, target.health - damage);
-
-    // Check if target is disabled
-    if (target.health === 0) {
-      target.status = 'disabled';
-      target.target = undefined;
-    }
-  }
-
-  private findUnitZone(unit: CombatUnit): CombatZone | null {
-    for (const zone of Array.from(this.combatZones.values())) {
-      if (zone.units.some(u => u.id === unit.id)) {
-        return zone;
-      }
-    }
-    return null;
-  }
-
-  private getDistance(pos1: { x: number; y: number }, pos2: { x: number; y: number }): number {
-    const dx = pos1.x - pos2.x;
-    const dy = pos1.y - pos2.y;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  // Public API
-  public addUnit(unit: CombatUnit) {
-    this.units.set(unit.id, unit);
-  }
-
-  public removeUnit(unitId: string) {
-    this.units.delete(unitId);
-  }
-
-  public createCombatZone(position: { x: number; y: number }): string {
-    const zone: CombatZone = {
-      id: `zone-${Date.now()}`,
-      position,
-      radius: 100,
-      units: [],
-      threatLevel: 0,
-    };
-    this.combatZones.set(zone.id, zone);
-    return zone.id;
-  }
-
-  public setAutoDispatch(enabled: boolean) {
-    this.autoDispatchEnabled = enabled;
-  }
-
-  public getZoneStatus(zoneId: string) {
-    return this.combatZones.get(zoneId);
-  }
-
-  public getUnitStatus(unitId: string) {
-    return this.units.get(unitId);
-  }
-
-  getFleetStatus(fleetId: string) {
-    const fleetUnits = Array.from(this.units.values()).filter(unit => unit.faction === fleetId);
-    return fleetUnits.length > 0 ? { units: fleetUnits } : undefined;
-  }
-
-  getUnitsInRange(position: { x: number; y: number }, range: number): CombatUnit[] {
-    return Array.from(this.units.values()).filter(unit => {
-      const dx = unit.position.x - position.x;
-      const dy = unit.position.y - position.y;
-      return Math.sqrt(dx * dx + dy * dy) <= range;
-    });
-  }
-
-  getThreatsInRange(position: { x: number; y: number }, range: number): Threat[] {
-    return Array.from(this.threats.values()).filter(threat => {
-      const dx = threat.position.x - position.x;
-      const dy = threat.position.y - position.y;
-      return Math.sqrt(dx * dx + dy * dy) <= range;
-    });
-  }
-
-  moveUnit(unitId: string, position: { x: number; y: number }): void {
-    const unit = this.units.get(unitId);
-    if (unit) {
-      unit.position = position;
-    }
+    return true;
   }
 }
 
-export const combatManager = new CombatManagerImpl();
+/**
+ * Example usage:
+ *
+ * ```typescript
+ * // Get the combat manager instance from the registry
+ * import { getCombatManager } from '../ManagerRegistry';
+ * const combatManager = getCombatManager();
+ *
+ * // Subscribe to events
+ * combatManager.on('combat:unit-spawned', ({ unitId, unitType, position, faction }) => {
+ *   console.log(`Unit ${unitId} of type ${unitType} spawned at (${position.x}, ${position.y}) for faction ${faction}`);
+ * });
+ *
+ * // Spawn a unit
+ * const unit = combatManager.spawnUnit('fighter', { x: 100, y: 100 }, 'player');
+ *
+ * // Move the unit
+ * combatManager.moveUnit(unit.id, { x: 200, y: 200 });
+ * ```
+ */
+
+// Export the class for type usage and instantiation by the registry
+export { CombatManager };

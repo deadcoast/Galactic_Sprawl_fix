@@ -1,3 +1,4 @@
+import { ResourceType } from "./../types/resources/ResourceTypes";
 /**
  * @file DataCollectionService.ts
  * Service for collecting and preprocessing data for analysis
@@ -688,7 +689,7 @@ export class DataCollectionService {
     // Adjust risk based on anomaly type
     // Higher risk for dangerous anomaly types
     const highRiskTypes = ['radiation', 'temporal', 'gravitational', 'void'];
-    const mediumRiskTypes = ['magnetic', 'spatial', 'energy'];
+    const mediumRiskTypes = ['magnetic', 'spatial', ResourceType.ENERGY];
 
     if (highRiskTypes.some(t => type.toLowerCase().includes(t))) {
       riskBase *= 1.5; // 50% higher risk

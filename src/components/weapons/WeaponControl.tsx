@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Crosshair } from 'lucide-react';
 import { WeaponEffect } from '../../effects/types_effects/WeaponEffects';
 import {

@@ -1,7 +1,9 @@
+import React from "react";
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useResourceTracking } from '../../../hooks/resources/useResourceTracking';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -48,14 +50,17 @@ describe('useResourceTracking', () => {
     expect(resources.size).toBeGreaterThan(0);
 
     // Check specific resource
-    const energy = resources.get('energy');
+    const energy = resources.get(ensureStringResourceType(ResourceType.ENERGY));
     expect(energy).toBeDefined();
     expect(energy?.current).toBe(0);
     expect(energy?.max).toBe(100);
   });
 
   it('should initialize with custom resource types', () => {
-    const customTypes = ['energy', 'minerals'] as ResourceType[];
+    const customTypes = [
+      ensureStringResourceType(ResourceType.ENERGY),
+      ensureStringResourceType(ResourceType.MINERALS),
+    ];
 
     const { result } = renderHook(() => useResourceTracking({ types: customTypes }));
 
@@ -65,9 +70,13 @@ describe('useResourceTracking', () => {
     });
 
     expect(result.current.resources.size).toBe(2);
-    expect(result.current.resources.has('energy')).toBe(true);
-    expect(result.current.resources.has('minerals')).toBe(true);
-    expect(result.current.resources.has('population')).toBe(false);
+    expect(result.current.resources.has(ensureStringResourceType(ResourceType.ENERGY))).toBe(true);
+    expect(result.current.resources.has(ensureStringResourceType(ResourceType.MINERALS))).toBe(
+      true
+    );
+    expect(result.current.resources.has(ensureStringResourceType(ResourceType.POPULATION))).toBe(
+      false
+    );
   });
 
   it('should update a resource', () => {
@@ -80,10 +89,13 @@ describe('useResourceTracking', () => {
 
     // Update energy resource
     act(() => {
-      result.current.updateResource('energy', { current: 50, max: 200 });
+      result.current.updateResource(ensureStringResourceType(ResourceType.ENERGY), {
+        current: 50,
+        max: 200,
+      });
     });
 
-    const energy = result.current.resources.get('energy');
+    const energy = result.current.resources.get(ensureStringResourceType(ResourceType.ENERGY));
     expect(energy?.current).toBe(50);
     expect(energy?.max).toBe(200);
   });
@@ -98,22 +110,24 @@ describe('useResourceTracking', () => {
 
     // Increment energy resource
     act(() => {
-      result.current.incrementResource('energy', 30);
+      result.current.incrementResource(ensureStringResourceType(ResourceType.ENERGY), 30);
     });
 
-    const energy = result.current.resources.get('energy');
+    const energy = result.current.resources.get(ensureStringResourceType(ResourceType.ENERGY));
     expect(energy?.current).toBe(30);
 
     // Increment again
     act(() => {
-      result.current.incrementResource('energy', 20);
+      result.current.incrementResource(ensureStringResourceType(ResourceType.ENERGY), 20);
     });
 
-    expect(result.current.resources.get('energy')?.current).toBe(50);
+    expect(
+      result.current.resources.get(ensureStringResourceType(ResourceType.ENERGY))?.current
+    ).toBe(50);
 
     // Check history
     expect(result.current.history.length).toBe(2);
-    expect(result.current.history[0].type).toBe('energy');
+    expect(result.current.history[0].type).toBe(ensureStringResourceType(ResourceType.ENERGY));
     expect(result.current.history[0].amount).toBe(20);
   });
 
@@ -127,15 +141,15 @@ describe('useResourceTracking', () => {
 
     // Set max capacity
     act(() => {
-      result.current.updateResource('energy', { max: 50 });
+      result.current.updateResource(ensureStringResourceType(ResourceType.ENERGY), { max: 50 });
     });
 
     // Increment beyond max
     act(() => {
-      result.current.incrementResource('energy', 70);
+      result.current.incrementResource(ensureStringResourceType(ResourceType.ENERGY), 70);
     });
 
-    const energy = result.current.resources.get('energy');
+    const energy = result.current.resources.get(ensureStringResourceType(ResourceType.ENERGY));
     expect(energy?.current).toBe(50); // Capped at max
   });
 
@@ -149,20 +163,20 @@ describe('useResourceTracking', () => {
 
     // Set initial value
     act(() => {
-      result.current.updateResource('energy', { current: 50 });
+      result.current.updateResource(ensureStringResourceType(ResourceType.ENERGY), { current: 50 });
     });
 
     // Decrement energy resource
     act(() => {
-      result.current.decrementResource('energy', 20);
+      result.current.decrementResource(ensureStringResourceType(ResourceType.ENERGY), 20);
     });
 
-    const energy = result.current.resources.get('energy');
+    const energy = result.current.resources.get(ensureStringResourceType(ResourceType.ENERGY));
     expect(energy?.current).toBe(30);
 
     // Check history
     expect(result.current.history.length).toBe(1);
-    expect(result.current.history[0].type).toBe('energy');
+    expect(result.current.history[0].type).toBe(ensureStringResourceType(ResourceType.ENERGY));
     expect(result.current.history[0].amount).toBe(20);
   });
 
@@ -176,15 +190,18 @@ describe('useResourceTracking', () => {
 
     // Set initial value and min
     act(() => {
-      result.current.updateResource('energy', { current: 30, min: 10 });
+      result.current.updateResource(ensureStringResourceType(ResourceType.ENERGY), {
+        current: 30,
+        min: 10,
+      });
     });
 
     // Decrement beyond min
     act(() => {
-      result.current.decrementResource('energy', 25);
+      result.current.decrementResource(ensureStringResourceType(ResourceType.ENERGY), 25);
     });
 
-    const energy = result.current.resources.get('energy');
+    const energy = result.current.resources.get(ensureStringResourceType(ResourceType.ENERGY));
     expect(energy?.current).toBe(10); // Capped at min
   });
 
@@ -198,13 +215,13 @@ describe('useResourceTracking', () => {
 
     // Set initial value
     act(() => {
-      result.current.updateResource('energy', { current: 50 });
+      result.current.updateResource(ensureStringResourceType(ResourceType.ENERGY), { current: 50 });
     });
 
     // Transfer resources
     act(() => {
       const success = result.current.transferResource({
-        type: 'energy',
+        type: ensureStringResourceType(ResourceType.ENERGY),
         source: 'storage',
         target: 'consumption',
         amount: 20,
@@ -214,12 +231,12 @@ describe('useResourceTracking', () => {
       expect(success).toBe(true);
     });
 
-    const energy = result.current.resources.get('energy');
+    const energy = result.current.resources.get(ensureStringResourceType(ResourceType.ENERGY));
     expect(energy?.current).toBe(30);
 
     // Check history
     expect(result.current.history.length).toBe(1);
-    expect(result.current.history[0].type).toBe('energy');
+    expect(result.current.history[0].type).toBe(ensureStringResourceType(ResourceType.ENERGY));
     expect(result.current.history[0].amount).toBe(20);
   });
 
@@ -233,13 +250,13 @@ describe('useResourceTracking', () => {
 
     // Set initial value
     act(() => {
-      result.current.updateResource('energy', { current: 30 });
+      result.current.updateResource(ensureStringResourceType(ResourceType.ENERGY), { current: 30 });
     });
 
     // Try to transfer more than available
     act(() => {
       const success = result.current.transferResource({
-        type: 'energy',
+        type: ensureStringResourceType(ResourceType.ENERGY),
         source: 'storage',
         target: 'consumption',
         amount: 50,
@@ -249,7 +266,7 @@ describe('useResourceTracking', () => {
       expect(success).toBe(false);
     });
 
-    const energy = result.current.resources.get('energy');
+    const energy = result.current.resources.get(ensureStringResourceType(ResourceType.ENERGY));
     expect(energy?.current).toBe(30); // Unchanged
 
     // Check history (no transfer recorded)
@@ -271,8 +288,8 @@ describe('useResourceTracking', () => {
 
     // Set threshold
     act(() => {
-      result.current.setThreshold('energy', {
-        type: 'energy',
+      result.current.setThreshold(ensureStringResourceType(ResourceType.ENERGY), {
+        type: ensureStringResourceType(ResourceType.ENERGY),
         min: 20,
         max: 80,
         target: 50,
@@ -281,7 +298,7 @@ describe('useResourceTracking', () => {
 
     // Set resource below threshold
     act(() => {
-      result.current.updateResource('energy', { current: 10 });
+      result.current.updateResource(ensureStringResourceType(ResourceType.ENERGY), { current: 10 });
     });
 
     // Trigger threshold check
@@ -291,7 +308,7 @@ describe('useResourceTracking', () => {
 
     // Check alerts
     expect(result.current.alerts.length).toBeGreaterThan(0);
-    expect(result.current.alerts[0].type).toBe('energy');
+    expect(result.current.alerts[0].type).toBe(ensureStringResourceType(ResourceType.ENERGY));
     expect(result.current.alerts[0].severity).toBe('critical');
   });
 
@@ -305,7 +322,10 @@ describe('useResourceTracking', () => {
 
     // Update resource
     act(() => {
-      result.current.updateResource('energy', { current: 75, max: 150 });
+      result.current.updateResource(ensureStringResourceType(ResourceType.ENERGY), {
+        current: 75,
+        max: 150,
+      });
     });
 
     // Check localStorage was called
@@ -313,14 +333,14 @@ describe('useResourceTracking', () => {
 
     // Check the saved data
     const savedData = JSON.parse(localStorageMock.setItem.mock.calls[0][1]);
-    expect(savedData.energy.current).toBe(75);
-    expect(savedData.energy.max).toBe(150);
+    expect(savedData[ensureStringResourceType(ResourceType.ENERGY)].current).toBe(75);
+    expect(savedData[ensureStringResourceType(ResourceType.ENERGY)].max).toBe(150);
   });
 
   it('should load resources from localStorage', () => {
     // Set up localStorage with initial data
     const initialData = {
-      energy: {
+      [ensureStringResourceType(ResourceType.ENERGY)]: {
         current: 60,
         min: 0,
         max: 120,
@@ -339,7 +359,7 @@ describe('useResourceTracking', () => {
     });
 
     // Check loaded data
-    const energy = result.current.resources.get('energy');
+    const energy = result.current.resources.get(ensureStringResourceType(ResourceType.ENERGY));
     expect(energy?.current).toBe(60);
     expect(energy?.max).toBe(120);
     expect(energy?.production).toBe(5);

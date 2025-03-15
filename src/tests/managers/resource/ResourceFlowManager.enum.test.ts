@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowManager';
 import {
@@ -269,18 +270,18 @@ describe('ResourceFlowManager with Enum ResourceTypes', () => {
 
   it('should correctly handle ResourceTypeHelpers for conversions', () => {
     // Test string to enum conversion
-    const energyEnum = ResourceTypeHelpers.stringToEnum('energy');
+    const energyEnum = ResourceTypeHelpers.stringToEnum(ResourceType.ENERGY);
     expect(energyEnum).toBe(ResourceType.ENERGY);
 
-    const mineralsEnum = ResourceTypeHelpers.stringToEnum('minerals');
+    const mineralsEnum = ResourceTypeHelpers.stringToEnum(ResourceType.MINERALS);
     expect(mineralsEnum).toBe(ResourceType.MINERALS);
 
     // Test enum to string conversion
     const energyString = ResourceTypeHelpers.enumToString(ResourceType.ENERGY);
-    expect(energyString).toBe('energy');
+    expect(energyString).toBe(ResourceType.ENERGY);
 
     const mineralsString = ResourceTypeHelpers.enumToString(ResourceType.MINERALS);
-    expect(mineralsString).toBe('minerals');
+    expect(mineralsString).toBe(ResourceType.MINERALS);
 
     // Test getDisplayName
     const energyDisplay = ResourceTypeHelpers.getDisplayName(ResourceType.ENERGY);
@@ -413,8 +414,8 @@ describe('ResourceFlowManager with Enum ResourceTypes', () => {
     flowManager.registerNode({
       id: 'legacy-node',
       type: 'producer' as FlowNodeType,
-      resources: ['energy' as ResourceType], // Using string for backward compatibility
-      priority: { type: 'energy' as ResourceType, priority: 1, consumers: [] },
+      resources: [ResourceType.ENERGY as ResourceType], // Using string for backward compatibility
+      priority: { type: ResourceType.ENERGY as ResourceType, priority: 1, consumers: [] },
       active: true,
     });
 

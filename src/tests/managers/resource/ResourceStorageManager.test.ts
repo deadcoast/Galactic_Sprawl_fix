@@ -3,7 +3,7 @@ import {
   ResourceStorageManager,
   StorageContainerConfig,
 } from '../../../managers/resource/ResourceStorageManager';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 describe('ResourceStorageManager', () => {
   let storageManager: ResourceStorageManager;
@@ -28,7 +28,7 @@ describe('ResourceStorageManager', () => {
       name: 'Test Container',
       type: 'container',
       capacity: 100,
-      resourceTypes: ['energy' as ResourceType, 'minerals' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as ResourceType, ResourceType.MINERALS as ResourceType],
       priority: 1,
     };
 
@@ -64,7 +64,7 @@ describe('ResourceStorageManager', () => {
       name: 'Test Container',
       type: 'container',
       capacity: 100,
-      resourceTypes: ['energy' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as ResourceType],
       priority: 1,
     };
 
@@ -82,7 +82,7 @@ describe('ResourceStorageManager', () => {
       name: 'Test Container',
       type: 'container',
       capacity: 100,
-      resourceTypes: ['energy' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as ResourceType],
       priority: 1,
     };
 
@@ -90,13 +90,13 @@ describe('ResourceStorageManager', () => {
 
     const amountStored = storageManager.storeResource(
       'test-container',
-      'energy' as ResourceType,
+      ResourceType.ENERGY as ResourceType,
       50
     );
     expect(amountStored).toBe(50);
 
     const container = storageManager.getContainer('test-container');
-    expect(container?.resources.get('energy')?.current).toBe(50);
+    expect(container?.resources.get(ResourceType.ENERGY)?.current).toBe(50);
     expect(container?.totalStored).toBe(50);
   });
 
@@ -106,25 +106,25 @@ describe('ResourceStorageManager', () => {
       name: 'Test Container',
       type: 'container',
       capacity: 100,
-      resourceTypes: ['energy' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as ResourceType],
       priority: 1,
     };
 
     storageManager.registerContainer(config);
 
     // Store up to capacity
-    storageManager.storeResource('test-container', 'energy' as ResourceType, 80);
+    storageManager.storeResource('test-container', ResourceType.ENERGY as ResourceType, 80);
 
     // Try to store more than remaining capacity
     const amountStored = storageManager.storeResource(
       'test-container',
-      'energy' as ResourceType,
+      ResourceType.ENERGY as ResourceType,
       30
     );
     expect(amountStored).toBe(20); // Only 20 more can be stored
 
     const container = storageManager.getContainer('test-container');
-    expect(container?.resources.get('energy')?.current).toBe(100); // Max capacity
+    expect(container?.resources.get(ResourceType.ENERGY)?.current).toBe(100); // Max capacity
   });
 
   it('should retrieve resources from a container', () => {
@@ -133,22 +133,22 @@ describe('ResourceStorageManager', () => {
       name: 'Test Container',
       type: 'container',
       capacity: 100,
-      resourceTypes: ['energy' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as ResourceType],
       priority: 1,
     };
 
     storageManager.registerContainer(config);
-    storageManager.storeResource('test-container', 'energy' as ResourceType, 50);
+    storageManager.storeResource('test-container', ResourceType.ENERGY as ResourceType, 50);
 
     const amountRetrieved = storageManager.retrieveResource(
       'test-container',
-      'energy' as ResourceType,
+      ResourceType.ENERGY as ResourceType,
       30
     );
     expect(amountRetrieved).toBe(30);
 
     const container = storageManager.getContainer('test-container');
-    expect(container?.resources.get('energy')?.current).toBe(20);
+    expect(container?.resources.get(ResourceType.ENERGY)?.current).toBe(20);
     expect(container?.totalStored).toBe(20);
   });
 
@@ -158,22 +158,22 @@ describe('ResourceStorageManager', () => {
       name: 'Test Container',
       type: 'container',
       capacity: 100,
-      resourceTypes: ['energy' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as ResourceType],
       priority: 1,
     };
 
     storageManager.registerContainer(config);
-    storageManager.storeResource('test-container', 'energy' as ResourceType, 50);
+    storageManager.storeResource('test-container', ResourceType.ENERGY as ResourceType, 50);
 
     const amountRetrieved = storageManager.retrieveResource(
       'test-container',
-      'energy' as ResourceType,
+      ResourceType.ENERGY as ResourceType,
       70
     );
     expect(amountRetrieved).toBe(50); // Only 50 available
 
     const container = storageManager.getContainer('test-container');
-    expect(container?.resources.get('energy')?.current).toBe(0);
+    expect(container?.resources.get(ResourceType.ENERGY)?.current).toBe(0);
   });
 
   it('should get containers by resource type', () => {
@@ -183,7 +183,7 @@ describe('ResourceStorageManager', () => {
       name: 'Energy Container',
       type: 'container',
       capacity: 100,
-      resourceTypes: ['energy' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as ResourceType],
       priority: 1,
     });
 
@@ -192,7 +192,7 @@ describe('ResourceStorageManager', () => {
       name: 'Mineral Container',
       type: 'container',
       capacity: 100,
-      resourceTypes: ['minerals' as ResourceType],
+      resourceTypes: [ResourceType.MINERALS as ResourceType],
       priority: 1,
     });
 
@@ -201,17 +201,17 @@ describe('ResourceStorageManager', () => {
       name: 'Mixed Container',
       type: 'container',
       capacity: 100,
-      resourceTypes: ['energy' as ResourceType, 'minerals' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as ResourceType, ResourceType.MINERALS as ResourceType],
       priority: 1,
     });
 
-    const energyContainers = storageManager.getContainersByResourceType('energy' as ResourceType);
+    const energyContainers = storageManager.getContainersByResourceType(ResourceType.ENERGY as ResourceType);
     expect(energyContainers.length).toBe(2);
     expect(energyContainers[0].config.id).toBe('energy-container');
     expect(energyContainers[1].config.id).toBe('mixed-container');
 
     const mineralContainers = storageManager.getContainersByResourceType(
-      'minerals' as ResourceType
+      ResourceType.MINERALS as ResourceType
     );
     expect(mineralContainers.length).toBe(2);
     expect(mineralContainers[0].config.id).toBe('mineral-container');

@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { SHIP_STATS as CONFIG_SHIP_STATS } from '../../config/ships';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { AsteroidFieldManager } from '../../managers/game/AsteroidFieldManager';
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { Position } from '../../types/core/GameTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
 import { CommonShipStats, ShipStatus as CommonShipStatus } from '../../types/ships/CommonShipTypes';
 import { FactionFleet, FactionShip, FactionShipClass } from '../../types/ships/FactionShipTypes';
 import {
@@ -29,6 +27,13 @@ import {
   convertWeaponSystemToMount,
   isFactionCombatUnit,
 } from '../../utils/typeConversions';
+import { ResourceType } from './../../types/resources/ResourceTypes';
+
+// Import the standardized FactionFleet and FactionTerritory types
+import {
+  FactionFleet as StandardizedFactionFleet,
+  FactionTerritory as StandardizedFactionTerritory,
+} from '../../types/events/FactionEvents';
 
 /**
  * FACTION BEHAVIOR SYSTEM
@@ -454,11 +459,7 @@ export interface FactionTerritory {
   center: Position;
   radius: number;
   controlPoints: Position[];
-  resources: {
-    minerals: number;
-    gas: number;
-    exotic: number;
-  };
+  resources: Record<ResourceType, number>;
   threatLevel: number;
   factionId: FactionId;
 }
@@ -487,15 +488,7 @@ export interface FactionBehaviorState {
     totalShips: number;
     activeFleets: number;
     territorySystems: number;
-    resourceIncome: {
-      minerals: number;
-      energy: number;
-      plasma: number;
-      exotic: number;
-      gas: number;
-      population: number;
-      research: number;
-    };
+    resourceIncome: Record<ResourceType, number>;
   };
   stateMachine: {
     current: FactionStateType;
@@ -520,7 +513,7 @@ export interface FactionBehaviorState {
   };
   expansionStrategy: {
     expansionDirection: Position;
-    systemPriority: 'resources' | 'strategic' | 'population';
+    systemPriority: 'resources' | 'strategic' | ResourceType.POPULATION;
     colonizationThreshold: number;
     maxTerritory: number;
     consolidationThreshold: number;
@@ -528,8 +521,12 @@ export interface FactionBehaviorState {
 }
 
 // Create faction behavior event emitter
-class FactionBehaviorEventEmitter extends EventEmitter<FactionBehaviorEvents> {}
-const factionBehaviorEvents = new FactionBehaviorEventEmitter();
+// class FactionBehaviorEventEmitter extends EventEmitter<FactionBehaviorEvents> {}
+// const factionBehaviorEvents = new FactionBehaviorEventEmitter();
+
+// Use the standardized FactionBehaviorManager instead
+import { FactionBehaviorManager } from '../../managers/factions/FactionBehaviorManager';
+const factionBehaviorManager = new FactionBehaviorManager();
 
 export type ShipClass =
   // Base Ships
@@ -1025,11 +1022,11 @@ const asteroidFieldManager = new AsteroidFieldManager();
 // Add resource value multiplier function
 function getResourceValueMultiplier(type: ResourceType): number {
   switch (type) {
-    case 'exotic':
+    case ResourceType.EXOTIC:
       return 3.0;
-    case 'gas':
-      return 2.0;
-    case 'minerals':
+    case ResourceType.GAS:
+      return 1.5;
+    case ResourceType.MINERALS:
       return 1.0;
     default:
       return 1.0;
@@ -1049,9 +1046,23 @@ export function useFactionBehavior(factionId: FactionId) {
       radius: 100,
       controlPoints: [],
       resources: {
-        minerals: 0,
-        gas: 0,
-        exotic: 0,
+        [ResourceType.MINERALS]: 0,
+        [ResourceType.GAS]: 0,
+        [ResourceType.EXOTIC]: 0,
+        [ResourceType.ENERGY]: 0,
+        [ResourceType.PLASMA]: 0,
+        [ResourceType.POPULATION]: 0,
+        [ResourceType.RESEARCH]: 0,
+        [ResourceType.IRON]: 0,
+        [ResourceType.COPPER]: 0,
+        [ResourceType.DEUTERIUM]: 0,
+        [ResourceType.ANTIMATTER]: 0,
+        [ResourceType.DARK_MATTER]: 0,
+        [ResourceType.EXOTIC_MATTER]: 0,
+        [ResourceType.TITANIUM]: 0,
+        [ResourceType.URANIUM]: 0,
+        [ResourceType.WATER]: 0,
+        [ResourceType.HELIUM]: 0,
       },
       threatLevel: 0,
       factionId,
@@ -1079,13 +1090,23 @@ export function useFactionBehavior(factionId: FactionId) {
       activeFleets: 0,
       territorySystems: 0,
       resourceIncome: {
-        minerals: 0,
-        energy: 0,
-        plasma: 0,
-        exotic: 0,
-        gas: 0,
-        population: 0,
-        research: 0,
+        [ResourceType.MINERALS]: 0,
+        [ResourceType.ENERGY]: 0,
+        [ResourceType.PLASMA]: 0,
+        [ResourceType.EXOTIC]: 0,
+        [ResourceType.GAS]: 0,
+        [ResourceType.POPULATION]: 0,
+        [ResourceType.RESEARCH]: 0,
+        [ResourceType.IRON]: 0,
+        [ResourceType.COPPER]: 0,
+        [ResourceType.DEUTERIUM]: 0,
+        [ResourceType.ANTIMATTER]: 0,
+        [ResourceType.DARK_MATTER]: 0,
+        [ResourceType.EXOTIC_MATTER]: 0,
+        [ResourceType.TITANIUM]: 0,
+        [ResourceType.URANIUM]: 0,
+        [ResourceType.WATER]: 0,
+        [ResourceType.HELIUM]: 0,
       },
     },
     stateMachine: {
@@ -1103,13 +1124,23 @@ export function useFactionBehavior(factionId: FactionId) {
     resourceManagement: {
       gatheringPriority: [],
       stockpileThresholds: {
-        minerals: 0,
-        energy: 0,
-        plasma: 0,
-        exotic: 0,
-        gas: 0,
-        population: 0,
-        research: 0,
+        [ResourceType.MINERALS]: 0,
+        [ResourceType.ENERGY]: 0,
+        [ResourceType.PLASMA]: 0,
+        [ResourceType.EXOTIC]: 0,
+        [ResourceType.GAS]: 0,
+        [ResourceType.POPULATION]: 0,
+        [ResourceType.RESEARCH]: 0,
+        [ResourceType.IRON]: 0,
+        [ResourceType.COPPER]: 0,
+        [ResourceType.DEUTERIUM]: 0,
+        [ResourceType.ANTIMATTER]: 0,
+        [ResourceType.DARK_MATTER]: 0,
+        [ResourceType.EXOTIC_MATTER]: 0,
+        [ResourceType.TITANIUM]: 0,
+        [ResourceType.URANIUM]: 0,
+        [ResourceType.WATER]: 0,
+        [ResourceType.HELIUM]: 0,
       },
       tradePreferences: [],
     },
@@ -1138,7 +1169,7 @@ export function useFactionBehavior(factionId: FactionId) {
               combatTactics: newTactics,
             }));
 
-            factionBehaviorEvents.emit('combatTacticsChanged', {
+            factionBehaviorManager.emit('faction:combat-tactics-changed', {
               factionId,
               oldTactics,
               newTactics,
@@ -1244,6 +1275,94 @@ export function useFactionBehavior(factionId: FactionId) {
     [factionId]
   );
 
+  useEffect(() => {
+    // Subscribe to faction behavior events
+    const unsubscribeBehaviorChanged = factionBehaviorManager.on(
+      'faction:behavior-changed',
+      event => {
+        if (event.factionId === factionId) {
+          handleBehaviorEvent('behaviorChanged', {
+            factionId,
+            oldBehavior: event.oldBehavior,
+            newBehavior: event.newBehavior,
+          });
+        }
+      }
+    );
+
+    const unsubscribeFleetUpdated = factionBehaviorManager.on('faction:fleet-updated', event => {
+      if (event.factionId === factionId) {
+        handleBehaviorEvent('fleetUpdated', {
+          factionId,
+          fleets: event.fleets,
+        });
+      }
+    });
+
+    const unsubscribeTerritoryChanged = factionBehaviorManager.on(
+      'faction:territory-changed',
+      event => {
+        if (event.factionId === factionId) {
+          handleBehaviorEvent('territoryChanged', {
+            factionId,
+            territory: event.territory,
+          });
+        }
+      }
+    );
+
+    const unsubscribeRelationshipChanged = factionBehaviorManager.on(
+      'faction:relationship-changed',
+      event => {
+        if (event.factionId === factionId) {
+          handleBehaviorEvent('relationshipChanged', {
+            factionId,
+            targetFaction: event.targetFaction,
+            oldValue: event.oldValue,
+            newValue: event.newValue,
+          });
+        }
+      }
+    );
+
+    const unsubscribeResourcesUpdated = factionBehaviorManager.on(
+      'faction:resources-updated',
+      event => {
+        if (event.factionId === factionId) {
+          handleBehaviorEvent('resourcesUpdated', {
+            factionId,
+            resourceType: event.resourceType,
+            oldAmount: event.oldAmount,
+            newAmount: event.newAmount,
+          });
+        }
+      }
+    );
+
+    const unsubscribeCombatTacticsChanged = factionBehaviorManager.on(
+      'faction:combat-tactics-changed',
+      event => {
+        if (event.factionId === factionId) {
+          handleBehaviorEvent('combatTacticsChanged', {
+            factionId,
+            oldTactics: event.oldTactics,
+            newTactics: event.newTactics,
+          });
+        }
+      }
+    );
+
+    // Clean up subscriptions
+    return () => {
+      unsubscribeBehaviorChanged();
+      unsubscribeFleetUpdated();
+      unsubscribeTerritoryChanged();
+      unsubscribeRelationshipChanged();
+      unsubscribeResourcesUpdated();
+      unsubscribeCombatTacticsChanged();
+    };
+  }, [factionId]);
+
   const updateFactionBehavior = useCallback(() => {
     const nearbyUnits = Array.from(
       combatManager.getUnitsInRange(behavior.territory.center, behavior.territory.radius)
@@ -1252,33 +1371,29 @@ export function useFactionBehavior(factionId: FactionId) {
     // Update fleets based on nearby units
     const updatedFleets = updateFleets(nearbyUnits);
     if (updatedFleets.length !== behavior.fleets.length) {
-      factionBehaviorEvents.emit('fleetUpdated', {
-        factionId,
-        fleets: updatedFleets,
-      });
+      // Convert to standardized fleet format
+      const standardizedFleets = updatedFleets.map(convertToStandardizedFleet);
+      factionBehaviorManager.updateFleets(factionId, standardizedFleets);
     }
 
     // Update territory based on unit positions
     const updatedTerritory = calculateTerritory(nearbyUnits, behavior.territory);
     if (updatedTerritory.radius !== behavior.territory.radius) {
-      factionBehaviorEvents.emit('territoryChanged', {
-        factionId,
-        territory: updatedTerritory,
-      });
+      // Convert to standardized territory format
+      const standardizedTerritory = convertToStandardizedTerritory(updatedTerritory);
+      factionBehaviorManager.updateTerritory(factionId, standardizedTerritory);
     }
 
     // Update resource income
     const newResourceIncome = calculateResourceIncome(behavior.territory);
-    Object.entries(newResourceIncome).forEach(([resourceType, newAmount]) => {
-      const oldAmount =
-        behavior.stats.resourceIncome[resourceType as keyof typeof newResourceIncome];
-      if (oldAmount !== newAmount) {
-        factionBehaviorEvents.emit('resourcesUpdated', {
-          factionId,
-          resourceType: resourceType as ResourceType,
-          oldAmount,
-          newAmount,
-        });
+    Object.entries(newResourceIncome).forEach(([resourceKey, newAmount]) => {
+      // Convert resource key to ResourceType enum
+      const resourceType = ResourceType[resourceKey.toUpperCase() as keyof typeof ResourceType];
+      if (resourceType) {
+        const oldAmount = behavior.stats.resourceIncome[resourceType] || 0;
+        if (oldAmount !== newAmount) {
+          factionBehaviorManager.updateResources(factionId, resourceType, newAmount);
+        }
       }
     });
 
@@ -1287,12 +1402,7 @@ export function useFactionBehavior(factionId: FactionId) {
     Object.entries(updatedRelationships).forEach(([targetFaction, newValue]) => {
       const oldValue = behavior.relationships[targetFaction as FactionId];
       if (oldValue !== newValue) {
-        factionBehaviorEvents.emit('relationshipChanged', {
-          factionId,
-          targetFaction: targetFaction as FactionId,
-          oldValue,
-          newValue,
-        });
+        factionBehaviorManager.updateRelationship(factionId, targetFaction as FactionId, newValue);
       }
     });
 
@@ -1329,32 +1439,13 @@ export function useFactionBehavior(factionId: FactionId) {
   useEffect(() => {
     const unsubscribeModuleEvents = moduleEventBus.subscribe('STATUS_CHANGED', handleModuleEvent);
 
-    const unsubscribeCallbacks = [
-      'behaviorChanged',
-      'fleetUpdated',
-      'territoryChanged',
-      'relationshipChanged',
-      'resourcesUpdated',
-      'combatTacticsChanged',
-    ].map(eventType => {
-      const callback = (event: FactionBehaviorEvents[keyof FactionBehaviorEvents]) => {
-        if (event && typeof event === 'object' && 'factionId' in event) {
-          handleBehaviorEvent(eventType as keyof FactionBehaviorEvents, event);
-        }
-      };
-      factionBehaviorEvents.subscribe(eventType as keyof FactionBehaviorEvents, callback);
-      return () =>
-        factionBehaviorEvents.unsubscribe(eventType as keyof FactionBehaviorEvents, callback);
-    });
-
     const updateInterval = setInterval(updateFactionBehavior, 1000);
 
     return () => {
       unsubscribeModuleEvents();
-      unsubscribeCallbacks.forEach(callback => callback());
       clearInterval(updateInterval);
     };
-  }, [factionId, handleModuleEvent, handleBehaviorEvent, updateFactionBehavior]);
+  }, [factionId, handleModuleEvent, updateFactionBehavior]);
 
   return behavior;
 }
@@ -1536,7 +1627,7 @@ interface ShipStats {
 }
 
 interface FactionWeaponEffect {
-  type: 'plasma' | 'spark' | 'gauss' | 'explosive';
+  type: ResourceType.PLASMA | 'spark' | 'gauss' | 'explosive';
   damage: number;
   duration: number;
   radius?: number;
@@ -1629,7 +1720,7 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
         range: 800,
         cooldown: 0.1,
         accuracy: 0.7,
-        effects: [{ type: 'plasma', damage: 10, duration: 3 }],
+        effects: [{ type: ResourceType.PLASMA, damage: 10, duration: 3 }],
       },
       {
         id: 'rockets',
@@ -1815,23 +1906,16 @@ function calculateTerritorySystems(territory: FactionTerritory): number {
 }
 
 // Helper function to calculate resource income
-function calculateResourceIncome(territory: FactionTerritory): {
-  minerals: number;
-  energy: number;
-  plasma: number;
-  exotic: number;
-  gas: number;
-  population: number;
-  research: number;
-} {
+function calculateResourceIncome(territory: FactionTerritory): Record<string, number> {
+  // Convert to use ResourceType enum keys
   return {
-    minerals: territory.resources.minerals * 0.1,
-    energy: 0,
-    plasma: 0,
-    exotic: territory.resources.exotic * 0.1,
-    gas: territory.resources.gas * 0.1,
-    population: 0,
-    research: 0,
+    [ResourceType.MINERALS]: Math.floor(territory.resources[ResourceType.MINERALS] * 0.1),
+    [ResourceType.ENERGY]: Math.floor((territory.resources[ResourceType.MINERALS] || 0) * 0.05),
+    [ResourceType.PLASMA]: Math.floor((territory.resources[ResourceType.EXOTIC] || 0) * 0.2),
+    [ResourceType.EXOTIC]: Math.floor(territory.resources[ResourceType.EXOTIC] * 0.05),
+    [ResourceType.GAS]: Math.floor(territory.resources[ResourceType.GAS] * 0.1),
+    [ResourceType.POPULATION]: Math.floor((territory.resources[ResourceType.MINERALS] || 0) * 0.01),
+    [ResourceType.RESEARCH]: Math.floor((territory.resources[ResourceType.EXOTIC] || 0) * 0.02),
   };
 }
 
@@ -1984,7 +2068,7 @@ function updateCombatTactics(state: FactionBehaviorState): void {
   }
 
   // Update target priorities based on needs
-  if (state.stats.resourceIncome.minerals < 100) {
+  if (state.stats.resourceIncome[ResourceType.MINERALS] < 100) {
     state.combatTactics.targetPriority = 'resources';
   } else if (threatLevel > 0.7) {
     state.combatTactics.targetPriority = 'ships';
@@ -2002,13 +2086,23 @@ function manageResources(state: FactionBehaviorState): void {
   // Adjust stockpile thresholds based on expansion plans
   if (state.expansionStrategy.systemPriority === 'resources') {
     state.resourceManagement.stockpileThresholds = {
-      minerals: 2000,
-      energy: 1500,
-      plasma: 1000,
-      exotic: 500,
-      gas: 1000,
-      population: 500,
-      research: 1000,
+      [ResourceType.MINERALS]: 2000,
+      [ResourceType.ENERGY]: 1500,
+      [ResourceType.PLASMA]: 1000,
+      [ResourceType.EXOTIC]: 500,
+      [ResourceType.GAS]: 1000,
+      [ResourceType.POPULATION]: 500,
+      [ResourceType.RESEARCH]: 1000,
+      [ResourceType.IRON]: 0,
+      [ResourceType.COPPER]: 0,
+      [ResourceType.DEUTERIUM]: 0,
+      [ResourceType.ANTIMATTER]: 0,
+      [ResourceType.DARK_MATTER]: 0,
+      [ResourceType.EXOTIC_MATTER]: 0,
+      [ResourceType.TITANIUM]: 0,
+      [ResourceType.URANIUM]: 0,
+      [ResourceType.WATER]: 0,
+      [ResourceType.HELIUM]: 0,
     };
   }
 }
@@ -2020,7 +2114,10 @@ function planExpansion(state: FactionBehaviorState): void {
   state.expansionStrategy.expansionDirection = newDirection;
 
   // Adjust system priority based on needs
-  if (state.stats.resourceIncome.minerals < 100 || state.stats.resourceIncome.energy < 100) {
+  if (
+    state.stats.resourceIncome[ResourceType.MINERALS] < 100 ||
+    state.stats.resourceIncome[ResourceType.ENERGY] < 100
+  ) {
     state.expansionStrategy.systemPriority = 'resources';
   } else if (state.stats.territorySystems < 5) {
     state.expansionStrategy.systemPriority = 'strategic';
@@ -2210,71 +2307,54 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
   return fleets;
 }
 
-/**
- * Updates a faction fleet with the latest unit information.
- * This function will be used in future implementations to:
- * 1. Synchronize fleet composition with current combat units
- * 2. Apply faction-specific fleet configurations
- * 3. Calculate fleet strength and capabilities
- * 4. Support the fleet management system
- * 5. Determine appropriate AI behavior based on fleet composition
- *
- * @param fleet The faction fleet to update
- * @param units The combat units to update the fleet with
- * @returns The updated faction fleet
- */
-// @ts-expect-error - This function is documented for future use in the faction fleet system
-function _updateFleet(fleet: FactionFleet, units: CombatUnit[]): FactionFleet {
-  const factionUnits = units.map(u =>
-    convertToFactionCombatUnit(u, 'neutral', u.type as FactionShipClass)
-  );
-  const factionShips: FactionShip[] = factionUnits.map(u => ({
-    id: u.id,
-    name: `${u.type}`,
-    category: 'war',
-    status: 'ready' as CommonShipStatus,
-    faction: u.faction,
-    class: u.class,
-    health: u.stats.health,
-    maxHealth: u.stats.maxHealth,
-    shield: u.stats.shield,
-    maxShield: u.stats.maxShield,
-    position: u.position,
-    rotation: u.rotation,
-    tactics: {
-      formation: 'defensive',
-      behavior: 'defensive',
-    },
-    stats: {
-      health: u.stats.health,
-      maxHealth: u.stats.maxHealth,
-      shield: u.stats.shield,
-      maxShield: u.stats.maxShield,
-      energy: 100,
-      maxEnergy: 100,
-      cargo: 100,
-      speed: u.stats.speed,
-      turnRate: u.stats.turnRate,
-      defense: {
-        armor: 100,
-        shield: u.stats.shield,
-        evasion: 0.3,
-        regeneration: 1,
-      },
-      mobility: {
-        speed: u.stats.speed,
-        turnRate: u.stats.turnRate,
-        acceleration: 50,
-      },
-      weapons: [],
-      abilities: [],
-    },
-    abilities: [],
-  }));
-
+// Convert local FactionFleet to StandardizedFactionFleet
+function convertToStandardizedFleet(fleet: FactionFleet): StandardizedFactionFleet {
   return {
-    ...fleet,
-    ships: factionShips,
-    strength: calculateFleetStrength(units),
+    id: fleet.id || `fleet-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    name: fleet.name || `Fleet ${fleet.id}`,
+    ships: fleet.ships.map(ship => ({
+      id: ship.id,
+      name: ship.name,
+      type: ship.class,
+      level: ship.level || 1,
+      status:
+        ship.status === 'ready'
+          ? 'idle'
+          : ship.status === 'engaging'
+            ? 'engaging'
+            : ship.status === 'damaged'
+              ? 'damaged'
+              : 'retreating',
+    })),
+    formation: fleet.formation,
+    status:
+      fleet.status === 'ready'
+        ? 'idle'
+        : fleet.status === 'engaging'
+          ? 'engaging'
+          : fleet.status === 'retreating'
+            ? 'retreating'
+            : 'patrolling',
+    position: fleet.position,
+  };
+}
+
+// Convert local FactionTerritory to StandardizedFactionTerritory
+function convertToStandardizedTerritory(territory: FactionTerritory): StandardizedFactionTerritory {
+  return {
+    center: territory.center,
+    radius: territory.radius,
+    controlPoints: territory.controlPoints,
+    resources: {
+      ...Object.keys(ResourceType).reduce(
+        (acc, key) => {
+          acc[ResourceType[key as keyof typeof ResourceType]] = 0;
+          return acc;
+        },
+        {} as Record<ResourceType, number>
+      ),
+      ...territory.resources,
+    },
+    threatLevel: territory.threatLevel,
   };
 }

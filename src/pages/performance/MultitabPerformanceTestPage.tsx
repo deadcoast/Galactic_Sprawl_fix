@@ -5,7 +5,8 @@
  * components to provide a complete multi-tab performance testing solution.
  */
 
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MultitabPerformanceLauncher from '../../components/performance/MultitabPerformanceLauncher';
 import MultitabPerformanceResults from '../../components/performance/MultitabPerformanceResults';

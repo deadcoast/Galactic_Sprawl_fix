@@ -10,7 +10,8 @@
  * 5. Performance monitoring of event handling
  */
 
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import {
   useEventCategorySubscription,
   useEventSubscription,
@@ -18,7 +19,7 @@ import {
 import { moduleEventBus } from '../../../lib/events/ModuleEventBus';
 import { ModuleType } from '../../../types/buildings/ModuleTypes';
 import { EventCategory, EventType } from '../../../types/events/EventTypes';
-import { ResourceType } from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 /**
  * Demonstrates using the standardized event system

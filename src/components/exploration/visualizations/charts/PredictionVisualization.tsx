@@ -17,7 +17,8 @@ import {
 } from '@mui/material';
 import { scaleOrdinal } from 'd3-scale';
 import { schemeCategory10 } from 'd3-scale-chromatic';
-import React, { useCallback, useMemo, useState } from 'react';
+import * as React from "react";
+import { useCallback, useMemo, useState } from 'react';
 import {
   CartesianGrid,
   Legend,

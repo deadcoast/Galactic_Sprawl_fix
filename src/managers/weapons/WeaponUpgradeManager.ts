@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
   CombatWeaponStats,
@@ -135,7 +136,7 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
         baseUpgrades.push({
           id: `${category}-plasma-overcharge`,
           name: 'Plasma Overcharge',
-          type: 'plasma' as WeaponUpgradeType,
+          type: ResourceType.PLASMA as WeaponUpgradeType,
           description: 'Enhances plasma damage and penetration',
           stats: {
             damage: 1.3,

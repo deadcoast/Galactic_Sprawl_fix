@@ -1,3 +1,4 @@
+import * as React from "react";
 import { AlertTriangle, ArrowRight, Crosshair, Lock, Rocket, Shield } from 'lucide-react';
 
 interface UpgradeRequirement {

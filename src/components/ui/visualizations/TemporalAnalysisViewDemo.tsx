@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
-import React, { useState } from 'react';
+import * as React from "react";
+import { useState } from 'react';
 import TemporalAnalysisView from './TemporalAnalysisView';
 
 /**

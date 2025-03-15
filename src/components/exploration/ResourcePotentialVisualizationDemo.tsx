@@ -1,9 +1,10 @@
+import * as React from "react";
 import { useState } from 'react';
 import { ResourcePotentialVisualization } from './ResourcePotentialVisualization';
-
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 // Define the types to match those in ResourcePotentialVisualization
 interface ResourceData {
-  type: 'minerals' | 'gas' | 'energy' | 'organic' | 'exotic';
+  type: ResourceType.MINERALS | ResourceType.GAS | ResourceType.ENERGY | 'organic' | ResourceType.EXOTIC;
   name: string;
   amount: number; // 0-100 scale
   quality: number; // 0-1 scale
@@ -29,7 +30,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
     sectorName: 'Alpha Centauri',
     resources: [
       {
-        type: 'minerals',
+        type: ResourceType.MINERALS,
         name: 'Iron Deposits',
         amount: 85,
         quality: 0.7,
@@ -39,7 +40,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
         extractionDifficulty: 3,
       },
       {
-        type: 'gas',
+        type: ResourceType.GAS,
         name: 'Hydrogen Clouds',
         amount: 45,
         quality: 0.5,
@@ -58,7 +59,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
     sectorName: 'Proxima Nebula',
     resources: [
       {
-        type: 'energy',
+        type: ResourceType.ENERGY,
         name: 'Plasma Streams',
         amount: 92,
         quality: 0.85,
@@ -68,7 +69,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
         extractionDifficulty: 7,
       },
       {
-        type: 'exotic',
+        type: ResourceType.EXOTIC,
         name: 'Quantum Particles',
         amount: 25,
         quality: 0.95,
@@ -97,7 +98,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
         extractionDifficulty: 2,
       },
       {
-        type: 'minerals',
+        type: ResourceType.MINERALS,
         name: 'Copper Deposits',
         amount: 55,
         quality: 0.5,
@@ -116,7 +117,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
     sectorName: 'Orion Belt',
     resources: [
       {
-        type: 'minerals',
+        type: ResourceType.MINERALS,
         name: 'Titanium Deposits',
         amount: 65,
         quality: 0.8,
@@ -126,7 +127,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
         extractionDifficulty: 6,
       },
       {
-        type: 'gas',
+        type: ResourceType.GAS,
         name: 'Helium Pockets',
         amount: 40,
         quality: 0.7,
@@ -136,7 +137,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
         extractionDifficulty: 5,
       },
       {
-        type: 'energy',
+        type: ResourceType.ENERGY,
         name: 'Thermal Vents',
         amount: 35,
         quality: 0.6,
@@ -155,7 +156,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
     sectorName: 'Cygnus X-1',
     resources: [
       {
-        type: 'energy',
+        type: ResourceType.ENERGY,
         name: 'Radiation Fields',
         amount: 95,
         quality: 0.9,
@@ -165,7 +166,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
         extractionDifficulty: 8,
       },
       {
-        type: 'exotic',
+        type: ResourceType.EXOTIC,
         name: 'Dark Matter Traces',
         amount: 15,
         quality: 0.98,
@@ -185,7 +186,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
     sectorName: 'Vega System',
     resources: [
       {
-        type: 'minerals',
+        type: ResourceType.MINERALS,
         name: 'Gold Deposits',
         amount: 30,
         quality: 0.9,
@@ -215,7 +216,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
     sectorName: 'Pleiades Cluster',
     resources: [
       {
-        type: 'gas',
+        type: ResourceType.GAS,
         name: 'Methane Clouds',
         amount: 80,
         quality: 0.6,
@@ -225,7 +226,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
         extractionDifficulty: 4,
       },
       {
-        type: 'minerals',
+        type: ResourceType.MINERALS,
         name: 'Silicon Deposits',
         amount: 50,
         quality: 0.5,
@@ -244,7 +245,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
     sectorName: 'Andromeda Fringe',
     resources: [
       {
-        type: 'exotic',
+        type: ResourceType.EXOTIC,
         name: 'Antimatter Particles',
         amount: 10,
         quality: 0.99,

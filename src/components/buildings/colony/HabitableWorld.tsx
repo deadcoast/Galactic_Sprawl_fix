@@ -1,5 +1,6 @@
-import { AlertTriangle, Leaf, Ship, Star, Users, Wheat, Zap } from 'lucide-react';
+import * as React from "react";
 import { useEffect, useState } from 'react';
+import { AlertTriangle, Leaf, Ship, Star, Users, Wheat, Zap } from 'lucide-react';
 
 interface HabitableWorldProps {
   planetData: {

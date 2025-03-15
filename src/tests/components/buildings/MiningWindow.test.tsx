@@ -1,3 +1,4 @@
+import * as React from "react";
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { MiningWindow } from '../../../components/buildings/modules/MiningHub/MiningWindow';

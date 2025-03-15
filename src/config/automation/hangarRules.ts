@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { AutomationRule } from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
@@ -15,14 +16,14 @@ export const hangarRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: {
           amount: 100,
         },
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: {
           amount: 100,
         },
@@ -64,14 +65,14 @@ export const hangarRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: {
           amount: 50,
         },
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: {
           amount: 25,
         },
@@ -114,14 +115,14 @@ export const hangarRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: {
           amount: 200,
         },
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: {
           amount: 300,
         },
@@ -164,14 +165,14 @@ export const hangarRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: {
           amount: 150,
         },
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: {
           amount: 200,
         },

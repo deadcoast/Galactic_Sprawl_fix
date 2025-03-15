@@ -1,4 +1,4 @@
-import { ResourceState, ResourceType } from './ResourceTypes';
+import { ResourceType } from "./ResourceTypes";
 
 /**
  * Pool allocation strategy

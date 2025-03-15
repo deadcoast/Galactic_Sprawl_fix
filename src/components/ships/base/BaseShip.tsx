@@ -1,3 +1,4 @@
+import React from "react";
 import { Crosshair } from 'lucide-react';
 import { ReactNode, useEffect } from 'react';
 import { ShipProvider, useShipState } from '../../../contexts/ShipContext';

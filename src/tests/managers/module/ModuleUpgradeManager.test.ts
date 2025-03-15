@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { moduleEventBus } from '../../../lib/modules/ModuleEvents';
 import { ResourceManager } from '../../../managers/game/ResourceManager';
@@ -98,8 +99,8 @@ describe('ModuleUpgradeManager', () => {
           requirements: {
             minLevel: 1,
             resourceCosts: [
-              { type: 'minerals', amount: 100 },
-              { type: 'energy', amount: 50 },
+              { type: ResourceType.MINERALS, amount: 100 },
+              { type: ResourceType.ENERGY, amount: 50 },
             ],
             buildingLevel: 2,
           },
@@ -120,8 +121,8 @@ describe('ModuleUpgradeManager', () => {
           requirements: {
             minLevel: 2,
             resourceCosts: [
-              { type: 'minerals', amount: 200 },
-              { type: 'energy', amount: 100 },
+              { type: ResourceType.MINERALS, amount: 200 },
+              { type: ResourceType.ENERGY, amount: 100 },
             ],
             buildingLevel: 3,
           },

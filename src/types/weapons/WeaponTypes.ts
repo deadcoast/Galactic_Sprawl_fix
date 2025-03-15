@@ -9,6 +9,7 @@ import {
   WeaponEffect,
   WeaponEffectType,
 } from '../../effects/types_effects/WeaponEffects';
+import { ResourceType } from "./../resources/ResourceTypes";
 
 export type { AreaEffect, DamageEffect, WeaponEffect, WeaponEffectType };
 
@@ -76,7 +77,7 @@ export type WeaponStatus = 'ready' | 'charging' | 'cooling' | 'disabled';
 
 // Upgrade Types
 export type WeaponUpgradeType =
-  | 'plasma'
+  | ResourceType.PLASMA
   | 'spark'
   | 'gauss'
   | 'light'

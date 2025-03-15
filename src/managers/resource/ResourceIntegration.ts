@@ -1,15 +1,20 @@
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
-  ResourcePriority,
+  FlowConnection,
+  FlowNode,
+  FlowNodeType,
+  ResourcePriorityConfig,
   ResourceState,
   ResourceTransfer,
   ResourceType,
+  ResourceTypeString,
+  toEnumResourceType,
 } from '../../types/resources/ResourceTypes';
 import { ResourceManager } from '../game/ResourceManager';
 import { ResourceCostManager } from './ResourceCostManager';
 import { ResourceExchangeManager } from './ResourceExchangeManager';
-import { FlowNodeType, ResourceFlowManager } from './ResourceFlowManager';
+import { ResourceFlowManager } from './ResourceFlowManager';
 import { ResourcePoolManager } from './ResourcePoolManager';
 import { ResourceStorageManager, StorageContainerConfig } from './ResourceStorageManager';
 import { ResourceThresholdManager, ThresholdConfig } from './ResourceThresholdManager';
@@ -93,8 +98,10 @@ export class ResourceIntegration {
         return;
       }
 
+      const enumType = toEnumResourceType(resourceType);
+
       // Get resource state
-      const resourceState = this.resourceManager.getResourceState(resourceType);
+      const resourceState = this.resourceManager.getResourceState(enumType);
       if (resourceState) {
         this.updateResourceState(resourceType, resourceState);
       }
@@ -113,8 +120,10 @@ export class ResourceIntegration {
         return;
       }
 
+      const enumType = toEnumResourceType(resourceType);
+
       // Get resource state
-      const resourceState = this.resourceManager.getResourceState(resourceType);
+      const resourceState = this.resourceManager.getResourceState(enumType);
       if (resourceState) {
         this.updateResourceState(resourceType, resourceState);
       }
@@ -138,9 +147,11 @@ export class ResourceIntegration {
         return;
       }
 
+      const enumType = toEnumResourceType(resourceType);
+
       // Record transfer in history
       this.transferHistory.push({
-        type: resourceType,
+        type: enumType,
         amount,
         source,
         target,
@@ -166,8 +177,10 @@ export class ResourceIntegration {
         return;
       }
 
+      const enumType = toEnumResourceType(resourceType);
+
       // Get current resource state
-      const currentAmount = this.resourceManager.getResourceAmount(resourceType);
+      const currentAmount = this.resourceManager.getResourceAmount(enumType);
       const status = currentAmount < requiredAmount ? 'warning' : 'inactive';
 
       // Emit a status change event for the resource module
@@ -194,7 +207,7 @@ export class ResourceIntegration {
       // Find or create threshold configuration
       const existingConfig = this.thresholdManager
         .getThresholdConfigs()
-        .find(config => config.threshold.type === resourceType);
+        .find(config => config.threshold.resourceId === enumType);
 
       if (existingConfig) {
         // Update existing threshold if needed
@@ -212,7 +225,7 @@ export class ResourceIntegration {
         this.thresholdManager.registerThreshold({
           id: `shortage-${resourceType}-${Date.now()}`,
           threshold: {
-            type: resourceType,
+            resourceId: enumType,
             min: requiredAmount,
           },
           actions: [
@@ -233,33 +246,13 @@ export class ResourceIntegration {
   /**
    * Type guard to validate if a value is a valid ResourceType
    */
-  private isValidResourceType(value: unknown): value is ResourceType {
+  private isValidResourceType(value: unknown): value is ResourceTypeString {
     if (typeof value !== 'string') {
       return false;
     }
 
     // Check if the value is one of the known resource types
-    // This assumes ResourceType is a string enum or string literal type
-    const validTypes = [
-      'energy',
-      'minerals',
-      'food',
-      'consumer_goods',
-      'alloys',
-      'research',
-      'influence',
-      'unity',
-      'exotic_matter',
-      'dark_matter',
-      'nanites',
-      'living_metal',
-      'zro',
-      'motes',
-      'gases',
-      'crystals',
-    ];
-
-    return validTypes.includes(value as string);
+    return Object.values(ResourceType).includes(value as ResourceType);
   }
 
   /**
@@ -267,11 +260,14 @@ export class ResourceIntegration {
    */
   private initializeThresholds(): void {
     // Get all resource types
-    const resourceTypes = Array.from(this.resourceManager['resources'].keys()) as ResourceType[];
+    const resourceTypes = Array.from(
+      this.resourceManager['resources'].keys()
+    ) as ResourceTypeString[];
 
     // Create thresholds for each resource type
     resourceTypes.forEach(type => {
-      const resourceState = this.resourceManager.getResourceState(type);
+      const enumType = toEnumResourceType(type);
+      const resourceState = this.resourceManager.getResourceState(enumType);
       if (!resourceState) {
         return;
       }
@@ -280,7 +276,7 @@ export class ResourceIntegration {
       const config: ThresholdConfig = {
         id: `resource-${type}`,
         threshold: {
-          type,
+          resourceId: enumType,
           min: resourceState.min,
           max: resourceState.max,
           target: (resourceState.min + resourceState.max) / 2,
@@ -304,11 +300,14 @@ export class ResourceIntegration {
    */
   private initializeStorage(): void {
     // Get all resource types
-    const resourceTypes = Array.from(this.resourceManager['resources'].keys()) as ResourceType[];
+    const resourceTypes = Array.from(
+      this.resourceManager['resources'].keys()
+    ) as ResourceTypeString[];
 
     // Create a main storage container for each resource type
     resourceTypes.forEach(type => {
-      const resourceState = this.resourceManager.getResourceState(type);
+      const enumType = toEnumResourceType(type);
+      const resourceState = this.resourceManager.getResourceState(enumType);
       if (!resourceState) {
         return;
       }
@@ -319,14 +318,14 @@ export class ResourceIntegration {
         name: `Main ${type} Storage`,
         type: 'storage',
         capacity: resourceState.max,
-        resourceTypes: [type],
+        resourceTypes: [enumType],
         priority: 10, // High priority for main storage
       };
 
       this.storageManager.registerContainer(config);
 
       // Initialize with current amount
-      this.storageManager.storeResource(config.id, type, resourceState.current);
+      this.storageManager.storeResource(config.id, enumType, resourceState.current);
     });
   }
 
@@ -335,82 +334,108 @@ export class ResourceIntegration {
    */
   private initializeFlows(): void {
     // Get all resource types
-    const resourceTypes = Array.from(this.resourceManager['resources'].keys()) as ResourceType[];
+    const resourceTypes = Array.from(
+      this.resourceManager['resources'].keys()
+    ) as ResourceTypeString[];
 
     // Create producer and consumer nodes for each resource type
     resourceTypes.forEach(type => {
-      const resourceState = this.resourceManager.getResourceState(type);
+      const enumType = toEnumResourceType(type);
+      const resourceState = this.resourceManager.getResourceState(enumType);
       if (!resourceState) {
         return;
       }
 
-      // Create a resource priority
-      const resourcePriority: ResourcePriority = {
-        type,
+      const resourcePriority: ResourcePriorityConfig = {
+        type: enumType,
         priority: 1,
         consumers: [],
       };
 
+      // Create empty resource records with all required keys
+      const emptyResources = Object.values(ResourceType).reduce(
+        (acc, rt) => {
+          acc[rt] = {
+            current: 0,
+            max: 0,
+            min: 0,
+            production: 0,
+            consumption: 0,
+            rate: 0,
+            value: 0,
+          };
+          return acc;
+        },
+        {} as Record<ResourceType, ResourceState>
+      );
+
       // Create producer node
-      this.flowManager.registerNode({
+      const producerNode: FlowNode = {
         id: `producer-${type}`,
-        type: 'producer' as FlowNodeType,
-        resources: [type],
+        type: FlowNodeType.PRODUCER,
+        resources: { ...emptyResources, [enumType]: resourceState },
         priority: resourcePriority,
         active: true,
-      });
+      };
+      this.flowManager.registerNode(producerNode);
 
       // Create consumer node
-      this.flowManager.registerNode({
+      const consumerNode: FlowNode = {
         id: `consumer-${type}`,
-        type: 'consumer' as FlowNodeType,
-        resources: [type],
+        type: FlowNodeType.CONSUMER,
+        resources: { ...emptyResources, [enumType]: resourceState },
         priority: resourcePriority,
         active: true,
-      });
+      };
+      this.flowManager.registerNode(consumerNode);
 
       // Create storage node
-      this.flowManager.registerNode({
+      const storageNode: FlowNode = {
         id: `storage-${type}`,
-        type: 'storage' as FlowNodeType,
-        resources: [type],
+        type: FlowNodeType.STORAGE,
+        resources: { ...emptyResources, [enumType]: resourceState },
         priority: resourcePriority,
         capacity: resourceState.max,
         active: true,
-      });
+      };
+      this.flowManager.registerNode(storageNode);
 
       // Create connections
-      this.flowManager.registerConnection({
+      const productionConnection: FlowConnection = {
         id: `production-${type}`,
         source: `producer-${type}`,
         target: `storage-${type}`,
-        resourceType: type,
+        resourceTypes: [enumType],
         maxRate: resourceState.production,
         currentRate: 0,
         priority: resourcePriority,
         active: true,
-      });
+      };
+      this.flowManager.registerConnection(productionConnection);
 
-      this.flowManager.registerConnection({
+      const consumptionConnection: FlowConnection = {
         id: `consumption-${type}`,
         source: `storage-${type}`,
         target: `consumer-${type}`,
-        resourceType: type,
+        resourceTypes: [enumType],
         maxRate: resourceState.consumption,
         currentRate: 0,
         priority: resourcePriority,
         active: true,
-      });
+      };
+      this.flowManager.registerConnection(consumptionConnection);
 
       // Update resource state in flow manager
-      this.flowManager.updateResourceState(type, resourceState);
+      this.flowManager.updateResourceState(enumType, resourceState);
     });
   }
 
   /**
    * Update resource state in all managers
    */
-  private updateResourceState(type: ResourceType, state: ResourceState): void {
+  private updateResourceState(type: ResourceTypeString, state: ResourceState): void {
+    const enumType = toEnumResourceType(type);
+
     // Update in threshold manager via event
     moduleEventBus.emit({
       type: 'resource:update' as ModuleEventType,
@@ -418,19 +443,19 @@ export class ResourceIntegration {
       moduleType: 'resource-manager',
       timestamp: Date.now(),
       data: {
-        type,
+        type: enumType,
         state,
       },
     });
 
     // Update in flow manager
-    this.flowManager.updateResourceState(type, state);
+    this.flowManager.updateResourceState(enumType, state);
 
     // Update in cost manager
-    this.costManager.updateResourceState(type, state);
+    this.costManager.updateResourceState(enumType, state);
 
     // Update in exchange manager
-    this.exchangeManager.updateResourceState(type, state);
+    this.exchangeManager.updateResourceState(enumType, state);
   }
 
   /**
@@ -445,23 +470,27 @@ export class ResourceIntegration {
     const flowResult = this.flowManager.optimizeFlows();
 
     // Apply transfers to the legacy resource manager
-    flowResult.transfers.forEach(transfer => {
-      // Only apply transfers to/from storage
-      if (transfer.source.startsWith('storage-') || transfer.target.startsWith('storage-')) {
-        // Extract the resource type from the node ID
-        const sourceType = transfer.source.replace('storage-', '') as ResourceType;
-        const targetType = transfer.target.replace('storage-', '') as ResourceType;
+    flowResult.then(result => {
+      result.transfers.forEach(transfer => {
+        // Only apply transfers to/from storage
+        if (transfer.source.startsWith('storage-') || transfer.target.startsWith('storage-')) {
+          // Extract the resource type from the node ID
+          const sourceType = transfer.source.replace('storage-', '') as ResourceTypeString;
+          const targetType = transfer.target.replace('storage-', '') as ResourceTypeString;
 
-        // If transferring from storage to consumer, remove from legacy manager
-        if (transfer.source.startsWith('storage-') && transfer.target.startsWith('consumer-')) {
-          this.resourceManager.removeResource(sourceType, transfer.amount);
-        }
+          // If transferring from storage to consumer, remove from legacy manager
+          if (transfer.source.startsWith('storage-') && transfer.target.startsWith('consumer-')) {
+            const enumSourceType = toEnumResourceType(sourceType);
+            this.resourceManager.removeResource(enumSourceType, transfer.amount);
+          }
 
-        // If transferring from producer to storage, add to legacy manager
-        if (transfer.source.startsWith('producer-') && transfer.target.startsWith('storage-')) {
-          this.resourceManager.addResource(targetType, transfer.amount);
+          // If transferring from producer to storage, add to legacy manager
+          if (transfer.source.startsWith('producer-') && transfer.target.startsWith('storage-')) {
+            const enumTargetType = toEnumResourceType(targetType);
+            this.resourceManager.addResource(enumTargetType, transfer.amount);
+          }
         }
-      }
+      });
     });
   }
 
@@ -478,7 +507,7 @@ export class ResourceIntegration {
 
     // Clean up all managers
     this.thresholdManager.cleanup();
-    this.flowManager.cleanup();
+    this.flowManager.dispose(); // Use dispose instead of cleanup
     this.storageManager.cleanup();
     this.costManager.cleanup();
     this.exchangeManager.cleanup();
@@ -494,7 +523,7 @@ export class ResourceIntegration {
 export function createResourceIntegration(resourceManager: ResourceManager): ResourceIntegration {
   // Create all the resource managers
   const thresholdManager = new ResourceThresholdManager();
-  const flowManager = new ResourceFlowManager();
+  const flowManager = ResourceFlowManager.getInstance(); // Use getInstance instead of new
   const storageManager = new ResourceStorageManager();
   const costManager = new ResourceCostManager();
   const exchangeManager = new ResourceExchangeManager();

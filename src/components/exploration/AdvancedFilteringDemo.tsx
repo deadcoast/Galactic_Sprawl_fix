@@ -1,5 +1,6 @@
+import * as React from "react";
 import { useMemo, useState } from 'react';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   AdvancedFilteringSystem,
   AdvancedFilters,
@@ -50,8 +51,8 @@ const sampleSectors: Sector[] = [
     ],
     lastScanned: Date.now() - 3600000, // 1 hour ago
     resources: [
-      { type: 'minerals', amount: 5000 },
-      { type: 'energy', amount: 3000 },
+      { type: ResourceType.MINERALS, amount: 5000 },
+      { type: ResourceType.ENERGY, amount: 3000 },
     ],
   },
   {
@@ -63,7 +64,7 @@ const sampleSectors: Sector[] = [
     habitabilityScore: 0.3,
     anomalies: [],
     lastScanned: Date.now() - 86400000, // 1 day ago
-    resources: [{ type: 'gas', amount: 2000 }],
+    resources: [{ type: ResourceType.GAS, amount: 2000 }],
   },
   {
     id: 'sector-3',
@@ -83,8 +84,8 @@ const sampleSectors: Sector[] = [
     ],
     lastScanned: Date.now() - 43200000, // 12 hours ago
     resources: [
-      { type: 'minerals', amount: 3000 },
-      { type: 'exotic', amount: 500 },
+      { type: ResourceType.MINERALS, amount: 3000 },
+      { type: ResourceType.EXOTIC, amount: 500 },
     ],
   },
   {
@@ -115,8 +116,8 @@ const sampleSectors: Sector[] = [
     ],
     lastScanned: Date.now() - 604800000, // 1 week ago
     resources: [
-      { type: 'gas', amount: 4000 },
-      { type: 'energy', amount: 2000 },
+      { type: ResourceType.GAS, amount: 4000 },
+      { type: ResourceType.ENERGY, amount: 2000 },
     ],
   },
 ];

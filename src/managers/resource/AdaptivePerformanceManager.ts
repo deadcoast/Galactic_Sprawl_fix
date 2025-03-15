@@ -12,8 +12,9 @@ import {
   ResourceConsumptionPredictor,
 } from '../../lib/ai/ResourceConsumptionPredictor';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { ModuleEvent, ModuleType } from '../../types/events/ModuleEventTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { GameLoopManager } from '../game/GameLoopManager';
 import {
   PerformanceMetrics,
@@ -45,7 +46,7 @@ export interface OptimizationSuggestion {
  */
 export class AdaptivePerformanceManager {
   private resourcePredictor: ResourceConsumptionPredictor;
-  private performanceMonitor: ResourcePerformanceMonitor;
+  private _performanceMonitor: ResourcePerformanceMonitor;
   private gameLoopManager: GameLoopManager | null = null;
 
   private deviceProfile: DeviceProfile;
@@ -55,16 +56,16 @@ export class AdaptivePerformanceManager {
 
   private userInteractionCount = 0;
   private sessionStartTime: number;
-  private lastOptimizationTime: number;
+  private _lastOptimizationTime: number;
 
   private optimizationInterval: number | null = null;
   private predictionSubscription: (() => void) | null = null;
 
   constructor(performanceMonitor: ResourcePerformanceMonitor) {
     this.resourcePredictor = new ResourceConsumptionPredictor();
-    this.performanceMonitor = performanceMonitor;
+    this._performanceMonitor = performanceMonitor;
     this.sessionStartTime = Date.now();
-    this.lastOptimizationTime = Date.now();
+    this._lastOptimizationTime = Date.now();
 
     // Initialize with default device profile
     this.deviceProfile = this.detectDeviceProfile();
@@ -72,13 +73,13 @@ export class AdaptivePerformanceManager {
     // Initialize predictor with existing metrics if available
     this.initializePredictor();
 
-    // Subscribe to performance snapshots
+    // Subscribe to performance events
     this.subscribeToPerformanceEvents();
 
     // Start optimization cycle
     this.startOptimizationCycle();
 
-    console.log(
+    console.warn(
       '[AdaptivePerformanceManager] Initialized with device profile:',
       this.deviceProfile.deviceType
     );
@@ -89,7 +90,7 @@ export class AdaptivePerformanceManager {
    */
   public connectGameLoopManager(gameLoopManager: GameLoopManager): void {
     this.gameLoopManager = gameLoopManager;
-    console.log('[AdaptivePerformanceManager] Connected to GameLoopManager');
+    console.warn('[AdaptivePerformanceManager] Connected to GameLoopManager');
   }
 
   /**
@@ -105,16 +106,14 @@ export class AdaptivePerformanceManager {
    * Subscribe to performance events
    */
   private subscribeToPerformanceEvents(): void {
-    this.predictionSubscription = moduleEventBus.subscribe({
-      topic: 'STATUS_CHANGED',
-      callback: (event: ModuleEvent) => {
-        if (
-          event.moduleId === 'resource-performance-monitor' &&
-          event.data.type === 'performance_snapshot'
-        ) {
-          this.processPerformanceSnapshot(event.data.snapshot);
-        }
-      },
+    // Use the correct signature for moduleEventBus.subscribe
+    this.predictionSubscription = moduleEventBus.subscribe('STATUS_CHANGED', event => {
+      if (
+        event.moduleId === 'resource-performance-monitor' &&
+        event.data?.type === 'performance_snapshot'
+      ) {
+        this.processPerformanceSnapshot(event.data.snapshot as ResourcePerformanceSnapshot);
+      }
     });
   }
 
@@ -124,6 +123,14 @@ export class AdaptivePerformanceManager {
   private processPerformanceSnapshot(snapshot: ResourcePerformanceSnapshot): void {
     // Update user interaction count (would come from a real event system)
     this.userInteractionCount += Math.round(Math.random() * 3); // Placeholder
+
+    // Check time since last performance monitor snapshot
+    const timeSinceLastMonitorSnapshot = this._performanceMonitor.getTimeSinceLastSnapshot();
+    if (timeSinceLastMonitorSnapshot > 10000) {
+      console.warn(
+        `[AdaptivePerformanceManager] Performance monitor snapshot delay: ${timeSinceLastMonitorSnapshot}ms`
+      );
+    }
 
     // Process each resource metric
     for (const [resourceType, metrics] of snapshot.metrics.entries()) {
@@ -154,19 +161,21 @@ export class AdaptivePerformanceManager {
   }
 
   /**
-   * Update potential savings for a resource
+   * Updates potential savings for a resource type
    */
-  private updatePotentialSavings(resourceType: ResourceType, metrics: PerformanceMetrics): void {
-    const savings = this.resourcePredictor.calculatePotentialSavings(
-      resourceType,
-      metrics.consumptionRate
-    );
+  private updatePotentialSavings(
+    resourceType: StringResourceType | ResourceType,
+    metrics: PerformanceMetrics
+  ): void {
+    // Convert to string type for consistent handling
+    const stringType = ensureStringResourceType(resourceType);
 
-    if (savings > 0) {
-      console.log(
-        `[AdaptivePerformanceManager] Potential ${resourceType} savings: ${savings.toFixed(2)} units`
-      );
-    }
+    // Calculate potential savings based on metrics
+    const savings = metrics.consumptionRate * (1 - metrics.efficiency);
+
+    console.log(
+      `[AdaptivePerformanceManager] Potential ${stringType} savings: ${savings.toFixed(2)} units`
+    );
   }
 
   /**
@@ -215,11 +224,11 @@ export class AdaptivePerformanceManager {
         });
       }
 
-      if (resourceType === 'energy' && this.deviceProfile.batteryState === 'discharging') {
+      if (resourceType === ResourceType.ENERGY && this.deviceProfile.batteryState === 'discharging') {
         // Energy optimization for battery-powered devices
         suggestions.push({
           type: 'resource-allocation',
-          target: 'energy',
+          target: ResourceType.ENERGY,
           priority: 'critical',
           description: 'Activate power-saving mode to extend battery life',
           potentialSavings: metrics.consumptionRate * 0.3, // Estimated 30% improvement
@@ -245,9 +254,9 @@ export class AdaptivePerformanceManager {
 
     // Log suggestions
     if (suggestions.length > 0) {
-      console.log('[AdaptivePerformanceManager] Optimization suggestions:');
+      console.warn('[AdaptivePerformanceManager] Optimization suggestions:');
       suggestions.forEach(suggestion => {
-        console.log(
+        console.warn(
           `- ${suggestion.priority.toUpperCase()}: ${suggestion.description} (Savings: ${suggestion.potentialSavings.toFixed(2)})`
         );
       });
@@ -299,7 +308,7 @@ export class AdaptivePerformanceManager {
       this.gameLoopManager.adjustUpdateFrequency(throttleFactor);
     }
 
-    console.log(
+    console.warn(
       `[AdaptivePerformanceManager] Applied throttling factor: ${throttleFactor.toFixed(2)}`
     );
   }
@@ -311,7 +320,7 @@ export class AdaptivePerformanceManager {
     moduleEventBus.emit({
       type: 'STATUS_CHANGED',
       moduleId: 'adaptive-performance-manager',
-      moduleType: 'resource-manager' as ModuleType,
+      moduleType: 'resource-manager', // Use string literal instead of type casting
       timestamp: Date.now(),
       data: {
         type: 'optimization_suggestions',
@@ -334,6 +343,12 @@ export class AdaptivePerformanceManager {
    * Run a full optimization cycle
    */
   private runOptimizationCycle(): void {
+    // Calculate time since last optimization
+    const timeSinceLastOptimization = Date.now() - this._lastOptimizationTime;
+    console.warn(
+      `[AdaptivePerformanceManager] Time since last optimization: ${(timeSinceLastOptimization / 1000).toFixed(1)}s`
+    );
+
     // Update device profile
     this.deviceProfile = this.detectDeviceProfile();
 
@@ -343,7 +358,7 @@ export class AdaptivePerformanceManager {
     // Apply the most valuable optimization suggestions
     this.applyHighPriorityOptimizations();
 
-    this.lastOptimizationTime = Date.now();
+    this._lastOptimizationTime = Date.now();
   }
 
   /**
@@ -360,7 +375,7 @@ export class AdaptivePerformanceManager {
 
     if (shouldEnablePowerSaving !== this.powerSavingMode) {
       this.powerSavingMode = shouldEnablePowerSaving;
-      console.log(
+      console.warn(
         `[AdaptivePerformanceManager] Power saving mode ${this.powerSavingMode ? 'enabled' : 'disabled'}`
       );
 
@@ -368,7 +383,7 @@ export class AdaptivePerformanceManager {
       moduleEventBus.emit({
         type: 'STATUS_CHANGED',
         moduleId: 'adaptive-performance-manager',
-        moduleType: 'resource-manager' as ModuleType,
+        moduleType: 'resource-manager', // Use string literal instead of type casting
         timestamp: Date.now(),
         data: {
           type: 'power_saving_mode',
@@ -398,7 +413,7 @@ export class AdaptivePerformanceManager {
     // Apply top suggestions (in a real implementation, this would connect to various systems)
     for (const suggestion of sortedSuggestions.slice(0, 2)) {
       // Apply top 2 suggestions
-      console.log(`[AdaptivePerformanceManager] Applying optimization: ${suggestion.description}`);
+      console.warn(`[AdaptivePerformanceManager] Applying optimization: ${suggestion.description}`);
 
       // In a real implementation, we would apply the optimization
       // For now, just log it
@@ -413,8 +428,11 @@ export class AdaptivePerformanceManager {
     // For now, we'll use simple heuristics
 
     const userAgent = navigator.userAgent;
-    const memory = (navigator as any).deviceMemory || 4; // Cast to any for browser API
-    const connection = (navigator as any).connection || { type: 'unknown', rtt: 50 }; // Cast to any for browser API
+    const memory = (navigator as { deviceMemory?: number }).deviceMemory || 4;
+    const connection = (navigator as { connection?: { type: string; rtt: number } }).connection || {
+      type: 'unknown',
+      rtt: 50,
+    };
 
     // Detect device type based on memory and user agent
     let deviceType: 'high-end' | 'mid-range' | 'low-end';
@@ -436,8 +454,11 @@ export class AdaptivePerformanceManager {
     let batteryLevel: number | undefined;
 
     // Try to get battery info (this is an async API, but we're simplifying for now)
-    if (typeof (navigator as any).getBattery === 'function') {
-      (navigator as any).getBattery().then((battery: { charging: boolean; level: number }) => {
+    const navigatorWithBattery = navigator as {
+      getBattery?: () => Promise<{ charging: boolean; level: number }>;
+    };
+    if (typeof navigatorWithBattery.getBattery === 'function') {
+      navigatorWithBattery.getBattery().then(battery => {
         batteryState = battery.charging ? 'charging' : 'discharging';
         batteryLevel = battery.level;
       });
@@ -465,7 +486,7 @@ export class AdaptivePerformanceManager {
   /**
    * Get resource consumption predictions
    */
-  public getResourcePredictions(): Map<ResourceType, ConsumptionPrediction> {
+  public getResourcePredictions(): Map<StringResourceType | ResourceType, ConsumptionPrediction> {
     return this.resourcePredictor.getAllPredictions();
   }
 
@@ -474,7 +495,7 @@ export class AdaptivePerformanceManager {
    */
   public setAdaptiveThrottling(enabled: boolean): void {
     this.adaptiveThrottlingEnabled = enabled;
-    console.log(
+    console.warn(
       `[AdaptivePerformanceManager] Adaptive throttling ${enabled ? 'enabled' : 'disabled'}`
     );
   }
@@ -484,7 +505,7 @@ export class AdaptivePerformanceManager {
    */
   public setPowerSavingMode(enabled: boolean): void {
     this.powerSavingMode = enabled;
-    console.log(
+    console.warn(
       `[AdaptivePerformanceManager] Power saving mode ${enabled ? 'enabled' : 'disabled'}`
     );
 
@@ -492,7 +513,7 @@ export class AdaptivePerformanceManager {
     moduleEventBus.emit({
       type: 'STATUS_CHANGED',
       moduleId: 'adaptive-performance-manager',
-      moduleType: 'resource-manager' as ModuleType,
+      moduleType: 'resource-manager', // Use string literal instead of type casting
       timestamp: Date.now(),
       data: {
         type: 'power_saving_mode',
@@ -518,6 +539,20 @@ export class AdaptivePerformanceManager {
     // Clean up predictor
     this.resourcePredictor.cleanup();
 
-    console.log('[AdaptivePerformanceManager] Cleaned up resources');
+    console.warn('[AdaptivePerformanceManager] Cleaned up resources');
+  }
+
+  /**
+   * Get the performance monitor instance
+   */
+  public getPerformanceMonitor(): ResourcePerformanceMonitor {
+    return this._performanceMonitor;
+  }
+
+  /**
+   * Get time since last optimization in milliseconds
+   */
+  public getTimeSinceLastOptimization(): number {
+    return Date.now() - this._lastOptimizationTime;
   }
 }

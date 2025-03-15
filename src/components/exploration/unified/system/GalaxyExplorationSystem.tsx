@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 /**
  * GalaxyExplorationSystem Component
  *
@@ -6,7 +7,7 @@
  * into a single coherent interface.
  */
 
-import * as React from 'react';
+import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AnalysisResult,
@@ -568,7 +569,7 @@ const GalaxyExplorationSystemInner: React.FC<
 
             // Set color based on resource type
             switch (resource.type as string) {
-              case 'minerals':
+              case ResourceType.MINERALS:
                 ctx.fillStyle = 'rgba(150, 150, 150, 0.8)';
                 break;
               case 'iron':
@@ -592,10 +593,10 @@ const GalaxyExplorationSystemInner: React.FC<
               case 'deuterium':
                 ctx.fillStyle = 'rgba(150, 200, 255, 0.8)';
                 break;
-              case 'energy':
+              case ResourceType.ENERGY:
                 ctx.fillStyle = 'rgba(255, 255, 100, 0.8)';
                 break;
-              case 'exotic':
+              case ResourceType.EXOTIC:
                 ctx.fillStyle = 'rgba(200, 100, 200, 0.8)';
                 break;
               default:

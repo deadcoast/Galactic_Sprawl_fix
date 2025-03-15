@@ -1,3 +1,5 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import React from "react";
 import { Shield, Target } from 'lucide-react';
 import { ReactNode, useCallback } from 'react';
 import { CombatEffectType } from '../../../effects/types_effects/EffectTypes';
@@ -134,7 +136,7 @@ export function EquatorHorizonShip({
             magnitude: mount.currentWeapon.state.currentStats.damage * 1.4,
             duration: 10,
             strength: 1.4,
-            damageType: 'energy',
+            damageType: ResourceType.ENERGY,
             penetration: 0.2,
           });
 

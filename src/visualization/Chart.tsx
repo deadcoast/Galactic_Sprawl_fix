@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import * as React from "react";
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { CanvasRenderer } from './renderers/CanvasRenderer';
 import { SVGRenderer } from './renderers/SVGRenderer';
 import { WebGLRenderer } from './renderers/WebGLRenderer';

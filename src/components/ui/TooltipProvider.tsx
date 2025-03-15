@@ -1,3 +1,4 @@
+import React from "react";
 import { ReactNode } from 'react';
 import { useTooltip } from '../../hooks/ui/useTooltip';
 import { TooltipContext } from './tooltip-context';

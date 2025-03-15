@@ -6,7 +6,7 @@
  * eliminating duplication and ensuring consistency across components.
  */
 
-import { ResourceType } from '../../resources/ResourceTypes';
+import { ResourceType } from "./../../resources/ResourceTypes";
 import { BasePoint } from '../../visualization/CommonTypes';
 
 // =========================================
@@ -457,7 +457,7 @@ export interface AnalysisResult {
  */
 export enum AnalysisType {
   COMPOSITION = 'composition',
-  ENERGY = 'energy',
+  ENERGY = ResourceType.ENERGY,
   SPATIAL = 'spatial',
   TEMPORAL = 'temporal',
   RESOURCE = 'resource',
@@ -508,7 +508,7 @@ export enum ExplorationActivityType {
   SURVEY = 'survey',
   SAMPLE = 'sample',
   INVESTIGATE = 'investigate',
-  RESEARCH = 'research',
+  RESEARCH = ResourceType.RESEARCH,
   EXPLOIT = 'exploit'
 }
 

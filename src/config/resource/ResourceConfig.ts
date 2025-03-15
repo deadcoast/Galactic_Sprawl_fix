@@ -1,16 +1,50 @@
-import { ResourceManagerConfig, ResourceType } from '../../types/resources/ResourceTypes';
+import {
+  ResourceManagerConfig,
+  ResourceType as StringResourceType,
+} from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 /**
- * Default resource limits configuration
+ * Default resource limits configuration using standardized enum
  */
-const DEFAULT_RESOURCE_LIMITS: { [key in ResourceType]: { min: number; max: number } } = {
-  minerals: { min: 0, max: 10000 },
-  energy: { min: 0, max: 5000 },
-  population: { min: 0, max: 1000 },
-  research: { min: 0, max: 2000 },
-  plasma: { min: 0, max: 1000 },
-  gas: { min: 0, max: 3000 },
-  exotic: { min: 0, max: 500 },
+const DEFAULT_RESOURCE_LIMITS_ENUM: { [key in ResourceType]: { min: number; max: number } } = {
+  [ResourceType.MINERALS]: { min: 0, max: 10000 },
+  [ResourceType.ENERGY]: { min: 0, max: 5000 },
+  [ResourceType.POPULATION]: { min: 0, max: 1000 },
+  [ResourceType.RESEARCH]: { min: 0, max: 2000 },
+  [ResourceType.PLASMA]: { min: 0, max: 1000 },
+  [ResourceType.GAS]: { min: 0, max: 3000 },
+  [ResourceType.EXOTIC]: { min: 0, max: 500 },
+  // Add all other resource types with default values
+  [ResourceType.IRON]: { min: 0, max: ResourceTypeInfo[ResourceType.IRON].defaultMax },
+  [ResourceType.COPPER]: { min: 0, max: ResourceTypeInfo[ResourceType.COPPER].defaultMax },
+  [ResourceType.TITANIUM]: { min: 0, max: ResourceTypeInfo[ResourceType.TITANIUM].defaultMax },
+  [ResourceType.URANIUM]: { min: 0, max: ResourceTypeInfo[ResourceType.URANIUM].defaultMax },
+  [ResourceType.WATER]: { min: 0, max: ResourceTypeInfo[ResourceType.WATER].defaultMax },
+  [ResourceType.HELIUM]: { min: 0, max: ResourceTypeInfo[ResourceType.HELIUM].defaultMax },
+  [ResourceType.DEUTERIUM]: { min: 0, max: ResourceTypeInfo[ResourceType.DEUTERIUM].defaultMax },
+  [ResourceType.ANTIMATTER]: { min: 0, max: ResourceTypeInfo[ResourceType.ANTIMATTER].defaultMax },
+  [ResourceType.DARK_MATTER]: {
+    min: 0,
+    max: ResourceTypeInfo[ResourceType.DARK_MATTER].defaultMax,
+  },
+  [ResourceType.EXOTIC_MATTER]: {
+    min: 0,
+    max: ResourceTypeInfo[ResourceType.EXOTIC_MATTER].defaultMax,
+  },
+};
+
+/**
+ * Convert enum-based resource limits to string-based format for backward compatibility
+ */
+const DEFAULT_RESOURCE_LIMITS: { [key in StringResourceType]: { min: number; max: number } } = {
+  minerals: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.MINERALS],
+  energy: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.ENERGY],
+  population: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.POPULATION],
+  research: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.RESEARCH],
+  plasma: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.PLASMA],
+  gas: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.GAS],
+  exotic: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.EXOTIC],
 };
 
 /**
@@ -44,26 +78,48 @@ export const RESOURCE_THRESHOLDS = {
  * Default resource production rates (units per interval)
  */
 export const DEFAULT_PRODUCTION_RATES: { [key in ResourceType]: number } = {
-  minerals: 10,
-  energy: 5,
-  population: 1,
-  research: 2,
-  plasma: 3,
-  gas: 4,
-  exotic: 1,
+  [ResourceType.MINERALS]: 10,
+  [ResourceType.ENERGY]: 5,
+  [ResourceType.POPULATION]: 1,
+  [ResourceType.RESEARCH]: 2,
+  [ResourceType.PLASMA]: 3,
+  [ResourceType.GAS]: 4,
+  [ResourceType.EXOTIC]: 1,
+  // Add all other resource types with default values
+  [ResourceType.IRON]: 8,
+  [ResourceType.COPPER]: 7,
+  [ResourceType.TITANIUM]: 5,
+  [ResourceType.URANIUM]: 2,
+  [ResourceType.WATER]: 6,
+  [ResourceType.HELIUM]: 3,
+  [ResourceType.DEUTERIUM]: 2,
+  [ResourceType.ANTIMATTER]: 0.5,
+  [ResourceType.DARK_MATTER]: 0.2,
+  [ResourceType.EXOTIC_MATTER]: 0.1,
 };
 
 /**
  * Default resource consumption rates (units per interval)
  */
 export const DEFAULT_CONSUMPTION_RATES: { [key in ResourceType]: number } = {
-  minerals: 5,
-  energy: 3,
-  population: 0.5,
-  research: 1,
-  plasma: 2,
-  gas: 2,
-  exotic: 0.5,
+  [ResourceType.MINERALS]: 5,
+  [ResourceType.ENERGY]: 3,
+  [ResourceType.POPULATION]: 0.5,
+  [ResourceType.RESEARCH]: 1,
+  [ResourceType.PLASMA]: 2,
+  [ResourceType.GAS]: 2,
+  [ResourceType.EXOTIC]: 0.5,
+  // Add all other resource types with default values
+  [ResourceType.IRON]: 4,
+  [ResourceType.COPPER]: 3,
+  [ResourceType.TITANIUM]: 2,
+  [ResourceType.URANIUM]: 1,
+  [ResourceType.WATER]: 3,
+  [ResourceType.HELIUM]: 1.5,
+  [ResourceType.DEUTERIUM]: 1,
+  [ResourceType.ANTIMATTER]: 0.2,
+  [ResourceType.DARK_MATTER]: 0.1,
+  [ResourceType.EXOTIC_MATTER]: 0.05,
 };
 
 /**
@@ -90,11 +146,22 @@ export const STORAGE_EFFICIENCY = {
  * Resource type priorities (higher = more important)
  */
 export const RESOURCE_PRIORITIES: { [key in ResourceType]: number } = {
-  energy: 100, // Critical resource
-  population: 90,
-  minerals: 80,
-  research: 70,
-  plasma: 60,
-  gas: 50,
-  exotic: 40,
+  [ResourceType.ENERGY]: 100, // Critical resource
+  [ResourceType.POPULATION]: 90,
+  [ResourceType.MINERALS]: 80,
+  [ResourceType.RESEARCH]: 70,
+  [ResourceType.PLASMA]: 60,
+  [ResourceType.GAS]: 50,
+  [ResourceType.EXOTIC]: 40,
+  // Add all other resource types with appropriate priorities
+  [ResourceType.IRON]: 75,
+  [ResourceType.COPPER]: 73,
+  [ResourceType.TITANIUM]: 78,
+  [ResourceType.URANIUM]: 65,
+  [ResourceType.WATER]: 85,
+  [ResourceType.HELIUM]: 55,
+  [ResourceType.DEUTERIUM]: 58,
+  [ResourceType.ANTIMATTER]: 45,
+  [ResourceType.DARK_MATTER]: 42,
+  [ResourceType.EXOTIC_MATTER]: 38,
 };

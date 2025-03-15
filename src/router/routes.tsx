@@ -1,5 +1,6 @@
-// Import React.lazy for code splitting
+import * as React from "react";
 import { lazy, Suspense } from 'react';
+// Import React.lazy for code splitting
 
 // Define a loading component for lazy-loaded routes
 const LazyLoadingFallback = () => (

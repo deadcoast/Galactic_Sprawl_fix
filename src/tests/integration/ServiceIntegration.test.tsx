@@ -1,3 +1,4 @@
+import * as React from "react";
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { ServiceProvider } from '../../components/providers/ServiceProvider';
 import { useService } from '../../hooks/services/useService';

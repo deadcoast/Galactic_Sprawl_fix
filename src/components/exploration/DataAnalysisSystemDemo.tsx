@@ -1,3 +1,4 @@
+import * as React from "react";
 import { DataAnalysisProvider } from '../../contexts/DataAnalysisContext';
 import { DataAnalysisSystem } from './DataAnalysisSystem';
 

@@ -1,10 +1,11 @@
+import * as React from "react";
 import { act, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { ResourceRatesProvider, useResourceRate } from '../../contexts/ResourceRatesContext';
 import { EventBus } from '../../lib/events/EventBus';
 import { ResourceManager } from '../../managers/game/ResourceManager';
 import { EventType } from '../../types/events/EventTypes';
-import { ResourceType } from '../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // Mock ResourceManager
 vi.mock('../../managers/game/ResourceManager');

@@ -1,5 +1,5 @@
-import { ResourceState, ResourceTransfer, ResourceType } from '../../types/resources/ResourceTypes';
-
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 /**
  * Storage allocation strategy
  */
@@ -102,16 +102,16 @@ export class ResourceStorageManager {
    */
   private setDefaultResourcePriorities(): void {
     // Higher number = higher priority
-    this.resourcePriorities.set('energy', 10);
-    this.resourcePriorities.set('minerals', 8);
+    this.resourcePriorities.set(ResourceType.ENERGY, 10);
+    this.resourcePriorities.set(ResourceType.MINERALS, 8);
     // Replace non-existent resource types with valid ones
-    this.resourcePriorities.set('population', 9);
-    this.resourcePriorities.set('research', 10);
-    this.resourcePriorities.set('plasma', 10);
-    this.resourcePriorities.set('gas', 7);
-    this.resourcePriorities.set('exotic', 6);
-    this.resourcePriorities.set('research', 5);
-    this.resourcePriorities.set('population', 10);
+    this.resourcePriorities.set(ResourceType.POPULATION, 9);
+    this.resourcePriorities.set(ResourceType.RESEARCH, 10);
+    this.resourcePriorities.set(ResourceType.PLASMA, 10);
+    this.resourcePriorities.set(ResourceType.GAS, 7);
+    this.resourcePriorities.set(ResourceType.EXOTIC, 6);
+    this.resourcePriorities.set(ResourceType.RESEARCH, 5);
+    this.resourcePriorities.set(ResourceType.POPULATION, 10);
   }
 
   /**

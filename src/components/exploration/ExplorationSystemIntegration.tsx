@@ -1,5 +1,6 @@
+import * as React from "react";
 import { useMemo, useState } from 'react';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   AdvancedFilteringSystem,
   AdvancedFilters,

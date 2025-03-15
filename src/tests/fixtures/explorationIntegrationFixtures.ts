@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 /**
  * Test fixtures for exploration integration testing
  */
@@ -38,8 +39,8 @@ export const createTestSectors = (
     resources:
       index % 2 === 0
         ? [
-            { type: 'minerals', amount: 100 + index * 20, quality: 0.7 },
-            { type: 'gas', amount: 50 + index * 10, quality: 0.5 },
+            { type: ResourceType.MINERALS, amount: 100 + index * 20, quality: 0.7 },
+            { type: ResourceType.GAS, amount: 50 + index * 10, quality: 0.5 },
           ]
         : undefined,
   }));
@@ -71,7 +72,7 @@ export const createTestAnomaly = (
  * @param count Number of anomalies to create
  */
 export const createTestAnomalies = (sectorId: string, count: number): Omit<Anomaly, 'id'>[] => {
-  const anomalyTypes = ['spatial', 'temporal', 'energy', 'biological', 'technological'];
+  const anomalyTypes = ['spatial', 'temporal', ResourceType.ENERGY, 'biological', 'technological'];
   const severities: ('low' | 'medium' | 'high')[] = ['low', 'medium', 'high'];
 
   return Array.from({ length: count }, (_, index) => ({
@@ -121,7 +122,7 @@ export const createTestShips = (count: number): Omit<Ship, 'id'>[] => {
  * Create test resource data
  */
 export const createTestResourceData = () => {
-  const resourceTypes = ['minerals', 'gas', 'energy', 'organic', 'exotic'];
+  const resourceTypes = [ResourceType.MINERALS, ResourceType.GAS, ResourceType.ENERGY, 'organic', ResourceType.EXOTIC];
 
   return resourceTypes.map((type, index) => ({
     type,

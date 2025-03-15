@@ -1,4 +1,5 @@
-import React, { Component, ReactNode } from 'react';
+import * as React from "react";
+import { Component, ReactNode } from 'react';
 import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { recoveryService } from '../../services/RecoveryService';
 

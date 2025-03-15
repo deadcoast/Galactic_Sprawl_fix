@@ -1,5 +1,6 @@
-import { Activity, Battery, Shield, Target, Zap } from 'lucide-react';
+import * as React from "react";
 import { useEffect, useState } from 'react';
+import { Activity, Battery, Shield, Target, Zap } from 'lucide-react';
 import { useGameState } from '../../../../contexts/GameContext';
 
 interface ShipStatusMonitorProps {

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Database } from 'lucide-react';
 
 interface TradeRoute {

@@ -1,5 +1,6 @@
-import { AlertTriangle } from 'lucide-react';
+import * as React from "react";
 import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { CentralMothership } from '../../effects/component_effects/CentralMothership';
 import { ColonyStarStation } from '../../effects/component_effects/ColonyStarStation';
 import { ExplorationHub } from '../../effects/component_effects/ExplorationHub';

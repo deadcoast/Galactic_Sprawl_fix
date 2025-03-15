@@ -22,7 +22,7 @@ import {
   ResourceDeposit
 } from './ExplorationTypes';
 import { DataPoint } from '../DataAnalysisTypes';
-import { ResourceType } from '../../resources/ResourceTypes';
+import { ResourceType } from "./../../resources/ResourceTypes";
 
 // =========================================
 // Type Conversion Utilities

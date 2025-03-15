@@ -1,8 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ResourceSystem } from '../../resource/ResourceSystem';
-import { ResourceType } from '../../types/resources/ResourceTypes';
-import { StorageContainerConfig } from '../../resource/subsystems/ResourceStorageSubsystem';
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
+import { ResourceSystem } from '../../resource/ResourceSystem';
+import { StorageContainerConfig } from '../../resource/subsystems/ResourceStorageSubsystem';
+import {
+  ThresholdAction,
+  ThresholdComparison,
+  ThresholdType,
+} from '../../resource/subsystems/ResourceThresholdSubsystem';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // Mock event system publish to avoid side effects
 vi.mock('../../lib/events/UnifiedEventSystem', () => ({
@@ -19,10 +25,10 @@ describe('ResourceSystem', () => {
   beforeEach(async () => {
     // Reset ResourceSystem singleton between tests
     ResourceSystem['resetInstance']('ResourceSystem');
-    
+
     // Get a fresh instance
     resourceSystem = ResourceSystem.getInstance();
-    
+
     // Initialize the system
     await resourceSystem.initialize();
   });
@@ -50,8 +56,8 @@ describe('ResourceSystem', () => {
       consumption: 5,
     };
 
-    resourceSystem.updateResourceState('energy', energyState);
-    const retrievedState = resourceSystem.getResourceState('energy');
+    resourceSystem.updateResourceState(EnumResourceType.ENERGY, energyState);
+    const retrievedState = resourceSystem.getResourceState(EnumResourceType.ENERGY);
 
     expect(retrievedState).toEqual(energyState);
   });
@@ -63,7 +69,7 @@ describe('ResourceSystem', () => {
       name: 'Test Container',
       type: 'container',
       capacity: 1000,
-      resourceTypes: ['energy' as ResourceType, 'minerals' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as StringResourceType, ResourceType.MINERALS as StringResourceType],
       priority: 1,
     };
 
@@ -73,18 +79,22 @@ describe('ResourceSystem', () => {
     expect(registered).toBe(true);
 
     // Store some resources
-    const stored = resourceSystem.storeResource('energy', 100, 'test-container');
+    const stored = resourceSystem.storeResource(EnumResourceType.ENERGY, 100, 'test-container');
     expect(stored).toBe(100);
 
     // Retrieve resources
-    const retrieved = resourceSystem.retrieveResource('energy', 50, 'test-container');
+    const retrieved = resourceSystem.retrieveResource(
+      EnumResourceType.ENERGY,
+      50,
+      'test-container'
+    );
     expect(retrieved).toBe(50);
 
     // Check container state
     const container = storageSubsystem.getContainer('test-container');
     expect(container).toBeDefined();
     if (container) {
-      const energyState = container.resources.get('energy');
+      const energyState = container.resources.get(ResourceType.ENERGY);
       expect(energyState?.current).toBe(50); // 100 stored - 50 retrieved
     }
   });
@@ -92,21 +102,21 @@ describe('ResourceSystem', () => {
   it('should register and use flow nodes and connections', () => {
     // Register producer and consumer nodes
     const flowSubsystem = resourceSystem.getFlowSubsystem();
-    
+
     flowSubsystem.registerNode({
       id: 'producer-1',
       type: 'producer',
-      resources: ['energy' as ResourceType],
-      priority: { type: 'energy' as ResourceType, priority: 1, consumers: [] },
+      resources: [ResourceType.ENERGY as StringResourceType],
+      priority: { type: ResourceType.ENERGY as StringResourceType, priority: 1, consumers: [] },
       active: true,
       efficiency: 1.0,
     });
-    
+
     flowSubsystem.registerNode({
       id: 'consumer-1',
       type: 'consumer',
-      resources: ['energy' as ResourceType],
-      priority: { type: 'energy' as ResourceType, priority: 1, consumers: [] },
+      resources: [ResourceType.ENERGY as StringResourceType],
+      priority: { type: ResourceType.ENERGY as StringResourceType, priority: 1, consumers: [] },
       active: true,
     });
 
@@ -114,7 +124,7 @@ describe('ResourceSystem', () => {
     const registered = resourceSystem.registerResourceFlow(
       'producer-1',
       'consumer-1',
-      'energy',
+      EnumResourceType.ENERGY,
       10
     );
     expect(registered).toBe(true);
@@ -132,25 +142,25 @@ describe('ResourceSystem', () => {
       name: 'Source Container',
       type: 'container',
       capacity: 1000,
-      resourceTypes: ['energy' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as StringResourceType],
       priority: 1,
     });
-    
+
     resourceSystem.getStorageSubsystem().registerContainer({
       id: 'target-container',
       name: 'Target Container',
       type: 'container',
       capacity: 1000,
-      resourceTypes: ['energy' as ResourceType],
+      resourceTypes: [ResourceType.ENERGY as StringResourceType],
       priority: 1,
     });
 
     // Store resources in source container
-    resourceSystem.storeResource('energy', 100, 'source-container');
+    resourceSystem.storeResource(EnumResourceType.ENERGY, 100, 'source-container');
 
     // Transfer resources
     const transferred = resourceSystem.transferResource(
-      'energy',
+      EnumResourceType.ENERGY,
       50,
       'source-container',
       'target-container'
@@ -160,11 +170,11 @@ describe('ResourceSystem', () => {
     // Check container states
     const sourceContainer = resourceSystem.getStorageSubsystem().getContainer('source-container');
     const targetContainer = resourceSystem.getStorageSubsystem().getContainer('target-container');
-    
+
     if (sourceContainer && targetContainer) {
-      const sourceEnergy = sourceContainer.resources.get('energy');
-      const targetEnergy = targetContainer.resources.get('energy');
-      
+      const sourceEnergy = sourceContainer.resources.get(ResourceType.ENERGY);
+      const targetEnergy = targetContainer.resources.get(ResourceType.ENERGY);
+
       expect(sourceEnergy?.current).toBe(50); // 100 - 50
       expect(targetEnergy?.current).toBe(50); // 0 + 50
     }
@@ -180,20 +190,20 @@ describe('ResourceSystem', () => {
   it('should register and trigger resource thresholds', () => {
     // Register a threshold
     const thresholdSubsystem = resourceSystem.getThresholdSubsystem();
-    
+
     thresholdSubsystem.registerThreshold({
       id: 'test-threshold',
-      resourceType: 'energy',
-      thresholdType: 'absolute',
-      comparison: 'less_than',
+      resourceType: EnumResourceType.ENERGY,
+      thresholdType: ThresholdType.ABSOLUTE,
+      comparison: ThresholdComparison.LESS_THAN,
       value: 50,
-      action: 'alert',
+      action: ThresholdAction.ALERT,
       actionData: { message: 'Energy low!' },
       enabled: true,
     });
 
     // Set resource state below threshold
-    resourceSystem.updateResourceState('energy', {
+    resourceSystem.updateResourceState(EnumResourceType.ENERGY, {
       current: 40,
       max: 1000,
       min: 0,
@@ -216,18 +226,18 @@ describe('ResourceSystem', () => {
       name: 'Converter Container',
       type: 'container',
       capacity: 1000,
-      resourceTypes: ['minerals' as ResourceType, 'energy' as ResourceType],
+      resourceTypes: [ResourceType.MINERALS as StringResourceType, ResourceType.ENERGY as StringResourceType],
       priority: 1,
     });
 
     // Store minerals in container
-    resourceSystem.storeResource('minerals', 100, 'converter-container');
+    resourceSystem.storeResource(EnumResourceType.MINERALS, 100, 'converter-container');
 
     // Convert minerals to energy
     const converted = resourceSystem.convertResources(
-      'minerals',
+      EnumResourceType.MINERALS,
       50,
-      'energy',
+      EnumResourceType.ENERGY,
       25,
       'converter-container'
     );
@@ -236,9 +246,9 @@ describe('ResourceSystem', () => {
     // Check container state
     const container = resourceSystem.getStorageSubsystem().getContainer('converter-container');
     if (container) {
-      const mineralsState = container.resources.get('minerals');
-      const energyState = container.resources.get('energy');
-      
+      const mineralsState = container.resources.get(ResourceType.MINERALS);
+      const energyState = container.resources.get(ResourceType.ENERGY);
+
       expect(mineralsState?.current).toBe(50); // 100 - 50
       expect(energyState?.current).toBe(25); // 0 + 25
     }

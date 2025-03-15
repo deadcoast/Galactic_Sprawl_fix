@@ -8,7 +8,7 @@ import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { ResourceTransferManager } from '../../../../managers/resource/ResourceTransferManager';
 import { MiningResource } from '../../../../types/mining/MiningTypes';
-import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 import { AutomationMonitor } from './AutomationMonitor';
 import { MiningControls } from './MiningControls';
 import { MiningMap } from './MiningMap';
@@ -19,7 +19,7 @@ interface MineralProcessingCentreProps {
   tier: 1 | 2 | 3;
 }
 
-type ResourceFilter = 'all' | 'mineral' | 'gas' | 'exotic';
+type ResourceFilter = 'all' | 'mineral' | ResourceType.GAS | ResourceType.EXOTIC;
 
 function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) {
   const [selectedNode, setSelectedNode] = React.useState<MiningResource | null>(null);
@@ -108,7 +108,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
   const mockStorageData = [
     {
       id: 'iron-storage',
-      resourceType: 'Iron',
+      resourceType: ResourceType.IRON,
       currentAmount: 8500,
       maxCapacity: 10000,
       refiningAmount: 250,
@@ -117,7 +117,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
     },
     {
       id: 'helium-storage',
-      resourceType: 'Helium-3',
+      resourceType: ResourceType.HELIUM,
       currentAmount: 2800,
       maxCapacity: 5000,
       refiningAmount: 100,
@@ -138,13 +138,13 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
         return false;
       }
       if (
-        filter === 'gas' &&
+        filter === ResourceType.GAS &&
         ![ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(resource.type)
       ) {
         return false;
       }
       if (
-        filter === 'exotic' &&
+        filter === ResourceType.EXOTIC &&
         ![ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(resource.type)
       ) {
         return false;
@@ -251,8 +251,8 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
           {[
             { id: 'all', label: 'All Resources', icon: Database },
             { id: 'mineral', label: 'Minerals', icon: Database },
-            { id: 'gas', label: 'Gas', icon: Database },
-            { id: 'exotic', label: 'Exotic', icon: AlertTriangle },
+            { id: ResourceType.GAS, label: 'Gas', icon: Database },
+            { id: ResourceType.EXOTIC, label: 'Exotic', icon: AlertTriangle },
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}

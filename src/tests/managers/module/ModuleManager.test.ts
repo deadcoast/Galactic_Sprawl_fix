@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { moduleEventBus } from '../../../lib/modules/ModuleEvents';
 import { moduleManager } from '../../../managers/module/ModuleManager';
@@ -37,8 +38,8 @@ describe('ModuleManager', () => {
         minLevel: 1,
         buildingType: ['mothership', 'colony'] as BuildingType[],
         resourceCosts: [
-          { type: 'minerals', amount: 100 },
-          { type: 'energy', amount: 50 },
+          { type: ResourceType.MINERALS, amount: 100 },
+          { type: ResourceType.ENERGY, amount: 50 },
         ],
       },
       baseStats: {

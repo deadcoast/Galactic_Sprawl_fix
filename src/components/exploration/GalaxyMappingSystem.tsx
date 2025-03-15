@@ -1,6 +1,7 @@
-import { AlertTriangle, Compass, Info, Layers, Route, Users, Zap } from 'lucide-react';
+import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { AlertTriangle, Compass, Info, Layers, Route, Users, Zap } from 'lucide-react';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { GalaxyMapSystem } from './GalaxyMapSystem';
 
 // Interfaces

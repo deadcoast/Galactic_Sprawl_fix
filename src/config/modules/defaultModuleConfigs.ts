@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleConfig, ModuleType } from '../../types/buildings/ModuleTypes';
 
 export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
@@ -9,8 +10,8 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['mothership', 'colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 300 },
-        { type: 'energy', amount: 200 },
+        { type: ResourceType.MINERALS, amount: 300 },
+        { type: ResourceType.ENERGY, amount: 200 },
       ],
     },
     baseStats: {
@@ -27,8 +28,8 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['mothership', 'colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 600 },
-        { type: 'energy', amount: 400 },
+        { type: ResourceType.MINERALS, amount: 600 },
+        { type: ResourceType.ENERGY, amount: 400 },
       ],
     },
     baseStats: {
@@ -45,8 +46,8 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['mothership'],
       resourceCosts: [
-        { type: 'minerals', amount: 400 },
-        { type: 'energy', amount: 300 },
+        { type: ResourceType.MINERALS, amount: 400 },
+        { type: ResourceType.ENERGY, amount: 300 },
       ],
     },
     baseStats: {
@@ -63,8 +64,8 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 400 },
-        { type: 'energy', amount: 300 },
+        { type: ResourceType.MINERALS, amount: 400 },
+        { type: ResourceType.ENERGY, amount: 300 },
       ],
     },
     baseStats: {
@@ -81,8 +82,8 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 500 },
-        { type: 'energy', amount: 300 },
+        { type: ResourceType.MINERALS, amount: 500 },
+        { type: ResourceType.ENERGY, amount: 300 },
       ],
     },
     baseStats: {
@@ -99,8 +100,8 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 400 },
-        { type: 'energy', amount: 300 },
+        { type: ResourceType.MINERALS, amount: 400 },
+        { type: ResourceType.ENERGY, amount: 300 },
       ],
     },
     baseStats: {
@@ -117,8 +118,8 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['mothership', 'colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 300 },
-        { type: 'energy', amount: 200 },
+        { type: ResourceType.MINERALS, amount: 300 },
+        { type: ResourceType.ENERGY, amount: 200 },
       ],
     },
     baseStats: {
@@ -128,15 +129,15 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
     },
   },
   population: {
-    type: 'population',
+    type: ResourceType.POPULATION,
     name: 'Population Center',
     description: 'Manages colony population growth and housing',
     requirements: {
       minLevel: 1,
       buildingType: ['colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 500 },
-        { type: 'energy', amount: 300 },
+        { type: ResourceType.MINERALS, amount: 500 },
+        { type: ResourceType.ENERGY, amount: 300 },
       ],
     },
     baseStats: {
@@ -153,8 +154,8 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 600 },
-        { type: 'energy', amount: 400 },
+        { type: ResourceType.MINERALS, amount: 600 },
+        { type: ResourceType.ENERGY, amount: 400 },
       ],
     },
     baseStats: {
@@ -164,15 +165,15 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
     },
   },
   research: {
-    type: 'research',
+    type: ResourceType.RESEARCH,
     name: 'Research Center',
     description: 'Conducts scientific research and development',
     requirements: {
       minLevel: 1,
       buildingType: ['colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 400 },
-        { type: 'energy', amount: 500 },
+        { type: ResourceType.MINERALS, amount: 400 },
+        { type: ResourceType.ENERGY, amount: 500 },
       ],
     },
     baseStats: {
@@ -189,8 +190,8 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 300 },
-        { type: 'energy', amount: 200 },
+        { type: ResourceType.MINERALS, amount: 300 },
+        { type: ResourceType.ENERGY, amount: 200 },
       ],
     },
     baseStats: {
@@ -207,8 +208,8 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['colony'],
       resourceCosts: [
-        { type: 'minerals', amount: 700 },
-        { type: 'energy', amount: 500 },
+        { type: ResourceType.MINERALS, amount: 700 },
+        { type: ResourceType.ENERGY, amount: 500 },
       ],
     },
     baseStats: {

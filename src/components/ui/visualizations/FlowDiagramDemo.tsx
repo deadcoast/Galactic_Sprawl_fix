@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import * as React from "react";
+import { useState } from 'react';
 import FlowDiagram from './FlowDiagram';
 
 /**
@@ -124,7 +126,7 @@ const FlowDiagramDemo: React.FC = () => {
         value: 60,
         maxCapacity: 80,
         utilization: 0.75,
-        flowType: 'energy',
+        flowType: ResourceType.ENERGY,
         active: true,
       },
       {
@@ -134,7 +136,7 @@ const FlowDiagramDemo: React.FC = () => {
         value: 25,
         maxCapacity: 30,
         utilization: 0.83,
-        flowType: 'energy',
+        flowType: ResourceType.ENERGY,
         active: true,
       },
       {

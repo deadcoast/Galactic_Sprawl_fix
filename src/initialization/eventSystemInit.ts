@@ -1,3 +1,4 @@
+import { ResourceType } from "./../types/resources/ResourceTypes";
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
 import { gameLoopManager, UpdatePriority } from '../managers/game/GameLoopManager';
 import { getSystemCommunication } from '../utils/events/EventCommunication';
@@ -38,7 +39,7 @@ export function initializeEventSystem(): () => void {
     'resource-update',
     message => {
       const payload = message.payload as {
-        resourceType: string;
+        resourceType: ResourceType;
         amount: number;
         operation: 'add' | 'subtract';
       };

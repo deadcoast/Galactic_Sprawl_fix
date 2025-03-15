@@ -1,3 +1,4 @@
+import { ResourceType } from "./../types/resources/ResourceTypes";
 import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
 import { globalAutomationManager } from '../managers/automation/GlobalAutomationManager';
 import { automationManager } from '../managers/game/AutomationManager';
@@ -59,7 +60,7 @@ function registerDefaultRoutines(): void {
     conditions: [
       {
         type: 'RESOURCE_BELOW',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: 100,
       },
     ],
@@ -71,12 +72,12 @@ function registerDefaultRoutines(): void {
           from: 'global-storage',
           to: 'energy-system',
           amount: 50,
-          type: 'energy',
+          type: ResourceType.ENERGY,
         },
       },
     ],
     systems: ['resource-system', 'module-system'],
-    tags: ['resource', 'balancing', 'energy'],
+    tags: ['resource', 'balancing', ResourceType.ENERGY],
   });
 
   // Register performance optimization routine

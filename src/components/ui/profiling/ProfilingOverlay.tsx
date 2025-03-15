@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { ApplicationProfilingMetrics, ComponentRenderMetrics } from '../../../types/ui/UITypes';
 import { applicationProfiler } from '../../../utils/profiling/applicationProfiler';
 

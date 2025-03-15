@@ -9,8 +9,10 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import * as React from 'react';
+import { useRef, useState } from 'react';
 import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 import { ExplorationControls } from './ExplorationControls';
 import { ExplorationTutorial } from './ExplorationTutorial';
 import { MissionLog } from './MissionLog';
@@ -113,7 +115,7 @@ const mockExplorationTransfers = [
     id: 'discovery-1',
     sourceId: 'alpha-sector',
     targetId: 'storage',
-    resourceType: 'Dark Matter',
+    resourceType: ResourceType.DARK_MATTER,
     amount: 100,
     progress: 0.5,
   },

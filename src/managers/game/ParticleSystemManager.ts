@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
+import { EventEmitter } from '../../lib/events/EventEmitter';
 import { EntityPool } from '../../lib/optimization/EntityPool';
 import { Position } from '../../types/core/GameTypes';
-import { EventEmitter } from '../../utils/EventEmitter';
 
 interface Particle {
   id: string;
@@ -104,7 +104,9 @@ export class ParticleSystemManager extends EventEmitter<ParticleSystemEvents> {
       totalActiveParticles += system.getActiveParticleCount();
     });
 
-    this.emit('systemUpdated', { activeCount: totalActiveParticles });
+    this.emit('systemUpdated', {
+      activeCount: totalActiveParticles,
+    } as ParticleSystemEvents['systemUpdated']);
   }
 
   /**

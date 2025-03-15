@@ -1,3 +1,5 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import React from "react";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useModuleStatus } from '../../../hooks/modules/useModuleStatus';
 import { moduleManager } from '../../../managers/module/ModuleManager';
@@ -90,11 +92,11 @@ export function ModuleUpgradeVisualization({
         stages[1].description = 'Upgrading extraction systems';
         stages[2].description = 'Calibrating resource filters';
         break;
-      case 'energy':
+      case ResourceType.ENERGY:
         stages[1].description = 'Upgrading power converters';
         stages[2].description = 'Stabilizing energy flow';
         break;
-      case 'research':
+      case ResourceType.RESEARCH:
         stages[1].description = 'Upgrading processing units';
         stages[2].description = 'Loading new research algorithms';
         break;

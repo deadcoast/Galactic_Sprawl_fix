@@ -1,4 +1,4 @@
-import { EventBus } from '../../lib/events/EventBus';
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
@@ -9,10 +9,16 @@ import {
 } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import { moduleStatusManager } from './ModuleStatusManager';
 
 /**
- * Module manager event types that are not in standard EventType
+ * Module manager event types
+ */
+export type ModuleEventType = EventType | ModuleManagerEventType;
+
+/**
+ * Module manager specific event types
  */
 export enum ModuleManagerEventType {
   MODULE_CONFIG_REGISTERED = 'MODULE_CONFIG_REGISTERED',
@@ -20,20 +26,36 @@ export enum ModuleManagerEventType {
 }
 
 /**
+ * Module manager event interface
+ */
+export interface ModuleManagerEvent extends Omit<BaseEvent, 'type'> {
+  type: ModuleEventType;
+  moduleId?: string;
+  buildingId?: string;
+  moduleType?: ModuleType;
+  resourceType?: ResourceType;
+  data?: Record<string, unknown>;
+  timestamp: number;
+  [key: string]: unknown;
+}
+
+/**
  * Manages the lifecycle and state of all modules in the game.
  * Handles module creation, attachment, upgrades, and state updates.
  */
-export class ModuleManager extends AbstractBaseManager<BaseEvent> {
+export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
   private modules: Map<string, BaseModule>;
   private buildings: Map<string, ModularBuilding>;
   private configs: Map<ModuleType, ModuleConfig>;
+  private eventEmitter: BaseTypedEventEmitter<ModuleManagerEvent>;
 
-  constructor(eventBus?: EventBus<BaseEvent>) {
-    super('ModuleManager', eventBus || new EventBus<BaseEvent>());
+  constructor() {
+    super('ModuleManager');
 
     this.modules = new Map();
     this.buildings = new Map();
     this.configs = new Map();
+    this.eventEmitter = new BaseTypedEventEmitter<ModuleManagerEvent>();
   }
 
   /**
@@ -45,13 +67,50 @@ export class ModuleManager extends AbstractBaseManager<BaseEvent> {
       // Connect to resource manager events if needed
     }
 
-    console.log('ModuleManager initialized');
+    // Subscribe to module events
+    this.subscribe(EventType.MODULE_CREATED, this.handleModuleCreated);
+    this.subscribe(EventType.MODULE_ATTACHED, this.handleModuleAttached);
+    this.subscribe(EventType.MODULE_UPGRADED, this.handleModuleUpgraded);
+    this.subscribe(EventType.MODULE_ACTIVATED, this.handleModuleActivated);
+
+    console.warn('ModuleManager initialized');
   }
+
+  /**
+   * Event handlers
+   */
+  private handleModuleCreated = (event: ModuleManagerEvent): void => {
+    // Handle module creation event
+    if (event.moduleId && event.moduleType) {
+      console.warn(`Module created: ${event.moduleId} of type ${event.moduleType}`);
+    }
+  };
+
+  private handleModuleAttached = (event: ModuleManagerEvent): void => {
+    // Handle module attachment event
+    if (event.moduleId && event.buildingId) {
+      console.warn(`Module ${event.moduleId} attached to building ${event.buildingId}`);
+    }
+  };
+
+  private handleModuleUpgraded = (event: ModuleManagerEvent): void => {
+    // Handle module upgrade event
+    if (event.moduleId) {
+      console.warn(`Module upgraded: ${event.moduleId}`);
+    }
+  };
+
+  private handleModuleActivated = (event: ModuleManagerEvent): void => {
+    // Handle module activation event
+    if (event.moduleId) {
+      console.warn(`Module activation state changed: ${event.moduleId}`);
+    }
+  };
 
   /**
    * @inheritdoc
    */
-  protected onUpdate(deltaTime: number): void {
+  protected onUpdate(_deltaTime: number): void {
     // Update modules if needed on each game tick
     // This could involve updating module progress, checking status, etc.
 
@@ -59,12 +118,12 @@ export class ModuleManager extends AbstractBaseManager<BaseEvent> {
     this.publishEvent({
       type: EventType.STATUS_CHANGED,
       moduleId: this.id,
-      moduleType: 'module-manager' as ModuleType, // Cast for type compatibility
+      moduleType: 'resource-manager' as ModuleType,
       timestamp: Date.now(),
       data: {
-        activeModulesCount: this.getActiveModules().length,
-        totalModulesCount: this.modules.size,
-        buildingsCount: this.buildings.size,
+        moduleCount: this.modules.size,
+        buildingCount: this.buildings.size,
+        configCount: this.configs.size,
       },
     });
   }
@@ -78,7 +137,7 @@ export class ModuleManager extends AbstractBaseManager<BaseEvent> {
     this.buildings.clear();
     this.configs.clear();
 
-    console.log('ModuleManager disposed');
+    console.warn('ModuleManager disposed');
   }
 
   /**
@@ -340,6 +399,5 @@ export class ModuleManager extends AbstractBaseManager<BaseEvent> {
   }
 }
 
-// Create singleton instance with default event bus
-const moduleEventBusInstance = new EventBus<BaseEvent>();
-export const moduleManager = new ModuleManager(moduleEventBusInstance);
+// Create singleton instance
+export const moduleManager = ModuleManager.getInstance();

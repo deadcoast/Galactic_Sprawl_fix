@@ -1,9 +1,9 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database, ZoomIn, ZoomOut } from 'lucide-react';
-import * as React from 'react';
+import * as React from "react";
 import { MiningResource, MiningShip } from '../../../../types/mining/MiningTypes';
-import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 
 interface MiningMapProps {
   resources: MiningResource[];

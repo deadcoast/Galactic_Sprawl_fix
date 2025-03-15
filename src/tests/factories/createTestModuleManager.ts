@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleManager } from '../../managers/module/ModuleManager';
 import { moduleStatusManager } from '../../managers/module/ModuleStatusManager';
 import {
@@ -79,8 +80,8 @@ const TEST_MODULE_CONFIGS: Record<string, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['mothership', 'colony'] as BuildingType[],
       resourceCosts: [
-        { type: 'minerals', amount: 100 },
-        { type: 'energy', amount: 50 },
+        { type: ResourceType.MINERALS, amount: 100 },
+        { type: ResourceType.ENERGY, amount: 50 },
       ],
     },
     baseStats: {
@@ -97,8 +98,8 @@ const TEST_MODULE_CONFIGS: Record<string, ModuleConfig> = {
       minLevel: 1,
       buildingType: ['colony'] as BuildingType[],
       resourceCosts: [
-        { type: 'minerals', amount: 200 },
-        { type: 'energy', amount: 100 },
+        { type: ResourceType.MINERALS, amount: 200 },
+        { type: ResourceType.ENERGY, amount: 100 },
       ],
     },
     baseStats: {
@@ -108,15 +109,15 @@ const TEST_MODULE_CONFIGS: Record<string, ModuleConfig> = {
     },
   },
   research: {
-    type: 'research' as ModuleType,
+    type: ResourceType.RESEARCH as ModuleType,
     name: 'Research Lab',
     description: 'Generates research points',
     requirements: {
       minLevel: 2,
       buildingType: ['mothership', 'colony'] as BuildingType[],
       resourceCosts: [
-        { type: 'minerals', amount: 300 },
-        { type: 'energy', amount: 150 },
+        { type: ResourceType.MINERALS, amount: 300 },
+        { type: ResourceType.ENERGY, amount: 150 },
       ],
     },
     baseStats: {

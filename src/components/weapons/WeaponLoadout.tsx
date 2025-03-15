@@ -1,3 +1,4 @@
+import * as React from "react";
 import { AlertTriangle, Crosshair } from 'lucide-react';
 import { WeaponConfig, WeaponMount } from '../../types/weapons/WeaponTypes';
 

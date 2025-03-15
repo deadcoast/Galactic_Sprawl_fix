@@ -1,5 +1,6 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import * as React from "react";
+import { useState } from 'react';
 import {
   CartesianGrid,
   Cell,

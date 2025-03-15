@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { combatManager } from '../../managers/combat/combatManager';
+import { getCombatManager } from '../../managers/ManagerRegistry';
 import { factionManager } from '../../managers/factions/factionManager';
 import { CombatStats, DebugState } from '../../types/debug/DebugTypes';
 
@@ -148,8 +148,8 @@ export function useDebugOverlay() {
     projectiles: ProjectileMetrics[];
     combatZones: CombatZoneMetrics[];
   } => {
-    const activeUnits = Array.from(combatManager.getUnitsInRange({ x: 0, y: 0 }, 2000)).length;
-    const extendedManager = combatManager as unknown as ExtendedCombatManager;
+    const activeUnits = Array.from(getCombatManager().getUnitsInRange({ x: 0, y: 0 }, 2000)).length;
+    const extendedManager = getCombatManager() as unknown as ExtendedCombatManager;
 
     // Get active projectiles with null check
     const projectiles = extendedManager.getActiveProjectiles?.() || [];
@@ -285,14 +285,14 @@ export function useDebugOverlay() {
       const states: Record<string, DebugState> = {};
 
       // Get all active units
-      const units = Array.from(combatManager.getUnitsInRange({ x: 0, y: 0 }, 1000));
+      const units = Array.from(getCombatManager().getUnitsInRange({ x: 0, y: 0 }, 1000));
       units.forEach(combatUnit => {
         const unit = combatUnit as unknown as Unit;
         // Get unit's faction information
         const factionState = factionManager.getFactionState(unit.faction);
 
         // Get unit's status
-        const unitStatus = combatManager.getUnitStatus(unit.id);
+        const unitStatus = getCombatManager().getUnitStatus(unit.id);
 
         if (unitStatus) {
           const threatLevel =

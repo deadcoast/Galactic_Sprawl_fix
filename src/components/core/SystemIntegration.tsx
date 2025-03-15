@@ -8,6 +8,7 @@ import { moduleManager } from '../../managers/module/ModuleManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { Module } from '../../types/modules/ModuleTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 interface SystemIntegrationProps {
   children: ReactNode;
@@ -114,19 +115,24 @@ export function SystemIntegration({
 
       // Add resource rates to the update if we can calculate them
       let resourceRates = {};
-      const _production = {};
-      const _consumption = {};
 
       if (resourceManager.getAllResourceStates) {
         const states = resourceManager.getAllResourceStates();
 
         // Calculate rates from production and consumption
         resourceRates = {
-          mineralRate: (states.minerals?.production || 0) - (states.minerals?.consumption || 0),
-          energyRate: (states.energy?.production || 0) - (states.energy?.consumption || 0),
+          mineralRate:
+            (states[ResourceType.MINERALS]?.production || 0) -
+            (states[ResourceType.MINERALS]?.consumption || 0),
+          energyRate:
+            (states[ResourceType.ENERGY]?.production || 0) -
+            (states[ResourceType.ENERGY]?.consumption || 0),
           populationRate:
-            (states.population?.production || 0) - (states.population?.consumption || 0),
-          researchRate: (states.research?.production || 0) - (states.research?.consumption || 0),
+            (states[ResourceType.POPULATION]?.production || 0) -
+            (states[ResourceType.POPULATION]?.consumption || 0),
+          researchRate:
+            (states[ResourceType.RESEARCH]?.production || 0) -
+            (states[ResourceType.RESEARCH]?.consumption || 0),
         };
       }
 
@@ -134,10 +140,10 @@ export function SystemIntegration({
       gameDispatch({
         type: GameActionType.UPDATE_RESOURCES,
         payload: {
-          minerals: currentResources.minerals || 0,
-          energy: currentResources.energy || 0,
-          population: currentResources.population || 0,
-          research: currentResources.research || 0,
+          minerals: currentResources[ResourceType.MINERALS] || 0,
+          energy: currentResources[ResourceType.ENERGY] || 0,
+          population: currentResources[ResourceType.POPULATION] || 0,
+          research: currentResources[ResourceType.RESEARCH] || 0,
           ...resourceRates, // Add rates if available
         },
       });

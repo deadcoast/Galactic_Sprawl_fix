@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   AlertTriangle,
   Battery,
@@ -10,9 +11,16 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 interface ResourceData {
-  type: 'energy' | 'materials' | 'food' | 'research' | 'technology' | 'population';
+  type:
+    | ResourceType.ENERGY
+    | 'materials'
+    | 'food'
+    | ResourceType.RESEARCH
+    | 'technology'
+    | ResourceType.POPULATION;
   name: string;
   production: number;
   consumption: number;
@@ -34,17 +42,17 @@ export function ResourceDashboard({
   // Get resource icon
   const getResourceIcon = (type: ResourceData['type']) => {
     switch (type) {
-      case 'energy':
+      case ResourceType.ENERGY:
         return <Battery className="h-5 w-5 text-yellow-400" />;
       case 'materials':
         return <Package className="h-5 w-5 text-amber-400" />;
       case 'food':
         return <Leaf className="h-5 w-5 text-green-400" />;
-      case 'research':
+      case ResourceType.RESEARCH:
         return <Beaker className="h-5 w-5 text-blue-400" />;
       case 'technology':
         return <Cpu className="h-5 w-5 text-purple-400" />;
-      case 'population':
+      case ResourceType.POPULATION:
         return <Users className="h-5 w-5 text-indigo-400" />;
       default:
         return <Package className="h-5 w-5 text-gray-400" />;

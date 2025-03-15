@@ -1,5 +1,7 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { AlertTriangle, Check, Info, RefreshCw, TrendingUp, Zap } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { useResourceRates } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';

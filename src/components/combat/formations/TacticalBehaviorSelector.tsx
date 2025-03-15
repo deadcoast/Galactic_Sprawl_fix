@@ -1,3 +1,5 @@
+import * as React from "react";
+import { useState } from 'react';
 import {
   Clock,
   CornerUpRight,
@@ -8,7 +10,6 @@ import {
   Shield,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
 
 export interface TacticalBehavior {
   id: string;

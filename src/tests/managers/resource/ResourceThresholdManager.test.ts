@@ -3,7 +3,7 @@ import type {
   ResourceThresholdManager as ResourceThresholdManagerType,
   ThresholdConfig,
 } from '../../../managers/resource/ResourceThresholdManager';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 // Define mock directly in the test file instead of importing from setup
 const unsubscribeMock = vi.fn();
@@ -103,7 +103,7 @@ describe('ResourceThresholdManager', () => {
     const config: ThresholdConfig = {
       id: 'test-threshold',
       threshold: {
-        type: 'energy' as ResourceType,
+        type: ResourceType.ENERGY as ResourceType,
         min: 10,
         max: 100,
         target: 50,
@@ -130,7 +130,7 @@ describe('ResourceThresholdManager', () => {
     const invalidConfig = {
       id: '',
       threshold: {
-        type: 'energy' as ResourceType,
+        type: ResourceType.ENERGY as ResourceType,
         min: 10,
         max: 100,
       },
@@ -149,7 +149,7 @@ describe('ResourceThresholdManager', () => {
     const config: ThresholdConfig = {
       id: 'test-threshold',
       threshold: {
-        type: 'energy' as ResourceType,
+        type: ResourceType.ENERGY as ResourceType,
         min: 10,
         max: 100,
         target: 50,
@@ -170,7 +170,7 @@ describe('ResourceThresholdManager', () => {
     const config: ThresholdConfig = {
       id: 'test-threshold',
       threshold: {
-        type: 'energy' as ResourceType,
+        type: ResourceType.ENERGY as ResourceType,
         min: 10,
         max: 100,
         target: 50,
@@ -219,7 +219,7 @@ describe('ResourceThresholdManager', () => {
     const resourceUpdate = {
       type: 'resource:update',
       data: {
-        type: 'energy' as ResourceType,
+        type: ResourceType.ENERGY as ResourceType,
         current: 20,
         min: 0,
         max: 100,

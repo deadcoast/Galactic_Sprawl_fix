@@ -1,3 +1,4 @@
+import * as React from "react";
 import { AlertTriangle, ArrowUp, Leaf, Zap } from 'lucide-react';
 
 interface BiodomeModuleProps {

@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { expect, test } from '@playwright/test';
 
 test.describe('Mining Operations', () => {
@@ -177,7 +178,7 @@ test.describe('Mining Operations', () => {
       console.warn('Filter dropdown is visible');
 
       // Select the "Gas" filter
-      await filterDropdown.selectOption('gas');
+      await filterDropdown.selectOption(ResourceType.GAS);
       console.warn('Selected "Gas" filter');
       await page.waitForTimeout(1000); // Wait for filter to apply
 

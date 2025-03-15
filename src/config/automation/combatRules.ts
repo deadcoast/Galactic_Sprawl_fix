@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   AutomationRule,
@@ -143,7 +144,7 @@ export const combatRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: 200,
       },
       {
@@ -188,7 +189,7 @@ export const combatRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: 300,
       },
       {

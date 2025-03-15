@@ -1,7 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Crosshair, Shield, Zap } from 'lucide-react';
-import * as React from 'react';
+import * as React from "react";
 import { Position } from '../../types/core/GameTypes';
 
 interface CombatAutomationEffectProps {

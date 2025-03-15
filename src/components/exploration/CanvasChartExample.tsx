@@ -10,7 +10,8 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { ChartDataRecord } from '../../types/exploration/AnalysisComponentTypes';
 import CanvasChartFactory, { ChartType } from './visualizations/charts/CanvasChartFactory';
 

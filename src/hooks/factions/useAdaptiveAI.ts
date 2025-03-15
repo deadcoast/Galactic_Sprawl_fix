@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { combatManager } from '../../managers/combat/combatManager';
+import { getCombatManager } from '../../managers/ManagerRegistry';
 import { factionManager } from '../../managers/factions/factionManager';
 
 interface AdaptiveAIState {
@@ -60,6 +60,7 @@ export function useAdaptiveAI(unitId: string, factionId: string) {
   });
 
   useEffect(() => {
+    const combatManager = getCombatManager();
     const updateInterval = setInterval(() => {
       const unit = combatManager.getUnitStatus(unitId) as unknown as CombatUnit;
       const faction = factionManager.getFactionState(factionId) as unknown as FactionUnit;

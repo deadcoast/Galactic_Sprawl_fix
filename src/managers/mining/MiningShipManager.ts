@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { EventEmitter } from 'events';
 import { thresholdEvents } from '../../contexts/ThresholdTypes';
 import { shipBehaviorManager } from '../../lib/ai/shipBehavior';
@@ -19,7 +20,7 @@ interface MiningTask {
   id: string;
   shipId: string;
   nodeId: string;
-  resourceType: string;
+  resourceType: ResourceType;
   priority: number;
   status: 'queued' | 'in-progress' | 'completed' | 'failed';
   startTime?: number;

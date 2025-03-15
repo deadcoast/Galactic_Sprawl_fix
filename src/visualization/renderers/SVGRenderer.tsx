@@ -1,3 +1,4 @@
+import React from "react";
 import { ChartData, ChartOptions, ChartRenderer, ChartType } from '../Chart';
 
 /**

@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModularBuilding } from '../../types/buildings/ModuleTypes';
 
 export const defaultMothership: ModularBuilding = {
@@ -59,20 +60,20 @@ export const defaultColony: ModularBuilding = {
     {
       id: 'development-1',
       position: { x: 0, y: 1 },
-      allowedTypes: ['population', 'infrastructure', 'food'],
+      allowedTypes: [ResourceType.POPULATION, 'infrastructure', 'food'],
       currentModule: undefined,
     },
     {
       id: 'development-2',
       position: { x: 1, y: 1 },
-      allowedTypes: ['population', 'infrastructure', 'food'],
+      allowedTypes: [ResourceType.POPULATION, 'infrastructure', 'food'],
       currentModule: undefined,
     },
     // Research and exploration
     {
       id: 'research-1',
       position: { x: -1, y: 1 },
-      allowedTypes: ['research', 'exploration'],
+      allowedTypes: [ResourceType.RESEARCH, 'exploration'],
       currentModule: undefined,
     },
     // Defense systems

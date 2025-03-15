@@ -6,7 +6,7 @@ import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowMana
 import { ResourceThresholdManager } from '../../../managers/resource/ResourceThresholdManager';
 import { ModuleType } from '../../../types/buildings/ModuleTypes';
 import { Position } from '../../../types/core/GameTypes';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 // Define custom event types for testing
 type _CustomModuleEventType = ModuleEventType | 'SHIP_ASSIGNED' | 'RESOURCE_LEVEL_CHANGED';
@@ -66,9 +66,9 @@ interface ShipAssignedEvent extends Omit<ModuleEvent, 'type' | 'moduleType'> {
 interface ResourceUpdateEvent extends Omit<ModuleEvent, 'type' | 'moduleType'> {
   type: 'RESOURCE_UPDATED';
   moduleType: ExtendedModuleType;
-  resourceType: string;
+  resourceType: ResourceType;
   data: {
-    resourceType: string;
+    resourceType: ResourceType;
     delta: number;
     newAmount: number;
     oldAmount: number;
@@ -112,7 +112,7 @@ describe('Mining Resource Integration', () => {
     flowManager = new ResourceFlowManager(100, 500, 10);
 
     // Create storage nodes for the resources we'll be testing
-    createStorageNodes(['minerals', 'energy', 'gas']);
+    createStorageNodes([ResourceType.MINERALS, ResourceType.ENERGY, ResourceType.GAS]);
 
     // Create the integration using real managers
     integration = new MiningResourceIntegration(miningManager, thresholdManager, flowManager);
@@ -138,7 +138,7 @@ describe('Mining Resource Integration', () => {
       const position: Position = { x: 100, y: 200 };
 
       // Act
-      integration.registerMiningNode('test-node-1', 'minerals', position, 0.8);
+      integration.registerMiningNode('test-node-1', ResourceType.MINERALS, position, 0.8);
 
       // Assert
       expect(registerNodeSpy).toHaveBeenCalledTimes(1);
@@ -146,7 +146,7 @@ describe('Mining Resource Integration', () => {
         expect.objectContaining({
           id: 'mining-node-test-node-1',
           type: 'producer',
-          resources: ['minerals'],
+          resources: [ResourceType.MINERALS],
           active: true,
           efficiency: 0.8,
         })
@@ -157,7 +157,7 @@ describe('Mining Resource Integration', () => {
       const addedNode = nodes.find(node => node.id === 'mining-node-test-node-1');
       expect(addedNode).toBeDefined();
       expect(addedNode?.type).toBe('producer');
-      expect(addedNode?.resources).toContain('minerals');
+      expect(addedNode?.resources).toContain(ResourceType.MINERALS);
       expect(addedNode?.efficiency).toBe(0.8);
     });
 
@@ -167,7 +167,7 @@ describe('Mining Resource Integration', () => {
       const position: Position = { x: 100, y: 200 };
 
       // Act
-      integration.registerMiningNode('test-node-1', 'minerals', position, 0.8);
+      integration.registerMiningNode('test-node-1', ResourceType.MINERALS, position, 0.8);
       integration.unregisterMiningNode('test-node-1');
 
       // Assert
@@ -183,7 +183,7 @@ describe('Mining Resource Integration', () => {
     it('should update node efficiency in ResourceFlowManager when efficiency changes', () => {
       // Arrange
       const position: Position = { x: 100, y: 200 };
-      integration.registerMiningNode('test-node-1', 'minerals', position, 0.8);
+      integration.registerMiningNode('test-node-1', ResourceType.MINERALS, position, 0.8);
 
       // Create a spy to track changes to nodes in the flow manager
       const getNodesSpy = vi.spyOn(flowManager, 'getNodes');
@@ -216,7 +216,7 @@ describe('Mining Resource Integration', () => {
       const position: Position = { x: 100, y: 200 };
 
       // Act
-      integration.registerMiningNode('test-node-1', 'minerals', position, 0.8);
+      integration.registerMiningNode('test-node-1', ResourceType.MINERALS, position, 0.8);
 
       // Assert
       expect(registerThresholdSpy).toHaveBeenCalled();
@@ -225,7 +225,7 @@ describe('Mining Resource Integration', () => {
         expect.objectContaining({
           id: 'mining-threshold-minerals',
           threshold: {
-            type: 'minerals',
+            type: ResourceType.MINERALS,
             min: 100,
             target: 500,
           },
@@ -239,7 +239,7 @@ describe('Mining Resource Integration', () => {
         .getThresholdConfigs()
         .find(config => config.id === 'mining-threshold-minerals');
       expect(thresholdConfig).toBeDefined();
-      expect(thresholdConfig?.threshold.type).toBe('minerals');
+      expect(thresholdConfig?.threshold.type).toBe(ResourceType.MINERALS);
       expect(thresholdConfig?.threshold.min).toBe(100);
       expect(thresholdConfig?.threshold.target).toBe(500);
     });
@@ -252,7 +252,7 @@ describe('Mining Resource Integration', () => {
       const position: Position = { x: 100, y: 200 };
 
       // Register a mining node
-      integration.registerMiningNode('test-node-1', 'minerals', position, 0.8);
+      integration.registerMiningNode('test-node-1', ResourceType.MINERALS, position, 0.8);
 
       // Mock the mining manager's ship assignment
       const mockShip = {
@@ -294,7 +294,7 @@ describe('Mining Resource Integration', () => {
       expect(_createFlowSpy).toHaveBeenCalledWith(
         expect.stringContaining('test-node-1'), // Source node ID should contain the mining node ID
         expect.any(String), // Target node ID
-        'minerals', // Resource type
+        ResourceType.MINERALS, // Resource type
         expect.any(Number) // Flow rate
       );
     });
@@ -307,19 +307,19 @@ describe('Mining Resource Integration', () => {
       const position: Position = { x: 100, y: 200 };
 
       // Register several mining nodes to create a more complex network
-      integration.registerMiningNode('test-node-1', 'minerals', position, 0.8);
-      integration.registerMiningNode('test-node-2', 'energy', { x: 150, y: 250 }, 1.0);
-      integration.registerMiningNode('test-node-3', 'gas', { x: 200, y: 300 }, 1.2);
+      integration.registerMiningNode('test-node-1', ResourceType.MINERALS, position, 0.8);
+      integration.registerMiningNode('test-node-2', ResourceType.ENERGY, { x: 150, y: 250 }, 1.0);
+      integration.registerMiningNode('test-node-3', ResourceType.GAS, { x: 200, y: 300 }, 1.2);
 
       // Simulate network changes that would trigger optimization
       const resourceUpdateEvent: ResourceUpdateEvent = {
         type: 'RESOURCE_UPDATED',
         moduleId: 'mining-module-1',
         moduleType: 'miningHub',
-        resourceType: 'minerals',
+        resourceType: ResourceType.MINERALS,
         timestamp: Date.now(),
         data: {
-          resourceType: 'minerals',
+          resourceType: ResourceType.MINERALS,
           delta: 50,
           newAmount: 150,
           oldAmount: 100,

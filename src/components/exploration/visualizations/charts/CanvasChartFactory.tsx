@@ -1,5 +1,6 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
-import React, { useEffect, useMemo, useState } from 'react';
+import * as React from "react";
+import { useEffect, useMemo, useState } from 'react';
 import { useMemoryManager } from '../../../../hooks/useMemoryManager';
 import { BaseChartProps } from './BaseChart';
 import CanvasLineChart from './CanvasLineChart';

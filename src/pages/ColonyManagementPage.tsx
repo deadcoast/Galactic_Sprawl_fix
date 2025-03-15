@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { ResourceType } from "./../types/resources/ResourceTypes";
+import * as React from "react";
+import { useState } from 'react';
 import { ColonyManagementSystem } from '../components/buildings/colony/ColonyManagementSystem';
 
 // Sample data for demo
@@ -40,7 +42,7 @@ const sampleGrowthModifiers = [
     name: 'Fusion Reactors',
     description: 'Clean and efficient energy production.',
     effect: 1.05, // +5%
-    type: 'energy' as const,
+    type: ResourceType.ENERGY as const,
     active: true,
   },
 ];
@@ -109,7 +111,7 @@ const sampleTradeRoutes = [
     resources: [
       {
         id: 'resource-2-1',
-        name: 'minerals',
+        name: ResourceType.MINERALS,
         type: 'import' as const,
         amount: 120,
         value: 18,
@@ -132,7 +134,7 @@ const sampleTradeRoutes = [
     resources: [
       {
         id: 'resource-3-1',
-        name: 'minerals',
+        name: ResourceType.MINERALS,
         type: 'import' as const,
         amount: 200,
         value: 20,
@@ -235,7 +237,7 @@ const sampleBuildings = [
   },
   {
     id: 'building-4',
-    type: 'energy' as const,
+    type: ResourceType.ENERGY as const,
     name: 'Fusion Reactor',
     level: 2,
     position: { x: 180, y: 200 },
@@ -244,7 +246,7 @@ const sampleBuildings = [
   },
   {
     id: 'building-5',
-    type: 'research' as const,
+    type: ResourceType.RESEARCH as const,
     name: 'Research Laboratory',
     level: 1,
     position: { x: 100, y: 180 },
@@ -265,7 +267,7 @@ const sampleBuildings = [
 // Sample resources for resource dashboard
 const sampleResources = [
   {
-    type: 'energy' as const,
+    type: ResourceType.ENERGY as const,
     name: 'Energy',
     production: 1200,
     consumption: 950,
@@ -289,7 +291,7 @@ const sampleResources = [
     capacity: 4000,
   },
   {
-    type: 'research' as const,
+    type: ResourceType.RESEARCH as const,
     name: 'Research',
     production: 300,
     consumption: 300,
@@ -327,7 +329,7 @@ const sampleSatisfactionFactors = [
     weight: 0.2,
   },
   {
-    type: 'energy' as const,
+    type: ResourceType.ENERGY as const,
     name: 'Energy Supply',
     value: 95,
     weight: 0.15,
@@ -359,7 +361,7 @@ export function ColonyManagementPage() {
   };
 
   // Handle resource click
-  const handleResourceClick = (resourceType: string) => {
+  const handleResourceClick = (resourceType: ResourceType) => {
     console.warn(`Resource clicked: ${resourceType}`);
   };
 

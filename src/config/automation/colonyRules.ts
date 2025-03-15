@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   AutomationRule,
@@ -28,7 +29,7 @@ export const colonyRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: 300,
       },
     ],
@@ -98,12 +99,12 @@ export const colonyRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: 1000,
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: 800,
       },
       {
@@ -291,7 +292,7 @@ export const colonyRules: AutomationRule[] = [
           moduleType: 'colony' as ModuleType,
           eventType: 'INITIATE_RESEARCH' as ModuleEventType,
           data: {
-            type: 'research',
+            type: ResourceType.RESEARCH,
             priority: 3,
           },
         } as EmitEventValue,
@@ -313,7 +314,7 @@ export const colonyRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_BELOW',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: 500,
       },
       {

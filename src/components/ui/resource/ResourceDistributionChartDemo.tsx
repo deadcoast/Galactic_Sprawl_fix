@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { ResourceType } from '../../../types/resources/StandardizedResourceTypes';
+import * as React from "react";
+import { useState } from 'react';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import ResourceDistributionChart from './ResourceDistributionChart';
 
 /**

@@ -1,5 +1,6 @@
 import { AlertTriangle, Award, BarChart2, Filter, Play, Search, X } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import * as React from "react";
+import { useMemo, useState } from 'react';
 import { MissionReplay } from './MissionReplay';
 
 interface MissionEntry {

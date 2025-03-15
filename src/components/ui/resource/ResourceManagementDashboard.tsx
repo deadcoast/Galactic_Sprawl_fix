@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from 'react';
 // Temporarily comment out antd and icons imports until dependencies are installed
 // import { Button, Tabs } from 'antd';
 // import {

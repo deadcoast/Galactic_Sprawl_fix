@@ -7,7 +7,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { FlowNodeType } from '../../types/resources/FlowTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // Type definitions for the ResourceNode and ResourceConnection
 export interface ResourceNode {

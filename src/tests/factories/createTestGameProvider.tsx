@@ -1,4 +1,5 @@
-import React, { createContext, ReactNode, useCallback, useEffect, useReducer } from 'react';
+import * as React from "react";
+import { createContext, ReactNode, useCallback, useEffect, useReducer } from 'react';
 import { GameContext } from '../../contexts/GameContext';
 import { GameEvent } from '../../types/core/GameTypes';
 import { Ship } from '../../types/ships/Ship';

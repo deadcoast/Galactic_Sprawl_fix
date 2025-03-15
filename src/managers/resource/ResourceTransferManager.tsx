@@ -1,15 +1,15 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Truck } from 'lucide-react';
-import * as React from 'react';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import * as React from "react";
 import { useThreshold } from '../../contexts/ThresholdContext';
 
 interface Transfer {
   id: string;
   sourceId: string;
   targetId: string;
-  resourceType: string;
+  resourceType: ResourceType | string;
   amount: number;
   progress: number;
   priority: number;
@@ -19,7 +19,7 @@ interface Transfer {
 interface ResourceTransferManagerProps {
   storageNodes: Array<{
     id: string;
-    resourceType: string;
+    resourceType: ResourceType | string;
     currentAmount: number;
     maxCapacity: number;
     transferRate: number;

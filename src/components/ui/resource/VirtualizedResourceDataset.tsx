@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VariableSizeList } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
-import { ResourceType } from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 export interface ResourceDataItem {
   id: string;

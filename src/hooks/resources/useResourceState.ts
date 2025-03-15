@@ -17,7 +17,7 @@ import {
   useResourceRates,
   useResourceRatesDispatch,
 } from '../../contexts/ResourceRatesContext';
-import { ResourceType, ResourceTypeInfo } from '../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   HookPerformanceConfig,
   defaultPerformanceConfig,
@@ -79,20 +79,20 @@ export function useResourceState() {
 
   // Memoized selectors for individual resource types - with performance tracking
   const minerals = measureSelectorTime(
-    'minerals',
+    ResourceType.MINERALS,
     () =>
       useMemo(() => resourceRates[ResourceType.MINERALS], [resourceRates[ResourceType.MINERALS]]),
     resourceStatePerformanceConfig
   );
 
   const energy = measureSelectorTime(
-    'energy',
+    ResourceType.ENERGY,
     () => useMemo(() => resourceRates[ResourceType.ENERGY], [resourceRates[ResourceType.ENERGY]]),
     resourceStatePerformanceConfig
   );
 
   const population = measureSelectorTime(
-    'population',
+    ResourceType.POPULATION,
     () =>
       useMemo(
         () => resourceRates[ResourceType.POPULATION],
@@ -102,7 +102,7 @@ export function useResourceState() {
   );
 
   const research = measureSelectorTime(
-    'research',
+    ResourceType.RESEARCH,
     () =>
       useMemo(() => resourceRates[ResourceType.RESEARCH], [resourceRates[ResourceType.RESEARCH]]),
     resourceStatePerformanceConfig

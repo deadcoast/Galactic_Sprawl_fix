@@ -1,7 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { Rocket, ShieldAlert, Wrench } from 'lucide-react';
-import * as React from 'react';
+import * as React from "react";
 import { hangarRules } from '../../../../config/automation/hangarRules';
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { BaseModule } from '../../../../types/buildings/ModuleTypes';

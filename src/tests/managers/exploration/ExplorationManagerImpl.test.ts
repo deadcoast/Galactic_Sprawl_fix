@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 /**
  * Tests for the refactored ExplorationManagerImpl
  * Verifies that circular dependencies, event handling, and functionality are working
@@ -162,7 +163,7 @@ describe('ExplorationManagerImpl', () => {
       id: 'system-1',
       name: 'Alpha Centauri',
       type: 'binary',
-      resources: ['minerals', 'energy'],
+      resources: [ResourceType.MINERALS, ResourceType.ENERGY],
       status: 'mapped',
     });
 
@@ -170,7 +171,7 @@ describe('ExplorationManagerImpl', () => {
       id: 'system-2',
       name: 'Proxima Centauri',
       type: 'single',
-      resources: ['gas', 'energy'],
+      resources: [ResourceType.GAS, ResourceType.ENERGY],
       status: 'unmapped',
     });
 
@@ -178,7 +179,7 @@ describe('ExplorationManagerImpl', () => {
       id: 'system-3',
       name: 'Tau Ceti',
       type: 'binary',
-      resources: ['minerals'],
+      resources: [ResourceType.MINERALS],
       status: 'scanning',
     });
 
@@ -195,7 +196,7 @@ describe('ExplorationManagerImpl', () => {
     expect(typeResults.map(s => s.id)).toContain('system-3');
 
     // Search by resources
-    const resourceResults = explorationManager.searchSystems({ resources: ['minerals'] });
+    const resourceResults = explorationManager.searchSystems({ resources: [ResourceType.MINERALS] });
     expect(resourceResults.length).toBe(2);
     expect(resourceResults.map(s => s.id)).toContain('system-1');
     expect(resourceResults.map(s => s.id)).toContain('system-3');
@@ -208,7 +209,7 @@ describe('ExplorationManagerImpl', () => {
     // Combined search
     const combinedResults = explorationManager.searchSystems({
       type: 'binary',
-      resources: ['minerals'],
+      resources: [ResourceType.MINERALS],
     });
     expect(combinedResults.length).toBe(2);
     expect(combinedResults.map(s => s.id)).toContain('system-1');
@@ -229,13 +230,13 @@ describe('ExplorationManagerImpl', () => {
     // Update the system
     const updatedSystem = explorationManager.updateSystem('system-1', {
       status: 'mapped',
-      resources: ['minerals', 'energy'],
+      resources: [ResourceType.MINERALS, ResourceType.ENERGY],
     });
 
     // Check the update worked
     expect(updatedSystem).toBeDefined();
     expect(updatedSystem?.status).toBe('mapped');
-    expect(updatedSystem?.resources).toEqual(['minerals', 'energy']);
+    expect(updatedSystem?.resources).toEqual([ResourceType.MINERALS, ResourceType.ENERGY]);
 
     // Verify that an event was emitted
     expect(eventBus.emittedEvents.length).toBe(1);

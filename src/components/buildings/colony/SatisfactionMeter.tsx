@@ -1,3 +1,4 @@
+import * as React from "react";
 import { motion } from 'framer-motion';
 import {
   Frown,
@@ -11,9 +12,10 @@ import {
   Utensils,
   Zap,
 } from 'lucide-react';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 interface SatisfactionFactor {
-  type: 'housing' | 'food' | 'healthcare' | 'energy' | 'security';
+  type: 'housing' | 'food' | 'healthcare' | ResourceType.ENERGY | 'security';
   name: string;
   value: number; // 0-100
   weight: number; // 0-1, sum of all weights should be 1
@@ -67,7 +69,7 @@ export function SatisfactionMeter({
         return <Utensils className="h-4 w-4 text-green-400" />;
       case 'healthcare':
         return <Heart className="h-4 w-4 text-red-400" />;
-      case 'energy':
+      case ResourceType.ENERGY:
         return <Zap className="h-4 w-4 text-yellow-400" />;
       case 'security':
         return <Shield className="h-4 w-4 text-purple-400" />;

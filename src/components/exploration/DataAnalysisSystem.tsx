@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Compass, Database, Layers, Map, RadioTower } from 'lucide-react';
-import * as React from 'react';
+import * as React from "react";
 import { useDataAnalysis } from '../../contexts/DataAnalysisContext';
 import {
   AnalysisConfig,

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import './ConverterDetailsView.css';
 
 // Define the interfaces for the component

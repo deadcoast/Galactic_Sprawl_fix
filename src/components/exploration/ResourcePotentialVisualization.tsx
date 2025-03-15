@@ -1,8 +1,9 @@
 import { BarChart3, Database, Download, Droplet, Filter, Leaf, Sparkles, Zap } from 'lucide-react';
-import React, { useRef, useState } from 'react';
-
+import * as React from "react";
+import { useRef, useState } from 'react';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 interface ResourceData {
-  type: 'minerals' | 'gas' | 'energy' | 'organic' | 'exotic';
+  type: ResourceType.MINERALS | ResourceType.GAS | ResourceType.ENERGY | 'organic' | ResourceType.EXOTIC;
   name: string;
   amount: number; // 0-100 scale
   quality: number; // 0-1 scale
@@ -112,15 +113,15 @@ export function ResourcePotentialVisualization({
   // Get resource icon
   const getResourceIcon = (type: ResourceData['type'], className = 'w-4 h-4') => {
     switch (type) {
-      case 'minerals':
+      case ResourceType.MINERALS:
         return <Database className={className} />;
-      case 'gas':
+      case ResourceType.GAS:
         return <Droplet className={className} />;
-      case 'energy':
+      case ResourceType.ENERGY:
         return <Zap className={className} />;
       case 'organic':
         return <Leaf className={className} />;
-      case 'exotic':
+      case ResourceType.EXOTIC:
         return <Sparkles className={className} />;
     }
   };
@@ -128,15 +129,15 @@ export function ResourcePotentialVisualization({
   // Get resource color
   const getResourceColor = (type: ResourceData['type']) => {
     switch (type) {
-      case 'minerals':
+      case ResourceType.MINERALS:
         return 'text-blue-400';
-      case 'gas':
+      case ResourceType.GAS:
         return 'text-purple-400';
-      case 'energy':
+      case ResourceType.ENERGY:
         return 'text-yellow-400';
       case 'organic':
         return 'text-green-400';
-      case 'exotic':
+      case ResourceType.EXOTIC:
         return 'text-pink-400';
     }
   };
@@ -144,15 +145,15 @@ export function ResourcePotentialVisualization({
   // Get resource background color
   const getResourceBgColor = (type: ResourceData['type']) => {
     switch (type) {
-      case 'minerals':
+      case ResourceType.MINERALS:
         return 'bg-blue-900/30';
-      case 'gas':
+      case ResourceType.GAS:
         return 'bg-purple-900/30';
-      case 'energy':
+      case ResourceType.ENERGY:
         return 'bg-yellow-900/30';
       case 'organic':
         return 'bg-green-900/30';
-      case 'exotic':
+      case ResourceType.EXOTIC:
         return 'bg-pink-900/30';
     }
   };
@@ -341,7 +342,7 @@ export function ResourcePotentialVisualization({
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center space-x-1">
                   {/* Show icons for available resources */}
-                  {['minerals', 'gas', 'energy', 'organic', 'exotic'].map(type => {
+                  {[ResourceType.MINERALS, ResourceType.GAS, ResourceType.ENERGY, 'organic', ResourceType.EXOTIC].map(type => {
                     const hasResource = resources.some(r => r.type === type);
                     if (!hasResource) return null;
 
@@ -465,9 +466,9 @@ export function ResourcePotentialVisualization({
           </button>
 
           <button
-            onClick={() => setResourceFilter('minerals')}
+            onClick={() => setResourceFilter(ResourceType.MINERALS)}
             className={`flex items-center space-x-1 rounded px-2 py-1 text-xs ${
-              resourceFilter === 'minerals'
+              resourceFilter === ResourceType.MINERALS
                 ? 'bg-blue-900 text-blue-300'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
@@ -477,9 +478,9 @@ export function ResourcePotentialVisualization({
           </button>
 
           <button
-            onClick={() => setResourceFilter('gas')}
+            onClick={() => setResourceFilter(ResourceType.GAS)}
             className={`flex items-center space-x-1 rounded px-2 py-1 text-xs ${
-              resourceFilter === 'gas'
+              resourceFilter === ResourceType.GAS
                 ? 'bg-purple-900 text-purple-300'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
@@ -489,9 +490,9 @@ export function ResourcePotentialVisualization({
           </button>
 
           <button
-            onClick={() => setResourceFilter('energy')}
+            onClick={() => setResourceFilter(ResourceType.ENERGY)}
             className={`flex items-center space-x-1 rounded px-2 py-1 text-xs ${
-              resourceFilter === 'energy'
+              resourceFilter === ResourceType.ENERGY
                 ? 'bg-yellow-900 text-yellow-300'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
@@ -513,9 +514,9 @@ export function ResourcePotentialVisualization({
           </button>
 
           <button
-            onClick={() => setResourceFilter('exotic')}
+            onClick={() => setResourceFilter(ResourceType.EXOTIC)}
             className={`flex items-center space-x-1 rounded px-2 py-1 text-xs ${
-              resourceFilter === 'exotic'
+              resourceFilter === ResourceType.EXOTIC
                 ? 'bg-pink-900 text-pink-300'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
@@ -694,7 +695,7 @@ export function ResourcePotentialVisualization({
                           </li>
                         )}
 
-                        {selectedSector.resources.some(r => r.type === 'exotic') && (
+                        {selectedSector.resources.some(r => r.type === ResourceType.EXOTIC) && (
                           <li className="flex items-start space-x-1">
                             <span className="text-pink-400">•</span>
                             <span>Exotic materials present - research station recommended</span>

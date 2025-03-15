@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { ResourceType, ResourceTypeHelpers } from '../types/resources/StandardizedResourceTypes';
+import * as React from "react";
+import { ResourceType } from "./../types/resources/ResourceTypes";
 import { ThresholdAction, ThresholdState, initialState, thresholdEvents } from './ThresholdTypes';
 
 // Types

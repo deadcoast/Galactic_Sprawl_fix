@@ -1,3 +1,4 @@
+import { ResourceType } from './../../types/resources/ResourceTypes';
 /**
  * @file ExplorationManager.ts
  * Implementation of the ExplorationManager that conforms to the BaseManager interface.
@@ -16,27 +17,53 @@ import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { ReconShipManagerImpl, Ship } from './ReconShipManagerImpl';
 
-// Define Exploration specific event types as strings
-// These will be cast to EventType when publishing events
-export enum ExplorationEvents {
-  SECTOR_DISCOVERED = 'EXPLORATION_SECTOR_DISCOVERED',
-  SECTOR_SCANNED = 'EXPLORATION_SECTOR_SCANNED',
-  ANOMALY_DETECTED = 'EXPLORATION_ANOMALY_DETECTED',
-  RESOURCE_DETECTED = 'EXPLORATION_RESOURCE_DETECTED',
-  SCAN_STARTED = 'EXPLORATION_SCAN_STARTED',
-  SCAN_COMPLETED = 'EXPLORATION_SCAN_COMPLETED',
-  SCAN_FAILED = 'EXPLORATION_SCAN_FAILED',
-  SHIP_ASSIGNED = 'EXPLORATION_SHIP_ASSIGNED',
-  SHIP_UNASSIGNED = 'EXPLORATION_SHIP_UNASSIGNED',
+/**
+ * Exploration event interface extending BaseEvent
+ */
+export interface ExplorationEvent extends BaseEvent {
+  type: EventType;
+  moduleId: string;
+  moduleType: ModuleType;
+  data: ExplorationEventData;
 }
 
+/**
+ * Type guard for ExplorationEvent
+ */
+export function isExplorationEvent(event: unknown): event is ExplorationEvent {
+  if (!event || typeof event !== 'object') return false;
+  const e = event as ExplorationEvent;
+  return (
+    'type' in e &&
+    'moduleId' in e &&
+    'moduleType' in e &&
+    'data' in e &&
+    typeof e.type === 'string' &&
+    typeof e.moduleId === 'string' &&
+    typeof e.moduleType === 'string' &&
+    typeof e.data === 'object'
+  );
+}
+
+// Map exploration events to standard EventType enum
+export const EXPLORATION_EVENTS = {
+  SECTOR_DISCOVERED: EventType.EXPLORATION_SECTOR_DISCOVERED,
+  SECTOR_SCANNED: EventType.EXPLORATION_SECTOR_SCANNED,
+  ANOMALY_DETECTED: EventType.EXPLORATION_ANOMALY_DETECTED,
+  RESOURCE_DETECTED: EventType.EXPLORATION_RESOURCE_DETECTED,
+  SCAN_STARTED: EventType.EXPLORATION_SCAN_STARTED,
+  SCAN_COMPLETED: EventType.EXPLORATION_SCAN_COMPLETED,
+  SCAN_FAILED: EventType.EXPLORATION_SCAN_FAILED,
+  SHIP_ASSIGNED: EventType.EXPLORATION_SHIP_ASSIGNED,
+  SHIP_UNASSIGNED: EventType.EXPLORATION_SHIP_UNASSIGNED,
+} as const;
+
 // Define a type for our exploration event data
-// This will be used in the data field of BaseEvent
 export interface ExplorationEventData extends Record<string, unknown> {
   sector?: Sector;
   operation?: ScanOperation;
   resource?: {
-    type: string;
+    type: ResourceType;
     amount: number;
     quality: number;
   };
@@ -67,15 +94,15 @@ export interface StarSystem {
 export interface Sector {
   id: string;
   name: string;
-  status: 'unmapped' | 'mapped' | 'scanning' | 'analyzed';
   coordinates: { x: number; y: number };
+  status: 'unmapped' | 'mapped' | 'scanning' | 'analyzed';
   resourcePotential: number;
   habitabilityScore: number;
   anomalies: Anomaly[];
   lastScanned?: number;
   discoveredAt?: number;
   resources?: Array<{
-    type: string;
+    type: ResourceType;
     amount: number;
     quality?: number;
   }>;
@@ -115,7 +142,7 @@ export interface ScanOperation {
  * ExplorationManager implements the exploration system functionality,
  * managing star systems, sectors, anomalies, and coordinating with ship operations.
  */
-export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
+export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   // Maps to store exploration data
   private sectors: Map<string, Sector> = new Map();
   private anomalies: Map<string, Anomaly> = new Map();
@@ -137,7 +164,6 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
 
   // Module ID for this manager (used in events)
   private moduleId: string = uuidv4();
-  private moduleType: string = 'EXPLORATION'; // Using string instead of enum to avoid 'used as a value' error
 
   /**
    * Creates a new ExplorationManager
@@ -176,7 +202,9 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
     console.log('ExplorationManager initialized');
 
     // Subscribe to ship-related events to update exploration data
-    this.subscribeToEvent(EventType.STATUS_CHANGED, this.handleShipStatusChange);
+    this.unsubscribeFunctions.push(
+      this.subscribe(EventType.STATUS_CHANGED, this.handleShipStatusChange)
+    );
   }
 
   /**
@@ -191,24 +219,39 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
    * Clean up resources
    */
   protected async onDispose(): Promise<void> {
-    // Nothing to clean up currently
+    // Clear all data
     this.sectors.clear();
     this.anomalies.clear();
     this.scanOperations.clear();
   }
 
   /**
-   * Creates a standard BaseEvent for our exploration events
+   * Creates a standard ExplorationEvent
    */
-  private createEvent(type: string, data: ExplorationEventData): BaseEvent {
+  private createEvent(type: EventType, data: ExplorationEventData): ExplorationEvent {
     return {
-      type: type as unknown as EventType,
+      type,
       timestamp: Date.now(),
       moduleId: this.moduleId,
-      moduleType: this.moduleType as unknown as ModuleType,
-      data: data as Record<string, unknown>,
+      moduleType: 'exploration' as ModuleType,
+      data,
     };
   }
+
+  /**
+   * Handle ship status changes
+   */
+  private handleShipStatusChange = (event: ExplorationEvent): void => {
+    if (!isExplorationEvent(event)) return;
+
+    const { shipId, status } = event.data;
+    if (!shipId || !status) return;
+
+    // If the ship is no longer available, cancel its scan operations
+    if (status === 'unavailable' || status === 'destroyed') {
+      this.cancelScanOperationsForShip(shipId as string);
+    }
+  };
 
   /**
    * Update active scan operations
@@ -255,7 +298,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
 
       // Emit a scan completed event
       this.publishEvent(
-        this.createEvent(ExplorationEvents.SCAN_COMPLETED, {
+        this.createEvent(EXPLORATION_EVENTS.SCAN_COMPLETED, {
           sector,
           operation,
         })
@@ -285,7 +328,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
 
         // Emit a resource detected event
         this.publishEvent(
-          this.createEvent(ExplorationEvents.RESOURCE_DETECTED, {
+          this.createEvent(EXPLORATION_EVENTS.RESOURCE_DETECTED, {
             resource,
             sector,
           })
@@ -316,7 +359,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
 
       // Emit an anomaly detected event
       this.publishEvent(
-        this.createEvent(ExplorationEvents.ANOMALY_DETECTED, {
+        this.createEvent(EXPLORATION_EVENTS.ANOMALY_DETECTED, {
           anomaly,
           sector,
           anomalyId: anomaly.id,
@@ -324,33 +367,6 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
       );
     }
   }
-
-  /**
-   * Handle ship status changes
-   */
-  private handleShipStatusChange = (event: BaseEvent): void => {
-    // Cast to a more specific event type if needed
-    const shipEvent = event as unknown as {
-      shipId: string;
-      status: string;
-      data?: Record<string, unknown>;
-    };
-
-    // Handle different ship status changes
-    switch (shipEvent.status) {
-      case 'scanning':
-        // Start a new scan operation if the ship is assigned to a sector
-        if (shipEvent.data?.sectorId) {
-          this.startScanOperation(shipEvent.shipId, shipEvent.data.sectorId as string);
-        }
-        break;
-
-      case 'idle':
-        // Cancel any active scan operations for this ship
-        this.cancelScanOperationsForShip(shipEvent.shipId);
-        break;
-    }
-  };
 
   /**
    * Start a new scan operation
@@ -379,7 +395,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
 
     // Emit a scan started event
     this.publishEvent(
-      this.createEvent(ExplorationEvents.SCAN_STARTED, {
+      this.createEvent(EXPLORATION_EVENTS.SCAN_STARTED, {
         operation,
         sector,
         sectorId,
@@ -399,7 +415,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
 
         // Emit a scan failed event
         this.publishEvent(
-          this.createEvent(ExplorationEvents.SCAN_FAILED, {
+          this.createEvent(EXPLORATION_EVENTS.SCAN_FAILED, {
             operation,
             reason: 'cancelled_by_ship',
             sectorId: operation.sectorId,
@@ -432,9 +448,25 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
   /**
    * Get a random resource type
    */
-  private getRandomResourceType(): string {
-    const types = ['minerals', 'energy', 'gas', 'exotic', 'water', 'metals'];
-    return types[Math.floor(Math.random() * types.length)];
+  private getRandomResourceType(): ResourceType {
+    const resourceTypes = [
+      ResourceType.MINERALS,
+      ResourceType.ENERGY,
+      ResourceType.PLASMA,
+      ResourceType.GAS,
+      ResourceType.EXOTIC,
+      ResourceType.IRON,
+      ResourceType.COPPER,
+      ResourceType.TITANIUM,
+      ResourceType.URANIUM,
+      ResourceType.WATER,
+      ResourceType.HELIUM,
+      ResourceType.DEUTERIUM,
+      ResourceType.ANTIMATTER,
+      ResourceType.DARK_MATTER,
+      ResourceType.EXOTIC_MATTER,
+    ];
+    return resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
   }
 
   /**
@@ -472,7 +504,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
 
     // Emit a sector discovered event
     this.publishEvent(
-      this.createEvent(ExplorationEvents.SECTOR_DISCOVERED, {
+      this.createEvent(EXPLORATION_EVENTS.SECTOR_DISCOVERED, {
         sector,
         sectorId: sector.id,
       })
@@ -502,7 +534,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
 
     // Emit a ship assigned event
     this.publishEvent(
-      this.createEvent(ExplorationEvents.SHIP_ASSIGNED, {
+      this.createEvent(EXPLORATION_EVENTS.SHIP_ASSIGNED, {
         sectorId,
         shipId,
         sector,
@@ -531,7 +563,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
 
     // Emit a ship unassigned event
     this.publishEvent(
-      this.createEvent(ExplorationEvents.SHIP_UNASSIGNED, {
+      this.createEvent(EXPLORATION_EVENTS.SHIP_UNASSIGNED, {
         shipId,
         ship,
       })
@@ -605,7 +637,7 @@ export class ExplorationManager extends AbstractBaseManager<BaseEvent> {
 }
 
 // Mock event bus and ship manager for demonstration purposes
-const explorationEventBus = new EventBus<BaseEvent>();
+const explorationEventBus = new EventBus<ExplorationEvent>();
 const shipManager = new ReconShipManagerImpl();
 
 // Export a singleton instance of the ExplorationManager

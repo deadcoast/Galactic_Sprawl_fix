@@ -8,7 +8,7 @@
  * 3. Service availability tracking
  */
 
-import { CombatManager } from '../managers/combat/combatManager';
+import { CombatManager } from '../managers/ManagerRegistry';
 import { ResourceManager } from '../managers/game/ResourceManager';
 import { MiningShipManagerImpl } from '../managers/mining/MiningShipManagerImpl';
 import { ResourceCostManager } from '../managers/resource/ResourceCostManager';

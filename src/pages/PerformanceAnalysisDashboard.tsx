@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import UserBehaviorCorrelationView from '../components/ui/performance/UserBehaviorCorrelationView';
 import { SessionPerformanceData } from '../services/telemetry/SessionPerformanceTracker';
-import { ResourceType } from '../types/resources/ResourceTypes';
+import { ResourceType } from "./../types/resources/ResourceTypes";
 
 /**
  * Performance Analysis Dashboard that showcases various performance
@@ -82,10 +83,10 @@ const PerformanceAnalysisDashboard: React.FC = () => {
           memoryUsage,
           cpuUsage,
           resourceUtilization: new Map([
-            ['minerals' as ResourceType, 20 + Math.random() * 30],
-            ['energy' as ResourceType, 40 + Math.random() * 30],
-            ['gas' as ResourceType, 10 + Math.random() * 20],
-            ['research' as ResourceType, 5 + Math.random() * 10],
+            [ResourceType.MINERALS as ResourceType, 20 + Math.random() * 30],
+            [ResourceType.ENERGY as ResourceType, 40 + Math.random() * 30],
+            [ResourceType.GAS as ResourceType, 10 + Math.random() * 20],
+            [ResourceType.RESEARCH as ResourceType, 5 + Math.random() * 10],
           ]),
           renderTime,
           eventProcessingTime: 2 + interactionCount * 0.1 + Math.random() * 2,

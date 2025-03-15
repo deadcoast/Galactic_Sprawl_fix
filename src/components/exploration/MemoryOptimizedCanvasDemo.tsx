@@ -17,7 +17,8 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
+import * as React from "react";
+import { useCallback, useEffect, useState } from 'react';
 import { ChartDataRecord } from '../../types/exploration/AnalysisComponentTypes';
 import { ChartType } from './visualizations/charts/CanvasChartFactory';
 import MemoryOptimizedCanvasChart from './visualizations/charts/MemoryOptimizedCanvasChart';

@@ -1,4 +1,5 @@
-import React, { memo, useEffect, useState } from 'react';
+import * as React from "react";
+import { memo, useEffect, useState } from 'react';
 import { useModuleStatus } from '../../../hooks/modules/useModuleStatus';
 import { moduleManager } from '../../../managers/module/ModuleManager';
 import { BaseEvent, EventType } from '../../../types/events/EventTypes';

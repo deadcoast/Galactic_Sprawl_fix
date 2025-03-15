@@ -9,7 +9,7 @@ import {
   SubModuleRequirements,
   SubModuleType,
 } from '../../types/buildings/ModuleTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ResourceManager } from '../game/ResourceManager';
 import { moduleManager } from './ModuleManager';
 

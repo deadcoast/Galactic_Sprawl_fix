@@ -9,7 +9,8 @@ import {
   Terminal,
   X,
 } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import * as React from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { GameActionType, useGameDispatch, useGameState } from '../../contexts/GameContext';
 import { ModuleActionType, useModuleDispatch, useModules } from '../../contexts/ModuleContext';
@@ -19,8 +20,9 @@ import { moduleManager } from '../../managers/module/ModuleManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { Module } from '../../types/modules/ModuleTypes';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 import { NotificationSystem, notificationManager } from './NotificationSystem';
-import { ResourceVisualization } from './ResourceVisualization';
+import ResourceVisualization from './ResourceVisualization';
 
 interface GameHUDProps {
   empireName: string;
@@ -534,7 +536,7 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
           id: 'research-lab',
           name: 'Research Lab',
           description: 'Research new technologies and upgrades',
-          moduleType: 'research' as ModuleType,
+          moduleType: ResourceType.RESEARCH as ModuleType,
           cost: {
             minerals: 500,
             energy: 600,
@@ -761,7 +763,14 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
             </div>
           </div>
         </div>
-        <ResourceVisualization />
+        <ResourceVisualization
+          resourceType={ResourceType.MINERALS}
+          amount={gameState.resources.minerals}
+        />
+        <ResourceVisualization
+          resourceType={ResourceType.ENERGY}
+          amount={gameState.resources.energy}
+        />
       </div>
       {/* Main content with menu and active panel */}
       <div className="flex flex-1 overflow-hidden">

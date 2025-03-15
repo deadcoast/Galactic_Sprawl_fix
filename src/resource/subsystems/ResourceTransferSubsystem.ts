@@ -1,18 +1,22 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
-import { ResourceTransfer, ResourceType } from '../../types/resources/ResourceTypes';
-import { validateResourceTransfer } from '../../utils/resources/resourceValidation';
+import {
+  ResourceTransfer as StringResourceTransfer,
+  ResourceType as StringResourceType,
+} from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
 
 /**
  * ResourceTransferSubsystem
- * 
+ *
  * Handles resource transfers between entities
  * - Direct transfers between entities
  * - Transfer history tracking
  * - Transfer validation and error handling
  */
 export class ResourceTransferSubsystem {
-  private transferHistory: ResourceTransfer[] = [];
+  private transferHistory: StringResourceTransfer[] = [];
   private parentSystem: ResourceSystem;
   private config: ResourceSystemConfig;
   private isInitialized = false;
@@ -33,7 +37,7 @@ export class ResourceTransferSubsystem {
     try {
       // Initialize event subscriptions
       this.initializeEventSubscriptions();
-      
+
       this.isInitialized = true;
     } catch (error) {
       console.error('Failed to initialize ResourceTransferSubsystem:', error);
@@ -50,9 +54,9 @@ export class ResourceTransferSubsystem {
     }
 
     try {
-      // Clear transfer history
-      this.transferHistory = [];
-      
+      // Unsubscribe from events
+      eventSystem.clearSubscriptions(undefined, this.constructor.name);
+
       this.isInitialized = false;
     } catch (error) {
       console.error('Failed to dispose ResourceTransferSubsystem:', error);
@@ -64,24 +68,43 @@ export class ResourceTransferSubsystem {
    * Initialize event subscriptions
    */
   private initializeEventSubscriptions(): void {
-    // Subscribe to relevant events
-    eventSystem.subscribe('RESOURCE_TRANSFER_REQUESTED', this.handleTransferRequest);
+    eventSystem.subscribe(
+      'resource.transfer.request',
+      this.handleTransferRequest,
+      {},
+      this.constructor.name
+    );
   }
 
   /**
-   * Handle a transfer request event
+   * Handle transfer request events
    */
-  private handleTransferRequest = (event: any): void => {
-    const { type, amount, sourceId, targetId } = event;
-    
+  private handleTransferRequest = (event: Record<string, unknown>): void => {
+    const { type, amount, sourceId, targetId } = event as {
+      type: StringResourceType | ResourceType;
+      amount: number;
+      sourceId: string;
+      targetId: string;
+    };
+
     this.transferResource(type, amount, sourceId, targetId);
+
+    // Publish transfer completed event
+    eventSystem.publish({
+      type: 'RESOURCE_TRANSFERRED',
+      resourceType: type,
+      amount,
+      sourceId,
+      targetId,
+      timestamp: Date.now(),
+    });
   };
 
   /**
    * Transfer resources between entities
    */
   public transferResource(
-    type: ResourceType,
+    type: StringResourceType | ResourceType,
     amount: number,
     sourceId: string,
     targetId: string
@@ -90,28 +113,31 @@ export class ResourceTransferSubsystem {
       return 0;
     }
 
+    // Convert to string resource type for internal use
+    const stringType = ensureStringResourceType(type);
+
     // Get storage subsystem
     const storageSubsystem = this.parentSystem.getStorageSubsystem();
 
     // Retrieve from source
-    const retrievedAmount = storageSubsystem.retrieveResource(sourceId, type, amount);
+    const retrievedAmount = storageSubsystem.retrieveResource(sourceId, stringType, amount);
 
     if (retrievedAmount <= 0) {
       return 0;
     }
 
     // Store in target
-    const storedAmount = storageSubsystem.storeResource(targetId, type, retrievedAmount);
+    const storedAmount = storageSubsystem.storeResource(targetId, stringType, retrievedAmount);
 
     // If not all was stored, return remainder to source
     if (storedAmount < retrievedAmount) {
       const remainder = retrievedAmount - storedAmount;
-      storageSubsystem.storeResource(sourceId, type, remainder);
+      storageSubsystem.storeResource(sourceId, stringType, remainder);
     }
 
     // Record transfer
     this.recordTransfer({
-      type,
+      type: stringType,
       source: sourceId,
       target: targetId,
       amount: storedAmount,
@@ -124,24 +150,25 @@ export class ResourceTransferSubsystem {
   /**
    * Bulk transfer resources between multiple sources and targets
    */
-  public bulkTransfer(transfers: {
-    type: ResourceType;
-    amount: number;
-    sourceId: string;
-    targetId: string;
-  }[]): { transferred: number; totalRequested: number } {
+  public bulkTransfer(
+    transfers: {
+      type: StringResourceType | ResourceType;
+      amount: number;
+      sourceId: string;
+      targetId: string;
+    }[]
+  ): { transferred: number; totalRequested: number } {
     let totalTransferred = 0;
     let totalRequested = 0;
 
     for (const transfer of transfers) {
       totalRequested += transfer.amount;
-      const transferred = this.transferResource(
+      totalTransferred += this.transferResource(
         transfer.type,
         transfer.amount,
         transfer.sourceId,
         transfer.targetId
       );
-      totalTransferred += transferred;
     }
 
     return {
@@ -151,27 +178,26 @@ export class ResourceTransferSubsystem {
   }
 
   /**
-   * Record a transfer in the history
+   * Record a resource transfer in the history
    */
-  private recordTransfer(transfer: ResourceTransfer): void {
-    // Validate transfer
-    if (!validateResourceTransfer(transfer)) {
-      console.warn('Invalid transfer:', transfer);
-      return;
-    }
-    
+  private recordTransfer(transfer: StringResourceTransfer): void {
     // Add to history
     this.transferHistory.push(transfer);
 
-    // Trim history if needed
-    if (this.transferHistory.length > this.config.maxHistorySize) {
-      this.transferHistory = this.transferHistory.slice(-this.config.maxHistorySize);
+    // Trim history if it exceeds the configured maximum
+    if (this.config.maxHistorySize && this.transferHistory.length > this.config.maxHistorySize) {
+      this.transferHistory = this.transferHistory.slice(
+        this.transferHistory.length - this.config.maxHistorySize
+      );
     }
 
-    // Emit transfer event
+    // Publish transfer event
     eventSystem.publish({
       type: 'RESOURCE_TRANSFERRED',
-      transfer,
+      resourceType: transfer.type,
+      source: transfer.source,
+      target: transfer.target,
+      amount: transfer.amount,
       timestamp: Date.now(),
     });
   }
@@ -179,21 +205,22 @@ export class ResourceTransferSubsystem {
   /**
    * Get all transfer history
    */
-  public getTransferHistory(): ResourceTransfer[] {
+  public getTransferHistory(): StringResourceTransfer[] {
     return [...this.transferHistory];
   }
 
   /**
    * Get transfer history for a specific resource type
    */
-  public getTransfersByType(type: ResourceType): ResourceTransfer[] {
-    return this.transferHistory.filter(transfer => transfer.type === type);
+  public getTransfersByType(type: StringResourceType | ResourceType): StringResourceTransfer[] {
+    const stringType = ensureStringResourceType(type);
+    return this.transferHistory.filter(transfer => transfer.type === stringType);
   }
 
   /**
    * Get transfers involving a specific entity (as source or target)
    */
-  public getTransfersByEntity(entityId: string): ResourceTransfer[] {
+  public getTransfersByEntity(entityId: string): StringResourceTransfer[] {
     return this.transferHistory.filter(
       transfer => transfer.source === entityId || transfer.target === entityId
     );
@@ -202,7 +229,7 @@ export class ResourceTransferSubsystem {
   /**
    * Get transfers between specific entities
    */
-  public getTransfersBetween(sourceId: string, targetId: string): ResourceTransfer[] {
+  public getTransfersBetween(sourceId: string, targetId: string): StringResourceTransfer[] {
     return this.transferHistory.filter(
       transfer => transfer.source === sourceId && transfer.target === targetId
     );
@@ -213,28 +240,31 @@ export class ResourceTransferSubsystem {
    */
   public calculateNetFlow(
     entityId: string,
-    resourceType?: ResourceType
+    resourceType?: StringResourceType | ResourceType
   ): Record<string, number> {
     const netFlow: Record<string, number> = {};
-    
+
+    // Convert resource type if provided
+    const stringType = resourceType ? ensureStringResourceType(resourceType) : undefined;
+
     // Filter transfers involving this entity
     const relevantTransfers = this.transferHistory.filter(
-      transfer => 
-        (transfer.source === entityId || transfer.target === entityId) && 
-        (!resourceType || transfer.type === resourceType)
+      transfer =>
+        (transfer.source === entityId || transfer.target === entityId) &&
+        (!stringType || transfer.type === stringType)
     );
-    
+
     for (const transfer of relevantTransfers) {
       // Calculate the other entity ID
       const otherEntityId = transfer.source === entityId ? transfer.target : transfer.source;
-      
+
       // Calculate flow direction - positive for incoming, negative for outgoing
       const flowAmount = transfer.source === entityId ? -transfer.amount : transfer.amount;
-      
+
       // Update net flow
       netFlow[otherEntityId] = (netFlow[otherEntityId] || 0) + flowAmount;
     }
-    
+
     return netFlow;
   }
 }

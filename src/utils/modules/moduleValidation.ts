@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   BaseModule,
   BuildingType,
@@ -27,9 +28,9 @@ export function isModuleType(value: unknown): value is ModuleType {
     'exploration',
     'mineral',
     'trading',
-    'population',
+    ResourceType.POPULATION,
     'infrastructure',
-    'research',
+    ResourceType.RESEARCH,
     'food',
     'defense',
     'resource-manager',

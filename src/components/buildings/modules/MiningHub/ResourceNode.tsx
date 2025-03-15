@@ -1,12 +1,12 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database, Truck, Zap } from 'lucide-react';
-import * as React from 'react';
-
+import * as React from "react";
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 interface Resource {
   id: string;
   name: string;
-  type: 'mineral' | 'gas' | 'exotic';
+  type: 'mineral' | ResourceType.GAS | ResourceType.EXOTIC;
   abundance: number;
   distance: number;
   extractionRate: number;
@@ -41,9 +41,9 @@ export function ResourceNode({
     switch (type) {
       case 'mineral':
         return 'cyan';
-      case 'gas':
+      case ResourceType.GAS:
         return 'purple';
-      case 'exotic':
+      case ResourceType.EXOTIC:
         return 'amber';
       default:
         return 'blue';

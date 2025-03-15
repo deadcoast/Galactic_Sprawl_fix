@@ -1,5 +1,6 @@
 import { Box, Button, LinearProgress, Skeleton, Typography } from '@mui/material';
-import React, { ComponentType, useCallback, useEffect, useState } from 'react';
+import * as React from "react";
+import { ComponentType, useCallback, useEffect, useState } from 'react';
 import useMemoryManager, { MemoryManagerOptions } from '../../../hooks/useMemoryManager';
 import { BaseChartProps } from './charts/BaseChart';
 

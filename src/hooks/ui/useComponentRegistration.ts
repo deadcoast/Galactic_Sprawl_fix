@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { useEffect, useRef } from 'react';
 import { componentRegistryService } from '../../services/ComponentRegistryService';
 import { useComponentProfiler } from './useComponentProfiler';

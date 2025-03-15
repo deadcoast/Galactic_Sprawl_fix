@@ -10,7 +10,8 @@
  * 5. Standardized state update mechanisms
  */
 
-import React, { createContext, useContext, useEffect, useMemo, useRef } from 'react';
+import * as React from "react";
+import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { EventBus } from '../events/EventBus';
 

@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-
+import * as React from "react";
+import { useEffect, useRef, useState } from 'react';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 interface BuildingData {
   id: string;
-  type: 'housing' | 'industry' | 'agriculture' | 'energy' | 'research' | 'infrastructure';
+  type: 'housing' | 'industry' | 'agriculture' | ResourceType.ENERGY | ResourceType.RESEARCH | 'infrastructure';
   name: string;
   level: number;
   position: { x: number; y: number };
@@ -90,9 +91,9 @@ export function ColonyMap({
         return 'bg-amber-800 border-amber-600';
       case 'agriculture':
         return 'bg-green-800 border-green-600';
-      case 'energy':
+      case ResourceType.ENERGY:
         return 'bg-yellow-800 border-yellow-600';
-      case 'research':
+      case ResourceType.RESEARCH:
         return 'bg-purple-800 border-purple-600';
       case 'infrastructure':
         return 'bg-gray-800 border-gray-600';

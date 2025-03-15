@@ -1,12 +1,14 @@
-import { ArrowRight, Package } from 'lucide-react';
+import * as React from "react";
 import { useEffect, useState } from 'react';
+import { ArrowRight, Package } from 'lucide-react';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 interface CargoShipProps {
   id: string;
   sourcePosition: { x: number; y: number };
   targetPosition: { x: number; y: number };
   progress: number;
-  resourceType: string;
+  resourceType: ResourceType;
   amount: number;
 }
 
@@ -75,11 +77,11 @@ export function ResourceTransferAnimation({ ships }: { ships: CargoShipProps[] }
 
   const getResourceColor = (type: string) => {
     switch (type.toLowerCase()) {
-      case 'minerals':
+      case ResourceType.MINERALS:
         return 'rgb(251, 191, 36)'; // amber-400
-      case 'energy':
+      case ResourceType.ENERGY:
         return 'rgb(52, 211, 153)'; // emerald-400
-      case 'plasma':
+      case ResourceType.PLASMA:
         return 'rgb(167, 139, 250)'; // violet-400
       default:
         return 'rgb(96, 165, 250)'; // blue-400

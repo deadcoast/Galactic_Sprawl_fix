@@ -1,5 +1,6 @@
-import { AlertTriangle, Rocket, Shield, Sword } from 'lucide-react';
+import * as React from "react";
 import { useEffect, useState } from 'react';
+import { AlertTriangle, Rocket, Shield, Sword } from 'lucide-react';
 import { FormationTransitionEffect } from '../../../effects/component_effects/FormationTransitionEffect';
 import { useAdaptiveAI } from '../../../hooks/factions/useAdaptiveAI';
 import { useFleetAI } from '../../../hooks/factions/useFleetAI';

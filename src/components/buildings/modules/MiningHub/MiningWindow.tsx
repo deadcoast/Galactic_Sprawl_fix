@@ -18,7 +18,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
 import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
 import { MiningResource } from '../../../../types/mining/MiningTypes';
-import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 import { MiningMap } from './MiningMap';
 import { MiningTutorial } from './MiningTutorial';
 import { ResourceNode } from './ResourceNode';
@@ -29,7 +29,7 @@ import { ResourceTransfer } from './ResourceTransfer';
 const mockStorageData = [
   {
     id: 'iron-storage',
-    resourceType: 'Iron',
+    resourceType: ResourceType.IRON,
     currentAmount: 8500,
     maxCapacity: 10000,
     refiningAmount: 250,
@@ -38,7 +38,7 @@ const mockStorageData = [
   },
   {
     id: 'helium-storage',
-    resourceType: 'Helium-3',
+    resourceType: ResourceType.HELIUM,
     currentAmount: 2800,
     maxCapacity: 5000,
     refiningAmount: 100,
@@ -53,7 +53,7 @@ const mockTransfers = [
     id: 'transfer-1',
     sourceId: 'iron-belt-1',
     targetId: 'iron-storage',
-    resourceType: 'Iron',
+    resourceType: ResourceType.IRON,
     amount: 50,
     progress: 0.3,
   },
@@ -61,7 +61,7 @@ const mockTransfers = [
     id: 'transfer-2',
     sourceId: 'helium-cloud-1',
     targetId: 'helium-storage',
-    resourceType: 'Helium-3',
+    resourceType: ResourceType.HELIUM,
     amount: 25,
     progress: 0.7,
   },
@@ -70,7 +70,7 @@ const mockTransfers = [
 interface Resource {
   id: string;
   name: string;
-  type: 'mineral' | 'gas' | 'exotic';
+  type: 'mineral' | ResourceType.GAS | ResourceType.EXOTIC;
   abundance: number;
   distance: number;
   extractionRate: number;
@@ -108,7 +108,7 @@ const mockResources: Resource[] = [
   {
     id: 'helium-cloud-1',
     name: 'Helium Cloud Beta',
-    type: 'gas',
+    type: ResourceType.GAS,
     abundance: 0.6,
     distance: 300,
     extractionRate: 15,
@@ -119,7 +119,7 @@ const mockResources: Resource[] = [
   {
     id: 'dark-matter-1',
     name: 'Dark Matter Cluster',
-    type: 'exotic',
+    type: ResourceType.EXOTIC,
     abundance: 0.3,
     distance: 500,
     extractionRate: 5,
@@ -154,13 +154,13 @@ const mockShips: MiningShip[] = [
 
 type ViewMode = 'map' | 'grid';
 type SortOption = 'priority' | 'name' | 'type' | 'abundance' | 'distance';
-type FilterOption = 'all' | 'mineral' | 'gas' | 'exotic';
+type FilterOption = 'all' | 'mineral' | ResourceType.GAS | ResourceType.EXOTIC;
 
 // Define specific types for drag items
 interface ResourceDragData {
   id: string;
   name: string;
-  type: 'mineral' | 'gas' | 'exotic';
+  type: 'mineral' | ResourceType.GAS | ResourceType.EXOTIC;
   abundance: number;
 }
 
@@ -204,7 +204,7 @@ const createDragData = (type: 'resource' | 'ship', data: BaseDragDataInput): Dra
     return {
       id: data.id || '',
       name: data.name || '',
-      type: (data.type as 'mineral' | 'gas' | 'exotic') || 'mineral',
+      type: (data.type as 'mineral' | ResourceType.GAS | ResourceType.EXOTIC) || 'mineral',
       abundance: typeof data.abundance === 'number' ? data.abundance : 0,
     } as ResourceDragData;
   } else {
@@ -227,10 +227,10 @@ const convertToMiningResource = (resource: Resource): MiningResource => {
     case 'mineral':
       resourceType = ResourceType.IRON; // Default to IRON for minerals
       break;
-    case 'gas':
+    case ResourceType.GAS:
       resourceType = ResourceType.HELIUM; // Default to HELIUM for gas
       break;
-    case 'exotic':
+    case ResourceType.EXOTIC:
       resourceType = ResourceType.EXOTIC_MATTER; // Map to EXOTIC_MATTER for exotic
       break;
     default:
@@ -245,13 +245,13 @@ const convertToMiningResource = (resource: Resource): MiningResource => {
 
 const convertToResource = (resource: MiningResource): Resource => {
   // Map the ResourceType enum to string type
-  let type: 'mineral' | 'gas' | 'exotic';
+  let type: 'mineral' | ResourceType.GAS | ResourceType.EXOTIC;
   if ([ResourceType.IRON, ResourceType.COPPER, ResourceType.TITANIUM].includes(resource.type)) {
     type = 'mineral';
   } else if ([ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(resource.type)) {
-    type = 'gas';
+    type = ResourceType.GAS;
   } else if ([ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(resource.type)) {
-    type = 'exotic';
+    type = ResourceType.EXOTIC;
   } else {
     type = 'mineral'; // Default fallback
   }
@@ -331,9 +331,12 @@ export function MiningWindow() {
     setSelectedNode(node);
   }, []);
 
-  const handleFilterChange = useCallback((newFilter: 'all' | 'mineral' | 'gas' | 'exotic') => {
-    setFilterBy(newFilter);
-  }, []);
+  const handleFilterChange = useCallback(
+    (newFilter: 'all' | 'mineral' | ResourceType.GAS | ResourceType.EXOTIC) => {
+      setFilterBy(newFilter);
+    },
+    []
+  );
 
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
@@ -628,8 +631,8 @@ export function MiningWindow() {
               },
               React.createElement('option', { value: 'all' }, 'All Resources'),
               React.createElement('option', { value: 'mineral' }, 'Minerals'),
-              React.createElement('option', { value: 'gas' }, 'Gas'),
-              React.createElement('option', { value: 'exotic' }, 'Exotic')
+              React.createElement('option', { value: ResourceType.GAS }, 'Gas'),
+              React.createElement('option', { value: ResourceType.EXOTIC }, 'Exotic')
             )
           ),
           // View mode toggle

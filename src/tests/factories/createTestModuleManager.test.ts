@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BuildingType, ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
@@ -23,8 +24,8 @@ describe('createTestModuleManager', () => {
           minLevel: 1,
           buildingType: ['mothership'] as BuildingType[],
           resourceCosts: [
-            { type: 'minerals', amount: 200 },
-            { type: 'energy', amount: 100 },
+            { type: ResourceType.MINERALS, amount: 200 },
+            { type: ResourceType.ENERGY, amount: 100 },
           ],
         },
         baseStats: {
@@ -138,7 +139,7 @@ describe('createTestModuleManager', () => {
     it('should create a test attachment point', () => {
       // Arrange
       const position: Position = { x: 10, y: 20 };
-      const allowedTypes: ModuleType[] = ['radar', 'research'];
+      const allowedTypes: ModuleType[] = ['radar', ResourceType.RESEARCH];
 
       // Act
       const attachmentPoint = testModuleManager.createTestAttachmentPoint(position, allowedTypes);

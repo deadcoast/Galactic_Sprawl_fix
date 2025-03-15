@@ -2,7 +2,7 @@ import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
 import { ResourceManager } from '../game/ResourceManager';
 
@@ -256,28 +256,41 @@ export class MiningShipManagerImpl extends EventEmitter {
   }
 
   private getPriorityForResourceType(type: ResourceType): number {
+    // Assign priority based on resource type
     switch (type) {
-      case 'exotic':
-        return 3;
-      case 'gas':
-        return 2;
-      case 'minerals':
+      case ResourceType.MINERALS:
         return 1;
+      case ResourceType.IRON:
+        return 2;
+      case ResourceType.COPPER:
+        return 3;
+      case ResourceType.TITANIUM:
+        return 4;
+      case ResourceType.URANIUM:
+        return 5;
+      case ResourceType.EXOTIC:
+        return 6;
+      case ResourceType.EXOTIC_MATTER:
+        return 7;
+      case ResourceType.DARK_MATTER:
+        return 8;
       default:
         return 0;
     }
   }
 
-  // Add method to get ship efficiency with tech bonuses
   public getShipEfficiency(shipId: string): number {
     const ship = this.ships.get(shipId);
     if (!ship) {
       return 0;
     }
 
-    const baseEfficiency = ship.efficiency;
-    const techBonus = ship.techBonuses?.efficiency || 1;
+    // Base efficiency plus any tech bonuses
+    let efficiency = ship.efficiency;
+    if (ship.techBonuses) {
+      efficiency *= ship.techBonuses.efficiency;
+    }
 
-    return baseEfficiency * techBonus;
+    return Math.min(1, efficiency);
   }
 }

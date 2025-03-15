@@ -1,5 +1,6 @@
+import * as React from "react";
 import { useEffect, useState } from 'react';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { GalaxyMappingSystem } from './GalaxyMappingSystem';
 
 // Interfaces
@@ -53,7 +54,7 @@ const generateSampleSectors = (count: number): Sector[] => {
   const statuses = ['unmapped', 'mapped', 'scanning', 'analyzed'] as const;
   const anomalyTypes = ['artifact', 'signal', 'phenomenon'] as const;
   const severities = ['low', 'medium', 'high'] as const;
-  const resourceTypes = ['minerals', 'gas', 'energy', 'organic', 'exotic'] as const;
+  const resourceTypes = [ResourceType.MINERALS, ResourceType.GAS, ResourceType.ENERGY, 'organic', ResourceType.EXOTIC] as const;
   const factionNames = [
     'Equator Horizon',
     'Lost Nova',
@@ -126,7 +127,7 @@ const generateSampleSectors = (count: number): Sector[] => {
 // Generate sample trade routes
 const generateSampleTradeRoutes = (sectors: Sector[], count: number): TradeRoute[] => {
   const routes: TradeRoute[] = [];
-  const resourceTypes = ['minerals', 'gas', 'energy', 'organic', 'exotic'] as const;
+  const resourceTypes = [ResourceType.MINERALS, ResourceType.GAS, ResourceType.ENERGY, 'organic', ResourceType.EXOTIC] as const;
 
   for (let i = 0; i < count; i++) {
     const sourceIndex = Math.floor(Math.random() * sectors.length);

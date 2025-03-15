@@ -8,7 +8,8 @@
  * 3. Performance optimization recommendations
  */
 
-import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import * as React from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import {
   clearAllHooksPerformanceData,
   clearHookPerformanceData,

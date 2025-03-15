@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import * as React from "react";
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import {

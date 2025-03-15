@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useModulesWithStatus } from '../../../hooks/modules/useModuleStatus';
 import { moduleManager } from '../../../managers/module/ModuleManager';
 import { ExtendedModuleStatus } from '../../../managers/module/ModuleStatusManager';

@@ -13,7 +13,7 @@ import {
   DataPoint,
   Dataset,
 } from '../../../types/exploration/DataAnalysisTypes';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 /**
  * Creates a mock taxonomy category for testing
@@ -83,7 +83,7 @@ export function createMockClassifiableDiscovery(
         }
       : undefined,
     // Resource specific properties
-    resourceType: !isAnomaly ? overrides.resourceType || 'minerals' : undefined,
+    resourceType: !isAnomaly ? overrides.resourceType || ResourceType.MINERALS : undefined,
     amount: !isAnomaly ? overrides.amount || Math.floor(Math.random() * 1000) : undefined,
     quality: !isAnomaly ? overrides.quality || Math.random() : undefined,
     distribution: !isAnomaly ? overrides.distribution || 'scattered' : undefined,
@@ -358,13 +358,13 @@ export function createMockTaxonomyHierarchy(): TaxonomyCategory[] {
  */
 export function createMockResourceType(): ResourceType {
   const resourceTypes: ResourceType[] = [
-    'minerals',
-    'energy',
-    'population',
-    'research',
-    'plasma',
-    'gas',
-    'exotic',
+    ResourceType.MINERALS,
+    ResourceType.ENERGY,
+    ResourceType.POPULATION,
+    ResourceType.RESEARCH,
+    ResourceType.PLASMA,
+    ResourceType.GAS,
+    ResourceType.EXOTIC,
   ];
 
   return resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
@@ -409,7 +409,7 @@ export function createTestEnvironment() {
               id: 'system-1',
               name: 'System 1',
               type: 'single',
-              resources: ['gas'],
+              resources: [ResourceType.GAS],
               status: 'explored',
             },
           ];
@@ -418,7 +418,7 @@ export function createTestEnvironment() {
             id: `system-${i * 6}`,
             name: `System ${i * 6}`,
             type: 'binary',
-            resources: ['minerals'],
+            resources: [ResourceType.MINERALS],
             status: i % 4 === 0 ? 'unexplored' : 'explored',
           }));
         } else if (criteria.type) {
@@ -426,7 +426,7 @@ export function createTestEnvironment() {
             id: `system-${i * 3}`,
             name: `System ${i * 3}`,
             type: 'binary',
-            resources: i % 2 === 0 ? ['minerals', 'energy'] : ['gas'],
+            resources: i % 2 === 0 ? [ResourceType.MINERALS, ResourceType.ENERGY] : [ResourceType.GAS],
             status: i % 4 === 0 ? 'unexplored' : 'explored',
           }));
         } else if (criteria.resources) {
@@ -434,7 +434,7 @@ export function createTestEnvironment() {
             id: `system-${i * 2}`,
             name: `System ${i * 2}`,
             type: i % 3 === 0 ? 'binary' : 'single',
-            resources: ['minerals', 'energy'],
+            resources: [ResourceType.MINERALS, ResourceType.ENERGY],
             status: i % 4 === 0 ? 'unexplored' : 'explored',
           }));
         } else if (criteria.status) {
@@ -442,7 +442,7 @@ export function createTestEnvironment() {
             id: `system-${i * 4}`,
             name: `System ${i * 4}`,
             type: i % 3 === 0 ? 'binary' : 'single',
-            resources: i % 2 === 0 ? ['minerals', 'energy'] : ['gas'],
+            resources: i % 2 === 0 ? [ResourceType.MINERALS, ResourceType.ENERGY] : [ResourceType.GAS],
             status: 'unexplored',
           }));
         }

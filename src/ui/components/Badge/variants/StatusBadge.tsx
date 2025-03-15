@@ -1,4 +1,5 @@
-import React, { forwardRef } from 'react';
+import * as React from "react";
+import { forwardRef } from 'react';
 import { Badge, BadgeProps } from '../Badge';
 import { cn } from '../../../../utils/cn';
 

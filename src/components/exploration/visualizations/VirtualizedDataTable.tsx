@@ -9,7 +9,8 @@ import {
   TableSortLabel,
   Typography,
 } from '@mui/material';
-import React, { useCallback, useMemo, useState } from 'react';
+import * as React from "react";
+import { useCallback, useMemo, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
 import { ChartDataRecord } from '../../../types/exploration/AnalysisComponentTypes';

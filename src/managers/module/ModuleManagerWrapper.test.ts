@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventBus } from '../../lib/events/EventBus';
 import { BaseModule, ModularBuilding } from '../../types/buildings/ModuleTypes';
 import { BaseEvent } from '../../types/events/EventTypes';
+import { ModuleManager } from './ModuleManager';
 import { ModuleManagerWrapper, convertToModule, convertToModules } from './ModuleManagerWrapper';
 
 // Define a mock interface for the ModuleManager to avoid 'any'
@@ -111,7 +112,7 @@ describe('ModuleManagerWrapper', () => {
         eventBus: { subscribe: vi.fn() } as unknown as EventBus<BaseEvent>,
       };
 
-      wrapper = new ModuleManagerWrapper(mockModuleManager as unknown);
+      wrapper = new ModuleManagerWrapper(mockModuleManager as unknown as ModuleManager);
     });
 
     it('should convert modules when calling getModules', () => {
@@ -176,7 +177,7 @@ describe('ModuleManagerWrapper', () => {
       };
 
       const wrapperWithDispatchAction = new ModuleManagerWrapper(
-        mockManagerWithDispatchAction as unknown
+        mockManagerWithDispatchAction as unknown as ModuleManager
       );
 
       // Create action
@@ -196,7 +197,9 @@ describe('ModuleManagerWrapper', () => {
         dispatch: vi.fn(),
       };
 
-      const wrapperWithDispatch = new ModuleManagerWrapper(mockManagerWithDispatch as unknown);
+      const wrapperWithDispatch = new ModuleManagerWrapper(
+        mockManagerWithDispatch as unknown as ModuleManager
+      );
 
       // Create action
       const action = { type: 'TEST_ACTION', moduleId: 'module-1' };

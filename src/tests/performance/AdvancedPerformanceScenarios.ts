@@ -9,7 +9,7 @@
 import { ResourceFlowManager } from '../../managers/resource/ResourceFlowManager';
 import { ModuleEvent } from '../../types/events/ModuleEvent';
 import { FlowNodeType } from '../../types/resources/FlowTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { EventPrioritizer } from '../../utils/events/EventPrioritizer';
 import {
   BenchmarkResult,

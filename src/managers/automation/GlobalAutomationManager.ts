@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
@@ -409,7 +410,7 @@ export class GlobalAutomationManager {
   /**
    * Helper method to get resource amount
    */
-  private getResourceAmount(_resourceType: string): number {
+  private getResourceAmount(_resourceType: ResourceType): number {
     try {
       // Try to access the resource manager through the automation manager
       // This is a simplified implementation

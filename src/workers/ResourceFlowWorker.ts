@@ -1,3 +1,4 @@
+import { ResourceType } from './../types/resources/ResourceTypes';
 /**
  * ResourceFlowWorker.ts
  *
@@ -11,8 +12,7 @@ import {
   FlowNode,
   ResourceState,
   ResourceTransfer,
-  ResourceType,
-} from '../types/resources/StandardizedResourceTypes';
+} from '../types/resources/ResourceTypes';
 
 // Message types for communication with the main thread
 type WorkerMessageType =
@@ -25,27 +25,27 @@ type WorkerMessageType =
 // Input data structure for worker tasks
 interface WorkerInput {
   type: WorkerMessageType;
-  data: any;
+  data: unknown;
   taskId: string;
 }
 
 // Output data structure for worker results
 interface WorkerOutput {
   type: WorkerMessageType;
-  result: any;
+  result: unknown;
   taskId: string;
   executionTimeMs: number;
 }
 
 // Self reference for the worker context
-const ctx: Worker = self as any;
+const ctx: Worker = self as unknown as Worker;
 
 // Handle messages from main thread
 ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
   const { type, data, taskId } = event.data;
   const startTime = Date.now();
 
-  let result: any;
+  let result: unknown;
 
   try {
     switch (type) {
@@ -320,7 +320,7 @@ function optimizeFlowRates(
           target: connection.target,
           resourceType: connection.resourceType,
           amount: optimalRate,
-          timestamp: new Date(),
+          timestamp: Date.now(),
         });
       }
     }

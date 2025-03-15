@@ -1,12 +1,15 @@
+import * as React from "react";
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ResourceVisualization } from '../../../components/ui/ResourceVisualization';
+import ResourceVisualization from '../../../components/ui/ResourceVisualization';
 import { GameProvider } from '../../../contexts/GameContext';
 import { useResourceTracking } from '../../../hooks/resources/useResourceTracking';
 import { ModuleEvent, moduleEventBus } from '../../../lib/modules/ModuleEvents';
 import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowManager';
 import { ResourceThresholdManager } from '../../../managers/resource/ResourceThresholdManager';
 import { ModuleType } from '../../../types/buildings/ModuleTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 // Define a type that includes our test module types
 type ExtendedModuleType = ModuleType | 'resourceManager';
@@ -29,22 +32,22 @@ vi.mock('../../../lib/modules/ModuleEvents', () => ({
 vi.mock('../../../hooks/resources/useResourceTracking', () => ({
   useResourceTracking: vi.fn().mockReturnValue({
     resources: {
-      minerals: 500,
-      energy: 1000,
-      population: 50,
-      research: 200,
+      [ensureStringResourceType(ResourceType.MINERALS)]: 500,
+      [ensureStringResourceType(ResourceType.ENERGY)]: 1000,
+      [ensureStringResourceType(ResourceType.POPULATION)]: 50,
+      [ensureStringResourceType(ResourceType.RESEARCH)]: 200,
     },
     resourceRates: {
-      minerals: 10,
-      energy: 20,
-      population: 1,
-      research: 5,
+      [ensureStringResourceType(ResourceType.MINERALS)]: 10,
+      [ensureStringResourceType(ResourceType.ENERGY)]: 20,
+      [ensureStringResourceType(ResourceType.POPULATION)]: 1,
+      [ensureStringResourceType(ResourceType.RESEARCH)]: 5,
     },
     thresholds: {
-      minerals: { low: 100, critical: 50 },
-      energy: { low: 200, critical: 100 },
-      population: { low: 10, critical: 5 },
-      research: { low: 50, critical: 20 },
+      [ensureStringResourceType(ResourceType.MINERALS)]: { low: 100, critical: 50 },
+      [ensureStringResourceType(ResourceType.ENERGY)]: { low: 200, critical: 100 },
+      [ensureStringResourceType(ResourceType.POPULATION)]: { low: 10, critical: 5 },
+      [ensureStringResourceType(ResourceType.RESEARCH)]: { low: 50, critical: 20 },
     },
   }),
 }));
@@ -64,7 +67,7 @@ describe('ResourceVisualization Integration', () => {
     thresholdManager = new ResourceThresholdManager();
 
     // Set up initial resource states
-    flowManager.updateResourceState('minerals', {
+    flowManager.updateResourceState(ensureStringResourceType(ResourceType.MINERALS), {
       current: 500,
       max: 2000,
       min: 0,
@@ -72,7 +75,7 @@ describe('ResourceVisualization Integration', () => {
       consumption: 5,
     });
 
-    flowManager.updateResourceState('energy', {
+    flowManager.updateResourceState(ensureStringResourceType(ResourceType.ENERGY), {
       current: 1000,
       max: 5000,
       min: 0,
@@ -82,9 +85,9 @@ describe('ResourceVisualization Integration', () => {
 
     // Set up thresholds
     thresholdManager.registerThreshold({
-      id: 'minerals',
+      id: ensureStringResourceType(ResourceType.MINERALS),
       threshold: {
-        type: 'minerals',
+        type: ensureStringResourceType(ResourceType.MINERALS),
         min: 100,
         max: 2000,
       },
@@ -93,9 +96,9 @@ describe('ResourceVisualization Integration', () => {
     });
 
     thresholdManager.registerThreshold({
-      id: 'energy',
+      id: ensureStringResourceType(ResourceType.ENERGY),
       threshold: {
-        type: 'energy',
+        type: ensureStringResourceType(ResourceType.ENERGY),
         min: 200,
         max: 5000,
       },
@@ -154,26 +157,38 @@ describe('ResourceVisualization Integration', () => {
       // Update the mock for useResourceTracking
       vi.mocked(useResourceTracking).mockReturnValue({
         resources: new Map([
-          ['minerals', { current: 600, max: 2000, min: 0, production: 10, consumption: 5 }], // Updated value
-          ['energy', { current: 1000, max: 5000, min: 0, production: 20, consumption: 10 }],
-          ['population', { current: 50, max: 100, min: 0, production: 1, consumption: 0 }],
-          ['research', { current: 200, max: 500, min: 0, production: 5, consumption: 0 }],
+          [
+            ensureStringResourceType(ResourceType.MINERALS),
+            { current: 600, max: 2000, min: 0, production: 10, consumption: 5 },
+          ], // Updated value
+          [
+            ensureStringResourceType(ResourceType.ENERGY),
+            { current: 1000, max: 5000, min: 0, production: 20, consumption: 10 },
+          ],
+          [
+            ensureStringResourceType(ResourceType.POPULATION),
+            { current: 50, max: 100, min: 0, production: 1, consumption: 0 },
+          ],
+          [
+            ensureStringResourceType(ResourceType.RESEARCH),
+            { current: 200, max: 500, min: 0, production: 5, consumption: 0 },
+          ],
         ]),
         resourceList: [
           {
-            type: 'minerals',
+            type: ensureStringResourceType(ResourceType.MINERALS),
             state: { current: 600, max: 2000, min: 0, production: 10, consumption: 5 },
           },
           {
-            type: 'energy',
+            type: ensureStringResourceType(ResourceType.ENERGY),
             state: { current: 1000, max: 5000, min: 0, production: 20, consumption: 10 },
           },
           {
-            type: 'population',
+            type: ensureStringResourceType(ResourceType.POPULATION),
             state: { current: 50, max: 100, min: 0, production: 1, consumption: 0 },
           },
           {
-            type: 'research',
+            type: ensureStringResourceType(ResourceType.RESEARCH),
             state: { current: 200, max: 500, min: 0, production: 5, consumption: 0 },
           },
         ],
@@ -204,35 +219,35 @@ describe('ResourceVisualization Integration', () => {
             consumption: 15,
             net: 21,
             amounts: {
-              minerals: 600,
-              energy: 1000,
-              population: 50,
-              research: 200,
-              plasma: 0,
-              gas: 0,
-              exotic: 0,
+              [ensureStringResourceType(ResourceType.MINERALS)]: 600,
+              [ensureStringResourceType(ResourceType.ENERGY)]: 1000,
+              [ensureStringResourceType(ResourceType.POPULATION)]: 50,
+              [ensureStringResourceType(ResourceType.RESEARCH)]: 200,
+              [ensureStringResourceType(ResourceType.PLASMA)]: 0,
+              [ensureStringResourceType(ResourceType.GAS)]: 0,
+              [ensureStringResourceType(ResourceType.EXOTIC)]: 0,
             },
             capacities: {
-              minerals: 2000,
-              energy: 5000,
-              population: 100,
-              research: 500,
-              plasma: 0,
-              gas: 0,
-              exotic: 0,
+              [ensureStringResourceType(ResourceType.MINERALS)]: 2000,
+              [ensureStringResourceType(ResourceType.ENERGY)]: 5000,
+              [ensureStringResourceType(ResourceType.POPULATION)]: 100,
+              [ensureStringResourceType(ResourceType.RESEARCH)]: 500,
+              [ensureStringResourceType(ResourceType.PLASMA)]: 0,
+              [ensureStringResourceType(ResourceType.GAS)]: 0,
+              [ensureStringResourceType(ResourceType.EXOTIC)]: 0,
             },
           },
           percentages: {
-            minerals: 0.3,
-            energy: 0.2,
-            population: 0.5,
-            research: 0.4,
-            plasma: 0,
-            gas: 0,
-            exotic: 0,
+            [ensureStringResourceType(ResourceType.MINERALS)]: 0.3,
+            [ensureStringResourceType(ResourceType.ENERGY)]: 0.2,
+            [ensureStringResourceType(ResourceType.POPULATION)]: 0.5,
+            [ensureStringResourceType(ResourceType.RESEARCH)]: 0.4,
+            [ensureStringResourceType(ResourceType.PLASMA)]: 0,
+            [ensureStringResourceType(ResourceType.GAS)]: 0,
+            [ensureStringResourceType(ResourceType.EXOTIC)]: 0,
           },
           criticalResources: [],
-          abundantResources: ['energy'],
+          abundantResources: [ensureStringResourceType(ResourceType.ENERGY)],
         },
       });
 
@@ -243,7 +258,7 @@ describe('ResourceVisualization Integration', () => {
         moduleType: 'resourceManager' as ExtendedModuleType,
         timestamp: Date.now(),
         data: {
-          resourceType: 'minerals',
+          resourceType: ensureStringResourceType(ResourceType.MINERALS),
           newValue: 600,
           oldValue: 500,
           delta: 100,
@@ -261,26 +276,38 @@ describe('ResourceVisualization Integration', () => {
     // Simulate low resource state
     vi.mocked(useResourceTracking).mockReturnValue({
       resources: new Map([
-        ['minerals', { current: 90, max: 2000, min: 0, production: 10, consumption: 15 }], // Below low threshold
-        ['energy', { current: 90, max: 5000, min: 0, production: 20, consumption: 25 }], // Below critical threshold
-        ['population', { current: 50, max: 100, min: 0, production: 1, consumption: 0 }],
-        ['research', { current: 200, max: 500, min: 0, production: 5, consumption: 0 }],
+        [
+          ensureStringResourceType(ResourceType.MINERALS),
+          { current: 90, max: 2000, min: 0, production: 10, consumption: 15 },
+        ], // Below low threshold
+        [
+          ensureStringResourceType(ResourceType.ENERGY),
+          { current: 90, max: 5000, min: 0, production: 20, consumption: 25 },
+        ], // Below critical threshold
+        [
+          ensureStringResourceType(ResourceType.POPULATION),
+          { current: 50, max: 100, min: 0, production: 1, consumption: 0 },
+        ],
+        [
+          ensureStringResourceType(ResourceType.RESEARCH),
+          { current: 200, max: 500, min: 0, production: 5, consumption: 0 },
+        ],
       ]),
       resourceList: [
         {
-          type: 'minerals',
+          type: ensureStringResourceType(ResourceType.MINERALS),
           state: { current: 90, max: 2000, min: 0, production: 10, consumption: 15 },
         },
         {
-          type: 'energy',
+          type: ensureStringResourceType(ResourceType.ENERGY),
           state: { current: 90, max: 5000, min: 0, production: 20, consumption: 25 },
         },
         {
-          type: 'population',
+          type: ensureStringResourceType(ResourceType.POPULATION),
           state: { current: 50, max: 100, min: 0, production: 1, consumption: 0 },
         },
         {
-          type: 'research',
+          type: ensureStringResourceType(ResourceType.RESEARCH),
           state: { current: 200, max: 500, min: 0, production: 5, consumption: 0 },
         },
       ],
@@ -311,34 +338,37 @@ describe('ResourceVisualization Integration', () => {
           consumption: 40,
           net: -4,
           amounts: {
-            minerals: 90,
-            energy: 90,
-            population: 50,
-            research: 200,
-            plasma: 0,
-            gas: 0,
-            exotic: 0,
+            [ensureStringResourceType(ResourceType.MINERALS)]: 90,
+            [ensureStringResourceType(ResourceType.ENERGY)]: 90,
+            [ensureStringResourceType(ResourceType.POPULATION)]: 50,
+            [ensureStringResourceType(ResourceType.RESEARCH)]: 200,
+            [ensureStringResourceType(ResourceType.PLASMA)]: 0,
+            [ensureStringResourceType(ResourceType.GAS)]: 0,
+            [ensureStringResourceType(ResourceType.EXOTIC)]: 0,
           },
           capacities: {
-            minerals: 2000,
-            energy: 5000,
-            population: 100,
-            research: 500,
-            plasma: 0,
-            gas: 0,
-            exotic: 0,
+            [ensureStringResourceType(ResourceType.MINERALS)]: 2000,
+            [ensureStringResourceType(ResourceType.ENERGY)]: 5000,
+            [ensureStringResourceType(ResourceType.POPULATION)]: 100,
+            [ensureStringResourceType(ResourceType.RESEARCH)]: 500,
+            [ensureStringResourceType(ResourceType.PLASMA)]: 0,
+            [ensureStringResourceType(ResourceType.GAS)]: 0,
+            [ensureStringResourceType(ResourceType.EXOTIC)]: 0,
           },
         },
         percentages: {
-          minerals: 0.045,
-          energy: 0.018,
-          population: 0.5,
-          research: 0.4,
-          plasma: 0,
-          gas: 0,
-          exotic: 0,
+          [ensureStringResourceType(ResourceType.MINERALS)]: 0.045,
+          [ensureStringResourceType(ResourceType.ENERGY)]: 0.018,
+          [ensureStringResourceType(ResourceType.POPULATION)]: 0.5,
+          [ensureStringResourceType(ResourceType.RESEARCH)]: 0.4,
+          [ensureStringResourceType(ResourceType.PLASMA)]: 0,
+          [ensureStringResourceType(ResourceType.GAS)]: 0,
+          [ensureStringResourceType(ResourceType.EXOTIC)]: 0,
         },
-        criticalResources: ['minerals', 'energy'],
+        criticalResources: [
+          ensureStringResourceType(ResourceType.MINERALS),
+          ensureStringResourceType(ResourceType.ENERGY),
+        ],
         abundantResources: [],
       },
     });

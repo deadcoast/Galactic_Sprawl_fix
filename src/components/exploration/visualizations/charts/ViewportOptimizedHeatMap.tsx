@@ -1,5 +1,6 @@
 import { debounce } from 'lodash';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChartDataRecord } from '../../../../types/exploration/AnalysisComponentTypes';
 import { BaseChart } from './BaseChart';
 

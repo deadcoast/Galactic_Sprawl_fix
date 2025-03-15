@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { useSubModules } from '../../../hooks/modules/useSubModules';
 import { moduleManager } from '../../../managers/module/ModuleManager';
 import { subModuleManager, SubModuleManager } from '../../../managers/module/SubModuleManager';

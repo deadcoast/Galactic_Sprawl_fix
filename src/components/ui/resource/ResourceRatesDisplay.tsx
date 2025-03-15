@@ -1,6 +1,8 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDownIcon, ArrowUpIcon, BarChart4, ChevronDown, ChevronUp } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { useAllResourceRates, useResourceRate } from '../../../contexts/ResourceRatesContext';
 import {
   ResourceType,

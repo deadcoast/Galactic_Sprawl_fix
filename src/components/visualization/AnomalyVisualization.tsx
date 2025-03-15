@@ -1,5 +1,6 @@
 import { Box, CircularProgress, Paper, Typography } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
+import * as React from "react";
+import { useCallback, useEffect, useState } from 'react';
 import { useService } from '../../hooks/services/useService';
 import { DataPoint, anomalyDetectionService } from '../../services/AnomalyDetectionService';
 

@@ -1,6 +1,8 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { render, RenderOptions, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React, { ReactElement } from 'react';
+import * as React from "react";
+import { ReactElement } from 'react';
 import { expect, vi } from 'vitest';
 import { GameProvider } from '../../contexts/GameContext';
 
@@ -136,7 +138,7 @@ export function createMockResource(overrides: Partial<Record<string, unknown>> =
     id: generateTestId('resource'),
     name: 'Test Resource',
     type: 'primary',
-    category: 'minerals',
+    category: ResourceType.MINERALS,
     amount: 100,
     max: 1000,
     rate: 10,
@@ -154,8 +156,8 @@ export function createMockResourceNode(overrides: Partial<Record<string, unknown
   return {
     id: generateTestId('node'),
     type: 'producer',
-    resources: ['energy'],
-    priority: { type: 'energy', priority: 1, consumers: [] },
+    resources: [ResourceType.ENERGY],
+    priority: { type: ResourceType.ENERGY, priority: 1, consumers: [] },
     active: true,
     ...overrides,
   };
@@ -171,10 +173,10 @@ export function createMockResourceConnection(overrides: Partial<Record<string, u
     id: generateTestId('connection'),
     source: 'source-node',
     target: 'target-node',
-    resourceType: 'energy',
+    resourceType: ResourceType.ENERGY,
     maxRate: 10,
     currentRate: 5,
-    priority: { type: 'energy', priority: 1, consumers: [] },
+    priority: { type: ResourceType.ENERGY, priority: 1, consumers: [] },
     active: true,
     ...overrides,
   };

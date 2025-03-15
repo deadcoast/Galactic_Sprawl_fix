@@ -1,13 +1,14 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { ChevronRight, Database, Settings, Wind, Zap } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import * as React from "react";
+import { useCallback, useEffect, useMemo } from 'react';
 import {
   MiningExperience,
   MiningResource,
   MiningTechBonuses,
 } from '../../../../types/mining/MiningTypes';
-import { ResourceType } from '../../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 
 interface MiningControlsProps {
   resource: MiningResource;

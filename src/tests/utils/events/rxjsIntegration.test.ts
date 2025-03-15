@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { Observable, Subject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ModuleEvent, ModuleEventType, moduleEventBus } from '../../../lib/modules/ModuleEvents';

@@ -1,5 +1,6 @@
-import { Box, Paper, Slider, Stack, Typography } from '@mui/material';
+import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Box, Paper, Slider, Stack, Typography } from '@mui/material';
 import { useWebGL } from '../../hooks/useWebGL';
 
 interface Point {

@@ -1,5 +1,6 @@
-import { act, render, screen } from '@testing-library/react';
+import * as React from "react";
 import { useEffect } from 'react';
+import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ModuleEvent, ModuleEventType, moduleEventBus } from '../../../lib/modules/ModuleEvents';
 import {

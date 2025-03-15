@@ -1,3 +1,5 @@
+import * as React from "react";
+import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowRight,
@@ -16,8 +18,7 @@ import {
   Shield,
   Zap,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 // Enhanced Anomaly interface with additional properties for detailed analysis
 interface Anomaly {
   id: string;
@@ -131,7 +132,7 @@ export function DetailedAnomalyAnalysis({
   const [analysisInProgress, setAnalysisInProgress] = useState<Record<string, boolean>>({});
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'detailed' | 'research' | 'exploitation'>(
+  const [activeTab, setActiveTab] = useState<'overview' | 'detailed' | ResourceType.RESEARCH | 'exploitation'>(
     'overview'
   );
   const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
@@ -457,9 +458,9 @@ export function DetailedAnomalyAnalysis({
                   Detailed
                 </button>
                 <button
-                  onClick={() => setActiveTab('research')}
+                  onClick={() => setActiveTab(ResourceType.RESEARCH)}
                   className={`px-2 py-1 text-xs ${
-                    activeTab === 'research'
+                    activeTab === ResourceType.RESEARCH
                       ? 'bg-blue-700 text-white'
                       : 'bg-gray-700 text-gray-300'
                   }`}
@@ -697,9 +698,9 @@ export function DetailedAnomalyAnalysis({
                   Detailed Analysis
                 </button>
                 <button
-                  onClick={() => setActiveTab('research')}
+                  onClick={() => setActiveTab(ResourceType.RESEARCH)}
                   className={`border-b-2 px-4 py-2 text-sm ${
-                    activeTab === 'research'
+                    activeTab === ResourceType.RESEARCH
                       ? 'border-blue-500 text-blue-400'
                       : 'border-transparent text-gray-400 hover:text-gray-300'
                   }`}
@@ -1747,7 +1748,7 @@ export function DetailedAnomalyAnalysis({
                 )}
 
                 {/* Research tab will be implemented in the next step */}
-                {activeTab === 'research' && (
+                {activeTab === ResourceType.RESEARCH && (
                   <div className="p-4 text-white">
                     Research tab content will be implemented in the next step
                   </div>

@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { moduleEventBus, ModuleEventType } from '../../../lib/modules/ModuleEvents';
@@ -206,7 +206,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
     container
       .append('defs')
       .selectAll('marker')
-      .data(['default', 'minerals', 'energy', 'plasma', 'gas', 'research'])
+      .data(['default', ResourceType.MINERALS, ResourceType.ENERGY, ResourceType.PLASMA, ResourceType.GAS, ResourceType.RESEARCH])
       .enter()
       .append('marker')
       .attr('id', d => `arrow-${d}`)

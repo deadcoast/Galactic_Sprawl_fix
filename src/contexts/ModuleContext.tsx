@@ -1,3 +1,5 @@
+import { ResourceType } from "./../types/resources/ResourceTypes";
+import * as React from "react";
 import React, {
   createContext,
   ReactNode,
@@ -568,11 +570,11 @@ export function canBuildModule(
   try {
     // Type assertion to a more specific interface with getResourceAmount
     const typedResourceManager = resourceManager as unknown as {
-      getResourceAmount: (resourceType: string) => number;
+      getResourceAmount: (resourceType: ResourceType) => number;
     };
 
-    currentMinerals = typedResourceManager.getResourceAmount('minerals') || 0;
-    currentEnergy = typedResourceManager.getResourceAmount('energy') || 0;
+    currentMinerals = typedResourceManager.getResourceAmount(ResourceType.MINERALS) || 0;
+    currentEnergy = typedResourceManager.getResourceAmount(ResourceType.ENERGY) || 0;
   } catch (error) {
     console.error('Error getting resource amounts:', error);
     return false;

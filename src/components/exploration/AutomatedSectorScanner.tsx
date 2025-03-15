@@ -1,5 +1,7 @@
-import { AlertTriangle, Cpu, Database, Radar, Settings, Zap } from 'lucide-react';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, Cpu, Database, Radar, Settings, Zap } from 'lucide-react';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   automationManager,
@@ -317,7 +319,7 @@ export function AutomatedSectorScanner({
         },
         {
           type: 'RESOURCE_ABOVE' as const,
-          target: 'energy',
+          target: ResourceType.ENERGY,
           value: {
             amount: energyPerScan,
           },

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { AlertTriangle, BarChart2, RefreshCw, Ship, TrendingUp } from 'lucide-react';
 import { BaseModule } from '../../../../types/buildings/ModuleTypes';
 

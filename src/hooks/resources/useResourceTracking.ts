@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ResourceTotals,
@@ -94,7 +95,7 @@ export interface ResourceTrackingResult {
 export function useResourceTracking(options: ResourceTrackingOptions = {}): ResourceTrackingResult {
   // Default options
   const {
-    types = ['minerals', 'energy', 'population', 'research', 'plasma', 'gas', 'exotic'],
+    types = [ResourceType.MINERALS, ResourceType.ENERGY, ResourceType.POPULATION, ResourceType.RESEARCH, ResourceType.PLASMA, ResourceType.GAS, ResourceType.EXOTIC],
     updateInterval = 1000,
     historyLimit = 100,
     enableAlerts: _enableAlerts = true,

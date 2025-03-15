@@ -1,5 +1,6 @@
-import { Award, Shield, Target, Zap } from 'lucide-react';
+import * as React from "react";
 import { useEffect, useState } from 'react';
+import { Award, Shield, Target, Zap } from 'lucide-react';
 import { weaponUpgradeManager } from '../../managers/weapons/WeaponUpgradeManager';
 import { WEAPON_COLORS, WeaponInstance, WeaponUpgrade } from '../../types/weapons/WeaponTypes';
 

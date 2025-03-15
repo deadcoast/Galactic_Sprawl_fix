@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Activity, Crosshair, Shield, Zap } from 'lucide-react';
 import type { CommonShipDisplayStats } from '../../../../types/ships/CommonShipTypes';
 

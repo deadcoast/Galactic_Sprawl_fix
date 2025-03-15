@@ -6,7 +6,8 @@
  * tracking memory usage over extended sessions.
  */
 
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import LongSessionMemoryVisualizer from '../../components/performance/LongSessionMemoryVisualizer';
 import {
   LongSessionMemoryResult,

@@ -1,5 +1,6 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { cleanup, screen } from '@testing-library/react';
-import React from 'react';
+import * as React from "react";
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createMockResource,
@@ -91,11 +92,11 @@ describe('Test Utilities Usage Example', () => {
     it('should create mock resource nodes', () => {
       const node = createMockResourceNode({
         type: 'consumer',
-        resources: ['minerals'],
+        resources: [ResourceType.MINERALS],
       });
 
       expect(node.type).toBe('consumer');
-      expect(node.resources).toEqual(['minerals']);
+      expect(node.resources).toEqual([ResourceType.MINERALS]);
       expect(node.active).toBe(true);
     });
   });

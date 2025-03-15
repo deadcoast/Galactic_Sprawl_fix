@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   ModuleUpgradeManager,
   ModuleUpgradePath,
@@ -18,8 +19,8 @@ export const moduleUpgradePaths: ModuleUpgradePath[] = [
         requirements: {
           minLevel: 1,
           resourceCosts: [
-            { type: 'minerals', amount: 100 },
-            { type: 'energy', amount: 50 },
+            { type: ResourceType.MINERALS, amount: 100 },
+            { type: ResourceType.ENERGY, amount: 50 },
           ],
           buildingLevel: 2,
         },
@@ -59,9 +60,9 @@ export const moduleUpgradePaths: ModuleUpgradePath[] = [
         requirements: {
           minLevel: 2,
           resourceCosts: [
-            { type: 'minerals', amount: 200 },
-            { type: 'energy', amount: 100 },
-            { type: 'plasma', amount: 50 },
+            { type: ResourceType.MINERALS, amount: 200 },
+            { type: ResourceType.ENERGY, amount: 100 },
+            { type: ResourceType.PLASMA, amount: 50 },
           ],
           techRequirements: ['advanced_sensors'],
           buildingLevel: 3,
@@ -121,8 +122,8 @@ export const moduleUpgradePaths: ModuleUpgradePath[] = [
         requirements: {
           minLevel: 1,
           resourceCosts: [
-            { type: 'minerals', amount: 150 },
-            { type: 'energy', amount: 75 },
+            { type: ResourceType.MINERALS, amount: 150 },
+            { type: ResourceType.ENERGY, amount: 75 },
           ],
           buildingLevel: 2,
         },
@@ -162,9 +163,9 @@ export const moduleUpgradePaths: ModuleUpgradePath[] = [
         requirements: {
           minLevel: 2,
           resourceCosts: [
-            { type: 'minerals', amount: 300 },
-            { type: 'energy', amount: 150 },
-            { type: 'plasma', amount: 75 },
+            { type: ResourceType.MINERALS, amount: 300 },
+            { type: ResourceType.ENERGY, amount: 150 },
+            { type: ResourceType.PLASMA, amount: 75 },
           ],
           techRequirements: ['automated_docking'],
           buildingLevel: 3,
@@ -224,15 +225,15 @@ export const moduleUpgradePaths: ModuleUpgradePath[] = [
         requirements: {
           minLevel: 1,
           resourceCosts: [
-            { type: 'minerals', amount: 120 },
-            { type: 'energy', amount: 60 },
+            { type: ResourceType.MINERALS, amount: 120 },
+            { type: ResourceType.ENERGY, amount: 60 },
           ],
           buildingLevel: 2,
         },
         effects: [
           {
             type: 'resource',
-            target: 'minerals',
+            target: ResourceType.MINERALS,
             value: 25,
             isPercentage: true,
             description: 'Increases mineral production',
@@ -265,9 +266,9 @@ export const moduleUpgradePaths: ModuleUpgradePath[] = [
         requirements: {
           minLevel: 2,
           resourceCosts: [
-            { type: 'minerals', amount: 250 },
-            { type: 'energy', amount: 125 },
-            { type: 'plasma', amount: 60 },
+            { type: ResourceType.MINERALS, amount: 250 },
+            { type: ResourceType.ENERGY, amount: 125 },
+            { type: ResourceType.PLASMA, amount: 60 },
           ],
           techRequirements: ['automated_mining'],
           buildingLevel: 3,
@@ -275,7 +276,7 @@ export const moduleUpgradePaths: ModuleUpgradePath[] = [
         effects: [
           {
             type: 'resource',
-            target: 'minerals',
+            target: ResourceType.MINERALS,
             value: 50,
             isPercentage: true,
             description: 'Greatly increases mineral production',

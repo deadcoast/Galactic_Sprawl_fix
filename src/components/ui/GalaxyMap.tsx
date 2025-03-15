@@ -1,3 +1,5 @@
+import * as React from "react";
+import { useEffect, useRef, useState } from 'react';
 import {
   AlertTriangle,
   ArrowRight,
@@ -10,7 +12,6 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 
 interface CosmicEvent {
   id: string;

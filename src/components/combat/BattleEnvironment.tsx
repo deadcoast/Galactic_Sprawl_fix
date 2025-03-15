@@ -1,5 +1,6 @@
-import { AlertTriangle, Shield, Zap } from 'lucide-react';
+import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AlertTriangle, Shield, Zap } from 'lucide-react';
 import { CombatAutomationEffect } from '../../effects/component_effects/CombatAutomationEffect';
 import { useFleetAI } from '../../hooks/factions/useFleetAI';
 import { useGlobalEvents } from '../../hooks/game/useGlobalEvents';

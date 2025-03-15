@@ -3,7 +3,7 @@ import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/
 import { ResourceManager } from '../../managers/game/ResourceManager';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // Create an instance of ResourceManager
 const resourceManager = new ResourceManager();

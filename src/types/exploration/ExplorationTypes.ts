@@ -1,5 +1,5 @@
 import { Vector3D } from '../common/VectorTypes';
-import { ResourceType } from '../resources/StandardizedResourceTypes';
+import { ResourceType } from "./../resources/ResourceTypes";
 
 export enum SectorType {
   UNEXPLORED = 'UNEXPLORED',

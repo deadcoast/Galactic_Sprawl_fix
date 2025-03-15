@@ -1,10 +1,10 @@
+import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { EventEmitter } from '../../lib/utils/EventEmitter';
-import { combatManager } from '../../managers/combat/combatManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { CommonShipCapabilities } from '../../types/ships/CommonShipTypes';
 import { WeaponConfig, WeaponState } from '../../types/weapons/WeaponTypes';
+import { getCombatManager } from '../ManagerRegistry';
 
 interface WarShip {
   id: string;
@@ -85,7 +85,20 @@ interface AttackData {
   targetId?: string;
 }
 
-export class WarShipManagerImpl extends EventEmitter {
+interface WarShipEvents {
+  shipRegistered: { shipId: string };
+  shipUnregistered: { shipId: string };
+  taskAssigned: { shipId: string; task: CombatTask };
+  taskCompleted: { shipId: string; task: CombatTask };
+  techBonusesUpdated: {
+    shipId: string;
+    bonuses: { weaponEfficiency: number; shieldRegeneration: number; energyEfficiency: number };
+  };
+  formationCreated: { formationId: string; type: string; ships: string[] };
+  shipStatusUpdated: { shipId: string; status: string };
+}
+
+export class WarShipManagerImpl extends BaseTypedEventEmitter<WarShipEvents> {
   private ships: Map<string, WarShip> = new Map();
   private tasks: Map<string, CombatTask> = new Map();
   private formations: Map<
@@ -421,7 +434,7 @@ export class WarShipManagerImpl extends EventEmitter {
                 };
 
                 // Move ship towards formation position
-                combatManager.moveUnit(shipId, targetPos);
+                getCombatManager().moveUnit(shipId, targetPos);
               }
             }
           });
@@ -444,7 +457,7 @@ export class WarShipManagerImpl extends EventEmitter {
       // Handle combat tasks
       const task = this.tasks.get(ship.id);
       if (task?.status === 'in-progress') {
-        const target = combatManager
+        const target = getCombatManager()
           .getUnitsInRange(ship.position, ship.weapons[0].config.baseStats.range)
           .find(unit => unit.id === task.target.id);
 

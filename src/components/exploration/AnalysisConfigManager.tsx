@@ -17,7 +17,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
+import * as React from "react";
+import { useState } from 'react';
 import {
   AnalysisConfig,
   AnalysisType,

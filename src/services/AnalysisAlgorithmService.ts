@@ -1,3 +1,4 @@
+import { ResourceType } from "./../types/resources/ResourceTypes";
 /**
  * @file AnalysisAlgorithmService.ts
  * Service for implementing data analysis algorithms

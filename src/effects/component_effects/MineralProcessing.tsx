@@ -1,7 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database } from 'lucide-react';
-import * as React from 'react';
+import * as React from "react";
 import { useState } from 'react';
 
 interface MineralNode {

@@ -1,5 +1,7 @@
-import { Loader2, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
+import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Loader2, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { useTooltip } from '../../hooks/ui/useTooltip';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 
@@ -50,7 +52,7 @@ interface ResourceTransfer {
   id: string;
   sourceId: string;
   targetId: string;
-  resourceType: string;
+  resourceType: ResourceType;
   amount: number;
   progress: number;
   startTime: number;

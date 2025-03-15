@@ -1,7 +1,7 @@
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { Position } from '../../types/core/GameTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
-import { EventEmitter } from '../../utils/EventEmitter';
 
 interface BehaviorNode {
   id: string;
@@ -27,7 +27,7 @@ interface BehaviorContext {
   cooldowns: Record<string, number>;
 }
 
-interface BehaviorEvents {
+export interface BehaviorEvents {
   nodeExecuted: { nodeId: string; success: boolean };
   treeCompleted: { unitId: string; success: boolean };
   actionStarted: { unitId: string; actionType: string };
@@ -35,15 +35,13 @@ interface BehaviorEvents {
   [key: string]: unknown;
 }
 
-export class BehaviorTreeManager extends EventEmitter<BehaviorEvents> {
+export class BehaviorTreeManager extends TypedEventEmitter<BehaviorEvents> {
   private static instance: BehaviorTreeManager;
-  private trees: Map<string, BehaviorNode>;
-  private contexts: Map<string, BehaviorContext>;
+  private trees: Map<string, BehaviorNode> = new Map();
+  private contexts: Map<string, BehaviorContext> = new Map();
 
   private constructor() {
     super();
-    this.trees = new Map();
-    this.contexts = new Map();
     this.initializeDefaultTrees();
   }
 

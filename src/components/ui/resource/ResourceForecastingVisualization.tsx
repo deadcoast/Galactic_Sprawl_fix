@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -10,7 +11,8 @@ import {
   Tooltip,
   TooltipItem,
 } from 'chart.js';
-import React, { useEffect, useMemo, useState } from 'react';
+import * as React from "react";
+import { useEffect, useMemo, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { useResourceRate } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';

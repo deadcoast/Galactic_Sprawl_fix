@@ -11,7 +11,12 @@ import {
   Truck,
   Users,
 } from 'lucide-react';
-import React, { useCallback, useState } from 'react';
+import * as React from 'react';
+import { useCallback, useState } from 'react';
+import { useEventSubscription } from '../../../hooks/events/useEventSubscription';
+import { ModuleEvent, moduleEventBus } from '../../../lib/events/ModuleEventBus';
+import { EventType } from '../../../types/events/EventTypes';
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 import { AutomatedPopulationManager } from './AutomatedPopulationManager';
 import { ColonyMap } from './ColonyMap';
 import { GrowthRateModifiers } from './GrowthRateModifiers';
@@ -27,7 +32,7 @@ interface GrowthModifier {
   name: string;
   description: string;
   effect: number; // Percentage modifier (e.g., 1.1 = +10%)
-  type: 'food' | 'housing' | 'healthcare' | 'environment' | 'energy';
+  type: 'food' | 'housing' | 'healthcare' | 'environment' | ResourceType.ENERGY;
   active: boolean;
 }
 
@@ -66,7 +71,13 @@ interface PopulationEvent {
 // New types for additional components
 interface BuildingData {
   id: string;
-  type: 'housing' | 'industry' | 'agriculture' | 'energy' | 'research' | 'infrastructure';
+  type:
+    | 'housing'
+    | 'industry'
+    | 'agriculture'
+    | ResourceType.ENERGY
+    | ResourceType.RESEARCH
+    | 'infrastructure';
   name: string;
   level: number;
   position: { x: number; y: number };
@@ -75,7 +86,13 @@ interface BuildingData {
 }
 
 interface ResourceData {
-  type: 'energy' | 'materials' | 'food' | 'research' | 'technology' | 'population';
+  type:
+    | ResourceType.ENERGY
+    | 'materials'
+    | 'food'
+    | ResourceType.RESEARCH
+    | 'technology'
+    | ResourceType.POPULATION;
   name: string;
   production: number;
   consumption: number;
@@ -84,7 +101,7 @@ interface ResourceData {
 }
 
 interface SatisfactionFactor {
-  type: 'housing' | 'food' | 'healthcare' | 'energy' | 'security';
+  type: 'housing' | 'food' | 'healthcare' | ResourceType.ENERGY | 'security';
   name: string;
   value: number; // 0-100
   weight: number; // 0-1, sum of all weights should be 1
@@ -109,6 +126,33 @@ interface ColonyManagementSystemProps {
   onGrowthModifierChange?: (modifiers: GrowthModifier[]) => void;
   onBuildingClick?: (buildingId: string) => void;
   onResourceClick?: (resourceType: ResourceData['type']) => void;
+}
+
+// Type guards
+function isColonyStatsEvent(event: ModuleEvent): boolean {
+  return (
+    event.moduleType === 'colony' &&
+    event.data !== undefined &&
+    typeof event.data === 'object' &&
+    event.data !== null &&
+    'stats' in event.data &&
+    typeof event.data.stats === 'object' &&
+    event.data.stats !== null &&
+    ResourceType.POPULATION in event.data.stats &&
+    typeof event.data.stats.population === 'number'
+  );
+}
+
+function isResourceUpdateEvent(event: ModuleEvent): boolean {
+  return (
+    event.moduleType === 'colony' &&
+    event.data !== undefined &&
+    typeof event.data === 'object' &&
+    event.data !== null &&
+    'resourceAmounts' in event.data &&
+    typeof event.data.resourceAmounts === 'object' &&
+    event.data.resourceAmounts !== null
+  );
 }
 
 /**
@@ -159,6 +203,55 @@ export function ColonyManagementSystem({
     projection: false,
   });
 
+  // Subscribe to colony events
+  useEventSubscription(moduleEventBus, EventType.MODULE_UPDATED, (event: ModuleEvent) => {
+    if (event.moduleId === colonyId && isColonyStatsEvent(event)) {
+      const { population: newPopulation } = event.data.stats;
+      handlePopulationChange(newPopulation);
+    }
+  });
+
+  useEventSubscription(moduleEventBus, EventType.RESOURCE_UPDATED, (event: ModuleEvent) => {
+    if (event.moduleId === colonyId && isResourceUpdateEvent(event)) {
+      // Update resource amounts
+      const updatedResources = resources.map(resource => {
+        const resourceAmounts = event.data.resourceAmounts as Record<string, number>;
+        const amount = resourceAmounts[resource.type];
+        if (amount !== undefined) {
+          return {
+            ...resource,
+            storage: amount,
+          };
+        }
+        return resource;
+      });
+      _setResources(updatedResources);
+    }
+  });
+
+  useEventSubscription(moduleEventBus, EventType.TRADE_ROUTE_UPDATED, event => {
+    if (event.moduleId === colonyId && event.data.tradeResources) {
+      // Update trade routes
+      const updatedRoutes = tradeRoutes.map(route => {
+        if (route.partnerId === event.data.partnerId) {
+          return {
+            ...route,
+            resources: event.data.tradeResources.map(resource => ({
+              id: `${resource}-${Date.now()}`,
+              name: resource,
+              type: 'import',
+              amount: 0,
+              value: 0,
+            })),
+          };
+        }
+        return route;
+      });
+      setTradeRoutes(updatedRoutes);
+      onTradeRouteChange?.(updatedRoutes);
+    }
+  });
+
   // Calculate effective growth rate based on active modifiers
   const calculateEffectiveGrowthRate = useCallback(() => {
     const activeModifiers = growthModifiers.filter(m => m.active);
@@ -178,7 +271,7 @@ export function ColonyManagementSystem({
   const handlePopulationChange = (newPopulation: number) => {
     setPopulation(newPopulation);
 
-    // Add population event
+    // Add population event and emit event
     const growthAmount = newPopulation - population;
     if (growthAmount !== 0) {
       const newEvent: PopulationEvent = {
@@ -190,6 +283,14 @@ export function ColonyManagementSystem({
       };
 
       setPopulationEvents(prev => [newEvent, ...prev]);
+
+      // Emit population change event
+      moduleEventBus.emitEvent(EventType.MODULE_UPDATED, colonyId, 'colony', {
+        colonyId,
+        stats: {
+          population: newPopulation,
+        },
+      });
     }
 
     // Call external handler
@@ -309,7 +410,7 @@ export function ColonyManagementSystem({
       case 'housing':
       case 'food':
       case 'healthcare':
-      case 'energy':
+      case ResourceType.ENERGY:
         // These factors correspond to modifiers, so expand the modifiers section
         setExpandedSections(prev => ({
           ...prev,
@@ -360,7 +461,7 @@ export function ColonyManagementSystem({
         return 'Advanced Medical Facilities';
       case 'environment':
         return 'Environmental Adaptation';
-      case 'energy':
+      case ResourceType.ENERGY:
         return 'Energy Grid Optimization';
       default:
         return 'New Modifier';
@@ -377,7 +478,7 @@ export function ColonyManagementSystem({
         return 'Advanced medical facilities improve population health and growth.';
       case 'environment':
         return 'Environmental adaptations make the colony more habitable.';
-      case 'energy':
+      case ResourceType.ENERGY:
         return 'Optimized energy grid supports more population infrastructure.';
       default:
         return 'A new modifier affecting population growth.';
@@ -394,7 +495,7 @@ export function ColonyManagementSystem({
         return 1.08; // +8%
       case 'environment':
         return 1.12; // +12%
-      case 'energy':
+      case ResourceType.ENERGY:
         return 1.05; // +5%
       default:
         return 1.1; // +10%
@@ -402,7 +503,14 @@ export function ColonyManagementSystem({
   };
 
   const generateRandomResources = (partnerId: string): TradeResource[] => {
-    const resourceTypes = ['minerals', 'food', 'technology', 'luxury', 'medicine', 'energy'];
+    const resourceTypes = [
+      ResourceType.MINERALS,
+      'food',
+      'technology',
+      'luxury',
+      'medicine',
+      ResourceType.ENERGY,
+    ];
     const resourceCount = 1 + Math.floor(Math.random() * 3); // 1-3 resources
     const resources: TradeResource[] = [];
 
@@ -481,7 +589,7 @@ export function ColonyManagementSystem({
           title="Population Growth"
           icon={<Users className="h-5 w-5 text-blue-400" />}
           isExpanded={expandedSections.population}
-          onToggle={() => toggleSection('population')}
+          onToggle={() => toggleSection(ResourceType.POPULATION)}
         />
 
         {expandedSections.population && (

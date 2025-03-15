@@ -1,6 +1,6 @@
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { moduleManager } from '../module/ModuleManager';
 import { ResourceManager } from './ResourceManager';
 

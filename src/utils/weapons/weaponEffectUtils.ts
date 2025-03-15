@@ -7,7 +7,7 @@ import {
 } from '../../effects/types_effects/WeaponEffects';
 import { Effect } from '../../types/core/GameTypes';
 import { WeaponCategory, WeaponSystem } from '../../types/weapons/WeaponTypes';
-
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 interface WeaponLike {
   id: string;
   type: WeaponCategory | string;
@@ -99,7 +99,7 @@ export function createDamageEffect(params: {
   magnitude: number;
   duration: number;
   strength: number;
-  damageType: 'physical' | 'energy' | 'explosive';
+  damageType: 'physical' | ResourceType.ENERGY | 'explosive';
   penetration: number;
   name?: string;
   description?: string;
@@ -207,7 +207,7 @@ export function createCustomWeaponEffect(params: {
   magnitude: number;
   duration: number;
   strength: number;
-  damageType?: 'physical' | 'energy' | 'explosive';
+  damageType?: 'physical' | ResourceType.ENERGY | 'explosive';
   penetration?: number;
   radius?: number;
   falloff?: number;

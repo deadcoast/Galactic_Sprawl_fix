@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { AutomationRule } from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
@@ -19,7 +20,7 @@ export const explorationRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: {
           amount: 100,
         },

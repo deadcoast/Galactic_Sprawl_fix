@@ -1,6 +1,7 @@
 import { Check, ChevronDown, ChevronUp, Filter, Search, X } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import * as React from "react";
+import { useCallback, useEffect, useState } from 'react';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // Anomaly types and severities
 const ANOMALY_TYPES = ['artifact', 'signal', 'phenomenon'] as const;
@@ -9,7 +10,12 @@ const ANOMALY_SEVERITIES = ['low', 'medium', 'high'] as const;
 type AnomalySeverity = (typeof ANOMALY_SEVERITIES)[number] | 'any';
 
 // Resource types from the game's resource system
-const RESOURCE_TYPES: ResourceType[] = ['minerals', 'energy', 'gas', 'exotic'];
+const RESOURCE_TYPES: ResourceType[] = [
+  ResourceType.MINERALS,
+  ResourceType.ENERGY,
+  ResourceType.GAS,
+  ResourceType.EXOTIC,
+];
 
 // Time periods for "last scanned" filter
 const TIME_PERIODS = [

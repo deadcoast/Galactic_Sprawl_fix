@@ -1,6 +1,8 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
-import React, { useState } from 'react';
+import * as React from "react";
+import { useState } from 'react';
 import { useAllResourceRates } from '../../../contexts/ResourceRatesContext';
 import {
   ResourceType,
@@ -176,7 +178,7 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
   };
 
   // Check if a resource passes the current filter
-  const passesFilter = (resourceType: string): boolean => {
+  const passesFilter = (resourceType: ResourceType): boolean => {
     const resType = resourceType as ResourceType;
 
     // Check if the resource type exists in allResourceRates
@@ -206,13 +208,13 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
   const getResourceKey = (resourceType: ResourceType): keyof typeof allResourceRates | null => {
     // Map ResourceType enum values to keys in allResourceRates
     const mapping: Partial<Record<ResourceType, keyof typeof allResourceRates>> = {
-      [ResourceType.MINERALS]: 'minerals',
-      [ResourceType.ENERGY]: 'energy',
-      [ResourceType.POPULATION]: 'population',
-      [ResourceType.RESEARCH]: 'research',
-      [ResourceType.PLASMA]: 'plasma',
-      [ResourceType.GAS]: 'gas',
-      [ResourceType.EXOTIC]: 'exotic',
+      [ResourceType.MINERALS]: ResourceType.MINERALS,
+      [ResourceType.ENERGY]: ResourceType.ENERGY,
+      [ResourceType.POPULATION]: ResourceType.POPULATION,
+      [ResourceType.RESEARCH]: ResourceType.RESEARCH,
+      [ResourceType.PLASMA]: ResourceType.PLASMA,
+      [ResourceType.GAS]: ResourceType.GAS,
+      [ResourceType.EXOTIC]: ResourceType.EXOTIC,
     };
 
     return mapping[resourceType] || null;

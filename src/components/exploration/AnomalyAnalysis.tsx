@@ -10,7 +10,8 @@ import {
   Microscope,
   Zap,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import * as React from "react";
+import { useState } from 'react';
 
 interface Anomaly {
   id: string;

@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   AutomationRule,
@@ -23,7 +24,7 @@ export const miningRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: {
           amount: 150,
         },
@@ -67,7 +68,7 @@ export const miningRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_BELOW',
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: {
           amount: 1000, // Minimum threshold
         },
@@ -82,7 +83,7 @@ export const miningRules: AutomationRule[] = [
           moduleType: 'mineral' as ModuleType,
           eventType: 'INCREASE_MINING_PRIORITY' as ModuleEventType,
           data: {
-            resourceType: 'minerals',
+            resourceType: ResourceType.MINERALS,
             priority: 2,
           },
         },
@@ -141,7 +142,7 @@ export const miningRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: 8000, // Near max storage
       },
     ],
@@ -267,24 +268,24 @@ export const miningRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: 500,
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: 300,
       },
     ],
     actions: [
       {
         type: 'CONSUME_RESOURCES',
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: 500,
       },
       {
         type: 'CONSUME_RESOURCES',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: 300,
       },
       {
@@ -357,12 +358,12 @@ export const miningRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_BELOW',
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: 100, // Critical low
       },
       {
         type: 'RESOURCE_BELOW',
-        target: 'energy',
+        target: ResourceType.ENERGY,
         value: 50, // Critical low
       },
     ],

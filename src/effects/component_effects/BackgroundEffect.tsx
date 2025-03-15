@@ -1,6 +1,6 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
-import * as React from 'react';
+import * as React from "react";
 import { useEffect, useRef } from 'react';
 
 interface BackgroundEffectProps {

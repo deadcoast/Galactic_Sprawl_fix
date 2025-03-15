@@ -1,29 +1,298 @@
 /**
- * Resource types
+ * Standardized resource type definitions to ensure consistency across the codebase.
+ * This file addresses the type inconsistencies identified in the resource system analysis.
  */
-export type ResourceType =
-  | 'minerals'
-  | 'energy'
-  | 'population'
-  | 'research'
-  | 'plasma'
-  | 'gas'
-  | 'exotic';
+
+/**
+ * ResourceType as an enum for better type safety and intellisense support
+ */
+export enum ResourceType {
+  MINERALS = 'MINERALS',
+  ENERGY = 'ENERGY',
+  POPULATION = 'POPULATION',
+  RESEARCH = 'RESEARCH',
+  PLASMA = 'PLASMA',
+  GAS = 'GAS',
+  EXOTIC = 'EXOTIC',
+  // Additional resource types for future expansion
+  IRON = 'IRON',
+  COPPER = 'COPPER',
+  TITANIUM = 'TITANIUM',
+  URANIUM = 'URANIUM',
+  WATER = 'WATER',
+  HELIUM = 'HELIUM',
+  DEUTERIUM = 'DEUTERIUM',
+  ANTIMATTER = 'ANTIMATTER',
+  DARK_MATTER = 'DARK_MATTER',
+  EXOTIC_MATTER = 'EXOTIC_MATTER',
+}
+
+/**
+ * For backward compatibility with string-based resource types
+ * @deprecated Use ResourceType enum instead for better type safety and intellisense support
+ */
+export type ResourceTypeString = keyof typeof ResourceType;
 
 /**
  * Resource categories
  */
-export type ResourceCategory = 'basic' | 'advanced' | 'special';
+export enum ResourceCategory {
+  BASIC = 'basic',
+  ADVANCED = 'advanced',
+  SPECIAL = 'special',
+}
 
 /**
  * Resource rarity levels
  */
-export type ResourceRarity = 'common' | 'uncommon' | 'rare' | 'legendary';
+export enum ResourceRarity {
+  COMMON = 'common',
+  UNCOMMON = 'uncommon',
+  RARE = 'rare',
+  LEGENDARY = 'legendary',
+}
 
 /**
- * Base Resource interface
+ * Metadata for resource types
  */
-export interface Resource {
+export interface ResourceTypeMetadata {
+  id: ResourceType;
+  displayName: string;
+  description: string;
+  icon: string;
+  category: ResourceCategory;
+  defaultMax: number;
+}
+
+/**
+ * Lookup object for resource metadata
+ */
+export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
+  [ResourceType.MINERALS]: {
+    id: ResourceType.MINERALS,
+    displayName: 'Minerals',
+    description: 'Basic building materials',
+    icon: 'minerals-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.ENERGY]: {
+    id: ResourceType.ENERGY,
+    displayName: 'Energy',
+    description: 'Essential resource for various systems',
+    icon: 'energy-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.POPULATION]: {
+    id: ResourceType.POPULATION,
+    displayName: 'Population',
+    description: 'Workers for colonies and stations',
+    icon: 'population-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 500,
+  },
+  [ResourceType.RESEARCH]: {
+    id: ResourceType.RESEARCH,
+    displayName: 'Research',
+    description: 'Scientific progress',
+    icon: 'research-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.PLASMA]: {
+    id: ResourceType.PLASMA,
+    displayName: 'Plasma',
+    description: 'High-energy resource',
+    icon: 'plasma-icon',
+    category: ResourceCategory.ADVANCED,
+    defaultMax: 500,
+  },
+  [ResourceType.GAS]: {
+    id: ResourceType.GAS,
+    displayName: 'Gas',
+    description: 'Volatile gases',
+    icon: 'gas-icon',
+    category: ResourceCategory.ADVANCED,
+    defaultMax: 800,
+  },
+  [ResourceType.EXOTIC]: {
+    id: ResourceType.EXOTIC,
+    displayName: 'Exotic Materials',
+    description: 'Rare, valuable resources',
+    icon: 'exotic-icon',
+    category: ResourceCategory.SPECIAL,
+    defaultMax: 250,
+  },
+  [ResourceType.IRON]: {
+    id: ResourceType.IRON,
+    displayName: 'Iron',
+    description: 'Basic building material',
+    icon: 'iron-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.COPPER]: {
+    id: ResourceType.COPPER,
+    displayName: 'Copper',
+    description: 'Basic building material',
+    icon: 'copper-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.TITANIUM]: {
+    id: ResourceType.TITANIUM,
+    displayName: 'Titanium',
+    description: 'Basic building material',
+    icon: 'titanium-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.URANIUM]: {
+    id: ResourceType.URANIUM,
+    displayName: 'Uranium',
+    description: 'Basic building material',
+    icon: 'uranium-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.WATER]: {
+    id: ResourceType.WATER,
+    displayName: 'Water',
+    description: 'Essential resource for life support',
+    icon: 'water-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.HELIUM]: {
+    id: ResourceType.HELIUM,
+    displayName: 'Helium',
+    description: 'Used for advanced propulsion',
+    icon: 'helium-icon',
+    category: ResourceCategory.ADVANCED,
+    defaultMax: 500,
+  },
+  [ResourceType.DEUTERIUM]: {
+    id: ResourceType.DEUTERIUM,
+    displayName: 'Deuterium',
+    description: 'Fuel for fusion reactors',
+    icon: 'deuterium-icon',
+    category: ResourceCategory.ADVANCED,
+    defaultMax: 500,
+  },
+  [ResourceType.ANTIMATTER]: {
+    id: ResourceType.ANTIMATTER,
+    displayName: 'Antimatter',
+    description: 'Extremely powerful energy source',
+    icon: 'antimatter-icon',
+    category: ResourceCategory.SPECIAL,
+    defaultMax: 100,
+  },
+  [ResourceType.DARK_MATTER]: {
+    id: ResourceType.DARK_MATTER,
+    displayName: 'Dark Matter',
+    description: 'Exotic material with unique properties',
+    icon: 'dark-matter-icon',
+    category: ResourceCategory.SPECIAL,
+    defaultMax: 50,
+  },
+  [ResourceType.EXOTIC_MATTER]: {
+    id: ResourceType.EXOTIC_MATTER,
+    displayName: 'Exotic Matter',
+    description: 'Rare material with extraordinary properties',
+    icon: 'exotic-matter-icon',
+    category: ResourceCategory.SPECIAL,
+    defaultMax: 25,
+  },
+};
+
+/**
+ * Helper functions for resource type conversions
+ */
+export const ResourceTypeHelpers = {
+  /**
+   * Convert string to enum
+   * @param type String representation of resource type
+   * @returns ResourceType enum value
+   */
+  stringToEnum(type: ResourceTypeString): ResourceType {
+    const mapping: Record<ResourceTypeString, ResourceType> = {
+      MINERALS: ResourceType.MINERALS,
+      ENERGY: ResourceType.ENERGY,
+      POPULATION: ResourceType.POPULATION,
+      RESEARCH: ResourceType.RESEARCH,
+      PLASMA: ResourceType.PLASMA,
+      GAS: ResourceType.GAS,
+      EXOTIC: ResourceType.EXOTIC,
+      IRON: ResourceType.IRON,
+      COPPER: ResourceType.COPPER,
+      TITANIUM: ResourceType.TITANIUM,
+      URANIUM: ResourceType.URANIUM,
+      WATER: ResourceType.WATER,
+      HELIUM: ResourceType.HELIUM,
+      DEUTERIUM: ResourceType.DEUTERIUM,
+      ANTIMATTER: ResourceType.ANTIMATTER,
+      DARK_MATTER: ResourceType.DARK_MATTER,
+      EXOTIC_MATTER: ResourceType.EXOTIC_MATTER,
+    };
+    return mapping[type] || ResourceType.MINERALS;
+  },
+
+  /**
+   * Convert enum to string
+   * @param type ResourceType enum value
+   * @returns String representation of resource type
+   */
+  enumToString(type: ResourceType): ResourceTypeString {
+    const mapping: Record<ResourceType, ResourceTypeString> = {
+      [ResourceType.MINERALS]: 'MINERALS',
+      [ResourceType.ENERGY]: 'ENERGY',
+      [ResourceType.POPULATION]: 'POPULATION',
+      [ResourceType.RESEARCH]: 'RESEARCH',
+      [ResourceType.PLASMA]: 'PLASMA',
+      [ResourceType.GAS]: 'GAS',
+      [ResourceType.EXOTIC]: 'EXOTIC',
+      [ResourceType.IRON]: 'IRON',
+      [ResourceType.COPPER]: 'COPPER',
+      [ResourceType.TITANIUM]: 'TITANIUM',
+      [ResourceType.URANIUM]: 'URANIUM',
+      [ResourceType.WATER]: 'WATER',
+      [ResourceType.HELIUM]: 'HELIUM',
+      [ResourceType.DEUTERIUM]: 'DEUTERIUM',
+      [ResourceType.ANTIMATTER]: 'ANTIMATTER',
+      [ResourceType.DARK_MATTER]: 'DARK_MATTER',
+      [ResourceType.EXOTIC_MATTER]: 'EXOTIC_MATTER',
+    };
+    return mapping[type] || 'MINERALS';
+  },
+
+  /**
+   * Get metadata for a resource type
+   * @param type ResourceType enum or string
+   * @returns Metadata for the resource type
+   */
+  getMetadata(type: ResourceType | ResourceTypeString): ResourceTypeMetadata {
+    if (typeof type === 'string') {
+      // Convert string to enum
+      type = this.stringToEnum(type as ResourceTypeString);
+    }
+    return ResourceTypeInfo[type];
+  },
+
+  /**
+   * Get display name for a resource type
+   * @param type ResourceType enum or string
+   * @returns Display name for the resource type
+   */
+  getDisplayName(type: ResourceType | ResourceTypeString): string {
+    return this.getMetadata(type).displayName;
+  },
+};
+
+/**
+ * Standard resource interface
+ */
+export interface StandardResource {
   id: string;
   name: string;
   type: ResourceType;
@@ -33,45 +302,123 @@ export interface Resource {
 }
 
 /**
- * Basic Resource (raw materials)
+ * Resource state class for managing resource amounts
  */
-export interface BasicResource extends Resource {
-  category: 'basic';
-  extractionRate?: number;
-  baseValue?: number;
+export class ResourceStateClass {
+  private _current: number;
+  private _max: number;
+  private _min: number;
+  private _production: number;
+  private _consumption: number;
+  private _type: ResourceType;
+
+  constructor(data: {
+    type: ResourceType | ResourceTypeString;
+    current?: number;
+    max?: number;
+    min?: number;
+    production?: number;
+    consumption?: number;
+  }) {
+    // Convert string type to enum if needed
+    this._type =
+      typeof data.type === 'string'
+        ? ResourceTypeHelpers.stringToEnum(data.type as ResourceTypeString)
+        : data.type;
+
+    // Set default values from metadata
+    const metadata = ResourceTypeInfo[this._type];
+    this._current = data.current ?? 0;
+    this._max = data.max ?? metadata.defaultMax;
+    this._min = data.min ?? 0;
+    this._production = data.production ?? 0;
+    this._consumption = data.consumption ?? 0;
+  }
+
+  get current(): number {
+    return this._current;
+  }
+
+  set current(value: number) {
+    this._current = Math.max(this._min, Math.min(this._max, value));
+  }
+
+  get max(): number {
+    return this._max;
+  }
+
+  set max(value: number) {
+    this._max = Math.max(this._min, value);
+    this._current = Math.min(this._current, this._max);
+  }
+
+  get min(): number {
+    return this._min;
+  }
+
+  set min(value: number) {
+    this._min = Math.min(this._max, value);
+    this._current = Math.max(this._current, this._min);
+  }
+
+  get production(): number {
+    return this._production;
+  }
+
+  set production(value: number) {
+    this._production = Math.max(0, value);
+  }
+
+  get consumption(): number {
+    return this._consumption;
+  }
+
+  set consumption(value: number) {
+    this._consumption = Math.max(0, value);
+  }
+
+  get type(): ResourceType {
+    return this._type;
+  }
+
+  get rate(): number {
+    return this._production - this._consumption;
+  }
+
+  get value(): number {
+    return this._current;
+  }
+
+  set value(value: number) {
+    this.current = value;
+  }
+
+  public asObject(): ResourceState {
+    return {
+      current: this._current,
+      max: this._max,
+      min: this._min,
+      production: this._production,
+      consumption: this._consumption,
+      rate: this.rate,
+      value: this.value,
+    };
+  }
+
+  public static fromResourceState(state: ResourceState, type: ResourceType): ResourceStateClass {
+    return new ResourceStateClass({
+      type,
+      current: state.current,
+      max: state.max,
+      min: state.min,
+      production: state.production,
+      consumption: state.consumption,
+    });
+  }
 }
 
 /**
- * Advanced Resource (processed materials)
- */
-export interface AdvancedResource extends Resource {
-  category: 'advanced';
-  components: ResourceCost[];
-  processingTime?: number;
-  baseValue?: number;
-}
-
-/**
- * Special Resource (rare/unique materials)
- */
-export interface SpecialResource extends Resource {
-  category: 'special';
-  rarity: ResourceRarity;
-  discoveryChance?: number;
-  baseValue?: number;
-  specialProperties?: string[];
-}
-
-/**
- * Resource cost
- */
-export interface ResourceCost {
-  type: ResourceType;
-  amount: number;
-}
-
-/**
- * Resource state
+ * Resource state interface
  */
 export interface ResourceState {
   current: number;
@@ -79,31 +426,34 @@ export interface ResourceState {
   min: number;
   production: number;
   consumption: number;
+  rate?: number;
+  value?: number;
 }
 
 /**
- * Resource transfer
+ * Resource cost interface
  */
-export interface ResourceTransfer {
+export interface ResourceCost {
   type: ResourceType;
   amount: number;
-  source: string;
-  target: string;
-  timestamp: number;
 }
 
 /**
- * Resource threshold configuration
+ * Resource threshold interface
  */
 export interface ResourceThreshold {
-  type: ResourceType;
+  resourceId: ResourceType;
   min?: number;
   max?: number;
   target?: number;
+  critical?: number;
+  low?: number;
+  high?: number;
+  maximum?: number;
 }
 
 /**
- * Resource production configuration
+ * Resource production interface
  */
 export interface ResourceProduction {
   type: ResourceType;
@@ -113,7 +463,7 @@ export interface ResourceProduction {
 }
 
 /**
- * Resource consumption configuration
+ * Resource consumption interface
  */
 export interface ResourceConsumption {
   type: ResourceType;
@@ -121,6 +471,28 @@ export interface ResourceConsumption {
   interval: number;
   required: boolean;
   conditions?: ResourceThreshold[];
+}
+
+/**
+ * Helper function to create a resource state
+ */
+export function createResourceState(
+  type: ResourceType | ResourceTypeString,
+  current: number = 0,
+  max: number = 100,
+  min: number = 0,
+  production: number = 0,
+  consumption: number = 0
+): ResourceState {
+  const resourceState = new ResourceStateClass({
+    type,
+    current,
+    max,
+    min,
+    production,
+    consumption,
+  });
+  return resourceState.asObject();
 }
 
 /**
@@ -138,217 +510,101 @@ export interface ResourceFlow {
 }
 
 /**
- * Resource manager configuration
+ * Resource transfer
  */
-export interface ResourceManagerConfig {
-  maxTransferHistory: number;
-  defaultResourceLimits: {
-    [key in ResourceType]: {
-      min: number;
-      max: number;
-    };
-  };
+export interface ResourceTransfer {
+  type: ResourceType;
+  amount: number;
+  source: string;
+  target: string;
+  timestamp: number;
 }
 
 /**
- * Base Resource Container interface
+ * Resource data interface
  */
-export interface ResourceContainer {
+export interface ResourceData {
   id: string;
-  name: string;
+  type: ResourceType;
+  amount: number;
   capacity: number;
-  description?: string;
-  resources?: Map<ResourceType, number>;
+  production: number;
+  consumption: number;
+  lastUpdated: number;
 }
 
 /**
- * Resource Pool Types
+ * Flow node types for resource network
  */
-export type ResourcePoolType = 'global' | 'module';
-
-/**
- * Resource Pool (for resource management)
- */
-export interface ResourcePool extends ResourceContainer {
-  type: ResourceType;
-  poolType: ResourcePoolType;
-  priority?: number;
-  autoDistribute?: boolean;
+export enum FlowNodeType {
+  SOURCE = 'source',
+  SINK = 'sink',
+  CONVERTER = 'converter',
+  PRODUCER = 'producer',
+  CONSUMER = 'consumer',
+  STORAGE = 'storage',
 }
 
 /**
- * Resource Storage Types
+ * Flow node interface for resource network
  */
-export type ResourceStorageType = 'basic' | 'advanced';
-
-/**
- * Resource Storage (for resource storage)
- */
-export interface ResourceStorage extends ResourceContainer {
-  type: ResourceType;
-  storageType: ResourceStorageType;
-  efficiency: number;
-  upgradeLevel?: number;
-  maxUpgradeLevel?: number;
+export interface FlowNode {
+  id: string;
+  type: FlowNodeType;
+  resources: Record<ResourceType, ResourceState>;
+  maxConnections?: number;
+  metadata?: Record<string, unknown>;
+  priority?: ResourcePriorityConfig;
+  capacity?: number;
+  active?: boolean;
 }
 
 /**
- * Resource Exchange Rate
+ * Flow connection interface for resource network
  */
-export interface ResourceExchangeRate {
-  fromType: ResourceType;
-  toType: ResourceType;
-  rate: number;
-  minAmount?: number;
-  maxAmount?: number;
-  cooldown?: number;
+export interface FlowConnection {
+  id: string;
+  source: string;
+  target: string;
+  resourceTypes: ResourceType[];
+  maxFlow?: number;
+  metadata?: Record<string, unknown>;
+  maxRate?: number;
+  currentRate?: number;
+  priority?: ResourcePriorityConfig;
+  active?: boolean;
 }
 
 /**
- * Resource Priority Configuration
+ * Resource priority configuration
  */
-export interface ResourcePriority {
+export interface ResourcePriorityConfig {
   type: ResourceType;
   priority: number;
   consumers: string[];
 }
 
 /**
- * Resource Extraction Configuration
+ * Resource priority levels for resource allocation and distribution
  */
-export interface ResourceExtraction {
-  type: ResourceType;
-  baseRate: number;
-  efficiency: number;
-  bonusFactors?: {
-    [key: string]: number;
-  };
+export enum ResourcePriority {
+  CRITICAL = 'critical',
+  HIGH = 'high',
+  MEDIUM = 'medium',
+  LOW = 'low',
+  OPTIONAL = 'optional',
 }
 
 /**
- * Resource Alert Configuration
+ * Convert a string resource type to enum resource type
  */
-export interface ResourceAlert {
-  id: string;
-  type: ResourceType;
-  threshold: ResourceThreshold;
-  message: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  autoResolve?: boolean;
-  actions?: {
-    type: 'production' | 'consumption' | 'transfer';
-    target: string;
-    amount: number;
-  }[];
+export function toEnumResourceType(type: ResourceTypeString): ResourceType {
+  return ResourceType[type];
 }
 
 /**
- * Resource Conversion Recipe
- *
- * Defines how one set of resources is converted to another
+ * Convert an enum resource type to string resource type
  */
-export interface ResourceConversionRecipe {
-  id: string;
-  name: string;
-  description?: string;
-  inputs: ResourceCost[];
-  outputs: ResourceCost[];
-  processingTime: number; // Time in milliseconds to complete one conversion cycle
-  baseEfficiency: number; // Base efficiency (1.0 = 100%)
-}
-
-/**
- * Resource Conversion Process
- *
- * Represents an active conversion process
- */
-export interface ResourceConversionProcess {
-  recipeId: string;
-  progress: number; // Progress from 0 to 1
-  startTime: number; // Timestamp when the process started
-  endTime: number; // Timestamp when the process will complete
-  sourceId: string; // ID of the converter node
-  active: boolean; // Whether the process is active
-  paused: boolean; // Whether the process is paused
-  inputsProvided: boolean; // Whether the required inputs have been provided
-  appliedEfficiency?: number; // The efficiency applied to this process
-}
-
-/**
- * Multi-Step Conversion Chain
- *
- * Represents a sequence of conversion recipes that form a production chain
- */
-export interface ConversionChain {
-  id: string;
-  name: string;
-  description?: string;
-  steps: string[]; // Array of recipe IDs in sequence
-  active: boolean;
-}
-
-/**
- * Chain Execution Status
- *
- * Tracks the execution status of a multi-step conversion chain
- */
-export interface ChainExecutionStatus {
-  chainId: string;
-  currentStepIndex: number;
-  recipeIds: string[];
-  startTime: number;
-  estimatedEndTime: number;
-  progress: number; // Overall progress from 0 to 1
-  stepStatus: {
-    recipeId: string;
-    converterId: string;
-    processId?: string;
-    status: 'pending' | 'in_progress' | 'completed' | 'failed';
-    startTime?: number;
-    endTime?: number;
-  }[];
-  resourceTransfers: {
-    type: ResourceType;
-    amount: number;
-    fromStep: number;
-    toStep: number;
-    status: 'pending' | 'in_progress' | 'completed';
-  }[];
-  active: boolean;
-  paused: boolean;
-  completed: boolean;
-  failed: boolean;
-  errorMessage?: string;
-}
-
-/**
- * Converter Node Configuration
- *
- * Configuration for a converter node in the resource network
- */
-export interface ConverterNodeConfig {
-  supportedRecipes: string[]; // IDs of recipes this converter can process
-  maxConcurrentProcesses: number; // Maximum number of concurrent conversion processes
-  autoStart: boolean; // Whether to automatically start conversion when inputs are available
-  queueBehavior: 'fifo' | 'priority'; // How to handle the process queue
-  byproducts?: { [key in ResourceType]?: number }; // Chance to produce byproducts (0-1)
-  efficiencyModifiers?: { [key: string]: number }; // Modifiers that affect efficiency
-  tier?: 1 | 2 | 3; // Technology tier of the converter
-  chainBonus?: number; // Bonus when used in a conversion chain
-}
-
-/**
- * Converter Process Status
- *
- * Detailed status information about a converter's processing
- */
-export interface ConverterProcessStatus {
-  activeProcesses: ResourceConversionProcess[];
-  queuedProcesses: ResourceConversionProcess[];
-  completedProcesses: number;
-  failedProcesses: number;
-  totalResourcesProduced: { [key in ResourceType]?: number };
-  totalResourcesConsumed: { [key in ResourceType]?: number };
-  averageEfficiency: number;
-  uptime: number; // Total time the converter has been active
+export function toStringResourceType(type: ResourceType): ResourceTypeString {
+  return ResourceType[type] as ResourceTypeString;
 }

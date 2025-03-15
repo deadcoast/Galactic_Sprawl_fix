@@ -9,7 +9,7 @@
  * - Memory optimization for large datasets
  */
 
-import * as React from 'react';
+import * as React from "react";
 import { useState, useCallback, useMemo } from 'react';
 import { 
   AnalysisResult, 

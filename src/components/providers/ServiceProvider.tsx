@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import * as React from "react";
+import { useEffect, useState } from 'react';
 import { ServiceRegistry } from '../../lib/services/ServiceRegistry';
 import { anomalyDetectionService } from '../../services/AnomalyDetectionService';
 import { apiService } from '../../services/APIService';

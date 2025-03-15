@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowManager';
 import {
@@ -17,7 +18,7 @@ vi.mock('../../../utils/resources/resourceValidation', () => ({
 
 describe('ResourceFlowManager Cache System', () => {
   let flowManager: ResourceFlowManager;
-  const defaultPriority: ResourcePriority = { type: 'energy', priority: 1, consumers: [] };
+  const defaultPriority: ResourcePriority = { type: ResourceType.ENERGY, priority: 1, consumers: [] };
 
   // Mock Date.now for testing cache expiration
   let currentTime = 0;
@@ -52,18 +53,18 @@ describe('ResourceFlowManager Cache System', () => {
       };
 
       // Update the resource state
-      flowManager.updateResourceState('energy', resourceState);
+      flowManager.updateResourceState(ResourceType.ENERGY, resourceState);
 
       // First retrieval should get from network and cache it
       const getResourceStateSpy = vi.spyOn(flowManager['network'].resourceStates, 'get');
-      const firstResult = flowManager.getResourceState('energy');
+      const firstResult = flowManager.getResourceState(ResourceType.ENERGY);
 
       expect(getResourceStateSpy).toHaveBeenCalledTimes(1);
       expect(firstResult).toEqual(resourceState);
 
       // Second retrieval should get from cache (no additional calls to network.resourceStates.get)
       getResourceStateSpy.mockClear();
-      const secondResult = flowManager.getResourceState('energy');
+      const secondResult = flowManager.getResourceState(ResourceType.ENERGY);
 
       expect(getResourceStateSpy).toHaveBeenCalledTimes(0); // Should not be called again
       expect(secondResult).toEqual(resourceState);
@@ -89,15 +90,15 @@ describe('ResourceFlowManager Cache System', () => {
       };
 
       // Set initial state and retrieve to cache it
-      flowManager.updateResourceState('energy', initialState);
-      const firstResult = flowManager.getResourceState('energy');
+      flowManager.updateResourceState(ResourceType.ENERGY, initialState);
+      const firstResult = flowManager.getResourceState(ResourceType.ENERGY);
       expect(firstResult).toEqual(initialState);
 
       // Update state (which should invalidate cache)
-      flowManager.updateResourceState('energy', updatedState);
+      flowManager.updateResourceState(ResourceType.ENERGY, updatedState);
 
       // Should get updated state
-      const secondResult = flowManager.getResourceState('energy');
+      const secondResult = flowManager.getResourceState(ResourceType.ENERGY);
       expect(secondResult).toEqual(updatedState);
     });
   });
@@ -113,23 +114,23 @@ describe('ResourceFlowManager Cache System', () => {
         consumption: 5,
       };
 
-      flowManager.updateResourceState('energy', resourceState);
+      flowManager.updateResourceState(ResourceType.ENERGY, resourceState);
 
       // First retrieval - caches the result
       const getResourceStateSpy = vi.spyOn(flowManager['network'].resourceStates, 'get');
-      flowManager.getResourceState('energy');
+      flowManager.getResourceState(ResourceType.ENERGY);
       expect(getResourceStateSpy).toHaveBeenCalledTimes(1);
       getResourceStateSpy.mockClear();
 
       // Retrieval within TTL - should use cache
       currentTime += 300; // Advance time, but still within TTL (500ms)
-      flowManager.getResourceState('energy');
+      flowManager.getResourceState(ResourceType.ENERGY);
       expect(getResourceStateSpy).toHaveBeenCalledTimes(0);
       getResourceStateSpy.mockClear();
 
       // Retrieval after TTL - should fetch from network again
       currentTime += 300; // Advance time beyond TTL (total 600ms > 500ms TTL)
-      flowManager.getResourceState('energy');
+      flowManager.getResourceState(ResourceType.ENERGY);
       expect(getResourceStateSpy).toHaveBeenCalledTimes(1);
     });
 
@@ -143,24 +144,24 @@ describe('ResourceFlowManager Cache System', () => {
         consumption: 5,
       };
 
-      flowManager.updateResourceState('energy', resourceState);
+      flowManager.updateResourceState(ResourceType.ENERGY, resourceState);
 
       // Cache the state
-      flowManager.getResourceState('energy');
+      flowManager.getResourceState(ResourceType.ENERGY);
 
       // Register a node with the same resource type
       const getResourceStateSpy = vi.spyOn(flowManager['network'].resourceStates, 'get');
       flowManager.registerNode({
         id: 'new-producer',
         type: 'producer' as FlowNodeType,
-        resources: ['energy' as ResourceType],
+        resources: [ResourceType.ENERGY as ResourceType],
         priority: defaultPriority,
         active: true,
       });
 
       // Should access network directly after cache invalidation
       getResourceStateSpy.mockClear();
-      flowManager.getResourceState('energy');
+      flowManager.getResourceState(ResourceType.ENERGY);
       expect(getResourceStateSpy).toHaveBeenCalledTimes(1);
     });
 
@@ -182,31 +183,31 @@ describe('ResourceFlowManager Cache System', () => {
         consumption: 2,
       };
 
-      flowManager.updateResourceState('energy', energyState);
-      flowManager.updateResourceState('minerals', mineralsState);
+      flowManager.updateResourceState(ResourceType.ENERGY, energyState);
+      flowManager.updateResourceState(ResourceType.MINERALS, mineralsState);
 
       // Cache both states
-      flowManager.getResourceState('energy');
-      flowManager.getResourceState('minerals');
+      flowManager.getResourceState(ResourceType.ENERGY);
+      flowManager.getResourceState(ResourceType.MINERALS);
 
       // Register a node that affects only minerals
       const getResourceStateSpy = vi.spyOn(flowManager['network'].resourceStates, 'get');
       flowManager.registerNode({
         id: 'minerals-producer',
         type: 'producer' as FlowNodeType,
-        resources: ['minerals' as ResourceType],
-        priority: { type: 'minerals', priority: 1, consumers: [] },
+        resources: [ResourceType.MINERALS as ResourceType],
+        priority: { type: ResourceType.MINERALS, priority: 1, consumers: [] },
         active: true,
       });
 
       // Energy cache should still be valid
       getResourceStateSpy.mockClear();
-      flowManager.getResourceState('energy');
+      flowManager.getResourceState(ResourceType.ENERGY);
       expect(getResourceStateSpy).toHaveBeenCalledTimes(0);
 
       // Minerals cache should be invalidated
       getResourceStateSpy.mockClear();
-      flowManager.getResourceState('minerals');
+      flowManager.getResourceState(ResourceType.MINERALS);
       expect(getResourceStateSpy).toHaveBeenCalledTimes(1);
     });
   });
@@ -222,10 +223,10 @@ describe('ResourceFlowManager Cache System', () => {
         consumption: 5,
       };
 
-      flowManager.updateResourceState('energy', initialState);
+      flowManager.updateResourceState(ResourceType.ENERGY, initialState);
 
       // Get the resource state (which will be cached)
-      const state = flowManager.getResourceState('energy');
+      const state = flowManager.getResourceState(ResourceType.ENERGY);
 
       // Modify the returned state object
       if (state) {
@@ -233,7 +234,7 @@ describe('ResourceFlowManager Cache System', () => {
       }
 
       // Get the state again - should not be affected by the modification
-      const retrievedState = flowManager.getResourceState('energy');
+      const retrievedState = flowManager.getResourceState(ResourceType.ENERGY);
       expect(retrievedState?.current).toBe(100); // Original value, not 200
     });
   });

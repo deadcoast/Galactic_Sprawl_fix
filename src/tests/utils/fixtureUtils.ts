@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { FlowNode, FlowNodeType } from '../../managers/resource/ResourceFlowManager';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   explorationTasks,
   fleetFormations,
@@ -109,7 +109,7 @@ export function createMockMiningManager() {
       id: 'new-operation',
       shipId: 'miningShip1',
       nodeId: 'miningNode1',
-      resourceType: 'minerals',
+      resourceType: ResourceType.MINERALS,
       startTime: Date.now(),
       targetAmount: 500,
       currentAmount: 0,

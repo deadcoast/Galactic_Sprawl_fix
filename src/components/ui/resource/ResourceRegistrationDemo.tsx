@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import * as React from "react";
+import { useState } from 'react';
 import { moduleEventBus, ModuleEventType } from '../../../lib/modules/ModuleEvents';
 import {
   ComponentRegistration,
   componentRegistryService,
 } from '../../../services/ComponentRegistryService';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { ResourceDisplay } from './ResourceDisplay';
 
 /**
@@ -17,7 +18,7 @@ import { ResourceDisplay } from './ResourceDisplay';
  */
 export const ResourceRegistrationDemo: React.FC = () => {
   // State for event emission controls
-  const [resourceType, setResourceType] = useState<ResourceType>('minerals');
+  const [resourceType, setResourceType] = useState<ResourceType>(ResourceType.MINERALS);
   const [amount, setAmount] = useState<number>(10);
   const [eventType, setEventType] = useState<string>('RESOURCE_PRODUCED');
 
@@ -92,10 +93,10 @@ export const ResourceRegistrationDemo: React.FC = () => {
           </p>
 
           <div className="mb-8 grid grid-cols-2 gap-4">
-            <ResourceDisplay resourceType="minerals" initialAmount={100} />
-            <ResourceDisplay resourceType="energy" initialAmount={200} />
-            <ResourceDisplay resourceType="population" initialAmount={50} />
-            <ResourceDisplay resourceType="research" initialAmount={75} />
+            <ResourceDisplay resourceType={ResourceType.MINERALS} initialAmount={100} />
+            <ResourceDisplay resourceType={ResourceType.ENERGY} initialAmount={200} />
+            <ResourceDisplay resourceType={ResourceType.POPULATION} initialAmount={50} />
+            <ResourceDisplay resourceType={ResourceType.RESEARCH} initialAmount={75} />
           </div>
 
           {/* Event controls */}
@@ -110,10 +111,16 @@ export const ResourceRegistrationDemo: React.FC = () => {
                   value={resourceType}
                   onChange={e => setResourceType(e.target.value as ResourceType)}
                 >
-                  <option value="minerals">Minerals</option>
-                  <option value="energy">Energy</option>
-                  <option value="population">Population</option>
-                  <option value="research">Research</option>
+                  <option value={ResourceType.MINERALS}>Minerals</option>
+                  <option value={ResourceType.ENERGY}>Energy</option>
+                  <option value={ResourceType.POPULATION}>Population</option>
+                  <option value={ResourceType.RESEARCH}>Research</option>
+                  <option value={ResourceType.PLASMA}>Plasma</option>
+                  <option value={ResourceType.GAS}>Gas</option>
+                  <option value={ResourceType.EXOTIC}>Exotic</option>
+                  <option value={ResourceType.IRON}>Iron</option>
+                  <option value={ResourceType.COPPER}>Copper</option>
+                  <option value={ResourceType.TITANIUM}>Titanium</option>
                 </select>
               </div>
 

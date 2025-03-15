@@ -10,6 +10,7 @@ import {
   ModuleAttachmentPoint,
   ModuleType,
 } from '../../../types/buildings/ModuleTypes';
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 
 const MOTHERSHIP_ATTACHMENT_POINTS: ModuleAttachmentPoint[] = [
   {
@@ -73,7 +74,7 @@ export function MothershipCore({
       id: string;
       source: { x: number; y: number };
       target: { x: number; y: number };
-      type: 'energy' | 'materials' | 'research' | 'population';
+      type: ResourceType.ENERGY | 'materials' | ResourceType.RESEARCH | ResourceType.POPULATION;
       rate: number;
     }>
   >([]);
@@ -140,18 +141,23 @@ export function MothershipCore({
         id: `energy-flow-${module.id}`,
         source: { x: centerX, y: centerY },
         target: { x: module.position.x, y: module.position.y },
-        type: 'energy' as const,
+        type: ResourceType.ENERGY as const,
         rate: Math.min(100, resourceLevels.energy * (0.7 + Math.random() * 0.6)),
       });
 
       // Materials or research flow (from module to center)
-      const resourceType = index % 2 === 0 ? ('materials' as const) : ('research' as const);
+      const resourceType =
+        index % 2 === 0 ? ('materials' as const) : (ResourceType.RESEARCH as const);
       flows.push({
         id: `${resourceType}-flow-${module.id}`,
         source: { x: module.position.x, y: module.position.y },
         target: { x: centerX, y: centerY },
         type: resourceType,
-        rate: Math.min(100, resourceLevels[resourceType] * (0.6 + Math.random() * 0.8)),
+        rate: Math.min(
+          100,
+          resourceLevels[resourceType === ResourceType.RESEARCH ? ResourceType.RESEARCH : 'materials'] *
+            (0.6 + Math.random() * 0.8)
+        ),
       });
 
       return flows;

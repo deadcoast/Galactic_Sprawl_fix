@@ -1,6 +1,6 @@
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 /**
  * Mining ship status
@@ -90,7 +90,7 @@ export const miningShips: MiningShip[] = [
     efficiency: 0.9,
     capacity: 800,
     currentLoad: 350,
-    resourceType: 'minerals',
+    resourceType: ResourceType.MINERALS,
     position: { x: 150, y: 150 },
     targetNodeId: 'miningNode1',
     durability: 900,
@@ -105,7 +105,7 @@ export const miningShips: MiningShip[] = [
     efficiency: 0.75,
     capacity: 1200,
     currentLoad: 1000,
-    resourceType: 'gas',
+    resourceType: ResourceType.GAS,
     position: { x: 200, y: 200 },
     targetNodeId: 'miningHub1',
     durability: 800,
@@ -123,7 +123,7 @@ export const miningNodes: MiningNode[] = [
     id: 'miningNode1',
     name: 'Alpha Asteroid',
     type: 'asteroid',
-    resourceType: 'minerals',
+    resourceType: ResourceType.MINERALS,
     position: { x: 150, y: 150 },
     richness: 0.7,
     depletion: 0.2,
@@ -136,7 +136,7 @@ export const miningNodes: MiningNode[] = [
     id: 'miningNode2',
     name: 'Beta Gas Cloud',
     type: 'nebula',
-    resourceType: 'gas',
+    resourceType: ResourceType.GAS,
     position: { x: 250, y: 250 },
     richness: 0.9,
     depletion: 0.1,
@@ -149,7 +149,7 @@ export const miningNodes: MiningNode[] = [
     id: 'miningNode3',
     name: 'Gamma Planet',
     type: 'planet',
-    resourceType: 'energy',
+    resourceType: ResourceType.ENERGY,
     position: { x: 350, y: 350 },
     richness: 0.5,
     depletion: 0.0,
@@ -234,7 +234,7 @@ export const miningOperations: MiningOperation[] = [
     id: 'operation1',
     shipId: 'miningShip2',
     nodeId: 'miningNode1',
-    resourceType: 'minerals',
+    resourceType: ResourceType.MINERALS,
     startTime: Date.now() - 3600000, // Started 1 hour ago
     targetAmount: 500,
     currentAmount: 350,
@@ -245,7 +245,7 @@ export const miningOperations: MiningOperation[] = [
     id: 'operation2',
     shipId: 'miningShip3',
     nodeId: 'miningNode2',
-    resourceType: 'gas',
+    resourceType: ResourceType.GAS,
     startTime: Date.now() - 7200000, // Started 2 hours ago
     endTime: Date.now() - 1800000, // Ended 30 minutes ago
     targetAmount: 1000,

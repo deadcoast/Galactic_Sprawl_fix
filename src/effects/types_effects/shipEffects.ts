@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { AreaEffect as BaseAreaEffect, BaseEffect } from './EffectTypes';
 import { DamageEffect, AreaEffect as WeaponAreaEffect } from './WeaponEffects';
 
@@ -11,7 +12,7 @@ export const PLASMA_EFFECT: DamageEffect = {
   active: true,
   cooldown: 0,
   strength: 20,
-  damageType: 'energy',
+  damageType: ResourceType.ENERGY,
   penetration: 10,
   id: 'plasma-effect',
 };

@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 
 /**

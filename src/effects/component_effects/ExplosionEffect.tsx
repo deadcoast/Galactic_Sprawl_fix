@@ -1,6 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
-import React, { useEffect, useRef } from 'react';
+import * as React from "react";
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 // Mock for react-three-fiber

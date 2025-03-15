@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { ResourceFlowManager } from '../../managers/resource/ResourceFlowManager';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 /**
  * ResourceFlowManager Performance Benchmark
@@ -45,8 +45,8 @@ function createTestNetwork(
     manager.registerNode({
       id: `producer-${i}`,
       type: 'producer',
-      resources: ['energy' as ResourceType],
-      priority: { type: 'energy', priority: 1, consumers: [] },
+      resources: [ResourceType.ENERGY as ResourceType],
+      priority: { type: ResourceType.ENERGY, priority: 1, consumers: [] },
       active: true,
     });
   }
@@ -56,8 +56,8 @@ function createTestNetwork(
     manager.registerNode({
       id: `consumer-${i}`,
       type: 'consumer',
-      resources: ['energy' as ResourceType],
-      priority: { type: 'energy', priority: 1, consumers: [] },
+      resources: [ResourceType.ENERGY as ResourceType],
+      priority: { type: ResourceType.ENERGY, priority: 1, consumers: [] },
       active: true,
     });
   }
@@ -74,16 +74,16 @@ function createTestNetwork(
       id: `connection-${i}`,
       source: `producer-${producerIndex}`,
       target: `consumer-${consumerIndex}`,
-      resourceType: 'energy',
+      resourceType: ResourceType.ENERGY,
       maxRate: 10,
       currentRate: 0,
-      priority: { type: 'energy', priority: 1, consumers: [] },
+      priority: { type: ResourceType.ENERGY, priority: 1, consumers: [] },
       active: true,
     });
   }
 
   // Set resource state
-  manager.updateResourceState('energy', {
+  manager.updateResourceState(ResourceType.ENERGY, {
     current: 1000,
     max: 10000,
     min: 0,

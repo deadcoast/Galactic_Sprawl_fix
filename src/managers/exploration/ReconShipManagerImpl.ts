@@ -6,9 +6,11 @@
  * functionality used by the ExplorationManager.
  */
 
-import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
+import { AbstractBaseManager } from '../../lib/managers/BaseManager';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
+import { BaseEvent, EventType } from '../../types/events/EventTypes';
 
 /**
  * Interface for exploration ship data
@@ -17,12 +19,13 @@ export interface Ship {
   id: string;
   name: string;
   type: string;
-  status: string;
+  status: 'idle' | 'assigned' | 'scanning' | 'returning';
+  assignedSectorId?: string;
+  position?: { x: number; y: number };
   sensorRange?: number;
   speed?: number;
   efficiency?: number;
   sectorId?: string;
-  position?: Position;
   capabilities?: {
     canScan: boolean;
     canSalvage: boolean;
@@ -62,27 +65,50 @@ export interface ExplorationTask {
   threatLevel?: number;
 }
 
-export type ShipEvent = {
-  shipId: string;
-  task?: ExplorationTask;
-  progress?: number;
-};
+export interface ShipEvent extends BaseEvent {
+  type: EventType;
+  moduleId: string;
+  moduleType: ModuleType;
+  data: ShipEventData;
+}
 
-export type EventCallback = (event: ShipEvent) => void;
+export interface ShipEventData extends Record<string, unknown> {
+  shipId: string;
+  ship?: Ship;
+  sectorId?: string;
+  status?: Ship['status'];
+  position?: { x: number; y: number };
+}
+
+/**
+ * Type guard for ShipEvent
+ */
+export function isShipEvent(event: unknown): event is ShipEvent {
+  if (!event || typeof event !== 'object') return false;
+  const e = event as ShipEvent;
+  return (
+    'type' in e &&
+    'moduleId' in e &&
+    'moduleType' in e &&
+    'data' in e &&
+    typeof e.type === 'string' &&
+    typeof e.moduleId === 'string' &&
+    typeof e.moduleType === 'string' &&
+    typeof e.data === 'object' &&
+    'shipId' in e.data &&
+    typeof e.data.shipId === 'string'
+  );
+}
 
 /**
  * Implementation of the ship manager for exploration ships
  */
-export class ReconShipManagerImpl extends EventEmitter {
+export class ReconShipManagerImpl extends AbstractBaseManager<ShipEvent> {
   private ships: Map<string, Ship> = new Map();
   private tasks: Map<string, ExplorationTask> = new Map();
-  private lastUpdate: number = Date.now();
 
-  /**
-   * Create a new ReconShipManagerImpl
-   */
   constructor() {
-    super();
+    super('ReconShipManager');
     this.ships = new Map();
     this.tasks = new Map();
 
@@ -128,7 +154,13 @@ export class ReconShipManagerImpl extends EventEmitter {
    */
   public addShip(ship: Ship): Ship {
     this.ships.set(ship.id, ship);
-    this.emit('shipRegistered', { shipId: ship.id });
+    this.publish({
+      type: EventType.EXPLORATION_SHIP_REGISTERED,
+      moduleId: ship.id,
+      moduleType: 'ship' as ModuleType,
+      timestamp: Date.now(),
+      data: { shipId: ship.id, ship },
+    });
     return ship;
   }
 
@@ -164,12 +196,20 @@ export class ReconShipManagerImpl extends EventEmitter {
    * @param status The new status
    * @returns True if the ship was updated, false otherwise
    */
-  public updateShipStatus(shipId: string, status: string): boolean {
+  public updateShipStatus(shipId: string, status: Ship['status']): void {
     const ship = this.ships.get(shipId);
-    if (!ship) return false;
+    if (!ship) return;
 
     ship.status = status;
-    return true;
+    this.ships.set(shipId, ship);
+
+    this.publish({
+      type: EventType.STATUS_CHANGED,
+      moduleId: shipId,
+      moduleType: 'ship' as ModuleType,
+      timestamp: Date.now(),
+      data: { shipId, status, ship },
+    });
   }
 
   /**
@@ -182,8 +222,17 @@ export class ReconShipManagerImpl extends EventEmitter {
     const ship = this.ships.get(shipId);
     if (!ship) return false;
 
-    ship.sectorId = sectorId;
+    ship.assignedSectorId = sectorId || undefined;
     ship.status = 'scanning';
+    this.ships.set(shipId, ship);
+
+    this.publish({
+      type: EventType.MODULE_UPDATED,
+      moduleId: shipId,
+      moduleType: 'ship' as ModuleType,
+      timestamp: Date.now(),
+      data: { shipId, sectorId, ship },
+    });
     return true;
   }
 
@@ -196,19 +245,40 @@ export class ReconShipManagerImpl extends EventEmitter {
     const ship = this.ships.get(shipId);
     if (!ship) return false;
 
-    delete ship.sectorId;
+    delete ship.assignedSectorId;
     ship.status = 'idle';
+    this.ships.set(shipId, ship);
+
+    this.publish({
+      type: EventType.MODULE_UPDATED,
+      moduleId: shipId,
+      moduleType: 'ship' as ModuleType,
+      timestamp: Date.now(),
+      data: { shipId, ship },
+    });
     return true;
   }
 
   public registerShip(ship: Ship): void {
     this.ships.set(ship.id, ship);
-    this.emit('shipRegistered', { shipId: ship.id });
+    this.publish({
+      type: EventType.EXPLORATION_SHIP_REGISTERED,
+      moduleId: ship.id,
+      moduleType: 'ship' as ModuleType,
+      timestamp: Date.now(),
+      data: { shipId: ship.id, ship },
+    });
   }
 
   public unregisterShip(shipId: string): void {
     this.ships.delete(shipId);
-    this.emit('shipUnregistered', { shipId });
+    this.publish({
+      type: EventType.EXPLORATION_SHIP_UNREGISTERED,
+      moduleId: shipId,
+      moduleType: 'ship' as ModuleType,
+      timestamp: Date.now(),
+      data: { shipId },
+    });
   }
 
   public assignExplorationTask(
@@ -231,14 +301,16 @@ export class ReconShipManagerImpl extends EventEmitter {
     };
 
     this.tasks.set(task.id, task);
-    this.emit('taskAssigned', { shipId, task });
+    this.publish({
+      type: EventType.EXPLORATION_TASK_ASSIGNED,
+      moduleId: task.id,
+      moduleType: 'task' as ModuleType,
+      timestamp: Date.now(),
+      data: { shipId, task },
+    });
   }
 
   public update(deltaTime: number): void {
-    const now = Date.now();
-    const dt = now - this.lastUpdate;
-    this.lastUpdate = now;
-
     // Update all active tasks
     for (const [taskId, task] of this.tasks) {
       if (task.status === 'in-progress') {
@@ -246,21 +318,68 @@ export class ReconShipManagerImpl extends EventEmitter {
         const progress = (task.progress || 0) + (deltaTime / 1000) * 0.1; // 10% per second
         if (progress >= 1) {
           task.status = 'completed';
-          this.emit('taskCompleted', { shipId: taskId, task });
+          this.publish({
+            type: EventType.EXPLORATION_TASK_COMPLETED,
+            moduleId: taskId,
+            moduleType: 'task' as ModuleType,
+            timestamp: Date.now(),
+            data: { shipId: taskId, task },
+          });
           this.tasks.delete(taskId);
         } else {
           task.progress = progress;
-          this.emit('taskProgress', { shipId: taskId, task, progress });
+          this.publish({
+            type: EventType.EXPLORATION_TASK_PROGRESS,
+            moduleId: taskId,
+            moduleType: 'task' as ModuleType,
+            timestamp: Date.now(),
+            data: { shipId: taskId, task, progress },
+          });
         }
       }
     }
   }
 
-  public on(event: string, listener: EventCallback): this {
-    return super.on(event, listener);
+  public updateShipPosition(shipId: string, position: { x: number; y: number }): void {
+    const ship = this.ships.get(shipId);
+    if (!ship) return;
+
+    ship.position = position;
+    this.ships.set(shipId, ship);
+
+    this.publish({
+      type: EventType.EXPLORATION_POSITION_UPDATED,
+      moduleId: shipId,
+      moduleType: 'ship' as ModuleType,
+      timestamp: Date.now(),
+      data: { shipId, position, ship },
+    });
   }
 
-  public off(event: string, listener: EventCallback): this {
-    return super.off(event, listener);
+  protected async onInitialize(_dependencies?: unknown): Promise<void> {
+    console.log('ReconShipManager initialized');
+  }
+
+  protected onUpdate(_deltaTime: number): void {
+    // Update ship states if needed
+  }
+
+  protected async onDispose(): Promise<void> {
+    this.ships.clear();
+    this.tasks.clear();
+  }
+
+  protected getVersion(): string {
+    return '1.0.0';
+  }
+
+  protected getStats(): Record<string, number | string> {
+    return {
+      totalShips: this.ships.size,
+      idleShips: Array.from(this.ships.values()).filter(s => s.status === 'idle').length,
+      assignedShips: Array.from(this.ships.values()).filter(s => s.status === 'assigned').length,
+      scanningShips: Array.from(this.ships.values()).filter(s => s.status === 'scanning').length,
+      returningShips: Array.from(this.ships.values()).filter(s => s.status === 'returning').length,
+    };
   }
 }

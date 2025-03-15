@@ -4,7 +4,7 @@
  */
 
 import { Effect } from '../../types/core/GameTypes';
-
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 // Base Hazard Types
 // ------------------------------------------------------------
 
@@ -36,7 +36,7 @@ export interface HazardEffect extends Effect {
 export interface DamageHazardEffect extends HazardEffect {
   type: 'damage';
   /** Type of damage inflicted */
-  damageType: 'physical' | 'energy' | 'corrosive' | 'thermal';
+  damageType: 'physical' | ResourceType.ENERGY | 'corrosive' | 'thermal';
   /** How much the damage ignores armor (0-1) */
   penetration: number;
   /** Damage per second */

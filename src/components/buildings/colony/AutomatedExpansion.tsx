@@ -1,3 +1,5 @@
+import * as React from "react";
+import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowRight,
@@ -8,7 +10,6 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
 import type { EventPayload } from '../../../hooks/game/useGlobalEvents';
 import { useGlobalEvents } from '../../../hooks/game/useGlobalEvents';
 import { useVPR } from '../../../hooks/ui/useVPR';

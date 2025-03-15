@@ -93,7 +93,7 @@ test.describe('Mining Operations', () => {
           <style>
             .resource-list { display: block; border: 1px solid #ccc; padding: 10px; }
             .resource-item { margin: 5px 0; padding: 5px; border-bottom: 1px solid #eee; }
-            .resource-item[data-type="energy"] { color: blue; }
+            .resource-item[data-type=ResourceType.ENERGY] { color: blue; }
             .resource-item[data-type="mineral"] { color: brown; }
           </style>
           <script>
@@ -113,12 +113,12 @@ test.describe('Mining Operations', () => {
           <h1>Mining Operations</h1>
           <div class="filter-controls">
             <button onclick="filterByType('all')">All</button>
-            <button onclick="filterByType('energy')">Energy</button>
+            <button onclick="filterByType(ResourceType.ENERGY)">Energy</button>
             <button onclick="filterByType('mineral')">Mineral</button>
           </div>
           <div class="resource-list">
             <div class="resource-item" data-type="mineral">Iron Deposit</div>
-            <div class="resource-item" data-type="energy">Energy Field</div>
+            <div class="resource-item" data-type=ResourceType.ENERGY>Energy Field</div>
             <div class="resource-item" data-type="mineral">Titanium Deposit</div>
           </div>
         </body>
@@ -129,14 +129,14 @@ test.describe('Mining Operations', () => {
     await page.click('button:has-text("Energy")');
 
     // Verify only energy resources are displayed
-    await expect(page.locator('.resource-item[data-type="energy"]')).toBeVisible();
+    await expect(page.locator('.resource-item[data-type=ResourceType.ENERGY]')).toBeVisible();
     await expect(page.locator('.resource-item[data-type="mineral"]').first()).not.toBeVisible();
 
     // Reset filter
     await page.click('button:has-text("All")');
 
     // Verify all resources are visible again
-    await expect(page.locator('.resource-item[data-type="energy"]')).toBeVisible();
+    await expect(page.locator('.resource-item[data-type=ResourceType.ENERGY]')).toBeVisible();
     await expect(page.locator('.resource-item[data-type="mineral"]').first()).toBeVisible();
 
     // Take a screenshot

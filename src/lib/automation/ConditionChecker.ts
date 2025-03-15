@@ -9,7 +9,7 @@ import {
 import { ResourceManager } from '../../managers/game/ResourceManager';
 import { MiningShipManagerImpl } from '../../managers/mining/MiningShipManagerImpl';
 import { moduleManager } from '../../managers/module/ModuleManager';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 
 // Create a resourceManager instance
 const resourceManager = new ResourceManager();

@@ -1,7 +1,8 @@
-import React, { forwardRef } from 'react';
+import * as React from "react";
+import { forwardRef } from 'react';
 import { Button, ButtonProps } from '../Button';
 import { cn } from '../../../../utils/cn';
-
+import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 /**
  * Ability interface for game abilities
  */
@@ -27,7 +28,7 @@ export interface Ability {
   /** The ability's required level */
   requiredLevel?: number;
   /** The ability's damage type */
-  damageType?: 'physical' | 'energy' | 'thermal' | 'explosive' | 'none';
+  damageType?: 'physical' | ResourceType.ENERGY | 'thermal' | 'explosive' | 'none';
   /** The ability's range in units */
   range?: number;
   /** The ability's duration in seconds */

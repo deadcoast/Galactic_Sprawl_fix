@@ -10,7 +10,7 @@
  * - Customizable cell rendering
  */
 
-import * as React from 'react';
+import * as React from "react";
 import { useState, useCallback, useMemo } from 'react';
 import { cn } from '../../../../utils/cn';
 

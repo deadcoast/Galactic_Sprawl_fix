@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { createTestAutomationManager } from './createTestAutomationManager';
@@ -105,14 +106,14 @@ describe('createTestAutomationManager', () => {
       const resourceAboveCondition = testAutomationManager.createTestCondition('RESOURCE_ABOVE');
 
       expect(resourceAboveCondition.type).toBe('RESOURCE_ABOVE');
-      expect(resourceAboveCondition.target).toBe('energy');
+      expect(resourceAboveCondition.target).toBe(ResourceType.ENERGY);
       expect(resourceAboveCondition.operator).toBe('greater');
       expect(resourceAboveCondition.value).toEqual({ amount: 100 });
 
       const resourceBelowCondition = testAutomationManager.createTestCondition('RESOURCE_BELOW');
 
       expect(resourceBelowCondition.type).toBe('RESOURCE_BELOW');
-      expect(resourceBelowCondition.target).toBe('energy');
+      expect(resourceBelowCondition.target).toBe(ResourceType.ENERGY);
       expect(resourceBelowCondition.operator).toBe('less');
       expect(resourceBelowCondition.value).toEqual({ amount: 100 });
     });
@@ -130,7 +131,7 @@ describe('createTestAutomationManager', () => {
       expect(eventCondition.type).toBe('EVENT_OCCURRED');
       expect(eventCondition.value).toEqual({
         eventType: 'RESOURCE_PRODUCED',
-        eventData: { resourceType: 'energy' },
+        eventData: { resourceType: ResourceType.ENERGY },
       });
     });
 
@@ -145,14 +146,14 @@ describe('createTestAutomationManager', () => {
 
     it('should override default values with provided options', () => {
       const customCondition = testAutomationManager.createTestCondition('RESOURCE_ABOVE', {
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: { amount: 200 },
         operator: 'greater',
         id: 'custom-condition-id',
       });
 
       expect(customCondition.type).toBe('RESOURCE_ABOVE');
-      expect(customCondition.target).toBe('minerals');
+      expect(customCondition.target).toBe(ResourceType.MINERALS);
       expect(customCondition.value).toEqual({ amount: 200 });
       expect(customCondition.operator).toBe('greater');
       expect(customCondition.id).toBe('custom-condition-id');
@@ -168,7 +169,7 @@ describe('createTestAutomationManager', () => {
         from: 'source-module',
         to: 'target-module',
         amount: 50,
-        type: 'energy',
+        type: ResourceType.ENERGY,
       });
     });
 
@@ -176,7 +177,7 @@ describe('createTestAutomationManager', () => {
       const produceAction = testAutomationManager.createTestAction('PRODUCE_RESOURCES');
 
       expect(produceAction.type).toBe('PRODUCE_RESOURCES');
-      expect(produceAction.target).toBe('energy');
+      expect(produceAction.target).toBe(ResourceType.ENERGY);
       expect(produceAction.value).toEqual({ amount: 50 });
     });
 
@@ -195,20 +196,20 @@ describe('createTestAutomationManager', () => {
         moduleId: 'test-module',
         moduleType: 'radar',
         eventType: 'RESOURCE_PRODUCED',
-        data: { resourceType: 'energy', amount: 50 },
+        data: { resourceType: ResourceType.ENERGY, amount: 50 },
       });
     });
 
     it('should override default values with provided options', () => {
       const customAction = testAutomationManager.createTestAction('CONSUME_RESOURCES', {
-        target: 'minerals',
+        target: ResourceType.MINERALS,
         value: { amount: 75 },
         delay: 1000,
         id: 'custom-action-id',
       });
 
       expect(customAction.type).toBe('CONSUME_RESOURCES');
-      expect(customAction.target).toBe('minerals');
+      expect(customAction.target).toBe(ResourceType.MINERALS);
       expect(customAction.value).toEqual({ amount: 75 });
       expect(customAction.delay).toBe(1000);
       expect(customAction.id).toBe('custom-action-id');

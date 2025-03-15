@@ -1,0 +1,1256 @@
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/App.tsx
+  360:9  warning  'profiler' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx
+  378:11  warning  'ExplorationTask' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/ExplorationHub/MissionReplay.tsx
+  163:13  warning  'isCurrentEvent' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/MineralProcessingCentre.tsx
+  182:9  warning  'resourcesByType' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/MiningControls.tsx
+  122:9  warning  'getResourceTypeColor' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/MiningHub/MiningMap.tsx
+  26:3  warning  'techBonuses' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  27:3  warning  'ships' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  28:3  warning  'children' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/hangar/ShipBuildingInterface.tsx
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/buildings/modules/hangar/ShipHangar.tsx
+  351:9  warning  'toShip' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/combat/CombatSystemDemo.tsx
+  207:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/core/IntegrationErrorHandler.tsx
+  139:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/core/SystemIntegration.tsx
+  39:6  warning  'ModuleEventType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/core/ThresholdIntegration.tsx
+  126:13  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  146:13  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/AnalysisConfigManager.tsx
+  45:3  warning  'onUpdateConfig' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/DatasetManager.tsx
+  38:3  warning  'onUpdateDataset' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/DiscoveryClassification.tsx
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/DiscoveryClassificationDemo.tsx
+  163:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/ResourceDiscoverySystem.tsx
+  180:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/unified/context/ExplorationContext.tsx
+  59:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/unified/core/BaseAnalysisVisualizer.tsx
+   20:10  warning  'VisualizationValue' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   36:24  error    Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+   52:18  error    Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  164:11  warning  'data' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  164:17  warning  'width' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  164:24  warning  'height' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  164:32  warning  'options' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  170:12  warning  'data' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  170:18  warning  'width' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  170:25  warning  'height' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  170:33  warning  'options' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  176:15  warning  'data' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  176:21  warning  'width' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  176:28  warning  'height' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  176:36  warning  'options' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  182:11  warning  'data' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  182:17  warning  'width' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  182:24  warning  'height' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  182:32  warning  'options' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  188:13  warning  'data' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  188:19  warning  'width' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  188:26  warning  'height' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  188:34  warning  'options' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  194:15  warning  'data' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  194:21  warning  'width' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  194:28  warning  'height' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  194:36  warning  'options' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  200:15  warning  'data' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  200:21  warning  'width' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  200:28  warning  'height' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  200:36  warning  'options' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  206:19  warning  'width' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  206:26  warning  'height' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  206:34  warning  'options' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  240:14  warning  'data' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  240:20  warning  'width' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  240:27  warning  'height' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  240:35  warning  'options' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  261:63  error    Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  449:29  error    Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/unified/core/BaseMap.tsx
+   18:3  warning  'Coordinates' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  134:3  warning  'onEntityClick' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/unified/system/GalaxyExplorationSystem.tsx
+  550:11  warning  'settings' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  639:11  warning  'settings' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/visualizations/DataVisualizationDemo.tsx
+  136:62  warning  'index' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/visualizations/MemoryOptimizedCharts.tsx
+  1:13  warning  'React' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/visualizations/charts/BaseChart.tsx
+  249:9  warning  'yKeys' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/visualizations/charts/HeatMap.tsx
+   98:3   warning  'cellTooltip' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  114:3   warning  'grid' is defined but never used. Allowed unused args must match /^_/u                  @typescript-eslint/no-unused-vars
+  115:3   warning  'animate' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  119:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error       no-console
+  346:32  warning  'index' is defined but never used. Allowed unused args must match /^_/u                 @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/visualizations/charts/LineChart.tsx
+  25:6  warning  'ReferenceLinePosition' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/visualizations/charts/ResourceMappingVisualization.tsx
+  120:61  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  213:43  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  217:9   warning  'getHeatMapCellColor' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  218:50  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/visualizations/charts/ScatterPlot.tsx
+  26:6  warning  'ReferenceLinePosition' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/exploration/visualizations/charts/VirtualizedLineChart.tsx
+  371:28  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/performance/LongSessionMemoryVisualizer.tsx
+  521:9  warning  'drawNoDataMessage' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ships/FactionShips/lostNova/DarkMatterReaper.tsx
+  94:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/DragAndDrop.tsx
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/GameHUD.tsx
+   35:11  warning  'MenuItem' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+  137:9   warning  'gameContext' is assigned a value but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  138:9   warning  'moduleContext' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/ResourceEventMonitor.tsx
+  8:7  warning  'RESOURCE_EVENT_TYPES' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/api/TypeSafeApiDemo.tsx
+  43:6  warning  'User' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  44:6  warning  'Todo' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/config/TypeSafeConfigDemo.tsx
+  160:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  178:67  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  216:22  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  463:50  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/event/VirtualizedEventLog.tsx
+   94:3   warning  'showDetails' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  208:5   warning  'index' is defined but never used. Allowed unused args must match /^_/u                 @typescript-eslint/no-unused-vars
+  219:11  warning  'eventId' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/modules/ModuleCard.tsx
+  64:67  warning  'updateStatus' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/performance/AnimationPerformanceProfilerDemo.tsx
+  107:36  error    Unexpected any. Specify a different type                                                 @typescript-eslint/no-explicit-any
+  277:25  warning  'targetHeight' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/performance/DynamicBudgetAdjustmentPanel.tsx
+  153:9  warning  'handleConfigChange' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/performance/InterpolationMemoizationDemo.tsx
+   34:9   warning  'svgRef' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  111:28  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  122:28  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  219:45  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  273:45  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  417:69  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/performance/OptimizationComparisonView.tsx
+   31:3  warning  'width' is assigned a value but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+   32:3  warning  'height' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  100:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  106:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  161:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  187:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/resource/ChainVisualization.tsx
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/resource/ConverterDashboard.tsx
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/resource/ResourceEventDemo.tsx
+  30:10  warning  'resourceEventCount' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  34:11  warning  'latestEvent' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  56:11  warning  'latestEvents' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/resource/ResourceFlowDiagram.tsx
+   97:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  110:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  116:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/resource/ResourceFlowDiagramDemo.tsx
+  35:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  41:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/resource/ResourceOptimizationSuggestions.tsx
+  59:9  warning  'componentId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  74:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error       no-console
+  77:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error       no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/resource/ResourceThresholdVisualization.tsx
+  266:9  warning  'currentStatus' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/showcase/DataDashboardApp.tsx
+   111:11  warning  'TimeSeriesAnimationConfig' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+   234:11  warning  'D3Link' is defined but never used. Allowed unused vars must match /^_/u                                    @typescript-eslint/no-unused-vars
+   328:10  warning  'worldMapData' is assigned a value but never used. Allowed unused vars must match /^_/u                     @typescript-eslint/no-unused-vars
+   336:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error                           no-console
+   341:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error                           no-console
+   369:9   warning  'handleTimeRangeChange' is assigned a value but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   506:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error                           no-console
+   587:13  warning  'labels' is assigned a value but never used. Allowed unused vars must match /^_/u                           @typescript-eslint/no-unused-vars
+   696:9   warning  'convertTimeSeriesDataToD3Format' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   742:9   warning  'convertGeoDataToD3Format' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   852:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error                           no-console
+   919:11  warning  'filterByCategory' is assigned a value but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  1426:35  warning  'pointCount' is defined but never used. Allowed unused args must match /^_/u                                @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/showcase/PerformanceMonitoringDashboard.tsx
+   85:23  warning  'setFrameBudget' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  137:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error          no-console
+  178:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u               @typescript-eslint/no-unused-vars
+  898:9   warning  'colorScale' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/visualization/ChartCoordinationDemo.tsx
+  103:9  warning  'handleScatterBrush' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/visualization/CustomShaderVisualization.tsx
+  153:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  156:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/visualization/DataHighlightDemo.tsx
+  119:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/visualization/DataTransitionParticleSystem.tsx
+   18:11  warning  'DataTransitionConfig' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   96:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+   99:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  134:13  warning  'delay' is assigned a value but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  161:15  warning  'currentPosition' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/visualization/HeatMapDensityDemo.tsx
+   86:9   error  Unexpected lexical declaration in case block  no-case-declarations
+   87:9   error  Unexpected lexical declaration in case block  no-case-declarations
+  124:9   error  Unexpected lexical declaration in case block  no-case-declarations
+  125:9   error  Unexpected lexical declaration in case block  no-case-declarations
+  126:9   error  Unexpected lexical declaration in case block  no-case-declarations
+  144:9   error  Unexpected lexical declaration in case block  no-case-declarations
+  145:9   error  Unexpected lexical declaration in case block  no-case-declarations
+  146:9   error  Unexpected lexical declaration in case block  no-case-declarations
+  202:61  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  204:48  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  232:71  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/visualization/HeatMapDensityVisualization.tsx
+  97:9  warning  'canvasRef' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/visualization/ParticleTransitionDemo.tsx
+  409:47  warning  'progress' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/visualizations/AnimationTypeSafetyDemo.tsx
+  87:11  warning  'animationSequence' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/visualizations/FlowDiagram.tsx
+  182:3   warning  'nodeMap' is defined but never used. Allowed unused args must match /^_/u                   @typescript-eslint/no-unused-vars
+  230:7   warning  'isNodeReference' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  251:10  warning  'selectedNodeId' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  252:10  warning  'selectedLinkId' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  260:13  warning  'flowDataSchema' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  408:27  warning  'nodeMap' is assigned a value but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/visualizations/TemporalAnalysisView.tsx
+  153:10  warning  'isAnimating' is assigned a value but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  176:9   warning  'categoryScale' is assigned a value but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  198:11  warning  'xAxis' is assigned a value but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars
+  214:11  warning  'yAxis' is assigned a value but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars
+  412:13  warning  'startTimestamp' is assigned a value but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  458:9   warning  'createNodeHoverHandler' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  461:13  warning  'value' is assigned a value but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars
+  462:13  warning  'timestamp' is assigned a value but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  463:13  warning  'category' is assigned a value but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/visualization/AnomalyVisualization.tsx
+  20:3  warning  'chartId' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  21:3  warning  'groupId' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  22:3  warning  'initialState' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/contexts/DataAnalysisContext.tsx
+   55:10  warning  'isProcessingData' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  862:13  warning  Unexpected console statement. Only these console methods are allowed: warn, error            no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/contexts/ThresholdContext.tsx
+  44:7  warning  'getResourceName' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/errorHandling/GlobalErrorBoundary.tsx
+   26:9   warning  'handleReset' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  151:69  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/errorHandling/specialized/VisualizationErrorBoundary.tsx
+  100:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/errorHandling/utils/errorBoundaryHOC.tsx
+    2:36  warning  'ReactNode' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  166:77  error    Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  168:55  error    Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/factory/createDataFetchHook.ts
+  50:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/factory/createStateHook.ts
+   6:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/performance/useSessionPerformance.ts
+  83:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  83:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/resources/useResourceManagement.tsx
+  1:13  warning  'React' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/resources/useResourceSystem.ts
+  46:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  50:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/ui/useComponentLifecycle.ts
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/ui/useComponentRegistration.ts
+    1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  100:26  warning  'renderTime' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/useMemoryManager.ts
+   70:35  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+   75:34  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+   96:37  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  150:9   error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  160:38  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  204:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  225:46  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  230:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  237:45  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  246:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  261:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  269:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  291:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  319:17  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  361:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  372:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/useTypedApi.ts
+   48:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/useWorker.ts
+  22:3  warning  'onProgress' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/ai/ResourceConsumptionPredictor.ts
+   89:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  176:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  455:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/contexts/BaseContext.tsx
+  286:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  309:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  370:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/events/EventBus.ts
+    1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   79:30  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   91:10  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   99:12  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  106:11  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  113:12  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  564:17  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  580:19  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  595:18  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  612:19  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  708:10  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  716:12  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  723:11  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  731:59  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  731:69  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  741:19  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  751:21  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  760:20  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  769:24  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  787:64  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/events/ModuleEventBus.ts
+  69:21  warning  'type' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+  69:44  warning  'listener' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/modules/ModuleEvents.ts
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/optimization/WebGLShaderManager.ts
+  690:13  warning  'deltaTime' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/patterns/Singleton.ts
+  23:33  warning  'T' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  24:46  error    Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/services/BaseService.ts
+  94:29  warning  'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/visualization/ChartCoordinationManager.ts
+  151:41  warning  'groupId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/visualization/ParticleSystem.ts
+  456:36  warning  'id' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  650:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  651:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  653:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  654:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  662:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  663:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  664:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  673:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  674:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  675:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  676:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  678:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  679:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  680:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  681:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  682:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  683:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  693:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  696:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  697:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  700:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  701:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  702:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  703:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  704:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  712:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  721:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  722:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  725:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  726:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  727:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  728:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  730:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  733:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  767:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  786:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  798:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+  799:9   error    Unexpected lexical declaration in case block                          no-case-declarations
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/exploration/ExplorationManager.ts
+  177:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error               no-console
+  609:7  warning  'explorationEventBus' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/exploration/ReconShipManagerImpl.ts
+  239:11  warning  'dt' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/game/GameLoopManager.ts
+  302:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/game/ResourceManager.ts
+  161:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  428:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/module/ModuleStatusManager.ts
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource/AdaptivePerformanceManager.ts
+  176:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource/ResourceConversionManager.ts
+  470:5  warning  'inputs' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/managers/resource/ResourceFlowManager.ts
+  315:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/pages/ConverterManagementPage.tsx
+  1:8  warning  'React' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/pages/ResourceRegistryDemo.tsx
+  214:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/pages/performance/MultitabPerformanceTestPage.tsx
+  24:10  warning  'report' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/registry/ResourceRegistry.ts
+  279:48  warning  'relatedResources' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  841:48  warning  'resourceType' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/registry/ResourceRegistryIntegration.ts
+   58:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error      no-console
+   65:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error      no-console
+   78:35  warning  'resourceFlowManager' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  104:32  warning  'resourceFlowManager' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  130:44  warning  'resourceFlowManager' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/resource/ResourceSystem.ts
+  122:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  128:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/resource/subsystems/ResourceFlowSubsystem.ts
+  682:36  warning  'converter' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  682:57  warning  'activeConnections' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  929:41  error    Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+  954:41  error    Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+  983:43  error    Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+  988:46  error    Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/resource/subsystems/ResourceStorageSubsystem.ts
+  518:19  warning  'resType' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/scripts/runNetworkTests.ts
+   42:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   43:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   44:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   47:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   87:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  102:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  106:29  warning  'results' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  109:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  110:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  114:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  115:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  121:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  127:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  133:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  140:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  149:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  150:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  151:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  154:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  157:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  160:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/services/AnalysisAlgorithmService.ts
+     1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u                     @typescript-eslint/no-unused-vars
+   130:11  warning  'pendingResult' is assigned a value but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   308:11  warning  'sampleRate' is assigned a value but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+   401:5   warning  'options' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+   521:22  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+   662:5   warning  'options' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+   971:5   warning  'options' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+  1025:5   warning  'options' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+  1143:36  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  1398:9   error    Unexpected lexical declaration in case block                                                       no-case-declarations
+  1399:9   error    Unexpected lexical declaration in case block                                                       no-case-declarations
+  1400:9   error    Unexpected lexical declaration in case block                                                       no-case-declarations
+  1413:26  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  1413:36  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  1428:39  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  1468:34  warning  'i' is defined but never used. Allowed unused args must match /^_/u                                @typescript-eslint/no-unused-vars
+  1471:26  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  1472:21  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  1472:29  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  1890:17  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  1925:17  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  2080:5   warning  'options' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+  2569:38  warning  'normalizedTestFeatures' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2580:11  warning  'normalizedTestTargets' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  2664:11  warning  'batchLoss' is assigned a value but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  2907:74  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  2908:55  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  2981:5   warning  'options' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+  3001:47  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  3230:33  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  3310:33  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  3336:5   warning  'dataset' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+  3337:5   warning  'options' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+  3346:7   warning  'normalizeValues' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  3347:7   warning  'timeRange' is assigned a value but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  3348:7   warning  'groupBy' is assigned a value but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  3376:5   warning  'dataset' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+  3377:5   warning  'options' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+  3383:33  warning  'includeNeighbors' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  3383:59  warning  'timeRange' is assigned a value but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/services/ComponentRegistryService.ts
+  164:53  warning  'eventData' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  176:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/services/RecoveryService.ts
+  139:5  warning  'metadata' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/services/WorkerService.ts
+  242:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  265:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/services/telemetry/SessionPerformanceTracker.ts
+  152:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  171:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  186:11  warning  'screenHeight' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  541:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+  597:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error        no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/services/telemetry/UserBehaviorCorrelationAnalysis.ts
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/systems/exploration/DiscoveryClassification.ts
+  182:5   warning  'signatureAnalysis' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  183:5   warning  'compositionAnalysis' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  189:35  warning  'discovery' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  193:31  warning  'discovery' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  197:32  warning  'discovery' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  201:35  warning  'discovery' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  205:33  warning  'discovery' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  209:35  warning  'discovery' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  213:35  warning  'discovery' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  217:37  warning  'discovery' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  221:27  warning  'composition' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  225:28  warning  'pressure' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  225:46  warning  'temperature' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  229:34  warning  'location' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  233:34  warning  'metadata' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  233:44  error    Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  241:33  warning  'metadata' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  241:43  error    Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  249:33  warning  'metadata' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  249:43  error    Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  257:28  warning  'metadata' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  257:38  error    Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  261:28  warning  'metadata' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  261:38  error    Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  269:40  warning  'result' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  273:31  warning  'result' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  277:31  warning  'result' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  281:42  warning  'result' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/components/ui/ResourceVisualization.snapshot.test.tsx
+  105:18  warning  'selector' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/contexts/ResourceRatesContext.test.tsx
+   15:7   warning  'mockEventBus' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   15:30  error    Unexpected any. Specify a different type                                                 @typescript-eslint/no-explicit-any
+  104:49  error    Unexpected any. Specify a different type                                                 @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/contexts/exploration/ClassificationContext.test.tsx
+  389:11  warning  'initialClassificationsCount' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/helpers/ResourceNetworkGenerator.ts
+   22:29  error    Unexpected any. Specify a different type                                                            @typescript-eslint/no-explicit-any
+  168:9   warning  'getNodesForResourceType' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/helpers/UserInteractionSimulator.ts
+  101:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  126:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  150:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  175:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  191:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  202:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  222:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  238:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  263:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/hooks/automation/useAutomation.test.tsx
+  1:8  warning  'React' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/hooks/events/useEventBatching.test.tsx
+  1:13  warning  'React' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/hooks/factory/hookFactories.test.tsx
+  1:13  warning  'React' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  2:10  warning  'render' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  2:18  warning  'screen' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  2:26  warning  'fireEvent' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:37  warning  'waitFor' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  2:46  warning  'act' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/hooks/resources/useResourceTracking.test.tsx
+  1:8  warning  'React' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/hooks/useGameStateHook.test.tsx
+  131:32  warning  'selectorCallCounts' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/integration/ManagerIntegration.test.ts
+  219:11  warning  'module' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/integration/ModuleSystemIntegration.test.tsx
+   90:9   error    A `require()` style import is forbidden                                  @typescript-eslint/no-require-imports
+  220:35  error    A `require()` style import is forbidden                                  @typescript-eslint/no-require-imports
+  289:35  error    A `require()` style import is forbidden                                  @typescript-eslint/no-require-imports
+  325:53  warning  'event' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/integration/OptimizationComponents.test.ts
+   22:31  error    Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  144:12  warning  'updateNodePositions' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  145:43  error    Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  145:48  error    Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  145:53  error    Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  183:17  warning  'rect' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  341:23  warning  'deltaTime' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  341:34  warning  'frameInfo' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/integration/resource/ResourceFlowManagerIntegration.test.ts
+  45:7  warning  'resourceRegistry' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/lib/managers/BaseManager.test.ts
+  20:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/managers/exploration/ExplorationManagerImpl.test.ts
+  129:11  warning  'system' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  259:11  warning  'system' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/performance/AdvancedPerformanceScenarios.ts
+  190:26  error  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  253:22  error  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  253:45  error  The `Function` type accepts any function-like value.
+Prefer explicitly defining any function parameters and return type  @typescript-eslint/no-unsafe-function-type
+  253:79  error  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  308:22  error  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/performance/LongSessionMemoryTestSuite.ts
+  140:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  155:11  warning  'initialSnapshot' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  203:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  213:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  218:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  225:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  229:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  233:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  237:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  283:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  564:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                @typescript-eslint/no-unused-vars
+  566:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/performance/MultitabPerformanceTestSuite.ts
+  288:44  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  632:36  warning  'e' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  664:11  error    Unexpected lexical declaration in case block                                       no-case-declarations
+  676:11  error    Unexpected lexical declaration in case block                                       no-case-declarations
+  678:11  error    Unexpected lexical declaration in case block                                       no-case-declarations
+  839:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u       @typescript-eslint/no-unused-vars
+  858:16  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u       @typescript-eslint/no-unused-vars
+  952:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  956:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  962:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  968:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  974:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  979:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/performance/NetworkDegradationTestSuite.ts
+    1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  147:22  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u      @typescript-eslint/no-unused-vars
+  194:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+  195:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+  198:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+  231:35  warning  'resource' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  245:17  warning  'startTime' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  270:22  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u      @typescript-eslint/no-unused-vars
+  403:22  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u      @typescript-eslint/no-unused-vars
+  466:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+  470:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+  473:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+  476:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+  487:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/types/CommonTypesTest.ts
+  6:3  warning  'BaseDataRecord' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/types/D3AnimationTypes.test.ts
+   73:26  warning  'callback' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+   81:7   warning  'timer' is never reassigned. Use 'const' instead                                       prefer-const
+   99:37  warning  'delay' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  141:13  warning  'transition' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/events/rxjsIntegration.test.ts
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/index.ts
+  30:3  warning  'runBenchmark' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  31:3  warning  'measureAsyncExecutionTime' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  32:3  warning  'measureAsyncMemoryUsage' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  33:3  warning  'runAsyncBenchmark' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/performance/benchmarks/PerformanceBenchmarkTools.test.ts
+   15:3   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  129:34  warning  'resolve' is defined but never used. Allowed unused args must match /^_/u                                            @typescript-eslint/no-unused-vars
+  266:7   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  296:7   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/performanceUtils.ts
+  292:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  347:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/portManager.ts
+  41:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  52:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  80:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  89:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/tests/utils/testPerformanceUtils.ts
+  115:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  134:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/TypeUtils.ts
+  202:12  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/buildings/ShipHangarTypes.ts
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/config/TypeSafeConfig.ts
+   36:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   86:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  152:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  185:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  368:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  369:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  390:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  506:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/events/ModuleEventTypes.ts
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/events/SharedEventTypes.ts
+  127:3  warning  'T' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/exploration/unified/ExplorationTypeUtils.ts
+  20:3   warning  'StarSystem' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  21:3   warning  'Planet' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  70:53  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/exploration/unified/ExplorationTypes.ts
+  448:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  520:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  682:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypeUtils.ts
+  212:54  warning  'resourceType' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/StandardizedResourceTypes.ts
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/ships/CommonShipTypes.ts
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/state/TypeSafeStateManagement.ts
+   30:60  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   72:28  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   75:56  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   98:66  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  111:38  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  146:3   warning  'initialState' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  162:39  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  171:34  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  174:31  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  193:39  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  211:36  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  214:33  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/visualization/CommonTypes.ts
+  364:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/visualizations/D3DragTypes.ts
+   16:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+  100:25  error  Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  209:29  error  Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  213:29  error  Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  267:41  error  Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/visualizations/D3SelectionTypes.ts
+   19:54  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+   31:52  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+   44:3   warning  'elementType' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   45:42  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+   58:3   warning  'elementType' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   59:42  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+   71:54  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+   83:52  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+   96:3   warning  'elementType' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   97:42  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  110:55  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  114:38  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  144:47  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  277:36  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  300:37  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  320:31  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  328:31  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  375:22  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  445:40  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  464:37  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  475:38  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  506:68  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  529:83  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  542:60  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/visualizations/D3ZoomTypes.ts
+   18:3   warning  'PElement' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   19:3   warning  'PDatum' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   19:12  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   28:74  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   93:78  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  127:36  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  167:91  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  173:47  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  173:52  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  173:57  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  200:29  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  217:29  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  236:29  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  289:11  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  295:42  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  295:47  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  295:52  error    Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/ui/components/Button/variants/AbilityButton.tsx
+  39:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/ui/components/Card/variants/ModuleCard.tsx
+  50:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/dataTransforms/chartTransforms.ts
+   19:3   warning  'AnalysisType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  137:16  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  300:13  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  312:44  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  365:12  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  366:17  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  382:26  error    Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/dataTransforms/filterTransforms.ts
+  229:7  error  Unexpected lexical declaration in case block  no-case-declarations
+  235:7  error  Unexpected lexical declaration in case block  no-case-declarations
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/dataTransforms/index.ts
+  27:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/dataTransforms/scientificTransforms.ts
+  115:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/events/EventBatchingRxJS.ts
+   49:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  161:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  218:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/events/EventDevTools.ts
+  205:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  208:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  269:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  332:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/events/EventDispatcher.tsx
+  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3AccessorBenchmark.ts
+  209:15  warning  'transform' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  227:15  warning  'transform' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  262:15  warning  'transform' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  277:15  warning  'transform' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  298:15  warning  'transform' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  313:15  warning  'transform' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  449:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+  452:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+  454:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error     no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3AnimationFrameManager.ts
+   261:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   281:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   314:15  warning  'callbackDuration' is assigned a value but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   328:13  warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   370:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   390:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   460:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   510:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   535:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   553:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   585:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   625:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   660:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   679:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   719:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error              no-console
+   983:9   warning  'originalTransition' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   988:15  warning  'deltaTime' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+   988:26  warning  'frameInfo' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+  1028:15  warning  'deltaTime' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+  1028:26  warning  'frameInfo' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+  1086:15  warning  'deltaTime' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+  1086:26  warning  'frameInfo' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3AnimationProfiler.ts
+  132:5   warning  'detailedMetrics' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  148:7   warning  'selectionUpdates' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  525:47  error    Unexpected any. Specify a different type                                                     @typescript-eslint/no-explicit-any
+  525:55  error    Unexpected any. Specify a different type                                                     @typescript-eslint/no-explicit-any
+  534:10  error    Unexpected any. Specify a different type                                                     @typescript-eslint/no-explicit-any
+  537:41  error    Unexpected any. Specify a different type                                                     @typescript-eslint/no-explicit-any
+  537:49  error    Unexpected any. Specify a different type                                                     @typescript-eslint/no-explicit-any
+  546:10  error    Unexpected any. Specify a different type                                                     @typescript-eslint/no-explicit-any
+  549:42  error    Unexpected any. Specify a different type                                                     @typescript-eslint/no-explicit-any
+  549:50  error    Unexpected any. Specify a different type                                                     @typescript-eslint/no-explicit-any
+  558:10  error    Unexpected any. Specify a different type                                                     @typescript-eslint/no-explicit-any
+  665:40  error    Unexpected any. Specify a different type                                                     @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3AnimationQualityManager.ts
+  314:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  357:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                @typescript-eslint/no-unused-vars
+  364:45  error    Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  375:16  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                @typescript-eslint/no-unused-vars
+  398:40  error    Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  415:7   warning  'benchmarkResult' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  434:42  error    Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  631:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  646:13  warning  Unexpected console statement. Only these console methods are allowed: warn, error           no-console
+  775:70  error    Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3BatchedUpdates.ts
+  303:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error         no-console
+  349:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error         no-console
+  498:46  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  498:54  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  516:8   error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  519:47  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  519:55  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  537:8   error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  540:50  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  540:58  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  558:8   error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  561:46  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  561:54  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  579:8   error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  582:46  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  582:54  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  600:8   error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  611:46  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  635:45  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  635:53  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  643:55  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  643:61  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  649:13  warning  'originalTween' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  675:10  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  678:56  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  678:81  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  684:13  warning  'originalTween' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  710:10  error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  713:8   error    Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3InterpolationCache.ts
+  137:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  146:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  441:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  564:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  564:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  565:6   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  566:6   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  680:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  680:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  688:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  688:67  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  690:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  693:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  702:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  702:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  704:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  707:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  717:8   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3PerformanceOptimizations.ts
+   66:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:80  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  243:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  243:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  284:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  291:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  295:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/D3PerformanceProfiler.ts
+  182:5   warning  'totalDurationMs' is defined but never used. Allowed unused args must match /^_/u                                        @typescript-eslint/no-unused-vars
+  254:25  error    The `Function` type accepts any function-like value.
+Prefer explicitly defining any function parameters and return type  @typescript-eslint/no-unsafe-function-type
+  274:11  error    Unexpected aliasing of 'this' to local variable                                                                          @typescript-eslint/no-this-alias
+  288:67  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  307:21  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  311:23  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  315:23  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  319:26  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  344:63  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  362:49  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  371:21  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  375:23  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  379:23  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  383:26  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  408:52  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  539:17  warning  'transform' is assigned a value but never used. Allowed unused vars must match /^_/u                                     @typescript-eslint/no-unused-vars
+  555:17  warning  'transform' is assigned a value but never used. Allowed unused vars must match /^_/u                                     @typescript-eslint/no-unused-vars
+  602:32  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  603:32  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  604:31  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  617:32  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  618:32  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  619:31  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  633:32  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  634:32  error    Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/HookPerformanceDashboard.tsx
+  58:3  warning  'showDetails' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/benchmarks/DynamicBudgetAdjustment.ts
+  670:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/benchmarks/PerformanceBenchmarkTools.ts
+  321:9  warning  'converters' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  923:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error      no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/hookPerformanceMonitor.ts
+  140:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  200:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  238:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/longsession/LongSessionMemoryTracker.ts
+  233:68  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  243:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  287:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  320:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  332:16  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u       @typescript-eslint/no-unused-vars
+  349:42  error    Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  646:16  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u       @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/multitab/MultitabCommunicationChannel.ts
+  134:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  143:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/performance/network/NetworkDegradationSimulator.ts
+  387:76  error    Unexpected any. Specify a different type                                                   @typescript-eslint/no-explicit-any
+  389:14  error    Unexpected any. Specify a different type                                                   @typescript-eslint/no-explicit-any
+  394:76  error    Unexpected any. Specify a different type                                                   @typescript-eslint/no-explicit-any
+  395:42  error    Unexpected any. Specify a different type                                                   @typescript-eslint/no-explicit-any
+  405:11  warning  'originalOnload' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  424:74  error    Unexpected any. Specify a different type                                                   @typescript-eslint/no-explicit-any
+  469:26  error    Unexpected any. Specify a different type                                                   @typescript-eslint/no-explicit-any
+  544:20  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u               @typescript-eslint/no-unused-vars
+  555:43  error    Unexpected any. Specify a different type                                                   @typescript-eslint/no-explicit-any
+  610:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error          no-console
+  611:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error          no-console
+  651:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error          no-console
+  699:60  error    Unexpected any. Specify a different type                                                   @typescript-eslint/no-explicit-any
+  699:70  error    Unexpected any. Specify a different type                                                   @typescript-eslint/no-explicit-any
+  726:16  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u               @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/resources/ResourceTypeMigration.ts
+  12:6  warning  'EnumResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/services/ServiceAccess.ts
+  84:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/state/stateMigration.ts
+  65:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/state/statePersistence.ts
+  87:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/utils/testing/hookTestingUtils.tsx
+  156:21  warning  'updatedState' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+  418:9   warning  'testPerformanceConfig' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/visualization/Chart.tsx
+   14:18  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   25:20  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   32:20  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   46:26  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  247:16  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/visualization/renderers/CanvasRenderer.tsx
+     1:8   warning  'React' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   174:46  warning  'options' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+   221:78  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   274:77  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   312:81  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   344:78  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   410:43  warning  'options' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+   579:81  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   585:11  warning  'xAxis' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   586:11  warning  'yAxis' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   667:73  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   776:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   810:28  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   810:44  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   855:75  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   871:5   warning  'legendWidth' is never reassigned. Use 'const' instead                            prefer-const
+   872:5   warning  'legendHeight' is never reassigned. Use 'const' instead                           prefer-const
+  1059:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1134:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1213:12  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/visualization/renderers/SVGRenderer.tsx
+     1:8   warning  'React' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+    71:11  warning  'themeColors' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   174:46  warning  'options' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+   218:16  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+   290:16  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+   348:16  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+   398:16  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+   750:16  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+   867:16  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+  1010:16  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+  1061:13  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+  1062:16  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+  1121:75  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+  1137:5   warning  'legendWidth' is never reassigned. Use 'const' instead                                  prefer-const
+  1138:5   warning  'legendHeight' is never reassigned. Use 'const' instead                                 prefer-const
+  1303:16  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+  1382:12  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/visualization/renderers/WebGLRenderer.tsx
+     1:8   warning  'React' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   211:46  warning  'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   521:78  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   637:81  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   708:78  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1043:16  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1055:73  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1201:13  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1202:16  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1261:75  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1277:5   warning  'legendWidth' is never reassigned. Use 'const' instead                     prefer-const
+  1278:5   warning  'legendHeight' is never reassigned. Use 'const' instead                    prefer-const
+  1352:16  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1465:16  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1542:16  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1621:12  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1751:16  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/workers/ResourceFlowWorker.ts
+  108:3  warning  'resourceStates' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  191:3  warning  'activeConnections' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 875 problems (384 errors, 491 warnings)
+

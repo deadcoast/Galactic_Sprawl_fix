@@ -1,3 +1,5 @@
+import * as React from "react";
+import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -12,7 +14,6 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
 
 interface PopulationEvent {
   id: string;

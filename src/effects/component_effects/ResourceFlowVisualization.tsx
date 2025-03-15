@@ -1,10 +1,11 @@
-import { motion } from 'framer-motion';
+import * as React from "react";
 import { useEffect, useRef } from 'react';
-
+import { motion } from 'framer-motion';
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 interface ResourceFlowVisualizationProps {
   sourcePosition: { x: number; y: number };
   targetPosition: { x: number; y: number };
-  resourceType: 'energy' | 'materials' | 'research' | 'population';
+  resourceType: ResourceType.ENERGY | 'materials' | ResourceType.RESEARCH | ResourceType.POPULATION;
   flowRate: number; // 0-100
   quality: 'low' | 'medium' | 'high';
 }

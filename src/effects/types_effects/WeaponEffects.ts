@@ -4,7 +4,7 @@
  */
 
 import { Effect } from '../../types/core/GameTypes';
-
+import { ResourceType } from "./../../types/resources/ResourceTypes";
 // Effect Types
 // ------------------------------------------------------------
 
@@ -26,7 +26,7 @@ export interface WeaponEffect extends Effect {
  */
 export interface DamageEffect extends WeaponEffect {
   type: 'damage';
-  damageType: 'physical' | 'energy' | 'explosive';
+  damageType: 'physical' | ResourceType.ENERGY | 'explosive';
   penetration: number;
 }
 

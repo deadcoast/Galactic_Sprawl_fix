@@ -1,5 +1,6 @@
-import { Wind } from 'lucide-react';
+import * as React from "react";
 import { useEffect, useState } from 'react';
+import { Wind } from 'lucide-react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { ShipStatus } from '../../../../types/ships/ShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';

@@ -1,3 +1,4 @@
+import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowManager';
 import { ResourcePriority } from '../../../types/resources/ResourceTypes';
@@ -12,7 +13,7 @@ vi.mock('../../../utils/resources/resourceValidation', () => ({
 
 describe('ResourceFlowManager Batch Processing', () => {
   let flowManager: ResourceFlowManager;
-  const defaultPriority: ResourcePriority = { type: 'energy', priority: 1, consumers: [] };
+  const defaultPriority: ResourcePriority = { type: ResourceType.ENERGY, priority: 1, consumers: [] };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -46,7 +47,7 @@ describe('ResourceFlowManager Batch Processing', () => {
         flowManager.registerNode({
           id: `producer-${i}`,
           type: 'producer',
-          resources: ['energy'],
+          resources: [ResourceType.ENERGY],
           priority: defaultPriority,
           active: true,
         });
@@ -57,7 +58,7 @@ describe('ResourceFlowManager Batch Processing', () => {
         flowManager.registerNode({
           id: `consumer-${i}`,
           type: 'consumer',
-          resources: ['energy'],
+          resources: [ResourceType.ENERGY],
           priority: defaultPriority,
           active: true,
         });
@@ -69,7 +70,7 @@ describe('ResourceFlowManager Batch Processing', () => {
           id: `connection-${i}`,
           source: `producer-${i}`,
           target: `consumer-${i}`,
-          resourceType: 'energy',
+          resourceType: ResourceType.ENERGY,
           maxRate: 10,
           currentRate: 0,
           priority: defaultPriority,
@@ -78,7 +79,7 @@ describe('ResourceFlowManager Batch Processing', () => {
       }
 
       // Set resource state
-      flowManager.updateResourceState('energy', {
+      flowManager.updateResourceState(ResourceType.ENERGY, {
         current: 1000,
         max: 10000,
         min: 0,
@@ -115,7 +116,7 @@ describe('ResourceFlowManager Batch Processing', () => {
       flowManager.registerNode({
         id: 'energy-producer',
         type: 'producer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -123,7 +124,7 @@ describe('ResourceFlowManager Batch Processing', () => {
       flowManager.registerNode({
         id: 'minerals-consumer',
         type: 'consumer',
-        resources: ['minerals'],
+        resources: [ResourceType.MINERALS],
         priority: defaultPriority,
         active: true,
       });
@@ -133,7 +134,7 @@ describe('ResourceFlowManager Batch Processing', () => {
         flowManager.registerNode({
           id: `converter-${i}`,
           type: 'converter',
-          resources: ['energy', 'minerals'],
+          resources: [ResourceType.ENERGY, ResourceType.MINERALS],
           priority: defaultPriority,
           active: true,
         });
@@ -143,7 +144,7 @@ describe('ResourceFlowManager Batch Processing', () => {
           id: `energy-to-converter-${i}`,
           source: 'energy-producer',
           target: `converter-${i}`,
-          resourceType: 'energy',
+          resourceType: ResourceType.ENERGY,
           maxRate: 10,
           currentRate: 0,
           priority: defaultPriority,
@@ -155,7 +156,7 @@ describe('ResourceFlowManager Batch Processing', () => {
           id: `converter-to-minerals-${i}`,
           source: `converter-${i}`,
           target: 'minerals-consumer',
-          resourceType: 'minerals',
+          resourceType: ResourceType.MINERALS,
           maxRate: 20, // Twice the input rate due to conversion ratio
           currentRate: 0,
           priority: defaultPriority,
@@ -164,7 +165,7 @@ describe('ResourceFlowManager Batch Processing', () => {
       }
 
       // Set resource states
-      flowManager.updateResourceState('energy', {
+      flowManager.updateResourceState(ResourceType.ENERGY, {
         current: 1000,
         max: 10000,
         min: 0,
@@ -172,7 +173,7 @@ describe('ResourceFlowManager Batch Processing', () => {
         consumption: 0,
       });
 
-      flowManager.updateResourceState('minerals', {
+      flowManager.updateResourceState(ResourceType.MINERALS, {
         current: 0,
         max: 10000,
         min: 0,
@@ -210,7 +211,7 @@ describe('ResourceFlowManager Batch Processing', () => {
       flowManager.registerNode({
         id: 'central-producer',
         type: 'producer',
-        resources: ['energy'],
+        resources: [ResourceType.ENERGY],
         priority: defaultPriority,
         active: true,
       });
@@ -220,7 +221,7 @@ describe('ResourceFlowManager Batch Processing', () => {
         flowManager.registerNode({
           id: `consumer-${i}`,
           type: 'consumer',
-          resources: ['energy'],
+          resources: [ResourceType.ENERGY],
           priority: defaultPriority,
           active: true,
         });
@@ -229,7 +230,7 @@ describe('ResourceFlowManager Batch Processing', () => {
           id: `connection-${i}`,
           source: 'central-producer',
           target: `consumer-${i}`,
-          resourceType: 'energy',
+          resourceType: ResourceType.ENERGY,
           maxRate: 5 + i, // Different rates to test prioritization
           currentRate: 0,
           priority: defaultPriority,
@@ -238,7 +239,7 @@ describe('ResourceFlowManager Batch Processing', () => {
       }
 
       // Set resource state with enough energy for all consumers
-      flowManager.updateResourceState('energy', {
+      flowManager.updateResourceState(ResourceType.ENERGY, {
         current: 1000,
         max: 10000,
         min: 0,
@@ -274,7 +275,7 @@ describe('ResourceFlowManager Batch Processing', () => {
           manager.registerNode({
             id: `producer-${i}`,
             type: 'producer',
-            resources: ['energy'],
+            resources: [ResourceType.ENERGY],
             priority: defaultPriority,
             active: true,
           });
@@ -285,7 +286,7 @@ describe('ResourceFlowManager Batch Processing', () => {
           manager.registerNode({
             id: `consumer-${i}`,
             type: 'consumer',
-            resources: ['energy'],
+            resources: [ResourceType.ENERGY],
             priority: defaultPriority,
             active: true,
           });
@@ -297,7 +298,7 @@ describe('ResourceFlowManager Batch Processing', () => {
             id: `connection-${i}`,
             source: `producer-${i}`,
             target: `consumer-${i}`,
-            resourceType: 'energy',
+            resourceType: ResourceType.ENERGY,
             maxRate: 10,
             currentRate: 0,
             priority: defaultPriority,
@@ -306,7 +307,7 @@ describe('ResourceFlowManager Batch Processing', () => {
         }
 
         // Set resource state
-        manager.updateResourceState('energy', {
+        manager.updateResourceState(ResourceType.ENERGY, {
           current: 1000,
           max: 10000,
           min: 0,
