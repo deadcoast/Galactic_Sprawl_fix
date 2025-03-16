@@ -27,7 +27,7 @@ export interface PayloadAction<T extends string, P> extends Action<T> {
  * Helper type to define a discriminated union of action types based on a record
  * Makes it easy to define all the possible action types for a reducer
  */
-export type ActionUnion<T extends Record<string, (...args: any[]) => Action<string>>> = ReturnType<T[keyof T]>;
+export type ActionUnion<T extends Record<string, (...args: unknown[]) => Action<string>>> = ReturnType<T[keyof T]>;
 
 /**
  * Type for a function that creates a PayloadAction
@@ -69,10 +69,10 @@ export function createSimpleAction<T extends string>(type: T): SimpleActionCreat
  * @returns Record of action creators
  */
 export function createActionCreators<
-  T extends Record<string, any>,
+  T extends Record<string, unknown>,
   K extends keyof T = keyof T
 >(actionMap: { [P in K]: T[P] extends undefined ? string : [string, T[P]] }) {
-  const creators: Record<string, ActionCreator<string, any> | SimpleActionCreator<string>> = {};
+  const creators: Record<string, ActionCreator<string, unknown> | SimpleActionCreator<string>> = {};
 
   for (const key in actionMap) {
     const value = actionMap[key];
@@ -95,7 +95,7 @@ export function createActionCreators<
  * Ensures that action types are properly typed and matched in the reducer
  */
 export class ReducerBuilder<S, A extends Action = Action> {
-  private handlers: Partial<Record<A['type'], (state: S, action: any) => S>> = {};
+  private handlers: Partial<Record<A['type'], (state: S, action: unknown) => S>> = {};
 
   /**
    * Add a handler for a specific action type
@@ -108,7 +108,7 @@ export class ReducerBuilder<S, A extends Action = Action> {
     type: T,
     handler: (state: S, action: AC) => S
   ): ReducerBuilder<S, A> {
-    this.handlers[type] = handler as any;
+    this.handlers[type] = handler as unknown;
     return this;
   }
 
@@ -159,7 +159,7 @@ export function createReducer<S, A extends Action = Action>(
 export function useTypedReducer<
   S,
   A extends Action,
-  AC extends Record<string, (...args: any[]) => A>
+  AC extends Record<string, (...args: unknown[]) => A>
 >(
   reducer: Reducer<S, A>,
   initialState: S,
@@ -168,10 +168,10 @@ export function useTypedReducer<
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const boundActions = useMemo(() => {
-    const result: Record<string, any> = {};
+    const result: Record<string, unknown> = {};
     for (const key in actions) {
       const actionCreator = actions[key];
-      result[key] = (...args: any[]) => dispatch(actionCreator(...args));
+      result[key] = (...args: unknown[]) => dispatch(actionCreator(...args));
     }
     return result as { [K in keyof AC]: (...args: Parameters<AC[K]>) => void };
   }, [actions, dispatch]);
@@ -190,7 +190,7 @@ export function useTypedReducer<
  */
 export function createTypedStateSlice<
   S,
-  AM extends Record<string, (...args: any[]) => Action>,
+  AM extends Record<string, (...args: unknown[]) => Action>,
   A extends ReturnType<AM[keyof AM]>
 >(
   initialState: S,
@@ -208,10 +208,10 @@ export function createTypedStateSlice<
     const [state, dispatch] = useReducer(reducer, initialState);
 
     const boundActions = useMemo(() => {
-      const result: Record<string, any> = {};
+      const result: Record<string, unknown> = {};
       for (const key in actionMap) {
         const actionCreator = actionMap[key];
-        result[key] = (...args: any[]) => dispatch(actionCreator(...args));
+        result[key] = (...args: unknown[]) => dispatch(actionCreator(...args));
       }
       return result as { [K in keyof AM]: (...args: Parameters<AM[K]>) => void };
     }, [dispatch]);
@@ -265,7 +265,7 @@ export function useTypedTransitions<S>(initialState: S) {
  * Type-safe selector hook
  * 
  * @param state The state object
- * @param selector Function to select a portion of state
+ * @param selector (...args: unknown[]) => unknown to select a portion of state
  * @returns The selected state portion
  */
 export function useTypedSelector<S, R>(state: S, selector: (state: S) => R): R {
@@ -277,7 +277,7 @@ export function useTypedSelector<S, R>(state: S, selector: (state: S) => R): R {
  * Handles loading, error, and success states for async operations
  * 
  * @param actionType Base action type for the async action
- * @param handler Function that processes the action payload
+ * @param handler (...args: unknown[]) => unknown that processes the action payload
  * @returns An object with action creators and a reducer
  */
 export function createAsyncReducer<S, P, R>(

@@ -133,10 +133,6 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
     return null;
   }
 
-  // Combine contexts for backward compatibility
-  const gameContext = { state: gameState, dispatch: gameDispatch };
-  const moduleContext = { state: moduleState, dispatch: moduleDispatch };
-
   // Check if a module can be built based on resources and available attachment points
   const canBuildModule = (
     moduleType: ModuleType,
@@ -763,14 +759,8 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
             </div>
           </div>
         </div>
-        <ResourceVisualization
-          resourceType={ResourceType.MINERALS}
-          amount={gameState.resources.minerals}
-        />
-        <ResourceVisualization
-          resourceType={ResourceType.ENERGY}
-          amount={gameState.resources.energy}
-        />
+        <ResourceVisualization type={ResourceType.MINERALS} value={gameState.resources.minerals} />
+        <ResourceVisualization type={ResourceType.ENERGY} value={gameState.resources.energy} />
       </div>
       {/* Main content with menu and active panel */}
       <div className="flex flex-1 overflow-hidden">

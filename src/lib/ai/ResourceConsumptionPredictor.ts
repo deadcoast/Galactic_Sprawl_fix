@@ -86,7 +86,7 @@ export class ResourceConsumptionPredictor {
       this.initializeModels();
     }
 
-    console.log('[ResourceConsumptionPredictor] Initialized predictor');
+    console.warn('[ResourceConsumptionPredictor] Initialized predictor');
   }
 
   /**
@@ -173,7 +173,7 @@ export class ResourceConsumptionPredictor {
         lastUpdated: Date.now(),
       });
 
-      console.log(
+      console.warn(
         `[ResourceConsumptionPredictor] Trained model for ${resourceType} with confidence: ${confidenceScore.toFixed(2)}`
       );
     } catch (error) {
@@ -452,6 +452,6 @@ export class ResourceConsumptionPredictor {
     this.historicalData.clear();
     this.models.clear();
     this.predictionCache.clear();
-    console.log('[ResourceConsumptionPredictor] Cleaned up predictor');
+    console.warn('[ResourceConsumptionPredictor] Cleaned up predictor');
   }
 }

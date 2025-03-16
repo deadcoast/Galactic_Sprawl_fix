@@ -21,7 +21,7 @@
  * ```
  */
 export abstract class Singleton<T> {
-  private static instances = new Map<string, any>();
+  private static instances = new Map<string, unknown>();
 
   protected constructor() {
     // Protected constructor to prevent direct instantiation

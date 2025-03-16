@@ -342,7 +342,7 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
     };
   }, [data, width, height, onSimulationCreated, optimizationConfig]);
 
-  // Function to manually restart the simulation (e.g., after configuration changes)
+  // (...args: unknown[]) => unknown to manually restart the simulation (e.g., after configuration changes)
   const restartSimulation = useCallback(() => {
     if (simulationRef.current && optimizedTickerRef.current) {
       simulationRef.current.alpha(1).restart();

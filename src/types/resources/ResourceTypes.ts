@@ -14,6 +14,7 @@ export enum ResourceType {
   PLASMA = 'PLASMA',
   GAS = 'GAS',
   EXOTIC = 'EXOTIC',
+  ORGANIC = 'ORGANIC',
   // Additional resource types for future expansion
   IRON = 'IRON',
   COPPER = 'COPPER',
@@ -62,6 +63,26 @@ export interface ResourceTypeMetadata {
   icon: string;
   category: ResourceCategory;
   defaultMax: number;
+}
+
+/**
+ * Resource conversion recipe definition
+ */
+export interface ResourceConversionRecipe {
+  id: string;
+  name: string;
+  description: string;
+  inputs: Array<{
+    type: ResourceType;
+    amount: number;
+  }>;
+  outputs: Array<{
+    type: ResourceType;
+    amount: number;
+  }>;
+  duration: number;
+  energyCost: number;
+  requiredLevel: number;
 }
 
 /**
@@ -123,6 +144,14 @@ export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
     icon: 'exotic-icon',
     category: ResourceCategory.SPECIAL,
     defaultMax: 250,
+  },
+  [ResourceType.ORGANIC]: {
+    id: ResourceType.ORGANIC,
+    displayName: 'Organic Materials',
+    description: 'Biological resources and compounds',
+    icon: 'organic-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 800,
   },
   [ResourceType.IRON]: {
     id: ResourceType.IRON,
@@ -224,6 +253,7 @@ export const ResourceTypeHelpers = {
       PLASMA: ResourceType.PLASMA,
       GAS: ResourceType.GAS,
       EXOTIC: ResourceType.EXOTIC,
+      ORGANIC: ResourceType.ORGANIC,
       IRON: ResourceType.IRON,
       COPPER: ResourceType.COPPER,
       TITANIUM: ResourceType.TITANIUM,
@@ -252,6 +282,7 @@ export const ResourceTypeHelpers = {
       [ResourceType.PLASMA]: 'PLASMA',
       [ResourceType.GAS]: 'GAS',
       [ResourceType.EXOTIC]: 'EXOTIC',
+      [ResourceType.ORGANIC]: 'ORGANIC',
       [ResourceType.IRON]: 'IRON',
       [ResourceType.COPPER]: 'COPPER',
       [ResourceType.TITANIUM]: 'TITANIUM',
@@ -263,7 +294,7 @@ export const ResourceTypeHelpers = {
       [ResourceType.DARK_MATTER]: 'DARK_MATTER',
       [ResourceType.EXOTIC_MATTER]: 'EXOTIC_MATTER',
     };
-    return mapping[type] || 'MINERALS';
+    return mapping[type];
   },
 
   /**

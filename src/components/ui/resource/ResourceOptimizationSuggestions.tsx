@@ -1,11 +1,11 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { AlertTriangle, Check, Info, RefreshCw, TrendingUp, Zap } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useResourceRates } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
+import { EventType } from '../../../types/events/EventTypes';
 import {
   ResourceType,
   ResourceTypeHelpers,
@@ -71,11 +71,29 @@ const ResourceOptimizationSuggestions: React.FC<ResourceOptimizationSuggestionsP
   // Component lifecycle tracking for performance monitoring
   useComponentLifecycle({
     onMount: () => {
-      console.log('ResourceOptimizationSuggestions mounted');
+      console.warn(`ResourceOptimizationSuggestions (${componentId}) mounted`);
     },
     onUnmount: () => {
-      console.log('ResourceOptimizationSuggestions unmounted');
+      console.warn(`ResourceOptimizationSuggestions (${componentId}) unmounted`);
     },
+    eventSubscriptions: [
+      {
+        eventType: EventType.RESOURCE_UPDATED,
+        handler: event => {
+          console.warn(`Component ${componentId} received resource update:`, event);
+          if (event.data?.resourceType) {
+            refreshSuggestions();
+          }
+        },
+      },
+      {
+        eventType: EventType.RESOURCE_FLOW_UPDATED,
+        handler: event => {
+          console.warn(`Component ${componentId} received flow update:`, event);
+          refreshSuggestions();
+        },
+      },
+    ],
   });
 
   // Generate optimization suggestions based on current resource state

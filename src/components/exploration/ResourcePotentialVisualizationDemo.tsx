@@ -1,10 +1,14 @@
-import * as React from "react";
 import { useState } from 'react';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 import { ResourcePotentialVisualization } from './ResourcePotentialVisualization';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 // Define the types to match those in ResourcePotentialVisualization
 interface ResourceData {
-  type: ResourceType.MINERALS | ResourceType.GAS | ResourceType.ENERGY | 'organic' | ResourceType.EXOTIC;
+  type:
+    | ResourceType.MINERALS
+    | ResourceType.GAS
+    | ResourceType.ENERGY
+    | ResourceType.ORGANIC
+    | ResourceType.EXOTIC;
   name: string;
   amount: number; // 0-100 scale
   quality: number; // 0-1 scale
@@ -88,7 +92,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
     sectorName: 'Taurus Expanse',
     resources: [
       {
-        type: 'organic',
+        type: ResourceType.ORGANIC,
         name: 'Bacterial Colonies',
         amount: 78,
         quality: 0.6,
@@ -196,7 +200,7 @@ const SAMPLE_SECTOR_DATA: SectorResourceData[] = [
         extractionDifficulty: 7,
       },
       {
-        type: 'organic',
+        type: ResourceType.ORGANIC,
         name: 'Alien Flora',
         amount: 60,
         quality: 0.75,

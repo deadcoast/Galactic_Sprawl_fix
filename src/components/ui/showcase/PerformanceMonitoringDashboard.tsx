@@ -134,7 +134,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
   const startMonitoring = (animationId: string) => {
     if (!animationId) return;
 
-    console.log(`Starting monitoring for animation: ${animationId}`);
+    console.warn(`Starting monitoring for animation: ${animationId}`);
 
     // Reset metrics
     setPerformanceMetrics({

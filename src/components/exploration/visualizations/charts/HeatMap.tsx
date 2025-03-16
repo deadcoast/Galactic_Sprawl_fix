@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useMemo } from 'react';
 import {
   BaseVisualizationProps,
@@ -111,12 +111,12 @@ export const HeatMap = React.memo(function HeatMap({
   className = '',
   onElementClick,
   errorMessage,
-  grid,
-  animate,
+  grid = { show: false },
+  animate = true,
 }: HeatMapProps) {
   // Process data into a 2D grid format for the heatmap
   const { processedData, xValues, yValues, dataMinValue, dataMaxValue } = useMemo(() => {
-    console.log('Processing heat map data'); // For debugging
+    console.warn('Processing heat map data'); // For debugging
     if (!data || data.length === 0) {
       return {
         processedData: [],
@@ -343,12 +343,14 @@ export const HeatMap = React.memo(function HeatMap({
   // Memoize the rendered cells to prevent unnecessary re-renders
   const renderedCells = useMemo(
     () =>
-      processedData.map((cell, index) => {
+      processedData.map(cell => {
         const cellColor = getColorForValue(cell.value);
         return (
           <div
             key={`${cell.x}-${cell.y}`}
-            className="heat-map-cell"
+            className={`heat-map-cell ${animate ? 'transition-colors duration-300' : ''} ${
+              grid?.show ? 'grid-cell' : ''
+            }`}
             style={{
               position: 'absolute',
               left: cell.x * cellWidth,
@@ -358,23 +360,23 @@ export const HeatMap = React.memo(function HeatMap({
               backgroundColor: cellColor,
               border: `${cellBorder.width}px solid ${cellBorder.color}`,
               borderRadius: cellBorder.radius,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               cursor: onElementClick ? 'pointer' : 'default',
             }}
             onClick={() => handleCellClick(cell)}
-            data-testid={`cell-${cell.x}-${cell.y}`}
+            data-tooltip-id="heat-map-tooltip"
+            data-tooltip-content={
+              cellTooltip
+                ? `${xLabels?.[cell.xIndex] || cell.originalX}, ${
+                    yLabels?.[cell.yIndex] || cell.originalY
+                  }: ${valueFormatter(cell.value)}`
+                : undefined
+            }
           >
             {showValues && (
               <span
-                style={{
-                  color: theme === 'light' ? '#000000' : '#ffffff',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  textShadow:
-                    theme === 'light' ? '0 0 2px #ffffff' : '0 0 2px #000000, 0 0 3px #000000',
-                }}
+                className={`absolute inset-0 flex items-center justify-center text-xs ${
+                  theme === 'dark' ? 'text-white' : 'text-black'
+                }`}
               >
                 {valueFormatter(cell.value)}
               </span>
@@ -389,10 +391,14 @@ export const HeatMap = React.memo(function HeatMap({
       cellHeight,
       cellBorder,
       handleCellClick,
-      onElementClick,
+      cellTooltip,
+      xLabels,
+      yLabels,
+      valueFormatter,
       showValues,
       theme,
-      valueFormatter,
+      animate,
+      grid?.show,
     ]
   );
 

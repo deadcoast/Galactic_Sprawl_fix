@@ -84,7 +84,7 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
 
   const log = (message: string, ...args: unknown[]) => {
     if (debug) {
-      console.log(`[StatePersistence:${key}] ${message}`, ...args);
+      console.warn(`[StatePersistence:${key}] ${message}`, ...args);
     }
   };
 

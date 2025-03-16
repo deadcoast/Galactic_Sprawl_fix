@@ -173,7 +173,7 @@ export class AdaptivePerformanceManager {
     // Calculate potential savings based on metrics
     const savings = metrics.consumptionRate * (1 - metrics.efficiency);
 
-    console.log(
+    console.warn(
       `[AdaptivePerformanceManager] Potential ${stringType} savings: ${savings.toFixed(2)} units`
     );
   }

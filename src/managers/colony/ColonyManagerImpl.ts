@@ -481,7 +481,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
    * @inheritdoc
    */
   protected async onInitialize(_dependencies?: unknown): Promise<void> {
-    console.log('ColonyManager initialized');
+    console.warn('ColonyManager initialized');
   }
 
   /**

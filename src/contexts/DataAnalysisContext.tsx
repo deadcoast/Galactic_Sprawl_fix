@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   createContext,
   ReactNode,
@@ -11,7 +11,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import {
   Anomaly,
-  ExplorationEvents,
+  EXPLORATION_EVENTS,
   explorationManager,
   Sector,
 } from '../managers/exploration/ExplorationManager';
@@ -52,7 +52,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   const [datasets, setDatasets] = useState<Dataset[]>(initialDatasets);
   const [analysisConfigs, setAnalysisConfigs] = useState<AnalysisConfig[]>(initialAnalysisConfigs);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>(initialAnalysisResults);
-  const [isProcessingData, setIsProcessingData] = useState<boolean>(false);
+  const [_isProcessingData, setIsProcessingData] = useState<boolean>(false);
 
   // Create references to the services for persistence across renders
   const dataCollectionServiceRef = useRef<DataCollectionService | null>(null);
@@ -337,23 +337,23 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     };
 
     // Helper function to convert ExplorationEvents to EventType
-    const asEventType = (event: ExplorationEvents): EventType => {
-      return event as unknown as EventType;
+    const asEventType = (event: keyof typeof EXPLORATION_EVENTS): EventType => {
+      return EventType[`EXPLORATION_${event}`] as EventType;
     };
 
     // Subscribe to exploration events
     const unsubscribeSector = explorationManager.subscribeToEvent(
-      asEventType(ExplorationEvents.SECTOR_DISCOVERED),
+      EventType.EXPLORATION_SECTOR_DISCOVERED,
       handleSectorDiscovered
     );
 
     const unsubscribeAnomaly = explorationManager.subscribeToEvent(
-      asEventType(ExplorationEvents.ANOMALY_DETECTED),
+      EventType.EXPLORATION_ANOMALY_DETECTED,
       handleAnomalyDetected
     );
 
     const unsubscribeResource = explorationManager.subscribeToEvent(
-      asEventType(ExplorationEvents.RESOURCE_DETECTED),
+      EventType.EXPLORATION_RESOURCE_DETECTED,
       handleResourceDetected
     );
 
@@ -859,7 +859,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       setTimeout(() => {
         filterDataset(datasetId, filters)
           .then(results => {
-            console.log(`Filtered ${results.length} results for dataset ${datasetId}`);
+            console.warn(`Filtered ${results.length} results for dataset ${datasetId}`);
           })
           .catch(error => {
             console.error('Error in filterDataset:', error);

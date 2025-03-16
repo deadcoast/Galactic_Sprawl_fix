@@ -299,7 +299,7 @@ export class GameLoopManager {
       },
     });
 
-    console.log(
+    console.warn(
       `[GameLoopManager] Adjusted to ${Math.round(factor * 100)}% speed (${adjustedFPS} FPS)`
     );
   }

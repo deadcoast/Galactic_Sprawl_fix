@@ -1,14 +1,14 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { ChevronRight, Database, Settings, Wind, Zap } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useEffect, useMemo } from 'react';
 import {
   MiningExperience,
   MiningResource,
   MiningTechBonuses,
 } from '../../../../types/mining/MiningTypes';
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 
 interface MiningControlsProps {
   resource: MiningResource;
@@ -155,8 +155,10 @@ export function MiningControls({ resource, techBonuses, onExperienceGained }: Mi
               {getResourceTypeIcon(resource.type)}
             </div>
             <div>
-              <h3 className="font-medium text-white">{resource.name}</h3>
-              <div className="text-sm text-gray-400">
+              <h3 className={`font-medium ${getResourceTypeColor(resource.type)}`}>
+                {resource.name}
+              </h3>
+              <div className={`text-sm ${getResourceTypeColor(resource.type)}`}>
                 {resource.type.toString().charAt(0).toUpperCase() +
                   resource.type.toString().slice(1)}{' '}
                 • {resource.distance}ly

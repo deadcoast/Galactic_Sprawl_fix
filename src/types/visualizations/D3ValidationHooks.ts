@@ -424,12 +424,12 @@ export function createD3SimulationSchemas(
 /**
  * Creates a validation wrapper specifically for D3 force simulation data
  *
- * @param nodeTransformFn Function to transform raw data into simulation nodes
- * @param linkTransformFn Function to transform raw data into simulation links
+ * @param nodeTransformFn (...args: unknown[]) => unknown to transform raw data into simulation nodes
+ * @param linkTransformFn (...args: unknown[]) => unknown to transform raw data into simulation links
  * @param customNodeSchema Custom schema for nodes
  * @param customLinkSchema Custom schema for links
  * @param options Validation options
- * @returns Functions to transform and validate nodes and links
+ * @returns (...args: unknown[]) => unknowns to transform and validate nodes and links
  */
 export function createD3ForceValidation<
   InputType,

@@ -464,7 +464,7 @@ export class CombatManager extends BaseTypedEventEmitter<CombatEvents> {
  *
  * // Subscribe to events
  * combatManager.on('combat:unit-spawned', ({ unitId, unitType, position, faction }) => {
- *   console.log(`Unit ${unitId} of type ${unitType} spawned at (${position.x}, ${position.y}) for faction ${faction}`);
+ *   console.warn(`Unit ${unitId} of type ${unitType} spawned at (${position.x}, ${position.y}) for faction ${faction}`);
  * });
  *
  * // Spawn a unit

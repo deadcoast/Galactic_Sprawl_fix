@@ -283,7 +283,7 @@ export function createStandardContext<
     // State and reducer
     const [state, dispatch] = React.useReducer((state: TState, action: TAction): TState => {
       if (options.debug?.logActions) {
-        console.log(`[${options.name}] Action:`, action);
+        console.warn(`[${options.name}] Action:`, action);
       }
 
       const startTime = options.performanceMonitoring?.enabled ? performance.now() : 0;
@@ -306,7 +306,7 @@ export function createStandardContext<
       }
 
       if (options.debug?.logStateChanges) {
-        console.log(`[${options.name}] New state:`, newState);
+        console.warn(`[${options.name}] New state:`, newState);
       }
 
       return newState;
@@ -367,7 +367,7 @@ export function createStandardContext<
     // Memoize context value to prevent unnecessary renders
     const contextValue = useMemo(() => {
       if (options.debug?.logRendering) {
-        console.log(`[${options.name}] Rendering provider`);
+        console.warn(`[${options.name}] Rendering provider`);
       }
       return { state, dispatch };
     }, [state]);

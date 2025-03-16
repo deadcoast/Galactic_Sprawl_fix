@@ -1,9 +1,7 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
-import * as React from "react";
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
-import { ModuleEventType } from '../../../lib/modules/ModuleEvents';
+import { EventType } from '../../../types/events/EventTypes';
 import {
   ResourceType,
   ResourceTypeHelpers,
@@ -210,9 +208,8 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
   cycleTime,
   thresholds,
 }) => {
-  const [resourceStatus, setResourceStatus] = useState<ResourceStatus>(
-    getResourceStatus(currentValue, maxValue, rate, thresholds)
-  );
+  // Get status based on current value and thresholds
+  const status = getResourceStatus(currentValue, maxValue, rate, thresholds);
 
   // Convert cycle rate to per-minute rate for easier understanding
   const ratePerMinute = rate * (60000 / cycleTime);
@@ -242,7 +239,7 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
     },
     eventSubscriptions: [
       {
-        eventType: 'RESOURCE_UPDATED' as ModuleEventType,
+        eventType: EventType.RESOURCE_UPDATED,
         handler: event => {
           // Only update if this event is for our resource type
           if (event.data?.resourceType === resourceType) {
@@ -251,7 +248,7 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
         },
       },
       {
-        eventType: 'RESOURCE_UPDATED' as ModuleEventType, // Changed from 'RESOURCE_THRESHOLD_CHANGED'
+        eventType: EventType.RESOURCE_THRESHOLD_CHANGED,
         handler: event => {
           // Only update if this event is for our resource type
           if (event.data?.resourceType === resourceType) {
@@ -262,24 +259,16 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
     ],
   });
 
-  // Get status based on current value and thresholds
-  const currentStatus = getResourceStatus(currentValue, maxValue, rate, thresholds);
-
-  // Update status when resource values change
-  useEffect(() => {
-    setResourceStatus(getResourceStatus(currentValue, maxValue, rate, thresholds));
-  }, [resourceType, currentValue, maxValue, rate, thresholds]);
-
   return (
     <div
-      className={`resource-threshold-visualization ${resourceStatus.level}`}
-      style={{ borderColor: resourceStatus.color }}
+      className={`resource-threshold-visualization ${status.level}`}
+      style={{ borderColor: status.color }}
     >
       <h3>{getResourceTitle(resourceType)} Threshold Monitor</h3>
 
       <div className="status-section">
         <p>
-          <strong>Status:</strong> {resourceStatus.message}
+          <strong>Status:</strong> {status.message}
         </p>
         <p>
           <strong>Current:</strong> {currentValue.toFixed(1)} / {maxValue.toFixed(1)}(
@@ -290,15 +279,12 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
           {ratePerMinute.toFixed(2)}/minute
         </p>
 
-        <div
-          className="progress-bar"
-          title={`Progress to ${resourceStatus.nextThresholdName} threshold`}
-        >
+        <div className="progress-bar" title={`Progress to ${status.nextThresholdName} threshold`}>
           <div
             className="progress-fill"
             style={{
-              width: `${Math.min(100, Math.max(0, resourceStatus.percentToNextThreshold))}%`,
-              backgroundColor: resourceStatus.color,
+              width: `${Math.min(100, Math.max(0, status.percentToNextThreshold))}%`,
+              backgroundColor: status.color,
             }}
           />
         </div>
@@ -307,11 +293,11 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
       <div className="prediction-section">
         <h4>Prediction</h4>
 
-        {resourceStatus.timeToThreshold !== undefined ? (
+        {status.timeToThreshold !== undefined ? (
           <p>
             {rate > 0
-              ? `Time to ${resourceStatus.nextThresholdName} threshold: ${formatTime(resourceStatus.timeToThreshold)}`
-              : `Time until ${resourceStatus.nextThresholdName} threshold: ${formatTime(resourceStatus.timeToThreshold)}`}
+              ? `Time to ${status.nextThresholdName} threshold: ${formatTime(status.timeToThreshold)}`
+              : `Time until ${status.nextThresholdName} threshold: ${formatTime(status.timeToThreshold)}`}
           </p>
         ) : (
           <p>No rate change detected</p>

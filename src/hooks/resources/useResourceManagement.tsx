@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ResourceManager } from '../../managers/game/ResourceManager';
 import {
@@ -7,10 +6,11 @@ import {
 } from '../../managers/resource/ResourceIntegration';
 import {
   ResourceState,
+  ResourceType,
+  ResourceTypeString,
   ResourceType as StringResourceType,
 } from '../../types/resources/ResourceTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceTypeConverter } from '../../utils/ResourceTypeConverter';
 
 // Create an instance of ResourceManager
 const resourceManager = new ResourceManager();
@@ -33,13 +33,21 @@ function getResourceIntegration(): ResourceIntegration {
   return resourceIntegrationInstance;
 }
 
+const defaultResourceState: ResourceState = {
+  current: 0,
+  max: 1000,
+  min: 0,
+  production: 0,
+  consumption: 0,
+  rate: 0,
+  value: 0,
+};
+
 /**
  * Hook for accessing the resource management system
  */
 export function useResourceManagement() {
-  const [resourceStates, setResourceStates] = useState<Map<StringResourceType, ResourceState>>(
-    new Map()
-  );
+  const [resourceStates, setResourceStates] = useState<Map<ResourceType, ResourceState>>(new Map());
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Get or create the resource integration
@@ -89,147 +97,159 @@ export function useResourceManagement() {
   }, []);
 
   // Get a resource state
-  const getResourceState = useCallback(
-    (type: StringResourceType | ResourceType): ResourceState | undefined => {
-      const stringType = ensureStringResourceType(type);
-      return resourceStates.get(stringType);
-    },
-    [resourceStates]
-  );
+  const getResourceState = (type: ResourceType | ResourceTypeString) => {
+    const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+    return resourceStates.get(enumType) || defaultResourceState;
+  };
 
   // Get all resource states
-  const getAllResourceStates = useCallback((): Map<StringResourceType, ResourceState> => {
-    return resourceStates;
-  }, [resourceStates]);
+  const getAllResourceStates = () => {
+    const result = new Map<ResourceType, ResourceState>();
+    resourceStates.forEach((state, type) => {
+      result.set(type, state);
+    });
+    return result;
+  };
 
   // Get resource amount
-  const getResourceAmount = useCallback(
-    (type: StringResourceType | ResourceType): number => {
-      const stringType = ensureStringResourceType(type);
-      return resourceStates.get(stringType)?.current || 0;
-    },
-    [resourceStates]
-  );
+  const getResourceAmount = (type: ResourceType | ResourceTypeString) => {
+    const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+    return resourceStates.get(enumType)?.current || 0;
+  };
 
   // Check if a resource is available
-  const hasResource = useCallback(
-    (type: StringResourceType | ResourceType, amount: number): boolean => {
-      const stringType = ensureStringResourceType(type);
-      const state = resourceStates.get(stringType);
-      return state ? state.current >= amount : false;
-    },
-    [resourceStates]
-  );
+  const hasResource = (type: ResourceType | ResourceTypeString, amount: number) => {
+    const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+    return (resourceStates.get(enumType)?.current || 0) >= amount;
+  };
 
   // Check if multiple resources are available
-  const hasResources = useCallback(
-    (resources: Array<{ type: StringResourceType | ResourceType; amount: number }>): boolean => {
-      return resources.every(({ type, amount }) => hasResource(type, amount));
-    },
-    [hasResource]
-  );
+  const hasResources = (resources: Record<ResourceType | ResourceTypeString, number>) => {
+    return Object.entries(resources).every(([type, amount]) => {
+      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      return hasResource(enumType, amount);
+    });
+  };
 
   // Consume a resource
-  const consumeResource = useCallback(
-    (type: StringResourceType | ResourceType, amount: number): boolean => {
-      if (!hasResource(type, amount)) {
-        return false;
-      }
+  const consumeResource = (type: ResourceType | ResourceTypeString, amount: number) => {
+    const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+    const currentAmount = resourceStates.get(enumType)?.current || 0;
+    if (currentAmount < amount) return false;
 
-      const stringType = ensureStringResourceType(type);
-      resourceManager.removeResource(stringType, amount);
-      return true;
-    },
-    [hasResource]
-  );
+    setResourceStates(prev => {
+      const newStates = new Map(prev);
+      const currentState = newStates.get(enumType) || { ...defaultResourceState };
+      newStates.set(enumType, {
+        ...currentState,
+        current: currentAmount - amount,
+      });
+      return newStates;
+    });
+    return true;
+  };
 
   // Consume multiple resources
-  const consumeResources = useCallback(
-    (resources: Array<{ type: StringResourceType | ResourceType; amount: number }>): boolean => {
-      if (!hasResources(resources)) {
-        return false;
-      }
+  const consumeResources = (resources: Record<ResourceType | ResourceTypeString, number>) => {
+    const canConsume = hasResources(resources);
+    if (!canConsume) return false;
 
-      resources.forEach(({ type, amount }) => {
-        const stringType = ensureStringResourceType(type);
-        resourceManager.removeResource(stringType, amount);
+    setResourceStates(prev => {
+      const newStates = new Map(prev);
+      Object.entries(resources).forEach(([type, amount]) => {
+        const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+        const currentState = newStates.get(enumType) || { ...defaultResourceState };
+        const currentAmount = currentState.current;
+        newStates.set(enumType, {
+          ...currentState,
+          current: currentAmount - amount,
+        });
       });
-
-      return true;
-    },
-    [hasResources]
-  );
+      return newStates;
+    });
+    return true;
+  };
 
   // Add a resource
-  const addResource = useCallback(
-    (type: StringResourceType | ResourceType, amount: number): void => {
-      const stringType = ensureStringResourceType(type);
-      resourceManager.addResource(stringType, amount);
-    },
-    []
-  );
+  const addResource = (type: ResourceType | ResourceTypeString, amount: number) => {
+    const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+    setResourceStates(prev => {
+      const newStates = new Map(prev);
+      const currentState = newStates.get(enumType) || { ...defaultResourceState };
+      newStates.set(enumType, {
+        ...currentState,
+        current: currentState.current + amount,
+      });
+      return newStates;
+    });
+  };
 
   // Add multiple resources
-  const addResources = useCallback(
-    (resources: Array<{ type: StringResourceType | ResourceType; amount: number }>): void => {
-      resources.forEach(({ type, amount }) => {
-        const stringType = ensureStringResourceType(type);
-        resourceManager.addResource(stringType, amount);
+  const addResources = (resources: Record<ResourceType | ResourceTypeString, number>) => {
+    setResourceStates(prev => {
+      const newStates = new Map(prev);
+      Object.entries(resources).forEach(([type, amount]) => {
+        const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+        const currentState = newStates.get(enumType) || { ...defaultResourceState };
+        newStates.set(enumType, {
+          ...currentState,
+          current: currentState.current + amount,
+        });
       });
-    },
-    []
-  );
+      return newStates;
+    });
+  };
 
   // Get resource production rate
   const getProductionRate = useCallback(
-    (type: StringResourceType | ResourceType): number => {
-      const stringType = ensureStringResourceType(type);
-      return resourceStates.get(stringType)?.production || 0;
+    (type: ResourceType | ResourceTypeString): number => {
+      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      return resourceStates.get(enumType)?.production || 0;
     },
     [resourceStates]
   );
 
   // Get resource consumption rate
   const getConsumptionRate = useCallback(
-    (type: StringResourceType | ResourceType): number => {
-      const stringType = ensureStringResourceType(type);
-      return resourceStates.get(stringType)?.consumption || 0;
+    (type: ResourceType | ResourceTypeString): number => {
+      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      return resourceStates.get(enumType)?.consumption || 0;
     },
     [resourceStates]
   );
 
   // Set resource production rate
   const setProductionRate = useCallback(
-    (type: StringResourceType | ResourceType, rate: number): void => {
-      const stringType = ensureStringResourceType(type);
-      resourceManager.setResourceProduction(stringType, rate);
+    (type: ResourceType | ResourceTypeString, rate: number): void => {
+      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      resourceManager.setResourceProduction(enumType, rate);
     },
     []
   );
 
   // Set resource consumption rate
   const setConsumptionRate = useCallback(
-    (type: StringResourceType | ResourceType, rate: number): void => {
-      const stringType = ensureStringResourceType(type);
-      resourceManager.setResourceConsumption(stringType, rate);
+    (type: ResourceType | ResourceTypeString, rate: number): void => {
+      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      resourceManager.setResourceConsumption(enumType, rate);
     },
     []
   );
 
   // Get resource capacity
   const getResourceCapacity = useCallback(
-    (type: StringResourceType | ResourceType): number => {
-      const stringType = ensureStringResourceType(type);
-      return resourceStates.get(stringType)?.max || 0;
+    (type: ResourceType | ResourceTypeString): number => {
+      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      return resourceStates.get(enumType)?.max || 0;
     },
     [resourceStates]
   );
 
   // Get resource percentage
   const getResourcePercentage = useCallback(
-    (type: StringResourceType | ResourceType): number => {
-      const stringType = ensureStringResourceType(type);
-      const state = resourceStates.get(stringType);
+    (type: ResourceType | ResourceTypeString): number => {
+      const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
+      const state = resourceStates.get(enumType);
       if (!state || state.max === 0) {
         return 0;
       }

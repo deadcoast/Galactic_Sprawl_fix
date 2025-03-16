@@ -5,14 +5,14 @@
  * This component provides visualization of resource flows and conversions.
  */
 
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ExtendedResourceMetadata,
   ResourceQuality,
   ResourceRegistry,
 } from '../registry/ResourceRegistry';
-import { ResourceType } from "./../types/resources/ResourceTypes";
+import { ResourceCategory, ResourceType } from './../types/resources/ResourceTypes';
 
 // Styles
 const styles = {

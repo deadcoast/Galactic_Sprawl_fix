@@ -3,7 +3,7 @@ import { Position } from '../../types/core/Position';
 /**
  * Particle animation easing functions
  */
-export enum EasingFunction {
+export enum EasingType {
   LINEAR = 'linear',
   EASE_IN = 'easeIn',
   EASE_OUT = 'easeOut',
@@ -12,6 +12,11 @@ export enum EasingFunction {
   ELASTIC = 'elastic',
   BACK = 'back',
 }
+
+/**
+ * Easing function type
+ */
+export type EasingFunction = (progress: number) => number;
 
 /**
  * Path type for particle movement
@@ -63,7 +68,7 @@ export interface Particle {
   active: boolean;
   path?: ParticlePath;
   pathParams?: Record<string, number>;
-  easing?: EasingFunction;
+  easing?: EasingFunction | EasingType;
   blendMode?: ParticleBlendMode;
   group?: string;
   data?: Record<string, unknown>;
@@ -91,7 +96,7 @@ export interface ParticleEmitterConfig {
   gravity?: { x: number; y: number };
   path?: ParticlePath;
   pathParams?: Record<string, number>;
-  easing?: EasingFunction;
+  easing?: EasingFunction | EasingType;
   blendMode?: ParticleBlendMode;
   group?: string;
 }
@@ -100,6 +105,11 @@ export interface ParticleEmitterConfig {
  * Transition configuration for moving particles between data states
  */
 export interface ParticleTransitionConfig {
+  /**
+   * Optional transition ID
+   */
+  id?: string;
+
   /**
    * Source data points with positions
    */
@@ -116,9 +126,9 @@ export interface ParticleTransitionConfig {
   duration: number;
 
   /**
-   * Easing function for the transition
+   * Easing function or type for the transition
    */
-  easing?: EasingFunction;
+  easing?: EasingFunction | EasingType;
 
   /**
    * Path type for particle movement
@@ -389,7 +399,7 @@ export class ParticleSystem {
       maxLife: 1,
       active: true,
       path: config.path || ParticlePath.LINEAR,
-      easing: config.easing || EasingFunction.EASE_IN_OUT,
+      easing: config.easing || this.getEasingFunction(EasingType.EASE_IN_OUT),
       pathParams: config.pathParams,
       group: transitionId,
       data: {
@@ -575,7 +585,7 @@ export class ParticleSystem {
     // Apply easing
     const easedProgress = this.applyEasing(
       transitionProgress,
-      particle.easing || EasingFunction.LINEAR
+      particle.easing || this.getEasingFunction(EasingType.LINEAR)
     );
 
     // Update position based on path type
@@ -633,178 +643,254 @@ export class ParticleSystem {
    * Update particle position based on path type
    */
   private updateParticlePosition(particle: Particle, progress: number): void {
-    if (!particle.startPosition || !particle.targetPosition) return;
+    const start = particle.startPosition || { x: 0, y: 0 };
+    const end = particle.targetPosition || { x: 0, y: 0 };
+    let position: Position;
 
-    const start = particle.startPosition;
-    const end = particle.targetPosition;
-
-    switch (particle.path) {
-      case ParticlePath.LINEAR:
-        // Simple linear interpolation
-        particle.position.x = start.x + (end.x - start.x) * progress;
-        particle.position.y = start.y + (end.y - start.y) * progress;
-        break;
-
+    switch (particle.path || ParticlePath.LINEAR) {
       case ParticlePath.CURVED:
-        // Curved path with a quadratic bezier
-        const controlX = (start.x + end.x) / 2;
-        const controlY = Math.min(start.y, end.y) - Math.abs(end.x - start.x) * 0.2;
-
-        const t = progress;
-        const invT = 1 - t;
-
-        particle.position.x = invT * invT * start.x + 2 * invT * t * controlX + t * t * end.x;
-        particle.position.y = invT * invT * start.y + 2 * invT * t * controlY + t * t * end.y;
+        position = this.calculateCurvedPath(start, end, progress);
         break;
 
       case ParticlePath.SPIRAL:
-        // Spiral path
-        const turns = (particle.pathParams?.turns || 2) * Math.PI * 2;
-        const angle = progress * turns;
-        const radius =
-          (1 - progress) * Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.2;
-
-        particle.position.x = start.x + (end.x - start.x) * progress + Math.cos(angle) * radius;
-        particle.position.y = start.y + (end.y - start.y) * progress + Math.sin(angle) * radius;
+        position = this.calculateSpiralPath(start, end, progress, particle.pathParams?.turns);
         break;
 
       case ParticlePath.BEZIER:
-        // Cubic bezier curve
-        const cp1x = start.x + (end.x - start.x) * 0.3;
-        const cp1y = start.y - Math.abs(end.y - start.y) * 0.3;
-        const cp2x = start.x + (end.x - start.x) * 0.7;
-        const cp2y = end.y + Math.abs(end.y - start.y) * 0.3;
-
-        const t1 = progress;
-        const t2 = t1 * t1;
-        const t3 = t2 * t1;
-        const invT1 = 1 - t1;
-        const invT2 = invT1 * invT1;
-        const invT3 = invT2 * invT1;
-
-        particle.position.x =
-          invT3 * start.x + 3 * invT2 * t1 * cp1x + 3 * invT1 * t2 * cp2x + t3 * end.x;
-        particle.position.y =
-          invT3 * start.y + 3 * invT2 * t1 * cp1y + 3 * invT1 * t2 * cp2y + t3 * end.y;
+        position = this.calculateBezierPath(start, end, progress);
         break;
 
       case ParticlePath.WAVE:
-        // Wavy path
-        const amplitude =
-          particle.pathParams?.amplitude ||
-          Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.1;
-        const frequency = particle.pathParams?.frequency || 3;
-        const waviness = Math.sin(progress * Math.PI * frequency) * amplitude;
-
-        // Calculate the normal vector to the path
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        const normalX = -dy / length;
-        const normalY = dx / length;
-
-        particle.position.x = start.x + (end.x - start.x) * progress + normalX * waviness;
-        particle.position.y = start.y + (end.y - start.y) * progress + normalY * waviness;
+        position = this.calculateWavePath(
+          start,
+          end,
+          progress,
+          particle.pathParams?.amplitude,
+          particle.pathParams?.frequency
+        );
         break;
 
       case ParticlePath.RANDOM:
-        // Random path with controlled randomness
-        const seeds = (particle.data?.randomSeeds as number[]) || [];
-        if (!seeds.length) {
-          // Create random seeds for consistent randomness
-          for (let i = 0; i < 10; i++) {
-            seeds.push(Math.random());
-          }
-          (particle.data as Record<string, unknown>).randomSeeds = seeds;
-        }
-
-        const jitter = particle.pathParams?.jitter || 0.1;
-        const jitterSize = Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * jitter;
-
-        // Use seeds and progress to generate controlled randomness
-        const index = Math.floor(progress * 10);
-        const subProgress = (progress * 10) % 1;
-        const seed1 = seeds[index % seeds.length];
-        const seed2 = seeds[(index + 1) % seeds.length];
-
-        const randomX =
-          (seed1 * 2 - 1) * jitterSize * (1 - subProgress) +
-          (seed2 * 2 - 1) * jitterSize * subProgress;
-        const randomY =
-          (seeds[(index + 2) % seeds.length] * 2 - 1) * jitterSize * (1 - subProgress) +
-          (seeds[(index + 3) % seeds.length] * 2 - 1) * jitterSize * subProgress;
-
-        particle.position.x = start.x + (end.x - start.x) * progress + randomX;
-        particle.position.y = start.y + (end.y - start.y) * progress + randomY;
+        position = this.calculateRandomPath(
+          start,
+          end,
+          progress,
+          particle,
+          particle.pathParams?.jitter
+        );
         break;
 
+      case ParticlePath.LINEAR:
       default:
-        // Default to linear
-        particle.position.x = start.x + (end.x - start.x) * progress;
-        particle.position.y = start.y + (end.y - start.y) * progress;
+        position = {
+          x: start.x + (end.x - start.x) * progress,
+          y: start.y + (end.y - start.y) * progress,
+        };
+    }
+
+    particle.position = position;
+  }
+
+  /**
+   * Calculate curved path position
+   */
+  private calculateCurvedPath(start: Position, end: Position, progress: number): Position {
+    const controlX = (start.x + end.x) / 2;
+    const controlY = Math.min(start.y, end.y) - Math.abs(end.x - start.x) * 0.2;
+
+    const t = progress;
+    const invT = 1 - t;
+
+    return {
+      x: invT * invT * start.x + 2 * invT * t * controlX + t * t * end.x,
+      y: invT * invT * start.y + 2 * invT * t * controlY + t * t * end.y,
+    };
+  }
+
+  /**
+   * Calculate spiral path position
+   */
+  private calculateSpiralPath(
+    start: Position,
+    end: Position,
+    progress: number,
+    turns = 2
+  ): Position {
+    const angle = progress * turns * Math.PI * 2;
+    const radius =
+      (1 - progress) * Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.2;
+
+    return {
+      x: start.x + (end.x - start.x) * progress + Math.cos(angle) * radius,
+      y: start.y + (end.y - start.y) * progress + Math.sin(angle) * radius,
+    };
+  }
+
+  /**
+   * Calculate bezier path position
+   */
+  private calculateBezierPath(start: Position, end: Position, progress: number): Position {
+    const cp1x = start.x + (end.x - start.x) * 0.3;
+    const cp1y = start.y - Math.abs(end.y - start.y) * 0.3;
+    const cp2x = start.x + (end.x - start.x) * 0.7;
+    const cp2y = end.y + Math.abs(end.y - start.y) * 0.3;
+
+    const t1 = progress;
+    const t2 = t1 * t1;
+    const t3 = t2 * t1;
+    const invT1 = 1 - t1;
+    const invT2 = invT1 * invT1;
+    const invT3 = invT2 * invT1;
+
+    return {
+      x: invT3 * start.x + 3 * invT2 * t1 * cp1x + 3 * invT1 * t2 * cp2x + t3 * end.x,
+      y: invT3 * start.y + 3 * invT2 * t1 * cp1y + 3 * invT1 * t2 * cp2y + t3 * end.y,
+    };
+  }
+
+  /**
+   * Calculate wave path position
+   */
+  private calculateWavePath(
+    start: Position,
+    end: Position,
+    progress: number,
+    amplitude?: number,
+    frequency = 3
+  ): Position {
+    const actualAmplitude =
+      amplitude || Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.1;
+    const waviness = Math.sin(progress * Math.PI * frequency) * actualAmplitude;
+
+    // Calculate the normal vector to the path
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const normalX = -dy / length;
+    const normalY = dx / length;
+
+    return {
+      x: start.x + (end.x - start.x) * progress + normalX * waviness,
+      y: start.y + (end.y - start.y) * progress + normalY * waviness,
+    };
+  }
+
+  /**
+   * Calculate random path position
+   */
+  private calculateRandomPath(
+    start: Position,
+    end: Position,
+    progress: number,
+    particle: Particle,
+    jitter = 0.1
+  ): Position {
+    // Get or create random seeds
+    let seeds = (particle.data?.randomSeeds as number[]) || [];
+    if (!seeds.length) {
+      seeds = Array.from({ length: 10 }, () => Math.random());
+      (particle.data as Record<string, unknown>).randomSeeds = seeds;
+    }
+
+    const jitterSize = Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * jitter;
+
+    // Use seeds and progress to generate controlled randomness
+    const index = Math.floor(progress * 10);
+    const subProgress = (progress * 10) % 1;
+    const seed1 = seeds[index % seeds.length];
+    const seed2 = seeds[(index + 1) % seeds.length];
+
+    const randomX =
+      (seed1 * 2 - 1) * jitterSize * (1 - subProgress) + (seed2 * 2 - 1) * jitterSize * subProgress;
+    const randomY =
+      (seeds[(index + 2) % seeds.length] * 2 - 1) * jitterSize * (1 - subProgress) +
+      (seeds[(index + 3) % seeds.length] * 2 - 1) * jitterSize * subProgress;
+
+    return {
+      x: start.x + (end.x - start.x) * progress + randomX,
+      y: start.y + (end.y - start.y) * progress + randomY,
+    };
+  }
+
+  /**
+   * Bounce easing function
+   */
+  private bounceEasing(t: number): number {
+    const a = 7.5625;
+    const b = 2.75;
+
+    if (t < 1 / b) {
+      return a * t * t;
+    } else if (t < 2 / b) {
+      t -= 1.5 / b;
+      return a * t * t + 0.75;
+    } else if (t < 2.5 / b) {
+      t -= 2.25 / b;
+      return a * t * t + 0.9375;
+    } else {
+      t -= 2.625 / b;
+      return a * t * t + 0.984375;
+    }
+  }
+
+  /**
+   * Elastic easing function
+   */
+  private elasticEasing(t: number): number {
+    return t === 0
+      ? 0
+      : t === 1
+        ? 1
+        : Math.pow(2, -10 * t) * Math.sin(((t * 10 - 0.75) * Math.PI) / 1.5) + 1;
+  }
+
+  /**
+   * Back easing function
+   */
+  private backEasing(t: number): number {
+    const overshoot = 1.70158;
+    return t * t * ((overshoot + 1) * t - overshoot);
+  }
+
+  /**
+   * Get easing function by type
+   */
+  private getEasingFunction(type: EasingType): EasingFunction {
+    switch (type) {
+      case EasingType.LINEAR:
+        return (t: number) => t;
+
+      case EasingType.EASE_IN:
+        return (t: number) => t * t;
+
+      case EasingType.EASE_OUT:
+        return (t: number) => t * (2 - t);
+
+      case EasingType.EASE_IN_OUT:
+        return (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+
+      case EasingType.BOUNCE:
+        return this.bounceEasing.bind(this);
+
+      case EasingType.ELASTIC:
+        return this.elasticEasing.bind(this);
+
+      case EasingType.BACK:
+        return this.backEasing.bind(this);
+
+      default:
+        return (t: number) => t;
     }
   }
 
   /**
    * Apply easing function to progress
    */
-  private applyEasing(progress: number, easing: EasingFunction): number {
-    switch (easing) {
-      case EasingFunction.LINEAR:
-        return progress;
-
-      case EasingFunction.EASE_IN:
-        return progress * progress;
-
-      case EasingFunction.EASE_OUT:
-        return progress * (2 - progress);
-
-      case EasingFunction.EASE_IN_OUT:
-        return progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
-
-      case EasingFunction.BOUNCE:
-        // Bounce effect
-        const bounce = (t: number): number => {
-          const a = 7.5625;
-          const b = 2.75;
-
-          if (t < 1 / b) {
-            return a * t * t;
-          } else if (t < 2 / b) {
-            return a * (t -= 1.5 / b) * t + 0.75;
-          } else if (t < 2.5 / b) {
-            return a * (t -= 2.25 / b) * t + 0.9375;
-          } else {
-            return a * (t -= 2.625 / b) * t + 0.984375;
-          }
-        };
-
-        return bounce(progress);
-
-      case EasingFunction.ELASTIC:
-        // Elastic effect
-        const elastic = (t: number): number => {
-          return t === 0
-            ? 0
-            : t === 1
-              ? 1
-              : Math.pow(2, -10 * t) * Math.sin(((t * 10 - 0.75) * Math.PI) / 1.5) + 1;
-        };
-
-        return elastic(progress);
-
-      case EasingFunction.BACK:
-        // Back effect (overshooting)
-        const overshoot = 1.70158;
-        const back = (t: number): number => {
-          return t * t * ((overshoot + 1) * t - overshoot);
-        };
-
-        return back(progress);
-
-      default:
-        return progress;
+  private applyEasing(progress: number, easing: EasingFunction | EasingType): number {
+    if (typeof easing === 'function') {
+      return easing(progress);
     }
+    return this.getEasingFunction(easing)(progress);
   }
 
   /**

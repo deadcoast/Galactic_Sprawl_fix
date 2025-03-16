@@ -259,13 +259,13 @@ export function needsMigration(fileContent: string): boolean {
 
 /**
  * Creates a compatibility layer for functions that need to work with both string and enum resource types
- * @param originalFunction The original function
+ * @param original(...args: unknown[]) => unknown The original function
  * @param parameterIndices The indices of parameters to convert
  * @param convertToEnum Whether to convert to enum (true) or string (false)
  * @returns The wrapped function
  */
 export function createResourceTypeCompatibilityLayer<T extends (...args: unknown[]) => unknown>(
-  originalFunction: T,
+  original(...args: unknown[]) => unknown: T,
   parameterIndices: number[],
   convertToEnum: boolean
 ): T {
@@ -280,7 +280,7 @@ export function createResourceTypeCompatibilityLayer<T extends (...args: unknown
         newArgs[index] = ensureStringResourceType(args[index]);
       }
     }
-    return originalFunction(...newArgs);
+    return original(...args: unknown[]) => unknown(...newArgs);
   }) as T;
 }
 

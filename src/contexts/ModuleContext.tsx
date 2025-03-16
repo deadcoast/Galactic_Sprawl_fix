@@ -1,5 +1,3 @@
-import { ResourceType } from "./../types/resources/ResourceTypes";
-import * as React from "react";
 import React, {
   createContext,
   ReactNode,
@@ -23,6 +21,7 @@ import {
   ModuleEventType,
   ModuleStatus,
 } from '../types/modules/ModuleTypes';
+import { ResourceType } from './../types/resources/ResourceTypes';
 
 /**
  * Enum for action types to ensure type safety

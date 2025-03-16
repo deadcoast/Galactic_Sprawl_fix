@@ -119,13 +119,13 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
   private initializeEventSubscriptions(): void {
     // Listen for threshold events
     eventSystem.subscribe(EventType.RESOURCE_THRESHOLD_TRIGGERED, event => {
-      console.log('Resource threshold reached:', event);
+      console.warn('Resource threshold reached:', event);
       // Additional handling as needed
     });
 
     // Listen for storage overflow events
     eventSystem.subscribe(EventType.RESOURCE_SHORTAGE, event => {
-      console.log('Resource storage overflow:', event);
+      console.warn('Resource storage overflow:', event);
       // Handle overflow according to policy
       if (event.data && typeof event.data === 'object') {
         const { resourceType, amount, containerId } = event.data as {

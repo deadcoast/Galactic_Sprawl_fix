@@ -172,7 +172,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    */
   private initializeEventHandlers(): void {
     // Resource production events
-    this.unsubscribeFunctions.push(
+    this.unsubscribe(...args: unknown[]) => unknowns.push(
       this.subscribe(EventType.RESOURCE_PRODUCED, this.handleResourceProduced.bind(this)),
       this.subscribe(EventType.RESOURCE_CONSUMED, this.handleResourceConsumed.bind(this)),
       this.subscribe(EventType.RESOURCE_TRANSFERRED, this.handleResourceTransferred.bind(this)),

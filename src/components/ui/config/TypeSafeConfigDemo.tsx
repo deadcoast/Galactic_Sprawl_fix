@@ -157,7 +157,7 @@ const configManager = createConfigManager({
     console.warn('Config validation errors:', errors);
   },
   onConfigChange: (key, newValue, oldValue) => {
-    console.log(`Config changed: ${key}`, { oldValue, newValue });
+    console.warn(`Config changed: ${key}`, { oldValue, newValue });
   },
 });
 
@@ -175,7 +175,7 @@ const TypeSafeConfigDemo: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>('user');
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>('production');
   const [userId, setUserId] = useState<string>('user-123');
-  const [configValues, setConfigValues] = useState<Record<string, any>>({});
+  const [configValues, setConfigValues] = useState<Record<string, unknown>>({});
   const [featureValues, setFeatureValues] = useState<Record<string, boolean>>({});
   const [selectedCategory, setSelectedCategory] = useState<string>('appearance');
   const [selectedConfig, setSelectedConfig] = useState<ConfigItem | null>(null);
@@ -213,7 +213,7 @@ const TypeSafeConfigDemo: React.FC = () => {
     if (!selectedConfig) return;
 
     // Parse the value based on the schema type
-    let parsedValue: any;
+    let parsedValue: unknown;
     try {
       if (selectedConfig.schema instanceof z.ZodObject) {
         parsedValue = JSON.parse(editValue);

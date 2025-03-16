@@ -93,7 +93,7 @@ export interface FactionWeaponSystem extends WeaponSystem {
  * @param weapon The weapon system to convert
  * @returns A fully configured weapon instance
  */
-// @ts-expect-error - This function is documented for future use in the faction behavior system
+
 function _convertToWeaponInstance(weapon: WeaponSystem): WeaponInstance {
   const config: WeaponConfig = {
     id: weapon.id,
@@ -150,7 +150,7 @@ function _convertToWeaponInstance(weapon: WeaponSystem): WeaponInstance {
  * @param weapons Array of weapon systems to convert
  * @returns Array of weapon mounts
  */
-// @ts-expect-error - This function is documented for future use in the faction behavior system
+
 function _convertToWeaponMounts(weapons: WeaponSystem[]): WeaponMount[] {
   return weapons.map((weapon, index) => convertWeaponSystemToMount(weapon, index));
 }
@@ -232,7 +232,7 @@ export interface FactionCombatUnit
  * @param statusToCheck The status to check for
  * @returns Whether the unit has the specified status
  */
-// @ts-expect-error - This function is documented for future use in the faction behavior system
+
 function _hasStatus(unit: CombatUnit | FactionCombatUnit, statusToCheck: string): boolean {
   if (isFactionCombatUnit(unit)) {
     // For FactionCombatUnit, check main status, secondary status, and effects
@@ -1063,6 +1063,7 @@ export function useFactionBehavior(factionId: FactionId) {
         [ResourceType.URANIUM]: 0,
         [ResourceType.WATER]: 0,
         [ResourceType.HELIUM]: 0,
+        [ResourceType.ORGANIC]: 0,
       },
       threatLevel: 0,
       factionId,
@@ -1107,6 +1108,7 @@ export function useFactionBehavior(factionId: FactionId) {
         [ResourceType.URANIUM]: 0,
         [ResourceType.WATER]: 0,
         [ResourceType.HELIUM]: 0,
+        [ResourceType.ORGANIC]: 0,
       },
     },
     stateMachine: {
@@ -1141,6 +1143,7 @@ export function useFactionBehavior(factionId: FactionId) {
         [ResourceType.URANIUM]: 0,
         [ResourceType.WATER]: 0,
         [ResourceType.HELIUM]: 0,
+        [ResourceType.ORGANIC]: 0,
       },
       tradePreferences: [],
     },
@@ -1598,7 +1601,7 @@ function calculateBehaviorState(
  * @param b Second position with x and y coordinates
  * @returns The distance between the two positions
  */
-// @ts-expect-error - This function is documented for future use in the faction behavior system
+
 function _calculateDistance(a: { x: number; y: number }, b: { x: number; y: number }): number {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
@@ -1819,7 +1822,7 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
  * @param unit The faction combat unit to evaluate
  * @returns The determined ship class for the unit
  */
-// @ts-expect-error - This function is documented for future use in the faction behavior system
+
 function _determineShipClass(unit: FactionCombatUnit): ShipClass {
   const { status } = unit;
   const factionShips = FACTION_SHIPS[unit.faction] || [];
@@ -1862,7 +1865,7 @@ function _determineShipClass(unit: FactionCombatUnit): ShipClass {
  * @param unit The faction combat unit to evaluate
  * @returns The current status of the ship
  */
-// @ts-expect-error - This function is documented for future use in the faction behavior system
+
 function _determineShipStatus(unit: FactionCombatUnit): CommonShipStatus {
   const status = unit.status.main;
   if (status === 'active') {
@@ -1891,7 +1894,7 @@ function _determineShipStatus(unit: FactionCombatUnit): CommonShipStatus {
  * @param units Array of faction combat units to organize
  * @returns The optimal formation configuration for the units
  */
-// @ts-expect-error - This function is documented for future use in the faction behavior system
+
 function _determineFormation(units: FactionCombatUnit[]): FactionFleet['formation'] {
   return {
     type: 'defensive',
@@ -2043,7 +2046,7 @@ function calculateThreatLevel(
  * @param shipClass The ship class name to normalize
  * @returns The normalized ship class name as a FactionShipClass
  */
-// @ts-expect-error - This function is documented for future use in the faction ship system
+
 function _normalizeShipClass(shipClass: string): FactionShipClass {
   const camelCase = shipClass.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
   return camelCase as FactionShipClass;
@@ -2103,6 +2106,7 @@ function manageResources(state: FactionBehaviorState): void {
       [ResourceType.URANIUM]: 0,
       [ResourceType.WATER]: 0,
       [ResourceType.HELIUM]: 0,
+      [ResourceType.ORGANIC]: 800,
     };
   }
 }
@@ -2309,33 +2313,27 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
 
 // Convert local FactionFleet to StandardizedFactionFleet
 function convertToStandardizedFleet(fleet: FactionFleet): StandardizedFactionFleet {
+  // Generate a unique ID and name if not provided
+  const fleetId = `fleet-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const fleetName = `Fleet ${fleetId}`;
+
   return {
-    id: fleet.id || `fleet-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    name: fleet.name || `Fleet ${fleet.id}`,
+    id: fleetId,
+    name: fleetName,
     ships: fleet.ships.map(ship => ({
       id: ship.id,
-      name: ship.name,
+      name: ship.name || `Ship ${ship.id}`,
       type: ship.class,
-      level: ship.level || 1,
-      status:
-        ship.status === 'ready'
-          ? 'idle'
-          : ship.status === 'engaging'
-            ? 'engaging'
-            : ship.status === 'damaged'
-              ? 'damaged'
-              : 'retreating',
+      level: 1,
+      status: 'idle',
     })),
-    formation: fleet.formation,
-    status:
-      fleet.status === 'ready'
-        ? 'idle'
-        : fleet.status === 'engaging'
-          ? 'engaging'
-          : fleet.status === 'retreating'
-            ? 'retreating'
-            : 'patrolling',
-    position: fleet.position,
+    formation: {
+      type: fleet.formation.type === 'stealth' ? 'defensive' : fleet.formation.type,
+      spacing: fleet.formation.spacing,
+      facing: fleet.formation.facing,
+    },
+    status: 'idle',
+    position: { x: 0, y: 0 },
   };
 }
 

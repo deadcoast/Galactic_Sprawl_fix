@@ -46,7 +46,7 @@ export interface TimeBatchConfig {
   /**
    * Group events by a specific property
    */
-  groupBy?: (event: any) => string;
+  groupBy?: (event: unknown) => string;
 
   /**
    * Priority threshold - events with priority below this will be batched
@@ -148,7 +148,7 @@ export function createTimeBatchedStream<T>(
     // High priority stream (process immediately)
     const highPriorityStream = source.pipe(
       filter(
-        (event: any) =>
+        (event: unknown) =>
           event.priority !== undefined && event.priority < batchConfig.priorityThreshold!
       ),
       map(event => [event]),
@@ -158,7 +158,7 @@ export function createTimeBatchedStream<T>(
     // Low priority stream (batch)
     const lowPriorityStream = source.pipe(
       filter(
-        (event: any) =>
+        (event: unknown) =>
           event.priority === undefined || event.priority >= batchConfig.priorityThreshold!
       ),
       bufferTime(batchConfig.timeWindow, null, batchConfig.maxBatchSize || Number.MAX_SAFE_INTEGER),
@@ -215,7 +215,7 @@ function createBatchResult<T>(
 ): TimeBatchResult<T> {
   // Get timestamps (if available)
   const now = Date.now();
-  const timestamps = events.map(event => (event as any).timestamp || now);
+  const timestamps = events.map(event => (event as unknown).timestamp || now);
 
   // Sort events by timestamp if configured
   if (config.sortByTimestamp && events.length > 1) {

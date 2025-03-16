@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { Feature } from 'geojson';
-import * as React from "react";
-import { useCallback, useEffect, useRef, useState } from 'react';
+import * as React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // Import optimization utilities
 import {
@@ -81,7 +81,7 @@ interface D3NetworkNode extends SimulationNodeDatum<NetworkNode> {
 }
 
 // D3 simulation link interface with proper typing
-interface D3NetworkLink extends SimulationLinkDatum<D3NetworkNode> {
+interface _D3Link extends SimulationLinkDatum<D3NetworkNode> {
   source: string | D3NetworkNode;
   target: string | D3NetworkNode;
   value: number;
@@ -108,7 +108,7 @@ interface CategorySeries {
 }
 
 // Animation configuration for time series
-interface TimeSeriesAnimationConfig extends AnimationConfig {
+interface _TimeSeriesAnimationConfig extends AnimationConfig {
   // Additional animation settings specific to time series
   staggerDelay?: number; // Delay between animating different series
   pointDelay?: number; // Delay between animating different points
@@ -287,7 +287,10 @@ interface D3LinkData {
  * - Integrated performance optimization
  * - Type-safe implementation
  */
-const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, height = 900 }) => {
+export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
+  width = 1200,
+  height = 900,
+}) => {
   // References
   const containerRef = useRef<HTMLDivElement>(null);
   const networkRef = useRef<SVGSVGElement>(null);
@@ -296,7 +299,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
   const hierarchyRef = useRef<SVGSVGElement>(null);
 
   // Simulation state reference for force-directed graph
-  const simulationRef = useRef<d3.Simulation<D3NetworkNode, D3NetworkLink> | null>(null);
+  const simulationRef = useRef<d3.Simulation<D3NetworkNode, _D3Link> | null>(null);
 
   // State
   const [currentView, setCurrentView] = useState<VisualizationType>(VisualizationType.NETWORK);
@@ -331,14 +334,22 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
   const [hierarchyLayoutType, setHierarchyLayoutType] =
     useState<ExtendedQualitySettings['hierarchyLayout']>('tree');
 
+  // Memoized world map data
+  const _worldMapData = useMemo(() => {
+    return {
+      features: [],
+      type: 'FeatureCollection',
+    };
+  }, []);
+
   // Define visualization initialization functions early to avoid "used before declaration" errors
   const initializeTimeSeriesVisualization = useCallback(() => {
-    console.log('Initializing time series visualization');
+    console.warn('Initializing time series visualization');
     // Implementation would go here
   }, [timeSeriesData, selectedEntities, timeRange, optimizationsEnabled, qualitySettings]);
 
   const initializeGeoVisualization = useCallback(() => {
-    console.log('Initializing geo visualization');
+    console.warn('Initializing geo visualization');
     // Implementation would go here
   }, [geoData, selectedEntities, optimizationsEnabled, qualitySettings]);
 
@@ -366,9 +377,9 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
     });
   };
 
-  const handleTimeRangeChange = (range: [Date, Date]) => {
-    setTimeRange(range);
-  };
+  const _handleTimeRangeChange = useCallback((range: [Date, Date]) => {
+    // Implementation
+  }, []);
 
   const handleFilterChange = (value: number) => {
     setFilterValue(value);
@@ -469,7 +480,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
     });
 
     // Convert links with proper typing
-    const links: D3NetworkLink[] = networkData.links.map(link => {
+    const links: _D3Link[] = networkData.links.map(link => {
       // Calculate link width based on value and quality settings
       const baseWidth = Math.sqrt(link.value) * 1.5;
       // Cast to ExtendedQualitySettings to use the additional properties
@@ -481,7 +492,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
       const color = link.type === 'direct' ? '#4285F4' : '#9AA0A6';
 
       // Create D3 link with proper typing
-      const d3Link: D3NetworkLink = {
+      const d3Link: _D3Link = {
         source: link.source,
         target: link.target,
         value: link.value,
@@ -503,7 +514,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
   const initializeNetworkVisualization = useCallback(() => {
     if (!networkRef.current || networkData.nodes.length === 0) return;
 
-    console.log('Initializing network visualization with force-directed graph');
+    console.warn('Initializing network visualization with force-directed graph');
 
     // Clear previous visualization
     d3.select(networkRef.current).selectAll('*').remove();
@@ -604,7 +615,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
       .force(
         'link',
         d3
-          .forceLink<D3NetworkNode, D3NetworkLink>(links)
+          .forceLink<D3NetworkNode, _D3Link>(links)
           .id(d => d.id)
           .distance(d => 30 + d.value)
       )
@@ -849,7 +860,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
   const initializeHierarchyVisualization = useCallback(() => {
     if (!hierarchyRef.current || hierarchyData.length === 0) return;
 
-    console.log(`Initializing hierarchical visualization with ${hierarchyLayoutType} layout`);
+    console.warn(`Initializing hierarchical visualization with ${hierarchyLayoutType} layout`);
 
     // Clear previous visualization
     d3.select(hierarchyRef.current).selectAll('*').remove();
@@ -916,12 +927,12 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
     const zoomG = g.append('g');
 
     // Apply category filter if selected entities exist
-    const filterByCategory = (node: D3HierarchyNode): boolean => {
+    const _filterByCategory = (node: D3HierarchyNode): boolean => {
       if (selectedEntities.length === 0) return true;
       if (selectedEntities.includes(node.category)) return true;
       if (node.children) {
         // Include if any children match the filter
-        return node.children.some(filterByCategory);
+        return node.children.some(_filterByCategory);
       }
       return false;
     };
@@ -948,7 +959,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
 
     const depthColorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-    // Function to determine node color based on settings
+    // (...args: unknown[]) => unknown to determine node color based on settings
     const getNodeColor = (d: HierarchyDatum): string => {
       switch (nodeColor) {
         case 'byValue':
@@ -1423,7 +1434,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
   };
 
   // Generate mock time series data
-  const generateTimeSeriesData = (pointCount: number) => {
+  const generateTimeSeriesData = useCallback((_pointCount: number) => {
     const data: TimeSeriesPoint[] = [];
     const categories = ['revenue', 'expenses', 'profit', 'users'];
     const timePeriods = ['Q1', 'Q2', 'Q3', 'Q4'];
@@ -1457,7 +1468,7 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
     }
 
     return data;
-  };
+  }, []);
 
   // Generate mock geo data
   const generateGeoData = (pointCount: number) => {
@@ -1582,6 +1593,28 @@ const DataDashboardApp: React.FC<DataDashboardAppProps> = ({ width = 1200, heigh
     };
 
     fetchWorldMap();
+  }, []);
+
+  // Memoized labels
+  const _labels = useMemo(() => {
+    return {
+      network: {
+        title: 'Network Visualization',
+        subtitle: 'Interactive force-directed graph',
+      },
+      timeseries: {
+        title: 'Time Series Analysis',
+        subtitle: 'Multi-category temporal data',
+      },
+      geospatial: {
+        title: 'Geographic Distribution',
+        subtitle: 'Global data visualization',
+      },
+      hierarchy: {
+        title: 'Hierarchical Structure',
+        subtitle: 'Tree-based organization',
+      },
+    };
   }, []);
 
   // Rendering

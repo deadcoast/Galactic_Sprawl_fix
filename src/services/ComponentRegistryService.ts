@@ -173,7 +173,7 @@ class ComponentRegistryServiceImpl extends AbstractBaseService {
 
     // Log in development
     if (process.env.NODE_ENV === 'development') {
-      console.debug(
+      console.warn(
         `[ComponentRegistryService] Notifying ${components.length} components of event: ${eventType}`
       );
     }

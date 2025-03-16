@@ -47,7 +47,7 @@ export interface Module {
   /** Resources produced per cycle */
   resourceProduction?: Record<string, number>;
   /** Custom metadata */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**

@@ -256,17 +256,17 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
  * // Define the lifecycle hook
  * const useUserProfileLifecycle = createLifecycleHook<UserProfileProps>({
  *   onMount: (props) => {
- *     console.log('UserProfile mounted with ID:', props.userId);
+ *     console.warn('UserProfile mounted with ID:', props.userId);
  *     // Fetch data or set up subscriptions
  *   },
  *   onUpdate: (prevProps, nextProps) => {
  *     if (prevProps.userId !== nextProps.userId) {
- *       console.log('UserProfile updated with new ID:', nextProps.userId);
+ *       console.warn('UserProfile updated with new ID:', nextProps.userId);
  *       // Refetch data with new ID
  *     }
  *   },
  *   onUnmount: (props) => {
- *     console.log('UserProfile unmounting, cleanup for ID:', props.userId);
+ *     console.warn('UserProfile unmounting, cleanup for ID:', props.userId);
  *     // Clean up subscriptions or timers
  *   },
  *   updateDependencies: (props) => [props.userId],

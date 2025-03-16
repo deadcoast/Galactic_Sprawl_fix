@@ -1,4 +1,3 @@
-import { ResourceType } from "./../types/resources/ResourceTypes";
 /**
  * @file AnalysisAlgorithmService.ts
  * Service for implementing data analysis algorithms
@@ -127,7 +126,7 @@ export class AnalysisAlgorithmService {
     const startTime = Date.now();
 
     // Create a pending result
-    const pendingResult: AnalysisResult = {
+    const _pendingResult: AnalysisResult = {
       id: resultId,
       analysisConfigId: config.id,
       status: 'processing',
@@ -1104,7 +1103,7 @@ export class AnalysisAlgorithmService {
     }
 
     // Normalize feature vectors if specified
-    const normalizedVectors = normalize
+    const normalizedVectors = options.normalize
       ? this.normalizeFeatureVectors(featureVectors)
       : featureVectors;
 
@@ -1187,7 +1186,7 @@ export class AnalysisAlgorithmService {
       distanceMetric,
       inertia: clusterResult.inertia,
       clusters: clusterStats,
-      normalized: normalize,
+      normalized: options.normalize,
     };
 
     // Generate insights and summary
@@ -1394,7 +1393,6 @@ export class AnalysisAlgorithmService {
       case 'manhattan':
         return a.reduce((sum, val, i) => sum + Math.abs(val - b[i]), 0);
 
-      case 'cosine':
         const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
         const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
         const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
@@ -1410,7 +1408,7 @@ export class AnalysisAlgorithmService {
   /**
    * Check if two arrays are equal
    */
-  private arraysEqual(a: any[], b: any[]): boolean {
+  private arraysEqual(a: unknown[], b: unknown[]): boolean {
     if (a.length !== b.length) return false;
 
     for (let i = 0; i < a.length; i++) {
@@ -1468,8 +1466,8 @@ export class AnalysisAlgorithmService {
       clusters.forEach((cluster, i) => {
         // Find distinctive features for this cluster
         const distinctiveFeatures = cluster.featureStats
-          .filter((stat: any) => stat.mean > 0.5 || stat.mean < -0.5)
-          .sort((a: any, b: any) => Math.abs(b.mean) - Math.abs(a.mean));
+          .filter((stat: unknown) => stat.mean > 0.5 || stat.mean < -0.5)
+          .sort((a: unknown, b: unknown) => Math.abs(b.mean) - Math.abs(a.mean));
 
         if (distinctiveFeatures.length > 0) {
           const topFeature = distinctiveFeatures[0];
@@ -1887,7 +1885,7 @@ export class AnalysisAlgorithmService {
     const insights: string[] = [];
     const groups = data.groups as Record<
       string,
-      { values: any[]; trendLine: { slope: number; intercept: number } }
+      { values: unknown[]; trendLine: { slope: number; intercept: number } }
     >;
 
     // Add insights for each group
@@ -1922,7 +1920,7 @@ export class AnalysisAlgorithmService {
   private generateTrendSummary(data: Record<string, unknown>): string {
     const groups = data.groups as Record<
       string,
-      { values: any[]; trendLine: { slope: number; intercept: number } }
+      { values: unknown[]; trendLine: { slope: number; intercept: number } }
     >;
     const groupCount = Object.keys(groups).length;
 
@@ -2700,7 +2698,7 @@ export class AnalysisAlgorithmService {
       }
     }
 
-    // Function to make predictions
+    // (...args: unknown[]) => unknown to make predictions
     const predict = (features: number[]): number => {
       // Normalize features
       const normalizedFeatures = features.map(

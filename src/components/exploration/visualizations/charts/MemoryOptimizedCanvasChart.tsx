@@ -61,7 +61,7 @@ export interface MemoryOptimizedCanvasChartProps extends BaseChartProps {
   /** Whether to use double buffering for smoother rendering */
   useDoubleBuffering?: boolean;
 
-  /** Function to format date values on the X-axis */
+  /** (...args: unknown[]) => unknown to format date values on the X-axis */
   formatXAxisDate?: (value: number) => string;
 
   /** Whether to cache rendered results between renders */

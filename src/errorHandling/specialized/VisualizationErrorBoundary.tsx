@@ -97,7 +97,7 @@ export const VisualizationErrorBoundary: React.FC<VisualizationErrorBoundaryProp
         actionText="Show Default View"
         onAction={() => {
           // This could switch to a simpler view or load simplified data
-          console.log('Switching to default view');
+          console.warn('Switching to default view');
           reset();
         }}
       />

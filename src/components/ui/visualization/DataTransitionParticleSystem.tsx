@@ -93,10 +93,10 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
   // Handle component lifecycle
   useComponentLifecycle({
     onMount: () => {
-      console.log('DataTransitionParticleSystem mounted');
+      console.warn('DataTransitionParticleSystem mounted');
     },
     onUnmount: () => {
-      console.log('DataTransitionParticleSystem unmounted');
+      console.warn('DataTransitionParticleSystem unmounted');
     },
   });
 

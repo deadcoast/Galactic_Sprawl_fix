@@ -2,13 +2,14 @@
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database, Grid2X2, Map, Truck } from 'lucide-react';
 import * as React from 'react';
+import { useMemo } from 'react';
 import { miningRules } from '../../../../config/automation/miningRules';
 import { ThresholdProvider, useThreshold } from '../../../../contexts/ThresholdContext';
 import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { ResourceTransferManager } from '../../../../managers/resource/ResourceTransferManager';
 import { MiningResource } from '../../../../types/mining/MiningTypes';
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 import { AutomationMonitor } from './AutomationMonitor';
 import { MiningControls } from './MiningControls';
 import { MiningMap } from './MiningMap';
@@ -126,32 +127,26 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
     },
   ];
 
-  const filteredResources = mockResources.filter(resource => {
-    if (searchQuery && !resource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    if (filter !== 'all') {
-      if (
-        filter === 'mineral' &&
-        ![ResourceType.IRON, ResourceType.COPPER, ResourceType.TITANIUM].includes(resource.type)
-      ) {
-        return false;
+  // Use resourcesByType to filter resources by type
+  const resourcesByType = mockResources.reduce(
+    (acc, resource) => {
+      if ([ResourceType.IRON, ResourceType.COPPER, ResourceType.TITANIUM].includes(resource.type)) {
+        acc.minerals.push(resource);
+      } else if ([ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(resource.type)) {
+        acc.gas.push(resource);
+      } else if ([ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(resource.type)) {
+        acc.exotic.push(resource);
       }
-      if (
-        filter === ResourceType.GAS &&
-        ![ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(resource.type)
-      ) {
-        return false;
-      }
-      if (
-        filter === ResourceType.EXOTIC &&
-        ![ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(resource.type)
-      ) {
-        return false;
-      }
-    }
-    return true;
-  });
+      return acc;
+    },
+    { minerals: [], gas: [], exotic: [] } as Record<string, MiningResource[]>
+  );
+
+  // Use resourcesByType to filter resources by type
+  const filteredResources = useMemo(() => {
+    if (filter === 'all') return mockResources;
+    return resourcesByType[filter] || [];
+  }, [filter, mockResources, resourcesByType]);
 
   // Implement useEffect for tier-based tech bonuses
   React.useEffect(() => {
@@ -177,21 +172,6 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
       });
     };
   }, []);
-
-  // Update the resource type comparison
-  const resourcesByType = mockResources.reduce(
-    (acc, resource) => {
-      if ([ResourceType.IRON, ResourceType.COPPER, ResourceType.TITANIUM].includes(resource.type)) {
-        acc.minerals.push(resource);
-      } else if ([ResourceType.HELIUM, ResourceType.DEUTERIUM].includes(resource.type)) {
-        acc.gas.push(resource);
-      } else if ([ResourceType.DARK_MATTER, ResourceType.EXOTIC_MATTER].includes(resource.type)) {
-        acc.exotic.push(resource);
-      }
-      return acc;
-    },
-    { minerals: [], gas: [], exotic: [] } as Record<string, MiningResource[]>
-  );
 
   return (
     <div className="fixed inset-4 flex overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md">

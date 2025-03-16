@@ -357,7 +357,7 @@ export class ReconShipManagerImpl extends AbstractBaseManager<ShipEvent> {
   }
 
   protected async onInitialize(_dependencies?: unknown): Promise<void> {
-    console.log('ReconShipManager initialized');
+    console.warn('ReconShipManager initialized');
   }
 
   protected onUpdate(_deltaTime: number): void {

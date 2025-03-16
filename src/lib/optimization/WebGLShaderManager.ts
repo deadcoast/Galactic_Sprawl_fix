@@ -678,7 +678,7 @@ export class WebGLShaderManager {
 
   /**
    * Start animation loop for continuous rendering
-   * @param renderCallback Function to call on each animation frame
+   * @param renderCallback (...args: unknown[]) => unknown to call on each animation frame
    */
   public startAnimationLoop(renderCallback: () => void): void {
     // Stop any existing animation loop

@@ -12,7 +12,7 @@ import { TypedEventEmitter } from './EventBus';
  * Base class for all typed event emitters in the system
  * Manager classes should extend this class to gain typed event emitting capabilities
  */
-export class BaseTypedEventEmitter<T extends Record<string, any>>
+export class BaseTypedEventEmitter<T extends Record<string, unknown>>
   extends TypedEventEmitter<T>
   implements ITypedEventEmitter<T>
 {

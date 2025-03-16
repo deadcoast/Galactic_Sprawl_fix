@@ -33,7 +33,7 @@ export interface FeatureTargeting {
     start?: string;
     end?: string;
   };
-  customRules?: Record<string, any>;
+  customRules?: Record<string, unknown>;
 }
 
 /**
@@ -83,7 +83,7 @@ export interface ConfigValidationError {
   key: string;
   message: string;
   path?: string[];
-  value?: any;
+  value?: unknown;
 }
 
 /**
@@ -102,7 +102,7 @@ export interface ConfigManagerOptions {
   strictMode?: boolean;
   logErrors?: boolean;
   onValidationError?: (errors: ConfigValidationError[]) => void;
-  onConfigChange?: (key: string, newValue: any, oldValue: any) => void;
+  onConfigChange?: (key: string, newValue: unknown, oldValue: unknown) => void;
 }
 
 /**
@@ -111,10 +111,10 @@ export interface ConfigManagerOptions {
 export class TypeSafeConfigManager {
   private configItems: Map<string, ConfigItem> = new Map();
   private featureFlags: Map<string, FeatureFlag> = new Map();
-  private configValues: Map<string, any> = new Map();
+  private configValues: Map<string, unknown> = new Map();
   private categories: Map<string, ConfigCategory> = new Map();
   private options: ConfigManagerOptions;
-  private userContext: Record<string, any> = {};
+  private userContext: Record<string, unknown> = {};
 
   constructor(options: ConfigManagerOptions = {}) {
     this.options = {
@@ -149,7 +149,7 @@ export class TypeSafeConfigManager {
    * Register multiple configuration items
    */
   registerConfigs(configs: ConfigItem[]): void {
-    configs.forEach(config => this.registerConfig(config as any));
+    configs.forEach(config => this.registerConfig(config as unknown));
   }
 
   /**
@@ -182,7 +182,7 @@ export class TypeSafeConfigManager {
   /**
    * Set user context for feature flag targeting
    */
-  setUserContext(context: Record<string, any>): void {
+  setUserContext(context: Record<string, unknown>): void {
     this.userContext = context;
   }
 
@@ -365,8 +365,8 @@ export class TypeSafeConfigManager {
   /**
    * Export all configuration values
    */
-  exportConfig(): Record<string, any> {
-    const result: Record<string, any> = {};
+  exportConfig(): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
     this.configValues.forEach((value, key) => {
       result[key] = value;
     });
@@ -387,7 +387,7 @@ export class TypeSafeConfigManager {
   /**
    * Import configuration from an object
    */
-  importConfig(config: Record<string, any>): ConfigValidationResult {
+  importConfig(config: Record<string, unknown>): ConfigValidationResult {
     const errors: ConfigValidationError[] = [];
 
     Object.entries(config).forEach(([key, value]) => {
@@ -503,7 +503,7 @@ export function createConfigItem<T extends z.ZodType>(
 export function createFeatureFlag(
   key: string,
   defaultValue: boolean,
-  options: Omit<FeatureFlag, 'key' | 'defaultValue'> = {} as any
+  options: Omit<FeatureFlag, 'key' | 'defaultValue'> = {} as unknown
 ): FeatureFlag {
   return {
     key,

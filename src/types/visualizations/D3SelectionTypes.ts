@@ -16,7 +16,7 @@ import * as d3 from 'd3';
  */
 export function selectSvg(
   selector: string
-): d3.Selection<SVGSVGElement, unknown, HTMLElement, any> {
+): d3.Selection<SVGSVGElement, unknown, HTMLElement, unknown> {
   return d3.select<SVGSVGElement, unknown>(selector);
 }
 
@@ -28,7 +28,7 @@ export function selectSvg(
  */
 export function selectGroup(
   selector: string
-): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
+): d3.Selection<SVGGElement, unknown, HTMLElement, unknown> {
   return d3.select<SVGGElement, unknown>(selector);
 }
 
@@ -42,7 +42,7 @@ export function selectGroup(
 export function selectSvgElement<E extends SVGElement>(
   selector: string,
   elementType: new () => E
-): d3.Selection<E, unknown, HTMLElement, any> {
+): d3.Selection<E, unknown, HTMLElement, unknown> {
   return d3.select<E, unknown>(selector);
 }
 
@@ -56,7 +56,7 @@ export function selectSvgElement<E extends SVGElement>(
 export function selectHtmlElement<E extends HTMLElement>(
   selector: string,
   elementType: new () => E
-): d3.Selection<E, unknown, HTMLElement, any> {
+): d3.Selection<E, unknown, HTMLElement, unknown> {
   return d3.select<E, unknown>(selector);
 }
 
@@ -68,7 +68,7 @@ export function selectHtmlElement<E extends HTMLElement>(
  */
 export function selectAllSvg(
   selector: string
-): d3.Selection<SVGSVGElement, unknown, HTMLElement, any> {
+): d3.Selection<SVGSVGElement, unknown, HTMLElement, unknown> {
   return d3.selectAll<SVGSVGElement, unknown>(selector);
 }
 
@@ -80,7 +80,7 @@ export function selectAllSvg(
  */
 export function selectAllGroups(
   selector: string
-): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
+): d3.Selection<SVGGElement, unknown, HTMLElement, unknown> {
   return d3.selectAll<SVGGElement, unknown>(selector);
 }
 
@@ -94,7 +94,7 @@ export function selectAllGroups(
 export function selectAllSvgElements<E extends SVGElement>(
   selector: string,
   elementType: new () => E
-): d3.Selection<E, unknown, HTMLElement, any> {
+): d3.Selection<E, unknown, HTMLElement, unknown> {
   return d3.selectAll<E, unknown>(selector);
 }
 
@@ -107,11 +107,11 @@ export function selectAllSvgElements<E extends SVGElement>(
  * @returns A properly typed update selection
  */
 export function bindData<GElement extends Element, Datum, PElement extends Element, PDatum>(
-  selection: d3.Selection<GElement, PDatum, PElement, any>,
+  selection: d3.Selection<GElement, PDatum, PElement, unknown>,
   data: Datum[],
   key?: ((datum: Datum, index: number, groups: Datum[]) => string) | string
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
-  return selection.data(data, key as any);
+  return selection.data(data, key as unknown);
 }
 
 /**
@@ -119,9 +119,9 @@ export function bindData<GElement extends Element, Datum, PElement extends Eleme
  *
  * @param selection The D3 selection to perform join on
  * @param elementType Tag name for new elements
- * @param enter Function to handle enter selection
- * @param update Function to handle update selection
- * @param exit Function to handle exit selection
+ * @param enter (...args: unknown[]) => unknown to handle enter selection
+ * @param update (...args: unknown[]) => unknown to handle update selection
+ * @param exit (...args: unknown[]) => unknown to handle exit selection
  * @returns A merged selection
  */
 export function joinElements<
@@ -141,7 +141,7 @@ export function joinElements<
   ) => d3.Selection<GElement, Datum, PElement, PDatum>,
   exit?: (selection: d3.Selection<GElement, Datum, PElement, PDatum>) => void
 ): d3.Selection<NewElement | GElement, Datum, PElement, PDatum> {
-  return selection.join(elementType, enter as any, update, exit) as d3.Selection<
+  return selection.join(elementType, enter as unknown, update, exit) as d3.Selection<
     NewElement | GElement,
     Datum,
     PElement,
@@ -274,7 +274,7 @@ export function createSelectionBuilder<
       key: string,
       value: string | number | boolean | ((d: Datum, i: number) => string | number | boolean)
     ) {
-      selection.attr(key, value as any);
+      selection.attr(key, value as unknown);
       return this;
     },
 
@@ -297,7 +297,7 @@ export function createSelectionBuilder<
       key: string,
       value: string | number | boolean | ((d: Datum, i: number) => string | number | boolean)
     ) {
-      selection.style(key, value as any);
+      selection.style(key, value as unknown);
       return this;
     },
 
@@ -317,7 +317,7 @@ export function createSelectionBuilder<
      * Sets text content on the selection
      */
     text(value: string | ((d: Datum, i: number) => string)) {
-      selection.text(value as any);
+      selection.text(value as unknown);
       return this;
     },
 
@@ -325,7 +325,7 @@ export function createSelectionBuilder<
      * Sets HTML content on the selection
      */
     html(value: string | ((d: Datum, i: number) => string)) {
-      selection.html(value as any);
+      selection.html(value as unknown);
       return this;
     },
 
@@ -372,7 +372,7 @@ export function createSelectionBuilder<
       key?: ((datum: NewDatum, index: number, groups: NewDatum[]) => string) | string
     ) {
       const newSelection = bindData<GElement, NewDatum, PElement, PDatum>(
-        selection as any,
+        selection as unknown,
         data,
         key
       );
@@ -442,7 +442,7 @@ export function createTransitionBuilder<
      * Sets the delay of the transition
      */
     delay(milliseconds: number | ((d: Datum, i: number) => number)) {
-      transition.delay(milliseconds as any);
+      transition.delay(milliseconds as unknown);
       return this;
     },
 
@@ -461,7 +461,7 @@ export function createTransitionBuilder<
       key: string,
       value: string | number | boolean | ((d: Datum, i: number) => string | number | boolean)
     ) {
-      transition.attr(key, value as any);
+      transition.attr(key, value as unknown);
       return this;
     },
 
@@ -472,7 +472,7 @@ export function createTransitionBuilder<
       key: string,
       value: string | number | boolean | ((d: Datum, i: number) => string | number | boolean)
     ) {
-      transition.style(key, value as any);
+      transition.style(key, value as unknown);
       return this;
     },
 
@@ -503,7 +503,7 @@ export function createTransitionBuilder<
  * @returns A selection builder for the new SVG
  */
 export function createSvg(
-  parent: string | d3.Selection<HTMLElement, unknown, HTMLElement, any>,
+  parent: string | d3.Selection<HTMLElement, unknown, HTMLElement, unknown>,
   width: number,
   height: number
 ) {
@@ -526,7 +526,7 @@ export function createSvg(
  * @param svg The SVG element to append defs to
  * @returns A selection of the defs element
  */
-export function createDefs(svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>) {
+export function createDefs(svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, unknown>) {
   return svg.append<SVGDefsElement>('defs');
 }
 
@@ -539,7 +539,7 @@ export function createDefs(svg: d3.Selection<SVGSVGElement, unknown, HTMLElement
  * @returns A selection of the marker element
  */
 export function createMarker(
-  defs: d3.Selection<SVGDefsElement, unknown, HTMLElement, any>,
+  defs: d3.Selection<SVGDefsElement, unknown, HTMLElement, unknown>,
   id: string,
   options: {
     width?: number;

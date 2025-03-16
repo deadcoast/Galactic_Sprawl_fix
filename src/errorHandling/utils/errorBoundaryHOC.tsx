@@ -10,7 +10,7 @@ export interface TypedErrorFallbackProps {
   error: Error;
   /** Component name for error reporting */
   componentName: string;
-  /** Function to reset the error boundary */
+  /** (...args: unknown[]) => unknown to reset the error boundary */
   resetError: () => void;
   /** Additional error context information */
   errorContext?: Record<string, unknown>;
@@ -160,7 +160,7 @@ export function withErrorBoundary<P extends object>(
  * an error boundary, creating a new record of "safe" components.
  * 
  * @param components Record of components to wrap
- * @param getOptions Function to generate options for each component
+ * @param getOptions (...args: unknown[]) => unknown to generate options for each component
  * @returns Record of wrapped components
  */
 export function createSafeComponents<T extends Record<string, ComponentType<any>>>(

@@ -1,30 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { moduleEventBus } from '../../lib/events/ModuleEventBus';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import {
   ModuleUpgradeEffect,
   moduleUpgradeManager,
   ModuleUpgradeStatus,
 } from '../../managers/module/ModuleUpgradeManager';
-
-/**
- * Interface for module event data
- *
- * This interface will be used in future implementations to:
- * 1. Provide strong typing for module events
- * 2. Type check event data in event handlers
- * 3. Validate event data before processing
- * 4. Provide better error messages when event data is malformed
- * 5. Enable auto-completion and type safety when accessing event data properties
- *
- * The index signature [key: string]: unknown allows for additional properties
- * while maintaining type safety by requiring explicit type checking before use.
- */
-// @ts-expect-error - This interface is documented for future use in the module event system
-interface _ModuleEventData {
-  moduleId: string;
-  [key: string]: unknown;
-}
+import { EventType } from '../../types/events/EventTypes';
+import { StandardizedEvent } from '../../types/events/StandardizedEvents';
 
 /**
  * Hook for managing module upgrades
@@ -59,7 +42,7 @@ export function useModuleUpgrade(moduleId?: string) {
       return;
     }
 
-    const handleModuleUpgraded = (event: ModuleEvent) => {
+    const handleModuleEvent = (event: StandardizedEvent) => {
       if (event.moduleId === moduleId) {
         try {
           const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
@@ -70,40 +53,21 @@ export function useModuleUpgrade(moduleId?: string) {
       }
     };
 
-    const handleUpgradeStarted = (event: ModuleEvent) => {
-      if (event.moduleId === moduleId) {
-        try {
-          const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
-          setUpgradeStatus(status || null);
-        } catch (err) {
-          setError(`Error updating upgrade status: ${err}`);
-        }
-      }
-    };
-
-    const handleUpgradeCancelled = (event: ModuleEvent) => {
-      if (event.moduleId === moduleId) {
-        try {
-          const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
-          setUpgradeStatus(status || null);
-        } catch (err) {
-          setError(`Error updating upgrade status: ${err}`);
-        }
-      }
-    };
-
-    // Subscribe to events
+    // Subscribe to events with filtering by moduleId
     const unsubscribeUpgraded = moduleEventBus.subscribe(
-      'MODULE_UPGRADED' as ModuleEventType,
-      handleModuleUpgraded
+      EventType.MODULE_UPGRADED,
+      handleModuleEvent,
+      { moduleId }
     );
     const unsubscribeStarted = moduleEventBus.subscribe(
-      'MODULE_UPGRADE_STARTED' as ModuleEventType,
-      handleUpgradeStarted
+      EventType.MODULE_STATUS_CHANGED,
+      handleModuleEvent,
+      { moduleId }
     );
-    const unsubscribeCancelled = moduleEventBus.subscribe(
-      'MODULE_UPGRADE_CANCELLED' as ModuleEventType,
-      handleUpgradeCancelled
+    const unsubscribeUpdated = moduleEventBus.subscribe(
+      EventType.MODULE_UPDATED,
+      handleModuleEvent,
+      { moduleId }
     );
 
     // Set up progress update interval for active upgrades
@@ -120,15 +84,9 @@ export function useModuleUpgrade(moduleId?: string) {
 
     return () => {
       // Unsubscribe from events
-      if (typeof unsubscribeUpgraded === 'function') {
-        unsubscribeUpgraded();
-      }
-      if (typeof unsubscribeStarted === 'function') {
-        unsubscribeStarted();
-      }
-      if (typeof unsubscribeCancelled === 'function') {
-        unsubscribeCancelled();
-      }
+      unsubscribeUpgraded();
+      unsubscribeStarted();
+      unsubscribeUpdated();
 
       // Clear interval
       clearInterval(progressInterval);
@@ -236,7 +194,7 @@ export function useModulesWithAvailableUpgrades() {
 
   // Subscribe to module events
   useEffect(() => {
-    const handleModuleUpgraded = () => {
+    const updateAvailableUpgrades = () => {
       try {
         // Get all modules
         const modules = moduleManager.getActiveModules();
@@ -249,33 +207,23 @@ export function useModulesWithAvailableUpgrades() {
 
         setModuleIds(availableUpgrades.map(module => module.id));
       } catch (err) {
-        setError(`Error updating modules with available upgrades: ${err}`);
+        setError(`Error updating available upgrades: ${err}`);
       }
     };
 
-    const handleResourceChanged = () => {
-      // Resource changes might affect upgrade availability
-      handleModuleUpgraded();
-    };
-
-    // Subscribe to events
+    // Subscribe to relevant events
     const unsubscribeUpgraded = moduleEventBus.subscribe(
-      'MODULE_UPGRADED' as ModuleEventType,
-      handleModuleUpgraded
+      EventType.MODULE_UPGRADED,
+      updateAvailableUpgrades
     );
-    const unsubscribeResourceChanged = moduleEventBus.subscribe(
-      'RESOURCE_CHANGED' as ModuleEventType,
-      handleResourceChanged
+    const unsubscribeResources = moduleEventBus.subscribe(
+      EventType.RESOURCE_UPDATED,
+      updateAvailableUpgrades
     );
 
     return () => {
-      // Unsubscribe from events
-      if (typeof unsubscribeUpgraded === 'function') {
-        unsubscribeUpgraded();
-      }
-      if (typeof unsubscribeResourceChanged === 'function') {
-        unsubscribeResourceChanged();
-      }
+      unsubscribeUpgraded();
+      unsubscribeResources();
     };
   }, []);
 

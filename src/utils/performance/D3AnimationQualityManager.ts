@@ -311,7 +311,7 @@ export class D3AnimationQualityManager {
     this.performanceState.isInitialized = true;
 
     if (this.config.debugMode) {
-      console.log('D3AnimationQualityManager initialized', {
+      console.warn('D3AnimationQualityManager initialized', {
         capabilities: this.performanceState.detectedCapabilities,
         qualityTier: this.performanceState.currentTier,
         settings: this.currentSettings,
@@ -628,7 +628,7 @@ export class D3AnimationQualityManager {
         this.setQualityTier(newTier);
 
         if (this.config.debugMode) {
-          console.log(`Reducing quality to ${newTier} due to low FPS (${avgFps.toFixed(1)})`);
+          console.warn(`Reducing quality to ${newTier} due to low FPS (${avgFps.toFixed(1)})`);
         }
       } else if (avgFps > minAcceptableFps * 1.5 && currentTierIndex < 4) {
         // Performance is good, we might be able to increase quality
@@ -643,7 +643,7 @@ export class D3AnimationQualityManager {
           this.setQualityTier(newTier);
 
           if (this.config.debugMode) {
-            console.log(`Increasing quality to ${newTier} due to good FPS (${avgFps.toFixed(1)})`);
+            console.warn(`Increasing quality to ${newTier} due to good FPS (${avgFps.toFixed(1)})`);
           }
         }
       }
@@ -772,7 +772,7 @@ export class D3AnimationQualityManager {
   /**
    * Set user preference override for specific settings
    */
-  public setUserPreference(settingKey: keyof QualitySettings, value: any): void {
+  public setUserPreference(settingKey: keyof QualitySettings, value: unknown): void {
     this.userOverrides[settingKey] = value;
 
     // Apply the change immediately
@@ -893,7 +893,7 @@ export const animationQualityManager = new D3AnimationQualityManager();
 export function createQualityAdaptiveVisualization<GElement extends Element = SVGSVGElement>(
   selector: string | GElement,
   animationId: string,
-  setupFunction: (
+  setup(...args: unknown[]) => unknown: (
     container: d3.Selection<GElement, unknown, null, undefined>,
     settings: QualitySettings
   ) => void,
@@ -910,7 +910,7 @@ export function createQualityAdaptiveVisualization<GElement extends Element = SV
       selection.selectAll('*').remove();
 
       // Set up visualization with current quality settings
-      setupFunction(selection, settings);
+      setup(...args: unknown[]) => unknown(selection, settings);
     },
     qualityOverrides
   );
@@ -963,7 +963,7 @@ export function bindDataWithQualityAdjustment<
 >(
   selection: d3.Selection<GElement, OldDatum, PElement, PDatum>,
   data: NewDatum[],
-  keyFunction?: (d: NewDatum, i: number, data: NewDatum[]) => string
+  key(...args: unknown[]) => unknown?: (d: NewDatum, i: number, data: NewDatum[]) => string
 ): d3.Selection<GElement, NewDatum, PElement, PDatum> {
   const settings = animationQualityManager.getCurrentSettings();
 
@@ -977,7 +977,7 @@ export function bindDataWithQualityAdjustment<
   }
 
   // Bind the data, potentially with a key function
-  return keyFunction ? selection.data(limitedData, keyFunction) : selection.data(limitedData);
+  return key(...args: unknown[]) => unknown ? selection.data(limitedData, key(...args: unknown[]) => unknown) : selection.data(limitedData);
 }
 
 /**

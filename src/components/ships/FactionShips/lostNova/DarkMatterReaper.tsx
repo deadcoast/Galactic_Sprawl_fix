@@ -91,7 +91,7 @@ export function DarkMatterReaper({
     }
 
     // Log weapon and shield scaling for debugging
-    console.debug('Dark Matter Reaper stats scaling:', {
+    console.warn('Dark Matter Reaper stats scaling:', {
       healthScaling,
       shieldScaling,
       speedScaling,

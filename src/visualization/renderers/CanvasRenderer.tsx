@@ -218,7 +218,7 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render line chart
    */
-  private renderLineChart(data: ChartData, options: ChartOptions, chartArea: any): void {
+  private renderLineChart(data: ChartData, options: ChartOptions, chartArea: unknown): void {
     if (!this.ctx) return;
 
     const { datasets } = data;
@@ -271,7 +271,7 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render bar chart
    */
-  private renderBarChart(data: ChartData, options: ChartOptions, chartArea: any): void {
+  private renderBarChart(data: ChartData, options: ChartOptions, chartArea: unknown): void {
     if (!this.ctx) return;
 
     const { datasets } = data;
@@ -309,7 +309,7 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render scatter chart
    */
-  private renderScatterChart(data: ChartData, options: ChartOptions, chartArea: any): void {
+  private renderScatterChart(data: ChartData, options: ChartOptions, chartArea: unknown): void {
     if (!this.ctx) return;
 
     const { datasets } = data;
@@ -341,7 +341,7 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render area chart
    */
-  private renderAreaChart(data: ChartData, options: ChartOptions, chartArea: any): void {
+  private renderAreaChart(data: ChartData, options: ChartOptions, chartArea: unknown): void {
     if (!this.ctx) return;
 
     const { datasets } = data;
@@ -576,7 +576,7 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render heatmap chart
    */
-  private renderHeatmapChart(data: ChartData, options: ChartOptions, chartArea: any): void {
+  private renderHeatmapChart(data: ChartData, options: ChartOptions, chartArea: unknown): void {
     if (!this.ctx) return;
 
     const { datasets } = data;
@@ -664,7 +664,7 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render axes for charts
    */
-  private renderAxes(data: ChartData, options: ChartOptions, chartArea: any): void {
+  private renderAxes(data: ChartData, options: ChartOptions, chartArea: unknown): void {
     if (!this.ctx) return;
 
     const xAxis = options.axes?.x || { type: 'linear' };
@@ -773,7 +773,7 @@ export class CanvasRenderer implements ChartRenderer {
   private renderCategoryAxes(
     xCategories: string[],
     yCategories: string[],
-    chartArea: any,
+    chartArea: unknown,
     options: ChartOptions
   ): void {
     if (!this.ctx) return;
@@ -807,7 +807,7 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Draw grid lines
    */
-  private drawGrid(scales: any, chartArea: any, options: ChartOptions): void {
+  private drawGrid(scales: unknown, chartArea: unknown, options: ChartOptions): void {
     if (!this.ctx) return;
 
     const xAxis = options.axes?.x || { type: 'linear', grid: true };
@@ -852,7 +852,7 @@ export class CanvasRenderer implements ChartRenderer {
   /**
    * Render legend
    */
-  private renderLegend(data: ChartData, options: ChartOptions, chartArea: any): void {
+  private renderLegend(data: ChartData, options: ChartOptions, chartArea: unknown): void {
     if (!this.ctx || !this.canvas) return;
 
     const { datasets } = data;
@@ -1131,7 +1131,7 @@ export class CanvasRenderer implements ChartRenderer {
    */
   private calculateScales(
     data: ChartData,
-    chartArea: any,
+    chartArea: unknown,
     xAxis: ChartOptions['axes']['x'],
     yAxis: ChartOptions['axes']['y']
   ): { x: { min: number, max: number }, y: { min: number, max: number } } {
@@ -1210,7 +1210,7 @@ export class CanvasRenderer implements ChartRenderer {
    * Map a data value to a pixel position
    */
   private mapValueToPixel(
-    value: any,
+    value: unknown,
     scale: { min: number; max: number },
     pixelMin: number,
     pixelMax: number,

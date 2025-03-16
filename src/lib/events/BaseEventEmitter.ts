@@ -5,12 +5,14 @@
  * that manager classes can extend to gain event emitting capabilities.
  */
 
+import { v4 as uuidv4 } from 'uuid';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
   EventHandler,
   IEventEmitter,
   SubscriptionOptions,
 } from '../../types/events/EventEmitterInterface';
-import { EventType } from '../../types/events/EventTypes';
+import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { EventEmitter } from './EventEmitter';
 
 /**
@@ -37,7 +39,7 @@ export class BaseEventEmitter implements IEventEmitter {
    * @param options Additional subscription options
    * @returns A function to unsubscribe the handler
    */
-  public on<T = any>(
+  public on<T>(
     eventType: EventType | string,
     handler: EventHandler<T>,
     options?: SubscriptionOptions
@@ -45,11 +47,11 @@ export class BaseEventEmitter implements IEventEmitter {
     return this.eventEmitter.subscribe(
       event => {
         if (typeof event === 'object' && event !== null && 'type' in event) {
-          return (event as any).type === eventType;
+          return (event as { type: string }).type === eventType;
         }
         return false;
       },
-      handler as any,
+      handler as EventHandler<BaseEvent>,
       options
     );
   }
@@ -57,10 +59,10 @@ export class BaseEventEmitter implements IEventEmitter {
   /**
    * Unsubscribe from an event
    *
-   * @param eventType The type of event to unsubscribe from
-   * @param handler The handler function to remove
+   * @param _eventType The type of event to unsubscribe from
+   * @param _handler The handler function to remove
    */
-  public off<T = any>(eventType: EventType | string, handler: EventHandler<T>): void {
+  public off<T>(_eventType: EventType | string, _handler: EventHandler<T>): void {
     // This is a simplified implementation since the EventEmitter class doesn't have a direct 'off' method
     // In a real implementation, you would need to track subscriptions to properly remove them
     console.warn('off method is not fully implemented in BaseEventEmitter');
@@ -72,14 +74,19 @@ export class BaseEventEmitter implements IEventEmitter {
    * @param eventType The type of event to emit
    * @param data The data to pass to the event handlers
    */
-  public emit<T = any>(eventType: EventType | string, data: T): void {
+  public emit<T>(eventType: EventType | string, data: T): void {
     // Create an event object that conforms to the BaseEvent interface
-    const event = {
+    const event: BaseEvent = {
+      id: uuidv4(),
       type: eventType as EventType,
+      name: eventType as EventType,
+      description: eventType as EventType,
+      category: eventType as EventType,
+      subCategory: eventType as EventType,
       timestamp: Date.now(),
-      moduleId: (data as any)?.moduleId || 'unknown',
-      moduleType: (data as any)?.moduleType || 'unknown',
-      data: data as unknown as Record<string, unknown>,
+      moduleId: (data as { moduleId?: string })?.moduleId || 'unknown',
+      moduleType: (data as { moduleType?: ModuleType })?.moduleType || 'radar',
+      data: data as Record<string, unknown>,
     };
     this.eventEmitter.emit(event);
   }
@@ -87,9 +94,9 @@ export class BaseEventEmitter implements IEventEmitter {
   /**
    * Remove all event listeners
    *
-   * @param eventType Optional event type to remove listeners for. If not provided, all listeners are removed.
+   * @param _eventType Optional event type to remove listeners for. If not provided, all listeners are removed.
    */
-  public removeAllListeners(eventType?: EventType | string): void {
+  public removeAllListeners(_eventType?: EventType | string): void {
     // This is a simplified implementation since the EventEmitter class doesn't have a direct 'removeAllListeners' method
     // In a real implementation, you would need to track subscriptions to properly remove them
     console.warn('removeAllListeners method is not fully implemented in BaseEventEmitter');
@@ -99,10 +106,10 @@ export class BaseEventEmitter implements IEventEmitter {
   /**
    * Get the number of listeners for an event type
    *
-   * @param eventType The event type to get the listener count for
+   * @param _eventType The event type to get the listener count for
    * @returns The number of listeners
    */
-  public listenerCount(eventType: EventType | string): number {
+  public listenerCount(_eventType: EventType | string): number {
     // This is a simplified implementation since the EventEmitter class doesn't track listeners by event type
     return this.eventEmitter.handlerCount;
   }
@@ -113,7 +120,7 @@ export class BaseEventEmitter implements IEventEmitter {
    * @param eventType Optional event type to filter by
    * @returns Array of events
    */
-  public getHistory(eventType?: string): any[] {
+  public getHistory(eventType?: string): BaseEvent[] {
     return this.eventEmitter.getHistory(eventType);
   }
 
@@ -123,7 +130,7 @@ export class BaseEventEmitter implements IEventEmitter {
    * @param eventType The event type to get
    * @returns The latest event of the specified type, or undefined if none exists
    */
-  public getLatestEvent(eventType: string): any | undefined {
+  public getLatestEvent(eventType: string): BaseEvent | undefined {
     return this.eventEmitter.getLatestEvent(eventType);
   }
 
@@ -133,7 +140,7 @@ export class BaseEventEmitter implements IEventEmitter {
    * @param eventType Optional event type to get metrics for, defaults to 'all'
    * @returns Performance metrics object
    */
-  public getPerformanceMetrics(eventType?: string): any {
+  public getPerformanceMetrics(eventType?: string): unknown {
     return this.eventEmitter.getPerformanceMetrics(eventType);
   }
 }

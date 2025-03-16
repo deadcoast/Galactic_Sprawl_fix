@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { typedInterpolators } from '../../../types/visualizations/D3AnimationTypes';
 import {
@@ -11,6 +11,22 @@ import {
   createMemoizedInterpolators,
   getMemoizationStats,
 } from '../../../utils/performance/D3InterpolationCache';
+
+interface Particle {
+  id: string;
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  targetX: number;
+  targetY: number;
+  targetSize: number;
+  targetColor: string;
+  speed: number;
+}
+
+// Add type for interpolation type
+type InterpolationType = 'position' | 'color' | 'mixed';
 
 interface InterpolationMemoizationDemoProps {
   width?: number;
@@ -31,7 +47,6 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
   width = 900,
   height = 600,
 }) => {
-  const svgRef = useRef<SVGSVGElement>(null);
   const standardSvgRef = useRef<SVGSVGElement>(null);
   const memoizedSvgRef = useRef<SVGSVGElement>(null);
 
@@ -107,8 +122,8 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
     // Setup SVGs - Standard (non-memoized) version
     const standardSvg = d3.select(standardSvgRef.current);
     const standardParticles = standardSvg
-      .selectAll('circle')
-      .data(particles, (d: any) => d.id)
+      .selectAll<SVGCircleElement, Particle>('circle')
+      .data(particles, (d: Particle) => d.id)
       .join('circle')
       .attr('r', d => d.size)
       .attr('cx', d => d.x)
@@ -118,8 +133,8 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
     // Memoized version
     const memoizedSvg = d3.select(memoizedSvgRef.current);
     const memoizedParticles = memoizedSvg
-      .selectAll('circle')
-      .data(particles, (d: any) => d.id)
+      .selectAll<SVGCircleElement, Particle>('circle')
+      .data(particles, (d: Particle) => d.id)
       .join('circle')
       .attr('r', d => d.size)
       .attr('cx', d => d.x)
@@ -216,7 +231,7 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
         }
 
         // Animation with standard interpolators
-        standardParticles.each(function (d: any, i) {
+        standardParticles.each(function (d: Particle, i) {
           const interpolators = standardInterpolators[i];
 
           // Calculate t value oscillating between 0 and 1
@@ -270,7 +285,7 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
         if (!useMemoization) return false;
 
         // Animation with memoized interpolators
-        memoizedParticles.each(function (d: any, i) {
+        memoizedParticles.each(function (d: Particle, i) {
           const interpolators = memoizedParticleInterpolators[i];
 
           // Calculate t value oscillating between 0 and 1
@@ -414,7 +429,7 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
             <span>Interpolation Type:</span>
             <select
               value={interpolationType}
-              onChange={e => setInterpolationType(e.target.value as any)}
+              onChange={e => setInterpolationType(e.target.value as InterpolationType)}
               disabled={isAnimating}
             >
               <option value="position">Position Only</option>

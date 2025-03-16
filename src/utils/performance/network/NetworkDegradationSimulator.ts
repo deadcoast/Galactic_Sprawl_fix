@@ -384,15 +384,15 @@ function proxyXHR(condition: NetworkCondition): void {
   const originalSend = XMLHttpRequest.prototype.send;
 
   // Override XHR open method
-  XMLHttpRequest.prototype.open = function (this: XMLHttpRequest, ...args: any[]) {
+  XMLHttpRequest.prototype.open = function (this: XMLHttpRequest, ...args: unknown[]) {
     // Store network condition in the XHR instance
-    (this as any).__networkCondition = simulationState.enabled ? condition : null;
+    (this as unknown).__networkCondition = simulationState.enabled ? condition : null;
     return originalOpen.apply(this, args);
   };
 
   // Override XHR send method
-  XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, ...args: any[]) {
-    const xhrNetworkCondition = (this as any).__networkCondition;
+  XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, ...args: unknown[]) {
+    const xhrNetworkCondition = (this as unknown).__networkCondition;
 
     if (!xhrNetworkCondition) {
       return originalSend.apply(this, args);
@@ -421,7 +421,7 @@ function proxyXHR(condition: NetworkCondition): void {
     }
 
     // Handle readystatechange
-    this.onreadystatechange = function (this: XMLHttpRequest, ...rsArgs: any[]) {
+    this.onreadystatechange = function (this: XMLHttpRequest, ...rsArgs: unknown[]) {
       if (this.readyState === 4) {
         // Calculate throughput delay for the response
         let throughputDelay = 0;
@@ -466,7 +466,7 @@ function proxyWebSocket(condition: NetworkCondition): void {
 
   // Create a proxy WebSocket class
   class DegradedWebSocket extends OriginalWebSocket {
-    constructor(...args: any[]) {
+    constructor(...args: unknown[]) {
       super(...args);
 
       if (!simulationState.enabled) return;
@@ -552,7 +552,7 @@ function proxyWebSocket(condition: NetworkCondition): void {
   }
 
   // Replace global WebSocket with our degraded version
-  window.WebSocket = DegradedWebSocket as any;
+  window.WebSocket = DegradedWebSocket as unknown;
 
   simulationState.proxiedWebSocket = true;
 }
@@ -607,8 +607,8 @@ export function enableNetworkDegradation(
     proxyWebSocket(condition);
   }
 
-  console.log(`Network degradation simulation enabled: ${condition.name}`);
-  console.log(
+  console.warn(`Network degradation simulation enabled: ${condition.name}`);
+  console.warn(
     `  Latency: ${condition.latencyMs}ms, Throughput: ${condition.throughputKbps}Kbps, Packet Loss: ${condition.packetLoss * 100}%`
   );
 }
@@ -648,7 +648,7 @@ export function disableNetworkDegradation(): void {
   simulationState.enabled = false;
   simulationState.currentCondition = null;
 
-  console.log('Network degradation simulation disabled');
+  console.warn('Network degradation simulation disabled');
 }
 
 /**
@@ -696,7 +696,7 @@ export function createCustomNetworkCondition(
  * @param fn The function to degrade
  * @returns A new function with network degradation applied
  */
-export function withNetworkDegradation<T extends (...args: any[]) => any>(
+export function withNetworkDegradation<T extends (...args: unknown[]) => any>(
   condition: NetworkCondition,
   fn: T
 ): (...args: Parameters<T>) => Promise<ReturnType<T>> {

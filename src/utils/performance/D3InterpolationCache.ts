@@ -134,7 +134,7 @@ export class InterpolationCache<T> {
     } else if (value === null || value === undefined) {
       return 0;
     } else if (Array.isArray(value)) {
-      return (value as any[]).reduce(
+      return (value as unknown[]).reduce(
         (size, item) => size + this.estimateSize(item as unknown as T),
         0
       );
@@ -143,7 +143,7 @@ export class InterpolationCache<T> {
       for (const key in value) {
         if (Object.prototype.hasOwnProperty.call(value, key)) {
           size += key.length * 2; // Key size
-          size += this.estimateSize((value as any)[key]); // Value size
+          size += this.estimateSize((value as unknown)[key]); // Value size
         }
       }
       return size;
@@ -438,7 +438,7 @@ export const objectCacheConfig: InterpolationCacheConfig = {
  * Cache that spans across multiple animations
  */
 class GlobalInterpolationCache {
-  private caches: Map<string, InterpolationCache<any>> = new Map();
+  private caches: Map<string, InterpolationCache<unknown>> = new Map();
 
   /**
    * Get or create a cache for a specific animation ID
@@ -561,9 +561,9 @@ export function createMemoizedInterpolators(
  * Helper to create a memoized D3 interpolator for any method
  */
 export function memoizeD3Interpolator<T>(
-  interpolatorFactory: (a: any, b: any) => (t: number) => T,
-  a: any,
-  b: any,
+  interpolatorFactory: (a: unknown, b: unknown) => (t: number) => T,
+  a: unknown,
+  b: unknown,
   config?: InterpolationCacheConfig
 ): TypedInterpolator<T> {
   const interpolator = interpolatorFactory(a, b);
@@ -677,7 +677,7 @@ export function optimizeD3Transitions<
   const originalTransition = selection.transition;
 
   // Replace with memoized version
-  selection.transition = function (...args: any[]): any {
+  selection.transition = function (...args: unknown[]): unknown {
     const transition = originalTransition.apply(this, args);
 
     // Store original interpolation functions
@@ -685,12 +685,12 @@ export function optimizeD3Transitions<
     const originalStyleTween = transition.styleTween;
 
     // Replace with memoized versions
-    transition.attrTween = function (name: string, factory: any): any {
+    transition.attrTween = function (name: string, factory: unknown): unknown {
       // Create a memoized version of the factory function
-      const memoizedFactory = function (d: Datum, i: number, a: any) {
+      const memoizedFactory = function (d: Datum, i: number, a: unknown) {
         const interpolator = factory(d, i, a);
         if (typeof interpolator === 'function') {
-          const cache = new InterpolationCache<any>(config);
+          const cache = new InterpolationCache<unknown>(config);
           return cache.memoize(interpolator);
         }
         return interpolator;
@@ -699,12 +699,12 @@ export function optimizeD3Transitions<
       return originalAttrTween.call(this, name, memoizedFactory);
     };
 
-    transition.styleTween = function (name: string, factory: any): any {
+    transition.styleTween = function (name: string, factory: unknown): unknown {
       // Create a memoized version of the factory function
-      const memoizedFactory = function (d: Datum, i: number, a: any) {
+      const memoizedFactory = function (d: Datum, i: number, a: unknown) {
         const interpolator = factory(d, i, a);
         if (typeof interpolator === 'function') {
-          const cache = new InterpolationCache<any>(config);
+          const cache = new InterpolationCache<unknown>(config);
           return cache.memoize(interpolator);
         }
         return interpolator;
@@ -714,7 +714,7 @@ export function optimizeD3Transitions<
     };
 
     return transition;
-  } as any;
+  } as unknown;
 
   return selection;
 }

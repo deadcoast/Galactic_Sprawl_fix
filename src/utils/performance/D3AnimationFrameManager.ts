@@ -258,7 +258,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
       // Skip if we've reached the per-frame animation limit
       if (maxAnimationsPerFrame > 0 && animationsProcessed >= maxAnimationsPerFrame) {
         if (debugMode) {
-          console.debug(
+          console.warn(
             `Animation frame manager: Reached max animations per frame (${maxAnimationsPerFrame})`
           );
         }
@@ -278,7 +278,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
       // Skip if we're out of time
       if (frameTimeBudgetRemaining <= 0) {
         if (debugMode) {
-          console.debug(
+          console.warn(
             `Animation frame manager: Frame budget exhausted, skipping remaining animations`
           );
         }
@@ -286,11 +286,12 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
       }
 
       // Prepare frame info
-      const frameInfo: FrameInfo = {
+      const _deltaTime = timestamp - animation.lastFrameTime;
+      const _frameInfo = {
         timestamp,
-        elapsed: elapsedTime,
-        deltaTime,
-        frameCount,
+        elapsed: animation.elapsedTime,
+        deltaTime: _deltaTime,
+        frameCount: animation.frameCount,
         remainingFrameBudget: frameTimeBudgetRemaining,
         isFrameOverBudget:
           frameTimeBudgetRemaining < (animation.config.frameTimeBudget || frameBudget * 0.2),
@@ -310,8 +311,8 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
       try {
         // Execute animation callback
         const callbackStart = performance.now();
-        const result = animation.callback(animation.elapsedTime, deltaTime, frameInfo);
-        const callbackDuration = performance.now() - callbackStart;
+        const result = animation.callback(animation.elapsedTime, _deltaTime, _frameInfo);
+        const _callbackDuration = performance.now() - callbackStart;
 
         // Handle result (return true to stop the animation)
         if (result === true) {
@@ -325,7 +326,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
           !animation.config.loop
         ) {
           if (debugMode) {
-            console.debug(
+            console.warn(
               `Animation frame manager: Auto-cancelling long-running animation ${animation.config.id}`
             );
           }
@@ -367,7 +368,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     frameTimes = [];
 
     if (debugMode) {
-      console.debug('Animation frame manager: Starting animation loop');
+      console.warn('Animation frame manager: Starting animation loop');
     }
 
     rafId = requestAnimationFrame(animationFrame);
@@ -387,7 +388,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.debug('Animation frame manager: Stopping animation loop');
+      console.warn('Animation frame manager: Stopping animation loop');
     }
   }
 
@@ -457,7 +458,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     animations.set(id, animation);
 
     if (debugMode) {
-      console.debug(`Animation frame manager: Registered animation ${id} (${fullConfig.name})`);
+      console.warn(`Animation frame manager: Registered animation ${id} (${fullConfig.name})`);
     }
 
     return id;
@@ -507,7 +508,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.debug(`Animation frame manager: Started animation ${id} (${animation.config.name})`);
+      console.warn(`Animation frame manager: Started animation ${id} (${animation.config.name})`);
     }
 
     // Start the animation loop if needed
@@ -532,7 +533,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     animation.pauseStartTime = performance.now();
 
     if (debugMode) {
-      console.debug(`Animation frame manager: Paused animation ${id} (${animation.config.name})`);
+      console.warn(`Animation frame manager: Paused animation ${id} (${animation.config.name})`);
     }
   }
 
@@ -550,7 +551,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     startAnimation(id, false);
 
     if (debugMode) {
-      console.debug(`Animation frame manager: Resumed animation ${id} (${animation.config.name})`);
+      console.warn(`Animation frame manager: Resumed animation ${id} (${animation.config.name})`);
     }
   }
 
@@ -582,9 +583,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.debug(
-        `Animation frame manager: Completed animation ${id} (${animation.config.name})`
-      );
+      console.warn(`Animation frame manager: Completed animation ${id} (${animation.config.name})`);
     }
   }
 
@@ -622,9 +621,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.debug(
-        `Animation frame manager: Cancelled animation ${id} (${animation.config.name})`
-      );
+      console.warn(`Animation frame manager: Cancelled animation ${id} (${animation.config.name})`);
     }
   }
 
@@ -657,7 +654,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.debug(`Animation frame manager: Updated visibility for ${id} to ${visibility}`);
+      console.warn(`Animation frame manager: Updated visibility for ${id} to ${visibility}`);
     }
   }
 
@@ -676,7 +673,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     animation.config.priority = priority;
 
     if (debugMode) {
-      console.debug(`Animation frame manager: Updated priority for ${id} to ${priority}`);
+      console.warn(`Animation frame manager: Updated priority for ${id} to ${priority}`);
     }
   }
 
@@ -716,7 +713,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
     }
 
     if (debugMode) {
-      console.debug(`Animation frame manager: Synchronized group ${groupId} with action ${action}`);
+      console.warn(`Animation frame manager: Synchronized group ${groupId} with action ${action}`);
     }
   }
 
@@ -980,15 +977,15 @@ export function registerD3Transition<
   };
 
   // Store original transition method
-  const originalTransition = selection.transition;
+  const _originalTransition = selection.transition;
 
   // Register animation with frame manager
   const id = animationFrameManager.registerAnimation(
     fullConfig,
-    (elapsed, deltaTime, frameInfo) => {
+    (_elapsed, _deltaTime, _frameInfo) => {
       // Calculate progress based on elapsed time
       const duration = fullConfig.duration || 1000;
-      const progress = Math.min(1, elapsed / duration);
+      const progress = Math.min(1, _elapsed / duration);
 
       // Check if animation is complete
       if (progress >= 1 && !fullConfig.loop) {
@@ -1025,7 +1022,7 @@ export function registerD3Timer(
   // Register animation with frame manager
   const id = animationFrameManager.registerAnimation(
     fullConfig,
-    (elapsed, deltaTime, frameInfo) => {
+    (elapsed, _deltaTime, _frameInfo) => {
       // Call the original callback
       const result = callback(elapsed);
 
@@ -1071,8 +1068,8 @@ export function registerAnimationSequence<
   controller: { start: () => void; stop: () => void; pause: () => void; resume: () => void };
 } {
   // Store original sequence methods to intercept them
-  const originalStart = sequence.start;
-  const originalStop = sequence.stop;
+  const _originalStart = sequence.start;
+  const _originalStop = sequence.stop;
 
   // Create complete configuration
   const fullConfig: Omit<RegisteredAnimationConfig, 'id'> & { id?: string } = {
@@ -1083,7 +1080,7 @@ export function registerAnimationSequence<
   // Register animation with frame manager
   const id = animationFrameManager.registerAnimation(
     fullConfig,
-    (elapsed, deltaTime, frameInfo) => {
+    (elapsed, _deltaTime, _frameInfo) => {
       // Check if sequence is complete based on its configuration
       // Since we don't have direct access to sequence's internal state,
       // we rely on the manager to handle timing
@@ -1103,13 +1100,13 @@ export function registerAnimationSequence<
       // Start in frame manager
       animationFrameManager.startAnimation(id);
       // Start the actual sequence
-      originalStart.call(sequence);
+      _originalStart.call(sequence);
     },
     stop: () => {
       // Stop in frame manager
       animationFrameManager.cancelAnimation(id);
       // Stop the actual sequence
-      originalStop.call(sequence);
+      _originalStop.call(sequence);
     },
     pause: () => {
       animationFrameManager.pauseAnimation(id);
@@ -1122,4 +1119,24 @@ export function registerAnimationSequence<
   };
 
   return { id, controller };
+}
+
+function updateAnimation(
+  animation: RegisteredAnimation,
+  timestamp: number,
+  deltaTime: number,
+  frameInfo: FrameInfo
+): void {
+  // ... existing code ...
+  const _deltaTime = timestamp - animation.lastFrameTime;
+  const _frameInfo = {
+    timestamp,
+    elapsed: animation.elapsedTime,
+    deltaTime: _deltaTime,
+    frameCount: animation.frameCount,
+    remainingFrameBudget: frameInfo.remainingFrameBudget,
+    isFrameOverBudget: frameInfo.isFrameOverBudget,
+    currentFps: frameInfo.currentFps,
+  };
+  // ... existing code ...
 }

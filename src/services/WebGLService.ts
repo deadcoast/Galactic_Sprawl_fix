@@ -1,5 +1,15 @@
-import { AbstractBaseService } from '../lib/services/BaseService';
-import { ErrorType, errorLoggingService } from './ErrorLoggingService';
+import { Singleton } from '../lib/patterns/Singleton';
+import { BaseService, ServiceMetadata } from '../lib/services/BaseService';
+import { ChartAxes, ChartLegend, ChartOptions, ChartTooltip } from '../visualization/Chart';
+import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService';
+
+// Add error types
+export enum WebGLErrorType {
+  SHADER_COMPILATION = 'SHADER_COMPILATION',
+  RENDER_TARGET_CREATION = 'RENDER_TARGET_CREATION',
+  CONTEXT_LOSS = 'CONTEXT_LOSS',
+  BUFFER_ALLOCATION = 'BUFFER_ALLOCATION',
+}
 
 export interface ShaderProgram {
   program: WebGLProgram;
@@ -41,14 +51,21 @@ export interface ComputeProgram {
   workgroupSize: [number, number, number];
 }
 
-class WebGLServiceImpl extends AbstractBaseService {
-  private static instance: WebGLServiceImpl;
+export interface ExtendedChartOptions extends Omit<ChartOptions, 'axes' | 'legend' | 'tooltip'> {
+  axes: ChartAxes;
+  legend?: ChartLegend;
+  tooltip?: ChartTooltip;
+}
+
+export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements BaseService {
+  protected metadata: ServiceMetadata;
   private gl: WebGL2RenderingContext | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private programs: Map<string, ShaderProgram> = new Map();
   private renderTargets: Map<string, RenderTarget> = new Map();
   private computePrograms: Map<string, ComputeProgram> = new Map();
   private storageBuffers: Map<string, StorageBuffer> = new Map();
+  private lastOptions: ExtendedChartOptions | null = null;
 
   // Default shaders
   private readonly defaultShaders = {
@@ -226,76 +243,127 @@ class WebGLServiceImpl extends AbstractBaseService {
     },
   };
 
-  private constructor() {
-    super('WebGLService', '1.0.0');
-  }
-
-  public static getInstance(): WebGLServiceImpl {
-    if (!WebGLServiceImpl.instance) {
-      WebGLServiceImpl.instance = new WebGLServiceImpl();
-    }
-    return WebGLServiceImpl.instance;
-  }
-
-  protected async onInitialize(): Promise<void> {
-    // Initialize metrics
-    this.metadata.metrics = {
-      active_programs: 0,
-      render_targets: 0,
-      draw_calls: 0,
-      shader_compile_time: 0,
+  constructor() {
+    super();
+    this.metadata = {
+      name: 'WebGLService',
+      version: '1.0.0',
+      status: 'initializing',
     };
+  }
 
-    // Create default shaders
-    await this.createDefaultShaders();
-
-    // Initialize WebGL2 compute extensions
-    if (this.gl) {
-      const computeExt = this.gl.getExtension('WEBGL_compute_shader');
-      const storageExt = this.gl.getExtension('WEBGL_storage_buffer');
-
-      if (!computeExt || !storageExt) {
-        console.warn('WebGL2 compute extensions not available. GPU data processing disabled.');
-        return;
+  public async initialize(dependencies?: Record<string, unknown>): Promise<void> {
+    try {
+      // Initialize WebGL context and resources
+      if (dependencies?.canvas instanceof HTMLCanvasElement) {
+        this.canvas = dependencies.canvas;
+        this.gl = this.canvas.getContext('webgl2');
+        if (!this.gl) {
+          throw new Error('Failed to initialize WebGL2 context');
+        }
+      } else {
+        throw new Error('Canvas dependency required for WebGL service initialization');
       }
 
-      // Create compute shaders
-      for (const [name, config] of Object.entries(this.computeShaders)) {
-        await this.createComputeShader(name, config);
+      // Initialize metrics
+      this.metadata.metrics = {
+        shader_compile_time: 0,
+        active_programs: 0,
+        render_targets: 0,
+        compute_programs: 0,
+        storage_buffers: 0,
+      };
+
+      this.metadata.status = 'ready';
+
+      // Create default shaders
+      await this.createDefaultShaders();
+
+      // Initialize WebGL2 compute extensions
+      if (this.gl) {
+        const computeExt = this.gl.getExtension('WEBGL_compute_shader');
+        const storageExt = this.gl.getExtension('WEBGL_storage_buffer');
+
+        if (!computeExt || !storageExt) {
+          console.warn('WebGL2 compute extensions not available. GPU data processing disabled.');
+          return;
+        }
+
+        // Create compute shaders
+        for (const [name, config] of Object.entries(this.computeShaders)) {
+          await this.createComputeShader(name, config);
+        }
       }
+    } catch (error) {
+      this.metadata.status = 'error';
+      this.handleError(error as Error);
+      throw error;
     }
   }
 
-  protected async onDispose(): Promise<void> {
+  public async dispose(): Promise<void> {
+    try {
+      // Clean up WebGL resources
+      this.disposeResources();
+      this.gl = null;
+      this.canvas = null;
+      this.metadata.status = 'disposed';
+    } catch (error) {
+      this.handleError(error as Error);
+      throw error;
+    }
+  }
+
+  public getMetadata(): ServiceMetadata {
+    return { ...this.metadata };
+  }
+
+  public isReady(): boolean {
+    return this.metadata.status === 'ready';
+  }
+
+  public handleError(error: Error, context?: Record<string, unknown>): void {
+    this.metadata.lastError = {
+      type: ErrorType.RUNTIME,
+      message: error.message,
+      timestamp: Date.now(),
+    };
+    errorLoggingService.logError(error, ErrorType.RUNTIME, ErrorSeverity.HIGH, context);
+  }
+
+  private disposeResources(): void {
     if (!this.gl) return;
 
+    // Delete shader programs
+    this.programs.forEach(program => {
+      this.gl?.deleteProgram(program.program);
+    });
+    this.programs.clear();
+
+    // Delete render targets
+    this.renderTargets.forEach(target => {
+      this.gl?.deleteFramebuffer(target.framebuffer);
+      this.gl?.deleteTexture(target.texture);
+    });
+    this.renderTargets.clear();
+
     // Delete compute programs
-    for (const program of this.computePrograms.values()) {
-      this.gl.deleteProgram(program.program);
-    }
+    this.computePrograms.forEach(program => {
+      this.gl?.deleteProgram(program.program);
+    });
     this.computePrograms.clear();
 
     // Delete storage buffers
-    for (const buffer of this.storageBuffers.values()) {
-      this.gl.deleteBuffer(buffer.buffer);
-    }
+    this.storageBuffers.forEach(buffer => {
+      this.gl?.deleteBuffer(buffer.buffer);
+    });
     this.storageBuffers.clear();
 
-    // Call original dispose
-    this.disposeResources();
-  }
-
-  public initializeContext(canvas: HTMLCanvasElement): void {
-    this.canvas = canvas;
-    this.gl = canvas.getContext('webgl2');
-
-    if (!this.gl) {
-      throw new Error('WebGL 2 not supported');
+    // Update metrics
+    if (this.metadata.metrics) {
+      this.metadata.metrics.shader_compile_time +=
+        performance.now() - this.metadata.metrics.shader_compile_time;
     }
-
-    // Enable necessary WebGL features
-    this.gl.enable(this.gl.BLEND);
-    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
   }
 
   private async createDefaultShaders(): Promise<void> {
@@ -304,6 +372,9 @@ class WebGLServiceImpl extends AbstractBaseService {
     }
   }
 
+  /**
+   * Creates a shader program with proper error handling
+   */
   public async createShaderProgram(name: string, config: ShaderConfig): Promise<ShaderProgram> {
     if (!this.gl) {
       throw new Error('WebGL context not initialized');
@@ -312,61 +383,88 @@ class WebGLServiceImpl extends AbstractBaseService {
     const startTime = performance.now();
 
     try {
-      // Create and compile vertex shader
-      const vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER)!;
+      // Create vertex shader
+      const vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+      if (!vertexShader) {
+        throw new Error('Failed to create vertex shader');
+      }
+
       this.gl.shaderSource(vertexShader, config.vertexSource);
       this.gl.compileShader(vertexShader);
 
       if (!this.gl.getShaderParameter(vertexShader, this.gl.COMPILE_STATUS)) {
-        throw new Error(
-          `Vertex shader compilation failed: ${this.gl.getShaderInfoLog(vertexShader)}`
-        );
+        const info = this.gl.getShaderInfoLog(vertexShader);
+        this.gl.deleteShader(vertexShader);
+        throw new Error(`Vertex shader compilation failed: ${info}`);
       }
 
-      // Create and compile fragment shader
-      const fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER)!;
+      // Create fragment shader
+      const fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+      if (!fragmentShader) {
+        this.gl.deleteShader(vertexShader);
+        throw new Error('Failed to create fragment shader');
+      }
+
       this.gl.shaderSource(fragmentShader, config.fragmentSource);
       this.gl.compileShader(fragmentShader);
 
       if (!this.gl.getShaderParameter(fragmentShader, this.gl.COMPILE_STATUS)) {
-        throw new Error(
-          `Fragment shader compilation failed: ${this.gl.getShaderInfoLog(fragmentShader)}`
-        );
+        const info = this.gl.getShaderInfoLog(fragmentShader);
+        this.gl.deleteShader(vertexShader);
+        this.gl.deleteShader(fragmentShader);
+        throw new Error(`Fragment shader compilation failed: ${info}`);
       }
 
-      // Create and link program
-      const program = this.gl.createProgram()!;
+      // Create program
+      const program = this.gl.createProgram();
+      if (!program) {
+        this.gl.deleteShader(vertexShader);
+        this.gl.deleteShader(fragmentShader);
+        throw new Error('Failed to create shader program');
+      }
+
       this.gl.attachShader(program, vertexShader);
       this.gl.attachShader(program, fragmentShader);
       this.gl.linkProgram(program);
 
       if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
-        throw new Error(`Program link failed: ${this.gl.getProgramInfoLog(program)}`);
+        const info = this.gl.getProgramInfoLog(program);
+        this.gl.deleteProgram(program);
+        this.gl.deleteShader(vertexShader);
+        this.gl.deleteShader(fragmentShader);
+        throw new Error(`Shader program linking failed: ${info}`);
       }
 
-      // Get attribute locations
+      // Get attribute and uniform locations
       const attributes: Record<string, number> = {};
-      for (const attribute of config.attributes) {
-        attributes[attribute] = this.gl.getAttribLocation(program, attribute);
-      }
-
-      // Get uniform locations
       const uniforms: Record<string, WebGLUniformLocation> = {};
-      for (const uniform of config.uniforms) {
-        const location = this.gl.getUniformLocation(program, uniform);
+
+      config.attributes.forEach(attr => {
+        const location = this.gl!.getAttribLocation(program, attr);
+        if (location !== -1) {
+          attributes[attr] = location;
+        }
+      });
+
+      config.uniforms.forEach(uniform => {
+        const location = this.gl!.getUniformLocation(program, uniform);
         if (location) {
           uniforms[uniform] = location;
         }
-      }
+      });
 
-      const shaderProgram = { program, attributes, uniforms };
+      // Clean up shaders
+      this.gl.deleteShader(vertexShader);
+      this.gl.deleteShader(fragmentShader);
+
+      const shaderProgram: ShaderProgram = { program, attributes, uniforms };
       this.programs.set(name, shaderProgram);
 
       // Update metrics
-      const metrics = this.metadata.metrics || {};
-      metrics.active_programs = this.programs.size;
-      metrics.shader_compile_time += performance.now() - startTime;
-      this.metadata.metrics = metrics;
+      if (this.metadata.metrics) {
+        this.metadata.metrics.shader_compile_time += performance.now() - startTime;
+        this.metadata.metrics.active_programs = this.programs.size;
+      }
 
       return shaderProgram;
     } catch (error) {
@@ -375,50 +473,81 @@ class WebGLServiceImpl extends AbstractBaseService {
     }
   }
 
+  /**
+   * Creates a render target with proper error handling
+   */
   public createRenderTarget(name: string, width: number, height: number): RenderTarget {
     if (!this.gl) {
       throw new Error('WebGL context not initialized');
     }
 
-    // Create framebuffer
-    const framebuffer = this.gl.createFramebuffer()!;
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
+    try {
+      // Create framebuffer
+      const framebuffer = this.gl.createFramebuffer();
+      if (!framebuffer) {
+        throw new Error('Failed to create framebuffer');
+      }
 
-    // Create texture
-    const texture = this.gl.createTexture()!;
-    this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-    this.gl.texImage2D(
-      this.gl.TEXTURE_2D,
-      0,
-      this.gl.RGBA,
-      width,
-      height,
-      0,
-      this.gl.RGBA,
-      this.gl.UNSIGNED_BYTE,
-      null
-    );
-    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
-    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+      // Create texture
+      const texture = this.gl.createTexture();
+      if (!texture) {
+        this.gl.deleteFramebuffer(framebuffer);
+        throw new Error('Failed to create texture');
+      }
 
-    // Attach texture to framebuffer
-    this.gl.framebufferTexture2D(
-      this.gl.FRAMEBUFFER,
-      this.gl.COLOR_ATTACHMENT0,
-      this.gl.TEXTURE_2D,
-      texture,
-      0
-    );
+      this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+      this.gl.texImage2D(
+        this.gl.TEXTURE_2D,
+        0,
+        this.gl.RGBA,
+        width,
+        height,
+        0,
+        this.gl.RGBA,
+        this.gl.UNSIGNED_BYTE,
+        null
+      );
 
-    const renderTarget = { framebuffer, texture, width, height };
-    this.renderTargets.set(name, renderTarget);
+      this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+      this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+      this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+      this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
 
-    // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.render_targets = this.renderTargets.size;
-    this.metadata.metrics = metrics;
+      // Attach texture to framebuffer
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
+      this.gl.framebufferTexture2D(
+        this.gl.FRAMEBUFFER,
+        this.gl.COLOR_ATTACHMENT0,
+        this.gl.TEXTURE_2D,
+        texture,
+        0
+      );
 
-    return renderTarget;
+      // Check framebuffer status
+      const status = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
+      if (status !== this.gl.FRAMEBUFFER_COMPLETE) {
+        this.gl.deleteFramebuffer(framebuffer);
+        this.gl.deleteTexture(texture);
+        throw new Error(`Framebuffer is not complete: ${status}`);
+      }
+
+      // Reset bindings
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+
+      const renderTarget: RenderTarget = { framebuffer, texture, width, height };
+      this.renderTargets.set(name, renderTarget);
+
+      // Update metrics
+      if (this.metadata.metrics) {
+        this.metadata.metrics.render_targets = this.renderTargets.size;
+      }
+
+      return renderTarget;
+    } catch (error) {
+      this.handleError(error as Error);
+      throw error;
+    }
   }
 
   public useProgram(name: string): ShaderProgram {
@@ -451,33 +580,6 @@ class WebGLServiceImpl extends AbstractBaseService {
     }
 
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, renderTarget.framebuffer);
-  }
-
-  private disposeResources(): void {
-    if (!this.gl) return;
-
-    // Delete shader programs
-    for (const program of this.programs.values()) {
-      this.gl.deleteProgram(program.program);
-    }
-    this.programs.clear();
-
-    // Delete render targets
-    for (const target of this.renderTargets.values()) {
-      this.gl.deleteFramebuffer(target.framebuffer);
-      this.gl.deleteTexture(target.texture);
-    }
-    this.renderTargets.clear();
-
-    // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.active_programs = 0;
-    metrics.render_targets = 0;
-    this.metadata.metrics = metrics;
-  }
-
-  public override handleError(error: Error): void {
-    errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, { service: 'WebGLService' });
   }
 
   public async createComputeShader(

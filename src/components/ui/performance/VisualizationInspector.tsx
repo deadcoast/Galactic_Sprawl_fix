@@ -306,7 +306,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
   // Start frame rate tracking
   const startFrameRateTracking = () => {
-    // Function to update frame data
+    // (...args: unknown[]) => unknown to update frame data
     const updateFrame = (timestamp: number): void => {
       // Calculate time since last animation frame
       const currentFrameTime = timestamp - lastFrameTimestampRef.current;

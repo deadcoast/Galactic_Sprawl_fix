@@ -45,7 +45,7 @@ interface CacheEntry<T> {
   ttl: number;
 }
 
-const apiCache = new Map<string, CacheEntry<any>>();
+const apiCache = new Map<string, CacheEntry<unknown>>();
 
 /**
  * Hook for using the type-safe API client
@@ -175,7 +175,7 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
         queryParams?: Record<string, string | number | boolean | undefined>;
         headers?: Record<string, string>;
         withCredentials?: boolean;
-        dependencies?: any[];
+        dependencies?: unknown[];
       } = {}
     ) => {
       const [state, setState] = useState<ApiRequestState<ResponseType>>({

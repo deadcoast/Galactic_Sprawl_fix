@@ -63,7 +63,7 @@ export function optimizeForceSimulation(
 
   if (linkForce && 'distance' in linkForce) {
     // Adjust link distance based on node count
-    (linkForce as any).distance(nodeCount > 100 ? 30 : nodeCount > 50 ? 40 : 50);
+    (linkForce as unknown).distance(nodeCount > 100 ? 30 : nodeCount > 50 ? 40 : 50);
   }
 
   if (chargeForce) {
@@ -161,7 +161,7 @@ export function createOptimizedTicker(
  * @param updateFn The function that performs updates on the selection
  * @param config Optimization configuration
  */
-export function optimizeSelectionUpdates<T extends d3.Selection<any, any, any, any>>(
+export function optimizeSelectionUpdates<T extends d3.Selection<SVGElement, unknown, any, unknown>>(
   selection: T,
   updateFn: (selection: T) => void,
   config: Partial<PerformanceOptimizationConfig> = {}
@@ -203,7 +203,7 @@ export function optimizeSelectionUpdates<T extends d3.Selection<any, any, any, a
  * Create a data structure index for faster lookups
  *
  * @param data Array of data items
- * @param keyFn Function to extract a key from each item
+ * @param keyFn (...args: unknown[]) => unknown to extract a key from each item
  * @returns An object mapping keys to data items
  */
 export function createDataIndex<T>(data: T[], keyFn: (item: T) => string): Record<string, T> {
@@ -240,7 +240,7 @@ export function createOptimizedAccessor<T>(
     }
 
     // Type-safe property access
-    return (node as any)[propName] !== undefined ? (node as any)[propName] : defaultValue;
+    return (node as unknown)[propName] !== undefined ? (node as unknown)[propName] : defaultValue;
   };
 
   // Return memoized version if requested
@@ -281,18 +281,18 @@ export function createCoordinateCache(nodes: d3.SimulationNodeDatum[]): {
 
   // Populate caches
   nodes.forEach(node => {
-    const id = (node as any).id || Math.random().toString();
+    const id = (node as unknown).id || Math.random().toString();
     xCache.set(id, memoizedD3Accessors.getX(node));
     yCache.set(id, memoizedD3Accessors.getY(node));
   });
 
   return {
     getX: (node: d3.SimulationNodeDatum): number => {
-      const id = (node as any).id || '';
+      const id = (node as unknown).id || '';
       return xCache.has(id) ? xCache.get(id) || 0 : memoizedD3Accessors.getX(node);
     },
     getY: (node: d3.SimulationNodeDatum): number => {
-      const id = (node as any).id || '';
+      const id = (node as unknown).id || '';
       return yCache.has(id) ? yCache.get(id) || 0 : memoizedD3Accessors.getY(node);
     },
   };
@@ -326,7 +326,7 @@ export function memoizeTransform<T, R>(transformFn: (data: T) => R): (data: T) =
  * Apply all available performance optimizations to a D3 visualization
  *
  * @param simulation The force simulation to optimize
- * @param selectionUpdater Function that updates the visualization's DOM elements
+ * @param selectionUpdater (...args: unknown[]) => unknown that updates the visualization's DOM elements
  * @param config Optimization configuration
  * @returns Controls for the optimized simulation
  */

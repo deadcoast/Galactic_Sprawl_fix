@@ -1,4 +1,3 @@
-import * as React from "react";
 import React, {
   createContext,
   ReactNode,
@@ -10,7 +9,7 @@ import React, {
 import { v4 as uuidv4 } from 'uuid';
 import {
   Anomaly,
-  ExplorationEvents,
+  EXPLORATION_EVENTS,
   explorationManager,
   Sector,
 } from '../managers/exploration/ExplorationManager';
@@ -23,7 +22,7 @@ import {
   TaxonomyCategory,
 } from '../types/exploration/ClassificationTypes';
 import { ResourceData } from '../types/exploration/DataAnalysisTypes';
-import { ResourceType } from "./../types/resources/ResourceTypes";
+import { ResourceType } from './../types/resources/ResourceTypes';
 
 // Default taxonomy categories
 const defaultTaxonomyCategories: TaxonomyCategory[] = [
@@ -176,8 +175,8 @@ const defaultTaxonomyCategories: TaxonomyCategory[] = [
 ];
 
 // Helper function to convert event type
-const asEventType = (event: ExplorationEvents): EventType => {
-  return event as unknown as EventType;
+const asEventType = (event: EventType): EventType => {
+  return event;
 };
 
 // Create the context
@@ -201,7 +200,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
   const [classifications, setClassifications] = useState<Classification[]>(initialClassifications);
   const [discoveries, setDiscoveries] = useState<ClassifiableDiscovery[]>(discoveryData);
 
-  // Function to convert an Anomaly to a ClassifiableDiscovery
+  // (...args: unknown[]) => unknown to convert an Anomaly to a ClassifiableDiscovery
   const anomalyToDiscovery = useCallback(
     (anomaly: Anomaly, sector?: Sector): ClassifiableDiscovery => {
       const anomalyType = determineAnomalyType(anomaly.type);
@@ -223,7 +222,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
     []
   );
 
-  // Function to convert a Resource to a ClassifiableDiscovery
+  // (...args: unknown[]) => unknown to convert a Resource to a ClassifiableDiscovery
   const resourceToDiscovery = useCallback(
     (
       resource: ResourceData,
@@ -547,12 +546,12 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
 
     // Subscribe to exploration events
     const unsubscribeAnomaly = explorationManager.subscribeToEvent(
-      asEventType(ExplorationEvents.ANOMALY_DETECTED),
+      asEventType(EXPLORATION_EVENTS.ANOMALY_DETECTED),
       handleAnomalyDetected
     );
 
     const unsubscribeResource = explorationManager.subscribeToEvent(
-      asEventType(ExplorationEvents.RESOURCE_DETECTED),
+      asEventType(EXPLORATION_EVENTS.RESOURCE_DETECTED),
       handleResourceDetected
     );
 

@@ -1,4 +1,4 @@
-import { EventEmitter } from '../utils/EventEmitter';
+import { EventEmitter } from '../../lib/events/EventEmitter';
 import { shipBehaviorManager } from './shipBehavior';
 
 interface Position {
@@ -17,10 +17,13 @@ interface MovementState {
 }
 
 interface ShipMovementEvents {
-  movementStarted: { shipId: string; targetPosition: Position };
-  movementUpdated: { shipId: string; position: Position; rotation: number };
-  movementCompleted: { shipId: string; finalPosition: Position };
-  [key: string]: unknown;
+  type: string;
+  data: {
+    movementStarted?: { shipId: string; targetPosition: Position };
+    movementUpdated?: { shipId: string; position: Position; rotation: number };
+    movementCompleted?: { shipId: string; finalPosition: Position };
+    movementStopped?: { shipId: string };
+  };
 }
 
 class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
@@ -65,10 +68,15 @@ class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
     });
 
     // Emit an event to notify that the ship has been registered with its initial position
-    this.emit('movementUpdated', {
-      shipId,
-      position: initialPosition,
-      rotation: 0,
+    this.emit({
+      type: 'movementUpdated',
+      data: {
+        movementUpdated: {
+          shipId,
+          position: initialPosition,
+          rotation: 0,
+        },
+      },
     });
   }
 
@@ -83,7 +91,15 @@ class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
     }
 
     state.targetPosition = targetPosition;
-    this.emit('movementStarted', { shipId, targetPosition });
+    this.emit({
+      type: 'movementStarted',
+      data: {
+        movementStarted: {
+          shipId,
+          targetPosition,
+        },
+      },
+    });
   }
 
   public update(deltaTime: number, shipPositions: Map<string, Position>): void {
@@ -111,9 +127,14 @@ class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
         if (task?.type === 'salvage') {
           shipBehaviorManager.completeTask(shipId);
         }
-        this.emit('movementCompleted', {
-          shipId,
-          finalPosition: shipPositions.get(shipId) || { x: 0, y: 0 },
+        this.emit({
+          type: 'movementCompleted',
+          data: {
+            movementCompleted: {
+              shipId,
+              finalPosition: shipPositions.get(shipId) || { x: 0, y: 0 },
+            },
+          },
         });
         return;
       }
@@ -150,10 +171,15 @@ class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
       };
 
       // Emit position update
-      this.emit('positionUpdated', {
-        shipId,
-        position: newPosition,
-        rotation: state.currentRotation,
+      this.emit({
+        type: 'movementUpdated',
+        data: {
+          movementUpdated: {
+            shipId,
+            position: newPosition,
+            rotation: state.currentRotation,
+          },
+        },
       });
     });
   }
@@ -163,7 +189,14 @@ class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
     if (state) {
       state.targetPosition = undefined;
       state.currentSpeed = 0;
-      this.emit('movementStopped', { shipId });
+      this.emit({
+        type: 'movementStopped',
+        data: {
+          movementStopped: {
+            shipId,
+          },
+        },
+      });
     }
   }
 }

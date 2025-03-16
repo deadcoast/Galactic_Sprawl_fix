@@ -1,5 +1,4 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
   CartesianGrid,
@@ -40,6 +39,7 @@ const resourceColors: Record<ResourceType, string> = {
   [ResourceType.ANTIMATTER]: '#d946ef', // fuchsia
   [ResourceType.DARK_MATTER]: '#f43f5e', // rose
   [ResourceType.EXOTIC_MATTER]: '#10b981', // emerald
+  [ResourceType.ORGANIC]: '#14b8a6', // teal
 };
 
 // Interface for resource rate history data point
@@ -101,19 +101,23 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
     const getResourceKey = (resourceType: ResourceType): keyof typeof allResourceRates | null => {
       // Map ResourceType enum values to keys in allResourceRates
       const mapping: Partial<Record<ResourceType, keyof typeof allResourceRates>> = {
-        [ResourceType.MINERALS]: ResourceType.MINERALS,
-        [ResourceType.ENERGY]: ResourceType.ENERGY,
-        [ResourceType.POPULATION]: ResourceType.POPULATION,
-        [ResourceType.RESEARCH]: ResourceType.RESEARCH,
-        [ResourceType.PLASMA]: ResourceType.PLASMA,
-        [ResourceType.GAS]: ResourceType.GAS,
-        [ResourceType.EXOTIC]: ResourceType.EXOTIC,
+        [ResourceType.MINERALS]:
+          ResourceType.MINERALS.toLowerCase() as keyof typeof allResourceRates,
+        [ResourceType.ENERGY]: ResourceType.ENERGY.toLowerCase() as keyof typeof allResourceRates,
+        [ResourceType.POPULATION]:
+          ResourceType.POPULATION.toLowerCase() as keyof typeof allResourceRates,
+        [ResourceType.RESEARCH]:
+          ResourceType.RESEARCH.toLowerCase() as keyof typeof allResourceRates,
+        [ResourceType.PLASMA]: ResourceType.PLASMA.toLowerCase() as keyof typeof allResourceRates,
+        [ResourceType.GAS]: ResourceType.GAS.toLowerCase() as keyof typeof allResourceRates,
+        [ResourceType.EXOTIC]: ResourceType.EXOTIC.toLowerCase() as keyof typeof allResourceRates,
+        [ResourceType.ORGANIC]: ResourceType.ORGANIC.toLowerCase() as keyof typeof allResourceRates,
       };
 
       return mapping[resourceType] || null;
     };
 
-    // Function to collect current rate data
+    // (...args: unknown[]) => unknown to collect current rate data
     const collectRateData = () => {
       if (!allResourceRates) return;
 

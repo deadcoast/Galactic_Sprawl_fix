@@ -150,10 +150,10 @@ export const CustomShaderVisualization: React.FC<CustomShaderVisualizationProps>
   // Handle component lifecycle
   useComponentLifecycle({
     onMount: () => {
-      console.log('CustomShaderVisualization mounted');
+      console.warn('CustomShaderVisualization mounted');
     },
     onUnmount: () => {
-      console.log('CustomShaderVisualization unmounted');
+      console.warn('CustomShaderVisualization unmounted');
     },
   });
 

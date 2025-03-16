@@ -36,7 +36,7 @@ export interface Ability {
   /** Tags for filtering and categorization */
   tags?: string[];
   /** Custom metadata */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**

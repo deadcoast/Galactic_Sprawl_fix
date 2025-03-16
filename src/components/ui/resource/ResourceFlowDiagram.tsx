@@ -1,17 +1,18 @@
 import * as d3 from 'd3';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import * as React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { moduleEventBus, ModuleEventType } from '../../../lib/modules/ModuleEvents';
 import {
   FlowNodeType,
-  ResourceType,
   ResourceTypeHelpers,
 } from '../../../types/resources/StandardizedResourceTypes';
 import { d3Accessors, SimulationNodeDatum } from '../../../types/visualizations/D3Types';
 import DataTransitionParticleSystem, {
   DataPoint,
 } from '../visualization/DataTransitionParticleSystem';
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 interface ResourceFlowDiagramProps {
   width?: number;
@@ -94,7 +95,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
 
   useComponentLifecycle({
     onMount: () => {
-      console.log('ResourceFlowDiagram mounted');
+      console.warn('ResourceFlowDiagram mounted');
       fetchResourceFlowData();
 
       // Subscribe to resource flow events
@@ -107,13 +108,13 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
           event.type === ('RESOURCE_CONNECTION_REMOVED' as ModuleEventType) ||
           event.type === ('RESOURCE_FLOW_OPTIMIZATION_COMPLETED' as ModuleEventType)
         ) {
-          console.log(`Resource flow event received: ${event.type}`);
+          console.warn(`Resource flow event received: ${event.type}`);
           fetchResourceFlowData();
         }
       });
     },
     onUnmount: () => {
-      console.log('ResourceFlowDiagram unmounted');
+      console.warn('ResourceFlowDiagram unmounted');
       if (simulationRef.current) {
         simulationRef.current.stop();
       }
@@ -206,7 +207,14 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
     container
       .append('defs')
       .selectAll('marker')
-      .data(['default', ResourceType.MINERALS, ResourceType.ENERGY, ResourceType.PLASMA, ResourceType.GAS, ResourceType.RESEARCH])
+      .data([
+        'default',
+        ResourceType.MINERALS,
+        ResourceType.ENERGY,
+        ResourceType.PLASMA,
+        ResourceType.GAS,
+        ResourceType.RESEARCH,
+      ])
       .enter()
       .append('marker')
       .attr('id', d => `arrow-${d}`)

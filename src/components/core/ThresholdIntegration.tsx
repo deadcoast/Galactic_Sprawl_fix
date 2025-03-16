@@ -123,7 +123,7 @@ export function ThresholdIntegration({ resourceManager, children }: ThresholdInt
           // If auto-mining is enabled, try to produce more of this resource
           if (autoMine) {
             // Here we would implement logic to automatically produce more of this resource
-            console.log(`Auto-mining resource ${resourceId} due to threshold violation`);
+            console.warn(`Auto-mining resource ${resourceId} due to threshold violation`);
           }
         } else if (currentAmount > thresholds.max) {
           // Publish threshold violation event
@@ -143,7 +143,7 @@ export function ThresholdIntegration({ resourceManager, children }: ThresholdInt
 
           // Stop production if we're over the maximum
           if (autoMine) {
-            console.log(
+            console.warn(
               `Stopping resource ${resourceId} production due to max threshold violation`
             );
           }

@@ -9,8 +9,12 @@ import {
   Typography,
 } from '@mui/material';
 import { Compass, Database, Layers, Map, RadioTower } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
+import { useCallback, useEffect } from 'react';
 import { useDataAnalysis } from '../../contexts/DataAnalysisContext';
+import { moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { EventType } from '../../types/events/EventTypes';
+import { StandardizedEvent } from '../../types/events/StandardizedEvents';
 import {
   AnalysisConfig,
   AnalysisResult,
@@ -245,35 +249,97 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     setActiveTab(newValue);
   };
 
-  // Handle dataset selection
-  const handleSelectDataset = (dataset: Dataset) => {
-    setSelectedDataset(dataset);
-    if (filters.length > 0) {
-      const filtered = filterDataset(dataset.id, filters);
-      setFilteredData(filtered);
-    } else {
-      setFilteredData(dataset.dataPoints);
-    }
-  };
+  // Handle dataset selection with standardized events
+  const handleSelectDataset = useCallback(
+    (dataset: Dataset) => {
+      setSelectedDataset(dataset);
+      if (filters.length > 0) {
+        const filtered = filterDataset(dataset.id, filters);
+        setFilteredData(filtered);
+      } else {
+        setFilteredData(dataset.dataPoints);
+      }
 
-  // Handle config selection
-  const handleSelectConfig = (config: AnalysisConfig) => {
+      // Emit dataset selection event
+      const event: StandardizedEvent = {
+        type: EventType.MODULE_UPDATED,
+        moduleId: dataset.id,
+        moduleType: 'exploration',
+        timestamp: Date.now(),
+        data: {
+          action: 'select_dataset',
+          datasetId: dataset.id,
+          filterCount: filters.length,
+        },
+      };
+      moduleEventBus.emit(event);
+    },
+    [filters]
+  );
+
+  // Handle config selection with standardized events
+  const handleSelectConfig = useCallback((config: AnalysisConfig) => {
     setSelectedConfig(config);
-  };
 
-  // Handle running analysis
-  const handleRunAnalysis = async () => {
+    // Emit config selection event
+    const event: StandardizedEvent = {
+      type: EventType.MODULE_UPDATED,
+      moduleId: config.id,
+      moduleType: 'exploration',
+      timestamp: Date.now(),
+      data: {
+        action: 'select_config',
+        configId: config.id,
+        configType: config.type,
+      },
+    };
+    moduleEventBus.emit(event);
+  }, []);
+
+  // Handle running analysis with standardized events
+  const handleRunAnalysis = useCallback(async () => {
     if (!selectedConfig) return;
 
     setIsLoading(true);
     try {
       await runAnalysis(selectedConfig.id);
+
+      // Emit analysis complete event
+      const event: StandardizedEvent = {
+        type: EventType.MODULE_UPDATED,
+        moduleId: selectedConfig.id,
+        moduleType: 'exploration',
+        timestamp: Date.now(),
+        data: {
+          action: 'run_analysis',
+          configId: selectedConfig.id,
+          configType: selectedConfig.type,
+          status: 'complete',
+        },
+      };
+      moduleEventBus.emit(event);
     } catch (error) {
       console.error('Error running analysis:', error);
+
+      // Emit analysis error event
+      const event: StandardizedEvent = {
+        type: EventType.MODULE_UPDATED,
+        moduleId: selectedConfig.id,
+        moduleType: 'exploration',
+        timestamp: Date.now(),
+        data: {
+          action: 'run_analysis',
+          configId: selectedConfig.id,
+          configType: selectedConfig.type,
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+      moduleEventBus.emit(event);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedConfig]);
 
   // Refresh datasets from the data collection service
   const refreshDatasets = () => {
@@ -283,32 +349,67 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
     setIsLoading(false);
   };
 
-  // Handle filter changes
-  const handleFilterChange = (
-    newFilters: Array<{
-      field: string;
-      operator:
-        | 'equals'
-        | 'notEquals'
-        | 'greaterThan'
-        | 'lessThan'
-        | 'contains'
-        | 'notContains'
-        | 'between';
-      value: string | number | boolean | string[] | [number, number];
-    }>
-  ) => {
-    setFilters(newFilters);
-    if (selectedDataset) {
-      const filtered = filterDataset(selectedDataset.id, newFilters);
-      setFilteredData(filtered);
-    }
-  };
+  // Handle filter changes with standardized events
+  const handleFilterChange = useCallback(
+    (
+      newFilters: Array<{
+        field: string;
+        operator:
+          | 'equals'
+          | 'notEquals'
+          | 'greaterThan'
+          | 'lessThan'
+          | 'contains'
+          | 'notContains'
+          | 'between';
+        value: string | number | boolean | string[] | [number, number];
+      }>
+    ) => {
+      setFilters(newFilters);
+      if (selectedDataset) {
+        const filtered = filterDataset(selectedDataset.id, newFilters);
+        setFilteredData(filtered);
 
-  // New handler for selecting a data point
-  const handleSelectDataPoint = (dataPoint: DataPoint) => {
-    setSelectedDataPoint(dataPoint);
-  };
+        // Emit filter change event
+        const event: StandardizedEvent = {
+          type: EventType.MODULE_UPDATED,
+          moduleId: selectedDataset.id,
+          moduleType: 'exploration',
+          timestamp: Date.now(),
+          data: {
+            action: 'update_filters',
+            datasetId: selectedDataset.id,
+            filterCount: newFilters.length,
+            filteredCount: filtered.length,
+          },
+        };
+        moduleEventBus.emit(event);
+      }
+    },
+    [selectedDataset]
+  );
+
+  // Handle data point selection with standardized events
+  const handleSelectDataPoint = useCallback(
+    (dataPoint: DataPoint) => {
+      setSelectedDataPoint(dataPoint);
+
+      // Emit data point selection event
+      const event: StandardizedEvent = {
+        type: EventType.MODULE_UPDATED,
+        moduleId: dataPoint.id,
+        moduleType: 'exploration',
+        timestamp: Date.now(),
+        data: {
+          action: 'select_data_point',
+          dataPointId: dataPoint.id,
+          datasetId: selectedDataset?.id,
+        },
+      };
+      moduleEventBus.emit(event);
+    },
+    [selectedDataset]
+  );
 
   // Use the utility function that references _DatasetInfo
   React.useEffect(() => {
@@ -316,6 +417,15 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
       _logDatasetDetails(selectedDataset);
     }
   }, [selectedDataset]);
+
+  // Cleanup subscriptions on unmount
+  useEffect(() => {
+    const cleanup = () => {
+      // Any cleanup needed for event subscriptions
+    };
+
+    return cleanup;
+  }, []);
 
   return (
     <div className={className}>

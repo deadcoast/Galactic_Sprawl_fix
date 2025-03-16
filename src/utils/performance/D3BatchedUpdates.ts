@@ -300,7 +300,7 @@ export class D3BatchUpdateManager {
     }
 
     if (this.config.debugMode) {
-      console.debug(
+      console.warn(
         `Batch #${batchId} processed: ${readOpsToProcess.length} reads, ${writeOpsToProcess.length} writes`
       );
     }
@@ -346,7 +346,7 @@ export class D3BatchUpdateManager {
     // Skip if this exact operation was already scheduled (deduplication)
     if (this.operationIds.has(id)) {
       if (this.config.debugMode) {
-        console.debug(`Skipping duplicate operation ${id}`);
+        console.warn(`Skipping duplicate operation ${id}`);
       }
       return undefined;
     }
@@ -495,7 +495,7 @@ export function createBatchedSelection<
   const originalText = batchedSelection.text;
 
   // Override attr to use batched writes
-  batchedSelection.attr = function (...args: any[]): any {
+  batchedSelection.attr = function (...args: unknown[]): unknown {
     if (args.length === 1) {
       // Read operation - needs to execute right away to return the value
       return originalAttr.apply(this, args);
@@ -513,10 +513,10 @@ export function createBatchedSelection<
     );
 
     return batchedSelection;
-  } as any;
+  } as unknown;
 
   // Override style to use batched writes
-  batchedSelection.style = function (...args: any[]): any {
+  batchedSelection.style = function (...args: unknown[]): unknown {
     if (args.length === 1) {
       // Read operation - needs to execute right away to return the value
       return originalStyle.apply(this, args);
@@ -534,10 +534,10 @@ export function createBatchedSelection<
     );
 
     return batchedSelection;
-  } as any;
+  } as unknown;
 
   // Override property to use batched writes
-  batchedSelection.property = function (...args: any[]): any {
+  batchedSelection.property = function (...args: unknown[]): unknown {
     if (args.length === 1) {
       // Read operation - needs to execute right away to return the value
       return originalProperty.apply(this, args);
@@ -555,10 +555,10 @@ export function createBatchedSelection<
     );
 
     return batchedSelection;
-  } as any;
+  } as unknown;
 
   // Override html to use batched writes
-  batchedSelection.html = function (...args: any[]): any {
+  batchedSelection.html = function (...args: unknown[]): unknown {
     if (args.length === 0) {
       // Read operation - needs to execute right away to return the value
       return originalHtml.apply(this, args);
@@ -576,10 +576,10 @@ export function createBatchedSelection<
     );
 
     return batchedSelection;
-  } as any;
+  } as unknown;
 
   // Override text to use batched writes
-  batchedSelection.text = function (...args: any[]): any {
+  batchedSelection.text = function (...args: unknown[]): unknown {
     if (args.length === 0) {
       // Read operation - needs to execute right away to return the value
       return originalText.apply(this, args);
@@ -597,7 +597,7 @@ export function createBatchedSelection<
     );
 
     return batchedSelection;
-  } as any;
+  } as unknown;
 
   return batchedSelection;
 }
@@ -632,7 +632,7 @@ export function createBatchedTransition<
   const originalTransition = selection.transition;
 
   // Override transition to batch operations
-  selection.transition = function (...args: any[]): any {
+  selection.transition = function (...args: unknown[]): unknown {
     const transition = originalTransition.apply(this, args);
 
     // Store original methods
@@ -640,77 +640,93 @@ export function createBatchedTransition<
     const originalStyle = transition.style;
 
     // Override attr to use batched writes
-    transition.attr = function (name: string, value?: any): any {
+    transition.attr = function (name: string, value?: unknown): unknown {
       if (arguments.length === 1) {
         return originalAttr.call(this, name);
       }
 
       // Schedule the update to happen at each tick of the transition
-      const originalTween = transition.attrTween;
-      transition.attrTween(name, function (d, i, nodes) {
-        const node = nodes[i];
-        const interpolator =
-          typeof value === 'function'
-            ? d3.interpolate(originalAttr.call(d3.select(node), name), value(d, i, nodes))
-            : d3.interpolate(originalAttr.call(d3.select(node), name), value);
+      const _originalTween = transition.attrTween;
+      transition.attrTween(
+        name,
+        function (
+          this: d3.Transition<GElement, Datum, PElement, PDatum>,
+          d: Datum,
+          i: number,
+          nodes: GElement[]
+        ) {
+          const node = nodes[i];
+          const interpolator =
+            typeof value === 'function'
+              ? d3.interpolate(originalAttr.call(d3.select(node), name), value(d, i, nodes))
+              : d3.interpolate(originalAttr.call(d3.select(node), name), value);
 
-        return function (t: number) {
-          const interpolated = interpolator(t);
-          // Batch the DOM update
-          batchWrite(
-            () => {
-              d3.select(node).attr(name, interpolated);
-            },
-            {
-              ...options,
-              element: node,
-              priority: t === 1 || t === 0 ? 'high' : 'normal', // Prioritize start and end values
-            }
-          );
-          return interpolated;
-        };
-      });
+          return function (t: number) {
+            const interpolated = interpolator(t);
+            // Batch the DOM update
+            batchWrite(
+              () => {
+                d3.select(node).attr(name, interpolated);
+              },
+              {
+                ...options,
+                element: node,
+                priority: t === 1 || t === 0 ? 'high' : 'normal', // Prioritize start and end values
+              }
+            );
+            return interpolated;
+          };
+        }
+      );
 
       return this;
-    } as any;
+    } as unknown;
 
     // Override style to use batched writes
-    transition.style = function (name: string, value?: any, priority?: string): any {
+    transition.style = function (name: string, value?: unknown, priority?: string): unknown {
       if (arguments.length === 1) {
         return originalStyle.call(this, name);
       }
 
       // Schedule the update to happen at each tick of the transition
-      const originalTween = transition.styleTween;
-      transition.styleTween(name, function (d, i, nodes) {
-        const node = nodes[i];
-        const interpolator =
-          typeof value === 'function'
-            ? d3.interpolate(originalStyle.call(d3.select(node), name), value(d, i, nodes))
-            : d3.interpolate(originalStyle.call(d3.select(node), name), value);
+      const _originalTween = transition.styleTween;
+      transition.styleTween(
+        name,
+        function (
+          this: d3.Transition<GElement, Datum, PElement, PDatum>,
+          d: Datum,
+          i: number,
+          nodes: GElement[]
+        ) {
+          const node = nodes[i];
+          const interpolator =
+            typeof value === 'function'
+              ? d3.interpolate(originalStyle.call(d3.select(node), name), value(d, i, nodes))
+              : d3.interpolate(originalStyle.call(d3.select(node), name), value);
 
-        return function (t: number) {
-          const interpolated = interpolator(t);
-          // Batch the DOM update
-          batchWrite(
-            () => {
-              d3.select(node).style(name, interpolated, priority);
-            },
-            {
-              ...options,
-              element: node,
-              priority: t === 1 || t === 0 ? 'high' : 'normal', // Prioritize start and end values
-            }
-          );
-          return interpolated;
-        };
-      });
+          return function (t: number) {
+            const interpolated = interpolator(t);
+            // Batch the DOM update
+            batchWrite(
+              () => {
+                d3.select(node).style(name, interpolated, priority);
+              },
+              {
+                ...options,
+                element: node,
+                priority: t === 1 || t === 0 ? 'high' : 'normal', // Prioritize start and end values
+              }
+            );
+            return interpolated;
+          };
+        }
+      );
 
       return this;
-    } as any;
+    } as unknown;
 
     return transition;
-  } as any;
+  } as unknown;
 
   return selection;
 }

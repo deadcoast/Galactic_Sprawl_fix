@@ -1,5 +1,3 @@
-import * as React from "react";
-import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -14,6 +12,12 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useModuleEvents } from '../../../hooks/events/useModuleEvents';
+import { moduleEventBus } from '../../../lib/events/ModuleEventBus';
+import { EventType } from '../../../types/events/EventTypes';
+import { StandardizedEvent } from '../../../types/events/StandardizedEvents';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
 
 interface PopulationEvent {
   id: string;
@@ -45,8 +49,8 @@ interface AutomatedPopulationManagerProps {
  * Handles growth cycles, population events, and provides controls for automation.
  */
 export function AutomatedPopulationManager({
-  colonyId: _colonyId,
-  colonyName: _colonyName,
+  colonyId,
+  colonyName,
   currentPopulation,
   maxPopulation,
   growthRate,
@@ -65,6 +69,8 @@ export function AutomatedPopulationManager({
   const [showSettings, setShowSettings] = useState(false);
   const [customCycleLength, setCustomCycleLength] = useState(cycleLength);
   const [showEvents, setShowEvents] = useState(false);
+
+  const { subscribe } = useModuleEvents();
 
   // Calculate the next growth amount based on current population and growth rate
   const calculateNextGrowthAmount = useCallback(() => {
@@ -87,86 +93,90 @@ export function AutomatedPopulationManager({
     setNextGrowthAmount(calculateNextGrowthAmount());
   }, [calculateNextGrowthAmount]);
 
-  // Handle growth cycle
-  const handleGrowthCycle = useCallback(() => {
-    if (currentPopulation >= maxPopulation) {
-      // Population is at max, stop growth
-      if (isRunning) {
-        setIsRunning(false);
-        onAutoGrowthToggle?.(false);
+  // Emit population update event
+  const emitPopulationUpdate = useCallback(
+    (newPopulation: number) => {
+      const event: StandardizedEvent = {
+        type: EventType.MODULE_UPDATED,
+        moduleId: colonyId,
+        moduleType: ResourceType.POPULATION,
+        timestamp: Date.now(),
+        data: {
+          stats: {
+            [ResourceType.POPULATION]: newPopulation,
+          },
+        },
+      };
+      moduleEventBus.emit(event);
+    },
+    [colonyId]
+  );
+
+  // Handle population growth cycle
+  useEffect(() => {
+    if (!isRunning) return;
+
+    let lastUpdate = Date.now();
+    let progress = 0;
+
+    const updateInterval = setInterval(() => {
+      const now = Date.now();
+      const delta = now - lastUpdate;
+      lastUpdate = now;
+
+      progress += delta;
+      const progressPercent = (progress / customCycleLength) * 100;
+      setCycleProgress(progressPercent);
+
+      if (progress >= customCycleLength) {
+        // Reset progress
+        progress = 0;
+        setCycleProgress(0);
+        setCycleCount(prev => prev + 1);
+
+        // Calculate and apply population growth
+        const growthAmount = calculateNextGrowthAmount();
+        if (growthAmount > 0) {
+          const newPopulation = currentPopulation + growthAmount;
+          onPopulationChange?.(newPopulation);
+          emitPopulationUpdate(newPopulation);
+        }
+
+        // Notify cycle completion
+        onCycleComplete?.(cycleCount + 1);
       }
-      return;
-    }
+    }, 100); // Update progress every 100ms
 
-    const growthAmount = calculateNextGrowthAmount();
-
-    if (growthAmount > 0) {
-      // Apply population growth
-      onPopulationChange?.(currentPopulation + growthAmount);
-
-      // Update cycle count
-      const newCycleCount = cycleCount + 1;
-      setCycleCount(newCycleCount);
-      onCycleComplete?.(newCycleCount);
-    }
+    return () => {
+      clearInterval(updateInterval);
+    };
   }, [
-    currentPopulation,
-    maxPopulation,
     isRunning,
+    customCycleLength,
+    currentPopulation,
     calculateNextGrowthAmount,
-    cycleCount,
     onPopulationChange,
-    onAutoGrowthToggle,
     onCycleComplete,
+    cycleCount,
+    colonyId,
+    emitPopulationUpdate,
   ]);
 
-  // Set up growth cycle interval
-  useEffect(() => {
-    if (!isRunning) {
-      return;
-    }
-
-    // Reset progress
-    setCycleProgress(0);
-
-    // Set up progress interval (updates every second)
-    const progressInterval = setInterval(() => {
-      setCycleProgress(prev => {
-        const newProgress = prev + (1000 / cycleLength) * 100;
-        return newProgress >= 100 ? 0 : newProgress;
-      });
-    }, 1000);
-
-    // Set up growth cycle interval
-    const cycleInterval = setInterval(() => {
-      handleGrowthCycle();
-    }, cycleLength);
-
-    // Clean up intervals
-    return () => {
-      clearInterval(progressInterval);
-      clearInterval(cycleInterval);
-    };
-  }, [isRunning, cycleLength, handleGrowthCycle]);
-
-  // Toggle auto growth
-  const toggleAutoGrowth = () => {
+  // Handle automation toggle
+  const handleAutomationToggle = useCallback(() => {
     const newState = !isRunning;
     setIsRunning(newState);
     onAutoGrowthToggle?.(newState);
-  };
+  }, [isRunning, onAutoGrowthToggle]);
 
-  // Reset cycle count
-  const resetCycleCount = () => {
-    setCycleCount(0);
-    onCycleComplete?.(0);
-  };
-
-  // Apply custom cycle length
-  const applyCustomCycleLength = () => {
-    onSettingsChange?.({ cycleLength: customCycleLength });
-    setShowSettings(false);
-  };
+  // Handle cycle length change
+  const handleCycleLengthChange = useCallback(
+    (newLength: number) => {
+      setCustomCycleLength(newLength);
+      onSettingsChange?.({ cycleLength: newLength });
+    },
+    [onSettingsChange]
+  );
 
   // Format time in minutes and seconds
   const formatTime = (ms: number) => {
@@ -308,7 +318,7 @@ export function AutomatedPopulationManager({
                   ? 'bg-red-900/30 text-red-400 hover:bg-red-800/50'
                   : 'bg-green-900/30 text-green-400 hover:bg-green-800/50'
               }`}
-              onClick={toggleAutoGrowth}
+              onClick={handleAutomationToggle}
             >
               {isRunning ? (
                 <>
@@ -325,7 +335,10 @@ export function AutomatedPopulationManager({
 
             <button
               className="flex items-center space-x-1 rounded-md bg-gray-800 px-2 py-1 text-xs text-gray-400 hover:bg-gray-700"
-              onClick={resetCycleCount}
+              onClick={() => {
+                setCycleCount(0);
+                onCycleComplete?.(0);
+              }}
             >
               <RotateCcw className="h-3 w-3" />
               <span>Reset</span>
@@ -356,12 +369,12 @@ export function AutomatedPopulationManager({
                 min="1000"
                 step="1000"
                 value={customCycleLength}
-                onChange={e => setCustomCycleLength(Number(e.target.value))}
+                onChange={e => handleCycleLengthChange(Number(e.target.value))}
                 className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-1 text-sm text-white"
               />
               <button
                 className="rounded-md bg-blue-900/30 px-2 py-1 text-xs text-blue-400 hover:bg-blue-800/50"
-                onClick={applyCustomCycleLength}
+                onClick={() => handleCycleLengthChange(customCycleLength)}
               >
                 Apply
               </button>

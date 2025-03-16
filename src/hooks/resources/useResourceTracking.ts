@@ -1,4 +1,3 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ResourceTotals,
@@ -10,12 +9,24 @@ import {
   validateResourceState,
 } from '../../types/resources/ResourceSerializationTypes';
 import {
-  ResourceAlert,
   ResourceState,
   ResourceThreshold,
   ResourceTransfer,
   ResourceType,
 } from '../../types/resources/ResourceTypes';
+
+/**
+ * Resource alert interface
+ */
+export interface ResourceAlert {
+  id: string;
+  type: ResourceType;
+  message: string;
+  severity: 'critical' | 'medium' | 'low';
+  timestamp: number;
+  threshold?: ResourceThreshold;
+  dismissed?: boolean;
+}
 
 /**
  * Resource tracking options
@@ -95,7 +106,15 @@ export interface ResourceTrackingResult {
 export function useResourceTracking(options: ResourceTrackingOptions = {}): ResourceTrackingResult {
   // Default options
   const {
-    types = [ResourceType.MINERALS, ResourceType.ENERGY, ResourceType.POPULATION, ResourceType.RESEARCH, ResourceType.PLASMA, ResourceType.GAS, ResourceType.EXOTIC],
+    types = [
+      ResourceType.MINERALS,
+      ResourceType.ENERGY,
+      ResourceType.POPULATION,
+      ResourceType.RESEARCH,
+      ResourceType.PLASMA,
+      ResourceType.GAS,
+      ResourceType.EXOTIC,
+    ],
     updateInterval = 1000,
     historyLimit = 100,
     enableAlerts: _enableAlerts = true,
@@ -245,46 +264,43 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
         }
 
         for (const threshold of thresholdList) {
-          // Check min threshold
-          if (threshold.min !== undefined && resourceState.current < threshold.min) {
+          // Check critical threshold
+          if (threshold.critical !== undefined && resourceState.current < threshold.critical) {
             newAlerts.push({
-              id: `${type}-min-${Date.now()}`,
+              id: `${type}-critical-${Date.now()}`,
               type,
               threshold,
-              message: `${type} is below minimum threshold (${resourceState.current} < ${threshold.min})`,
+              message: `${type} is below critical threshold (${resourceState.current}/${threshold.critical})`,
               severity: 'critical',
+              timestamp: Date.now(),
             });
           }
-
-          // Check max threshold
-          if (threshold.max !== undefined && resourceState.current > threshold.max) {
+          // Check low threshold
+          else if (threshold.low !== undefined && resourceState.current < threshold.low) {
             newAlerts.push({
-              id: `${type}-max-${Date.now()}`,
+              id: `${type}-low-${Date.now()}`,
               type,
               threshold,
-              message: `${type} is above maximum threshold (${resourceState.current} > ${threshold.max})`,
+              message: `${type} is below low threshold (${resourceState.current}/${threshold.low})`,
               severity: 'medium',
+              timestamp: Date.now(),
             });
           }
-
           // Check target threshold
-          if (threshold.target !== undefined) {
-            const deviation = Math.abs(resourceState.current - threshold.target);
-            const maxDeviation = threshold.target * 0.2; // 20% deviation
-
-            if (deviation > maxDeviation) {
-              newAlerts.push({
-                id: `${type}-target-${Date.now()}`,
-                type,
-                threshold,
-                message: `${type} is deviating from target (${resourceState.current} vs ${threshold.target})`,
-                severity: 'low',
-              });
-            }
+          else if (threshold.target !== undefined && resourceState.current < threshold.target) {
+            newAlerts.push({
+              id: `${type}-target-${Date.now()}`,
+              type,
+              threshold,
+              message: `${type} is below target threshold (${resourceState.current}/${threshold.target})`,
+              severity: 'low',
+              timestamp: Date.now(),
+            });
           }
         }
       }
 
+      // Update alerts if there are new ones
       if (newAlerts.length > 0) {
         setState(prev => ({
           ...prev,

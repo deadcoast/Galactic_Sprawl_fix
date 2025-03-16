@@ -45,6 +45,7 @@ export function resourceTypeToString(resourceType: ResourceType | string): strin
 export class ResourceTypeConverter {
   // Mapping from string resource types to enum resource types
   private static stringToEnumMap: Record<string, ResourceType> = {
+    // Always use uppercase for consistency
     MINERALS: ResourceType.MINERALS,
     ENERGY: ResourceType.ENERGY,
     POPULATION: ResourceType.POPULATION,
@@ -52,14 +53,17 @@ export class ResourceTypeConverter {
     PLASMA: ResourceType.PLASMA,
     GAS: ResourceType.GAS,
     EXOTIC: ResourceType.EXOTIC,
-    // Legacy lowercase mappings for backward compatibility
-    minerals: ResourceType.MINERALS,
-    energy: ResourceType.ENERGY,
-    population: ResourceType.POPULATION,
-    research: ResourceType.RESEARCH,
-    plasma: ResourceType.PLASMA,
-    gas: ResourceType.GAS,
-    exotic: ResourceType.EXOTIC,
+    ORGANIC: ResourceType.ORGANIC,
+    IRON: ResourceType.IRON,
+    COPPER: ResourceType.COPPER,
+    TITANIUM: ResourceType.TITANIUM,
+    URANIUM: ResourceType.URANIUM,
+    WATER: ResourceType.WATER,
+    HELIUM: ResourceType.HELIUM,
+    DEUTERIUM: ResourceType.DEUTERIUM,
+    ANTIMATTER: ResourceType.ANTIMATTER,
+    DARK_MATTER: ResourceType.DARK_MATTER,
+    EXOTIC_MATTER: ResourceType.EXOTIC_MATTER,
   };
 
   // Mapping from enum resource types to string resource types
@@ -71,17 +75,17 @@ export class ResourceTypeConverter {
     [ResourceType.PLASMA]: 'PLASMA',
     [ResourceType.GAS]: 'GAS',
     [ResourceType.EXOTIC]: 'EXOTIC',
-    // Map the specialized resources to their general categories
-    [ResourceType.IRON]: 'MINERALS',
-    [ResourceType.COPPER]: 'MINERALS',
-    [ResourceType.TITANIUM]: 'MINERALS',
-    [ResourceType.URANIUM]: 'MINERALS',
-    [ResourceType.WATER]: 'MINERALS',
-    [ResourceType.HELIUM]: 'GAS',
-    [ResourceType.DEUTERIUM]: 'GAS',
-    [ResourceType.ANTIMATTER]: 'EXOTIC',
-    [ResourceType.DARK_MATTER]: 'EXOTIC',
-    [ResourceType.EXOTIC_MATTER]: 'EXOTIC',
+    [ResourceType.ORGANIC]: 'ORGANIC',
+    [ResourceType.IRON]: 'IRON',
+    [ResourceType.COPPER]: 'COPPER',
+    [ResourceType.TITANIUM]: 'TITANIUM',
+    [ResourceType.URANIUM]: 'URANIUM',
+    [ResourceType.WATER]: 'WATER',
+    [ResourceType.HELIUM]: 'HELIUM',
+    [ResourceType.DEUTERIUM]: 'DEUTERIUM',
+    [ResourceType.ANTIMATTER]: 'ANTIMATTER',
+    [ResourceType.DARK_MATTER]: 'DARK_MATTER',
+    [ResourceType.EXOTIC_MATTER]: 'EXOTIC_MATTER',
   };
 
   /**
@@ -91,6 +95,12 @@ export class ResourceTypeConverter {
    * @returns The enum resource type or undefined if not found
    */
   public static stringToEnum(stringType: string): ResourceType | undefined {
+    // Try uppercase first
+    const upperType = stringType.toUpperCase();
+    if (this.stringToEnumMap[upperType]) {
+      return this.stringToEnumMap[upperType];
+    }
+    // Try as-is
     return this.stringToEnumMap[stringType];
   }
 
@@ -231,11 +241,14 @@ export class ResourceTypeConverter {
    */
   public static ensureEnumResourceType(resourceType: ResourceType | string): ResourceType {
     // If it's already an enum type, return it
-    if (Object.values(ResourceType).includes(resourceType as ResourceType)) {
+    if (
+      typeof resourceType === 'number' ||
+      Object.values(ResourceType).includes(resourceType as ResourceType)
+    ) {
       return resourceType as ResourceType;
     }
 
-    // Otherwise, convert it
+    // Try to convert string to enum
     const enumType = this.stringToEnum(resourceType as string);
     if (enumType !== undefined) {
       return enumType;
@@ -251,31 +264,32 @@ export class ResourceTypeConverter {
    * @returns The string resource type
    */
   public static ensureStringResourceType(value: unknown): string {
-    if (typeof value === 'string' && this.isValidStringType(value)) {
-      return value;
-    }
-
-    if (typeof value === 'string' && this.isValidEnumType(value as ResourceType)) {
-      return this.enumToString(value as ResourceType) || ResourceType.MINERALS;
-    }
-
-    // Handle numeric enum values by first converting to ResourceType
-    if (typeof value === 'number') {
-      const enumValue = Object.values(ResourceType).find(rt => String(rt) === String(value));
-      if (enumValue) {
-        return this.enumToString(enumValue) || ResourceType.MINERALS;
-      }
-    }
-
-    if (value && typeof value === 'object' && 'valueOf' in value) {
-      const stringValue = String(value);
-      if (this.isValidStringType(stringValue)) {
+    // If it's already a ResourceType enum
+    if (typeof value === 'number' || Object.values(ResourceType).includes(value as ResourceType)) {
+      const stringValue = this.enumToString(value as ResourceType);
+      if (stringValue) {
         return stringValue;
       }
     }
 
-    console.warn(`Unknown resource type: ${String(value)}, defaulting to ${ResourceType.MINERALS}`);
-    return ResourceType.MINERALS;
+    // If it's a string, try to validate it
+    if (typeof value === 'string') {
+      const upperValue = value.toUpperCase();
+      // Check if it's a valid string type
+      if (this.isValidStringType(upperValue)) {
+        return upperValue;
+      }
+      // Check if it's a valid enum value as string
+      if (this.isValidEnumType(value as ResourceType)) {
+        const stringValue = this.enumToString(value as ResourceType);
+        if (stringValue) {
+          return stringValue;
+        }
+      }
+    }
+
+    console.warn(`Unknown resource type: ${String(value)}, defaulting to MINERALS`);
+    return 'MINERALS';
   }
 
   /**

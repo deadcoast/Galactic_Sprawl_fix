@@ -1,7 +1,6 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDownIcon, ArrowUpIcon, BarChart4, ChevronDown, ChevronUp } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useAllResourceRates, useResourceRate } from '../../../contexts/ResourceRatesContext';
 import {
@@ -117,6 +116,12 @@ const resourceColors: Record<
     bg: 'bg-emerald-900/20',
     border: 'border-emerald-700/30',
     fill: 'bg-emerald-500',
+  },
+  [ResourceType.ORGANIC]: {
+    base: 'text-teal-400',
+    bg: 'bg-teal-900/20',
+    border: 'border-teal-700/30',
+    fill: 'bg-teal-500',
   },
 };
 

@@ -27,7 +27,6 @@ export function useWebGL({ width, height, onInit }: UseWebGLOptions): UseWebGLRe
     if (!canvas || !service) return;
 
     // Initialize WebGL context
-    service.initializeContext(canvas);
     const gl = canvas.getContext('webgl2');
     if (!gl) return;
 
@@ -38,11 +37,15 @@ export function useWebGL({ width, height, onInit }: UseWebGLOptions): UseWebGLRe
     canvas.height = height;
     gl.viewport(0, 0, width, height);
 
+    // Initialize the WebGL service
+    service.initialize({ canvas, gl });
+
     // Call user initialization
     onInit?.(gl);
 
     return () => {
       // Cleanup will be handled by the service
+      service.dispose();
     };
   }, [service, width, height, onInit]);
 

@@ -1,7 +1,6 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useState } from 'react';
 import { useAllResourceRates } from '../../../contexts/ResourceRatesContext';
 import {
@@ -98,6 +97,11 @@ const resourceColors: Record<ResourceType, { base: string; bgLight: string; bgSe
       bgLight: 'bg-emerald-500/10',
       bgSelected: 'bg-emerald-500/30',
     },
+    [ResourceType.ORGANIC]: {
+      base: 'text-teal-400',
+      bgLight: 'bg-teal-500/10',
+      bgSelected: 'bg-teal-500/30',
+    },
   };
 
 // Filter type to categorize resource rates
@@ -114,6 +118,14 @@ interface ResourceRateFilteringProps {
   initialFilterType?: RateFilterType;
 }
 
+interface ResourceRateDetail {
+  production: number;
+  consumption: number;
+  net: number;
+}
+
+type ResourceRates = Record<Lowercase<keyof typeof ResourceType>, ResourceRateDetail>;
+
 /**
  * Component for filtering resource rates by type and rate value
  */
@@ -122,7 +134,7 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
   initialSelectedResources,
   initialFilterType = RateFilterType.ALL,
 }) => {
-  const allResourceRates = useAllResourceRates();
+  const allResourceRates = useAllResourceRates() as ResourceRates | null;
   const [selectedResources, setSelectedResources] = useState<ResourceType[]>(
     initialSelectedResources ||
       (allResourceRates ? (Object.keys(allResourceRates) as ResourceType[]) : [])
@@ -179,16 +191,14 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
 
   // Check if a resource passes the current filter
   const passesFilter = (resourceType: ResourceType): boolean => {
-    const resType = resourceType as ResourceType;
-
     // Check if the resource type exists in allResourceRates
     if (!allResourceRates) return true;
 
-    // Convert the enum value to a string that matches the keys in allResourceRates
-    const resourceKey = getResourceKey(resType);
-    if (!resourceKey || !allResourceRates[resourceKey]) return true;
+    const resourceKey = ResourceTypeHelpers.enumToString(resourceType).toLowerCase();
+    const rate = allResourceRates[resourceKey as keyof typeof allResourceRates];
+    if (!rate) return true;
 
-    const netRate = allResourceRates[resourceKey].net;
+    const netRate = rate.net;
 
     switch (filterType) {
       case RateFilterType.POSITIVE:
@@ -204,27 +214,17 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
     }
   };
 
-  // Helper function to convert ResourceType enum to a key in allResourceRates
-  const getResourceKey = (resourceType: ResourceType): keyof typeof allResourceRates | null => {
-    // Map ResourceType enum values to keys in allResourceRates
-    const mapping: Partial<Record<ResourceType, keyof typeof allResourceRates>> = {
-      [ResourceType.MINERALS]: ResourceType.MINERALS,
-      [ResourceType.ENERGY]: ResourceType.ENERGY,
-      [ResourceType.POPULATION]: ResourceType.POPULATION,
-      [ResourceType.RESEARCH]: ResourceType.RESEARCH,
-      [ResourceType.PLASMA]: ResourceType.PLASMA,
-      [ResourceType.GAS]: ResourceType.GAS,
-      [ResourceType.EXOTIC]: ResourceType.EXOTIC,
-    };
-
-    return mapping[resourceType] || null;
-  };
-
   // Get available resources after filtering
   const getAvailableResources = (): ResourceType[] => {
     if (!allResourceRates) return [];
 
-    return Object.keys(allResourceRates).filter(passesFilter) as ResourceType[];
+    return Object.keys(allResourceRates)
+      .map(key =>
+        ResourceTypeHelpers.stringToEnum(
+          key.toUpperCase() as Parameters<typeof ResourceTypeHelpers.stringToEnum>[0]
+        )
+      )
+      .filter(passesFilter);
   };
 
   const availableResources = getAvailableResources();

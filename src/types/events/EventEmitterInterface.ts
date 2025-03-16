@@ -92,7 +92,7 @@ export interface IEventEmitter {
  * Interface for typed event emitters
  * This interface provides type safety for event data
  */
-export interface ITypedEventEmitter<T extends Record<string, any>> {
+export interface ITypedEventEmitter<T extends Record<string, unknown>> {
   /**
    * Subscribe to an event
    *

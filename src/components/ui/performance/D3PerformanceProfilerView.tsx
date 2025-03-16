@@ -6,7 +6,7 @@
  */
 
 import * as d3 from 'd3';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FlowData } from '../../../types/visualizations/FlowTypes';
 import {
@@ -16,7 +16,7 @@ import {
   profileCoordinateAccess,
   profileDOMOperations,
 } from '../../../utils/performance/D3PerformanceProfiler';
-import FlowDiagram from '../visualizations/FlowDiagram';
+import FlowDiagram from '../visualization/FlowDiagram';
 
 // Sample flow data for testing
 const generateTestFlowData = (nodeCount: number, linkCount: number): FlowData => {

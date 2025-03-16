@@ -67,7 +67,7 @@ export function dataPointToAnomaly(dataPoint: DataPoint): Anomaly {
     },
     potentialUses: [],
     dangerLevel: determineDangerLevel(dataPoint),
-    visualData: dataPoint.properties?.visualData as any || undefined
+    visualData: dataPoint.properties?.visualData as unknown || undefined
   };
 }
 
@@ -184,7 +184,7 @@ export function sectorToDataPoint(sector: Sector): DataPoint {
 }
 
 // =========================================
-// Helper Functions
+// Helper (...args: unknown[]) => unknowns
 // =========================================
 
 /**

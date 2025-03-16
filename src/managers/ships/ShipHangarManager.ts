@@ -82,7 +82,7 @@ interface ShipHangarEvents {
   'cargo:loaded': { shipId: string; resourceType: ResourceType; amount: number };
   'cargo:unloaded': { shipId: string; resourceType: ResourceType; amount: number };
   'hangar:capacity-changed': { oldCapacity: number; newCapacity: number };
-  'ship-type:available': { shipType: ShipType; requirements: Record<string, any> };
+  'ship-type:available': { shipType: ShipType; requirements: Record<string, unknown> };
 }
 
 /**
@@ -534,7 +534,7 @@ export class ShipHangarManager extends BaseTypedEventEmitter<ShipHangarEvents> {
    * @param shipType The type of ship to make available
    * @param requirements The requirements to build this ship type
    */
-  public makeShipTypeAvailable(shipType: ShipType, requirements: Record<string, any>): void {
+  public makeShipTypeAvailable(shipType: ShipType, requirements: Record<string, unknown>): void {
     this.emit('ship-type:available', { shipType, requirements });
   }
 }
@@ -548,7 +548,7 @@ export class ShipHangarManager extends BaseTypedEventEmitter<ShipHangarEvents> {
  *
  * // Subscribe to events
  * hangarManager.on('ship:added', ({ ship }) => {
- *   console.log(`Ship ${ship.name} added to hangar`);
+ *   console.warn(`Ship ${ship.name} added to hangar`);
  * });
  *
  * // Create and add a ship

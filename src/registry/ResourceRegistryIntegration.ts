@@ -55,14 +55,14 @@ export class ResourceRegistryIntegration {
     // Subscribe to registry events to sync with other systems
     this.registry.subscribe('resourceRegistered', (data: RegistryEventData) => {
       if ('resourceType' in data && 'metadata' in data) {
-        console.log(`Resource registered: ${data.resourceType}`);
+        console.warn(`Resource registered: ${data.resourceType}`);
         // Here you would notify other systems about the new resource
       }
     });
 
     this.registry.subscribe('conversionRateChanged', (data: RegistryEventData) => {
       if ('sourceType' in data && 'targetType' in data && 'rate' in data) {
-        console.log(
+        console.warn(
           `Conversion rate changed: ${data.sourceType} -> ${data.targetType} = ${data.rate}`
         );
         // Here you would update conversion rates in other systems

@@ -9,7 +9,7 @@ import {
 import { ResourceManager } from '../../managers/game/ResourceManager';
 import { MiningShipManagerImpl } from '../../managers/mining/MiningShipManagerImpl';
 import { moduleManager } from '../../managers/module/ModuleManager';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Create a resourceManager instance
 const resourceManager = new ResourceManager();
@@ -30,7 +30,6 @@ const conditionState = new Subject<{
  * 4. Support condition debouncing to prevent rapid oscillation
  * 5. Enable condition-specific timeout and expiration logic
  */
-// @ts-expect-error - This interface is documented for future use in the automation condition system
 interface __RuntimeCondition extends AutomationCondition {
   lastChecked?: number;
 }

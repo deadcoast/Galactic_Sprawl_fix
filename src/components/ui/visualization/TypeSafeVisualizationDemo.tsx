@@ -1,24 +1,38 @@
+/**
+ * Type-Safe Visualization Demo
+ *
+ * This component demonstrates the use of type-safe D3 utilities for drag, zoom,
+ * and selection operations. It provides an interactive visualization to showcase
+ * how these type-safe wrappers improve development experience and code quality.
+ */
+
 import * as d3 from 'd3';
 import * as React from "react";
 import { useEffect, useRef, useState } from 'react';
 import { createSimulationDragBehavior } from '../../../types/visualizations/D3DragTypes';
-import { appendElement, createSvg } from '../../../types/visualizations/D3SelectionTypes';
+import {
+  createDefs,
+  createMarker,
+  createSvg,
+} from '../../../types/visualizations/D3SelectionTypes';
 import { SimulationNodeDatum } from '../../../types/visualizations/D3Types';
 import {
   createSvgZoomBehavior,
   getFitToViewportTransform,
 } from '../../../types/visualizations/D3ZoomTypes';
 
-// Define the node interface with proper typing
+// Define the node data structure
 interface Node extends SimulationNodeDatum {
   id: string;
-  label: string;
+  name: string;
+  group: number;
   radius: number;
   color: string;
 }
 
-// Define the link interface with proper typing
+// Define the link data structure
 interface Link {
+  id: string;
   source: string | Node;
   target: string | Node;
   value: number;
@@ -30,169 +44,201 @@ interface GraphData {
   links: Link[];
 }
 
-// Define component props
+// Props for the visualization demo
 interface TypeSafeVisualizationDemoProps {
   width?: number;
   height?: number;
 }
 
 /**
- * TypeSafeVisualizationDemo Component
- *
- * This component demonstrates the use of type-safe D3 utilities
- * to create an interactive force-directed graph visualization.
+ * A demonstration component that showcases type-safe D3 utilities
  */
 const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
   width = 800,
   height = 600,
 }) => {
-  // Create a ref for the container element
+  // References
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Create a ref to store the container ID
-  const containerIdRef = useRef<string>(`viz-container-${Math.random().toString(36).substr(2, 9)}`);
-
-  // State for the graph data
-  const [data, setData] = useState<GraphData>({
-    nodes: [
-      { id: '1', label: 'Node 1', radius: 20, color: '#ff7f0e', x: 100, y: 100 },
-      { id: '2', label: 'Node 2', radius: 15, color: '#1f77b4', x: 200, y: 200 },
-      { id: '3', label: 'Node 3', radius: 25, color: '#2ca02c', x: 300, y: 150 },
-      { id: '4', label: 'Node 4', radius: 18, color: '#d62728', x: 250, y: 300 },
-      { id: '5', label: 'Node 5', radius: 22, color: '#9467bd', x: 150, y: 250 },
-    ],
-    links: [
-      { source: '1', target: '2', value: 1 },
-      { source: '1', target: '3', value: 2 },
-      { source: '2', target: '3', value: 1 },
-      { source: '3', target: '4', value: 3 },
-      { source: '4', target: '5', value: 1 },
-      { source: '5', target: '1', value: 2 },
-    ],
-  });
-
-  // Reference to the simulation
+  const svgRef = useRef<SVGSVGElement | null>(null);
   const simulationRef = useRef<d3.Simulation<Node, undefined> | null>(null);
 
-  // Effect to create and update the visualization
+  // State
+  const [data, setData] = useState<GraphData>({
+    nodes: [],
+    links: [],
+  });
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  // Generate sample data on component mount
   useEffect(() => {
-    // Skip if container or data is not available
+    const sampleData = generateSampleData();
+    setData(sampleData);
+  }, []);
+
+  // Initialize the visualization when data is available
+  useEffect(() => {
     if (!containerRef.current || !data.nodes.length) return;
 
-    // Clear existing SVG elements
+    // Clear any existing SVG
     d3.select(containerRef.current).selectAll('svg').remove();
 
-    // Set the container ID
-    if (containerRef.current) {
-      containerRef.current.setAttribute('id', containerIdRef.current);
-    }
+    // Create SVG with type-safe builder
+    const parentSelection = d3.select(containerRef.current) as unknown as d3.Selection<
+      HTMLElement,
+      unknown,
+      HTMLElement,
+      unknown
+    >;
+    const svgBuilder = createSvg(parentSelection, width, height);
 
-    // Create a new SVG with type-safe builder using a string selector
-    const svg = createSvg(`#${containerIdRef.current}`, width, height);
+    const svg = svgBuilder.selection;
+    // Store the SVG element in the ref
+    svgRef.current = svg.node();
 
-    // Create a group for the graph elements
-    const g = appendElement<SVGSVGElement, unknown, HTMLElement, unknown, SVGGElement>(
-      svg.selection,
-      'g'
-    );
+    // Create defs and marker for arrows
+    const defs = createDefs(svg);
+    createMarker(defs, 'arrow', {
+      refX: 15,
+      refY: 5,
+      path: 'M0,0L10,5L0,10z',
+      color: '#666',
+    });
 
-    // Create a simulation with type safety
+    // Create the main container group that will be transformed during zoom
+    const container = svg.append<SVGGElement>('g').attr('class', 'container');
+
+    // Create groups for links and nodes
+    const linksGroup = container.append<SVGGElement>('g').attr('class', 'links');
+
+    const nodesGroup = container.append<SVGGElement>('g').attr('class', 'nodes');
+
+    // Create node map for lookup
+    const nodeMap = new Map<string, Node>();
+    data.nodes.forEach(node => nodeMap.set(node.id, node));
+
+    // Process link references
+    const links = data.links.map(link => {
+      return {
+        ...link,
+        source:
+          typeof link.source === 'string' ? nodeMap.get(link.source) || link.source : link.source,
+        target:
+          typeof link.target === 'string' ? nodeMap.get(link.target) || link.target : link.target,
+      };
+    });
+
+    // Create the simulation
     const simulation = d3
-      .forceSimulation<Node>()
+      .forceSimulation<Node>(data.nodes)
       .force(
         'link',
-        d3.forceLink<Node, Link>().id((d: Node) => d.id)
+        d3
+          .forceLink<Node, d3.SimulationLinkDatum<Node>>(links)
+          .id(d => d.id)
+          .distance(100)
       )
-      .force('charge', d3.forceManyBody().strength(-100))
+      .force('charge', d3.forceManyBody<Node>().strength(-400))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force(
         'collision',
-        d3.forceCollide<Node>().radius((d: Node) => d.radius + 5)
-      );
+        d3.forceCollide<Node>().radius(d => d.radius + 5)
+      )
+      .alpha(1)
+      .alphaDecay(0.02);
 
-    // Store the simulation in the ref
+    // Store the simulation reference
     simulationRef.current = simulation;
 
-    // Create links with type-safe builder
-    const links = appendElement<SVGGElement, unknown, HTMLElement, unknown, SVGLineElement>(
-      g,
-      'line'
-    )
-      .data(data.links)
-      .enter()
-      .append('line')
-      .attr('stroke', '#999')
-      .attr('stroke-opacity', 0.6)
-      .attr('stroke-width', (d: Link) => Math.sqrt(d.value));
+    // Create links with type-safe utilities
+    const linkElements = linksGroup.selectAll<SVGLineElement, Link>('line').data(links, d => d.id);
 
-    // Create a merged selection for nodes
-    const nodes = g
-      .selectAll<SVGCircleElement, Node>('circle')
-      .data(data.nodes)
+    const linkEnter = linkElements
       .enter()
-      .append('circle')
-      .attr('r', (d: Node) => d.radius)
-      .attr('fill', (d: Node) => d.color)
+      .append<SVGLineElement>('line')
+      .attr('stroke', '#666')
+      .attr('stroke-width', d => Math.sqrt(d.value))
+      .attr('marker-end', 'url(#arrow)');
+
+    // Create nodes with type-safe utilities
+    const nodeElements = nodesGroup
+      .selectAll<SVGGElement, Node>('g.node')
+      .data(data.nodes, d => d.id);
+
+    const nodeEnter = nodeElements.enter().append<SVGGElement>('g').attr('class', 'node');
+
+    // Add circles to nodes
+    nodeEnter
+      .append<SVGCircleElement>('circle')
+      .attr('r', d => d.radius)
+      .attr('fill', d => d.color)
       .attr('stroke', '#fff')
-      .attr('stroke-width', 1.5);
+      .attr('stroke-width', 2);
 
-    // Create labels for nodes
-    const labels = g
-      .selectAll<SVGTextElement, Node>('text')
-      .data(data.nodes)
-      .enter()
-      .append('text')
+    // Add text labels to nodes
+    nodeEnter
+      .append<SVGTextElement>('text')
+      .attr('dy', 4)
       .attr('text-anchor', 'middle')
-      .attr('dy', '.35em')
+      .text(d => d.name)
       .attr('fill', '#fff')
-      .text((d: Node) => d.label);
+      .attr('font-size', 12)
+      .attr('pointer-events', 'none');
+
+    // Create the merged selections
+    const link = linkEnter;
+    const node = nodeEnter;
 
     // Create type-safe drag behavior for nodes
-    const dragBehavior = createSimulationDragBehavior<Node>(simulation);
+    const dragBehavior = createSimulationDragBehavior<Node, SVGGElement>(simulation, {
+      onDragStart: event => {
+        // Select node on drag start
+        setSelectedNodeId((event.subject as Node).id);
+      },
+    });
 
     // Apply drag behavior to nodes
+    node.call(dragBehavior as d3.DragBehavior<SVGGElement, Node, object>);
 
-    nodes.call(dragBehavior as unknown as d3.DragBehavior<SVGCircleElement, Node, unknown>);
-
-    // Create zoom behavior
-    const zoomBehavior = createSvgZoomBehavior({
-      targetElement: g,
+    // Create type-safe zoom behavior
+    const zoomBehavior = createSvgZoomBehavior<SVGSVGElement>({
       scaleExtentMin: 0.1,
       scaleExtentMax: 4,
-      initialTransform: d3.zoomIdentity,
+      targetElement: container,
+      onZoom: event => {
+        setZoomLevel(event.transform.k);
+      },
     });
 
     // Apply zoom behavior to SVG
-    svg.selection.call(zoomBehavior);
+    svg.call(zoomBehavior);
 
-    // Update function for the simulation
-    simulation.nodes(data.nodes).on('tick', () => {
-      links
-        .attr('x1', (d: Link) => {
-          const source = d.source as Node;
-          return source.x || 0;
-        })
-        .attr('y1', (d: Link) => {
-          const source = d.source as Node;
-          return source.y || 0;
-        })
-        .attr('x2', (d: Link) => {
-          const target = d.target as Node;
-          return target.x || 0;
-        })
-        .attr('y2', (d: Link) => {
-          const target = d.target as Node;
-          return target.y || 0;
-        });
+    // Fit the graph to the viewport initially
+    svg.call(zoomBehavior.transform, getFitToViewportTransform(width, height, width, height, 50));
 
-      nodes.attr('cx', (d: Node) => d.x || 0).attr('cy', (d: Node) => d.y || 0);
-
-      labels.attr('x', (d: Node) => d.x || 0).attr('y', (d: Node) => d.y || 0);
+    // Add click handler to select nodes
+    node.on('click', (event, d) => {
+      event.stopPropagation();
+      setSelectedNodeId(d.id);
     });
 
-    // Set up the link force with the links data
-    const linkForce = simulation.force('link') as d3.ForceLink<Node, Link>;
-    linkForce.links(data.links);
+    // Add click handler to SVG to deselect
+    svg.on('click', () => {
+      setSelectedNodeId(null);
+    });
+
+    // Update function for simulation ticks
+    simulation.on('tick', () => {
+      // Update link positions with type-safe attribute setting
+      link
+        .attr('x1', d => (d.source as Node).x || 0)
+        .attr('y1', d => (d.source as Node).y || 0)
+        .attr('x2', d => (d.target as Node).x || 0)
+        .attr('y2', d => (d.target as Node).y || 0);
+
+      // Update node positions with type-safe attribute setting
+      node.attr('transform', d => `translate(${d.x || 0},${d.y || 0})`);
+    });
 
     // Cleanup function
     return () => {
@@ -200,91 +246,245 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
     };
   }, [data, width, height]);
 
-  // Function to add a new node
-  const addNode = () => {
-    const newId = (data.nodes.length + 1).toString();
-    const colors = ['#ff7f0e', '#1f77b4', '#2ca02c', '#d62728', '#9467bd'];
-    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  // Update node highlighting when selection changes
+  useEffect(() => {
+    if (!svgRef.current) return;
 
-    setData(prevData => {
-      const newNode: Node = {
-        id: newId,
-        label: `Node ${newId}`,
-        radius: 15 + Math.random() * 10,
-        color: randomColor,
-        x: width / 2 + (Math.random() - 0.5) * 100,
-        y: height / 2 + (Math.random() - 0.5) * 100,
-      };
+    const svg = d3.select(svgRef.current);
 
-      const newLink: Link = {
-        source: newId,
-        target: data.nodes[Math.floor(Math.random() * data.nodes.length)].id,
-        value: 1 + Math.floor(Math.random() * 3),
-      };
+    // Highlight selected node
+    svg.selectAll<SVGGElement, Node>('g.node').each(function (d) {
+      const element = d3.select(this);
+      const isSelected = d.id === selectedNodeId;
+
+      element
+        .select('circle')
+        .transition()
+        .duration(200)
+        .attr('stroke', isSelected ? '#ff0' : '#fff')
+        .attr('stroke-width', isSelected ? 4 : 2);
+
+      element
+        .select('text')
+        .transition()
+        .duration(200)
+        .attr('font-weight', isSelected ? 'bold' : 'normal')
+        .attr('font-size', isSelected ? 14 : 12);
+    });
+  }, [selectedNodeId]);
+
+  // Generate sample graph data
+  const generateSampleData = (): GraphData => {
+    const nodeCount = 20;
+    const linkCount = 30;
+
+    // Create nodes
+    const nodes: Node[] = Array.from({ length: nodeCount }, (_, i) => {
+      const group = Math.floor(Math.random() * 5);
+      const colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'];
 
       return {
-        nodes: [...prevData.nodes, newNode],
-        links: [...prevData.links, newLink],
+        id: `node-${i}`,
+        name: `N${i}`,
+        group,
+        radius: 10 + Math.random() * 10,
+        color: colors[group],
+        x: Math.random() * width,
+        y: Math.random() * height,
       };
     });
-  };
 
-  // Function to remove a random node
-  const removeNode = () => {
-    if (data.nodes.length <= 1) return;
+    // Create links
+    const links: Link[] = Array.from({ length: linkCount }, (_, i) => {
+      const source = `node-${Math.floor(Math.random() * nodeCount)}`;
+      let target = `node-${Math.floor(Math.random() * nodeCount)}`;
 
-    setData(prevData => {
-      const indexToRemove = Math.floor(Math.random() * prevData.nodes.length);
-      const nodeIdToRemove = prevData.nodes[indexToRemove].id;
+      // Ensure source and target are different
+      while (target === source) {
+        target = `node-${Math.floor(Math.random() * nodeCount)}`;
+      }
 
       return {
-        nodes: prevData.nodes.filter(node => node.id !== nodeIdToRemove),
-        links: prevData.links.filter(link => {
-          const sourceId = typeof link.source === 'string' ? link.source : (link.source as Node).id;
-          const targetId = typeof link.target === 'string' ? link.target : (link.target as Node).id;
-          return sourceId !== nodeIdToRemove && targetId !== nodeIdToRemove;
-        }),
+        id: `link-${i}`,
+        source,
+        target,
+        value: 1 + Math.random() * 5,
       };
     });
+
+    return { nodes, links };
   };
 
-  // Function to reset the view
-  const resetView = () => {
-    if (!containerRef.current) return;
+  // Add a new node at a random position
+  const handleAddNode = () => {
+    if (!data.nodes.length) return;
 
-    const svg = d3.select(containerRef.current).select('svg');
-    // Prefix with underscore to indicate intentionally unused variable
-    const _g = svg.select('g');
+    const newNode: Node = {
+      id: `node-${data.nodes.length}`,
+      name: `N${data.nodes.length}`,
+      group: Math.floor(Math.random() * 5),
+      radius: 10 + Math.random() * 10,
+      color: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'][Math.floor(Math.random() * 5)],
+      x: width / 2 + (Math.random() - 0.5) * 100,
+      y: height / 2 + (Math.random() - 0.5) * 100,
+    };
+
+    // Add links to random existing nodes
+    const newLinks: Link[] = Array.from({ length: 2 }, (_, i) => {
+      const targetIndex = Math.floor(Math.random() * data.nodes.length);
+
+      return {
+        id: `link-${data.links.length + i}`,
+        source: newNode.id,
+        target: data.nodes[targetIndex].id,
+        value: 1 + Math.random() * 5,
+      };
+    });
+
+    // Update data with new node and links
+    setData(prevData => ({
+      nodes: [...prevData.nodes, newNode],
+      links: [...prevData.links, ...newLinks],
+    }));
+  };
+
+  // Reset zoom to fit the entire graph
+  const handleResetZoom = () => {
+    if (!svgRef.current || !simulationRef.current) return;
+
+    const svg = d3.select(svgRef.current);
+    const zoom = d3.zoom<SVGSVGElement, unknown>().on('zoom', null);
 
     // Get the fit transform
-    const fitTransform = getFitToViewportTransform(width, height, width, height, 50);
+    const transform = getFitToViewportTransform(width, height, width, height, 50);
 
-    // Apply a smooth transition
-    const zoom = d3.zoom<SVGSVGElement, unknown>();
-
-    // D3's zoom.transform expects a selection but we're calling it on a transition
-    // This is a known limitation in D3's TypeScript definitions where the types
-    // don't properly support calling transform on a transition
+    // Apply the transform smoothly
     svg
       .transition()
       .duration(750)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .call(zoom.transform as any, fitTransform);
+      .call(
+        // Use a type assertion that matches what d3 expects for transitions
+        zoom.transform as unknown as (
+          selection: d3.Transition<SVGSVGElement, unknown, null, undefined>,
+          transform: d3.ZoomTransform
+        ) => void,
+        transform
+      );
   };
 
   return (
     <div className="type-safe-visualization-demo">
       <div className="controls">
-        <button onClick={addNode}>Add Node</button>
-        <button onClick={removeNode}>Remove Node</button>
-        <button onClick={resetView}>Reset View</button>
+        <div className="info">
+          <h3>Type-Safe D3 Interaction Demo</h3>
+          <p>Current zoom level: {zoomLevel.toFixed(2)}x</p>
+          {selectedNodeId && <p>Selected node: {selectedNodeId}</p>}
+        </div>
+        <div className="buttons">
+          <button onClick={handleAddNode}>Add Node</button>
+          <button onClick={handleResetZoom}>Reset Zoom</button>
+        </div>
       </div>
-      <div
-        ref={containerRef}
-        id={containerIdRef.current}
-        className="visualization-container"
-        style={{ width: `${width}px`, height: `${height}px`, border: '1px solid #ccc' }}
-      />
+
+      <div className="visualization-container" ref={containerRef}></div>
+
+      <div className="instructions">
+        <h4>Interactions:</h4>
+        <ul>
+          <li>
+            <strong>Drag Nodes:</strong> Click and drag nodes to reposition them
+          </li>
+          <li>
+            <strong>Zoom:</strong> Use mouse wheel or pinch gestures to zoom in/out
+          </li>
+          <li>
+            <strong>Pan:</strong> Click and drag the background to pan the view
+          </li>
+          <li>
+            <strong>Select:</strong> Click on a node to select it
+          </li>
+        </ul>
+      </div>
+
+      <style jsx>{`
+        .type-safe-visualization-demo {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          height: 100%;
+          padding: 20px;
+          box-sizing: border-box;
+        }
+
+        .controls {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 15px;
+        }
+
+        .info h3 {
+          margin: 0 0 5px 0;
+        }
+
+        .info p {
+          margin: 5px 0;
+        }
+
+        .buttons {
+          display: flex;
+          gap: 10px;
+        }
+
+        .buttons button {
+          padding: 8px 16px;
+          background-color: #4285f4;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 500;
+          transition: background-color 0.2s;
+        }
+
+        .buttons button:hover {
+          background-color: #3367d6;
+        }
+
+        .visualization-container {
+          flex: 1;
+          min-height: ${height}px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          overflow: hidden;
+          background-color: #f9f9f9;
+        }
+
+        .visualization-container svg {
+          width: 100%;
+          height: 100%;
+        }
+
+        .instructions {
+          margin-top: 15px;
+          padding: 10px;
+          background-color: #f0f0f0;
+          border-radius: 4px;
+        }
+
+        .instructions h4 {
+          margin: 0 0 10px 0;
+        }
+
+        .instructions ul {
+          margin: 0;
+          padding-left: 20px;
+        }
+
+        .instructions li {
+          margin-bottom: 5px;
+        }
+      `}</style>
     </div>
   );
 };

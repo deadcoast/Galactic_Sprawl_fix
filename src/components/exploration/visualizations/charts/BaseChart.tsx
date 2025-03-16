@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { ReactElement } from 'react';
 import { ResponsiveContainer, TooltipProps } from 'recharts';
 import { DataPoint } from '../../../../types/exploration/DataAnalysisTypes';
@@ -256,7 +256,7 @@ export function processChartData(
       const metadata = dataPoint.metadata || {};
 
       // Create a new object with flattened structure for chart
-      return {
+      const processedPoint: Record<string, unknown> = {
         ...properties,
         ...metadata,
         // Include the id and date for reference
@@ -268,10 +268,19 @@ export function processChartData(
             ? new Date(dataPoint.date).toLocaleDateString()
             : undefined,
       };
+
+      // Ensure all yKeys have a value, default to 0 if missing
+      yKeys.forEach(key => {
+        if (!(key in processedPoint)) {
+          processedPoint[key] = 0;
+        }
+      });
+
+      return processedPoint;
     }
 
     // Handle record objects
-    return {
+    const processedRecord: Record<string, unknown> = {
       ...item,
       // Format date if it's a timestamp and dateFormat is true
       formattedDate:
@@ -279,6 +288,15 @@ export function processChartData(
           ? new Date(item.date as number).toLocaleDateString()
           : undefined,
     };
+
+    // Ensure all yKeys have a value, default to 0 if missing
+    yKeys.forEach(key => {
+      if (!(key in processedRecord)) {
+        processedRecord[key] = 0;
+      }
+    });
+
+    return processedRecord;
   });
 }
 

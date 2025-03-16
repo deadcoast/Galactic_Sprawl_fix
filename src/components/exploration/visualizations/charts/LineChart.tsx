@@ -1,8 +1,6 @@
-import * as React from "react";
 import { useMemo } from 'react';
 import {
   CartesianGrid,
-  LabelProps,
   Legend,
   Line,
   LineChart as RechartsLineChart,
@@ -18,24 +16,9 @@ import {
   formatAxisTick,
   getColor,
   processChartData,
+  ReferenceLinePosition,
   ReferenceLine as ReferenceLineType,
 } from './BaseChart';
-
-// Define allowed positions for reference line labels
-type ReferenceLinePosition =
-  | 'top'
-  | 'bottom'
-  | 'left'
-  | 'right'
-  | 'insideTop'
-  | 'insideBottom'
-  | 'insideLeft'
-  | 'insideRight'
-  | 'insideTopRight'
-  | 'insideTopLeft'
-  | 'insideBottomRight'
-  | 'insideBottomLeft'
-  | 'center';
 
 // Define the dot click event interface
 interface DotClickEvent {
@@ -188,10 +171,10 @@ export function LineChart({
           stroke={line.color || '#ff7300'}
           label={
             line.label
-              ? ({
+              ? {
                   value: line.label,
-                  position: line.position || 'center',
-                } as LabelProps)
+                  position: (line.position || 'center') as ReferenceLinePosition,
+                }
               : undefined
           }
         />

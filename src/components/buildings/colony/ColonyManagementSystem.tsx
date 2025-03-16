@@ -12,9 +12,9 @@ import {
   Users,
 } from 'lucide-react';
 import * as React from 'react';
-import { useCallback, useState } from 'react';
-import { useEventSubscription } from '../../../hooks/events/useEventSubscription';
-import { ModuleEvent, moduleEventBus } from '../../../lib/events/ModuleEventBus';
+import { useCallback, useEffect, useState } from 'react';
+import { useModuleEvents } from '../../../hooks/events/useModuleEvents';
+import { ModuleEvent } from '../../../lib/events/ModuleEventBus';
 import { EventType } from '../../../types/events/EventTypes';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 import { AutomatedPopulationManager } from './AutomatedPopulationManager';
@@ -129,9 +129,10 @@ interface ColonyManagementSystemProps {
 }
 
 // Type guards
-function isColonyStatsEvent(event: ModuleEvent): boolean {
+function isColonyStatsEvent(
+  event: ModuleEvent
+): event is ModuleEvent & { data: { stats: { [ResourceType.POPULATION]: number } } } {
   return (
-    event.moduleType === 'colony' &&
     event.data !== undefined &&
     typeof event.data === 'object' &&
     event.data !== null &&
@@ -139,19 +140,33 @@ function isColonyStatsEvent(event: ModuleEvent): boolean {
     typeof event.data.stats === 'object' &&
     event.data.stats !== null &&
     ResourceType.POPULATION in event.data.stats &&
-    typeof event.data.stats.population === 'number'
+    typeof event.data.stats[ResourceType.POPULATION] === 'number'
   );
 }
 
-function isResourceUpdateEvent(event: ModuleEvent): boolean {
+function isResourceUpdateEvent(event: ModuleEvent): event is ModuleEvent & {
+  data: { resourceAmounts: { [key in ResourceData['type']]?: number } };
+} {
   return (
-    event.moduleType === 'colony' &&
     event.data !== undefined &&
     typeof event.data === 'object' &&
     event.data !== null &&
     'resourceAmounts' in event.data &&
     typeof event.data.resourceAmounts === 'object' &&
     event.data.resourceAmounts !== null
+  );
+}
+
+function isTradeRouteEvent(event: ModuleEvent): event is ModuleEvent & {
+  data: { partnerId: string; tradeResources: Array<ResourceData['type']> };
+} {
+  return (
+    event.data !== undefined &&
+    typeof event.data === 'object' &&
+    event.data !== null &&
+    'partnerId' in event.data &&
+    'tradeResources' in event.data &&
+    Array.isArray(event.data.tradeResources)
   );
 }
 
@@ -192,7 +207,7 @@ export function ColonyManagementSystem({
   const [satisfactionFactors, _setSatisfactionFactors] = useState(initialSatisfactionFactors);
   const [autoGrowthEnabled, setAutoGrowthEnabled] = useState(false);
   const [cycleLength, setCycleLength] = useState(60000); // 1 minute default
-  const [expandedSections, setExpandedSections] = useState({
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     population: true,
     trade: false,
     modifiers: false,
@@ -203,54 +218,64 @@ export function ColonyManagementSystem({
     projection: false,
   });
 
-  // Subscribe to colony events
-  useEventSubscription(moduleEventBus, EventType.MODULE_UPDATED, (event: ModuleEvent) => {
-    if (event.moduleId === colonyId && isColonyStatsEvent(event)) {
-      const { population: newPopulation } = event.data.stats;
-      handlePopulationChange(newPopulation);
-    }
-  });
+  // Subscribe to colony events using the new hook
+  const { subscribe } = useModuleEvents();
 
-  useEventSubscription(moduleEventBus, EventType.RESOURCE_UPDATED, (event: ModuleEvent) => {
-    if (event.moduleId === colonyId && isResourceUpdateEvent(event)) {
-      // Update resource amounts
-      const updatedResources = resources.map(resource => {
-        const resourceAmounts = event.data.resourceAmounts as Record<string, number>;
-        const amount = resourceAmounts[resource.type];
-        if (amount !== undefined) {
-          return {
-            ...resource,
-            storage: amount,
-          };
-        }
-        return resource;
-      });
-      _setResources(updatedResources);
-    }
-  });
+  // Event handlers
+  const handleModuleUpdate = useCallback(
+    (event: ModuleEvent) => {
+      if (event.moduleId === colonyId && isColonyStatsEvent(event)) {
+        handlePopulationChange(event.data.stats[ResourceType.POPULATION]);
+      }
+    },
+    [colonyId]
+  );
 
-  useEventSubscription(moduleEventBus, EventType.TRADE_ROUTE_UPDATED, event => {
-    if (event.moduleId === colonyId && event.data.tradeResources) {
-      // Update trade routes
-      const updatedRoutes = tradeRoutes.map(route => {
-        if (route.partnerId === event.data.partnerId) {
-          return {
-            ...route,
-            resources: event.data.tradeResources.map(resource => ({
-              id: `${resource}-${Date.now()}`,
-              name: resource,
-              type: 'import',
-              amount: 0,
-              value: 0,
-            })),
-          };
-        }
-        return route;
-      });
-      setTradeRoutes(updatedRoutes);
-      onTradeRouteChange?.(updatedRoutes);
-    }
-  });
+  const handleResourceUpdate = useCallback(
+    (event: ModuleEvent) => {
+      if (event.moduleId === colonyId && isResourceUpdateEvent(event)) {
+        const updatedResources = resources.map(resource => ({
+          ...resource,
+          storage: event.data.resourceAmounts[resource.type] ?? resource.storage,
+        }));
+        _setResources(updatedResources);
+      }
+    },
+    [colonyId, resources]
+  );
+
+  const handleTradeRouteUpdate = useCallback(
+    (event: ModuleEvent) => {
+      if (event.moduleId === colonyId && isTradeRouteEvent(event)) {
+        const updatedRoutes = tradeRoutes.map(route => ({
+          ...route,
+          resources: event.data.tradeResources.map(resource => ({
+            id: `${resource}-${Date.now()}`,
+            name: String(resource),
+            type: 'import' as const,
+            amount: 0,
+            value: 0,
+          })),
+        }));
+        setTradeRoutes(updatedRoutes);
+        onTradeRouteChange?.(updatedRoutes);
+      }
+    },
+    [colonyId, tradeRoutes, onTradeRouteChange]
+  );
+
+  // Subscribe to events
+  useEffect(() => {
+    const unsubModuleUpdate = subscribe(EventType.MODULE_UPDATED, handleModuleUpdate);
+    const unsubResourceUpdate = subscribe(EventType.RESOURCE_UPDATED, handleResourceUpdate);
+    const unsubTradeRouteUpdate = subscribe(EventType.RESOURCE_TRANSFERRED, handleTradeRouteUpdate);
+
+    return () => {
+      unsubModuleUpdate();
+      unsubResourceUpdate();
+      unsubTradeRouteUpdate();
+    };
+  }, [subscribe, handleModuleUpdate, handleResourceUpdate, handleTradeRouteUpdate]);
 
   // Calculate effective growth rate based on active modifiers
   const calculateEffectiveGrowthRate = useCallback(() => {
@@ -268,34 +293,45 @@ export function ColonyManagementSystem({
   }, [baseGrowthRate, growthModifiers]);
 
   // Handle population change
-  const handlePopulationChange = (newPopulation: number) => {
-    setPopulation(newPopulation);
+  const handlePopulationChange = useCallback(
+    (newPopulation: number) => {
+      setPopulation(newPopulation);
 
-    // Add population event and emit event
-    const growthAmount = newPopulation - population;
-    if (growthAmount !== 0) {
-      const newEvent: PopulationEvent = {
-        id: `event-${Date.now()}`,
-        timestamp: Date.now(),
-        type: growthAmount > 0 ? 'growth' : 'decline',
-        amount: growthAmount,
-        reason: growthAmount > 0 ? 'Natural population growth' : 'Natural population decline',
-      };
+      // Add population event and emit event
+      const growthAmount = newPopulation - population;
+      if (growthAmount !== 0) {
+        const newEvent: PopulationEvent = {
+          id: `event-${Date.now()}`,
+          timestamp: Date.now(),
+          type: growthAmount > 0 ? 'growth' : 'decline',
+          amount: growthAmount,
+          reason: growthAmount > 0 ? 'Natural population growth' : 'Natural population decline',
+        };
 
-      setPopulationEvents(prev => [newEvent, ...prev]);
+        setPopulationEvents(prev => [newEvent, ...prev]);
 
-      // Emit population change event
-      moduleEventBus.emitEvent(EventType.MODULE_UPDATED, colonyId, 'colony', {
-        colonyId,
-        stats: {
-          population: newPopulation,
-        },
-      });
-    }
+        // Create and emit population change event
+        const event: ModuleEvent = {
+          type: EventType.MODULE_UPDATED,
+          moduleId: colonyId,
+          moduleType: ResourceType.POPULATION,
+          timestamp: Date.now(),
+          data: {
+            stats: {
+              [ResourceType.POPULATION]: newPopulation,
+            },
+          },
+        };
 
-    // Call external handler
-    onPopulationChange?.(newPopulation);
-  };
+        // Emit the event to all subscribers
+        handleModuleUpdate(event);
+      }
+
+      // Call external handler
+      onPopulationChange?.(newPopulation);
+    },
+    [colonyId, population, onPopulationChange, handleModuleUpdate]
+  );
 
   // Handle modifier toggle
   const handleModifierToggle = (modifierId: string, active: boolean) => {

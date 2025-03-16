@@ -56,7 +56,7 @@ declare module '../../managers/combat/CombatManager' {
     getFleetStatus: (fleetId: string) => Fleet | undefined;
     getUnitsInRange: (position: { x: number; y: number }, range: number) => CombatUnit[];
     getThreatsInRange: (position: { x: number; y: number }, range: number) => Threat[];
-    moveUnit: (unitId: string, position: { x: number; y: number }) => void;
+    moveUnit: (unitId: string, position: { x: number; y: number }) => boolean;
   }
 }
 

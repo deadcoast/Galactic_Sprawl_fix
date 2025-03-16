@@ -31,9 +31,9 @@ export interface DataFetchResult<T> {
   isLoading: boolean;
   /** Any error that occurred during fetching */
   error: Error | null;
-  /** Function to manually trigger a fetch */
+  /** (...args: unknown[]) => unknown to manually trigger a fetch */
   fetch: () => Promise<void>;
-  /** Function to reset the hook state */
+  /** (...args: unknown[]) => unknown to reset the hook state */
   reset: () => void;
   /** Last time data was fetched successfully */
   lastFetched: number | null;

@@ -6,7 +6,7 @@ import { moduleStatusManager } from '../managers/module/ModuleStatusManager';
 import { moduleUpgradeManager } from '../managers/module/ModuleUpgradeManager';
 import { subModuleManager } from '../managers/module/SubModuleManager';
 import { ModuleType, SubModuleEffect, SubModuleType } from '../types/buildings/ModuleTypes';
-import { ResourceType } from "./../types/resources/ResourceTypes";
+import { ResourceType } from './../types/resources/ResourceTypes';
 
 // Create an instance of ResourceManager
 const resourceManager = new ResourceManager();
@@ -108,6 +108,8 @@ function registerResourceIntegration(): void {
       resourceManager.registerProduction(`module-${module.id}`, {
         type: resourceType as ResourceType,
         amount: amount,
+        rate: amount,
+        maxRate: amount,
         interval: 60000, // 1 minute
       });
     }

@@ -1,9 +1,9 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database, ZoomIn, ZoomOut } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { MiningResource, MiningShip } from '../../../../types/mining/MiningTypes';
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 
 interface MiningMapProps {
   resources: MiningResource[];
@@ -140,9 +140,14 @@ export function MiningMap({
             const color = getResourceColor(resource.type);
             const background = getResourceBackground(resource.type);
             const isSelected = selectedNode?.id === resource.id;
-            const angle = Math.random() * Math.PI * 2; // Random angle for position
+            const assignedShips = ships.filter(ship => ship.targetNode === resource.id);
+            const angle = Math.random() * Math.PI * 2;
             const x = Math.cos(angle) * resource.distance;
             const y = Math.sin(angle) * resource.distance;
+
+            // Calculate effective extraction rate with tech bonuses
+            const effectiveExtractionRate =
+              resource.extractionRate * (1 + techBonuses.extractionRate);
 
             return (
               <div
@@ -157,9 +162,9 @@ export function MiningMap({
                 <button onClick={() => onSelectNode(resource)} className="group relative">
                   {/* Resource Node Visualization */}
                   <div
-                    className={`h-16 w-16 rounded-full ${background} relative animate-pulse ${
-                      isSelected ? `ring-2 ${color} ring-offset-2 ring-offset-gray-900` : ''
-                    }`}
+                    className={`h-16 w-16 rounded-full ${background} relative ${
+                      assignedShips.length > 0 ? 'animate-pulse' : ''
+                    } ${isSelected ? `ring-2 ${color} ring-offset-2 ring-offset-gray-900` : ''}`}
                   >
                     <div
                       className={`absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full ${background}`}
@@ -175,6 +180,13 @@ export function MiningMap({
                     {resource.depletion > 0.5 && (
                       <AlertTriangle className="absolute -right-1 -top-1 h-4 w-4 text-yellow-500" />
                     )}
+
+                    {/* Assigned Ships Indicator */}
+                    {assignedShips.length > 0 && (
+                      <div className="absolute -left-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
+                        {assignedShips.length}
+                      </div>
+                    )}
                   </div>
 
                   {/* Resource Label */}
@@ -182,12 +194,14 @@ export function MiningMap({
                     <div className={`${color} text-sm font-medium`}>{resource.name}</div>
                     <div className={`${color.replace('400', '300')}/70 text-xs`}>
                       {Math.round(resource.abundance * 100)}% • {resource.distance}ly
+                      {assignedShips.length > 0 && ` • ${effectiveExtractionRate.toFixed(1)}/s`}
                     </div>
                   </div>
                 </button>
               </div>
             );
           })}
+          {children}
         </div>
       </div>
     </div>

@@ -445,7 +445,7 @@ export interface AnalysisResult {
   name: string;
   type: AnalysisType;
   createdAt: number;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   entityIds: string[];
   insights: Insight[];
   summary: string;
@@ -517,7 +517,7 @@ export enum ExplorationActivityType {
  */
 export interface ExplorationResult {
   success: boolean;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   discoveries: string[]; // IDs of discovered entities
   quality: number; // 0-100 scale
   rewards: Reward[];
@@ -679,7 +679,7 @@ export interface ExplorationEvent {
   entityId?: string;
   entityType?: string;
   timestamp: number;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 /**

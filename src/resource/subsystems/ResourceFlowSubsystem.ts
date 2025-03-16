@@ -926,7 +926,7 @@ export class ResourceFlowSubsystem {
   }
 
   // Module event handlers
-  private handleModuleCreated = (event: any): void => {
+  private handleModuleCreated = (event: unknown): void => {
     const { moduleId, moduleType, resources } = event;
 
     // Determine node type based on module type
@@ -951,7 +951,7 @@ export class ResourceFlowSubsystem {
     this.registerNode(node);
   };
 
-  private handleModuleUpdated = (event: any): void => {
+  private handleModuleUpdated = (event: unknown): void => {
     const { moduleId, changes } = event;
 
     // Get existing node
@@ -980,12 +980,12 @@ export class ResourceFlowSubsystem {
     }
   };
 
-  private handleModuleDestroyed = (event: any): void => {
+  private handleModuleDestroyed = (event: unknown): void => {
     const { moduleId } = event;
     this.unregisterNode(moduleId);
   };
 
-  private handleModuleStateChanged = (event: any): void => {
+  private handleModuleStateChanged = (event: unknown): void => {
     const { moduleId, active } = event;
 
     // Get existing node

@@ -15,9 +15,12 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react';
-import * as React from "react";
-import { useState } from 'react';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import * as React from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { EventType } from '../../types/events/EventTypes';
+import { StandardizedEvent } from '../../types/events/StandardizedEvents';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 // Types from other components
 interface Anomaly {
   id: string;
@@ -43,7 +46,12 @@ interface Sector {
 }
 
 interface ResourceData {
-  type: ResourceType.MINERALS | ResourceType.GAS | ResourceType.ENERGY | 'organic' | ResourceType.EXOTIC;
+  type:
+    | ResourceType.MINERALS
+    | ResourceType.GAS
+    | ResourceType.ENERGY
+    | 'organic'
+    | ResourceType.EXOTIC;
   name: string;
   amount: number;
   quality: number;
@@ -190,20 +198,48 @@ export function ExplorationDataManager({
     }
   };
 
-  // Handle record selection
-  const handleRecordSelect = (recordId: string, multiSelect = false) => {
+  // Handle record selection with standardized events
+  const handleRecordSelect = useCallback((recordId: string, multiSelect = false) => {
     if (multiSelect) {
       setSelectedRecordIds(prev => {
-        if (prev.includes(recordId)) {
-          return prev.filter(id => id !== recordId);
-        } else {
-          return [...prev, recordId];
-        }
+        const newSelection = prev.includes(recordId)
+          ? prev.filter(id => id !== recordId)
+          : [...prev, recordId];
+
+        // Emit selection event
+        const event: StandardizedEvent = {
+          type: EventType.MODULE_UPDATED,
+          moduleId: recordId,
+          moduleType: 'exploration',
+          timestamp: Date.now(),
+          data: {
+            action: 'select',
+            selectionType: 'multi',
+            selectedIds: newSelection,
+          },
+        };
+        moduleEventBus.emit(event);
+
+        return newSelection;
       });
     } else {
       setSelectedRecordIds([recordId]);
+
+      // Emit selection event
+      const event: StandardizedEvent = {
+        type: EventType.MODULE_UPDATED,
+        moduleId: recordId,
+        moduleType: 'exploration',
+        timestamp: Date.now(),
+        data: {
+          action: 'select',
+          selectionType: 'single',
+          selectedIds: [recordId],
+        },
+      };
+      moduleEventBus.emit(event);
     }
-  };
+  }, []);
 
   // Handle select all
   const handleSelectAll = () => {
@@ -214,16 +250,33 @@ export function ExplorationDataManager({
     }
   };
 
-  // Handle record star toggle
-  const handleToggleStar = (recordId: string) => {
-    const record = records.find(r => r.id === recordId);
-    if (record) {
-      onSaveRecord({
-        ...record,
-        starred: !record.starred,
-      });
-    }
-  };
+  // Handle record star toggle with standardized events
+  const handleToggleStar = useCallback(
+    (recordId: string) => {
+      const record = records.find(r => r.id === recordId);
+      if (record) {
+        const updatedRecord = {
+          ...record,
+          starred: !record.starred,
+        };
+        onSaveRecord(updatedRecord);
+
+        // Emit star toggle event
+        const event: StandardizedEvent = {
+          type: EventType.MODULE_UPDATED,
+          moduleId: recordId,
+          moduleType: 'exploration',
+          timestamp: Date.now(),
+          data: {
+            action: 'toggle_star',
+            starred: !record.starred,
+          },
+        };
+        moduleEventBus.emit(event);
+      }
+    },
+    [records, onSaveRecord]
+  );
 
   // Handle tag toggle
   const handleToggleTag = (tag: string) => {
@@ -236,28 +289,60 @@ export function ExplorationDataManager({
     });
   };
 
-  // Handle category toggle
-  const handleToggleCategory = (categoryId: string) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [categoryId]: !prev[categoryId],
-    }));
-  };
+  // Handle category toggle with standardized events
+  const handleToggleCategory = useCallback((categoryId: string) => {
+    setExpandedCategories(prev => {
+      const isExpanded = !prev[categoryId];
 
-  // Handle create category
-  const handleCreateCategory = () => {
+      // Emit category toggle event
+      const event: StandardizedEvent = {
+        type: EventType.MODULE_UPDATED,
+        moduleId: categoryId,
+        moduleType: 'exploration',
+        timestamp: Date.now(),
+        data: {
+          action: 'toggle_category',
+          expanded: isExpanded,
+        },
+      };
+      moduleEventBus.emit(event);
+
+      return {
+        ...prev,
+        [categoryId]: isExpanded,
+      };
+    });
+  }, []);
+
+  // Handle create category with standardized events
+  const handleCreateCategory = useCallback(() => {
     if (newCategoryName.trim()) {
-      onCreateCategory({
+      const categoryData = {
         name: newCategoryName.trim(),
         color: newCategoryColor,
         parentId: newCategoryParentId,
         subCategories: [],
-      });
+      };
+      onCreateCategory(categoryData);
+
+      // Emit category create event
+      const event: StandardizedEvent = {
+        type: EventType.MODULE_UPDATED,
+        moduleId: `category-${Date.now()}`, // Temporary ID until actual category is created
+        moduleType: 'exploration',
+        timestamp: Date.now(),
+        data: {
+          action: 'create_category',
+          categoryData,
+        },
+      };
+      moduleEventBus.emit(event);
+
       setNewCategoryName('');
       setNewCategoryColor('#3b82f6');
       setNewCategoryParentId(undefined);
     }
-  };
+  }, [newCategoryName, newCategoryColor, newCategoryParentId, onCreateCategory]);
 
   // Format date
   const formatDate = (timestamp: number) => {
@@ -350,6 +435,15 @@ export function ExplorationDataManager({
       </ul>
     );
   };
+
+  // Cleanup subscriptions on unmount
+  useEffect(() => {
+    const cleanup = () => {
+      // Any cleanup needed for event subscriptions
+    };
+
+    return cleanup;
+  }, []);
 
   return (
     <div className={`flex h-full flex-col bg-gray-900 ${className}`}>

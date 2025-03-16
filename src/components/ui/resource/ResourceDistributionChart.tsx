@@ -1,6 +1,5 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
 import * as d3 from 'd3';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import {
   ResourceType,
@@ -257,7 +256,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
         .text(d => `${d.amount}`);
     }
 
-    // Function called on each tick of the simulation
+    // (...args: unknown[]) => unknown called on each tick of the simulation
     function ticked() {
       node.attr('transform', d => {
         // Use safe accessors instead of direct property access

@@ -1,20 +1,10 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
-import * as React from "react";
+import { Button, Tabs } from 'antd';
+import * as React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-// Temporarily comment out antd and icons imports until dependencies are installed
-// import { Button, Tabs } from 'antd';
-// import {
-//   BarChartOutlined,
-//   AlignLeftOutlined,
-//   NodeIndexOutlined,
-//   SlidersFilled,
-//   AlertOutlined,
-//   SettingOutlined,
-// } from '@ant-design/icons';
 import { useResourceRates } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle, useComponentRegistration } from '../../../hooks/ui';
-import { ModuleEventType } from '../../../lib/modules/ModuleEvents';
+import { EventType } from '../../../types/events/EventTypes';
 import {
   ResourceType,
   ResourceTypeHelpers,
@@ -27,74 +17,6 @@ import './ResourceManagementDashboard.css';
 import ResourceOptimizationSuggestions from './ResourceOptimizationSuggestions';
 import ResourceThresholdVisualization from './ResourceThresholdVisualization';
 import { ResourceVisualizationEnhanced } from './ResourceVisualizationEnhanced';
-
-// Temporarily use simplified versions of Button and Tabs from custom components
-const Button = ({
-  children,
-  onClick,
-  type,
-  size,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  type?: string;
-  size?: string;
-}) => (
-  <button
-    onClick={onClick}
-    className={`custom-button ${type === 'primary' ? 'primary' : ''} ${size === 'small' ? 'small' : ''}`}
-  >
-    {children}
-  </button>
-);
-
-const Tabs = ({
-  children,
-  activeKey,
-  onChange,
-  type: _type,
-  className,
-}: {
-  children: React.ReactNode;
-  activeKey: string;
-  onChange: (key: string) => void;
-  type?: string;
-  className?: string;
-}) => (
-  <div className={`custom-tabs ${className || ''}`}>
-    <div className="tabs-header">
-      {React.Children.map(children, child => {
-        if (!React.isValidElement(child)) return null;
-        const tabKey = child.props.tabKey;
-        return (
-          <div
-            className={`tab-item ${activeKey === tabKey ? 'active' : ''}`}
-            onClick={() => onChange(tabKey)}
-          >
-            {child.props.tab}
-          </div>
-        );
-      })}
-    </div>
-    <div className="tabs-content">
-      {React.Children.map(children, child => {
-        if (!React.isValidElement(child)) return null;
-        const tabKey = child.props.tabKey;
-        return activeKey === tabKey ? child.props.children : null;
-      })}
-    </div>
-  </div>
-);
-
-Tabs.TabPane = ({
-  children,
-  tab: _tab,
-  tabKey: _tabKey,
-}: {
-  children: React.ReactNode;
-  tab: React.ReactNode;
-  tabKey: string;
-}) => <div className="tab-pane">{children}</div>;
 
 // Main resource types to display
 const MAIN_RESOURCES: ResourceType[] = [
@@ -124,20 +46,12 @@ interface ResourceData {
   };
 }
 
-// Define custom event types for the component registry
-type _CustomEventType =
-  | ModuleEventType
-  | 'RESOURCE_THRESHOLD_CHANGED'
-  | 'RESOURCE_THRESHOLD_TRIGGERED'
-  | 'RESOURCE_FLOW_UPDATED';
-
-// For component registration, we need to cast the event types
-const componentEventSubscriptions: ModuleEventType[] = [
-  'RESOURCE_UPDATED',
-  // Cast custom events to ModuleEventType for compatibility with the component registry
-  'RESOURCE_THRESHOLD_CHANGED' as unknown as ModuleEventType,
-  'RESOURCE_THRESHOLD_TRIGGERED' as unknown as ModuleEventType,
-  'RESOURCE_FLOW_UPDATED' as unknown as ModuleEventType,
+// For component registration, we need to use the correct EventType values
+const componentEventSubscriptions: EventType[] = [
+  EventType.RESOURCE_UPDATED,
+  EventType.RESOURCE_FLOW_REGISTERED,
+  EventType.RESOURCE_FLOW_UNREGISTERED,
+  EventType.RESOURCE_FLOW_UPDATED,
 ];
 
 // Create a wrapper for ResourceVisualizationEnhanced that accepts props
@@ -196,7 +110,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
     },
     eventSubscriptions: [
       {
-        eventType: 'RESOURCE_UPDATED' as ModuleEventType,
+        eventType: EventType.RESOURCE_UPDATED,
         handler: event => {
           if (event.data?.resourceType) {
             updateResourceData(event.data.resourceType as ResourceType, event.data);
@@ -204,8 +118,8 @@ const ResourceManagementDashboardBase: React.FC = () => {
         },
       },
       {
-        // Cast to ModuleEventType for compatibility
-        eventType: 'RESOURCE_THRESHOLD_TRIGGERED' as unknown as ModuleEventType,
+        // Cast to EventType for compatibility
+        eventType: EventType.RESOURCE_THRESHOLD_TRIGGERED,
         handler: event => {
           if (event.data?.resourceId) {
             // Show alert or notification
@@ -688,43 +602,58 @@ const ResourceManagementDashboardBase: React.FC = () => {
 
   return (
     <div className="resource-management-dashboard">
-      <header className="dashboard-header">
-        <h1>Resource Management</h1>
-      </header>
+      <div className="dashboard-header">
+        <h2>Resource Management</h2>
+      </div>
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab} type="card" className="dashboard-tabs">
-        <Tabs.TabPane tab={<span>Overview</span>} tabKey="overview">
-          {renderResourceOverview()}
-        </Tabs.TabPane>
-
-        <Tabs.TabPane tab={<span>Resource Flow</span>} tabKey="flow">
-          {renderResourceFlow()}
-        </Tabs.TabPane>
-
-        <Tabs.TabPane tab={<span>Forecasting</span>} tabKey="forecasting">
-          {renderResourceForecasting()}
-        </Tabs.TabPane>
-
-        <Tabs.TabPane tab={<span>Optimization</span>} tabKey="optimization">
-          {renderOptimizationSuggestions()}
-        </Tabs.TabPane>
-
-        <Tabs.TabPane tab={<span>Converters</span>} tabKey="converters">
-          {renderConverterManagement()}
-        </Tabs.TabPane>
-
-        <Tabs.TabPane tab={<span>Production Chains</span>} tabKey="chains">
-          {renderProductionChains()}
-        </Tabs.TabPane>
-
-        <Tabs.TabPane tab={<span>Threshold Config</span>} tabKey="thresholds">
-          {renderThresholdConfiguration()}
-        </Tabs.TabPane>
-
-        <Tabs.TabPane tab={<span>Alerts</span>} tabKey="alerts">
-          {renderAlerts()}
-        </Tabs.TabPane>
-      </Tabs>
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        type="card"
+        className="resource-tabs"
+        items={[
+          {
+            key: 'overview',
+            label: 'Overview',
+            children: renderResourceOverview(),
+          },
+          {
+            key: 'flow',
+            label: 'Resource Flow',
+            children: renderResourceFlow(),
+          },
+          {
+            key: 'converters',
+            label: 'Converters',
+            children: renderConverterManagement(),
+          },
+          {
+            key: 'chains',
+            label: 'Production Chains',
+            children: renderProductionChains(),
+          },
+          {
+            key: 'thresholds',
+            label: 'Thresholds',
+            children: renderThresholdConfiguration(),
+          },
+          {
+            key: 'alerts',
+            label: 'Alerts',
+            children: renderAlerts(),
+          },
+          {
+            key: 'forecasting',
+            label: 'Forecasting',
+            children: renderResourceForecasting(),
+          },
+          {
+            key: 'optimization',
+            label: 'Optimization',
+            children: renderOptimizationSuggestions(),
+          },
+        ]}
+      />
     </div>
   );
 };

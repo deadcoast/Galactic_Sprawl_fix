@@ -1,8 +1,8 @@
-import * as React from "react";
+import * as React from 'react';
 import { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
 import { ResourceManager } from '../managers/game/ResourceManager';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
-import { ResourceType } from "./../types/resources/ResourceTypes";
+import { ResourceType } from './../types/resources/ResourceTypes';
 
 /**
  * We're focusing only on the core resources for this context
@@ -69,6 +69,7 @@ const defaultResourceRates: Record<ResourceType, ResourceRateDetail> = {
   [ResourceType.PLASMA]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.GAS]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.EXOTIC]: { production: 0, consumption: 0, net: 0 },
+  [ResourceType.ORGANIC]: { production: 0, consumption: 0, net: 0 },
   // Add missing resource types
   [ResourceType.IRON]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.COPPER]: { production: 0, consumption: 0, net: 0 },

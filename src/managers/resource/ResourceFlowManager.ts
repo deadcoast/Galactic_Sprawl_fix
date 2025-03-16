@@ -312,7 +312,7 @@ export class ResourceFlowManager
       if ('sourceType' in data && 'targetType' in data && 'rate' in data) {
         // Update conversion recipes when rates change
         // This is a placeholder for actual implementation
-        console.log(
+        console.warn(
           `Conversion rate changed: ${data.sourceType} -> ${data.targetType} = ${data.rate}`
         );
       }

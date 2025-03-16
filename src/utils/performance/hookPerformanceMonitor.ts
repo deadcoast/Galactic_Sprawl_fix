@@ -137,7 +137,7 @@ export function measureSelectorTime<T>(
       `[${config.hookName}] Slow selector '${selectorName}': ${duration.toFixed(2)}ms (threshold: ${config.selectorThreshold}ms)`
     );
   } else if (config.verbose) {
-    console.log(`[${config.hookName}] Selector '${selectorName}': ${duration.toFixed(2)}ms`);
+    console.warn(`[${config.hookName}] Selector '${selectorName}': ${duration.toFixed(2)}ms`);
   }
 
   return result;
@@ -197,7 +197,7 @@ export function measureComputationTime<T>(
       `[${config.hookName}] Slow computation '${computationName}': ${duration.toFixed(2)}ms (threshold: ${config.computationThreshold}ms)`
     );
   } else if (config.verbose) {
-    console.log(`[${config.hookName}] Computation '${computationName}': ${duration.toFixed(2)}ms`);
+    console.warn(`[${config.hookName}] Computation '${computationName}': ${duration.toFixed(2)}ms`);
   }
 
   return result;
@@ -235,7 +235,7 @@ export function trackHookRender(config: HookPerformanceConfig): void {
 
   // Log if verbose
   if (config.verbose) {
-    console.log(
+    console.warn(
       `[${config.hookName}] Render #${hookData.renderCount} (${timeSinceLastRender}ms since last render)`
     );
   }

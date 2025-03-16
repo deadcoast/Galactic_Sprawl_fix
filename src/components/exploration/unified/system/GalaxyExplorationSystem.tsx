@@ -1,4 +1,4 @@
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 /**
  * GalaxyExplorationSystem Component
  *
@@ -7,8 +7,11 @@ import { ResourceType } from "./../../../../types/resources/ResourceTypes";
  * into a single coherent interface.
  */
 
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { moduleEventBus } from '../../../../lib/events/ModuleEventBus';
+import { EventType } from '../../../../types/events/EventTypes';
+import { StandardizedEvent } from '../../../../types/events/StandardizedEvents';
 import {
   AnalysisResult,
   AnalysisType,
@@ -558,6 +561,9 @@ const GalaxyExplorationSystemInner: React.FC<
             const screenX = (x - viewport.x) * viewport.scale + viewport.width / 2;
             const screenY = (y - viewport.y) * viewport.scale + viewport.height / 2;
 
+            // Only draw if detail level is sufficient
+            if (settings.detailLevel === DetailLevel.LOW && viewport.scale < 0.5) return;
+
             // Draw resource
             ctx.beginPath();
             ctx.rect(
@@ -567,49 +573,50 @@ const GalaxyExplorationSystemInner: React.FC<
               10 * viewport.scale
             );
 
-            // Set color based on resource type
+            // Set color based on resource type and theme
+            const alpha = settings.theme === MapTheme.DARK ? 0.9 : 0.8;
             switch (resource.type as string) {
               case ResourceType.MINERALS:
-                ctx.fillStyle = 'rgba(150, 150, 150, 0.8)';
+                ctx.fillStyle = `rgba(150, 150, 150, ${alpha})`;
                 break;
               case 'iron':
-                ctx.fillStyle = 'rgba(130, 130, 130, 0.8)';
+                ctx.fillStyle = `rgba(130, 130, 130, ${alpha})`;
                 break;
               case 'copper':
-                ctx.fillStyle = 'rgba(180, 120, 70, 0.8)';
+                ctx.fillStyle = `rgba(180, 120, 70, ${alpha})`;
                 break;
               case 'titanium':
-                ctx.fillStyle = 'rgba(200, 200, 200, 0.8)';
+                ctx.fillStyle = `rgba(200, 200, 200, ${alpha})`;
                 break;
               case 'uranium':
-                ctx.fillStyle = 'rgba(100, 200, 100, 0.8)';
+                ctx.fillStyle = `rgba(100, 200, 100, ${alpha})`;
                 break;
               case 'water':
-                ctx.fillStyle = 'rgba(100, 150, 200, 0.8)';
+                ctx.fillStyle = `rgba(100, 150, 200, ${alpha})`;
                 break;
               case 'helium':
-                ctx.fillStyle = 'rgba(200, 200, 255, 0.8)';
+                ctx.fillStyle = `rgba(200, 200, 255, ${alpha})`;
                 break;
               case 'deuterium':
-                ctx.fillStyle = 'rgba(150, 200, 255, 0.8)';
+                ctx.fillStyle = `rgba(150, 200, 255, ${alpha})`;
                 break;
               case ResourceType.ENERGY:
-                ctx.fillStyle = 'rgba(255, 255, 100, 0.8)';
+                ctx.fillStyle = `rgba(255, 255, 100, ${alpha})`;
                 break;
               case ResourceType.EXOTIC:
-                ctx.fillStyle = 'rgba(200, 100, 200, 0.8)';
+                ctx.fillStyle = `rgba(200, 100, 200, ${alpha})`;
                 break;
               default:
-                ctx.fillStyle = 'rgba(150, 150, 150, 0.8)';
+                ctx.fillStyle = `rgba(150, 150, 150, ${alpha})`;
             }
 
             ctx.fill();
-            ctx.strokeStyle = 'white';
+            ctx.strokeStyle = settings.theme === MapTheme.DARK ? '#ffffff' : '#000000';
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Draw quality indicator if scale is sufficient
-            if (viewport.scale > 0.7) {
+            // Draw quality indicator if scale is sufficient and detail level allows
+            if (viewport.scale > 0.7 && settings.detailLevel !== DetailLevel.LOW) {
               const quality = Math.min(Math.max(resource.quality, 0), 100);
               const radius = 4 * viewport.scale;
               const startAngle = -Math.PI / 2;
@@ -617,7 +624,10 @@ const GalaxyExplorationSystemInner: React.FC<
 
               ctx.beginPath();
               ctx.arc(screenX, screenY, radius, startAngle, endAngle);
-              ctx.strokeStyle = 'rgba(255, 255, 100, 0.8)';
+              ctx.strokeStyle =
+                settings.theme === MapTheme.DARK
+                  ? 'rgba(255, 255, 100, 0.9)'
+                  : 'rgba(255, 255, 100, 0.8)';
               ctx.lineWidth = 2;
               ctx.stroke();
             }
@@ -652,6 +662,9 @@ const GalaxyExplorationSystemInner: React.FC<
 
             if (!source || !target) return;
 
+            // Skip if detail level is low and route is not significant
+            if (settings.detailLevel === DetailLevel.LOW && route.volume < 50) return;
+
             // Convert coordinates to screen space
             const sourceX =
               (source.coordinates.x - viewport.x) * viewport.scale + viewport.width / 2;
@@ -668,18 +681,22 @@ const GalaxyExplorationSystemInner: React.FC<
             ctx.moveTo(sourceX, sourceY);
             ctx.lineTo(targetX, targetY);
 
-            // Set style based on trade volume
-            const alpha = 0.3 + (route.volume / 100) * 0.4;
+            // Set style based on trade volume and theme
+            const baseAlpha = settings.theme === MapTheme.DARK ? 0.4 : 0.3;
+            const alpha = baseAlpha + (route.volume / 100) * 0.4;
             const width = 1 + (route.volume / 100) * 3;
 
-            ctx.strokeStyle = `rgba(100, 200, 255, ${alpha})`;
+            ctx.strokeStyle =
+              settings.theme === MapTheme.DARK
+                ? `rgba(120, 220, 255, ${alpha})`
+                : `rgba(100, 200, 255, ${alpha})`;
             ctx.lineWidth = width;
             ctx.setLineDash([5, 5]);
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Draw direction arrow if scale is sufficient
-            if (viewport.scale > 0.5) {
+            // Draw direction arrow if scale is sufficient and detail level allows
+            if (viewport.scale > 0.5 && settings.detailLevel !== DetailLevel.LOW) {
               const dx = targetX - sourceX;
               const dy = targetY - sourceY;
               const distance = Math.sqrt(dx * dx + dy * dy);
@@ -703,7 +720,10 @@ const GalaxyExplorationSystemInner: React.FC<
                 );
                 ctx.closePath();
 
-                ctx.fillStyle = 'rgba(100, 200, 255, 0.8)';
+                ctx.fillStyle =
+                  settings.theme === MapTheme.DARK
+                    ? 'rgba(120, 220, 255, 0.9)'
+                    : 'rgba(100, 200, 255, 0.8)';
                 ctx.fill();
               }
             }
@@ -896,7 +916,7 @@ const GalaxyExplorationSystemInner: React.FC<
     }
   }, [dataTableView, sectorColumns, systemColumns, anomalyColumns, resourceColumns]);
 
-  // Handle map click
+  // Handle map click with standardized events
   const handleMapClick = useCallback(
     (worldX: number, worldY: number) => {
       // Find clicked entity
@@ -920,6 +940,20 @@ const GalaxyExplorationSystemInner: React.FC<
             highlightColor: '#ffcc00',
           },
         ]);
+
+        // Emit exploration event
+        const event: StandardizedEvent = {
+          type: EventType.MODULE_UPDATED,
+          moduleId: clickedSector.id,
+          moduleType: 'exploration',
+          timestamp: Date.now(),
+          data: {
+            entityType: 'sector',
+            coordinates: clickedSector.coordinates,
+            action: 'select',
+          },
+        };
+        moduleEventBus.emit(event);
         return;
       }
 
@@ -943,6 +977,20 @@ const GalaxyExplorationSystemInner: React.FC<
             highlightColor: '#88aaff',
           },
         ]);
+
+        // Emit exploration event
+        const event: StandardizedEvent = {
+          type: EventType.MODULE_UPDATED,
+          moduleId: clickedSystem.id,
+          moduleType: 'exploration',
+          timestamp: Date.now(),
+          data: {
+            entityType: 'system',
+            coordinates: clickedSystem.coordinates,
+            action: 'select',
+          },
+        };
+        moduleEventBus.emit(event);
         return;
       }
 
@@ -953,7 +1001,7 @@ const GalaxyExplorationSystemInner: React.FC<
         const dx = x - worldX;
         const dy = y - worldY;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < 7;
+        return distance < 8;
       });
 
       if (clickedAnomaly) {
@@ -963,37 +1011,24 @@ const GalaxyExplorationSystemInner: React.FC<
             entityType: 'anomaly',
             coordinates: clickedAnomaly.coordinates,
             selected: true,
-            highlightColor: '#ff88aa',
+            highlightColor: '#ff88ff',
           },
         ]);
-        return;
-      }
 
-      // Check resources
-      const resources = exploration.state.resources;
-      const clickedResource = resources.find(resource => {
-        const { x, y } = resource.coordinates;
-        const dx = x - worldX;
-        const dy = y - worldY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < 5;
-      });
-
-      if (clickedResource) {
-        setSelection([
-          {
-            entityId: clickedResource.id,
-            entityType: 'resource',
-            coordinates: clickedResource.coordinates,
-            selected: true,
-            highlightColor: '#aaffaa',
+        // Emit exploration event
+        const event: StandardizedEvent = {
+          type: EventType.MODULE_UPDATED,
+          moduleId: clickedAnomaly.id,
+          moduleType: 'exploration',
+          timestamp: Date.now(),
+          data: {
+            entityType: 'anomaly',
+            coordinates: clickedAnomaly.coordinates,
+            action: 'select',
           },
-        ]);
-        return;
+        };
+        moduleEventBus.emit(event);
       }
-
-      // If nothing clicked, clear selection
-      setSelection([]);
     },
     [exploration]
   );
@@ -1058,45 +1093,20 @@ const GalaxyExplorationSystemInner: React.FC<
     [setSelection, viewMode]
   );
 
-  // Handle analyze button click
+  // Handle analyze with standardized events
   const handleAnalyze = useCallback(() => {
     if (selection.length === 0) return;
 
-    // Find entity to analyze
     const entity = selection[0];
-    let analysisTarget: string;
-    let analysisType: AnalysisType;
-
-    switch (entity.entityType) {
-      case 'sector':
-        analysisTarget = 'Sector Analysis';
-        analysisType = AnalysisType.STRATEGIC;
-        break;
-      case 'system':
-        analysisTarget = 'System Analysis';
-        analysisType = AnalysisType.RESOURCE;
-        break;
-      case 'anomaly':
-        analysisTarget = 'Anomaly Analysis';
-        analysisType = AnalysisType.COMPOSITION;
-        break;
-      case 'resource':
-        analysisTarget = 'Resource Analysis';
-        analysisType = AnalysisType.RESOURCE;
-        break;
-      default:
-        analysisTarget = 'Generic Analysis';
-        analysisType = AnalysisType.STRATEGIC;
-    }
+    const analysisTarget = entity.entityType;
+    const analysisType = AnalysisType.STRATEGIC;
 
     // Create a simple analysis result
-    // In a real implementation, you would call an analysis service
     const analysisId = exploration.createAnalysis({
       name: `${analysisTarget} - ${new Date().toLocaleDateString()}`,
       type: analysisType,
       entityIds: [entity.entityId],
       data: {
-        // Sample data - in a real implementation, this would be real analysis data
         coordinates: entity.coordinates,
         analysisTime: Date.now(),
         metrics: {
@@ -1137,6 +1147,21 @@ const GalaxyExplorationSystemInner: React.FC<
     if (analysis) {
       setCurrentAnalysis(analysis);
       setViewMode('analysis');
+
+      // Emit analysis event
+      const event: StandardizedEvent = {
+        type: EventType.MODULE_UPDATED,
+        moduleId: entity.entityId,
+        moduleType: 'exploration',
+        timestamp: Date.now(),
+        data: {
+          entityType: entity.entityType,
+          analysisId: analysisId,
+          analysisType: analysisType,
+          action: 'analyze',
+        },
+      };
+      moduleEventBus.emit(event);
     }
   }, [selection, exploration]);
 
@@ -1476,6 +1501,15 @@ const GalaxyExplorationSystemInner: React.FC<
       </div>
     );
   };
+
+  // Cleanup subscriptions on unmount
+  useEffect(() => {
+    const cleanup = () => {
+      // Any cleanup needed for event subscriptions
+    };
+
+    return cleanup;
+  }, []);
 
   return (
     <div

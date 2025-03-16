@@ -10,7 +10,7 @@ import {
   ModuleAttachmentPoint,
   ModuleType,
 } from '../../../types/buildings/ModuleTypes';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 const MOTHERSHIP_ATTACHMENT_POINTS: ModuleAttachmentPoint[] = [
   {
@@ -41,14 +41,22 @@ const MODULE_ICONS = {
   academy: GraduationCap,
 };
 
+interface ResourceFlow {
+  id: string;
+  source: { x: number; y: number };
+  target: { x: number; y: number };
+  type: ResourceType.ENERGY | ResourceType.RESEARCH | 'materials';
+  rate: number;
+}
+
 interface MothershipProps {
   id: string;
   level: number;
   modules: ModularBuilding['modules'];
   resourceLevels?: {
-    energy: number;
+    [ResourceType.ENERGY]: number;
     materials: number;
-    research: number;
+    [ResourceType.RESEARCH]: number;
   };
   expansionProgress?: number;
   quality?: 'low' | 'medium' | 'high';
@@ -57,11 +65,18 @@ interface MothershipProps {
   onSectionClick?: (section: string) => void;
 }
 
+// Add mapping between ResourceType and resourceLevels keys
+const resourceTypeToKey = {
+  [ResourceType.ENERGY]: ResourceType.ENERGY,
+  [ResourceType.RESEARCH]: ResourceType.RESEARCH,
+  materials: 'materials',
+} as const;
+
 export function MothershipCore({
   id,
   level,
   modules,
-  resourceLevels = { energy: 50, materials: 50, research: 50 },
+  resourceLevels = { [ResourceType.ENERGY]: 50, materials: 50, [ResourceType.RESEARCH]: 50 },
   expansionProgress = 50,
   quality = 'medium',
   onModuleAttach,
@@ -69,15 +84,7 @@ export function MothershipCore({
   onSectionClick,
 }: MothershipProps) {
   // State for resource flows
-  const [resourceFlows, setResourceFlows] = useState<
-    Array<{
-      id: string;
-      source: { x: number; y: number };
-      target: { x: number; y: number };
-      type: ResourceType.ENERGY | 'materials' | ResourceType.RESEARCH | ResourceType.POPULATION;
-      rate: number;
-    }>
-  >([]);
+  const [resourceFlows, setResourceFlows] = useState<ResourceFlow[]>([]);
 
   // Calculate tier based on level
   const tier = level <= 3 ? 1 : level <= 7 ? 2 : 3;
@@ -125,39 +132,32 @@ export function MothershipCore({
 
   // Generate resource flows
   useEffect(() => {
-    // Clear existing flows
-    setResourceFlows([]);
-
-    // Center position
     const centerX = 0;
     const centerY = 0;
 
-    // Generate flows for each attached module
     const newFlows = modules.flatMap((module, index) => {
-      const flows = [];
+      const flows: ResourceFlow[] = [];
 
       // Energy flow (from center to module)
+      const energyKey = resourceTypeToKey[ResourceType.ENERGY];
       flows.push({
         id: `energy-flow-${module.id}`,
         source: { x: centerX, y: centerY },
         target: { x: module.position.x, y: module.position.y },
-        type: ResourceType.ENERGY as const,
-        rate: Math.min(100, resourceLevels.energy * (0.7 + Math.random() * 0.6)),
+        type: ResourceType.ENERGY,
+        rate: Math.min(100, resourceLevels[energyKey] * (0.6 + Math.random() * 0.8)),
       });
 
       // Materials or research flow (from module to center)
-      const resourceType =
-        index % 2 === 0 ? ('materials' as const) : (ResourceType.RESEARCH as const);
+      const resourceType = index % 2 === 0 ? 'materials' : ResourceType.RESEARCH;
+      const resourceKey = resourceTypeToKey[resourceType];
+
       flows.push({
         id: `${resourceType}-flow-${module.id}`,
         source: { x: module.position.x, y: module.position.y },
         target: { x: centerX, y: centerY },
         type: resourceType,
-        rate: Math.min(
-          100,
-          resourceLevels[resourceType === ResourceType.RESEARCH ? ResourceType.RESEARCH : 'materials'] *
-            (0.6 + Math.random() * 0.8)
-        ),
+        rate: Math.min(100, resourceLevels[resourceKey] * (0.6 + Math.random() * 0.8)),
       });
 
       return flows;
@@ -182,9 +182,9 @@ export function MothershipCore({
               tier={tier as 1 | 2 | 3}
               expansionLevel={expansionProgress}
               resourceFlow={{
-                energy: resourceLevels.energy,
+                energy: resourceLevels[ResourceType.ENERGY],
                 materials: resourceLevels.materials,
-                research: resourceLevels.research,
+                research: resourceLevels[ResourceType.RESEARCH],
               }}
               quality={quality}
               onSectionClick={onSectionClick}
@@ -273,12 +273,12 @@ export function MothershipCore({
             <div>
               <div className="mb-1 flex justify-between text-xs">
                 <span className="text-yellow-400">Energy</span>
-                <span className="text-gray-400">{resourceLevels.energy}%</span>
+                <span className="text-gray-400">{resourceLevels[ResourceType.ENERGY]}%</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
                 <div
                   className="h-full rounded-full bg-yellow-500"
-                  style={{ width: `${resourceLevels.energy}%` }}
+                  style={{ width: `${resourceLevels[ResourceType.ENERGY]}%` }}
                 />
               </div>
             </div>
@@ -301,12 +301,12 @@ export function MothershipCore({
             <div>
               <div className="mb-1 flex justify-between text-xs">
                 <span className="text-purple-400">Research</span>
-                <span className="text-gray-400">{resourceLevels.research}%</span>
+                <span className="text-gray-400">{resourceLevels[ResourceType.RESEARCH]}%</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
                 <div
                   className="h-full rounded-full bg-purple-500"
-                  style={{ width: `${resourceLevels.research}%` }}
+                  style={{ width: `${resourceLevels[ResourceType.RESEARCH]}%` }}
                 />
               </div>
             </div>

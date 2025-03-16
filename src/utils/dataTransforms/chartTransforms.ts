@@ -134,7 +134,7 @@ export function safelyExtractPath<T>(
   if (!obj) return defaultValue;
   
   const keys = path.split('.');
-  let current: any = obj;
+  let current: unknown = obj;
   
   for (const key of keys) {
     if (current === null || current === undefined || typeof current !== 'object') {
@@ -297,7 +297,7 @@ export function transformClusterData(
   result: AnalysisResult,
   allData: ChartDataRecord[]
 ): {
-  clusters: any[];
+  clusters: unknown[];
   features: string[];
   clusterPoints: ClusterPoint[];
 } {
@@ -309,7 +309,7 @@ export function transformClusterData(
     };
   }
   
-  const clusters = result.data.clusters as any[];
+  const clusters = result.data.clusters as unknown[];
   const features = safelyExtractArray<string>(result.data, 'features', []);
   const clusterPoints: ClusterPoint[] = [];
   
@@ -362,8 +362,8 @@ export function transformPredictionData(
   model: string;
   targetVariable: string;
   features: string[];
-  metrics: any;
-  modelDetails: any;
+  metrics: unknown;
+  modelDetails: unknown;
 } {
   // Extract data with type safety
   const predictions = safelyExtractArray<PredictionPoint>(result.data, 'predictions', []);
@@ -379,7 +379,7 @@ export function transformPredictionData(
   );
   
   // Process model details based on model type
-  let typedModelDetails: any;
+  let typedModelDetails: unknown;
   
   if (model === 'linear') {
     typedModelDetails = {

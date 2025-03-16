@@ -18,7 +18,7 @@ import { OfficerManager } from './managers/module/OfficerManager';
 import { ShipHangarManager } from './managers/module/ShipHangarManager';
 import { ModuleType } from './types/buildings/ModuleTypes';
 import { ModuleStatus } from './types/modules/ModuleTypes';
-import { ResourceType } from "./../types/resources/ResourceTypes";
+import { ResourceType } from './types/resources/ResourceTypes';
 
 // Import the GlobalErrorBoundary component
 import { GlobalErrorBoundary } from './components/ui/GlobalErrorBoundary';
@@ -349,7 +349,7 @@ const GameLayoutWrapper = () => {
   return (
     <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
       <div className="min-h-screen bg-gray-900">
-        <ResourceVisualization resourceType={ResourceType.ENERGY} amount={100} />
+        <ResourceVisualization type={ResourceType.ENERGY} value={100} />
       </div>
     </GameLayout>
   );

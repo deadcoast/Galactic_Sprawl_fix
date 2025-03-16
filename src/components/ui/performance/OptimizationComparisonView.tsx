@@ -97,13 +97,13 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
   // Setup chart visualization
   const setupCharts = () => {
     // In a real implementation, this would initialize D3 charts
-    console.log('Setting up performance comparison charts');
+    console.warn('Setting up performance comparison charts');
   };
 
   // Update chart visualization
   const updateCharts = () => {
     // In a real implementation, this would update D3 charts with new data
-    console.log('Updating performance comparison charts');
+    console.warn('Updating performance comparison charts');
   };
 
   // Start the comparison
@@ -158,7 +158,7 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
   // Run the optimized animation
   const runOptimizedAnimation = () => {
     // In a real implementation, this would set up and run the optimized animation
-    console.log('Running optimized animation');
+    console.warn('Running optimized animation');
 
     // Example of registering an animation with the animation frame manager
     animationFrameManager.registerAnimation(
@@ -184,7 +184,7 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
   // Run the unoptimized animation
   const runUnoptimizedAnimation = () => {
     // In a real implementation, this would set up and run the unoptimized animation
-    console.log('Running unoptimized animation');
+    console.warn('Running unoptimized animation');
 
     // Example of registering an animation with the animation frame manager
     animationFrameManager.registerAnimation(

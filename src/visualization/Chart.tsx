@@ -11,7 +11,7 @@ import { errorLoggingService, ErrorType } from '../services/ErrorLoggingService'
 export interface ChartDataPoint {
   x: number | string | Date;
   y: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -22,14 +22,14 @@ export interface ChartData {
     label: string;
     data: ChartDataPoint[];
     color?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }[];
   annotations?: {
     type: 'line' | 'box' | 'point';
     position: { x?: number | string | Date; y?: number };
     color?: string;
     label?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }[];
 }
 
@@ -43,7 +43,7 @@ export interface ChartAxes {
     min?: number | string | Date;
     max?: number | string | Date;
     tickCount?: number;
-    tickFormat?: (value: any) => string;
+    tickFormat?: (value: unknown) => string;
     grid?: boolean;
   };
   y: {

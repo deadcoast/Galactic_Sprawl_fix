@@ -1,5 +1,5 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleConfig, ModuleType } from '../../types/buildings/ModuleTypes';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
   radar: {
@@ -128,7 +128,7 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       upkeep: 10,
     },
   },
-  population: {
+  [ResourceType.POPULATION]: {
     type: ResourceType.POPULATION,
     name: 'Population Center',
     description: 'Manages colony population growth and housing',
@@ -164,7 +164,7 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       upkeep: 30,
     },
   },
-  research: {
+  [ResourceType.RESEARCH]: {
     type: ResourceType.RESEARCH,
     name: 'Research Center',
     description: 'Conducts scientific research and development',

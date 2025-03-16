@@ -293,7 +293,7 @@ export function RealTimeMapUpdates({
       return;
     }
 
-    // Function to update ship positions and status
+    // (...args: unknown[]) => unknown to update ship positions and status
     const updateShips = () => {
       let updatedCount = 0;
 
@@ -335,7 +335,7 @@ export function RealTimeMapUpdates({
       return updatedCount;
     };
 
-    // Function to update resource transfers
+    // (...args: unknown[]) => unknown to update resource transfers
     const updateTransfers = () => {
       let updatedCount = 0;
 

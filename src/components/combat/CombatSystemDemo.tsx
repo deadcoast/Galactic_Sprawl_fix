@@ -204,7 +204,7 @@ export function CombatSystemDemo({ className = '' }: CombatSystemDemoProps) {
   const handleViewAlertDetails = (alertId: string) => {
     const alert = alerts.find(a => a.id === alertId);
     if (alert) {
-      console.log(`Viewing details for alert: ${alert.message}`);
+      console.warn(`Viewing details for alert: ${alert.message}`);
       // In a real app, this would open a modal or panel with details
     }
   };

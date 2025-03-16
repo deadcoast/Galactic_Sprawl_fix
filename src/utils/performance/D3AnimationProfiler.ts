@@ -522,7 +522,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     const originalStyle = selection.style;
 
     // Wrap transition method
-    selection.transition = function (...args: any[]): any {
+    selection.transition = function (...args: unknown[]): unknown {
       const startTime = performance.now();
       const result = originalTransition.apply(this, args);
       const duration = performance.now() - startTime;
@@ -531,10 +531,10 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       recordDomUpdates(1, duration);
 
       return result;
-    } as any;
+    } as unknown;
 
     // Wrap attr method
-    selection.attr = function (...args: any[]): any {
+    selection.attr = function (...args: unknown[]): unknown {
       const startTime = performance.now();
       const result = originalAttr.apply(this, args);
       const duration = performance.now() - startTime;
@@ -543,10 +543,10 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       recordDomUpdates(selection.size(), duration);
 
       return result;
-    } as any;
+    } as unknown;
 
     // Wrap style method
-    selection.style = function (...args: any[]): any {
+    selection.style = function (...args: unknown[]): unknown {
       const startTime = performance.now();
       const result = originalStyle.apply(this, args);
       const duration = performance.now() - startTime;
@@ -555,7 +555,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       recordDomUpdates(selection.size(), duration);
 
       return result;
-    } as any;
+    } as unknown;
 
     return selection;
   }
@@ -662,7 +662,7 @@ export function profileAnimationSequence<
     }, config.profileDuration || 10000); // Default to 10 seconds max
 
     // Try to access private property to detect completion
-    const privateConfig = (sequence as any).config;
+    const privateConfig = (sequence as unknown).config;
     if (privateConfig && !privateConfig.loop && privateConfig.onComplete) {
       const originalOnComplete = privateConfig.onComplete;
       privateConfig.onComplete = () => {

@@ -55,24 +55,24 @@ export interface MemoryManagerResult<T> {
   isAboveThreshold: boolean;
 
   /**
-   * Function to manually trigger cleanup
+   * (...args: unknown[]) => unknown to manually trigger cleanup
    */
   cleanup: () => void;
 
   /**
-   * Function to update the tracked data
+   * (...args: unknown[]) => unknown to update the tracked data
    */
   updateData: (newData: T | null) => void;
 
   /**
-   * Function to get cached data
+   * (...args: unknown[]) => unknown to get cached data
    */
-  getCachedData: (key: string) => any;
+  getCachedData: (key: string) => unknown;
 
   /**
-   * Function to cache data with expiration
+   * (...args: unknown[]) => unknown to cache data with expiration
    */
-  cacheData: (key: string, data: any, expiresInMs?: number) => void;
+  cacheData: (key: string, data: unknown, expiresInMs?: number) => void;
 
   /**
    * Clear a specific cache entry
@@ -93,7 +93,7 @@ export interface MemoryManagerResult<T> {
 /**
  * Rough size estimation for JavaScript objects
  */
-function estimateObjectSize(object: any): number {
+function estimateObjectSize(object: unknown): number {
   if (object === null || object === undefined) return 0;
 
   // Handle primitive types
@@ -136,7 +136,7 @@ function estimateObjectSize(object: any): number {
       // Size of property name
       size += key.length * 2;
       // Size of property value
-      size += estimateObjectSize(object[key]);
+      size += estimateObjectSize(object[key as keyof typeof object]);
     }
   }
 
@@ -147,7 +147,7 @@ function estimateObjectSize(object: any): number {
  * Cache item with expiration
  */
 interface CacheItem {
-  data: any;
+  data: unknown;
   expiry: number | null; // null means no expiration
 }
 
@@ -157,7 +157,7 @@ interface CacheItem {
  * This hook helps track memory usage, provides caching with expiration,
  * and helps with cleanup to prevent memory leaks.
  */
-export function useMemoryManager<T = any>(
+export function useMemoryManager<T>(
   initialData: T | null = null,
   options: MemoryManagerOptions
 ): MemoryManagerResult<T> {
@@ -201,7 +201,7 @@ export function useMemoryManager<T = any>(
     setIsAboveThreshold(estimatedSize > memoryThreshold);
 
     if (enableLogging) {
-      console.log(
+      console.warn(
         `[MemoryManager:${key}] Memory usage: ${(estimatedSize / 1024 / 1024).toFixed(2)}MB`
       );
     }
@@ -222,19 +222,23 @@ export function useMemoryManager<T = any>(
   };
 
   // Cache data with expiration
-  const cacheData = (cacheKey: string, data: any, expiresInMs: number = cacheExpirationTime) => {
+  const cacheData = (
+    cacheKey: string,
+    data: unknown,
+    expiresInMs: number = cacheExpirationTime
+  ) => {
     const expiry = expiresInMs ? Date.now() + expiresInMs : null;
     cacheRef.current.set(cacheKey, { data, expiry });
 
     if (enableLogging) {
-      console.log(
+      console.warn(
         `[MemoryManager:${key}] Cached data: ${cacheKey}, expires: ${expiry ? new Date(expiry).toLocaleString() : 'never'}`
       );
     }
   };
 
   // Get cached data
-  const getCachedData = (cacheKey: string): any => {
+  const getCachedData = (cacheKey: string): unknown => {
     const item = cacheRef.current.get(cacheKey);
 
     if (!item) return null;
@@ -243,7 +247,7 @@ export function useMemoryManager<T = any>(
     if (item.expiry && Date.now() > item.expiry) {
       cacheRef.current.delete(cacheKey);
       if (enableLogging) {
-        console.log(`[MemoryManager:${key}] Cache expired: ${cacheKey}`);
+        console.warn(`[MemoryManager:${key}] Cache expired: ${cacheKey}`);
       }
       return null;
     }
@@ -258,7 +262,7 @@ export function useMemoryManager<T = any>(
   const clearCacheEntry = (cacheKey: string) => {
     cacheRef.current.delete(cacheKey);
     if (enableLogging) {
-      console.log(`[MemoryManager:${key}] Cache cleared: ${cacheKey}`);
+      console.warn(`[MemoryManager:${key}] Cache cleared: ${cacheKey}`);
     }
   };
 
@@ -266,11 +270,11 @@ export function useMemoryManager<T = any>(
   const clearAllCache = () => {
     cacheRef.current.clear();
     if (enableLogging) {
-      console.log(`[MemoryManager:${key}] All cache cleared`);
+      console.warn(`[MemoryManager:${key}] All cache cleared`);
     }
   };
 
-  // Function to clean up data
+  // (...args: unknown[]) => unknown to clean up data
   const cleanup = () => {
     // Clear the data reference
     dataRef.current = null;
@@ -288,7 +292,7 @@ export function useMemoryManager<T = any>(
     const newUsage = updateMemoryUsage();
 
     if (enableLogging) {
-      console.log(
+      console.warn(
         `[MemoryManager:${key}] Cleanup performed. New memory usage: ${(newUsage / 1024 / 1024).toFixed(2)}MB`
       );
     }
@@ -316,7 +320,7 @@ export function useMemoryManager<T = any>(
               (autoCleanupLevel === 'low' && timeSinceLastInteraction > 300000) // 5 minutes
             ) {
               if (enableLogging) {
-                console.log(`[MemoryManager:${key}] Auto cleanup triggered (${autoCleanupLevel})`);
+                console.warn(`[MemoryManager:${key}] Auto cleanup triggered (${autoCleanupLevel})`);
               }
               cleanup();
             }
@@ -358,7 +362,7 @@ export function useMemoryManager<T = any>(
       }
 
       if (removedCount > 0 && enableLogging) {
-        console.log(`[MemoryManager:${key}] Auto-cleared ${removedCount} expired cache items`);
+        console.warn(`[MemoryManager:${key}] Auto-cleared ${removedCount} expired cache items`);
       }
     }, 60000); // 1 minute interval
 
@@ -369,7 +373,7 @@ export function useMemoryManager<T = any>(
   useEffect(() => {
     return () => {
       if (enableLogging) {
-        console.log(`[MemoryManager:${key}] Component unmounted, cleaning up resources`);
+        console.warn(`[MemoryManager:${key}] Component unmounted, cleaning up resources`);
       }
 
       // Clear all data and cache

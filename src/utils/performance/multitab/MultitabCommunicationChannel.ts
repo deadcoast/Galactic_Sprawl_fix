@@ -131,7 +131,7 @@ export class MultitabCommunicationChannel {
         this.broadcastChannel.onmessage = event => {
           this.handleIncomingMessage(event.data);
         };
-        console.log(`[Tab ${this.tabId}] Using BroadcastChannel for communication`);
+        console.warn(`[Tab ${this.tabId}] Using BroadcastChannel for communication`);
       } catch (error) {
         console.warn(
           'BroadcastChannel initialization failed, falling back to localStorage:',
@@ -140,7 +140,7 @@ export class MultitabCommunicationChannel {
         this.setupLocalStorageFallback();
       }
     } else {
-      console.log(
+      console.warn(
         `[Tab ${this.tabId}] BroadcastChannel not supported, falling back to localStorage`
       );
       this.setupLocalStorageFallback();

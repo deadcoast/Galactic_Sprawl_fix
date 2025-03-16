@@ -1,4 +1,3 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 /**
  * @file EventBus.ts
  * Base class for event bus implementations providing standardized event management.
@@ -10,6 +9,8 @@ import { ResourceType } from "./../../types/resources/ResourceTypes";
  * 4. Performance monitoring for event handling
  */
 
+import { v4 as uuidv4 } from 'uuid';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
   BaseEvent,
   EventCategory,
@@ -74,9 +75,9 @@ interface Subscription<T extends BaseEvent = BaseEvent> {
 }
 
 /**
- * Event handler type
+ * Event handler type that accepts a generic event data type
  */
-export type EventHandler<T = any> = (data: T) => void;
+export type EventHandler<TEventData = unknown> = (data: TEventData) => void;
 
 /**
  * Event bus interface
@@ -88,7 +89,7 @@ export interface IEventBus {
    * @param handler The handler function to call when the event is emitted
    * @returns A function to unsubscribe the handler
    */
-  on<T = any>(eventName: string, handler: EventHandler<T>): () => void;
+  on<TEventData = unknown>(eventName: string, handler: EventHandler<TEventData>): () => void;
 
   /**
    * Subscribe to an event once
@@ -96,21 +97,21 @@ export interface IEventBus {
    * @param handler The handler function to call when the event is emitted
    * @returns A function to unsubscribe the handler
    */
-  once<T = any>(eventName: string, handler: EventHandler<T>): () => void;
+  once<TEventData = unknown>(eventName: string, handler: EventHandler<TEventData>): () => void;
 
   /**
    * Unsubscribe from an event
    * @param eventName The name of the event to unsubscribe from
    * @param handler The handler function to unsubscribe
    */
-  off<T = any>(eventName: string, handler: EventHandler<T>): void;
+  off<TEventData = unknown>(eventName: string, handler: EventHandler<TEventData>): void;
 
   /**
    * Emit an event
    * @param eventName The name of the event to emit
    * @param data The data to pass to the event handlers
    */
-  emit<T = any>(eventName: string, data: T): void;
+  emitEvent<TEventData = unknown>(eventName: string, data: TEventData): void;
 
   /**
    * Check if an event has subscribers
@@ -372,6 +373,28 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
   }
 
   /**
+   * Emit an event by name and data
+   * @param eventName The name of the event to emit
+   * @param data The data to pass to the event handlers
+   */
+  emitEvent<TEventData = unknown>(eventName: string, data: TEventData): void {
+    // Create an event object that conforms to the BaseEvent interface
+    const event: BaseEvent = {
+      id: uuidv4(),
+      type: eventName as EventType,
+      name: eventName as EventType,
+      description: eventName as EventType,
+      category: eventName as EventType,
+      subCategory: eventName as EventType,
+      timestamp: Date.now(),
+      moduleId: (data as { moduleId?: string })?.moduleId || 'unknown',
+      moduleType: (data as { moduleType?: ModuleType })?.moduleType || 'radar',
+      data: data as Record<string, unknown>,
+    };
+    this.emit(event as T);
+  }
+
+  /**
    * Get the latest event of a specific type
    * @param eventType The type of event to get
    * @returns The latest event of the specified type, or undefined if none exists
@@ -561,7 +584,10 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
    * @param handler The handler function to call when the event is emitted
    * @returns A function to unsubscribe the handler
    */
-  public on<T = any>(eventName: string, handler: EventHandler<T>): () => void {
+  public on<TEventData = unknown>(
+    eventName: string,
+    handler: EventHandler<TEventData>
+  ): () => void {
     if (!this.handlers.has(eventName)) {
       this.handlers.set(eventName, new Set());
     }
@@ -577,7 +603,10 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
    * @param handler The handler function to call when the event is emitted
    * @returns A function to unsubscribe the handler
    */
-  public once<T = any>(eventName: string, handler: EventHandler<T>): () => void {
+  public once<TEventData = unknown>(
+    eventName: string,
+    handler: EventHandler<TEventData>
+  ): () => void {
     if (!this.onceHandlers.has(eventName)) {
       this.onceHandlers.set(eventName, new Set());
     }
@@ -592,7 +621,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
    * @param eventName The name of the event to unsubscribe from
    * @param handler The handler function to unsubscribe
    */
-  public off<T = any>(eventName: string, handler: EventHandler<T>): void {
+  public off<TEventData = unknown>(eventName: string, handler: EventHandler<TEventData>): void {
     // Remove from regular handlers
     if (this.handlers.has(eventName)) {
       this.handlers.get(eventName)!.delete(handler as EventHandler);
@@ -601,38 +630,6 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     // Remove from once handlers
     if (this.onceHandlers.has(eventName)) {
       this.onceHandlers.get(eventName)!.delete(handler as EventHandler);
-    }
-  }
-
-  /**
-   * Emit an event
-   * @param eventName The name of the event to emit
-   * @param data The data to pass to the event handlers
-   */
-  public emit<T = any>(eventName: string, data: T): void {
-    // Call regular handlers
-    if (this.handlers.has(eventName)) {
-      for (const handler of this.handlers.get(eventName)!) {
-        try {
-          handler(data);
-        } catch (error) {
-          console.error(`Error in event handler for ${eventName}:`, error);
-        }
-      }
-    }
-
-    // Call once handlers
-    if (this.onceHandlers.has(eventName)) {
-      const handlers = Array.from(this.onceHandlers.get(eventName)!);
-      this.onceHandlers.set(eventName, new Set());
-
-      for (const handler of handlers) {
-        try {
-          handler(data);
-        } catch (error) {
-          console.error(`Error in once event handler for ${eventName}:`, error);
-        }
-      }
     }
   }
 
@@ -705,7 +702,7 @@ export interface IEventEmitter {
    * @param handler The handler function to call when the event is emitted
    * @returns A function to unsubscribe the handler
    */
-  on<T = any>(eventName: string, handler: EventHandler<T>): () => void;
+  on<TEventData = unknown>(eventName: string, handler: EventHandler<TEventData>): () => void;
 
   /**
    * Subscribe to an event once
@@ -713,24 +710,30 @@ export interface IEventEmitter {
    * @param handler The handler function to call when the event is emitted
    * @returns A function to unsubscribe the handler
    */
-  once<T = any>(eventName: string, handler: EventHandler<T>): () => void;
+  once<TEventData = unknown>(eventName: string, handler: EventHandler<TEventData>): () => void;
 
   /**
    * Unsubscribe from an event
    * @param eventName The name of the event to unsubscribe from
    * @param handler The handler function to unsubscribe
    */
-  off<T = any>(eventName: string, handler: EventHandler<T>): void;
+  off<TEventData = unknown>(eventName: string, handler: EventHandler<TEventData>): void;
 }
 
 /**
- * Event emitter mixin
+ * Mixin that adds event emitter functionality to a class
  * @param Base The base class to extend
  * @returns A class that extends the base class with event emitter functionality
  */
-export function EventEmitterMixin<T extends new (...args: any[]) => any>(Base: T) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function EventEmitterMixin<TBase extends new (...args: any[]) => object>(Base: TBase) {
   return class extends Base implements IEventEmitter {
     private eventBus: EventBus = new EventBus();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(...args: any[]) {
+      super(...args);
+    }
 
     /**
      * Subscribe to an event
@@ -738,7 +741,10 @@ export function EventEmitterMixin<T extends new (...args: any[]) => any>(Base: T
      * @param handler The handler function to call when the event is emitted
      * @returns A function to unsubscribe the handler
      */
-    public on<T = any>(eventName: string, handler: EventHandler<T>): () => void {
+    public on<TEventData = unknown>(
+      eventName: string,
+      handler: EventHandler<TEventData>
+    ): () => void {
       return this.eventBus.on(eventName, handler);
     }
 
@@ -748,7 +754,10 @@ export function EventEmitterMixin<T extends new (...args: any[]) => any>(Base: T
      * @param handler The handler function to call when the event is emitted
      * @returns A function to unsubscribe the handler
      */
-    public once<T = any>(eventName: string, handler: EventHandler<T>): () => void {
+    public once<TEventData = unknown>(
+      eventName: string,
+      handler: EventHandler<TEventData>
+    ): () => void {
       return this.eventBus.once(eventName, handler);
     }
 
@@ -757,7 +766,7 @@ export function EventEmitterMixin<T extends new (...args: any[]) => any>(Base: T
      * @param eventName The name of the event to unsubscribe from
      * @param handler The handler function to unsubscribe
      */
-    public off<T = any>(eventName: string, handler: EventHandler<T>): void {
+    public off<TEventData = unknown>(eventName: string, handler: EventHandler<TEventData>): void {
       this.eventBus.off(eventName, handler);
     }
 
@@ -766,8 +775,8 @@ export function EventEmitterMixin<T extends new (...args: any[]) => any>(Base: T
      * @param eventName The name of the event to emit
      * @param data The data to pass to the event handlers
      */
-    protected emit<T = any>(eventName: string, data: T): void {
-      this.eventBus.emit(eventName, data);
+    protected emit<TEventData = unknown>(eventName: string, data: TEventData): void {
+      this.eventBus.emitEvent(eventName, data);
     }
 
     /**
@@ -784,7 +793,7 @@ export function EventEmitterMixin<T extends new (...args: any[]) => any>(Base: T
  *
  * This allows for type checking of event data when emitting and subscribing to events.
  */
-export class TypedEventEmitter<EventMap extends Record<string, any>> {
+export class TypedEventEmitter<EventMap extends Record<string, unknown>> {
   private eventBus: EventBus = new EventBus();
 
   /**
@@ -828,7 +837,7 @@ export class TypedEventEmitter<EventMap extends Record<string, any>> {
    * @param data The data to pass to the event handlers
    */
   protected emit<K extends keyof EventMap>(eventName: K, data: EventMap[K]): void {
-    this.eventBus.emit(eventName as string, data);
+    this.eventBus.emitEvent(eventName as string, data);
   }
 
   /**
@@ -865,7 +874,7 @@ export class TypedEventEmitter<EventMap extends Record<string, any>> {
  *
  * // TypeScript will enforce the correct event data type
  * manager.on('resource:added', ({ type, amount }) => {
- *   console.log(`Added ${amount} of ${type}`);
+ *   console.warn(`Added ${amount} of ${type}`);
  * });
  * ```
  */

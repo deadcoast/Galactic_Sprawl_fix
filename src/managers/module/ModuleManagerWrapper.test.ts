@@ -18,7 +18,7 @@ interface MockModuleManager {
 }
 
 describe('ModuleManagerWrapper', () => {
-  describe('Type Conversion Functions', () => {
+  describe('Type Conversion (...args: unknown[]) => unknowns', () => {
     it('should convert BaseModule to Module with convertToModule', () => {
       // Create a mock BaseModule
       const baseModule: BaseModule = {

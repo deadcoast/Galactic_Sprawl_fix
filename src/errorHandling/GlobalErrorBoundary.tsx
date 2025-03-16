@@ -148,7 +148,7 @@ export const GlobalErrorBoundary: React.FC<GlobalErrorBoundaryProps> = ({
 // Add this to global.d.ts if needed
 declare global {
   interface Window {
-    gtag?: (command: string, action: string, params: Record<string, any>) => void;
+    gtag?: (command: string, action: string, params: Record<string, unknown>) => void;
   }
 }
 

@@ -1,5 +1,5 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useMemoryManager } from '../../../../hooks/useMemoryManager';
 import { BaseChartProps } from './BaseChart';
@@ -255,12 +255,13 @@ const CanvasChartFactory: React.FC<CanvasChartFactoryProps> = ({
   // Function to render the appropriate chart based on the determined type
   const renderChart = () => {
     const actualYAxisKeys = Array.isArray(yAxisKeys) ? yAxisKeys : [yAxisKeys];
+    const chartData: Record<string, unknown>[] = Array.isArray(activeData) ? activeData : [];
 
     switch (detectedChartType) {
       case 'scatter':
         return (
           <CanvasScatterPlot
-            data={activeData}
+            data={chartData}
             xAxisKey={xAxisKey}
             yAxisKey={Array.isArray(yAxisKeys) ? yAxisKeys[0] : yAxisKeys}
             sizeKey={sizeKey}
@@ -288,7 +289,7 @@ const CanvasChartFactory: React.FC<CanvasChartFactoryProps> = ({
       case 'timeSeries':
         return (
           <CanvasLineChart
-            data={activeData}
+            data={chartData}
             xAxisKey={xAxisKey}
             yAxisKeys={actualYAxisKeys}
             width={width}

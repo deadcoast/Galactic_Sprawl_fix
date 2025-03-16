@@ -43,11 +43,11 @@ export function useResourceSystem() {
 
   // Subscribe to resource events
   useEventSubscription('RESOURCE_THRESHOLD_REACHED', event => {
-    console.log('Resource threshold reached:', event);
+    console.warn('Resource threshold reached:', event);
   });
 
   useEventSubscription('RESOURCE_TRANSFERRED', event => {
-    console.log('Resource transferred:', event);
+    console.warn('Resource transferred:', event);
   });
 
   /**

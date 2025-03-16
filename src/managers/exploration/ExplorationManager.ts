@@ -199,10 +199,10 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
    * Initialize the exploration manager
    */
   protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
-    console.log('ExplorationManager initialized');
+    console.warn('ExplorationManager initialized');
 
     // Subscribe to ship-related events to update exploration data
-    this.unsubscribeFunctions.push(
+    this.unsubscribe(...args: unknown[]) => unknowns.push(
       this.subscribe(EventType.STATUS_CHANGED, this.handleShipStatusChange)
     );
   }

@@ -17,9 +17,9 @@ export type BoundAction<TPayload = any> = (payload: TPayload) => void;
  * State hook options
  */
 export interface StateHookOptions<TState> {
-  /** Function to run on state initialization */
+  /** (...args: unknown[]) => unknown to run on state initialization */
   onInit?: (state: TState) => void;
-  /** Function to run on state cleanup */
+  /** (...args: unknown[]) => unknown to run on state cleanup */
   onCleanup?: (state: TState) => void;
   /** Whether to persist state in localStorage */
   persist?: boolean;
@@ -39,8 +39,8 @@ export interface StateHookOptions<TState> {
  * @returns A hook that provides state and bound actions
  */
 export function createStateHook<
-  TState extends Record<string, any>,
-  TActions extends Record<string, ActionCreator<TState, any>>
+  TState extends Record<string, unknown>,
+  TActions extends Record<string, ActionCreator<TState, unknown>>
 >(
   initialState: TState | (() => TState),
   actions: TActions,

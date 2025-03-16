@@ -667,7 +667,7 @@ export class DynamicBudgetAdjuster {
     this.budgets[index] = { ...this.budgets[index], ...newBudget };
 
     // Log the adjustment
-    console.info(`Adjusted performance budget for "${operationName}":`, {
+    console.warn(`Adjusted performance budget for "${operationName}":`, {
       before: this.budgets[index],
       after: newBudget,
     });

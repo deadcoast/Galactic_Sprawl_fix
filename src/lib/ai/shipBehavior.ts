@@ -1,4 +1,4 @@
-import { EventEmitter } from '../../lib/utils/EventEmitter';
+import { EventEmitter } from '../../lib/events/EventEmitter';
 import { techTreeManager } from '../../managers/game/techTreeManager';
 import { Salvage } from '../../types/combat/SalvageTypes';
 import {
@@ -40,11 +40,13 @@ interface ShipTask {
 }
 
 interface ShipBehaviorEvents {
-  taskAssigned: { shipId: string; taskId: string; taskType: string };
-  taskCompleted: { shipId: string; taskId: string; success: boolean };
-  shipAdded: { shipId: string; category: ShipCategory };
-  shipRemoved: { shipId: string };
-  [key: string]: unknown;
+  type: string;
+  data: {
+    taskAssigned?: { shipId: string; taskId: string; taskType: string };
+    taskCompleted?: { shipId: string; taskId: string; success: boolean };
+    shipAdded?: { shipId: string; category: ShipCategory };
+    shipRemoved?: { shipId: string };
+  };
 }
 
 class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
@@ -111,10 +113,15 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
     }
 
     this.tasks.set(task.id, task);
-    this.emit('taskAssigned', {
-      shipId: task.id,
-      taskId: task.id,
-      taskType: task.type,
+    this.emit({
+      type: 'taskAssigned',
+      data: {
+        taskAssigned: {
+          shipId: task.id,
+          taskId: task.id,
+          taskType: task.type,
+        },
+      },
     });
   }
 
@@ -131,10 +138,15 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
     };
 
     this.tasks.set(shipId, task);
-    this.emit('taskAssigned', {
-      shipId,
-      taskId: task.id,
-      taskType: task.type,
+    this.emit({
+      type: 'taskAssigned',
+      data: {
+        taskAssigned: {
+          shipId,
+          taskId: task.id,
+          taskType: task.type,
+        },
+      },
     });
   }
 
@@ -161,10 +173,15 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
         this.salvageTargets.delete(task.target.id);
       }
       this.tasks.delete(shipId);
-      this.emit('taskCompleted', {
-        shipId,
-        taskId: task.id,
-        success: true,
+      this.emit({
+        type: 'taskCompleted',
+        data: {
+          taskCompleted: {
+            shipId,
+            taskId: task.id,
+            success: true,
+          },
+        },
       });
     }
   }

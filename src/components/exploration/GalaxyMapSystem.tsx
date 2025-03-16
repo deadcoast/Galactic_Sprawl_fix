@@ -1,7 +1,7 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { Filter, Search, ZoomIn, ZoomOut } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 interface Sector {
   id: string;
@@ -86,7 +86,7 @@ const getResourceColor = (resourceType: ResourceType): string => {
       return 'rgba(16, 185, 129, 0.8)'; // emerald-500
     case ResourceType.ENERGY:
       return 'rgba(245, 158, 11, 0.8)'; // amber-500
-    case 'organic':
+    case ResourceType.ORGANIC:
       return 'rgba(139, 92, 246, 0.8)'; // purple-500
     case ResourceType.EXOTIC:
       return 'rgba(236, 72, 153, 0.8)'; // pink-500

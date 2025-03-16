@@ -80,7 +80,7 @@ export default function useSessionPerformance(componentId: string) {
   /**
    * Create a performance-tracked event handler
    */
-  const withPerformanceTracking = <T extends (...args: any[]) => any>(
+  const withPerformanceTracking = <T extends (...args: unknown[]) => any>(
     handler: T,
     interactionType: 'click' | 'hover' | 'scroll' | 'keypress' | 'custom' = 'click'
   ): ((...args: Parameters<T>) => ReturnType<T>) => {

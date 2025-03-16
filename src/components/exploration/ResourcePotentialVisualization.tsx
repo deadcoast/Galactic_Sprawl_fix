@@ -1,9 +1,14 @@
 import { BarChart3, Database, Download, Droplet, Filter, Leaf, Sparkles, Zap } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useRef, useState } from 'react';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 interface ResourceData {
-  type: ResourceType.MINERALS | ResourceType.GAS | ResourceType.ENERGY | 'organic' | ResourceType.EXOTIC;
+  type:
+    | ResourceType.MINERALS
+    | ResourceType.GAS
+    | ResourceType.ENERGY
+    | ResourceType.ORGANIC
+    | ResourceType.EXOTIC;
   name: string;
   amount: number; // 0-100 scale
   quality: number; // 0-1 scale
@@ -119,7 +124,7 @@ export function ResourcePotentialVisualization({
         return <Droplet className={className} />;
       case ResourceType.ENERGY:
         return <Zap className={className} />;
-      case 'organic':
+      case ResourceType.ORGANIC:
         return <Leaf className={className} />;
       case ResourceType.EXOTIC:
         return <Sparkles className={className} />;
@@ -135,7 +140,7 @@ export function ResourcePotentialVisualization({
         return 'text-purple-400';
       case ResourceType.ENERGY:
         return 'text-yellow-400';
-      case 'organic':
+      case ResourceType.ORGANIC:
         return 'text-green-400';
       case ResourceType.EXOTIC:
         return 'text-pink-400';
@@ -151,7 +156,7 @@ export function ResourcePotentialVisualization({
         return 'bg-purple-900/30';
       case ResourceType.ENERGY:
         return 'bg-yellow-900/30';
-      case 'organic':
+      case ResourceType.ORGANIC:
         return 'bg-green-900/30';
       case ResourceType.EXOTIC:
         return 'bg-pink-900/30';
@@ -228,11 +233,11 @@ export function ResourcePotentialVisualization({
 
               // Group resources by type for stacked bar
               const resourcesByType: Record<ResourceData['type'], number> = {
-                minerals: 0,
-                gas: 0,
-                energy: 0,
-                organic: 0,
-                exotic: 0,
+                [ResourceType.MINERALS]: 0,
+                [ResourceType.GAS]: 0,
+                [ResourceType.ENERGY]: 0,
+                [ResourceType.ORGANIC]: 0,
+                [ResourceType.EXOTIC]: 0,
               };
 
               resources.forEach(resource => {
@@ -342,7 +347,13 @@ export function ResourcePotentialVisualization({
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center space-x-1">
                   {/* Show icons for available resources */}
-                  {[ResourceType.MINERALS, ResourceType.GAS, ResourceType.ENERGY, 'organic', ResourceType.EXOTIC].map(type => {
+                  {[
+                    ResourceType.MINERALS,
+                    ResourceType.GAS,
+                    ResourceType.ENERGY,
+                    ResourceType.ORGANIC,
+                    ResourceType.EXOTIC,
+                  ].map(type => {
                     const hasResource = resources.some(r => r.type === type);
                     if (!hasResource) return null;
 
@@ -502,9 +513,9 @@ export function ResourcePotentialVisualization({
           </button>
 
           <button
-            onClick={() => setResourceFilter('organic')}
+            onClick={() => setResourceFilter(ResourceType.ORGANIC)}
             className={`flex items-center space-x-1 rounded px-2 py-1 text-xs ${
-              resourceFilter === 'organic'
+              resourceFilter === ResourceType.ORGANIC
                 ? 'bg-green-900 text-green-300'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}

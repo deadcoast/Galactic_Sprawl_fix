@@ -1,8 +1,9 @@
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DataPoint,
   EasingFunction,
+  EasingType,
   Particle,
   ParticleBlendMode,
   ParticlePath,
@@ -45,9 +46,9 @@ export interface ParticleTransitionVisualizationProps {
   duration?: number;
 
   /**
-   * Easing function for the transition
+   * Easing function or type for the transition
    */
-  easing?: EasingFunction;
+  easing?: EasingFunction | EasingType;
 
   /**
    * Path type for particle movement
@@ -137,7 +138,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
   width,
   height,
   duration = 1000,
-  easing = EasingFunction.EASE_IN_OUT,
+  easing = EasingType.EASE_IN_OUT,
   path = ParticlePath.LINEAR,
   pathParams,
   staggerDelay = 20,
@@ -181,6 +182,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
     // Set up transition
     const transitionId = 'main-transition';
     particleSystemRef.current.setupTransition(transitionId, {
+      id: transitionId,
       sourceData: initialData,
       targetData: targetData || initialData,
       duration,
@@ -209,6 +211,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
               if (pingPong && currentDirection === 'backward') {
                 // Reverse the transition for ping-pong
                 ps.setupTransition(transitionId, {
+                  id: transitionId,
                   sourceData: targetData || initialData,
                   targetData: initialData,
                   duration,
@@ -223,6 +226,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
               } else {
                 // Regular forward transition
                 ps.setupTransition(transitionId, {
+                  id: transitionId,
                   sourceData: initialData,
                   targetData: targetData || initialData,
                   duration,
@@ -301,6 +305,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
 
       // Re-setup the transition
       ps.setupTransition('main-transition', {
+        id: 'main-transition',
         sourceData: initialData,
         targetData: targetData || initialData,
         duration,
@@ -635,7 +640,7 @@ export const TransitionPresets = {
     props: Omit<ParticleTransitionVisualizationProps, 'easing' | 'path'>
   ): ParticleTransitionVisualizationProps => ({
     ...props,
-    easing: EasingFunction.BOUNCE,
+    easing: EasingType.BOUNCE,
     path: ParticlePath.CURVED,
     staggerDelay: 30,
     drawTrails: false,
@@ -649,7 +654,7 @@ export const TransitionPresets = {
     props: Omit<ParticleTransitionVisualizationProps, 'easing' | 'path'>
   ): ParticleTransitionVisualizationProps => ({
     ...props,
-    easing: EasingFunction.ELASTIC,
+    easing: EasingType.ELASTIC,
     path: ParticlePath.SPIRAL,
     pathParams: { turns: 2 },
     staggerDelay: 10,
@@ -665,7 +670,7 @@ export const TransitionPresets = {
     props: Omit<ParticleTransitionVisualizationProps, 'easing' | 'path'>
   ): ParticleTransitionVisualizationProps => ({
     ...props,
-    easing: EasingFunction.EASE_IN_OUT,
+    easing: EasingType.EASE_IN_OUT,
     path: ParticlePath.WAVE,
     pathParams: { amplitude: 50, frequency: 2 },
     staggerDelay: 15,
@@ -681,7 +686,7 @@ export const TransitionPresets = {
     props: Omit<ParticleTransitionVisualizationProps, 'easing' | 'path'>
   ): ParticleTransitionVisualizationProps => ({
     ...props,
-    easing: EasingFunction.BACK,
+    easing: EasingType.BACK,
     path: ParticlePath.RANDOM,
     pathParams: { jitter: 0.3 },
     staggerDelay: 5,
@@ -697,7 +702,7 @@ export const TransitionPresets = {
     props: Omit<ParticleTransitionVisualizationProps, 'easing' | 'path'>
   ): ParticleTransitionVisualizationProps => ({
     ...props,
-    easing: EasingFunction.EASE_OUT,
+    easing: EasingType.EASE_OUT,
     path: ParticlePath.BEZIER,
     staggerDelay: 20,
     drawTrails: false,

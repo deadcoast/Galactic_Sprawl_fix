@@ -116,7 +116,7 @@ export const DataHighlightDemo: React.FC<DataHighlightDemoProps> = ({
 
   // Handle data point selection
   const handleDataPointClick = useCallback((dataPoint: DataPoint, index: number) => {
-    console.log(`Selected data point at index ${index} with value ${dataPoint.value}`);
+    console.warn(`Selected data point at index ${index} with value ${dataPoint.value}`);
     setSelectedPoint(dataPoint);
   }, []);
 

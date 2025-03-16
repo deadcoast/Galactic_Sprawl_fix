@@ -6,153 +6,126 @@
  * while leveraging the new standardized architecture.
  */
 
+import { v4 as uuidv4 } from 'uuid';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { EventType } from '../../types/events/EventTypes';
 import {
-  BaseEvent,
-  EventType,
-  createEvent,
-  stringToEventType,
-} from '../../types/events/EventTypes';
-import { EventBus, EventListener } from './EventBus';
+  StandardizedEvent,
+  isValidModuleStatusEventData,
+  isValidPopulationEventData,
+  isValidResourceEventData,
+  isValidStandardizedEvent,
+  isValidTradeRouteEventData,
+} from '../../types/events/StandardizedEvents';
+import { ResourceType } from '../../types/resources/ResourceTypes';
+import { EventBus, EventListener, SubscriptionOptions } from './EventBus';
 
 /**
  * Legacy type definition for ModuleEvent
  * Kept for backward compatibility
  */
-export interface ModuleEvent extends BaseEvent {
-  moduleId: string;
-  moduleType: ModuleType;
-  timestamp: number;
-  data?: Record<string, unknown>;
-}
+export type ModuleEvent = StandardizedEvent;
 
 /**
- * Legacy type definition for ModuleEventType
- * Kept for backward compatibility
+ * Type for event data that can be emitted
  */
-export type ModuleEventType = string;
-
-/**
- * Legacy type definition for ModuleEventListener
- * Kept for backward compatibility
- */
-export type ModuleEventListener = EventListener<ModuleEvent>;
-
-/**
- * ModuleEventBus extension of the base EventBus class
- * Provides backward compatibility with the original ModuleEventBus implementation
- */
-export class ModuleEventBus extends EventBus<ModuleEvent> {
-  /**
-   * Subscribe to a module event type
-   * This method maintains the original API for backward compatibility
-   *
-   * @param type The type of event to subscribe to (string version)
-   * @param listener The function to call when events of this type occur
-   * @returns A function that, when called, unsubscribes the listener
-   */
-  subscribe(type: ModuleEventType | '*', listener: ModuleEventListener): () => void {
-    // Convert string type to enum if possible
-    const eventType =
-      type !== '*' ? stringToEventType(type) || (type as unknown as EventType) : '*';
-
-    // Call the parent class subscribe method
-    return super.subscribe(eventType, listener, {
-      source: 'LegacyModuleEventBus',
-    });
-  }
-
-  /**
-   * Legacy method to maintain compatibility
-   * @deprecated Use the function returned by subscribe instead
-   */
-  legacyUnsubscribe(type: ModuleEventType, listener: ModuleEventListener): void {
-    console.warn(
-      '[ModuleEventBus] unsubscribe method is deprecated. Use the returned function from subscribe instead.'
-    );
-    // This method can't be properly implemented with the new architecture
-    // The proper approach is to use the function returned by subscribe
-  }
-
-  /**
-   * Emit a module event
-   * This method maintains the original API for backward compatibility
-   *
-   * @param event The module event to emit
-   */
-  emit(event: ModuleEvent): void {
-    // Ensure event type is a valid EventType enum
-    const eventType =
-      stringToEventType(event.type.toString()) || (event.type as unknown as EventType);
-
-    // Create a standardized event
-    const standardizedEvent: ModuleEvent = {
-      ...event,
-      type: eventType,
-    };
-
-    // Call the parent class emit method
-    super.emit(standardizedEvent);
-  }
-
-  /**
-   * Create and emit a module event in one step
-   *
-   * @param type The type of event to emit
-   * @param moduleId ID of the module emitting the event
-   * @param moduleType Type of the module emitting the event
-   * @param data Additional data for the event
-   */
-  emitEvent<T extends Record<string, unknown>>(
-    type: EventType | string,
-    moduleId: string,
-    moduleType: ModuleType,
-    data?: T
-  ): void {
-    const event = createEvent(type, moduleId, moduleType, data);
-    this.emit(event as ModuleEvent);
-  }
-
-  /**
-   * Get module history (maintains backward compatibility)
-   *
-   * @param moduleId The ID of the module to get history for
-   * @returns An array of events for the specified module
-   */
-  getModuleHistory(moduleId: string): ModuleEvent[] {
-    return super.getModuleHistory(moduleId);
-  }
-
-  /**
-   * Get event type history (maintains backward compatibility)
-   *
-   * @param type The type of event to get history for
-   * @returns An array of events of the specified type
-   */
-  getEventTypeHistory(type: ModuleEventType): ModuleEvent[] {
-    const eventType = stringToEventType(type) || (type as unknown as EventType);
-    return super.getEventHistory(eventType);
-  }
-
-  /**
-   * Clear history (maintains backward compatibility)
-   */
-  clearHistory(): void {
-    super.clearHistory();
-  }
-}
+export type EventData = Record<string, unknown>;
 
 /**
  * Singleton instance of the ModuleEventBus
- * This maintains the same export pattern as the original ModuleEvents.ts
  */
-export const moduleEventBus = new ModuleEventBus();
+class ModuleEventBus extends EventBus<ModuleEvent> {
+  private static instance: ModuleEventBus;
 
-/**
- * Re-export types from EventTypes.ts for backward compatibility
- */
-export type {
-  EventCategory,
-  EventType,
-  BaseEvent as StandardizedModuleEvent,
-} from '../../types/events/EventTypes';
+  private constructor() {
+    super();
+  }
+
+  public static getInstance(): ModuleEventBus {
+    if (!ModuleEventBus.instance) {
+      ModuleEventBus.instance = new ModuleEventBus();
+    }
+    return ModuleEventBus.instance;
+  }
+
+  /**
+   * Emit an event with runtime validation
+   */
+  public override emit(event: ModuleEvent): void;
+  public override emit<T extends EventData>(eventName: string, data: T): void;
+  public override emit<T extends EventData>(eventOrName: ModuleEvent | string, data?: T): void {
+    if (typeof eventOrName === 'string' && data !== undefined) {
+      // Handle string event name with data by creating a ModuleEvent
+      const event: ModuleEvent = {
+        id: uuidv4(),
+        type: eventOrName as EventType,
+        name: eventOrName as EventType,
+        description: eventOrName as EventType,
+        category: eventOrName as EventType,
+        subCategory: eventOrName as EventType,
+        timestamp: Date.now(),
+        moduleId: (data as { moduleId?: string })?.moduleId || 'unknown',
+        moduleType: (data as { moduleType?: ModuleType })?.moduleType || 'radar',
+        data: data as Record<string, unknown>,
+      };
+      super.emit(event);
+      return;
+    }
+
+    // Handle ModuleEvent
+    const event = eventOrName as ModuleEvent;
+    if (!isValidStandardizedEvent(event)) {
+      console.error('Invalid event structure:', event);
+      return;
+    }
+
+    // Validate event data based on event type
+    if (event.data) {
+      let isValid = true;
+      switch (event.type) {
+        case EventType.RESOURCE_PRODUCED:
+        case EventType.RESOURCE_CONSUMED:
+        case EventType.RESOURCE_UPDATED:
+          isValid = isValidResourceEventData(event.data);
+          break;
+        case EventType.MODULE_UPDATED:
+          if (event.moduleType === ResourceType.POPULATION) {
+            isValid = isValidPopulationEventData(event.data);
+          }
+          break;
+        case EventType.MODULE_STATUS_CHANGED:
+          isValid = isValidModuleStatusEventData(event.data);
+          break;
+        case EventType.RESOURCE_TRANSFERRED:
+          isValid = isValidTradeRouteEventData(event.data);
+          break;
+      }
+
+      if (!isValid) {
+        console.error('Invalid event data for type:', event.type, event.data);
+        return;
+      }
+    }
+
+    super.emit(event);
+  }
+
+  /**
+   * Subscribe to events with optional filtering
+   */
+  public override subscribe(
+    eventType: EventType | '*',
+    listener: EventListener<ModuleEvent>,
+    options?: SubscriptionOptions & { moduleId?: string; moduleType?: ModuleType }
+  ): () => void {
+    const wrappedListener: EventListener<ModuleEvent> = (event: ModuleEvent) => {
+      if (options?.moduleId && event.moduleId !== options.moduleId) return;
+      if (options?.moduleType && event.moduleType !== options.moduleType) return;
+      listener(event);
+    };
+
+    return super.subscribe(eventType, wrappedListener, options);
+  }
+}
+
+export const moduleEventBus = ModuleEventBus.getInstance();

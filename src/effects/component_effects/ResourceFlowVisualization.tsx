@@ -1,11 +1,15 @@
-import * as React from "react";
-import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { useEffect, useRef } from 'react';
+import { ResourceType } from './../../types/resources/ResourceTypes';
+
 interface ResourceFlowVisualizationProps {
   sourcePosition: { x: number; y: number };
   targetPosition: { x: number; y: number };
-  resourceType: ResourceType.ENERGY | 'materials' | ResourceType.RESEARCH | ResourceType.POPULATION;
+  resourceType:
+    | ResourceType.ENERGY
+    | ResourceType.MINERALS
+    | ResourceType.RESEARCH
+    | ResourceType.POPULATION;
   flowRate: number; // 0-100
   quality: 'low' | 'medium' | 'high';
 }
@@ -40,11 +44,27 @@ export function ResourceFlowVisualization({
 
   // Resource type specific properties
   const resourceColors = {
-    energy: { primary: '#FFD700', secondary: '#FFA500', glow: 'rgba(255, 215, 0, 0.6)' },
-    materials: { primary: '#1E90FF', secondary: '#0000CD', glow: 'rgba(30, 144, 255, 0.6)' },
-    research: { primary: '#9370DB', secondary: '#4B0082', glow: 'rgba(147, 112, 219, 0.6)' },
-    population: { primary: '#32CD32', secondary: '#006400', glow: 'rgba(50, 205, 50, 0.6)' },
-  };
+    [ResourceType.ENERGY]: {
+      primary: '#FFD700',
+      secondary: '#B8860B',
+      glow: 'rgba(255, 215, 0, 0.6)',
+    },
+    [ResourceType.MINERALS]: {
+      primary: '#A0522D',
+      secondary: '#8B4513',
+      glow: 'rgba(160, 82, 45, 0.6)',
+    },
+    [ResourceType.RESEARCH]: {
+      primary: '#9370DB',
+      secondary: '#4B0082',
+      glow: 'rgba(147, 112, 219, 0.6)',
+    },
+    [ResourceType.POPULATION]: {
+      primary: '#32CD32',
+      secondary: '#006400',
+      glow: 'rgba(50, 205, 50, 0.6)',
+    },
+  } as const;
 
   const colors = resourceColors[resourceType];
 

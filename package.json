@@ -2,7 +2,6 @@
   "name": "vite-react-typescript-starter",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -47,6 +46,7 @@
     "typecheck:specific": "node tools/run-typecheck.mjs"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.6.1",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.11",
@@ -58,6 +58,7 @@
     "@react-three/fiber": "^8.17.14",
     "@types/d3": "^7.4.3",
     "@types/serve-static": "^1.15.7",
+    "antd": "^5.24.3",
     "chart.js": "^4.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.0.0",
@@ -84,7 +85,8 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@babel/parser": "^7.26.8",
+    "@babel/parser": "^7.26.10",
+    "@babel/traverse": "^7.26.10",
     "@eslint/js": "^9.21.0",
     "@jest/globals": "^29.7.0",
     "@playwright/test": "^1.50.1",
@@ -94,7 +96,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.16",
-    "@types/node": "^22.13.4",
+    "@types/node": "^22.13.10",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@types/react-window": "^1.8.8",
@@ -109,6 +111,7 @@
     "@vitest/coverage-v8": "^1.6.1",
     "@vitest/ui": "^1.3.1",
     "autoprefixer": "^10.4.18",
+    "commander": "^13.1.0",
     "eslint": "^9.21.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-alias": "^1.1.2",
@@ -119,7 +122,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.11",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "glob": "^10.3.10",
+    "glob": "^10.4.5",
     "globals": "^15.9.0",
     "gsap": "^3.12.7",
     "husky": "^9.0.0",
@@ -136,6 +139,7 @@
     "sharp": "^0.33.5",
     "tailwindcss": "^3.4.1",
     "ts-jest": "^29.2.6",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.25.0",
     "typescript-plugin-css-modules": "^5.1.0",
@@ -156,7 +160,7 @@
     "url": "https://github.com/deadcoast/Galactic_Sprawl_fix/issues"
   },
   "homepage": "https://github.com/deadcoast/Galactic_Sprawl_fix#readme",
-  "description": "",
+  "description": "## Overview",
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --cache --fix",
@@ -169,5 +173,6 @@
     "*.{json,css,scss,md}": [
       "prettier --write"
     ]
-  }
+  },
+  "type": "module"
 }

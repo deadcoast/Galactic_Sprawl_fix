@@ -239,7 +239,7 @@ function EventsTab({ events }: { events: ModuleEvent[] }) {
     return <div className="text-gray-400">No events recorded yet.</div>;
   }
 
-  // Function to get a color for different event types
+  // (...args: unknown[]) => unknown to get a color for different event types
   const getEventColor = (type: string): string => {
     if (type.includes('RESOURCE')) return 'text-green-400';
     if (type.includes('MODULE')) return 'text-blue-400';

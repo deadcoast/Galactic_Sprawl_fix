@@ -230,7 +230,7 @@ export class LongSessionMemoryTracker {
 
     // Check Memory API support (Chrome)
     this.browserSupport.memoryAPI =
-      this.browserSupport.performanceAPI && typeof (performance as any).memory !== 'undefined';
+      this.browserSupport.performanceAPI && typeof (performance as unknown).memory !== 'undefined';
 
     // Check DOM Count API support
     this.browserSupport.domCountAPI =
@@ -240,7 +240,7 @@ export class LongSessionMemoryTracker {
     this.browserSupport.gc = typeof window !== 'undefined' && typeof window.gc === 'function';
 
     if (this.options.loggingLevel && this.options.loggingLevel >= 3) {
-      console.log('[LongSessionMemoryTracker] Browser support detected:', this.browserSupport);
+      console.warn('[LongSessionMemoryTracker] Browser support detected:', this.browserSupport);
     }
 
     // Warn if memory API not available
@@ -284,7 +284,7 @@ export class LongSessionMemoryTracker {
     }
 
     if (this.options.loggingLevel && this.options.loggingLevel >= 3) {
-      console.log('[LongSessionMemoryTracker] Started tracking memory usage');
+      console.warn('[LongSessionMemoryTracker] Started tracking memory usage');
     }
 
     // Add session start marker
@@ -317,7 +317,7 @@ export class LongSessionMemoryTracker {
     this.addSessionMarker('tracking_stopped');
 
     if (this.options.loggingLevel && this.options.loggingLevel >= 3) {
-      console.log('[LongSessionMemoryTracker] Stopped tracking memory usage');
+      console.warn('[LongSessionMemoryTracker] Stopped tracking memory usage');
     }
   }
 
@@ -346,7 +346,7 @@ export class LongSessionMemoryTracker {
     if (this.browserSupport.memoryAPI) {
       // Use explicit casting to access the browser-specific memory properties
       // This avoids TypeScript errors while still allowing us to access these properties
-      const memoryInfo = (performance as any).memory as PerformanceMemory;
+      const memoryInfo = (performance as unknown).memory as PerformanceMemory;
       snapshot.usedHeapSizeMB = memoryInfo.usedJSHeapSize / (1024 * 1024);
       snapshot.totalHeapSizeMB = memoryInfo.totalJSHeapSize / (1024 * 1024);
       snapshot.heapLimitMB = memoryInfo.jsHeapSizeLimit / (1024 * 1024);

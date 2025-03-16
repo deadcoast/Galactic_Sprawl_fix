@@ -233,7 +233,7 @@ export interface FactionState {
  *
  * // Subscribe to events
  * factionBehaviorManager.on('faction:behavior-changed', ({ factionId, oldBehavior, newBehavior }) => {
- *   console.log(`Faction ${factionId} behavior changed from ${oldBehavior} to ${newBehavior}`);
+ *   console.warn(`Faction ${factionId} behavior changed from ${oldBehavior} to ${newBehavior}`);
  * });
  *
  * // Change a faction's behavior

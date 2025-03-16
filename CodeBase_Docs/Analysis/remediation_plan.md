@@ -1,142 +1,126 @@
-# Remediation Plan
+# Updated Remediation Plan
 
-## Current Status
+## 1. High Priority: TypeScript Type Safety
 
-- ✅ Created a comprehensive fix script (`fix_resources.sh`) that combines all resource type fixes
-- ✅ Fixed ResourceTypeMigration.ts imports to include ResourceTypeString
-- ✅ Fixed duplicate imports in ResourceDiscoverySystem.tsx
-- ✅ Updated component props to use ResourceType enum instead of string
-- ✅ Fixed string literals to use ResourceType enum values
-- ✅ Fixed object literals with string resourceType
-- ✅ Fixed specific files with remaining issues
-- ✅ Fixed files that use ResourceTypeMigration
-- ✅ Fixed duplicate React imports
-- ✅ Fixed ESLint custom rule file and configuration
-- ✅ Fixed ResourceTypes.js and DataAnalysisTypes.js by removing redundant JS files
-- ✅ Fixed resourceValidation.ts with proper type imports and implementations
-- ✅ Fixed ResourceTypeMigration.ts type issues and improved type safety
-- ✅ Created standardized event interfaces and base implementations
-- ✅ Implemented proper event history tracking in useModuleEvents.ts
-- ⏳ Remaining TypeScript errors: 1331 (down from 1785)
+### 1.1 Manual Type Review (487 instances)
 
-## Immediate Actions
+- Focus on visualization components first
+- Create shared type definitions for common patterns
+- Document type usage patterns
 
-### 1. Event System Implementation (Current Focus)
+### 1.2 Type System Improvements
 
-#### Completed Steps
+```typescript
+// Example shared type definitions
+type D3Selection<T extends Element = SVGElement> = d3.Selection<T, unknown, null, undefined>;
+type EventHandler<T = unknown> = (event: T) => void;
+type AsyncOperation<T = unknown> = Promise<T>;
+```
 
-- ✅ Created standardized event interfaces (`IEventEmitter`, `ITypedEventEmitter`)
-- ✅ Created base event emitter implementations (`BaseEventEmitter`, `BaseTypedEventEmitter`)
-- ✅ Created ship, module, faction, and combat event definitions
-- ✅ Updated `ShipHangarManager` and `StandardShipHangarManager`
-- ✅ Updated `BaseModuleManager` to use the new event system
-- ✅ Updated `useFactionBehavior` and `useCombatAI` hooks
-- ✅ Created `CombatManager` class extending `BaseTypedEventEmitter`
-- ✅ Implemented proper event history tracking in useModuleEvents.ts
-- ✅ Updated `ResourceManager` to use the new event system
-- ✅ Updated `ExplorationManager` to use standardized event types
-- ✅ Added type guards for resource and exploration events
-- ✅ Updated `ColonyManager` to use the new event system
-- ✅ Added type guards for colony events
+### 1.3 Type Validation
 
-#### Next Steps
+- Add runtime type checking for critical paths
+- Implement automated type coverage reporting
+- Create type testing utilities
 
-1. Fix component event subscriptions:
+## 2. Medium Priority: Code Structure
 
-   - [ ] Update resource-related components to use new event system
-   - [ ] Update exploration components to use standardized events
-   - [ ] Update colony management components
-   - [ ] Ensure proper event unsubscription in all components
+### 2.1 Unused Variables
 
-2. Standardize event handling:
-   - [ ] Review and standardize event payload interfaces
-   - [ ] Add runtime validation for event payloads
-   - [ ] Create event utility functions for common operations
-   - [ ] Document event flow and best practices
+- Review ESLint configuration for unused variable detection
+- Update grep patterns to better match unused variables
+- Create script to automatically prefix unused variables with `_`
 
-### 2. Type Safety Improvements
+### 2.2 Case Block Declarations
 
-#### Next Steps
+- Review switch statements for lexical declarations
+- Update grep patterns to better match case declarations
+- Create script to automatically add blocks around case declarations
 
-1. Replace 'any' types with proper interfaces:
+## 3. Low Priority: Console Statements (1078 instances)
 
-   - [ ] Create specific interfaces for complex data structures
-   - [ ] Use unknown type with type guards where appropriate
-   - [ ] Implement generics for reusable components
+### 3.1 Console Usage Policy
 
-2. Fix visualization component types:
+- Allow `console.warn` and `console.error` in production code
+- Allow all console methods in test files
+- Allow all console methods in development tools
 
-   - [ ] Replace 'any' types in chart renderers
-   - [ ] Create proper interfaces for visualization data
-   - [ ] Implement type-safe D3 wrappers
+### 3.2 Console Statement Review
 
-3. Add type guards for runtime type checking:
-   - ✅ Implement isResourceType and other type guards
-   - [ ] Add runtime validation for external data
-   - [ ] Use type predicates for narrowing types
+```bash
+# Find console statements in production code
+grep -r "console\." src --include="*.ts" --include="*.tsx" --exclude-dir="tests" --exclude-dir="tools"
 
-### 3. Code Quality Improvements
+# Find console statements in test files
+grep -r "console\." src/tests --include="*.ts" --include="*.tsx"
 
-#### Next Steps
+# Find console statements in development tools
+grep -r "console\." src/tools --include="*.ts" --include="*.tsx"
+```
 
-1. Fix unused variables and imports:
+### 3.3 Logging Strategy
 
-   - [ ] Remove or prefix unused variables
-   - [ ] Clean up unnecessary imports
-   - [ ] Update import statements to be more specific
+- Create centralized logging service
+- Add log levels and categories
+- Add production logging configuration
 
-2. Improve code organization:
+## Implementation Strategy
 
-   - [ ] Standardize file and folder structure
-   - [ ] Group related functionality
-   - [ ] Create index files for better module organization
+1. **Week 1: Type Safety**
 
-3. Add comprehensive documentation:
-   - [ ] Document all event types and payloads
-   - [ ] Add JSDoc comments to public methods
-   - [ ] Create usage examples for common patterns
+   - [ ] Create shared type definitions
+   - [ ] Review and update visualization component types
+   - [ ] Add type validation tests
 
-## Progress Tracking
+2. **Week 2: Code Structure**
 
-Current metrics (as of latest report):
+   - [ ] Fix case block declarations
+   - [ ] Update unused variable handling
+   - [ ] Improve ESLint configuration
 
-- TypeScript Errors: 1331 (decreased from 1785, 25% improvement)
-- ESLint Errors: 606 (increased from 551)
-- ESLint Warnings: 503 (decreased from 725, 30% improvement)
+3. **Week 3: Logging**
+   - [ ] Implement logging service
+   - [ ] Update console statements
+   - [ ] Add logging configuration
 
-### Error Type Progress
+## Monitoring and Reporting
 
-- Type Mismatches: 35% improvement
-- Missing Properties: -18% (regression)
-- Any Type Usage: -18% (regression)
-- Unused Variables: -13% (regression)
+1. **Daily Progress Tracking**
 
-## Next Priority Tasks
+   ```bash
+   # Run progress tracking script
+   node tools/track-linter-progress.mjs
+   ```
 
-1. **Component Event System Updates**
+2. **Weekly Review**
 
-   - Update resource-related components
-   - Update exploration components
-   - Update colony management components
-   - Ensure proper event cleanup
+   - Review progress report
+   - Update remediation plan
+   - Adjust priorities if needed
 
-2. **Type Safety Improvements**
+3. **Final Verification**
+   ```bash
+   # Run all checks
+   npm run lint
+   npm run type-check
+   npm test
+   ```
 
-   - Focus on visualization components
-   - Add missing type guards
-   - Fix remaining any types
+## Success Criteria
 
-3. **Code Quality**
-   - Address unused variables
-   - Improve code organization
-   - Add comprehensive documentation
+1. **Type Safety**
 
-## Success Metrics
+   - Zero `any` types in production code
+   - All shared types documented
+   - Type coverage > 95%
 
-We'll continue tracking:
+2. **Code Structure**
 
-1. TypeScript error count (target: <500)
-2. ESLint error count (target: <200)
-3. ESLint warning count (target: <300)
-4. Test coverage (target: >80%)
-5. Build success rate (target: >95%)
+   - All case blocks properly scoped
+   - All unused variables properly marked
+   - ESLint rules enforced
+
+3. **Logging**
+   - Centralized logging service
+   - Clear logging policy
+   - Production-ready configuration

@@ -17,7 +17,6 @@ import {
   useResourceRates,
   useResourceRatesDispatch,
 } from '../../contexts/ResourceRatesContext';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   HookPerformanceConfig,
   defaultPerformanceConfig,
@@ -25,6 +24,7 @@ import {
   measureSelectorTime,
   trackHookRender,
 } from '../../utils/performance/hookPerformanceMonitor';
+import { ResourceType, ResourceTypeInfo } from './../../types/resources/ResourceTypes';
 
 // Type for core resources tracked in ResourceRatesContext
 type CoreResourceType =

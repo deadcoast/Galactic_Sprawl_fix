@@ -6,7 +6,7 @@
  * and provides insights for performance optimization.
  */
 
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
   LongSessionMemoryTracker,
@@ -174,10 +174,7 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
 
     if (filteredSnapshots.length < 2) {
       // Not enough data to render
-      ctx.font = '14px Arial';
-      ctx.fillStyle = '#666';
-      ctx.textAlign = 'center';
-      ctx.fillText('Not enough data to display chart', canvas.width / 2, canvas.height / 2);
+      drawNoDataMessage(ctx);
       return;
     }
 

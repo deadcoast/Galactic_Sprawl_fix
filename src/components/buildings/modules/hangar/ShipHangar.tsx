@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import ResourceVisualization from '../../../../components/ui/ResourceVisualization';
 import {
@@ -8,8 +8,8 @@ import {
   ShipType,
 } from '../../../../managers/ships/ShipHangarManager';
 import { Effect } from '../../../../types/core/GameTypes';
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 import { WeaponCategory, WeaponStatus } from '../../../../types/weapons/WeaponTypes';
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 
 interface HangarWeaponSystem {
   id: string;
@@ -272,7 +272,7 @@ const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 }) => {
     if (selectedShip) {
       const destination = prompt('Enter destination:');
       if (destination) {
-        hangarManager.deployShip(selectedShip.id, destination);
+        hangarManager.deployShip(toShip(selectedShip).id, destination);
       }
     }
   };
@@ -280,28 +280,28 @@ const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 }) => {
   // Handle ship docking
   const handleDockShip = () => {
     if (selectedShip) {
-      hangarManager.dockShip(selectedShip.id);
+      hangarManager.dockShip(toShip(selectedShip).id);
     }
   };
 
   // Handle ship repair
   const handleRepairShip = () => {
     if (selectedShip) {
-      hangarManager.repairShip(selectedShip.id, 10);
+      hangarManager.repairShip(toShip(selectedShip).id, 10);
     }
   };
 
   // Handle ship refueling
   const handleRefuelShip = () => {
     if (selectedShip) {
-      hangarManager.refuelShip(selectedShip.id, 10);
+      hangarManager.refuelShip(toShip(selectedShip).id, 10);
     }
   };
 
   // Handle ship upgrade
   const handleUpgradeShip = () => {
     if (selectedShip) {
-      hangarManager.upgradeShip(selectedShip.id);
+      hangarManager.upgradeShip(toShip(selectedShip).id);
     }
   };
 
@@ -309,7 +309,7 @@ const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 }) => {
   const handleRemoveShip = () => {
     if (selectedShip) {
       if (window.confirm(`Are you sure you want to remove ${selectedShip.name}?`)) {
-        hangarManager.removeShip(selectedShip.id);
+        hangarManager.removeShip(toShip(selectedShip).id);
       }
     }
   };
@@ -493,7 +493,7 @@ const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 }) => {
                       {Array.from(selectedShip.cargo.resources.entries()).map(
                         ([resourceType, amount]) => (
                           <div key={resourceType.toString()} className="flex items-center">
-                            <ResourceVisualization resourceType={resourceType} amount={amount} />
+                            <ResourceVisualization type={resourceType} value={amount} />
                           </div>
                         )
                       )}

@@ -149,7 +149,7 @@ export class SessionPerformanceTracker {
     this.isEnabled = this.options.collectionEnabled && samplingValue <= this.options.samplingRate;
 
     if (!this.isEnabled) {
-      console.log('[SessionPerformanceTracker] Telemetry disabled due to sampling');
+      console.warn('[SessionPerformanceTracker] Telemetry disabled due to sampling');
       return;
     }
 
@@ -168,7 +168,7 @@ export class SessionPerformanceTracker {
     // Start transmission cycle
     this.startTransmissionCycle();
 
-    console.log(
+    console.warn(
       `[SessionPerformanceTracker] Initialized session: ${this.sessionMetadata.sessionId}`
     );
   }
@@ -538,7 +538,7 @@ export class SessionPerformanceTracker {
 
     // In a real implementation, we would transmit this data to a telemetry server
     // For this implementation, we'll log it
-    console.log('[SessionPerformanceTracker] Transmitting telemetry data:', dataToTransmit);
+    console.warn('[SessionPerformanceTracker] Transmitting telemetry data:', dataToTransmit);
 
     // After transmission, remove the transmitted entries except the current one
     if (this.performanceData.length > 1) {
@@ -594,7 +594,7 @@ export class SessionPerformanceTracker {
     this.componentLoadTimers.clear();
     this.accumulatedEventCounts = {};
 
-    console.log(
+    console.warn(
       `[SessionPerformanceTracker] Cleaned up session: ${this.sessionMetadata.sessionId}`
     );
   }

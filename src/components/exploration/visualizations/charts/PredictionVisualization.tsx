@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { scaleOrdinal } from 'd3-scale';
 import { schemeCategory10 } from 'd3-scale-chromatic';
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import {
   CartesianGrid,
@@ -613,7 +613,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                     <TableCell>{modelDetails.architecture.hiddenUnits || 'N/A'}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Activation Function</TableCell>
+                    <TableCell>Activation {`(...args: unknown[]) => unknown`}</TableCell>
                     <TableCell>{modelDetails.architecture.activation || 'ReLU'}</TableCell>
                   </TableRow>
                   <TableRow>

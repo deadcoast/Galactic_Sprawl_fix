@@ -1,7 +1,6 @@
-import { Box, Button, LinearProgress, Skeleton, Typography } from '@mui/material';
-import * as React from "react";
-import { ComponentType, useCallback, useEffect, useState } from 'react';
-import useMemoryManager, { MemoryManagerOptions } from '../../../hooks/useMemoryManager';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
+import React, { ComponentType, useEffect, useState } from 'react';
+import { MemoryManagerOptions, useMemoryManager } from '../../../hooks/useMemoryManager';
 import { BaseChartProps } from './charts/BaseChart';
 
 /**
@@ -38,6 +37,49 @@ export interface WithMemoryManagementOptions extends Partial<MemoryManagerOption
 }
 
 /**
+ * Data transfer object for memory-managed component state
+ */
+interface MemoryManagedState {
+  isLoading: boolean;
+  error: string | null;
+  dataTimestamp: number;
+  memoryUsage: number;
+  isDataLoaded: boolean;
+}
+
+// Define styles as const objects to avoid complex unions
+const containerStyle = {
+  position: 'relative',
+} as const;
+
+const loadingContainerStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+} as const;
+
+const errorContainerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+} as const;
+
+const unloadedContainerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  border: '1px dashed #ccc',
+  borderRadius: '4px',
+  padding: '16px',
+} as const;
+
+const statsStyle = {
+  marginTop: '8px',
+} as const;
+
+/**
  * HOC that adds memory management to chart components
  *
  * This component ensures proper cleanup of large datasets when the component
@@ -48,257 +90,214 @@ export interface WithMemoryManagementOptions extends Partial<MemoryManagerOption
  * @param options Configuration options for memory management
  */
 export function withMemoryManagement<P extends BaseChartProps>(
-  Component: ComponentType<P>,
+  WrappedComponent: ComponentType<P>,
   options: WithMemoryManagementOptions = {}
-) {
-  // The wrapped component
-  const MemoryManagedComponent = (props: P) => {
+): React.FC<P> {
+  // Set a display name for the wrapped component
+  const wrappedComponentName = `WithMemoryManagement(${WrappedComponent.displayName || WrappedComponent.name || 'UnknownComponent'})`;
+
+  const MemoryManagedComponent = React.memo((props: P) => {
     // Default options
-    const {
-      autoLoad = true,
-      showMemoryStats = false,
-      loadingComponent,
-      errorComponent,
-      disableAutoReload = false,
-      ...memoryOptions
-    } = options;
+    const { autoLoad = true, showMemoryStats = false, disableAutoReload = false } = options;
 
     // Component identifier for memory manager
-    const componentKey = `memory-managed-${Component.displayName || Component.name || 'component'}`;
+    const componentKey = `memory-managed-${wrappedComponentName}`;
 
-    // Loading state
-    const [isLoading, setIsLoading] = useState(autoLoad);
-    const [error, setError] = useState<string | null>(null);
-    const [dataTimestamp, setDataTimestamp] = useState<number>(0);
-
-    // Use our memory manager hook
-    const memory = useMemoryManager(props.data, {
-      key: componentKey,
-      // Set sensible initial memory estimations based on data array length
-      initialDataSizeEstimate: Array.isArray(props.data)
-        ? props.data.length * 1024 // rough estimate of 1KB per data point
-        : undefined,
-      // Default to medium cleanup level
-      autoCleanupLevel: 'medium',
-      ...memoryOptions,
+    // Component state using DTO
+    const [state, setState] = useState<MemoryManagedState>({
+      isLoading: autoLoad,
+      error: null,
+      dataTimestamp: 0,
+      memoryUsage: 0,
+      isDataLoaded: false,
     });
 
-    // Load data function
-    const loadData = useCallback(() => {
-      setIsLoading(true);
-      setError(null);
+    // Use our memory manager hook
+    const memory = useMemoryManager<P['data']>(props.data, {
+      key: componentKey,
+      initialDataSizeEstimate: Array.isArray(props.data) ? props.data.length * 1024 : undefined,
+    });
 
+    // Load data function with error boundary
+    const loadData = async () => {
       try {
-        // In a real implementation, this might be an async data fetch
-        // Here we're just updating the memory manager with the props data
+        setState(prev => ({ ...prev, isLoading: true, error: null }));
+
+        // Validate data at boundary
+        if (props.data === undefined || props.data === null) {
+          throw new Error('Data is required');
+        }
+
         memory.updateData(props.data);
-        setDataTimestamp(Date.now());
-        setIsLoading(false);
+
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          dataTimestamp: Date.now(),
+          memoryUsage: memory.memoryUsage,
+          isDataLoaded: true,
+        }));
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error loading data');
-        setIsLoading(false);
+        // Consistent error handling at boundary
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load data';
+        console.error(`[${componentKey}] Error loading data:`, err);
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: errorMessage,
+          isDataLoaded: false,
+        }));
       }
-    }, [props.data, memory]);
+    };
 
-    // Cleanup data function
-    const cleanupData = useCallback(() => {
-      memory.cleanup();
-      setDataTimestamp(0);
-    }, [memory]);
-
-    // Load data on component mount if autoLoad is true
+    // Initial load with error boundary
     useEffect(() => {
       if (autoLoad) {
-        loadData();
+        loadData().catch(err => {
+          console.error(`[${componentKey}] Error in initial load:`, err);
+        });
       }
-    }, [autoLoad, loadData]);
+    }, []);
 
-    // Handle visibility changes for auto-reloading
+    // Intersection observer for visibility-based loading
     useEffect(() => {
       if (disableAutoReload) return;
 
-      // Set up visibility observer to reload data when component becomes visible
+      const element = document.querySelector(`[data-memory-manager="${componentKey}"]`);
+      if (!element) {
+        console.warn(`[${componentKey}] Could not find element for intersection observer`);
+        return;
+      }
+
       const observer = new IntersectionObserver(
         entries => {
           entries.forEach(entry => {
-            // When component becomes visible again and data was previously unloaded
-            if (entry.isIntersecting && !memory.isDataLoaded && dataTimestamp !== 0) {
-              loadData();
+            if (entry.isIntersecting && !state.isDataLoaded && !state.isLoading) {
+              loadData().catch(err => {
+                console.error(`[${componentKey}] Error in visibility-based load:`, err);
+              });
             }
           });
         },
-        { threshold: 0.1 } // 10% visibility threshold
+        { threshold: 0.1 }
       );
 
-      // Find the component's element
-      const element = document.querySelector(`[data-memory-manager="${componentKey}"]`);
-
-      if (element) {
-        observer.observe(element);
-      }
+      observer.observe(element);
 
       return () => {
         observer.disconnect();
       };
-    }, [loadData, memory.isDataLoaded, dataTimestamp, disableAutoReload, componentKey]);
+    }, [state.isDataLoaded, state.dataTimestamp, disableAutoReload]);
 
-    // If data has been cleaned up and we're not loading, show reload button
-    if (!memory.isDataLoaded && !isLoading && dataTimestamp !== 0) {
+    // Render loading state
+    if (state.isLoading) {
       return (
         <Box
-          sx={{
+          component="div"
+          style={{
+            ...loadingContainerStyle,
             width: props.width || '100%',
             height: props.height || 400,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            border: '1px dashed #ccc',
-            borderRadius: 1,
-            p: 2,
           }}
-          data-memory-manager={componentKey}
         >
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Data unloaded to conserve memory
-          </Typography>
-          <Button variant="outlined" onClick={loadData} sx={{ mt: 1 }}>
-            Reload Data
-          </Button>
+          <CircularProgress />
         </Box>
       );
     }
 
-    // Show loading state
-    if (isLoading) {
-      if (loadingComponent) {
-        return (
-          <Box
-            sx={{ width: props.width || '100%', height: props.height || 400 }}
-            data-memory-manager={componentKey}
-          >
-            {loadingComponent}
-          </Box>
-        );
-      }
-
+    // Render error state
+    if (state.error) {
       return (
         <Box
-          sx={{
+          component="div"
+          style={{
+            ...errorContainerStyle,
             width: props.width || '100%',
             height: props.height || 400,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            p: 2,
           }}
-          data-memory-manager={componentKey}
         >
-          <Skeleton variant="rectangular" width="100%" height="100%" />
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Loading chart data...
+          <Typography color="error" gutterBottom>
+            {state.error}
           </Typography>
-          <LinearProgress sx={{ width: '100%', mt: 1 }} />
-        </Box>
-      );
-    }
-
-    // Show error state
-    if (error) {
-      if (errorComponent) {
-        return (
-          <Box
-            sx={{ width: props.width || '100%', height: props.height || 400 }}
-            data-memory-manager={componentKey}
-          >
-            {errorComponent}
-          </Box>
-        );
-      }
-
-      return (
-        <Box
-          sx={{
-            width: props.width || '100%',
-            height: props.height || 400,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            border: '1px solid #f44336',
-            borderRadius: 1,
-            p: 2,
-          }}
-          data-memory-manager={componentKey}
-        >
-          <Typography variant="body1" color="error" gutterBottom>
-            Error loading chart data
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {error}
-          </Typography>
-          <Button variant="outlined" color="error" onClick={loadData} sx={{ mt: 2 }}>
+          <Button variant="outlined" onClick={() => loadData()} style={{ marginTop: '8px' }}>
             Retry
           </Button>
         </Box>
       );
     }
 
-    // Render the wrapped component with memory stats if enabled
-    return (
-      <Box
-        sx={{
-          width: props.width || '100%',
-          height: 'auto',
-          position: 'relative',
-        }}
-        data-memory-manager={componentKey}
-      >
-        {/* Pass the managed data to the component */}
-        <Component {...props} />
+    // Render unloaded state
+    if (!state.isDataLoaded && !state.isLoading && state.dataTimestamp !== 0) {
+      return (
+        <Box
+          component="div"
+          style={{
+            ...unloadedContainerStyle,
+            width: props.width || '100%',
+            height: props.height || 400,
+          }}
+          data-memory-manager={componentKey}
+        >
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Data unloaded to conserve memory
+          </Typography>
+          <Button variant="outlined" onClick={() => loadData()} style={{ marginTop: '8px' }}>
+            Reload Data
+          </Button>
+        </Box>
+      );
+    }
 
-        {/* Show memory stats if enabled */}
-        {showMemoryStats && (
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: 4,
-              right: 4,
-              backgroundColor: 'rgba(0,0,0,0.6)',
-              color: 'white',
-              padding: '4px 8px',
-              borderRadius: 1,
-              fontSize: '0.75rem',
-              zIndex: 10,
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Typography variant="caption" color="inherit">
-              Memory: {(memory.memoryUsage / (1024 * 1024)).toFixed(2)} MB
-            </Typography>
-            {memory.isAboveThreshold && (
-              <Typography variant="caption" color="error">
-                Above threshold
+    // Extract only the props needed by the wrapped component
+    const {
+      data,
+      width,
+      height,
+      title,
+      subtitle,
+      colors,
+      className,
+      animate,
+      theme,
+      onElementClick,
+      showLoadingState,
+      errorMessage,
+      ...otherProps
+    } = props;
+
+    // Render the component with memory-managed data
+    return (
+      <Box component="div" style={containerStyle}>
+        <div data-memory-manager={componentKey}>
+          <WrappedComponent
+            data={data}
+            width={width}
+            height={height}
+            title={title}
+            subtitle={subtitle}
+            colors={colors}
+            className={className}
+            animate={animate}
+            theme={theme}
+            onElementClick={onElementClick}
+            showLoadingState={showLoadingState}
+            errorMessage={errorMessage}
+            {...(otherProps as Omit<P, keyof BaseChartProps>)}
+          />
+          {showMemoryStats && (
+            <Box style={statsStyle}>
+              <Typography variant="body2" color="textSecondary">
+                Memory Usage: {Math.round(state.memoryUsage / 1024 / 1024)}MB
               </Typography>
-            )}
-            <Button
-              variant="text"
-              size="small"
-              onClick={cleanupData}
-              sx={{ color: 'white', minWidth: 'auto', padding: '0px 4px' }}
-            >
-              Clear
-            </Button>
-          </Box>
-        )}
+            </Box>
+          )}
+        </div>
       </Box>
     );
-  };
+  });
 
-  // Set display name for the wrapped component
-  MemoryManagedComponent.displayName = `withMemoryManagement(${Component.displayName || Component.name || 'Component'})`;
+  // Set display name for better debugging
+  MemoryManagedComponent.displayName = wrappedComponentName;
 
   return MemoryManagedComponent;
 }

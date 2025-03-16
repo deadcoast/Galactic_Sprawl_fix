@@ -368,7 +368,7 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
         onClick={chartData =>
           chartData && handleChartClick(chartData as Record<string, unknown>, 0)
         }
-        onMouseDown={() => console.log('Starting zoom/pan')}
+        onMouseDown={() => console.warn('Starting zoom/pan')}
         onMouseUp={e => {
           // The recharts library doesn't export proper types for chart events
           const event = e as unknown as {

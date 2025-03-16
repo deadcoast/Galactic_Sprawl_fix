@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ComponentType } from 'react';
 import { BaseChartProps } from './charts/BaseChart';
 import { ViewportOptimizedHeatMap } from './charts/ViewportOptimizedHeatMap';

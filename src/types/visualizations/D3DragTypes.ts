@@ -30,17 +30,17 @@ export interface DragBehaviorConfig<
   ContainerElement extends Element = Element,
 > {
   /**
-   * Function called when drag starts
+   * (...args: unknown[]) => unknown called when drag starts
    */
   onDragStart?: (event: TypedDragEvent<Datum, ParentDatum, ContainerElement>) => void;
 
   /**
-   * Function called during dragging
+   * (...args: unknown[]) => unknown called during dragging
    */
   onDrag?: (event: TypedDragEvent<Datum, ParentDatum, ContainerElement>) => void;
 
   /**
-   * Function called when drag ends
+   * (...args: unknown[]) => unknown called when drag ends
    */
   onDragEnd?: (event: TypedDragEvent<Datum, ParentDatum, ContainerElement>) => void;
 
@@ -97,7 +97,7 @@ export function createTypedDragBehavior<
   }
 
   if (config.filter) {
-    drag.filter((event: any, d: Datum) => config.filter!(event, d));
+    drag.filter((event: unknown, d: Datum) => config.filter!(event, d));
   }
 
   if (config.touchable !== undefined) {
@@ -206,11 +206,11 @@ export function createCustomDragBehavior<
     }
 
     if (options.horizontalOnly) {
-      y = (event.subject as any).y;
+      y = (event.subject as unknown).y;
     }
 
     if (options.verticalOnly) {
-      x = (event.subject as any).x;
+      x = (event.subject as unknown).x;
     }
 
     if (options.minPosition) {
@@ -264,5 +264,5 @@ export function applyDragBehavior<
   selection: d3.Selection<GElement, Datum, PElement, PDatum>,
   dragBehavior: d3.DragBehavior<Element, Datum, PDatum>
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
-  return selection.call(dragBehavior as any);
+  return selection.call(dragBehavior as unknown);
 }

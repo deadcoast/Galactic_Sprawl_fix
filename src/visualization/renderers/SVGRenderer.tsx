@@ -215,7 +215,7 @@ export class SVGRenderer implements ChartRenderer {
   private renderLineChart(
     data: ChartData,
     options: ChartOptions,
-    chartArea: any,
+    chartArea: unknown,
     chartGroup: SVGGElement
   ): void {
     const { datasets } = data;
@@ -287,7 +287,7 @@ export class SVGRenderer implements ChartRenderer {
   private renderBarChart(
     data: ChartData,
     options: ChartOptions,
-    chartArea: any,
+    chartArea: unknown,
     chartGroup: SVGGElement
   ): void {
     const { datasets } = data;
@@ -345,7 +345,7 @@ export class SVGRenderer implements ChartRenderer {
   private renderScatterChart(
     data: ChartData,
     options: ChartOptions,
-    chartArea: any,
+    chartArea: unknown,
     chartGroup: SVGGElement
   ): void {
     const { datasets } = data;
@@ -395,7 +395,7 @@ export class SVGRenderer implements ChartRenderer {
   private renderAreaChart(
     data: ChartData,
     options: ChartOptions,
-    chartArea: any,
+    chartArea: unknown,
     chartGroup: SVGGElement
   ): void {
     const { datasets } = data;
@@ -747,7 +747,7 @@ export class SVGRenderer implements ChartRenderer {
   private renderHeatmapChart(
     data: ChartData,
     options: ChartOptions,
-    chartArea: any,
+    chartArea: unknown,
     chartGroup: SVGGElement
   ): void {
     const { datasets } = data;
@@ -864,7 +864,7 @@ export class SVGRenderer implements ChartRenderer {
   private renderAxes(
     data: ChartData,
     options: ChartOptions,
-    chartArea: any,
+    chartArea: unknown,
     chartGroup: SVGGElement
   ): void {
     const xAxis = options.axes?.x || { type: 'linear' };
@@ -1007,7 +1007,7 @@ export class SVGRenderer implements ChartRenderer {
   private renderCategoryAxes(
     xCategories: string[],
     yCategories: string[],
-    chartArea: any,
+    chartArea: unknown,
     options: ChartOptions,
     chartGroup: SVGGElement
   ): void {
@@ -1058,8 +1058,8 @@ export class SVGRenderer implements ChartRenderer {
    * Draw grid lines
    */
   private drawGrid(
-    scales: any,
-    chartArea: any,
+    scales: unknown,
+    chartArea: unknown,
     options: ChartOptions,
     chartGroup: SVGGElement
   ): void {
@@ -1118,7 +1118,7 @@ export class SVGRenderer implements ChartRenderer {
   /**
    * Render legend
    */
-  private renderLegend(data: ChartData, options: ChartOptions, chartArea: any): void {
+  private renderLegend(data: ChartData, options: ChartOptions, chartArea: unknown): void {
     if (!this.svg) return;
 
     const { datasets } = data;
@@ -1300,7 +1300,7 @@ export class SVGRenderer implements ChartRenderer {
    */
   private calculateScales(
     data: ChartData,
-    chartArea: any,
+    chartArea: unknown,
     xAxis: ChartOptions['axes']['x'],
     yAxis: ChartOptions['axes']['y']
   ): { x: { min: number, max: number }, y: { min: number, max: number } } {
@@ -1379,7 +1379,7 @@ export class SVGRenderer implements ChartRenderer {
    * Map a data value to a pixel position
    */
   private mapValueToPixel(
-    value: any,
+    value: unknown,
     scale: { min: number; max: number },
     pixelMin: number,
     pixelMax: number,

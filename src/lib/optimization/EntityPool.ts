@@ -1,4 +1,4 @@
-import { EventEmitter } from '../utils/EventEmitter';
+import { EventEmitter } from '../events/EventEmitter';
 
 export interface PooledEntity {
   reset(): void;
@@ -11,10 +11,15 @@ interface PoolEvents<T extends PooledEntity> {
   [key: string]: unknown;
 }
 
+interface PoolEvent<T extends PooledEntity> {
+  type: keyof PoolEvents<T>;
+  data: PoolEvents<T>[keyof PoolEvents<T>];
+}
+
 /**
  * Generic entity pool for efficient object reuse
  */
-export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<T>> {
+export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvent<T>> {
   private available: T[];
   private inUse: Set<T>;
   private factory: () => T;
@@ -91,7 +96,10 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
         }
 
         // Emit event for pool expansion
-        this.emit('poolExpanded', { newSize: this.getTotalCount() });
+        this.emit({
+          type: 'poolExpanded',
+          data: { newSize: this.getTotalCount() },
+        });
 
         // Get an entity from the newly expanded pool
         entity = this.available.pop()!;
@@ -103,7 +111,10 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
 
     entity.reset();
     this.inUse.add(entity);
-    this.emit('entityActivated', { entity });
+    this.emit({
+      type: 'entityActivated',
+      data: { entity },
+    });
     return entity;
   }
 
@@ -115,7 +126,10 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
       this.inUse.delete(entity);
       entity.reset();
       this.available.push(entity);
-      this.emit('entityDeactivated', { entity });
+      this.emit({
+        type: 'entityDeactivated',
+        data: { entity },
+      });
     }
   }
 
@@ -153,7 +167,10 @@ export class EntityPool<T extends PooledEntity> extends EventEmitter<PoolEvents<
   public clear(): void {
     this.available = [];
     this.inUse.clear();
-    this.emit('entityDeactivated', { entity: null as unknown as T });
+    this.emit({
+      type: 'entityDeactivated',
+      data: { entity: null as unknown as T },
+    });
     console.warn('[EntityPool] Pool cleared');
   }
 }

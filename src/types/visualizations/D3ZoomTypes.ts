@@ -27,17 +27,17 @@ export interface TypedZoomEvent<
  */
 export interface ZoomBehaviorConfig<Element extends d3.BaseType, Datum = any> {
   /**
-   * Function called when zoom starts
+   * (...args: unknown[]) => unknown called when zoom starts
    */
   onZoomStart?: (event: TypedZoomEvent<Element, Datum>) => void;
 
   /**
-   * Function called during zooming
+   * (...args: unknown[]) => unknown called during zooming
    */
   onZoom?: (event: TypedZoomEvent<Element, Datum>) => void;
 
   /**
-   * Function called when zoom ends
+   * (...args: unknown[]) => unknown called when zoom ends
    */
   onZoomEnd?: (event: TypedZoomEvent<Element, Datum>) => void;
 
@@ -124,7 +124,7 @@ export function createTypedZoomBehavior<Element extends d3.BaseType, Datum = any
     // If wheelZoom is false, we need to filter out wheel events
     if (!config.wheelZoom) {
       const originalFilter = zoom.filter();
-      zoom.filter(function (event: any) {
+      zoom.filter(function (event: unknown) {
         return event.type !== 'wheel' && originalFilter.call(this, event);
       });
     }
@@ -170,7 +170,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
      * Target element (usually a group) to transform during zoom
      * If not provided, zooming will apply to the element the zoom behavior is attached to
      */
-    targetElement?: d3.Selection<SVGGElement, any, any, any>;
+    targetElement?: d3.Selection<SVGGElement, unknown, any, unknown>;
 
     /**
      * Whether to enable panning
@@ -197,7 +197,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
   // Configure SVG-specific options
   if (config.enablePan === false) {
     // Disable panning by only allowing scaling transformations
-    zoom.on('zoom', (event: any) => {
+    zoom.on('zoom', (event: unknown) => {
       const transform = event.transform;
       const newTransform = d3.zoomIdentity.scale(transform.k);
 
@@ -214,7 +214,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
     });
   } else if (config.targetElement) {
     // Apply normal pan/zoom transformation to target element
-    zoom.on('zoom', (event: any) => {
+    zoom.on('zoom', (event: unknown) => {
       config.targetElement!.attr('transform', event.transform);
 
       // Call the original zoom handler if provided
@@ -233,7 +233,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
   if (config.constrainPan) {
     const originalZoom = zoom.on('zoom');
 
-    zoom.on('zoom', (event: any) => {
+    zoom.on('zoom', (event: unknown) => {
       // Constrain the transform to prevent content from leaving viewport
       const transform = event.transform;
       const constrainedTransform = constrainTransform(transform, config.extent);
@@ -292,10 +292,10 @@ export function createSimulationZoomBehavior<
     /**
      * The container group that holds all simulation elements
      */
-    container: d3.Selection<SVGGElement, any, any, any>;
+    container: d3.Selection<SVGGElement, unknown, any, unknown>;
 
     /**
-     * Function to update the simulation view after zoom/pan
+     * (...args: unknown[]) => unknown to update the simulation view after zoom/pan
      */
     updateView?: (transform: d3.ZoomTransform) => void;
   }

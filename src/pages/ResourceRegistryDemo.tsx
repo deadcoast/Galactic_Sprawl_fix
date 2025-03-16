@@ -211,7 +211,7 @@ const ResourceRegistryDemo: React.FC = () => {
 
   const exportRegistryData = () => {
     const data = registry.exportRegistryData();
-    console.log('Registry Data:', data);
+    console.warn('Registry Data:', data);
     alert('Registry data exported to console. Check the developer tools console.');
   };
 

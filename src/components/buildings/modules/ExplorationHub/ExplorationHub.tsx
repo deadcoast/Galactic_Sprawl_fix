@@ -17,33 +17,21 @@ import { ContextMenuItem, useContextMenu } from '../../../../components/ui/Conte
 import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
 import { useTooltipContext } from '../../../../components/ui/tooltip-context';
 import { explorationRules } from '../../../../config/automation/explorationRules';
+import { StarSystem } from '../../../../managers/exploration/ExplorationManagerImpl';
 import {
   ReconShipManagerImpl,
+  Ship as ReconShipType,
   ShipEvent,
 } from '../../../../managers/exploration/ReconShipManagerImpl';
 import { automationManager } from '../../../../managers/game/AutomationManager';
-import { Position } from '../../../../types/core/GameTypes';
+import { BaseEvent, EventType } from '../../../../types/events/EventTypes';
+import { SectorType } from '../../../../types/exploration/ExplorationTypes';
 import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 import { ExplorationControls } from './ExplorationControls';
 import { ExplorationTutorial } from './ExplorationTutorial';
 import { MissionLog } from './MissionLog';
 import { ReconShipStatus } from './ReconShipStatus';
-
-interface Sector {
-  id: string;
-  name: string;
-  status: 'unmapped' | 'mapped' | 'scanning';
-  coordinates: { x: number; y: number };
-  resourcePotential: number;
-  habitabilityScore: number;
-  anomalies: Anomaly[];
-  lastScanned?: number;
-  resources?: Array<{
-    type: string;
-    amount: number;
-  }>;
-}
 
 interface Anomaly {
   id: string;
@@ -53,15 +41,46 @@ interface Anomaly {
   investigated: boolean;
 }
 
-interface ReconShip {
+// Update sector status type
+type SectorStatus = 'unmapped' | 'mapped' | 'scanning';
+
+// Update ship status type
+type ShipStatus = 'idle' | 'scanning' | 'returning' | 'assigned';
+
+interface Sector extends Omit<StarSystem, 'status'> {
+  resourcePotential: number;
+  habitabilityScore: number;
+  anomalies: Anomaly[];
+  position: { x: number; y: number };
+  coordinates: { x: number; y: number };
+  assignedShips: string[];
+  status: SectorStatus;
+}
+
+// Update ship status type to match ReconShipStatus component
+type ReconShipStatusType = 'idle' | 'scanning' | 'returning' | 'investigating';
+
+interface ReconShip extends Omit<ReconShipType, 'status'> {
   id: string;
   name: string;
-  status: 'idle' | 'scanning' | 'investigating' | 'returning';
-  targetSector?: string;
+  type: string;
   experience: number;
   specialization: 'mapping' | 'anomaly' | 'resource';
   efficiency: number;
   lastUpdate?: number;
+  status: ShipStatus;
+  targetSector?: string;
+}
+
+// Interface for ReconShipStatus component - prefix with underscore since it's used for type documentation
+interface _ReconShipStatusProps {
+  id: string;
+  name: string;
+  status: ReconShipStatusType;
+  targetSector?: string;
+  experience: number;
+  specialization: 'mapping' | 'anomaly' | 'resource';
+  efficiency: number;
 }
 
 interface MapOffset {
@@ -78,12 +97,22 @@ interface AdvancedFilters {
   resourceTypes: string[];
 }
 
+// Add type for context menu items
+interface ShipMenuItem extends ContextMenuItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  action: () => void;
+}
+
 // Mock data for demonstration
 const mockSectors: Sector[] = [
   {
     id: 'alpha-sector',
     name: 'Alpha Sector',
+    type: SectorType.PLANETARY_SYSTEM,
     status: 'mapped',
+    position: { x: 0, y: 0 },
     coordinates: { x: 0, y: 0 },
     resourcePotential: 0.8,
     habitabilityScore: 0.6,
@@ -97,46 +126,72 @@ const mockSectors: Sector[] = [
       },
     ],
     lastScanned: Date.now() - 3600000,
+    assignedShips: [],
   },
   {
     id: 'beta-sector',
     name: 'Beta Sector',
+    type: SectorType.ASTEROID_FIELD,
     status: 'scanning',
+    position: { x: 200, y: -150 },
     coordinates: { x: 200, y: -150 },
     resourcePotential: 0.5,
     habitabilityScore: 0.3,
     anomalies: [],
     lastScanned: Date.now(),
+    assignedShips: [],
   },
   {
     id: 'gamma-sector',
     name: 'Gamma Sector',
+    type: SectorType.DEEP_SPACE,
     status: 'unmapped',
+    position: { x: -180, y: 120 },
     coordinates: { x: -180, y: 120 },
     resourcePotential: 0.4,
     habitabilityScore: 0.7,
     anomalies: [],
+    assignedShips: [],
   },
 ];
 
+// Update mock ships to use correct status values
 const mockShips: ReconShip[] = [
   {
     id: 'recon-1',
     name: 'Pathfinder Alpha',
-    status: 'scanning',
-    targetSector: 'beta-sector',
+    type: 'recon',
+    status: 'scanning' as ShipStatus,
+    assignedSectorId: 'beta-sector',
     experience: 1250,
     specialization: 'mapping',
     efficiency: 0.9,
+    sensorRange: 100,
+    speed: 1.0,
+    capabilities: {
+      canScan: true,
+      canSalvage: false,
+      canMine: false,
+      canJump: true,
+    },
   },
   {
     id: 'recon-2',
     name: 'Signal Hunter Beta',
-    status: 'investigating',
-    targetSector: 'alpha-sector',
+    type: 'recon',
+    status: 'assigned' as ShipStatus,
+    assignedSectorId: 'alpha-sector',
     experience: 800,
     specialization: 'anomaly',
     efficiency: 0.85,
+    sensorRange: 120,
+    speed: 0.8,
+    capabilities: {
+      canScan: true,
+      canSalvage: true,
+      canMine: false,
+      canJump: false,
+    },
   },
 ];
 
@@ -178,8 +233,8 @@ const SectorComponent = memo(
     const scanningShip = ships.find(ship => ship.targetSector === sector.id);
     const heatValue = getSectorHeat(sector);
 
-    // Context menu for sector actions
-    const getSectorMenuItems = (): ContextMenuItem[] => {
+    // Update getSectorMenuItems to use proper types
+    const getSectorMenuItems = (): ShipMenuItem[] => {
       const assignedShip = ships.find(ship => ship.targetSector === sector.id);
       return [
         {
@@ -222,8 +277,8 @@ const SectorComponent = memo(
       <div
         className="absolute"
         style={{
-          left: `calc(50% + ${sector.coordinates.x}px)`,
-          top: `calc(50% + ${sector.coordinates.y}px)`,
+          left: `calc(50% + ${sector.position.x}px)`,
+          top: `calc(50% + ${sector.position.y}px)`,
           transform: 'translate(-50%, -50%)',
         }}
       >
@@ -286,7 +341,7 @@ const SectorComponent = memo(
               )}
 
               {/* Anomaly Indicators */}
-              {sector.anomalies.length > 0 && (
+              {sector.anomalies?.length > 0 && (
                 <div className="mb-3">
                   <div className="mb-2 text-xs font-medium text-gray-300">Detected Anomalies</div>
                   <div className="space-y-1">
@@ -348,8 +403,8 @@ const ShipMarker = memo(({ ship, targetSector }: { ship: ReconShip; targetSector
     <div
       className="absolute transition-all duration-300"
       style={{
-        left: `calc(50% + ${targetSector.coordinates.x}px)`,
-        top: `calc(50% + ${targetSector.coordinates.y}px)`,
+        left: `calc(50% + ${targetSector.position.x}px)`,
+        top: `calc(50% + ${targetSector.position.y}px)`,
         transform: 'translate(-50%, -50%)',
       }}
     >
@@ -373,22 +428,6 @@ const ShipMarker = memo(({ ship, targetSector }: { ship: ReconShip; targetSector
     </div>
   );
 });
-
-// Define the ExplorationTask interface to match the one in ReconShipManagerImpl.ts
-interface ExplorationTask {
-  id: string;
-  type: 'explore' | 'investigate' | 'evade';
-  target: {
-    id: string;
-    position: Position;
-  };
-  priority: number;
-  assignedAt: number;
-  specialization: 'mapping' | 'anomaly' | 'resource';
-  status: 'queued' | 'in-progress' | 'completed' | 'failed';
-  progress?: number;
-  threatLevel?: number;
-}
 
 export function ExplorationHub() {
   const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
@@ -449,8 +488,30 @@ export function ExplorationHub() {
     };
   }, []);
 
-  // Optimize real-time updates with separate intervals
+  // Update sector status handling
   useEffect(() => {
+    // Sector updates (less frequent)
+    updateIntervals.current.sectors = setInterval(() => {
+      setSectors((prevSectors: Sector[]) => {
+        return prevSectors.map(sector => {
+          const scanningShip = ships.find(
+            ship => ship.targetSector === sector.id && ship.status === 'scanning'
+          );
+
+          // Create new sector with proper status type
+          return {
+            ...sector,
+            status: scanningShip
+              ? 'scanning'
+              : sector.status === 'scanning'
+                ? 'mapped'
+                : (sector.status as SectorStatus),
+            lastScanned: Date.now(),
+          };
+        });
+      });
+    }, 2000);
+
     // Ship position updates (more frequent)
     updateIntervals.current.ships = setInterval(() => {
       setShips(prevShips =>
@@ -470,49 +531,18 @@ export function ExplorationHub() {
           if (progress >= 1) {
             return {
               ...ship,
-              status: ship.status === 'scanning' ? 'investigating' : 'returning',
+              status: ship.status === 'scanning' ? 'returning' : 'idle',
               lastUpdate: Date.now(),
-            };
+            } as ReconShip;
           }
 
           return {
             ...ship,
             lastUpdate: Date.now(),
-          };
+          } as ReconShip;
         })
       );
     }, 1000);
-
-    // Sector updates (less frequent)
-    updateIntervals.current.sectors = setInterval(() => {
-      setSectors(prevSectors =>
-        prevSectors.map(sector => {
-          const scanningShip = ships.find(
-            ship => ship.targetSector === sector.id && ship.status === 'scanning'
-          );
-
-          if (scanningShip) {
-            // Update sector data based on ship's scan
-            return {
-              ...sector,
-              status: 'scanning',
-              lastScanned: Date.now(),
-            };
-          }
-
-          if (sector.status === 'scanning' && !scanningShip) {
-            // Complete the scan
-            return {
-              ...sector,
-              status: 'mapped',
-              lastScanned: Date.now(),
-            };
-          }
-
-          return sector;
-        })
-      );
-    }, 2000);
 
     // Transfer updates (least frequent)
     updateIntervals.current.transfers = setInterval(() => {
@@ -536,58 +566,139 @@ export function ExplorationHub() {
         if (interval) clearInterval(interval);
       });
     };
-  }, [sectors, ships]);
+  }, [ships]);
 
-  // Enhanced sector filtering
-  const filteredSectors = useMemo(() => {
+  // Update ship status management
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShips((prevShips: ReconShip[]) =>
+        prevShips.map(ship => {
+          if (!ship) return ship;
+
+          const baseShip = {
+            ...ship,
+            lastUpdate: Date.now(),
+            status: ship.status || 'idle',
+            experience: ship.experience || 0,
+            specialization: ship.specialization || 'mapping',
+            efficiency: ship.efficiency || 1.0,
+          } as ReconShip;
+
+          if (baseShip.status === 'idle' || !baseShip.assignedSectorId) {
+            return baseShip;
+          }
+
+          // Calculate progress based on efficiency and time
+          const progress = Math.min(
+            1,
+            (Date.now() - (baseShip.lastUpdate || Date.now())) /
+              (10000 / (baseShip.efficiency || 1))
+          );
+
+          // Update ship status based on progress
+          if (progress >= 1) {
+            baseShip.status = baseShip.status === 'scanning' ? 'assigned' : 'returning';
+          }
+
+          return baseShip;
+        })
+      );
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update task completion handler
+  useEffect(() => {
+    const handleTaskCompleted = (event: BaseEvent) => {
+      const { shipId, ship } = event.data as ShipEvent['data'];
+      if (!shipId || !ship?.assignedSectorId) return;
+
+      setShips((prevShips: ReconShip[]) =>
+        prevShips.map(s =>
+          s.id === shipId
+            ? {
+                ...s,
+                status: 'returning' as ReconShip['status'],
+                experience: (s.experience || 0) + 100,
+                lastUpdate: Date.now(),
+              }
+            : s
+        )
+      );
+
+      setSectors((prevSectors: Sector[]) =>
+        prevSectors.map(sector =>
+          sector.id === ship.assignedSectorId
+            ? {
+                ...sector,
+                status: 'mapped' as SectorStatus,
+                lastScanned: Date.now(),
+              }
+            : sector
+        )
+      );
+    };
+
+    const unsubscribe = reconManager.subscribeToEvent(
+      EventType.EXPLORATION_TASK_COMPLETED,
+      handleTaskCompleted
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, [reconManager]);
+
+  // Update sector filtering with proper type checks
+  const filterSectors = (
+    sectors: Sector[],
+    filter: FilterType,
+    advancedFilters: AdvancedFilters
+  ) => {
     return sectors.filter(sector => {
-      // Basic text search
-      if (searchQuery && !sector.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
-
-      // Basic type filter
+      // Basic filters
       if (filter === 'unmapped' && sector.status !== 'unmapped') {
         return false;
       }
-      if (filter === 'anomalies' && sector.anomalies.length === 0) {
+
+      // Handle optional anomalies array safely
+      const anomalies = sector.anomalies ?? [];
+      if (filter === 'anomalies' && anomalies.length === 0) {
         return false;
       }
 
-      // Advanced filters
-      if (sector.resourcePotential < advancedFilters.minResourcePotential) {
-        return false;
-      }
-      if (sector.habitabilityScore < advancedFilters.minHabitabilityScore) {
-        return false;
-      }
-      if (advancedFilters.hasAnomalies && sector.anomalies.length === 0) {
-        return false;
-      }
-      if (advancedFilters.anomalySeverity !== 'any') {
-        const hasMatchingSeverity = sector.anomalies.some(
-          a => a.severity === advancedFilters.anomalySeverity
-        );
-        if (!hasMatchingSeverity) {
+      // Advanced filters with safe property access
+      if (advancedFilters) {
+        const resourcePotential = sector.resourcePotential ?? 0;
+        const habitabilityScore = sector.habitabilityScore ?? 0;
+
+        if (resourcePotential < advancedFilters.minResourcePotential) {
           return false;
         }
-      }
-      if (advancedFilters.lastScannedWithin > 0 && sector.lastScanned) {
-        const hoursSinceLastScan = (Date.now() - sector.lastScanned) / (1000 * 60 * 60);
-        if (hoursSinceLastScan > advancedFilters.lastScannedWithin) {
+        if (habitabilityScore < advancedFilters.minHabitabilityScore) {
           return false;
         }
-      }
-      if (
-        advancedFilters.resourceTypes.length > 0 &&
-        !sector.resources?.some(r => advancedFilters.resourceTypes.includes(r.type))
-      ) {
-        return false;
+        if (advancedFilters.hasAnomalies && anomalies.length === 0) {
+          return false;
+        }
+        if (advancedFilters.anomalySeverity !== 'any') {
+          const hasMatchingSeverity = anomalies.some(
+            a => a.severity === advancedFilters.anomalySeverity
+          );
+          if (!hasMatchingSeverity) {
+            return false;
+          }
+        }
       }
 
       return true;
     });
-  }, [sectors, searchQuery, filter, advancedFilters]);
+  };
+
+  // Enhanced sector filtering
+  const filteredSectors = useMemo(() => {
+    return filterSectors(sectors, filter, advancedFilters);
+  }, [sectors, filter, advancedFilters]);
 
   // Enhanced heat map calculation
   const getSectorHeat = useCallback((sector: Sector) => {
@@ -758,20 +869,15 @@ export function ExplorationHub() {
       const sector = sectors.find(s => s.id === sectorId);
       if (!sector) return;
 
-      reconManager.assignExplorationTask(
-        shipId,
-        sectorId,
-        sector.coordinates,
-        'mapping' // Default to mapping, can be updated based on sector type
-      );
+      reconManager.assignExplorationTask(shipId, sectorId, sector.position, 'mapping');
 
       setShips(prevShips =>
         prevShips.map(ship =>
           ship.id === shipId
             ? {
                 ...ship,
-                status: 'scanning',
-                targetSector: sectorId,
+                status: 'assigned',
+                assignedSectorId: sectorId,
                 lastUpdate: Date.now(),
               }
             : ship
@@ -784,85 +890,9 @@ export function ExplorationHub() {
   // Register ships with ReconShipManager
   useEffect(() => {
     ships.forEach(ship => {
-      reconManager.registerShip({
-        ...ship,
-        type: 'AC27G',
-        position: { x: 0, y: 0 }, // Initial position
-        capabilities: {
-          canScan: true,
-          canSalvage: false,
-          canMine: false,
-          canJump: true,
-        },
-        stealth: {
-          active: false,
-          level: 1,
-          cooldown: 0,
-        },
-        sensors: {
-          range: 100,
-          accuracy: 0.8,
-          anomalyDetection: 0.7,
-        },
-        discoveries: {
-          mappedSectors: 0,
-          anomaliesFound: 0,
-          resourcesLocated: 0,
-        },
-      });
+      reconManager.registerShip(ship);
     });
-
-    // Cleanup on unmount
-    return () => {
-      ships.forEach(ship => reconManager.unregisterShip(ship.id));
-    };
   }, [ships, reconManager]);
-
-  // Listen for ReconShipManager events
-  useEffect(() => {
-    const handleTaskCompleted = ({ shipId, task }: ShipEvent) => {
-      if (!task) return; // Skip if no task is provided
-
-      setShips(prevShips =>
-        prevShips.map(ship =>
-          ship.id === shipId
-            ? {
-                ...ship,
-                status: 'returning',
-                experience: ship.experience + 100, // Base XP gain
-              }
-            : ship
-        )
-      );
-
-      // Update sector status
-      setSectors(prevSectors =>
-        prevSectors.map(sector =>
-          sector.id === task.target.id
-            ? {
-                ...sector,
-                status: 'mapped',
-                lastScanned: Date.now(),
-              }
-            : sector
-        )
-      );
-    };
-
-    reconManager.on('taskCompleted', handleTaskCompleted);
-    return () => {
-      reconManager.off('taskCompleted', handleTaskCompleted);
-    };
-  }, [reconManager]);
-
-  // Update ReconShipManager
-  useEffect(() => {
-    const interval = setInterval(() => {
-      reconManager.update(1000 / 60); // Update at 60fps
-    }, 1000 / 60);
-
-    return () => clearInterval(interval);
-  }, [reconManager]);
 
   return (
     <div className="fixed inset-4 flex overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md">
@@ -1154,9 +1184,40 @@ export function ExplorationHub() {
       <div className="flex w-1/3 flex-col p-6">
         {selectedSector ? (
           <>
-            <ExplorationControls sector={selectedSector} onClose={() => setSelectedSector(null)} />
+            <ExplorationControls
+              sector={{
+                ...selectedSector,
+                status: (selectedSector.status === 'unmapped'
+                  ? 'unmapped'
+                  : selectedSector.status === 'scanning'
+                    ? 'scanning'
+                    : 'mapped') as SectorStatus,
+              }}
+              onClose={() => setSelectedSector(null)}
+            />
             <div className="mt-6">
-              <ReconShipStatus ships={activeShips} />
+              <ReconShipStatus
+                ships={activeShips.map(ship => {
+                  let displayStatus: ReconShipStatusType;
+                  if (ship.status === 'assigned' || ship.status === 'scanning') {
+                    displayStatus = 'scanning';
+                  } else if (ship.status === 'returning') {
+                    displayStatus = 'returning';
+                  } else {
+                    displayStatus = 'idle';
+                  }
+
+                  return {
+                    id: ship.id,
+                    name: ship.name,
+                    status: displayStatus,
+                    targetSector: ship.targetSector,
+                    experience: ship.experience,
+                    specialization: ship.specialization,
+                    efficiency: ship.efficiency,
+                  };
+                })}
+              />
             </div>
           </>
         ) : (

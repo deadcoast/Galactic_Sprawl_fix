@@ -124,6 +124,6 @@ export interface ShipEvents {
    */
   'ship-type:available': {
     shipType: ShipType;
-    requirements: Record<string, any>;
+    requirements: Record<string, unknown>;
   };
 }

@@ -1,6 +1,5 @@
-import * as React from "react";
 import { useMemo, useState } from 'react';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";import {
+import {
   ChartDataRecord,
   ClusterPoint,
   ForecastPoint,
@@ -22,7 +21,7 @@ import {
   ResourceMappingAnalysisConfig,
   TrendAnalysisConfig,
 } from '../../../types/exploration/DataAnalysisTypes';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 import { BarChart } from './charts/BarChart';
 import { ClusterVisualization } from './charts/ClusterVisualization';
 import { HeatMap } from './charts/HeatMap';

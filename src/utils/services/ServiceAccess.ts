@@ -81,7 +81,7 @@ export function getRequiredService<T>(
 export function registerService<T>(serviceName: keyof Window & string, serviceInstance: T): void {
   // Convert to unknown first as suggested by the linter
   (window as unknown as Record<string, unknown>)[serviceName] = serviceInstance;
-  console.log(`Service '${serviceName}' registered successfully.`);
+  console.warn(`Service '${serviceName}' registered successfully.`);
 }
 
 /**

@@ -137,7 +137,7 @@ export interface BaseVisualizationProps extends BaseChartComponentProps {
   /** Custom tooltip component or renderer */
   customTooltip?: React.FC<VisualizationTooltipProps> | TooltipRenderer<ChartDataRecord>;
   
-  /** Function to determine color based on data point */
+  /** (...args: unknown[]) => unknown to determine color based on data point */
   colorAccessor?: ColorAccessorFn<ChartDataRecord>;
   
   /** Click handler for chart elements */
@@ -188,27 +188,27 @@ export interface ChartRenderProps extends BaseVisualizationProps {
 // =========================================
 
 /**
- * Function to determine element color based on data
+ * (...args: unknown[]) => unknown to determine element color based on data
  */
 export type ColorAccessorFn<T> = (data: T, index?: number) => string;
 
 /**
- * Function to determine element size based on data
+ * (...args: unknown[]) => unknown to determine element size based on data
  */
 export type SizeAccessorFn<T> = (data: T, index?: number) => number;
 
 /**
- * Function to access a specific numeric value from data
+ * (...args: unknown[]) => unknown to access a specific numeric value from data
  */
 export type ValueAccessorFn<T> = (data: T, index?: number) => number;
 
 /**
- * Function to generate a label from data
+ * (...args: unknown[]) => unknown to generate a label from data
  */
 export type LabelAccessorFn<T> = (data: T, index?: number) => string;
 
 /**
- * Function to render tooltip content
+ * (...args: unknown[]) => unknown to render tooltip content
  */
 export type TooltipRenderer<T> = (data: T, index?: number) => React.ReactNode;
 
@@ -361,7 +361,7 @@ export interface ClusterPoint {
   cluster: number;
   features: (number | null)[];
   distanceToCentroid: number;
-  originalPoint: any;
+  originalPoint: unknown;
 }
 
 /**

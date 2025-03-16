@@ -230,7 +230,7 @@ export class DiscoveryClassification {
     return 0.7; // Placeholder
   }
 
-  private analyzeSpectralProfile(metadata: any): SpectralProfile {
+  private analyzeSpectralProfile(metadata: unknown): SpectralProfile {
     return {
       wavelengths: [],
       intensities: [],
@@ -238,7 +238,7 @@ export class DiscoveryClassification {
     };
   }
 
-  private analyzeDensityProfile(metadata: any): DensityProfile {
+  private analyzeDensityProfile(metadata: unknown): DensityProfile {
     return {
       average: 0,
       variation: 0,
@@ -246,7 +246,7 @@ export class DiscoveryClassification {
     };
   }
 
-  private analyzeThermalProfile(metadata: any): ThermalProfile {
+  private analyzeThermalProfile(metadata: unknown): ThermalProfile {
     return {
       temperature: 0,
       conductivity: 0,
@@ -254,11 +254,11 @@ export class DiscoveryClassification {
     };
   }
 
-  private identifyElements(metadata: any): ElementProfile[] {
+  private identifyElements(metadata: unknown): ElementProfile[] {
     return [];
   }
 
-  private analyzeStructure(metadata: any): StructureAnalysis {
+  private analyzeStructure(metadata: unknown): StructureAnalysis {
     return {
       crystallinity: 0,
       porosity: 0,

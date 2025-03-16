@@ -1,13 +1,17 @@
-import {
-  ResourceManagerConfig,
-  ResourceType as StringResourceType,
-} from '../../types/resources/ResourceTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType, ResourceTypeInfo } from '../../types/resources/ResourceTypes';
+
+/**
+ * Resource manager configuration type
+ */
+export interface ResourceManagerConfig {
+  maxTransferHistory: number;
+  defaultResourceLimits: { [key in ResourceType]: { min: number; max: number } };
+}
 
 /**
  * Default resource limits configuration using standardized enum
  */
-const DEFAULT_RESOURCE_LIMITS_ENUM: { [key in ResourceType]: { min: number; max: number } } = {
+const DEFAULT_RESOURCE_LIMITS: { [key in ResourceType]: { min: number; max: number } } = {
   [ResourceType.MINERALS]: { min: 0, max: 10000 },
   [ResourceType.ENERGY]: { min: 0, max: 5000 },
   [ResourceType.POPULATION]: { min: 0, max: 1000 },
@@ -15,6 +19,7 @@ const DEFAULT_RESOURCE_LIMITS_ENUM: { [key in ResourceType]: { min: number; max:
   [ResourceType.PLASMA]: { min: 0, max: 1000 },
   [ResourceType.GAS]: { min: 0, max: 3000 },
   [ResourceType.EXOTIC]: { min: 0, max: 500 },
+  [ResourceType.ORGANIC]: { min: 0, max: 2000 },
   // Add all other resource types with default values
   [ResourceType.IRON]: { min: 0, max: ResourceTypeInfo[ResourceType.IRON].defaultMax },
   [ResourceType.COPPER]: { min: 0, max: ResourceTypeInfo[ResourceType.COPPER].defaultMax },
@@ -32,19 +37,6 @@ const DEFAULT_RESOURCE_LIMITS_ENUM: { [key in ResourceType]: { min: number; max:
     min: 0,
     max: ResourceTypeInfo[ResourceType.EXOTIC_MATTER].defaultMax,
   },
-};
-
-/**
- * Convert enum-based resource limits to string-based format for backward compatibility
- */
-const DEFAULT_RESOURCE_LIMITS: { [key in StringResourceType]: { min: number; max: number } } = {
-  minerals: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.MINERALS],
-  energy: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.ENERGY],
-  population: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.POPULATION],
-  research: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.RESEARCH],
-  plasma: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.PLASMA],
-  gas: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.GAS],
-  exotic: DEFAULT_RESOURCE_LIMITS_ENUM[ResourceType.EXOTIC],
 };
 
 /**
@@ -85,6 +77,7 @@ export const DEFAULT_PRODUCTION_RATES: { [key in ResourceType]: number } = {
   [ResourceType.PLASMA]: 3,
   [ResourceType.GAS]: 4,
   [ResourceType.EXOTIC]: 1,
+  [ResourceType.ORGANIC]: 3,
   // Add all other resource types with default values
   [ResourceType.IRON]: 8,
   [ResourceType.COPPER]: 7,
@@ -109,6 +102,7 @@ export const DEFAULT_CONSUMPTION_RATES: { [key in ResourceType]: number } = {
   [ResourceType.PLASMA]: 2,
   [ResourceType.GAS]: 2,
   [ResourceType.EXOTIC]: 0.5,
+  [ResourceType.ORGANIC]: 1.5,
   // Add all other resource types with default values
   [ResourceType.IRON]: 4,
   [ResourceType.COPPER]: 3,
@@ -153,6 +147,7 @@ export const RESOURCE_PRIORITIES: { [key in ResourceType]: number } = {
   [ResourceType.PLASMA]: 60,
   [ResourceType.GAS]: 50,
   [ResourceType.EXOTIC]: 40,
+  [ResourceType.ORGANIC]: 45,
   // Add all other resource types with appropriate priorities
   [ResourceType.IRON]: 75,
   [ResourceType.COPPER]: 73,

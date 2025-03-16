@@ -446,10 +446,10 @@ in D3 visualizations across different scenarios and data sizes.
  * Run all benchmarks and output results to console
  */
 export function runAndLogBenchmarks(): void {
-  console.log('Running D3 Accessor Benchmarks...');
+  console.warn('Running D3 Accessor Benchmarks...');
 
   const report = generateBenchmarkReport();
-  console.log(report);
+  console.warn(report);
 
-  console.log('Benchmark complete.');
+  console.warn('Benchmark complete.');
 }

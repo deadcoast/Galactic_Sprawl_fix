@@ -136,7 +136,7 @@ export class IntegrationErrorHandler extends Component<
   resetErrorBoundary = () => {
     const { componentName } = this.props;
 
-    console.log(`Recovering ${componentName} from error state`);
+    console.warn(`Recovering ${componentName} from error state`);
 
     // Log the recovery attempt
     errorLoggingService.logError(

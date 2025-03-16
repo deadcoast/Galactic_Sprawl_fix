@@ -1,4 +1,41 @@
-import { ResourceType } from "./ResourceTypes";
+import { ResourceType } from './ResourceTypes';
+
+/**
+ * Type of node in a resource flow network
+ */
+export enum FlowNodeType {
+  PRODUCER = 'producer',
+  CONSUMER = 'consumer',
+  STORAGE = 'storage',
+  CONVERTER = 'converter',
+  SOURCE = 'source',
+  SINK = 'sink',
+}
+
+/**
+ * Represents a node in a resource flow network
+ */
+export interface FlowNode {
+  id: string;
+  type: FlowNodeType;
+  name: string;
+  description?: string;
+  capacity: number;
+  currentLoad: number;
+  efficiency: number;
+  status: 'active' | 'inactive' | 'maintenance' | 'error';
+  inputs?: Array<{
+    type: ResourceType;
+    rate: number;
+    maxCapacity: number;
+  }>;
+  outputs?: Array<{
+    type: ResourceType;
+    rate: number;
+    maxCapacity: number;
+  }>;
+}
+
 /**
  * StandardizedResourceTypes.ts
  *
@@ -11,19 +48,22 @@ import { ResourceType } from "./ResourceTypes";
 
 export {
   ResourceCategory,
+  ResourceType,
+  ResourceTypeHelpers,
+  ResourceTypeInfo,
+} from './ResourceTypes';
+
+export type {
   ResourceConsumption,
+  ResourceConversionRecipe,
   ResourceFlow,
   ResourceProduction,
   ResourceState,
   ResourceStateClass,
   ResourceThreshold,
   ResourceTransfer,
-  ResourceType,
-  ResourceTypeHelpers,
-  ResourceTypeInfo,
   ResourceTypeMetadata,
   ResourceTypeString,
-  createResourceState,
 } from './ResourceTypes';
 
 // Add a comment to indicate that this file is for backward compatibility

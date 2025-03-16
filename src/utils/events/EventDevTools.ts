@@ -202,10 +202,10 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
     // Add cleanup method
     this.dispose = () => {
       unsubscribeEvents();
-      console.log('[EventDevTools] Stopped monitoring events');
+      console.warn('[EventDevTools] Stopped monitoring events');
     };
 
-    console.log('[EventDevTools] Started monitoring events');
+    console.warn('[EventDevTools] Started monitoring events');
   }
 
   /**
@@ -266,7 +266,7 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
           ? ` (${metrics.lastProcessingTime.toFixed(2)}ms)`
           : '';
 
-        console.log(`[EventDevTools] Event: ${event.type}${timeString}`, event);
+        console.warn(`[EventDevTools] Event: ${event.type}${timeString}`, event);
       }
     }, 0);
   }
@@ -329,7 +329,7 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
 
     // Log subscription activity
     if (this.config.consoleLogging) {
-      console.log(
+      console.warn(
         `[EventDevTools] ${action === 'subscribe' ? 'Subscribed to' : 'Unsubscribed from'} ${eventType} (source: ${source})`
       );
     }

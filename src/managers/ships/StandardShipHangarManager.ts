@@ -260,7 +260,7 @@ export class StandardShipHangarManager extends BaseTypedEventEmitter<ShipEvents>
    * @param shipType The type of ship to make available
    * @param requirements The requirements to build this ship type
    */
-  public makeShipTypeAvailable(shipType: ShipType, requirements: Record<string, any>): void {
+  public makeShipTypeAvailable(shipType: ShipType, requirements: Record<string, unknown>): void {
     this.emit('ship-type:available', { shipType, requirements });
   }
 
@@ -274,10 +274,10 @@ export class StandardShipHangarManager extends BaseTypedEventEmitter<ShipEvents>
     const id = `ship-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     // Set base stats based on ship type
-    let maxHealth = 100;
-    let maxFuel = 100;
-    let maxCrew = 10;
-    let cargoCapacity = 100;
+    const maxHealth = 100;
+    const maxFuel = 100;
+    const maxCrew = 10;
+    const cargoCapacity = 100;
 
     // In a real implementation, these would be based on the ShipType from ShipTypes.ts
     // For now, we're using default values
@@ -316,7 +316,7 @@ export class StandardShipHangarManager extends BaseTypedEventEmitter<ShipEvents>
  *
  * // Subscribe to events
  * hangarManager.on('ship:added', ({ ship, hangarId }) => {
- *   console.log(`Ship ${ship.name} added to hangar ${hangarId}`);
+ *   console.warn(`Ship ${ship.name} added to hangar ${hangarId}`);
  * });
  *
  * // Create and add a ship

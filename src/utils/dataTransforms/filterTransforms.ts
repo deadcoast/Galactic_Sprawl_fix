@@ -225,8 +225,7 @@ export function convertFilterValue(
 ): string | number | boolean | string[] | [number, number] {
   switch (operator) {
     case 'greaterThan':
-    case 'lessThan':
-      const num = parseFloat(value);
+    const num = parseFloat(value);
       return isNaN(num) ? value : num;
       
     case 'equals':

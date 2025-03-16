@@ -24,7 +24,7 @@ import {
 export interface EventSubscriptionOptions<T extends BaseEvent = BaseEvent>
   extends SubscriptionOptions {
   /**
-   * Function to filter events before handling
+   * (...args: unknown[]) => unknown to filter events before handling
    */
   filter?: (event: T) => boolean;
 
@@ -49,7 +49,7 @@ export interface EventSubscriptionOptions<T extends BaseEvent = BaseEvent>
  * Hook for subscribing to events with automatic cleanup
  * @param eventBus The event bus to subscribe to
  * @param eventType The type of event to subscribe to
- * @param handler Function to handle the event
+ * @param handler (...args: unknown[]) => unknown to handle the event
  * @param options Additional subscription options
  * @returns Object containing information about the subscription
  */
@@ -148,7 +148,7 @@ export function useEventSubscription<T extends BaseEvent = BaseEvent>(
  * Hook for subscribing to events in a specific category
  * @param eventBus The event bus to subscribe to
  * @param category The category of events to subscribe to
- * @param handler Function to handle the events
+ * @param handler (...args: unknown[]) => unknown to handle the events
  * @param options Additional subscription options
  * @returns Object containing information about the subscription
  */

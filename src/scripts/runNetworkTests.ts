@@ -39,12 +39,12 @@ function formatDuration(ms: number): string {
 
 // Function to print a result table
 function printResultTable(results: NetworkDegradationTestResult[], title: string): void {
-  console.log(`\n${title}`);
-  console.log('-'.repeat(100));
-  console.log(
+  console.warn(`\n${title}`);
+  console.warn('-'.repeat(100));
+  console.warn(
     '| Network Condition       | Avg Response Time | Max Response Time | Success Rate | TTI        |'
   );
-  console.log(
+  console.warn(
     '|-------------------------|-------------------|-------------------|--------------|------------|'
   );
 
@@ -84,7 +84,7 @@ function printResultTable(results: NetworkDegradationTestResult[], title: string
       condResults.reduce((sum, r) => sum + r.timeToInteractive, 0) / condResults.length;
 
     // Print the row
-    console.log(
+    console.warn(
       `| %-23s | %-17s | %-17s | %-12s | %-10s |`.replace(/%(-?\d+)s/g, (match, width) => {
         const paddingLength = parseInt(width.replace('-', ''));
         const text = [
@@ -99,45 +99,45 @@ function printResultTable(results: NetworkDegradationTestResult[], title: string
     );
   }
 
-  console.log('-'.repeat(100));
+  console.warn('-'.repeat(100));
 }
 
 // Function to generate a full HTML report
 function generateHtmlReport(results: Record<string, NetworkDegradationTestResult[]>): void {
   // Implementation for generating a detailed HTML report
   // (This would be a more extensive implementation in the real system)
-  console.log('\nGenerating HTML report...');
-  console.log('HTML report generation not implemented in this demo script.');
+  console.warn('\nGenerating HTML report...');
+  console.warn('HTML report generation not implemented in this demo script.');
 }
 
 async function main(): Promise<void> {
-  console.log('Network Degradation Test Suite Runner');
-  console.log('====================================\n');
+  console.warn('Network Degradation Test Suite Runner');
+  console.warn('====================================\n');
 
   const startTime = Date.now();
   const results: Record<string, NetworkDegradationTestResult[]> = {};
 
   if (runApi) {
-    console.log('Running API performance tests...');
+    console.warn('Running API performance tests...');
     results.api = await testApiPerformance();
     printResultTable(results.api, 'API Performance Results');
   }
 
   if (runResources) {
-    console.log('\nRunning resource loading performance tests...');
+    console.warn('\nRunning resource loading performance tests...');
     results.resources = await testResourceLoadingPerformance();
     printResultTable(results.resources, 'Resource Loading Performance Results');
   }
 
   if (runInteractions) {
-    console.log('\nRunning user interaction performance tests...');
+    console.warn('\nRunning user interaction performance tests...');
     results.interactions = await testUserInteractionPerformance();
     printResultTable(results.interactions, 'User Interaction Performance Results');
   }
 
   // Print overall time
   const totalTime = Date.now() - startTime;
-  console.log(`\nCompleted all tests in ${formatDuration(totalTime)}`);
+  console.warn(`\nCompleted all tests in ${formatDuration(totalTime)}`);
 
   // Generate report if requested
   if (generateReport) {
@@ -146,18 +146,18 @@ async function main(): Promise<void> {
 
   // Print usage instructions if no arguments provided
   if (!runAll && !runApi && !runResources && !runInteractions) {
-    console.log('\nUsage:');
-    console.log('  npx ts-node src/scripts/runNetworkTests.ts --all         Run all tests');
-    console.log(
+    console.warn('\nUsage:');
+    console.warn('  npx ts-node src/scripts/runNetworkTests.ts --all         Run all tests');
+    console.warn(
       '  npx ts-node src/scripts/runNetworkTests.ts --api         Run API performance tests'
     );
-    console.log(
+    console.warn(
       '  npx ts-node src/scripts/runNetworkTests.ts --resources   Run resource loading tests'
     );
-    console.log(
+    console.warn(
       '  npx ts-node src/scripts/runNetworkTests.ts --interactions Run user interaction tests'
     );
-    console.log('  npx ts-node src/scripts/runNetworkTests.ts --report      Generate HTML report');
+    console.warn('  npx ts-node src/scripts/runNetworkTests.ts --report      Generate HTML report');
   }
 }
 

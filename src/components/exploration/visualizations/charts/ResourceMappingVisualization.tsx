@@ -24,12 +24,12 @@ import {
 } from '../../../../types/exploration/AnalysisComponentTypes';
 import { DataPoint } from '../../../../types/exploration/DataAnalysisTypes';
 import {
-  ensureEnumResourceType,
   ensureStringResourceType,
   isEnumResourceType,
   isStringResourceType,
 } from '../../../../utils/resources/ResourceTypeMigration';
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import { ResourceTypeConverter } from '../../../../utils/ResourceTypeConverter';
+import { ResourceType, ResourceTypeString } from './../../../../types/resources/ResourceTypes';
 import { BaseChart } from './BaseChart';
 import { HeatMap } from './HeatMap';
 import { ScatterPlot } from './ScatterPlot';
@@ -98,6 +98,7 @@ const resourceTypeColors: Record<ResourceType, string> = {
   [ResourceType.PLASMA]: '#D5A6BD', // Purple
   [ResourceType.GAS]: '#C27BA0', // Pink
   [ResourceType.EXOTIC]: '#CC0000', // Red
+  [ResourceType.ORGANIC]: '#8B4513', // Saddle brown
   [ResourceType.IRON]: '#8B8B8B', // Gray
   [ResourceType.COPPER]: '#CD7F32', // Bronze
   [ResourceType.TITANIUM]: '#B5B5B5', // Silver
@@ -111,14 +112,14 @@ const resourceTypeColors: Record<ResourceType, string> = {
 };
 
 // Define a function to get color for a resource type
-const getResourceColor = (resourceType: ResourceType | string): string => {
+const getResourceColor = (resourceType: ResourceType | ResourceTypeString): string => {
   // Handle both string and enum resource types
   if (isEnumResourceType(resourceType)) {
-    return resourceTypeColors[resourceType as ResourceType] || '#999999';
+    return resourceTypeColors[resourceType] || '#999999';
   } else if (isStringResourceType(resourceType)) {
     // Convert string to enum and get color
-    const enumType = ensureEnumResourceType(resourceType as any);
-    return resourceTypeColors[enumType] || '#999999';
+    const enumType = ResourceTypeConverter.stringToEnum(resourceType);
+    return enumType ? resourceTypeColors[enumType] || '#999999' : '#999999';
   }
   return '#999999'; // Default color
 };
@@ -210,12 +211,12 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
 
   // Color function for scatter plot points
   const getPointColor = (point: ResourceChartPoint): string => {
-    return getResourceColor(point.type as any);
+    return getResourceColor(point.type as ResourceType | ResourceTypeString);
   };
 
   // Color function for heat map cells in overlay mode
   const getHeatMapCellColor = (cell: ResourceHeatMapCell): string => {
-    return getResourceColor(cell.dominantType as any);
+    return getResourceColor(cell.dominantType as ResourceType | ResourceTypeString);
   };
 
   // Tooltip for heatmap cells
@@ -358,6 +359,11 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
     const heatMapColors =
       overlayMode && selectedResourceType === 'all' ? Object.values(resourceTypeColors) : undefined;
 
+    const colorAccessor =
+      overlayMode && selectedResourceType === 'all'
+        ? (getHeatMapCellColor as ColorAccessorFn<ChartDataRecord>)
+        : undefined;
+
     return (
       <div style={{ height: 'calc(100% - 120px)', minHeight: '400px' }}>
         <HeatMap
@@ -372,6 +378,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
           cellTooltip={true}
           customTooltip={CellTooltipComponentFromRenderer}
           colors={heatMapColors}
+          colorAccessor={colorAccessor}
           cellBorder={{
             width: 1,
             color: 'rgba(255,255,255,0.3)',

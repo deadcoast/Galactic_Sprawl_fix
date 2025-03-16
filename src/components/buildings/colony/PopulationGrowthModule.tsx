@@ -1,8 +1,12 @@
-import * as React from "react";
-import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Droplet, Leaf, TrendingUp, Users, Zap } from 'lucide-react';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { useCallback, useEffect, useState } from 'react';
+import { useModuleEvents } from '../../../hooks/events/useModuleEvents';
+import { moduleEventBus } from '../../../lib/events/ModuleEventBus';
+import { EventType } from '../../../types/events/EventTypes';
+import { StandardizedEvent } from '../../../types/events/StandardizedEvents';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
+
 interface GrowthModifier {
   id: string;
   name: string;
@@ -31,7 +35,7 @@ interface PopulationGrowthModuleProps {
  * Shows growth rate, modifiers, and provides controls for adjusting growth parameters.
  */
 export function PopulationGrowthModule({
-  colonyId: _colonyId,
+  colonyId,
   currentPopulation,
   maxPopulation,
   baseGrowthRate,
@@ -48,22 +52,30 @@ export function PopulationGrowthModule({
   const [autoGrowth, setAutoGrowth] = useState(false);
   const [growthInterval, setGrowthInterval] = useState<NodeJS.Timeout | null>(null);
 
+  const { subscribe } = useModuleEvents();
+
   // Calculate effective growth rate with all active modifiers
-  const effectiveGrowthRate = growthModifiers.reduce((rate, modifier) => {
-    if (modifier.active) {
-      return rate * modifier.effect;
+  const effectiveGrowthRate = useCallback(() => {
+    const activeModifiers = growthModifiers.filter(m => m.active);
+    if (activeModifiers.length === 0) {
+      return baseGrowthRate;
     }
-    return rate;
-  }, baseGrowthRate);
+
+    const totalEffect = activeModifiers.reduce((total, modifier) => {
+      return total * modifier.effect;
+    }, 1);
+
+    return baseGrowthRate * totalEffect;
+  }, [baseGrowthRate, growthModifiers]);
 
   // Format growth rate as percentage
-  const formattedGrowthRate = `${(effectiveGrowthRate * 100).toFixed(2)}%`;
+  const formattedGrowthRate = `${(effectiveGrowthRate() * 100).toFixed(2)}%`;
 
   // Population percentage of maximum
   const populationPercentage = Math.min(100, Math.round((population / maxPopulation) * 100));
 
   // Population status
-  const getPopulationStatus = () => {
+  const getPopulationStatus = useCallback(() => {
     if (populationPercentage < 30) {
       return 'low';
     }
@@ -71,12 +83,12 @@ export function PopulationGrowthModule({
       return 'critical';
     }
     return 'normal';
-  };
+  }, [populationPercentage]);
 
   const populationStatus = getPopulationStatus();
 
   // Handle manual population growth
-  const handleGrowthCycle = () => {
+  const handleGrowthCycle = useCallback(() => {
     if (population >= maxPopulation) {
       setIsGrowing(false);
       return;
@@ -85,7 +97,7 @@ export function PopulationGrowthModule({
     setIsGrowing(true);
 
     // Calculate growth amount
-    const growthAmount = Math.floor(population * effectiveGrowthRate);
+    const growthAmount = Math.floor(population * effectiveGrowthRate());
     const newPopulation = Math.min(maxPopulation, population + growthAmount);
 
     // Update population
@@ -95,18 +107,35 @@ export function PopulationGrowthModule({
     // Update growth history
     setGrowthHistory(prev => [...prev.slice(-9), growthAmount]);
 
+    // Emit population update event
+    const event: StandardizedEvent = {
+      type: EventType.MODULE_UPDATED,
+      moduleId: colonyId,
+      moduleType: ResourceType.POPULATION,
+      timestamp: Date.now(),
+      data: {
+        stats: {
+          [ResourceType.POPULATION]: newPopulation,
+        },
+      },
+    };
+    moduleEventBus.emit(event);
+
     setTimeout(() => {
       setIsGrowing(false);
     }, 1000);
-  };
+  }, [population, maxPopulation, effectiveGrowthRate, colonyId, onPopulationChange]);
 
   // Handle modifier toggle
-  const handleModifierToggle = (modifierId: string) => {
-    const modifier = growthModifiers.find(m => m.id === modifierId);
-    if (modifier) {
-      onModifierToggle?.(modifierId, !modifier.active);
-    }
-  };
+  const handleModifierToggle = useCallback(
+    (modifierId: string) => {
+      const modifier = growthModifiers.find(m => m.id === modifierId);
+      if (modifier) {
+        onModifierToggle?.(modifierId, !modifier.active);
+      }
+    },
+    [growthModifiers, onModifierToggle]
+  );
 
   // Handle auto growth toggle
   useEffect(() => {
@@ -125,7 +154,7 @@ export function PopulationGrowthModule({
       clearInterval(growthInterval);
       setGrowthInterval(null);
     }
-  }, [autoGrowth, cycleLength, population, maxPopulation, effectiveGrowthRate]);
+  }, [autoGrowth, cycleLength, handleGrowthCycle]);
 
   // Update local population when prop changes
   useEffect(() => {
@@ -133,7 +162,7 @@ export function PopulationGrowthModule({
   }, [currentPopulation]);
 
   // Get icon for modifier type
-  const getModifierIcon = (type: GrowthModifier['type']) => {
+  const getModifierIcon = useCallback((type: GrowthModifier['type']) => {
     switch (type) {
       case 'food':
         return <Droplet className="h-4 w-4 text-blue-400" />;
@@ -146,7 +175,7 @@ export function PopulationGrowthModule({
       case ResourceType.ENERGY:
         return <Zap className="h-4 w-4 text-yellow-400" />;
     }
-  };
+  }, []);
 
   return (
     <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">

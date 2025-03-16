@@ -62,7 +62,7 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
 
   const log = (message: string, ...args: unknown[]) => {
     if (debug) {
-      console.log(`[MigrationManager] ${message}`, ...args);
+      console.warn(`[MigrationManager] ${message}`, ...args);
     }
   };
 

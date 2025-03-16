@@ -50,7 +50,7 @@ export interface ProfilerSection {
   name: string;
   /** Type of operation */
   type: ProfilerMeasurementType;
-  /** Function to execute */
+  /** (...args: unknown[]) => unknown to execute */
   fn: () => void;
   /** Operation count (e.g., number of nodes processed) */
   operationCount: number;
@@ -251,7 +251,7 @@ export class D3Profiler {
  */
 export class ForceSimulationProfiler {
   private profiler: D3Profiler;
-  private originalTick: Function | null = null;
+  private originalTick: (...args: unknown[]) => unknown | null = null;
   private simulation: d3.Simulation<d3.SimulationNodeDatum, undefined> | null = null;
   private tickMeasurements: PerformanceMeasurement[] = [];
   private forceMeasurements: Record<string, PerformanceMeasurement[]> = {};
@@ -285,7 +285,7 @@ export class ForceSimulationProfiler {
         name: 'Simulation Tick',
         durationMs: endTime - startTime,
         operationCount: simulation.nodes().length,
-        isBottleneck: endTime - startTime > (profiler.profiler as any).bottleneckThreshold,
+        isBottleneck: endTime - startTime > (profiler.profiler as unknown).bottleneckThreshold,
         metadata: {
           nodeCount: simulation.nodes().length,
           alpha: simulation.alpha(),
@@ -304,19 +304,19 @@ export class ForceSimulationProfiler {
     const collisionForce = simulation.force('collision');
 
     if (linkForce && 'on' in linkForce) {
-      (linkForce as any).on('tick.profile', this.measureForce('link'));
+      (linkForce as unknown).on('tick.profile', this.measureForce('link'));
     }
 
     if (chargeForce && 'on' in chargeForce) {
-      (chargeForce as any).on('tick.profile', this.measureForce('charge'));
+      (chargeForce as unknown).on('tick.profile', this.measureForce('charge'));
     }
 
     if (centerForce && 'on' in centerForce) {
-      (centerForce as any).on('tick.profile', this.measureForce('center'));
+      (centerForce as unknown).on('tick.profile', this.measureForce('center'));
     }
 
     if (collisionForce && 'on' in collisionForce) {
-      (collisionForce as any).on('tick.profile', this.measureForce('collision'));
+      (collisionForce as unknown).on('tick.profile', this.measureForce('collision'));
     }
   }
 
@@ -341,7 +341,7 @@ export class ForceSimulationProfiler {
         name: `${forceName} Force Calculation`,
         durationMs: endTime - startTime,
         operationCount: this.simulation?.nodes().length || 0,
-        isBottleneck: endTime - startTime > (this.profiler as any).bottleneckThreshold,
+        isBottleneck: endTime - startTime > (this.profiler as unknown).bottleneckThreshold,
         metadata: {
           forceName,
           nodeCount: this.simulation?.nodes().length || 0,
@@ -359,7 +359,7 @@ export class ForceSimulationProfiler {
     if (!this.simulation || !this.originalTick) return;
 
     // Restore original tick function
-    this.simulation.tick = this.originalTick as any;
+    this.simulation.tick = this.originalTick as unknown;
 
     // Remove event listeners from forces
     const linkForce = this.simulation.force('link');
@@ -368,19 +368,19 @@ export class ForceSimulationProfiler {
     const collisionForce = this.simulation.force('collision');
 
     if (linkForce && 'on' in linkForce) {
-      (linkForce as any).on('tick.profile', null);
+      (linkForce as unknown).on('tick.profile', null);
     }
 
     if (chargeForce && 'on' in chargeForce) {
-      (chargeForce as any).on('tick.profile', null);
+      (chargeForce as unknown).on('tick.profile', null);
     }
 
     if (centerForce && 'on' in centerForce) {
-      (centerForce as any).on('tick.profile', null);
+      (centerForce as unknown).on('tick.profile', null);
     }
 
     if (collisionForce && 'on' in collisionForce) {
-      (collisionForce as any).on('tick.profile', null);
+      (collisionForce as unknown).on('tick.profile', null);
     }
 
     this.simulation = null;
@@ -405,7 +405,7 @@ export class ForceSimulationProfiler {
 
     const bottlenecks = allMeasurements.filter(
       measurement =>
-        measurement.durationMs > (this.profiler as any).bottleneckThreshold ||
+        measurement.durationMs > (this.profiler as unknown).bottleneckThreshold ||
         measurement.durationMs / totalDurationMs > 0.1 // >10% of total time
     );
 
@@ -544,7 +544,7 @@ export function profileCoordinateAccess(
 
   // Profile type-safe accessor functions
   profiler.measureSection({
-    name: 'Type-Safe Accessor Functions',
+    name: 'Type-Safe Accessor (...args: unknown[]) => unknowns',
     type: ProfilerMeasurementType.COORDINATE_ACCESS,
     operationCount: nodes.length * iterations,
     fn: () => {
@@ -599,9 +599,9 @@ export function profileDOMOperations(
         .data(nodes)
         .enter()
         .append('circle')
-        .attr('cx', d => (d as any).x)
-        .attr('cy', d => (d as any).y)
-        .attr('r', d => (d as any).value / 10)
+        .attr('cx', d => (d as unknown).x)
+        .attr('cy', d => (d as unknown).y)
+        .attr('r', d => (d as unknown).value / 10)
         .attr('fill', 'steelblue');
     },
   });
@@ -614,9 +614,9 @@ export function profileDOMOperations(
     fn: () => {
       container
         .selectAll('circle')
-        .attr('cx', d => (d as any).x + Math.random() * 10 - 5)
-        .attr('cy', d => (d as any).y + Math.random() * 10 - 5)
-        .attr('r', d => (d as any).value / 10 + Math.random() * 2);
+        .attr('cx', d => (d as unknown).x + Math.random() * 10 - 5)
+        .attr('cy', d => (d as unknown).y + Math.random() * 10 - 5)
+        .attr('r', d => (d as unknown).value / 10 + Math.random() * 2);
     },
   });
 
@@ -630,8 +630,8 @@ export function profileDOMOperations(
         .selectAll('circle')
         .transition()
         .duration(500)
-        .attr('cx', d => (d as any).x + Math.random() * 20 - 10)
-        .attr('cy', d => (d as any).y + Math.random() * 20 - 10);
+        .attr('cx', d => (d as unknown).x + Math.random() * 20 - 10)
+        .attr('cy', d => (d as unknown).y + Math.random() * 20 - 10);
     },
   });
 
