@@ -640,3 +640,31 @@ export function toEnumResourceType(type: ResourceTypeString): ResourceType {
 export function toStringResourceType(type: ResourceType): ResourceTypeString {
   return ResourceType[type] as ResourceTypeString;
 }
+
+/**
+ * Resource container interface
+ */
+export interface ResourceContainer {
+  id: string;
+  name: string;
+  description?: string;
+  capacity: number;
+  resources: Record<ResourceType, ResourceState>;
+  maxResourceTypes?: number;
+  allowedResourceTypes?: ResourceType[];
+  efficiency?: number;
+  lastUpdated: number;
+}
+
+/**
+ * Resource pool interface
+ */
+export interface ResourcePool {
+  id: string;
+  name: string;
+  description?: string;
+  resources: Record<ResourceType, number>;
+  containers: string[];
+  maxCapacity?: number;
+  lastUpdated: number;
+}

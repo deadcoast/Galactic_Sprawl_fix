@@ -14,16 +14,8 @@
 
 ## Resource Type Standardization Progress
 
-- [x] Created a comprehensive fix script (`fix_resources.sh`) that combines all resource type fixes
-- [x] Fixed ResourceTypeMigration.ts imports to include ResourceTypeString
-- [x] Fixed duplicate imports in ResourceDiscoverySystem.tsx
-- [x] Updated component props to use ResourceType enum instead of string
-- [x] Fixed string literals to use ResourceType enum values
-- [x] Fixed object literals with string resourceType
-- [x] Fixed specific files with remaining issues
-- [x] Fixed files that use ResourceTypeMigration
-- [x] Fixed duplicate React imports
 - [ ] Address remaining TypeScript errors (~1372 remaining, down from 1785)
+- [ ] Fix MiningShipManager resource types
 
 ### Next Steps for Resource Type Standardization
 
@@ -33,12 +25,19 @@
    - Update function parameters to accept ResourceType
    - Add type conversion where needed
 
-2. **Fix React Type Definition Conflicts**:
+2. **Fix MiningShipManager Implementation**:
+
+   - Fix `getResourceTypeFromNodeId` method to properly handle string conversion
+   - Update string comparisons in switch cases to correctly match string resource types
+   - Fix comparison against ResourceType enum values
+   - Add proper type guards and validation
+
+3. **Fix React Type Definition Conflicts**:
 
    - Ensure esModuleInterop is enabled in tsconfig.json
    - Fix remaining import issues in components
 
-3. **Improve Type Safety**:
+4. **Improve Type Safety**:
    - Replace 'any' types with proper interfaces
    - Implement generics for reusable components
    - Add type guards where necessary
@@ -75,11 +74,7 @@ The next priority task is to implement a chart component system using the strate
   - Verified type safety in components using Material UI
 
 - [ ] Front-End and Back-End Integration
-  - [x] Create proper API interfaces between services and UI components
-  - [ ] Implement service provider pattern for dependency injection
   - [ ] Add service registration in the application bootstrap process
-    - [x] Updated ErrorLoggingService to implement BaseService
-    - [x] Updated APIService to implement BaseService
     - [ ] Updated RecoveryService to implement BaseService
     - [ ] Updated ComponentRegistryService to implement BaseService
     - [ ] Updated EventPropagationService to implement BaseService
@@ -174,68 +169,9 @@ The next priority task is to implement a chart component system using the strate
 - [ ] Impact assessment completed
 - [ ] Migration paths outlined
 
-## Completed Tasks
-
-- [x] EventEmitter Consolidation and Enhancement
-- [x] Resource Type Standardization (migrated to 04_RESOURCES.md)
-
 # Code Consolidation Tasklist
 
-## Phase 1: Critical Infrastructure Consolidation (VERY HIGH Priority)
-
-### Service Pattern Standardization
-
-- [ ] Create a base `SingletonService` abstract class
-  - Target files:
-    - `/src/services/DataProcessingService.ts`
-    - `/src/services/WorkerService.ts`
-    - `/src/services/ErrorLoggingService.ts`
-    - `/src/services/APIService.ts`
-    - `/src/services/RealTimeDataService.ts`
-    - `/src/services/WebGLService.ts`
-    - `/src/services/RecoveryService.ts`
-  - Implementation: Extract common singleton pattern into reusable base class
-
-### Service Registry Unification
-
-- [ ] Consolidate service registry implementations
-  - Target files:
-    - `/src/lib/managers/ServiceRegistry.ts`
-    - `/src/lib/services/ServiceRegistry.ts`
-  - Implementation: Create unified service registry with clear separation of concerns
-
 ## Phase 2: Core System Consolidation (HIGH Priority)
-
-### Event System Unification
-
-- [ ] Create unified event system architecture
-  - Target files:
-    - `/src/lib/events/EventBus.ts`
-    - `/src/lib/utils/EventEmitter.ts`
-    - `/src/utils/events/EventDispatcher.tsx`
-    - `/src/utils/events/EventCommunication.ts`
-  - Implementation: Implement a unified event system with adapters for different contexts
-
-### Resource Management Consolidation
-
-- [ ] Unify resource management systems
-  - Target files:
-    - `/src/managers/game/ResourceManager.ts`
-    - `/src/managers/resource/ResourceFlowManager.ts`
-    - `/src/managers/resource/ResourceStorageManager.ts`
-    - `/src/managers/resource/ResourceTransferManager.tsx`
-    - `/src/hooks/resources/useResourceManagement.tsx`
-  - Implementation: Create a unified resource management system with specialized components
-
-### Manager Pattern Standardization
-
-- [ ] Create base manager class for singleton managers
-  - Target files:
-    - `/src/managers/weapons/AdvancedWeaponEffectManager.ts`
-    - `/src/managers/combat/EnvironmentalHazardManager.ts`
-    - `/src/managers/game/assetManager.ts`
-    - `/src/managers/ai/BehaviorTreeManager.ts`
-  - Implementation: Extract common singleton pattern into reusable base class
 
 ### Visualization Component Consolidation
 
@@ -249,55 +185,13 @@ The next priority task is to implement a chart component system using the strate
   - Implementation: Create a unified chart component system with renderer strategy pattern
 
 - [ ] Consolidate memory optimization for visualization
-
   - Target files:
     - `/src/components/exploration/visualizations/MemoryOptimizedCharts.tsx`
     - `/src/components/exploration/MemoryOptimizedCanvasDemo.tsx`
     - `/src/components/exploration/visualizations/charts/MemoryOptimizedCanvasChart.tsx`
   - Implementation: Refactor into a unified memory optimization system
 
-- [ ] Unify resource visualization components
-  - Target files:
-    - `/src/components/ui/ResourceVisualization.tsx`
-    - `/src/components/ui/ResourceVisualizationEnhanced.tsx`
-    - `/src/components/ui/resource/ResourceFlowDiagram.tsx`
-    - `/src/components/ui/resource/ResourceDistributionChart.tsx`
-    - `/src/components/ui/resource/ResourceThresholdVisualization.tsx`
-    - `/src/components/ui/resource/ResourceForecastingVisualization.tsx`
-    - `/src/effects/component_effects/ResourceFlowVisualization.tsx`
-  - Implementation: Create a unified resource visualization library
-
-### Hook Pattern Standardization
-
-- [ ] Create hook factories for common patterns
-  - Target files:
-    - `/src/hooks/services/useService.ts`
-    - `/src/hooks/modules/useSubModules.ts`
-    - `/src/hooks/modules/useModuleUpgrade.ts`
-  - Implementation: Create hook factories or higher-order hooks for common patterns
-
-### System Integration Architecture
-
-- [ ] Create unified system integration architecture
-  - Target files:
-    - `/src/components/core/SystemIntegration.tsx`
-    - `/src/components/core/ThresholdIntegration.tsx`
-    - `/src/components/exploration/ExplorationSystemIntegration.tsx`
-    - `/src/managers/resource/ResourceIntegration.ts`
-    - `/src/managers/mining/MiningResourceIntegration.ts`
-    - `/src/initialization/gameSystemsIntegration.ts`
-  - Implementation: Create a unified system integration architecture with specialized modules
-
 ## Phase 3: Secondary System Consolidation (MEDIUM Priority)
-
-### Event Processing Pipeline
-
-- [ ] Consolidate event processing components
-  - Target files:
-    - `/src/utils/events/EventBatcher.ts`
-    - `/src/utils/events/EventFilter.ts`
-    - `/src/utils/events/EventPrioritizer.ts`
-  - Implementation: Create a unified event processing pipeline
 
 ### Module Management System
 
@@ -307,15 +201,6 @@ The next priority task is to implement a chart component system using the strate
     - `/src/managers/module/ModuleManagerWrapper.ts`
     - `/src/managers/module/ModuleManagerWrapper.test.ts`
   - Implementation: Refactor into a unified module system with clear interfaces
-
-### Performance Monitoring System
-
-- [ ] Create centralized performance monitoring
-  - Target files:
-    - `/src/services/telemetry/SessionPerformanceTracker.ts`
-    - `/src/hooks/performance/useSessionPerformance.ts`
-    - `/src/utils/performance/hookPerformanceMonitor.ts`
-  - Implementation: Create a centralized performance monitoring system
 
 ### Animation Optimization System
 
@@ -353,13 +238,6 @@ The next priority task is to implement a chart component system using the strate
     - Various chart components
   - Implementation: Extract data transformation utilities
 
-### Chart Component Interface Standardization
-
-- [ ] Create common interface hierarchy
-  - Target files:
-    - Various chart components with duplicated props
-  - Implementation: Create common interface hierarchy for chart components
-
 ### Game System Consolidation
 
 - [ ] Unify combat management system
@@ -376,23 +254,6 @@ The next priority task is to implement a chart component system using the strate
     - `/src/factories/ships/ShipClassFactory.ts`
     - `/src/hooks/ships/useShipClassManager.ts`
   - Implementation: Create a unified ship management system
-
-### Callback Pattern Standardization
-
-- [ ] Extract reusable callback patterns
-  - Target files:
-    - `/src/hooks/ships/useShipEffects.ts`
-    - `/src/hooks/modules/useModuleState.ts`
-    - `/src/hooks/modules/useSubModules.ts`
-  - Implementation: Extract reusable callback patterns into utility hooks
-
-### Component Lifecycle Management
-
-- [ ] Standardize lifecycle management
-  - Target files:
-    - `/src/hooks/ui/useComponentLifecycle.ts`
-    - Various event subscription implementations
-  - Implementation: Standardize lifecycle management across components
 
 ## Phase 4: Low Priority Consolidation (LOW Priority)
 
@@ -422,161 +283,43 @@ The next priority task is to implement a chart component system using the strate
     - `/src/tests/components/exploration/DataAnalysisSystem.test.tsx`
   - Implementation: Standardize error handling across visualization components
 
-### Visualization Type Definitions
+## In Progress Tasks
 
-- [ ] Create shared type definitions
-  - Target files:
-    - `/src/types/exploration/AnalysisComponentTypes.ts`
-    - `/src/types/exploration/DataAnalysisTypes.ts`
-  - Implementation: Create shared type definitions for visualization components
+1. 🔄 Discovery Classification Visualization
+2. 🔄 Comprehensive system-wide performance optimization
+3. 🔄 Expanding test coverage and integration tests
+4. 🔄 Resource Type Standardization (addressing remaining TypeScript errors)
 
-## Completed Tasks
+## Current Focus
 
-### Exploration System Consolidation
+1. 🔄 Fix MiningShipManager resource types
 
-- [x] Unify exploration data processing
+   - [ ] Fix `getResourceTypeFromNodeId` method in MiningShipManagerImpl.ts (incorrect string to enum comparisons)
+   - [ ] Update MiningTask interface to consistently use ResourceType
+   - [ ] Update dispatchShipToResource to properly handle ResourceType conversion
+   - [ ] Add proper type guards and validation
 
-  - Resolution: Created unified exploration system with shared types, utilities, and components:
-    - `/src/types/exploration/unified/ExplorationTypes.ts`
-    - `/src/types/exploration/unified/ExplorationTypeUtils.ts`
-    - `/src/components/exploration/unified/context/ExplorationContext.tsx`
-    - `/src/components/exploration/unified/core/BaseAnalysisVisualizer.tsx`
-
-- [x] Unify galaxy mapping components
-  - Resolution: Created unified mapping component that provides consistent UI and behavior:
-    - `/src/components/exploration/unified/core/BaseMap.tsx`
-    - `/src/components/exploration/unified/system/GalaxyExplorationSystem.tsx`
-
-## Progress Tracking
-
-- Total Tasks: 25
-- Completed: 2
-- In Progress: 0
-- Not Started: 23
-
-## Next Steps
-
-1. Begin with Phase 1 (VERY HIGH priority) tasks to establish core infrastructure patterns
-2. Move to Phase 2 (HIGH priority) tasks once Phase 1 is complete
-3. Continue with Phase 3 and 4 as resources allow
-
-## Scratchpad
-
-### Type Safety Improvements
-
-[X] Create shared type definitions for chart components
-[X] Fix `instanceof Date` type checking in WebGLRenderer
-[ ] Resolve type compatibility issues in WebGLRenderer:
-
-- Base ChartOptions vs ExtendedChartOptions compatibility
-- Theme type comparisons
-- Tick formatter parameter types
-  [ ] Review and update other visualization component types
-  [ ] Add type validation tests
-  [ ] Implement automated type coverage reporting
-
-### Code Structure
-
-[ ] Fix case block declarations
-[ ] Update unused variable handling
-[ ] Improve ESLint configuration
-
-### Logging
-
-[ ] Implement logging service
-[ ] Update console statements
-[ ] Add logging configuration
-
-[ ] Create System_Directory_Tree.md
-[ ] Create System_Development_History.md
-[ ] Update System_Architecture.md with phased restructuring plan
-[ ] Complete initial analysis of code duplication patterns
-[ ] Implement service registry consolidation
-[ ] Standardize event system implementation
-[ ] Unify resource management interfaces
-[ ] Consolidate visualization component APIs
-[ ] Set up integration testing framework
-[ ] Document public APIs and integration points
-
-[X] Fix useFactionBehavior.ts event system integration
-
-- [x] Remove unused calculateTerritorySystems function
-- [x] Integrate proper event handling using FactionEventType enum
-- [x] Ensure consistent resource management through proper interfaces
-- [x] Implement proper service access patterns
-- [x] Fix linter errors following type standards
-
-[ ] Update System Documentation
-
-- [ ] Document useFactionBehavior.ts changes in System_Architecture.md
-- [ ] Update integration points in System_Integration.md
-- [ ] Add new event handling patterns to development history
-
-[ ] Implement Remaining Tasks from System Architecture
-
-- [ ] Complete Discovery Classification Visualization
-- [ ] Continue system-wide performance optimization
-- [ ] Expand test coverage and integration tests
-
-[ ] Fix Resource Management System Integration
-
-- [ ] Fix ResourceManager event handling
-  - Fix unsubscribe/subscribe method implementation
-  - Fix args usage in event handling
-- [ ] Fix MiningResourceIntegration type issues
-  - Remove duplicate ResourceType imports
-  - Update OldResourceType references to use new ResourceType enum
-  - Fix FlowNode and ResourceThreshold property issues
-  - Implement proper event handling in MiningShipManagerImpl
-
-### Current Focus
-
-1. ResourceManager.ts event system fixes
-
-   - Implement proper TypedEventEmitter methods
-   - Fix event subscription handling
-
-2. MiningResourceIntegration.ts standardization
-   - Remove legacy resource type usage
-   - Update to use standardized interfaces
-   - Fix type definitions for flow nodes and thresholds
-
-[X] Fix MiningResourceIntegration event system
-
-- [x] Use proper EventEmitter types
-- [x] Use proper event interfaces
-- [x] Use proper resource type enums
-
-[ ] Fix MiningShipManager resource types
-
-- [ ] Convert string resourceType to ResourceType enum
-- [ ] Update MiningTask interface to use proper types
-- [ ] Update dispatchShipToResource to use ResourceType
-- [ ] Add proper type guards and validation
-
-### Current Focus
-
-1. Convert string-based resource types to enums in MiningShipManager
-2. Ensure consistent type usage across mining system
-3. Implement proper type validation at boundaries
-
-[ ] Fix Event Type Issues
-
-- [ ] Update TechTreeEvents to satisfy Record<string, unknown>
-- [ ] Update ModuleEvents to satisfy Record<string, unknown>
-- [ ] Fix OfficerManager EventEmitter implementation
-- [ ] Add missing getResourceNodes method to MiningShipManagerImpl
-
-### Current Focus
-
-1. Convert event interfaces to proper Record types
-2. Fix EventEmitter implementations
-3. Add missing methods
-4. Remove unused @ts-expect-error
+2. 🔄 Fix Event Type Issues
+   - [ ] Update TechTreeEvents to satisfy Record<string, unknown>
+   - [ ] Update ModuleEvents to satisfy Record<string, unknown>
+   - [ ] Fix OfficerManager EventEmitter implementation
+   - [ ] Add missing getResourceNodes method to MiningShipManagerImpl
 
 ### Implementation Order
 
-1. Fix base event types (TechTreeEvents, ModuleEvents)
-2. Update manager implementations
-3. Add missing methods
-4. Clean up type assertions
+1. Fix MiningShipManagerImpl.ts `getResourceTypeFromNodeId` method first
+2. Update remaining resource type conversions
+3. Fix base event types (TechTreeEvents, ModuleEvents)
+4. Update manager implementations
+5. Add missing methods
+6. Clean up type assertions
+
+## Next Steps
+
+1. Continue with the chart component strategy pattern (Task-007)
+2. Complete remaining Module Management System tasks
+3. Focus on UI Component Standardization tasks
+4. Address remaining resource type errors
+5. Document useFactionBehavior.ts changes in System_Architecture.md
+
+## Completed Tasks

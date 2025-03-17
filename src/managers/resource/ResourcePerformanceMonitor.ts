@@ -1,10 +1,9 @@
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType, ResourceTypeString } from '../../types/resources/ResourceTypes';
 
 export interface PerformanceMetrics {
   timestamp: number;
-  resourceType: StringResourceType | ResourceType;
+  resourceType: ResourceTypeString | ResourceType;
   productionRate: number;
   consumptionRate: number;
   transferRate: number;
@@ -13,9 +12,9 @@ export interface PerformanceMetrics {
 }
 
 export interface ResourcePerformanceSnapshot {
-  metrics: Map<StringResourceType | ResourceType, PerformanceMetrics>;
+  metrics: Map<ResourceTypeString | ResourceType, PerformanceMetrics>;
   systemLoad: number;
-  bottlenecks: (StringResourceType | ResourceType)[];
+  bottlenecks: (ResourceTypeString | ResourceType)[];
   recommendations: string[];
 }
 
@@ -128,8 +127,8 @@ export class ResourcePerformanceMonitor {
    * Generates a performance snapshot
    */
   private generateSnapshot(): ResourcePerformanceSnapshot {
-    const metrics = new Map<StringResourceType | ResourceType, PerformanceMetrics>();
-    const bottlenecks: (StringResourceType | ResourceType)[] = [];
+    const metrics = new Map<ResourceTypeString | ResourceType, PerformanceMetrics>();
+    const bottlenecks: (ResourceTypeString | ResourceType)[] = [];
     const recommendations: string[] = [];
 
     // Calculate current metrics for each resource

@@ -1,5 +1,9 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import {
+  ResourceState,
+  ResourceTransfer,
+  ResourceType,
+} from './../../types/resources/ResourceTypes';
+
 /**
  * Storage allocation strategy
  */
