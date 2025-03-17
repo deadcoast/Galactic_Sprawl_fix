@@ -25,7 +25,7 @@ export interface ThresholdPreset {
 
 export interface ThresholdHistoryEntry {
   timestamp: number;
-  resourceId: string;
+  resourceId: ResourceType;
   amount: number;
   thresholds: {
     min: number;
@@ -62,7 +62,7 @@ export type ThresholdAction =
 
 export interface ThresholdEvent {
   type: 'THRESHOLD_VIOLATED' | 'AUTO_MINE_TRIGGERED' | 'STORAGE_FULL';
-  resourceId: string;
+  resourceId: ResourceType;
   details: {
     type: 'below_minimum' | 'above_maximum';
     current: number;

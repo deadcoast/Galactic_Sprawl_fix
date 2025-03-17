@@ -177,7 +177,7 @@ export interface WeaponConfig {
   };
   requirements?: {
     tech: string[];
-    resources: string[];
+    resources: ResourceType[];
   };
 }
 

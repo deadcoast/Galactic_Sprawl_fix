@@ -13,7 +13,7 @@ import { ResourceType } from "./ResourceTypes";
  * @param resourceType The resource type
  * @returns The display name
  */
-export function getResourceDisplayName(resourceType: ResourceType): string {
+export function getResourceDisplayName(resourceType: ResourceType): ResourceType {
   return ResourceTypeInfo[resourceType].displayName;
 }
 
@@ -22,7 +22,7 @@ export function getResourceDisplayName(resourceType: ResourceType): string {
  * @param resourceType The resource type
  * @returns The description
  */
-export function getResourceDescription(resourceType: ResourceType): string {
+export function getResourceDescription(resourceType: ResourceType): ResourceType {
   return ResourceTypeInfo[resourceType].description;
 }
 
@@ -31,7 +31,7 @@ export function getResourceDescription(resourceType: ResourceType): string {
  * @param resourceType The resource type
  * @returns The icon name
  */
-export function getResourceIcon(resourceType: ResourceType): string {
+export function getResourceIcon(resourceType: ResourceType): ResourceType {
   return ResourceTypeInfo[resourceType].icon;
 }
 
@@ -118,7 +118,7 @@ export function isSpecialResource(resourceType: ResourceType): boolean {
  * @param resourceType The resource type
  * @returns A color string (hex or CSS color)
  */
-export function getResourceTypeColor(resourceType: ResourceType): string {
+export function getResourceTypeColor(resourceType: ResourceType): ResourceType {
   // Define a color mapping for resource types
   const colorMap: Record<ResourceType, string> = {
     [ResourceType.MINERALS]: '#8B4513', // SaddleBrown
@@ -148,7 +148,7 @@ export function getResourceTypeColor(resourceType: ResourceType): string {
  * @param resourceType The resource type
  * @returns A lighter color string (hex or CSS color)
  */
-export function getResourceTypeHighlightColor(resourceType: ResourceType): string {
+export function getResourceTypeHighlightColor(resourceType: ResourceType): ResourceType {
   // Define a highlight color mapping for resource types
   const highlightColorMap: Record<ResourceType, string> = {
     [ResourceType.MINERALS]: '#CD853F', // Peru (lighter brown)
@@ -178,7 +178,7 @@ export function getResourceTypeHighlightColor(resourceType: ResourceType): strin
  * @param resourceType The resource type
  * @returns A darker color string (hex or CSS color)
  */
-export function getResourceTypeDarkColor(resourceType: ResourceType): string {
+export function getResourceTypeDarkColor(resourceType: ResourceType): ResourceType {
   // Define a dark color mapping for resource types
   const darkColorMap: Record<ResourceType, string> = {
     [ResourceType.MINERALS]: '#5C2E0E', // Darker brown
@@ -209,7 +209,7 @@ export function getResourceTypeDarkColor(resourceType: ResourceType): string {
  * @param resourceType Optional resource type for specialized formatting
  * @returns Formatted string representation of the amount
  */
-export function formatResourceAmount(amount: number, resourceType?: ResourceType): string {
+export function formatResourceAmount(amount: number, resourceType?: ResourceType): ResourceType {
   // For large numbers, use abbreviations
   if (amount >= 1_000_000) {
     return `${(amount / 1_000_000).toFixed(1)}M`;

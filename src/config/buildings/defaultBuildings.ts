@@ -60,13 +60,13 @@ export const defaultColony: ModularBuilding = {
     {
       id: 'development-1',
       position: { x: 0, y: 1 },
-      allowedTypes: [ResourceType.POPULATION, 'infrastructure', 'food'],
+      allowedTypes: [ResourceType.POPULATION, 'infrastructure', ResourceType.FOOD],
       currentModule: undefined,
     },
     {
       id: 'development-2',
       position: { x: 1, y: 1 },
-      allowedTypes: [ResourceType.POPULATION, 'infrastructure', 'food'],
+      allowedTypes: [ResourceType.POPULATION, 'infrastructure', ResourceType.FOOD],
       currentModule: undefined,
     },
     // Research and exploration

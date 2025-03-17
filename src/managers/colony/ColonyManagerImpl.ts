@@ -49,7 +49,7 @@ export interface ColonyEventData extends Record<string, unknown> {
   level?: number;
   amount?: number;
   partnerId?: string;
-  tradeResources?: string[];
+  tradeResources?: ResourceType[];
   threatLevel?: number;
   project?: string;
   benefits?: ResearchBenefits;
@@ -252,7 +252,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
       // Convert string resource to ResourceType enum
       let resourceType: ResourceType;
       switch (resource) {
-        case 'food':
+        case ResourceType.FOOD:
           resourceType = ResourceType.POPULATION; // Using POPULATION as a proxy for food
           break;
         case ResourceType.ENERGY:
@@ -366,7 +366,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     });
   }
 
-  public establishTradeRoute(colonyId: string, partnerId: string, resources: string[]): void {
+  public establishTradeRoute(colonyId: string, partnerId: string, resources: ResourceType[]): void {
     const colony = this.colonies.get(colonyId);
     if (!colony) {
       return;
@@ -550,7 +550,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
     const resourceNeeds = this.calculateResourceNeeds(colony);
     const resourceAvailability = Object.entries(resourceNeeds).every(([resource, amount]) => {
       const resourceType =
-        resource === 'food'
+        resource === ResourceType.FOOD
           ? ResourceType.POPULATION
           : ResourceType[resource.toUpperCase() as keyof typeof ResourceType];
       return resourceManager.getResourceAmount(resourceType) >= amount;

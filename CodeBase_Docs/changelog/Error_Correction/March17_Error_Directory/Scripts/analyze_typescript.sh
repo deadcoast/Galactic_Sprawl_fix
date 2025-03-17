@@ -139,8 +139,12 @@ find_error_hotspots() {
   grep -o "[^ ]*\.tsx\?:[0-9]*:[0-9]*" "$TS_ERROR_FILE" | cut -d':' -f1 | sort | uniq -c | sort -nr > "$OUTPUT_DIR/error_hotspots.txt"
   
   # Display top 10 files with most errors
-  echo "Top 10 files with most errors:"
-  head -n 10 "$OUTPUT_DIR/error_hotspots.txt"
+  if [ -s "$OUTPUT_DIR/error_hotspots.txt" ]; then
+    echo "Top 10 files with most errors:"
+    head -n 10 "$OUTPUT_DIR/error_hotspots.txt"
+  else
+    echo "No error hotspots found."
+  fi
   
   echo "Hotspot analysis complete. Full list in: $OUTPUT_DIR/error_hotspots.txt"
 }
@@ -153,8 +157,12 @@ analyze_error_codes() {
   grep -o "TS[0-9]*" "$TS_ERROR_FILE" | sort | uniq -c | sort -nr > "$OUTPUT_DIR/error_code_frequency.txt"
   
   # Display top 10 error codes
-  echo "Top 10 most frequent error codes:"
-  head -n 10 "$OUTPUT_DIR/error_code_frequency.txt"
+  if [ -s "$OUTPUT_DIR/error_code_frequency.txt" ]; then
+    echo "Top 10 most frequent error codes:"
+    head -n 10 "$OUTPUT_DIR/error_code_frequency.txt"
+  else
+    echo "No error codes found."
+  fi
   
   echo "Error code analysis complete. Full list in: $OUTPUT_DIR/error_code_frequency.txt"
 }
@@ -189,16 +197,32 @@ Total TypeScript errors: $(grep -c "error TS" "$TS_ERROR_FILE" || echo "0")
 | Event System Issues | $(wc -l < "$OUTPUT_DIR/event_system_errors.txt" || echo "0") |
 | React Component Issues | $(wc -l < "$OUTPUT_DIR/react_component_errors.txt" || echo "0") |
 | Syntax Errors | $(wc -l < "$OUTPUT_DIR/syntax_errors.txt" || echo "0") |
+EOF
+
+  # Add error code frequency
+  if [ -s "$OUTPUT_DIR/error_code_frequency.txt" ]; then
+    cat >> "$report_file" << EOF
 
 ## Top Error Codes
 
 $(head -n 5 "$OUTPUT_DIR/error_code_frequency.txt" | awk '{ print "- " $2 " (" $1 " occurrences)" }')
+EOF
+  fi
+
+  # Add error hotspots
+  if [ -s "$OUTPUT_DIR/error_hotspots.txt" ]; then
+    cat >> "$report_file" << EOF
 
 ## Error Hotspots
 
 The following files have the most TypeScript errors:
 
 $(head -n 5 "$OUTPUT_DIR/error_hotspots.txt" | awk '{ print "- " $2 " (" $1 " errors)" }')
+EOF
+  fi
+
+  # Add code samples for each category
+  cat >> "$report_file" << EOF
 
 ## Common Error Patterns
 
@@ -207,7 +231,7 @@ $(head -n 5 "$OUTPUT_DIR/error_hotspots.txt" | awk '{ print "- " $2 " (" $1 " er
 The ResourceType enum is not consistently used throughout the codebase:
 
 \`\`\`
-$(head -n 3 "$OUTPUT_DIR/resource_type_errors.txt" || echo "No resource type errors found.")
+$(head -n 3 "$OUTPUT_DIR/resource_type_errors.txt" 2>/dev/null || echo "No resource type errors found.")
 \`\`\`
 
 ### Event System Issues
@@ -215,7 +239,7 @@ $(head -n 3 "$OUTPUT_DIR/resource_type_errors.txt" || echo "No resource type err
 Event emitter typing issues are common:
 
 \`\`\`
-$(head -n 3 "$OUTPUT_DIR/event_system_errors.txt" || echo "No event system errors found.")
+$(head -n 3 "$OUTPUT_DIR/event_system_errors.txt" 2>/dev/null || echo "No event system errors found.")
 \`\`\`
 
 ### Type Mismatch Issues
@@ -223,7 +247,7 @@ $(head -n 3 "$OUTPUT_DIR/event_system_errors.txt" || echo "No event system error
 Type compatibility problems are prevalent:
 
 \`\`\`
-$(head -n 3 "$OUTPUT_DIR/type_mismatch_errors.txt" || echo "No type mismatch errors found.")
+$(head -n 3 "$OUTPUT_DIR/type_mismatch_errors.txt" 2>/dev/null || echo "No type mismatch errors found.")
 \`\`\`
 
 ## Recommended Fixes

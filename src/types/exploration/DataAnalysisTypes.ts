@@ -232,7 +232,7 @@ export interface SectorAnalysisConfig extends AnalysisConfig {
  * Interface representing resource data from exploration
  */
 export interface ResourceData {
-  type: string;
+  type: ResourceType;
   amount: number;
   quality?: number;
   sectorId?: string;

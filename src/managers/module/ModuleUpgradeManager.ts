@@ -45,7 +45,7 @@ export interface ModuleUpgradeLevel {
 export interface ModuleUpgradeRequirements {
   minLevel: number;
   resourceCosts: {
-    type: string;
+    type: ResourceType;
     amount: number;
   }[];
   techRequirements?: string[];

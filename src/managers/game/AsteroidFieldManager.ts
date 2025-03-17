@@ -287,7 +287,7 @@ export class AsteroidFieldManager extends TypedEventEmitter<AsteroidFieldEvents>
     console.warn('[AsteroidFieldManager] Cleaned up');
   }
 
-  public registerResourceNode(fieldId: string, _type: ResourceType): string {
+  public registerResourceNode(fieldId: string, _type: ResourceType): ResourceType {
     const field = this.state.fields.get(fieldId);
     if (!field) {
       return '';

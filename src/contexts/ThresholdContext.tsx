@@ -26,7 +26,7 @@ export interface ThresholdPreset {
 
 export interface ThresholdHistoryEntry {
   timestamp: number;
-  resourceId: string;
+  resourceId: ResourceType;
   amount: number;
   thresholds: {
     min: number;

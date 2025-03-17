@@ -46,7 +46,7 @@ export type AutomationActionType =
  * Resource threshold configuration
  */
 export interface ResourceThreshold {
-  type: string;
+  type: ResourceType;
   min?: number;
   max?: number;
   target?: number;

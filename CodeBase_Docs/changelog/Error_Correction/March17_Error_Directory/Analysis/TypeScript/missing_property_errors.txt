@@ -1,0 +1,97 @@
+../../../../src/config/automation/colonyRules.ts(27,30): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/config/automation/colonyRules.ts(67,30): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/config/buildings/defaultBuildings.ts(63,78): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/config/buildings/defaultBuildings.ts(69,78): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/config/modules/defaultModuleConfigs.ts(186,24): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/managers/colony/ColonyManagerImpl.ts(255,27): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/managers/colony/ColonyManagerImpl.ts(553,35): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/managers/resource/ResourcePoolManager.ts(210,42): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(211,20): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(226,42): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(232,20): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(289,45): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(340,51): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(341,29): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(347,24): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(497,51): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(577,64): error TS2339: Property 'type' does not exist on type 'ResourcePool'.
+../../../../src/managers/resource/ResourcePoolManager.ts(646,52): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(653,52): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(656,31): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(657,31): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(244,47): error TS2339: Property 'type' does not exist on type 'ResourceThreshold'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(279,70): error TS2339: Property 'type' does not exist on type 'ResourceThreshold'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(304,36): error TS2339: Property 'type' does not exist on type 'ResourceThreshold'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(328,36): error TS2339: Property 'type' does not exist on type 'ResourceThreshold'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(424,38): error TS2339: Property 'type' does not exist on type 'ResourceThreshold'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(440,38): error TS2339: Property 'type' does not exist on type 'ResourceThreshold'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(456,38): error TS2339: Property 'type' does not exist on type 'ResourceThreshold'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(473,71): error TS2339: Property 'type' does not exist on type 'ResourceThreshold'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(490,30): error TS2339: Property 'type' does not exist on type 'ResourceThreshold'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(492,45): error TS2339: Property 'type' does not exist on type 'ResourceThreshold'.
+../../../../src/managers/weapons/WeaponEffectManager.ts(142,10): error TS2339: Property 'emit' does not exist on type 'WeaponEffectManager'.
+../../../../src/managers/weapons/WeaponEffectManager.ts(240,14): error TS2339: Property 'emit' does not exist on type 'WeaponEffectManager'.
+../../../../src/managers/weapons/WeaponEffectManager.ts(248,10): error TS2339: Property 'emit' does not exist on type 'WeaponEffectManager'.
+../../../../src/managers/weapons/WeaponUpgradeManager.ts(239,10): error TS2339: Property 'emit' does not exist on type 'WeaponUpgradeManager'.
+../../../../src/managers/weapons/WeaponUpgradeManager.ts(240,10): error TS2339: Property 'emit' does not exist on type 'WeaponUpgradeManager'.
+../../../../src/managers/weapons/WeaponUpgradeManager.ts(327,14): error TS2339: Property 'emit' does not exist on type 'WeaponUpgradeManager'.
+../../../../src/managers/weapons/WeaponUpgradeManager.ts(365,10): error TS2339: Property 'on' does not exist on type 'WeaponUpgradeManager'.
+../../../../src/managers/weapons/WeaponUpgradeManager.ts(368,14): error TS2339: Property 'off' does not exist on type 'WeaponUpgradeManager'.
+../../../../src/managers/weapons/WeaponUpgradeManager.ts(380,10): error TS2339: Property 'emit' does not exist on type 'WeaponUpgradeManager'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(930,13): error TS2339: Property 'moduleId' does not exist on type 'unknown'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(930,23): error TS2339: Property 'moduleType' does not exist on type 'unknown'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(930,35): error TS2339: Property 'resources' does not exist on type 'unknown'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(955,13): error TS2339: Property 'moduleId' does not exist on type 'unknown'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(955,23): error TS2339: Property 'changes' does not exist on type 'unknown'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(984,13): error TS2339: Property 'moduleId' does not exist on type 'unknown'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(989,13): error TS2339: Property 'moduleId' does not exist on type 'unknown'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(989,23): error TS2339: Property 'active' does not exist on type 'unknown'.
+../../../../src/services/AnalysisAlgorithmService.ts(1030,7): error TS2339: Property 'algorithm' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1031,7): error TS2339: Property 'features' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1032,7): error TS2339: Property 'k' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1033,7): error TS2339: Property 'maxIterations' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1034,7): error TS2339: Property 'distanceMetric' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1035,7): error TS2339: Property 'normalize' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(2084,7): error TS2339: Property 'targetVariable' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(2086,7): error TS2339: Property 'predictionHorizon' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(2087,7): error TS2339: Property 'model' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(2088,7): error TS2339: Property 'testSplit' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(2089,7): error TS2339: Property 'epochs' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
+../../../../src/systems/exploration/DiscoveryClassification.ts(57,18): error TS2339: Property 'enhanceAnalysis' does not exist on type 'DiscoveryClassification'.
+../../../../src/systems/exploration/DiscoveryClassification.ts(154,36): error TS2339: Property 'analyzeResourceSignature' does not exist on type 'DiscoveryClassification'.
+../../../../src/systems/exploration/DiscoveryClassification.ts(155,38): error TS2339: Property 'analyzeComposition' does not exist on type 'DiscoveryClassification'.
+../../../../src/systems/exploration/DiscoveryClassification.ts(333,19): error TS2339: Property 'publish' does not exist on type 'EventBus<BaseEvent>'.
+../../../../src/types/common/VectorTypes.ts(85,17): error TS2339: Property 'x' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(86,17): error TS2339: Property 'y' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(87,17): error TS2339: Property 'z' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(92,17): error TS2339: Property 'x' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(93,17): error TS2339: Property 'y' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(94,17): error TS2339: Property 'z' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(95,17): error TS2339: Property 'w' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(114,38): error TS2339: Property 'x' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(114,62): error TS2339: Property 'y' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(114,86): error TS2339: Property 'z' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(118,23): error TS2339: Property 'x' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(118,47): error TS2339: Property 'y' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(118,71): error TS2339: Property 'z' does not exist on type 'never'.
+../../../../src/types/common/VectorTypes.ts(118,95): error TS2339: Property 'w' does not exist on type 'never'.
+  Property 'DEFAULT' does not exist on type 'Partial<Record<A["type"], (state: S, action: unknown) => S>>'.
+  Property 'DEFAULT' does not exist on type 'Partial<Record<A["type"], (state: S, action: unknown) => S>>'.
+../../../../src/types/state/TypeSafeStateManagement.ts(330,20): error TS2339: Property 'payload' does not exist on type 'Action<string>'.
+../../../../src/types/state/TypeSafeStateManagement.ts(336,21): error TS2339: Property 'payload' does not exist on type 'Action<string>'.
+../../../../src/types/visualizations/D3DragTypes.ts(129,19): error TS2339: Property 'fx' does not exist on type 'object'.
+../../../../src/types/visualizations/D3DragTypes.ts(129,38): error TS2339: Property 'x' does not exist on type 'object'.
+../../../../src/types/visualizations/D3DragTypes.ts(130,19): error TS2339: Property 'fy' does not exist on type 'object'.
+../../../../src/types/visualizations/D3DragTypes.ts(130,38): error TS2339: Property 'y' does not exist on type 'object'.
+../../../../src/types/visualizations/D3DragTypes.ts(140,19): error TS2339: Property 'fx' does not exist on type 'object'.
+../../../../src/types/visualizations/D3DragTypes.ts(141,19): error TS2339: Property 'fy' does not exist on type 'object'.
+../../../../src/types/visualizations/D3DragTypes.ts(152,19): error TS2339: Property 'fx' does not exist on type 'object'.
+../../../../src/types/visualizations/D3DragTypes.ts(153,19): error TS2339: Property 'fy' does not exist on type 'object'.
+../../../../src/utils/dataTransforms/chartTransforms.ts(376,12): error TS2339: Property 'config' does not exist on type 'AnalysisResult'.
+../../../../src/utils/dataTransforms/chartTransforms.ts(709,24): error TS2339: Property 'toLowerCase' does not exist on type 'never'.
+../../../../src/utils/dataTransforms/chartTransforms.ts(713,25): error TS2339: Property 'toLowerCase' does not exist on type 'never'.
+../../../../src/utils/dataTransforms/filterTransforms.ts(381,20): error TS2339: Property 'toLowerCase' does not exist on type 'never'.
+../../../../src/utils/dataTransforms/filterTransforms.ts(385,21): error TS2339: Property 'toLowerCase' does not exist on type 'never'.
+../../../../src/utils/dataTransforms/filterTransforms.ts(594,35): error TS2339: Property 'length' does not exist on type 'never'.
+../../../../src/utils/performance/benchmarks/PerformanceBenchmarkTools.ts(307,18): error TS2339: Property 'OXYGEN' does not exist on type 'typeof ResourceType'.
+../../../../src/utils/performance/benchmarks/PerformanceBenchmarkTools.ts(308,18): error TS2339: Property 'SILICON' does not exist on type 'typeof ResourceType'.

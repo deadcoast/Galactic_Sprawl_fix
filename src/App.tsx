@@ -91,7 +91,7 @@ interface ResourceEvent extends BaseEvent {
 }
 
 interface ThresholdEvent extends BaseEvent {
-  resourceId: string;
+  resourceId: ResourceType;
   details: {
     type: 'below_minimum' | 'above_maximum';
     current: number;

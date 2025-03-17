@@ -353,7 +353,7 @@ export interface ThresholdChangedEventData {
 
 export interface ThresholdTriggeredEventData {
   resourceType: ResourceType;
-  resourceId: string;
+  resourceId: ResourceType;
   thresholdType: 'critical' | 'low' | 'normal' | 'high' | 'maximum';
   currentValue: number;
   thresholdValue: number;

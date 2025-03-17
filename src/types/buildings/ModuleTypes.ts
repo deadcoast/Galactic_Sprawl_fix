@@ -27,7 +27,7 @@ export type ModuleType =
   | ResourceType.POPULATION
   | 'infrastructure'
   | ResourceType.RESEARCH
-  | 'food'
+  | ResourceType.FOOD
   | 'defense'
   // System modules
   | 'resource-manager';
@@ -69,7 +69,7 @@ export type SubModuleEffectType =
 // Sub-module effect interface
 export interface SubModuleEffect {
   type: SubModuleEffectType;
-  target: string; // What the effect targets (stat name, resource type, etc.)
+  target: ResourceType; // What the effect targets (stat name, resource type, etc.)
   value: number; // Effect value (percentage or absolute)
   isPercentage: boolean; // Whether the value is a percentage
   description: string;
@@ -80,7 +80,7 @@ export interface SubModuleRequirements {
   parentModuleLevel: number;
   parentModuleTypes: ModuleType[];
   resourceCosts: {
-    type: string;
+    type: ResourceType;
     amount: number;
   }[];
   incompatibleWith?: SubModuleType[]; // Sub-module types that cannot be installed together
@@ -117,7 +117,7 @@ export interface ModuleRequirements {
   minLevel: number;
   buildingType: BuildingType[];
   resourceCosts: {
-    type: string;
+    type: ResourceType;
     amount: number;
   }[];
 }

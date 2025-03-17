@@ -1,0 +1,187 @@
+../../../../src/components/ships/common/CommonShipMovement.tsx(49,7): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/config/automation/colonyRules.ts(27,30): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/config/automation/colonyRules.ts(67,30): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/config/buildings/defaultBuildings.ts(63,78): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/config/buildings/defaultBuildings.ts(69,78): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/config/modules/defaultModuleConfigs.ts(186,24): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/contexts/GameContext.tsx(85,15): error TS2304: Cannot find name 'ResourceType'.
+        Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/contexts/ThresholdContext.tsx(103,13): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/contexts/ThresholdContext.tsx(113,13): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+        Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/contexts/ThresholdContext.tsx(152,11): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+        Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/initialization/moduleFrameworkInit.ts(218,11): error TS2322: Type '{ type: string; amount: number; }[]' is not assignable to type '{ type: ResourceType; amount: number; }[]'.
+  Type '{ type: string; amount: number; }' is not assignable to type '{ type: ResourceType; amount: number; }'.
+      Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/initialization/moduleFrameworkInit.ts(353,11): error TS2322: Type '"efficiency"' is not assignable to type 'ResourceType'.
+../../../../src/initialization/moduleFrameworkInit.ts(371,11): error TS2322: Type '"conversion"' is not assignable to type 'ResourceType'.
+../../../../src/initialization/moduleFrameworkInit.ts(388,11): error TS2322: Type '"processing"' is not assignable to type 'ResourceType'.
+../../../../src/initialization/moduleFrameworkInit.ts(405,11): error TS2322: Type '"storage"' is not assignable to type 'ResourceType'.
+../../../../src/initialization/moduleFrameworkInit.ts(422,11): error TS2322: Type '"automation"' is not assignable to type 'ResourceType'.
+../../../../src/lib/ai/ResourceConsumptionPredictor.ts(73,15): error TS2322: Type '{ timestamp: number; resourceType: "MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | ... 5 more ... | ResourceType; value: number; sessionDuration: number; userActions: number; systemLoad: number; }[]' is not assignable to type 'ConsumptionDataPoint[]'.
+  Type '{ timestamp: number; resourceType: "MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | ... 5 more ... | ResourceType; value: number; sessionDuration: number; userActions: number; systemLoad: number; }' is not assignable to type 'ConsumptionDataPoint'.
+      Type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER" | ResourceType' is not assignable to type 'ResourceType'.
+        Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/managers/colony/ColonyManagerImpl.ts(255,27): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/managers/colony/ColonyManagerImpl.ts(553,35): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/managers/exploration/ExplorationManagerImpl.ts(38,15): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/managers/exploration/ExplorationManagerImpl.ts(52,15): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/managers/exploration/ExplorationManagerImpl.ts(219,11): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/managers/exploration/ExplorationManagerImpl.ts(220,16): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/managers/game/AsteroidFieldManager.ts(293,7): error TS2322: Type '""' is not assignable to type 'ResourceType'.
+../../../../src/managers/game/AsteroidFieldManager.ts(331,5): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/managers/mining/MiningShipManager.ts(73,7): error TS2322: Type '"rockBreaker" | "voidDredger"' is not assignable to type 'ResourceType'.
+  Type '"rockBreaker"' is not assignable to type 'ResourceType'.
+../../../../src/managers/mining/MiningShipManagerImpl.ts(149,7): error TS2322: Type '"rockBreaker" | "voidDredger"' is not assignable to type 'ResourceType'.
+  Type '"rockBreaker"' is not assignable to type 'ResourceType'.
+../../../../src/managers/resource/AdaptivePerformanceManager.ts(139,9): error TS2322: Type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER" | ResourceType' is not assignable to type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/managers/resource/AdaptivePerformanceManager.ts(192,57): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER" | ResourceType' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/managers/resource/ResourceExchangeManager.ts(213,5): error TS2322: Type '"MINERALS-MINERALS" | "MINERALS-ENERGY" | "MINERALS-POPULATION" | "MINERALS-RESEARCH" | "MINERALS-PLASMA" | "MINERALS-GAS" | "MINERALS-EXOTIC" | "MINERALS-ORGANIC" | "MINERALS-IRON" | ... 314 more ... | "EXOTIC_MATTER-EXOTIC_MATTER"' is not assignable to type 'ResourceType'.
+  Type '"MINERALS-MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/managers/resource/ResourcePoolManager.ts(206,7): error TS2740: Type 'Map<ResourceType, number>' is missing the following properties from type 'Record<ResourceType, number>': MINERALS, ENERGY, POPULATION, RESEARCH, and 14 more.
+../../../../src/managers/resource/ResourcePoolManager.ts(210,42): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(211,20): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(226,42): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(232,20): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(289,45): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(336,11): error TS2740: Type 'Map<ResourceType, number>' is missing the following properties from type 'Record<ResourceType, ResourceState>': MINERALS, ENERGY, POPULATION, RESEARCH, and 14 more.
+../../../../src/managers/resource/ResourcePoolManager.ts(340,51): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(341,29): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(347,24): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, number>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(497,51): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(638,7): error TS2740: Type 'Map<ResourceType, number>' is missing the following properties from type 'Record<ResourceType, ResourceState>': MINERALS, ENERGY, POPULATION, RESEARCH, and 14 more.
+../../../../src/managers/resource/ResourcePoolManager.ts(642,7): error TS2740: Type 'Map<ResourceType, number>' is missing the following properties from type 'Record<ResourceType, ResourceState>': MINERALS, ENERGY, POPULATION, RESEARCH, and 14 more.
+../../../../src/managers/resource/ResourcePoolManager.ts(646,52): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(653,52): error TS2339: Property 'get' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(656,31): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourcePoolManager.ts(657,31): error TS2339: Property 'set' does not exist on type 'Record<ResourceType, ResourceState>'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(1,10): error TS2300: Duplicate identifier 'ResourceType'.
+../../../../src/managers/resource/ResourceThresholdManager.ts(5,3): error TS2724: '"./../../types/resources/ResourceTypes"' has no exported member named 'ResourceAlert'. Did you mean 'ResourceRarity'?
+../../../../src/managers/resource/ResourceThresholdManager.ts(8,3): error TS2300: Duplicate identifier 'ResourceType'.
+../../../../src/pages/ColonyManagementPage.tsx(418,11): error TS2322: Type '(resourceType: ResourceType) => void' is not assignable to type '(resourceType: ResourceType.ENERGY | ResourceType.POPULATION | ResourceType.RESEARCH | "food" | "technology" | "materials") => void'.
+    Type 'ResourceType.ENERGY | ResourceType.POPULATION | ResourceType.RESEARCH | "food" | "technology" | "materials"' is not assignable to type 'ResourceType'.
+      Type '"food"' is not assignable to type 'ResourceType'.
+../../../../src/registry/ResourceRegistryIntegration.ts(8,10): error TS2300: Duplicate identifier 'ResourceType'.
+../../../../src/registry/ResourceRegistryIntegration.ts(9,10): error TS2300: Duplicate identifier 'ResourceType'.
+../../../../src/registry/ResourceRegistryIntegration.ts(164,24): error TS2304: Cannot find name 'ResourceTypeConverter'.
+../../../../src/registry/ResourceRegistryIntegration.ts(182,24): error TS2304: Cannot find name 'ResourceTypeConverter'.
+../../../../src/registry/ResourceRegistryIntegration.ts(200,24): error TS2304: Cannot find name 'ResourceTypeConverter'.
+../../../../src/registry/ResourceRegistryIntegration.ts(221,18): error TS2304: Cannot find name 'ResourceTypeConverter'.
+../../../../src/registry/ResourceRegistryIntegration.ts(244,18): error TS2304: Cannot find name 'ResourceTypeConverter'.
+../../../../src/registry/ResourceRegistryIntegration.ts(275,18): error TS2304: Cannot find name 'ResourceTypeConverter'.
+../../../../src/registry/ResourceRegistryIntegration.ts(302,24): error TS2304: Cannot find name 'ResourceTypeConverter'.
+../../../../src/registry/ResourceRegistryIntegration.ts(311,24): error TS2304: Cannot find name 'ResourceTypeConverter'.
+../../../../src/resource/ResourceSystem.ts(8,3): error TS2724: '"../utils/resources/ResourceTypeConverter"' has no exported member named 'ensureEnumResourceType'. Did you mean 'ensureStringResourceType'?
+../../../../src/resource/ResourceSystem.ts(238,43): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/ResourceSystem.ts(346,46): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/ResourceSystem.ts(375,35): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/ResourceSystem.ts(380,38): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/ResourceSystem.ts(464,51): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/ResourceSystem.ts(466,48): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/ResourceSystem.ts(478,54): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/ResourceSystem.ts(480,51): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/ResourceSystem.ts(495,43): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/ResourceSystem.ts(509,63): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/ResourceSystem.ts(550,45): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(10,3): error TS2724: '"../../utils/resources/ResourceTypeConverter"' has no exported member named 'isStringResourceType'. Did you mean 'toStringResourceType'?
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(453,36): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER" | ResourceType' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(459,36): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER" | ResourceType' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(472,21): error TS2304: Cannot find name 'ResourceTypeType'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(476,9): error TS2322: Type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER" | ResourceType' is not assignable to type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(496,29): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER" | ResourceType' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(497,26): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER" | ResourceType' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(509,36): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER" | ResourceType' is not assignable to parameter of type 'ResourceType'.
+  Type '"MINERALS"' is not assignable to type 'ResourceType'.
+../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(565,13): error TS2345: Argument of type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/resource/subsystems/ResourceFlowSubsystem").FlowNode[]' is not assignable to parameter of type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/StandardizedResourceTypes").FlowNode[]'.
+    Type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes").FlowConnection[]' is not assignable to type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/resource/subsystems/ResourceFlowSubsystem").FlowConnection[]'.
+      Property 'resourceType' is missing in type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes").FlowConnection' but required in type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/resource/subsystems/ResourceFlowSubsystem").FlowConnection'.
+    Type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes").FlowConnection[]' is not assignable to type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/resource/subsystems/ResourceFlowSubsystem").FlowConnection[]'.
+      Property 'resourceType' is missing in type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes").FlowConnection' but required in type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/resource/subsystems/ResourceFlowSubsystem").FlowConnection'.
+    Type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes").FlowConnection[]' is not assignable to type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/resource/subsystems/ResourceFlowSubsystem").FlowConnection[]'.
+      Property 'resourceType' is missing in type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes").FlowConnection' but required in type 'import("/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/resource/subsystems/ResourceFlowSubsystem").FlowConnection'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(7,10): error TS2300: Duplicate identifier 'ResourceType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(8,10): error TS2300: Duplicate identifier 'ResourceType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(198,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(234,23): error TS2304: Cannot find name 'ResourceTypeType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(276,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(751,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(761,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(792,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(829,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(841,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(858,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceStorageSubsystem.ts(874,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceThresholdSubsystem.ts(6,10): error TS2300: Duplicate identifier 'ResourceType'.
+../../../../src/resource/subsystems/ResourceThresholdSubsystem.ts(7,10): error TS2300: Duplicate identifier 'ResourceType'.
+../../../../src/resource/subsystems/ResourceThresholdSubsystem.ts(164,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceThresholdSubsystem.ts(169,21): error TS2304: Cannot find name 'ResourceTypeType'.
+../../../../src/resource/subsystems/ResourceThresholdSubsystem.ts(196,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceThresholdSubsystem.ts(231,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceThresholdSubsystem.ts(259,9): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceThresholdSubsystem.ts(266,9): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceThresholdSubsystem.ts(367,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceThresholdSubsystem.ts(384,11): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceTransferSubsystem.ts(6,10): error TS2300: Duplicate identifier 'ResourceType'.
+../../../../src/resource/subsystems/ResourceTransferSubsystem.ts(7,10): error TS2300: Duplicate identifier 'ResourceType'.
+../../../../src/resource/subsystems/ResourceTransferSubsystem.ts(117,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceTransferSubsystem.ts(216,24): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/resource/subsystems/ResourceTransferSubsystem.ts(248,39): error TS2304: Cannot find name 'ensureStringResourceType'.
+../../../../src/systems/exploration/DiscoveryClassification.ts(93,52): error TS2345: Argument of type '{ type: DiscoveryType; confidence: number; details: { resourceType: ResourceType; estimatedQuantity: number; extractionDifficulty: number; qualityIndicators: QualityIndicators; }; }' is not assignable to parameter of type 'ClassificationResult'.
+  Type '{ type: DiscoveryType; confidence: number; details: { resourceType: ResourceType; estimatedQuantity: number; extractionDifficulty: number; qualityIndicators: QualityIndicators; }; }' is missing the following properties from type 'ClassificationResult': timestamp, analysisTime, enhancementApplied
+../../../../src/systems/exploration/DiscoveryClassification.ts(94,5): error TS2739: Type '{ type: DiscoveryType; confidence: number; details: { resourceType: ResourceType; estimatedQuantity: number; extractionDifficulty: number; qualityIndicators: QualityIndicators; }; }' is missing the following properties from type 'ClassificationResult': timestamp, analysisTime, enhancementApplied
+../../../../src/types/buildings/ModuleTypes.ts(30,18): error TS2694: Namespace '"/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes".ResourceType' has no exported member 'FOOD'.
+../../../../src/types/resources/ResourceTypes.ts(329,5): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/types/resources/ResourceTypeUtils.ts(17,10): error TS2304: Cannot find name 'ResourceTypeInfo'.
+../../../../src/types/resources/ResourceTypeUtils.ts(26,10): error TS2304: Cannot find name 'ResourceTypeInfo'.
+../../../../src/types/resources/ResourceTypeUtils.ts(35,10): error TS2304: Cannot find name 'ResourceTypeInfo'.
+../../../../src/types/resources/ResourceTypeUtils.ts(43,66): error TS2304: Cannot find name 'ResourceCategory'.
+../../../../src/types/resources/ResourceTypeUtils.ts(44,10): error TS2304: Cannot find name 'ResourceTypeInfo'.
+../../../../src/types/resources/ResourceTypeUtils.ts(53,10): error TS2304: Cannot find name 'ResourceTypeInfo'.
+../../../../src/types/resources/ResourceTypeUtils.ts(61,54): error TS2304: Cannot find name 'ResourceCategory'.
+../../../../src/types/resources/ResourceTypeUtils.ts(62,53): error TS2304: Cannot find name 'ResourceTypeInfo'.
+../../../../src/types/resources/ResourceTypeUtils.ts(70,37): error TS2304: Cannot find name 'ResourceCategory'.
+../../../../src/types/resources/ResourceTypeUtils.ts(78,37): error TS2304: Cannot find name 'ResourceCategory'.
+../../../../src/types/resources/ResourceTypeUtils.ts(86,37): error TS2304: Cannot find name 'ResourceCategory'.
+../../../../src/types/resources/ResourceTypeUtils.ts(95,10): error TS2304: Cannot find name 'ResourceTypeInfo'.
+../../../../src/types/resources/ResourceTypeUtils.ts(95,54): error TS2304: Cannot find name 'ResourceCategory'.
+../../../../src/types/resources/ResourceTypeUtils.ts(104,10): error TS2304: Cannot find name 'ResourceTypeInfo'.
+../../../../src/types/resources/ResourceTypeUtils.ts(104,54): error TS2304: Cannot find name 'ResourceCategory'.
+../../../../src/types/resources/ResourceTypeUtils.ts(113,10): error TS2304: Cannot find name 'ResourceTypeInfo'.
+../../../../src/types/resources/ResourceTypeUtils.ts(113,54): error TS2304: Cannot find name 'ResourceCategory'.
+../../../../src/types/resources/ResourceTypeUtils.ts(123,9): error TS2741: Property '[ResourceType.ORGANIC]' is missing in type '{ MINERALS: string; ENERGY: string; POPULATION: string; RESEARCH: string; PLASMA: string; GAS: string; EXOTIC: string; IRON: string; COPPER: string; TITANIUM: string; URANIUM: string; WATER: string; ... 4 more ...; EXOTIC_MATTER: string; }' but required in type 'Record<ResourceType, string>'.
+../../../../src/types/resources/ResourceTypeUtils.ts(143,3): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/types/resources/ResourceTypeUtils.ts(153,9): error TS2741: Property '[ResourceType.ORGANIC]' is missing in type '{ MINERALS: string; ENERGY: string; POPULATION: string; RESEARCH: string; PLASMA: string; GAS: string; EXOTIC: string; IRON: string; COPPER: string; TITANIUM: string; URANIUM: string; WATER: string; ... 4 more ...; EXOTIC_MATTER: string; }' but required in type 'Record<ResourceType, string>'.
+../../../../src/types/resources/ResourceTypeUtils.ts(173,3): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/types/resources/ResourceTypeUtils.ts(183,9): error TS2741: Property '[ResourceType.ORGANIC]' is missing in type '{ MINERALS: string; ENERGY: string; POPULATION: string; RESEARCH: string; PLASMA: string; GAS: string; EXOTIC: string; IRON: string; COPPER: string; TITANIUM: string; URANIUM: string; WATER: string; ... 4 more ...; EXOTIC_MATTER: string; }' but required in type 'Record<ResourceType, string>'.
+../../../../src/types/resources/ResourceTypeUtils.ts(203,3): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/types/resources/ResourceTypeUtils.ts(215,5): error TS2322: Type '`${string}M`' is not assignable to type 'ResourceType'.
+../../../../src/types/resources/ResourceTypeUtils.ts(217,5): error TS2322: Type '`${string}K`' is not assignable to type 'ResourceType'.
+../../../../src/types/resources/ResourceTypeUtils.ts(219,5): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/types/resources/ResourceTypeUtils.ts(221,5): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/types/shared/index.ts(32,9): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/utils/dataTransforms/chartTransforms.ts(243,5): error TS2561: Object literal may only specify known properties, but 'minerals' does not exist in type 'Record<ResourceType, string>'. Did you mean to write 'MINERALS'?
+../../../../src/utils/dataTransforms/index.ts(28,28): error TS2304: Cannot find name 'getResourceTypeColor'.
+../../../../src/utils/performance/benchmarks/PerformanceBenchmarkTools.ts(307,18): error TS2339: Property 'OXYGEN' does not exist on type 'typeof ResourceType'.
+../../../../src/utils/performance/benchmarks/PerformanceBenchmarkTools.ts(308,18): error TS2339: Property 'SILICON' does not exist on type 'typeof ResourceType'.
+../../../../src/utils/resources/ResourceTypeMigration.ts(48,3): error TS2561: Object literal may only specify known properties, but 'minerals' does not exist in type 'Record<"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER", ResourceType>'. Did you mean to write 'MINERALS'?
+../../../../src/utils/resources/ResourceTypeMigration.ts(60,7): error TS2741: Property '[ResourceType.ORGANIC]' is missing in type '{ MINERALS: ResourceType; ENERGY: ResourceType; POPULATION: ResourceType; RESEARCH: ResourceType; PLASMA: ResourceType; ... 11 more ...; EXOTIC_MATTER: ResourceType; }' but required in type 'Record<ResourceType, string>'.
+../../../../src/utils/resources/resourceUtils.ts(9,3): error TS2322: Type 'string' is not assignable to type 'ResourceType'.

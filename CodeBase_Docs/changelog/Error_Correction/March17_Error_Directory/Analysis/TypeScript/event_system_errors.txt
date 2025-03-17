@@ -1,0 +1,32 @@
+../../../../src/contexts/ThresholdContext.tsx(75,9): error TS2322: Type '(ThresholdHistoryEntry | { timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "threshold_change"; })[]' is not assignable to type 'ThresholdHistoryEntry[]'.
+  Type 'ThresholdHistoryEntry | { timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "threshold_change"; }' is not assignable to type 'ThresholdHistoryEntry'.
+    Type '{ timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "threshold_change"; }' is not assignable to type 'ThresholdHistoryEntry'.
+../../../../src/contexts/ThresholdContext.tsx(129,9): error TS2322: Type '(ThresholdHistoryEntry | { timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "amount_update"; })[]' is not assignable to type 'ThresholdHistoryEntry[]'.
+  Type 'ThresholdHistoryEntry | { timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "amount_update"; }' is not assignable to type 'ThresholdHistoryEntry'.
+    Type '{ timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "amount_update"; }' is not assignable to type 'ThresholdHistoryEntry'.
+../../../../src/contexts/ThresholdContext.tsx(166,9): error TS2322: Type '(ThresholdHistoryEntry | { timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "auto_mine_toggle"; })[]' is not assignable to type 'ThresholdHistoryEntry[]'.
+  Type 'ThresholdHistoryEntry | { timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "auto_mine_toggle"; }' is not assignable to type 'ThresholdHistoryEntry'.
+    Type '{ timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "auto_mine_toggle"; }' is not assignable to type 'ThresholdHistoryEntry'.
+../../../../src/managers/weapons/WeaponEffectManager.ts(3,30): error TS2307: Cannot find module '../../utils/EventEmitter' or its corresponding type declarations.
+../../../../src/managers/weapons/WeaponUpgradeManager.ts(10,30): error TS2307: Cannot find module '../../utils/EventEmitter' or its corresponding type declarations.
+    Argument of type '(event: Event, d: Datum, i: number, g: GElement[]) => void' is not assignable to parameter of type 'null'.
+  Overload 2 of 3, '(typenames: string, listener: (this: GElement, event: any, d: Datum) => void, options?: any): Selection<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type '(event: Event, d: Datum, i: number, g: GElement[]) => void' is not assignable to parameter of type '(this: GElement, event: any, d: Datum) => void'.
+    Argument of type '(event: Event, d: Datum, i: number, g: GElement[]) => void' is not assignable to parameter of type 'null'.
+  Overload 2 of 3, '(typenames: string, listener: (this: GElement, event: any, d: Datum) => void, options?: any): Selection<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type '(event: Event, d: Datum, i: number, g: GElement[]) => void' is not assignable to parameter of type '(this: GElement, event: any, d: Datum) => void'.
+    Argument of type '(event: Event, d: Datum) => void' is not assignable to parameter of type 'null'.
+    Argument of type '(event: Event, d: Datum) => void' is not assignable to parameter of type 'ValueFn<GElement, Datum, void>'.
+      Types of parameters 'event' and 'datum' are incompatible.
+../../../../src/types/visualizations/D3ZoomTypes.ts(128,16): error TS18046: 'event' is of type 'unknown'.
+../../../../src/types/visualizations/D3ZoomTypes.ts(201,25): error TS18046: 'event' is of type 'unknown'.
+../../../../src/types/visualizations/D3ZoomTypes.ts(218,47): error TS18046: 'event' is of type 'unknown'.
+../../../../src/types/visualizations/D3ZoomTypes.ts(238,25): error TS18046: 'event' is of type 'unknown'.
+../../../../src/types/visualizations/D3ZoomTypes.ts(242,7): error TS18046: 'event' is of type 'unknown'.
+        Types of parameters 'module' and 'event' are incompatible.
+../../../../src/utils/events/EventBatchingRxJS.ts(152,11): error TS18046: 'event' is of type 'unknown'.
+../../../../src/utils/events/EventBatchingRxJS.ts(152,43): error TS18046: 'event' is of type 'unknown'.
+../../../../src/utils/events/EventBatchingRxJS.ts(162,11): error TS18046: 'event' is of type 'unknown'.
+../../../../src/utils/events/EventBatchingRxJS.ts(162,43): error TS18046: 'event' is of type 'unknown'.
+../../../../src/utils/events/EventBatchingRxJS.ts(177,5): error TS2322: Type 'Observable<TimeBatchResult<unknown>>' is not assignable to type 'Observable<TimeBatchResult<T>>'.
+../../../../src/utils/events/EventBatchingRxJS.ts(218,42): error TS2571: Object is of type 'unknown'.

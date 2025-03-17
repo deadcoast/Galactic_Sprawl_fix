@@ -79,7 +79,7 @@ export interface StarSystem {
   id: string;
   name: string;
   type?: string;
-  resources?: string[];
+  resources?: ResourceType[];
   status: 'unmapped' | 'mapped' | 'scanning' | 'analyzed';
   assignedShips: string[];
   position: {
@@ -122,7 +122,7 @@ export interface Anomaly {
 export interface SystemSearchCriteria {
   name?: string;
   type?: string;
-  resources?: string[];
+  resources?: ResourceType[];
   status?: string;
 }
 

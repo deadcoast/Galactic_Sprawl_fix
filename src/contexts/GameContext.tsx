@@ -82,7 +82,7 @@ interface GameState extends BaseState {
       xpGained?: number;
       resourcesFound?: Array<{ type: string; amount: number }>;
       anomalyDetails?: {
-        type: string;
+        type: ResourceType;
         severity: string;
         investigated: boolean;
       };

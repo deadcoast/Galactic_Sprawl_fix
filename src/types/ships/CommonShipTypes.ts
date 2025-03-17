@@ -5,7 +5,7 @@ import { WeaponMount, WeaponType as WeaponTypeBase } from '../weapons/WeaponType
 
 // Ship Type Interface
 export interface ShipType {
-  type: string;
+  type: ResourceType;
 }
 
 // Ship Categories

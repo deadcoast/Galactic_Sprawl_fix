@@ -893,7 +893,7 @@ export const animationQualityManager = new D3AnimationQualityManager();
 export function createQualityAdaptiveVisualization<GElement extends Element = SVGSVGElement>(
   selector: string | GElement,
   animationId: string,
-  setup(...args: unknown[]) => unknown: (
+  setup: (
     container: d3.Selection<GElement, unknown, null, undefined>,
     settings: QualitySettings
   ) => void,
@@ -910,7 +910,7 @@ export function createQualityAdaptiveVisualization<GElement extends Element = SV
       selection.selectAll('*').remove();
 
       // Set up visualization with current quality settings
-      setup(...args: unknown[]) => unknown(selection, settings);
+      setup(selection, settings);
     },
     qualityOverrides
   );
@@ -963,7 +963,7 @@ export function bindDataWithQualityAdjustment<
 >(
   selection: d3.Selection<GElement, OldDatum, PElement, PDatum>,
   data: NewDatum[],
-  key(...args: unknown[]) => unknown?: (d: NewDatum, i: number, data: NewDatum[]) => string
+  key?: (d: NewDatum, i: number, data: NewDatum[]) => string
 ): d3.Selection<GElement, NewDatum, PElement, PDatum> {
   const settings = animationQualityManager.getCurrentSettings();
 
@@ -977,7 +977,7 @@ export function bindDataWithQualityAdjustment<
   }
 
   // Bind the data, potentially with a key function
-  return key(...args: unknown[]) => unknown ? selection.data(limitedData, key(...args: unknown[]) => unknown) : selection.data(limitedData);
+  return key ? selection.data(limitedData, key) : selection.data(limitedData);
 }
 
 /**

@@ -24,7 +24,7 @@ export const colonyRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
-        target: 'food',
+        target: ResourceType.FOOD,
         value: 500,
       },
       {
@@ -64,7 +64,7 @@ export const colonyRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_BELOW',
-        target: 'food',
+        target: ResourceType.FOOD,
         value: 1000,
       },
     ],

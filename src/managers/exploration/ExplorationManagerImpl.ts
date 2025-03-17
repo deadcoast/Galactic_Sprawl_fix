@@ -35,7 +35,7 @@ export interface StarSystem {
   id: string;
   name: string;
   type?: string;
-  resources?: string[];
+  resources?: ResourceType[];
   status: 'unmapped' | 'mapped' | 'scanning' | 'analyzed';
   assignedShips: string[];
   position: {
@@ -49,7 +49,7 @@ export interface StarSystem {
 export interface SystemSearchCriteria {
   name?: string;
   type?: string;
-  resources?: string[];
+  resources?: ResourceType[];
   status?: string;
 }
 
@@ -216,8 +216,8 @@ export class ExplorationManagerImpl extends AbstractBaseManager<BaseEvent> {
   public addStarSystem(system: {
     id: string;
     name: string;
-    type: string;
-    resources: string[];
+    type: ResourceType;
+    resources: ResourceType[];
     status: 'unmapped' | 'mapped' | 'scanning' | 'analyzed';
     position?: { x: number; y: number };
   }): StarSystem {

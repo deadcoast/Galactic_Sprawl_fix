@@ -325,7 +325,7 @@ export const ResourceTypeHelpers = {
    * @param type ResourceType enum or string
    * @returns Display name for the resource type
    */
-  getDisplayName(type: ResourceType | ResourceTypeString): string {
+  getDisplayName(type: ResourceType | ResourceTypeString): ResourceType {
     return this.getMetadata(type).displayName;
   },
 };

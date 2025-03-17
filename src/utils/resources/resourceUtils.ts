@@ -5,7 +5,7 @@ import { ResourceType } from '../../types/resources/ResourceTypes';
  * @param resourceType The resource type to get a display name for
  * @returns A formatted display name
  */
-export function getResourceDisplayName(resourceType: ResourceType): string {
+export function getResourceDisplayName(resourceType: ResourceType): ResourceType {
   return resourceType
     .toString()
     .replace(/_/g, ' ')

@@ -183,7 +183,7 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
     },
   },
   food: {
-    type: 'food',
+    type: ResourceType.FOOD,
     name: 'Food Production',
     description: 'Manages food production and biodomes',
     requirements: {

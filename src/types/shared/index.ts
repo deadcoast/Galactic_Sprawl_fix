@@ -29,7 +29,7 @@ export interface EventEmitter<T = unknown> {
  */
 
 export type ResourceOperation<T> = {
-  type: string;
+  type: ResourceType;
   data: T;
   timestamp: number;
   metadata?: Record<string, unknown>;
