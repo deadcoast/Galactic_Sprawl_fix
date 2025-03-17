@@ -1,15 +1,30 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import { EventEmitter } from 'events';
 import { thresholdEvents } from '../../contexts/ThresholdTypes';
 import { shipBehaviorManager } from '../../lib/ai/shipBehavior';
 import { shipMovementManager } from '../../lib/ai/shipMovement';
+import { EventEmitter } from '../../lib/events/EventEmitter';
 import { Position } from '../../types/core/GameTypes';
+import { ResourceType } from '../../types/resources/StandardizedResourceTypes';
+
+// Define ship status and task status as enums for type safety
+enum ShipStatus {
+  IDLE = 'idle',
+  MINING = 'mining',
+  RETURNING = 'returning',
+  MAINTENANCE = 'maintenance',
+}
+
+enum TaskStatus {
+  QUEUED = 'queued',
+  IN_PROGRESS = 'in-progress',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+}
 
 interface MiningShip {
   id: string;
   name: string;
   type: 'rockBreaker' | 'voidDredger';
-  status: 'idle' | 'mining' | 'returning' | 'maintenance';
+  status: ShipStatus;
   capacity: number;
   currentLoad: number;
   targetNode?: string;
@@ -22,7 +37,7 @@ interface MiningTask {
   nodeId: string;
   resourceType: ResourceType;
   priority: number;
-  status: 'queued' | 'in-progress' | 'completed' | 'failed';
+  status: TaskStatus;
   startTime?: number;
   endTime?: number;
 }
@@ -30,16 +45,13 @@ interface MiningTask {
 /**
  * Manages automated mining operations
  */
-class MiningShipManagerImpl extends EventEmitter {
-  private ships: Map<string, MiningShip>;
-  private tasks: Map<string, MiningTask>;
-  private nodeAssignments: Map<string, string>; // nodeId -> shipId
+export class MiningShipManagerImpl extends EventEmitter {
+  private ships: Map<string, MiningShip> = new Map();
+  private tasks: Map<string, MiningTask> = new Map();
+  private nodeAssignments: Map<string, string> = new Map(); // nodeId -> shipId
 
   constructor() {
     super();
-    this.ships = new Map();
-    this.tasks = new Map();
-    this.nodeAssignments = new Map();
 
     // Listen for threshold events
     thresholdEvents.subscribe(event => {
@@ -105,7 +117,7 @@ class MiningShipManagerImpl extends EventEmitter {
     if (details.type === 'below_minimum') {
       // Find available mining ship
       const availableShip = Array.from(this.ships.values()).find(
-        ship => ship.status === 'idle' && ship.currentLoad === 0
+        ship => ship.status === ShipStatus.IDLE && ship.currentLoad === 0
       );
 
       if (availableShip) {
@@ -121,11 +133,37 @@ class MiningShipManagerImpl extends EventEmitter {
   }
 
   /**
+   * Get resource type from node ID
+   */
+  private getResourceTypeFromNodeId(nodeId: string): ResourceType {
+    const resourceStr = nodeId.split('-')[0]; // e.g., "iron" from "iron-belt-1"
+    switch (resourceStr.toLowerCase()) {
+      case 'iron':
+        return ResourceType.IRON;
+      case 'copper':
+        return ResourceType.COPPER;
+      case ResourceType.GAS:
+        return ResourceType.GAS;
+      case ResourceType.MINERALS:
+        return ResourceType.MINERALS;
+      case ResourceType.EXOTIC:
+        return ResourceType.EXOTIC;
+      case ResourceType.PLASMA:
+        return ResourceType.PLASMA;
+      case ResourceType.ENERGY:
+        return ResourceType.ENERGY;
+      default:
+        return ResourceType.MINERALS; // Default to minerals
+    }
+  }
+
+  /**
    * Dispatches a ship to mine a resource
    */
   private dispatchShipToResource(shipId: string, resourceId: string): void {
     const ship = this.ships.get(shipId);
     if (!ship) {
+      console.warn(`[MiningShipManager] Ship ${shipId} not found`);
       return;
     }
 
@@ -134,16 +172,16 @@ class MiningShipManagerImpl extends EventEmitter {
       id: `mining-${Date.now()}`,
       shipId,
       nodeId: resourceId,
-      resourceType: resourceId.split('-')[0], // e.g., "iron" from "iron-belt-1"
+      resourceType: this.getResourceTypeFromNodeId(resourceId),
       priority: 1,
-      status: 'queued',
+      status: TaskStatus.QUEUED,
     };
 
     this.tasks.set(task.id, task);
     this.nodeAssignments.set(resourceId, shipId);
 
     // Update ship status
-    ship.status = 'mining';
+    ship.status = ShipStatus.MINING;
     ship.targetNode = resourceId;
 
     // Assign task to behavior system
@@ -170,15 +208,15 @@ class MiningShipManagerImpl extends EventEmitter {
 
     // Clear current task
     Array.from(this.tasks.values())
-      .filter(task => task.shipId === shipId && task.status === 'in-progress')
+      .filter(task => task.shipId === shipId && task.status === TaskStatus.IN_PROGRESS)
       .forEach(task => {
-        task.status = 'completed';
+        task.status = TaskStatus.COMPLETED;
         task.endTime = Date.now();
         this.nodeAssignments.delete(task.nodeId);
       });
 
     // Update ship status
-    ship.status = 'returning';
+    ship.status = ShipStatus.RETURNING;
     ship.targetNode = undefined;
 
     // Move ship back to base
@@ -202,10 +240,10 @@ class MiningShipManagerImpl extends EventEmitter {
    */
   update(deltaTime: number): void {
     this.ships.forEach(ship => {
-      if (ship.status === 'mining' && ship.targetNode) {
+      if (ship.status === ShipStatus.MINING && ship.targetNode) {
         // Update mining progress
         const task = Array.from(this.tasks.values()).find(
-          t => t.shipId === ship.id && t.status === 'in-progress'
+          t => t.shipId === ship.id && t.status === TaskStatus.IN_PROGRESS
         );
 
         if (task) {

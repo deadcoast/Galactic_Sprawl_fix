@@ -1,11 +1,9 @@
+import { EventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { Position } from '../../types/core/GameTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
-  FlowConnection,
   FlowNode,
   FlowNodeType,
-  ResourcePriority,
   ResourceType,
 } from '../../types/resources/StandardizedResourceTypes';
 import { ResourceFlowManager } from '../resource/ResourceFlowManager';
@@ -21,56 +19,49 @@ interface MiningShip {
 
 interface ResourceNode {
   id: string;
-  type: OldResourceType;
+  type: ResourceType;
   position: Position;
   efficiency: number;
 }
 
 interface ResourceTransfer {
-  type: OldResourceType;
+  type: ResourceType;
   source: string;
   target: string;
   amount: number;
   timestamp: number;
 }
 
-// Helper function to convert old ResourceType to new ResourceType enum
-function convertResourceType(oldType: OldResourceType): ResourceType {
-  switch (oldType) {
-    case ResourceType.MINERALS:
-      return ResourceType.MINERALS;
-    case ResourceType.ENERGY:
-      return ResourceType.ENERGY;
-    case ResourceType.POPULATION:
-      return ResourceType.POPULATION;
-    case ResourceType.RESEARCH:
-      return ResourceType.RESEARCH;
-    case ResourceType.PLASMA:
-      return ResourceType.PLASMA;
-    case ResourceType.GAS:
-      return ResourceType.GAS;
-    case ResourceType.EXOTIC:
-      return ResourceType.EXOTIC;
-    default:
-      return ResourceType.MINERALS; // Default fallback
-  }
+// Define event types
+interface MiningEvents {
+  shipRegistered: { shipId: string };
+  shipUnregistered: { shipId: string };
+  shipStatusUpdated: { shipId: string; status: string };
+  resourceTransferred: ResourceTransfer;
 }
 
-// Helper function to convert array of old ResourceTypes to new ResourceType enum array
-function convertResourceTypeArray(oldTypes: OldResourceType[]): ResourceType[] {
-  return oldTypes.map(convertResourceType);
-}
-
-// Helper function to create a ResourcePriority object
-function createResourcePriority(
-  oldType: OldResourceType,
-  priority: number,
-  consumers: string[] = []
-): ResourcePriority {
+// Helper function to create a flow node
+function createFlowNode(
+  id: string,
+  type: FlowNodeType,
+  resourceTypes: ResourceType[],
+  efficiency: number = 1.0,
+  isActive: boolean = true
+): FlowNode {
   return {
-    type: convertResourceType(oldType),
-    priority,
-    consumers,
+    id,
+    type,
+    name: `Mining Node ${id}`,
+    capacity: 1000,
+    currentLoad: 0,
+    efficiency,
+    status: isActive ? 'active' : 'inactive',
+    inputs: [],
+    outputs: resourceTypes.map(type => ({
+      type,
+      rate: 1.0,
+      maxCapacity: 1000,
+    })),
   };
 }
 
@@ -81,7 +72,7 @@ function createResourcePriority(
  * Connects mining operations with resource thresholds and flow optimization.
  */
 export class MiningResourceIntegration {
-  private miningManager: MiningShipManagerImpl;
+  private miningManager: MiningShipManagerImpl & EventEmitter<MiningEvents>;
   private thresholdManager: ResourceThresholdManager;
   private flowManager: ResourceFlowManager;
   private initialized: boolean = false;
@@ -89,7 +80,7 @@ export class MiningResourceIntegration {
     string,
     {
       id: string;
-      type: OldResourceType;
+      type: ResourceType;
       position: Position;
       efficiency: number;
     }
@@ -101,7 +92,7 @@ export class MiningResourceIntegration {
     thresholdManager: ResourceThresholdManager,
     flowManager: ResourceFlowManager
   ) {
-    this.miningManager = miningManager;
+    this.miningManager = miningManager as MiningShipManagerImpl & EventEmitter<MiningEvents>;
     this.thresholdManager = thresholdManager;
     this.flowManager = flowManager;
   }
@@ -114,7 +105,7 @@ export class MiningResourceIntegration {
       return;
     }
 
-    // Subscribe to mining events
+    // Subscribe to mining events using EventEmitter methods
     this.subscribeToMiningEvents();
 
     // Register existing mining nodes
@@ -132,62 +123,50 @@ export class MiningResourceIntegration {
    */
   private subscribeToMiningEvents(): void {
     // Listen for mining ship registration
-    this.miningManager.on('shipRegistered', (data: unknown) => {
-      // Type guard for ship registration data
-      if (!isShipRegistrationData(data)) {
-        return;
-      }
-
-      console.warn(`[MiningResourceIntegration] Mining ship registered: ${data.shipId}`);
+    this.miningManager.on('shipRegistered', (event: MiningEvents['shipRegistered']) => {
+      console.warn(`[MiningResourceIntegration] Mining ship registered: ${event.shipId}`);
 
       // Get the ship from the mining manager
-      const ship = this.getShipFromManager(data.shipId);
+      const ship = this.getShipFromManager(event.shipId);
       if (!ship) {
         return;
       }
 
       // Register the ship as a producer node in the flow manager
-      this.flowManager.registerNode({
-        id: `mining-ship-${data.shipId}`,
-        type: FlowNodeType.PRODUCER,
-        resources: convertResourceTypeArray([ResourceType.MINERALS, ResourceType.GAS, ResourceType.PLASMA, ResourceType.EXOTIC]),
-        priority: createResourcePriority(ResourceType.MINERALS, 5),
-        efficiency: ship.efficiency || 1.0,
-        active: ship.status === 'mining',
-      });
+      this.flowManager.registerNode(
+        createFlowNode(
+          `mining-ship-${event.shipId}`,
+          FlowNodeType.PRODUCER,
+          [ResourceType.MINERALS, ResourceType.GAS, ResourceType.PLASMA, ResourceType.EXOTIC],
+          ship.efficiency || 1.0,
+          ship.status === 'mining'
+        )
+      );
     });
 
     // Listen for mining ship unregistration
-    this.miningManager.on('shipUnregistered', (data: unknown) => {
-      // Type guard for ship registration data
-      if (!isShipRegistrationData(data)) {
-        return;
-      }
-
-      console.warn(`[MiningResourceIntegration] Mining ship unregistered: ${data.shipId}`);
+    this.miningManager.on('shipUnregistered', (event: MiningEvents['shipUnregistered']) => {
+      console.warn(`[MiningResourceIntegration] Mining ship unregistered: ${event.shipId}`);
 
       // Unregister the ship from the flow manager
-      this.flowManager.unregisterNode(`mining-ship-${data.shipId}`);
+      this.flowManager.unregisterNode(`mining-ship-${event.shipId}`);
     });
 
     // Listen for mining ship status changes
-    this.miningManager.on('shipStatusChanged', (data: unknown) => {
-      // Type guard for ship object
-      if (!isShipObject(data)) {
-        return;
-      }
-
+    this.miningManager.on('shipStatusUpdated', (event: MiningEvents['shipStatusUpdated']) => {
       // Get the node and update its active status
-      const node = this.flowManager.getNode(`mining-ship-${data.id}`);
+      const node = this.flowManager.getNode(`mining-ship-${event.shipId}`);
       if (node) {
         // Create a new node with updated active status
-        const updatedNode: FlowNode = {
-          ...node,
-          active: data.status === 'mining',
-        };
-
-        // Re-register the node with updated properties
-        this.flowManager.registerNode(updatedNode);
+        this.flowManager.registerNode(
+          createFlowNode(
+            node.id,
+            node.type,
+            node.outputs?.map(output => output.type) || [],
+            node.efficiency,
+            event.status === 'mining'
+          )
+        );
       }
     });
 
@@ -212,7 +191,7 @@ export class MiningResourceIntegration {
       // Create a transfer record
       const shipId = event.moduleId.replace('mining-ship-', '');
       const transfer: ResourceTransfer = {
-        type: resourceType as OldResourceType,
+        type: resourceType,
         source: `mining-ship-${shipId}`,
         target: `storage-${resourceType}`,
         amount: delta,
@@ -261,26 +240,9 @@ export class MiningResourceIntegration {
       });
 
       // Register the node in the flow manager
-      this.flowManager.registerNode({
-        id: `mining-node-${node.id}`,
-        type: FlowNodeType.PRODUCER,
-        resources: [convertResourceType(node.type)],
-        priority: createResourcePriority(node.type, 3),
-        efficiency: 1.0,
-        active: true,
-      });
-
-      // Create a connection to the storage
-      this.flowManager.registerConnection({
-        id: `mining-connection-${node.id}`,
-        source: `mining-node-${node.id}`,
-        target: `storage-${node.type}`,
-        resourceType: convertResourceType(node.type),
-        maxRate: 10, // Default extraction rate
-        currentRate: 0,
-        priority: createResourcePriority(node.type, 3),
-        active: true,
-      });
+      this.flowManager.registerNode(
+        createFlowNode(`mining-node-${node.id}`, FlowNodeType.PRODUCER, [node.type], 1.0, true)
+      );
     });
   }
 
@@ -297,7 +259,7 @@ export class MiningResourceIntegration {
     // Get unique resource types
     const resourceTypes = new Set<ResourceType>();
     resourceNodes.forEach((node: ResourceNode) => {
-      resourceTypes.add(convertResourceType(node.type));
+      resourceTypes.add(node.type);
     });
 
     // Create thresholds for each resource type
@@ -306,8 +268,7 @@ export class MiningResourceIntegration {
       const config: ThresholdConfig = {
         id: `mining-threshold-${type}`,
         threshold: {
-          // Use type assertion to resolve type compatibility issue
-          type: type as unknown as OldResourceType,
+          resourceId: type,
           min: 100,
           target: 500,
           max: 1000,
@@ -332,7 +293,7 @@ export class MiningResourceIntegration {
    */
   public registerMiningNode(
     id: string,
-    type: OldResourceType,
+    type: ResourceType,
     position: Position,
     efficiency: number = 1.0
   ): void {
@@ -345,147 +306,9 @@ export class MiningResourceIntegration {
     });
 
     // Register the node in the flow manager
-    this.flowManager.registerNode({
-      id: `mining-node-${id}`,
-      type: FlowNodeType.PRODUCER,
-      resources: [convertResourceType(type)],
-      priority: createResourcePriority(type, 3),
-      efficiency,
-      active: true,
-    });
-
-    // Create a connection to the storage
-    this.flowManager.registerConnection({
-      id: `mining-connection-${id}`,
-      source: `mining-node-${id}`,
-      target: `storage-${type}`,
-      resourceType: convertResourceType(type),
-      maxRate: 10 * efficiency, // Extraction rate based on efficiency
-      currentRate: 0,
-      priority: createResourcePriority(type, 3),
-      active: true,
-    });
-
-    // Update thresholds if needed
-    const existingThreshold = this.thresholdManager.getThresholdConfigs().find(config => {
-      // Convert the threshold type to string for comparison
-      const thresholdTypeStr = String(config.threshold.type);
-      const convertedTypeStr = String(convertResourceType(type));
-      return thresholdTypeStr === convertedTypeStr;
-    });
-
-    if (!existingThreshold) {
-      // Create a new threshold
-      const config: ThresholdConfig = {
-        id: `mining-threshold-${String(convertResourceType(type))}`,
-        threshold: {
-          // Use type assertion to resolve type compatibility issue
-          type: convertResourceType(type) as unknown as OldResourceType,
-          min: 100,
-          target: 500,
-          max: 1000,
-        },
-        actions: [
-          {
-            type: 'notification',
-            target: 'mining-manager',
-            message: `Low ${String(convertResourceType(type))} levels, prioritizing mining`,
-          },
-        ],
-        enabled: true,
-      };
-
-      // Register the threshold
-      this.thresholdManager.registerThreshold(config);
-    }
-  }
-
-  /**
-   * Unregister a mining node
-   */
-  public unregisterMiningNode(id: string): void {
-    // Remove from local storage
-    this.miningNodes.delete(id);
-
-    // Unregister from flow manager
-    this.flowManager.unregisterNode(`mining-node-${id}`);
-    this.flowManager.unregisterConnection(`mining-connection-${id}`);
-  }
-
-  /**
-   * Update mining node efficiency
-   */
-  public updateMiningNodeEfficiency(id: string, efficiency: number): void {
-    // Update local storage
-    const node = this.miningNodes.get(id);
-    if (node) {
-      node.efficiency = efficiency;
-    }
-
-    // Update flow manager - get the node first
-    const flowNode = this.flowManager.getNode(`mining-node-${id}`);
-    if (flowNode) {
-      // Create updated node with new efficiency
-      const updatedNode: FlowNode = {
-        ...flowNode,
-        efficiency,
-      };
-
-      // Re-register the node with updated properties
-      this.flowManager.registerNode(updatedNode);
-    }
-
-    // Update connection - get the connection first
-    const connection = this.flowManager.getConnection(`mining-connection-${id}`);
-    if (connection) {
-      // Create updated connection with new max rate
-      const updatedConnection: FlowConnection = {
-        ...connection,
-        maxRate: 10 * efficiency,
-      };
-
-      // Re-register the connection with updated properties
-      this.flowManager.registerConnection(updatedConnection);
-    }
-  }
-
-  /**
-   * Cleanup the integration
-   */
-  public cleanup(): void {
-    if (!this.initialized) {
-      return;
-    }
-
-    // Unregister all mining nodes
-    this.miningNodes.forEach((node, id) => {
-      // Use the node parameter to log more detailed information about the node being unregistered
-      console.warn(
-        `[MiningResourceIntegration] Unregistering mining node ${id} (type: ${node.type}, efficiency: ${node.efficiency.toFixed(2)})`
-      );
-      this.flowManager.unregisterNode(`mining-node-${id}`);
-      this.flowManager.unregisterConnection(`mining-connection-${id}`);
-    });
-
-    // Unregister all thresholds
-    this.miningNodes.forEach((node, _id) => {
-      const typeStr = String(convertResourceType(node.type));
-      this.thresholdManager.unregisterThreshold(`mining-threshold-${typeStr}`);
-    });
-
-    // Unregister all mining ships
-    const miningManagerWithShips = this.miningManager as unknown as {
-      ships: Map<string, MiningShip>;
-    };
-    const { ships } = miningManagerWithShips;
-    if (ships) {
-      ships.forEach((_ship: MiningShip, shipId: string) => {
-        this.flowManager.unregisterNode(`mining-ship-${shipId}`);
-      });
-    }
-
-    this.initialized = false;
-    console.warn('[MiningResourceIntegration] Mining resource integration cleaned up');
+    this.flowManager.registerNode(
+      createFlowNode(`mining-node-${id}`, FlowNodeType.PRODUCER, [type], efficiency, true)
+    );
   }
 
   /**
@@ -504,7 +327,7 @@ export class MiningResourceIntegration {
    */
   private getMiningNodesFromManager(): Array<{
     id: string;
-    type: OldResourceType;
+    type: ResourceType;
     position: Position;
     thresholds: { min: number; max: number };
   }> {
@@ -518,7 +341,7 @@ export class MiningResourceIntegration {
         string,
         {
           id: string;
-          type: OldResourceType;
+          type: ResourceType;
           position: Position;
           thresholds: { min: number; max: number };
         }
@@ -531,37 +354,6 @@ export class MiningResourceIntegration {
 
     return [];
   }
-}
-
-/**
- * Factory function to create and initialize the mining resource integration
- */
-export function createMiningResourceIntegration(
-  miningManager: MiningShipManagerImpl,
-  thresholdManager: ResourceThresholdManager,
-  flowManager: ResourceFlowManager
-): MiningResourceIntegration {
-  // Create the integration
-  const integration = new MiningResourceIntegration(miningManager, thresholdManager, flowManager);
-
-  // Initialize the integration
-  integration.initialize();
-
-  return integration;
-}
-
-/**
- * Type guard for ship object
- */
-function isShipObject(obj: unknown): obj is { id: string; status: string } {
-  return (
-    obj !== null &&
-    typeof obj === 'object' &&
-    'id' in obj &&
-    typeof obj.id === 'string' &&
-    'status' in obj &&
-    typeof obj.status === 'string'
-  );
 }
 
 /**
@@ -580,14 +372,5 @@ function isResourceEventData(data: unknown): data is {
     typeof data.resourceType === 'string' &&
     'delta' in data &&
     typeof data.delta === 'number'
-  );
-}
-
-/**
- * Type guard for ship registration data
- */
-function isShipRegistrationData(data: unknown): data is { shipId: string } {
-  return (
-    data !== null && typeof data === 'object' && 'shipId' in data && typeof data.shipId === 'string'
   );
 }

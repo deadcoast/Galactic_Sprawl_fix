@@ -1,4 +1,3 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
@@ -15,6 +14,7 @@ import {
   ResourceConditionValue,
 } from '../game/AutomationManager';
 import { gameLoopManager, UpdatePriority } from '../game/GameLoopManager';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * Global routine type
@@ -299,7 +299,7 @@ export class GlobalAutomationManager {
             // Simple implementation for resource below condition
             const { target, value } = condition;
             if (target && value !== undefined) {
-              const resourceAmount = this.getResourceAmount(target);
+              const resourceAmount = this.getResourceAmount(target as ResourceType);
               // Extract numeric value for comparison
               const threshold =
                 typeof value === 'number' ? value : (value as ResourceConditionValue).amount;
@@ -312,7 +312,7 @@ export class GlobalAutomationManager {
             // Simple implementation for resource above condition
             const { target, value } = condition;
             if (target && value !== undefined) {
-              const resourceAmount = this.getResourceAmount(target);
+              const resourceAmount = this.getResourceAmount(target as ResourceType);
               // Extract numeric value for comparison
               const threshold =
                 typeof value === 'number' ? value : (value as ResourceConditionValue).amount;
@@ -408,17 +408,14 @@ export class GlobalAutomationManager {
   }
 
   /**
-   * Helper method to get resource amount
+   * Get the current amount of a resource
+   * @param resourceType The type of resource to check
+   * @returns The current amount of the resource
    */
-  private getResourceAmount(_resourceType: ResourceType): number {
-    try {
-      // Try to access the resource manager through the automation manager
-      // This is a simplified implementation
-      return 100; // Default value for testing
-    } catch (error) {
-      console.warn('Error getting resource amount:', error);
-      return 0;
-    }
+  private getResourceAmount(resourceType: ResourceType): number {
+    // Implementation would get the actual resource amount from the game state
+    // For now, return a mock value
+    return 100;
   }
 
   /**

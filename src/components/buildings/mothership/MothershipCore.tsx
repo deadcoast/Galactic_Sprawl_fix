@@ -45,7 +45,7 @@ interface ResourceFlow {
   id: string;
   source: { x: number; y: number };
   target: { x: number; y: number };
-  type: ResourceType.ENERGY | ResourceType.RESEARCH | 'materials';
+  type: ResourceType.ENERGY | ResourceType.RESEARCH | ResourceType.MINERALS;
   rate: number;
 }
 
@@ -55,7 +55,7 @@ interface MothershipProps {
   modules: ModularBuilding['modules'];
   resourceLevels?: {
     [ResourceType.ENERGY]: number;
-    materials: number;
+    [ResourceType.MINERALS]: number;
     [ResourceType.RESEARCH]: number;
   };
   expansionProgress?: number;
@@ -69,14 +69,75 @@ interface MothershipProps {
 const resourceTypeToKey = {
   [ResourceType.ENERGY]: ResourceType.ENERGY,
   [ResourceType.RESEARCH]: ResourceType.RESEARCH,
-  materials: 'materials',
+  [ResourceType.MINERALS]: ResourceType.MINERALS,
 } as const;
+
+interface ModuleResourcePanelProps {
+  resourceFlow: {
+    energy: number;
+    materials: number;
+    research: number;
+  };
+}
+
+function ModuleResourcePanel({ resourceFlow }: ModuleResourcePanelProps) {
+  return (
+    <div className="mt-2 rounded-lg bg-gray-800 p-2 shadow-lg">
+      <div className="mb-1 text-xs font-medium text-gray-400">Resources</div>
+
+      <div className="space-y-2">
+        <div>
+          <div className="mb-1 flex justify-between text-xs">
+            <span className="text-yellow-400">Energy</span>
+            <span className="text-gray-400">{resourceFlow.energy}%</span>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
+            <div
+              className="h-full rounded-full bg-yellow-500"
+              style={{ width: `${resourceFlow.energy}%` }}
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-1 flex justify-between text-xs">
+            <span className="text-blue-400">Minerals</span>
+            <span className="text-gray-400">{resourceFlow.materials}%</span>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
+            <div
+              className="h-full rounded-full bg-blue-500"
+              style={{ width: `${resourceFlow.materials}%` }}
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-1 flex justify-between text-xs">
+            <span className="text-purple-400">Research</span>
+            <span className="text-gray-400">{resourceFlow.research}%</span>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
+            <div
+              className="h-full rounded-full bg-purple-500"
+              style={{ width: `${resourceFlow.research}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function MothershipCore({
   id,
   level,
   modules,
-  resourceLevels = { [ResourceType.ENERGY]: 50, materials: 50, [ResourceType.RESEARCH]: 50 },
+  resourceLevels = {
+    [ResourceType.ENERGY]: 50,
+    [ResourceType.MINERALS]: 50,
+    [ResourceType.RESEARCH]: 50,
+  },
   expansionProgress = 50,
   quality = 'medium',
   onModuleAttach,
@@ -149,7 +210,7 @@ export function MothershipCore({
       });
 
       // Materials or research flow (from module to center)
-      const resourceType = index % 2 === 0 ? 'materials' : ResourceType.RESEARCH;
+      const resourceType = index % 2 === 0 ? ResourceType.MINERALS : ResourceType.RESEARCH;
       const resourceKey = resourceTypeToKey[resourceType];
 
       flows.push({
@@ -183,7 +244,7 @@ export function MothershipCore({
               expansionLevel={expansionProgress}
               resourceFlow={{
                 energy: resourceLevels[ResourceType.ENERGY],
-                materials: resourceLevels.materials,
+                materials: resourceLevels[ResourceType.MINERALS],
                 research: resourceLevels[ResourceType.RESEARCH],
               }}
               quality={quality}
@@ -269,47 +330,13 @@ export function MothershipCore({
           <div className="mt-8 space-y-3">
             <h3 className="text-md font-semibold text-gray-300">Resource Levels</h3>
 
-            {/* Energy */}
-            <div>
-              <div className="mb-1 flex justify-between text-xs">
-                <span className="text-yellow-400">Energy</span>
-                <span className="text-gray-400">{resourceLevels[ResourceType.ENERGY]}%</span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
-                <div
-                  className="h-full rounded-full bg-yellow-500"
-                  style={{ width: `${resourceLevels[ResourceType.ENERGY]}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Materials */}
-            <div>
-              <div className="mb-1 flex justify-between text-xs">
-                <span className="text-blue-400">Materials</span>
-                <span className="text-gray-400">{resourceLevels.materials}%</span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
-                <div
-                  className="h-full rounded-full bg-blue-500"
-                  style={{ width: `${resourceLevels.materials}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Research */}
-            <div>
-              <div className="mb-1 flex justify-between text-xs">
-                <span className="text-purple-400">Research</span>
-                <span className="text-gray-400">{resourceLevels[ResourceType.RESEARCH]}%</span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
-                <div
-                  className="h-full rounded-full bg-purple-500"
-                  style={{ width: `${resourceLevels[ResourceType.RESEARCH]}%` }}
-                />
-              </div>
-            </div>
+            <ModuleResourcePanel
+              resourceFlow={{
+                energy: resourceLevels[ResourceType.ENERGY],
+                materials: resourceLevels[ResourceType.MINERALS],
+                research: resourceLevels[ResourceType.RESEARCH],
+              }}
+            />
           </div>
         </div>
       </div>

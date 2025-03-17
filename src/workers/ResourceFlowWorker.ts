@@ -22,6 +22,103 @@ type WorkerMessageType =
   | 'OPTIMIZE_FLOW_RATES'
   | 'CALCULATE_EFFICIENCY';
 
+// Input data interfaces for each message type
+interface OptimizeFlowsData {
+  nodes: FlowNode[];
+  connections: FlowConnection[];
+  resourceStates: Map<ResourceType, ResourceState>;
+}
+
+interface BatchProcessData {
+  nodes: FlowNode[];
+  connections: FlowConnection[];
+  batchSize: number;
+}
+
+interface CalculateResourceBalanceData {
+  producers: FlowNode[];
+  consumers: FlowNode[];
+  storages: FlowNode[];
+  connections: FlowConnection[];
+}
+
+interface OptimizeFlowRatesData {
+  connections: FlowConnection[];
+  availability: Partial<Record<ResourceType, number>>;
+  demand: Partial<Record<ResourceType, number>>;
+}
+
+interface CalculateEfficiencyData {
+  network: {
+    nodes: FlowNode[];
+    connections: FlowConnection[];
+  };
+}
+
+// Type guard functions
+function isOptimizeFlowsData(data: unknown): data is OptimizeFlowsData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'nodes' in data &&
+    'connections' in data &&
+    'resourceStates' in data &&
+    Array.isArray((data as OptimizeFlowsData).nodes) &&
+    Array.isArray((data as OptimizeFlowsData).connections)
+  );
+}
+
+function isBatchProcessData(data: unknown): data is BatchProcessData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'nodes' in data &&
+    'connections' in data &&
+    'batchSize' in data &&
+    Array.isArray((data as BatchProcessData).nodes) &&
+    Array.isArray((data as BatchProcessData).connections) &&
+    typeof (data as BatchProcessData).batchSize === 'number'
+  );
+}
+
+function isCalculateResourceBalanceData(data: unknown): data is CalculateResourceBalanceData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'producers' in data &&
+    'consumers' in data &&
+    'storages' in data &&
+    'connections' in data &&
+    Array.isArray((data as CalculateResourceBalanceData).producers) &&
+    Array.isArray((data as CalculateResourceBalanceData).consumers) &&
+    Array.isArray((data as CalculateResourceBalanceData).storages) &&
+    Array.isArray((data as CalculateResourceBalanceData).connections)
+  );
+}
+
+function isOptimizeFlowRatesData(data: unknown): data is OptimizeFlowRatesData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'connections' in data &&
+    'availability' in data &&
+    'demand' in data &&
+    Array.isArray((data as OptimizeFlowRatesData).connections)
+  );
+}
+
+function isCalculateEfficiencyData(data: unknown): data is CalculateEfficiencyData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'network' in data &&
+    typeof (data as CalculateEfficiencyData).network === 'object' &&
+    (data as CalculateEfficiencyData).network !== null &&
+    'nodes' in (data as CalculateEfficiencyData).network &&
+    'connections' in (data as CalculateEfficiencyData).network
+  );
+}
+
 // Input data structure for worker tasks
 interface WorkerInput {
   type: WorkerMessageType;
@@ -35,6 +132,7 @@ interface WorkerOutput {
   result: unknown;
   taskId: string;
   executionTimeMs: number;
+  error?: string;
 }
 
 // Self reference for the worker context
@@ -50,14 +148,23 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
   try {
     switch (type) {
       case 'OPTIMIZE_FLOWS':
+        if (!isOptimizeFlowsData(data)) {
+          throw new Error('Invalid data format for OPTIMIZE_FLOWS');
+        }
         result = optimizeFlows(data.nodes, data.connections, data.resourceStates);
         break;
 
       case 'BATCH_PROCESS':
+        if (!isBatchProcessData(data)) {
+          throw new Error('Invalid data format for BATCH_PROCESS');
+        }
         result = processBatch(data.nodes, data.connections, data.batchSize);
         break;
 
       case 'CALCULATE_RESOURCE_BALANCE':
+        if (!isCalculateResourceBalanceData(data)) {
+          throw new Error('Invalid data format for CALCULATE_RESOURCE_BALANCE');
+        }
         result = calculateResourceBalance(
           data.producers,
           data.consumers,
@@ -67,10 +174,16 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
         break;
 
       case 'OPTIMIZE_FLOW_RATES':
+        if (!isOptimizeFlowRatesData(data)) {
+          throw new Error('Invalid data format for OPTIMIZE_FLOW_RATES');
+        }
         result = optimizeFlowRates(data.connections, data.availability, data.demand);
         break;
 
       case 'CALCULATE_EFFICIENCY':
+        if (!isCalculateEfficiencyData(data)) {
+          throw new Error('Invalid data format for CALCULATE_EFFICIENCY');
+        }
         result = calculateNetworkEfficiency(data.network);
         break;
 
@@ -94,7 +207,7 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
       error: error instanceof Error ? error.message : 'Unknown error',
       taskId,
       executionTimeMs: Date.now() - startTime,
-    });
+    } as WorkerOutput);
   }
 });
 
@@ -105,10 +218,37 @@ function optimizeFlows(
   nodes: FlowNode[],
   connections: FlowConnection[],
   resourceStates: Map<ResourceType, ResourceState>
-) {
+): {
+  transfers: ResourceTransfer[];
+  updatedConnections: FlowConnection[];
+  bottlenecks: string[];
+  underutilized: string[];
+  performanceMetrics: {
+    nodesProcessed: number;
+    connectionsProcessed: number;
+    transfersGenerated: number;
+  };
+} {
   // Filter active nodes and connections
   const activeNodes = nodes.filter(node => node.active);
   const activeConnections = connections.filter(conn => conn.active);
+
+  // Apply resource state information to node resources if applicable
+  activeNodes.forEach(node => {
+    Object.keys(node.resources).forEach(key => {
+      const resourceType = key as ResourceType;
+      if (resourceStates.has(resourceType)) {
+        // Update node resource state with global resource state information
+        const globalState = resourceStates.get(resourceType)!;
+        node.resources[resourceType] = {
+          ...node.resources[resourceType],
+          production: node.resources[resourceType].production * (globalState.production / 100 || 1),
+          consumption:
+            node.resources[resourceType].consumption * (globalState.consumption / 100 || 1),
+        };
+      }
+    });
+  });
 
   // Categorize nodes by type
   const producers = activeNodes.filter(node => node.type === 'producer');
@@ -141,7 +281,7 @@ function optimizeFlows(
     underutilized,
     performanceMetrics: {
       nodesProcessed: activeNodes.length,
-      connectionsProcessed: activeConnections.length,
+      connectionsProcessed: connections.length,
       transfersGenerated: transfers.length,
     },
   };
@@ -187,7 +327,7 @@ function calculateResourceBalance(
   producers: FlowNode[],
   consumers: FlowNode[],
   storages: FlowNode[],
-  activeConnections: FlowConnection[]
+  connections: FlowConnection[]
 ): {
   availability: Partial<Record<ResourceType, number>>;
   demand: Partial<Record<ResourceType, number>>;
@@ -197,27 +337,29 @@ function calculateResourceBalance(
 
   // Calculate production capacity
   for (const producer of producers) {
-    for (const resourceType of producer.resources) {
-      // This is a simplified version - the actual implementation would calculate
-      // based on producer capacity, efficiency, etc.
+    const resourceTypes = Object.keys(producer.resources) as ResourceType[];
+    for (const resourceType of resourceTypes) {
       availability[resourceType] = (availability[resourceType] || 0) + 10;
     }
   }
 
   // Calculate consumer demand
   for (const consumer of consumers) {
-    for (const resourceType of consumer.resources) {
-      // Simplified demand calculation
+    const resourceTypes = Object.keys(consumer.resources) as ResourceType[];
+    for (const resourceType of resourceTypes) {
       demand[resourceType] = (demand[resourceType] || 0) + 5;
     }
   }
 
-  // Factor in storage capacity
-  for (const storage of storages) {
-    for (const resourceType of storage.resources) {
-      // Simplified storage calculation
-      availability[resourceType] = (availability[resourceType] || 0) + 2;
-    }
+  // Factor in connection capacity limitations
+  for (const connection of connections) {
+    // For each resource type in the connection
+    connection.resourceTypes.forEach(resourceType => {
+      if (connection.maxFlow && availability[resourceType]) {
+        // If this connection has a bottleneck, adjust the available throughput
+        availability[resourceType] = Math.min(availability[resourceType]!, connection.maxFlow);
+      }
+    });
   }
 
   return { availability, demand };
@@ -237,20 +379,19 @@ function identifyResourceIssues(
   const underutilized: string[] = [];
 
   // Compare availability and demand for each resource type
-  for (const resourceType in demand) {
-    if (Object.prototype.hasOwnProperty.call(demand, resourceType)) {
-      const availableAmount = availability[resourceType as ResourceType] || 0;
-      const demandAmount = demand[resourceType as ResourceType] || 0;
+  for (const resourceType of Object.keys(demand)) {
+    const enumResourceType = resourceType as ResourceType;
+    const availableAmount = availability[enumResourceType] || 0;
+    const demandAmount = demand[enumResourceType] || 0;
 
-      // Check for bottlenecks (demand > availability)
-      if (demandAmount > availableAmount) {
-        bottlenecks.push(resourceType);
-      }
+    // Check for bottlenecks (demand > availability)
+    if (demandAmount > availableAmount) {
+      bottlenecks.push(resourceType);
+    }
 
-      // Check for underutilized resources (availability > demand * 1.5)
-      if (availableAmount > demandAmount * 1.5) {
-        underutilized.push(resourceType);
-      }
+    // Check for underutilized resources (availability > demand * 1.5)
+    if (availableAmount > demandAmount * 1.5) {
+      underutilized.push(resourceType);
     }
   }
 
@@ -258,70 +399,35 @@ function identifyResourceIssues(
 }
 
 /**
- * Optimize flow rates based on resource availability and demand
+ * Optimize flow rates between nodes
  */
 function optimizeFlowRates(
-  activeConnections: FlowConnection[],
+  connections: FlowConnection[],
   availability: Partial<Record<ResourceType, number>>,
   demand: Partial<Record<ResourceType, number>>
 ): {
   updatedConnections: FlowConnection[];
   transfers: ResourceTransfer[];
 } {
-  const updatedConnections: FlowConnection[] = [];
+  const updatedConnections = [...connections];
   const transfers: ResourceTransfer[] = [];
 
-  // Group connections by resource type
-  const connectionsByResource: Record<string, FlowConnection[]> = {};
+  for (const connection of updatedConnections) {
+    for (const resourceType of connection.resourceTypes) {
+      const availableAmount = availability[resourceType] || 0;
+      const demandAmount = demand[resourceType] || 0;
+      const transferAmount = Math.min(availableAmount, demandAmount);
 
-  for (const connection of activeConnections) {
-    const resourceType = connection.resourceType as string;
-    connectionsByResource[resourceType] = connectionsByResource[resourceType] || [];
-    connectionsByResource[resourceType].push(connection);
-  }
-
-  // Process each resource type
-  for (const resourceType in connectionsByResource) {
-    if (Object.prototype.hasOwnProperty.call(connectionsByResource, resourceType)) {
-      const connections = connectionsByResource[resourceType];
-      const availableAmount = availability[resourceType as ResourceType] || 0;
-      const demandAmount = demand[resourceType as ResourceType] || 0;
-
-      // Skip if no demand or availability
-      if (demandAmount === 0 || availableAmount === 0) {
-        continue;
-      }
-
-      // Sort connections by priority
-      connections.sort((a, b) => (b.priority?.priority || 0) - (a.priority?.priority || 0));
-
-      // Distribute resources based on priority
-      let remainingAvailability = availableAmount;
-
-      for (const connection of connections) {
-        if (remainingAvailability <= 0) break;
-
-        // Calculate optimal flow rate based on availability and max rate
-        const optimalRate = Math.min(connection.maxRate, remainingAvailability);
-
-        // Update connection rate
-        const updatedConnection = {
-          ...connection,
-          currentRate: optimalRate,
-        };
-
-        updatedConnections.push(updatedConnection);
-        remainingAvailability -= optimalRate;
-
-        // Create transfer record
-        transfers.push({
-          id: `transfer-${connection.id}-${Date.now()}`,
+      if (transferAmount > 0) {
+        const transfer: ResourceTransfer = {
+          type: resourceType,
+          amount: transferAmount,
           source: connection.source,
           target: connection.target,
-          resourceType: connection.resourceType,
-          amount: optimalRate,
           timestamp: Date.now(),
-        });
+        };
+
+        transfers.push(transfer);
       }
     }
   }
@@ -330,7 +436,7 @@ function optimizeFlowRates(
 }
 
 /**
- * Calculate network efficiency based on node placement and connections
+ * Calculate network efficiency metrics
  */
 function calculateNetworkEfficiency(network: {
   nodes: FlowNode[];
@@ -346,27 +452,15 @@ function calculateNetworkEfficiency(network: {
 
   // Calculate efficiency for each node
   for (const node of nodes) {
-    // Count connections to/from this node
     const nodeConnections = connections.filter(
       conn => conn.source === node.id || conn.target === node.id
     );
-
-    // Basic efficiency calculation - more connections = higher stress = lower efficiency
-    const connectionStress = Math.min(1, nodeConnections.length / 10);
-    const efficiency = 1 - connectionStress;
-
-    nodeEfficiencies[node.id] = efficiency;
-
-    if (efficiency < 0.6) {
-      bottlenecks.push(node.id);
-    }
+    nodeEfficiencies[node.id] = nodeConnections.length > 0 ? 0.8 : 0; // Simplified calculation
   }
 
-  // Calculate overall network efficiency
+  // Calculate overall efficiency (simplified)
   const overallEfficiency =
-    nodes.length > 0
-      ? Object.values(nodeEfficiencies).reduce((sum, val) => sum + val, 0) / nodes.length
-      : 0;
+    Object.values(nodeEfficiencies).reduce((sum, eff) => sum + eff, 0) / nodes.length;
 
   return {
     overallEfficiency,

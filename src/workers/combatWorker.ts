@@ -42,8 +42,8 @@ interface BatchedUpdate {
  * @param obj The object to check
  * @returns True if the object is a valid Hazard, false otherwise
  */
-// @ts-expect-error - This function is documented for future use in the combat hazard system
-function __isHazard(obj: unknown): obj is Hazard {
+
+function isHazard(obj: unknown): obj is Hazard {
   return (
     obj !== null &&
     obj !== undefined &&
@@ -113,12 +113,16 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
   }
 };
 
+/**
+ * Process a batch of units and hazards for combat simulation
+ */
 function processBatch(units: CombatUnit[], hazards: Hazard[]): void {
+  // Validate hazards first
+  const validHazards = hazards.filter(hazard => isHazard(hazard));
+
+  // Process each unit
   units.forEach(unit => {
-    // Check if unit status is an object with a main property
-    if (typeof unit.status === 'object' && unit.status.main === 'active') {
-      processEngagingUnit(unit, hazards);
-    }
+    processEngagingUnit(unit, validHazards);
   });
 }
 

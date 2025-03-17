@@ -50,7 +50,17 @@ export enum ResourceRarity {
   COMMON = 'common',
   UNCOMMON = 'uncommon',
   RARE = 'rare',
-  LEGENDARY = 'legendary',
+  VERY_RARE = 'very_rare',
+  EXOTIC = ResourceType.EXOTIC,
+}
+
+/**
+ * Resource priority configuration
+ */
+export interface ResourcePriorityConfig {
+  type: ResourceType;
+  priority: number;
+  consumers: string[];
 }
 
 /**
@@ -604,15 +614,6 @@ export interface FlowConnection {
   currentRate?: number;
   priority?: ResourcePriorityConfig;
   active?: boolean;
-}
-
-/**
- * Resource priority configuration
- */
-export interface ResourcePriorityConfig {
-  type: ResourceType;
-  priority: number;
-  consumers: string[];
 }
 
 /**

@@ -85,7 +85,7 @@ interface AttackData {
   targetId?: string;
 }
 
-interface WarShipEvents {
+interface WarShipEvents extends Record<string, unknown> {
   shipRegistered: { shipId: string };
   shipUnregistered: { shipId: string };
   taskAssigned: { shipId: string; task: CombatTask };

@@ -1,10 +1,5 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import {
-  ResourceContainer,
-  ResourceCost,
-  ResourceState,
-  ResourceType,
-} from '../../types/resources/ResourceTypes';
+import { ResourceContainer } from '../../types/resources/ResourceConversionTypes';
+import { ResourceCost, ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
 import { validateResourceCost } from '../../utils/resources/resourceValidation';
 
 /**
@@ -129,7 +124,7 @@ export class ResourceCostManager {
         // Check specific container
         const container = this.containers.get(containerId);
         if (container && container.resources) {
-          available = container.resources.get(type) || 0;
+          available = this.getAvailableResources(container, type);
         }
       } else {
         // Check global resource state
@@ -234,8 +229,7 @@ export class ResourceCostManager {
         // Apply to specific container
         const container = this.containers.get(containerId);
         if (container && container.resources) {
-          const currentAmount = container.resources.get(type) || 0;
-          container.resources.set(type, Math.max(0, currentAmount - amount));
+          this.updateContainerResources(container, type, amount);
         }
       } else {
         // Apply to global resource state
@@ -340,5 +334,32 @@ export class ResourceCostManager {
     this.discounts.clear();
     this.taxes.clear();
     this.costHistory = [];
+  }
+
+  /**
+   * Get available resources from a container
+   */
+  private getAvailableResources(container: ResourceContainer, type: ResourceType): number {
+    if (!container || !container.resources) {
+      return 0;
+    }
+
+    return container.resources.get(type) || 0;
+  }
+
+  /**
+   * Update resources in a container
+   */
+  private updateContainerResources(
+    container: ResourceContainer,
+    type: ResourceType,
+    amount: number
+  ): void {
+    if (!container || !container.resources) {
+      return;
+    }
+
+    const currentAmount = container.resources.get(type) || 0;
+    container.resources.set(type, Math.max(0, currentAmount - amount));
   }
 }

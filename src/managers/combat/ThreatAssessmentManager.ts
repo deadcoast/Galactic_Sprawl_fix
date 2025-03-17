@@ -1,5 +1,5 @@
+import { EventEmitter } from '../../lib/events/EventEmitter';
 import { CombatUnit } from '../../types/combat/CombatTypes';
-import { EventEmitter } from '../../utils/EventEmitter';
 import { getDistance } from '../../utils/combat/scanRadiusUtils';
 import { DetectableObject } from './ObjectDetectionSystem';
 

@@ -1,5 +1,5 @@
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { Position } from '../../types/core/GameTypes';
-import { EventEmitter } from '../../utils/EventEmitter';
 import { particleSystemManager } from './ParticleSystemManager';
 
 interface Effect {
@@ -19,7 +19,7 @@ interface EffectEvents {
   [key: string]: unknown;
 }
 
-export class EffectLifecycleManager extends EventEmitter<EffectEvents> {
+export class EffectLifecycleManager extends TypedEventEmitter<EffectEvents> {
   private static instance: EffectLifecycleManager;
   private effects: Map<string, Effect>;
   private cleanupInterval: number = 0;

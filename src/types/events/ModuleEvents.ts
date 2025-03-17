@@ -82,59 +82,20 @@ export interface ModuleEfficiencyEvent extends ModuleEvent {
 /**
  * Interface defining all module-related events
  */
-export interface ModuleEvents {
-  /**
-   * Emitted when a module is created
-   */
+type ModuleEventMap = {
   'module:created': ModuleEvent;
-
-  /**
-   * Emitted when a module is destroyed
-   */
   'module:destroyed': ModuleEvent;
-
-  /**
-   * Emitted when a module's state changes
-   */
   'module:state-changed': ModuleStateEvent;
-
-  /**
-   * Emitted when a module produces resources
-   */
   'module:resource-produced': ModuleResourceEvent;
-
-  /**
-   * Emitted when a module consumes resources
-   */
   'module:resource-consumed': ModuleResourceEvent;
-
-  /**
-   * Emitted when a module is upgraded
-   */
   'module:upgraded': ModuleUpgradeEvent;
-
-  /**
-   * Emitted when a module is attached to another module
-   */
   'module:attached': ModuleAttachmentEvent;
-
-  /**
-   * Emitted when a module is detached from another module
-   */
   'module:detached': ModuleAttachmentEvent;
-
-  /**
-   * Emitted when a module is damaged
-   */
   'module:damaged': ModuleDamageEvent;
-
-  /**
-   * Emitted when a module is repaired
-   */
   'module:repaired': ModuleRepairEvent;
-
-  /**
-   * Emitted when a module's efficiency changes
-   */
   'module:efficiency-changed': ModuleEfficiencyEvent;
-}
+};
+
+export type ModuleEvents = {
+  [K in keyof ModuleEventMap]: ModuleEventMap[K];
+};

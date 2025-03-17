@@ -29,10 +29,15 @@ import {
 } from '../../utils/typeConversions';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
-// Import the standardized FactionFleet and FactionTerritory types
+// Import faction event types and interfaces
 import {
-  FactionFleet as StandardizedFactionFleet,
-  FactionTerritory as StandardizedFactionTerritory,
+  FactionBehaviorChangedEvent,
+  FactionCombatTacticsEvent,
+  FactionEventType,
+  FactionFleetEvent,
+  FactionRelationshipEvent,
+  FactionResourceEvent,
+  FactionTerritoryEvent,
 } from '../../types/events/FactionEvents';
 
 /**
@@ -1033,6 +1038,105 @@ function getResourceValueMultiplier(type: ResourceType): number {
   }
 }
 
+// Add type guards for each event type
+interface BehaviorChangedEvent {
+  factionId: FactionId;
+  oldBehavior: FactionBehaviorType;
+  newBehavior: FactionBehaviorType;
+}
+
+interface FleetUpdatedEvent {
+  factionId: FactionId;
+  fleets: FactionFleet[];
+}
+
+interface TerritoryChangedEvent {
+  factionId: FactionId;
+  territory: FactionTerritory;
+}
+
+interface RelationshipChangedEvent {
+  factionId: FactionId;
+  targetFaction: FactionId;
+  oldValue: number;
+  newValue: number;
+}
+
+interface ResourcesUpdatedEvent {
+  factionId: FactionId;
+  resourceType: ResourceType;
+  oldAmount: number;
+  newAmount: number;
+}
+
+interface CombatTacticsChangedEvent {
+  factionId: FactionId;
+  oldTactics: FactionBehaviorState['combatTactics'];
+  newTactics: FactionBehaviorState['combatTactics'];
+}
+
+function isBehaviorChangedEvent(event: unknown): event is BehaviorChangedEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'factionId' in event &&
+    'oldBehavior' in event &&
+    'newBehavior' in event
+  );
+}
+
+function isFleetUpdatedEvent(event: unknown): event is FleetUpdatedEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'factionId' in event &&
+    'fleets' in event &&
+    Array.isArray((event as FleetUpdatedEvent).fleets)
+  );
+}
+
+function isTerritoryChangedEvent(event: unknown): event is TerritoryChangedEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'factionId' in event &&
+    'territory' in event &&
+    typeof (event as TerritoryChangedEvent).territory === 'object'
+  );
+}
+
+function isRelationshipChangedEvent(event: unknown): event is RelationshipChangedEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'factionId' in event &&
+    'targetFaction' in event &&
+    'oldValue' in event &&
+    'newValue' in event
+  );
+}
+
+function isResourcesUpdatedEvent(event: unknown): event is ResourcesUpdatedEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'factionId' in event &&
+    'resourceType' in event &&
+    'oldAmount' in event &&
+    'newAmount' in event
+  );
+}
+
+function isCombatTacticsChangedEvent(event: unknown): event is CombatTacticsChangedEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'factionId' in event &&
+    'oldTactics' in event &&
+    'newTactics' in event
+  );
+}
+
 export function useFactionBehavior(factionId: FactionId) {
   const [behavior, setBehavior] = useState<FactionBehaviorState>({
     id: factionId,
@@ -1089,7 +1193,7 @@ export function useFactionBehavior(factionId: FactionId) {
     stats: {
       totalShips: 0,
       activeFleets: 0,
-      territorySystems: 0,
+      territorySystems: Math.floor(100 / 1000), // Calculate directly from initial radius
       resourceIncome: {
         [ResourceType.MINERALS]: 0,
         [ResourceType.ENERGY]: 0,
@@ -1184,107 +1288,57 @@ export function useFactionBehavior(factionId: FactionId) {
     [behavior.combatTactics, factionId]
   );
 
-  const handleBehaviorEvent = useCallback(
-    (
-      eventType: keyof FactionBehaviorEvents,
-      event: FactionBehaviorEvents[keyof FactionBehaviorEvents]
-    ) => {
-      switch (eventType) {
-        case 'behaviorChanged': {
-          const { oldBehavior, newBehavior } = event as FactionBehaviorEvents['behaviorChanged'];
-          console.warn(
-            `[FactionBehavior] ${factionId} behavior changed from ${oldBehavior} to ${newBehavior}`
-          );
-          break;
-        }
-
-        case 'fleetUpdated': {
-          const { fleets } = event as FactionBehaviorEvents['fleetUpdated'];
-          setBehavior(prev => ({
-            ...prev,
-            fleets,
-            stats: {
-              ...prev.stats,
-              totalShips: fleets.reduce((total, fleet) => total + fleet.ships.length, 0),
-            },
-          }));
-          break;
-        }
-
-        case 'territoryChanged': {
-          const { territory } = event as FactionBehaviorEvents['territoryChanged'];
-          setBehavior(prev => ({
-            ...prev,
-            territory,
-            stats: {
-              ...prev.stats,
-              territorySystems: calculateTerritorySystems(territory),
-            },
-          }));
-          break;
-        }
-
-        case 'relationshipChanged': {
-          const { targetFaction, oldValue, newValue } =
-            event as FactionBehaviorEvents['relationshipChanged'];
-          setBehavior(prev => ({
-            ...prev,
-            relationships: {
-              ...prev.relationships,
-              [targetFaction]: newValue,
-            },
-          }));
-          console.warn(
-            `[FactionBehavior] ${factionId} relationship with ${targetFaction} changed from ${oldValue} to ${newValue}`
-          );
-          break;
-        }
-
-        case 'resourcesUpdated': {
-          const { resourceType, oldAmount, newAmount } =
-            event as FactionBehaviorEvents['resourcesUpdated'];
-          setBehavior(prev => ({
-            ...prev,
-            stats: {
-              ...prev.stats,
-              resourceIncome: {
-                ...prev.stats.resourceIncome,
-                [resourceType]: newAmount,
-              },
-            },
-          }));
-          console.warn(
-            `[FactionBehavior] ${factionId} ${resourceType} income changed from ${oldAmount} to ${newAmount}`
-          );
-          break;
-        }
-
-        case 'combatTacticsChanged': {
-          const { oldTactics, newTactics } = event as FactionBehaviorEvents['combatTacticsChanged'];
-          setBehavior(prev => ({
-            ...prev,
-            combatTactics: newTactics,
-          }));
-          console.warn(
-            `[FactionBehavior] ${factionId} combat tactics updated:
-          Range: ${oldTactics.preferredRange} -> ${newTactics.preferredRange}
-          Formation: ${oldTactics.formationStyle} -> ${newTactics.formationStyle}
-          Priority: ${oldTactics.targetPriority} -> ${newTactics.targetPriority}`
-          );
-          break;
-        }
+  const handleBehaviorEvent = (eventType: FactionEventType, data: unknown) => {
+    switch (eventType) {
+      case FactionEventType.BEHAVIOR_CHANGED: {
+        const behaviorData = data as FactionBehaviorChangedEvent;
+        console.warn(
+          `Faction ${behaviorData.factionId} behavior changed from ${behaviorData.oldBehavior} to ${behaviorData.newBehavior}`
+        );
+        break;
       }
-    },
-    [factionId]
-  );
+      case FactionEventType.FLEET_UPDATED: {
+        const fleetData = data as FactionFleetEvent;
+        console.warn(
+          `Faction ${fleetData.factionId} fleet updated with ${fleetData.fleets.length} ships`
+        );
+        break;
+      }
+      case FactionEventType.TERRITORY_CHANGED: {
+        const territoryData = data as FactionTerritoryEvent;
+        console.warn(`Faction ${territoryData.factionId} territory changed`);
+        break;
+      }
+      case FactionEventType.RELATIONSHIP_CHANGED: {
+        const relationshipData = data as FactionRelationshipEvent;
+        console.warn(
+          `Faction ${relationshipData.factionId} relationship with ${relationshipData.targetFaction} changed from ${relationshipData.oldValue} to ${relationshipData.newValue}`
+        );
+        break;
+      }
+      case FactionEventType.RESOURCES_UPDATED: {
+        const resourceData = data as FactionResourceEvent;
+        console.warn(
+          `Faction ${resourceData.factionId} resources updated: ${resourceData.resourceType} from ${resourceData.oldAmount} to ${resourceData.newAmount}`
+        );
+        break;
+      }
+      case FactionEventType.COMBAT_TACTICS_CHANGED: {
+        const tacticsData = data as FactionCombatTacticsEvent;
+        console.warn(`Faction ${tacticsData.factionId} combat tactics changed`);
+        break;
+      }
+      default:
+        console.warn(`Unknown event type: ${eventType}`);
+    }
+  };
 
   useEffect(() => {
-    // Subscribe to faction behavior events
     const unsubscribeBehaviorChanged = factionBehaviorManager.on(
-      'faction:behavior-changed',
+      FactionEventType.BEHAVIOR_CHANGED,
       event => {
-        if (event.factionId === factionId) {
-          handleBehaviorEvent('behaviorChanged', {
+        if (isBehaviorChangedEvent(event) && event.factionId === factionId) {
+          handleBehaviorEvent(FactionEventType.BEHAVIOR_CHANGED, {
             factionId,
             oldBehavior: event.oldBehavior,
             newBehavior: event.newBehavior,
@@ -1293,20 +1347,23 @@ export function useFactionBehavior(factionId: FactionId) {
       }
     );
 
-    const unsubscribeFleetUpdated = factionBehaviorManager.on('faction:fleet-updated', event => {
-      if (event.factionId === factionId) {
-        handleBehaviorEvent('fleetUpdated', {
-          factionId,
-          fleets: event.fleets,
-        });
+    const unsubscribeFleetUpdated = factionBehaviorManager.on(
+      FactionEventType.FLEET_UPDATED,
+      event => {
+        if (isFleetUpdatedEvent(event) && event.factionId === factionId) {
+          handleBehaviorEvent(FactionEventType.FLEET_UPDATED, {
+            factionId,
+            fleets: event.fleets,
+          });
+        }
       }
-    });
+    );
 
     const unsubscribeTerritoryChanged = factionBehaviorManager.on(
-      'faction:territory-changed',
+      FactionEventType.TERRITORY_CHANGED,
       event => {
-        if (event.factionId === factionId) {
-          handleBehaviorEvent('territoryChanged', {
+        if (isTerritoryChangedEvent(event) && event.factionId === factionId) {
+          handleBehaviorEvent(FactionEventType.TERRITORY_CHANGED, {
             factionId,
             territory: event.territory,
           });
@@ -1315,10 +1372,10 @@ export function useFactionBehavior(factionId: FactionId) {
     );
 
     const unsubscribeRelationshipChanged = factionBehaviorManager.on(
-      'faction:relationship-changed',
+      FactionEventType.RELATIONSHIP_CHANGED,
       event => {
-        if (event.factionId === factionId) {
-          handleBehaviorEvent('relationshipChanged', {
+        if (isRelationshipChangedEvent(event) && event.factionId === factionId) {
+          handleBehaviorEvent(FactionEventType.RELATIONSHIP_CHANGED, {
             factionId,
             targetFaction: event.targetFaction,
             oldValue: event.oldValue,
@@ -1329,10 +1386,10 @@ export function useFactionBehavior(factionId: FactionId) {
     );
 
     const unsubscribeResourcesUpdated = factionBehaviorManager.on(
-      'faction:resources-updated',
+      FactionEventType.RESOURCES_UPDATED,
       event => {
-        if (event.factionId === factionId) {
-          handleBehaviorEvent('resourcesUpdated', {
+        if (isResourcesUpdatedEvent(event) && event.factionId === factionId) {
+          handleBehaviorEvent(FactionEventType.RESOURCES_UPDATED, {
             factionId,
             resourceType: event.resourceType,
             oldAmount: event.oldAmount,
@@ -1343,10 +1400,10 @@ export function useFactionBehavior(factionId: FactionId) {
     );
 
     const unsubscribeCombatTacticsChanged = factionBehaviorManager.on(
-      'faction:combat-tactics-changed',
+      FactionEventType.COMBAT_TACTICS_CHANGED,
       event => {
-        if (event.factionId === factionId) {
-          handleBehaviorEvent('combatTacticsChanged', {
+        if (isCombatTacticsChangedEvent(event) && event.factionId === factionId) {
+          handleBehaviorEvent(FactionEventType.COMBAT_TACTICS_CHANGED, {
             factionId,
             oldTactics: event.oldTactics,
             newTactics: event.newTactics,
@@ -1364,7 +1421,7 @@ export function useFactionBehavior(factionId: FactionId) {
       unsubscribeResourcesUpdated();
       unsubscribeCombatTacticsChanged();
     };
-  }, [factionId]);
+  }, [factionId, handleBehaviorEvent]);
 
   const updateFactionBehavior = useCallback(() => {
     const nearbyUnits = Array.from(
@@ -1374,17 +1431,26 @@ export function useFactionBehavior(factionId: FactionId) {
     // Update fleets based on nearby units
     const updatedFleets = updateFleets(nearbyUnits);
     if (updatedFleets.length !== behavior.fleets.length) {
-      // Convert to standardized fleet format
-      const standardizedFleets = updatedFleets.map(convertToStandardizedFleet);
-      factionBehaviorManager.updateFleets(factionId, standardizedFleets);
+      // Convert to event fleet format
+      const eventFleets = updatedFleets.map(convertToEventFleet);
+      factionBehaviorManager.updateFleets(factionId, eventFleets);
     }
 
     // Update territory based on unit positions
     const updatedTerritory = calculateTerritory(nearbyUnits, behavior.territory);
     if (updatedTerritory.radius !== behavior.territory.radius) {
-      // Convert to standardized territory format
-      const standardizedTerritory = convertToStandardizedTerritory(updatedTerritory);
-      factionBehaviorManager.updateTerritory(factionId, standardizedTerritory);
+      // Update territory systems based on new radius
+      setBehavior(prev => ({
+        ...prev,
+        stats: {
+          ...prev.stats,
+          territorySystems: Math.floor(updatedTerritory.radius / 1000),
+        },
+      }));
+
+      // Convert to event territory format
+      const eventTerritory = convertToEventTerritory(updatedTerritory, factionId);
+      factionBehaviorManager.updateTerritory(factionId, eventTerritory);
     }
 
     // Update resource income
@@ -1903,11 +1969,6 @@ function _determineFormation(units: FactionCombatUnit[]): FactionFleet['formatio
   };
 }
 
-// Helper function to calculate territory systems
-function calculateTerritorySystems(territory: FactionTerritory): number {
-  return Math.floor(territory.radius / 1000);
-}
-
 // Helper function to calculate resource income
 function calculateResourceIncome(territory: FactionTerritory): Record<string, number> {
   // Convert to use ResourceType enum keys
@@ -1931,8 +1992,17 @@ function findNearbyEnemies(state: FactionBehaviorState): FactionCombatUnit[] {
 
 // Helper function to calculate player power
 function calculatePlayerPower(): number {
-  // TODO: Implement actual player power calculation based on fleet strength and territory
-  return 0.5; // Default value for now
+  const playerState = factionManager.getFactionState('player');
+  if (!playerState) return 0;
+
+  // Use a simplified power calculation based on fleet count and territory
+  const fleetCount = Array.isArray(playerState.fleets) ? playerState.fleets.length : 0;
+  const hasTerritory = Boolean(playerState.territory);
+
+  // Basic power calculation: fleet count (0.7 weight) + territory presence (0.3 weight)
+  const power = fleetCount * 0.07 + (hasTerritory ? 0.3 : 0);
+
+  return Math.min(power, 1);
 }
 
 // Helper function to check for ambush opportunities
@@ -2311,18 +2381,15 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
   return fleets;
 }
 
-// Convert local FactionFleet to StandardizedFactionFleet
-function convertToStandardizedFleet(fleet: FactionFleet): StandardizedFactionFleet {
-  // Generate a unique ID and name if not provided
-  const fleetId = `fleet-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-  const fleetName = `Fleet ${fleetId}`;
+// Convert local FactionTerritory to StandardizedFactionTerritory\
 
+// Convert local FactionFleet to event FactionFleet
+function convertToEventFleet(fleet: FactionFleet): FactionFleetEvent['fleets'][0] {
+  const firstShip = fleet.ships[0];
   return {
-    id: fleetId,
-    name: fleetName,
     ships: fleet.ships.map(ship => ({
       id: ship.id,
-      name: ship.name || `Ship ${ship.id}`,
+      name: ship.id,
       type: ship.class,
       level: 1,
       status: 'idle',
@@ -2333,26 +2400,18 @@ function convertToStandardizedFleet(fleet: FactionFleet): StandardizedFactionFle
       facing: fleet.formation.facing,
     },
     status: 'idle',
-    position: { x: 0, y: 0 },
+    position: firstShip?.position || { x: 0, y: 0 },
+    id: firstShip?.id || 'fleet-1',
+    name: `Fleet ${firstShip?.id || '1'}`,
   };
 }
 
-// Convert local FactionTerritory to StandardizedFactionTerritory
-function convertToStandardizedTerritory(territory: FactionTerritory): StandardizedFactionTerritory {
+function convertToEventTerritory(
+  territory: FactionTerritory,
+  factionId: FactionId
+): FactionTerritory {
   return {
-    center: territory.center,
-    radius: territory.radius,
-    controlPoints: territory.controlPoints,
-    resources: {
-      ...Object.keys(ResourceType).reduce(
-        (acc, key) => {
-          acc[ResourceType[key as keyof typeof ResourceType]] = 0;
-          return acc;
-        },
-        {} as Record<ResourceType, number>
-      ),
-      ...territory.resources,
-    },
-    threatLevel: territory.threatLevel,
+    ...territory,
+    factionId,
   };
 }

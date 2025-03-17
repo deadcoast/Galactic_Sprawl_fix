@@ -1,10 +1,10 @@
+import { EventEmitter } from '../../lib/events/EventEmitter';
 import {
   EnvironmentalFactors,
   ScannerClass,
   calculateScanRadius,
   getDistance,
 } from '../../utils/combat/scanRadiusUtils';
-import { EventEmitter } from '../../utils/EventEmitter';
 
 /**
  * Events emitted by the ObjectDetectionSystem

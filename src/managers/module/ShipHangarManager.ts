@@ -1,8 +1,8 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { v4 as uuidv4 } from 'uuid';
 import { SHIP_BLUEPRINTS, ShipBlueprint } from '../../config/ShipBlueprints';
+import { WeaponEffectType } from '../../effects/types_effects/WeaponEffects';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { EventEmitter } from '../../lib/utils/EventEmitter';
 import {
   ShipHangarManager as IShipHangarManager,
   ShipBuildQueueItem,
@@ -23,13 +23,17 @@ import { PlayerShipCategory, PlayerShipClass } from '../../types/ships/PlayerShi
 import {
   WeaponCategory,
   WeaponConfig,
+  WeaponInstance,
   WeaponMount,
   WeaponMountPosition,
   WeaponMountSize,
+  WeaponState,
+  WeaponStats,
   WeaponStatus,
 } from '../../types/weapons/WeaponTypes';
 import { ResourceManager } from '../game/ResourceManager';
 import { techTreeManager } from '../game/techTreeManager';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 import { OfficerManager } from './OfficerManager';
 
 // Extend CommonShip to include state
@@ -67,7 +71,7 @@ interface ShipState {
  * Handles ship production, docking, and hangar bay management
  */
 export class ShipHangarManager
-  extends EventEmitter<ShipHangarEvents>
+  extends TypedEventEmitter<ShipHangarEvents>
   implements IShipHangarManager
 {
   private state: ShipHangarState;
@@ -550,7 +554,7 @@ export class ShipHangarManager
     // Initialize ship stats if needed
     if (!ship.stats || Object.keys(ship.stats).length === 0) {
       const shipClass = this.getShipClass(ship);
-      ship.stats = this._getBaseStats(shipClass);
+      ship.stats = this.getBaseStats(shipClass);
     }
 
     targetBay.ships.push(ship);
@@ -730,51 +734,11 @@ export class ShipHangarManager
         energy: blueprint.baseStats.energy,
         maxEnergy: blueprint.baseStats.energy,
         speed: blueprint.baseStats.speed,
-        turnRate: 2, // Default value, can be adjusted based on ship type
+        turnRate: 2,
         cargo: blueprint.baseStats.cargo || 0,
-        weapons:
-          blueprint.weapons?.map(weapon => ({
-            id: uuidv4(),
-            size: 'medium' as WeaponMountSize,
-            position: 'front' as WeaponMountPosition,
-            rotation: 0,
-            allowedCategories: ['machineGun' as WeaponCategory],
-            currentWeapon: {
-              config: {
-                id: weapon.name.toLowerCase().replace(/\s+/g, '-'),
-                name: weapon.name,
-                category: 'machineGun' as WeaponCategory,
-                tier: blueprint.tier,
-                baseStats: {
-                  damage: weapon.damage,
-                  range: weapon.range,
-                  accuracy: 0.8, // Default value
-                  rateOfFire: 1 / weapon.cooldown,
-                  energyCost: 5, // Default value
-                  cooldown: weapon.cooldown,
-                  effects: [], // Can be configured in blueprint
-                },
-                visualAsset: `weapons/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`,
-                mountRequirements: {
-                  size: 'medium' as WeaponMountSize,
-                  power: 20,
-                },
-              },
-              state: {
-                status: 'ready' as WeaponStatus,
-                currentStats: {
-                  damage: weapon.damage,
-                  range: weapon.range,
-                  accuracy: 0.8,
-                  rateOfFire: 1 / weapon.cooldown,
-                  energyCost: 5,
-                  cooldown: weapon.cooldown,
-                  effects: [],
-                },
-                effects: [],
-              },
-            },
-          })) || [],
+        weapons: (blueprint.weapons || []).map(weapon =>
+          this.createWeaponMount(weapon, blueprint.tier)
+        ),
         abilities:
           blueprint.abilities?.map(ability => ({
             id: uuidv4(),
@@ -795,15 +759,15 @@ export class ShipHangarManager
             },
           })) || [],
         defense: {
-          armor: Math.floor(blueprint.baseStats.hull * 0.3), // 30% of hull as armor
+          armor: Math.floor(blueprint.baseStats.hull * 0.3),
           shield: blueprint.baseStats.shield,
-          evasion: 0.2, // Default value
-          regeneration: Math.floor(blueprint.baseStats.shield * 0.02), // 2% shield regen
+          evasion: 0.2,
+          regeneration: Math.floor(blueprint.baseStats.shield * 0.02),
         },
         mobility: {
           speed: blueprint.baseStats.speed,
-          turnRate: 2, // Default value
-          acceleration: blueprint.baseStats.speed * 0.5, // 50% of speed as acceleration
+          turnRate: 2,
+          acceleration: blueprint.baseStats.speed * 0.5,
         },
       },
       abilities:
@@ -856,10 +820,7 @@ export class ShipHangarManager
     return classMap[ship.name] || 'spitflare'; // Default to spitflare if name not found
   }
 
-  /**
-   * Get ship category from class
-   */
-  private _getShipCategory(shipClass: PlayerShipClass): PlayerShipCategory {
+  private getShipCategory(shipClass: PlayerShipClass): PlayerShipCategory {
     if (shipClass.includes('void-dredger')) {
       return 'mining';
     }
@@ -869,40 +830,82 @@ export class ShipHangarManager
     return 'war';
   }
 
-  /**
-   * Get base stats for a ship class
-   */
-  private _getBaseStats(shipClass: PlayerShipClass): CommonShipStats {
-    const blueprint = SHIP_BLUEPRINTS.find(bp => bp.shipClass === shipClass);
+  private createWeaponMount(
+    weapon: { name: string; damage: number; range: number; cooldown: number },
+    tier: number
+  ): WeaponMount {
+    const damageEffect: WeaponEffectType = {
+      id: uuidv4(),
+      type: 'damage',
+      duration: 0,
+      strength: weapon.damage,
+      magnitude: weapon.damage,
+      name: 'Direct Damage',
+      description: 'Deals direct damage to target',
+      damageType: 'physical',
+      penetration: 0,
+    };
+
+    const weaponStats: WeaponStats = {
+      damage: weapon.damage,
+      range: weapon.range,
+      accuracy: 0.8,
+      rateOfFire: 1 / weapon.cooldown,
+      energyCost: 5,
+      cooldown: weapon.cooldown,
+      effects: [damageEffect],
+      special: {
+        armorPenetration: 0,
+        shieldDamageBonus: 0,
+        areaOfEffect: 0,
+        disableChance: 0,
+      },
+    };
+
+    const weaponState: WeaponState = {
+      status: 'ready' as WeaponStatus,
+      currentStats: weaponStats,
+      effects: [damageEffect],
+      currentAmmo: undefined,
+      maxAmmo: undefined,
+    };
+
+    const weaponInstance: WeaponInstance = {
+      config: {
+        id: weapon.name.toLowerCase().replace(/\s+/g, '-'),
+        name: weapon.name,
+        category: 'machineGun' as WeaponCategory,
+        tier: tier,
+        baseStats: weaponStats,
+        visualAsset: `weapons/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`,
+        mountRequirements: {
+          size: 'medium' as WeaponMountSize,
+          power: 20,
+        },
+      },
+      state: weaponState,
+    };
+
+    return {
+      id: uuidv4(),
+      size: 'medium' as WeaponMountSize,
+      position: 'front' as WeaponMountPosition,
+      rotation: 0,
+      allowedCategories: ['machineGun' as WeaponCategory],
+      currentWeapon: weaponInstance,
+    };
+  }
+
+  private getBaseStats(shipClass: PlayerShipClass): CommonShipStats {
+    const blueprint = SHIP_BLUEPRINTS.find((bp: ShipBlueprint) => bp.shipClass === shipClass);
     if (!blueprint) {
-      // Return default stats if no blueprint found
-      return {
-        health: 100,
-        maxHealth: 100,
-        shield: 50,
-        maxShield: 50,
-        energy: 100,
-        maxEnergy: 100,
-        speed: 10,
-        turnRate: 2,
-        cargo: 100,
-        weapons: [],
-        abilities: [],
-        defense: {
-          armor: 30,
-          shield: 50,
-          evasion: 0.2,
-          regeneration: 1,
-        },
-        mobility: {
-          speed: 10,
-          turnRate: 2,
-          acceleration: 5,
-        },
-      };
+      throw new Error(`No blueprint found for ship class ${shipClass}`);
     }
 
-    // Create stats from blueprint
+    const weapons: WeaponMount[] = (blueprint.weapons || []).map(weapon =>
+      this.createWeaponMount(weapon, blueprint.tier)
+    );
+
     return {
       health: blueprint.baseStats.hull,
       maxHealth: blueprint.baseStats.hull,
@@ -911,51 +914,9 @@ export class ShipHangarManager
       energy: blueprint.baseStats.energy,
       maxEnergy: blueprint.baseStats.energy,
       speed: blueprint.baseStats.speed,
-      turnRate: 2, // Default value, can be adjusted based on ship type
+      turnRate: 2,
       cargo: blueprint.baseStats.cargo || 0,
-      weapons:
-        blueprint.weapons?.map(weapon => ({
-          id: uuidv4(),
-          size: 'medium' as WeaponMountSize,
-          position: 'front' as WeaponMountPosition,
-          rotation: 0,
-          allowedCategories: ['machineGun' as WeaponCategory],
-          currentWeapon: {
-            config: {
-              id: weapon.name.toLowerCase().replace(/\s+/g, '-'),
-              name: weapon.name,
-              category: 'machineGun' as WeaponCategory,
-              tier: blueprint.tier,
-              baseStats: {
-                damage: weapon.damage,
-                range: weapon.range,
-                accuracy: 0.8, // Default value
-                rateOfFire: 1 / weapon.cooldown,
-                energyCost: 5, // Default value
-                cooldown: weapon.cooldown,
-                effects: [], // Can be configured in blueprint
-              },
-              visualAsset: `weapons/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`,
-              mountRequirements: {
-                size: 'medium' as WeaponMountSize,
-                power: 20,
-              },
-            },
-            state: {
-              status: 'ready' as WeaponStatus,
-              currentStats: {
-                damage: weapon.damage,
-                range: weapon.range,
-                accuracy: 0.8,
-                rateOfFire: 1 / weapon.cooldown,
-                energyCost: 5,
-                cooldown: weapon.cooldown,
-                effects: [],
-              },
-              effects: [],
-            },
-          },
-        })) || [],
+      weapons,
       abilities:
         blueprint.abilities?.map(ability => ({
           id: uuidv4(),
@@ -976,15 +937,15 @@ export class ShipHangarManager
           },
         })) || [],
       defense: {
-        armor: Math.floor(blueprint.baseStats.hull * 0.3), // 30% of hull as armor
+        armor: Math.floor(blueprint.baseStats.hull * 0.3),
         shield: blueprint.baseStats.shield,
-        evasion: 0.2, // Default value
-        regeneration: Math.floor(blueprint.baseStats.shield * 0.02), // 2% shield regen
+        evasion: 0.2,
+        regeneration: Math.floor(blueprint.baseStats.shield * 0.02),
       },
       mobility: {
         speed: blueprint.baseStats.speed,
-        turnRate: 2, // Default value
-        acceleration: blueprint.baseStats.speed * 0.5, // 50% of speed as acceleration
+        turnRate: 2,
+        acceleration: blueprint.baseStats.speed * 0.5,
       },
     };
   }
@@ -1013,7 +974,7 @@ export class ShipHangarManager
   public getShipsByCategory(category: PlayerShipCategory): CommonShip[] {
     return this.getDockedShips().filter(ship => {
       const shipClass = this.getShipClass(ship);
-      return this._getShipCategory(shipClass) === category;
+      return this.getShipCategory(shipClass) === category;
     });
   }
 
@@ -1495,7 +1456,7 @@ export class ShipHangarManager
           id: ability.id,
         },
       };
-      this._applyShipEffect(shipWithState, shipEffect);
+      this.applyShipEffect(shipWithState, shipEffect);
     }
 
     // Set up ability timer
@@ -1638,7 +1599,19 @@ export class ShipHangarManager
           rateOfFire: 1 / weapon.cooldown,
           energyCost: 5,
           cooldown: weapon.cooldown,
-          effects: [],
+          effects: [
+            {
+              id: uuidv4(),
+              type: 'damage',
+              duration: 0,
+              magnitude: weapon.damage,
+              strength: weapon.damage,
+              name: 'Direct Damage',
+              description: 'Deals direct damage to target',
+              damageType: 'physical',
+              penetration: 0,
+            },
+          ] as WeaponEffectType[],
         },
         visualAsset: `weapons/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`,
         mountRequirements: {
@@ -1696,7 +1669,19 @@ export class ShipHangarManager
       state: {
         status: 'ready',
         currentStats: { ...weaponConfig.baseStats },
-        effects: [],
+        effects: [
+          {
+            id: uuidv4(),
+            type: 'damage',
+            duration: 0,
+            magnitude: weaponConfig.baseStats.damage,
+            strength: weaponConfig.baseStats.damage,
+            name: 'Direct Damage',
+            description: 'Deals direct damage to target',
+            damageType: 'physical',
+            penetration: 0,
+          },
+        ] as WeaponEffectType[],
       },
     };
 
@@ -1828,7 +1813,7 @@ export class ShipHangarManager
     });
 
     // Update efficiency based on bay status
-    const efficiencyBonus = this._getBayEfficiencyBonus(bay);
+    const efficiencyBonus = this.getBayEfficiencyBonus(bay);
     bay.efficiency = Math.min(1.0, bay.efficiency + 0.1 * efficiencyBonus);
     bay.lastMaintenance = Date.now();
 
@@ -1842,7 +1827,7 @@ export class ShipHangarManager
   /**
    * Get bay efficiency bonus
    */
-  private _getBayEfficiencyBonus(bay: ShipHangarBay): number {
+  private getBayEfficiencyBonus(bay: ShipHangarBay): number {
     // Base multiplier from tier
     const tierMultiplier = 1 + (bay.tier - 1) * 0.1; // 10% per tier
 
@@ -2159,7 +2144,7 @@ export class ShipHangarManager
   /**
    * Apply an effect to a ship
    */
-  private _applyShipEffect(ship: ShipWithState, effect: ShipEffect): void {
+  private applyShipEffect(ship: ShipWithState, effect: ShipEffect): void {
     // Initialize ship state if needed
     if (!ship.state) {
       ship.state = { activeEffects: [], effectHistory: [] };

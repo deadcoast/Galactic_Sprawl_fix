@@ -1,7 +1,10 @@
 /**
  * Generic Singleton implementation that can be extended by services and managers.
  * Provides a common pattern for singleton instances throughout the application.
- * 
+ *
+ * The type parameter _T represents the specific singleton class that extends this base class.
+ * This allows for type-safe getInstance() method that returns the correct type.
+ *
  * @example
  * ```typescript
  * class MyService extends Singleton<MyService> {
@@ -9,19 +12,20 @@
  *     super();
  *     // initialization code
  *   }
- *   
+ *
  *   public doSomething(): void {
  *     // implementation
  *   }
  * }
- * 
+ *
  * // Usage:
  * const service = MyService.getInstance();
  * service.doSomething();
  * ```
  */
-export abstract class Singleton<T> {
-  private static instances = new Map<string, unknown>();
+export abstract class Singleton<_T> {
+  // Use Singleton<object> to allow storing any singleton type
+  private static instances = new Map<string, Singleton<object>>();
 
   protected constructor() {
     // Protected constructor to prevent direct instantiation

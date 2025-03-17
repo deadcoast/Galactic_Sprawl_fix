@@ -6,8 +6,9 @@ import {
   WeaponEffectType,
 } from '../../effects/types_effects/WeaponEffects';
 import { Effect } from '../../types/core/GameTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import { WeaponCategory, WeaponSystem } from '../../types/weapons/WeaponTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+
 interface WeaponLike {
   id: string;
   type: WeaponCategory | string;
@@ -33,8 +34,8 @@ interface WeaponLike {
  * - cooldown: Time in seconds before the ability can be used again
  * - damage: Base damage value for offensive abilities
  */
-// @ts-expect-error - This interface is documented for future use in the ship ability system
-interface __CommonShipAbility {
+
+interface CommonShipAbility {
   id?: string;
   name: string;
   type?: string;

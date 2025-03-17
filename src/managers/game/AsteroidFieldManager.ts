@@ -1,8 +1,8 @@
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { EventEmitter } from '../../lib/utils/EventEmitter';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 interface Hazard {
   id: string;
@@ -39,7 +39,7 @@ interface AsteroidFieldState {
   resourceNodes: Map<string, { fieldId: string; type: ResourceType; amount: number }>;
 }
 
-interface AsteroidFieldEvents {
+interface AsteroidFieldEvents extends Record<string, unknown> {
   fieldGenerated: { fieldId: string; position: Position };
   fieldDepleted: { fieldId: string };
   resourceDiscovered: { fieldId: string; resourceType: ResourceType; amount: number };
@@ -54,10 +54,9 @@ interface AsteroidFieldEvents {
   resourceExtracted: { nodeId: string; type: ResourceType; amount: number; remaining: number };
   shipHazardCollision: { shipId: string; hazardId: string; effect: Hazard['effect'] };
   shipPositionUpdated: { shipId: string; position: Position; inField: boolean };
-  [key: string]: unknown;
 }
 
-export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
+export class AsteroidFieldManager extends TypedEventEmitter<AsteroidFieldEvents> {
   private state: AsteroidFieldState = {
     fields: new Map(),
     activeHazards: new Set(),
@@ -184,7 +183,11 @@ export class AsteroidFieldManager extends EventEmitter<AsteroidFieldEvents> {
     };
 
     // Generate initial resources
-    const resourceTypes: ResourceType[] = [ResourceType.MINERALS, ResourceType.GAS, ResourceType.EXOTIC];
+    const resourceTypes: ResourceType[] = [
+      ResourceType.MINERALS,
+      ResourceType.GAS,
+      ResourceType.EXOTIC,
+    ];
     resourceTypes.forEach(type => {
       const amount = Math.floor(1000 + Math.random() * 4000 * density);
       field.resources.set(type, amount);

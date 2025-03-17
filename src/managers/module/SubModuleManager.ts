@@ -9,8 +9,8 @@ import {
   SubModuleRequirements,
   SubModuleType,
 } from '../../types/buildings/ModuleTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ResourceManager } from '../game/ResourceManager';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 import { moduleManager } from './ModuleManager';
 
 // Create an instance of ResourceManager
@@ -31,12 +31,6 @@ const resourceManager = new ResourceManager();
  * This will be critical for the upcoming module progression system where
  * upgrades can trigger complex chains of effects throughout the station.
  */
-// @ts-expect-error - This interface is documented for future use in the module upgrade system
-interface _ModuleUpgradedEventData {
-  moduleId: string;
-  newLevel: number;
-  previousLevel?: number;
-}
 
 /**
  * Interface for module activation event data
@@ -53,11 +47,6 @@ interface _ModuleUpgradedEventData {
  * synchronization system where timing between module activations
  * can create synergy effects.
  */
-// @ts-expect-error - This interface is documented for future use in the module activation system
-interface _ModuleActivatedEventData {
-  moduleId: string;
-  timestamp?: number;
-}
 
 /**
  * Interface for module deactivation event data
@@ -73,12 +62,6 @@ interface _ModuleActivatedEventData {
  * which will be important for the upcoming module reliability system where
  * frequent unexpected deactivations can lead to permanent damage.
  */
-// @ts-expect-error - This interface is documented for future use in the module deactivation system
-interface _ModuleDeactivatedEventData {
-  moduleId: string;
-  reason?: string;
-  timestamp?: number;
-}
 
 /**
  * Sub-module attachment result

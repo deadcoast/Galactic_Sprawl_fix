@@ -1,9 +1,5 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import {
-  ResourceExchangeRate,
-  ResourceState,
-  ResourceType,
-} from '../../types/resources/ResourceTypes';
+import { ResourceExchangeRate } from '../../types/resources/ResourceConversionTypes';
+import { ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
 
 /**
  * Exchange transaction
@@ -43,8 +39,8 @@ export interface ExchangeRateModifier {
  * Extended resource exchange rate with additional properties
  */
 export interface ExtendedRate extends ResourceExchangeRate {
-  sourceType?: ResourceType;
-  targetType?: ResourceType;
+  sourceType: ResourceType;
+  targetType: ResourceType;
 }
 
 /**
@@ -106,6 +102,7 @@ export class ResourceExchangeManager {
     this.registerExchangeRate({
       fromType: ResourceType.MINERALS,
       toType: ResourceType.ENERGY,
+      baseRate: 0.5,
       rate: 0.5, // 2 minerals = 1 energy
       minAmount: 10,
       maxAmount: 1000,
@@ -115,6 +112,7 @@ export class ResourceExchangeManager {
     this.registerExchangeRate({
       fromType: ResourceType.ENERGY,
       toType: ResourceType.MINERALS,
+      baseRate: 1.8,
       rate: 1.8, // 1 energy = 1.8 minerals
       minAmount: 5,
       maxAmount: 500,
@@ -124,6 +122,7 @@ export class ResourceExchangeManager {
     this.registerExchangeRate({
       fromType: ResourceType.MINERALS,
       toType: ResourceType.RESEARCH,
+      baseRate: 0.2,
       rate: 0.2, // 5 minerals = 1 research
       minAmount: 20,
       maxAmount: 2000,
@@ -133,6 +132,7 @@ export class ResourceExchangeManager {
     this.registerExchangeRate({
       fromType: ResourceType.ENERGY,
       toType: ResourceType.RESEARCH,
+      baseRate: 0.3,
       rate: 0.3, // 3.33 energy = 1 research
       minAmount: 10,
       maxAmount: 1000,
@@ -142,6 +142,7 @@ export class ResourceExchangeManager {
     this.registerExchangeRate({
       fromType: ResourceType.GAS,
       toType: ResourceType.ENERGY,
+      baseRate: 2.0,
       rate: 2.0, // 1 gas = 2 energy
       minAmount: 5,
       maxAmount: 500,
@@ -151,6 +152,7 @@ export class ResourceExchangeManager {
     this.registerExchangeRate({
       fromType: ResourceType.PLASMA,
       toType: ResourceType.ENERGY,
+      baseRate: 3.0,
       rate: 3.0, // 1 plasma = 3 energy
       minAmount: 5,
       maxAmount: 300,
@@ -160,6 +162,7 @@ export class ResourceExchangeManager {
     this.registerExchangeRate({
       fromType: ResourceType.EXOTIC,
       toType: ResourceType.RESEARCH,
+      baseRate: 5.0,
       rate: 5.0, // 1 exotic = 5 research
       minAmount: 1,
       maxAmount: 100,

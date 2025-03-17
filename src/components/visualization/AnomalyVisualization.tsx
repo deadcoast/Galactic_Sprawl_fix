@@ -1,5 +1,5 @@
-import { Box, CircularProgress, Paper, Typography } from '@mui/material';
-import * as React from "react";
+import { CircularProgress, Paper, Typography } from '@mui/material';
+import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useService } from '../../hooks/services/useService';
 import { DataPoint, anomalyDetectionService } from '../../services/AnomalyDetectionService';
@@ -17,15 +17,15 @@ interface ChartCoordination {
 
 // Mock useChartCoordination until it's implemented
 const useChartCoordination = ({
-  chartId,
-  groupId,
-  initialState,
+  _chartId,
+  _groupId,
+  _initialState,
   onViewportChange,
   onHighlightChange,
 }: {
-  chartId: string;
-  groupId?: string;
-  initialState: {
+  _chartId: string;
+  _groupId?: string;
+  _initialState: {
     viewport: ViewportState;
     highlight: DataPoint | null;
   };
@@ -65,9 +65,9 @@ export function AnomalyVisualization({
 
   // Setup chart coordination
   const { updateViewport, updateHighlight } = useChartCoordination({
-    chartId,
-    groupId,
-    initialState: {
+    _chartId: chartId,
+    _groupId: groupId,
+    _initialState: {
       viewport,
       highlight: null,
     },
@@ -185,10 +185,17 @@ export function AnomalyVisualization({
   );
 
   if (isLoading) {
+    const boxStyle = {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height,
+    };
+
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height={height}>
+      <div style={boxStyle}>
         <CircularProgress />
-      </Box>
+      </div>
     );
   }
 
@@ -206,7 +213,7 @@ export function AnomalyVisualization({
         onWheel={handleWheel}
       />
       {hoveredPoint && (
-        <Box mt={1}>
+        <div style={{ marginTop: '8px' }}>
           <Typography variant="body2">
             Point ID: {hoveredPoint.id}
             {(anomalyService as typeof anomalyDetectionService)
@@ -217,7 +224,7 @@ export function AnomalyVisualization({
                 </div>
               ))}
           </Typography>
-        </Box>
+        </div>
       )}
     </Paper>
   );

@@ -9,10 +9,12 @@ import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { Singleton } from '../../lib/patterns/Singleton';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceConversionRecipe as ExtendedResourceConversionRecipe } from '../../types/resources/ResourceConversionTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import {
   ChainExecutionStatus,
   ConversionChain,
+  ConverterFlowNode,
   FlowNode,
   ResourceConversionRecipe,
 } from '../../types/resources/StandardizedResourceTypes';
@@ -142,13 +144,12 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
       estimatedEndTime: 0,
       progress: 0,
       resourceTransfers: [],
-      stepStatus: chain.steps.map(recipeId => ({
+      stepStatus: chain.steps.map((recipeId: string) => ({
         recipeId,
         status: 'pending',
         startTime: 0,
         endTime: 0,
         processId: '',
-        converterId: '',
       })),
     };
 
@@ -161,62 +162,41 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
   }
 
   /**
-   * Process the next step in a conversion chain
+   * Process next step in a conversion chain
    */
   private processNextChainStep(chainId: string): void {
-    const chainStatus = this.chainExecutions.get(chainId);
-    if (!chainStatus || !chainStatus.active || chainStatus.paused) {
+    const status = this.chainExecutions.get(chainId);
+    if (!status || !status.active || status.completed || status.failed) {
       return;
     }
 
     // Get the current step
-    const currentStepIndex = chainStatus.currentStepIndex;
-    if (currentStepIndex >= chainStatus.stepStatus.length) {
+    const currentStepIndex = status.currentStepIndex;
+    if (currentStepIndex >= status.recipeIds.length) {
       // Chain is complete
-      chainStatus.completed = true;
-      chainStatus.active = false;
+      status.completed = true;
+      status.active = false;
       return;
     }
 
-    const step = chainStatus.stepStatus[currentStepIndex];
-    if (step.status !== 'pending') {
-      // Step is already in progress or completed
-      return;
-    }
+    const currentRecipeId = status.recipeIds[currentStepIndex];
+    const stepStatus = status.stepStatus[currentStepIndex];
 
-    // Get the recipe for this step
-    const recipeId = step.recipeId;
-    const recipe = this.conversionRecipes.get(recipeId);
-    if (!recipe) {
-      // Recipe not found
-      step.status = 'failed';
-      chainStatus.failed = true;
-      chainStatus.active = false;
-      chainStatus.errorMessage = `Recipe ${recipeId} not found`;
+    // If step is already in progress or completed, skip
+    if (stepStatus.status !== 'pending') {
       return;
     }
 
     // Find a converter that can process this recipe
-    const converters = this.getConvertersForRecipe(recipeId);
-
+    const converters = this.getConvertersForRecipe(currentRecipeId);
     if (converters.length === 0) {
-      // No converter found
-      step.status = 'failed';
-      chainStatus.failed = true;
-      chainStatus.active = false;
-      chainStatus.errorMessage = `No converter found for recipe ${recipeId}`;
+      status.failed = true;
+      status.errorMessage = `No converters available for recipe ${currentRecipeId}`;
       return;
     }
 
-    // Sort converters by priority
-    converters.sort((a, b) => {
-      const aEfficiency = a.efficiency || 1;
-      const bEfficiency = b.efficiency || 1;
-      return bEfficiency - aEfficiency; // Higher efficiency first
-    });
-
-    // Try to start the conversion on the first available converter
-    let started = false;
+    // Find an available converter
+    let availableConverter: ConverterFlowNode | null = null;
     for (const converter of converters) {
       // Check if converter has capacity
       if (
@@ -228,43 +208,67 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
         continue;
       }
 
-      // Try to start the conversion
-      const result = this.startConversionProcess(converter.id, recipeId);
-      if (result.success) {
-        // Update step status
-        step.status = 'in_progress';
-        step.startTime = Date.now();
-        step.processId = result.processId;
-        step.converterId = converter.id;
-        started = true;
-
-        // Add to completed processes for tracking
-        if (result.processId) {
-          const process = this.processingQueue.find(p => p.processId === result.processId);
-          if (process) {
-            this._completedProcesses.push({ ...process });
-          }
-        }
-
-        break;
-      }
+      availableConverter = converter;
+      break;
     }
 
-    if (!started) {
-      // Could not start conversion
-      step.status = 'failed';
-      chainStatus.failed = true;
-      chainStatus.active = false;
-      chainStatus.errorMessage = 'Could not start conversion process';
+    if (!availableConverter) {
+      return; // No available converters, try again later
+    }
+
+    // Start conversion process
+    const result = this.startConversionProcess(availableConverter.id, currentRecipeId);
+    if (!result.success) {
+      status.failed = true;
+      status.errorMessage =
+        result.error || `Failed to start conversion for recipe ${currentRecipeId}`;
+      return;
+    }
+
+    // Update step status
+    stepStatus.status = 'in-progress';
+    stepStatus.startTime = Date.now();
+    stepStatus.processId = result.processId;
+    stepStatus.converterId = availableConverter.id;
+
+    // Emit event for chain step started
+    if (this.parentManager) {
+      // Create event data
+      const eventData = {
+        // Use a valid EventType enum value
+        type: EventType.RESOURCE_UPDATED, // Use an existing EventType value
+        chainId,
+        stepIndex: currentStepIndex,
+        recipeId: currentRecipeId,
+        processId: result.processId,
+        converterId: availableConverter.id,
+        // Add required BaseEvent properties
+        moduleId: 'resource-conversion-manager',
+        moduleType: 'resource-manager' as ModuleType,
+        timestamp: Date.now(),
+        data: {
+          type: 'CHAIN_STEP_STARTED',
+          chainId,
+          stepIndex: currentStepIndex,
+          recipeId: currentRecipeId,
+          processId: result.processId,
+          converterId: availableConverter.id,
+        },
+      };
+
+      // Use the protected method to publish the event
+      if (typeof this.parentManager['publishEvent'] === 'function') {
+        this.parentManager['publishEvent'](eventData);
+      }
     }
   }
 
   /**
-   * Get converters that can process a specific recipe
+   * Get converters that can handle a specific recipe
    */
-  private getConvertersForRecipe(_recipeId: string): FlowNode[] {
-    // Implementation would find converters that support this recipe
-    // For now, return an empty array as a placeholder
+  private getConvertersForRecipe(_recipeId: string): ConverterFlowNode[] {
+    // Implementation would query the resource flow manager for converters
+    // For now, return an empty array
     return [];
   }
 
@@ -295,7 +299,9 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
       // Update progress
       const now = Date.now();
       const elapsed = now - process.startTime;
-      const recipe = this.conversionRecipes.get(process.recipeId);
+      const recipe = this.conversionRecipes.get(
+        process.recipeId
+      ) as ExtendedResourceConversionRecipe;
       if (!recipe) {
         continue;
       }
@@ -329,7 +335,7 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
     process.endTime = Date.now();
 
     // Get the recipe
-    const recipe = this.conversionRecipes.get(process.recipeId);
+    const recipe = this.conversionRecipes.get(process.recipeId) as ExtendedResourceConversionRecipe;
     if (!recipe) {
       return;
     }
@@ -429,8 +435,8 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
    * Calculate the efficiency of a converter for a specific recipe
    */
   private calculateConverterEfficiency(
-    converter: FlowNode,
-    recipe: ResourceConversionRecipe
+    converter: ConverterFlowNode,
+    recipe: ExtendedResourceConversionRecipe
   ): number {
     // Base efficiency from recipe
     let efficiency = recipe.baseEfficiency || 1;
@@ -464,10 +470,10 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
   }
 
   /**
-   * Calculate quality factors for input resources
+   * Calculate resource quality factors for a set of inputs
    */
   private calculateResourceQualityFactors(
-    inputs: { type: ResourceType | number; amount: number }[]
+    _inputs: { type: ResourceType | number; amount: number }[]
   ): Record<string, number> {
     // Implementation would calculate quality factors
     // For now, return a placeholder object
@@ -479,7 +485,7 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
   /**
    * Calculate network stress factor for a converter
    */
-  private calculateNetworkStressFactor(_converter: FlowNode): number {
+  private calculateNetworkStressFactor(_converter: ConverterFlowNode): number {
     // Implementation would calculate network stress
     // For now, return a placeholder value
     return 1;

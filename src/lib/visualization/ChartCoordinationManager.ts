@@ -1,4 +1,4 @@
-import { EventEmitter } from '../utils/EventEmitter';
+import { EventEmitter } from '../events/EventEmitter';
 
 export interface ViewportState {
   scale: number;
@@ -148,7 +148,7 @@ export class ChartCoordinationManager {
 
     if (propagate) {
       // Find all groups containing this chart
-      this.linkedGroups.forEach((group, groupId) => {
+      this.linkedGroups.forEach(group => {
         if (group.has(chartId)) {
           // Notify all other charts in the group
           group.forEach(linkedChartId => {

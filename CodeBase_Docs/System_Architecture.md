@@ -1070,3 +1070,56 @@ The consolidation will be implemented in four phases, as detailed in the System_
 5. **Test-Driven Refactoring**
    - Ensure test coverage before refactoring
    - Verify behavior consistency after consolidation
+
+## FACTION BEHAVIOR SYSTEM
+
+The faction behavior system follows the standardized event-driven architecture:
+
+```typescript
+interface FactionBehaviorSystem {
+  // Core Components
+  useFactionBehavior: (factionId: FactionId) => FactionBehaviorState;
+  FactionBehaviorManager: TypedEventEmitter<FactionEvents>;
+
+  // Event Types
+  FactionEventType: {
+    BEHAVIOR_CHANGED: 'behaviorChanged';
+    FLEET_UPDATED: 'fleetUpdated';
+    TERRITORY_CHANGED: 'territoryChanged';
+    RELATIONSHIP_CHANGED: 'relationshipChanged';
+    RESOURCES_UPDATED: 'resourcesUpdated';
+    COMBAT_TACTICS_CHANGED: 'combatTacticsChanged';
+  };
+
+  // Integration Points
+  managers: {
+    factionManager: FactionManager;
+    combatManager: CombatManager;
+    asteroidFieldManager: AsteroidFieldManager;
+  };
+}
+```
+
+### Implementation Status
+
+- ✅ Standardized event system using TypedEventEmitter
+- ✅ Proper enum usage for event types
+- ✅ Integration with resource management system
+- ✅ Consistent manager service patterns
+- ✅ Type-safe event handling
+
+### Integration Points
+
+The system integrates with:
+
+- Resource Management System
+- Combat System
+- Territory Management
+- Fleet Management
+
+### Event Flow
+
+1. State changes trigger typed events
+2. Events are handled through the FactionBehaviorManager
+3. UI updates through React hooks
+4. Resource updates through standardized interfaces

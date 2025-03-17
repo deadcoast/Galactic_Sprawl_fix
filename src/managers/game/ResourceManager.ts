@@ -172,16 +172,11 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    */
   private initializeEventHandlers(): void {
     // Resource production events
-    this.unsubscribe(...args: unknown[]) => unknowns.push(
-      this.subscribe(EventType.RESOURCE_PRODUCED, this.handleResourceProduced.bind(this)),
-      this.subscribe(EventType.RESOURCE_CONSUMED, this.handleResourceConsumed.bind(this)),
-      this.subscribe(EventType.RESOURCE_TRANSFERRED, this.handleResourceTransferred.bind(this)),
-      this.subscribe(EventType.RESOURCE_SHORTAGE, this.handleResourceShortage.bind(this)),
-      this.subscribe(
-        EventType.RESOURCE_THRESHOLD_TRIGGERED,
-        this.handleResourceThreshold.bind(this)
-      )
-    );
+    this.subscribe(EventType.RESOURCE_PRODUCED, this.handleResourceProduced.bind(this));
+    this.subscribe(EventType.RESOURCE_CONSUMED, this.handleResourceConsumed.bind(this));
+    this.subscribe(EventType.RESOURCE_TRANSFERRED, this.handleResourceTransferred.bind(this));
+    this.subscribe(EventType.RESOURCE_SHORTAGE, this.handleResourceShortage.bind(this));
+    this.subscribe(EventType.RESOURCE_THRESHOLD_TRIGGERED, this.handleResourceThreshold.bind(this));
   }
 
   /**
@@ -231,6 +226,11 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     const { resourceType, details } = event;
     if (details?.thresholds) {
       this.checkThresholds(details.thresholds as ResourceThreshold[]);
+    } else {
+      this.logResourceError(`threshold-${resourceType}`, {
+        code: 'THRESHOLD_VIOLATION',
+        message: `No thresholds provided for ${resourceType}`,
+      });
     }
   }
 
@@ -524,7 +524,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
         try {
           // Try to convert directly if it's already in the correct format
           resourceType = type as unknown as ResourceType;
-        } catch (e) {
+        } catch (_e) {
           // If that fails, try to use the helper
           resourceType = ResourceTypeHelpers.stringToEnum(type.toLowerCase() as ResourceTypeString);
         }

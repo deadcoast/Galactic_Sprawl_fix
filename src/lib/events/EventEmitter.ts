@@ -149,11 +149,39 @@ export class EventEmitter<T = BaseEvent> {
   }
 
   /**
-   * Emit an event to all matching subscribers
-   *
-   * @param event Event data to emit
+   * Subscribe to events using event name
    */
-  public emit(event: T): void {
+  public on<K extends keyof T>(event: K, handler: EventHandler<T[K]>): () => void {
+    return this.subscribe(
+      e => typeof e === 'object' && e !== null && 'type' in e && (e as { type: K }).type === event,
+      handler as EventHandler<T>
+    );
+  }
+
+  /**
+   * Unsubscribe from events using event name
+   */
+  public off<K extends keyof T>(event: K, handler: EventHandler<T[K]>): void {
+    const index = this.handlers.findIndex(
+      h => h.handler === handler && h.predicate({ type: event } as T)
+    );
+    if (index !== -1) {
+      this.handlers.splice(index, 1);
+    }
+  }
+
+  /**
+   * Emit an event to all matching subscribers
+   * Supports both single argument (event object) and double argument (event name, data) patterns
+   */
+  public emit<K extends keyof T>(eventOrType: T | K, data?: T[K]): void {
+    let event: T;
+    if (typeof eventOrType === 'object' && eventOrType !== null) {
+      event = eventOrType as T;
+    } else {
+      event = { type: eventOrType, ...data } as T;
+    }
+
     // Add to history
     this.history.push(event);
     if (this.history.length > this.maxHistorySize) {

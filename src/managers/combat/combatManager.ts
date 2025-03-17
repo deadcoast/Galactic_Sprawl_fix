@@ -474,6 +474,3 @@ export class CombatManager extends BaseTypedEventEmitter<CombatEvents> {
  * combatManager.moveUnit(unit.id, { x: 200, y: 200 });
  * ```
  */
-
-// Export the class for type usage and instantiation by the registry
-export { CombatManager };

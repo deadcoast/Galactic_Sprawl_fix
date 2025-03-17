@@ -12,9 +12,8 @@ import {
   ResourceConsumptionPredictor,
 } from '../../lib/ai/ResourceConsumptionPredictor';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ensureStringResourceType } from '../../utils/resources/ResourceTypeMigration';
 import { GameLoopManager } from '../game/GameLoopManager';
 import {
   PerformanceMetrics,
@@ -164,7 +163,7 @@ export class AdaptivePerformanceManager {
    * Updates potential savings for a resource type
    */
   private updatePotentialSavings(
-    resourceType: StringResourceType | ResourceType,
+    resourceType: string | ResourceType,
     metrics: PerformanceMetrics
   ): void {
     // Convert to string type for consistent handling
@@ -224,7 +223,10 @@ export class AdaptivePerformanceManager {
         });
       }
 
-      if (resourceType === ResourceType.ENERGY && this.deviceProfile.batteryState === 'discharging') {
+      if (
+        resourceType === ResourceType.ENERGY &&
+        this.deviceProfile.batteryState === 'discharging'
+      ) {
         // Energy optimization for battery-powered devices
         suggestions.push({
           type: 'resource-allocation',
@@ -486,7 +488,7 @@ export class AdaptivePerformanceManager {
   /**
    * Get resource consumption predictions
    */
-  public getResourcePredictions(): Map<StringResourceType | ResourceType, ConsumptionPrediction> {
+  public getResourcePredictions(): Map<string | ResourceType, ConsumptionPrediction> {
     return this.resourcePredictor.getAllPredictions();
   }
 

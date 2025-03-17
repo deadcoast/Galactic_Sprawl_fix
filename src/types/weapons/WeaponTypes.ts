@@ -9,7 +9,7 @@ import {
   WeaponEffect,
   WeaponEffectType,
 } from '../../effects/types_effects/WeaponEffects';
-import { ResourceType } from "./../resources/ResourceTypes";
+import { ResourceType } from '../resources/ResourceTypes';
 
 export type { AreaEffect, DamageEffect, WeaponEffect, WeaponEffectType };
 
@@ -268,7 +268,7 @@ export const WEAPON_COLORS: Record<WeaponCategory, string> = {
 } as const;
 
 export const UPGRADE_COLORS: Record<WeaponUpgradeType, string> = {
-  plasma: 'cyan',
+  [ResourceType.PLASMA]: 'cyan',
   spark: 'cyan',
   gauss: 'violet',
   light: 'violet',

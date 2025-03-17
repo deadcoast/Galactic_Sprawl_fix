@@ -420,8 +420,8 @@ export class WebGLRenderer implements ChartRenderer {
 
     this.canvas.addEventListener(
       'webglcontextrestored',
-      ((event: Event) => {
-        this.handleContextRestored(event as WebGLContextEvent);
+      (() => {
+        this.handleContextRestored();
       }) as EventListener,
       false
     );
@@ -450,7 +450,7 @@ export class WebGLRenderer implements ChartRenderer {
   /**
    * Handle WebGL context restoration
    */
-  private handleContextRestored(event: WebGLContextEvent): void {
+  private handleContextRestored(): void {
     // Reinitialize WebGL resources
     if (this.canvas && this.canvas.parentElement) {
       this.initialize(this.canvas.parentElement, this.lastOptions!);
@@ -814,14 +814,25 @@ export class WebGLRenderer implements ChartRenderer {
     const location = this.gl.getUniformLocation(program, name);
     if (!location) return null;
 
-    // Get uniform information
-    const info = this.gl.getActiveUniform(program, location);
-    if (!info) return null;
+    // First get the number of active uniforms
+    const numUniforms = this.gl.getProgramParameter(program, this.gl.ACTIVE_UNIFORMS);
+
+    // Find the index of our uniform by name
+    let uniformInfo = null;
+    for (let i = 0; i < numUniforms; i++) {
+      const info = this.gl.getActiveUniform(program, i);
+      if (info && info.name === name) {
+        uniformInfo = info;
+        break;
+      }
+    }
+
+    if (!uniformInfo) return null;
 
     return {
       location,
-      type: info.type,
-      size: info.size,
+      type: uniformInfo.type,
+      size: uniformInfo.size,
     };
   }
 
@@ -1905,7 +1916,6 @@ export class WebGLRenderer implements ChartRenderer {
     yAxis: ChartAxes['y']
   ): { x: Scale; y: Scale } {
     const { datasets } = data;
-    const axes = { x: xAxis || {}, y: yAxis || {} };
 
     // Find min and max x values
     let xMin = xAxis?.min !== undefined ? Number(xAxis.min) : Infinity;
@@ -2084,7 +2094,7 @@ export class WebGLRenderer implements ChartRenderer {
     }
 
     // Handle rgba
-    const rgbaRegex = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\))$/i;
+    const rgbaRegex = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/i;
     const rgbaResult = rgbaRegex.exec(color);
 
     if (rgbaResult) {

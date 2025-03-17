@@ -497,3 +497,86 @@ The next priority task is to implement a chart component system using the strate
 [ ] Consolidate visualization component APIs
 [ ] Set up integration testing framework
 [ ] Document public APIs and integration points
+
+[X] Fix useFactionBehavior.ts event system integration
+
+- [x] Remove unused calculateTerritorySystems function
+- [x] Integrate proper event handling using FactionEventType enum
+- [x] Ensure consistent resource management through proper interfaces
+- [x] Implement proper service access patterns
+- [x] Fix linter errors following type standards
+
+[ ] Update System Documentation
+
+- [ ] Document useFactionBehavior.ts changes in System_Architecture.md
+- [ ] Update integration points in System_Integration.md
+- [ ] Add new event handling patterns to development history
+
+[ ] Implement Remaining Tasks from System Architecture
+
+- [ ] Complete Discovery Classification Visualization
+- [ ] Continue system-wide performance optimization
+- [ ] Expand test coverage and integration tests
+
+[ ] Fix Resource Management System Integration
+
+- [ ] Fix ResourceManager event handling
+  - Fix unsubscribe/subscribe method implementation
+  - Fix args usage in event handling
+- [ ] Fix MiningResourceIntegration type issues
+  - Remove duplicate ResourceType imports
+  - Update OldResourceType references to use new ResourceType enum
+  - Fix FlowNode and ResourceThreshold property issues
+  - Implement proper event handling in MiningShipManagerImpl
+
+### Current Focus
+
+1. ResourceManager.ts event system fixes
+
+   - Implement proper TypedEventEmitter methods
+   - Fix event subscription handling
+
+2. MiningResourceIntegration.ts standardization
+   - Remove legacy resource type usage
+   - Update to use standardized interfaces
+   - Fix type definitions for flow nodes and thresholds
+
+[X] Fix MiningResourceIntegration event system
+
+- [x] Use proper EventEmitter types
+- [x] Use proper event interfaces
+- [x] Use proper resource type enums
+
+[ ] Fix MiningShipManager resource types
+
+- [ ] Convert string resourceType to ResourceType enum
+- [ ] Update MiningTask interface to use proper types
+- [ ] Update dispatchShipToResource to use ResourceType
+- [ ] Add proper type guards and validation
+
+### Current Focus
+
+1. Convert string-based resource types to enums in MiningShipManager
+2. Ensure consistent type usage across mining system
+3. Implement proper type validation at boundaries
+
+[ ] Fix Event Type Issues
+
+- [ ] Update TechTreeEvents to satisfy Record<string, unknown>
+- [ ] Update ModuleEvents to satisfy Record<string, unknown>
+- [ ] Fix OfficerManager EventEmitter implementation
+- [ ] Add missing getResourceNodes method to MiningShipManagerImpl
+
+### Current Focus
+
+1. Convert event interfaces to proper Record types
+2. Fix EventEmitter implementations
+3. Add missing methods
+4. Remove unused @ts-expect-error
+
+### Implementation Order
+
+1. Fix base event types (TechTreeEvents, ModuleEvents)
+2. Update manager implementations
+3. Add missing methods
+4. Clean up type assertions

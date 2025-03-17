@@ -1,4 +1,4 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 /**
  * Environmental Hazard Manager
  *
@@ -16,7 +16,7 @@ import {
   SplittingHazard,
   WeatherHazardEffect,
 } from '../../effects/types_effects/EnvironmentalHazardEffects';
-import { EventEmitter } from '../../lib/utils/EventEmitter';
+import { EventEmitter } from '../../lib/events/EventEmitter';
 import { Position } from '../../types/core/GameTypes';
 
 // Event types for the hazard manager

@@ -121,3 +121,51 @@ For each consolidated system, document the following integration aspects:
    - Document expected performance characteristics
    - Specify resource usage limits and scaling behavior
    - Provide monitoring and profiling guidelines
+
+### Faction Behavior Integration
+
+The faction behavior system has been integrated following these guidelines:
+
+1. **Event System Integration**
+
+   - Uses TypedEventEmitter for type-safe event handling
+   - Events are properly typed and documented
+   - Event flow follows standardized patterns
+
+2. **Resource Management Integration**
+
+   - Direct integration with ResourceType enum
+   - Consistent resource calculation methods
+   - Type-safe resource updates
+
+3. **Manager Service Integration**
+
+   - Proper use of manager services (FactionManager, CombatManager, etc.)
+   - Consistent service access patterns
+   - Type-safe manager interactions
+
+4. **UI Integration**
+   - React hooks follow standard patterns
+   - Event-based UI updates
+   - Type-safe state management
+
+### Integration Documentation Requirements
+
+For the faction behavior system, document:
+
+1. **Event Contract**
+
+   - Event types are defined in FactionEventType enum
+   - Event payloads use proper interfaces
+   - Event handling follows type-safe patterns
+
+2. **Resource Flow**
+
+   - Resource calculations use standardized methods
+   - Resource updates follow proper event patterns
+   - Resource types use proper enums
+
+3. **Error Handling**
+   - Type-safe error propagation
+   - Proper error boundary usage
+   - Consistent error logging

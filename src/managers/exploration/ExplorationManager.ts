@@ -11,7 +11,6 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { EventBus } from '../../lib/events/EventBus';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
@@ -202,9 +201,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
     console.warn('ExplorationManager initialized');
 
     // Subscribe to ship-related events to update exploration data
-    this.unsubscribe(...args: unknown[]) => unknowns.push(
-      this.subscribe(EventType.STATUS_CHANGED, this.handleShipStatusChange)
-    );
+    this.subscribe(EventType.STATUS_CHANGED, this.handleShipStatusChange);
   }
 
   /**
@@ -637,7 +634,6 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
 }
 
 // Mock event bus and ship manager for demonstration purposes
-const explorationEventBus = new EventBus<ExplorationEvent>();
 const shipManager = new ReconShipManagerImpl();
 
 // Export a singleton instance of the ExplorationManager

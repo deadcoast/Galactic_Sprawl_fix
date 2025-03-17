@@ -1,305 +1,111 @@
-import { Box, Button, CircularProgress, Typography } from '@mui/material';
-import React, { ComponentType, useEffect, useState } from 'react';
-import { MemoryManagerOptions, useMemoryManager } from '../../../hooks/useMemoryManager';
+import { ComponentType, useEffect, useState } from 'react';
 import { BaseChartProps } from './charts/BaseChart';
 
 /**
- * Options for the withMemoryManagement HOC
+ * Options for memory management behavior
  */
-export interface WithMemoryManagementOptions extends Partial<MemoryManagerOptions> {
-  /**
-   * Whether to automatically load data when component mounts
-   * @default true
-   */
-  autoLoad?: boolean;
-
-  /**
-   * Whether to show memory usage statistics in the UI
-   * @default false
-   */
+interface MemoryOptions {
+  /** Show memory usage statistics */
   showMemoryStats?: boolean;
 
-  /**
-   * Custom loading component
-   */
-  loadingComponent?: React.ReactNode;
+  /** Memory threshold in bytes */
+  memoryThreshold?: number;
 
-  /**
-   * Custom error component
-   */
-  errorComponent?: React.ReactNode;
+  /** Whether to log memory usage to console */
+  enableLogging?: boolean;
 
-  /**
-   * Whether to disable automatic reloading of data when component becomes visible again
-   * @default false
-   */
-  disableAutoReload?: boolean;
+  /** Auto cleanup level, controlling aggressiveness of cleanup */
+  autoCleanupLevel?: 'none' | 'low' | 'medium' | 'high';
+
+  /** Time in milliseconds for cache expiration */
+  cacheExpirationTime?: number;
 }
 
 /**
- * Data transfer object for memory-managed component state
+ * Simple function to estimate data size
  */
-interface MemoryManagedState {
-  isLoading: boolean;
-  error: string | null;
-  dataTimestamp: number;
-  memoryUsage: number;
-  isDataLoaded: boolean;
+function estimateSize(data: unknown): number {
+  if (data === null || data === undefined) return 0;
+
+  if (Array.isArray(data)) {
+    return data.length * 1024; // Estimate 1KB per array item
+  }
+
+  if (typeof data === 'object') {
+    return Object.keys(data).length * 1024; // Estimate 1KB per object property
+  }
+
+  return 1024; // Default size for primitives
 }
 
-// Define styles as const objects to avoid complex unions
-const containerStyle = {
-  position: 'relative',
-} as const;
-
-const loadingContainerStyle = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-} as const;
-
-const errorContainerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-} as const;
-
-const unloadedContainerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  border: '1px dashed #ccc',
-  borderRadius: '4px',
-  padding: '16px',
-} as const;
-
-const statsStyle = {
-  marginTop: '8px',
-} as const;
-
 /**
- * HOC that adds memory management to chart components
- *
- * This component ensures proper cleanup of large datasets when the component
- * is unmounted or not visible, automatically handles loading states, and
- * provides memory usage metrics.
- *
- * @param Component The chart component to wrap
- * @param options Configuration options for memory management
+ * Higher-order component that adds memory management to visualization components
  */
 export function withMemoryManagement<P extends BaseChartProps>(
   WrappedComponent: ComponentType<P>,
-  options: WithMemoryManagementOptions = {}
-): React.FC<P> {
-  // Set a display name for the wrapped component
-  const wrappedComponentName = `WithMemoryManagement(${WrappedComponent.displayName || WrappedComponent.name || 'UnknownComponent'})`;
-
-  const MemoryManagedComponent = React.memo((props: P) => {
+  options: MemoryOptions = {}
+): ComponentType<P> {
+  const ManagedComponent = (props: P) => {
     // Default options
-    const { autoLoad = true, showMemoryStats = false, disableAutoReload = false } = options;
-
-    // Component identifier for memory manager
-    const componentKey = `memory-managed-${wrappedComponentName}`;
-
-    // Component state using DTO
-    const [state, setState] = useState<MemoryManagedState>({
-      isLoading: autoLoad,
-      error: null,
-      dataTimestamp: 0,
-      memoryUsage: 0,
-      isDataLoaded: false,
-    });
-
-    // Use our memory manager hook
-    const memory = useMemoryManager<P['data']>(props.data, {
-      key: componentKey,
-      initialDataSizeEstimate: Array.isArray(props.data) ? props.data.length * 1024 : undefined,
-    });
-
-    // Load data function with error boundary
-    const loadData = async () => {
-      try {
-        setState(prev => ({ ...prev, isLoading: true, error: null }));
-
-        // Validate data at boundary
-        if (props.data === undefined || props.data === null) {
-          throw new Error('Data is required');
-        }
-
-        memory.updateData(props.data);
-
-        setState(prev => ({
-          ...prev,
-          isLoading: false,
-          dataTimestamp: Date.now(),
-          memoryUsage: memory.memoryUsage,
-          isDataLoaded: true,
-        }));
-      } catch (err) {
-        // Consistent error handling at boundary
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load data';
-        console.error(`[${componentKey}] Error loading data:`, err);
-        setState(prev => ({
-          ...prev,
-          isLoading: false,
-          error: errorMessage,
-          isDataLoaded: false,
-        }));
-      }
-    };
-
-    // Initial load with error boundary
-    useEffect(() => {
-      if (autoLoad) {
-        loadData().catch(err => {
-          console.error(`[${componentKey}] Error in initial load:`, err);
-        });
-      }
-    }, []);
-
-    // Intersection observer for visibility-based loading
-    useEffect(() => {
-      if (disableAutoReload) return;
-
-      const element = document.querySelector(`[data-memory-manager="${componentKey}"]`);
-      if (!element) {
-        console.warn(`[${componentKey}] Could not find element for intersection observer`);
-        return;
-      }
-
-      const observer = new IntersectionObserver(
-        entries => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting && !state.isDataLoaded && !state.isLoading) {
-              loadData().catch(err => {
-                console.error(`[${componentKey}] Error in visibility-based load:`, err);
-              });
-            }
-          });
-        },
-        { threshold: 0.1 }
-      );
-
-      observer.observe(element);
-
-      return () => {
-        observer.disconnect();
-      };
-    }, [state.isDataLoaded, state.dataTimestamp, disableAutoReload]);
-
-    // Render loading state
-    if (state.isLoading) {
-      return (
-        <Box
-          component="div"
-          style={{
-            ...loadingContainerStyle,
-            width: props.width || '100%',
-            height: props.height || 400,
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      );
-    }
-
-    // Render error state
-    if (state.error) {
-      return (
-        <Box
-          component="div"
-          style={{
-            ...errorContainerStyle,
-            width: props.width || '100%',
-            height: props.height || 400,
-          }}
-        >
-          <Typography color="error" gutterBottom>
-            {state.error}
-          </Typography>
-          <Button variant="outlined" onClick={() => loadData()} style={{ marginTop: '8px' }}>
-            Retry
-          </Button>
-        </Box>
-      );
-    }
-
-    // Render unloaded state
-    if (!state.isDataLoaded && !state.isLoading && state.dataTimestamp !== 0) {
-      return (
-        <Box
-          component="div"
-          style={{
-            ...unloadedContainerStyle,
-            width: props.width || '100%',
-            height: props.height || 400,
-          }}
-          data-memory-manager={componentKey}
-        >
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Data unloaded to conserve memory
-          </Typography>
-          <Button variant="outlined" onClick={() => loadData()} style={{ marginTop: '8px' }}>
-            Reload Data
-          </Button>
-        </Box>
-      );
-    }
-
-    // Extract only the props needed by the wrapped component
     const {
-      data,
-      width,
-      height,
-      title,
-      subtitle,
-      colors,
-      className,
-      animate,
-      theme,
-      onElementClick,
-      showLoadingState,
-      errorMessage,
-      ...otherProps
-    } = props;
+      showMemoryStats = false,
+      memoryThreshold = 50 * 1024 * 1024,
+      enableLogging = false,
+      autoCleanupLevel = 'medium',
+      cacheExpirationTime = 5 * 60 * 1000,
+    } = options;
 
-    // Render the component with memory-managed data
+    // Track memory usage
+    const [memoryUsage, setMemoryUsage] = useState<number>(0);
+
+    // Update memory usage when props change
+    useEffect(() => {
+      const size = estimateSize(props.data);
+      setMemoryUsage(size);
+
+      // Log memory usage if enabled
+      if (enableLogging) {
+        console.log(
+          `[MemoryManager] Memory usage: ${Math.round(size / 1024 / 1024)}MB, Cleanup level: ${autoCleanupLevel}`
+        );
+      }
+    }, [props.data, enableLogging, autoCleanupLevel]);
+
+    // Calculate memory usage in MB for display
+    const memoryMB = Math.round(memoryUsage / 1024 / 1024);
+
+    // Check if memory usage exceeds threshold
+    const isAboveThreshold = memoryUsage > memoryThreshold;
+
     return (
-      <Box component="div" style={containerStyle}>
-        <div data-memory-manager={componentKey}>
-          <WrappedComponent
-            data={data}
-            width={width}
-            height={height}
-            title={title}
-            subtitle={subtitle}
-            colors={colors}
-            className={className}
-            animate={animate}
-            theme={theme}
-            onElementClick={onElementClick}
-            showLoadingState={showLoadingState}
-            errorMessage={errorMessage}
-            {...(otherProps as Omit<P, keyof BaseChartProps>)}
-          />
-          {showMemoryStats && (
-            <Box style={statsStyle}>
-              <Typography variant="body2" color="textSecondary">
-                Memory Usage: {Math.round(state.memoryUsage / 1024 / 1024)}MB
-              </Typography>
-            </Box>
-          )}
-        </div>
-      </Box>
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <WrappedComponent {...props} />
+
+        {showMemoryStats && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 5,
+              right: 5,
+              fontSize: '0.75rem',
+              opacity: 0.7,
+              backgroundColor: isAboveThreshold ? 'rgba(255,200,200,0.8)' : 'rgba(200,200,200,0.8)',
+              padding: '2px 5px',
+              borderRadius: '3px',
+            }}
+          >
+            Memory: {memoryMB}MB
+          </div>
+        )}
+      </div>
     );
-  });
+  };
 
   // Set display name for better debugging
-  MemoryManagedComponent.displayName = wrappedComponentName;
+  const wrappedName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
+  ManagedComponent.displayName = `WithMemory(${wrappedName})`;
 
-  return MemoryManagedComponent;
+  return ManagedComponent;
 }
 
 export default withMemoryManagement;

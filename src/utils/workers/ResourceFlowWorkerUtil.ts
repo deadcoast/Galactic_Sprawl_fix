@@ -1,4 +1,3 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 /**
  * ResourceFlowWorkerUtil.ts
  *
@@ -7,12 +6,15 @@ import { ResourceType } from "./../../types/resources/ResourceTypes";
  */
 
 import {
-  FlowConnection,
   FlowNode,
   ResourceState,
   ResourceTransfer,
-  ResourceType,
 } from '../../types/resources/StandardizedResourceTypes';
+
+import { ResourceType } from '../../types/resources/ResourceTypes';
+
+// We need to import FlowConnection from ResourceTypes since it's not in StandardizedResourceTypes
+import { FlowConnection } from '../../types/resources/ResourceTypes';
 
 // Input message types that can be sent to the worker
 type WorkerMessageType =

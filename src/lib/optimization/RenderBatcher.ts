@@ -1,5 +1,5 @@
 import { Position } from '../../types/core/Position';
-import { EventEmitter } from '../utils/EventEmitter';
+import { EventEmitter } from '../events/EventEmitter';
 
 export interface RenderBatch {
   id: string;
@@ -20,6 +20,14 @@ export interface RenderItem {
   uniforms?: Record<string, unknown>;
 }
 
+export interface RenderBatcherEvent {
+  type: 'batchCreated' | 'batchUpdated' | 'batchRemoved' | 'frameStarted' | 'frameEnded';
+  batch?: RenderBatch;
+  batchId?: string;
+  timestamp?: number;
+  drawCalls?: number;
+}
+
 export interface RenderBatcherEvents {
   batchCreated: { batch: RenderBatch };
   batchUpdated: { batch: RenderBatch };
@@ -32,7 +40,7 @@ export interface RenderBatcherEvents {
 /**
  * Manages render batching for optimized drawing
  */
-export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
+export class RenderBatcher extends EventEmitter<RenderBatcherEvent> {
   private batches: Map<string, RenderBatch> = new Map();
   private sortedBatches: RenderBatch[] = [];
   private needsSort: boolean = false;
@@ -57,7 +65,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
 
     this.batches.set(id, batch);
     this.needsSort = true;
-    this.emit('batchCreated', { batch });
+    this.emit({ type: 'batchCreated', batch });
 
     return id;
   }
@@ -69,7 +77,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
     const batch = this.batches.get(batchId);
     if (batch) {
       batch.items.push(item);
-      this.emit('batchUpdated', { batch });
+      this.emit({ type: 'batchUpdated', batch });
     }
   }
 
@@ -82,7 +90,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
       const index = batch.items.findIndex(item => item.id === itemId);
       if (index !== -1) {
         batch.items.splice(index, 1);
-        this.emit('batchUpdated', { batch });
+        this.emit({ type: 'batchUpdated', batch });
       }
     }
   }
@@ -93,7 +101,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
   public removeBatch(batchId: string): void {
     if (this.batches.delete(batchId)) {
       this.needsSort = true;
-      this.emit('batchRemoved', { batchId });
+      this.emit({ type: 'batchRemoved', batchId });
     }
   }
 
@@ -114,7 +122,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
    */
   public beginFrame(timestamp: number): void {
     this.drawCalls = 0;
-    this.emit('frameStarted', { timestamp });
+    this.emit({ type: 'frameStarted', timestamp });
   }
 
   /**
@@ -194,10 +202,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvents> {
    * End frame
    */
   public endFrame(timestamp: number): void {
-    this.emit('frameEnded', {
-      timestamp,
-      drawCalls: this.drawCalls,
-    });
+    this.emit({ type: 'frameEnded', timestamp, drawCalls: this.drawCalls });
   }
 
   /**

@@ -109,7 +109,7 @@ export type CombatUnitStatus =
 /**
  * Interface defining all combat-related events
  */
-export interface CombatEvents {
+export interface CombatEvents extends Record<string, unknown> {
   /**
    * Emitted when a combat unit moves
    */

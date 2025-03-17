@@ -9,6 +9,21 @@ import { ResourceType } from '../resources/ResourceTypes';
 import { FactionBehaviorType, FactionId } from '../ships/FactionTypes';
 
 /**
+ * Enum defining all possible faction event types
+ */
+export enum FactionEventType {
+  BEHAVIOR_CHANGED = 'behaviorChanged',
+  FLEET_UPDATED = 'fleetUpdated',
+  TERRITORY_CHANGED = 'territoryChanged',
+  RELATIONSHIP_CHANGED = 'relationshipChanged',
+  RESOURCES_UPDATED = 'resourcesUpdated',
+  COMBAT_TACTICS_CHANGED = 'combatTacticsChanged',
+  TREATY_STATUS_CHANGED = 'treatyStatusChanged',
+  TRADE_ESTABLISHED = 'tradeEstablished',
+  CONFLICT_RECORDED = 'conflictRecorded',
+}
+
+/**
  * Base faction event interface
  */
 export interface FactionEvent {
@@ -130,34 +145,29 @@ export interface FactionCombatTactics {
 /**
  * Interface defining all faction-related events
  */
-export interface FactionEvents {
-  /**
-   * Emitted when a faction's behavior changes
-   */
-  'faction:behavior-changed': FactionBehaviorChangedEvent;
-
-  /**
-   * Emitted when a faction's fleet is updated
-   */
-  'faction:fleet-updated': FactionFleetEvent;
-
-  /**
-   * Emitted when a faction's territory changes
-   */
-  'faction:territory-changed': FactionTerritoryEvent;
-
-  /**
-   * Emitted when a faction's relationship with another faction changes
-   */
-  'faction:relationship-changed': FactionRelationshipEvent;
-
-  /**
-   * Emitted when a faction's resources are updated
-   */
-  'faction:resources-updated': FactionResourceEvent;
-
-  /**
-   * Emitted when a faction's combat tactics change
-   */
-  'faction:combat-tactics-changed': FactionCombatTacticsEvent;
+export interface FactionEvents extends Record<string, unknown> {
+  relationshipChanged: {
+    factionId: FactionId;
+    targetFactionId: FactionId;
+    oldValue: number;
+    newValue: number;
+  };
+  treatyStatusChanged: {
+    factionId: FactionId;
+    targetFactionId: FactionId;
+    oldStatus: string;
+    newStatus: string;
+  };
+  tradeEstablished: {
+    factionId: FactionId;
+    targetFactionId: FactionId;
+    resourceType: ResourceType;
+    amount: number;
+  };
+  conflictRecorded: {
+    factionId: FactionId;
+    targetFactionId: FactionId;
+    type: string;
+    severity: number;
+  };
 }

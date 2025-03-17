@@ -24,6 +24,8 @@ export interface FlowNode {
   currentLoad: number;
   efficiency: number;
   status: 'active' | 'inactive' | 'maintenance' | 'error';
+  resources?: Map<ResourceType, number>;
+  active?: boolean;
   inputs?: Array<{
     type: ResourceType;
     rate: number;
@@ -57,14 +59,31 @@ export type {
   ResourceConsumption,
   ResourceConversionRecipe,
   ResourceFlow,
+  ResourcePriorityConfig,
   ResourceProduction,
   ResourceState,
-  ResourceStateClass,
   ResourceThreshold,
   ResourceTransfer,
   ResourceTypeMetadata,
   ResourceTypeString,
 } from './ResourceTypes';
+
+// Export the ResourceStateClass directly
+export { ResourceStateClass } from './ResourceTypes';
+
+// Export types from ResourceConversionTypes.ts
+export type {
+  ChainExecutionStatus,
+  ConversionChain,
+  ConverterFlowNode,
+  ConverterNodeConfig,
+  ConverterStatus,
+  ExtendedResourceConversionRecipe,
+  ResourceConversionProcess,
+} from './ResourceConversionTypes';
+
+// Add FlowConnection to exports
+export type { FlowConnection } from './ResourceFlowTypes';
 
 // Add a comment to indicate that this file is for backward compatibility
 // and that new code should import directly from ResourceTypes.ts

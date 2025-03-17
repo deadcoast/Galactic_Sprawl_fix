@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { OFFICER_TRAITS, SQUAD_CONFIG, TRAINING_CONFIG } from '../../config/OfficerConfig';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { techTreeManager } from '../../managers/game/techTreeManager';
 import type { ModuleType } from '../../types/buildings/ModuleTypes';
@@ -14,7 +15,6 @@ import type {
   Squad,
   TrainingProgram,
 } from '../../types/officers/OfficerTypes';
-import { EventEmitter } from '../../utils/EventEmitter';
 
 type TechNodeUnlockedEvent = {
   nodeId: string;
@@ -28,7 +28,7 @@ type TechNodeUnlockedEvent = {
  * Implementation of the Officer Manager
  * Handles officer hiring, training, assignment, squad management, and progression
  */
-export class OfficerManager extends EventEmitter<OfficerEvents> implements IOfficerManager {
+export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements IOfficerManager {
   private officers: Map<string, Officer> = new Map();
   private squads: Map<string, Squad> = new Map();
   private trainingPrograms: Map<string, TrainingProgram> = new Map();

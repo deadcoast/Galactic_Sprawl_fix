@@ -22,9 +22,14 @@ export interface TechNode {
     | 'synergy';
 }
 
-interface TechTreeEvents {
+// Define event types
+type TechTreeEventMap = {
   nodeUnlocked: { nodeId: string; node: TechNode };
-}
+};
+
+type TechTreeEvents = {
+  [K in keyof TechTreeEventMap]: TechTreeEventMap[K];
+};
 
 /**
  * Tech tree manager for handling tech unlocks and progression
