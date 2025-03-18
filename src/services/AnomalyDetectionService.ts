@@ -45,7 +45,7 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService {
 
   protected async onInitialize(): Promise<void> {
     // Initialize metrics
-    this.metadata.metrics = {
+    this.metadata?.metrics = {
       total_datapoints: 0,
       total_anomalies: 0,
       last_detection_run: 0,
@@ -63,9 +63,9 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService {
     this.dataPoints.push(...points);
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.total_datapoints = this.dataPoints.length;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
   }
 
   public async detectAnomalies(
@@ -86,7 +86,7 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService {
       scores.forEach(score => this.anomalyScores.set(score.dataPointId, score));
 
       // Update metrics
-      const metrics = this.metadata.metrics || {};
+      const metrics = this.metadata?.metrics ?? {};
       metrics.total_anomalies = scores.filter(s => s.score > 0.7).length;
       metrics.last_detection_run = Date.now();
 
@@ -95,7 +95,7 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService {
         ? (metrics.average_detection_time + detectionTime) / 2
         : detectionTime;
 
-      this.metadata.metrics = metrics;
+      this.metadata?.metrics = metrics;
 
       return scores;
     } catch (error) {

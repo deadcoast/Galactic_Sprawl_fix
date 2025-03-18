@@ -7,7 +7,7 @@
  */
 
 import { PerformanceMetrics } from '../../managers/resource/ResourcePerformanceMonitor';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * Data point for model training and prediction
@@ -72,7 +72,7 @@ export class ResourceConsumptionPredictor {
       for (const [resourceType, metrics] of metricsHistory.entries()) {
         const dataPoints: ConsumptionDataPoint[] = metrics.map(metric => ({
           timestamp: metric.timestamp,
-          resourceType: metric.resourceType,
+          resourceType: metric.resourceType as ResourceType,
           value: metric.consumptionRate,
           sessionDuration: 0, // Will be calculated based on first entry
           userActions: 0, // Will need to be populated from event data

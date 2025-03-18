@@ -2,9 +2,9 @@
 /** @jsxFrag React.Fragment */
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bookmark, Database, Settings } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useThreshold } from '../../../../contexts/ThresholdContext';
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 import { ThresholdPresetsPanel } from './ThresholdPresetsPanel';
 import { ThresholdStatusIndicator } from './ThresholdStatusIndicator';
 
@@ -28,7 +28,7 @@ export function ThresholdManager({
 
   const [isEditing, setIsEditing] = React.useState(false);
   const [showPresetsPanel, setShowPresetsPanel] = React.useState(false);
-  const [minThreshold, setMinThreshold] = React.useState(resource?.thresholds.min || 0);
+  const [minThreshold, setMinThreshold] = React.useState(resource?.thresholds.min ?? 0);
   const [maxThreshold, setMaxThreshold] = React.useState(resource?.thresholds.max || maxCapacity);
 
   // Initialize threshold if not exists
@@ -118,7 +118,7 @@ export function ThresholdManager({
       {/* Threshold Status Indicator */}
       <ThresholdStatusIndicator
         currentAmount={currentAmount}
-        minThreshold={resource?.thresholds.min || 0}
+        minThreshold={resource?.thresholds.min ?? 0}
         maxThreshold={resource?.thresholds.max || maxCapacity}
         maxCapacity={maxCapacity}
         extractionRate={resource?.autoMine ? 10 : 0} // TODO: Get actual extraction rate

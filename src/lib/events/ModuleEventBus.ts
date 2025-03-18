@@ -80,29 +80,29 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
     }
 
     // Validate event data based on event type
-    if (event.data) {
+    if (event?.data) {
       let isValid = true;
-      switch (event.type) {
+      switch (event?.type) {
         case EventType.RESOURCE_PRODUCED:
         case EventType.RESOURCE_CONSUMED:
         case EventType.RESOURCE_UPDATED:
-          isValid = isValidResourceEventData(event.data);
+          isValid = isValidResourceEventData(event?.data);
           break;
         case EventType.MODULE_UPDATED:
-          if (event.moduleType === ResourceType.POPULATION) {
-            isValid = isValidPopulationEventData(event.data);
+          if (event?.moduleType === ResourceType.POPULATION) {
+            isValid = isValidPopulationEventData(event?.data);
           }
           break;
         case EventType.MODULE_STATUS_CHANGED:
-          isValid = isValidModuleStatusEventData(event.data);
+          isValid = isValidModuleStatusEventData(event?.data);
           break;
         case EventType.RESOURCE_TRANSFERRED:
-          isValid = isValidTradeRouteEventData(event.data);
+          isValid = isValidTradeRouteEventData(event?.data);
           break;
       }
 
       if (!isValid) {
-        console.error('Invalid event data for type:', event.type, event.data);
+        console.error('Invalid event data for type:', event?.type, event?.data);
         return;
       }
     }
@@ -119,8 +119,8 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
     options?: SubscriptionOptions & { moduleId?: string; moduleType?: ModuleType }
   ): () => void {
     const wrappedListener: EventListener<ModuleEvent> = (event: ModuleEvent) => {
-      if (options?.moduleId && event.moduleId !== options.moduleId) return;
-      if (options?.moduleType && event.moduleType !== options.moduleType) return;
+      if (options?.moduleId && event?.moduleId !== options?.moduleId) return;
+      if (options?.moduleType && event?.moduleType !== options?.moduleType) return;
       listener(event);
     };
 

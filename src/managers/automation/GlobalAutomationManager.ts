@@ -266,7 +266,7 @@ export class GlobalAutomationManager {
     // Add to the priority queue
     this.routineQueue.enqueue({
       ...routine,
-      executionTime: Date.now() + (routine.interval || 0),
+      executionTime: Date.now() + (routine.interval ?? 0),
     });
   }
 
@@ -554,7 +554,7 @@ export class GlobalAutomationManager {
             moduleId: emitValue.moduleId || 'automation',
             moduleType: (emitValue.moduleType || 'resource-manager') as ModuleType,
             timestamp: Date.now(),
-            data: emitValue.data || {},
+            data: emitValue.data ?? {},
           });
         } else {
           console.warn(`Invalid event type: ${action.target}`);
@@ -628,8 +628,8 @@ export class GlobalAutomationManager {
         routine.enabled &&
         routine.type === 'resource-balancing' &&
         routine.tags.includes(
-          event.data && typeof event.data === 'object' && 'resourceType' in event.data
-            ? String(event.data.resourceType)
+          event?.data && typeof event?.data === 'object' && 'resourceType' in event?.data
+            ? String(event?.data?.resourceType)
             : 'general'
         )
     );
@@ -654,8 +654,8 @@ export class GlobalAutomationManager {
         routine.enabled &&
         (routine.type === 'system-maintenance' || routine.type === 'performance-optimization') &&
         routine.tags.includes(
-          event.data && typeof event.data === 'object' && 'status' in event.data
-            ? String(event.data.status)
+          event?.data && typeof event?.data === 'object' && 'status' in event?.data
+            ? String(event?.data?.status)
             : 'general'
         )
     );

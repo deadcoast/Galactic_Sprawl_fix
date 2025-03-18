@@ -394,44 +394,44 @@ const CapabilityMetricsTable: React.FC<{
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 bg-white">
-          {data.map(item => (
-            <tr key={item.category} className="hover:bg-gray-50">
+          {data?.map(item => (
+            <tr key={item?.category} className="hover:bg-gray-50">
               <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                {item.category}
+                {item?.category}
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                {item.count.toLocaleString()}
+                {item?.count.toLocaleString()}
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                <span className={`rounded-full px-2 py-1 text-xs ${getFpsColorClass(item.avgFps)}`}>
-                  {item.avgFps.toFixed(1)}
+                <span className={`rounded-full px-2 py-1 text-xs ${getFpsColorClass(item?.avgFps)}`}>
+                  {item?.avgFps.toFixed(1)}
                 </span>
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                 <span
-                  className={`rounded-full px-2 py-1 text-xs ${getLoadTimeColorClass(item.avgLoadTime)}`}
+                  className={`rounded-full px-2 py-1 text-xs ${getLoadTimeColorClass(item?.avgLoadTime)}`}
                 >
-                  {item.avgLoadTime}ms
+                  {item?.avgLoadTime}ms
                 </span>
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                 <span
-                  className={`rounded-full px-2 py-1 text-xs ${getResponseTimeColorClass(item.avgResponseTime)}`}
+                  className={`rounded-full px-2 py-1 text-xs ${getResponseTimeColorClass(item?.avgResponseTime)}`}
                 >
-                  {item.avgResponseTime}ms
+                  {item?.avgResponseTime}ms
                 </span>
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                 <span
-                  className={`rounded-full px-2 py-1 text-xs ${getErrorRateColorClass(item.errorRate)}`}
+                  className={`rounded-full px-2 py-1 text-xs ${getErrorRateColorClass(item?.errorRate)}`}
                 >
-                  {item.errorRate.toFixed(2)}%
+                  {item?.errorRate.toFixed(2)}%
                 </span>
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                 <button
                   className="font-medium text-blue-600 hover:text-blue-800"
-                  onClick={() => onCategorySelect(item.category)}
+                  onClick={() => onCategorySelect(item?.category)}
                 >
                   Analyze
                 </button>
@@ -802,7 +802,7 @@ const DeviceCapabilityReport: React.FC = () => {
         <>
           <div className="mb-6 border-b border-gray-200">
             <nav className="flex flex-wrap space-x-4">
-              {Object.keys(deviceData || {}).map(segment => (
+              {Object.keys(deviceData ?? {}).map(segment => (
                 <button
                   key={segment}
                   className={`px-1 pb-2 text-sm font-medium ${

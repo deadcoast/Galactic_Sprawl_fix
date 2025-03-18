@@ -10,6 +10,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import {
   AnalysisConfig,
   AnalysisResult,
@@ -101,9 +102,9 @@ export class AnalysisAlgorithmService {
     // Set default options
     const effectiveOptions = {
       ...options,
-      sampleData: options.sampleData ?? dataset.dataPoints.length > this.defaultSampleSize,
-      sampleSize: options.sampleSize ?? this.defaultSampleSize,
-      useWorker: options.useWorker ?? (this.isWorkerSupported && dataset.dataPoints.length > 5000),
+      sampleData: options?.sampleData ?? dataset.dataPoints.length > this.defaultSampleSize,
+      sampleSize: options?.sampleSize ?? this.defaultSampleSize,
+      useWorker: options?.useWorker ?? (this.isWorkerSupported && dataset.dataPoints.length > 5000),
     };
 
     // Generate a cache key based on config, dataset, and options
@@ -206,7 +207,7 @@ export class AnalysisAlgorithmService {
 
       // Add data sampling info to result if sampling was used
       if (effectiveOptions.sampleData && dataset.dataPoints.length > effectiveOptions.sampleSize) {
-        result.data.samplingInfo = {
+        result?.data?.samplingInfo = {
           originalSize: dataset.dataPoints.length,
           sampleSize: effectiveOptions.sampleSize,
           samplingRatio: effectiveOptions.sampleSize / dataset.dataPoints.length,
@@ -253,14 +254,14 @@ export class AnalysisAlgorithmService {
 
       // Set up message handler
       const handleMessage = (event: MessageEvent) => {
-        if (event.data.messageId === messageId) {
+        if (event?.data?.messageId === messageId) {
           // Clean up message handler
           worker.removeEventListener('message', handleMessage);
 
-          if (event.data.error) {
-            reject(new Error(event.data.error));
+          if (event?.data?.error) {
+            reject(new Error(event?.data?.error));
           } else {
-            resolve(event.data.result);
+            resolve(event?.data?.result);
           }
         }
       };
@@ -285,12 +286,12 @@ export class AnalysisAlgorithmService {
       });
 
       // Set up timeout if specified
-      if (options.timeoutMs) {
+      if (options?.timeoutMs) {
         setTimeout(() => {
           worker.removeEventListener('message', handleMessage);
           worker.removeEventListener('error', handleError);
-          reject(new Error(`Analysis timed out after ${options.timeoutMs}ms`));
-        }, options.timeoutMs);
+          reject(new Error(`Analysis timed out after ${options?.timeoutMs}ms`));
+        }, options?.timeoutMs);
       }
     });
   }
@@ -299,13 +300,13 @@ export class AnalysisAlgorithmService {
    * Sample dataset for faster processing
    */
   private getSampledDataset(dataset: Dataset, options: AlgorithmOptions): Dataset {
-    if (!options.sampleData || dataset.dataPoints.length <= options.sampleSize!) {
+    if (!options?.sampleData || dataset.dataPoints.length <= options?.sampleSize!) {
       return dataset;
     }
 
     // Create a sampled copy of the dataset
-    const sampleRate = options.sampleSize! / dataset.dataPoints.length;
-    const sampledPoints = this.stratifiedSample(dataset.dataPoints, options.sampleSize!);
+    const sampleRate = options?.sampleSize! / dataset.dataPoints.length;
+    const sampledPoints = this.stratifiedSample(dataset.dataPoints, options?.sampleSize!);
 
     return {
       ...dataset,
@@ -363,7 +364,7 @@ export class AnalysisAlgorithmService {
 
       // Add selected points to result
       for (const index of selected) {
-        result.push(typeDataPoints[index]);
+        result?.push(typeDataPoints[index]);
       }
     }
 
@@ -1103,7 +1104,7 @@ export class AnalysisAlgorithmService {
     }
 
     // Normalize feature vectors if specified
-    const normalizedVectors = options.normalize
+    const normalizedVectors = options?.normalize
       ? this.normalizeFeatureVectors(featureVectors)
       : featureVectors;
 
@@ -1186,7 +1187,7 @@ export class AnalysisAlgorithmService {
       distanceMetric,
       inertia: clusterResult.inertia,
       clusters: clusterStats,
-      normalized: options.normalize,
+      normalized: options?.normalize,
     };
 
     // Generate insights and summary
@@ -1423,9 +1424,9 @@ export class AnalysisAlgorithmService {
    */
   private generateClusteringInsights(data: Record<string, unknown>): string[] {
     const insights: string[] = [];
-    const clusters = data.clusters as any[];
-    const algorithm = data.algorithm as string;
-    const k = data.k as number;
+    const clusters = data?.clusters as any[];
+    const algorithm = data?.algorithm as string;
+    const k = data?.k as number;
 
     // Overall clustering quality
     if (clusters.length > 0) {
@@ -1454,7 +1455,7 @@ export class AnalysisAlgorithmService {
         );
 
         // Check inertia
-        const inertia = data.inertia as number;
+        const inertia = data?.inertia as number;
         if (inertia !== undefined) {
           insights.push(
             `The clustering has an inertia (sum of squared distances) of ${inertia.toFixed(2)}.`
@@ -1487,9 +1488,9 @@ export class AnalysisAlgorithmService {
    * Generate summary of clustering results
    */
   private generateClusteringSummary(data: Record<string, unknown>): string {
-    const algorithm = data.algorithm as string;
-    const k = data.k as number;
-    const features = data.features as string[];
+    const algorithm = data?.algorithm as string;
+    const k = data?.k as number;
+    const features = data?.features as string[];
 
     let summary = `Clustering analysis using ${algorithm} algorithm identified ${k} clusters`;
 
@@ -1607,11 +1608,11 @@ export class AnalysisAlgorithmService {
           aggregatedValue = yValues.reduce((sum, value) => sum + value, 0);
       }
 
-      result.push({ x, y: aggregatedValue });
+      result?.push({ x, y: aggregatedValue });
     }
 
     // Sort by x value
-    return result.sort((a, b) => {
+    return result?.sort((a, b) => {
       if (typeof a.x === 'number' && typeof b.x === 'number') {
         return a.x - b.x;
       }
@@ -1883,7 +1884,7 @@ export class AnalysisAlgorithmService {
    */
   private generateTrendInsights(data: Record<string, unknown>): string[] {
     const insights: string[] = [];
-    const groups = data.groups as Record<
+    const groups = data?.groups as Record<
       string,
       { values: unknown[]; trendLine: { slope: number; intercept: number } }
     >;
@@ -1918,7 +1919,7 @@ export class AnalysisAlgorithmService {
    * Generate a summary for trend analysis
    */
   private generateTrendSummary(data: Record<string, unknown>): string {
-    const groups = data.groups as Record<
+    const groups = data?.groups as Record<
       string,
       { values: unknown[]; trendLine: { slope: number; intercept: number } }
     >;
@@ -1949,7 +1950,7 @@ export class AnalysisAlgorithmService {
    */
   private generateCorrelationInsights(data: Record<string, unknown>): string[] {
     const insights: string[] = [];
-    const correlations = data.correlations as Array<{
+    const correlations = data?.correlations as Array<{
       variables: string[];
       coefficient: number;
       strength: string;
@@ -1993,7 +1994,7 @@ export class AnalysisAlgorithmService {
    * Generate a summary for correlation analysis
    */
   private generateCorrelationSummary(data: Record<string, unknown>): string {
-    const correlations = data.correlations as Array<{
+    const correlations = data?.correlations as Array<{
       variables: string[];
       coefficient: number;
       strength: string;
@@ -2012,7 +2013,7 @@ export class AnalysisAlgorithmService {
    */
   private generateDistributionInsights(data: Record<string, unknown>): string[] {
     const insights: string[] = [];
-    const statistics = data.statistics as Record<string, number>;
+    const statistics = data?.statistics as Record<string, number>;
 
     if (!statistics) {
       return ['No valid statistics found for distribution analysis.'];
@@ -2045,13 +2046,13 @@ export class AnalysisAlgorithmService {
    * Generate a summary for distribution analysis
    */
   private generateDistributionSummary(data: Record<string, unknown>): string {
-    const statistics = data.statistics as Record<string, number>;
+    const statistics = data?.statistics as Record<string, number>;
 
     if (!statistics) {
       return 'No valid statistics found for distribution analysis.';
     }
 
-    return `Distribution analysis of ${data.variable} with mean=${statistics.mean.toFixed(2)} and SD=${statistics.standardDeviation.toFixed(2)}.`;
+    return `Distribution analysis of ${data?.variable} with mean=${statistics.mean.toFixed(2)} and SD=${statistics.standardDeviation.toFixed(2)}.`;
   }
 
   /**
@@ -2163,7 +2164,7 @@ export class AnalysisAlgorithmService {
 
     // Sort data by date if available (for time series)
     if (dataPoints.length > 0 && dataPoints[0].date !== undefined) {
-      dataPoints.sort((a, b) => (a.date || 0) - (b.date || 0));
+      dataPoints.sort((a, b) => (a.date ?? 0) - (b.date ?? 0));
     }
 
     // Split data into training and testing sets
@@ -2871,9 +2872,9 @@ export class AnalysisAlgorithmService {
    */
   private generatePredictionInsights(data: Record<string, unknown>): string[] {
     const insights: string[] = [];
-    const model = data.model as string;
-    const metrics = data.metrics as { mse: number; rmse: number; mae: number; r2?: number };
-    const forecast = data.forecast as Array<{ predicted: number; confidence?: [number, number] }>;
+    const model = data?.model as string;
+    const metrics = data?.metrics as { mse: number; rmse: number; mae: number; r2?: number };
+    const forecast = data?.forecast as Array<{ predicted: number; confidence?: [number, number] }>;
 
     // Model type and quality insights
     insights.push(
@@ -2902,8 +2903,8 @@ export class AnalysisAlgorithmService {
     );
 
     // Feature importance for linear models
-    if (model === 'linear' && data.modelDetails && (data.modelDetails as any).featureImportance) {
-      const featureImportance = (data.modelDetails as any).featureImportance as Array<{
+    if (model === 'linear' && data?.modelDetails && (data?.modelDetails as any).featureImportance) {
+      const featureImportance = (data?.modelDetails as any).featureImportance as Array<{
         feature: string;
         importance: number;
       }>;
@@ -2953,9 +2954,9 @@ export class AnalysisAlgorithmService {
    * Generate summary of prediction results
    */
   private generatePredictionSummary(data: Record<string, unknown>): string {
-    const model = data.model as string;
-    const targetVariable = data.targetVariable as string;
-    const metrics = data.metrics as { mse: number; rmse: number; mae: number; r2?: number };
+    const model = data?.model as string;
+    const targetVariable = data?.targetVariable as string;
+    const metrics = data?.metrics as { mse: number; rmse: number; mae: number; r2?: number };
 
     let summary = `${model === 'linear' ? 'Linear regression' : 'Neural network'} model `;
 
@@ -3035,7 +3036,7 @@ export class AnalysisAlgorithmService {
         x: number;
         y: number;
         resources: Array<{
-          type: string;
+          type: ResourceType;
           amount: number;
           quality?: number;
           accessibility?: number;
@@ -3223,11 +3224,11 @@ export class AnalysisAlgorithmService {
   /**
    * Generate insights from resource mapping analysis
    */
-  private generateResourceMappingInsights(data: Record<string, unknown>): string[] {
+  private generateResourceMappingInsights(data: Record<string, unknown>): ResourceType[] {
     const insights: string[] = [];
-    const cells = data.cells as any[];
-    const resourceDensity = data.resourceDensity as Record<string, number>;
-    const valueMetric = data.valueMetric as string;
+    const cells = data?.cells as any[];
+    const resourceDensity = data?.resourceDensity as Record<string, number>;
+    const valueMetric = data?.valueMetric as string;
 
     // Add insights about most abundant resource types
     const sortedDensities = Object.entries(resourceDensity).sort(([, a], [, b]) => b - a);
@@ -3304,12 +3305,12 @@ export class AnalysisAlgorithmService {
   /**
    * Generate summary from resource mapping analysis
    */
-  private generateResourceMappingSummary(data: Record<string, unknown>): string {
-    const cells = data.cells as any[];
-    const resourceDensity = data.resourceDensity as Record<string, number>;
-    const xRange = data.xRange as [number, number];
-    const yRange = data.yRange as [number, number];
-    const valueMetric = data.valueMetric as string;
+  private generateResourceMappingSummary(data: Record<string, unknown>): ResourceType {
+    const cells = data?.cells as any[];
+    const resourceDensity = data?.resourceDensity as Record<string, number>;
+    const xRange = data?.xRange as [number, number];
+    const yRange = data?.yRange as [number, number];
+    const valueMetric = data?.valueMetric as string;
 
     const sortedDensities = Object.entries(resourceDensity)
       .sort(([, a], [, b]) => b - a)

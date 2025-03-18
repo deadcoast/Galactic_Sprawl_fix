@@ -227,7 +227,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
                 const requirements = manager.getBuildRequirements(ship.shipClass);
                 const available =
                   requirements.resourceCost.find((r: { type: string }) => r.type === cost.type)
-                    ?.amount || 0;
+                    ?.amount ?? 0;
                 return React.createElement(
                   'div',
                   {

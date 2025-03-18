@@ -1,6 +1,5 @@
-import * as React from "react";
-import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { CentralMothership } from '../../effects/component_effects/CentralMothership';
 import { ColonyStarStation } from '../../effects/component_effects/ColonyStarStation';
 import { ExplorationHub } from '../../effects/component_effects/ExplorationHub';
@@ -10,6 +9,7 @@ import { ModuleUpgradeTransition } from '../../effects/component_effects/ModuleU
 import { PopulationIndicator } from '../../effects/component_effects/PopulationIndicator';
 import { StarSystemBackdrop } from '../../effects/component_effects/StarSystemBackdrop';
 import { useScalingSystem } from '../../hooks/game/useScalingSystem';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 
 interface VPRStarSystemViewProps {
   empireName: string;
@@ -71,7 +71,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
         type: 'terran' as const,
         population: 5000,
         maxPopulation: 10000,
-        resources: ['Iron', 'Titanium'],
+        resources: [ResourceType.IRON, ResourceType.TITANIUM],
         developmentLevel: 0.6,
         cityLightIntensity: 0.7,
         anomalies: [{ type: 'warning' as const, message: 'Unstable tectonic activity' }],
@@ -104,7 +104,7 @@ export function VPRStarSystemView({ empireName, onModuleSelect }: VPRStarSystemV
         nodes: [
           {
             id: 'iron-1',
-            type: 'Iron',
+            type: ResourceType.IRON,
             amount: 800,
             maxAmount: 1000,
             extractionRate: 10,

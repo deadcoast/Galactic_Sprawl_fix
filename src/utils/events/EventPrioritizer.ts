@@ -414,7 +414,7 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
    * Generate a unique ID for an event
    */
   private generateEventId(event: T): string {
-    return `${event.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `${event?.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   /**
@@ -422,8 +422,8 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
    */
   private getEventPriority(event: T): EventPriority {
     // Check if priority is explicitly set in the priority map
-    if (this.config.priorityMap.has(event.type)) {
-      return this.config.priorityMap.get(event.type)!;
+    if (this.config.priorityMap.has(event?.type)) {
+      return this.config.priorityMap.get(event?.type)!;
     }
 
     // Otherwise use default priority
@@ -452,15 +452,15 @@ export class EventPrioritizer<T extends BaseEvent = BaseEvent> {
     };
 
     // Check if this event type can be coalesced
-    if (this.config.enableEventCoalescing && this.config.coalesceableEventTypes.has(event.type)) {
+    if (this.config.enableEventCoalescing && this.config.coalesceableEventTypes.has(event?.type)) {
       // Check if we already have an event of this type
-      if (this.latestEventByType.has(event.type)) {
+      if (this.latestEventByType.has(event?.type)) {
         // Increment coalesced count
         this.metrics.eventsCoalesced++;
       }
 
       // Store as latest event of this type
-      this.latestEventByType.set(event.type, prioritizedEvent);
+      this.latestEventByType.set(event?.type, prioritizedEvent);
     } else {
       // For non-coalesceable events, emit immediately
       this.eventSubject.next(prioritizedEvent);

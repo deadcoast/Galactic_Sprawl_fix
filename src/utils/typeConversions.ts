@@ -136,7 +136,7 @@ export function convertToFactionCombatUnit(
       maxHealth: unit.stats?.maxHealth || 100,
       shield: unit.stats?.shield || 50,
       maxShield: unit.stats?.maxShield || 50,
-      armor: unit.stats?.armor || 0,
+      armor: unit.stats?.armor ?? 0,
       speed: unit.stats?.speed || 5,
       turnRate: unit.stats?.turnRate || 1,
       accuracy: 0.8,
@@ -151,7 +151,7 @@ export function convertToFactionCombatUnit(
     status: {
       main: unit.status?.main || 'active',
       secondary: unit.status?.secondary,
-      effects: unit.status?.effects || [],
+      effects: unit.status?.effects ?? [],
     },
     experience: {
       current: 0,
@@ -167,7 +167,7 @@ export function convertToBaseCombatUnit(unit: FactionCombatUnit): CombatUnit {
     id: unit.id,
     type: unit.type,
     position: unit.position,
-    rotation: unit.rotation || 0,
+    rotation: unit.rotation ?? 0,
     velocity: unit.velocity || { x: 0, y: 0 },
     status: unit.status,
     weapons: unit.weapons,
@@ -249,13 +249,13 @@ export function convertToCombatTypesUnit(
       status: convertToWeaponStatus(w.status || 'ready'),
     })),
     stats: {
-      health: unit.health || 0,
-      maxHealth: unit.maxHealth || 0,
-      shield: unit.shield || 0,
-      maxShield: unit.maxShield || 0,
-      armor: unit.armor || 0,
-      speed: unit.speed || 0,
-      turnRate: unit.turnRate || 0,
+      health: unit.health ?? 0,
+      maxHealth: unit.maxHealth ?? 0,
+      shield: unit.shield ?? 0,
+      maxShield: unit.maxShield ?? 0,
+      armor: unit.armor ?? 0,
+      speed: unit.speed ?? 0,
+      turnRate: unit.turnRate ?? 0,
     },
   };
 }
@@ -345,7 +345,7 @@ export function convertToManagerUnit(
       // Extract weapon properties safely
       const weaponId = w.id;
       const weaponType = w.type;
-      const weaponRange = w.range || 0;
+      const weaponRange = w.range ?? 0;
       const weaponDamage = w.damage;
       const weaponCooldown = w.cooldown;
 

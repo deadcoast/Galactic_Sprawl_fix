@@ -21,8 +21,8 @@ export function useCombatSystem() {
     const unsubscribeUnitSpawned = combatManager.subscribe('combat:unit-spawned', event => {
       setActiveUnits(prev => prev + 1);
       // Update threat level based on unit type and faction
-      if (event.faction !== 'player') {
-        setThreatLevel(prev => prev + getThreatValueForUnit(event.unitType));
+      if (event?.faction !== 'player') {
+        setThreatLevel(prev => prev + getThreatValueForUnit(event?.unitType));
       }
       setIsActive(true);
     });
@@ -225,8 +225,8 @@ export function useUnitCombat(unitId: string) {
 
   return {
     status: unitStatus?.status || 'idle',
-    health: unitStatus?.stats?.health || 0,
-    shield: unitStatus?.stats?.shield || 0,
+    health: unitStatus?.stats?.health ?? 0,
+    shield: unitStatus?.stats?.shield ?? 0,
     target: unitStatus?.target,
     position: unitStatus?.position,
   };

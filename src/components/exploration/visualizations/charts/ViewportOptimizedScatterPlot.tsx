@@ -94,16 +94,16 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
 
   // Track data boundaries for all data
   const dataBounds = useMemo(() => {
-    if (!data || data.length === 0) return { xMin: 0, xMax: 0, yMin: 0, yMax: 0 };
+    if (!data || data?.length === 0) return { xMin: 0, xMax: 0, yMin: 0, yMax: 0 };
 
     let xMin = Infinity;
     let xMax = -Infinity;
     let yMin = Infinity;
     let yMax = -Infinity;
 
-    data.forEach(point => {
-      const x = Number(point[xAxisKey] || 0);
-      const y = Number(point[yAxisKey] || 0);
+    data?.forEach(point => {
+      const x = Number(point[xAxisKey] ?? 0);
+      const y = Number(point[yAxisKey] ?? 0);
 
       xMin = Math.min(xMin, x);
       xMax = Math.max(xMax, x);
@@ -137,7 +137,7 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
 
   // Filter data to show only points in the current viewport (plus padding)
   const visibleData = useMemo(() => {
-    if (!viewportDomain || !dataProcessed || data.length <= maxPointsBeforeOptimization) {
+    if (!viewportDomain || !dataProcessed || data?.length <= maxPointsBeforeOptimization) {
       return data; // Show all data if it's a small dataset or viewport not yet set
     }
 
@@ -153,9 +153,9 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
     };
 
     // Filter data to only include points in the extended viewport
-    return data.filter(point => {
-      const x = Number(point[xAxisKey] || 0);
-      const y = Number(point[yAxisKey] || 0);
+    return data?.filter(point => {
+      const x = Number(point[xAxisKey] ?? 0);
+      const y = Number(point[yAxisKey] ?? 0);
 
       return (
         x >= extendedViewport.xMin &&
@@ -176,7 +176,7 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
 
   // Track number of points currently being rendered
   const pointCount = visibleData.length;
-  const totalPoints = data.length;
+  const totalPoints = data?.length;
   const isOptimized = totalPoints > maxPointsBeforeOptimization;
 
   // Handle viewport changes from user interactions (pan/zoom)
@@ -202,7 +202,7 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
   }, [pointCount, totalPoints, isOptimized, dataProcessed]);
 
   // If no data, show error
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return (
       <BaseChart
         width={width}
@@ -294,10 +294,10 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
             yAxis?: Array<{ domain: [number, number] }>;
           };
 
-          if (event && event.xAxis && event.yAxis && event.xAxis[0] && event.yAxis[0]) {
+          if (event && event?.xAxis && event?.yAxis && event?.xAxis[0] && event?.yAxis[0]) {
             const domain = {
-              x: event.xAxis[0].domain,
-              y: event.yAxis[0].domain,
+              x: event?.xAxis[0].domain,
+              y: event?.yAxis[0].domain,
             };
             debouncedViewportChange(domain);
           }
@@ -365,7 +365,7 @@ export const ViewportOptimizedScatterPlot = React.memo(function ViewportOptimize
                 r={zAxisKey ? typedProps.r : (pointSizeValue || 30) / 2}
                 fill={
                   typedProps.payload
-                    ? getPointColor(typedProps.payload, typedProps.index || 0)
+                    ? getPointColor(typedProps.payload, typedProps.index ?? 0)
                     : typedProps.fill || '#8884d8'
                 }
                 stroke={typedProps.stroke}

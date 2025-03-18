@@ -263,6 +263,41 @@ src/
 - **TTR (Tech Tree Research)**: Technology advancement system
 - **Automation Purpose (AP)**: Defines automated behavior patterns
 
+## Test Documentation
+
+The Tests directory contains test scripts for verifying the functionality of various error correction tools:
+
+### Test Scripts
+
+- **test_resource_type_fixes.sh**: Tests the ResourceType fix script
+- **test_type_safety_fixes.sh**: Tests the Type Safety fix script
+- **test_null_safety_fixes.sh**: Tests the Null Safety fix script
+
+### Running Tests
+
+```bash
+# Run the Resource Type test script
+./test_resource_type_fixes.sh
+
+# Run the Type Safety test script
+./test_type_safety_fixes.sh
+
+# Run the Null Safety test script
+./test_null_safety_fixes.sh
+```
+
+### Test Results
+
+The test results are summarized in `summary.md`, which provides details on:
+
+- Features tested for each fix script
+- Test status and verification methods
+- Manual testing steps performed
+- Integration testing with the unified script runner
+- Next steps for improvement
+
+For more details on the testing methodology and results, please see `summary.md`.
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.

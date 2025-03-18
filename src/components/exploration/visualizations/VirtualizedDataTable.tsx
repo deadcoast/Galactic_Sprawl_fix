@@ -258,7 +258,7 @@ export const VirtualizedDataTable = React.memo(
     }, []);
 
     // Handle empty data case
-    if (!data.length) {
+    if (!data?.length) {
       // Use style prop instead of sx to avoid complex union type
       return (
         <Paper sx={{ width: '100%', overflow: 'hidden' }} className={className}>
@@ -320,13 +320,13 @@ export const VirtualizedDataTable = React.memo(
     // If data references have changed but data content is the same, don't re-render
     if (prevProps.data !== nextProps.data) {
       // Only compare length for basic check (could be enhanced for deeper equality)
-      if (prevProps.data.length !== nextProps.data.length) {
+      if (prevProps.data?.length !== nextProps.data?.length) {
         return false; // Re-render if lengths are different
       }
 
       // Perform a simple comparison of the first item for quick check
       if (
-        prevProps.data.length > 0 &&
+        prevProps.data?.length > 0 &&
         JSON.stringify(prevProps.data[0]) !== JSON.stringify(nextProps.data[0])
       ) {
         return false; // Re-render if first items are different

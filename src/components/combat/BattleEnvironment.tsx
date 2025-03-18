@@ -195,7 +195,7 @@ export function BattleEnvironment({
       factionBehavior: {
         aggressionLevel: fleetAIResult.factionBehavior.behaviorState.aggression,
         territorialControl: {
-          facing: fleetAIResult.factionBehavior.territory.center.x || 0,
+          facing: fleetAIResult.factionBehavior.territory.center.x ?? 0,
         },
       },
       visualFeedback: {
@@ -327,7 +327,7 @@ export function BattleEnvironment({
       const particleCount = Math.floor(baseParticleCount * tierMultiplier);
 
       // Use object pooling for particles
-      const particles = particlePositionsRef.current[hazard.id] || [];
+      const particles = particlePositionsRef.current[hazard.id] ?? [];
       while (particles.length < particleCount) {
         particles.push({ x: 0, y: 0 });
       }
@@ -388,10 +388,10 @@ export function BattleEnvironment({
       const { type, data } = e.data;
       switch (type) {
         case 'WEAPON_FIRE':
-          handleWeaponFire(data.weaponId, data.targetId, data.weaponType);
+          handleWeaponFire(data?.weaponId, data?.targetId, data?.weaponType);
           break;
         case 'UNIT_MOVE':
-          onUnitMove(data.unitId, data.position);
+          onUnitMove(data?.unitId, data?.position);
           break;
       }
     };
@@ -446,9 +446,9 @@ export function BattleEnvironment({
   useEffect(() => {
     const subscription = moduleEventBus.subscribe('AUTOMATION_STARTED', (event: ModuleEvent) => {
       if (
-        event.type === 'AUTOMATION_STARTED' &&
-        event.moduleType === 'hangar' &&
-        event.data?.type
+        event?.type === 'AUTOMATION_STARTED' &&
+        event?.moduleType === 'hangar' &&
+        event?.data?.type
       ) {
         // Define the valid automation effect types
         const validTypes = [
@@ -462,24 +462,24 @@ export function BattleEnvironment({
         type AutomationEffectType = (typeof validTypes)[number];
 
         // Check if the type is valid
-        const effectType = event.data.type;
+        const effectType = event?.data?.type;
         if (
           typeof effectType === 'string' &&
           validTypes.includes(effectType as AutomationEffectType)
         ) {
           // Create a properly typed position object
           const position: Position =
-            event.data?.position &&
-            typeof event.data.position === 'object' &&
-            'x' in event.data.position &&
-            'y' in event.data.position
-              ? { x: Number(event.data.position.x), y: Number(event.data.position.y) }
+            event?.data?.position &&
+            typeof event?.data?.position === 'object' &&
+            'x' in event?.data?.position &&
+            'y' in event?.data?.position
+              ? { x: Number(event?.data?.position.x), y: Number(event?.data?.position.y) }
               : { x: 50, y: 50 };
 
           setAutomationEffects(prev => [
             ...prev,
             {
-              id: `${event.moduleId}-${Date.now()}`,
+              id: `${event?.moduleId}-${Date.now()}`,
               type: effectType as AutomationEffectType,
               position,
               timestamp: Date.now(),

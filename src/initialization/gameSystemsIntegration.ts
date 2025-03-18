@@ -201,7 +201,7 @@ export function integrateWithGameSystems(): () => void {
       data: unknown;
     }>(event => {
       try {
-        console.warn(`Processing combat event: ${event.type}`);
+        console.warn(`Processing combat event: ${event?.type}`);
         // Process the combat event
         return Promise.resolve();
       } catch (error) {

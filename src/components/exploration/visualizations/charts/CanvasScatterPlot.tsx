@@ -127,7 +127,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
 
   // Calculate domains from data if not provided
   const calculatedDomains = useMemo(() => {
-    if (!data || data.length === 0) {
+    if (!data || data?.length === 0) {
       return {
         x: [0, 1] as [number, number],
         y: [0, 1] as [number, number],
@@ -146,27 +146,27 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
     let colorMax = -Infinity;
 
     // Find min/max values
-    data.forEach(item => {
+    data?.forEach(item => {
       // X values
-      const x = Number(item[xAxisKey] || 0);
+      const x = Number(item[xAxisKey] ?? 0);
       xMin = Math.min(xMin, x);
       xMax = Math.max(xMax, x);
 
       // Y values
-      const y = Number(item[yAxisKey] || 0);
+      const y = Number(item[yAxisKey] ?? 0);
       yMin = Math.min(yMin, y);
       yMax = Math.max(yMax, y);
 
       // Size values (if provided)
       if (sizeKey && item[sizeKey] !== undefined) {
-        const size = Number(item[sizeKey] || 0);
+        const size = Number(item[sizeKey] ?? 0);
         sizeMin = Math.min(sizeMin, size);
         sizeMax = Math.max(sizeMax, size);
       }
 
       // Color values (if provided)
       if (colorKey && item[colorKey] !== undefined) {
-        const color = Number(item[colorKey] || 0);
+        const color = Number(item[colorKey] ?? 0);
         colorMin = Math.min(colorMin, color);
         colorMax = Math.max(colorMax, color);
       }
@@ -200,7 +200,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
 
   // Determine if we should use high performance mode
   const highPerformanceMode =
-    forcedHighPerformanceMode || (data && data.length > performanceThreshold);
+    forcedHighPerformanceMode || (data && data?.length > performanceThreshold);
 
   // Check WebGL support
   useEffect(() => {
@@ -508,9 +508,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
     }
 
     // Draw data points
-    data.forEach(item => {
-      const x = Number(item[xAxisKey] || 0);
-      const y = Number(item[yAxisKey] || 0);
+    data?.forEach(item => {
+      const x = Number(item[xAxisKey] ?? 0);
+      const y = Number(item[yAxisKey] ?? 0);
 
       // Skip points outside the visible range
       if (x < domains.x[0] || x > domains.x[1] || y < domains.y[0] || y > domains.y[1]) {
@@ -523,13 +523,13 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
       // Determine point size
       let pointSize = sizeRange[0];
       if (sizeKey && item[sizeKey] !== undefined) {
-        pointSize = scales.size(Number(item[sizeKey] || 0));
+        pointSize = scales.size(Number(item[sizeKey] ?? 0));
       }
 
       // Determine point color
       let pointColor = colorRange[0];
       if (colorKey && item[colorKey] !== undefined) {
-        pointColor = scales.color(Number(item[colorKey] || 0));
+        pointColor = scales.color(Number(item[colorKey] ?? 0));
       }
 
       // Draw point
@@ -566,7 +566,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   const renderWebGL = useCallback(() => {
     const gl = glRef.current;
     const canvas = webglCanvasRef.current;
-    if (!gl || !canvas || !data || data.length === 0) return;
+    if (!gl || !canvas || !data || data?.length === 0) return;
 
     // Clear canvas
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -578,9 +578,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
     const colors: number[] = [];
 
     // Prepare data for WebGL
-    data.forEach(item => {
-      const x = Number(item[xAxisKey] || 0);
-      const y = Number(item[yAxisKey] || 0);
+    data?.forEach(item => {
+      const x = Number(item[xAxisKey] ?? 0);
+      const y = Number(item[yAxisKey] ?? 0);
 
       // Skip points outside the visible range
       if (x < domains.x[0] || x > domains.x[1] || y < domains.y[0] || y > domains.y[1]) {
@@ -596,14 +596,14 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
       // Determine point size
       let pointSize = sizeRange[0];
       if (sizeKey && item[sizeKey] !== undefined) {
-        pointSize = scales.size(Number(item[sizeKey] || 0));
+        pointSize = scales.size(Number(item[sizeKey] ?? 0));
       }
       sizes.push(pointSize);
 
       // Determine point color
       let pointColor = colorRange[0];
       if (colorKey && item[colorKey] !== undefined) {
-        pointColor = scales.color(Number(item[colorKey] || 0));
+        pointColor = scales.color(Number(item[colorKey] ?? 0));
       }
 
       // Convert hex color to RGB
@@ -722,9 +722,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
         // Only check points within a certain radius in high performance mode
         const checkRadius = highPerformanceMode ? 10 : 50;
 
-        data.forEach(item => {
-          const itemX = Number(item[xAxisKey] || 0);
-          const itemY = Number(item[yAxisKey] || 0);
+        data?.forEach(item => {
+          const itemX = Number(item[xAxisKey] ?? 0);
+          const itemY = Number(item[yAxisKey] ?? 0);
 
           // Calculate distance in pixel space
           const pixelX = scales.x(itemX);
@@ -789,7 +789,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   }, [canUseWebGL, useWebGL, initWebGL, renderWebGL, renderCanvas2D, dimensions, data]);
 
   // If no data, show error
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return (
       <div
         className={`${className} flex flex-col items-center justify-center rounded border border-solid border-opacity-10`}
@@ -830,7 +830,7 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
       {/* Performance mode notification */}
       {highPerformanceMode && (
         <Typography variant="caption" color="text.secondary" className="mb-1">
-          High performance mode: {data.length.toLocaleString()} data points
+          High performance mode: {data?.length.toLocaleString()} data points
         </Typography>
       )}
 
@@ -881,8 +881,8 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
           <div
             style={{
               position: 'absolute',
-              top: scales.y(Number(hoveredPoint[yAxisKey] || 0)) - 10,
-              left: scales.x(Number(hoveredPoint[xAxisKey] || 0)) + 10,
+              top: scales.y(Number(hoveredPoint[yAxisKey] ?? 0)) - 10,
+              left: scales.x(Number(hoveredPoint[xAxisKey] ?? 0)) + 10,
               backgroundColor:
                 theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)',
               border: '1px solid rgba(0,0,0,0.2)',
@@ -895,19 +895,19 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
             }}
           >
             <div>
-              <strong>{xAxisKey}:</strong> {Number(hoveredPoint[xAxisKey] || 0).toFixed(2)}
+              <strong>{xAxisKey}:</strong> {Number(hoveredPoint[xAxisKey] ?? 0).toFixed(2)}
             </div>
             <div>
-              <strong>{yAxisKey}:</strong> {Number(hoveredPoint[yAxisKey] || 0).toFixed(2)}
+              <strong>{yAxisKey}:</strong> {Number(hoveredPoint[yAxisKey] ?? 0).toFixed(2)}
             </div>
             {sizeKey && hoveredPoint[sizeKey] !== undefined && (
               <div>
-                <strong>{sizeKey}:</strong> {Number(hoveredPoint[sizeKey] || 0).toFixed(2)}
+                <strong>{sizeKey}:</strong> {Number(hoveredPoint[sizeKey] ?? 0).toFixed(2)}
               </div>
             )}
             {colorKey && hoveredPoint[colorKey] !== undefined && (
               <div>
-                <strong>{colorKey}:</strong> {Number(hoveredPoint[colorKey] || 0).toFixed(2)}
+                <strong>{colorKey}:</strong> {Number(hoveredPoint[colorKey] ?? 0).toFixed(2)}
               </div>
             )}
             {mouseDataPosition && (

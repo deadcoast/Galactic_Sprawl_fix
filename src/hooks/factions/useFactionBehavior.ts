@@ -1150,6 +1150,7 @@ export function useFactionBehavior(factionId: FactionId) {
       radius: 100,
       controlPoints: [],
       resources: {
+        [ResourceType.FOOD]: 0,
         [ResourceType.MINERALS]: 0,
         [ResourceType.GAS]: 0,
         [ResourceType.EXOTIC]: 0,
@@ -1195,6 +1196,7 @@ export function useFactionBehavior(factionId: FactionId) {
       activeFleets: 0,
       territorySystems: Math.floor(100 / 1000), // Calculate directly from initial radius
       resourceIncome: {
+        [ResourceType.FOOD]: 0,
         [ResourceType.MINERALS]: 0,
         [ResourceType.ENERGY]: 0,
         [ResourceType.PLASMA]: 0,
@@ -1230,6 +1232,7 @@ export function useFactionBehavior(factionId: FactionId) {
     resourceManagement: {
       gatheringPriority: [],
       stockpileThresholds: {
+        [ResourceType.FOOD]: 0,
         [ResourceType.MINERALS]: 0,
         [ResourceType.ENERGY]: 0,
         [ResourceType.PLASMA]: 0,
@@ -1262,13 +1265,13 @@ export function useFactionBehavior(factionId: FactionId) {
 
   const handleModuleEvent = useCallback(
     (event: ModuleEvent) => {
-      switch (event.type) {
+      switch (event?.type) {
         case 'STATUS_CHANGED':
-          if (event.data?.type === 'tactics') {
+          if (event?.data?.type === 'tactics') {
             const oldTactics = behavior.combatTactics;
             const newTactics = {
               ...oldTactics,
-              ...event.data,
+              ...event?.data,
             };
 
             setBehavior(prev => ({
@@ -1337,11 +1340,11 @@ export function useFactionBehavior(factionId: FactionId) {
     const unsubscribeBehaviorChanged = factionBehaviorManager.on(
       FactionEventType.BEHAVIOR_CHANGED,
       event => {
-        if (isBehaviorChangedEvent(event) && event.factionId === factionId) {
+        if (isBehaviorChangedEvent(event) && event?.factionId === factionId) {
           handleBehaviorEvent(FactionEventType.BEHAVIOR_CHANGED, {
             factionId,
-            oldBehavior: event.oldBehavior,
-            newBehavior: event.newBehavior,
+            oldBehavior: event?.oldBehavior,
+            newBehavior: event?.newBehavior,
           });
         }
       }
@@ -1350,10 +1353,10 @@ export function useFactionBehavior(factionId: FactionId) {
     const unsubscribeFleetUpdated = factionBehaviorManager.on(
       FactionEventType.FLEET_UPDATED,
       event => {
-        if (isFleetUpdatedEvent(event) && event.factionId === factionId) {
+        if (isFleetUpdatedEvent(event) && event?.factionId === factionId) {
           handleBehaviorEvent(FactionEventType.FLEET_UPDATED, {
             factionId,
-            fleets: event.fleets,
+            fleets: event?.fleets,
           });
         }
       }
@@ -1362,10 +1365,10 @@ export function useFactionBehavior(factionId: FactionId) {
     const unsubscribeTerritoryChanged = factionBehaviorManager.on(
       FactionEventType.TERRITORY_CHANGED,
       event => {
-        if (isTerritoryChangedEvent(event) && event.factionId === factionId) {
+        if (isTerritoryChangedEvent(event) && event?.factionId === factionId) {
           handleBehaviorEvent(FactionEventType.TERRITORY_CHANGED, {
             factionId,
-            territory: event.territory,
+            territory: event?.territory,
           });
         }
       }
@@ -1374,12 +1377,12 @@ export function useFactionBehavior(factionId: FactionId) {
     const unsubscribeRelationshipChanged = factionBehaviorManager.on(
       FactionEventType.RELATIONSHIP_CHANGED,
       event => {
-        if (isRelationshipChangedEvent(event) && event.factionId === factionId) {
+        if (isRelationshipChangedEvent(event) && event?.factionId === factionId) {
           handleBehaviorEvent(FactionEventType.RELATIONSHIP_CHANGED, {
             factionId,
-            targetFaction: event.targetFaction,
-            oldValue: event.oldValue,
-            newValue: event.newValue,
+            targetFaction: event?.targetFaction,
+            oldValue: event?.oldValue,
+            newValue: event?.newValue,
           });
         }
       }
@@ -1388,12 +1391,12 @@ export function useFactionBehavior(factionId: FactionId) {
     const unsubscribeResourcesUpdated = factionBehaviorManager.on(
       FactionEventType.RESOURCES_UPDATED,
       event => {
-        if (isResourcesUpdatedEvent(event) && event.factionId === factionId) {
+        if (isResourcesUpdatedEvent(event) && event?.factionId === factionId) {
           handleBehaviorEvent(FactionEventType.RESOURCES_UPDATED, {
             factionId,
-            resourceType: event.resourceType,
-            oldAmount: event.oldAmount,
-            newAmount: event.newAmount,
+            resourceType: event?.resourceType,
+            oldAmount: event?.oldAmount,
+            newAmount: event?.newAmount,
           });
         }
       }
@@ -1402,11 +1405,11 @@ export function useFactionBehavior(factionId: FactionId) {
     const unsubscribeCombatTacticsChanged = factionBehaviorManager.on(
       FactionEventType.COMBAT_TACTICS_CHANGED,
       event => {
-        if (isCombatTacticsChangedEvent(event) && event.factionId === factionId) {
+        if (isCombatTacticsChangedEvent(event) && event?.factionId === factionId) {
           handleBehaviorEvent(FactionEventType.COMBAT_TACTICS_CHANGED, {
             factionId,
-            oldTactics: event.oldTactics,
-            newTactics: event.newTactics,
+            oldTactics: event?.oldTactics,
+            newTactics: event?.newTactics,
           });
         }
       }
@@ -1459,7 +1462,7 @@ export function useFactionBehavior(factionId: FactionId) {
       // Convert resource key to ResourceType enum
       const resourceType = ResourceType[resourceKey.toUpperCase() as keyof typeof ResourceType];
       if (resourceType) {
-        const oldAmount = behavior.stats.resourceIncome[resourceType] || 0;
+        const oldAmount = behavior.stats.resourceIncome[resourceType] ?? 0;
         if (oldAmount !== newAmount) {
           factionBehaviorManager.updateResources(factionId, resourceType, newAmount);
         }
@@ -1576,7 +1579,7 @@ function calculateRelationships(
   };
 
   // Get the base modifier for this faction
-  const baseFactionModifier = factionModifiers[factionId] || 0;
+  const baseFactionModifier = factionModifiers[factionId] ?? 0;
 
   Object.keys(currentRelationships).forEach(otherFactionId => {
     const otherFaction = FACTION_CONFIGS[otherFactionId as FactionId];
@@ -1891,7 +1894,7 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
 
 function _determineShipClass(unit: FactionCombatUnit): ShipClass {
   const { status } = unit;
-  const factionShips = FACTION_SHIPS[unit.faction] || [];
+  const factionShips = FACTION_SHIPS[unit.faction] ?? [];
 
   if (status.effects.includes('flagship')) {
     return (
@@ -1974,12 +1977,12 @@ function calculateResourceIncome(territory: FactionTerritory): Record<string, nu
   // Convert to use ResourceType enum keys
   return {
     [ResourceType.MINERALS]: Math.floor(territory.resources[ResourceType.MINERALS] * 0.1),
-    [ResourceType.ENERGY]: Math.floor((territory.resources[ResourceType.MINERALS] || 0) * 0.05),
-    [ResourceType.PLASMA]: Math.floor((territory.resources[ResourceType.EXOTIC] || 0) * 0.2),
+    [ResourceType.ENERGY]: Math.floor((territory.resources[ResourceType.MINERALS] ?? 0) * 0.05),
+    [ResourceType.PLASMA]: Math.floor((territory.resources[ResourceType.EXOTIC] ?? 0) * 0.2),
     [ResourceType.EXOTIC]: Math.floor(territory.resources[ResourceType.EXOTIC] * 0.05),
     [ResourceType.GAS]: Math.floor(territory.resources[ResourceType.GAS] * 0.1),
-    [ResourceType.POPULATION]: Math.floor((territory.resources[ResourceType.MINERALS] || 0) * 0.01),
-    [ResourceType.RESEARCH]: Math.floor((territory.resources[ResourceType.EXOTIC] || 0) * 0.02),
+    [ResourceType.POPULATION]: Math.floor((territory.resources[ResourceType.MINERALS] ?? 0) * 0.01),
+    [ResourceType.RESEARCH]: Math.floor((territory.resources[ResourceType.EXOTIC] ?? 0) * 0.02),
   };
 }
 
@@ -2159,6 +2162,7 @@ function manageResources(state: FactionBehaviorState): void {
   // Adjust stockpile thresholds based on expansion plans
   if (state.expansionStrategy.systemPriority === 'resources') {
     state.resourceManagement.stockpileThresholds = {
+      [ResourceType.FOOD]: 2000,
       [ResourceType.MINERALS]: 2000,
       [ResourceType.ENERGY]: 1500,
       [ResourceType.PLASMA]: 1000,

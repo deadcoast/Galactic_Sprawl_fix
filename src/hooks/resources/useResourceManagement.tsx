@@ -106,7 +106,7 @@ export function useResourceManagement() {
   const getAllResourceStates = () => {
     const result = new Map<ResourceType, ResourceState>();
     resourceStates.forEach((state, type) => {
-      result.set(type, state);
+      result?.set(type, state);
     });
     return result;
   };
@@ -114,13 +114,13 @@ export function useResourceManagement() {
   // Get resource amount
   const getResourceAmount = (type: ResourceType | ResourceTypeString) => {
     const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
-    return resourceStates.get(enumType)?.current || 0;
+    return resourceStates.get(enumType)?.current ?? 0;
   };
 
   // Check if a resource is available
   const hasResource = (type: ResourceType | ResourceTypeString, amount: number) => {
     const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
-    return (resourceStates.get(enumType)?.current || 0) >= amount;
+    return (resourceStates.get(enumType)?.current ?? 0) >= amount;
   };
 
   // Check if multiple resources are available
@@ -134,7 +134,7 @@ export function useResourceManagement() {
   // Consume a resource
   const consumeResource = (type: ResourceType | ResourceTypeString, amount: number) => {
     const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
-    const currentAmount = resourceStates.get(enumType)?.current || 0;
+    const currentAmount = resourceStates.get(enumType)?.current ?? 0;
     if (currentAmount < amount) return false;
 
     setResourceStates(prev => {
@@ -204,7 +204,7 @@ export function useResourceManagement() {
   const getProductionRate = useCallback(
     (type: ResourceType | ResourceTypeString): number => {
       const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
-      return resourceStates.get(enumType)?.production || 0;
+      return resourceStates.get(enumType)?.production ?? 0;
     },
     [resourceStates]
   );
@@ -213,7 +213,7 @@ export function useResourceManagement() {
   const getConsumptionRate = useCallback(
     (type: ResourceType | ResourceTypeString): number => {
       const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
-      return resourceStates.get(enumType)?.consumption || 0;
+      return resourceStates.get(enumType)?.consumption ?? 0;
     },
     [resourceStates]
   );
@@ -240,7 +240,7 @@ export function useResourceManagement() {
   const getResourceCapacity = useCallback(
     (type: ResourceType | ResourceTypeString): number => {
       const enumType = ResourceTypeConverter.ensureEnumResourceType(type);
-      return resourceStates.get(enumType)?.max || 0;
+      return resourceStates.get(enumType)?.max ?? 0;
     },
     [resourceStates]
   );

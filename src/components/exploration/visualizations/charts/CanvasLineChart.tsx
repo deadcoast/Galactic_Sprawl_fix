@@ -12,7 +12,7 @@ function downsampleLTTB(
   yKey: string,
   threshold: number
 ): Array<Record<string, unknown>> {
-  if (data.length <= threshold) {
+  if (data?.length <= threshold) {
     return data;
   }
 
@@ -21,7 +21,7 @@ function downsampleLTTB(
   // Always add the first point
   sampled.push(data[0]);
 
-  const bucketSize = (data.length - 2) / (threshold - 2);
+  const bucketSize = (data?.length - 2) / (threshold - 2);
 
   let a = 0; // Last sampled point index
   let nextA = 0;
@@ -36,32 +36,32 @@ function downsampleLTTB(
     let maxAreaIndex = bucketStart;
 
     const pointA = {
-      x: Number(data[a][xKey] || 0),
-      y: Number(data[a][yKey] || 0),
+      x: Number(data[a][xKey] ?? 0),
+      y: Number(data[a][yKey] ?? 0),
     };
 
     // For each point in the current bucket
     for (let j = bucketStart; j < bucketEnd; j++) {
       // Look ahead to next bucket to get point C
       const nextBucketStart = Math.floor((i + 1) * bucketSize) + 1;
-      const nextBucketEnd = Math.min(Math.floor((i + 2) * bucketSize) + 1, data.length);
+      const nextBucketEnd = Math.min(Math.floor((i + 2) * bucketSize) + 1, data?.length);
 
       const avgX =
         data
           .slice(nextBucketStart, nextBucketEnd)
-          .reduce((sum, p) => sum + Number(p[xKey] || 0), 0) /
+          .reduce((sum, p) => sum + Number(p[xKey] ?? 0), 0) /
         (nextBucketEnd - nextBucketStart);
 
       const avgY =
         data
           .slice(nextBucketStart, nextBucketEnd)
-          .reduce((sum, p) => sum + Number(p[yKey] || 0), 0) /
+          .reduce((sum, p) => sum + Number(p[yKey] ?? 0), 0) /
         (nextBucketEnd - nextBucketStart);
 
       const pointC = { x: avgX, y: avgY };
       const pointB = {
-        x: Number(data[j][xKey] || 0),
-        y: Number(data[j][yKey] || 0),
+        x: Number(data[j][xKey] ?? 0),
+        y: Number(data[j][yKey] ?? 0),
       };
 
       // Calculate triangle area
@@ -84,7 +84,7 @@ function downsampleLTTB(
   }
 
   // Always add the last point
-  sampled.push(data[data.length - 1]);
+  sampled.push(data[data?.length - 1]);
 
   return sampled;
 }
@@ -243,12 +243,12 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
 
   // Downsample data if needed for performance
   useEffect(() => {
-    if (!data || data.length === 0) return;
+    if (!data || data?.length === 0) return;
 
     // Sort data by x-axis value
     const sortedData = [...data].sort((a, b) => {
-      const aVal = Number(a[xAxisKey] || 0);
-      const bVal = Number(b[xAxisKey] || 0);
+      const aVal = Number(a[xAxisKey] ?? 0);
+      const bVal = Number(b[xAxisKey] ?? 0);
       return aVal - bVal;
     });
 
@@ -283,13 +283,13 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
     // Find min/max values for all series
     downsampledData.forEach(item => {
       // X values
-      const x = Number(item[xAxisKey] || 0);
+      const x = Number(item[xAxisKey] ?? 0);
       xMin = Math.min(xMin, x);
       xMax = Math.max(xMax, x);
 
       // Y values for all series
       yAxisKeys.forEach(key => {
-        const y = Number(item[key] || 0);
+        const y = Number(item[key] ?? 0);
         yMin = Math.min(yMin, y);
         yMax = Math.max(yMax, y);
       });
@@ -552,7 +552,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
 
         legendItems.forEach(item => {
           // Draw color box
-          ctx.fillStyle = item.color;
+          ctx.fillStyle = item?.color;
           ctx.fillRect(x, y - 9, 12, 9);
           ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
           ctx.strokeRect(x, y - 9, 12, 9);
@@ -560,9 +560,9 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
           // Draw label
           ctx.fillStyle = theme.palette.mode === 'dark' ? '#fff' : '#000';
           ctx.textAlign = 'left';
-          ctx.fillText(item.label, x + 16, y);
+          ctx.fillText(item?.label, x + 16, y);
 
-          x += ctx.measureText(item.label).width + 30;
+          x += ctx.measureText(item?.label).width + 30;
         });
       } else if (legendPosition === 'bottom') {
         let x = 10;
@@ -570,7 +570,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
 
         legendItems.forEach(item => {
           // Draw color box
-          ctx.fillStyle = item.color;
+          ctx.fillStyle = item?.color;
           ctx.fillRect(x, y - 9, 12, 9);
           ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
           ctx.strokeRect(x, y - 9, 12, 9);
@@ -578,9 +578,9 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
           // Draw label
           ctx.fillStyle = theme.palette.mode === 'dark' ? '#fff' : '#000';
           ctx.textAlign = 'left';
-          ctx.fillText(item.label, x + 16, y);
+          ctx.fillText(item?.label, x + 16, y);
 
-          x += ctx.measureText(item.label).width + 30;
+          x += ctx.measureText(item?.label).width + 30;
         });
       } else if (legendPosition === 'right') {
         let y = 20;
@@ -588,7 +588,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
 
         legendItems.forEach(item => {
           // Draw color box
-          ctx.fillStyle = item.color;
+          ctx.fillStyle = item?.color;
           ctx.fillRect(x, y - 9, 12, 9);
           ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
           ctx.strokeRect(x, y - 9, 12, 9);
@@ -596,7 +596,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
           // Draw label
           ctx.fillStyle = theme.palette.mode === 'dark' ? '#fff' : '#000';
           ctx.textAlign = 'left';
-          ctx.fillText(item.label, x + 16, y);
+          ctx.fillText(item?.label, x + 16, y);
 
           y += 20;
         });
@@ -606,7 +606,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
 
         legendItems.forEach(item => {
           // Draw color box
-          ctx.fillStyle = item.color;
+          ctx.fillStyle = item?.color;
           ctx.fillRect(x, y - 9, 12, 9);
           ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
           ctx.strokeRect(x, y - 9, 12, 9);
@@ -614,7 +614,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
           // Draw label
           ctx.fillStyle = theme.palette.mode === 'dark' ? '#fff' : '#000';
           ctx.textAlign = 'left';
-          ctx.fillText(item.label, x + 16, y);
+          ctx.fillText(item?.label, x + 16, y);
 
           y += 20;
         });
@@ -637,21 +637,21 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
         ctx.beginPath();
 
         // Start at the first point at the bottom of the chart
-        const firstX = Number(visibleData[0][xAxisKey] || 0);
+        const firstX = Number(visibleData[0][xAxisKey] ?? 0);
         ctx.moveTo(scales.x(firstX), scales.y(domains.y[0]));
 
         // Draw line up to the first data point
-        ctx.lineTo(scales.x(firstX), scales.y(Number(visibleData[0][key] || 0)));
+        ctx.lineTo(scales.x(firstX), scales.y(Number(visibleData[0][key] ?? 0)));
 
         // Draw the line through all points
         visibleData.forEach(item => {
-          const x = Number(item[xAxisKey] || 0);
-          const y = Number(item[key] || 0);
+          const x = Number(item[xAxisKey] ?? 0);
+          const y = Number(item[key] ?? 0);
           ctx.lineTo(scales.x(x), scales.y(y));
         });
 
         // Draw line down to the bottom of the chart
-        const lastX = Number(visibleData[visibleData.length - 1][xAxisKey] || 0);
+        const lastX = Number(visibleData[visibleData.length - 1][xAxisKey] ?? 0);
         ctx.lineTo(scales.x(lastX), scales.y(domains.y[0]));
 
         // Fill the path
@@ -666,8 +666,8 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
 
       let isFirstPoint = true;
       visibleData.forEach(item => {
-        const x = Number(item[xAxisKey] || 0);
-        const y = Number(item[key] || 0);
+        const x = Number(item[xAxisKey] ?? 0);
+        const y = Number(item[key] ?? 0);
 
         if (isFirstPoint) {
           ctx.moveTo(scales.x(x), scales.y(y));
@@ -682,8 +682,8 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
       // Draw data points if enabled
       if (showDataPoints) {
         visibleData.forEach(item => {
-          const x = Number(item[xAxisKey] || 0);
-          const y = Number(item[key] || 0);
+          const x = Number(item[xAxisKey] ?? 0);
+          const y = Number(item[key] ?? 0);
 
           ctx.beginPath();
           ctx.arc(scales.x(x), scales.y(y), dataPointRadius, 0, Math.PI * 2);
@@ -862,7 +862,7 @@ export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
   }, [renderChart, dimensions, downsampledData, animationProgress]);
 
   // If no data, show error
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return (
       <div
         className={`${className} flex flex-col items-center justify-center rounded border border-solid border-opacity-10`}

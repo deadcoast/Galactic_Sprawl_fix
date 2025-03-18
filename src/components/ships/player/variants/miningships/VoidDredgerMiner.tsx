@@ -1,5 +1,5 @@
-import * as React from "react";
 import { AlertTriangle, Database, Truck, Zap } from 'lucide-react';
+import { ResourceType } from '../../../../../types/resources/ResourceTypes';
 
 interface VoidDredgerProps {
   id: string;
@@ -15,7 +15,7 @@ interface VoidDredgerProps {
     current: number;
     capacity: number;
     resources: {
-      type: string;
+      type: ResourceType;
       amount: number;
     }[];
   };
@@ -141,7 +141,7 @@ export function VoidDredger({
           <span>Recall Ship</span>
         </button>
         <button
-          onClick={() => onSetTarget(targetNode?.id || '')}
+          onClick={() => onSetTarget(targetNode?.id ?? '')}
           disabled={status === 'maintenance'}
           className={`flex items-center justify-center space-x-2 rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 ${
             status === 'maintenance' ? 'cursor-not-allowed opacity-50' : ''

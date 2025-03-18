@@ -222,11 +222,11 @@ export class UserBehaviorCorrelationAnalysis {
 
         session.userInteractions.forEach(interaction => {
           typeCount[interaction.interactionType] =
-            (typeCount[interaction.interactionType] || 0) + 1;
+            (typeCount[interaction.interactionType] ?? 0) + 1;
         });
 
         Object.entries(typeCount).forEach(([type, count]) => {
-          metrics[`interactionType:${type}`] = metrics[`interactionType:${type}`] || [];
+          metrics[`interactionType:${type}`] = metrics[`interactionType:${type}`] ?? [];
           metrics[`interactionType:${type}`].push({
             timestamp: session.timestamp,
             value: count,
@@ -293,7 +293,7 @@ export class UserBehaviorCorrelationAnalysis {
         const metricName = `resourceUtilization:${resourceType}`;
 
         if (this.config.performanceMetrics.includes(metricName)) {
-          metrics[metricName] = metrics[metricName] || [];
+          metrics[metricName] = metrics[metricName] ?? [];
           metrics[metricName].push({
             timestamp: session.timestamp,
             value,
@@ -411,7 +411,7 @@ export class UserBehaviorCorrelationAnalysis {
 
     interactions.forEach(interaction => {
       const type = interaction.interactionType;
-      grouped[type] = grouped[type] || [];
+      grouped[type] = grouped[type] ?? [];
       grouped[type].push(interaction);
     });
 

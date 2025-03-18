@@ -218,17 +218,17 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
 
     // Start conversion process
     const result = this.startConversionProcess(availableConverter.id, currentRecipeId);
-    if (!result.success) {
+    if (!result?.success) {
       status.failed = true;
       status.errorMessage =
-        result.error || `Failed to start conversion for recipe ${currentRecipeId}`;
+        result?.error || `Failed to start conversion for recipe ${currentRecipeId}`;
       return;
     }
 
     // Update step status
     stepStatus.status = 'in-progress';
     stepStatus.startTime = Date.now();
-    stepStatus.processId = result.processId;
+    stepStatus.processId = result?.processId;
     stepStatus.converterId = availableConverter.id;
 
     // Emit event for chain step started
@@ -240,7 +240,7 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
         chainId,
         stepIndex: currentStepIndex,
         recipeId: currentRecipeId,
-        processId: result.processId,
+        processId: result?.processId,
         converterId: availableConverter.id,
         // Add required BaseEvent properties
         moduleId: 'resource-conversion-manager',
@@ -251,7 +251,7 @@ export class ResourceConversionManager extends Singleton<ResourceConversionManag
           chainId,
           stepIndex: currentStepIndex,
           recipeId: currentRecipeId,
-          processId: result.processId,
+          processId: result?.processId,
           converterId: availableConverter.id,
         },
       };

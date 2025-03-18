@@ -866,7 +866,7 @@ export default function TechTree() {
     // Simulate research progress
     const interval = setInterval(() => {
       setResearchProgress(prev => {
-        const currentProgress = prev[nodeId] || 0;
+        const currentProgress = prev[nodeId] ?? 0;
         const newProgress = currentProgress + 0.1; // 10% increment
 
         if (newProgress >= 1) {
@@ -1035,7 +1035,7 @@ export default function TechTree() {
             </span>
           </div>
           <ResearchProgressIndicator
-            progress={researchProgress[activeResearch] || 0}
+            progress={researchProgress[activeResearch] ?? 0}
             totalTime={10} // 10 seconds for research
             isActive={true}
           />

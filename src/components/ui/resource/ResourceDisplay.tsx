@@ -32,10 +32,10 @@ interface ResourceEventData {
 
 function isResourceEvent(event: ModuleEvent): event is ModuleEvent & { data: ResourceEventData } {
   return Boolean(
-    event.data &&
-      typeof event.data === 'object' &&
-      'resourceType' in event.data &&
-      'amount' in event.data
+    event?.data &&
+      typeof event?.data === 'object' &&
+      'resourceType' in event?.data &&
+      'amount' in event?.data
   );
 }
 
@@ -61,26 +61,26 @@ export function ResourceDisplay({
       {
         eventType: EventType.RESOURCE_PRODUCED,
         handler: (event: ModuleEvent) => {
-          if (isResourceEvent(event) && event.data.resourceType === resourceType) {
-            setAmount(prev => prev + event.data.amount);
-            setProductionRate(prev => prev + event.data.amount);
+          if (isResourceEvent(event) && event?.data?.resourceType === resourceType) {
+            setAmount(prev => prev + event?.data?.amount);
+            setProductionRate(prev => prev + event?.data?.amount);
           }
         },
       },
       {
         eventType: EventType.RESOURCE_CONSUMED,
         handler: (event: ModuleEvent) => {
-          if (isResourceEvent(event) && event.data.resourceType === resourceType) {
-            setAmount(prev => prev - event.data.amount);
-            setConsumptionRate(prev => prev + event.data.amount);
+          if (isResourceEvent(event) && event?.data?.resourceType === resourceType) {
+            setAmount(prev => prev - event?.data?.amount);
+            setConsumptionRate(prev => prev + event?.data?.amount);
           }
         },
       },
       {
         eventType: EventType.RESOURCE_UPDATED,
         handler: (event: ModuleEvent) => {
-          if (isResourceEvent(event) && event.data.resourceType === resourceType) {
-            setAmount(event.data.amount);
+          if (isResourceEvent(event) && event?.data?.resourceType === resourceType) {
+            setAmount(event?.data?.amount);
           }
         },
       },

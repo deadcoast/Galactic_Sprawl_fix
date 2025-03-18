@@ -246,9 +246,9 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
         status: sector.status,
         resourcePotential: sector.resourcePotential,
         habitabilityScore: sector.habitabilityScore,
-        anomalyCount: sector.anomalies?.length || 0,
-        resourceCount: sector.resources?.length || 0,
-        lastScanned: sector.lastScanned || 0,
+        anomalyCount: sector.anomalies?.length ?? 0,
+        resourceCount: sector.resources?.length ?? 0,
+        lastScanned: sector.lastScanned ?? 0,
       },
     };
   }, []);
@@ -287,7 +287,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
         properties: {
           type: resource.type,
           amount: resource.amount,
-          quality: resource.quality || 0,
+          quality: resource.quality ?? 0,
           sectorId,
         },
       };
@@ -299,7 +299,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   useEffect(() => {
     // Handle sector discovered events
     const handleSectorDiscovered = (event: BaseEvent) => {
-      const { sector } = event.data as { sector: Sector };
+      const { sector } = event?.data as { sector: Sector };
       if (!sector) return;
 
       // Get or create the sectors dataset
@@ -312,7 +312,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
 
     // Handle anomaly detected events
     const handleAnomalyDetected = (event: BaseEvent) => {
-      const { anomaly, sector: _ } = event.data as { anomaly: Anomaly; sector: Sector };
+      const { anomaly, sector: _ } = event?.data as { anomaly: Anomaly; sector: Sector };
       if (!anomaly) return;
 
       // Get or create the anomalies dataset
@@ -325,7 +325,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
 
     // Handle resource detected events
     const handleResourceDetected = (event: BaseEvent) => {
-      const { resource, sector } = event.data as { resource: ResourceData; sector: Sector };
+      const { resource, sector } = event?.data as { resource: ResourceData; sector: Sector };
       if (!resource || !sector) return;
 
       // Get or create the resources dataset
@@ -476,7 +476,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
                     prev.map(r => (r.id === pendingResultId ? result : r))
                   );
                   setIsProcessingData(false);
-                  return result.id;
+                  return result?.id;
               }
             }
 
@@ -489,7 +489,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
               endTime: Date.now(),
               data: processedData as Record<string, unknown>,
               summary: `Analysis completed successfully with ${
-                Object.keys(processedData || {}).length
+                Object.keys(processedData ?? {}).length
               } data points.`,
             };
           } catch (error) {
@@ -512,7 +512,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
         // Update the analysis results
         setAnalysisResults(prev => prev.map(r => (r.id === pendingResultId ? result : r)));
         setIsProcessingData(false);
-        return result.id;
+        return result?.id;
       } catch (error) {
         // Create a failed result
         const failedResult: AnalysisResult = {
@@ -784,7 +784,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   // Get an analysis result by ID
   const getAnalysisResultById = useCallback(
     (id: string): AnalysisResult | undefined => {
-      return analysisResults.find(result => result.id === id);
+      return analysisResults.find(result => result?.id === id);
     },
     [analysisResults]
   );
@@ -792,7 +792,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   // Get analysis results by config ID
   const getAnalysisResultsByConfigId = useCallback(
     (configId: string): AnalysisResult[] => {
-      return analysisResults.filter(result => result.analysisConfigId === configId);
+      return analysisResults.filter(result => result?.analysisConfigId === configId);
     },
     [analysisResults]
   );

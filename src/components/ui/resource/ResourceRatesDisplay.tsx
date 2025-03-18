@@ -3,10 +3,8 @@ import { ArrowDownIcon, ArrowUpIcon, BarChart4, ChevronDown, ChevronUp } from 'l
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useAllResourceRates, useResourceRate } from '../../../contexts/ResourceRatesContext';
-import {
-  ResourceType,
-  ResourceTypeHelpers,
-} from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceTypeHelpers } from '../../../types/resources/StandardizedResourceTypes';
 import { useTooltipContext } from '../tooltip-context';
 
 // Resource type colors matching existing styles
@@ -122,6 +120,12 @@ const resourceColors: Record<
     bg: 'bg-teal-900/20',
     border: 'border-teal-700/30',
     fill: 'bg-teal-500',
+  },
+  [ResourceType.FOOD]: {
+    base: 'text-yellow-400',
+    bg: 'bg-yellow-900/20',
+    border: 'border-yellow-700/30',
+    fill: 'bg-yellow-500',
   },
 };
 

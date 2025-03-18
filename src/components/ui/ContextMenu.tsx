@@ -78,26 +78,26 @@ export function ContextMenu({ items, x, y, onClose }: ContextMenuProps) {
     >
       <div className="py-1">
         {items.map(item => (
-          <div key={item.id} className="relative" onMouseEnter={() => setActiveSubmenu(item.id)}>
+          <div key={item?.id} className="relative" onMouseEnter={() => setActiveSubmenu(item?.id)}>
             <button
               onClick={() => {
-                if (!item.disabled && !item.children) {
-                  item.action();
+                if (!item?.disabled && !item?.children) {
+                  item?.action();
                   onClose();
                 }
               }}
-              disabled={item.disabled}
+              disabled={item?.disabled}
               className={`group flex w-full items-center justify-between px-4 py-2 text-left ${
-                item.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-800'
+                item?.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-800'
               }`}
             >
               <div className="flex items-center space-x-3">
-                {item.icon && <div className="h-4 w-4 text-gray-400">{item.icon}</div>}
-                <span className="text-gray-200">{item.label}</span>
+                {item?.icon && <div className="h-4 w-4 text-gray-400">{item?.icon}</div>}
+                <span className="text-gray-200">{item?.label}</span>
               </div>
               <div className="flex items-center space-x-3">
-                {item.shortcut && <span className="text-xs text-gray-500">{item.shortcut}</span>}
-                {item.children && (
+                {item?.shortcut && <span className="text-xs text-gray-500">{item?.shortcut}</span>}
+                {item?.children && (
                   <svg
                     className="h-4 w-4 text-gray-400"
                     fill="none"
@@ -116,10 +116,10 @@ export function ContextMenu({ items, x, y, onClose }: ContextMenuProps) {
             </button>
 
             {/* Submenu */}
-            {item.children && activeSubmenu === item.id && (
+            {item?.children && activeSubmenu === item?.id && (
               <div className="absolute left-full top-0 ml-1">
                 <ContextMenu
-                  items={item.children}
+                  items={item?.children}
                   x={0}
                   y={0}
                   onClose={() => setActiveSubmenu(null)}

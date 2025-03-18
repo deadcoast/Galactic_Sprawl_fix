@@ -505,7 +505,7 @@ export class ResourceStorageSubsystem {
             container.config.maxUpgradeLevel !== undefined &&
             container.config.upgradeLevel < container.config.maxUpgradeLevel
         )
-        .sort((a, b) => (a.config.upgradeLevel || 0) - (b.config.upgradeLevel || 0));
+        .sort((a, b) => (a.config.upgradeLevel ?? 0) - (b.config.upgradeLevel ?? 0));
 
       if (upgradableContainers.length === 0) {
         return 0;

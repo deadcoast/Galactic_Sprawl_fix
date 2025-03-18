@@ -169,7 +169,7 @@ export function WeaponUpgradeDisplay({
   onUpgrade,
 }: WeaponUpgradeDisplayProps) {
   const canAfford = upgrade.requirements.resources.every(
-    req => (resources[req.type] || 0) >= req.amount
+    req => (resources[req.type] ?? 0) >= req.amount
   );
 
   return (
@@ -239,12 +239,12 @@ export function WeaponUpgradeDisplay({
           <div
             key={resource.type}
             className={`rounded px-2 py-1 text-xs ${
-              (resources[resource.type] || 0) >= resource.amount
+              (resources[resource.type] ?? 0) >= resource.amount
                 ? 'bg-green-900/20 text-green-400'
                 : 'bg-red-900/20 text-red-400'
             }`}
           >
-            {resource.type}: {resources[resource.type] || 0}/{resource.amount}
+            {resource.type}: {resources[resource.type] ?? 0}/{resource.amount}
           </div>
         ))}
       </div>

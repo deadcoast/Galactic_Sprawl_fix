@@ -1,6 +1,6 @@
-import * as React from "react";
-import { useEffect, useState } from 'react';
 import { AlertTriangle, Leaf, Ship, Star, Users, Wheat, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
 
 interface HabitableWorldProps {
   planetData: {
@@ -10,7 +10,7 @@ interface HabitableWorldProps {
     population: number;
     maxPopulation: number;
     growthRate: number;
-    resources: string[];
+    resources: ResourceType[];
     developmentLevel: number;
     cityLightIntensity: number;
     alerts?: { type: 'warning' | 'info'; message: string }[];
@@ -28,7 +28,7 @@ export function HabitableWorld({ planetData, onUpgradeBiodome }: HabitableWorldP
   const [satellitePositions, setSatellitePositions] = useState<Array<{ angle: number }>>([]);
 
   useEffect(() => {
-    const satCount = planetData.satellites || 0;
+    const satCount = planetData.satellites ?? 0;
     if (satCount > 0) {
       setSatellitePositions(
         Array.from({ length: satCount }, (_, i) => ({
@@ -51,7 +51,7 @@ export function HabitableWorld({ planetData, onUpgradeBiodome }: HabitableWorldP
   }, []);
 
   useEffect(() => {
-    const routes = planetData.tradeRoutes || [];
+    const routes = planetData.tradeRoutes ?? [];
     if (routes.length > 0) {
       const interval = setInterval(() => {
         setShowTradeShip(prev => !prev);
@@ -159,14 +159,14 @@ export function HabitableWorld({ planetData, onUpgradeBiodome }: HabitableWorldP
         ))}
 
         {showTradeShip &&
-          (planetData.tradeRoutes || []).map((route, index) => (
+          (planetData.tradeRoutes ?? []).map((route, index) => (
             <div
               key={index}
               className="absolute"
               style={{
                 left: '50%',
                 top: '50%',
-                transform: `translate(-50%, -50%) rotate(${index * (360 / (planetData.tradeRoutes || []).length)}deg) translateX(80px)`,
+                transform: `translate(-50%, -50%) rotate(${index * (360 / (planetData.tradeRoutes ?? []).length)}deg) translateX(80px)`,
                 animation: `tradeShip ${10 + route.resourceFlow}s linear infinite`,
               }}
             >
@@ -261,7 +261,7 @@ export function HabitableWorld({ planetData, onUpgradeBiodome }: HabitableWorldP
                 <span className="text-sm text-gray-300">Biodome Level</span>
               </div>
               <div className="text-lg font-medium text-emerald-400">
-                {planetData.biodomeLevel || 0}
+                {planetData.biodomeLevel ?? 0}
               </div>
             </div>
 
@@ -280,11 +280,11 @@ export function HabitableWorld({ planetData, onUpgradeBiodome }: HabitableWorldP
         </div>
       )}
 
-      {(planetData.activeFestivals || []).length > 0 && (
+      {(planetData.activeFestivals ?? []).length > 0 && (
         <div className="mb-6">
           <h3 className="mb-2 text-sm font-medium text-gray-400">Active Events</h3>
           <div className="space-y-2">
-            {(planetData.activeFestivals || []).map(festival => (
+            {(planetData.activeFestivals ?? []).map(festival => (
               <div
                 key={festival.name}
                 className="rounded-lg border border-indigo-700/30 bg-indigo-900/20 p-3"

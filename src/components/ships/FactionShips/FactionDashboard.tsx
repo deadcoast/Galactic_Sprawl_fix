@@ -259,7 +259,7 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
             fleetStrength={
               factionBehaviors
                 .find(b => b?.id === selectedFaction)
-                ?.fleets.reduce((total, fleet) => total + fleet.strength, 0) || 0
+                ?.fleets.reduce((total, fleet) => total + fleet.strength, 0) ?? 0
             }
             threatLevel={0.5}
             onUpdateBehavior={() => {}}
@@ -281,7 +281,7 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
         <DiplomacyPanel
           faction={{
             id: selectedFaction,
-            name: factionConfigs[selectedFaction]?.name || '',
+            name: factionConfigs[selectedFaction]?.name ?? '',
             type: selectedFaction.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) as
               | 'spaceRats'
               | 'lostNova'
@@ -289,7 +289,7 @@ export function FactionDashboard({ onFactionUpdate }: FactionDashboardProps) {
             relationship:
               factionBehaviors.find(b => b?.id === selectedFaction)?.relationships[
                 selectedFaction
-              ] || 0,
+              ] ?? 0,
             status: 'neutral',
             tradingEnabled: true,
             lastInteraction: Date.now(),

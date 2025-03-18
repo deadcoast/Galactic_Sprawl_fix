@@ -64,7 +64,7 @@ export function AlertSystemUI({
   // Count alerts by level
   const alertCounts = sortedAlerts.reduce(
     (counts, alert) => {
-      counts[alert.level] = (counts[alert.level] || 0) + 1;
+      counts[alert.level] = (counts[alert.level] ?? 0) + 1;
       return counts;
     },
     {} as Record<AlertLevel, number>

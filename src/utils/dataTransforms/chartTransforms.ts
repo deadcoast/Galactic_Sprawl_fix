@@ -3,7 +3,7 @@
  * 
  * This module provides standardized utilities for transforming data
  * for visualization components. It consolidates common patterns for
- * extracting, processing, and formatting chart data.
+ * extracting, processing, and formatting chart data?.
  */
 
 import { 
@@ -161,7 +161,7 @@ export function calculateDomain(
   key: string,
   padding = 0.05
 ): [number, number] {
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return [0, 1];
   }
   
@@ -301,7 +301,7 @@ export function transformClusterData(
   features: string[];
   clusterPoints: ClusterPoint[];
 } {
-  if (!isArray(result.data.clusters)) {
+  if (!isArray(result?.data?.clusters)) {
     return {
       clusters: [],
       features: [],
@@ -309,8 +309,8 @@ export function transformClusterData(
     };
   }
   
-  const clusters = result.data.clusters as unknown[];
-  const features = safelyExtractArray<string>(result.data, 'features', []);
+  const clusters = result?.data?.clusters as unknown[];
+  const features = safelyExtractArray<string>(result?.data, 'features', []);
   const clusterPoints: ClusterPoint[] = [];
   
   clusters.forEach(cluster => {
@@ -366,14 +366,14 @@ export function transformPredictionData(
   modelDetails: unknown;
 } {
   // Extract data with type safety
-  const predictions = safelyExtractArray<PredictionPoint>(result.data, 'predictions', []);
-  const forecast = safelyExtractArray<ForecastPoint>(result.data, 'forecast', []);
-  const features = safelyExtractArray<string>(result.data, 'features', []);
-  const metrics = safelyExtractObject(result.data, 'metrics', { mse: 0, rmse: 0, mae: 0 });
-  const modelDetails = safelyExtractObject(result.data, 'modelDetails', {});
-  const model = safelyExtractString(result.data, 'model', 'unknown');
+  const predictions = safelyExtractArray<PredictionPoint>(result?.data, 'predictions', []);
+  const forecast = safelyExtractArray<ForecastPoint>(result?.data, 'forecast', []);
+  const features = safelyExtractArray<string>(result?.data, 'features', []);
+  const metrics = safelyExtractObject(result?.data, 'metrics', { mse: 0, rmse: 0, mae: 0 });
+  const modelDetails = safelyExtractObject(result?.data, 'modelDetails', {});
+  const model = safelyExtractString(result?.data, 'model', 'unknown');
   const targetVariable = safelyExtractString(
-    result.config?.parameters || {}, 
+    result?.config?.parameters ?? {}, 
     'target', 
     ''
   );
@@ -455,42 +455,42 @@ export function transformResourceMappingData(
   summary: string;
 } {
   // Safely extract all data with proper type checking
-  const resourcePoints = safelyExtractArray<DataPoint>(result.data, 'resourcePoints', []);
-  const gridCells = safelyExtractArray<ResourceGridCell>(result.data, 'gridCells', []);
-  const resourceTypes = safelyExtractArray<ResourceType>(result.data, 'resourceTypes', []);
+  const resourcePoints = safelyExtractArray<DataPoint>(result?.data, 'resourcePoints', []);
+  const gridCells = safelyExtractArray<ResourceGridCell>(result?.data, 'gridCells', []);
+  const resourceTypes = safelyExtractArray<ResourceType>(result?.data, 'resourceTypes', []);
   
   const valueMetric = safelyExtractString(
-    result.data, 
+    result?.data, 
     'valueMetric', 
     'amount'
   ) as 'amount' | 'quality' | 'accessibility' | 'estimatedValue';
   
-  const regionSize = safelyExtractNumber(result.data, 'regionSize', 1);
+  const regionSize = safelyExtractNumber(result?.data, 'regionSize', 1);
   
   // Ensure ranges are properly formatted
   let xRange: [number, number] = [0, 0];
   let yRange: [number, number] = [0, 0];
   
   if (
-    isArray(result.data.xRange) &&
-    result.data.xRange.length === 2 &&
-    isNumber(result.data.xRange[0]) &&
-    isNumber(result.data.xRange[1])
+    isArray(result?.data?.xRange) &&
+    result?.data?.xRange.length === 2 &&
+    isNumber(result?.data?.xRange[0]) &&
+    isNumber(result?.data?.xRange[1])
   ) {
-    xRange = result.data.xRange as [number, number];
+    xRange = result?.data?.xRange as [number, number];
   }
   
   if (
-    isArray(result.data.yRange) &&
-    result.data.yRange.length === 2 &&
-    isNumber(result.data.yRange[0]) &&
-    isNumber(result.data.yRange[1])
+    isArray(result?.data?.yRange) &&
+    result?.data?.yRange.length === 2 &&
+    isNumber(result?.data?.yRange[0]) &&
+    isNumber(result?.data?.yRange[1])
   ) {
-    yRange = result.data.yRange as [number, number];
+    yRange = result?.data?.yRange as [number, number];
   }
   
   // Extract remaining data
-  const density = safelyExtractObject(result.data, 'density', {});
+  const density = safelyExtractObject(result?.data, 'density', {});
   const insights = safelyExtractArray<string>(result, 'insights', []);
   const summary = safelyExtractString(result, 'summary', '');
   
@@ -677,7 +677,7 @@ export function applyFilters(
     return data;
   }
   
-  return data.filter(item => {
+  return data?.filter(item => {
     // Apply all filters (AND logic)
     return filters.every(filter => {
       const { field, operator, value } = filter;
@@ -756,7 +756,7 @@ export function paginateData<T>(
     };
   }
   
-  const totalItems = data.length;
+  const totalItems = data?.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const safePage = Math.max(0, Math.min(currentPage, totalPages - 1));
   
@@ -764,7 +764,7 @@ export function paginateData<T>(
   const endIndex = Math.min(startIndex + pageSize, totalItems);
   
   return {
-    items: data.slice(startIndex, endIndex),
+    items: data?.slice(startIndex, endIndex),
     totalItems,
     totalPages,
     currentPage: safePage,

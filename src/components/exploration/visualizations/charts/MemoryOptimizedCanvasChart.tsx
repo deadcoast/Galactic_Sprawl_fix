@@ -144,7 +144,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
   }>(null, {
     key: instanceIdRef.current,
     enableLogging: showPerformanceStats,
-    initialDataSizeEstimate: data ? data.length * 100 : 1000, // Rough estimate
+    initialDataSizeEstimate: data ? data?.length * 100 : 1000, // Rough estimate
     autoCleanupLevel: memoryOptions?.autoCleanupLevel || 'medium',
     memoryThreshold: memoryOptions?.memoryThreshold || 50 * 1024 * 1024, // 50MB default
     cacheExpirationTime: memoryOptions?.cacheExpirationTime || 60000, // 1 minute default
@@ -228,7 +228,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
       for (let i = 0; i < inputData.length; i += step) {
         const index = Math.floor(i);
         if (index < inputData.length) {
-          result.push(inputData[index] as ChartDataRecord);
+          result?.push(inputData[index] as ChartDataRecord);
         }
       }
 
@@ -239,7 +239,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
 
   // Fix the type error in the updateData function by using a different approach
   useEffect(() => {
-    if (!data || !data.length) {
+    if (!data || !data?.length) {
       setProcessedData(null);
       return;
     }
@@ -249,7 +249,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
 
     // Calculate optimal quality level based on data size and visibility
     const newQualityLevel = calculateOptimalQualityLevel(
-      data.length,
+      data?.length,
       visibilityPercentage,
       qualityLevels
     );
@@ -285,7 +285,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
       ...prev,
       renderTime: endTime - startTime,
       memoryUsage: memory.memoryUsage,
-      dataPoints: data.length,
+      dataPoints: data?.length,
       renderedPoints: sampledData.length,
       renderQuality: newQualityLevel,
     }));
@@ -396,10 +396,10 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
   // Calculate a hash for the data (for caching)
   const calculateDataHash = useCallback((data: ChartDataRecord[]): string => {
     // Simple hash based on data length and some sample points
-    if (!data.length) return '0';
+    if (!data?.length) return '0';
 
-    const samples = [data[0], data[Math.floor(data.length / 2)], data[data.length - 1]];
-    return `${data.length}_${JSON.stringify(samples)}`;
+    const samples = [data[0], data[Math.floor(data?.length / 2)], data[data?.length - 1]];
+    return `${data?.length}_${JSON.stringify(samples)}`;
   }, []);
 
   // Integrate the functions into the component's functionality
@@ -430,7 +430,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
     // Update performance metrics
     setPerformanceMetrics(prev => ({
       ...prev,
-      dataPoints: data?.length || 0,
+      dataPoints: data?.length ?? 0,
       renderedPoints: processedData.length,
       renderQuality: _qualityLevel,
     }));
@@ -495,7 +495,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
       >
         <CircularProgress size={24} />
         <Typography variant="body2" sx={{ mt: 1 }}>
-          Loading chart data...
+          Loading chart data?...
         </Typography>
       </div>
     );

@@ -387,7 +387,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    */
   getResourceAmount(type: ResourceType): number {
     const state = this.resources.get(type);
-    return state?.current || 0;
+    return state?.current ?? 0;
   }
 
   /**
@@ -1312,9 +1312,9 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       const type = typeKey as ResourceType;
       const state = this.getResourceState(type);
       rates[type] = {
-        production: state?.production || 0,
-        consumption: state?.consumption || 0,
-        net: (state?.production || 0) - (state?.consumption || 0),
+        production: state?.production ?? 0,
+        consumption: state?.consumption ?? 0,
+        net: (state?.production ?? 0) - (state?.consumption ?? 0),
       };
     });
 

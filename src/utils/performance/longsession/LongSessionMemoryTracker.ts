@@ -239,15 +239,15 @@ export class LongSessionMemoryTracker {
     // Check GC support (rarely available in browsers)
     this.browserSupport.gc = typeof window !== 'undefined' && typeof window.gc === 'function';
 
-    if (this.options.loggingLevel && this.options.loggingLevel >= 3) {
+    if (this.options?.loggingLevel && this.options?.loggingLevel >= 3) {
       console.warn('[LongSessionMemoryTracker] Browser support detected:', this.browserSupport);
     }
 
     // Warn if memory API not available
     if (
       !this.browserSupport.memoryAPI &&
-      this.options.loggingLevel &&
-      this.options.loggingLevel >= 2
+      this.options?.loggingLevel &&
+      this.options?.loggingLevel >= 2
     ) {
       console.warn(
         '[LongSessionMemoryTracker] Performance.memory API not available in this browser. Memory tracking will be limited.'
@@ -272,18 +272,18 @@ export class LongSessionMemoryTracker {
     // Set up periodic snapshots
     this.snapshotIntervalId = window.setInterval(
       () => this.takeSnapshot(),
-      this.options.snapshotIntervalMs!
+      this.options?.snapshotIntervalMs!
     );
 
     // Set up periodic reporting if enabled
-    if (this.options.reportToEventBus) {
+    if (this.options?.reportToEventBus) {
       this.reportIntervalId = window.setInterval(
         () => this.sendMemoryReport(),
-        this.options.reportIntervalMs!
+        this.options?.reportIntervalMs!
       );
     }
 
-    if (this.options.loggingLevel && this.options.loggingLevel >= 3) {
+    if (this.options?.loggingLevel && this.options?.loggingLevel >= 3) {
       console.warn('[LongSessionMemoryTracker] Started tracking memory usage');
     }
 
@@ -316,7 +316,7 @@ export class LongSessionMemoryTracker {
     // Add session end marker
     this.addSessionMarker('tracking_stopped');
 
-    if (this.options.loggingLevel && this.options.loggingLevel >= 3) {
+    if (this.options?.loggingLevel && this.options?.loggingLevel >= 3) {
       console.warn('[LongSessionMemoryTracker] Stopped tracking memory usage');
     }
   }
@@ -326,7 +326,7 @@ export class LongSessionMemoryTracker {
    */
   public takeSnapshot(): MemorySnapshot {
     // Attempt garbage collection if configured and supported
-    if (this.options.attemptGarbageCollection && this.browserSupport.gc) {
+    if (this.options?.attemptGarbageCollection && this.browserSupport.gc) {
       try {
         window.gc!();
       } catch (e) {
@@ -353,13 +353,13 @@ export class LongSessionMemoryTracker {
     }
 
     // Count DOM nodes if configured and supported
-    if (this.options.trackDomNodes && this.browserSupport.domCountAPI) {
+    if (this.options?.trackDomNodes && this.browserSupport.domCountAPI) {
       snapshot.domNodeCount = document.querySelectorAll('*').length;
     }
 
     // Add to snapshots array, ensuring we don't exceed maximum
     this.snapshots.push(snapshot);
-    if (this.snapshots.length > this.options.maxSnapshots!) {
+    if (this.snapshots.length > this.options?.maxSnapshots!) {
       this.snapshots.shift();
     }
 
@@ -369,8 +369,8 @@ export class LongSessionMemoryTracker {
     }
 
     // Notify via callback if configured
-    if (this.options.onSnapshot) {
-      this.options.onSnapshot(snapshot);
+    if (this.options?.onSnapshot) {
+      this.options?.onSnapshot(snapshot);
     }
 
     return snapshot;
@@ -420,7 +420,7 @@ export class LongSessionMemoryTracker {
 
     // Detect potential memory leak
     const suspectedLeak =
-      growthRatePerMinute > this.options.leakThresholdMBPerMinute! &&
+      growthRatePerMinute > this.options?.leakThresholdMBPerMinute! &&
       confidence > 0.7 &&
       snapshots.length >= 5; // Need at least 5 data points
 
@@ -439,20 +439,20 @@ export class LongSessionMemoryTracker {
     this.latestAnalysis = analysis;
 
     // Trigger callbacks if configured
-    if (this.options.onAnalysisUpdate) {
-      this.options.onAnalysisUpdate(analysis);
+    if (this.options?.onAnalysisUpdate) {
+      this.options?.onAnalysisUpdate(analysis);
     }
 
     // Log potential leak detection
     if (suspectedLeak) {
-      if (this.options.loggingLevel && this.options.loggingLevel >= 2) {
+      if (this.options?.loggingLevel && this.options?.loggingLevel >= 2) {
         console.warn(
           `[LongSessionMemoryTracker] Potential memory leak detected! Memory growing at ${growthRatePerMinute.toFixed(2)} MB/minute`
         );
       }
 
-      if (this.options.onLeakDetected) {
-        this.options.onLeakDetected(analysis);
+      if (this.options?.onLeakDetected) {
+        this.options?.onLeakDetected(analysis);
       }
 
       // Add marker for leak detection
@@ -611,7 +611,7 @@ export class LongSessionMemoryTracker {
    * Send memory report to event bus
    */
   private sendMemoryReport(): void {
-    if (!this.options.reportToEventBus || !this.isTracking || !this.latestAnalysis) return;
+    if (!this.options?.reportToEventBus || !this.isTracking || !this.latestAnalysis) return;
 
     moduleEventBus.emit({
       type: 'STATUS_CHANGED',

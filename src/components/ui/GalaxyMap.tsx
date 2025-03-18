@@ -1,5 +1,3 @@
-import * as React from "react";
-import { useEffect, useRef, useState } from 'react';
 import {
   AlertTriangle,
   ArrowRight,
@@ -12,6 +10,9 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
+import * as React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 
 interface CosmicEvent {
   id: string;
@@ -28,7 +29,7 @@ interface StarSystem {
   name: string;
   status: 'locked' | 'unlocked' | 'colonized' | 'hostile';
   position: { x: number; y: number };
-  resources?: string[];
+  resources?: ResourceType[];
   population?: number;
   faction?: string;
   techRequirements?: string[];
@@ -53,7 +54,7 @@ const mockSystems: StarSystem[] = [
     name: 'Sol System',
     status: 'colonized',
     position: { x: 0, y: 0 },
-    resources: ['Iron', 'Titanium'],
+    resources: [ResourceType.IRON, ResourceType.TITANIUM],
     population: 1000,
     faction: 'Player',
     techRequirements: [],
@@ -64,7 +65,7 @@ const mockSystems: StarSystem[] = [
     name: 'Alpha Centauri',
     status: 'unlocked',
     position: { x: 100, y: -50 },
-    resources: ['Helium-3', 'Dark Matter'],
+    resources: [ResourceType.HELIUM, ResourceType.DARK_MATTER],
     techRequirements: ['basic-radar'],
     tradeRoutes: ['home'],
   },
@@ -408,33 +409,33 @@ export function GalaxyMap() {
           {/* Cosmic Events */}
           {cosmicEvents.map(event => (
             <div
-              key={event.id}
+              key={event?.id}
               className="absolute"
               style={{
-                left: `calc(50% + ${event.position.x}px)`,
-                top: `calc(50% + ${event.position.y}px)`,
+                left: `calc(50% + ${event?.position.x}px)`,
+                top: `calc(50% + ${event?.position.y}px)`,
                 transform: 'translate(-50%, -50%)',
               }}
             >
               <div
                 className={`animate-pulse rounded-full ${
-                  event.type === 'storm'
+                  event?.type === 'storm'
                     ? 'bg-purple-500/20'
-                    : event.type === 'solarFlare'
+                    : event?.type === 'solarFlare'
                       ? 'bg-orange-500/20'
                       : 'bg-cyan-500/20'
                 }`}
                 style={{
-                  width: `${event.radius * 2}px`,
-                  height: `${event.radius * 2}px`,
+                  width: `${event?.radius * 2}px`,
+                  height: `${event?.radius * 2}px`,
                 }}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
-                  {event.type === 'storm' && <Zap className="h-8 w-8 text-purple-400" />}
-                  {event.type === 'solarFlare' && (
+                  {event?.type === 'storm' && <Zap className="h-8 w-8 text-purple-400" />}
+                  {event?.type === 'solarFlare' && (
                     <AlertTriangle className="h-8 w-8 text-orange-400" />
                   )}
-                  {event.type === 'anomaly' && (
+                  {event?.type === 'anomaly' && (
                     <div className="h-8 w-8 rounded-full bg-cyan-400/50" />
                   )}
                 </div>

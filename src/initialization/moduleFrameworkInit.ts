@@ -58,7 +58,7 @@ export function initializeModuleFramework(): void {
 function registerResourceIntegration(): void {
   // Handle module activation/deactivation for resource consumption
   moduleEventBus.subscribe('MODULE_ACTIVATED' as ModuleEventType, event => {
-    const module = moduleManager.getModule(event.moduleId);
+    const module = moduleManager.getModule(event?.moduleId);
     if (!module) {
       return;
     }
@@ -83,12 +83,12 @@ function registerResourceIntegration(): void {
 
   moduleEventBus.subscribe('MODULE_DEACTIVATED' as ModuleEventType, event => {
     // Remove resource consumption
-    resourceManager.unregisterConsumption(`module-${event.moduleId}`);
+    resourceManager.unregisterConsumption(`module-${event?.moduleId}`);
   });
 
   // Handle module upgrades for resource production boosts
   moduleEventBus.subscribe('MODULE_UPGRADED' as ModuleEventType, event => {
-    const module = moduleManager.getModule(event.moduleId);
+    const module = moduleManager.getModule(event?.moduleId);
     if (!module) {
       return;
     }
@@ -214,10 +214,10 @@ function initializeSubModuleSystem(): void {
         description: config.description,
         requirements: {
           parentModuleLevel: 1,
-          parentModuleTypes: config.allowedParentTypes || [],
+          parentModuleTypes: config.allowedParentTypes ?? [],
           resourceCosts: config.resourceCost
             ? Object.entries(config.resourceCost).map(([type, amount]) => ({
-                type,
+                type: type as ResourceType,
                 amount: amount as number,
               }))
             : [],

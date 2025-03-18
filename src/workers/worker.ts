@@ -28,7 +28,7 @@ taskHandlers.set('heavyComputation', async (data: unknown, reportProgress) => {
 
 // Handle messages from the main thread
 self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
-  const { taskId, type, data } = event.data;
+  const { taskId, type, data } = event?.data;
 
   try {
     const handler = taskHandlers.get(type);

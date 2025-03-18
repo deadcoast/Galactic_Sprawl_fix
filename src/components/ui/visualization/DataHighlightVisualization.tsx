@@ -85,7 +85,7 @@ export interface DataHighlightVisualizationProps {
 /**
  * DataHighlightVisualization Component
  *
- * A WebGL-based visualization component that uses shader effects to highlight data.
+ * A WebGL-based visualization component that uses shader effects to highlight data?.
  * Supports multiple visualization types including heatmaps, contours, and point clusters.
  */
 export const DataHighlightVisualization: React.FC<DataHighlightVisualizationProps> = ({
@@ -111,11 +111,11 @@ export const DataHighlightVisualization: React.FC<DataHighlightVisualizationProp
   // Prepare data for WebGL rendering
   const { positions, dataValues, dataRange } = useMemo(() => {
     const pos: Position[] = [];
-    const values = new Float32Array(data.length);
+    const values = new Float32Array(data?.length);
     let min = Infinity;
     let max = -Infinity;
 
-    data.forEach((point, index) => {
+    data?.forEach((point, index) => {
       pos.push({ x: point.x, y: point.y });
       values[index] = point.value;
 
@@ -214,7 +214,7 @@ export const DataHighlightVisualization: React.FC<DataHighlightVisualizationProp
     let nearestIndex = -1;
     let nearestDistance = Infinity;
 
-    data.forEach((point, index) => {
+    data?.forEach((point, index) => {
       const dx = point.x - x;
       const dy = point.y - y;
       const distance = Math.sqrt(dx * dx + dy * dy);
@@ -284,7 +284,7 @@ export const DataVisualizationPresets = {
   ): DataHighlightVisualizationProps => ({
     ...props,
     visualizationType: DataVisualizationShaderType.HEATMAP,
-    colors: props.colors || ['#000080', '#0000ff', '#00ffff', '#ffff00', '#ff0000'],
+    colors: props?.colors || ['#000080', '#0000ff', '#00ffff', '#ffff00', '#ff0000'],
   }),
 
   /**
@@ -295,8 +295,8 @@ export const DataVisualizationPresets = {
   ): DataHighlightVisualizationProps => ({
     ...props,
     visualizationType: DataVisualizationShaderType.DENSITY,
-    colors: props.colors || ['#000044', '#000088', '#0000ff', '#4444ff', '#8888ff'],
-    intensity: props.intensity || 0.7,
+    colors: props?.colors || ['#000044', '#000088', '#0000ff', '#4444ff', '#8888ff'],
+    intensity: props?.intensity ?? 0.7,
   }),
 
   /**
@@ -307,9 +307,9 @@ export const DataVisualizationPresets = {
   ): DataHighlightVisualizationProps => ({
     ...props,
     visualizationType: DataVisualizationShaderType.HIGHLIGHT,
-    colors: props.colors || ['#666666', '#888888', '#aaaaaa', '#cccccc', '#ffffff'],
-    highlightRange: props.highlightRange || [0.8, 1.0],
-    intensity: props.intensity || 0.9,
+    colors: props?.colors || ['#666666', '#888888', '#aaaaaa', '#cccccc', '#ffffff'],
+    highlightRange: props?.highlightRange || [0.8, 1.0],
+    intensity: props?.intensity ?? 0.9,
   }),
 
   /**
@@ -320,9 +320,9 @@ export const DataVisualizationPresets = {
   ): DataHighlightVisualizationProps => ({
     ...props,
     visualizationType: DataVisualizationShaderType.FLOW,
-    colors: props.colors || ['#003366', '#0066cc', '#0099ff', '#66ccff', '#99ddff'],
+    colors: props?.colors || ['#003366', '#0066cc', '#0099ff', '#66ccff', '#99ddff'],
     animate: true,
-    animationSpeed: props.animationSpeed || 1.5,
+    animationSpeed: props?.animationSpeed || 1.5,
   }),
 
   /**
@@ -333,7 +333,7 @@ export const DataVisualizationPresets = {
   ): DataHighlightVisualizationProps => ({
     ...props,
     visualizationType: DataVisualizationShaderType.CONTOUR,
-    colors: props.colors || ['#000000', '#333333', '#666666', '#999999', '#ffffff'],
-    intensity: props.intensity || 0.8,
+    colors: props?.colors || ['#000000', '#333333', '#666666', '#999999', '#ffffff'],
+    intensity: props?.intensity ?? 0.8,
   }),
 };

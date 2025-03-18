@@ -21,7 +21,7 @@ export function stringToResourceType(stringType: string): ResourceType {
  * @param resourceType The enum resource type
  * @returns The string resource type or the enum value as string if not found
  */
-export function resourceTypeToString(resourceType: ResourceType | string): string {
+export function resourceTypeToString(resourceType: ResourceType | string): ResourceType {
   if (typeof resourceType === 'string') {
     // If it's already a string, ensure it's a valid resource type string
     if (Object.values(ResourceType).includes(resourceType as ResourceType)) {
@@ -208,7 +208,7 @@ export class ResourceTypeConverter {
     map.forEach((value, key) => {
       const enumKey = this.stringToEnum(key);
       if (enumKey !== undefined) {
-        result.set(enumKey, value);
+        result?.set(enumKey, value);
       }
     });
 
@@ -227,7 +227,7 @@ export class ResourceTypeConverter {
     map.forEach((value, key) => {
       const stringKey = this.enumToString(key);
       if (stringKey !== undefined) {
-        result.set(stringKey, value);
+        result?.set(stringKey, value);
       }
     });
 
@@ -263,7 +263,7 @@ export class ResourceTypeConverter {
    * @param value The value to ensure is a string resource type
    * @returns The string resource type
    */
-  public static ensureStringResourceType(value: unknown): string {
+  public static ensureStringResourceType(value: unknown): ResourceType {
     // If it's already a ResourceType enum
     if (typeof value === 'number' || Object.values(ResourceType).includes(value as ResourceType)) {
       const stringValue = this.enumToString(value as ResourceType);

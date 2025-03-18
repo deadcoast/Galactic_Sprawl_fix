@@ -571,14 +571,14 @@ export class ResourceFlowSubsystem {
           this.applyOptimizationResults(result);
 
           // Add execution time to performance metrics
-          result.performanceMetrics = result.performanceMetrics || {
+          result?.performanceMetrics = result?.performanceMetrics || {
             executionTimeMs: 0,
             nodesProcessed: activeNodes.length,
             connectionsProcessed: activeConnections.length,
-            transfersGenerated: result.transfers.length,
+            transfersGenerated: result?.transfers.length,
           };
 
-          result.performanceMetrics.executionTimeMs = Date.now() - startTime;
+          result?.performanceMetrics.executionTimeMs = Date.now() - startTime;
 
           this.lastOptimizationResult = result;
           this.lastOptimizationTime = Date.now();
@@ -648,14 +648,14 @@ export class ResourceFlowSubsystem {
    */
   private applyOptimizationResults(result: FlowOptimizationResult): void {
     // Update connections with optimized rates
-    for (const connection of result.updatedConnections) {
+    for (const connection of result?.updatedConnections) {
       if (this.connections.has(connection.id)) {
         this.connections.set(connection.id, connection);
       }
     }
 
     // Process transfers
-    for (const transfer of result.transfers) {
+    for (const transfer of result?.transfers) {
       if (validateResourceTransfer(transfer)) {
         this.addToTransferHistory(transfer);
       }
@@ -721,7 +721,7 @@ export class ResourceFlowSubsystem {
           ? totalMaxRate * producer.efficiency
           : totalMaxRate;
 
-        availability[resourceType] = (availability[resourceType] || 0) + effectiveRate;
+        availability[resourceType] = (availability[resourceType] ?? 0) + effectiveRate;
       }
     }
 
@@ -736,7 +736,7 @@ export class ResourceFlowSubsystem {
         // Sum up max rates
         const totalMaxRate = incomingConnections.reduce((sum, conn) => sum + conn.maxRate, 0);
 
-        demand[resourceType] = (demand[resourceType] || 0) + totalMaxRate;
+        demand[resourceType] = (demand[resourceType] ?? 0) + totalMaxRate;
       }
     }
 
@@ -753,13 +753,13 @@ export class ResourceFlowSubsystem {
         if (resourceState.current > resourceState.max * 0.9) {
           availability[resourceType] = Math.max(
             0,
-            (availability[resourceType] || 0) - (resourceState.max - resourceState.current)
+            (availability[resourceType] ?? 0) - (resourceState.max - resourceState.current)
           );
         }
 
         // If storage is near empty, increase demand
         if (resourceState.current < resourceState.max * 0.1) {
-          demand[resourceType] = (demand[resourceType] || 0) + resourceState.max * 0.2;
+          demand[resourceType] = (demand[resourceType] ?? 0) + resourceState.max * 0.2;
         }
       }
     }
@@ -781,7 +781,7 @@ export class ResourceFlowSubsystem {
     const underutilized: string[] = [];
 
     for (const [type, availableAmount] of Object.entries(availability)) {
-      const demandAmount = demand[type as StringResourceType] || 0;
+      const demandAmount = demand[type as StringResourceType] ?? 0;
 
       if (availableAmount < demandAmount * 0.9) {
         bottlenecks.push(type);
@@ -816,8 +816,8 @@ export class ResourceFlowSubsystem {
     // Adjust flow rates
     for (const connection of prioritizedConnections) {
       const { resourceType } = connection;
-      const availableForType = availability[resourceType] || 0;
-      const demandForType = demand[resourceType] || 0;
+      const availableForType = availability[resourceType] ?? 0;
+      const demandForType = demand[resourceType] ?? 0;
 
       if (availableForType <= 0 || demandForType <= 0) {
         // No flow possible
@@ -904,7 +904,7 @@ export class ResourceFlowSubsystem {
    * Add an item to an array in a map
    */
   private addToArray<K, V>(map: Map<K, V[]>, key: K, value: V): void {
-    const array = map.get(key) || [];
+    const array = map.get(key) ?? [];
     if (!array.includes(value)) {
       array.push(value);
       map.set(key, array);
@@ -943,7 +943,7 @@ export class ResourceFlowSubsystem {
     const node: FlowNode = {
       id: moduleId,
       type: nodeType,
-      resources: resources || [],
+      resources: resources ?? [],
       priority: { type: resources?.[0] || ResourceType.ENERGY, priority: 1, consumers: [] },
       active: true,
     };

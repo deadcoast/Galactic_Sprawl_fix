@@ -112,10 +112,10 @@ export function useEventBatching(
   // Derived values
   const isEmpty = !batch || batch.events.length === 0;
   const hasEvents = !isEmpty;
-  const eventCount = batch?.size || 0;
+  const eventCount = batch?.size ?? 0;
   const batchEventTypes = batch?.eventTypes || new Set<ModuleEventType>();
   const batchModuleIds = batch?.moduleIds || new Set<string>();
-  const events = batch?.events || [];
+  const events = batch?.events ?? [];
 
   return {
     batch,

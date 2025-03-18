@@ -342,7 +342,7 @@ function proxyFetch(condition: NetworkCondition): void {
       const response = await originalFetch(input, init);
 
       // Clone the response to access its body
-      const clone = response.clone();
+      const clone = response?.clone();
       const text = await clone.text();
 
       // Calculate throughput delay based on response size
@@ -357,9 +357,9 @@ function proxyFetch(condition: NetworkCondition): void {
 
       // Create a new response with the same data
       return new Response(text, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
+        status: response?.status,
+        statusText: response?.statusText,
+        headers: response?.headers,
       });
     } catch (error) {
       if (error.message.includes('Simulated packet loss')) {
@@ -499,9 +499,9 @@ function proxyWebSocket(condition: NetworkCondition): void {
           const byteSize = new TextEncoder().encode(ev.data).length;
           throughputDelay = calculateThroughputDelay(byteSize, condition);
         } else if (ev.data instanceof Blob) {
-          throughputDelay = calculateThroughputDelay(ev.data.size, condition);
+          throughputDelay = calculateThroughputDelay(ev.data?.size, condition);
         } else if (ev.data instanceof ArrayBuffer) {
-          throughputDelay = calculateThroughputDelay(ev.data.byteLength, condition);
+          throughputDelay = calculateThroughputDelay(ev.data?.byteLength, condition);
         }
 
         // Delay message by latency + throughput
@@ -595,15 +595,15 @@ export function enableNetworkDegradation(
   simulationState.currentCondition = condition;
 
   // Apply proxies based on options
-  if (options.proxyFetch !== false) {
+  if (options?.proxyFetch !== false) {
     proxyFetch(condition);
   }
 
-  if (options.proxyXHR !== false) {
+  if (options?.proxyXHR !== false) {
     proxyXHR(condition);
   }
 
-  if (options.proxyWebSocket !== false) {
+  if (options?.proxyWebSocket !== false) {
     proxyWebSocket(condition);
   }
 
@@ -677,10 +677,10 @@ export function createCustomNetworkCondition(
 ): NetworkCondition {
   return {
     description: config.description || 'Custom network condition',
-    latencyMs: config.latencyMs || 0,
+    latencyMs: config.latencyMs ?? 0,
     throughputKbps: config.throughputKbps || 1000000,
-    packetLoss: config.packetLoss || 0,
-    jitterMs: config.jitterMs || 0,
+    packetLoss: config.packetLoss ?? 0,
+    jitterMs: config.jitterMs ?? 0,
     enableConnectionStalls: config.enableConnectionStalls || false,
     stallDurationMs: config.stallDurationMs,
     stallProbability: config.stallProbability,

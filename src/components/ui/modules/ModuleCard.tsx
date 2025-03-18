@@ -24,13 +24,13 @@ const useUpgradeProgressTracking = (moduleId: string): number => {
   useEffect(() => {
     const handleUpgradeProgress = (event: BaseEvent) => {
       if (
-        event.moduleId === moduleId &&
-        event.data &&
-        typeof event.data === 'object' &&
-        'progress' in event.data &&
-        typeof event.data.progress === 'number'
+        event?.moduleId === moduleId &&
+        event?.data &&
+        typeof event?.data === 'object' &&
+        'progress' in event?.data &&
+        typeof event?.data?.progress === 'number'
       ) {
-        setProgress(event.data.progress);
+        setProgress(event?.data?.progress);
       }
     };
 
@@ -94,7 +94,7 @@ export const ModuleCard = memo(function ModuleCard({
   if (isLoading) {
     return (
       <div className={`module-card module-card--loading ${compact ? 'module-card--compact' : ''}`}>
-        <div className="module-card__loading">Loading module data...</div>
+        <div className="module-card__loading">Loading module data?...</div>
       </div>
     );
   }

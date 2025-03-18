@@ -113,20 +113,20 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
       .attr('fill', d => d.color);
 
     // Create object interpolators for each data point
-    const interpolators = data.map(item => {
+    const interpolators = data?.map(item => {
       return {
         position: typedInterpolators.object(
           {
-            x: item.x,
-            y: item.y,
+            x: item?.x,
+            y: item?.y,
           },
           {
-            x: item.targetX,
-            y: item.targetY,
+            x: item?.targetX,
+            y: item?.targetY,
           }
         ),
-        size: typedInterpolators.number(item.size, item.targetSize),
-        color: typedInterpolators.color(item.color, item.targetColor),
+        size: typedInterpolators.number(item?.size, item?.targetSize),
+        color: typedInterpolators.color(item?.color, item?.targetColor),
       };
     });
 
@@ -153,8 +153,8 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
         // Record frame metrics if profiling
         if (profiler) {
           profiler.recordFrame({
-            interpolationCount: data.length * 3, // position, size, color
-            domUpdateCount: data.length, // One DOM update per circle
+            interpolationCount: data?.length * 3, // position, size, color
+            domUpdateCount: data?.length, // One DOM update per circle
           });
         }
 

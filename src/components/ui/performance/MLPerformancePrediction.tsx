@@ -112,7 +112,7 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
   const generatePredictions = async () => {
     setIsTraining(true);
     setTrainingProgress(0);
-    setTrainingMessage('Preparing data...');
+    setTrainingMessage('Preparing data?...');
 
     // Simulate async processing to show progress
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -199,29 +199,29 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
   const extractFeatures = (data: MetricPoint[], windowSize: number): MLFeature[] => {
     const features: MLFeature[] = [];
 
-    for (let i = windowSize; i < data.length; i++) {
-      const window = data.slice(i - windowSize, i);
+    for (let i = windowSize; i < data?.length; i++) {
+      const window = data?.slice(i - windowSize, i);
       const values = window.map(d => d.value);
 
       // Calculate statistical features
-      const average = d3.mean(values) || 0;
-      const standardDeviation = d3.deviation(values) || 0;
+      const average = d3.mean(values) ?? 0;
+      const standardDeviation = d3.deviation(values) ?? 0;
 
       // Simple trend calculation
       const trend = linearTrend(window.map((d, idx) => [idx, d.value]));
 
       // Simple seasonality estimation
       const detrended = values.map((v, idx) => v - (trend * idx + average));
-      const seasonality = d3.deviation(detrended) || 0;
+      const seasonality = d3.deviation(detrended) ?? 0;
 
       features.push({
         average,
         standardDeviation,
         trend,
         seasonality,
-        min: d3.min(values) || 0,
-        max: d3.max(values) || 0,
-        range: (d3.max(values) || 0) - (d3.min(values) || 0),
+        min: d3.min(values) ?? 0,
+        max: d3.max(values) ?? 0,
+        range: (d3.max(values) ?? 0) - (d3.min(values) ?? 0),
         target: data[i].value,
       });
     }
@@ -338,14 +338,14 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
 
     for (let i = 0; i < 7; i++) {
       const values = featureArray.map(f => f[i]);
-      mean.push(d3.mean(values) || 0);
+      mean.push(d3.mean(values) ?? 0);
       std.push(d3.deviation(values) || 1);
     }
 
     return {
       mean,
       std,
-      targetMean: d3.mean(targets) || 0,
+      targetMean: d3.mean(targets) ?? 0,
       targetStd: d3.deviation(targets) || 1,
     };
   };
@@ -419,14 +419,14 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
     const squaredErrors = actualValues.map((actual, i) =>
       Math.pow(actual - denormalizedPredictions[i], 2)
     );
-    const mse = d3.mean(squaredErrors) || 0;
+    const mse = d3.mean(squaredErrors) ?? 0;
     const rmse = Math.sqrt(mse);
 
     // R^2 calculation
-    const meanActual = d3.mean(actualValues) || 0;
+    const meanActual = d3.mean(actualValues) ?? 0;
     const totalSumSquares =
-      d3.sum(actualValues.map(actual => Math.pow(actual - meanActual, 2))) || 0;
-    const residualSumSquares = d3.sum(squaredErrors) || 0;
+      d3.sum(actualValues.map(actual => Math.pow(actual - meanActual, 2))) ?? 0;
+    const residualSumSquares = d3.sum(squaredErrors) ?? 0;
     const r2 = 1 - residualSumSquares / totalSumSquares;
 
     return { rmse, r2 };
@@ -690,7 +690,7 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
                 </p>
                 <p>
                   The confidence score is based on the R² value, which measures how well the model
-                  fits the test data. Higher values indicate better fit.
+                  fits the test data?. Higher values indicate better fit.
                 </p>
                 <p>
                   <strong>Note:</strong> This is a simplified prediction model for demonstration

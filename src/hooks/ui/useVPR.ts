@@ -61,9 +61,9 @@ export function useVPR() {
 
     // Apply type modifiers to base set
     const typeModifiedSet: AnimationSet = {
-      idle: `${baseSet.idle} ${typeModifiers.idle || ''}`,
-      active: `${baseSet.active} ${typeModifiers.active || ''}`,
-      impact: `${baseSet.impact} ${typeModifiers.impact || ''}`,
+      idle: `${baseSet.idle} ${typeModifiers.idle ?? ''}`,
+      active: `${baseSet.active} ${typeModifiers.active ?? ''}`,
+      impact: `${baseSet.impact} ${typeModifiers.impact ?? ''}`,
     };
 
     // Enhance animations based on tier

@@ -199,14 +199,14 @@ const CanvasChartFactory: React.FC<CanvasChartFactoryProps> = ({
     return () => {
       const endTime = performance.now();
       setRenderTime(endTime - startTime);
-      setPointsRendered(data?.length || 0);
+      setPointsRendered(data?.length ?? 0);
     };
   }, [data, showPerformanceStats]);
 
   // Auto-detect the best chart type based on data characteristics
   const detectedChartType = useMemo((): ChartType => {
     if (chartType !== 'auto') return chartType;
-    if (!data || data.length === 0) return 'scatter';
+    if (!data || data?.length === 0) return 'scatter';
 
     // Check if we're dealing with time series data
     const sampleX = data[0][xAxisKey];
@@ -220,7 +220,7 @@ const CanvasChartFactory: React.FC<CanvasChartFactoryProps> = ({
     if (Array.isArray(yAxisKeys) && yAxisKeys.length > 1) return 'line';
 
     // For smaller datasets, scatter plots work well
-    if (data.length < 1000) return 'scatter';
+    if (data?.length < 1000) return 'scatter';
 
     // For larger datasets, line charts with downsampling work better
     return 'line';
@@ -232,14 +232,14 @@ const CanvasChartFactory: React.FC<CanvasChartFactoryProps> = ({
       <Box component="div" style={containerStyles(width, height)} className={className}>
         <CircularProgress size={24} />
         <Typography variant="body2" sx={{ mt: 1 }}>
-          Loading chart data...
+          Loading chart data?...
         </Typography>
       </Box>
     );
   }
 
   // If we have no data, show error message
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return (
       <Box component="div" style={errorStyles(width, height)} className={className}>
         <Typography variant="body1" color="text.secondary">
@@ -332,7 +332,7 @@ const CanvasChartFactory: React.FC<CanvasChartFactoryProps> = ({
       {showPerformanceStats && (
         <Box component="div" style={overlayStyle}>
           <div>Chart Type: {detectedChartType}</div>
-          <div>Data Points: {data.length.toLocaleString()}</div>
+          <div>Data Points: {data?.length.toLocaleString()}</div>
           {pointsRendered && <div>Rendered: {pointsRendered.toLocaleString()} points</div>}
           {renderTime && <div>Render Time: {renderTime.toFixed(1)}ms</div>}
           {enableMemoryOptimization && (

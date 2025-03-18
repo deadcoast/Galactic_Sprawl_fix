@@ -252,7 +252,7 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
         visit(dep);
       }
 
-      result.push(name);
+      result?.push(name);
     };
 
     for (const name of names) {

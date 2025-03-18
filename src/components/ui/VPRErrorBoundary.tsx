@@ -23,7 +23,7 @@ export class VPRErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.props.onError(error, this.props.moduleId);
+    this.props?.onError(error, this.props?.moduleId);
     console.error('VPR Module Error:', error, errorInfo);
   }
 
@@ -42,6 +42,6 @@ export class VPRErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return this.props?.children;
   }
 }

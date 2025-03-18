@@ -164,7 +164,7 @@ const D3PerformanceProfilerView: React.FC = () => {
 
     const yScale = d3
       .scaleLinear()
-      .domain([0, d3.max(profileData.measurements, m => m.durationMs) || 0])
+      .domain([0, d3.max(profileData.measurements, m => m.durationMs) ?? 0])
       .nice()
       .range([height, 0]);
 
@@ -221,7 +221,7 @@ const D3PerformanceProfilerView: React.FC = () => {
         .enter()
         .append('rect')
         .attr('class', 'bar')
-        .attr('x', d => xScale(d.name) || 0)
+        .attr('x', d => xScale(d.name) ?? 0)
         .attr('width', xScale.bandwidth())
         .attr('y', d => yScale(d.durationMs))
         .attr('height', d => height - yScale(d.durationMs))
@@ -234,7 +234,7 @@ const D3PerformanceProfilerView: React.FC = () => {
         .enter()
         .append('text')
         .attr('class', 'label')
-        .attr('x', d => (xScale(d.name) || 0) + xScale.bandwidth() / 2)
+        .attr('x', d => (xScale(d.name) ?? 0) + xScale.bandwidth() / 2)
         .attr('y', d => yScale(d.durationMs) - 5)
         .attr('text-anchor', 'middle')
         .text(d => `${d.durationMs.toFixed(2)}ms`);

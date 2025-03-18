@@ -122,7 +122,7 @@ export const EventDispatcherProvider: React.FC<EventDispatcherProviderProps> = (
     const handleEvent = (event: ModuleEvent) => {
       setLatestEvents(prev => {
         const newMap = new Map(prev);
-        newMap.set(event.type, event);
+        newMap.set(event?.type, event);
         return newMap;
       });
     };
@@ -292,7 +292,7 @@ export const useEventDispatcher = (): EventDispatcherContextType => {
  *
  *   useEventSubscription('MODULE_CREATED', (event) => {
  *     setModuleCount(prev => prev + 1);
- *     console.warn(`New module created: ${event.moduleId}`);
+ *     console.warn(`New module created: ${event?.moduleId}`);
  *   });
  *
  *   return <div>Total modules created: {moduleCount}</div>;
@@ -364,8 +364,8 @@ export const useLatestEvent = <T extends ModuleEventType>(
  *
  *   const recentShortages = useFilteredEvents(
  *     (event) => (
- *       event.type === 'RESOURCE_SHORTAGE' &&
- *       event.timestamp > oneHourAgo
+ *       event?.type === 'RESOURCE_SHORTAGE' &&
+ *       event?.timestamp > oneHourAgo
  *     ),
  *     [oneHourAgo] // Update when oneHourAgo changes
  *   );
@@ -375,8 +375,8 @@ export const useLatestEvent = <T extends ModuleEventType>(
  *       <h3>Recent Resource Shortages: {recentShortages.length}</h3>
  *       <ul>
  *         {recentShortages.map(event => (
- *           <li key={event.timestamp}>
- *             {event.data?.resourceType}: {new Date(event.timestamp).toLocaleTimeString()}
+ *           <li key={event?.timestamp}>
+ *             {event?.data?.resourceType}: {new Date(event?.timestamp).toLocaleTimeString()}
  *           </li>
  *         ))}
  *       </ul>

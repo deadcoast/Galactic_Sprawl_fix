@@ -155,8 +155,8 @@ export const BattleView: React.FC = () => {
                 )}
               </div>
               <div className="pb-6">
-                <p className="font-medium text-white">{event.time}</p>
-                <p className="text-gray-400">{event.description}</p>
+                <p className="font-medium text-white">{event?.time}</p>
+                <p className="text-gray-400">{event?.description}</p>
               </div>
             </div>
           ))}

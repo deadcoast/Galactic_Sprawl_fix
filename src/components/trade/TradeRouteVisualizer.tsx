@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Database } from 'lucide-react';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 
 interface TradeRoute {
   id: string;
@@ -15,7 +15,7 @@ interface TradeRoute {
   };
   volume: number;
   resources: {
-    type: string;
+    type: ResourceType;
     amount: number;
   }[];
   status: 'active' | 'disrupted' | 'establishing';

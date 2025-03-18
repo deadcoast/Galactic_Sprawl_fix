@@ -60,7 +60,7 @@ export const D3VisualizationErrorBoundaryAdapter: React.FC<LegacyD3ErrorBoundary
     metadata: {
       visualizationType: 'D3',
       componentName,
-      ...(errorContext || {}),
+      ...(errorContext ?? {}),
     },
     children,
   });

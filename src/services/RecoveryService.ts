@@ -102,10 +102,10 @@ class RecoveryServiceImpl extends AbstractBaseService {
     }
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.total_snapshots = this.snapshots.length;
     metrics.latest_snapshot_timestamp = snapshot.timestamp;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     return snapshot.id;
   }
@@ -117,10 +117,10 @@ class RecoveryServiceImpl extends AbstractBaseService {
     }
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.total_restores = (metrics.total_restores || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.total_restores = (metrics.total_restores ?? 0) + 1;
     metrics.last_restore_timestamp = Date.now();
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     return snapshot.state;
   }
@@ -131,7 +131,7 @@ class RecoveryServiceImpl extends AbstractBaseService {
 
   public clearSnapshots(): void {
     this.snapshots = [];
-    this.metadata.metrics = {};
+    this.metadata?.metrics = {};
   }
 
   public getRecoveryStrategy(
@@ -143,10 +143,10 @@ class RecoveryServiceImpl extends AbstractBaseService {
 
   public override handleError(error: Error): void {
     // Update error metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.total_errors = (metrics.total_errors || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     // Log error in development
     if (process.env.NODE_ENV === 'development') {

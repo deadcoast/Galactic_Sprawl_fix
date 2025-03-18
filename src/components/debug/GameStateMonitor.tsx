@@ -253,19 +253,19 @@ function EventsTab({ events }: { events: ModuleEvent[] }) {
       <div className="space-y-1">
         {events.map((event, index) => (
           <div key={index} className="rounded bg-gray-700 p-1 text-xs">
-            <div className={`font-medium ${getEventColor(event.type)}`}>{event.type}</div>
+            <div className={`font-medium ${getEventColor(event?.type)}`}>{event?.type}</div>
             <div className="text-gray-300">
-              Module: {event.moduleId} ({event.moduleType})
+              Module: {event?.moduleId} ({event?.moduleType})
             </div>
             <div className="text-gray-300">
-              Time: {new Date(event.timestamp).toLocaleTimeString()}
+              Time: {new Date(event?.timestamp).toLocaleTimeString()}
             </div>
-            {event.data && (
+            {event?.data && (
               <div className="mt-1">
                 <details>
                   <summary className="cursor-pointer">Data</summary>
                   <pre className="mt-1 max-h-20 overflow-auto bg-gray-800 p-1 text-green-300">
-                    {JSON.stringify(event.data, null, 2)}
+                    {JSON.stringify(event?.data, null, 2)}
                   </pre>
                 </details>
               </div>

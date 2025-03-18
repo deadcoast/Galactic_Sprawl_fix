@@ -241,7 +241,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
   private handleShipStatusChange = (event: ExplorationEvent): void => {
     if (!isExplorationEvent(event)) return;
 
-    const { shipId, status } = event.data;
+    const { shipId, status } = event?.data;
     if (!shipId || !status) return;
 
     // If the ship is no longer available, cancel its scan operations
@@ -350,7 +350,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
         sectorId: sector.id,
       };
 
-      sector.anomalies = [...(sector.anomalies || []), anomaly];
+      sector.anomalies = [...(sector.anomalies ?? []), anomaly];
       this.anomalies.set(anomaly.id, anomaly);
       this.stats.anomaliesDetected++;
 

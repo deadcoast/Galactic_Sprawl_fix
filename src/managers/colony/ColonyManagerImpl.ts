@@ -109,7 +109,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
   private handleResourceUpdate(event: ColonyEvent): void {
     if (!isColonyEvent(event)) return;
     // Handle resource updates
-    const { colonyId, resourceAmounts } = event.data;
+    const { colonyId, resourceAmounts } = event?.data;
     if (colonyId && resourceAmounts) {
       this.updateColonyResources(colonyId, resourceAmounts);
     }
@@ -118,7 +118,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
   private handleResourceShortage(event: ColonyEvent): void {
     if (!isColonyEvent(event)) return;
     // Handle resource shortages
-    const { colonyId } = event.data;
+    const { colonyId } = event?.data;
     if (colonyId) {
       this.activateEmergencyProtocol(colonyId, 'resource_shortage');
     }
@@ -127,7 +127,7 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
   private handleTechUnlock(event: ColonyEvent): void {
     if (!isColonyEvent(event)) return;
     // Handle tech unlocks
-    const { colonyId, project } = event.data;
+    const { colonyId, project } = event?.data;
     if (colonyId && project) {
       this.applyTechBenefits(colonyId, project as string);
     }
@@ -466,15 +466,15 @@ export class ColonyManagerImpl extends AbstractBaseManager<ColonyEvent> {
   }
 
   public getActiveResearch(colonyId: string): string[] {
-    return Array.from(this.colonies.get(colonyId)?.activeResearch || []);
+    return Array.from(this.colonies.get(colonyId)?.activeResearch ?? []);
   }
 
   public getTradeRoutes(colonyId: string): string[] {
-    return Array.from(this.colonies.get(colonyId)?.tradeRoutes || []);
+    return Array.from(this.colonies.get(colonyId)?.tradeRoutes ?? []);
   }
 
   public getActiveEmergencyProtocols(colonyId: string): string[] {
-    return Array.from(this.colonies.get(colonyId)?.emergencyProtocols || []);
+    return Array.from(this.colonies.get(colonyId)?.emergencyProtocols ?? []);
   }
 
   /**

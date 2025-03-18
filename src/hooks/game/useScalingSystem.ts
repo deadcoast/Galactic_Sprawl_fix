@@ -50,7 +50,7 @@ export function useScalingSystem() {
 
         // Cast performance to ExtendedPerformance to access memory property
         const extendedPerformance = window.performance as ExtendedPerformance;
-        const memoryUsage = extendedPerformance.memory?.usedJSHeapSize || 0;
+        const memoryUsage = extendedPerformance.memory?.usedJSHeapSize ?? 0;
 
         setScalingState(prev => ({
           ...prev,

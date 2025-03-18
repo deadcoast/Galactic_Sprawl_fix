@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ResourceConversionRecipe } from '../../../types/resources/ResourceTypes';
+import { ResourceConversionRecipe, ResourceType } from '../../../types/resources/ResourceTypes';
 import { FlowNode } from '../../../types/resources/StandardizedResourceTypes';
 import { d3Accessors } from '../../../types/visualizations/D3Types';
 
@@ -22,7 +22,7 @@ interface ChainStatus {
     endTime?: number;
   }>;
   resourceTransfers: Array<{
-    type: string;
+    type: ResourceType;
     amount: number;
     fromStep: number;
     toStep: number;
@@ -210,7 +210,7 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
           // Use event to provide visual feedback on click
           d3.select(this).classed('node-clicked', true);
           // Use event coordinates for potential tooltips or context menus
-          console.warn(`Node clicked at x: ${event.x}, y: ${event.y}`);
+          console.warn(`Node clicked at x: ${event?.x}, y: ${event?.y}`);
           // After a short delay, remove the visual feedback
           setTimeout(() => {
             d3.select(this).classed('node-clicked', false);
@@ -273,7 +273,7 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
 
     // Drag event handlers
     function dragstarted(event: d3.D3DragEvent<SVGGElement, ChainNode, ChainNode>, d: ChainNode) {
-      if (!event.active) {
+      if (!event?.active) {
         simulation.alphaTarget(0.3).restart();
       }
       d.fx = d.x;
@@ -281,12 +281,12 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
     }
 
     function dragged(event: d3.D3DragEvent<SVGGElement, ChainNode, ChainNode>, d: ChainNode) {
-      d.fx = event.x;
-      d.fy = event.y;
+      d.fx = event?.x;
+      d.fy = event?.y;
     }
 
     function dragended(event: d3.D3DragEvent<SVGGElement, ChainNode, ChainNode>, d: ChainNode) {
-      if (!event.active) {
+      if (!event?.active) {
         simulation.alphaTarget(0);
       }
       d.fx = null;

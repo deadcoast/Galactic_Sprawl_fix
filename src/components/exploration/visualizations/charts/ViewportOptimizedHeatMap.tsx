@@ -167,7 +167,7 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
 
   // Extract unique X and Y values from data
   const { xValues, yValues, valueRange, effectiveMinValue, effectiveMaxValue } = useMemo(() => {
-    if (!data || data.length === 0) {
+    if (!data || data?.length === 0) {
       return {
         xValues: [],
         yValues: [],
@@ -183,7 +183,7 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
     let minVal = typeof minValue === 'number' ? minValue : Number.MAX_VALUE;
     let maxVal = typeof maxValue === 'number' ? maxValue : Number.MIN_VALUE;
 
-    data.forEach(item => {
+    data?.forEach(item => {
       const x = item[xKey];
       const y = item[yKey];
       const value = Number(item[valueKey]);
@@ -218,7 +218,7 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
 
   // Process data into a grid format
   const processedData = useMemo(() => {
-    if (!data || data.length === 0 || xValues.length === 0 || yValues.length === 0) {
+    if (!data || data?.length === 0 || xValues.length === 0 || yValues.length === 0) {
       return [];
     }
 
@@ -226,7 +226,7 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
 
     // Create a map for faster lookups
     const dataMap = new Map<string, ChartDataRecord>();
-    data.forEach(item => {
+    data?.forEach(item => {
       const x = item[xKey];
       const y = item[yKey];
       if (
@@ -247,7 +247,7 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
 
         if (item) {
           const value = Number(item[valueKey]);
-          result.push({
+          result?.push({
             x: xIndex,
             y: yIndex,
             xIndex,
@@ -293,7 +293,7 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
         const cell = processedData.find(c => c.value === value);
         if (cell) {
           // Find the original data item
-          const originalItem = data.find(
+          const originalItem = data?.find(
             item =>
               (item[xKey] === cell.originalX ||
                 (typeof item[xKey] === 'object' &&
@@ -356,7 +356,7 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
   const handleCellClick = useCallback(
     (cell: HeatMapCell) => {
       if (onElementClick) {
-        const originalItem = data.find(
+        const originalItem = data?.find(
           item =>
             (item[xKey] === cell.originalX ||
               (typeof item[xKey] === 'object' &&
@@ -488,7 +488,7 @@ export const ViewportOptimizedHeatMap = React.memo(function ViewportOptimizedHea
   const gridWidth = xValues.length * cellSize;
   const gridHeight = yValues.length * cellSize;
 
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return (
       <BaseChart
         width={width}

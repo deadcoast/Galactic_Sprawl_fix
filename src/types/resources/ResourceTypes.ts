@@ -15,6 +15,7 @@ export enum ResourceType {
   GAS = 'GAS',
   EXOTIC = 'EXOTIC',
   ORGANIC = 'ORGANIC',
+  FOOD = 'FOOD',
   // Additional resource types for future expansion
   IRON = 'IRON',
   COPPER = 'COPPER',
@@ -128,6 +129,14 @@ export const ResourceTypeInfo: Record<ResourceType, ResourceTypeMetadata> = {
     displayName: 'Research',
     description: 'Scientific progress',
     icon: 'research-icon',
+    category: ResourceCategory.BASIC,
+    defaultMax: 1000,
+  },
+  [ResourceType.FOOD]: {
+    id: ResourceType.FOOD,
+    displayName: 'Food',
+    description: 'Sustenance for population',
+    icon: 'food-icon',
     category: ResourceCategory.BASIC,
     defaultMax: 1000,
   },
@@ -264,6 +273,7 @@ export const ResourceTypeHelpers = {
       GAS: ResourceType.GAS,
       EXOTIC: ResourceType.EXOTIC,
       ORGANIC: ResourceType.ORGANIC,
+      FOOD: ResourceType.FOOD,
       IRON: ResourceType.IRON,
       COPPER: ResourceType.COPPER,
       TITANIUM: ResourceType.TITANIUM,
@@ -293,6 +303,7 @@ export const ResourceTypeHelpers = {
       [ResourceType.GAS]: 'GAS',
       [ResourceType.EXOTIC]: 'EXOTIC',
       [ResourceType.ORGANIC]: 'ORGANIC',
+      [ResourceType.FOOD]: 'FOOD',
       [ResourceType.IRON]: 'IRON',
       [ResourceType.COPPER]: 'COPPER',
       [ResourceType.TITANIUM]: 'TITANIUM',
@@ -325,7 +336,7 @@ export const ResourceTypeHelpers = {
    * @param type ResourceType enum or string
    * @returns Display name for the resource type
    */
-  getDisplayName(type: ResourceType | ResourceTypeString): ResourceType {
+  getDisplayName(type: ResourceType | ResourceTypeString): string {
     return this.getMetadata(type).displayName;
   },
 };
@@ -363,17 +374,17 @@ export class ResourceStateClass {
   }) {
     // Convert string type to enum if needed
     this._type =
-      typeof data.type === 'string'
-        ? ResourceTypeHelpers.stringToEnum(data.type as ResourceTypeString)
-        : data.type;
+      typeof data?.type === 'string'
+        ? ResourceTypeHelpers.stringToEnum(data?.type as ResourceTypeString)
+        : data?.type;
 
     // Set default values from metadata
     const metadata = ResourceTypeInfo[this._type];
-    this._current = data.current ?? 0;
-    this._max = data.max ?? metadata.defaultMax;
-    this._min = data.min ?? 0;
-    this._production = data.production ?? 0;
-    this._consumption = data.consumption ?? 0;
+    this._current = data?.current ?? 0;
+    this._max = data?.max ?? metadata?.defaultMax;
+    this._min = data?.min ?? 0;
+    this._production = data?.production ?? 0;
+    this._consumption = data?.consumption ?? 0;
   }
 
   get current(): number {

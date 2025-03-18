@@ -1,11 +1,12 @@
 import * as React from 'react';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
 import './ConverterDetailsView.css';
 
 // Define the interfaces for the component
 interface ConverterDetail {
   id: string;
   name: string;
-  type: string;
+  type: ResourceType;
   tier: number;
   status: 'active' | 'inactive' | 'error';
   efficiency: number;

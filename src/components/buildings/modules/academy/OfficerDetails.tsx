@@ -192,14 +192,14 @@ export function OfficerDetails({
                 <div className="mb-2 flex items-center justify-between">
                   <div className="text-violet-200">Training in Progress</div>
                   <div className="text-violet-400">
-                    {Math.round((officer.trainingProgress || 0) * 100)}%
+                    {Math.round((officer.trainingProgress ?? 0) * 100)}%
                   </div>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-gray-700">
                   <div
                     className="h-full rounded-full bg-violet-500 transition-all"
                     style={{
-                      width: `${(officer.trainingProgress || 0) * 100}%`,
+                      width: `${(officer.trainingProgress ?? 0) * 100}%`,
                     }}
                   />
                 </div>

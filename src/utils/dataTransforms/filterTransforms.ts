@@ -461,7 +461,7 @@ export function applyFilters(
     filters,
   };
   
-  return data.filter(item => applyFilterGroup(item, filterGroup));
+  return data?.filter(item => applyFilterGroup(item, filterGroup));
 }
 
 /**
@@ -477,7 +477,7 @@ export function applyComplexFilter(
     return data;
   }
   
-  return data.filter(item => applyFilterGroup(item, filterGroup));
+  return data?.filter(item => applyFilterGroup(item, filterGroup));
 }
 
 //=============================================================================
@@ -493,14 +493,14 @@ export function detectFieldTypes(
   data: Array<Record<string, unknown>>,
   sampleSize: number = 100
 ): Record<string, 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object' | 'mixed'> {
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return {};
   }
   
   // Sample the data for performance
-  const sampleData = data.length <= sampleSize 
+  const sampleData = data?.length <= sampleSize 
     ? data 
-    : data.slice(0, sampleSize);
+    : data?.slice(0, sampleSize);
   
   // Get all field names from first few records
   const fieldNames = new Set<string>();
@@ -574,7 +574,7 @@ export function getUniqueValues(
   field: string,
   limit: number = 100
 ): Array<string | number | boolean> {
-  if (!data || data.length === 0 || !field) {
+  if (!data || data?.length === 0 || !field) {
     return [];
   }
   
@@ -628,7 +628,7 @@ export function getFieldRange(
   data: Array<Record<string, unknown>>,
   field: string
 ): [number, number] | null {
-  if (!data || data.length === 0 || !field) {
+  if (!data || data?.length === 0 || !field) {
     return null;
   }
   

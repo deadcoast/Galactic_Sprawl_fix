@@ -197,7 +197,7 @@ export function useEventCategorySubscription<T extends BaseEvent = BaseEvent>(
       if (trackLatest) {
         setLatestEvents(prev => ({
           ...prev,
-          [event.type]: event,
+          [event?.type]: event,
         }));
       }
 

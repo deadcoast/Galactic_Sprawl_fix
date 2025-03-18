@@ -1,6 +1,7 @@
 import { AlertTriangle, Award, BarChart2, Filter, Play, Search, X } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useMemo, useState } from 'react';
+import { ResourceType } from '../../../../types/resources/ResourceTypes';
 import { MissionReplay } from './MissionReplay';
 
 interface MissionEntry {
@@ -13,11 +14,11 @@ interface MissionEntry {
   shipId?: string;
   xpGained?: number;
   resourcesFound?: {
-    type: string;
+    type: ResourceType;
     amount: number;
   }[];
   anomalyDetails?: {
-    type: string;
+    type: ResourceType;
     severity: string;
     investigated: boolean;
   };
@@ -79,9 +80,9 @@ export function MissionLog({ onClose }: MissionLogProps) {
       discoveries: relevantEntries.filter(e => e.type === 'discovery').length,
       anomalies: relevantEntries.filter(e => e.type === 'anomaly').length,
       completions: relevantEntries.filter(e => e.type === 'completion').length,
-      totalXP: relevantEntries.reduce((sum, entry) => sum + (entry.xpGained || 0), 0),
+      totalXP: relevantEntries.reduce((sum, entry) => sum + (entry.xpGained ?? 0), 0),
       resourcesFound: relevantEntries.reduce(
-        (sum, entry) => sum + (entry.resourcesFound?.reduce((r, res) => r + res.amount, 0) || 0),
+        (sum, entry) => sum + (entry.resourcesFound?.reduce((r, res) => r + res.amount, 0) ?? 0),
         0
       ),
       highPriority: relevantEntries.filter(e => e.importance === 'high').length,

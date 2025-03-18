@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useEffect } from 'react';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import {
   GameActionType,
   selectGameTime,
@@ -45,7 +46,7 @@ interface MissionCompletedEventData {
   xpGained?: number;
   resourcesFound?: Array<{ type: string; amount: number }>;
   anomalyDetails?: {
-    type: string;
+    type: ResourceType;
     severity: string;
     investigated: boolean;
   };
@@ -220,19 +221,19 @@ export function useGameState() {
 
     // Listen for mission events
     const unsubscribeMissionEvents = moduleEventBus.subscribe('MISSION_COMPLETED', event => {
-      if (event.moduleType === 'radar' && event.data) {
-        if (!isMissionCompletedEventData(event.data)) {
-          console.warn('Invalid mission data format:', event.data);
+      if (event?.moduleType === 'radar' && event?.data) {
+        if (!isMissionCompletedEventData(event?.data)) {
+          console.warn('Invalid mission data format:', event?.data);
           return;
         }
 
-        const missionData = event.data;
+        const missionData = event?.data;
         dispatch({
           type: GameActionType.ADD_MISSION,
           payload: {
             id: `mission-${Date.now()}`,
             type: missionData.type,
-            timestamp: event.timestamp,
+            timestamp: event?.timestamp,
             description: missionData.description,
             sector: missionData.sector,
             importance: missionData.importance,
@@ -246,12 +247,12 @@ export function useGameState() {
         dispatch({
           type: GameActionType.UPDATE_MISSION_STATS,
           payload: {
-            totalXP: missions.statistics.totalXP + (missionData.xpGained || 0),
+            totalXP: missions.statistics.totalXP + (missionData.xpGained ?? 0),
             discoveries:
               missions.statistics.discoveries + (missionData.type === 'discovery' ? 1 : 0),
             anomalies: missions.statistics.anomalies + (missionData.type === 'anomaly' ? 1 : 0),
             resourcesFound:
-              missions.statistics.resourcesFound + (missionData.resourcesFound?.length || 0),
+              missions.statistics.resourcesFound + (missionData.resourcesFound?.length ?? 0),
             highPriorityCompleted:
               missions.statistics.highPriorityCompleted +
               (missionData.importance === 'high' ? 1 : 0),
@@ -264,22 +265,22 @@ export function useGameState() {
     const unsubscribeSectorUpdates = moduleEventBus.subscribe(
       'AUTOMATION_CYCLE_COMPLETE',
       event => {
-        if (event.moduleType === 'radar' && event.data) {
-          if (!isSectorUpdateEventData(event.data)) {
-            console.warn('Invalid sector update data format:', event.data);
+        if (event?.moduleType === 'radar' && event?.data) {
+          if (!isSectorUpdateEventData(event?.data)) {
+            console.warn('Invalid sector update data format:', event?.data);
             return;
           }
 
-          const sectorData = event.data;
+          const sectorData = event?.data;
           dispatch({
             type: GameActionType.UPDATE_SECTOR,
             payload: {
               sectorId: sectorData.task.target.id,
               data: {
                 status: 'mapped' as const,
-                resourcePotential: sectorData.resourcePotential || 0,
-                habitabilityScore: sectorData.habitabilityScore || 0,
-                heatMapValue: sectorData.heatMapValue || 0,
+                resourcePotential: sectorData.resourcePotential ?? 0,
+                habitabilityScore: sectorData.habitabilityScore ?? 0,
+                heatMapValue: sectorData.heatMapValue ?? 0,
                 lastScanned: Date.now(),
               },
             },

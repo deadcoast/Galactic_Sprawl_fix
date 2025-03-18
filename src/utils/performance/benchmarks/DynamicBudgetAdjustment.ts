@@ -286,13 +286,13 @@ class PerformanceTelemetryCollector {
    */
   public recordBenchmarkResult(result: BenchmarkResult): boolean {
     return this.recordSample({
-      name: result.name,
-      timestamp: result.timestamp,
-      executionTimeMs: result.executionTimeMs,
-      memoryUsageMB: result.memoryUsageMB,
-      operationsPerSecond: result.operationsPerSecond,
+      name: result?.name,
+      timestamp: result?.timestamp,
+      executionTimeMs: result?.executionTimeMs,
+      memoryUsageMB: result?.memoryUsageMB,
+      operationsPerSecond: result?.operationsPerSecond,
       environment: 'development', // Benchmark results are typically from development
-      metadata: { additionalMetrics: result.additionalMetrics },
+      metadata: { additionalMetrics: result?.additionalMetrics },
     });
   }
 
@@ -365,7 +365,7 @@ class PerformanceTelemetryCollector {
       const samples = this.getSamplesForOperation(name);
       if (samples.length === 0) continue;
 
-      result.set(name, this.calculateStatisticsForSamples(name, samples));
+      result?.set(name, this.calculateStatisticsForSamples(name, samples));
     }
 
     return result;
@@ -443,7 +443,7 @@ class PerformanceTelemetryCollector {
     if (deviceTypes.length > 0) {
       deviceTypeBreakdown = {};
       for (const deviceType of deviceTypes) {
-        deviceTypeBreakdown[deviceType] = (deviceTypeBreakdown[deviceType] || 0) + 1;
+        deviceTypeBreakdown[deviceType] = (deviceTypeBreakdown[deviceType] ?? 0) + 1;
       }
 
       // Convert to percentages

@@ -129,7 +129,7 @@ export class MultitabCommunicationChannel {
       try {
         this.broadcastChannel = new BroadcastChannel('galactic_sprawl_multitab_perf_test');
         this.broadcastChannel.onmessage = event => {
-          this.handleIncomingMessage(event.data);
+          this.handleIncomingMessage(event?.data);
         };
         console.warn(`[Tab ${this.tabId}] Using BroadcastChannel for communication`);
       } catch (error) {
@@ -155,9 +155,9 @@ export class MultitabCommunicationChannel {
 
     // Listen for storage events
     window.addEventListener('storage', event => {
-      if (event.key && event.key.startsWith(this.storageKeyPrefix)) {
+      if (event?.key && event?.key.startsWith(this.storageKeyPrefix)) {
         try {
-          const message = JSON.parse(event.newValue || '');
+          const message = JSON.parse(event?.newValue ?? '');
           // Ignore our own messages
           if (message.senderId !== this.tabId) {
             this.handleIncomingMessage(message);

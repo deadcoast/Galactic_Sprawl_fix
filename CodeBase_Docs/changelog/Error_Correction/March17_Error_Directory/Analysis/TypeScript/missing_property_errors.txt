@@ -1,3 +1,14 @@
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(447,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(492,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(509,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(526,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(544,20): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/GrowthRateModifiers.tsx(112,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/GrowthRateModifiers.tsx(130,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/GrowthRateModifiers.tsx(160,18): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/PopulationGrowthModule.tsx(167,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/ResourceDashboard.tsx(49,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/SatisfactionMeter.tsx(68,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
 ../../../../src/config/automation/colonyRules.ts(27,30): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
 ../../../../src/config/automation/colonyRules.ts(67,30): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
 ../../../../src/config/buildings/defaultBuildings.ts(63,78): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
@@ -38,6 +49,10 @@
 ../../../../src/managers/weapons/WeaponUpgradeManager.ts(365,10): error TS2339: Property 'on' does not exist on type 'WeaponUpgradeManager'.
 ../../../../src/managers/weapons/WeaponUpgradeManager.ts(368,14): error TS2339: Property 'off' does not exist on type 'WeaponUpgradeManager'.
 ../../../../src/managers/weapons/WeaponUpgradeManager.ts(380,10): error TS2339: Property 'emit' does not exist on type 'WeaponUpgradeManager'.
+../../../../src/pages/ColonyManagementPage.tsx(13,24): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/pages/ColonyManagementPage.tsx(91,28): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/pages/ColonyManagementPage.tsx(286,24): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/pages/ColonyManagementPage.tsx(320,24): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
 ../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(930,13): error TS2339: Property 'moduleId' does not exist on type 'unknown'.
 ../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(930,23): error TS2339: Property 'moduleType' does not exist on type 'unknown'.
 ../../../../src/resource/subsystems/ResourceFlowSubsystem.ts(930,35): error TS2339: Property 'resources' does not exist on type 'unknown'.
@@ -93,5 +108,6 @@
 ../../../../src/utils/dataTransforms/filterTransforms.ts(381,20): error TS2339: Property 'toLowerCase' does not exist on type 'never'.
 ../../../../src/utils/dataTransforms/filterTransforms.ts(385,21): error TS2339: Property 'toLowerCase' does not exist on type 'never'.
 ../../../../src/utils/dataTransforms/filterTransforms.ts(594,35): error TS2339: Property 'length' does not exist on type 'never'.
+../../../../src/utils/modules/moduleValidation.ts(34,18): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
 ../../../../src/utils/performance/benchmarks/PerformanceBenchmarkTools.ts(307,18): error TS2339: Property 'OXYGEN' does not exist on type 'typeof ResourceType'.
 ../../../../src/utils/performance/benchmarks/PerformanceBenchmarkTools.ts(308,18): error TS2339: Property 'SILICON' does not exist on type 'typeof ResourceType'.

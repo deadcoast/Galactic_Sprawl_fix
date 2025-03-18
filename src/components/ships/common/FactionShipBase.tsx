@@ -192,10 +192,10 @@ export function FactionShipBase(props: FactionShipProps & { children?: ReactNode
       maxShield={ship.maxShield}
       weapons={ship.stats.weapons}
       stats={ship.stats}
-      onFire={props.onFire}
-      onSpecialAbility={props.onSpecialAbility}
-      onRetreat={props.onRetreat}
-      onEngage={props.onEngage}
+      onFire={props?.onFire}
+      onSpecialAbility={props?.onSpecialAbility}
+      onRetreat={props?.onRetreat}
+      onEngage={props?.onEngage}
     >
       <FactionShipContent ship={ship} {...rest} />
     </BaseShip>

@@ -38,7 +38,7 @@ export function useGPUCompute({
       const inputs = Array.isArray(inputData) ? inputData : [inputData];
       inputBuffersRef.current = inputs.map((data, i) => {
         const name = `input_${computeShader}_${i}`;
-        service.createStorageBuffer(name, data, data.byteLength);
+        service.createStorageBuffer(name, data, data?.byteLength);
         return name;
       });
 

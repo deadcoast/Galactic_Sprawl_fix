@@ -662,7 +662,7 @@ export function ExplorationDataManager({
                 />
 
                 <select
-                  value={newCategoryParentId || ''}
+                  value={newCategoryParentId ?? ''}
                   onChange={e => setNewCategoryParentId(e.target.value || undefined)}
                   className="flex-grow rounded border border-gray-600 bg-gray-700 px-1 py-1 text-xs text-gray-300"
                 >

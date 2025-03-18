@@ -54,7 +54,7 @@ export const useAutomation = () => {
     }
 
     try {
-      const allRoutines = globalAutomationManager.getAllRoutines() || [];
+      const allRoutines = globalAutomationManager.getAllRoutines() ?? [];
       setRoutines(allRoutines);
       setActiveRoutines(allRoutines.filter(r => r.enabled));
       setLastUpdate(Date.now());

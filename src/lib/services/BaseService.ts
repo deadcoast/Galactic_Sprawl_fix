@@ -1,5 +1,5 @@
-import { Singleton } from '../patterns/Singleton';
 import { ErrorType } from '../../services/ErrorLoggingService';
+import { Singleton } from '../patterns/Singleton';
 
 /**
  * Interface for service metadata
@@ -50,7 +50,10 @@ export interface BaseService {
  * Abstract base class that provides common service functionality
  * Extends the Singleton pattern to ensure only one instance exists
  */
-export abstract class AbstractBaseService extends Singleton<AbstractBaseService> implements BaseService {
+export abstract class AbstractBaseService
+  extends Singleton<AbstractBaseService>
+  implements BaseService
+{
   protected metadata: ServiceMetadata;
 
   protected constructor(name: string, version: string) {
@@ -88,7 +91,7 @@ export abstract class AbstractBaseService extends Singleton<AbstractBaseService>
   }
 
   isReady(): boolean {
-    return this.metadata.status === 'ready';
+    return this.metadata?.status === 'ready';
   }
 
   handleError(error: Error, context?: Record<string, unknown>): void {

@@ -45,15 +45,15 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
    */
   private setupEventListeners(): void {
     techTreeManager.on('nodeUnlocked', ((event: TechNodeUnlockedEvent) => {
-      if (event.node.type === 'academy') {
-        this.handleAcademyUpgrade(event.node.tier as OfficerTier);
+      if (event?.node.type === 'academy') {
+        this.handleAcademyUpgrade(event?.node.tier as OfficerTier);
       }
     }) as (data: unknown) => void);
 
     moduleEventBus.subscribe('MODULE_ACTIVATED', (event: ModuleEvent) => {
-      if (event.moduleType === 'academy') {
-        this.moduleId = event.moduleId;
-        this.emit('academyActivated', { moduleId: event.moduleId });
+      if (event?.moduleType === 'academy') {
+        this.moduleId = event?.moduleId;
+        this.emit('academyActivated', { moduleId: event?.moduleId });
       }
     });
   }

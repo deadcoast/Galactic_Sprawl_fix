@@ -142,8 +142,8 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
 
     // Check resources
     const hasResources =
-      (cost.minerals || 0) <= gameState.resources.minerals &&
-      (cost.energy || 0) <= gameState.resources.energy;
+      (cost.minerals ?? 0) <= gameState.resources.minerals &&
+      (cost.energy ?? 0) <= gameState.resources.energy;
 
     if (!hasResources) {
       console.warn('Not enough resources to build module');
@@ -335,26 +335,26 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
       };
 
       // Function keys mapping
-      if (event.key === 'F1') {
+      if (event?.key === 'F1') {
         toggleTechTree();
         return;
       }
 
-      if (event.key === 'F2') {
+      if (event?.key === 'F2') {
         toggleSettings();
         return;
       }
 
       // Alt + key combinations for categories
-      if (event.altKey && keyMap[event.key]) {
-        setActiveCategory(keyMap[event.key]);
-        event.preventDefault();
+      if (event?.altKey && keyMap[event?.key]) {
+        setActiveCategory(keyMap[event?.key]);
+        event?.preventDefault();
       }
 
       // Escape key to close active category
-      if (event.key === 'Escape' && activeCategory) {
+      if (event?.key === 'Escape' && activeCategory) {
         setActiveCategory(null);
-        event.preventDefault();
+        event?.preventDefault();
       }
     },
     [activeCategory, toggleTechTree, toggleSettings]
@@ -392,12 +392,12 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
     if (!showTooltip) return null;
 
     const menuCategory = Object.keys(menuItems).find(category =>
-      menuItems[category as MenuCategory].some(item => item.id === showTooltip.id)
+      menuItems[category as MenuCategory].some(item => item?.id === showTooltip.id)
     ) as MenuCategory | undefined;
 
     if (!menuCategory) return null;
 
-    const menuItem = menuItems[menuCategory].find(item => item.id === showTooltip.id);
+    const menuItem = menuItems[menuCategory].find(item => item?.id === showTooltip.id);
     if (!menuItem) return null;
 
     const canBuild =
@@ -576,30 +576,30 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
       menuItems[category as MenuCategory] = menuItems[category as MenuCategory].map(item => ({
         ...item,
         action: () => {
-          console.warn(`Attempting to build ${item.name}...`);
-          if (item.moduleType && item.cost) {
-            if (canBuildModule(item.moduleType, item.cost)) {
+          console.warn(`Attempting to build ${item?.name}...`);
+          if (item?.moduleType && item?.cost) {
+            if (canBuildModule(item?.moduleType, item?.cost)) {
               // Actually build the module using our local implementation
-              const success = buildModuleLocally(item.moduleType, item.cost);
+              const success = buildModuleLocally(item?.moduleType, item?.cost);
 
               if (success) {
                 // Update resources in game state
                 gameDispatch({
                   type: GameActionType.UPDATE_RESOURCES,
                   payload: {
-                    minerals: gameState.resources.minerals - (item.cost?.minerals || 0),
-                    energy: gameState.resources.energy - (item.cost?.energy || 0),
+                    minerals: gameState.resources.minerals - (item?.cost?.minerals ?? 0),
+                    energy: gameState.resources.energy - (item?.cost?.energy ?? 0),
                   },
                 });
 
                 // Show success notification
                 addNotification(
                   'success',
-                  `Successfully built ${item.name}`,
-                  `Your ${item.name} module is now operational.`
+                  `Successfully built ${item?.name}`,
+                  `Your ${item?.name} module is now operational.`
                 );
 
-                console.warn(`Successfully built ${item.name}!`);
+                console.warn(`Successfully built ${item?.name}!`);
 
                 // Activate the appropriate view based on module type
                 if (category === 'mining') {
@@ -611,20 +611,20 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
                 // Show error notification if building failed
                 addNotification(
                   'error',
-                  `Failed to build ${item.name}`,
-                  `Technical error occurred while building ${item.name}. Please try again.`
+                  `Failed to build ${item?.name}`,
+                  `Technical error occurred while building ${item?.name}. Please try again.`
                 );
               }
             } else {
               // Show error notification
               const missingResources = [];
-              if ((item.cost?.minerals || 0) > gameState.resources.minerals) {
+              if ((item?.cost?.minerals ?? 0) > gameState.resources.minerals) {
                 missingResources.push(
-                  `${item.cost?.minerals - gameState.resources.minerals} minerals`
+                  `${item?.cost?.minerals - gameState.resources.minerals} minerals`
                 );
               }
-              if ((item.cost?.energy || 0) > gameState.resources.energy) {
-                missingResources.push(`${item.cost?.energy - gameState.resources.energy} energy`);
+              if ((item?.cost?.energy ?? 0) > gameState.resources.energy) {
+                missingResources.push(`${item?.cost?.energy - gameState.resources.energy} energy`);
               }
 
               const resourceMessage =
@@ -634,8 +634,8 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
 
               addNotification(
                 'error',
-                `Cannot build ${item.name}`,
-                `Insufficient resources to build ${item.name}. ${resourceMessage}`
+                `Cannot build ${item?.name}`,
+                `Insufficient resources to build ${item?.name}. ${resourceMessage}`
               );
             }
           }
@@ -667,14 +667,14 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
         minThreshold: 200,
         maxThreshold: 2000,
         maxCapacity: 3000,
-        extractionRate: gameState.resourceRates?.minerals || 0,
+        extractionRate: gameState.resourceRates?.minerals ?? 0,
       },
       energy: {
         currentAmount: gameState.resources.energy,
         minThreshold: 100,
         maxThreshold: 1500,
         maxCapacity: 2000,
-        extractionRate: gameState.resourceRates?.energy || 0,
+        extractionRate: gameState.resourceRates?.energy ?? 0,
       },
     }),
     [gameState.resources, gameState.resourceRates]
@@ -829,15 +829,15 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
               <div className="space-y-3">
                 {menuItems[activeCategory].map(item => (
                   <button
-                    key={item.id}
+                    key={item?.id}
                     className={`w-full rounded-lg border p-4 text-left ${
                       categoryColors[activeCategory].border
                     } bg-gray-800 bg-opacity-50 transition-colors duration-200 hover:bg-opacity-70`}
-                    onClick={item.action}
+                    onClick={item?.action}
                     onMouseEnter={e => {
                       const rect = e.currentTarget.getBoundingClientRect();
                       setShowTooltip({
-                        id: item.id,
+                        id: item?.id,
                         x: rect.right,
                         y: rect.top,
                       });
@@ -845,35 +845,35 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
                     onMouseLeave={() => setShowTooltip(null)}
                   >
                     <div className="flex items-start justify-between">
-                      <h3 className="text-lg font-medium text-white">{item.name}</h3>
-                      {item.cost ? (
+                      <h3 className="text-lg font-medium text-white">{item?.name}</h3>
+                      {item?.cost ? (
                         <div className="flex space-x-3 text-sm">
-                          {item.cost.minerals ? (
+                          {item?.cost.minerals ? (
                             <span
                               className={`rounded px-2 py-1 ${
-                                gameState.resources.minerals < (item.cost.minerals || 0)
+                                gameState.resources.minerals < (item?.cost.minerals ?? 0)
                                   ? 'bg-red-900/60 text-red-300'
                                   : 'bg-amber-900/60 text-amber-300'
                               }`}
                             >
-                              {item.cost.minerals} minerals
+                              {item?.cost.minerals} minerals
                             </span>
                           ) : null}
-                          {item.cost.energy ? (
+                          {item?.cost.energy ? (
                             <span
                               className={`rounded px-2 py-1 ${
-                                gameState.resources.energy < (item.cost.energy || 0)
+                                gameState.resources.energy < (item?.cost.energy ?? 0)
                                   ? 'bg-red-900/60 text-red-300'
                                   : 'bg-cyan-900/60 text-cyan-300'
                               }`}
                             >
-                              {item.cost.energy} energy
+                              {item?.cost.energy} energy
                             </span>
                           ) : null}
                         </div>
                       ) : null}
                     </div>
-                    <p className="mt-1 text-gray-300">{item.description}</p>
+                    <p className="mt-1 text-gray-300">{item?.description}</p>
                   </button>
                 ))}
               </div>

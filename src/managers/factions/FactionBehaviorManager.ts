@@ -136,7 +136,7 @@ export class FactionBehaviorManager extends BaseTypedEventEmitter<FactionEvents>
       return false;
     }
 
-    const oldValue = faction.relationships[targetFaction] || 0;
+    const oldValue = faction.relationships[targetFaction] ?? 0;
     faction.relationships[targetFaction] = newValue;
     this.factions.set(factionId, faction);
 
@@ -168,7 +168,7 @@ export class FactionBehaviorManager extends BaseTypedEventEmitter<FactionEvents>
       return false;
     }
 
-    const oldAmount = faction.resources[resourceType] || 0;
+    const oldAmount = faction.resources[resourceType] ?? 0;
     faction.resources[resourceType] = newAmount;
     this.factions.set(factionId, faction);
 

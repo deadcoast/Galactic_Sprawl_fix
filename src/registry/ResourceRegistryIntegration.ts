@@ -55,7 +55,7 @@ export class ResourceRegistryIntegration {
     // Subscribe to registry events to sync with other systems
     this.registry.subscribe('resourceRegistered', (data: RegistryEventData) => {
       if ('resourceType' in data && 'metadata' in data) {
-        console.warn(`Resource registered: ${data.resourceType}`);
+        console.warn(`Resource registered: ${data?.resourceType}`);
         // Here you would notify other systems about the new resource
       }
     });
@@ -63,7 +63,7 @@ export class ResourceRegistryIntegration {
     this.registry.subscribe('conversionRateChanged', (data: RegistryEventData) => {
       if ('sourceType' in data && 'targetType' in data && 'rate' in data) {
         console.warn(
-          `Conversion rate changed: ${data.sourceType} -> ${data.targetType} = ${data.rate}`
+          `Conversion rate changed: ${data?.sourceType} -> ${data?.targetType} = ${data?.rate}`
         );
         // Here you would update conversion rates in other systems
       }
@@ -177,7 +177,7 @@ export class ResourceRegistryIntegration {
    * @param resourceType The resource type (string or enum)
    * @returns The display name or the resource type string if not found
    */
-  public getDisplayName(resourceType: ResourceType | string): string {
+  public getDisplayName(resourceType: ResourceType | string): ResourceType {
     if (typeof resourceType === 'string') {
       const enumType = ResourceTypeConverter.stringToEnum(resourceType);
       if (!enumType) {
@@ -227,7 +227,7 @@ export class ResourceRegistryIntegration {
     }
 
     const metadata = this.registry.getResourceMetadata(enumType);
-    return metadata ? metadata.category === category : false;
+    return metadata ? metadata?.category === category : false;
   }
 
   /**

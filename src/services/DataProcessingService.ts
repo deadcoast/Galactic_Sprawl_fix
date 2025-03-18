@@ -66,7 +66,7 @@ export class DataProcessingService {
    * Handle messages received from the web worker
    */
   private handleWorkerMessage = (event: MessageEvent): void => {
-    const { id, result, error } = event.data;
+    const { id, result, error } = event?.data;
 
     // Look up the pending request
     const request = this.pendingRequests.get(id);

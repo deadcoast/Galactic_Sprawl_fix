@@ -59,7 +59,7 @@ export function ShipStatusMonitor({ shipIds, onSelectShip }: ShipStatusMonitorPr
 
       ships.forEach(ship => {
         // Calculate real-time status values
-        const timeSinceLastUpdate = Date.now() - (shipStatuses[ship.id]?.lastUpdate || 0);
+        const timeSinceLastUpdate = Date.now() - (shipStatuses[ship.id]?.lastUpdate ?? 0);
         const energyDrain = ship.currentTask ? 0.001 * timeSinceLastUpdate : 0;
         const shieldRecharge = ship.currentTask ? 0 : 0.002 * timeSinceLastUpdate;
 

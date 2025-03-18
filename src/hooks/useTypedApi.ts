@@ -76,8 +76,8 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
       options: UseApiOptions = {}
     ): Promise<ApiResponse<ResponseType>> => {
       // Get cache key if caching is enabled
-      const cacheEnabled = options.enableCache ?? false;
-      const cacheKey = options.cacheKey ?? `${endpoint.method}:${endpoint.path}`;
+      const cacheEnabled = options?.enableCache ?? false;
+      const cacheKey = options?.cacheKey ?? `${endpoint.method}:${endpoint.path}`;
 
       // Check cache
       if (cacheEnabled && apiCache.has(cacheKey)) {
@@ -100,22 +100,22 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
           apiCache.set(cacheKey, {
             data: response,
             timestamp: Date.now(),
-            ttl: options.cacheTTL ?? 5 * 60 * 1000, // Default 5 minutes
+            ttl: options?.cacheTTL ?? 5 * 60 * 1000, // Default 5 minutes
           });
         }
 
         // Call success callback if provided
-        if (options.onSuccess && response.isValid) {
-          options.onSuccess(response.data);
+        if (options?.onSuccess && response?.isValid) {
+          options?.onSuccess(response?.data);
         }
 
         return response;
       } catch (error) {
         // Handle retry logic
-        if (options.retry && error instanceof ApiError) {
+        if (options?.retry && error instanceof ApiError) {
           const apiError = error as ApiError;
-          const maxRetries = options.maxRetries ?? 3;
-          const retryDelay = options.retryDelay ?? 1000;
+          const maxRetries = options?.maxRetries ?? 3;
+          const retryDelay = options?.retryDelay ?? 1000;
 
           let retryAttempt = 0;
           let lastError = apiError;
@@ -135,7 +135,7 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
                 apiCache.set(cacheKey, {
                   data: retryResponse,
                   timestamp: Date.now(),
-                  ttl: options.cacheTTL ?? 5 * 60 * 1000,
+                  ttl: options?.cacheTTL ?? 5 * 60 * 1000,
                 });
               }
 
@@ -154,8 +154,8 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
         }
 
         // Call error callback if provided
-        if (options.onError && error instanceof ApiError) {
-          options.onError(error as ApiError);
+        if (options?.onError && error instanceof ApiError) {
+          options?.onError(error as ApiError);
         }
 
         throw error;
@@ -180,7 +180,7 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
     ) => {
       const [state, setState] = useState<ApiRequestState<ResponseType>>({
         data: null,
-        isLoading: !options.skip,
+        isLoading: !options?.skip,
         isError: false,
         error: null,
         isValidationError: false,
@@ -200,20 +200,20 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
             method: 'GET',
             requestSchema: z.void(),
             responseSchema,
-            queryParams: options.queryParams,
-            headers: options.headers,
-            withCredentials: options.withCredentials,
+            queryParams: options?.queryParams,
+            headers: options?.headers,
+            withCredentials: options?.withCredentials,
           };
 
           const response = await request(endpoint, undefined, requestOptions);
 
           if (isMounted.current) {
             setState({
-              data: response.data,
+              data: response?.data,
               isLoading: false,
               isError: false,
               error: null,
-              isValidationError: !response.isValid,
+              isValidationError: !response?.isValid,
               isSuccess: true,
             });
           }
@@ -285,24 +285,24 @@ export function useTypedApi(apiClient: TypeSafeApiClient) {
                 method,
                 requestSchema,
                 responseSchema,
-                headers: options.headers,
-                withCredentials: options.withCredentials,
+                headers: options?.headers,
+                withCredentials: options?.withCredentials,
               };
 
             const response = await request(endpoint, requestData, options);
 
             if (isMounted.current) {
               setState({
-                data: response.data,
+                data: response?.data,
                 isLoading: false,
                 isError: false,
                 error: null,
-                isValidationError: !response.isValid,
+                isValidationError: !response?.isValid,
                 isSuccess: true,
               });
             }
 
-            return response.data;
+            return response?.data;
           } catch (error) {
             if (isMounted.current) {
               setState({

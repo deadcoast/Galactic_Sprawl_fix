@@ -1,6 +1,6 @@
+import { BaseTypedEventEmitter } from '../../lib/modules/BaseTypedEventEmitter';
 import { Position } from '../../types/core/GameTypes';
 import { WeaponCategory, WeaponVariant } from '../../types/weapons/WeaponTypes';
-import { EventEmitter } from '../../utils/EventEmitter';
 import { effectLifecycleManager } from '../effects/EffectLifecycleManager';
 import { particleSystemManager } from '../effects/ParticleSystemManager';
 
@@ -22,7 +22,7 @@ interface WeaponEffectConfig {
   quality?: 'low' | 'medium' | 'high';
 }
 
-export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
+export class WeaponEffectManager extends BaseTypedEventEmitter<WeaponEffectEvents> {
   private static instance: WeaponEffectManager;
   private activeEffects: Map<string, Set<string>>;
   private effectConfigs: Map<WeaponCategory, Map<WeaponVariant, WeaponEffectConfig>>;
@@ -249,7 +249,7 @@ export class WeaponEffectManager extends EventEmitter<WeaponEffectEvents> {
   }
 
   public getActiveEffects(weaponId: string): string[] {
-    return Array.from(this.activeEffects.get(weaponId) || []);
+    return Array.from(this.activeEffects.get(weaponId) ?? []);
   }
 
   public cleanup(): void {

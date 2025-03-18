@@ -184,7 +184,7 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
     } else {
       // Filter by benchmark type
       const savedResults = loadBenchmarkResults('performance-benchmark-results');
-      const filtered = savedResults.filter(result => result.name.includes(type));
+      const filtered = savedResults.filter(result => result?.name.includes(type));
       setBenchmarkResults(filtered);
     }
   };
@@ -337,13 +337,13 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
                   {benchmarkResults.map((result, index) => {
                     const resourceResult = result as ResourceFlowBenchmarkResult;
                     return (
-                      <tr key={`${result.name}-${index}`}>
-                        <td>{result.name}</td>
-                        <td>{result.executionTimeMs.toFixed(2)}</td>
+                      <tr key={`${result?.name}-${index}`}>
+                        <td>{result?.name}</td>
+                        <td>{result?.executionTimeMs.toFixed(2)}</td>
                         <td>{resourceResult.nodeCount || 'N/A'}</td>
                         <td>{resourceResult.connectionCount || 'N/A'}</td>
-                        <td>{result.memoryUsageMB?.toFixed(2) || 'N/A'}</td>
-                        <td>{result.timestamp?.toLocaleString() || 'N/A'}</td>
+                        <td>{result?.memoryUsageMB?.toFixed(2) || 'N/A'}</td>
+                        <td>{result?.timestamp?.toLocaleString() || 'N/A'}</td>
                       </tr>
                     );
                   })}

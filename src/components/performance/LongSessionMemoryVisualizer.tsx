@@ -1,7 +1,7 @@
 /**
  * LongSessionMemoryVisualizer Component
  *
- * A React component for visualizing long session memory tracking data.
+ * A React component for visualizing long session memory tracking data?.
  * Displays memory usage over time, detects potential memory leaks,
  * and provides insights for performance optimization.
  */
@@ -736,8 +736,8 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
                   <span className="marker-name">{formatMarkerName(marker.name)}</span>
                   {marker.name === 'leak_detected' && marker.metadata && (
                     <span className="marker-details">
-                      (Growth: {(marker.metadata.growthRatePerMinute as number).toFixed(2)} MB/min,
-                      Severity: {String(marker.metadata.severity)})
+                      (Growth: {(marker.metadata?.growthRatePerMinute as number).toFixed(2)} MB/min,
+                      Severity: {String(marker.metadata?.severity)})
                     </span>
                   )}
                 </li>

@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { ResourceType, ResourceTypeHelpers } from './../types/resources/ResourceTypes';
+import { ResourceType } from '../types/resources/ResourceTypes';
+import { ResourceTypeHelpers } from '../types/resources/StandardizedResourceTypes';
 import { ThresholdAction, ThresholdState, initialState, thresholdEvents } from './ThresholdTypes';
 
 // Types
@@ -51,8 +52,8 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
     case 'SET_THRESHOLD': {
       const historyEntry = {
         timestamp: Date.now(),
-        resourceId: action.payload.resourceId,
-        amount: state.resources[action.payload.resourceId]?.currentAmount || 0,
+        resourceId: action.payload.resourceId as ResourceType,
+        amount: state.resources[action.payload.resourceId]?.currentAmount ?? 0,
         thresholds: {
           min: action.payload.min,
           max: action.payload.max,
@@ -89,7 +90,7 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
 
       const historyEntry = {
         timestamp: Date.now(),
-        resourceId: action.payload.resourceId,
+        resourceId: action.payload.resourceId as ResourceType,
         amount: action.payload.amount,
         thresholds: resource.thresholds,
         event: 'amount_update' as const,
@@ -100,7 +101,7 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
         if (updatedResource.currentAmount < updatedResource.thresholds.min) {
           thresholdEvents.next({
             type: 'THRESHOLD_VIOLATED',
-            resourceId: action.payload.resourceId,
+            resourceId: action.payload.resourceId as ResourceType,
             details: {
               type: 'below_minimum',
               current: updatedResource.currentAmount,
@@ -110,7 +111,7 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
         } else if (updatedResource.currentAmount > updatedResource.thresholds.max) {
           thresholdEvents.next({
             type: 'STORAGE_FULL',
-            resourceId: action.payload.resourceId,
+            resourceId: action.payload.resourceId as ResourceType,
             details: {
               type: 'above_maximum',
               current: updatedResource.currentAmount,
@@ -140,7 +141,7 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
 
       const historyEntry = {
         timestamp: Date.now(),
-        resourceId: action.payload.resourceId,
+        resourceId: action.payload.resourceId as ResourceType,
         amount: resource.currentAmount,
         thresholds: resource.thresholds,
         event: 'auto_mine_toggle' as const,
@@ -149,7 +150,7 @@ function thresholdReducer(state: ThresholdState, action: ThresholdAction): Thres
       if (newAutoMine) {
         thresholdEvents.next({
           type: 'AUTO_MINE_TRIGGERED',
-          resourceId: action.payload.resourceId,
+          resourceId: action.payload.resourceId as ResourceType,
           details: { type: 'below_minimum', current: resource.currentAmount },
         });
       }

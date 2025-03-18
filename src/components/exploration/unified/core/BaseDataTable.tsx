@@ -116,7 +116,7 @@ export function BaseDataTable<T>({
   emptyMessage = 'No data available',
   showHeader = true,
   loading = false,
-  loadingMessage = 'Loading data...',
+  loadingMessage = 'Loading data?...',
   onSortChange
 }: BaseDataTableProps<T>) {
   // State
@@ -142,7 +142,7 @@ export function BaseDataTable<T>({
   // Filter data
   const filteredData = useMemo(() => {
     if (!filter) return data;
-    return data.filter(filter);
+    return data?.filter(filter);
   }, [data, filter]);
   
   // Sort data

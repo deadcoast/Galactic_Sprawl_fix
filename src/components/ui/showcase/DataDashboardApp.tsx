@@ -641,7 +641,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
     // Node click handler
     node.on('click', (event, d) => {
-      event.stopPropagation(); // Prevent triggering container click
+      event?.stopPropagation(); // Prevent triggering container click
       handleEntitySelection(d.id);
     });
 
@@ -963,12 +963,12 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     const getNodeColor = (d: HierarchyDatum): string => {
       switch (nodeColor) {
         case 'byValue':
-          return valueColorScale(d.data.value);
+          return valueColorScale(d.data?.value);
         case 'byDepth':
           return depthColorScale(d.depth.toString());
         case 'byCategory':
         default:
-          return d.data.color || categoryScale(d.data.category);
+          return d.data?.color || categoryScale(d.data?.category);
       }
     };
 
@@ -983,10 +983,10 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           node.children = node.children.filter(
             child =>
               selectedEntities.length === 0 ||
-              selectedEntities.includes(child.data.category) ||
+              selectedEntities.includes(child.data?.category) ||
               (child.children &&
                 child.children.some(grandchild =>
-                  selectedEntities.includes(grandchild.data.category)
+                  selectedEntities.includes(grandchild.data?.category)
                 ))
           );
         }
@@ -1042,7 +1042,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           return `translate(${d.x0!},${d.y0!})`;
         })
         .attr('class', 'node')
-        .classed('selected', d => selectedEntities.includes(d.data.id));
+        .classed('selected', d => selectedEntities.includes(d.data?.id));
 
       // Add rectangles for each node
       nodes
@@ -1053,8 +1053,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         .attr('stroke', '#fff')
         .attr('stroke-width', 1)
         .on('click', (event, d) => {
-          event.stopPropagation();
-          handleEntitySelection(d.data.id);
+          event?.stopPropagation();
+          handleEntitySelection(d.data?.id);
         });
 
       // Add text labels to cells
@@ -1070,7 +1070,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           return Math.min(width, height) / 8 + 'px';
         })
         .style('fill', '#fff')
-        .text(d => d.data.name)
+        .text(d => d.data?.name)
         .style('pointer-events', 'none');
 
       // Add tooltips
@@ -1078,13 +1078,13 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         .append('title')
         .text(
           d =>
-            `${d.data.name}\nCategory: ${d.data.category}\nValue: ${d.data.value.toFixed(2)}\nSize: ${d.data.size}`
+            `${d.data?.name}\nCategory: ${d.data?.category}\nValue: ${d.data?.value.toFixed(2)}\nSize: ${d.data?.size}`
         );
 
       // Add click handlers for selection
       nodes.on('click', (event, d) => {
-        event.stopPropagation();
-        handleEntitySelection(d.data.id);
+        event?.stopPropagation();
+        handleEntitySelection(d.data?.id);
       });
 
       // Add zoom behavior
@@ -1152,8 +1152,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
       // Create the link generator based on the selected style
       const linkGenerator = (d: CustomHierarchyPointLink) => {
-        const source = { x: d.source.x || 0, y: d.source.y || 0, data: d.source.data };
-        const target = { x: d.target.x || 0, y: d.target.y || 0, data: d.target.data };
+        const source = { x: d.source.x ?? 0, y: d.source.y ?? 0, data: d.source.data };
+        const target = { x: d.target.x ?? 0, y: d.target.y ?? 0, data: d.target.data };
 
         // Create properly formatted link data for d3.linkHorizontal
         const linkData: D3LinkData = {
@@ -1184,13 +1184,13 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           // Cast the HierarchyDatum link to CustomHierarchyPointLink
           const link = {
             source: {
-              x: d.source.x || 0,
-              y: d.source.y || 0,
+              x: d.source.x ?? 0,
+              y: d.source.y ?? 0,
               data: d.source.data,
             },
             target: {
-              x: d.target.x || 0,
-              y: d.target.y || 0,
+              x: d.target.x ?? 0,
+              y: d.target.y ?? 0,
               data: d.target.data,
             },
           } as CustomHierarchyPointLink;
@@ -1212,12 +1212,12 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         .append('g')
         .attr('class', 'node')
         .attr('transform', d => `translate(${d.x},${d.y})`)
-        .classed('selected', d => selectedEntities.includes(d.data.category));
+        .classed('selected', d => selectedEntities.includes(d.data?.category));
 
       // Add circles for each node
       const circles = nodes
         .append('circle')
-        .attr('r', d => (includeSizeEncoding ? sizeScale(d.data.value) : 6))
+        .attr('r', d => (includeSizeEncoding ? sizeScale(d.data?.value) : 6))
         .attr('fill', getNodeColor)
         .attr('stroke', '#fff')
         .attr('stroke-width', 1.5)
@@ -1230,7 +1230,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           .attr('dy', '.31em')
           .attr('x', d => (d.children ? -8 : 8))
           .style('text-anchor', d => (d.children ? 'end' : 'start'))
-          .text(d => d.data.name)
+          .text(d => d.data?.name)
           .attr('font-size', `${10 * textScaleFactor}px`)
           .attr('pointer-events', 'none'); // Don't interfere with click events
       }
@@ -1240,13 +1240,13 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         .append('title')
         .text(
           d =>
-            `${d.data.name}\nCategory: ${d.data.category}\nValue: ${d.data.value.toFixed(2)}\nSize: ${d.data.size}`
+            `${d.data?.name}\nCategory: ${d.data?.category}\nValue: ${d.data?.value.toFixed(2)}\nSize: ${d.data?.size}`
         );
 
       // Add click handlers for selection
       nodes.on('click', (event, d) => {
-        event.stopPropagation();
-        handleEntitySelection(d.data.category);
+        event?.stopPropagation();
+        handleEntitySelection(d.data?.category);
       });
 
       // Add zoom behavior
@@ -1288,7 +1288,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           .transition()
           .duration(animationDuration)
           .delay((d, i) => d.depth * 300 + i * 10)
-          .attr('r', d => (includeSizeEncoding ? sizeScale(d.data.value) : 6))
+          .attr('r', d => (includeSizeEncoding ? sizeScale(d.data?.value) : 6))
           .ease(d3.easeElastic);
       }
     }
@@ -1332,7 +1332,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     // Reset selection when clicking on the background
     svg.on('click', event => {
       // Prevent triggering if clicking on nodes
-      if (event.target === svg.node()) {
+      if (event?.target === svg.node()) {
         setSelectedEntities([]);
       }
     });
@@ -1446,16 +1446,16 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           const prevValue =
             catIdx === 0
               ? 0
-              : data.find(
+              : data?.find(
                   d =>
                     d.category === categories[catIdx] &&
                     d.timePeriod === timePeriods[periodIdx === 0 ? 3 : periodIdx - 1]
-                )?.value || 0;
+                )?.value ?? 0;
 
           const randomChange = Math.random() * 20 - 10; // -10 to +10
           const value = Math.max(0, prevValue + randomChange + Math.random() * 5 + 50);
 
-          data.push({
+          data?.push({
             id: `ts-${year}-${timePeriods[periodIdx]}-${categories[catIdx]}`,
             value,
             category: categories[catIdx],
@@ -1511,7 +1511,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           longitude = Math.random() * 360 - 180;
       }
 
-      data.push({
+      data?.push({
         id: `geo-${i}`,
         value: Math.random() * 100,
         category: ['customers', 'sales', 'partners'][Math.floor(Math.random() * 3)],
@@ -1531,7 +1531,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     const data: HierarchyNode[] = [];
 
     // Create root node
-    data.push({
+    data?.push({
       id: 'root',
       value: 1000,
       category: 'root',
@@ -1543,7 +1543,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     // Create first level children
     const firstLevelCount = 5;
     for (let i = 0; i < firstLevelCount; i++) {
-      data.push({
+      data?.push({
         id: `level1-${i}`,
         value: 200 + Math.random() * 200,
         category: ['category-A', 'category-B', 'category-C'][Math.floor(Math.random() * 3)],
@@ -1559,7 +1559,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
     for (let i = 0; i < firstLevelCount; i++) {
       for (let j = 0; j < nodesPerFirstLevel; j++) {
-        data.push({
+        data?.push({
           id: `level2-${i}-${j}`,
           value: 50 + Math.random() * 100,
           category: ['subcategory-1', 'subcategory-2', 'subcategory-3'][
@@ -1583,7 +1583,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       try {
         // Simplified world map in GeoJSON format (low resolution for performance)
         const response = await fetch('https://unpkg.com/world-atlas@2.0.2/countries-110m.json');
-        const data = await response.json();
+        const data = await response?.json();
         setWorldMapData(data);
       } catch (error) {
         console.error('Error loading world map data:', error);
@@ -1753,7 +1753,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
               }}
             >
-              <div>Loading visualization data...</div>
+              <div>Loading visualization data?...</div>
             </div>
           )}
         </div>

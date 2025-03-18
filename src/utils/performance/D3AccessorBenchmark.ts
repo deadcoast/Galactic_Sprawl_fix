@@ -131,12 +131,12 @@ export function compareBenchmarks(
  */
 export function formatBenchmarkResult(result: BenchmarkResult): string {
   return `
-Benchmark: ${result.name}
-Description: ${result.description}
-Iterations: ${result.iterations}
-Average Time: ${result.averageTimeMs.toFixed(6)} ms
-Median Time: ${result.medianTimeMs.toFixed(6)} ms
-Total Time: ${result.totalTimeMs.toFixed(2)} ms
+Benchmark: ${result?.name}
+Description: ${result?.description}
+Iterations: ${result?.iterations}
+Average Time: ${result?.averageTimeMs.toFixed(6)} ms
+Median Time: ${result?.medianTimeMs.toFixed(6)} ms
+Total Time: ${result?.totalTimeMs.toFixed(2)} ms
   `.trim();
 }
 
@@ -203,8 +203,8 @@ export function benchmarkAccessors(
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
         // Direct property access
-        const x = node.x || 0;
-        const y = node.y || 0;
+        const x = node.x ?? 0;
+        const y = node.y ?? 0;
         // Do something with coordinates (simulate transform application)
         const transform = `translate(${x}, ${y})`;
       }
@@ -257,8 +257,8 @@ export function runComprehensiveBenchmarks(): {
     iterations: 10000,
     testFn: () => {
       for (const node of nodes100) {
-        const x = node.x || 0;
-        const y = node.y || 0;
+        const x = node.x ?? 0;
+        const y = node.y ?? 0;
         const transform = `translate(${x}, ${y})`;
       }
     },
@@ -293,8 +293,8 @@ export function runComprehensiveBenchmarks(): {
     iterations: 100,
     testFn: () => {
       for (const node of nodes10000) {
-        const x = node.x || 0;
-        const y = node.y || 0;
+        const x = node.x ?? 0;
+        const y = node.y ?? 0;
         const transform = `translate(${x}, ${y})`;
       }
     },
@@ -336,8 +336,8 @@ export function runComprehensiveBenchmarks(): {
         const y = d.y !== undefined ? d.y : 0;
 
         // Apply force simulation logic (simplified)
-        const vx = d.vx || 0;
-        const vy = d.vy || 0;
+        const vx = d.vx ?? 0;
+        const vy = d.vy ?? 0;
         d.x = x + vx * 0.1;
         d.y = y + vy * 0.1;
 
@@ -365,8 +365,8 @@ export function runComprehensiveBenchmarks(): {
         const y = d3Accessors.getY(d);
 
         // Apply force simulation logic (simplified)
-        const vx = d.vx || 0;
-        const vy = d.vy || 0;
+        const vx = d.vx ?? 0;
+        const vy = d.vy ?? 0;
         d.x = x + vx * 0.1;
         d.y = y + vy * 0.1;
 
@@ -405,7 +405,7 @@ in D3 visualizations across different scenarios and data sizes.
 
   // Add individual results
   results.forEach(result => {
-    report += `\n### ${result.name}\n`;
+    report += `\n### ${result?.name}\n`;
     report += formatBenchmarkResult(result) + '\n';
   });
 

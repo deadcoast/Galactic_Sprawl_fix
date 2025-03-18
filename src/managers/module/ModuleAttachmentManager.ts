@@ -58,7 +58,7 @@ export class ModuleAttachmentManager {
    * Handle module attached event
    */
   private handleModuleAttached = (event: ModuleEvent): void => {
-    const { moduleId, buildingId, attachmentPointId } = event.data || {};
+    const { moduleId, buildingId, attachmentPointId } = event?.data ?? {};
     console.warn(
       `[ModuleAttachmentManager] Module ${moduleId} attached to building ${buildingId} at point ${attachmentPointId}`
     );
@@ -73,7 +73,7 @@ export class ModuleAttachmentManager {
    * Handle module detached event
    */
   private handleModuleDetached = (event: ModuleEvent): void => {
-    const { moduleId, buildingId, attachmentPointId } = event.data || {};
+    const { moduleId, buildingId, attachmentPointId } = event?.data ?? {};
     console.warn(
       `[ModuleAttachmentManager] Module ${moduleId} detached from building ${buildingId} at point ${attachmentPointId}`
     );
@@ -116,8 +116,8 @@ export class ModuleAttachmentManager {
       timestamp: Date.now(),
       data: {
         buildingId,
-        validPoints: this.validAttachmentPoints.get(buildingId)?.map(p => p.id) || [],
-        incompatiblePoints: this.incompatibleAttachmentPoints.get(buildingId)?.map(p => p.id) || [],
+        validPoints: this.validAttachmentPoints.get(buildingId)?.map(p => p.id) ?? [],
+        incompatiblePoints: this.incompatibleAttachmentPoints.get(buildingId)?.map(p => p.id) ?? [],
       },
     });
   }
@@ -228,8 +228,8 @@ export class ModuleAttachmentManager {
    */
   private showAttachmentVisualization(buildingId: string): void {
     // This would be implemented with actual UI visualization code
-    const validPoints = this.validAttachmentPoints.get(buildingId) || [];
-    const incompatiblePoints = this.incompatibleAttachmentPoints.get(buildingId) || [];
+    const validPoints = this.validAttachmentPoints.get(buildingId) ?? [];
+    const incompatiblePoints = this.incompatibleAttachmentPoints.get(buildingId) ?? [];
 
     console.warn(
       `[ModuleAttachmentManager] Showing attachment visualization for building ${buildingId}`
@@ -284,14 +284,14 @@ export class ModuleAttachmentManager {
    * Get valid attachment points for a building
    */
   public getValidAttachmentPoints(buildingId: string): ModuleAttachmentPoint[] {
-    return this.validAttachmentPoints.get(buildingId) || [];
+    return this.validAttachmentPoints.get(buildingId) ?? [];
   }
 
   /**
    * Get incompatible attachment points for a building
    */
   public getIncompatibleAttachmentPoints(buildingId: string): ModuleAttachmentPoint[] {
-    return this.incompatibleAttachmentPoints.get(buildingId) || [];
+    return this.incompatibleAttachmentPoints.get(buildingId) ?? [];
   }
 
   /**

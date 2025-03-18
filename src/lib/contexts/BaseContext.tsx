@@ -263,7 +263,7 @@ export function createStandardContext<
 
   // Create the context
   const Context = createContext<ContextType>(undefined);
-  Context.displayName = `${options.name}Context`;
+  Context.displayName = `${options?.name}Context`;
 
   // Reference to the manager connection config
   const managerConfigRef = { current: null as ManagerConfig<TManager> | null };
@@ -276,37 +276,37 @@ export function createStandardContext<
   }> = ({ children, manager, initialState }) => {
     // Combine default initial state with override props
     const combinedInitialState = {
-      ...options.initialState,
+      ...options?.initialState,
       ...initialState,
     } as TState;
 
     // State and reducer
     const [state, dispatch] = React.useReducer((state: TState, action: TAction): TState => {
-      if (options.debug?.logActions) {
-        console.warn(`[${options.name}] Action:`, action);
+      if (options?.debug?.logActions) {
+        console.warn(`[${options?.name}] Action:`, action);
       }
 
-      const startTime = options.performanceMonitoring?.enabled ? performance.now() : 0;
+      const startTime = options?.performanceMonitoring?.enabled ? performance.now() : 0;
 
       // Apply the reducer
-      const newState = options.reducer(state, action);
+      const newState = options?.reducer(state, action);
 
       // Update lastUpdated timestamp
       newState.lastUpdated = Date.now();
 
-      if (options.performanceMonitoring?.enabled) {
+      if (options?.performanceMonitoring?.enabled) {
         const endTime = performance.now();
         const duration = endTime - startTime;
 
-        if (duration > (options.performanceMonitoring.reducerThreshold || 5)) {
+        if (duration > (options?.performanceMonitoring.reducerThreshold || 5)) {
           console.warn(
-            `[${options.name}] Slow reducer for action ${action.type}: ${duration.toFixed(2)}ms`
+            `[${options?.name}] Slow reducer for action ${action.type}: ${duration.toFixed(2)}ms`
           );
         }
       }
 
-      if (options.debug?.logStateChanges) {
-        console.warn(`[${options.name}] New state:`, newState);
+      if (options?.debug?.logStateChanges) {
+        console.warn(`[${options?.name}] New state:`, newState);
       }
 
       return newState;
@@ -345,8 +345,8 @@ export function createStandardContext<
 
     // Event subscriptions effect
     useEffect(() => {
-      if (options.eventSubscriptions) {
-        const { eventBus, subscriptions } = options.eventSubscriptions;
+      if (options?.eventSubscriptions) {
+        const { eventBus, subscriptions } = options?.eventSubscriptions;
 
         // Subscribe to events
         const unsubscribers = Object.entries(subscriptions).map(([eventType, handler]) => {
@@ -366,8 +366,8 @@ export function createStandardContext<
 
     // Memoize context value to prevent unnecessary renders
     const contextValue = useMemo(() => {
-      if (options.debug?.logRendering) {
-        console.warn(`[${options.name}] Rendering provider`);
+      if (options?.debug?.logRendering) {
+        console.warn(`[${options?.name}] Rendering provider`);
       }
       return { state, dispatch };
     }, [state]);
@@ -379,7 +379,7 @@ export function createStandardContext<
   const useContextState = (): TState => {
     const context = useContext(Context);
     if (!context) {
-      throw new Error(`use${options.name} must be used within a ${options.name}Provider`);
+      throw new Error(`use${options?.name} must be used within a ${options?.name}Provider`);
     }
     return context.state;
   };
@@ -388,7 +388,7 @@ export function createStandardContext<
   const useContextDispatch = (): React.Dispatch<TAction> => {
     const context = useContext(Context);
     if (!context) {
-      throw new Error(`use${options.name}Dispatch must be used within a ${options.name}Provider`);
+      throw new Error(`use${options?.name}Dispatch must be used within a ${options?.name}Provider`);
     }
     return context.dispatch;
   };
@@ -397,25 +397,25 @@ export function createStandardContext<
   const useContextSelector = <TSelected,>(selector: Selector<TState, TSelected>): TSelected => {
     const context = useContext(Context);
     if (!context) {
-      throw new Error(`use${options.name}Selector must be used within a ${options.name}Provider`);
+      throw new Error(`use${options?.name}Selector must be used within a ${options?.name}Provider`);
     }
 
     // Ref for the previous selected value
     const prevSelectedRef = useRef<TSelected | undefined>(undefined);
 
     // Performance monitoring
-    const startTime = options.performanceMonitoring?.enabled ? performance.now() : 0;
+    const startTime = options?.performanceMonitoring?.enabled ? performance.now() : 0;
 
     // Apply the selector
     const selected = selector(context.state);
 
     // Performance monitoring
-    if (options.performanceMonitoring?.enabled) {
+    if (options?.performanceMonitoring?.enabled) {
       const endTime = performance.now();
       const duration = endTime - startTime;
 
-      if (duration > (options.performanceMonitoring.selectorThreshold || 2)) {
-        console.warn(`[${options.name}] Slow selector: ${duration.toFixed(2)}ms`);
+      if (duration > (options?.performanceMonitoring.selectorThreshold || 2)) {
+        console.warn(`[${options?.name}] Slow selector: ${duration.toFixed(2)}ms`);
       }
     }
 
@@ -442,7 +442,7 @@ export function createStandardContext<
   };
 
   return {
-    contextName: options.name,
+    contextName: options?.name,
     Context,
     Provider,
     useContextState,

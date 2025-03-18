@@ -53,8 +53,8 @@ export interface ComponentLifecycleOptions {
  *       {
  *         eventType: EventType.RESOURCE_PRODUCED,
  *         handler: (event) => {
- *           if (event.data.resourceType === resourceType) {
- *             setAmount(prev => prev + event.data.amount);
+ *           if (event?.data?.resourceType === resourceType) {
+ *             setAmount(prev => prev + event?.data?.amount);
  *           }
  *         }
  *       }
@@ -74,9 +74,9 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
     isMounted.current = true;
 
     // Call onMount callback if provided
-    if (options.onMount) {
+    if (options?.onMount) {
       try {
-        options.onMount();
+        options?.onMount();
       } catch (error) {
         console.error('Error in onMount callback:', error);
       }
@@ -85,8 +85,8 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
     // Set up event subscriptions
     const unsubscribers: Array<() => void> = [];
 
-    if (options.eventSubscriptions) {
-      options.eventSubscriptions.forEach(subscription => {
+    if (options?.eventSubscriptions) {
+      options?.eventSubscriptions.forEach(subscription => {
         // Subscribe to the event
         const unsubscribe = moduleEventBus.subscribe(subscription.eventType, event => {
           // Only call handler if component is still mounted
@@ -110,9 +110,9 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
       isMounted.current = false;
 
       // Call onUnmount callback if provided
-      if (options.onUnmount) {
+      if (options?.onUnmount) {
         try {
-          options.onUnmount();
+          options?.onUnmount();
         } catch (error) {
           console.error('Error in onUnmount callback:', error);
         }
@@ -172,8 +172,8 @@ export function useStableCallback<T extends (...args: unknown[]) => unknown>(cal
  *       {
  *         eventType: EventType.RESOURCE_PRODUCED,
  *         handler: (event) => {
- *           if (event.data.resourceType === resourceType) {
- *             setAmount(prev => prev + event.data.amount);
+ *           if (event?.data?.resourceType === resourceType) {
+ *             setAmount(prev => prev + event?.data?.amount);
  *           }
  *         }
  *       }
@@ -198,9 +198,9 @@ export function useDynamicComponentLifecycle(
       isMounted.current = true;
 
       // Call onMount callback if provided
-      if (options.onMount) {
+      if (options?.onMount) {
         try {
-          options.onMount();
+          options?.onMount();
         } catch (error) {
           console.error('Error in onMount callback:', error);
         }
@@ -210,8 +210,8 @@ export function useDynamicComponentLifecycle(
     // Set up event subscriptions
     const unsubscribers: Array<() => void> = [];
 
-    if (options.eventSubscriptions) {
-      options.eventSubscriptions.forEach(subscription => {
+    if (options?.eventSubscriptions) {
+      options?.eventSubscriptions.forEach(subscription => {
         // Subscribe to the event
         const unsubscribe = moduleEventBus.subscribe(subscription.eventType, event => {
           // Only call handler if component is still mounted
@@ -237,9 +237,9 @@ export function useDynamicComponentLifecycle(
         isMounted.current = false;
 
         // Call onUnmount callback if provided
-        if (options.onUnmount) {
+        if (options?.onUnmount) {
           try {
-            options.onUnmount();
+            options?.onUnmount();
           } catch (error) {
             console.error('Error in onUnmount callback:', error);
           }

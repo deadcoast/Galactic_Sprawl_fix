@@ -1,4 +1,4 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { BaseTypedEventEmitter } from '../../lib/modules/BaseTypedEventEmitter';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
   CombatWeaponStats,
@@ -7,7 +7,7 @@ import {
   WeaponUpgrade,
   WeaponUpgradeType,
 } from '../../types/weapons/WeaponTypes';
-import { EventEmitter } from '../../utils/EventEmitter';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 interface WeaponUpgradeEvents {
   upgradeApplied: { weaponId: string; upgradeId: string };
@@ -58,7 +58,7 @@ const WEAPON_CATEGORIES: WeaponCategory[] = [
   'ionCannon',
 ];
 
-export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
+export class WeaponUpgradeManager extends BaseTypedEventEmitter<WeaponUpgradeEvents> {
   private static instance: WeaponUpgradeManager;
   private upgradeTrees: UpgradeTree;
   private weaponExperience: Map<string, number> = new Map();
@@ -302,7 +302,7 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
   }
 
   public addExperience(weaponId: string, amount: number): void {
-    const currentExp = this.weaponExperience.get(weaponId) || 0;
+    const currentExp = this.weaponExperience.get(weaponId) ?? 0;
     this.weaponExperience.set(weaponId, currentExp + amount);
 
     // Emit event through module event bus
@@ -318,8 +318,8 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
   private checkSpecializationUnlocks(weapon: WeaponInstance): void {
     const { category } = weapon.config;
     const weaponId = weapon.config.id;
-    const experience = this.weaponExperience.get(weaponId) || 0;
-    const appliedUpgrades = Array.from(this.appliedUpgrades.get(weaponId) || []);
+    const experience = this.weaponExperience.get(weaponId) ?? 0;
+    const appliedUpgrades = Array.from(this.appliedUpgrades.get(weaponId) ?? []);
 
     this.upgradeTrees[category].specializations.forEach(spec => {
       if (!spec.unlocked && this.canUnlockSpecialization(spec, experience, appliedUpgrades)) {
@@ -371,7 +371,7 @@ export class WeaponUpgradeManager extends EventEmitter<WeaponUpgradeEvents> {
   }
 
   public getWeaponExperience(weaponId: string): number {
-    return this.weaponExperience.get(weaponId) || 0;
+    return this.weaponExperience.get(weaponId) ?? 0;
   }
 
   public addWeaponExperience(weaponId: string, amount: number): void {

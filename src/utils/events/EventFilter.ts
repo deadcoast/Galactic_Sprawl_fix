@@ -94,7 +94,7 @@ export class EventFilter {
     // Use indexed filtering for large event histories if enabled
     if (
       this.config.useIndexedFiltering &&
-      events.length > (this.config.indexedFilteringThreshold || 0)
+      events.length > (this.config.indexedFilteringThreshold ?? 0)
     ) {
       return this.filterEventsWithIndex(events, criteria);
     }
@@ -158,21 +158,21 @@ export class EventFilter {
 
       // Filter by event type
       if (criteria.eventTypes?.length) {
-        filteredBatch = filteredBatch.filter(event => criteria.eventTypes!.includes(event.type));
+        filteredBatch = filteredBatch.filter(event => criteria.eventTypes!.includes(event?.type));
       }
 
       // Filter by module ID
       if (criteria.moduleIds?.length) {
-        filteredBatch = filteredBatch.filter(event => criteria.moduleIds!.includes(event.moduleId));
+        filteredBatch = filteredBatch.filter(event => criteria.moduleIds!.includes(event?.moduleId));
       }
 
       // Filter by time range
       if (criteria.startTime !== undefined || criteria.endTime !== undefined) {
         filteredBatch = filteredBatch.filter(event => {
-          if (criteria.startTime !== undefined && event.timestamp < criteria.startTime) {
+          if (criteria.startTime !== undefined && event?.timestamp < criteria.startTime) {
             return false;
           }
-          if (criteria.endTime !== undefined && event.timestamp > criteria.endTime) {
+          if (criteria.endTime !== undefined && event?.timestamp > criteria.endTime) {
             return false;
           }
           return true;
@@ -184,7 +184,7 @@ export class EventFilter {
         filteredBatch = filteredBatch.filter(criteria.customFilter);
       }
 
-      result.push(...filteredBatch);
+      result?.push(...filteredBatch);
     }
 
     return result;
@@ -226,10 +226,10 @@ export class EventFilter {
     // Apply time range filtering if specified
     if (criteria.startTime !== undefined || criteria.endTime !== undefined) {
       filteredCandidates = filteredCandidates.filter(event => {
-        if (criteria.startTime !== undefined && event.timestamp < criteria.startTime) {
+        if (criteria.startTime !== undefined && event?.timestamp < criteria.startTime) {
           return false;
         }
-        if (criteria.endTime !== undefined && event.timestamp > criteria.endTime) {
+        if (criteria.endTime !== undefined && event?.timestamp > criteria.endTime) {
           return false;
         }
         return true;
@@ -262,19 +262,19 @@ export class EventFilter {
     // Build indices
     events.forEach((event, index) => {
       // Index by event type
-      if (!this.eventIndex!.byEventType.has(event.type)) {
-        this.eventIndex!.byEventType.set(event.type, new Set());
+      if (!this.eventIndex!.byEventType.has(event?.type)) {
+        this.eventIndex!.byEventType.set(event?.type, new Set());
       }
-      this.eventIndex!.byEventType.get(event.type)!.add(index);
+      this.eventIndex!.byEventType.get(event?.type)!.add(index);
 
       // Index by module ID
-      if (!this.eventIndex!.byModuleId.has(event.moduleId)) {
-        this.eventIndex!.byModuleId.set(event.moduleId, new Set());
+      if (!this.eventIndex!.byModuleId.has(event?.moduleId)) {
+        this.eventIndex!.byModuleId.set(event?.moduleId, new Set());
       }
-      this.eventIndex!.byModuleId.get(event.moduleId)!.add(index);
+      this.eventIndex!.byModuleId.get(event?.moduleId)!.add(index);
 
       // Index by time range (bucketed)
-      const timeBucket = Math.floor(event.timestamp / this.timeBucketSize) * this.timeBucketSize;
+      const timeBucket = Math.floor(event?.timestamp / this.timeBucketSize) * this.timeBucketSize;
       if (!this.eventIndex!.byTimeRange.has(timeBucket)) {
         this.eventIndex!.byTimeRange.set(timeBucket, new Set());
       }
@@ -383,7 +383,7 @@ export class EventFilter {
 
       // If the item exists in all sets, add it to the result
       if (inAllSets) {
-        result.add(item);
+        result?.add(item);
       }
     }
 
@@ -398,20 +398,20 @@ export class EventFilter {
    */
   private matchesCriteria(event: ModuleEvent, criteria: EventFilterCriteria): boolean {
     // Check event type
-    if (criteria.eventTypes?.length && !criteria.eventTypes.includes(event.type)) {
+    if (criteria.eventTypes?.length && !criteria.eventTypes.includes(event?.type)) {
       return false;
     }
 
     // Check module ID
-    if (criteria.moduleIds?.length && !criteria.moduleIds.includes(event.moduleId)) {
+    if (criteria.moduleIds?.length && !criteria.moduleIds.includes(event?.moduleId)) {
       return false;
     }
 
     // Check time range
-    if (criteria.startTime && event.timestamp < criteria.startTime) {
+    if (criteria.startTime && event?.timestamp < criteria.startTime) {
       return false;
     }
-    if (criteria.endTime && event.timestamp > criteria.endTime) {
+    if (criteria.endTime && event?.timestamp > criteria.endTime) {
       return false;
     }
 

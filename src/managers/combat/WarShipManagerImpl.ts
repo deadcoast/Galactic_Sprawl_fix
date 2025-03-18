@@ -119,15 +119,15 @@ export class WarShipManagerImpl extends BaseTypedEventEmitter<WarShipEvents> {
 
   private initializeAutomationHandlers(): void {
     moduleEventBus.subscribe('AUTOMATION_STARTED', (event: ModuleEvent) => {
-      if (event.moduleType === 'hangar' && event.data?.type) {
-        const ship = this.ships.get(event.moduleId);
+      if (event?.moduleType === 'hangar' && event?.data?.type) {
+        const ship = this.ships.get(event?.moduleId);
         if (ship) {
-          switch (event.data.type) {
+          switch (event?.data?.type) {
             case 'formation':
-              this.handleFormationChange(ship, event.data as FormationChangeData);
+              this.handleFormationChange(ship, event?.data as FormationChangeData);
               break;
             case 'engagement':
-              this.handleEngagement(ship, event.data as EngagementData);
+              this.handleEngagement(ship, event?.data as EngagementData);
               break;
             case 'repair':
               this.handleRepair(ship);
@@ -136,7 +136,7 @@ export class WarShipManagerImpl extends BaseTypedEventEmitter<WarShipEvents> {
               this.handleShieldBoost(ship);
               break;
             case 'attack':
-              this.handleAttack(ship, event.data as AttackData);
+              this.handleAttack(ship, event?.data as AttackData);
               break;
             case 'retreat':
               this.handleRetreat(ship);
@@ -447,7 +447,7 @@ export class WarShipManagerImpl extends BaseTypedEventEmitter<WarShipEvents> {
       // Update weapon cooldowns
       ship.weapons.forEach(weapon => {
         if (weapon.state.status === 'cooling') {
-          const timeSinceFired = Date.now() - (weapon.state.currentStats.cooldown || 0);
+          const timeSinceFired = Date.now() - (weapon.state.currentStats.cooldown ?? 0);
           if (timeSinceFired >= weapon.config.baseStats.cooldown) {
             weapon.state.status = 'ready';
           }

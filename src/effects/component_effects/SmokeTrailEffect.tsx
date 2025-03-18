@@ -63,7 +63,7 @@ const Canvas: React.FC<CanvasProps> = ({ children, camera, style }) => {
     perspective: `${1000 / (camera.fov / 75)}px`,
     perspectiveOrigin: `${50 + camera.position[0] * 5}% ${50 - camera.position[1] * 5}%`,
     // Add a subtle transform based on camera position for parallax effect
-    transform: `${style.transform || ''} rotateX(${camera.position[1]}deg) rotateY(${-camera.position[0]}deg)`,
+    transform: `${style.transform ?? ''} rotateX(${camera.position[1]}deg) rotateY(${-camera.position[0]}deg)`,
   };
 
   return React.createElement('div', { style: enhancedStyle }, children);

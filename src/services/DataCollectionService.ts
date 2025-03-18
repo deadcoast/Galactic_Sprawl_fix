@@ -201,7 +201,7 @@ function isResourceDetectionEventData(data: unknown): data is ResourceDetectionE
  * @returns True if the event is of the expected type, false otherwise
  */
 function isExplorationEventOfType(event: BaseEvent, expectedType: ExplorationEvents): boolean {
-  return event.type === asEventType(expectedType);
+  return event?.type === asEventType(expectedType);
 }
 
 /**
@@ -355,17 +355,17 @@ export class DataCollectionService {
 
     // Ensure this is the correct event type
     if (!isExplorationEventOfType(event, ExplorationEvents.SECTOR_DISCOVERED)) {
-      console.warn('Incorrect event type received:', event.type);
+      console.warn('Incorrect event type received:', event?.type);
       return;
     }
 
     // Validate sector data using type guard
-    if (!event.data || !isSectorDiscoveryEventData(event.data)) {
-      console.error('Invalid sector data received:', event.data);
+    if (!event?.data || !isSectorDiscoveryEventData(event?.data)) {
+      console.error('Invalid sector data received:', event?.data);
       return;
     }
 
-    const sector = event.data.sector;
+    const sector = event?.data?.sector;
     const dataPoint = this.processSectorData(sector);
 
     this.cache.sectors.set(sector.id, dataPoint);
@@ -392,17 +392,17 @@ export class DataCollectionService {
   private handleSectorScanned(event: BaseEvent): void {
     // Ensure this is the correct event type
     if (!isExplorationEventOfType(event, ExplorationEvents.SECTOR_SCANNED)) {
-      console.warn('Incorrect event type received:', event.type);
+      console.warn('Incorrect event type received:', event?.type);
       return;
     }
 
     // Validate sector data using type guard
-    if (!event.data || !isSectorDiscoveryEventData(event.data)) {
-      console.error('Invalid sector data received:', event.data);
+    if (!event?.data || !isSectorDiscoveryEventData(event?.data)) {
+      console.error('Invalid sector data received:', event?.data);
       return;
     }
 
-    const sector = event.data.sector;
+    const sector = event?.data?.sector;
     const dataPoint = this.processSectorData(sector);
 
     this.cache.sectors.set(sector.id, dataPoint);
@@ -420,17 +420,17 @@ export class DataCollectionService {
   private handleAnomalyDetected(event: BaseEvent): void {
     // Ensure this is the correct event type
     if (!isExplorationEventOfType(event, ExplorationEvents.ANOMALY_DETECTED)) {
-      console.warn('Incorrect event type received:', event.type);
+      console.warn('Incorrect event type received:', event?.type);
       return;
     }
 
     // Validate anomaly data using type guard
-    if (!event.data || !isAnomalyDetectionEventData(event.data)) {
-      console.error('Invalid anomaly data received:', event.data);
+    if (!event?.data || !isAnomalyDetectionEventData(event?.data)) {
+      console.error('Invalid anomaly data received:', event?.data);
       return;
     }
 
-    const anomaly = event.data.anomaly;
+    const anomaly = event?.data?.anomaly;
     const dataPoint = this.processAnomalyData(anomaly);
 
     this.cache.anomalies.set(anomaly.id, dataPoint);
@@ -449,17 +449,17 @@ export class DataCollectionService {
   private handleResourceDetected(event: BaseEvent): void {
     // Ensure this is the correct event type
     if (!isExplorationEventOfType(event, ExplorationEvents.RESOURCE_DETECTED)) {
-      console.warn('Incorrect event type received:', event.type);
+      console.warn('Incorrect event type received:', event?.type);
       return;
     }
 
     // Validate resource data using type guard
-    if (!event.data || !isResourceDetectionEventData(event.data)) {
-      console.error('Invalid resource data received:', event.data);
+    if (!event?.data || !isResourceDetectionEventData(event?.data)) {
+      console.error('Invalid resource data received:', event?.data);
       return;
     }
 
-    const resource = event.data.resource;
+    const resource = event?.data?.resource;
     const dataPoint = this.processResourceData(resource);
 
     this.cache.resources.set(uuidv4(), dataPoint);
@@ -478,28 +478,28 @@ export class DataCollectionService {
   private processSectorData(sector: Sector): DataPoint {
     // Ensure coordinates are valid
     const coordinates: Coordinates = {
-      x: sector.coordinates?.x || 0,
-      y: sector.coordinates?.y || 0,
+      x: sector.coordinates?.x ?? 0,
+      y: sector.coordinates?.y ?? 0,
     };
 
     // Extract additional metadata that might be useful for analysis
     const metadata: Record<string, PropertyType> = {
-      anomalyIds: sector.anomalies?.map(a => a.id) || [],
-      resourceTypes: sector.resources?.map(r => r.type) || [],
+      anomalyIds: sector.anomalies?.map(a => a.id) ?? [],
+      resourceTypes: sector.resources?.map(r => r.type) ?? [],
       lastUpdated: sector.lastScanned || Date.now(),
     };
 
     // Add region information if available
     if (sector.coordinates) {
-      metadata.region = `${sector.coordinates.x},${sector.coordinates.y}`;
+      metadata?.region = `${sector.coordinates.x},${sector.coordinates.y}`;
     }
 
     // Calculate additional derived properties
-    const anomalyCount = sector.anomalies?.length || 0;
-    const resourceCount = sector.resources?.length || 0;
+    const anomalyCount = sector.anomalies?.length ?? 0;
+    const resourceCount = sector.resources?.length ?? 0;
     const explorationScore = this.calculateExplorationScore(
-      sector.habitabilityScore || 0,
-      sector.resourcePotential || 0,
+      sector.habitabilityScore ?? 0,
+      sector.resourcePotential ?? 0,
       anomalyCount
     );
 
@@ -511,11 +511,11 @@ export class DataCollectionService {
       coordinates,
       properties: {
         status: sector.status,
-        resourcePotential: sector.resourcePotential || 0,
-        habitabilityScore: sector.habitabilityScore || 0,
+        resourcePotential: sector.resourcePotential ?? 0,
+        habitabilityScore: sector.habitabilityScore ?? 0,
         anomalyCount,
         resourceCount,
-        lastScanned: sector.lastScanned || 0,
+        lastScanned: sector.lastScanned ?? 0,
         explorationScore,
       },
       metadata,
@@ -548,24 +548,24 @@ export class DataCollectionService {
     }
 
     // Add investigation status metadata
-    metadata.investigated = anomaly.investigatedAt ? true : false;
-    metadata.investigationAge = anomaly.investigatedAt ? Date.now() - anomaly.investigatedAt : 0;
+    metadata?.investigated = anomaly.investigatedAt ? true : false;
+    metadata?.investigationAge = anomaly.investigatedAt ? Date.now() - anomaly.investigatedAt : 0;
 
     // Fix the type mismatch in calculateRiskAssessment call
     // Convert anomaly.severity from string to number
     const severityAsNumber =
       typeof anomaly.severity === 'string'
-        ? parseFloat(anomaly.severity) || 0
-        : anomaly.severity || 0;
+        ? parseFloat(anomaly.severity) ?? 0
+        : anomaly.severity ?? 0;
 
     // Calculate risk assessment based on severity and type
     const riskAssessment = this.calculateRiskAssessment(severityAsNumber, anomaly.type);
-    metadata.riskAssessment = riskAssessment;
+    metadata?.riskAssessment = riskAssessment;
 
     // Ensure coordinates are valid
     const coordinates: Coordinates = {
-      x: anomaly.position?.x || 0,
-      y: anomaly.position?.y || 0,
+      x: anomaly.position?.x ?? 0,
+      y: anomaly.position?.y ?? 0,
     };
 
     return {
@@ -578,7 +578,7 @@ export class DataCollectionService {
         type: anomaly.type,
         severity: anomaly.severity,
         description: anomaly.description,
-        investigatedAt: anomaly.investigatedAt || 0,
+        investigatedAt: anomaly.investigatedAt ?? 0,
         sectorId: anomaly.sectorId,
         riskFactor: this.calculateRiskFactor(severityAsNumber, riskAssessment),
       },
@@ -594,8 +594,8 @@ export class DataCollectionService {
     // Handle the type more explicitly to avoid property access issues
     const resourceCoords = resource.coordinates as { x?: number; y?: number } | undefined;
     const coordinates: Coordinates = {
-      x: resourceCoords?.x || 0,
-      y: resourceCoords?.y || 0,
+      x: resourceCoords?.x ?? 0,
+      y: resourceCoords?.y ?? 0,
     };
 
     // Cast accessibility to ensure it's a PropertyType
@@ -610,11 +610,11 @@ export class DataCollectionService {
 
     // Add extraction difficulty if available
     if (resource.extractionDifficulty !== undefined) {
-      metadata.extractionDifficulty = Number(resource.extractionDifficulty);
+      metadata?.extractionDifficulty = Number(resource.extractionDifficulty);
     }
 
     // Add purity grade based on quality
-    metadata.purityGrade = this.calculatePurityGrade(resource.quality || 1);
+    metadata?.purityGrade = this.calculatePurityGrade(resource.quality || 1);
 
     // Calculate resource potential score
     const potentialScore = this.calculateResourcePotential(
@@ -624,7 +624,7 @@ export class DataCollectionService {
     );
 
     // Add resource density if available or calculate a default
-    metadata.density =
+    metadata?.density =
       resource.density !== undefined ? Number(resource.density) : resource.amount / 100; // Default density calculation
 
     // Add additional resource data if available
@@ -651,7 +651,7 @@ export class DataCollectionService {
         type: resource.type,
         amount: resource.amount,
         quality: resource.quality || 1,
-        sectorId: resource.sectorId || '',
+        sectorId: resource.sectorId ?? '',
         potentialScore,
       },
       metadata,
@@ -684,7 +684,7 @@ export class DataCollectionService {
    */
   private calculateRiskAssessment(severity: number, type: string): number {
     // Base risk is determined by severity (0-10 scale)
-    let riskBase = severity || 0;
+    let riskBase = severity ?? 0;
 
     // Adjust risk based on anomaly type
     // Higher risk for dangerous anomaly types
@@ -824,7 +824,7 @@ export class DataCollectionService {
   ): DataPoint[] {
     if (!filters.length) return data;
 
-    return data.filter(dataPoint => {
+    return data?.filter(dataPoint => {
       return filters.every(filter => {
         const fieldParts = filter.field.split('.');
         let currentValue: unknown = dataPoint;
@@ -905,7 +905,7 @@ export class DataCollectionService {
     data: DataPoint[],
     transformFn: (dataPoint: DataPoint) => Partial<DataPoint>
   ): DataPoint[] {
-    return data.map(dataPoint => {
+    return data?.map(dataPoint => {
       const transformed = transformFn(dataPoint);
 
       // Validate transformed data
@@ -974,7 +974,7 @@ export class DataCollectionService {
     const groups = new Map<string | number | boolean, DataPoint[]>();
 
     // First pass: group the data
-    data.forEach(dataPoint => {
+    data?.forEach(dataPoint => {
       const groupValue = getNestedProperty(dataPoint, groupByField);
 
       // Skip items where the group value isn't a valid property type
@@ -983,7 +983,7 @@ export class DataCollectionService {
       }
 
       // Add to group
-      const group = groups.get(groupValue) || [];
+      const group = groups.get(groupValue) ?? [];
       group.push(dataPoint);
       groups.set(groupValue, group);
     });

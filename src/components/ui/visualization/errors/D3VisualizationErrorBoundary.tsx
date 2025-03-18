@@ -105,15 +105,15 @@ export class D3VisualizationErrorBoundary extends Component<
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Log error to console
     console.error(
-      `D3 Visualization Error (${this.props.componentName}):`,
+      `D3 Visualization Error (${this.props?.componentName}):`,
       error,
       errorInfo,
-      this.props.errorContext
+      this.props?.errorContext
     );
 
     // Call custom error handler if provided
-    if (this.props.onError) {
-      this.props.onError(error, errorInfo, this.props.componentName);
+    if (this.props?.onError) {
+      this.props?.onError(error, errorInfo, this.props?.componentName);
     }
   }
 
@@ -123,10 +123,10 @@ export class D3VisualizationErrorBoundary extends Component<
   componentDidUpdate(prevProps: D3VisualizationErrorBoundaryProps): void {
     if (
       this.state.hasError &&
-      this.props.resetKeys &&
-      Array.isArray(this.props.resetKeys) &&
-      prevProps.resetKeys !== this.props.resetKeys &&
-      this.haveDifferentValues(prevProps.resetKeys, this.props.resetKeys)
+      this.props?.resetKeys &&
+      Array.isArray(this.props?.resetKeys) &&
+      prevProps.resetKeys !== this.props?.resetKeys &&
+      this.haveDifferentValues(prevProps.resetKeys, this.props?.resetKeys)
     ) {
       this.resetErrorState();
     }

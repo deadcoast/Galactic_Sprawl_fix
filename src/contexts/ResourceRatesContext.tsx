@@ -62,6 +62,7 @@ export interface ResourceRatesState {
  * Default state with all rates at zero
  */
 const defaultResourceRates: Record<ResourceType, ResourceRateDetail> = {
+  [ResourceType.FOOD]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.MINERALS]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.ENERGY]: { production: 0, consumption: 0, net: 0 },
   [ResourceType.POPULATION]: { production: 0, consumption: 0, net: 0 },
@@ -133,7 +134,7 @@ const calculateRatesFromEvent = (event: BaseEvent): ResourceRateDetail => {
   // Extract resource rate data from event
   // This implementation would depend on the event structure
   const { production = 0, consumption = 0 } =
-    (event.data as { production?: number; consumption?: number }) || {};
+    (event?.data as { production?: number; consumption?: number }) ?? {};
 
   return {
     production,
@@ -219,19 +220,19 @@ export const ResourceRatesProvider: React.FC<{
     if (manager) {
       try {
         // Ensure we have a complete set of resource rates
-        const managerRates = manager.getAllResourceRates?.() || {};
+        const managerRates = manager.getAllResourceRates?.() ?? {};
         const rates = { ...defaultResourceRates, ...managerRates };
 
         return {
           ...initialState,
           resourceRates: rates,
-          ...(initialStateOverride || {}),
+          ...(initialStateOverride ?? {}),
         } as ResourceRatesState;
       } catch (error) {
         console.error('Error getting resource rates from manager:', error);
       }
     }
-    return { ...initialState, ...(initialStateOverride || {}) } as ResourceRatesState;
+    return { ...initialState, ...(initialStateOverride ?? {}) } as ResourceRatesState;
   }, [manager, initialStateOverride]);
 
   // Create reducer

@@ -140,7 +140,7 @@ const ctx: Worker = self as unknown as Worker;
 
 // Handle messages from main thread
 ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
-  const { type, data, taskId } = event.data;
+  const { type, data, taskId } = event?.data;
   const startTime = Date.now();
 
   let result: unknown;
@@ -151,14 +151,14 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
         if (!isOptimizeFlowsData(data)) {
           throw new Error('Invalid data format for OPTIMIZE_FLOWS');
         }
-        result = optimizeFlows(data.nodes, data.connections, data.resourceStates);
+        result = optimizeFlows(data?.nodes, data?.connections, data?.resourceStates);
         break;
 
       case 'BATCH_PROCESS':
         if (!isBatchProcessData(data)) {
           throw new Error('Invalid data format for BATCH_PROCESS');
         }
-        result = processBatch(data.nodes, data.connections, data.batchSize);
+        result = processBatch(data?.nodes, data?.connections, data?.batchSize);
         break;
 
       case 'CALCULATE_RESOURCE_BALANCE':
@@ -166,10 +166,10 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
           throw new Error('Invalid data format for CALCULATE_RESOURCE_BALANCE');
         }
         result = calculateResourceBalance(
-          data.producers,
-          data.consumers,
-          data.storages,
-          data.connections
+          data?.producers,
+          data?.consumers,
+          data?.storages,
+          data?.connections
         );
         break;
 
@@ -177,14 +177,14 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
         if (!isOptimizeFlowRatesData(data)) {
           throw new Error('Invalid data format for OPTIMIZE_FLOW_RATES');
         }
-        result = optimizeFlowRates(data.connections, data.availability, data.demand);
+        result = optimizeFlowRates(data?.connections, data?.availability, data?.demand);
         break;
 
       case 'CALCULATE_EFFICIENCY':
         if (!isCalculateEfficiencyData(data)) {
           throw new Error('Invalid data format for CALCULATE_EFFICIENCY');
         }
-        result = calculateNetworkEfficiency(data.network);
+        result = calculateNetworkEfficiency(data?.network);
         break;
 
       default:
@@ -339,7 +339,7 @@ function calculateResourceBalance(
   for (const producer of producers) {
     const resourceTypes = Object.keys(producer.resources) as ResourceType[];
     for (const resourceType of resourceTypes) {
-      availability[resourceType] = (availability[resourceType] || 0) + 10;
+      availability[resourceType] = (availability[resourceType] ?? 0) + 10;
     }
   }
 
@@ -347,7 +347,7 @@ function calculateResourceBalance(
   for (const consumer of consumers) {
     const resourceTypes = Object.keys(consumer.resources) as ResourceType[];
     for (const resourceType of resourceTypes) {
-      demand[resourceType] = (demand[resourceType] || 0) + 5;
+      demand[resourceType] = (demand[resourceType] ?? 0) + 5;
     }
   }
 
@@ -381,8 +381,8 @@ function identifyResourceIssues(
   // Compare availability and demand for each resource type
   for (const resourceType of Object.keys(demand)) {
     const enumResourceType = resourceType as ResourceType;
-    const availableAmount = availability[enumResourceType] || 0;
-    const demandAmount = demand[enumResourceType] || 0;
+    const availableAmount = availability[enumResourceType] ?? 0;
+    const demandAmount = demand[enumResourceType] ?? 0;
 
     // Check for bottlenecks (demand > availability)
     if (demandAmount > availableAmount) {
@@ -414,8 +414,8 @@ function optimizeFlowRates(
 
   for (const connection of updatedConnections) {
     for (const resourceType of connection.resourceTypes) {
-      const availableAmount = availability[resourceType] || 0;
-      const demandAmount = demand[resourceType] || 0;
+      const availableAmount = availability[resourceType] ?? 0;
+      const demandAmount = demand[resourceType] ?? 0;
       const transferAmount = Math.min(availableAmount, demandAmount);
 
       if (transferAmount > 0) {

@@ -4,7 +4,7 @@
  * This manager handles ship hangar operations using the standardized event system.
  */
 
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { BaseTypedEventEmitter } from '../../lib/modules/BaseTypedEventEmitter';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
@@ -332,7 +332,7 @@ export class ShipHangarManager extends BaseTypedEventEmitter<ShipHangarEvents> {
     }
 
     // Add the resource
-    const currentAmount = ship.cargo.resources.get(resourceType) || 0;
+    const currentAmount = ship.cargo.resources.get(resourceType) ?? 0;
     ship.cargo.resources.set(resourceType, currentAmount + amount);
     this.ships.set(shipId, ship);
     this.emit('cargo:loaded', { shipId, resourceType, amount });
@@ -353,7 +353,7 @@ export class ShipHangarManager extends BaseTypedEventEmitter<ShipHangarEvents> {
     }
 
     // Check if there's enough of the resource
-    const currentAmount = ship.cargo.resources.get(resourceType) || 0;
+    const currentAmount = ship.cargo.resources.get(resourceType) ?? 0;
     if (currentAmount < amount) {
       return false;
     }

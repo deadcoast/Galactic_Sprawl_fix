@@ -166,7 +166,7 @@ const PerformanceAnalysisDashboard: React.FC = () => {
       <div className="dashboard-content">
         {isLoading ? (
           <div className="loading-container">
-            <p>Loading performance data...</p>
+            <p>Loading performance data?...</p>
           </div>
         ) : (
           <>

@@ -20,6 +20,7 @@ const DEFAULT_RESOURCE_LIMITS: { [key in ResourceType]: { min: number; max: numb
   [ResourceType.GAS]: { min: 0, max: 3000 },
   [ResourceType.EXOTIC]: { min: 0, max: 500 },
   [ResourceType.ORGANIC]: { min: 0, max: 2000 },
+  [ResourceType.FOOD]: { min: 0, max: 2500 },
   // Add all other resource types with default values
   [ResourceType.IRON]: { min: 0, max: ResourceTypeInfo[ResourceType.IRON].defaultMax },
   [ResourceType.COPPER]: { min: 0, max: ResourceTypeInfo[ResourceType.COPPER].defaultMax },
@@ -78,6 +79,7 @@ export const DEFAULT_PRODUCTION_RATES: { [key in ResourceType]: number } = {
   [ResourceType.GAS]: 4,
   [ResourceType.EXOTIC]: 1,
   [ResourceType.ORGANIC]: 3,
+  [ResourceType.FOOD]: 4,
   // Add all other resource types with default values
   [ResourceType.IRON]: 8,
   [ResourceType.COPPER]: 7,
@@ -103,6 +105,7 @@ export const DEFAULT_CONSUMPTION_RATES: { [key in ResourceType]: number } = {
   [ResourceType.GAS]: 2,
   [ResourceType.EXOTIC]: 0.5,
   [ResourceType.ORGANIC]: 1.5,
+  [ResourceType.FOOD]: 2,
   // Add all other resource types with default values
   [ResourceType.IRON]: 4,
   [ResourceType.COPPER]: 3,
@@ -148,6 +151,7 @@ export const RESOURCE_PRIORITIES: { [key in ResourceType]: number } = {
   [ResourceType.GAS]: 50,
   [ResourceType.EXOTIC]: 40,
   [ResourceType.ORGANIC]: 45,
+  [ResourceType.FOOD]: 95, // High priority for food
   // Add all other resource types with appropriate priorities
   [ResourceType.IRON]: 75,
   [ResourceType.COPPER]: 73,

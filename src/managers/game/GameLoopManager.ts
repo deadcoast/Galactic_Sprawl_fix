@@ -375,7 +375,7 @@ export class GameLoopManager {
       priority <= UpdatePriority.BACKGROUND;
       priority++
     ) {
-      const updates = priorityGroups.get(priority) || [];
+      const updates = priorityGroups.get(priority) ?? [];
 
       // Skip throttled priorities if enabled
       if (

@@ -79,11 +79,11 @@ class ComponentRegistryServiceImpl extends AbstractBaseService {
     }
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.total_components = this.components.size;
     metrics.total_types = this.typeIndex.size;
     metrics.total_event_types = this.eventIndex.size;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     return id;
   }
@@ -112,11 +112,11 @@ class ComponentRegistryServiceImpl extends AbstractBaseService {
     this.components.delete(id);
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.total_components = this.components.size;
     metrics.total_types = this.typeIndex.size;
     metrics.total_event_types = this.eventIndex.size;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
   }
 
   public getComponent(id: string): ComponentRegistration | undefined {
@@ -152,24 +152,24 @@ class ComponentRegistryServiceImpl extends AbstractBaseService {
     }
 
     registration.lastRenderTime = Date.now();
-    registration.renderCount = (registration.renderCount || 0) + 1;
+    registration.renderCount = (registration.renderCount ?? 0) + 1;
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.total_renders = (metrics.total_renders || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.total_renders = (metrics.total_renders ?? 0) + 1;
     metrics.last_render_timestamp = registration.lastRenderTime;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
   }
 
   public notifyComponentsOfEvent(eventType: string, eventData: unknown): void {
     const components = this.getComponentsByEvent(eventType);
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.total_notifications = (metrics.total_notifications || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.total_notifications = (metrics.total_notifications ?? 0) + 1;
     metrics.last_notification_timestamp = Date.now();
     metrics.components_notified = components.length;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     // Log in development
     if (process.env.NODE_ENV === 'development') {
@@ -181,10 +181,10 @@ class ComponentRegistryServiceImpl extends AbstractBaseService {
 
   public override handleError(error: Error): void {
     // Update error metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.total_errors = (metrics.total_errors || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     // Log error in development
     if (process.env.NODE_ENV === 'development') {

@@ -209,7 +209,7 @@ export class ResourceExchangeManager {
   /**
    * Get exchange rate key
    */
-  private getRateKey(fromType: ResourceType, toType: ResourceType): ResourceType {
+  private getRateKey(fromType: ResourceType, toType: ResourceType): string {
     return `${fromType}-${toType}`;
   }
 

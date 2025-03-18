@@ -1,12 +1,12 @@
-import * as React from "react";
 import { AlertTriangle, BarChart2, RefreshCw, Ship, TrendingUp } from 'lucide-react';
 import { BaseModule } from '../../../../types/buildings/ModuleTypes';
+import { ResourceType } from '../../../../types/resources/ResourceTypes';
 
 interface TradeRoute {
   id: string;
   source: string;
   destination: string;
-  resource: string;
+  resource: ResourceType;
   amount: number;
   frequency: number; // in minutes
   profit: number;
@@ -16,7 +16,7 @@ interface TradeRoute {
 }
 
 interface MarketPrice {
-  resource: string;
+  resource: ResourceType;
   buyPrice: number;
   sellPrice: number;
   trend: 'up' | 'down' | 'stable';

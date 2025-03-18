@@ -10,7 +10,7 @@ export interface ComponentRegistrationOptions {
   /**
    * Type of the component (e.g., 'ResourceDisplay', 'ModuleCard')
    */
-  type: string;
+  type: ResourceType;
 
   /**
    * Event types this component is interested in receiving
@@ -52,14 +52,14 @@ export interface ComponentRegistrationOptions {
  */
 export function useComponentRegistration(options: ComponentRegistrationOptions): string {
   const componentId = useRef<string>('');
-  const profiler = useComponentProfiler(options.type);
+  const profiler = useComponentProfiler(options?.type);
 
   useEffect(() => {
     // Register component with registry
     const id = componentRegistryService.registerComponent({
-      type: options.type,
-      eventSubscriptions: options.eventSubscriptions,
-      updatePriority: options.updatePriority || 'medium',
+      type: options?.type,
+      eventSubscriptions: options?.eventSubscriptions,
+      updatePriority: options?.updatePriority || 'medium',
     });
 
     componentId.current = id;
@@ -76,7 +76,7 @@ export function useComponentRegistration(options: ComponentRegistrationOptions):
     return () => {
       componentRegistryService.unregisterComponent(id);
     };
-  }, [options.type, options.updatePriority, profiler]);
+  }, [options?.type, options?.updatePriority, profiler]);
 
   return componentId.current;
 }

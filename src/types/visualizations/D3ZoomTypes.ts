@@ -125,7 +125,7 @@ export function createTypedZoomBehavior<Element extends d3.BaseType, Datum = any
     if (!config.wheelZoom) {
       const originalFilter = zoom.filter();
       zoom.filter(function (event: unknown) {
-        return event.type !== 'wheel' && originalFilter.call(this, event);
+        return event?.type !== 'wheel' && originalFilter.call(this, event);
       });
     }
   }
@@ -198,7 +198,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
   if (config.enablePan === false) {
     // Disable panning by only allowing scaling transformations
     zoom.on('zoom', (event: unknown) => {
-      const transform = event.transform;
+      const transform = event?.transform;
       const newTransform = d3.zoomIdentity.scale(transform.k);
 
       if (config.targetElement) {
@@ -215,7 +215,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
   } else if (config.targetElement) {
     // Apply normal pan/zoom transformation to target element
     zoom.on('zoom', (event: unknown) => {
-      config.targetElement!.attr('transform', event.transform);
+      config.targetElement!.attr('transform', event?.transform);
 
       // Call the original zoom handler if provided
       if (config.onZoom) {
@@ -235,11 +235,11 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
 
     zoom.on('zoom', (event: unknown) => {
       // Constrain the transform to prevent content from leaving viewport
-      const transform = event.transform;
+      const transform = event?.transform;
       const constrainedTransform = constrainTransform(transform, config.extent);
 
       // Update the event transform with the constrained one
-      event.transform = constrainedTransform;
+      event?.transform = constrainedTransform;
 
       // Call the original zoom handler
       if (originalZoom) {
@@ -305,11 +305,11 @@ export function createSimulationZoomBehavior<
   // Handler for zoom events
   const handleZoom = (event: TypedZoomEvent<Element, Datum>) => {
     // Apply transform to the container
-    container.attr('transform', event.transform.toString());
+    container.attr('transform', event?.transform.toString());
 
     // Call custom update function if provided
     if (updateView) {
-      updateView(event.transform);
+      updateView(event?.transform);
     }
 
     // Call original handler if provided

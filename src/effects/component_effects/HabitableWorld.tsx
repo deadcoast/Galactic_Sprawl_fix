@@ -1,6 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database } from 'lucide-react';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import * as React from "react";
 import { useState } from 'react';
 
@@ -9,7 +10,7 @@ interface HabitableWorldProps {
   type: 'terran' | 'oceanic' | 'desert' | 'arctic';
   population: number;
   maxPopulation: number;
-  resources: string[];
+  resources: ResourceType[];
   developmentLevel: number;
   cityLightIntensity: number;
   anomalies?: { type: 'warning' | 'info'; message: string }[];

@@ -45,7 +45,7 @@ interface DynamicBudgetAdjustmentPanelProps {
  * Dynamic Budget Adjustment Panel
  *
  * A component that allows viewing and managing performance budgets
- * based on real-world telemetry data.
+ * based on real-world telemetry data?.
  */
 export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanelProps> = ({
   initialConfig,

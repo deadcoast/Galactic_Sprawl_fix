@@ -395,7 +395,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
 
     const svg = d3.select(fpsChartRef.current);
     const data = performanceMetrics.fps;
-    if (data.length === 0) return;
+    if (data?.length === 0) return;
 
     // Clear previous chart
     svg.selectAll('*').remove();
@@ -514,7 +514,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
       .attr('d', line);
 
     // Add points for the most recent data
-    const recentData = data.slice(-5); // Last 5 points
+    const recentData = data?.slice(-5); // Last 5 points
 
     g.selectAll('.data-point')
       .data(recentData)
@@ -531,8 +531,8 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
       });
 
     // Add line for current FPS value
-    if (data.length > 0) {
-      const lastPoint = data[data.length - 1];
+    if (data?.length > 0) {
+      const lastPoint = data[data?.length - 1];
 
       g.append('line')
         .attr('x1', 0)
@@ -551,7 +551,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
 
     const svg = d3.select(cpuChartRef.current);
     const data = performanceMetrics.cpuTime;
-    if (data.length === 0) return;
+    if (data?.length === 0) return;
 
     // Clear previous chart
     svg.selectAll('*').remove();
@@ -652,7 +652,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
       .attr('d', line);
 
     // Add points for the most recent data
-    const recentData = data.slice(-5); // Last 5 points
+    const recentData = data?.slice(-5); // Last 5 points
 
     g.selectAll('.data-point')
       .data(recentData)
@@ -669,8 +669,8 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
       });
 
     // Add line for current CPU value
-    if (data.length > 0) {
-      const lastPoint = data[data.length - 1];
+    if (data?.length > 0) {
+      const lastPoint = data[data?.length - 1];
 
       g.append('line')
         .attr('x1', 0)
@@ -689,7 +689,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
 
     const svg = d3.select(memoryChartRef.current);
     const data = performanceMetrics.memoryUsage;
-    if (data.length === 0) return;
+    if (data?.length === 0) return;
 
     // Clear previous chart
     svg.selectAll('*').remove();
@@ -779,7 +779,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
       .attr('d', line);
 
     // Add points for the most recent data
-    const recentData = data.slice(-5); // Last 5 points
+    const recentData = data?.slice(-5); // Last 5 points
 
     g.selectAll('.data-point')
       .data(recentData)
@@ -792,8 +792,8 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
       .attr('fill', '#4CAF50');
 
     // Add line for current memory value
-    if (data.length > 0) {
-      const lastPoint = data[data.length - 1];
+    if (data?.length > 0) {
+      const lastPoint = data[data?.length - 1];
 
       g.append('line')
         .attr('x1', 0)
@@ -817,7 +817,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
 
     // Get data for the selected metric
     const data = performanceMetrics[selectedMetric];
-    if (data.length === 0) return;
+    if (data?.length === 0) return;
 
     // Determine dimensions
     const margin = { top: 10, right: 20, bottom: 30, left: 40 };
@@ -1070,7 +1070,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
       .attr('d', line);
 
     // Add points for the recent data
-    const recentData = data.slice(-10); // Last 10 points
+    const recentData = data?.slice(-10); // Last 10 points
 
     g.selectAll('.data-point')
       .data(recentData)
@@ -1131,7 +1131,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
           `);
       })
       .on('mousemove', function (event: MouseEvent) {
-        tooltip.style('top', event.pageY - 10 + 'px').style('left', event.pageX + 10 + 'px');
+        tooltip.style('top', event?.pageY - 10 + 'px').style('left', event?.pageX + 10 + 'px');
       })
       .on('mouseout', function () {
         tooltip.style('visibility', 'hidden');

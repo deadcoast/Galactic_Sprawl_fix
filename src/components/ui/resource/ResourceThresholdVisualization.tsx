@@ -61,7 +61,7 @@ const getResourceStatus = (
 
     // Calculate time to next threshold if rate is positive
     const timeToThreshold =
-      rate > 0 ? (maxValue * (thresholds.low || 0) - currentValue) / rate : undefined;
+      rate > 0 ? (maxValue * (thresholds.low ?? 0) - currentValue) / rate : undefined;
 
     return {
       level: 'critical',
@@ -77,16 +77,16 @@ const getResourceStatus = (
   // Check if at low level
   if (thresholds.low && ratio <= thresholds.low) {
     const percentToNext =
-      ((currentValue - maxValue * (thresholds.critical || 0)) /
-        (maxValue * (thresholds.low - (thresholds.critical || 0)))) *
+      ((currentValue - maxValue * (thresholds.critical ?? 0)) /
+        (maxValue * (thresholds.low - (thresholds.critical ?? 0)))) *
       100;
 
     // Calculate time to next threshold
     const timeToThreshold =
       rate > 0
-        ? (maxValue * (thresholds.target || 0) - currentValue) / rate
+        ? (maxValue * (thresholds.target ?? 0) - currentValue) / rate
         : rate < 0
-          ? (maxValue * (thresholds.critical || 0) - currentValue) / rate
+          ? (maxValue * (thresholds.critical ?? 0) - currentValue) / rate
           : undefined;
 
     return {
@@ -103,8 +103,8 @@ const getResourceStatus = (
   // Check if at high level
   if (thresholds.high && ratio >= thresholds.high) {
     const percentToNext =
-      ((currentValue - maxValue * (thresholds.target || 0)) /
-        (maxValue * (thresholds.high - (thresholds.target || 0)))) *
+      ((currentValue - maxValue * (thresholds.target ?? 0)) /
+        (maxValue * (thresholds.high - (thresholds.target ?? 0)))) *
       100;
 
     // Calculate time to next threshold
@@ -112,7 +112,7 @@ const getResourceStatus = (
       rate > 0
         ? (maxValue * (thresholds.maximum || 1) - currentValue) / rate
         : rate < 0
-          ? (maxValue * (thresholds.target || 0) - currentValue) / rate
+          ? (maxValue * (thresholds.target ?? 0) - currentValue) / rate
           : undefined;
 
     return {
@@ -141,11 +141,11 @@ const getResourceStatus = (
   // Otherwise, resource is at normal/target level
   const percentToNext =
     rate > 0
-      ? ((currentValue - maxValue * (thresholds.low || 0)) /
-          (maxValue * ((thresholds.high || 1) - (thresholds.low || 0)))) *
+      ? ((currentValue - maxValue * (thresholds.low ?? 0)) /
+          (maxValue * ((thresholds.high || 1) - (thresholds.low ?? 0)))) *
         100
-      : ((currentValue - maxValue * (thresholds.low || 0)) /
-          (maxValue * ((thresholds.target || 0.5) - (thresholds.low || 0)))) *
+      : ((currentValue - maxValue * (thresholds.low ?? 0)) /
+          (maxValue * ((thresholds.target ?? 0.5) - (thresholds.low ?? 0)))) *
         100;
 
   // Calculate time to next threshold
@@ -153,7 +153,7 @@ const getResourceStatus = (
     rate > 0
       ? (maxValue * (thresholds.high || 1) - currentValue) / rate
       : rate < 0
-        ? (maxValue * (thresholds.low || 0) - currentValue) / rate
+        ? (maxValue * (thresholds.low ?? 0) - currentValue) / rate
         : undefined;
 
   return {
@@ -216,7 +216,7 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
 
   // Register with component registry
   useComponentRegistration({
-    type: 'ResourceThresholdVisualization',
+    type: ResourceType.RESEARCH,
     eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_THRESHOLD_CHANGED'],
     updatePriority: 'medium',
   });
@@ -242,7 +242,7 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
         eventType: EventType.RESOURCE_UPDATED,
         handler: event => {
           // Only update if this event is for our resource type
-          if (event.data?.resourceType === resourceType) {
+          if (event?.data?.resourceType === resourceType) {
             // Update logic here
           }
         },
@@ -251,7 +251,7 @@ const ResourceThresholdVisualization: React.FC<ResourceThresholdVisualizationPro
         eventType: EventType.RESOURCE_THRESHOLD_CHANGED,
         handler: event => {
           // Only update if this event is for our resource type
-          if (event.data?.resourceType === resourceType) {
+          if (event?.data?.resourceType === resourceType) {
             // Update logic here
           }
         },

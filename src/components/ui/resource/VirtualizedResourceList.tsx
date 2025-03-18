@@ -143,7 +143,7 @@ export function VirtualizedResourceList<T extends { id: string }>({
     // Initialize width
     setContainerSize(prev => ({
       ...prev,
-      width: containerRef.current?.clientWidth || 0,
+      width: containerRef.current?.clientWidth ?? 0,
     }));
 
     return () => {
@@ -173,7 +173,7 @@ export function VirtualizedResourceList<T extends { id: string }>({
           style={{
             minWidth: column.minWidth || column.width,
             width: column.width,
-            flex: column.flex || 0,
+            flex: column.flex ?? 0,
           }}
         >
           {column.header}
@@ -195,12 +195,12 @@ export function VirtualizedResourceList<T extends { id: string }>({
       >
         {columns.map(column => (
           <div
-            key={`${item.id}-${column.key.toString()}`}
+            key={`${item?.id}-${column.key.toString()}`}
             className="truncate px-4 py-2"
             style={{
               minWidth: column.minWidth || column.width,
               width: column.width,
-              flex: column.flex || 0,
+              flex: column.flex ?? 0,
             }}
           >
             {column.render

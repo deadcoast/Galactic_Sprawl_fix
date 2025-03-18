@@ -108,11 +108,11 @@ export const CustomShaderVisualization: React.FC<CustomShaderVisualizationProps>
   // Prepare data for WebGL rendering
   const { positions, dataValues, dataRange } = useMemo(() => {
     const pos: Position[] = [];
-    const values = new Float32Array(data.length);
+    const values = new Float32Array(data?.length);
     let min = Infinity;
     let max = -Infinity;
 
-    data.forEach((point, index) => {
+    data?.forEach((point, index) => {
       pos.push({ x: point.x, y: point.y });
       values[index] = point.value;
 
@@ -219,7 +219,7 @@ export const CustomShaderVisualization: React.FC<CustomShaderVisualizationProps>
     let nearestIndex = -1;
     let nearestDistance = Infinity;
 
-    data.forEach((point, index) => {
+    data?.forEach((point, index) => {
       const dx = point.x - x;
       const dy = point.y - y;
       const distance = Math.sqrt(dx * dx + dy * dy);

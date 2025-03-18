@@ -3,10 +3,8 @@ import { ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
 import * as React from 'react';
 import { useState } from 'react';
 import { useAllResourceRates } from '../../../contexts/ResourceRatesContext';
-import {
-  ResourceType,
-  ResourceTypeHelpers,
-} from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceTypeHelpers } from '../../../types/resources/StandardizedResourceTypes';
 
 // Resource type colors matching existing styles
 const resourceColors: Record<ResourceType, { base: string; bgLight: string; bgSelected: string }> =
@@ -102,6 +100,11 @@ const resourceColors: Record<ResourceType, { base: string; bgLight: string; bgSe
       bgLight: 'bg-teal-500/10',
       bgSelected: 'bg-teal-500/30',
     },
+    [ResourceType.FOOD]: {
+      base: 'text-yellow-400',
+      bgLight: 'bg-yellow-500/10',
+      bgSelected: 'bg-yellow-500/30',
+    },
   };
 
 // Filter type to categorize resource rates
@@ -124,7 +127,8 @@ interface ResourceRateDetail {
   net: number;
 }
 
-type ResourceRates = Record<Lowercase<keyof typeof ResourceType>, ResourceRateDetail>;
+// Update the ResourceRates type to ensure it can be indexed with ResourceType
+type ResourceRates = Record<string, ResourceRateDetail>;
 
 /**
  * Component for filtering resource rates by type and rate value

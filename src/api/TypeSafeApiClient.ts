@@ -110,16 +110,16 @@ export class TypeSafeApiClient {
   private onError?: (error: ApiError) => void;
 
   constructor(options: ApiClientOptions) {
-    this.baseUrl = options.baseUrl;
+    this.baseUrl = options?.baseUrl;
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      ...(options.defaultHeaders || {}),
+      ...(options?.defaultHeaders ?? {}),
     };
-    this.timeout = options.timeout || 30000; // 30 seconds default
-    this.withCredentials = options.withCredentials || false;
-    this.throwOnValidationError = options.throwOnValidationError || true;
-    this.onError = options.onError;
+    this.timeout = options?.timeout || 30000; // 30 seconds default
+    this.withCredentials = options?.withCredentials || false;
+    this.throwOnValidationError = options?.throwOnValidationError || true;
+    this.onError = options?.onError;
   }
 
   /**
@@ -212,18 +212,18 @@ export class TypeSafeApiClient {
 
       // Extract response headers
       const responseHeaders: Record<string, string> = {};
-      response.headers.forEach((value, key) => {
+      response?.headers.forEach((value, key) => {
         responseHeaders[key] = value;
       });
 
       // Handle error status codes
-      if (!response.ok) {
-        const errorType = this.getErrorTypeFromStatus(response.status);
+      if (!response?.ok) {
+        const errorType = this.getErrorTypeFromStatus(response?.status);
         const error = new ApiError(
           errorType,
-          `API request failed with status ${response.status}: ${response.statusText}`,
+          `API request failed with status ${response?.status}: ${response?.statusText}`,
           path,
-          response.status
+          response?.status
         );
 
         if (this.onError) {
@@ -234,7 +234,7 @@ export class TypeSafeApiClient {
       }
 
       // Parse JSON response
-      const responseData = await response.json();
+      const responseData = await response?.json();
 
       // Validate response data
       const validationResult = responseSchema.safeParse(responseData);
@@ -243,7 +243,7 @@ export class TypeSafeApiClient {
           ApiErrorType.RESPONSE_VALIDATION_ERROR,
           `Response validation failed for ${path}: ${validationResult.error.message}`,
           path,
-          response.status,
+          response?.status,
           validationResult.error
         );
 
@@ -258,7 +258,7 @@ export class TypeSafeApiClient {
         // Return data with validation metadata
         return {
           data: responseData as ResponseType,
-          status: response.status,
+          status: response?.status,
           headers: responseHeaders,
           validationResult: validationResult as z.SafeParseReturnType<unknown, ResponseType>,
           isValid: false,
@@ -268,7 +268,7 @@ export class TypeSafeApiClient {
       // Return successful response
       return {
         data: validationResult.data,
-        status: response.status,
+        status: response?.status,
         headers: responseHeaders,
         validationResult: validationResult as z.SafeParseReturnType<unknown, ResponseType>,
         isValid: true,
@@ -323,7 +323,7 @@ export class TypeSafeApiClient {
     };
 
     const response = await this.request(endpoint);
-    return response.data;
+    return response?.data;
   }
 
   /**
@@ -354,7 +354,7 @@ export class TypeSafeApiClient {
     };
 
     const response = await this.request(endpoint, requestData);
-    return response.data;
+    return response?.data;
   }
 
   /**
@@ -385,7 +385,7 @@ export class TypeSafeApiClient {
     };
 
     const response = await this.request(endpoint, requestData);
-    return response.data;
+    return response?.data;
   }
 
   /**
@@ -416,7 +416,7 @@ export class TypeSafeApiClient {
     };
 
     const response = await this.request(endpoint, requestData);
-    return response.data;
+    return response?.data;
   }
 
   /**
@@ -440,7 +440,7 @@ export class TypeSafeApiClient {
     };
 
     const response = await this.request(endpoint);
-    return response.data;
+    return response?.data;
   }
 
   /**

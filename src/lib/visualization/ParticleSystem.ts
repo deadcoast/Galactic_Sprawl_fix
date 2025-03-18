@@ -406,7 +406,7 @@ export class ParticleSystem {
         sourcePoint,
         targetPoint,
         startTime: performance.now(),
-        staggerDelay: config.staggerDelay || 0,
+        staggerDelay: config.staggerDelay ?? 0,
         transitionStarted: false,
       },
     });
@@ -480,14 +480,14 @@ export class ParticleSystem {
   private emitParticle(config: ParticleEmitterConfig): string {
     // Randomize position within emit radius
     const angle = Math.random() * Math.PI * 2;
-    const radius = Math.random() * (config.emitRadius || 0);
+    const radius = Math.random() * (config.emitRadius ?? 0);
     const position = {
       x: config.position.x + Math.cos(angle) * radius,
       y: config.position.y + Math.sin(angle) * radius,
     };
 
     // Randomize velocity
-    const direction = (config.direction || 0) + (Math.random() - 0.5) * (config.spread || 0);
+    const direction = (config.direction ?? 0) + (Math.random() - 0.5) * (config.spread ?? 0);
     const speed =
       config.minVelocity !== undefined && config.maxVelocity !== undefined
         ? config.minVelocity + Math.random() * (config.maxVelocity - config.minVelocity)
@@ -551,7 +551,7 @@ export class ParticleSystem {
 
       // Handle transition particles
       if (particle.group && this.transitionTimers.has(particle.group)) {
-        this.updateTransitionParticle(particle, this.transitionProgress.get(particle.group) || 0);
+        this.updateTransitionParticle(particle, this.transitionProgress.get(particle.group) ?? 0);
       } else {
         // Handle regular particles
         this.updateRegularParticle(particle, deltaTime);
@@ -571,7 +571,7 @@ export class ParticleSystem {
     if (!particle.startPosition || !particle.targetPosition) return;
 
     const data = particle.data as Record<string, unknown>;
-    const staggerDelay = (data.staggerDelay as number) || 0;
+    const staggerDelay = (data.staggerDelay as number) ?? 0;
 
     // Handle staggered start
     if (!data.transitionStarted) {
@@ -786,7 +786,7 @@ export class ParticleSystem {
     jitter = 0.1
   ): Position {
     // Get or create random seeds
-    let seeds = (particle.data?.randomSeeds as number[]) || [];
+    let seeds = (particle.data?.randomSeeds as number[]) ?? [];
     if (!seeds.length) {
       seeds = Array.from({ length: 10 }, () => Math.random());
       (particle.data as Record<string, unknown>).randomSeeds = seeds;
@@ -966,7 +966,7 @@ export class ParticleSystem {
    * Get transition progress
    */
   public getTransitionProgress(id: string): number {
-    return this.transitionProgress.get(id) || 0;
+    return this.transitionProgress.get(id) ?? 0;
   }
 
   /**

@@ -155,7 +155,7 @@ export function calculateCorrelationMatrix(
   data: Array<Record<string, unknown>>,
   variables: string[]
 ): Array<Array<number>> {
-  if (!data || data.length === 0 || !variables || variables.length === 0) {
+  if (!data || data?.length === 0 || !variables || variables.length === 0) {
     return [];
   }
   
@@ -168,7 +168,7 @@ export function calculateCorrelationMatrix(
   });
   
   // Extract values from data
-  data.forEach(item => {
+  data?.forEach(item => {
     variables.forEach(variable => {
       const value = safelyExtractNumber(item, variable, NaN);
       if (!isNaN(value)) {
@@ -272,7 +272,7 @@ export function calculateStatistics(
   count: number;
   missing: number;
 } {
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return {
       min: NaN,
       max: NaN,
@@ -288,7 +288,7 @@ export function calculateStatistics(
   const values: number[] = [];
   let missing = 0;
   
-  data.forEach(item => {
+  data?.forEach(item => {
     const value = safelyExtractNumber(item, variable, NaN);
     if (!isNaN(value)) {
       values.push(value);
@@ -569,6 +569,6 @@ export function calculateDistancesToCentroids(
         distance,
       };
     })
-    .filter(item => isFinite(item.distance))
+    .filter(item => isFinite(item?.distance))
     .sort((a, b) => b.distance - a.distance); // Sort descending (most distant first)
 }

@@ -28,7 +28,7 @@ function estimateSize(data: unknown): number {
   if (data === null || data === undefined) return 0;
 
   if (Array.isArray(data)) {
-    return data.length * 1024; // Estimate 1KB per array item
+    return data?.length * 1024; // Estimate 1KB per array item
   }
 
   if (typeof data === 'object') {
@@ -60,7 +60,7 @@ export function withMemoryManagement<P extends BaseChartProps>(
 
     // Update memory usage when props change
     useEffect(() => {
-      const size = estimateSize(props.data);
+      const size = estimateSize(props?.data);
       setMemoryUsage(size);
 
       // Log memory usage if enabled
@@ -69,7 +69,7 @@ export function withMemoryManagement<P extends BaseChartProps>(
           `[MemoryManager] Memory usage: ${Math.round(size / 1024 / 1024)}MB, Cleanup level: ${autoCleanupLevel}`
         );
       }
-    }, [props.data, enableLogging, autoCleanupLevel]);
+    }, [props?.data, enableLogging, autoCleanupLevel]);
 
     // Calculate memory usage in MB for display
     const memoryMB = Math.round(memoryUsage / 1024 / 1024);

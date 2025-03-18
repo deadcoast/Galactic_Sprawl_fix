@@ -87,7 +87,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvent> {
   public removeItem(batchId: string, itemId: string): void {
     const batch = this.batches.get(batchId);
     if (batch) {
-      const index = batch.items.findIndex(item => item.id === itemId);
+      const index = batch.items.findIndex(item => item?.id === itemId);
       if (index !== -1) {
         batch.items.splice(index, 1);
         this.emit({ type: 'batchUpdated', batch });
@@ -136,7 +136,7 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvent> {
       const byShader = new Map<string, RenderItem[]>();
 
       batch.items.forEach(item => {
-        const key = `${item.shader || 'default'}-${item.texture || 'none'}`;
+        const key = `${item?.shader || 'default'}-${item?.texture || 'none'}`;
         if (!byShader.has(key)) {
           byShader.set(key, []);
         }
@@ -162,18 +162,18 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvent> {
    */
   private setupShaderAndTexture(ctx: CanvasRenderingContext2D, item: RenderItem): void {
     // Set global alpha
-    ctx.globalAlpha = item.opacity;
+    ctx.globalAlpha = item?.opacity;
 
     // Set blend mode based on shader
-    if (item.shader === 'additive') {
+    if (item?.shader === 'additive') {
       ctx.globalCompositeOperation = 'lighter';
     } else {
       ctx.globalCompositeOperation = 'source-over';
     }
 
     // Set color
-    ctx.fillStyle = item.color;
-    ctx.strokeStyle = item.color;
+    ctx.fillStyle = item?.color;
+    ctx.strokeStyle = item?.color;
   }
 
   /**
@@ -183,16 +183,16 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvent> {
     ctx.save();
 
     // Transform
-    ctx.translate(item.position.x, item.position.y);
-    ctx.rotate(item.rotation);
+    ctx.translate(item?.position.x, item?.position.y);
+    ctx.rotate(item?.rotation);
 
     // Draw
-    if (item.texture) {
+    if (item?.texture) {
       // Draw textured quad
-      ctx.fillRect(-item.size.width / 2, -item.size.height / 2, item.size.width, item.size.height);
+      ctx.fillRect(-item?.size.width / 2, -item?.size.height / 2, item?.size.width, item?.size.height);
     } else {
       // Draw colored quad
-      ctx.fillRect(-item.size.width / 2, -item.size.height / 2, item.size.width, item.size.height);
+      ctx.fillRect(-item?.size.width / 2, -item?.size.height / 2, item?.size.width, item?.size.height);
     }
 
     ctx.restore();

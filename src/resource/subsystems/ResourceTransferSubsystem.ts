@@ -262,7 +262,7 @@ export class ResourceTransferSubsystem {
       const flowAmount = transfer.source === entityId ? -transfer.amount : transfer.amount;
 
       // Update net flow
-      netFlow[otherEntityId] = (netFlow[otherEntityId] || 0) + flowAmount;
+      netFlow[otherEntityId] = (netFlow[otherEntityId] ?? 0) + flowAmount;
     }
 
     return netFlow;

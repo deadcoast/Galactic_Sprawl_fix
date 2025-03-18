@@ -89,8 +89,8 @@ export class EventCommunication {
   private initializeEventBusIntegration(): void {
     // Subscribe to system communication events
     moduleEventBus.subscribe('SYSTEM_MESSAGE' as ModuleEventType, (event: ModuleEvent) => {
-      if (event.data && event.data.message) {
-        const message = event.data.message as SystemMessage;
+      if (event?.data && event?.data?.message) {
+        const message = event?.data?.message as SystemMessage;
 
         // Process the message if it's targeted at this system or is a broadcast
         if (message.target === this.systemId || message.target === 'broadcast') {
@@ -101,8 +101,8 @@ export class EventCommunication {
 
     // Subscribe to acknowledgment events
     moduleEventBus.subscribe('SYSTEM_MESSAGE_ACK' as ModuleEventType, (event: ModuleEvent) => {
-      if (event.data && event.data.ack) {
-        const ack = event.data.ack as MessageAcknowledgment;
+      if (event?.data && event?.data?.ack) {
+        const ack = event?.data?.ack as MessageAcknowledgment;
 
         // Process the acknowledgment if it's targeted at this system
         if (ack.target === this.systemId) {
@@ -157,7 +157,7 @@ export class EventCommunication {
         const result = handler(message);
         if (result instanceof Promise) {
           handlerPromises.push(
-            result.catch(error => {
+            result?.catch(error => {
               errors.push(error);
             })
           );

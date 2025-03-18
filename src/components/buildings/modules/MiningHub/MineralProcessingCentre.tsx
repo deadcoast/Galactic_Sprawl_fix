@@ -145,7 +145,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
   // Use resourcesByType to filter resources by type
   const filteredResources = useMemo(() => {
     if (filter === 'all') return mockResources;
-    return resourcesByType[filter] || [];
+    return resourcesByType[filter] ?? [];
   }, [filter, mockResources, resourcesByType]);
 
   // Implement useEffect for tier-based tech bonuses
@@ -268,7 +268,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
                   resourceId={resource.id}
                   resourceName={resource.name}
                   resourceType={resource.type}
-                  currentAmount={state.resources[resource.id]?.currentAmount || 0}
+                  currentAmount={state.resources[resource.id]?.currentAmount ?? 0}
                   maxCapacity={resource.thresholds.max}
                 />
               ))}

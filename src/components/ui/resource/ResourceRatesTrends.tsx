@@ -40,6 +40,7 @@ const resourceColors: Record<ResourceType, string> = {
   [ResourceType.DARK_MATTER]: '#f43f5e', // rose
   [ResourceType.EXOTIC_MATTER]: '#10b981', // emerald
   [ResourceType.ORGANIC]: '#14b8a6', // teal
+  [ResourceType.FOOD]: '#eab308', // yellow
 };
 
 // Interface for resource rate history data point
@@ -301,7 +302,7 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
           </ResponsiveContainer>
         ) : (
           <div className="flex h-full items-center justify-center">
-            <div className="text-gray-500">Collecting data...</div>
+            <div className="text-gray-500">Collecting data?...</div>
           </div>
         )}
       </div>

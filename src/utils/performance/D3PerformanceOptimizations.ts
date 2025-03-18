@@ -207,7 +207,7 @@ export function optimizeSelectionUpdates<T extends d3.Selection<SVGElement, unkn
  * @returns An object mapping keys to data items
  */
 export function createDataIndex<T>(data: T[], keyFn: (item: T) => string): Record<string, T> {
-  return data.reduce(
+  return data?.reduce(
     (index, item) => {
       const key = keyFn(item);
       index[key] = item;
@@ -288,12 +288,12 @@ export function createCoordinateCache(nodes: d3.SimulationNodeDatum[]): {
 
   return {
     getX: (node: d3.SimulationNodeDatum): number => {
-      const id = (node as unknown).id || '';
-      return xCache.has(id) ? xCache.get(id) || 0 : memoizedD3Accessors.getX(node);
+      const id = (node as unknown).id ?? '';
+      return xCache.has(id) ? xCache.get(id) ?? 0 : memoizedD3Accessors.getX(node);
     },
     getY: (node: d3.SimulationNodeDatum): number => {
-      const id = (node as unknown).id || '';
-      return yCache.has(id) ? yCache.get(id) || 0 : memoizedD3Accessors.getY(node);
+      const id = (node as unknown).id ?? '';
+      return yCache.has(id) ? yCache.get(id) ?? 0 : memoizedD3Accessors.getY(node);
     },
   };
 }

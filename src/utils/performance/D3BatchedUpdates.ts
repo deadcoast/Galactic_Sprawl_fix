@@ -232,11 +232,11 @@ export class D3BatchUpdateManager {
 
     // Filter operations based on options
     const filterOperation = (op: BatchOperation): boolean => {
-      if (options?.forElement && op.element !== options.forElement) return false;
-      if (options?.forAnimation && op.animationId !== options.forAnimation) return false;
+      if (options?.forElement && op.element !== options?.forElement) return false;
+      if (options?.forAnimation && op.animationId !== options?.forAnimation) return false;
       if (
         options?.minPriority &&
-        this.priorityOrder[op.priority] > this.priorityOrder[options.minPriority]
+        this.priorityOrder[op.priority] > this.priorityOrder[options?.minPriority]
       )
         return false;
       return true;

@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import {
   CartesianGrid,
@@ -181,12 +181,12 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
 
   // Process data for visualization
   const processedData = useMemo(() => {
-    if (!data || data.length === 0) {
+    if (!data || data?.length === 0) {
       return [];
     }
 
     // Convert data to the expected format
-    const processedData = data.map(item => {
+    const processedData = data?.map(item => {
       // Create a new object with the required structure
       const record: ChartDataRecord = {};
 
@@ -237,7 +237,7 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
       yKey: string,
       targetPoints: number
     ): VisualizationRecord[] => {
-      const dataLength = data.length;
+      const dataLength = data?.length;
       if (dataLength <= targetPoints) {
         return formatDataForRendering(data);
       }
@@ -259,8 +259,8 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
         for (let j = Math.floor(a + bucketSize); j < nextA; j++) {
           const pointIdx = Math.min(j, dataLength - 1);
           // Make sure we always treat these as numbers
-          const x = Number(data[pointIdx][xKey] || 0);
-          const y = Number(data[pointIdx][yKey] || 0);
+          const x = Number(data[pointIdx][xKey] ?? 0);
+          const y = Number(data[pointIdx][yKey] ?? 0);
           avgX += x / bucketCount;
           avgY += y / bucketCount;
         }
@@ -275,12 +275,12 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
           const pointIdx = Math.min(j, dataLength - 1);
 
           // Get x,y coords from data
-          const x = Number(data[pointIdx][xKey] || 0);
-          const y = Number(data[pointIdx][yKey] || 0);
+          const x = Number(data[pointIdx][xKey] ?? 0);
+          const y = Number(data[pointIdx][yKey] ?? 0);
 
           // aPoint = previous selected point
-          const aX = Number(data[a][xKey] || 0);
-          const aY = Number(data[a][yKey] || 0);
+          const aX = Number(data[a][xKey] ?? 0);
+          const aY = Number(data[a][yKey] ?? 0);
 
           // Calculate triangle area (using cross product)
           const area = Math.abs((aX - avgX) * (y - aY) - (aX - x) * (avgY - aY));
@@ -314,8 +314,8 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
         const [min, max] = domain.x;
         const visibleRange = max - min;
         const totalRange =
-          data.length > 0
-            ? (data[data.length - 1][xAxisKey] as number) - (data[0][xAxisKey] as number)
+          data?.length > 0
+            ? (data[data?.length - 1][xAxisKey] as number) - (data[0][xAxisKey] as number)
             : 1;
 
         // Calculate detail level based on zoom (1-10)
@@ -329,7 +329,7 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
   );
 
   // If no data, show error
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return (
       <BaseChart
         width={width}
@@ -354,8 +354,8 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
 
   // Handle dot click event
   const handleDotClick = (event: DotClickEvent, index: number) => {
-    if (onElementClick && event && event.payload) {
-      onElementClick(event.payload, index);
+    if (onElementClick && event && event?.payload) {
+      onElementClick(event?.payload, index);
     }
   };
 
@@ -376,10 +376,10 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
             yAxis?: Array<{ domain: [number, number] }>;
           };
 
-          if (event && event.xAxis && event.yAxis && event.xAxis[0] && event.yAxis[0]) {
+          if (event && event?.xAxis && event?.yAxis && event?.xAxis[0] && event?.yAxis[0]) {
             const domain = {
-              x: event.xAxis[0].domain,
-              y: event.yAxis[0].domain,
+              x: event?.xAxis[0].domain,
+              y: event?.yAxis[0].domain,
             };
             handleZoom(domain);
           }
@@ -453,8 +453,8 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
 
   // Add info about downsampling if applicable
   const displaySubtitle =
-    processedData.length < data.length
-      ? `Showing ${processedData.length} of ${data.length} points (downsampled for performance)`
+    processedData.length < data?.length
+      ? `Showing ${processedData.length} of ${data?.length} points (downsampled for performance)`
       : subtitle;
 
   return (

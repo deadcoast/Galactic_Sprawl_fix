@@ -179,7 +179,7 @@ export class ChartCoordinationManager {
    * Emit a chart event
    */
   public emit(event: ChartEvent): void {
-    const eventName = `${event.chartId}:${event.type}` as keyof ChartEvents;
+    const eventName = `${event?.chartId}:${event?.type}` as keyof ChartEvents;
     this.eventEmitter.emit(eventName, event);
   }
 

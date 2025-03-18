@@ -191,7 +191,7 @@ export class D3Profiler {
     // Group bottlenecks by type
     const bottlenecksByType = bottlenecks.reduce(
       (groups, bottleneck) => {
-        const group = groups[bottleneck.type] || [];
+        const group = groups[bottleneck.type] ?? [];
         group.push(bottleneck);
         groups[bottleneck.type] = group;
         return groups;
@@ -340,12 +340,12 @@ export class ForceSimulationProfiler {
         type: ProfilerMeasurementType.FORCE_CALCULATION,
         name: `${forceName} Force Calculation`,
         durationMs: endTime - startTime,
-        operationCount: this.simulation?.nodes().length || 0,
+        operationCount: this.simulation?.nodes().length ?? 0,
         isBottleneck: endTime - startTime > (this.profiler as unknown).bottleneckThreshold,
         metadata: {
           forceName,
-          nodeCount: this.simulation?.nodes().length || 0,
-          alpha: this.simulation?.alpha() || 0,
+          nodeCount: this.simulation?.nodes().length ?? 0,
+          alpha: this.simulation?.alpha() ?? 0,
         },
         timestamp: new Date(),
       });
@@ -470,7 +470,7 @@ export class ForceSimulationProfiler {
       const forceGroups = forceBottlenecks.reduce(
         (groups, bottleneck) => {
           const forceName = (bottleneck.metadata?.forceName as string) || 'unknown';
-          const group = groups[forceName] || [];
+          const group = groups[forceName] ?? [];
           group.push(bottleneck);
           groups[forceName] = group;
           return groups;
@@ -534,8 +534,8 @@ export function profileCoordinateAccess(
     fn: () => {
       for (let i = 0; i < iterations; i++) {
         for (const node of nodes) {
-          const x = node.x || 0;
-          const y = node.y || 0;
+          const x = node.x ?? 0;
+          const y = node.y ?? 0;
           const transform = `translate(${x}, ${y})`;
         }
       }
@@ -668,7 +668,7 @@ export const memoizedD3Accessors = {
 
     // Check cache first
     if (memoizedD3Accessors.xCache.has(node)) {
-      return memoizedD3Accessors.xCache.get(node) || 0;
+      return memoizedD3Accessors.xCache.get(node) ?? 0;
     }
 
     // Calculate and cache result
@@ -687,7 +687,7 @@ export const memoizedD3Accessors = {
 
     // Check cache first
     if (memoizedD3Accessors.yCache.has(node)) {
-      return memoizedD3Accessors.yCache.get(node) || 0;
+      return memoizedD3Accessors.yCache.get(node) ?? 0;
     }
 
     // Calculate and cache result

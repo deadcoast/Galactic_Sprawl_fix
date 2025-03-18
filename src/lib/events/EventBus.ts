@@ -10,6 +10,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
   BaseEvent,
@@ -246,8 +247,8 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
       id: subscriptionId,
       eventType,
       listener,
-      priority: options.priority ?? 100, // Default priority
-      source: options.source,
+      priority: options?.priority ?? 100, // Default priority
+      source: options?.source,
       createdAt: Date.now(),
     };
 
@@ -258,7 +259,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     this.updateListenerCountMetrics();
 
     // Emit latest event if requested
-    if (options.emitLatest && eventType !== '*' && this.latestEvents.has(eventType)) {
+    if (options?.emitLatest && eventType !== '*' && this.latestEvents.has(eventType)) {
       try {
         listener(this.latestEvents.get(eventType)!);
       } catch (error) {
@@ -339,10 +340,10 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     }
 
     // Update latest event for this type
-    this.latestEvents.set(event.type, event);
+    this.latestEvents.set(event?.type, event);
 
     // Get all subscriptions for this event type and the wildcard type
-    const specificSubscriptions = this.subscriptions.get(event.type) || new Set<Subscription<T>>();
+    const specificSubscriptions = this.subscriptions.get(event?.type) || new Set<Subscription<T>>();
     const wildcardSubscriptions = this.subscriptions.get('*') || new Set<Subscription<T>>();
 
     // Combine and sort subscriptions by priority
@@ -360,7 +361,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
       try {
         subscription.listener(event);
       } catch (error) {
-        console.error(`[EventBus] Error in event listener for event type ${event.type}:`, error);
+        console.error(`[EventBus] Error in event listener for event type ${event?.type}:`, error);
       }
     }
 
@@ -368,7 +369,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     if (this.trackPerformance) {
       const endTime = performance.now();
       const processingTime = endTime - startTime;
-      this.updatePerformanceMetrics(event.type, processingTime, allSubscriptions.length);
+      this.updatePerformanceMetrics(event?.type, processingTime, allSubscriptions.length);
     }
   }
 
@@ -413,7 +414,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
       return [...this.history]; // Return a copy of the entire history
     }
 
-    return this.history.filter(event => event.type === eventType);
+    return this.history.filter(event => event?.type === eventType);
   }
 
   /**
@@ -422,7 +423,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
    * @returns An array of events for the specified module
    */
   getModuleHistory(moduleId: string): T[] {
-    return this.history.filter(event => event.moduleId === moduleId);
+    return this.history.filter(event => event?.moduleId === moduleId);
   }
 
   /**

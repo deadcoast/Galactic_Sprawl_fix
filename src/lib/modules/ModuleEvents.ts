@@ -157,7 +157,7 @@ export class ModuleEventBus {
   }
 
   /**
-   * Subscribes to a specific type of module event.
+   * Subscribes to a specific type of module event?.
    *
    * This method registers a listener function to be called whenever an event
    * of the specified type is emitted. It returns an unsubscribe function that
@@ -170,7 +170,7 @@ export class ModuleEventBus {
    * @example
    * // Subscribe to MODULE_CREATED events
    * const unsubscribe = moduleEventBus.subscribe('MODULE_CREATED', (event) => {
-   *   console.warn(`New module created: ${event.moduleId}`);
+   *   console.warn(`New module created: ${event?.moduleId}`);
    * });
    *
    * // Later, to stop receiving events
@@ -200,7 +200,7 @@ export class ModuleEventBus {
    *
    * This method adds the event to the event history and notifies all listeners
    * subscribed to the event's type. If an error occurs in a listener, it is
-   * caught and logged, allowing other listeners to continue receiving the event.
+   * caught and logged, allowing other listeners to continue receiving the event?.
    *
    * @param {ModuleEvent} event - The event to emit
    * @returns {void}
@@ -223,7 +223,7 @@ export class ModuleEventBus {
     }
 
     // Notify listeners
-    const typeListeners = this.listeners.get(event.type);
+    const typeListeners = this.listeners.get(event?.type);
     if (typeListeners) {
       typeListeners.forEach(listener => {
         try {
@@ -247,7 +247,7 @@ export class ModuleEventBus {
    * // Get complete event history and count events by type
    * const history = moduleEventBus.getHistory();
    * const eventCounts = history.reduce((counts, event) => {
-   *   counts[event.type] = (counts[event.type] || 0) + 1;
+   *   counts[event?.type] = (counts[event?.type] ?? 0) + 1;
    *   return counts;
    * }, {});
    * console.warn('Event counts:', eventCounts);
@@ -268,13 +268,13 @@ export class ModuleEventBus {
    * @example
    * // Get history for a specific module and analyze its lifecycle
    * const moduleHistory = moduleEventBus.getModuleHistory('mining-module-1');
-   * const creationEvent = moduleHistory.find(event => event.type === 'MODULE_CREATED');
+   * const creationEvent = moduleHistory.find(event => event?.type === 'MODULE_CREATED');
    * if (creationEvent) {
    *   console.warn(`Module created at: ${new Date(creationEvent.timestamp).toLocaleString()}`);
    * }
    */
   getModuleHistory(moduleId: string): ModuleEvent[] {
-    return this.history.filter(event => event.moduleId === moduleId);
+    return this.history.filter(event => event?.moduleId === moduleId);
   }
 
   /**
@@ -289,11 +289,11 @@ export class ModuleEventBus {
    * @example
    * // Get all resource shortage events and identify affected resources
    * const shortages = moduleEventBus.getEventTypeHistory('RESOURCE_SHORTAGE');
-   * const affectedResources = shortages.map(event => event.data?.resourceType).filter(Boolean);
+   * const affectedResources = shortages.map(event => event?.data?.resourceType).filter(Boolean);
    * console.warn('Resources with shortages:', affectedResources);
    */
   getEventTypeHistory(type: ModuleEventType): ModuleEvent[] {
-    return this.history.filter(event => event.type === type);
+    return this.history.filter(event => event?.type === type);
   }
 
   /**

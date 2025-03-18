@@ -190,7 +190,7 @@ export class ResourcePerformanceMonitor {
    * Gets performance history for a resource
    */
   getResourceHistory(type: ResourceType): PerformanceMetrics[] {
-    return [...(this.metricsHistory.get(type) || [])];
+    return [...(this.metricsHistory.get(type) ?? [])];
   }
 
   /**

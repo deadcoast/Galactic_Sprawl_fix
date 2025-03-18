@@ -67,8 +67,8 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
 
     // Listen for threshold events
     thresholdEvents.subscribe((event: ThresholdEvent) => {
-      if (event.type === 'THRESHOLD_VIOLATED') {
-        this.handleThresholdViolation(event.resourceId, event.details);
+      if (event?.type === 'THRESHOLD_VIOLATED') {
+        this.handleThresholdViolation(event?.resourceId, event?.details);
       }
     });
   }
@@ -146,7 +146,7 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
     // Register with behavior system
     shipBehaviorManager.registerShip({
       id: ship.id,
-      type: ship.type,
+      type: ship.type as ResourceType,
       category: 'mining',
       capabilities: {
         canMine: true,

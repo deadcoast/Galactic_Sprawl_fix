@@ -267,7 +267,7 @@ export function ResourceDiscoverySystem({
       } else if (sortBy === 'potential') {
         const sectorA = sectors.find(s => s.id === a.sectorId);
         const sectorB = sectors.find(s => s.id === b.sectorId);
-        comparison = (sectorA?.resourcePotential || 0) - (sectorB?.resourcePotential || 0);
+        comparison = (sectorA?.resourcePotential ?? 0) - (sectorB?.resourcePotential ?? 0);
       }
 
       return sortOrder === 'asc' ? comparison : -comparison;
@@ -418,7 +418,7 @@ export function ResourceDiscoverySystem({
   // Update notes when changed
   useEffect(() => {
     if (selectedDiscovery && notes !== selectedDiscovery.notes) {
-      setNotes(selectedDiscovery.notes || '');
+      setNotes(selectedDiscovery.notes ?? '');
     }
   }, [selectedDiscovery]);
 

@@ -296,7 +296,7 @@ export abstract class AbstractBaseManager<T extends BaseEvent = BaseEvent>
    * Increment a metric
    */
   protected incrementMetric(key: string, increment = 1): void {
-    this.metrics[key] = (this.metrics[key] || 0) + increment;
+    this.metrics[key] = (this.metrics[key] ?? 0) + increment;
   }
 
   /**

@@ -110,7 +110,7 @@ export class EventEmitter<T = BaseEvent> {
     const subscription = {
       predicate,
       handler,
-      priority: options.priority ?? 100,
+      priority: options?.priority ?? 100,
     };
 
     this.handlers.push(subscription);

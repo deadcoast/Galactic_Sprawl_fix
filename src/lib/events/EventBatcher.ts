@@ -129,7 +129,7 @@ export class EventBatcher<T extends BaseEvent = BaseEvent> {
     private readonly config: EventBatcherConfig
   ) {
     // Initialize priority event types
-    this.priorityEventTypes = new Set(config.priorityEventTypes || []);
+    this.priorityEventTypes = new Set(config.priorityEventTypes ?? []);
 
     // Add event types from priority categories
     if (config.priorityCategories) {
@@ -147,7 +147,7 @@ export class EventBatcher<T extends BaseEvent = BaseEvent> {
    */
   addEvent(event: T): void {
     // Check if this is a priority event that should bypass batching
-    if (this.priorityEventTypes.has(event.type)) {
+    if (this.priorityEventTypes.has(event?.type)) {
       this.processImmediately(event);
       return;
     }

@@ -311,13 +311,13 @@ const D3AccessorBenchmarkView: React.FC = () => {
                   <tbody>
                     {benchmarkResults.map((result, index) => (
                       <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                        <td className="border p-2 font-medium">{result.name}</td>
+                        <td className="border p-2 font-medium">{result?.name}</td>
                         <td className="border p-2 text-right">
-                          {result.iterations.toLocaleString()}
+                          {result?.iterations.toLocaleString()}
                         </td>
-                        <td className="border p-2 text-right">{result.averageTimeMs.toFixed(6)}</td>
-                        <td className="border p-2 text-right">{result.medianTimeMs.toFixed(6)}</td>
-                        <td className="border p-2 text-right">{result.totalTimeMs.toFixed(2)}</td>
+                        <td className="border p-2 text-right">{result?.averageTimeMs.toFixed(6)}</td>
+                        <td className="border p-2 text-right">{result?.medianTimeMs.toFixed(6)}</td>
+                        <td className="border p-2 text-right">{result?.totalTimeMs.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>

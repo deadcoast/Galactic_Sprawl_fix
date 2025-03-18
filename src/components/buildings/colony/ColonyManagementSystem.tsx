@@ -32,7 +32,7 @@ interface GrowthModifier {
   name: string;
   description: string;
   effect: number; // Percentage modifier (e.g., 1.1 = +10%)
-  type: 'food' | 'housing' | 'healthcare' | 'environment' | ResourceType.ENERGY;
+  type: ResourceType.FOOD | 'housing' | 'healthcare' | 'environment' | ResourceType.ENERGY;
   active: boolean;
 }
 
@@ -89,7 +89,7 @@ interface ResourceData {
   type:
     | ResourceType.ENERGY
     | 'materials'
-    | 'food'
+    | ResourceType.FOOD
     | ResourceType.RESEARCH
     | 'technology'
     | ResourceType.POPULATION;
@@ -101,7 +101,7 @@ interface ResourceData {
 }
 
 interface SatisfactionFactor {
-  type: 'housing' | 'food' | 'healthcare' | ResourceType.ENERGY | 'security';
+  type: 'housing' | ResourceType.FOOD | 'healthcare' | ResourceType.ENERGY | 'security';
   name: string;
   value: number; // 0-100
   weight: number; // 0-1, sum of all weights should be 1
@@ -133,7 +133,7 @@ function isColonyStatsEvent(
   event: ModuleEvent
 ): event is ModuleEvent & { data: { stats: { [ResourceType.POPULATION]: number } } } {
   return (
-    event.data !== undefined &&
+    event?.data !== undefined &&
     typeof event.data === 'object' &&
     event.data !== null &&
     'stats' in event.data &&
@@ -148,7 +148,7 @@ function isResourceUpdateEvent(event: ModuleEvent): event is ModuleEvent & {
   data: { resourceAmounts: { [key in ResourceData['type']]?: number } };
 } {
   return (
-    event.data !== undefined &&
+    event?.data !== undefined &&
     typeof event.data === 'object' &&
     event.data !== null &&
     'resourceAmounts' in event.data &&
@@ -161,7 +161,7 @@ function isTradeRouteEvent(event: ModuleEvent): event is ModuleEvent & {
   data: { partnerId: string; tradeResources: Array<ResourceData['type']> };
 } {
   return (
-    event.data !== undefined &&
+    event?.data !== undefined &&
     typeof event.data === 'object' &&
     event.data !== null &&
     'partnerId' in event.data &&
@@ -224,8 +224,8 @@ export function ColonyManagementSystem({
   // Event handlers
   const handleModuleUpdate = useCallback(
     (event: ModuleEvent) => {
-      if (event.moduleId === colonyId && isColonyStatsEvent(event)) {
-        handlePopulationChange(event.data.stats[ResourceType.POPULATION]);
+      if (event?.moduleId === colonyId && isColonyStatsEvent(event)) {
+        handlePopulationChange(event?.data?.stats[ResourceType.POPULATION]);
       }
     },
     [colonyId]
@@ -233,10 +233,10 @@ export function ColonyManagementSystem({
 
   const handleResourceUpdate = useCallback(
     (event: ModuleEvent) => {
-      if (event.moduleId === colonyId && isResourceUpdateEvent(event)) {
+      if (event?.moduleId === colonyId && isResourceUpdateEvent(event)) {
         const updatedResources = resources.map(resource => ({
           ...resource,
-          storage: event.data.resourceAmounts[resource.type] ?? resource.storage,
+          storage: event?.data?.resourceAmounts[resource.type] ?? resource.storage,
         }));
         _setResources(updatedResources);
       }
@@ -246,10 +246,10 @@ export function ColonyManagementSystem({
 
   const handleTradeRouteUpdate = useCallback(
     (event: ModuleEvent) => {
-      if (event.moduleId === colonyId && isTradeRouteEvent(event)) {
+      if (event?.moduleId === colonyId && isTradeRouteEvent(event)) {
         const updatedRoutes = tradeRoutes.map(route => ({
           ...route,
-          resources: event.data.tradeResources.map(resource => ({
+          resources: event?.data?.tradeResources.map(resource => ({
             id: `${resource}-${Date.now()}`,
             name: String(resource),
             type: 'import' as const,
@@ -444,7 +444,7 @@ export function ColonyManagementSystem({
     // Toggle the corresponding section based on factor type
     switch (factorType) {
       case 'housing':
-      case 'food':
+      case ResourceType.FOOD:
       case 'healthcare':
       case ResourceType.ENERGY:
         // These factors correspond to modifiers, so expand the modifiers section
@@ -489,7 +489,7 @@ export function ColonyManagementSystem({
 
   const getDefaultModifierName = (type: GrowthModifier['type']): string => {
     switch (type) {
-      case 'food':
+      case ResourceType.FOOD:
         return 'Improved Agriculture';
       case 'housing':
         return 'Expanded Housing';
@@ -506,7 +506,7 @@ export function ColonyManagementSystem({
 
   const getDefaultModifierDescription = (type: GrowthModifier['type']): string => {
     switch (type) {
-      case 'food':
+      case ResourceType.FOOD:
         return 'Improved agricultural techniques increase food production and population growth.';
       case 'housing':
         return 'Expanded housing capacity allows for more population growth.';
@@ -523,7 +523,7 @@ export function ColonyManagementSystem({
 
   const getDefaultModifierEffect = (type: GrowthModifier['type']): number => {
     switch (type) {
-      case 'food':
+      case ResourceType.FOOD:
         return 1.15; // +15%
       case 'housing':
         return 1.1; // +10%
@@ -541,7 +541,7 @@ export function ColonyManagementSystem({
   const generateRandomResources = (partnerId: string): TradeResource[] => {
     const resourceTypes = [
       ResourceType.MINERALS,
-      'food',
+      ResourceType.FOOD,
       'technology',
       'luxury',
       'medicine',

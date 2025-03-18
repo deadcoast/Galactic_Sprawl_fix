@@ -63,9 +63,17 @@ export interface ErrorLogEntry {
 class ErrorLoggingServiceImpl extends AbstractBaseService {
   private errorLog: ErrorLogEntry[] = [];
   private maxLogSize = 1000;
+  private static instance: ErrorLoggingServiceImpl | null = null;
 
   protected constructor() {
     super('ErrorLoggingService', '1.0.0');
+  }
+
+  public static override getInstance(): ErrorLoggingServiceImpl {
+    if (!ErrorLoggingServiceImpl.instance) {
+      ErrorLoggingServiceImpl.instance = new ErrorLoggingServiceImpl();
+    }
+    return ErrorLoggingServiceImpl.instance;
   }
 
   protected async onInitialize(): Promise<void> {
@@ -101,9 +109,9 @@ class ErrorLoggingServiceImpl extends AbstractBaseService {
     }
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics[`errors_${type}`] = (metrics[`errors_${type}`] || 0) + 1;
-    metrics[`errors_${severity}`] = (metrics[`errors_${severity}`] || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics[`errors_${type}`] = (metrics[`errors_${type}`] ?? 0) + 1;
+    metrics[`errors_${severity}`] = (metrics[`errors_${severity}`] ?? 0) + 1;
     this.metadata.metrics = metrics;
 
     // Log to console in development

@@ -181,7 +181,7 @@ export const AbilityButton = forwardRef<HTMLButtonElement, AbilityButtonProps>(
           leadingIcon={abilityIcon}
           {...props}
         >
-          {props.children}
+          {props?.children}
         </Button>
         
         {cooldownOverlay}

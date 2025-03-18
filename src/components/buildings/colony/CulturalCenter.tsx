@@ -52,20 +52,20 @@ export function CulturalCenter({ centerData }: CulturalCenterProps) {
       <div className="mb-6 space-y-4">
         <h4 className="text-sm font-medium text-gray-300">Active Cultural Events</h4>
         {centerData.events.map(event => (
-          <div key={event.id} className="rounded-lg bg-gray-700/50 p-3">
+          <div key={event?.id} className="rounded-lg bg-gray-700/50 p-3">
             <div className="mb-2 flex items-start justify-between">
               <div>
-                <div className="text-sm font-medium text-white">{event.name}</div>
-                <div className="text-xs text-purple-400">{event.effect}</div>
+                <div className="text-sm font-medium text-white">{event?.name}</div>
+                <div className="text-xs text-purple-400">{event?.effect}</div>
               </div>
               <div className="text-xs text-gray-400">
-                {Math.ceil(event.duration * (1 - event.progress))}s
+                {Math.ceil(event?.duration * (1 - event?.progress))}s
               </div>
             </div>
             <div className="h-1 overflow-hidden rounded-full bg-gray-600">
               <div
                 className="h-full rounded-full bg-purple-500 transition-all"
-                style={{ width: `${event.progress * 100}%` }}
+                style={{ width: `${event?.progress * 100}%` }}
               />
             </div>
           </div>

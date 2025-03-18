@@ -58,7 +58,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService {
   }
 
   protected async onInitialize(): Promise<void> {
-    this.metadata.metrics = {
+    this.metadata?.metrics = {
       active_streams: 0,
       total_data_points: 0,
       buffer_utilization: 0,
@@ -106,10 +106,10 @@ class RealTimeDataServiceImpl extends AbstractBaseService {
       }
     }
 
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.total_data_points += newData.length;
     metrics.buffer_utilization = this.calculateBufferUtilization(buffer);
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     this.notifyListeners(bufferId);
   }
@@ -149,9 +149,9 @@ class RealTimeDataServiceImpl extends AbstractBaseService {
       this.streamIds.set(bufferId, streamId);
     }
 
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.active_streams = this.streamIds.size;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
   }
 
   public async stopStream(bufferId: string): Promise<void> {
@@ -166,10 +166,10 @@ class RealTimeDataServiceImpl extends AbstractBaseService {
       this.generators.delete(bufferId);
     }
 
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.active_streams = this.streamIds.size;
     metrics.generators_active = this.generators.size;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
   }
 
   public subscribe<T>(bufferId: string, callback: (data: T[]) => void): () => void {
@@ -195,18 +195,18 @@ class RealTimeDataServiceImpl extends AbstractBaseService {
     }
 
     if (buffer.head <= buffer.tail) {
-      return buffer.data.slice(buffer.head, buffer.tail) as T[];
+      return buffer.data?.slice(buffer.head, buffer.tail) as T[];
     } else {
-      return [...buffer.data.slice(buffer.head), ...buffer.data.slice(0, buffer.tail)] as T[];
+      return [...buffer.data?.slice(buffer.head), ...buffer.data?.slice(0, buffer.tail)] as T[];
     }
   }
 
   public registerGenerator<T>(bufferId: string, generator: DataGenerator<T>): void {
     this.generators.set(bufferId, generator as DataGenerator<unknown>);
 
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.generators_active = this.generators.size;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
   }
 
   public createSineWaveGenerator(
@@ -260,12 +260,12 @@ class RealTimeDataServiceImpl extends AbstractBaseService {
   private handleStreamData<T>(bufferId: string, data: T[]): void {
     this.appendData(bufferId, data);
 
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     const config = this.streamConfigs.get(bufferId);
     if (config) {
-      metrics.update_rate = data.length / (config.updateInterval / 1000);
+      metrics.update_rate = data?.length / (config.updateInterval / 1000);
     }
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
   }
 
   private startGeneratorStream(bufferId: string, interval: number): void {

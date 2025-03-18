@@ -62,22 +62,22 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
    */
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Only log to error service if not suppressed
-    if (!this.props.suppressErrorLogging) {
+    if (!this.props?.suppressErrorLogging) {
       errorLoggingService.logError(
         error,
         ErrorType.RUNTIME,
         undefined,
         {
           componentStack: errorInfo.componentStack,
-          context: this.props.context || 'ErrorBoundary',
-          ...this.props.metadata
+          context: this.props?.context || 'ErrorBoundary',
+          ...this.props?.metadata
         }
       );
     }
 
     // Call the onError callback if provided
-    if (this.props.onError) {
-      this.props.onError(error, errorInfo);
+    if (this.props?.onError) {
+      this.props?.onError(error, errorInfo);
     }
   }
 

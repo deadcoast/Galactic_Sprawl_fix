@@ -199,7 +199,7 @@ export class ModuleStatusManager {
     let errorTime = 0;
 
     for (const entry of errorEntries) {
-      errorTime += entry.duration || 0;
+      errorTime += entry.duration ?? 0;
     }
 
     statusDetails.metrics.reliability = Math.max(0, Math.min(1, 1 - errorTime / totalTime));
@@ -432,14 +432,14 @@ export class ModuleStatusManager {
    * Get status history for a module
    */
   public getModuleStatusHistory(moduleId: string): StatusHistoryEntry[] {
-    return this.moduleStatuses.get(moduleId)?.history || [];
+    return this.moduleStatuses.get(moduleId)?.history ?? [];
   }
 
   /**
    * Get alerts for a module
    */
   public getModuleAlerts(moduleId: string, onlyUnacknowledged = false): ModuleAlert[] {
-    const alerts = this.moduleStatuses.get(moduleId)?.alerts || [];
+    const alerts = this.moduleStatuses.get(moduleId)?.alerts ?? [];
     return onlyUnacknowledged ? alerts.filter(alert => !alert.acknowledged) : alerts;
   }
 
@@ -481,7 +481,7 @@ export class ModuleStatusManager {
    * Handle module created event
    */
   private handleModuleCreated = (event: ModuleEvent): void => {
-    this.initializeModuleStatus(event.moduleId);
+    this.initializeModuleStatus(event?.moduleId);
   };
 
   /**
@@ -505,12 +505,12 @@ export class ModuleStatusManager {
    * Handle module upgraded event
    */
   private handleModuleUpgraded = (event: ModuleEvent): void => {
-    const newLevel = event.data?.newLevel as number | undefined;
-    this.updateModuleStatus(event.moduleId, 'upgrading', `Upgrading to level ${newLevel}`);
+    const newLevel = event?.data?.newLevel as number | undefined;
+    this.updateModuleStatus(event?.moduleId, 'upgrading', `Upgrading to level ${newLevel}`);
 
     // After a short delay, return to active status
     setTimeout(() => {
-      this.updateModuleStatus(event.moduleId, 'active', 'Upgrade completed');
+      this.updateModuleStatus(event?.moduleId, 'active', 'Upgrade completed');
     }, 5000);
   };
 
@@ -535,10 +535,10 @@ export class ModuleStatusManager {
    */
   private handleStatusChanged = (event: ModuleEvent): void => {
     // Only handle events from other sources to avoid loops
-    if (event.data && event.data.source !== 'ModuleStatusManager') {
+    if (event?.data && event?.data?.source !== 'ModuleStatusManager') {
       const { moduleId } = event;
-      const status = event.data?.status as ExtendedModuleStatus | undefined;
-      const reason = event.data?.reason as string | undefined;
+      const status = event?.data?.status as ExtendedModuleStatus | undefined;
+      const reason = event?.data?.reason as string | undefined;
 
       if (status && status !== this.getModuleStatus(moduleId)) {
         this.updateModuleStatus(moduleId, status, reason);
@@ -551,8 +551,8 @@ export class ModuleStatusManager {
    */
   private handleErrorOccurred = (event: ModuleEvent): void => {
     const { moduleId } = event;
-    const level = event.data?.level as 'info' | 'warning' | 'error' | 'critical' | undefined;
-    const message = event.data?.message as string | undefined;
+    const level = event?.data?.level as 'info' | 'warning' | 'error' | 'critical' | undefined;
+    const message = event?.data?.message as string | undefined;
 
     // Add alert
     if (message) {
@@ -572,9 +572,9 @@ export class ModuleStatusManager {
    */
   private handleResourceShortage = (event: ModuleEvent): void => {
     const { moduleId } = event;
-    const resourceType = event.data?.resourceType as string | undefined;
-    const amount = event.data?.amount as number | undefined;
-    const required = event.data?.required as number | undefined;
+    const resourceType = event?.data?.resourceType as string | undefined;
+    const amount = event?.data?.amount as number | undefined;
+    const required = event?.data?.required as number | undefined;
 
     // Add alert
     this.addAlert(

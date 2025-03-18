@@ -75,7 +75,7 @@ export function optimizeSvgNodeCount<T extends Record<string, unknown>>(
   width: number = 800,
   height: number = 400
 ): T[] {
-  if (!data || data.length <= maxPoints) {
+  if (!data || data?.length <= maxPoints) {
     return data;
   }
 
@@ -83,16 +83,16 @@ export function optimizeSvgNodeCount<T extends Record<string, unknown>>(
   // The idea is to keep enough points for visual fidelity based on available pixels
   const pixelDensity = (width * height) / maxPoints;
   const optimalDataSize = Math.min(
-    data.length,
+    data?.length,
     Math.max(maxPoints, Math.floor((width * height) / pixelDensity))
   );
 
   // Simple sampling approach for demonstration
   // In a real application, you might want to use a more sophisticated algorithm
   // like the LTTB algorithm from VirtualizedLineChart
-  const samplingInterval = Math.ceil(data.length / optimalDataSize);
+  const samplingInterval = Math.ceil(data?.length / optimalDataSize);
 
-  return data.filter((_, index) => index % samplingInterval === 0);
+  return data?.filter((_, index) => index % samplingInterval === 0);
 }
 
 /**

@@ -120,25 +120,25 @@ function calculatePerformance(unit: CombatUnit, faction: FactionUnit) {
 
 function calculateWinRate(unit: CombatUnit): number {
   const totalEngagements = unit.combatHistory?.length || 1;
-  const wins = unit.combatHistory?.filter(combat => combat.outcome === 'victory').length || 0;
+  const wins = unit.combatHistory?.filter(combat => combat.outcome === 'victory').length ?? 0;
   return wins / totalEngagements;
 }
 
 function calculateSurvivalRate(unit: CombatUnit): number {
   const totalMissions = unit.missionHistory?.length || 1;
-  const survivals = unit.missionHistory?.filter(mission => mission.survived).length || 0;
+  const survivals = unit.missionHistory?.filter(mission => mission.survived).length ?? 0;
   return survivals / totalMissions;
 }
 
 function calculateDamageEfficiency(unit: CombatUnit): number {
-  const damageDealt = unit.totalDamageDealt || 0;
+  const damageDealt = unit.totalDamageDealt ?? 0;
   const damageTaken = unit.totalDamageTaken || 1;
   return Math.min(1, damageDealt / (damageDealt + damageTaken));
 }
 
 function calculateObjectiveCompletion(unit: CombatUnit, faction: FactionUnit): number {
   const totalObjectives = unit.objectives?.length || 1;
-  const completedObjectives = unit.objectives?.filter(obj => obj.completed).length || 0;
+  const completedObjectives = unit.objectives?.filter(obj => obj.completed).length ?? 0;
   const factionBonus = faction.power > 0 ? 0.1 : 0; // Faction power influences completion rate
   return Math.min(1, completedObjectives / totalObjectives + factionBonus);
 }

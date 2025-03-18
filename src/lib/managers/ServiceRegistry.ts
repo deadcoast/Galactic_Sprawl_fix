@@ -180,7 +180,7 @@ export class ServiceRegistry {
       try {
         // Collect dependencies
         const deps: Record<string, BaseManager> = {};
-        for (const depName of config.dependencies || []) {
+        for (const depName of config.dependencies ?? []) {
           const dep = this.services.get(depName);
           if (!dep) {
             throw new Error(`Dependency '${depName}' not found for service '${serviceName}'`);
@@ -223,7 +223,7 @@ export class ServiceRegistry {
 
     // Collect dependencies
     const deps: Record<string, BaseManager> = {};
-    for (const depName of config.dependencies || []) {
+    for (const depName of config.dependencies ?? []) {
       const dep = this.services.get(depName);
       if (!dep) {
         throw new Error(`Dependency '${depName}' not found for service '${name}'`);
@@ -266,13 +266,13 @@ export class ServiceRegistry {
 
       // Get dependencies
       const config = this.serviceConfigs.get(serviceName);
-      const dependencies = config?.dependencies || [];
+      const dependencies = config?.dependencies ?? [];
 
       // Prioritize dependencies by their priority
       const prioritizedDeps = [...dependencies]
         .map(dep => ({
           name: dep,
-          priority: this.serviceConfigs.get(dep)?.priority || 0,
+          priority: this.serviceConfigs.get(dep)?.priority ?? 0,
         }))
         .sort((a, b) => b.priority - a.priority);
 
@@ -286,14 +286,14 @@ export class ServiceRegistry {
       // Mark node as visited and add to result
       temporaryMarked.delete(serviceName);
       visited.add(serviceName);
-      result.push(serviceName);
+      result?.push(serviceName);
     };
 
     // Get all services sorted by priority
     const servicesByPriority = Array.from(this.services.keys())
       .map(name => ({
         name,
-        priority: this.serviceConfigs.get(name)?.priority || 0,
+        priority: this.serviceConfigs.get(name)?.priority ?? 0,
       }))
       .sort((a, b) => b.priority - a.priority);
 

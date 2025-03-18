@@ -106,17 +106,17 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
   height = 500,
 }) => {
   // State for selected features for visualization
-  const [xAxisFeature, setXAxisFeature] = useState<string>(data.features[0] || '');
+  const [xAxisFeature, setXAxisFeature] = useState<string>(data?.features[0] ?? '');
   const [yAxisFeature, setYAxisFeature] = useState<string>(
-    data.features.length > 1 ? data.features[1] : data.features[0] || ''
+    data?.features.length > 1 ? data?.features[1] : data?.features[0] ?? ''
   );
 
   // Get feature indices for easier access
-  const xFeatureIndex = data.features.indexOf(xAxisFeature);
-  const yFeatureIndex = data.features.indexOf(yAxisFeature);
+  const xFeatureIndex = data?.features.indexOf(xAxisFeature);
+  const yFeatureIndex = data?.features.indexOf(yAxisFeature);
 
   // Prepare data for visualization
-  const chartData: ChartPoint[] = data.points
+  const chartData: ChartPoint[] = data?.points
     .filter(
       point => point.features[xFeatureIndex] !== null && point.features[yFeatureIndex] !== null
     )
@@ -130,7 +130,7 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
     }));
 
   // Prepare centroid data
-  const centroidData: ChartPoint[] = data.clusters.map(cluster => ({
+  const centroidData: ChartPoint[] = data?.clusters.map(cluster => ({
     id: `centroid-${cluster.cluster}`,
     name: `Centroid ${cluster.cluster}`,
     cluster: cluster.cluster,
@@ -143,7 +143,7 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
   const combinedData: ChartPoint[] = [...chartData, ...centroidData];
 
   // Calculate cluster statistics
-  const clusterSummary = data.clusters.map(cluster => {
+  const clusterSummary = data?.clusters.map(cluster => {
     const xFeatureStat = cluster.featureStats.find(stat => stat.feature === xAxisFeature);
     const yFeatureStat = cluster.featureStats.find(stat => stat.feature === yAxisFeature);
 
@@ -151,8 +151,8 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
       cluster: cluster.cluster,
       size: cluster.size,
       percentage: cluster.percentage,
-      xMean: xFeatureStat?.mean || 0,
-      yMean: yFeatureStat?.mean || 0,
+      xMean: xFeatureStat?.mean ?? 0,
+      yMean: yFeatureStat?.mean ?? 0,
       color: CLUSTER_COLORS[cluster.cluster % CLUSTER_COLORS.length],
     };
   });
@@ -173,19 +173,19 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
           }}
         >
           <p className="label">
-            <strong>{data.name}</strong>
+            <strong>{data?.name}</strong>
           </p>
-          <p>Cluster: {data.cluster}</p>
+          <p>Cluster: {data?.cluster}</p>
           <p>
-            {xAxisFeature}: {data.x}
+            {xAxisFeature}: {data?.x}
           </p>
           <p>
-            {yAxisFeature}: {data.y}
+            {yAxisFeature}: {data?.y}
           </p>
-          {!data.isCentroid && (
-            <p>Distance to centroid: {data.distanceToCentroid?.toFixed(3) || 'N/A'}</p>
+          {!data?.isCentroid && (
+            <p>Distance to centroid: {data?.distanceToCentroid?.toFixed(3) || 'N/A'}</p>
           )}
-          {data.isCentroid && (
+          {data?.isCentroid && (
             <p>
               <em>This is a cluster centroid</em>
             </p>
@@ -209,7 +209,7 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
               label="X-Axis"
               onChange={e => setXAxisFeature(e.target.value)}
             >
-              {data.features.map(feature => (
+              {data?.features.map(feature => (
                 <MenuItem key={feature} value={feature}>
                   {feature}
                 </MenuItem>
@@ -223,7 +223,7 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
               label="Y-Axis"
               onChange={e => setYAxisFeature(e.target.value)}
             >
-              {data.features.map(feature => (
+              {data?.features.map(feature => (
                 <MenuItem key={feature} value={feature}>
                   {feature}
                 </MenuItem>
@@ -291,7 +291,7 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
             <Legend />
 
             {/* Render each cluster's points */}
-            {data.clusters.map(cluster => (
+            {data?.clusters.map(cluster => (
               <Scatter
                 key={`cluster-${cluster.cluster}`}
                 name={`Cluster ${cluster.cluster}`}

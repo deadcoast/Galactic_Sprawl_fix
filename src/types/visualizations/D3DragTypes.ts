@@ -124,10 +124,10 @@ export function createSimulationDragBehavior<
 ): d3.DragBehavior<ContainerElement, NodeDatum, object> {
   // Standard drag behavior for force simulations
   const handleDragStart = (event: TypedDragEvent<NodeDatum, object, ContainerElement>) => {
-    if (!event.active) simulation.alphaTarget(0.3).restart();
+    if (!event?.active) simulation.alphaTarget(0.3).restart();
     // Fix the node position during drag
-    event.subject.fx = event.subject.x;
-    event.subject.fy = event.subject.y;
+    event?.subject.fx = event?.subject.x;
+    event?.subject.fy = event?.subject.y;
 
     // Call custom handler if provided
     if (config.onDragStart) {
@@ -137,8 +137,8 @@ export function createSimulationDragBehavior<
 
   const handleDrag = (event: TypedDragEvent<NodeDatum, object, ContainerElement>) => {
     // Update the fixed position to follow the pointer
-    event.subject.fx = event.x;
-    event.subject.fy = event.y;
+    event?.subject.fx = event?.x;
+    event?.subject.fy = event?.y;
 
     // Call custom handler if provided
     if (config.onDrag) {
@@ -147,10 +147,10 @@ export function createSimulationDragBehavior<
   };
 
   const handleDragEnd = (event: TypedDragEvent<NodeDatum, object, ContainerElement>) => {
-    if (!event.active) simulation.alphaTarget(0);
+    if (!event?.active) simulation.alphaTarget(0);
     // Release the fixed position when drag ends (unless configured otherwise)
-    event.subject.fx = null;
-    event.subject.fy = null;
+    event?.subject.fx = null;
+    event?.subject.fy = null;
 
     // Call custom handler if provided
     if (config.onDragEnd) {
@@ -195,49 +195,49 @@ export function createCustomDragBehavior<
 ): d3.DragBehavior<ContainerElement, Datum, ParentDatum> {
   // Wrap the standard drag handlers with custom behavior
   const onDrag = (event: TypedDragEvent<Datum, ParentDatum, ContainerElement>) => {
-    let x = event.x;
-    let y = event.y;
+    let x = event?.x;
+    let y = event?.y;
 
     // Apply custom constraints
-    if (options.snapToGrid) {
-      const gridSize = options.snapToGrid;
+    if (options?.snapToGrid) {
+      const gridSize = options?.snapToGrid;
       x = Math.round(x / gridSize) * gridSize;
       y = Math.round(y / gridSize) * gridSize;
     }
 
-    if (options.horizontalOnly) {
-      y = (event.subject as unknown).y;
+    if (options?.horizontalOnly) {
+      y = (event?.subject as unknown).y;
     }
 
-    if (options.verticalOnly) {
-      x = (event.subject as unknown).x;
+    if (options?.verticalOnly) {
+      x = (event?.subject as unknown).x;
     }
 
-    if (options.minPosition) {
-      if (options.minPosition.x !== undefined) {
-        x = Math.max(x, options.minPosition.x);
+    if (options?.minPosition) {
+      if (options?.minPosition.x !== undefined) {
+        x = Math.max(x, options?.minPosition.x);
       }
-      if (options.minPosition.y !== undefined) {
-        y = Math.max(y, options.minPosition.y);
+      if (options?.minPosition.y !== undefined) {
+        y = Math.max(y, options?.minPosition.y);
       }
     }
 
-    if (options.maxPosition) {
-      if (options.maxPosition.x !== undefined) {
-        x = Math.min(x, options.maxPosition.x);
+    if (options?.maxPosition) {
+      if (options?.maxPosition.x !== undefined) {
+        x = Math.min(x, options?.maxPosition.x);
       }
-      if (options.maxPosition.y !== undefined) {
-        y = Math.min(y, options.maxPosition.y);
+      if (options?.maxPosition.y !== undefined) {
+        y = Math.min(y, options?.maxPosition.y);
       }
     }
 
     // Update event coordinates with constrained values
-    event.x = x;
-    event.y = y;
+    event?.x = x;
+    event?.y = y;
 
     // Call the original drag handler if provided
-    if (options.onDrag) {
-      options.onDrag(event);
+    if (options?.onDrag) {
+      options?.onDrag(event);
     }
   };
 

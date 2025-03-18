@@ -219,7 +219,7 @@ export class GameManager extends AbstractBaseManager<GameManagerEvent> {
    * Dispatch game event
    */
   dispatchEvent(event: GameEvent) {
-    const listeners = this.eventListeners.get(event.type);
+    const listeners = this.eventListeners.get(event?.type);
     if (listeners) {
       listeners.forEach(callback => callback(event));
     }

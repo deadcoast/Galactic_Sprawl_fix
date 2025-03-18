@@ -3,6 +3,7 @@ import {
   ResourcePool,
   ResourceState,
   ResourceType,
+  createResourceState,
 } from '../../types/resources/ResourceTypes';
 import { isResourcePool } from '../../utils/resources/resourceValidation';
 
@@ -203,12 +204,32 @@ export class ResourcePoolManager {
 
     // Initialize resources map if it doesn't exist
     if (!pool.resources) {
-      pool.resources = new Map<ResourceType, number>();
+      pool.resources = {
+        [ResourceType.MINERALS]: 0,
+        [ResourceType.ENERGY]: 0,
+        [ResourceType.POPULATION]: 0,
+        [ResourceType.RESEARCH]: 0,
+        [ResourceType.FOOD]: 0,
+        [ResourceType.WATER]: 0,
+        [ResourceType.PLASMA]: 0,
+        [ResourceType.GAS]: 0,
+        [ResourceType.EXOTIC]: 0,
+        [ResourceType.ORGANIC]: 0,
+        [ResourceType.IRON]: 0,
+        [ResourceType.COPPER]: 0,
+        [ResourceType.TITANIUM]: 0,
+        [ResourceType.URANIUM]: 0,
+        [ResourceType.HELIUM]: 0,
+        [ResourceType.DEUTERIUM]: 0,
+        [ResourceType.ANTIMATTER]: 0,
+        [ResourceType.DARK_MATTER]: 0,
+        [ResourceType.EXOTIC_MATTER]: 0,
+      };
     }
 
     // Add resource to pool
-    const currentAmount = pool.resources.get(type) || 0;
-    pool.resources.set(type, currentAmount + amount);
+    const currentAmount = pool.resources[type] ?? 0;
+    pool.resources[type] = currentAmount + amount;
 
     return true;
   }
@@ -223,13 +244,13 @@ export class ResourcePoolManager {
       return false;
     }
 
-    const currentAmount = pool.resources.get(type) || 0;
+    const currentAmount = pool.resources[type] ?? 0;
     if (currentAmount < amount) {
       console.error(`Insufficient ${type} in pool ${poolId}`);
       return false;
     }
 
-    pool.resources.set(type, currentAmount - amount);
+    pool.resources[type] = currentAmount - amount;
     return true;
   }
 
@@ -286,7 +307,7 @@ export class ResourcePoolManager {
         continue;
       }
 
-      const resourceAmount = pool.resources.get(rule.resourceType) || 0;
+      const resourceAmount = pool.resources[rule.resourceType] ?? 0;
       if (resourceAmount <= 0) {
         continue;
       }
@@ -333,18 +354,43 @@ export class ResourcePoolManager {
 
         // Initialize resources map if it doesn't exist
         if (!container.resources) {
-          container.resources = new Map<ResourceType, number>();
+          container.resources = {
+            [ResourceType.MINERALS]: createResourceState(ResourceType.MINERALS),
+            [ResourceType.ENERGY]: createResourceState(ResourceType.ENERGY),
+            [ResourceType.POPULATION]: createResourceState(ResourceType.POPULATION),
+            [ResourceType.RESEARCH]: createResourceState(ResourceType.RESEARCH),
+            [ResourceType.FOOD]: createResourceState(ResourceType.FOOD),
+            [ResourceType.WATER]: createResourceState(ResourceType.WATER),
+            [ResourceType.PLASMA]: createResourceState(ResourceType.PLASMA),
+            [ResourceType.GAS]: createResourceState(ResourceType.GAS),
+            [ResourceType.EXOTIC]: createResourceState(ResourceType.EXOTIC),
+            [ResourceType.ORGANIC]: createResourceState(ResourceType.ORGANIC),
+            [ResourceType.IRON]: createResourceState(ResourceType.IRON),
+            [ResourceType.COPPER]: createResourceState(ResourceType.COPPER),
+            [ResourceType.TITANIUM]: createResourceState(ResourceType.TITANIUM),
+            [ResourceType.URANIUM]: createResourceState(ResourceType.URANIUM),
+            [ResourceType.HELIUM]: createResourceState(ResourceType.HELIUM),
+            [ResourceType.DEUTERIUM]: createResourceState(ResourceType.DEUTERIUM),
+            [ResourceType.ANTIMATTER]: createResourceState(ResourceType.ANTIMATTER),
+            [ResourceType.DARK_MATTER]: createResourceState(ResourceType.DARK_MATTER),
+            [ResourceType.EXOTIC_MATTER]: createResourceState(ResourceType.EXOTIC_MATTER),
+          };
         }
 
         // Add resource to container
-        const currentAmount = container.resources.get(rule.resourceType) || 0;
-        container.resources.set(rule.resourceType, currentAmount + allocation.amount);
+        const resourceState =
+          container.resources[rule.resourceType] || createResourceState(rule.resourceType);
+        const updatedResourceState = {
+          ...resourceState,
+          current: resourceState.current + allocation.amount,
+        };
+        container.resources[rule.resourceType] = updatedResourceState;
         totalAllocated += allocation.amount;
       }
 
       // Remove allocated amount from pool
       if (totalAllocated > 0) {
-        pool.resources.set(rule.resourceType, resourceAmount - totalAllocated);
+        pool.resources[rule.resourceType] = resourceAmount - totalAllocated;
 
         // Record allocation
         const result: PoolAllocationResult = {
@@ -494,8 +540,9 @@ export class ResourcePoolManager {
       // Calculate demand based on capacity and current amount
       let demand = 0;
       if (container.capacity && container.resources) {
-        const currentAmount = container.resources.get(resourceType) || 0;
-        demand = Math.max(0, container.capacity - currentAmount);
+        const currentAmount =
+          container.resources[resourceType] ?? createResourceState(resourceType);
+        demand = Math.max(0, container.capacity - currentAmount.current);
       }
 
       return { id, demand };
@@ -543,10 +590,10 @@ export class ResourcePoolManager {
       const demandAllocation = demandAllocations.find(a => a.targetId === id);
 
       const combinedAmount =
-        (priorityAllocation?.amount || 0) * 0.5 + (demandAllocation?.amount || 0) * 0.5;
+        (priorityAllocation?.amount ?? 0) * 0.5 + (demandAllocation?.amount ?? 0) * 0.5;
 
       const combinedPercentage =
-        (priorityAllocation?.percentage || 0) * 0.5 + (demandAllocation?.percentage || 0) * 0.5;
+        (priorityAllocation?.percentage ?? 0) * 0.5 + (demandAllocation?.percentage ?? 0) * 0.5;
 
       return {
         targetId: id,
@@ -574,7 +621,7 @@ export class ResourcePoolManager {
    * Get pools by type
    */
   public getPoolsByType(type: ResourceType): ResourcePool[] {
-    return Array.from(this.pools.values()).filter(pool => pool.type === type);
+    return Array.from(this.pools.values()).filter(pool => pool.resources[type] > 0);
   }
 
   /**
@@ -595,14 +642,14 @@ export class ResourcePoolManager {
    * Get allocation history by pool ID
    */
   public getAllocationHistoryByPool(poolId: string): PoolAllocationResult[] {
-    return this.allocationHistory.filter(result => result.poolId === poolId);
+    return this.allocationHistory.filter(result => result?.poolId === poolId);
   }
 
   /**
    * Get allocation history by resource type
    */
   public getAllocationHistoryByType(type: ResourceType): PoolAllocationResult[] {
-    return this.allocationHistory.filter(result => result.resourceType === type);
+    return this.allocationHistory.filter(result => result?.resourceType === type);
   }
 
   /**
@@ -635,26 +682,74 @@ export class ResourcePoolManager {
 
     // Initialize resources maps if they don't exist
     if (!sourceContainer.resources) {
-      sourceContainer.resources = new Map<ResourceType, number>();
+      sourceContainer.resources = {
+        [ResourceType.MINERALS]: createResourceState(ResourceType.MINERALS),
+        [ResourceType.ENERGY]: createResourceState(ResourceType.ENERGY),
+        [ResourceType.POPULATION]: createResourceState(ResourceType.POPULATION),
+        [ResourceType.RESEARCH]: createResourceState(ResourceType.RESEARCH),
+        [ResourceType.FOOD]: createResourceState(ResourceType.FOOD),
+        [ResourceType.WATER]: createResourceState(ResourceType.WATER),
+        [ResourceType.PLASMA]: createResourceState(ResourceType.PLASMA),
+        [ResourceType.GAS]: createResourceState(ResourceType.GAS),
+        [ResourceType.EXOTIC]: createResourceState(ResourceType.EXOTIC),
+        [ResourceType.ORGANIC]: createResourceState(ResourceType.ORGANIC),
+        [ResourceType.IRON]: createResourceState(ResourceType.IRON),
+        [ResourceType.COPPER]: createResourceState(ResourceType.COPPER),
+        [ResourceType.TITANIUM]: createResourceState(ResourceType.TITANIUM),
+        [ResourceType.URANIUM]: createResourceState(ResourceType.URANIUM),
+        [ResourceType.HELIUM]: createResourceState(ResourceType.HELIUM),
+        [ResourceType.DEUTERIUM]: createResourceState(ResourceType.DEUTERIUM),
+        [ResourceType.ANTIMATTER]: createResourceState(ResourceType.ANTIMATTER),
+        [ResourceType.DARK_MATTER]: createResourceState(ResourceType.DARK_MATTER),
+        [ResourceType.EXOTIC_MATTER]: createResourceState(ResourceType.EXOTIC_MATTER),
+      };
     }
 
     if (!targetContainer.resources) {
-      targetContainer.resources = new Map<ResourceType, number>();
+      targetContainer.resources = {
+        [ResourceType.MINERALS]: createResourceState(ResourceType.MINERALS),
+        [ResourceType.ENERGY]: createResourceState(ResourceType.ENERGY),
+        [ResourceType.POPULATION]: createResourceState(ResourceType.POPULATION),
+        [ResourceType.RESEARCH]: createResourceState(ResourceType.RESEARCH),
+        [ResourceType.FOOD]: createResourceState(ResourceType.FOOD),
+        [ResourceType.WATER]: createResourceState(ResourceType.WATER),
+        [ResourceType.PLASMA]: createResourceState(ResourceType.PLASMA),
+        [ResourceType.GAS]: createResourceState(ResourceType.GAS),
+        [ResourceType.EXOTIC]: createResourceState(ResourceType.EXOTIC),
+        [ResourceType.ORGANIC]: createResourceState(ResourceType.ORGANIC),
+        [ResourceType.IRON]: createResourceState(ResourceType.IRON),
+        [ResourceType.COPPER]: createResourceState(ResourceType.COPPER),
+        [ResourceType.TITANIUM]: createResourceState(ResourceType.TITANIUM),
+        [ResourceType.URANIUM]: createResourceState(ResourceType.URANIUM),
+        [ResourceType.HELIUM]: createResourceState(ResourceType.HELIUM),
+        [ResourceType.DEUTERIUM]: createResourceState(ResourceType.DEUTERIUM),
+        [ResourceType.ANTIMATTER]: createResourceState(ResourceType.ANTIMATTER),
+        [ResourceType.DARK_MATTER]: createResourceState(ResourceType.DARK_MATTER),
+        [ResourceType.EXOTIC_MATTER]: createResourceState(ResourceType.EXOTIC_MATTER),
+      };
     }
 
     // Check if source has enough resources
-    const sourceAmount = sourceContainer.resources.get(resourceType) || 0;
-    if (sourceAmount < amount) {
+    const sourceAmount =
+      sourceContainer.resources[resourceType] ?? createResourceState(resourceType);
+    if (sourceAmount.current < amount) {
       console.error(`Insufficient ${resourceType} in source container ${sourceId}`);
       return false;
     }
 
     // Transfer resources
-    const targetAmount = targetContainer.resources.get(resourceType) || 0;
+    const targetAmount =
+      targetContainer.resources[resourceType] ?? createResourceState(resourceType);
 
     // Update source and target containers
-    sourceContainer.resources.set(resourceType, sourceAmount - amount);
-    targetContainer.resources.set(resourceType, targetAmount + amount);
+    sourceContainer.resources[resourceType] = {
+      ...sourceAmount,
+      current: sourceAmount.current - amount,
+    };
+    targetContainer.resources[resourceType] = {
+      ...targetAmount,
+      current: targetAmount.current + amount,
+    };
 
     return true;
   }

@@ -1,4 +1,3 @@
-import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
   ResourceStateClass,
   ResourceType,
@@ -35,6 +34,7 @@ import {
   stringToEnumResourceType,
 } from '../../utils/resources/ResourceTypeConverter';
 // Import ExtendedResourceConversionRecipe
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ExtendedResourceConversionRecipe } from '../../types/resources/ResourceConversionTypes';
 
 // Add type alias for StandardizedResourceType for backward compatibility
@@ -318,7 +318,7 @@ export class ResourceFlowManager
     this.resourceRegistry.subscribe('resourceRegistered', data => {
       if ('resourceType' in data && 'metadata' in data) {
         // Update local resource state when a new resource is registered
-        const enumType = this.safeResourceTypeConversion(data.resourceType);
+        const enumType = this.safeResourceTypeConversion(data?.resourceType);
         const stringType = enumToStringResourceType(enumType);
 
         if (stringType && !this.resourceStates.has(stringType)) {
@@ -339,7 +339,7 @@ export class ResourceFlowManager
         // Update conversion recipes when rates change
         // This is a placeholder for actual implementation
         console.warn(
-          `Conversion rate changed: ${data.sourceType} -> ${data.targetType} = ${data.rate}`
+          `Conversion rate changed: ${data?.sourceType} -> ${data?.targetType} = ${data?.rate}`
         );
       }
     });
@@ -599,7 +599,7 @@ export class ResourceFlowManager
     this.connections.set(connection.id, connection);
 
     // Invalidate cache for the affected resource type
-    this.invalidateCache(connection.resourceType);
+    this.invalidateCache(connection.resourceType as ResourceType);
 
     return true;
   }
@@ -946,8 +946,8 @@ export class ResourceFlowManager
 
         // Convert the result back to the format expected by the caller
         return {
-          updatedConnections: result.updatedConnections,
-          transfers: result.transfers.map(t => this.convertResourceTransfer(t)),
+          updatedConnections: result?.updatedConnections,
+          transfers: result?.transfers.map(t => this.convertResourceTransfer(t)),
         };
       } catch (error) {
         console.warn('Worker flow rate optimization failed, falling back to main thread:', error);
@@ -961,7 +961,7 @@ export class ResourceFlowManager
 
     // Create dummy transfers for compilation
     for (const connection of activeConnections) {
-      const currentRate = connection.currentRate || 0;
+      const currentRate = connection.currentRate ?? 0;
       if (currentRate > 0 && connection.resourceType) {
         const transfer: ResourceTransfer = {
           type: this.safeResourceTypeConversion(connection.resourceType),
@@ -1248,7 +1248,7 @@ export class ResourceFlowManager
         // Calculate step progress based on process progress
         const process = this.processingQueue.find(p => p.processId === step.processId);
         if (process) {
-          const stepProgress = process.progress || 0;
+          const stepProgress = process.progress ?? 0;
           totalProgress += stepProgress;
         }
       }
@@ -1509,8 +1509,8 @@ export class ResourceFlowManager
 
     // Find bottlenecks (resources where demand exceeds availability)
     for (const type in demand) {
-      const demandValue = demand[type as ResourceTypeString] || 0;
-      const availabilityValue = availability[type as ResourceTypeString] || 0;
+      const demandValue = demand[type as ResourceTypeString] ?? 0;
+      const availabilityValue = availability[type as ResourceTypeString] ?? 0;
 
       if (demandValue > availabilityValue * 1.1) {
         // 10% threshold to avoid minor imbalances
@@ -1534,8 +1534,8 @@ export class ResourceFlowManager
     const result = new Map<string, { available: number }>();
 
     for (const [type, state] of this.resourceStates.entries()) {
-      result.set(type, {
-        available: state.current || 0,
+      result?.set(type, {
+        available: state.current ?? 0,
       });
     }
 
@@ -1564,7 +1564,7 @@ export class ResourceFlowManager
         const input = recipe.inputs[0];
         const output = recipe.outputs[0];
 
-        result.push({
+        result?.push({
           input: {
             type: this.convertResourceType(input.type),
             amount: input.amount,
@@ -1786,6 +1786,6 @@ export class ResourceFlowManager
       return connection.priority;
     }
 
-    return connection.priority.priority || 0;
+    return connection.priority.priority ?? 0;
   }
 }

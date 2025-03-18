@@ -1,10 +1,8 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import {
-  ResourceType,
-  ResourceTypeHelpers,
-} from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceTypeHelpers } from '../../../types/resources/StandardizedResourceTypes';
 import { SimulationNodeDatum, d3Accessors } from '../../../types/visualizations/D3Types';
 
 /**
@@ -88,19 +86,19 @@ interface ResourceDistributionChartProps {
  * Utility to convert resource data to D3-compatible nodes with proper typing
  */
 const convertToNodes = (data: ResourceDistributionData[]): ResourceNode[] => {
-  return data.map((item, index) => {
+  return data?.map((item, index) => {
     // Get color based on resource type
-    const color = getResourceColor(item.resourceType);
+    const color = getResourceColor(item?.resourceType);
 
     // Calculate radius based on amount (normalized between 10-50)
-    const radius = Math.max(10, Math.min(50, 10 + (item.amount / 100) * 40));
+    const radius = Math.max(10, Math.min(50, 10 + (item?.amount / 100) * 40));
 
     return {
       id: `resource-${index}`,
-      resourceType: item.resourceType,
-      amount: item.amount,
-      location: item.location,
-      efficiency: item.efficiency,
+      resourceType: item?.resourceType,
+      amount: item?.amount,
+      location: item?.location,
+      efficiency: item?.efficiency,
       radius,
       color,
       // The data field provides access to the original data
@@ -191,7 +189,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
         .zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.1, 4])
         .on('zoom', event => {
-          container.attr('transform', event.transform);
+          container.attr('transform', event?.transform);
         });
 
       svg.call(zoom);
@@ -264,7 +262,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
         const y = d3Accessors.getY(d);
 
         // Constrain the nodes to be within the chart area
-        const r = d.radius || 0;
+        const r = d.radius ?? 0;
         const constrainedX = Math.max(r, Math.min(width - r, x));
         const constrainedY = Math.max(r, Math.min(height - r, y));
 
@@ -277,7 +275,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
       event: d3.D3DragEvent<SVGGElement, ResourceNode, ResourceNode>,
       d: ResourceNode
     ) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
+      if (!event?.active) simulation.alphaTarget(0.3).restart();
       d.fx = d3Accessors.getX(d);
       d.fy = d3Accessors.getY(d);
     }
@@ -286,15 +284,15 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
       event: d3.D3DragEvent<SVGGElement, ResourceNode, ResourceNode>,
       d: ResourceNode
     ) {
-      d.fx = event.x;
-      d.fy = event.y;
+      d.fx = event?.x;
+      d.fy = event?.y;
     }
 
     function dragEnded(
       event: d3.D3DragEvent<SVGGElement, ResourceNode, ResourceNode>,
       d: ResourceNode
     ) {
-      if (!event.active) simulation.alphaTarget(0);
+      if (!event?.active) simulation.alphaTarget(0);
       d.fx = null;
       d.fy = null;
     }

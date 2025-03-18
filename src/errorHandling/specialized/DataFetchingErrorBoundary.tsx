@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { ErrorBoundary, ErrorBoundaryProps } from '../ErrorBoundary';
 import { ErrorFallback } from '../ErrorFallback';
 
@@ -20,7 +20,7 @@ export interface DataFetchingErrorBoundaryProps extends Omit<ErrorBoundaryProps,
 
 /**
  * Specialized error boundary for data fetching components
- * 
+ *
  * This error boundary is designed specifically for components that fetch data,
  * with specialized handling for network errors, API errors, etc.
  */
@@ -39,7 +39,7 @@ export const DataFetchingErrorBoundary: React.FC<DataFetchingErrorBoundaryProps>
 }) => {
   // Track retry attempts
   const retryAttemptsRef = React.useRef(0);
-  
+
   // Combine data-fetching-specific metadata with general metadata
   const combinedMetadata = {
     ...(dataSource && { dataSource }),
@@ -52,19 +52,19 @@ export const DataFetchingErrorBoundary: React.FC<DataFetchingErrorBoundaryProps>
   const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
     // Update retry information
     combinedMetadata.retryAttempts = retryAttemptsRef.current;
-    
+
     // Call the original onError callback if provided
     if (onError) {
       onError(error, errorInfo);
     }
-    
+
     // Automatically retry fetching if option is enabled
     if (retryOnError && fetchData && retryAttemptsRef.current < maxRetries) {
       retryAttemptsRef.current += 1;
-      
+
       // Add exponential backoff
       const backoffDelay = Math.min(1000 * Math.pow(2, retryAttemptsRef.current), 30000);
-      
+
       setTimeout(() => {
         fetchData().catch(e => {
           console.error('Error retrying data fetch:', e);
@@ -76,7 +76,7 @@ export const DataFetchingErrorBoundary: React.FC<DataFetchingErrorBoundaryProps>
   // Reset retry counter when boundary resets
   const handleReset = () => {
     retryAttemptsRef.current = 0;
-    
+
     // Immediately refetch if function is provided
     if (fetchData) {
       fetchData().catch(e => {
@@ -94,18 +94,20 @@ export const DataFetchingErrorBoundary: React.FC<DataFetchingErrorBoundaryProps>
       }
       return fallback;
     }
-    
+
     // Determine if this is a network error
-    const isNetworkError = error.message.includes('network') || 
-                           error.message.includes('fetch') ||
-                           error.message.includes('Failed to fetch') ||
-                           error.message.includes('Network request failed');
-                           
+    const isNetworkError =
+      error.message.includes('network') ||
+      error.message.includes('fetch') ||
+      error.message.includes('Failed to fetch') ||
+      error.message.includes('Network request failed');
+
     // Determine if this is an API error (4xx/5xx)
-    const isApiError = error.message.includes('API') ||
-                       error.message.includes('status code') ||
-                       /[45]\d\d/.test(error.message);
-    
+    const isApiError =
+      error.message.includes('API') ||
+      error.message.includes('status code') ||
+      /[45]\d\d/.test(error.message);
+
     // Create a more specific error title based on the error type
     let errorTitle = 'Data Loading Error';
     if (isNetworkError) {
@@ -113,12 +115,13 @@ export const DataFetchingErrorBoundary: React.FC<DataFetchingErrorBoundaryProps>
     } else if (isApiError) {
       errorTitle = 'API Error';
     }
-    
+
     // Create action text for the retry button
-    const actionText = retryAttemptsRef.current > 0 
-      ? `Retry Again (${retryAttemptsRef.current}/${maxRetries})` 
-      : 'Retry';
-    
+    const actionText =
+      retryAttemptsRef.current > 0
+        ? `Retry Again (${retryAttemptsRef.current}/${maxRetries})`
+        : 'Retry';
+
     return (
       <ErrorFallback
         error={error}
@@ -129,11 +132,15 @@ export const DataFetchingErrorBoundary: React.FC<DataFetchingErrorBoundaryProps>
         title={errorTitle}
         showDetails={process.env.NODE_ENV !== 'production'}
         actionText={fetchData ? actionText : undefined}
-        onAction={fetchData ? () => {
-          fetchData().catch(e => {
-            console.error('Error fetching data from action button:', e);
-          });
-        } : undefined}
+        onAction={
+          fetchData
+            ? () => {
+                fetchData().catch(e => {
+                  console.error('Error fetching data from action button:', e);
+                });
+              }
+            : undefined
+        }
       />
     );
   };

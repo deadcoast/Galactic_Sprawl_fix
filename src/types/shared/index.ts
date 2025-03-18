@@ -1,3 +1,4 @@
+import { ResourceType } from './resources/ResourceTypes';
 /**
  * Shared type definitions for common patterns across the codebase.
  * These types are designed to be reusable and type-safe alternatives to 'any'.

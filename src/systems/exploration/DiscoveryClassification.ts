@@ -53,7 +53,7 @@ export class DiscoveryClassification {
     const analysisStart = performance.now();
     const result = await this.analyzeDiscovery(discovery);
 
-    if (result.confidence < this.config.confidenceThreshold) {
+    if (result?.confidence < this.config.confidenceThreshold) {
       await this.enhanceAnalysis(discovery, result);
     }
 
@@ -157,18 +157,18 @@ export class DiscoveryClassification {
   }
 
   private estimateResourceQuantity(discovery: Discovery): number {
-    const { densityMapping } = discovery.metadata.scanData;
+    const { densityMapping } = discovery.metadata?.scanData;
     return densityMapping.reduce((sum, density) => sum + density, 0) * 100;
   }
 
   private calculateExtractionDifficulty(discovery: Discovery): number {
-    const { structuralIntegrity } = discovery.metadata.scanData;
+    const { structuralIntegrity } = discovery.metadata?.scanData;
     return 1 - structuralIntegrity;
   }
 
   private analyzeResourceQuality(discovery: Discovery): QualityIndicators {
-    const { elementalComposition, structuralIntegrity } = discovery.metadata.scanData;
-    const { pressure, temperature } = discovery.metadata.initialReadings;
+    const { elementalComposition, structuralIntegrity } = discovery.metadata?.scanData;
+    const { pressure, temperature } = discovery.metadata?.initialReadings;
 
     return {
       purity: this.calculatePurity(elementalComposition),
@@ -289,14 +289,14 @@ export class DiscoveryClassification {
   private createClassification(discovery: Discovery, result: ClassificationResult): Classification {
     return {
       id: discovery.id,
-      type: result.type,
-      confidence: result.confidence,
-      details: result.details,
+      type: result?.type,
+      confidence: result?.confidence,
+      details: result?.details,
       timestamp: Date.now(),
       metadata: {
         analysisVersion: '1.0',
-        analysisTime: result.analysisTime,
-        enhancementApplied: result.enhancementApplied,
+        analysisTime: result?.analysisTime,
+        enhancementApplied: result?.enhancementApplied,
       },
     };
   }
@@ -312,9 +312,9 @@ export class DiscoveryClassification {
   }
 
   private isResultValid(result: ClassificationResult): boolean {
-    const age = Date.now() - result.timestamp;
+    const age = Date.now() - result?.timestamp;
     return (
-      result.confidence >= this.config.confidenceThreshold && age < this.config.analysisTimeout
+      result?.confidence >= this.config.confidenceThreshold && age < this.config.analysisTimeout
     );
   }
 
@@ -336,10 +336,10 @@ export class DiscoveryClassification {
       id: discovery.id,
       payload: {
         discoveryId: discovery.id,
-        classificationType: result.type,
-        confidence: result.confidence,
+        classificationType: result?.type,
+        confidence: result?.confidence,
         duration,
-        enhancementApplied: result.enhancementApplied,
+        enhancementApplied: result?.enhancementApplied,
       },
     });
   }

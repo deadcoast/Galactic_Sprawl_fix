@@ -707,7 +707,7 @@ export class D3AnimationQualityManager {
         // Apply global settings with any animation-specific overrides
         const animationSettings = {
           ...this.currentSettings,
-          ...(this.animationQualityOverrides.get(animationId) || {}),
+          ...(this.animationQualityOverrides.get(animationId) ?? {}),
         };
 
         callback(animationSettings);
@@ -739,7 +739,7 @@ export class D3AnimationQualityManager {
     // Apply current settings immediately
     const settings = {
       ...this.currentSettings,
-      ...(animationSpecificOverrides || {}),
+      ...(animationSpecificOverrides ?? {}),
     };
 
     onQualityChange(settings);
@@ -971,9 +971,9 @@ export function bindDataWithQualityAdjustment<
   const maxElements = settings.maxElementCount;
   let limitedData = data;
 
-  if (data.length > maxElements) {
+  if (data?.length > maxElements) {
     // Limit the number of elements based on quality settings
-    limitedData = data.slice(0, maxElements);
+    limitedData = data?.slice(0, maxElements);
   }
 
   // Bind the data, potentially with a key function

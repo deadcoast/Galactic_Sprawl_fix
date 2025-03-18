@@ -302,7 +302,7 @@ export const ExplorationProvider: React.FC<ExplorationProviderProps> = ({
           // Calculate distance between anomaly and system
           const dx = coords.x - system.coordinates.x;
           const dy = coords.y - system.coordinates.y;
-          const dz = (coords.z || 0) - (system.coordinates.z || 0);
+          const dz = (coords.z ?? 0) - (system.coordinates.z ?? 0);
 
           const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
@@ -355,7 +355,7 @@ export const ExplorationProvider: React.FC<ExplorationProviderProps> = ({
           // Calculate distance between resource and system
           const dx = coords.x - system.coordinates.x;
           const dy = coords.y - system.coordinates.y;
-          const dz = (coords.z || 0) - (system.coordinates.z || 0);
+          const dz = (coords.z ?? 0) - (system.coordinates.z ?? 0);
 
           const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
@@ -367,7 +367,7 @@ export const ExplorationProvider: React.FC<ExplorationProviderProps> = ({
       // Then check if it's a planet
       const planet = state.planets.find(p => p.id === entityId);
       if (planet) {
-        return planet.resources || [];
+        return planet.resources ?? [];
       }
 
       // If none of the above, return an empty array
@@ -390,7 +390,7 @@ export const ExplorationProvider: React.FC<ExplorationProviderProps> = ({
 
   const getAnalysisResultsByEntityId = useCallback(
     (entityId: string) => {
-      return state.analysisResults.filter(result => result.entityIds.includes(entityId));
+      return state.analysisResults.filter(result => result?.entityIds.includes(entityId));
     },
     [state.analysisResults]
   );
@@ -439,15 +439,15 @@ export const ExplorationProvider: React.FC<ExplorationProviderProps> = ({
       const data = await dataFetcher();
 
       // Update state with fetched data
-      if (data.sectors) dispatch({ type: ActionType.SET_SECTORS, payload: data.sectors });
-      if (data.systems) dispatch({ type: ActionType.SET_SYSTEMS, payload: data.systems });
-      if (data.planets) dispatch({ type: ActionType.SET_PLANETS, payload: data.planets });
-      if (data.resources) dispatch({ type: ActionType.SET_RESOURCES, payload: data.resources });
-      if (data.anomalies) dispatch({ type: ActionType.SET_ANOMALIES, payload: data.anomalies });
+      if (data?.sectors) dispatch({ type: ActionType.SET_SECTORS, payload: data?.sectors });
+      if (data?.systems) dispatch({ type: ActionType.SET_SYSTEMS, payload: data?.systems });
+      if (data?.planets) dispatch({ type: ActionType.SET_PLANETS, payload: data?.planets });
+      if (data?.resources) dispatch({ type: ActionType.SET_RESOURCES, payload: data?.resources });
+      if (data?.anomalies) dispatch({ type: ActionType.SET_ANOMALIES, payload: data?.anomalies });
       if (
-        data.tradeRoutes &&
-        Array.isArray(data.tradeRoutes) &&
-        data.tradeRoutes.every(
+        data?.tradeRoutes &&
+        Array.isArray(data?.tradeRoutes) &&
+        data?.tradeRoutes.every(
           (route): route is TradeRoute =>
             typeof route === 'object' &&
             route !== null &&
@@ -462,11 +462,11 @@ export const ExplorationProvider: React.FC<ExplorationProviderProps> = ({
             'travelTime' in route
         )
       ) {
-        dispatch({ type: ActionType.SET_TRADE_ROUTES, payload: data.tradeRoutes });
+        dispatch({ type: ActionType.SET_TRADE_ROUTES, payload: data?.tradeRoutes });
       }
-      if (data.activities) dispatch({ type: ActionType.SET_ACTIVITIES, payload: data.activities });
-      if (data.analysisResults)
-        dispatch({ type: ActionType.SET_ANALYSIS_RESULTS, payload: data.analysisResults });
+      if (data?.activities) dispatch({ type: ActionType.SET_ACTIVITIES, payload: data?.activities });
+      if (data?.analysisResults)
+        dispatch({ type: ActionType.SET_ANALYSIS_RESULTS, payload: data?.analysisResults });
     } catch (error) {
       dispatch({ type: ActionType.SET_ERROR, payload: String(error) });
     } finally {

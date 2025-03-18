@@ -51,8 +51,8 @@ function printResultTable(results: NetworkDegradationTestResult[], title: string
   // Group results by network condition
   const groupedResults: Record<string, NetworkDegradationTestResult[]> = {};
   results.forEach(result => {
-    const conditionName = result.networkCondition.name;
-    groupedResults[conditionName] = groupedResults[conditionName] || [];
+    const conditionName = result?.networkCondition.name;
+    groupedResults[conditionName] = groupedResults[conditionName] ?? [];
     groupedResults[conditionName].push(result);
   });
 

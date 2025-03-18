@@ -5,7 +5,7 @@
  * It fully implements the ShipEvents interface and uses the standardized types.
  */
 
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { BaseTypedEventEmitter } from '../../lib/modules/BaseTypedEventEmitter';
 import { Ship, ShipEvents } from '../../types/events/ShipEvents';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { ShipStatus, ShipType } from '../../types/ships/ShipTypes';
@@ -14,8 +14,19 @@ import { ShipStatus, ShipType } from '../../types/ships/ShipTypes';
  * Ship hangar manager class that uses standardized types and events
  */
 export class StandardShipHangarManager extends BaseTypedEventEmitter<ShipEvents> {
+  /**
+   * The map of ships in the hangar
+   */
   private ships: Map<string, Ship> = new Map();
+
+  /**
+   * The capacity of the hangar
+   */
   private capacity: number;
+
+  /**
+   * The ID of the hangar
+   */
   private hangarId: string;
 
   /**
@@ -217,7 +228,7 @@ export class StandardShipHangarManager extends BaseTypedEventEmitter<ShipEvents>
     }
 
     // Add the resource
-    const currentAmount = ship.cargo.resources.get(resourceType) || 0;
+    const currentAmount = ship.cargo.resources.get(resourceType) ?? 0;
     ship.cargo.resources.set(resourceType, currentAmount + amount);
     this.ships.set(shipId, ship);
     this.emit('cargo:loaded', { shipId, resourceType, amount });
@@ -238,7 +249,7 @@ export class StandardShipHangarManager extends BaseTypedEventEmitter<ShipEvents>
     }
 
     // Check if there's enough of the resource
-    const currentAmount = ship.cargo.resources.get(resourceType) || 0;
+    const currentAmount = ship.cargo.resources.get(resourceType) ?? 0;
     if (currentAmount < amount) {
       return false;
     }

@@ -96,7 +96,7 @@ export function isShipEvent(event: unknown): event is ShipEvent {
     typeof e.moduleType === 'string' &&
     typeof e.data === 'object' &&
     'shipId' in e.data &&
-    typeof e.data.shipId === 'string'
+    typeof e.data?.shipId === 'string'
   );
 }
 
@@ -315,7 +315,7 @@ export class ReconShipManagerImpl extends AbstractBaseManager<ShipEvent> {
     for (const [taskId, task] of this.tasks) {
       if (task.status === 'in-progress') {
         // Simulate task progress
-        const progress = (task.progress || 0) + (deltaTime / 1000) * 0.1; // 10% per second
+        const progress = (task.progress ?? 0) + (deltaTime / 1000) * 0.1; // 10% per second
         if (progress >= 1) {
           task.status = 'completed';
           this.publish({

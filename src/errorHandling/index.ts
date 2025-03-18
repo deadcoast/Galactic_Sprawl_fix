@@ -78,7 +78,7 @@ export {
  * </DataFetchingErrorBoundary>
  * 
  * // Visualization component
- * <VisualizationErrorBoundary visualizationType="chart" dataSize={data.length}>
+ * <VisualizationErrorBoundary visualizationType="chart" dataSize={data?.length}>
  *   <LineChart data={data} />
  * </VisualizationErrorBoundary>
  * 

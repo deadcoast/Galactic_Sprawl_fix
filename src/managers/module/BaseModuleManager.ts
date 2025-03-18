@@ -399,7 +399,7 @@ export abstract class BaseModuleManager extends BaseTypedEventEmitter<ModuleEven
 
     // Update module's resources if tracking is enabled
     if (module.resources) {
-      module.resources[resourceType] = (module.resources[resourceType] || 0) + amount;
+      module.resources[resourceType] = (module.resources[resourceType] ?? 0) + amount;
       this.modules.set(moduleId, module);
     }
 
@@ -429,7 +429,7 @@ export abstract class BaseModuleManager extends BaseTypedEventEmitter<ModuleEven
 
     // Update module's resources if tracking is enabled
     if (module.resources) {
-      const currentAmount = module.resources[resourceType] || 0;
+      const currentAmount = module.resources[resourceType] ?? 0;
       if (currentAmount < amount) {
         return false; // Not enough resources
       }

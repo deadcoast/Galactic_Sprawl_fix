@@ -81,7 +81,7 @@ export function DiscoveryClassification({
   // Get properties for the selected category
   const selectedCategoryProperties = useMemo(() => {
     const category = getTaxonomyCategory(selectedCategoryId);
-    return category?.properties || [];
+    return category?.properties ?? [];
   }, [getTaxonomyCategory, selectedCategoryId]);
 
   // Handle property value changes
@@ -485,7 +485,7 @@ export function DiscoveryClassification({
                         <input
                           type="text"
                           className="w-full rounded border p-2"
-                          value={(propertyValues[property.id] as string) || ''}
+                          value={(propertyValues[property.id] as string) ?? ''}
                           onChange={e => handlePropertyChange(property.id, e.target.value)}
                           required={property.required}
                         />
@@ -494,7 +494,7 @@ export function DiscoveryClassification({
                         <input
                           type="number"
                           className="w-full rounded border p-2"
-                          value={(propertyValues[property.id] as number) || ''}
+                          value={(propertyValues[property.id] as number) ?? ''}
                           onChange={e =>
                             handlePropertyChange(property.id, parseFloat(e.target.value))
                           }
@@ -516,12 +516,12 @@ export function DiscoveryClassification({
                       {property.type === 'enum' && property.options && (
                         <select
                           className="w-full rounded border p-2"
-                          value={(propertyValues[property.id] as string) || ''}
+                          value={(propertyValues[property.id] as string) ?? ''}
                           onChange={e => handlePropertyChange(property.id, e.target.value)}
                           required={property.required}
                         >
                           <option value="">Select an option</option>
-                          {property.options.map(option => (
+                          {property.options?.map(option => (
                             <option key={option} value={option}>
                               {option}
                             </option>

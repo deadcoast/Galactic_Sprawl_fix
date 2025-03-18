@@ -313,7 +313,7 @@ export class TypedAnimationSequence<
     if (this.currentIndex >= this.config.transitions.length) {
       if (this.config.loop) {
         this.currentIndex = 0;
-        setTimeout(() => this.playNext(), this.config.sequenceDelay || 0);
+        setTimeout(() => this.playNext(), this.config.sequenceDelay ?? 0);
       } else {
         this.isPlaying = false;
         if (this.config.onComplete) {
@@ -328,7 +328,7 @@ export class TypedAnimationSequence<
 
     transition.on('end', () => {
       this.currentIndex++;
-      setTimeout(() => this.playNext(), this.config.sequenceDelay || 0);
+      setTimeout(() => this.playNext(), this.config.sequenceDelay ?? 0);
     });
   }
 }

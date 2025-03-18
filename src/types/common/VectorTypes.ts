@@ -79,23 +79,21 @@ export function vectorScale(vector: Vector, scale: number): Vector {
       x: vector.x * scale,
       y: vector.y * scale,
     };
-  }
-  if (isVector3D(vector)) {
+  } else if (isVector3D(vector)) {
     return {
       x: vector.x * scale,
       y: vector.y * scale,
       z: vector.z * scale,
     };
-  }
-  if (isVector4D(vector)) {
+  } else {
+    // Must be Vector4D by exhaustion
     return {
-      x: vector.x * scale,
-      y: vector.y * scale,
-      z: vector.z * scale,
-      w: vector.w * scale,
+      x: (vector as Vector4D).x * scale,
+      y: (vector as Vector4D).y * scale,
+      z: (vector as Vector4D).z * scale,
+      w: (vector as Vector4D).w * scale,
     };
   }
-  throw new Error('Invalid vector type');
 }
 
 export function vectorNormalize(vector: Vector): Vector {
@@ -109,16 +107,13 @@ export function vectorNormalize(vector: Vector): Vector {
 export function vectorMagnitude(vector: Vector): number {
   if (isVector2D(vector)) {
     return Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
-  }
-  if (isVector3D(vector)) {
+  } else if (isVector3D(vector)) {
     return Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2) + Math.pow(vector.z, 2));
+  } else {
+    // Must be Vector4D by exhaustion
+    const v = vector as Vector4D;
+    return Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2) + Math.pow(v.z, 2) + Math.pow(v.w, 2));
   }
-  if (isVector4D(vector)) {
-    return Math.sqrt(
-      Math.pow(vector.x, 2) + Math.pow(vector.y, 2) + Math.pow(vector.z, 2) + Math.pow(vector.w, 2)
-    );
-  }
-  throw new Error('Invalid vector type');
 }
 
 export function vectorDot(a: Vector, b: Vector): number {

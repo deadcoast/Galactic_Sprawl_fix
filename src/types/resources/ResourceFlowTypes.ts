@@ -1,4 +1,5 @@
 import { ResourcePriorityConfig, ResourceType } from './ResourceTypes';
+import { ResourceType } from './resources/ResourceTypes';
 
 /**
  * Flow connection between nodes

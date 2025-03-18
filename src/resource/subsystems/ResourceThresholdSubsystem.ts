@@ -230,7 +230,7 @@ export class ResourceThresholdSubsystem {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
 
-    const thresholdIds = this.resourceTypeThresholds.get(stringType) || [];
+    const thresholdIds = this.resourceTypeThresholds.get(stringType) ?? [];
     return thresholdIds.map(id => this.thresholds.get(id)!).filter(Boolean);
   }
 
@@ -238,7 +238,7 @@ export class ResourceThresholdSubsystem {
    * Get thresholds for a specific entity
    */
   public getThresholdsByEntity(entityId: string): ResourceThreshold[] {
-    const thresholdIds = this.entityThresholds.get(entityId) || [];
+    const thresholdIds = this.entityThresholds.get(entityId) ?? [];
     return thresholdIds.map(id => this.thresholds.get(id)!).filter(Boolean);
   }
 
@@ -367,11 +367,11 @@ export class ResourceThresholdSubsystem {
     const stringType = ensureStringResourceType(type);
 
     // Get thresholds for this resource type
-    const thresholdIds = this.resourceTypeThresholds.get(stringType) || [];
+    const thresholdIds = this.resourceTypeThresholds.get(stringType) ?? [];
 
     // If entity ID is provided, also include entity-specific thresholds
     if (entityId) {
-      const entityThresholdIds = this.entityThresholds.get(entityId) || [];
+      const entityThresholdIds = this.entityThresholds.get(entityId) ?? [];
       thresholdIds.push(...entityThresholdIds);
     }
 
@@ -441,7 +441,7 @@ export class ResourceThresholdSubsystem {
       threshold: { ...threshold },
       resourceState: { ...state },
       automationAction: threshold.actionData?.automationAction || 'default',
-      parameters: threshold.actionData?.parameters || {},
+      parameters: threshold.actionData?.parameters ?? {},
       timestamp: Date.now(),
     });
   }
@@ -455,7 +455,7 @@ export class ResourceThresholdSubsystem {
       type: (threshold.actionData?.eventType as string) || 'RESOURCE_THRESHOLD_TRIGGERED',
       threshold: { ...threshold },
       resourceState: { ...state },
-      data: threshold.actionData?.eventData || {},
+      data: threshold.actionData?.eventData ?? {},
       timestamp: Date.now(),
     });
   }

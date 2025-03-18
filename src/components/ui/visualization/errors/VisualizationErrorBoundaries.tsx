@@ -20,11 +20,11 @@ const FlowDiagramErrorFallback: React.FC<ErrorFallbackProps> = props => (
       rendering issue.
     </p>
     <pre className="mb-3 overflow-auto rounded bg-orange-100 p-2 text-sm">
-      {props.error.message}
+      {props?.error.message}
     </pre>
     <div className="flex flex-row gap-3">
       <button
-        onClick={props.resetError}
+        onClick={props?.resetError}
         className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
       >
         Reset Diagram
@@ -108,8 +108,8 @@ export function withVisualizationErrorBoundary<P extends object>(
       <D3VisualizationErrorBoundary
         componentName={componentName}
         onError={handleVisualizationError}
-        errorContext={props.errorContext}
-        resetKeys={props.resetKeys}
+        errorContext={props?.errorContext}
+        resetKeys={props?.resetKeys}
       >
         <Component {...(props as P)} />
       </D3VisualizationErrorBoundary>

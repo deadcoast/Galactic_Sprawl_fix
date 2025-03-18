@@ -51,7 +51,7 @@ export class SVGRenderer implements ChartRenderer {
     // Convert theme 'auto' to 'light' for SVG renderer
     const svgOptions = {
       ...options,
-      theme: options.theme === 'auto' ? 'light' : options.theme || 'light',
+      theme: options?.theme === 'auto' ? 'light' : options?.theme || 'light',
     };
 
     this.containerWidth = typeof svgOptions.width === 'number' ? svgOptions.width : 300;
@@ -88,7 +88,7 @@ export class SVGRenderer implements ChartRenderer {
     };
 
     // Render axes if enabled
-    if (svgOptions.axes) {
+    if (svgOptions?.axes) {
       this.renderAxes(data, svgOptions, chartArea, chartGroup);
     }
 
@@ -130,7 +130,7 @@ export class SVGRenderer implements ChartRenderer {
     xAxis: ChartAxes['x'],
     yAxis: ChartAxes['y']
   ): ChartScales {
-    if (!data || !data.datasets || data.datasets.length === 0) {
+    if (!data || !data?.datasets || data?.datasets.length === 0) {
       return {
         x: { min: 0, max: 1, type: xAxis.type === 'time' ? 'time' : 'linear' },
         y: { min: 0, max: 1, type: yAxis.type === 'log' ? 'linear' : yAxis.type || 'linear' },
@@ -140,8 +140,8 @@ export class SVGRenderer implements ChartRenderer {
     const xValues: number[] = [];
     const yValues: number[] = [];
 
-    data.datasets.forEach(dataset => {
-      dataset.data.forEach(point => {
+    data?.datasets.forEach(dataset => {
+      dataset.data?.forEach(point => {
         const x = this.normalizeValue(point.x);
         const y = point.y;
         if (Number.isFinite(x) && Number.isFinite(y)) {
@@ -223,16 +223,16 @@ export class SVGRenderer implements ChartRenderer {
     chartArea: ChartArea,
     chartGroup: SVGGElement
   ): void {
-    const axes = options.axes;
+    const axes = options?.axes;
     if (!axes?.x || !axes?.y) return;
 
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
     if (!scales) return;
 
-    const themeColors = options.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
     // Draw each dataset
-    data.datasets.forEach((dataset, datasetIndex) => {
+    data?.datasets.forEach((dataset, datasetIndex) => {
       const datasetGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       datasetGroup.setAttribute('class', `dataset-${datasetIndex}`);
       datasetGroup.setAttribute('fill', 'none');
@@ -242,7 +242,7 @@ export class SVGRenderer implements ChartRenderer {
       datasetGroup.setAttribute('stroke-linejoin', 'round');
 
       // Add shadow filter for better visibility based on theme
-      if (options.theme === 'dark') {
+      if (options?.theme === 'dark') {
         datasetGroup.setAttribute('filter', `drop-shadow(0 0 2px ${themeColors.textColor})`);
       }
 
@@ -252,7 +252,7 @@ export class SVGRenderer implements ChartRenderer {
       const points: { x: number; y: number }[] = [];
 
       // Map data points to SVG coordinates
-      dataset.data.forEach(point => {
+      dataset.data?.forEach(point => {
         const x = this.normalizeValue(point.x);
         const y = this.normalizeValue(point.y);
         if (Number.isFinite(x) && Number.isFinite(y)) {
@@ -291,16 +291,16 @@ export class SVGRenderer implements ChartRenderer {
     chartArea: ChartArea,
     chartGroup: SVGGElement
   ): void {
-    const axes = options.axes;
+    const axes = options?.axes;
     if (!axes?.x || !axes?.y) return;
 
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
     if (!scales) return;
 
-    const themeColors = options.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
     // Draw each dataset
-    data.datasets.forEach((dataset, datasetIndex) => {
+    data?.datasets.forEach((dataset, datasetIndex) => {
       const datasetGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       datasetGroup.setAttribute('class', `dataset-${datasetIndex}`);
 
@@ -312,7 +312,7 @@ export class SVGRenderer implements ChartRenderer {
       const pointOutline = themeColors.backgroundColor;
 
       // Draw each point
-      dataset.data.forEach((point, pointIndex) => {
+      dataset.data?.forEach((point, pointIndex) => {
         const x = this.normalizeValue(point.x);
         const y = this.normalizeValue(point.y);
         if (!Number.isFinite(x) || !Number.isFinite(y)) return;
@@ -350,13 +350,13 @@ export class SVGRenderer implements ChartRenderer {
     chartArea: ChartArea,
     chartGroup: SVGGElement
   ): void {
-    const axes = options.axes;
+    const axes = options?.axes;
     if (!axes?.x || !axes?.y) return;
 
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
     if (!scales) return;
 
-    const themeColors = options.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
     // Create a group for axes
     const axesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -498,9 +498,9 @@ export class SVGRenderer implements ChartRenderer {
     options: ChartOptions,
     chartGroup: SVGGElement
   ): void {
-    const xAxis = options.axes?.x || { type: 'linear', grid: true };
-    const yAxis = options.axes?.y || { type: 'linear', grid: true };
-    const themeColors = options.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const xAxis = options?.axes?.x || { type: 'linear', grid: true };
+    const yAxis = options?.axes?.y || { type: 'linear', grid: true };
+    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
     // Create a group for the grid
     const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -508,7 +508,7 @@ export class SVGRenderer implements ChartRenderer {
     chartGroup.appendChild(gridGroup);
 
     // Draw x-axis grid lines
-    if (yAxis.grid) {
+    if (yAxis?.grid) {
       const xTickCount = xAxis.tickCount || 5;
       const xStep = (scales.x.max - scales.x.min) / (xTickCount - 1);
 
@@ -529,7 +529,7 @@ export class SVGRenderer implements ChartRenderer {
     }
 
     // Draw y-axis grid lines
-    if (xAxis.grid) {
+    if (xAxis?.grid) {
       const yTickCount = yAxis.tickCount || 5;
       const yStep = (scales.y.max - scales.y.min) / (yTickCount - 1);
 

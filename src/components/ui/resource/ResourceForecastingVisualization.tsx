@@ -8,7 +8,6 @@ import {
   PointElement,
   Title,
   Tooltip,
-  TooltipItem,
 } from 'chart.js';
 import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -17,10 +16,8 @@ import { useResourceRate } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
-import {
-  ResourceType,
-  ResourceTypeHelpers,
-} from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceTypeHelpers } from '../../../types/resources/StandardizedResourceTypes';
 import './ResourceForecastingVisualization.css';
 
 // Register the Chart.js components
@@ -73,7 +70,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
 
   // Register component
   const _componentId = useComponentRegistration({
-    type: 'ResourceForecastingVisualization',
+    type: ResourceType.MINERALS,
     eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_THRESHOLD_CHANGED', 'RESOURCE_FLOW_UPDATED'],
     updatePriority: 'low', // Forecasting is less critical than actual resource displays
   });
@@ -211,7 +208,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
         ? [
             {
               label: 'Critical Threshold',
-              data: Array(forecast.length).fill(maxValue * (thresholds.critical || 0.1)),
+              data: Array(forecast.length).fill(maxValue * (thresholds.critical ?? 0.1)),
               borderColor: 'rgba(255, 0, 0, 0.7)',
               backgroundColor: 'transparent',
               borderDash: [5, 5],
@@ -225,7 +222,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
         ? [
             {
               label: 'Low Threshold',
-              data: Array(forecast.length).fill(maxValue * (thresholds.low || 0.25)),
+              data: Array(forecast.length).fill(maxValue * (thresholds.low ?? 0.25)),
               borderColor: 'rgba(255, 165, 0, 0.7)',
               backgroundColor: 'transparent',
               borderDash: [5, 5],
@@ -239,7 +236,7 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
         ? [
             {
               label: 'High Threshold',
-              data: Array(forecast.length).fill(maxValue * (thresholds.high || 0.75)),
+              data: Array(forecast.length).fill(maxValue * (thresholds.high ?? 0.75)),
               borderColor: 'rgba(0, 128, 0, 0.7)',
               backgroundColor: 'transparent',
               borderDash: [5, 5],
@@ -252,39 +249,17 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
     ],
   };
 
+  // Chart options
   const chartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom',
-      },
-      title: {
-        display: true,
-        text: `${getResourceName(resourceType)} Forecast (${forecastPeriod} minutes)`,
-        color: '#e0e0e0',
-        font: {
-          size: 14,
-          weight: 'bold',
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: function (context: TooltipItem<'line'>) {
-            const value = context.raw as number;
-            const percent = Math.round((value / maxValue) * 100);
-            return `${value.toFixed(1)} (${percent}% of capacity)`;
-          },
-        },
-      },
-    },
     scales: {
       y: {
         beginAtZero: true,
-        max: maxValue,
+        max: maxValue * 1.1, // Add 10% buffer at top
         title: {
           display: true,
-          text: 'Resource Amount',
+          text: `${getResourceName(resourceType)} Units`,
         },
       },
       x: {
@@ -294,17 +269,36 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
         },
       },
     },
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function (context: { dataset: { label?: string }; parsed: { y?: number } }) {
+            const label = context.dataset.label || '';
+            const value = context.parsed.y || 0;
+            const percentage = ((value / maxValue) * 100).toFixed(1);
+            return `${label}: ${value.toFixed(1)} (${percentage}%)`;
+          },
+        },
+      },
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: `${getResourceName(resourceType)} Forecast (${rate > 0 ? '+' : ''}${rate.toFixed(2)}/min)`,
+      },
+    },
   };
 
   return (
     <div className="resource-forecasting-visualization">
-      <div className="forecast-chart" style={{ height: '300px' }}>
+      <div className="forecast-chart-container">
         <Line data={chartData} options={chartOptions} />
       </div>
 
       {criticalEvents && criticalEvents.length > 0 && (
-        <div className="critical-events">
-          <h4>Forecasted Events</h4>
+        <div className="forecast-critical-events">
+          <h4>Important Events:</h4>
           <ul>
             {criticalEvents.map((event, index) => (
               <li key={index} className={`event-${event.severity}`}>
@@ -315,27 +309,22 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
         </div>
       )}
 
-      <div className="forecast-metrics">
-        <div className="metric">
-          <div className="metric-label">Current Rate</div>
-          <div className="metric-value">
-            {rate > 0 ? `+${rate.toFixed(1)}` : rate.toFixed(1)} / min
-          </div>
+      <div className="forecast-legend">
+        <div className="legend-item">
+          <span className="legend-color" style={{ backgroundColor: 'rgba(255, 0, 0, 0.7)' }}></span>
+          <span>Critical</span>
         </div>
-        <div className="metric">
-          <div className="metric-label">Effective Cycle</div>
-          <div className="metric-value">{(cycleTime / 1000).toFixed(1)}s</div>
+        <div className="legend-item">
+          <span
+            className="legend-color"
+            style={{ backgroundColor: 'rgba(255, 165, 0, 0.7)' }}
+          ></span>
+          <span>Low</span>
         </div>
-        {rate !== 0 && (
-          <div className="metric">
-            <div className="metric-label">{rate > 0 ? 'Time to Full' : 'Time to Empty'}</div>
-            <div className="metric-value">
-              {rate > 0
-                ? formatTime((maxValue - currentValue) / rate)
-                : formatTime(currentValue / Math.abs(rate))}
-            </div>
-          </div>
-        )}
+        <div className="legend-item">
+          <span className="legend-color" style={{ backgroundColor: 'rgba(0, 128, 0, 0.7)' }}></span>
+          <span>Normal</span>
+        </div>
       </div>
     </div>
   );
@@ -347,20 +336,22 @@ const getResourceStatus = (
   maxValue: number,
   thresholds?: ResourceForecastingVisualizationProps['thresholds']
 ): 'critical' | 'low' | 'normal' | 'high' | 'maximum' => {
-  if (!thresholds) {
-    const percentage = value / maxValue;
-    if (percentage <= 0.1) return 'critical';
-    if (percentage <= 0.25) return 'low';
-    if (percentage >= 0.9) return 'maximum';
-    if (percentage >= 0.75) return 'high';
-    return 'normal';
-  }
+  // Default thresholds if not provided
+  const defaultThresholds = {
+    critical: 0.1,
+    low: 0.25,
+    target: 0.5,
+    high: 0.75,
+    maximum: 0.95,
+  };
 
+  const { critical, low, high, maximum } = { ...defaultThresholds, ...thresholds };
   const percentage = value / maxValue;
-  if (thresholds.critical && percentage <= thresholds.critical) return 'critical';
-  if (thresholds.low && percentage <= thresholds.low) return 'low';
-  if (thresholds.maximum && percentage >= thresholds.maximum) return 'maximum';
-  if (thresholds.high && percentage >= thresholds.high) return 'high';
+
+  if (percentage <= critical) return 'critical';
+  if (percentage <= low) return 'low';
+  if (percentage >= maximum) return 'maximum';
+  if (percentage >= high) return 'high';
   return 'normal';
 };
 
@@ -371,31 +362,35 @@ const getPointColor = (status: string): string => {
     case 'low':
       return 'rgba(255, 165, 0, 1)';
     case 'high':
-      return 'rgba(0, 128, 0, 1)';
+      return 'rgba(255, 255, 0, 1)';
     case 'maximum':
-      return 'rgba(128, 0, 128, 1)';
+      return 'rgba(255, 0, 255, 1)';
+    case 'normal':
     default:
-      return 'rgba(0, 123, 255, 1)';
+      return 'rgba(0, 128, 0, 1)';
   }
 };
 
 const getLineColor = (forecast: ForecastPoint[]): string => {
+  // Determine line color based on overall forecast trend
   const lastPoint = forecast[forecast.length - 1];
   switch (lastPoint?.status) {
     case 'critical':
-      return 'rgba(255, 0, 0, 0.8)';
+      return 'rgba(255, 0, 0, 1)';
     case 'low':
-      return 'rgba(255, 165, 0, 0.8)';
+      return 'rgba(255, 165, 0, 1)';
     case 'high':
-      return 'rgba(0, 128, 0, 0.8)';
+      return 'rgba(255, 255, 0, 1)';
     case 'maximum':
-      return 'rgba(128, 0, 128, 0.8)';
+      return 'rgba(255, 0, 255, 1)';
+    case 'normal':
     default:
-      return 'rgba(0, 123, 255, 0.8)';
+      return 'rgba(0, 128, 0, 1)';
   }
 };
 
 const getBackgroundColor = (forecast: ForecastPoint[]): string => {
+  // Determine background color based on overall forecast trend
   const lastPoint = forecast[forecast.length - 1];
   switch (lastPoint?.status) {
     case 'critical':
@@ -403,34 +398,23 @@ const getBackgroundColor = (forecast: ForecastPoint[]): string => {
     case 'low':
       return 'rgba(255, 165, 0, 0.1)';
     case 'high':
-      return 'rgba(0, 128, 0, 0.1)';
+      return 'rgba(255, 255, 0, 0.1)';
     case 'maximum':
-      return 'rgba(128, 0, 128, 0.1)';
+      return 'rgba(255, 0, 255, 0.1)';
+    case 'normal':
     default:
-      return 'rgba(0, 123, 255, 0.1)';
+      return 'rgba(0, 128, 0, 0.1)';
   }
 };
 
 const formatTime = (minutes: number): string => {
-  if (isNaN(minutes) || !isFinite(minutes)) return 'N/A';
-
-  if (minutes < 1) {
-    const seconds = Math.round(minutes * 60);
-    return `${seconds}s`;
-  }
-
   if (minutes < 60) {
     return `${Math.round(minutes)}m`;
+  } else {
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    return `${hours}h ${mins}m`;
   }
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = Math.round(minutes % 60);
-
-  if (remainingMinutes === 0) {
-    return `${hours}h`;
-  }
-
-  return `${hours}h ${remainingMinutes}m`;
 };
 
 export default ResourceForecastingVisualization;

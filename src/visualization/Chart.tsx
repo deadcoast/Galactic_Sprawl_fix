@@ -1,9 +1,9 @@
-import * as React from "react";
-import { useMemo, useState, useEffect, useRef } from 'react';
+import * as React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { errorLoggingService, ErrorType } from '../services/ErrorLoggingService';
 import { CanvasRenderer } from './renderers/CanvasRenderer';
 import { SVGRenderer } from './renderers/SVGRenderer';
 import { WebGLRenderer } from './renderers/WebGLRenderer';
-import { errorLoggingService, ErrorType } from '../services/ErrorLoggingService';
 
 /**
  * Common chart data point interface
@@ -130,7 +130,7 @@ const DEFAULT_CHART_OPTIONS: ChartOptions = {
     y: {
       type: 'linear',
       grid: true,
-    }
+    },
   },
   legend: {
     visible: true,
@@ -166,18 +166,8 @@ const DEFAULT_CHART_OPTIONS: ChartOptions = {
  * Chart renderer interface
  */
 export interface ChartRenderer {
-  render: (
-    container: HTMLElement,
-    data: ChartData,
-    options: ChartOptions,
-    type: ChartType
-  ) => void;
-  update: (
-    container: HTMLElement,
-    data: ChartData,
-    options: ChartOptions,
-    type: ChartType
-  ) => void;
+  render: (container: HTMLElement, data: ChartData, options: ChartOptions, type: ChartType) => void;
+  update: (container: HTMLElement, data: ChartData, options: ChartOptions, type: ChartType) => void;
   destroy: () => void;
   getStatus: () => { isInitialized: boolean; lastRenderTime?: number };
 }
@@ -211,32 +201,38 @@ export const Chart: React.FC<ChartProps> = ({
   onError,
 }) => {
   // Merge options with defaults
-  const mergedOptions: ChartOptions = useMemo(() => ({
-    ...DEFAULT_CHART_OPTIONS,
-    ...options,
-  }), [options]);
+  const mergedOptions: ChartOptions = useMemo(
+    () => ({
+      ...DEFAULT_CHART_OPTIONS,
+      ...options,
+    }),
+    [options]
+  );
 
   // Container ref for rendering
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Chart renderer ref
   const rendererRef = useRef<ChartRenderer | null>(null);
-  
+
   // Error state
   const [error, setError] = useState<Error | null>(null);
-  
+
   // Auto-select renderer based on data size and device capabilities if not specified
   const renderer = useMemo(() => {
     // Count total data points
-    const totalDataPoints = data.datasets.reduce((acc, dataset) => acc + dataset.data.length, 0);
-    
+    const totalDataPoints = data?.datasets.reduce((acc, dataset) => acc + dataset.data?.length, 0);
+
     // If renderer is explicitly set, use that
     if (mergedOptions.renderer) {
       return mergedOptions.renderer;
     }
-    
+
     // Auto-select based on data size and optimization settings
-    if (mergedOptions.memoryOptimized || totalDataPoints > (mergedOptions.optimizationThreshold || 1000)) {
+    if (
+      mergedOptions.memoryOptimized ||
+      totalDataPoints > (mergedOptions.optimizationThreshold || 1000)
+    ) {
       // Check if WebGL is available
       try {
         const canvas = document.createElement('canvas');
@@ -244,28 +240,40 @@ export const Chart: React.FC<ChartProps> = ({
         if (gl) {
           return 'webgl';
         }
-      } catch (e) {
+      } catch (error) {
+        // Log WebGL initialization error
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          ErrorType.RUNTIME,
+          undefined,
+          { component: 'Chart', action: 'detectWebGL' }
+        );
         // WebGL not available, fall back to canvas
       }
-      
+
       return 'canvas';
     }
-    
+
     // For smaller datasets, SVG provides better interactivity
     return 'svg';
-  }, [mergedOptions.renderer, mergedOptions.memoryOptimized, mergedOptions.optimizationThreshold, data]);
-  
+  }, [
+    mergedOptions.renderer,
+    mergedOptions.memoryOptimized,
+    mergedOptions.optimizationThreshold,
+    data,
+  ]);
+
   // Initialize renderer
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     try {
       // Destroy previous renderer if it exists
       if (rendererRef.current) {
         rendererRef.current.destroy();
         rendererRef.current = null;
       }
-      
+
       // Create new renderer based on selected strategy
       switch (renderer) {
         case 'canvas':
@@ -279,39 +287,39 @@ export const Chart: React.FC<ChartProps> = ({
           rendererRef.current = new SVGRenderer();
           break;
       }
-      
+
       // Initial render
       rendererRef.current.render(containerRef.current, data, mergedOptions, type);
-      
+
       // Call onRender callback if provided
       if (onRender) {
         onRender(rendererRef.current);
       }
-      
+
       // Clear any previous errors
       if (error) {
         setError(null);
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      
+
       // Log error
       errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
         component: 'Chart',
         renderer,
         chartType: type,
-        dataSize: data.datasets.reduce((acc, dataset) => acc + dataset.data.length, 0),
+        dataSize: data?.datasets.reduce((acc, dataset) => acc + dataset.data?.length, 0),
       });
-      
+
       // Set error state
       setError(error);
-      
+
       // Call onError callback if provided
       if (onError) {
         onError(error);
       }
     }
-    
+
     // Cleanup
     return () => {
       if (rendererRef.current) {
@@ -320,65 +328,77 @@ export const Chart: React.FC<ChartProps> = ({
       }
     };
   }, [renderer, type]);
-  
+
   // Update chart when data or options change
   useEffect(() => {
     if (!containerRef.current || !rendererRef.current) return;
-    
+
     try {
       rendererRef.current.update(containerRef.current, data, mergedOptions, type);
-      
+
       // Clear any previous errors
       if (error) {
         setError(null);
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      
+
       // Log error
       errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
         component: 'Chart',
         renderer,
         chartType: type,
-        dataSize: data.datasets.reduce((acc, dataset) => acc + dataset.data.length, 0),
+        dataSize: data?.datasets.reduce((acc, dataset) => acc + dataset.data?.length, 0),
         action: 'update',
       });
-      
+
       // Set error state
       setError(error);
-      
+
       // Call onError callback if provided
       if (onError) {
         onError(error);
       }
     }
   }, [data, mergedOptions]);
-  
+
   // Handle container resize
   useEffect(() => {
     if (!containerRef.current || !rendererRef.current || !mergedOptions.responsive) return;
-    
+
     const resizeObserver = new ResizeObserver(() => {
       if (containerRef.current && rendererRef.current) {
         try {
           rendererRef.current.update(containerRef.current, data, mergedOptions, type);
-        } catch (err) {
-          console.error('Error resizing chart:', err);
+        } catch (error) {
+          // Properly log resize error with error service
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error(String(error)),
+            ErrorType.RUNTIME,
+            undefined,
+            {
+              component: 'Chart',
+              action: 'resize',
+              renderer,
+              chartType: type,
+            }
+          );
+          console.error('Error resizing chart:', error);
         }
       }
     });
-    
+
     resizeObserver.observe(containerRef.current);
-    
+
     return () => {
       resizeObserver.disconnect();
     };
   }, [mergedOptions.responsive]);
-  
+
   // Fallback UI for errors
   if (error) {
     return (
-      <div 
+      <div
         className={`chart-error ${className}`}
         style={{
           width: mergedOptions.width,
@@ -396,7 +416,7 @@ export const Chart: React.FC<ChartProps> = ({
       >
         <h4>Chart Error</h4>
         <p style={{ fontSize: '0.875rem' }}>{error.message}</p>
-        <button 
+        <button
           onClick={() => {
             setError(null);
             if (containerRef.current && rendererRef.current) {
@@ -422,7 +442,7 @@ export const Chart: React.FC<ChartProps> = ({
       </div>
     );
   }
-  
+
   return (
     <div
       ref={containerRef}

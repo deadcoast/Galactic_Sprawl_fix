@@ -253,7 +253,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
         coordinates,
         resourceType,
         amount: resource.amount,
-        quality: resource.quality || 0,
+        quality: resource.quality ?? 0,
         distribution: 'scattered', // Default, would need proper detection
       };
     },
@@ -528,7 +528,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
   useEffect(() => {
     // Handle anomaly detected events
     const handleAnomalyDetected = (event: BaseEvent) => {
-      const { anomaly, sector } = event.data as { anomaly: Anomaly; sector: Sector };
+      const { anomaly, sector } = event?.data as { anomaly: Anomaly; sector: Sector };
       if (!anomaly) return;
 
       const discovery = anomalyToDiscovery(anomaly, sector);
@@ -537,7 +537,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
 
     // Handle resource detected events
     const handleResourceDetected = (event: BaseEvent) => {
-      const { resource, sector } = event.data as { resource: ResourceData; sector: Sector };
+      const { resource, sector } = event?.data as { resource: ResourceData; sector: Sector };
       if (!resource || !sector) return;
 
       const discovery = resourceToDiscovery(resource, sector.id, sector.coordinates, sector.name);

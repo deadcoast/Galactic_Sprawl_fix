@@ -161,7 +161,7 @@ export function FactionManager({ onFactionUpdate }: FactionManagerProps) {
               },
             }}
             fleetStrength={Number(
-              (factionBehaviors[selectedFaction]?.stats?.totalShips || 0) / 100
+              (factionBehaviors[selectedFaction]?.stats?.totalShips ?? 0) / 100
             )}
             threatLevel={0.5}
             onUpdateBehavior={() => {}}

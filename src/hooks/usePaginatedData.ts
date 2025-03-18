@@ -49,13 +49,13 @@ export function usePaginatedData<T>({
         const response = await service.fetchPaginated<T>(endpoint, newParams);
 
         if (newParams.page === 1) {
-          setData(response.data);
+          setData(response?.data);
         } else {
-          setData(prev => [...prev, ...response.data]);
+          setData(prev => [...prev, ...response?.data]);
         }
 
-        setTotal(response.total);
-        setHasMore(response.hasMore);
+        setTotal(response?.total);
+        setHasMore(response?.hasMore);
       } catch (err) {
         setError(err instanceof Error ? err : new Error(String(err)));
       } finally {

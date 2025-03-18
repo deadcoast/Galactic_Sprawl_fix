@@ -23,13 +23,13 @@ import {
   TooltipRenderer,
 } from '../../../../types/exploration/AnalysisComponentTypes';
 import { DataPoint } from '../../../../types/exploration/DataAnalysisTypes';
+import { ResourceType, ResourceTypeString } from '../../../../types/resources/ResourceTypes';
 import {
   ensureStringResourceType,
   isEnumResourceType,
   isStringResourceType,
 } from '../../../../utils/resources/ResourceTypeMigration';
 import { ResourceTypeConverter } from '../../../../utils/ResourceTypeConverter';
-import { ResourceType, ResourceTypeString } from './../../../../types/resources/ResourceTypes';
 import { BaseChart } from './BaseChart';
 import { HeatMap } from './HeatMap';
 import { ScatterPlot } from './ScatterPlot';
@@ -44,7 +44,7 @@ interface ResourceChartPoint extends ChartDataRecord {
   x: number;
   y: number;
   value: number;
-  type: string;
+  type: ResourceType;
   coordinates: { x: number; y: number };
 }
 
@@ -63,7 +63,7 @@ interface ResourceHeatMapCell extends ChartDataRecord {
   dominantResource?: ResourceType;
   dominantPercentage?: number;
   totalResourceCount: number;
-  dominantType: string;
+  dominantType: ResourceType;
 }
 
 /**
@@ -99,6 +99,7 @@ const resourceTypeColors: Record<ResourceType, string> = {
   [ResourceType.GAS]: '#C27BA0', // Pink
   [ResourceType.EXOTIC]: '#CC0000', // Red
   [ResourceType.ORGANIC]: '#8B4513', // Saddle brown
+  [ResourceType.FOOD]: '#228B22', // Forest green
   [ResourceType.IRON]: '#8B8B8B', // Gray
   [ResourceType.COPPER]: '#CD7F32', // Bronze
   [ResourceType.TITANIUM]: '#B5B5B5', // Silver
@@ -142,9 +143,9 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
 
   // Prepare the heat map data
   const heatMapData = useMemo(() => {
-    if (!data.gridCells || data.gridCells.length === 0) return [];
+    if (!data?.gridCells || data?.gridCells.length === 0) return [];
 
-    return data.gridCells.map((cell: ResourceGridCell) => {
+    return data?.gridCells.map((cell: ResourceGridCell) => {
       let value = 0;
 
       if (selectedResourceType === 'all') {
@@ -166,7 +167,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
 
         if (resourceData) {
           value =
-            (resourceData[data.valueMetric as keyof typeof resourceData] as number) ||
+            (resourceData[data?.valueMetric as keyof typeof resourceData] as number) ||
             resourceData.amount;
         }
       }
@@ -176,29 +177,29 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
         value,
       };
     });
-  }, [data.gridCells, selectedResourceType, data.valueMetric]);
+  }, [data?.gridCells, selectedResourceType, data?.valueMetric]);
 
   // Prepare scatter plot data
   const scatterData = useMemo(() => {
-    if (!data.resourcePoints || data.resourcePoints.length === 0) return [];
+    if (!data?.resourcePoints || data?.resourcePoints.length === 0) return [];
 
-    return data.resourcePoints.map((point: DataPoint) => {
+    return data?.resourcePoints.map((point: DataPoint) => {
       // Safely extract resource data from properties
-      const properties = point.properties || {};
+      const properties = point.properties ?? {};
       const resourceType = properties.resourceType || properties.type || 'unknown';
-      const value = properties[data.valueMetric] || properties.amount || 1;
+      const value = properties[data?.valueMetric] || properties.amount || 1;
 
       return {
         id: point.id,
         name: point.name || `Resource ${point.id}`,
-        x: point.coordinates?.x || 0,
-        y: point.coordinates?.y || 0,
+        x: point.coordinates?.x ?? 0,
+        y: point.coordinates?.y ?? 0,
         value,
         type: resourceType,
         coordinates: point.coordinates || { x: 0, y: 0 },
       };
     });
-  }, [data.resourcePoints, data.valueMetric]);
+  }, [data?.resourcePoints, data?.valueMetric]);
 
   // Event handlers
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -206,7 +207,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
   };
 
   const handleResourceTypeChange = (event: SelectChangeEvent<string>) => {
-    setSelectedResourceType(event.target.value);
+    setSelectedResourceType(event?.target.value);
   };
 
   // Color function for scatter plot points
@@ -223,10 +224,10 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
   const renderCellTooltip: TooltipRenderer<ResourceHeatMapCell> = heatMapCell => {
     if (!heatMapCell) return null;
 
-    const resources = heatMapCell.resources || [];
+    const resources = heatMapCell.resources ?? [];
     const sortedResources = [...resources].sort((a, b) => {
-      const aValue = (a[data.valueMetric as keyof typeof a] as number) || a.amount;
-      const bValue = (b[data.valueMetric as keyof typeof b] as number) || b.amount;
+      const aValue = (a[data?.valueMetric as keyof typeof a] as number) || a.amount;
+      const bValue = (b[data?.valueMetric as keyof typeof b] as number) || b.amount;
       return bValue - aValue;
     });
 
@@ -271,7 +272,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
       <Typography variant="subtitle2">{point.name}</Typography>
       <Typography variant="body2">Type: {point.type}</Typography>
       <Typography variant="body2">
-        {data.valueMetric}: {point.value.toFixed(2)}
+        {data?.valueMetric}: {point.value.toFixed(2)}
       </Typography>
       <Typography variant="body2">
         Location: ({point.coordinates.x.toFixed(1)}, {point.coordinates.y.toFixed(1)})
@@ -300,7 +301,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
         backgroundColor: theme => theme.palette.background.paper,
       }}
     >
-      {data.resourceTypes.map((type: ResourceType) => (
+      {data?.resourceTypes.map((type: ResourceType) => (
         <div key={type} style={{ display: 'flex', alignItems: 'center' }}>
           <div
             style={{
@@ -319,7 +320,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
 
   // Insights display
   const renderInsights = () => {
-    if (!data.insights || data.insights.length === 0) {
+    if (!data?.insights || data?.insights.length === 0) {
       return (
         <Paper sx={{ p: 2, mt: 2, backgroundColor: theme => theme.palette.background.paper }}>
           <Typography variant="body2">No insights available for this analysis.</Typography>
@@ -333,7 +334,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
           Key Insights
         </Typography>
         <Box component="ul" sx={{ ml: 2, mt: 1 }}>
-          {data.insights.map((insight: string, index: number) => (
+          {data?.insights.map((insight: string, index: number) => (
             <Typography component="li" key={index} variant="body2" sx={{ mb: 1 }}>
               {insight}
             </Typography>
@@ -459,7 +460,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
               size="small"
             >
               <MenuItem value="all">All Resources</MenuItem>
-              {data.resourceTypes.map((type: ResourceType) => (
+              {data?.resourceTypes.map((type: ResourceType) => (
                 <MenuItem
                   key={type}
                   value={isEnumResourceType(type) ? ensureStringResourceType(type) : type}

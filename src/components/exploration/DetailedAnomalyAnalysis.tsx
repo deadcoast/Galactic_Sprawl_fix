@@ -200,7 +200,7 @@ export function DetailedAnomalyAnalysis({
         comparison = a.discoveryDate - b.discoveryDate;
       } else if (sortBy === 'severity') {
         const severityValue = { low: 1, medium: 2, high: 3 };
-        comparison = (severityValue[a.severity] || 0) - (severityValue[b.severity] || 0);
+        comparison = (severityValue[a.severity] ?? 0) - (severityValue[b.severity] ?? 0);
       } else if (sortBy === 'type') {
         comparison = a.type.localeCompare(b.type);
       } else if (sortBy === 'value') {

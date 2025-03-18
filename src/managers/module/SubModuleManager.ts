@@ -318,7 +318,7 @@ export class SubModuleManager {
     }
 
     // Check if parent module has reached max sub-modules
-    const currentSubModules = parentModule.subModules || [];
+    const currentSubModules = parentModule.subModules ?? [];
     if (currentSubModules.length >= parentModuleConfig.subModuleSupport.maxSubModules) {
       console.error(
         `[SubModuleManager] Parent module ${parentModuleId} has reached max sub-modules`
@@ -445,7 +445,7 @@ export class SubModuleManager {
     }
 
     // Check if parent module has reached max sub-modules
-    const currentSubModules = parentModule.subModules || [];
+    const currentSubModules = parentModule.subModules ?? [];
     if (currentSubModules.length >= parentModuleConfig.subModuleSupport.maxSubModules) {
       return {
         success: false,
@@ -732,12 +732,12 @@ export class SubModuleManager {
    */
   private handleModuleUpgraded = (event: ModuleEvent): void => {
     // Type guard for event data
-    if (!event.data || typeof event.data !== 'object') {
+    if (!event?.data || typeof event?.data !== 'object') {
       return;
     }
 
     // Safely extract moduleId with type checking
-    const moduleId = typeof event.data.moduleId === 'string' ? event.data.moduleId : undefined;
+    const moduleId = typeof event?.data?.moduleId === 'string' ? event?.data?.moduleId : undefined;
     if (!moduleId) {
       return;
     }
@@ -763,12 +763,12 @@ export class SubModuleManager {
    */
   private handleModuleActivated = (event: ModuleEvent): void => {
     // Type guard for event data
-    if (!event.data || typeof event.data !== 'object') {
+    if (!event?.data || typeof event?.data !== 'object') {
       return;
     }
 
     // Safely extract moduleId with type checking
-    const moduleId = typeof event.data.moduleId === 'string' ? event.data.moduleId : undefined;
+    const moduleId = typeof event?.data?.moduleId === 'string' ? event?.data?.moduleId : undefined;
     if (!moduleId) {
       return;
     }
@@ -792,12 +792,12 @@ export class SubModuleManager {
    */
   private handleModuleDeactivated = (event: ModuleEvent): void => {
     // Type guard for event data
-    if (!event.data || typeof event.data !== 'object') {
+    if (!event?.data || typeof event?.data !== 'object') {
       return;
     }
 
     // Safely extract moduleId with type checking
-    const moduleId = typeof event.data.moduleId === 'string' ? event.data.moduleId : undefined;
+    const moduleId = typeof event?.data?.moduleId === 'string' ? event?.data?.moduleId : undefined;
     if (!moduleId) {
       return;
     }

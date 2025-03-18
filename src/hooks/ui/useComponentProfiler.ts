@@ -46,7 +46,7 @@ export function useComponentProfiler(
     profiler.metrics.lastRenderTimestamp = Date.now();
 
     // Add to render history
-    if (profiler.renderHistory.length >= (options.maxRenderHistory || 100)) {
+    if (profiler.renderHistory.length >= (options?.maxRenderHistory || 100)) {
       profiler.renderHistory.shift();
     }
 
@@ -58,10 +58,10 @@ export function useComponentProfiler(
     });
 
     // Log slow renders
-    if (options.logToConsole && renderTime > (options.slowRenderThreshold || 16)) {
+    if (options?.logToConsole && renderTime > (options?.slowRenderThreshold || 16)) {
       console.warn(
         `Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms ` +
-          `(threshold: ${options.slowRenderThreshold || 16}ms)`
+          `(threshold: ${options?.slowRenderThreshold || 16}ms)`
       );
     }
 

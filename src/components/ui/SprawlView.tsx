@@ -15,8 +15,9 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import { GameLayout } from './GameLayout';
 
 interface EmpireDetails {
@@ -30,7 +31,7 @@ interface Asset {
   name: string;
   position: { x: number; y: number };
   population?: number;
-  resources?: string[];
+  resources?: ResourceType[];
   tradeConnections?: { target: string; volume: number }[];
   status: 'active' | 'constructing' | 'damaged';
   developmentLevel: number;
@@ -70,7 +71,7 @@ export function SprawlView({ empire }: { empire: EmpireDetails }) {
       name: 'Alpha Prime',
       position: { x: 0, y: 0 },
       population: 10000,
-      resources: ['Iron', 'Titanium'],
+      resources: [ResourceType.IRON, ResourceType.TITANIUM],
       tradeConnections: [
         { target: 'beta-station', volume: 0.8 },
         { target: 'gamma-sphere', volume: 0.5 },
@@ -85,7 +86,7 @@ export function SprawlView({ empire }: { empire: EmpireDetails }) {
       name: 'Beta Station',
       position: { x: 150, y: -100 },
       population: 5000,
-      resources: ['Helium-3'],
+      resources: [ResourceType.HELIUM],
       tradeConnections: [{ target: 'alpha-colony', volume: 0.8 }],
       status: 'active',
       developmentLevel: 0.6,

@@ -31,7 +31,7 @@ export function isModuleType(value: unknown): value is ModuleType {
     ResourceType.POPULATION,
     'infrastructure',
     ResourceType.RESEARCH,
-    'food',
+    ResourceType.FOOD,
     'defense',
     'resource-manager',
   ];
@@ -216,14 +216,14 @@ export function validateModularBuilding(building: unknown): building is ModularB
   }
 
   // Validate each module
-  for (const module of b.modules || []) {
+  for (const module of b.modules ?? []) {
     if (!validateBaseModule(module)) {
       return false;
     }
   }
 
   // Validate each attachment point
-  for (const point of b.attachmentPoints || []) {
+  for (const point of b.attachmentPoints ?? []) {
     if (!validateModuleAttachmentPoint(point)) {
       return false;
     }
@@ -289,7 +289,7 @@ export function canUpgradeModule(
 
   // Check resource costs
   for (const cost of config.requirements.resourceCosts) {
-    const available = availableResources[cost.type] || 0;
+    const available = availableResources[cost.type] ?? 0;
     if (available < cost.amount) {
       return {
         canUpgrade: false,
@@ -623,7 +623,7 @@ export function validateSubModuleAttachmentPoint(
     return false;
   }
 
-  for (const type of p.allowedTypes || []) {
+  for (const type of p.allowedTypes ?? []) {
     if (!isSubModuleType(type)) {
       return false;
     }
@@ -669,7 +669,7 @@ export function canAttachSubModule(
   }
 
   // Check if parent module has reached max sub-modules
-  const currentSubModules = parentModule.subModules || [];
+  const currentSubModules = parentModule.subModules ?? [];
   if (currentSubModules.length >= parentConfig.subModuleSupport.maxSubModules) {
     return false;
   }
@@ -722,7 +722,7 @@ export function canUpgradeSubModule(
   const levelMultiplier = Math.pow(1.5, subModule.level);
   for (const cost of config.requirements.resourceCosts) {
     const scaledAmount = Math.ceil(cost.amount * levelMultiplier);
-    const available = availableResources[cost.type] || 0;
+    const available = availableResources[cost.type] ?? 0;
     if (available < scaledAmount) {
       return {
         canUpgrade: false,

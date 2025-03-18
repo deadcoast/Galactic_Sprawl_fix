@@ -1,11 +1,8 @@
 import { EventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { Position } from '../../types/core/GameTypes';
-import {
-  FlowNode,
-  FlowNodeType,
-  ResourceType,
-} from '../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
+import { FlowNode, FlowNodeType } from '../../types/resources/StandardizedResourceTypes';
 import { ResourceFlowManager } from '../resource/ResourceFlowManager';
 import { ResourceThresholdManager, ThresholdConfig } from '../resource/ResourceThresholdManager';
 import { MiningShipManagerImpl } from './MiningShipManagerImpl';
@@ -124,10 +121,10 @@ export class MiningResourceIntegration {
   private subscribeToMiningEvents(): void {
     // Listen for mining ship registration
     this.miningManager.on('shipRegistered', (event: MiningEvents['shipRegistered']) => {
-      console.warn(`[MiningResourceIntegration] Mining ship registered: ${event.shipId}`);
+      console.warn(`[MiningResourceIntegration] Mining ship registered: ${event?.shipId}`);
 
       // Get the ship from the mining manager
-      const ship = this.getShipFromManager(event.shipId);
+      const ship = this.getShipFromManager(event?.shipId);
       if (!ship) {
         return;
       }
@@ -135,7 +132,7 @@ export class MiningResourceIntegration {
       // Register the ship as a producer node in the flow manager
       this.flowManager.registerNode(
         createFlowNode(
-          `mining-ship-${event.shipId}`,
+          `mining-ship-${event?.shipId}`,
           FlowNodeType.PRODUCER,
           [ResourceType.MINERALS, ResourceType.GAS, ResourceType.PLASMA, ResourceType.EXOTIC],
           ship.efficiency || 1.0,
@@ -146,25 +143,25 @@ export class MiningResourceIntegration {
 
     // Listen for mining ship unregistration
     this.miningManager.on('shipUnregistered', (event: MiningEvents['shipUnregistered']) => {
-      console.warn(`[MiningResourceIntegration] Mining ship unregistered: ${event.shipId}`);
+      console.warn(`[MiningResourceIntegration] Mining ship unregistered: ${event?.shipId}`);
 
       // Unregister the ship from the flow manager
-      this.flowManager.unregisterNode(`mining-ship-${event.shipId}`);
+      this.flowManager.unregisterNode(`mining-ship-${event?.shipId}`);
     });
 
     // Listen for mining ship status changes
     this.miningManager.on('shipStatusUpdated', (event: MiningEvents['shipStatusUpdated']) => {
       // Get the node and update its active status
-      const node = this.flowManager.getNode(`mining-ship-${event.shipId}`);
+      const node = this.flowManager.getNode(`mining-ship-${event?.shipId}`);
       if (node) {
         // Create a new node with updated active status
         this.flowManager.registerNode(
           createFlowNode(
             node.id,
             node.type,
-            node.outputs?.map(output => output.type) || [],
+            node.outputs?.map(output => output.type) ?? [],
             node.efficiency,
-            event.status === 'mining'
+            event?.status === 'mining'
           )
         );
       }
@@ -173,7 +170,7 @@ export class MiningResourceIntegration {
     // Listen for resource events from the module event bus
     moduleEventBus.subscribe('RESOURCE_PRODUCED', (event: ModuleEvent) => {
       // Check if this is a mining ship module
-      if (!event.moduleId || !event.moduleId.startsWith('mining-ship-')) {
+      if (!event?.moduleId || !event?.moduleId.startsWith('mining-ship-')) {
         return;
       }
 
@@ -189,7 +186,7 @@ export class MiningResourceIntegration {
       }
 
       // Create a transfer record
-      const shipId = event.moduleId.replace('mining-ship-', '');
+      const shipId = event?.moduleId.replace('mining-ship-', '');
       const transfer: ResourceTransfer = {
         type: resourceType,
         source: `mining-ship-${shipId}`,
@@ -369,8 +366,8 @@ function isResourceEventData(data: unknown): data is {
     data !== null &&
     typeof data === 'object' &&
     'resourceType' in data &&
-    typeof data.resourceType === 'string' &&
+    typeof data?.resourceType === 'string' &&
     'delta' in data &&
-    typeof data.delta === 'number'
+    typeof data?.delta === 'number'
   );
 }

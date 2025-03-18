@@ -70,14 +70,14 @@ export function createEvent<T extends string, D>(type: T, data?: D): TypedEvent<
  * Type-safe event data extractor - safely extracts data from events
  */
 export function getEventData<T>(event: BaseEvent): T | undefined {
-  return event.data as T | undefined;
+  return event?.data as T | undefined;
 }
 
 /**
  * Event type guard - checks if an event is of a specific type
  */
 export function isEventOfType<T extends string>(event: BaseEvent, type: T): event is TypedEvent<T> {
-  return event.type === type;
+  return event?.type === type;
 }
 
 /**
@@ -87,7 +87,7 @@ export function hasEventData<T>(
   event: BaseEvent,
   predicate: (data: unknown) => data is T
 ): event is BaseEvent & { data: T } {
-  return event.data !== undefined && predicate(event.data);
+  return event?.data !== undefined && predicate(event?.data);
 }
 
 /**
@@ -98,8 +98,8 @@ export function createTypedEventHandler<T extends string, E extends BaseEvent, D
   handler: (data: D, event: E) => void
 ): EventHandler<E> {
   return (event: E) => {
-    if (event.type === type && event.data !== undefined) {
-      handler(event.data as D, event);
+    if (event?.type === type && event?.data !== undefined) {
+      handler(event?.data as D, event);
     }
   };
 }
@@ -133,8 +133,8 @@ export function typedSubscribe<
   handler: (data: M[K], event: TypedEvent<K, M[K]>) => void
 ): EventUnsubscribe {
   const wrappedHandler: EventHandler<E> = (event: E) => {
-    if (event.type === eventType) {
-      handler(event.data as M[K], event as unknown as TypedEvent<K, M[K]>);
+    if (event?.type === eventType) {
+      handler(event?.data as M[K], event as unknown as TypedEvent<K, M[K]>);
     }
   };
 

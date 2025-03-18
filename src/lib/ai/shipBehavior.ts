@@ -61,7 +61,7 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
 
   private setupEventListeners(): void {
     window.addEventListener('salvageGenerated', ((event: CustomEvent) => {
-      const { items, position } = event.detail;
+      const { items, position } = event?.detail;
       this.handleNewSalvage(items, position);
     }) as EventListener);
   }

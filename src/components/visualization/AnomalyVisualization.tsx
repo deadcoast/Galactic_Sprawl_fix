@@ -77,7 +77,7 @@ export function AnomalyVisualization({
 
   // Calculate anomaly scores when data changes
   useEffect(() => {
-    if (!anomalyService || !data.length) return;
+    if (!anomalyService || !data?.length) return;
 
     const detectAnomalies = async () => {
       try {
@@ -108,7 +108,7 @@ export function AnomalyVisualization({
     ctx.scale(viewport.scale, viewport.scale);
 
     // Draw points
-    data.forEach(point => {
+    data?.forEach(point => {
       const x = point.values[dimensions[0]];
       const y = point.values[dimensions[1]];
       const score = (anomalyService as typeof anomalyDetectionService).getAnomalyScore(point.id);
@@ -142,11 +142,11 @@ export function AnomalyVisualization({
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      const x = (event.clientX - rect.left - viewport.x) / viewport.scale;
-      const y = (event.clientY - rect.top - viewport.y) / viewport.scale;
+      const x = (event?.clientX - rect.left - viewport.x) / viewport.scale;
+      const y = (event?.clientY - rect.top - viewport.y) / viewport.scale;
 
       // Find nearest point
-      const nearest = data.reduce(
+      const nearest = data?.reduce(
         (nearest, point) => {
           const px = point.values[dimensions[0]];
           const py = point.values[dimensions[1]];
@@ -172,8 +172,8 @@ export function AnomalyVisualization({
   // Handle wheel zoom
   const handleWheel = useCallback(
     (event: React.WheelEvent<HTMLCanvasElement>) => {
-      event.preventDefault();
-      const delta = -event.deltaY;
+      event?.preventDefault();
+      const delta = -event?.deltaY;
       const scale = viewport.scale * (1 + delta / 1000);
 
       updateViewport({

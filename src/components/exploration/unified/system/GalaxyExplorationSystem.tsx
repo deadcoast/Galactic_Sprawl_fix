@@ -591,7 +591,7 @@ const GalaxyExplorationSystemInner: React.FC<
               case 'uranium':
                 ctx.fillStyle = `rgba(100, 200, 100, ${alpha})`;
                 break;
-              case 'water':
+              case ResourceType.WATER:
                 ctx.fillStyle = `rgba(100, 150, 200, ${alpha})`;
                 break;
               case 'helium':
@@ -1037,36 +1037,36 @@ const GalaxyExplorationSystemInner: React.FC<
   const handleRowClick = useCallback(
     (item: Sector | StarSystem | Anomaly | ResourceDeposit | Planet) => {
       // Different selection handling based on data type
-      if ('type' in item && item.id) {
-        if (item.type === 'sector') {
+      if ('type' in item && item?.id) {
+        if (item?.type === 'sector') {
           // It's a sector
           setSelection([
             {
-              entityId: item.id,
+              entityId: item?.id,
               entityType: 'sector',
-              coordinates: item.coordinates,
+              coordinates: item?.coordinates,
               selected: true,
               highlightColor: '#ffcc00',
             },
           ]);
-        } else if (item.type === 'system') {
+        } else if (item?.type === 'system') {
           // It's a system
           setSelection([
             {
-              entityId: item.id,
+              entityId: item?.id,
               entityType: 'system',
-              coordinates: item.coordinates,
+              coordinates: item?.coordinates,
               selected: true,
               highlightColor: '#88aaff',
             },
           ]);
-        } else if (item.type === 'anomaly') {
+        } else if (item?.type === 'anomaly') {
           // It's an anomaly
           setSelection([
             {
-              entityId: item.id,
+              entityId: item?.id,
               entityType: 'anomaly',
-              coordinates: item.coordinates,
+              coordinates: item?.coordinates,
               selected: true,
               highlightColor: '#ff88aa',
             },
@@ -1076,9 +1076,9 @@ const GalaxyExplorationSystemInner: React.FC<
         // It's a resource
         setSelection([
           {
-            entityId: item.id,
+            entityId: item?.id,
             entityType: 'resource',
-            coordinates: item.coordinates,
+            coordinates: item?.coordinates,
             selected: true,
             highlightColor: '#aaffaa',
           },

@@ -126,7 +126,7 @@ export class WebGLRenderer implements ChartRenderer {
   } = {};
 
   private validateOptions(options: BaseChartOptions): asserts options is ExtendedChartOptions {
-    if (!options.axes) {
+    if (!options?.axes) {
       throw new Error('WebGLRenderer requires axes configuration');
     }
   }
@@ -178,12 +178,12 @@ export class WebGLRenderer implements ChartRenderer {
     }
 
     // Calculate chart area with padding
-    const padding = options.padding || {};
+    const padding = options?.padding ?? {};
     const chartArea = {
-      left: padding.left || 0,
-      right: this.containerWidth - (padding.right || 0),
-      top: padding.top || 0,
-      bottom: this.containerHeight - (padding.bottom || 0),
+      left: padding.left ?? 0,
+      right: this.containerWidth - (padding.right ?? 0),
+      top: padding.top ?? 0,
+      bottom: this.containerHeight - (padding.bottom ?? 0),
     };
 
     // Render the chart based on type
@@ -215,12 +215,12 @@ export class WebGLRenderer implements ChartRenderer {
       }
 
       // Render legend if enabled
-      if (options.legend?.visible) {
+      if (options?.legend?.visible) {
         this.renderLegend(data, options, chartArea);
       }
 
       // Setup tooltips if enabled
-      if (options.tooltip?.enabled) {
+      if (options?.tooltip?.enabled) {
         this.setupTooltip(container, data, options, chartArea);
       } else if (this.tooltipElement) {
         this.tooltipElement.remove();
@@ -439,7 +439,7 @@ export class WebGLRenderer implements ChartRenderer {
    * Handle WebGL context loss
    */
   private handleContextLost(event: WebGLContextEvent): void {
-    event.preventDefault();
+    event?.preventDefault();
     this.isInitialized = false;
 
     // Clear all resources
@@ -870,8 +870,8 @@ export class WebGLRenderer implements ChartRenderer {
     if (!this.gl) return;
 
     const { datasets } = data;
-    const xAxis = options.axes?.x || { type: 'linear' };
-    const yAxis = options.axes?.y || { type: 'linear' };
+    const xAxis = options?.axes?.x || { type: 'linear' };
+    const yAxis = options?.axes?.y || { type: 'linear' };
 
     // Calculate scales
     const scales = this.calculateScales(data, chartArea, xAxis, yAxis);
@@ -890,7 +890,7 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Process each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      if (dataset.data.length === 0) return;
+      if (dataset.data?.length === 0) return;
 
       // Parse color
       const colorStr = dataset.color || this.getDefaultColor(datasetIndex);
@@ -995,8 +995,8 @@ export class WebGLRenderer implements ChartRenderer {
     if (!this.gl) return;
 
     const { datasets } = data;
-    const xAxis = options.axes?.x || { type: 'linear' };
-    const yAxis = options.axes?.y || { type: 'linear' };
+    const xAxis = options?.axes?.x || { type: 'linear' };
+    const yAxis = options?.axes?.y || { type: 'linear' };
 
     // Calculate scales
     const scales = this.calculateScales(data, chartArea, xAxis, yAxis);
@@ -1010,7 +1010,7 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Process each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      if (dataset.data.length === 0) return;
+      if (dataset.data?.length === 0) return;
 
       // Parse color
       const colorStr = dataset.color || this.getDefaultColor(datasetIndex);
@@ -1029,7 +1029,7 @@ export class WebGLRenderer implements ChartRenderer {
         pointIndices.push(pointIndexOffset + i);
       });
 
-      pointIndexOffset += dataset.data.length;
+      pointIndexOffset += dataset.data?.length;
     });
 
     // Create and bind buffers
@@ -1078,8 +1078,8 @@ export class WebGLRenderer implements ChartRenderer {
     if (!this.gl) return;
 
     const { datasets } = data;
-    const xAxis = options.axes?.x || { type: 'linear' };
-    const yAxis = options.axes?.y || { type: 'linear' };
+    const xAxis = options?.axes?.x || { type: 'linear' };
+    const yAxis = options?.axes?.y || { type: 'linear' };
 
     // Calculate scales
     const scales = this.calculateScales(data, chartArea, xAxis, yAxis);
@@ -1104,7 +1104,7 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Process each dataset
     datasets.forEach((dataset, datasetIndex) => {
-      if (dataset.data.length < 2) return;
+      if (dataset.data?.length < 2) return;
 
       // Parse color
       const colorStr = dataset.color || this.getDefaultColor(datasetIndex);
@@ -1417,10 +1417,10 @@ export class WebGLRenderer implements ChartRenderer {
   private renderAxes(data: ChartData, options: ExtendedChartOptions, chartArea: ChartArea): void {
     if (!this.svgCanvas) return;
 
-    const xAxis = options.axes?.x || { type: 'linear' };
-    const yAxis = options.axes?.y || { type: 'linear' };
+    const xAxis = options?.axes?.x || { type: 'linear' };
+    const yAxis = options?.axes?.y || { type: 'linear' };
     const scales = this.calculateScales(data, chartArea, xAxis, yAxis);
-    const themeColors = options.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
     // Create axes group
     const axesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -1568,10 +1568,10 @@ export class WebGLRenderer implements ChartRenderer {
     options: ExtendedChartOptions,
     axesGroup: SVGGElement
   ): void {
-    const _axes = options.axes || {};
+    const _axes = options?.axes ?? {};
     const xAxis = _axes.x || { type: 'linear', grid: true };
     const yAxis = _axes.y || { type: 'linear', grid: true };
-    const themeColors = options.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
     // Create a group for the grid
     const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -1628,7 +1628,7 @@ export class WebGLRenderer implements ChartRenderer {
     if (!this.svgCanvas) return;
 
     const { datasets } = data;
-    const legendOptions = options.legend || { visible: true, position: 'top' };
+    const legendOptions = options?.legend || { visible: true, position: 'top' };
 
     if (!legendOptions.visible || datasets.length === 0) return;
 
@@ -1674,7 +1674,7 @@ export class WebGLRenderer implements ChartRenderer {
     legendGroup.setAttribute('class', 'legend');
     this.svgCanvas.appendChild(legendGroup);
 
-    const themeColors = options.theme === 'dark' ? this.theme.dark : this.theme.light;
+    const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
     // Draw legend items
     datasets.forEach((dataset, i) => {
@@ -1729,9 +1729,9 @@ export class WebGLRenderer implements ChartRenderer {
     this.tooltipElement.className = 'chart-tooltip';
     this.tooltipElement.style.position = 'absolute';
     this.tooltipElement.style.display = 'none';
-    this.tooltipElement.style.backgroundColor = options.theme === 'dark' ? '#333' : '#fff';
-    this.tooltipElement.style.color = options.theme === 'dark' ? '#fff' : '#333';
-    this.tooltipElement.style.border = `1px solid ${options.theme === 'dark' ? '#555' : '#ddd'}`;
+    this.tooltipElement.style.backgroundColor = options?.theme === 'dark' ? '#333' : '#fff';
+    this.tooltipElement.style.color = options?.theme === 'dark' ? '#fff' : '#333';
+    this.tooltipElement.style.border = `1px solid ${options?.theme === 'dark' ? '#555' : '#ddd'}`;
     this.tooltipElement.style.padding = '8px';
     this.tooltipElement.style.borderRadius = '4px';
     this.tooltipElement.style.pointerEvents = 'none';
@@ -1772,8 +1772,8 @@ export class WebGLRenderer implements ChartRenderer {
             ? point.y.toLocaleString(undefined, { maximumFractionDigits: 2 })
             : point.y;
 
-        if (options.tooltip?.format) {
-          tooltipContent += options.tooltip.format(point, dataset);
+        if (options?.tooltip?.format) {
+          tooltipContent += options?.tooltip.format(point, dataset);
         } else {
           tooltipContent += `
             <div style="margin-bottom: 4px">
@@ -1829,11 +1829,11 @@ export class WebGLRenderer implements ChartRenderer {
     datasetIndex: number;
   }> {
     const { datasets } = data;
-    const xAxis = options.axes?.x || { type: 'linear' };
-    const yAxis = options.axes?.y || { type: 'linear' };
+    const xAxis = options?.axes?.x || { type: 'linear' };
+    const yAxis = options?.axes?.y || { type: 'linear' };
     const scales = this.calculateScales(data, chartArea, xAxis, yAxis);
-    const tooltipMode = options.tooltip?.mode || 'nearest';
-    const intersect = options.tooltip?.intersect !== false;
+    const tooltipMode = options?.tooltip?.mode || 'nearest';
+    const intersect = options?.tooltip?.intersect !== false;
 
     interface NearestPoint {
       dataset: ChartData['datasets'][0];
@@ -1846,7 +1846,7 @@ export class WebGLRenderer implements ChartRenderer {
 
     // Find nearest points based on chart type and tooltip mode
     datasets.forEach((dataset, datasetIndex) => {
-      dataset.data.forEach(point => {
+      dataset.data?.forEach(point => {
         const pointX = this.mapValueToPixel(point.x, scales.x, chartArea.left, chartArea.right);
         const pointY = this.mapValueToPixel(
           point.y,
@@ -1884,7 +1884,7 @@ export class WebGLRenderer implements ChartRenderer {
     } else if (tooltipMode === 'point') {
       // Include all points within a threshold distance
       result = nearestPoints.filter(item => {
-        return !intersect || item.distance < 20;
+        return !intersect || item?.distance < 20;
       });
     } else if (tooltipMode === 'dataset') {
       // Include the nearest point from each dataset
@@ -1892,18 +1892,18 @@ export class WebGLRenderer implements ChartRenderer {
 
       for (const item of nearestPoints) {
         if (
-          !datasetMap.has(item.datasetIndex) ||
-          item.distance < datasetMap.get(item.datasetIndex)!.distance
+          !datasetMap.has(item?.datasetIndex) ||
+          item?.distance < datasetMap.get(item?.datasetIndex)!.distance
         ) {
-          datasetMap.set(item.datasetIndex, item);
+          datasetMap.set(item?.datasetIndex, item);
         }
       }
 
-      result = Array.from(datasetMap.values()).filter(item => !intersect || item.distance < 40);
+      result = Array.from(datasetMap.values()).filter(item => !intersect || item?.distance < 40);
     }
 
     // Return without the distance property
-    return result.map(({ dataset, point, datasetIndex }) => ({ dataset, point, datasetIndex }));
+    return result?.map(({ dataset, point, datasetIndex }) => ({ dataset, point, datasetIndex }));
   }
 
   /**
@@ -1926,7 +1926,7 @@ export class WebGLRenderer implements ChartRenderer {
     let yMax = yAxis?.max !== undefined ? yAxis.max : -Infinity;
 
     datasets.forEach(dataset => {
-      dataset.data.forEach(point => {
+      dataset.data?.forEach(point => {
         // Handle x values
         let xValue = point.x;
         if (typeof xValue === 'string' && xAxis?.type === 'category') {
@@ -2043,8 +2043,8 @@ export class WebGLRenderer implements ChartRenderer {
   private getAllXValues(data: ChartData): string[] {
     const uniqueValues = new Set<string>();
 
-    data.datasets.forEach(dataset => {
-      dataset.data.forEach(point => {
+    data?.datasets.forEach(dataset => {
+      dataset.data?.forEach(point => {
         uniqueValues.add(String(point.x));
       });
     });

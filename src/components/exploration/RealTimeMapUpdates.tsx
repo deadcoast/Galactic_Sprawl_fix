@@ -1,9 +1,9 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import * as React from "react";
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTooltip } from '../../hooks/ui/useTooltip';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceTypeConverter } from '../../utils/ResourceTypeConverter';
 
 // Define ModuleEvent interface
 interface ModuleEvent {
@@ -22,7 +22,7 @@ interface Sector {
   anomalies: Anomaly[];
   lastScanned?: number;
   resources?: Array<{
-    type: string;
+    type: ResourceType;
     amount: number;
   }>;
 }
@@ -108,10 +108,10 @@ export function RealTimeMapUpdates({
   // Handle sector scan events
   useEffect(() => {
     const handleSectorScan = (event: ModuleEvent) => {
-      if (!event.data || !event.data.sectorId) return;
+      if (!event?.data || !event?.data?.sectorId) return;
 
-      const sectorId = event.data.sectorId as string;
-      const shipId = event.data.shipId as string;
+      const sectorId = event?.data?.sectorId as string;
+      const shipId = event?.data?.shipId as string;
 
       onSectorsUpdate(
         sectors.map(sector => {
@@ -148,9 +148,9 @@ export function RealTimeMapUpdates({
     };
 
     const handleScanComplete = (event: ModuleEvent) => {
-      if (!event.data || !event.data.sectorId) return;
+      if (!event?.data || !event?.data?.sectorId) return;
 
-      const sectorId = event.data.sectorId as string;
+      const sectorId = event?.data?.sectorId as string;
 
       onSectorsUpdate(
         sectors.map(sector => {
@@ -187,10 +187,10 @@ export function RealTimeMapUpdates({
     };
 
     const handleAnomalyDetected = (event: ModuleEvent) => {
-      if (!event.data || !event.data.sectorId || !event.data.anomaly) return;
+      if (!event?.data || !event?.data?.sectorId || !event?.data?.anomaly) return;
 
-      const sectorId = event.data.sectorId as string;
-      const anomaly = event.data.anomaly as Anomaly;
+      const sectorId = event?.data?.sectorId as string;
+      const anomaly = event?.data?.anomaly as Anomaly;
 
       onSectorsUpdate(
         sectors.map(sector => {
@@ -212,15 +212,21 @@ export function RealTimeMapUpdates({
     };
 
     const handleResourceDiscovered = (event: ModuleEvent) => {
-      if (!event.data || !event.data.sectorId || !event.data.resource) return;
+      if (!event?.data || !event?.data?.sectorId || !event?.data?.resource) return;
 
-      const sectorId = event.data.sectorId as string;
-      const resource = event.data.resource as { type: string; amount: number };
+      const sectorId = event?.data?.sectorId as string;
+      const resourceData = event?.data?.resource as { type: string; amount: number };
+
+      // Convert string type to ResourceType enum
+      const resource = {
+        type: ResourceTypeConverter.stringToEnum(resourceData.type) || ResourceType.MINERALS,
+        amount: resourceData.amount,
+      };
 
       onSectorsUpdate(
         sectors.map(sector => {
           if (sector.id === sectorId) {
-            const existingResources = sector.resources || [];
+            const existingResources = sector.resources ?? [];
             const existingResourceIndex = existingResources.findIndex(
               r => r.type === resource.type
             );

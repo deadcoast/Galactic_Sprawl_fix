@@ -74,9 +74,6 @@
   31:3  warning  'width' is assigned a value but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
   32:3  warning  'height' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
 
-/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/resource/ConverterDashboard.tsx
-  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
-
 /Users/deadcoast/CursorProjects/Galactic_Sprawl/src/components/ui/resource/ResourceVisualizationEnhanced.tsx
    88:11  warning  'percentFilled' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
    89:11  warning  'timeUntilEmpty' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
@@ -162,8 +159,7 @@
   83:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 /Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/ui/useComponentRegistration.ts
-    1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
-  100:26  warning  'renderTime' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  100:26  warning  'renderTime' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
 
 /Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/useWorker.ts
   22:3  warning  'onProgress' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
@@ -414,5 +410,5 @@
 /Users/deadcoast/CursorProjects/Galactic_Sprawl/src/visualization/Chart.tsx
   247:16  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
 
-✖ 227 problems (43 errors, 184 warnings)
+✖ 225 problems (43 errors, 182 warnings)
 

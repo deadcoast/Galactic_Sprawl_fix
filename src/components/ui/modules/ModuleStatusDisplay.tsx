@@ -72,7 +72,7 @@ export const ModuleStatusDisplay = React.memo<ModuleStatusDisplayProps>(
     if (isLoading) {
       return (
         <div className="module-status-display module-status-display--loading">
-          Loading status data...
+          Loading status data?...
         </div>
       );
     }
@@ -118,7 +118,7 @@ export const ModuleStatusDisplay = React.memo<ModuleStatusDisplayProps>(
             <div className="module-status-display__detail">
               <span className="module-status-display__detail-label">Uptime:</span>
               <span className="module-status-display__detail-value">
-                {formatUptime(metrics?.uptime || 0)}
+                {formatUptime(metrics?.uptime ?? 0)}
               </span>
             </div>
           </div>
@@ -227,7 +227,7 @@ export const ModuleStatusDisplay = React.memo<ModuleStatusDisplayProps>(
           <div className="module-status-display__metrics">
             <h4 className="module-status-display__section-title">Performance Metrics</h4>
             <div className="module-status-display__metric-grid">
-              {Object.entries(metrics || {}).map(([key, value]) => (
+              {Object.entries(metrics ?? {}).map(([key, value]) => (
                 <div key={key} className="module-status-display__metric">
                   <div className="module-status-display__metric-label">
                     {key.replace(/([A-Z])/g, ' $1').trim()}

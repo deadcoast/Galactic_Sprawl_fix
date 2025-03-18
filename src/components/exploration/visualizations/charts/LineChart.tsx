@@ -108,7 +108,7 @@ export function LineChart({
   );
 
   // If no data, show error
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return (
       <BaseChart
         width={width}
@@ -132,8 +132,8 @@ export function LineChart({
 
   // Handle dot click event
   const handleDotClick = (event: DotClickEvent, index: number) => {
-    if (onElementClick && event && event.payload) {
-      onElementClick(event.payload, index);
+    if (onElementClick && event && event?.payload) {
+      onElementClick(event?.payload, index);
     }
   };
 

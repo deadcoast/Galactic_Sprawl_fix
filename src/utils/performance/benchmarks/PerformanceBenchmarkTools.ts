@@ -413,11 +413,11 @@ export function runResourceFlowBenchmark(
       return {
         nodeCount,
         connectionCount,
-        nodesProcessed: result.performanceMetrics?.nodesProcessed || 0,
-        connectionsProcessed: result.performanceMetrics?.connectionsProcessed || 0,
-        transfersGenerated: result.performanceMetrics?.transfersGenerated || 0,
+        nodesProcessed: result?.performanceMetrics?.nodesProcessed ?? 0,
+        connectionsProcessed: result?.performanceMetrics?.connectionsProcessed ?? 0,
+        transfersGenerated: result?.performanceMetrics?.transfersGenerated ?? 0,
         optimizationCycles: 1,
-        executionTimeMs: result.performanceMetrics?.executionTimeMs || 0,
+        executionTimeMs: result?.performanceMetrics?.executionTimeMs ?? 0,
       };
     };
 
@@ -476,7 +476,7 @@ export function createPerformanceVisualization(
 
   const y = d3
     .scaleLinear()
-    .domain([0, d3.max(results, d => d.executionTimeMs) || 0])
+    .domain([0, d3.max(results, d => d.executionTimeMs) ?? 0])
     .nice()
     .range([height, 0]);
 
@@ -498,7 +498,7 @@ export function createPerformanceVisualization(
     .data(results)
     .enter()
     .append('rect')
-    .attr('x', d => x(d.name) || 0)
+    .attr('x', d => x(d.name) ?? 0)
     .attr('y', d => y(d.executionTimeMs))
     .attr('width', x.bandwidth())
     .attr('height', d => height - y(d.executionTimeMs))
@@ -520,7 +520,7 @@ export function createPerformanceVisualization(
     .enter()
     .append('text')
     .attr('class', 'label')
-    .attr('x', d => (x(d.name) || 0) + x.bandwidth() / 2)
+    .attr('x', d => (x(d.name) ?? 0) + x.bandwidth() / 2)
     .attr('y', d => y(d.executionTimeMs) - 5)
     .attr('text-anchor', 'middle')
     .text(d => `${d.executionTimeMs.toFixed(2)}ms`);
@@ -643,7 +643,7 @@ export function generateBenchmarkReport(results: BenchmarkResult[]): string {
               <td>${r.executionTimeMs.toFixed(2)}</td>
               <td>${r.operationsPerSecond?.toFixed(2) || 'N/A'}</td>
               <td>${r.memoryUsageMB?.toFixed(2) || 'N/A'}</td>
-              <td>${r.description || ''}</td>
+              <td>${r.description ?? ''}</td>
             </tr>
           `
             )
@@ -660,7 +660,7 @@ export function generateBenchmarkReport(results: BenchmarkResult[]): string {
         <thead>
           <tr>
             <th>Name</th>
-            ${Object.keys(results[0]?.additionalMetrics || {})
+            ${Object.keys(results[0]?.additionalMetrics ?? {})
               .map(key => `<th>${key}</th>`)
               .join('')}
           </tr>
@@ -671,7 +671,7 @@ export function generateBenchmarkReport(results: BenchmarkResult[]): string {
               r => `
             <tr>
               <td>${r.name}</td>
-              ${Object.values(r.additionalMetrics || {})
+              ${Object.values(r.additionalMetrics ?? {})
                 .map(value => `<td>${typeof value === 'number' ? value.toFixed(2) : value}</td>`)
                 .join('')}
             </tr>
@@ -737,7 +737,7 @@ export function detectPerformanceRegressions(
   }> = [];
 
   // Create a map of baseline results for easy lookup
-  const baselineMap = new Map(baselineResults.map(result => [result.name, result]));
+  const baselineMap = new Map(baselineResults.map(result => [result?.name, result]));
 
   // Compare each new result with its baseline
   for (const newResult of newResults) {
@@ -887,7 +887,7 @@ export class PerformanceBenchmarkManager {
 
     // Check for regressions if needed
     if (job.notifyOnRegression && job.baselineKey) {
-      const baselineResults = this.results.get(job.baselineKey) || [];
+      const baselineResults = this.results.get(job.baselineKey) ?? [];
       const regressionAnalysis = detectPerformanceRegressions(
         results,
         baselineResults,
@@ -907,7 +907,7 @@ export class PerformanceBenchmarkManager {
    * @param jobId Job ID
    */
   getJobResults(jobId: string): BenchmarkResult[] {
-    return this.results.get(jobId) || [];
+    return this.results.get(jobId) ?? [];
   }
 
   /**

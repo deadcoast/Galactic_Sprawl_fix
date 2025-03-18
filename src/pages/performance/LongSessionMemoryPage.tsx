@@ -155,7 +155,7 @@ const LongSessionMemoryPage: React.FC = () => {
    * Handle leak detection from the memory tracker
    */
   const handleLeakDetected = (analysis: MemoryTrendAnalysis) => {
-    const severity = analysis.leakSeverity || 0;
+    const severity = analysis.leakSeverity ?? 0;
     const rate = analysis.growthRatePerMinute.toFixed(2);
 
     showNotification(`Memory leak detected! Growth rate: ${rate} MB/min, Severity: ${severity}/5`);
@@ -249,7 +249,7 @@ const LongSessionMemoryPage: React.FC = () => {
                     type="number"
                     value={leakThreshold}
                     onChange={e =>
-                      setLeakThreshold(Math.max(0.1, parseFloat(e.target.value) || 0.5))
+                      setLeakThreshold(Math.max(0.1, parseFloat(e.target.value) ?? 0.5))
                     }
                     min="0.1"
                     step="0.1"
@@ -535,14 +535,14 @@ const LongSessionMemoryPage: React.FC = () => {
                               .replace(/([A-Z])/g, ' $1')
                               .replace(/^./, str => str.toUpperCase())}
                           </td>
-                          <td>{(result.durationMs / (60 * 1000)).toFixed(1)} min</td>
-                          <td>{(result.finalMemoryMB - result.initialMemoryMB).toFixed(2)} MB</td>
-                          <td>{result.memoryGrowthRateMBPerHour.toFixed(2)} MB/h</td>
-                          <td className={result.leakDetected ? 'leak-detected' : ''}>
-                            {result.leakDetected ? 'Yes' : 'No'}
+                          <td>{(result?.durationMs / (60 * 1000)).toFixed(1)} min</td>
+                          <td>{(result?.finalMemoryMB - result?.initialMemoryMB).toFixed(2)} MB</td>
+                          <td>{result?.memoryGrowthRateMBPerHour.toFixed(2)} MB/h</td>
+                          <td className={result?.leakDetected ? 'leak-detected' : ''}>
+                            {result?.leakDetected ? 'Yes' : 'No'}
                           </td>
-                          <td className={result.leakDetected ? 'leak-detected' : ''}>
-                            {result.leakSeverity || '-'}
+                          <td className={result?.leakDetected ? 'leak-detected' : ''}>
+                            {result?.leakSeverity || '-'}
                           </td>
                         </tr>
                       ))}

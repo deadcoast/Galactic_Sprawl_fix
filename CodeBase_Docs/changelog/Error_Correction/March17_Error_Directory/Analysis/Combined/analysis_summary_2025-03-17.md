@@ -8,19 +8,19 @@ This report summarizes the results of both TypeScript and ESLint analysis.
 
 | Analysis Type | Errors | Warnings |
 |--------------|--------|----------|
-| TypeScript   | 560 | 0 |
-| ESLint       | 59 | 185 |
-| **Total**    | 619 | 185 |
+| TypeScript   | 648 | 0 |
+| ESLint       | 59 | 183 |
+| **Total**    | 707 | 183 |
 
 ## TypeScript Error Categories
 
 | Category | Count |
 |----------|-------|
-| Type Mismatches |      281 |
-| Missing Properties |       97 |
+| Type Mismatches |      336 |
+| Missing Properties |      113 |
 | Unused Variables |        0 |
 | Null/Undefined |      144 |
-| Resource Type Issues |      187 |
+| Resource Type Issues |      277 |
 | Event System Issues |       32 |
 | React Component Issues |       10 |
 | Syntax Errors |        0 |
@@ -29,10 +29,10 @@ This report summarizes the results of both TypeScript and ESLint analysis.
 
 | Category | Count |
 |----------|-------|
-| Unused Variables |      101 |
+| Unused Variables |       99 |
 | Import Errors |        0 |
 | React Errors |        0 |
-| TypeScript Errors |      220 |
+| TypeScript Errors |      218 |
 | Formatting Errors |        0 |
 
 ## Error Hotspots

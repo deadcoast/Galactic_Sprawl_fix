@@ -108,10 +108,10 @@ export class AdaptivePerformanceManager {
     // Use the correct signature for moduleEventBus.subscribe
     this.predictionSubscription = moduleEventBus.subscribe('STATUS_CHANGED', event => {
       if (
-        event.moduleId === 'resource-performance-monitor' &&
-        event.data?.type === 'performance_snapshot'
+        event?.moduleId === 'resource-performance-monitor' &&
+        event?.data?.type === 'performance_snapshot'
       ) {
-        this.processPerformanceSnapshot(event.data.snapshot as ResourcePerformanceSnapshot);
+        this.processPerformanceSnapshot(event?.data?.snapshot as ResourcePerformanceSnapshot);
       }
     });
   }
@@ -136,7 +136,7 @@ export class AdaptivePerformanceManager {
       // Convert to a data point for the predictor
       this.resourcePredictor.addDataPoint({
         timestamp: Date.now(),
-        resourceType,
+        resourceType: resourceType as ResourceType,
         value: metrics.consumptionRate,
         sessionDuration: (Date.now() - this.sessionStartTime) / 1000, // in seconds
         userActions: this.userInteractionCount,
@@ -189,7 +189,7 @@ export class AdaptivePerformanceManager {
       if (!metrics) continue;
 
       // Get prediction for this resource type
-      const prediction = this.resourcePredictor.predict(resourceType, {
+      const prediction = this.resourcePredictor.predict(resourceType as ResourceType, {
         sessionDuration: (Date.now() - this.sessionStartTime) / 1000,
         userActions: this.userInteractionCount,
         systemLoad: snapshot.systemLoad,

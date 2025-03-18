@@ -117,13 +117,13 @@ export function ModuleUpgradeVisualization({
   useEffect(() => {
     const handleUpgradeProgress = (event: BaseEvent) => {
       if (
-        event.moduleId === moduleId &&
-        event.data &&
-        typeof event.data === 'object' &&
-        'progress' in event.data &&
-        typeof event.data.progress === 'number'
+        event?.moduleId === moduleId &&
+        event?.data &&
+        typeof event?.data === 'object' &&
+        'progress' in event?.data &&
+        typeof event?.data?.progress === 'number'
       ) {
-        const newProgress = event.data.progress;
+        const newProgress = event?.data?.progress;
         setProgress(newProgress);
 
         // Determine current stage

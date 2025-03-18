@@ -18,15 +18,15 @@ interface DragPreviewProps<T = Record<string, unknown>> {
 function DragPreview<T = Record<string, unknown>>({ item, currentOffset }: DragPreviewProps<T>) {
   // Extract properties safely with type assertions
   const name =
-    item.type === 'module' || item.type === 'ship'
-      ? String((item.data as Record<string, unknown>).name || '')
+    item?.type === 'module' || item?.type === 'ship'
+      ? String((item?.data as Record<string, unknown>).name ?? '')
       : '';
 
   const amount =
-    item.type === 'resource' ? String((item.data as Record<string, unknown>).amount || '') : '';
+    item?.type === 'resource' ? String((item?.data as Record<string, unknown>).amount ?? '') : '';
 
   const resourceType =
-    item.type === 'resource' ? String((item.data as Record<string, unknown>).type || '') : '';
+    item?.type === 'resource' ? String((item?.data as Record<string, unknown>).type ?? '') : '';
 
   return (
     <div
@@ -38,13 +38,13 @@ function DragPreview<T = Record<string, unknown>>({ item, currentOffset }: DragP
       }}
     >
       <div className="rounded-lg border border-gray-700 bg-gray-900/90 px-4 py-2 text-white backdrop-blur-sm">
-        {item.type === 'module' && <span>📦 {name}</span>}
-        {item.type === 'resource' && (
+        {item?.type === 'module' && <span>📦 {name}</span>}
+        {item?.type === 'resource' && (
           <span>
             💎 {amount} {resourceType}
           </span>
         )}
-        {item.type === 'ship' && <span>🚀 {name}</span>}
+        {item?.type === 'ship' && <span>🚀 {name}</span>}
       </div>
     </div>
   );
@@ -83,7 +83,7 @@ export function DropTarget<T = Record<string, unknown>>({
       setIsOver(false);
       if (e.dataTransfer) {
         const item = JSON.parse(e.dataTransfer.getData('text')) as DragItem<T>;
-        if (accept.includes(item.type)) {
+        if (accept.includes(item?.type)) {
           onDrop(item);
         }
       }

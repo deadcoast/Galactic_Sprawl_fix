@@ -82,7 +82,7 @@ export function useModuleStatus(moduleId: string): UseModuleStatusResult {
     const unsubscribe = moduleManager.subscribeToEvent(
       EventType.MODULE_STATUS_CHANGED,
       (event: BaseEvent) => {
-        if (event.moduleId === moduleId) {
+        if (event?.moduleId === moduleId) {
           // Refresh module status when it changes
           fetchModuleStatus();
         }
@@ -223,9 +223,9 @@ export function useModuleStatus(moduleId: string): UseModuleStatusResult {
     module,
     currentStatus: statusDetails?.currentStatus || 'inactive',
     previousStatus: statusDetails?.previousStatus,
-    history: statusDetails?.history || [],
+    history: statusDetails?.history ?? [],
     metrics: statusDetails?.metrics || null,
-    alerts: statusDetails?.alerts || [],
+    alerts: statusDetails?.alerts ?? [],
     updateStatus,
     acknowledgeAlert,
     getStatusColor,

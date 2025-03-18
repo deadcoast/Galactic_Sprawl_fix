@@ -120,7 +120,7 @@ export class ResourceFlowWorkerUtil {
    * Handle messages received from the worker
    */
   private handleWorkerMessage = (event: MessageEvent<WorkerOutput>): void => {
-    const { taskId, result, error } = event.data;
+    const { taskId, result, error } = event?.data;
 
     // Find the task in our tracking map
     const task = this.tasks.get(taskId);

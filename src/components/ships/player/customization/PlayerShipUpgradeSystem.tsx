@@ -1,5 +1,5 @@
-import * as React from "react";
 import { AlertTriangle, ArrowRight, Crosshair, Lock, Rocket, Shield } from 'lucide-react';
+import { ResourceType } from '../../../../types/resources/ResourceTypes';
 
 interface UpgradeRequirement {
   type: 'tech' | 'resource' | 'facility';
@@ -28,7 +28,7 @@ interface ShipUpgradeSystemProps {
       speed: StatUpgrade;
     };
     resourceCost: {
-      type: string;
+      type: ResourceType;
       amount: number;
       available: number;
     }[];

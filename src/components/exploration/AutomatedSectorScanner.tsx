@@ -20,7 +20,7 @@ interface Sector {
   anomalies: Anomaly[];
   lastScanned?: number;
   resources?: Array<{
-    type: string;
+    type: ResourceType;
     amount: number;
   }>;
 }
@@ -256,8 +256,8 @@ export function AutomatedSectorScanner({
         setScanStats(prev => ({
           ...prev,
           sectorsAnalyzed: prev.sectorsAnalyzed + 1,
-          anomaliesFound: prev.anomaliesFound + (scannedSector.anomalies?.length || 0),
-          resourcesDiscovered: prev.resourcesDiscovered + (scannedSector.resources?.length || 0),
+          anomaliesFound: prev.anomaliesFound + (scannedSector.anomalies?.length ?? 0),
+          resourcesDiscovered: prev.resourcesDiscovered + (scannedSector.resources?.length ?? 0),
         }));
 
         // Notify of any anomalies
@@ -279,9 +279,9 @@ export function AutomatedSectorScanner({
           sectorId: nextScan.sectorId,
           shipId: bestShip.id,
           findings: {
-            anomalies: scannedSector?.anomalies?.length || 0,
-            resources: scannedSector?.resources?.length || 0,
-            habitabilityScore: scannedSector?.habitabilityScore || 0,
+            anomalies: scannedSector?.anomalies?.length ?? 0,
+            resources: scannedSector?.resources?.length ?? 0,
+            habitabilityScore: scannedSector?.habitabilityScore ?? 0,
           },
           operation: 'sector-scan',
         },
@@ -441,24 +441,24 @@ export function AutomatedSectorScanner({
         </div>
         <div className="max-h-32 space-y-2 overflow-y-auto">
           {scanQueue.slice(0, 5).map(item => {
-            const sector = sectors.find(s => s.id === item.sectorId);
+            const sector = sectors.find(s => s.id === item?.sectorId);
             return (
-              <div key={item.sectorId} className="rounded bg-gray-800/40 p-2 text-xs">
+              <div key={item?.sectorId} className="rounded bg-gray-800/40 p-2 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-white">{sector?.name || item.sectorId}</span>
+                  <span className="font-medium text-white">{sector?.name || item?.sectorId}</span>
                   <span
                     className={`rounded px-1.5 py-0.5 ${
-                      item.priority > 0.7
+                      item?.priority > 0.7
                         ? 'bg-red-900/60 text-red-300'
-                        : item.priority > 0.4
+                        : item?.priority > 0.4
                           ? 'bg-yellow-900/60 text-yellow-300'
                           : 'bg-blue-900/60 text-blue-300'
                     }`}
                   >
-                    {Math.round(item.priority * 100)}%
+                    {Math.round(item?.priority * 100)}%
                   </span>
                 </div>
-                <div className="mt-1 text-gray-400">{item.reason}</div>
+                <div className="mt-1 text-gray-400">{item?.reason}</div>
               </div>
             );
           })}

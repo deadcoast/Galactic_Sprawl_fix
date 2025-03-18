@@ -77,8 +77,8 @@ export class AsteroidFieldManager extends TypedEventEmitter<AsteroidFieldEvents>
     moduleEventBus.subscribe(
       'MODULE_ACTIVATED',
       (event: { moduleType: string; moduleId: string }) => {
-        if (event.moduleType === 'asteroidField') {
-          this.handleModuleActivation(event.moduleId);
+        if (event?.moduleType === 'asteroidField') {
+          this.handleModuleActivation(event?.moduleId);
         }
       }
     );
@@ -86,8 +86,8 @@ export class AsteroidFieldManager extends TypedEventEmitter<AsteroidFieldEvents>
     moduleEventBus.subscribe(
       'MODULE_DEACTIVATED',
       (event: { moduleType: string; moduleId: string }) => {
-        if (event.moduleType === 'asteroidField') {
-          this.handleModuleDeactivation(event.moduleId);
+        if (event?.moduleType === 'asteroidField') {
+          this.handleModuleDeactivation(event?.moduleId);
         }
       }
     );
@@ -252,7 +252,7 @@ export class AsteroidFieldManager extends TypedEventEmitter<AsteroidFieldEvents>
       return false;
     }
 
-    const currentAmount = field.resources.get(node.type) || 0;
+    const currentAmount = field.resources.get(node.type) ?? 0;
     if (currentAmount < amount) {
       return false;
     }
@@ -287,14 +287,14 @@ export class AsteroidFieldManager extends TypedEventEmitter<AsteroidFieldEvents>
     console.warn('[AsteroidFieldManager] Cleaned up');
   }
 
-  public registerResourceNode(fieldId: string, _type: ResourceType): ResourceType {
+  public registerResourceNode(fieldId: string, _type: ResourceType): string {
     const field = this.state.fields.get(fieldId);
     if (!field) {
       return '';
     }
 
     const nodeId = `node-${fieldId}-${_type}-${Date.now()}`;
-    const amount = field.resources.get(_type) || 0;
+    const amount = field.resources.get(_type) ?? 0;
 
     this.state.resourceNodes.set(nodeId, {
       fieldId,
@@ -352,7 +352,7 @@ export class AsteroidFieldManager extends TypedEventEmitter<AsteroidFieldEvents>
       return false;
     }
 
-    const remaining = field.resources.get(node.type) || 0;
+    const remaining = field.resources.get(node.type) ?? 0;
     this.emit('resourceExtracted', {
       nodeId,
       type: node.type,
@@ -391,7 +391,7 @@ export class AsteroidFieldManager extends TypedEventEmitter<AsteroidFieldEvents>
       return null;
     }
 
-    const amount = field.resources.get(node.type) || 0;
+    const amount = field.resources.get(node.type) ?? 0;
     return {
       min: Math.floor(amount * 0.2),
       max: amount,

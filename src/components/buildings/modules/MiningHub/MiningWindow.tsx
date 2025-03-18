@@ -202,19 +202,19 @@ interface BaseDragDataInput {
 const createDragData = (type: 'resource' | 'ship', data: BaseDragDataInput): DragDataTypes => {
   if (type === 'resource') {
     return {
-      id: data.id || '',
-      name: data.name || '',
-      type: (data.type as 'mineral' | ResourceType.GAS | ResourceType.EXOTIC) || 'mineral',
-      abundance: typeof data.abundance === 'number' ? data.abundance : 0,
+      id: data?.id ?? '',
+      name: data?.name ?? '',
+      type: (data?.type as 'mineral' | ResourceType.GAS | ResourceType.EXOTIC) || 'mineral',
+      abundance: typeof data?.abundance === 'number' ? data?.abundance : 0,
     } as ResourceDragData;
   } else {
     // This will be implemented in the future
     console.warn('Ship drag data creation not yet implemented');
     return {
-      id: data.id || '',
-      name: data.name || '',
+      id: data?.id ?? '',
+      name: data?.name ?? '',
       type: 'rockBreaker',
-      efficiency: typeof data.efficiency === 'number' ? data.efficiency : 1.0,
+      efficiency: typeof data?.efficiency === 'number' ? data?.efficiency : 1.0,
     } as _ShipDragData;
   }
 };
@@ -339,7 +339,7 @@ export function MiningWindow() {
   );
 
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
+    setSearchQuery(event?.target.value);
   }, []);
 
   const handleViewChange = useCallback((newView: ViewMode) => {
@@ -430,9 +430,9 @@ export function MiningWindow() {
     item: DragItem<ResourceDragData>,
     _storage: (typeof mockStorageData)[0]
   ) => {
-    if (item.type === 'resource') {
+    if (item?.type === 'resource') {
       // Create a properly typed drag data object
-      const resourceData = createDragData('resource', item.data as unknown as BaseDragDataInput);
+      const resourceData = createDragData('resource', item?.data as unknown as BaseDragDataInput);
 
       // Handle resource transfer
       console.warn(`Transferring ${(resourceData as ResourceDragData).type} resource to storage`);
@@ -756,7 +756,7 @@ export function MiningWindow() {
                       techBonuses: techBonuses,
                       onClick: () => setSelectedNode(resource as Resource),
                       assignedShip:
-                        mockShips.find(ship => ship.targetNode === resource.id)?.id || '',
+                        mockShips.find(ship => ship.targetNode === resource.id)?.id ?? '',
                     })
                   ),
                 })

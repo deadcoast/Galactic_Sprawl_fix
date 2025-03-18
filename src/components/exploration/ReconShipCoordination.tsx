@@ -211,7 +211,7 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
                     onClick={() =>
                       handleShareTask(
                         shipId,
-                        selectedShipIds.find(id => id !== shipId) || '',
+                        selectedShipIds.find(id => id !== shipId) ?? '',
                         'explore'
                       )
                     }
@@ -224,7 +224,7 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
                     onClick={() =>
                       handleShareTask(
                         shipId,
-                        selectedShipIds.find(id => id !== shipId) || '',
+                        selectedShipIds.find(id => id !== shipId) ?? '',
                         'investigate'
                       )
                     }
@@ -237,7 +237,7 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
                     onClick={() =>
                       handleShareTask(
                         shipId,
-                        selectedShipIds.find(id => id !== shipId) || '',
+                        selectedShipIds.find(id => id !== shipId) ?? '',
                         'evade'
                       )
                     }
@@ -478,9 +478,9 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
         <div className="grid grid-cols-2 gap-2 text-sm text-gray-300">
           <div>Type: {ship.type}</div>
           <div>Status: {ship.status}</div>
-          <div>Scanning: {ship.capabilities?.scanning || 0}</div>
-          <div>Stealth: {ship.capabilities?.stealth || 0}</div>
-          <div>Combat: {ship.capabilities?.combat || 0}</div>
+          <div>Scanning: {ship.capabilities?.scanning ?? 0}</div>
+          <div>Stealth: {ship.capabilities?.stealth ?? 0}</div>
+          <div>Combat: {ship.capabilities?.combat ?? 0}</div>
           <div>Stealth Active: {ship.capabilities?.stealthActive ? 'Yes' : 'No'}</div>
         </div>
       </div>

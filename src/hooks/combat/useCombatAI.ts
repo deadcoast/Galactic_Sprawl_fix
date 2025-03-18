@@ -32,12 +32,12 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
       // Update performance metrics based on node execution
       setPerformance(prev => ({
         ...prev,
-        successRate: prev.successRate * 0.9 + (event.success ? 0.1 : 0),
+        successRate: prev.successRate * 0.9 + (event?.success ? 0.1 : 0),
       }));
     };
 
     const handleActionStarted = (event: BehaviorEvents['actionStarted']) => {
-      if (event.unitId === unitId) {
+      if (event?.unitId === unitId) {
         // Update status based on action type
         setStatus(prev => ({
           ...prev,
@@ -47,11 +47,11 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     };
 
     const handleTreeCompleted = (event: BehaviorEvents['treeCompleted']) => {
-      if (event.unitId === unitId) {
+      if (event?.unitId === unitId) {
         // Update performance metrics
         setPerformance(prev => ({
           ...prev,
-          successRate: prev.successRate * 0.9 + (event.success ? 0.1 : 0),
+          successRate: prev.successRate * 0.9 + (event?.success ? 0.1 : 0),
         }));
       }
     };
@@ -65,15 +65,15 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     const unsubscribeDamaged = combatManager.on(
       'combat:unit-damaged',
       (event: CombatUnitDamageEvent) => {
-        if (event.unitId === unitId) {
+        if (event?.unitId === unitId) {
           setPerformance(prev => ({
             ...prev,
-            damageTaken: prev.damageTaken + event.damageAmount,
+            damageTaken: prev.damageTaken + event?.damageAmount,
           }));
-        } else if (event.damageSource === unitId) {
+        } else if (event?.damageSource === unitId) {
           setPerformance(prev => ({
             ...prev,
-            damageDealt: prev.damageDealt + event.damageAmount,
+            damageDealt: prev.damageDealt + event?.damageAmount,
           }));
         }
       }
@@ -82,10 +82,10 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     const unsubscribeStatusChanged = combatManager.on(
       'combat:unit-status-changed',
       (event: CombatUnitStatusEvent) => {
-        if (event.unitId === unitId) {
+        if (event?.unitId === unitId) {
           // Convert string status to CombatUnitStatus object
           setStatus({
-            main: event.status === 'destroyed' ? 'destroyed' : 'active',
+            main: event?.status === 'destroyed' ? 'destroyed' : 'active',
             effects: [],
           });
         }
@@ -105,7 +105,7 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
       const nearbyEnemies = (
         combatManager
           .getUnitsInRange?.(unit.position, 500)
-          ?.filter(other => other.faction !== factionId) || []
+          ?.filter(other => other.faction !== factionId) ?? []
       ).map(unit => ({
         ...unit,
         velocity: { x: 0, y: 0 }, // Add default velocity for units
@@ -127,7 +127,7 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
       const nearbyAllies = (
         combatManager
           .getUnitsInRange?.(unit.position, 500)
-          ?.filter(other => other.faction === factionId && other.id !== unitId) || []
+          ?.filter(other => other.faction === factionId && other.id !== unitId) ?? []
       ).map(unit => ({
         ...unit,
         velocity: { x: 0, y: 0 }, // Add default velocity for units

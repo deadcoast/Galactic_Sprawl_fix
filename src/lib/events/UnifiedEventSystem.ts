@@ -155,7 +155,7 @@ export class EventSystem {
           error instanceof Error ? error : new Error(String(error)),
           ErrorType.RUNTIME,
           undefined,
-          { context: 'EventSystem.publish', eventType: event.type }
+          { context: 'EventSystem.publish', eventType: event?.type }
         );
       });
     } else {
@@ -181,7 +181,7 @@ export class EventSystem {
     const mergedOptions = { ...this.defaultPublishOptions, ...options, async: true };
 
     // Get handlers for this event type
-    const handlersMap = this.handlers.get(event.type);
+    const handlersMap = this.handlers.get(event?.type);
     if (!handlersMap || handlersMap.size === 0) {
       return;
     }
@@ -189,7 +189,7 @@ export class EventSystem {
     try {
       // Convert to array and sort by priority
       const handlers = Array.from(handlersMap.values()).sort(
-        (a, b) => (b.options.priority || 0) - (a.options.priority || 0)
+        (a, b) => (b.options?.priority ?? 0) - (a.options?.priority ?? 0)
       );
 
       // Create array of promises with timeout
@@ -197,7 +197,7 @@ export class EventSystem {
         .filter(subscription => this.shouldHandleEvent(subscription, event))
         .map(subscription => {
           // Handle once option
-          if (subscription.options.once) {
+          if (subscription.options?.once) {
             handlersMap.delete(subscription.id);
           }
 
@@ -206,7 +206,7 @@ export class EventSystem {
             Promise.resolve().then(() => subscription.handler(event)),
             new Promise((_, reject) => {
               setTimeout(() => {
-                reject(new Error(`Handler timeout for event ${event.type}`));
+                reject(new Error(`Handler timeout for event ${event?.type}`));
               }, mergedOptions.timeout);
             }),
           ]).catch(error => {
@@ -217,7 +217,7 @@ export class EventSystem {
                 error instanceof Error ? error : new Error(String(error)),
                 ErrorType.RUNTIME,
                 undefined,
-                { context: 'EventSystem.publishAsync.handler', eventType: event.type }
+                { context: 'EventSystem.publishAsync.handler', eventType: event?.type }
               );
             }
           });
@@ -233,7 +233,7 @@ export class EventSystem {
           error instanceof Error ? error : new Error(String(error)),
           ErrorType.RUNTIME,
           undefined,
-          { context: 'EventSystem.publishAsync', eventType: event.type }
+          { context: 'EventSystem.publishAsync', eventType: event?.type }
         );
       }
     }
@@ -246,7 +246,7 @@ export class EventSystem {
    */
   private publishSync<T extends BaseEvent>(event: T, options: PublishOptions): void {
     // Get handlers for this event type
-    const handlersMap = this.handlers.get(event.type);
+    const handlersMap = this.handlers.get(event?.type);
     if (!handlersMap || handlersMap.size === 0) {
       return;
     }
@@ -254,7 +254,7 @@ export class EventSystem {
     try {
       // Convert to array and sort by priority
       const handlers = Array.from(handlersMap.values()).sort(
-        (a, b) => (b.options.priority || 0) - (a.options.priority || 0)
+        (a, b) => (b.options?.priority ?? 0) - (a.options?.priority ?? 0)
       );
 
       // Call each handler
@@ -262,35 +262,35 @@ export class EventSystem {
         if (this.shouldHandleEvent(subscription, event)) {
           try {
             // Handle once option
-            if (subscription.options.once) {
+            if (subscription.options?.once) {
               handlersMap.delete(subscription.id);
             }
 
             // Call handler
             subscription.handler(event);
           } catch (error) {
-            if (options.errorMode === 'throw') {
+            if (options?.errorMode === 'throw') {
               throw error;
             } else {
               errorLoggingService.logError(
                 error instanceof Error ? error : new Error(String(error)),
                 ErrorType.RUNTIME,
                 undefined,
-                { context: 'EventSystem.publishSync.handler', eventType: event.type }
+                { context: 'EventSystem.publishSync.handler', eventType: event?.type }
               );
             }
           }
         }
       }
     } catch (error) {
-      if (options.errorMode === 'throw') {
+      if (options?.errorMode === 'throw') {
         throw error;
       } else {
         errorLoggingService.logError(
           error instanceof Error ? error : new Error(String(error)),
           ErrorType.RUNTIME,
           undefined,
-          { context: 'EventSystem.publishSync', eventType: event.type }
+          { context: 'EventSystem.publishSync', eventType: event?.type }
         );
       }
     }
@@ -389,7 +389,7 @@ export class EventSystem {
    * @returns True if the subscription should handle the event
    */
   private shouldHandleEvent<T extends BaseEvent>(subscription: Subscription<T>, event: T): boolean {
-    return !subscription.options.filter || subscription.options.filter(event);
+    return !subscription.options?.filter || subscription.options?.filter(event);
   }
 
   /**

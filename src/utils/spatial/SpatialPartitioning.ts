@@ -171,10 +171,10 @@ export class QuadTree<T extends SpatialObject> {
 
     // If this quadtree is divided, query children too
     if (this.divided) {
-      found.push(...(this.northwest?.queryRange(x, y, range) || []));
-      found.push(...(this.northeast?.queryRange(x, y, range) || []));
-      found.push(...(this.southwest?.queryRange(x, y, range) || []));
-      found.push(...(this.southeast?.queryRange(x, y, range) || []));
+      found.push(...(this.northwest?.queryRange(x, y, range) ?? []));
+      found.push(...(this.northeast?.queryRange(x, y, range) ?? []));
+      found.push(...(this.southwest?.queryRange(x, y, range) ?? []));
+      found.push(...(this.southeast?.queryRange(x, y, range) ?? []));
     }
 
     return found;
@@ -187,10 +187,10 @@ export class QuadTree<T extends SpatialObject> {
     const all = [...this.objects];
 
     if (this.divided) {
-      all.push(...(this.northwest?.getAllObjects() || []));
-      all.push(...(this.northeast?.getAllObjects() || []));
-      all.push(...(this.southwest?.getAllObjects() || []));
-      all.push(...(this.southeast?.getAllObjects() || []));
+      all.push(...(this.northwest?.getAllObjects() ?? []));
+      all.push(...(this.northeast?.getAllObjects() ?? []));
+      all.push(...(this.southwest?.getAllObjects() ?? []));
+      all.push(...(this.southeast?.getAllObjects() ?? []));
     }
 
     return all;

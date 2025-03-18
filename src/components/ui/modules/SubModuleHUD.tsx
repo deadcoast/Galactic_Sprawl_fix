@@ -115,7 +115,7 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
 
   // Render loading state
   if (isLoading) {
-    return <div className="sub-module-hud sub-module-hud--loading">Loading sub-module data...</div>;
+    return <div className="sub-module-hud sub-module-hud--loading">Loading sub-module data?...</div>;
   }
 
   // Render error state

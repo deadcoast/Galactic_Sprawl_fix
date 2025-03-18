@@ -31,7 +31,7 @@ export function createEffect(
     magnitude,
     description,
     active: true,
-    duration: options.duration || 0,
+    duration: options?.duration ?? 0,
     ...options,
   };
 }
@@ -60,7 +60,7 @@ export function createCombatEffect(
   baseEffect: BaseEffect,
   sourceId: string,
   targetId: string,
-  remainingTime: number = baseEffect.duration || 0,
+  remainingTime: number = baseEffect.duration ?? 0,
   effects: BaseEffect[] = []
 ): CombatEffect {
   return {
@@ -265,5 +265,5 @@ function getEffectStartTime(stack: EffectStack, effectId: string): number {
   const appliedEntry = stack.history
     .filter(entry => entry.effectId === effectId && entry.action === 'applied')
     .pop();
-  return appliedEntry?.timestamp || 0;
+  return appliedEntry?.timestamp ?? 0;
 }

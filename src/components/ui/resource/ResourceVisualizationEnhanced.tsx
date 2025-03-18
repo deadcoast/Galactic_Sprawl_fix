@@ -44,12 +44,13 @@ const resourceDescriptions: Record<ResourceType, string> = {
   [ResourceType.TITANIUM]: 'Strong, lightweight metal used for advanced construction.',
   [ResourceType.URANIUM]: 'Radioactive material used for nuclear power and weapons.',
   [ResourceType.WATER]: 'Essential resource for life support and various processes.',
-  [ResourceType.HELIUM]: 'Light gas used for cooling and propulsion systems.',
-  [ResourceType.DEUTERIUM]: 'Isotope of hydrogen used in fusion reactors.',
-  [ResourceType.ANTIMATTER]: 'Exotic material with immense energy potential.',
-  [ResourceType.DARK_MATTER]: 'Mysterious substance with unique gravitational properties.',
-  [ResourceType.EXOTIC_MATTER]: 'Extremely rare material with extraordinary properties.',
-  [ResourceType.ORGANIC]: 'Biological materials used for sustenance and bio-engineering.',
+  [ResourceType.HELIUM]: 'Light gas used for cooling and various industrial processes.',
+  [ResourceType.DEUTERIUM]: 'Hydrogen isotope used for fusion power and advanced propulsion.',
+  [ResourceType.ANTIMATTER]: 'Exotic material with enormous energy potential.',
+  [ResourceType.DARK_MATTER]: 'Mysterious substance with reality-warping properties.',
+  [ResourceType.EXOTIC_MATTER]: 'Extremely rare material with unique physical properties.',
+  [ResourceType.ORGANIC]: 'Biological material used for medicine and biotech.',
+  [ResourceType.FOOD]: 'Essential sustenance to maintain population growth and happiness.',
 };
 
 function getResourceStatus(
@@ -161,7 +162,7 @@ const EnhancedResourceDisplay = React.memo(function EnhancedResourceDisplayBase(
   useEffect(() => {
     const handleResourceUpdate = (event: ModuleEvent) => {
       if (isResourceUpdateEvent(event)) {
-        const resourceAmounts = event.data?.resourceAmounts;
+        const resourceAmounts = event?.data?.resourceAmounts;
         if (resourceAmounts && type in resourceAmounts) {
           const newValue = resourceAmounts[type];
           if (typeof newValue === 'number') {
@@ -237,7 +238,7 @@ export const ResourceVisualizationEnhanced = React.memo(
     useEffect(() => {
       const handleResourceUpdate = (event: ModuleEvent) => {
         if (isResourceUpdateEvent(event)) {
-          const resourceAmounts = event.data?.resourceAmounts;
+          const resourceAmounts = event?.data?.resourceAmounts;
           if (resourceAmounts && typeof resourceAmounts === 'object') {
             setResources(prev =>
               prev.map(resource => {

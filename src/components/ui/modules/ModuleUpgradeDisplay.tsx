@@ -85,7 +85,7 @@ export const ModuleUpgradeDisplay: React.FC<ModuleUpgradeDisplayProps> = ({
   if (isLoading) {
     return (
       <div className="module-upgrade-display module-upgrade-display--loading">
-        Loading upgrade data...
+        Loading upgrade data?...
       </div>
     );
   }

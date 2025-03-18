@@ -170,7 +170,7 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
     this.config = { ...DEFAULT_CONFIG, ...config };
 
     // Initialize excluded event types
-    this.excludedEventTypes = new Set(this.config.excludedEvents || []);
+    this.excludedEventTypes = new Set(this.config.excludedEvents ?? []);
 
     // Add excluded categories
     if (this.config.excludedCategories) {
@@ -214,7 +214,7 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
    */
   private handleEvent(event: T): void {
     // Skip if disabled or event is excluded
-    if (!this.config.enabled || this.excludedEventTypes.has(event.type)) {
+    if (!this.config.enabled || this.excludedEventTypes.has(event?.type)) {
       return;
     }
 
@@ -236,7 +236,7 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
     // Calculate processing time after all subscribers have been notified
     setTimeout(() => {
       // Get performance metrics for this event type
-      const metrics = this.targetEventBus.getPerformanceMetrics(event.type);
+      const metrics = this.targetEventBus.getPerformanceMetrics(event?.type);
 
       // Update the event history entry with processing time
       const historyEntry = this.eventHistory.find(entry => entry.sequenceId === sequenceId);
@@ -245,10 +245,10 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
       }
 
       // Track processing time for this event type
-      if (!this.eventProcessingTimes.has(event.type)) {
-        this.eventProcessingTimes.set(event.type, []);
+      if (!this.eventProcessingTimes.has(event?.type)) {
+        this.eventProcessingTimes.set(event?.type, []);
       }
-      this.eventProcessingTimes.get(event.type)!.push(metrics.lastProcessingTime);
+      this.eventProcessingTimes.get(event?.type)!.push(metrics.lastProcessingTime);
 
       // Check for slow event processing
       if (
@@ -256,7 +256,7 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
         metrics.lastProcessingTime > this.config.slowEventThreshold
       ) {
         console.warn(
-          `[EventDevTools] Slow event processing: ${event.type} took ${metrics.lastProcessingTime.toFixed(2)}ms (threshold: ${this.config.slowEventThreshold}ms)`
+          `[EventDevTools] Slow event processing: ${event?.type} took ${metrics.lastProcessingTime.toFixed(2)}ms (threshold: ${this.config.slowEventThreshold}ms)`
         );
       }
 
@@ -266,7 +266,7 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
           ? ` (${metrics.lastProcessingTime.toFixed(2)}ms)`
           : '';
 
-        console.warn(`[EventDevTools] Event: ${event.type}${timeString}`, event);
+        console.warn(`[EventDevTools] Event: ${event?.type}${timeString}`, event);
       }
     }, 0);
   }
@@ -382,7 +382,7 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
           .filter(
             activity =>
               activity.action === 'subscribe' &&
-              activeSourcesForType.includes(activity.source || '')
+              activeSourcesForType.includes(activity.source ?? '')
           )
           .sort((a, b) => a.timestamp - b.timestamp)[0];
 

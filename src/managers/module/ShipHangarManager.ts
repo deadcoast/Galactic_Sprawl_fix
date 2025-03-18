@@ -130,22 +130,22 @@ export class ShipHangarManager
 
     // Subscribe to module events
     moduleEventBus.subscribe('MODULE_ACTIVATED', (event: ModuleEvent) => {
-      if (event.moduleType === 'hangar') {
-        this.handleModuleActivation(event.moduleId);
+      if (event?.moduleType === 'hangar') {
+        this.handleModuleActivation(event?.moduleId);
       }
     });
 
     moduleEventBus.subscribe('MODULE_DEACTIVATED', (event: ModuleEvent) => {
-      if (event.moduleType === 'hangar') {
-        this.handleModuleDeactivation(event.moduleId);
+      if (event?.moduleType === 'hangar') {
+        this.handleModuleDeactivation(event?.moduleId);
       }
     });
 
     moduleEventBus.subscribe('STATUS_CHANGED', (event: ModuleEvent) => {
       if (
-        event.moduleType === 'hangar' &&
-        event.data &&
-        typeof event.data === 'object' &&
+        event?.moduleType === 'hangar' &&
+        event?.data &&
+        typeof event?.data === 'object' &&
         'status' in event.data
       ) {
         const status = String(event.data.status);
@@ -190,8 +190,8 @@ export class ShipHangarManager
       nodeId: string;
       node: { type: string; tier: number };
     }) => {
-      if (event.node.type === 'hangar') {
-        this.handleTierUpgrade(event.node.tier as Tier);
+      if (event?.node.type === 'hangar') {
+        this.handleTierUpgrade(event?.node.tier as Tier);
       }
     }) as (data: unknown) => void);
   }
@@ -400,7 +400,7 @@ export class ShipHangarManager
    * Cancel a build in progress
    */
   public cancelBuild(queueItemId: string): void {
-    const index = this.state.buildQueue.findIndex(item => item.id === queueItemId);
+    const index = this.state.buildQueue.findIndex(item => item?.id === queueItemId);
     if (index === -1) {
       return;
     }
@@ -408,9 +408,9 @@ export class ShipHangarManager
     const item = this.state.buildQueue[index];
 
     // Calculate refund based on progress
-    const refundedResources = item.resourceCost.map(cost => ({
+    const refundedResources = item?.resourceCost.map(cost => ({
       type: cost.type,
-      amount: Math.floor(cost.amount * (1 - item.progress) * 0.75), // 75% refund of remaining resources
+      amount: Math.floor(cost.amount * (1 - item?.progress) * 0.75), // 75% refund of remaining resources
     }));
 
     // Return resources
@@ -426,8 +426,8 @@ export class ShipHangarManager
    * Pause a build in progress
    */
   public pauseBuild(queueItemId: string): void {
-    const item = this.state.buildQueue.find(item => item.id === queueItemId);
-    if (!item || item.status !== 'building') {
+    const item = this.state.buildQueue.find(item => item?.id === queueItemId);
+    if (!item || item?.status !== 'building') {
       throw new Error('Cannot pause: Invalid build or already paused');
     }
 
@@ -440,14 +440,14 @@ export class ShipHangarManager
    * Resume a paused build
    */
   public resumeBuild(queueItemId: string): void {
-    const item = this.state.buildQueue.find(item => item.id === queueItemId);
-    if (!item || item.status !== 'paused') {
+    const item = this.state.buildQueue.find(item => item?.id === queueItemId);
+    if (!item || item?.status !== 'paused') {
       throw new Error('Cannot resume: Invalid build or not paused');
     }
 
     // Calculate total paused time
-    if (item.pausedAt) {
-      item.totalPausedTime = (item.totalPausedTime || 0) + (Date.now() - item.pausedAt);
+    if (item?.pausedAt) {
+      item.totalPausedTime = (item.totalPausedTime ?? 0) + (Date.now() - item.pausedAt);
     }
 
     item.status = 'building';
@@ -672,17 +672,17 @@ export class ShipHangarManager
 
     // Update progress for each building item
     this.state.buildQueue.forEach(item => {
-      if (item.status !== 'building') {
+      if (item?.status !== 'building') {
         return;
       }
 
       // Calculate elapsed time considering pauses
-      const elapsedTime = now - item.startTime - (item.totalPausedTime || 0);
-      const newProgress = Math.min(1, elapsedTime / item.duration);
+      const elapsedTime = now - item?.startTime - (item?.totalPausedTime ?? 0);
+      const newProgress = Math.min(1, elapsedTime / item?.duration);
 
-      if (newProgress !== item.progress) {
+      if (newProgress !== item?.progress) {
         item.progress = newProgress;
-        this.emit('buildProgressed', { queueItemId: item.id, progress: newProgress });
+        this.emit('buildProgressed', { queueItemId: item?.id, progress: newProgress });
       }
 
       // Check for completion
@@ -707,9 +707,9 @@ export class ShipHangarManager
    */
   private completeBuild(item: ShipBuildQueueItem): void {
     // Get ship blueprint
-    const blueprint = SHIP_BLUEPRINTS.find((bp: ShipBlueprint) => bp.shipClass === item.shipClass);
+    const blueprint = SHIP_BLUEPRINTS.find((bp: ShipBlueprint) => bp.shipClass === item?.shipClass);
     if (!blueprint) {
-      throw new Error(`No blueprint found for ship class: ${item.shipClass}`);
+      throw new Error(`No blueprint found for ship class: ${item?.shipClass}`);
     }
 
     // Find an available bay
@@ -735,8 +735,8 @@ export class ShipHangarManager
         maxEnergy: blueprint.baseStats.energy,
         speed: blueprint.baseStats.speed,
         turnRate: 2,
-        cargo: blueprint.baseStats.cargo || 0,
-        weapons: (blueprint.weapons || []).map(weapon =>
+        cargo: blueprint.baseStats.cargo ?? 0,
+        weapons: (blueprint.weapons ?? []).map(weapon =>
           this.createWeaponMount(weapon, blueprint.tier)
         ),
         abilities:
@@ -757,7 +757,7 @@ export class ShipHangarManager
               active: false,
               cooldown: ability.cooldown,
             },
-          })) || [],
+          })) ?? [],
         defense: {
           armor: Math.floor(blueprint.baseStats.hull * 0.3),
           shield: blueprint.baseStats.shield,
@@ -788,7 +788,7 @@ export class ShipHangarManager
             active: false,
             cooldown: ability.cooldown,
           },
-        })) || [],
+        })) ?? [],
     };
 
     // Add ship to bay
@@ -902,7 +902,7 @@ export class ShipHangarManager
       throw new Error(`No blueprint found for ship class ${shipClass}`);
     }
 
-    const weapons: WeaponMount[] = (blueprint.weapons || []).map(weapon =>
+    const weapons: WeaponMount[] = (blueprint.weapons ?? []).map(weapon =>
       this.createWeaponMount(weapon, blueprint.tier)
     );
 
@@ -915,7 +915,7 @@ export class ShipHangarManager
       maxEnergy: blueprint.baseStats.energy,
       speed: blueprint.baseStats.speed,
       turnRate: 2,
-      cargo: blueprint.baseStats.cargo || 0,
+      cargo: blueprint.baseStats.cargo ?? 0,
       weapons,
       abilities:
         blueprint.abilities?.map(ability => ({
@@ -935,7 +935,7 @@ export class ShipHangarManager
             active: false,
             cooldown: ability.cooldown,
           },
-        })) || [],
+        })) ?? [],
       defense: {
         armor: Math.floor(blueprint.baseStats.hull * 0.3),
         shield: blueprint.baseStats.shield,
@@ -1450,7 +1450,7 @@ export class ShipHangarManager
         magnitude: ability.effect.magnitude,
         duration: ability.effect.duration,
         active: true,
-        cooldown: ability.effect.cooldown || 0,
+        cooldown: ability.effect.cooldown ?? 0,
         source: {
           type: 'ability',
           id: ability.id,
@@ -1618,7 +1618,7 @@ export class ShipHangarManager
           size: 'medium' as WeaponMountSize,
           power: 20,
         },
-      })) || []
+      })) ?? []
     );
   }
 

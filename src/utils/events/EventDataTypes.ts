@@ -132,10 +132,10 @@ export function isModuleCreatedEventData(data: unknown): data is ModuleCreatedEv
     !!data &&
     typeof data === 'object' &&
     'module' in data &&
-    typeof data.module === 'object' &&
-    data.module !== null &&
-    'id' in data.module &&
-    'type' in data.module
+    typeof data?.module === 'object' &&
+    data?.module !== null &&
+    'id' in data?.module &&
+    'type' in data?.module
   );
 }
 
@@ -144,16 +144,16 @@ export function isModuleUpdatedEventData(data: unknown): data is ModuleUpdatedEv
     !!data &&
     typeof data === 'object' &&
     'moduleId' in data &&
-    typeof data.moduleId === 'string' &&
+    typeof data?.moduleId === 'string' &&
     'updates' in data &&
-    typeof data.updates === 'object' &&
-    data.updates !== null
+    typeof data?.updates === 'object' &&
+    data?.updates !== null
   );
 }
 
 export function isModuleRemovedEventData(data: unknown): data is ModuleRemovedEventData {
   return (
-    !!data && typeof data === 'object' && 'moduleId' in data && typeof data.moduleId === 'string'
+    !!data && typeof data === 'object' && 'moduleId' in data && typeof data?.moduleId === 'string'
   );
 }
 
@@ -164,7 +164,7 @@ export function isModuleStatusChangedEventData(
     !!data &&
     typeof data === 'object' &&
     'moduleId' in data &&
-    typeof data.moduleId === 'string' &&
+    typeof data?.moduleId === 'string' &&
     'status' in data
   );
 }
@@ -175,7 +175,7 @@ export function isResourceProducedEventData(data: unknown): data is ResourceProd
     typeof data === 'object' &&
     'resourceType' in data &&
     'amount' in data &&
-    typeof data.amount === 'number'
+    typeof data?.amount === 'number'
   );
 }
 
@@ -185,7 +185,7 @@ export function isResourceConsumedEventData(data: unknown): data is ResourceCons
     typeof data === 'object' &&
     'resourceType' in data &&
     'amount' in data &&
-    typeof data.amount === 'number'
+    typeof data?.amount === 'number'
   );
 }
 
@@ -197,11 +197,11 @@ export function isResourceTransferredEventData(
     typeof data === 'object' &&
     'resourceType' in data &&
     'amount' in data &&
-    typeof data.amount === 'number' &&
+    typeof data?.amount === 'number' &&
     'sourceId' in data &&
-    typeof data.sourceId === 'string' &&
+    typeof data?.sourceId === 'string' &&
     'targetId' in data &&
-    typeof data.targetId === 'string'
+    typeof data?.targetId === 'string'
   );
 }
 
@@ -211,7 +211,7 @@ export function isResourceUpdatedEventData(data: unknown): data is ResourceUpdat
 
 export function isGameStartedEventData(data: unknown): data is GameStartedEventData {
   return (
-    !!data && typeof data === 'object' && 'gameTime' in data && typeof data.gameTime === 'number'
+    !!data && typeof data === 'object' && 'gameTime' in data && typeof data?.gameTime === 'number'
   );
 }
 

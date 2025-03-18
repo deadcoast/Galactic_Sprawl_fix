@@ -124,7 +124,7 @@ const AutomationRuleEditor: React.FC<AutomationRuleEditorProps> = ({
               // Manually create connections for next actions
               const actionData = actionNodes[i].data as AutomationAction;
               if (actionData.nextActions && actionData.nextActions.length > 0) {
-                const nextIds = actionData.nextActions.map(a => a.id || '').filter(id => id);
+                const nextIds = actionData.nextActions.map(a => a.id ?? '').filter(id => id);
                 actionNodes[i].connectedTo = nextIds;
               } else {
                 actionNodes[i].connectedTo = [actionNodes[i + 1].id];
@@ -644,7 +644,7 @@ const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({ node, onUpdate }) =
             <div className="form-group">
               <label>Resource Type</label>
               <select
-                value={condition.target || ''}
+                value={condition.target ?? ''}
                 onChange={e => {
                   onUpdate({
                     ...condition,
@@ -687,7 +687,7 @@ const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({ node, onUpdate }) =
             <label>Module ID</label>
             <input
               type="text"
-              value={condition.target || ''}
+              value={condition.target ?? ''}
               onChange={e => {
                 onUpdate({
                   ...condition,
@@ -745,7 +745,7 @@ const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({ node, onUpdate }) =
             <label>Module ID</label>
             <input
               type="text"
-              value={action.target || ''}
+              value={action.target ?? ''}
               onChange={e => {
                 onUpdate({
                   ...action,
@@ -762,7 +762,7 @@ const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({ node, onUpdate }) =
             <div className="form-group">
               <label>Resource Type</label>
               <select
-                value={action.target || ''}
+                value={action.target ?? ''}
                 onChange={e => {
                   onUpdate({
                     ...action,
@@ -808,7 +808,7 @@ const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({ node, onUpdate }) =
           <label>Delay (ms)</label>
           <input
             type="number"
-            value={action.delay || 0}
+            value={action.delay ?? 0}
             onChange={e => {
               onUpdate({
                 ...action,

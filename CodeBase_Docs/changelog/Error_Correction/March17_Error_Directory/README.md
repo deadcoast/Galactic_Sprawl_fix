@@ -1,83 +1,141 @@
-# Error Analysis and Correction Workflow
+# TypeScript & ESLint Error Analysis Workflow
 
-This directory contains a structured approach to identifying, analyzing, and fixing errors in the Galactic Sprawl codebase. The workflow is designed to be systematic, repeatable, and efficient.
+## Overview
 
-## Directory Structure
+This workflow provides a comprehensive solution for analyzing and fixing TypeScript and ESLint errors in a codebase. It includes tools for:
 
-- **Analysis/**: Contains raw error data and analysis results
+1. **Analysis**: Identify and categorize different types of errors
+2. **Reporting**: Generate detailed reports with error statistics
+3. **Fixing**: Apply automated fixes for common error patterns
 
-  - **TypeScript/**: TypeScript error logs categorized by type
-  - **ESLint/**: ESLint error logs categorized by rule
-  - **Dependencies/**: Dependency and package issues
+## Workflow Components
 
-- **Categories/**: Categorized error documentation
+### Analysis Scripts
 
-  - **ResourceTypes/**: Resource type related errors
-  - **EventSystem/**: Event system related errors
-  - **TypeSafety/**: General type safety issues
-  - **Components/**: React component errors
-  - **Managers/**: Manager implementation errors
+| Script                  | Purpose                                            |
+| ----------------------- | -------------------------------------------------- |
+| `analyze_typescript.sh` | Analyzes TypeScript compiler errors                |
+| `analyze_eslint.sh`     | Analyzes ESLint errors and warnings                |
+| `run_full_analysis.sh`  | Runs both analyses and generates a combined report |
 
-- **Scripts/**: Automation scripts for error analysis and fixes
+### Fix Scripts
 
-  - All scripts include detailed documentation and usage examples
+| Script                  | Purpose                                              |
+| ----------------------- | ---------------------------------------------------- |
+| `fix_resource_types.sh` | Converts string literals to ResourceType enum values |
+| `fix_unused_vars.sh`    | Prefixes unused variables with underscore            |
 
-- **Reports/**: Generated reports from the analysis
+## Execution Order
 
-  - Daily progress reports
-  - Error trend analysis
-  - Priority recommendations
+For the complete workflow:
 
-- **Fixes/**: Templates and examples for common fixes
-  - Code snippets for common error patterns
-  - Automated fix scripts for batch corrections
+1. Run tests to verify the fix scripts work correctly:
 
-## Workflow Overview
+   ```bash
+   cd Tests/essential
+   ./test_master.sh
+   ```
 
-1. **Analyze**: Run the error analysis scripts to gather and categorize errors
-2. **Prioritize**: Review the reports to identify high-impact areas
-3. **Fix**: Apply fixes using the templates and scripts
-4. **Verify**: Re-run analysis to confirm fixes and identify new issues
-5. **Report**: Generate progress reports to track improvements
+2. Run the full analysis:
 
-## Getting Started
+   ```bash
+   ./Scripts/run_full_analysis.sh
+   ```
 
-1. Run the full system analysis:
+3. Apply fixes based on analysis results:
+
+   ```bash
+   ./Scripts/fix_resource_types.sh --target=/path/to/target
+   ./Scripts/fix_unused_vars.sh --target=/path/to/target
+   ```
+
+4. Re-run analysis to verify fixes:
+   ```bash
+   ./Scripts/run_full_analysis.sh
+   ```
+
+## Individual Commands
+
+### Analysis
+
+Run TypeScript analysis only:
 
 ```bash
-cd CodeBase_Docs/changelog/Error_Correction/March17_Error_Directory
-./Scripts/analyze_all.sh
+./Scripts/analyze_typescript.sh [--verbose] [--output-dir=<dir>]
 ```
 
-2. Review the generated reports in the `Reports` directory
+Run ESLint analysis only:
 
-3. Address the highest priority errors first, following the recommended order in the reports
+```bash
+./Scripts/analyze_eslint.sh [--verbose] [--output-dir=<dir>]
+```
 
-## Scripts
+Run both analyses with a combined report:
 
-See the [Scripts README](./Scripts/README.md) for detailed information on all available scripts.
+```bash
+./Scripts/run_full_analysis.sh [--verbose]
+```
 
-## Reports
+### Fixing
 
-Reports are automatically generated during analysis and are stored in the `Reports` directory. The main reports include:
+Fix ResourceType string literals:
 
-- `error_summary.md`: Overview of all errors by category
-- `priority_report.md`: Recommended order for fixing errors
-- `daily_progress.md`: Day-to-day progress tracking
+```bash
+./Scripts/fix_resource_types.sh --target=/path/to/file_or_directory
+```
 
-## Common Error Categories
+Fix unused variables:
 
-1. **Resource Type Errors**: Issues related to the use of string literals instead of ResourceType enum
-2. **Event System Errors**: Problems with event handling, subscriptions, and type safety
-3. **Component Props**: Incorrect prop types or missing required props
-4. **Manager Implementation**: Issues in manager classes, including singleton patterns and method implementations
-5. **Type Safety**: General type safety issues, including `any` types and type assertions
+```bash
+./Scripts/fix_unused_vars.sh --target=/path/to/file_or_directory
+```
 
-## Contributing
+## Generated Reports
 
-When fixing errors:
+### TypeScript Analysis (`Analysis/TypeScript/`)
 
-1. Document the fix in the appropriate category directory
-2. Update the error tracking information
-3. Run verification tests after applying fixes
-4. Update the daily progress report
+- `typescript_errors_YYYY-MM-DD.txt`: Raw TypeScript compiler output
+- `typescript_error_report_YYYY-MM-DD.md`: Markdown report with error summary
+- Categorized error files:
+  - `type_mismatch_errors.txt`
+  - `missing_property_errors.txt`
+  - `null_undefined_errors.txt`
+  - `resource_type_errors.txt`
+  - `event_system_errors.txt`
+  - `react_component_errors.txt`
+  - `syntax_errors.txt`
+  - `unused_variable_errors.txt`
+- Analysis files:
+  - `error_hotspots.txt`: Files with the most errors
+  - `error_code_frequency.txt`: Most common error codes
+
+### ESLint Analysis (`Analysis/ESLint/`)
+
+- `eslint_errors_YYYY-MM-DD.txt`: Readable ESLint output
+- `eslint_errors_YYYY-MM-DD.json`: JSON-formatted ESLint output
+- `eslint_error_report_YYYY-MM-DD.md`: Markdown report with error summary
+- Categorized error files:
+  - `unused_vars_YYYY-MM-DD.txt`
+  - `import_errors_YYYY-MM-DD.txt`
+  - `react_errors_YYYY-MM-DD.txt`
+  - `typescript_errors_YYYY-MM-DD.txt`
+  - `formatting_errors_YYYY-MM-DD.txt`
+- Analysis files:
+  - `eslint_hotspots_YYYY-MM-DD.txt`: Files with the most ESLint errors
+  - `eslint_rule_frequency_YYYY-MM-DD.txt`: Most common ESLint rules
+
+### Combined Report (`Analysis/Combined/`)
+
+- `analysis_summary_YYYY-MM-DD.md`: Unified report with data from both analyses
+
+## Workflow Tips
+
+1. Always run the tests first to ensure fix scripts are working correctly
+2. Run the full analysis before applying any fixes to understand the error landscape
+3. Fix issues in this order:
+   - Syntax errors
+   - Resource type errors
+   - Unused variables
+   - Type mismatches and null/undefined errors
+   - Component-specific issues
+4. Re-run analysis after each major fix to verify progress

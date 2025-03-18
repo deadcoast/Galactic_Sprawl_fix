@@ -169,7 +169,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
     // Apply search term filter
     if (searchTerm) {
       const lowercaseSearch = searchTerm.toLowerCase();
-      result = result.filter(item => {
+      result = result?.filter(item => {
         return searchFields.some(field => {
           const value = item[field];
           if (typeof value === 'string') {
@@ -184,17 +184,17 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
 
     // Apply custom filter
     if (filterItem) {
-      result = result.filter(filterItem);
+      result = result?.filter(filterItem);
     }
 
     // Apply sorting
     if (sortItems) {
-      result.sort(sortItems);
+      result?.sort(sortItems);
     }
 
     // Apply limit
-    if (result.length > maxItems) {
-      result = result.slice(0, maxItems);
+    if (result?.length > maxItems) {
+      result = result?.slice(0, maxItems);
     }
 
     return result;
@@ -216,7 +216,7 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
     // Initialize size
     setContainerSize(prev => ({
       ...prev,
-      width: containerRef.current?.clientWidth || 0,
+      width: containerRef.current?.clientWidth ?? 0,
     }));
 
     return () => {
@@ -267,21 +267,21 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white`}
             >
-              {item.type.charAt(0).toUpperCase()}
+              {item?.type.charAt(0).toUpperCase()}
             </div>
           </div>
           <div className="min-w-0 flex-1">
-            <div className="font-medium">{item.name}</div>
+            <div className="font-medium">{item?.name}</div>
             <div className="truncate text-sm text-gray-400">
-              {item.type} - {item.id}
+              {item?.type} - {item?.id}
             </div>
           </div>
           <div className="text-right">
-            <div className="font-bold">{item.amount.toLocaleString()}</div>
-            {item.rate !== undefined && (
-              <div className={`text-sm ${item.rate >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {item.rate >= 0 ? '+' : ''}
-                {item.rate.toFixed(1)}/s
+            <div className="font-bold">{item?.amount.toLocaleString()}</div>
+            {item?.rate !== undefined && (
+              <div className={`text-sm ${item?.rate >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {item?.rate >= 0 ? '+' : ''}
+                {item?.rate.toFixed(1)}/s
               </div>
             )}
           </div>

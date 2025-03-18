@@ -17,7 +17,7 @@ interface State {
 
 /**
  * Global error boundary to catch and handle unhandled errors throughout the application.
- * Provides error logging, a user-friendly fallback UI, and recovery options.
+ * Provides error logging, a user-friendly fallback UI, and recovery options?.
  */
 export class GlobalErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -39,8 +39,8 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     console.error('Global error caught by GlobalErrorBoundary:', error, errorInfo);
 
     // Send the error to any error logging service
-    if (this.props.onError) {
-      this.props.onError(error, errorInfo);
+    if (this.props?.onError) {
+      this.props?.onError(error, errorInfo);
     }
 
     // Update state with error details
@@ -56,8 +56,8 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     });
 
     // Call the onReset callback if provided
-    if (this.props.onReset) {
-      this.props.onReset();
+    if (this.props?.onReset) {
+      this.props?.onReset();
     } else {
       // Default behavior: reload the page
       window.location.reload();
@@ -67,8 +67,8 @@ export class GlobalErrorBoundary extends Component<Props, State> {
   render(): React.ReactNode {
     if (this.state.hasError) {
       // If a custom fallback is provided, use that
-      if (this.props.fallback) {
-        return this.props.fallback;
+      if (this.props?.fallback) {
+        return this.props?.fallback;
       }
 
       // Default fallback UI
@@ -111,6 +111,6 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     }
 
     // If no error occurred, render children normally
-    return this.props.children;
+    return this.props?.children;
   }
 }

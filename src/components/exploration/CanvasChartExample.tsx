@@ -24,7 +24,7 @@ const generateScatterPlotData = (count: number): ChartDataRecord[] => {
     const size = 5 + Math.random() * 15;
     const category = Math.floor(Math.random() * 5);
 
-    data.push({
+    data?.push({
       id: `point-${i}`,
       x,
       y,
@@ -64,7 +64,7 @@ const generateTimeSeriesData = (count: number, series: number = 3): ChartDataRec
         (Math.random() * 5 - 2.5); // Add some noise
     }
 
-    data.push(record);
+    data?.push(record);
   }
 
   return data;

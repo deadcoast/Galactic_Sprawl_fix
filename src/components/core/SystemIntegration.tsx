@@ -122,17 +122,17 @@ export function SystemIntegration({
         // Calculate rates from production and consumption
         resourceRates = {
           mineralRate:
-            (states[ResourceType.MINERALS]?.production || 0) -
-            (states[ResourceType.MINERALS]?.consumption || 0),
+            (states[ResourceType.MINERALS]?.production ?? 0) -
+            (states[ResourceType.MINERALS]?.consumption ?? 0),
           energyRate:
-            (states[ResourceType.ENERGY]?.production || 0) -
-            (states[ResourceType.ENERGY]?.consumption || 0),
+            (states[ResourceType.ENERGY]?.production ?? 0) -
+            (states[ResourceType.ENERGY]?.consumption ?? 0),
           populationRate:
-            (states[ResourceType.POPULATION]?.production || 0) -
-            (states[ResourceType.POPULATION]?.consumption || 0),
+            (states[ResourceType.POPULATION]?.production ?? 0) -
+            (states[ResourceType.POPULATION]?.consumption ?? 0),
           researchRate:
-            (states[ResourceType.RESEARCH]?.production || 0) -
-            (states[ResourceType.RESEARCH]?.consumption || 0),
+            (states[ResourceType.RESEARCH]?.production ?? 0) -
+            (states[ResourceType.RESEARCH]?.consumption ?? 0),
         };
       }
 
@@ -140,10 +140,10 @@ export function SystemIntegration({
       gameDispatch({
         type: GameActionType.UPDATE_RESOURCES,
         payload: {
-          minerals: currentResources[ResourceType.MINERALS] || 0,
-          energy: currentResources[ResourceType.ENERGY] || 0,
-          population: currentResources[ResourceType.POPULATION] || 0,
-          research: currentResources[ResourceType.RESEARCH] || 0,
+          minerals: currentResources[ResourceType.MINERALS] ?? 0,
+          energy: currentResources[ResourceType.ENERGY] ?? 0,
+          population: currentResources[ResourceType.POPULATION] ?? 0,
+          research: currentResources[ResourceType.RESEARCH] ?? 0,
           ...resourceRates, // Add rates if available
         },
       });

@@ -20,7 +20,7 @@ interface TooltipPayloadItem {
  * TooltipAdapter acts as a bridge between the Recharts tooltip component system
  * and our type-safe tooltip renderer functions. It takes a renderer function that
  * works with strongly-typed data objects and adapts it to work with Recharts'
- * tooltip component props.
+ * tooltip component props?.
  */
 interface TooltipAdapterProps<T> extends ChartTooltipProps {
   renderer: TooltipRenderer<T>;

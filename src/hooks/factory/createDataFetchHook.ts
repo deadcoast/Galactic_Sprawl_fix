@@ -171,7 +171,7 @@ export function createDataFetchHook<T, P extends any[] = []>(
  *   
  *   return (
  *     <div>
- *       <h1>{data.name}</h1>
+ *       <h1>{data?.name}</h1>
  *       <button onClick={fetch}>Refresh</button>
  *     </div>
  *   );

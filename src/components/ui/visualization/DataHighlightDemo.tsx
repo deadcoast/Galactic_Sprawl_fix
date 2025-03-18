@@ -88,7 +88,7 @@ export const DataHighlightDemo: React.FC<DataHighlightDemoProps> = ({
         // Combine patterns
         const combinedValue = (radialValue * 0.5 + waveValue * 0.5) * (1 - gridValue * 0.3);
 
-        data.push({
+        data?.push({
           x: posX,
           y: posY,
           value: combinedValue,

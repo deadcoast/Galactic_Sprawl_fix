@@ -44,38 +44,51 @@ export function generateMigrationGuide(): string {
 /**
  * Maps string resource types to enum resource types
  */
-const STRING_TO_ENUM_MAP: Record<StringResourceType, ResourceType> = {
-  minerals: ResourceType.MINERALS,
-  energy: ResourceType.ENERGY,
-  population: ResourceType.POPULATION,
-  research: ResourceType.RESEARCH,
-  plasma: ResourceType.PLASMA,
-  gas: ResourceType.GAS,
-  exotic: ResourceType.EXOTIC,
+const STRING_TO_ENUM_MAP: Record<string, ResourceType> = {
+  MINERALS: ResourceType.MINERALS,
+  ENERGY: ResourceType.ENERGY,
+  POPULATION: ResourceType.POPULATION,
+  RESEARCH: ResourceType.RESEARCH,
+  PLASMA: ResourceType.PLASMA,
+  GAS: ResourceType.GAS,
+  EXOTIC: ResourceType.EXOTIC,
+  ORGANIC: ResourceType.ORGANIC,
+  FOOD: ResourceType.FOOD,
+  IRON: ResourceType.IRON,
+  COPPER: ResourceType.COPPER,
+  TITANIUM: ResourceType.TITANIUM,
+  URANIUM: ResourceType.URANIUM,
+  WATER: ResourceType.WATER,
+  HELIUM: ResourceType.HELIUM,
+  DEUTERIUM: ResourceType.DEUTERIUM,
+  ANTIMATTER: ResourceType.ANTIMATTER,
+  DARK_MATTER: ResourceType.DARK_MATTER,
+  EXOTIC_MATTER: ResourceType.EXOTIC_MATTER,
 };
 
 /**
  * Maps enum resource types to string resource types
  */
-const ENUM_TO_STRING_MAP: Record<ResourceType, StringResourceType | string> = {
-  [ResourceType.MINERALS]: ResourceType.MINERALS,
-  [ResourceType.ENERGY]: ResourceType.ENERGY,
-  [ResourceType.POPULATION]: ResourceType.POPULATION,
-  [ResourceType.RESEARCH]: ResourceType.RESEARCH,
-  [ResourceType.PLASMA]: ResourceType.PLASMA,
-  [ResourceType.GAS]: ResourceType.GAS,
-  [ResourceType.EXOTIC]: ResourceType.EXOTIC,
-  // Map additional types to their closest string equivalent or default
-  [ResourceType.IRON]: ResourceType.MINERALS,
-  [ResourceType.COPPER]: ResourceType.MINERALS,
-  [ResourceType.TITANIUM]: ResourceType.MINERALS,
-  [ResourceType.URANIUM]: ResourceType.MINERALS,
-  [ResourceType.WATER]: ResourceType.MINERALS,
-  [ResourceType.HELIUM]: ResourceType.GAS,
-  [ResourceType.DEUTERIUM]: ResourceType.GAS,
-  [ResourceType.ANTIMATTER]: ResourceType.EXOTIC,
-  [ResourceType.DARK_MATTER]: ResourceType.EXOTIC,
-  [ResourceType.EXOTIC_MATTER]: ResourceType.EXOTIC,
+const ENUM_TO_STRING_MAP: Record<ResourceType, string> = {
+  [ResourceType.MINERALS]: 'MINERALS',
+  [ResourceType.ENERGY]: 'ENERGY',
+  [ResourceType.POPULATION]: 'POPULATION',
+  [ResourceType.RESEARCH]: 'RESEARCH',
+  [ResourceType.PLASMA]: 'PLASMA',
+  [ResourceType.GAS]: 'GAS',
+  [ResourceType.EXOTIC]: 'EXOTIC',
+  [ResourceType.ORGANIC]: 'ORGANIC',
+  [ResourceType.FOOD]: 'FOOD',
+  [ResourceType.IRON]: 'IRON',
+  [ResourceType.COPPER]: 'COPPER',
+  [ResourceType.TITANIUM]: 'TITANIUM',
+  [ResourceType.URANIUM]: 'URANIUM',
+  [ResourceType.WATER]: 'WATER',
+  [ResourceType.HELIUM]: 'HELIUM',
+  [ResourceType.DEUTERIUM]: 'DEUTERIUM',
+  [ResourceType.ANTIMATTER]: 'ANTIMATTER',
+  [ResourceType.DARK_MATTER]: 'DARK_MATTER',
+  [ResourceType.EXOTIC_MATTER]: 'EXOTIC_MATTER',
 };
 
 /**
@@ -194,7 +207,7 @@ export function convertMapResourceTypes<T>(map: Map<StringResourceType, T>): Map
   const result = new Map<ResourceType, T>();
   // Use Array.from to avoid iterator issues
   Array.from(map.entries()).forEach(([key, value]) => {
-    result.set(toEnumResourceType(key), value);
+    result?.set(toEnumResourceType(key), value);
   });
   return result;
 }
@@ -212,12 +225,12 @@ export function analyzeMigrationNeeds(fileContent: string): {
   const stringMatches = (
     fileContent.match(
       /['"]minerals['"]|['"]energy['"]|['"]population['"]|['"]research['"]|['"]plasma['"]|['"]gas['"]|['"]exotic['"]/g
-    ) || []
+    ) ?? []
   ).length;
   const enumMatches = (
     fileContent.match(
       /ResourceType\.MINERALS|ResourceType\.ENERGY|ResourceType\.POPULATION|ResourceType\.RESEARCH|ResourceType\.PLASMA|ResourceType\.GAS|ResourceType\.EXOTIC/g
-    ) || []
+    ) ?? []
   ).length;
 
   return {
@@ -236,13 +249,13 @@ export function applyMigration(fileContent: string): string {
   let result = fileContent;
 
   // Replace string literals with enum values
-  result = result.replace(/['"]minerals['"]/g, 'ResourceType.MINERALS');
-  result = result.replace(/['"]energy['"]/g, 'ResourceType.ENERGY');
-  result = result.replace(/['"]population['"]/g, 'ResourceType.POPULATION');
-  result = result.replace(/['"]research['"]/g, 'ResourceType.RESEARCH');
-  result = result.replace(/['"]plasma['"]/g, 'ResourceType.PLASMA');
-  result = result.replace(/['"]gas['"]/g, 'ResourceType.GAS');
-  result = result.replace(/['"]exotic['"]/g, 'ResourceType.EXOTIC');
+  result = result?.replace(/['"]minerals['"]/g, 'ResourceType.MINERALS');
+  result = result?.replace(/['"]energy['"]/g, 'ResourceType.ENERGY');
+  result = result?.replace(/['"]population['"]/g, 'ResourceType.POPULATION');
+  result = result?.replace(/['"]research['"]/g, 'ResourceType.RESEARCH');
+  result = result?.replace(/['"]plasma['"]/g, 'ResourceType.PLASMA');
+  result = result?.replace(/['"]gas['"]/g, 'ResourceType.GAS');
+  result = result?.replace(/['"]exotic['"]/g, 'ResourceType.EXOTIC');
 
   return result;
 }

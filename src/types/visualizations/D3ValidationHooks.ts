@@ -360,7 +360,7 @@ export function withStepValidation<InputType, OutputType>(
 
       if (
         mergedOptions.logErrors &&
-        !(error instanceof Error && error.message.includes(mergedOptions.errorPrefix || ''))
+        !(error instanceof Error && error.message.includes(mergedOptions.errorPrefix ?? ''))
       ) {
         console.error(`${mergedOptions.errorPrefix} (Transform): ${errorMessage}`);
       }

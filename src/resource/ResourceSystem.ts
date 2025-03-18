@@ -127,8 +127,8 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
     eventSystem.subscribe(EventType.RESOURCE_SHORTAGE, event => {
       console.warn('Resource storage overflow:', event);
       // Handle overflow according to policy
-      if (event.data && typeof event.data === 'object') {
-        const { resourceType, amount, containerId } = event.data as {
+      if (event?.data && typeof event?.data === 'object') {
+        const { resourceType, amount, containerId } = event?.data as {
           resourceType: ResourceType;
           amount: number;
           containerId: string;
@@ -140,8 +140,8 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
     // Listen for resource state changes
     eventSystem.subscribe(EventType.RESOURCE_UPDATED, event => {
       // Invalidate cache for the resource type
-      if (event.data && typeof event.data === 'object') {
-        const { resourceType } = event.data as { resourceType: ResourceType };
+      if (event?.data && typeof event?.data === 'object') {
+        const { resourceType } = event?.data as { resourceType: ResourceType };
         this.resourceCache.delete(resourceType);
       }
     });
@@ -397,7 +397,7 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
    */
   public getResourceTotal(type: ResourceType): number {
     const state = this.getResourceState(type);
-    return state?.current || 0;
+    return state?.current ?? 0;
   }
 
   /**

@@ -370,7 +370,7 @@ export function sortByDiscoveryDate<T extends { discoveredAt: number }>(
 export function calculateDistance(coord1: Coordinates, coord2: Coordinates): number {
   const dx = coord2.x - coord1.x;
   const dy = coord2.y - coord1.y;
-  const dz = (coord2.z || 0) - (coord1.z || 0);
+  const dz = (coord2.z ?? 0) - (coord1.z ?? 0);
   
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
@@ -390,7 +390,7 @@ export function findNearestEntities<T extends { coordinates: Coordinates }>(
     }))
     .sort((a, b) => a.distance - b.distance)
     .slice(0, limit)
-    .map(item => item.entity);
+    .map(item => item?.entity);
 }
 
 /**

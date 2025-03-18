@@ -181,7 +181,7 @@ export class ResourceCostManager {
       }
 
       // Apply resource-specific discount if available
-      const resourceDiscount = this.discounts.get(cost.type) || 0;
+      const resourceDiscount = this.discounts.get(cost.type) ?? 0;
       if (resourceDiscount > 0) {
         adjustedAmount *= 1 - resourceDiscount / 100;
       }
@@ -193,7 +193,7 @@ export class ResourceCostManager {
       }
 
       // Apply resource-specific tax if available
-      const resourceTax = this.taxes.get(cost.type) || 0;
+      const resourceTax = this.taxes.get(cost.type) ?? 0;
       if (resourceTax > 0) {
         adjustedAmount *= 1 + resourceTax / 100;
       }
@@ -344,7 +344,7 @@ export class ResourceCostManager {
       return 0;
     }
 
-    return container.resources.get(type) || 0;
+    return container.resources.get(type) ?? 0;
   }
 
   /**
@@ -359,7 +359,7 @@ export class ResourceCostManager {
       return;
     }
 
-    const currentAmount = container.resources.get(type) || 0;
+    const currentAmount = container.resources.get(type) ?? 0;
     container.resources.set(type, Math.max(0, currentAmount - amount));
   }
 }

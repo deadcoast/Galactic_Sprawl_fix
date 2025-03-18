@@ -45,7 +45,7 @@ interface AnalysisVisualizationProps {
 // Extract and memoize cluster data for better performance
 const useClusterData = (result: AnalysisResult, allData: ChartDataRecord[]) => {
   return useMemo(() => {
-    if (!result.data.clusters || !Array.isArray(result.data.clusters)) {
+    if (!result?.data?.clusters || !Array.isArray(result?.data?.clusters)) {
       return {
         clusters: [],
         features: [],
@@ -53,8 +53,8 @@ const useClusterData = (result: AnalysisResult, allData: ChartDataRecord[]) => {
       };
     }
 
-    const clusters = result.data.clusters;
-    const features = Array.isArray(result.data.features) ? (result.data.features as string[]) : [];
+    const clusters = result?.data?.clusters;
+    const features = Array.isArray(result?.data?.features) ? (result?.data?.features as string[]) : [];
 
     // Extract all points data from the clustering result
     const clusterPoints: ClusterPoint[] = [];
@@ -98,32 +98,32 @@ const useClusterData = (result: AnalysisResult, allData: ChartDataRecord[]) => {
       features,
       clusterPoints,
     };
-  }, [result.data.clusters, result.data.features, allData]);
+  }, [result?.data?.clusters, result?.data?.features, allData]);
 };
 
 // Extract and memoize prediction data for better performance
 const usePredictionData = (result: AnalysisResult, config: PredictionAnalysisConfig) => {
   return useMemo(() => {
     // Safely extract prediction data with type checking
-    const predictions = Array.isArray(result.data.predictions)
-      ? (result.data.predictions as PredictionPoint[])
+    const predictions = Array.isArray(result?.data?.predictions)
+      ? (result?.data?.predictions as PredictionPoint[])
       : [];
 
-    const forecast = Array.isArray(result.data.forecast)
-      ? (result.data.forecast as ForecastPoint[])
+    const forecast = Array.isArray(result?.data?.forecast)
+      ? (result?.data?.forecast as ForecastPoint[])
       : [];
 
-    const features = Array.isArray(result.data.features) ? (result.data.features as string[]) : [];
+    const features = Array.isArray(result?.data?.features) ? (result?.data?.features as string[]) : [];
 
-    const metrics = (result.data.metrics as ModelMetrics) || {
+    const metrics = (result?.data?.metrics as ModelMetrics) || {
       mse: 0,
       rmse: 0,
       mae: 0,
     };
 
-    const modelDetails = result.data.modelDetails || {};
-    const model = typeof result.data.model === 'string' ? result.data.model : 'unknown';
-    const targetVariable = config.parameters.target || '';
+    const modelDetails = result?.data?.modelDetails ?? {};
+    const model = typeof result?.data?.model === 'string' ? result?.data?.model : 'unknown';
+    const targetVariable = config.parameters.target ?? '';
 
     // Type guard for model details to ensure proper structure
     let typedModelDetails: LinearRegressionModelDetails | NeuralNetworkModelDetails;
@@ -200,12 +200,12 @@ const usePredictionData = (result: AnalysisResult, config: PredictionAnalysisCon
       modelDetails: typedModelDetails,
     };
   }, [
-    result.data.predictions,
-    result.data.forecast,
-    result.data.features,
-    result.data.metrics,
-    result.data.modelDetails,
-    result.data.model,
+    result?.data?.predictions,
+    result?.data?.forecast,
+    result?.data?.features,
+    result?.data?.metrics,
+    result?.data?.modelDetails,
+    result?.data?.model,
     config.parameters.target,
   ]);
 };
@@ -214,56 +214,56 @@ const usePredictionData = (result: AnalysisResult, config: PredictionAnalysisCon
 const useResourceMappingData = (result: AnalysisResult) => {
   return useMemo(() => {
     // Safely extract resource mapping data with proper type checking
-    const resourcePoints = Array.isArray(result.data.resourcePoints)
-      ? (result.data.resourcePoints as DataPoint[])
+    const resourcePoints = Array.isArray(result?.data?.resourcePoints)
+      ? (result?.data?.resourcePoints as DataPoint[])
       : [];
 
-    const gridCells = Array.isArray(result.data.gridCells)
-      ? (result.data.gridCells as ResourceGridCell[])
+    const gridCells = Array.isArray(result?.data?.gridCells)
+      ? (result?.data?.gridCells as ResourceGridCell[])
       : [];
 
-    const resourceTypes = Array.isArray(result.data.resourceTypes)
-      ? (result.data.resourceTypes as ResourceType[])
+    const resourceTypes = Array.isArray(result?.data?.resourceTypes)
+      ? (result?.data?.resourceTypes as ResourceType[])
       : [];
 
     const valueMetric =
-      typeof result.data.valueMetric === 'string'
-        ? (result.data.valueMetric as 'amount' | 'quality' | 'accessibility' | 'estimatedValue')
+      typeof result?.data?.valueMetric === 'string'
+        ? (result?.data?.valueMetric as 'amount' | 'quality' | 'accessibility' | 'estimatedValue')
         : 'amount';
 
-    const regionSize = typeof result.data.regionSize === 'number' ? result.data.regionSize : 1;
+    const regionSize = typeof result?.data?.regionSize === 'number' ? result?.data?.regionSize : 1;
 
     // Ensure xRange and yRange are properly formatted
     let xRange: [number, number] = [0, 0];
     let yRange: [number, number] = [0, 0];
 
     if (
-      Array.isArray(result.data.xRange) &&
-      result.data.xRange.length === 2 &&
-      typeof result.data.xRange[0] === 'number' &&
-      typeof result.data.xRange[1] === 'number'
+      Array.isArray(result?.data?.xRange) &&
+      result?.data?.xRange.length === 2 &&
+      typeof result?.data?.xRange[0] === 'number' &&
+      typeof result?.data?.xRange[1] === 'number'
     ) {
-      xRange = result.data.xRange as [number, number];
+      xRange = result?.data?.xRange as [number, number];
     }
 
     if (
-      Array.isArray(result.data.yRange) &&
-      result.data.yRange.length === 2 &&
-      typeof result.data.yRange[0] === 'number' &&
-      typeof result.data.yRange[1] === 'number'
+      Array.isArray(result?.data?.yRange) &&
+      result?.data?.yRange.length === 2 &&
+      typeof result?.data?.yRange[0] === 'number' &&
+      typeof result?.data?.yRange[1] === 'number'
     ) {
-      yRange = result.data.yRange as [number, number];
+      yRange = result?.data?.yRange as [number, number];
     }
 
     // Extract density data safely
     const density =
-      typeof result.data.density === 'object' && result.data.density !== null
-        ? (result.data.density as Record<string, number>)
+      typeof result?.data?.density === 'object' && result?.data?.density !== null
+        ? (result?.data?.density as Record<string, number>)
         : {};
 
     // Extract insights and summary
-    const insights = Array.isArray(result.insights) ? result.insights : [];
-    const summary = typeof result.summary === 'string' ? result.summary : '';
+    const insights = Array.isArray(result?.insights) ? result?.insights : [];
+    const summary = typeof result?.summary === 'string' ? result?.summary : '';
 
     return {
       resourcePoints,
@@ -278,16 +278,16 @@ const useResourceMappingData = (result: AnalysisResult) => {
       summary,
     };
   }, [
-    result.data.resourcePoints,
-    result.data.gridCells,
-    result.data.resourceTypes,
-    result.data.valueMetric,
-    result.data.regionSize,
-    result.data.xRange,
-    result.data.yRange,
-    result.data.density,
-    result.insights,
-    result.summary,
+    result?.data?.resourcePoints,
+    result?.data?.gridCells,
+    result?.data?.resourceTypes,
+    result?.data?.valueMetric,
+    result?.data?.regionSize,
+    result?.data?.xRange,
+    result?.data?.yRange,
+    result?.data?.density,
+    result?.insights,
+    result?.summary,
   ]);
 };
 
@@ -303,16 +303,16 @@ export function AnalysisVisualization({
   // State to toggle between chart view and raw data view
   const [showRawData, setShowRawData] = useState(false);
 
-  if (result.status !== 'completed') {
+  if (result?.status !== 'completed') {
     return (
       <div className="analysis-visualization-loading">
-        <p>Analysis status: {result.status}</p>
-        {result.status === 'failed' && <p className="error">{result.error}</p>}
+        <p>Analysis status: {result?.status}</p>
+        {result?.status === 'failed' && <p className="error">{result?.error}</p>}
       </div>
     );
   }
 
-  if (!result.data || Object.keys(result.data).length === 0) {
+  if (!result?.data || Object.keys(result?.data).length === 0) {
     return (
       <div className="analysis-visualization-empty">
         <p>No data available for visualization</p>
@@ -323,12 +323,12 @@ export function AnalysisVisualization({
   // Extract data from the result with safer type casting
   const allData = useMemo(() => {
     let extractedData: Record<string, unknown>[] = [];
-    if (Array.isArray(result.data.dataPoints)) {
-      extractedData = result.data.dataPoints as Record<string, unknown>[];
-    } else if (Array.isArray(result.data.values)) {
-      extractedData = result.data.values as Record<string, unknown>[];
-    } else if (Array.isArray(result.data.results)) {
-      extractedData = result.data.results as Record<string, unknown>[];
+    if (Array.isArray(result?.data?.dataPoints)) {
+      extractedData = result?.data?.dataPoints as Record<string, unknown>[];
+    } else if (Array.isArray(result?.data?.values)) {
+      extractedData = result?.data?.values as Record<string, unknown>[];
+    } else if (Array.isArray(result?.data?.results)) {
+      extractedData = result?.data?.results as Record<string, unknown>[];
     }
 
     // Convert to ChartDataRecord[] to ensure compatibility with visualization components
@@ -397,7 +397,7 @@ export function AnalysisVisualization({
       });
       return result;
     });
-  }, [result.data]);
+  }, [result?.data]);
 
   // Calculate pagination values
   const totalPages = Math.ceil(allData.length / pageSize);
@@ -461,7 +461,7 @@ export function AnalysisVisualization({
     const data = paginatedData;
 
     // Handle clustering analysis specially
-    if (analysisType === 'clustering' && result.data.clusters) {
+    if (analysisType === 'clustering' && result?.data?.clusters) {
       // Prepare data for cluster visualization
       const { clusters, features, clusterPoints } = useClusterData(result, allData);
 
@@ -552,14 +552,14 @@ export function AnalysisVisualization({
     let valueKey = 'value';
 
     // If analysis result contains axis information, use it
-    if (result.data.xAxis && typeof result.data.xAxis === 'string') {
-      xAxisKey = result.data.xAxis;
+    if (result?.data?.xAxis && typeof result?.data?.xAxis === 'string') {
+      xAxisKey = result?.data?.xAxis;
     }
-    if (result.data.yAxis && typeof result.data.yAxis === 'string') {
-      yAxisKeys = [result.data.yAxis];
+    if (result?.data?.yAxis && typeof result?.data?.yAxis === 'string') {
+      yAxisKeys = [result?.data?.yAxis];
     }
-    if (result.data.valueKey && typeof result.data.valueKey === 'string') {
-      valueKey = result.data.valueKey;
+    if (result?.data?.valueKey && typeof result?.data?.valueKey === 'string') {
+      valueKey = result?.data?.valueKey;
     }
 
     // For trend analysis, extract x and y axes from parameters
@@ -583,7 +583,7 @@ export function AnalysisVisualization({
     if (analysisType === 'comparison' && config.type === 'comparison') {
       const comparisonConfig = config as ComparisonAnalysisConfig;
       // Extract the comparison variables to use as y-axis keys
-      const compVars = comparisonConfig.parameters.comparisonVariables || [];
+      const compVars = comparisonConfig.parameters.comparisonVariables ?? [];
       if (compVars.length > 0) {
         yAxisKeys = compVars;
       }
@@ -672,7 +672,7 @@ export function AnalysisVisualization({
             <div className="chart-container">
               <p>The visualization type "{visualizationType}" is not yet implemented</p>
               <p>Analysis type: {analysisType}</p>
-              <pre>{JSON.stringify(result.data, null, 2)}</pre>
+              <pre>{JSON.stringify(result?.data, null, 2)}</pre>
             </div>
           </div>
         );
@@ -749,21 +749,21 @@ export function AnalysisVisualization({
       {renderPagination()}
 
       {/* Display insights and summary if available */}
-      {!showRawData && result.insights && result.insights.length > 0 && (
+      {!showRawData && result?.insights && result?.insights.length > 0 && (
         <div className="analysis-insights">
           <h4>Key Insights</h4>
           <ul>
-            {result.insights.map((insight, index) => (
+            {result?.insights.map((insight, index) => (
               <li key={index}>{insight}</li>
             ))}
           </ul>
         </div>
       )}
 
-      {!showRawData && result.summary && (
+      {!showRawData && result?.summary && (
         <div className="analysis-summary">
           <h4>Summary</h4>
-          <p>{result.summary}</p>
+          <p>{result?.summary}</p>
         </div>
       )}
 

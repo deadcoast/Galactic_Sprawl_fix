@@ -1,6 +1,6 @@
 /**
  * @file HookPerformanceDashboard.tsx
- * A React component for visualizing hook performance data.
+ * A React component for visualizing hook performance data?.
  *
  * This component provides:
  * 1. Real-time visualization of hook performance metrics
@@ -62,7 +62,7 @@ const HookPerformanceDashboard: React.FC<HookPerformanceDashboardProps> = ({
   const [performanceData, setPerformanceData] = useState<Record<string, HookPerformanceData>>({});
   const [selectedHook, setSelectedHook] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('renders');
-  const [filterText, setFilterText] = useState(filterByHook || '');
+  const [filterText, setFilterText] = useState(filterByHook ?? '');
   const [showOnlySlowHooks, setShowOnlySlowHooks] = useState(false);
 
   // Refresh performance data
@@ -92,11 +92,11 @@ const HookPerformanceDashboard: React.FC<HookPerformanceDashboardProps> = ({
     // Convert to array for filtering and sorting
     let hooks = Object.entries(performanceData).map(([hookName, data]) => ({
       hookName,
-      renderCount: data.renderCount,
-      selectorCount: Object.keys(data.selectorTimes).length,
-      computationCount: Object.keys(data.computationTimes).length,
-      avgSelectorTime: calculateAverageTime(data.selectorTimes),
-      avgComputationTime: calculateAverageTime(data.computationTimes),
+      renderCount: data?.renderCount,
+      selectorCount: Object.keys(data?.selectorTimes).length,
+      computationCount: Object.keys(data?.computationTimes).length,
+      avgSelectorTime: calculateAverageTime(data?.selectorTimes),
+      avgComputationTime: calculateAverageTime(data?.computationTimes),
       data,
     }));
 

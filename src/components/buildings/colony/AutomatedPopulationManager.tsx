@@ -412,26 +412,26 @@ export function AutomatedPopulationManager({
             ) : (
               <div className="max-h-48 overflow-y-auto">
                 {events.map(event => (
-                  <div key={event.id} className="border-b border-gray-700 p-3 last:border-b-0">
+                  <div key={event?.id} className="border-b border-gray-700 p-3 last:border-b-0">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        {getEventIcon(event.type)}
+                        {getEventIcon(event?.type)}
                         <span className="text-sm font-medium capitalize text-white">
-                          {event.type}
+                          {event?.type}
                         </span>
                       </div>
                       <span
                         className={`text-sm font-medium ${
-                          event.amount > 0 ? 'text-green-400' : 'text-red-400'
+                          event?.amount > 0 ? 'text-green-400' : 'text-red-400'
                         }`}
                       >
-                        {event.amount > 0 ? '+' : ''}
-                        {event.amount.toLocaleString()}
+                        {event?.amount > 0 ? '+' : ''}
+                        {event?.amount.toLocaleString()}
                       </span>
                     </div>
-                    <div className="mt-1 text-xs text-gray-400">{event.reason}</div>
+                    <div className="mt-1 text-xs text-gray-400">{event?.reason}</div>
                     <div className="mt-1 text-xs text-gray-500">
-                      {formatTimestamp(event.timestamp)}
+                      {formatTimestamp(event?.timestamp)}
                     </div>
                   </div>
                 ))}

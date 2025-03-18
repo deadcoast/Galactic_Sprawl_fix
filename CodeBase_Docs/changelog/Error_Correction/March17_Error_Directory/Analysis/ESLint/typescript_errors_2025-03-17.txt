@@ -28,7 +28,6 @@
   153:9  warning  'handleConfigChange' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
   31:3  warning  'width' is assigned a value but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
   32:3  warning  'height' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
-  1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
    88:11  warning  'percentFilled' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
    89:11  warning  'timeUntilEmpty' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
    90:11  warning  'timeUntilFull' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
@@ -77,8 +76,7 @@
    6:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   14:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   83:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-    1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
-  100:26  warning  'renderTime' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  100:26  warning  'renderTime' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   22:3  warning  'onProgress' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   64:42  warning  'event' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   1:10  warning  'ResourceType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars

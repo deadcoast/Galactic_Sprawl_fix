@@ -182,7 +182,7 @@ export const defaultModuleConfigs: Record<ModuleType, ModuleConfig> = {
       upkeep: 40,
     },
   },
-  food: {
+  [ResourceType.FOOD]: {
     type: ResourceType.FOOD,
     name: 'Food Production',
     description: 'Manages food production and biodomes',

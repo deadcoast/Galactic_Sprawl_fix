@@ -89,12 +89,12 @@ export class ResourceIntegration {
     // Subscribe to resource produced events
     moduleEventBus.subscribe('RESOURCE_PRODUCED' as ModuleEventType, event => {
       // Type guard for event data
-      if (!event.data || typeof event.data !== 'object') {
+      if (!event?.data || typeof event?.data !== 'object') {
         return;
       }
 
       // Extract and validate resource type
-      const resourceType = event.data.type;
+      const resourceType = event?.data?.type;
       if (!this.isValidResourceType(resourceType)) {
         return;
       }
@@ -111,12 +111,12 @@ export class ResourceIntegration {
     // Subscribe to resource consumed events
     moduleEventBus.subscribe('RESOURCE_CONSUMED' as ModuleEventType, event => {
       // Type guard for event data
-      if (!event.data || typeof event.data !== 'object') {
+      if (!event?.data || typeof event?.data !== 'object') {
         return;
       }
 
       // Extract and validate resource type
-      const resourceType = event.data.type;
+      const resourceType = event?.data?.type;
       if (!this.isValidResourceType(resourceType)) {
         return;
       }
@@ -212,13 +212,13 @@ export class ResourceIntegration {
 
       if (existingConfig) {
         // Update existing threshold if needed
-        existingConfig.threshold.min = Math.max(existingConfig.threshold.min || 0, requiredAmount);
+        existingConfig.threshold.min = Math.max(existingConfig.threshold.min ?? 0, requiredAmount);
         // Update the threshold configuration
         this.thresholdManager.registerThreshold({
           ...existingConfig,
           threshold: {
             ...existingConfig.threshold,
-            min: Math.max(existingConfig.threshold.min || 0, requiredAmount),
+            min: Math.max(existingConfig.threshold.min ?? 0, requiredAmount),
           },
         });
       } else {
@@ -442,7 +442,7 @@ export class ResourceIntegration {
         // Convert the key string to ResourceType enum
         const resourceType = key as unknown as ResourceType;
         // Get the current value from ResourceState
-        resourcesMap.set(resourceType, value.current || 0);
+        resourcesMap.set(resourceType, value.current ?? 0);
       });
     }
 
@@ -502,7 +502,7 @@ export class ResourceIntegration {
 
     // Apply transfers to the legacy resource manager
     flowResult.then(result => {
-      result.transfers.forEach(transfer => {
+      result?.transfers.forEach(transfer => {
         // Only apply transfers to/from storage
         if (transfer.source.startsWith('storage-') || transfer.target.startsWith('storage-')) {
           // Extract the resource type from the node ID

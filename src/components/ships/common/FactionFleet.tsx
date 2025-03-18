@@ -61,7 +61,7 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
   useEffect(() => {
     if (!previousFormation) {
       setPreviousFormation({
-        positions: fleetAI.currentPositions || [],
+        positions: fleetAI.currentPositions ?? [],
         type: fleetAI.formation.type,
         pattern: fleetAI.formation.pattern,
       });
@@ -79,7 +79,7 @@ export function FactionFleet({ fleetId, factionId, onFleetCommand }: FactionFlee
   const handleTransitionComplete = () => {
     setIsTransitioning(false);
     setPreviousFormation({
-      positions: fleetAI.currentPositions || [],
+      positions: fleetAI.currentPositions ?? [],
       type: fleetAI.formation.type,
       pattern: fleetAI.formation.pattern,
     });

@@ -76,10 +76,10 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
 
         // Check if budget is violated
         const checkResult = checkPerformanceBudget(
-          result.name,
-          result.executionTimeMs,
-          result.memoryUsageMB,
-          result.operationsPerSecond
+          result?.name,
+          result?.executionTimeMs,
+          result?.memoryUsageMB,
+          result?.operationsPerSecond
         );
 
         return {
@@ -89,7 +89,7 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
           checkResult,
         };
       })
-      .filter(item => !showOnlyViolations || item.violation);
+      .filter(item => !showOnlyViolations || item?.violation);
   }, [results, budgetsToShow, showOnlyViolations]);
 
   // Group by category
@@ -97,7 +97,7 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
     const grouped: Record<string, typeof budgetResults> = {};
 
     budgetResults.forEach(result => {
-      const category = result.budget.category;
+      const category = result?.budget.category;
       if (!grouped[category]) {
         grouped[category] = [];
       }
@@ -239,47 +239,47 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
                   <tr
                     key={`${category}-${index}`}
                     className={
-                      item.violation
-                        ? item.budget.critical
+                      item?.violation
+                        ? item?.budget.critical
                           ? 'critical-violation'
                           : 'violation'
                         : ''
                     }
                   >
                     <td className="budget-name">
-                      <div>{item.budget.name}</div>
-                      {item.budget.description && (
-                        <div className="budget-description">{item.budget.description}</div>
+                      <div>{item?.budget.name}</div>
+                      {item?.budget.description && (
+                        <div className="budget-description">{item?.budget.description}</div>
                       )}
                     </td>
 
                     <td className="budget-metric">
-                      {item.result ? (
+                      {item?.result ? (
                         <div className="metric-comparison">
                           <div
                             className="actual-value"
                             style={{
                               color: getHealthColor(
-                                item.result.executionTimeMs,
-                                item.budget.maxExecutionTimeMs,
+                                item?.result?.executionTimeMs,
+                                item?.budget.maxExecutionTimeMs,
                                 'executionTime'
                               ),
                             }}
                           >
-                            {formatExecutionTime(item.result.executionTimeMs)}
+                            {formatExecutionTime(item?.result?.executionTimeMs)}
                           </div>
                           <div className="budget-value">
-                            / {formatExecutionTime(item.budget.maxExecutionTimeMs)}
+                            / {formatExecutionTime(item?.budget.maxExecutionTimeMs)}
                           </div>
 
                           <div className="health-indicator">
                             <div
                               className="health-bar"
                               style={{
-                                width: `${Math.min(100, (item.result.executionTimeMs / item.budget.maxExecutionTimeMs) * 100)}%`,
+                                width: `${Math.min(100, (item?.result?.executionTimeMs / item?.budget.maxExecutionTimeMs) * 100)}%`,
                                 backgroundColor: getHealthColor(
-                                  item.result.executionTimeMs,
-                                  item.budget.maxExecutionTimeMs,
+                                  item?.result?.executionTimeMs,
+                                  item?.budget.maxExecutionTimeMs,
                                   'executionTime'
                                 ),
                               }}
@@ -293,33 +293,33 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
 
                     {results.some(r => r.budget.maxMemoryUsageMB !== undefined) && (
                       <td className="budget-metric">
-                        {item.result?.memoryUsageMB !== undefined &&
-                        item.budget.maxMemoryUsageMB !== undefined ? (
+                        {item?.result?.memoryUsageMB !== undefined &&
+                        item?.budget.maxMemoryUsageMB !== undefined ? (
                           <div className="metric-comparison">
                             <div
                               className="actual-value"
                               style={{
                                 color: getHealthColor(
-                                  item.result.memoryUsageMB,
-                                  item.budget.maxMemoryUsageMB,
+                                  item?.result?.memoryUsageMB,
+                                  item?.budget.maxMemoryUsageMB,
                                   'memoryUsage'
                                 ),
                               }}
                             >
-                              {item.result.memoryUsageMB.toFixed(1)} MB
+                              {item?.result?.memoryUsageMB.toFixed(1)} MB
                             </div>
                             <div className="budget-value">
-                              / {item.budget.maxMemoryUsageMB.toFixed(1)} MB
+                              / {item?.budget.maxMemoryUsageMB.toFixed(1)} MB
                             </div>
 
                             <div className="health-indicator">
                               <div
                                 className="health-bar"
                                 style={{
-                                  width: `${Math.min(100, (item.result.memoryUsageMB / item.budget.maxMemoryUsageMB) * 100)}%`,
+                                  width: `${Math.min(100, (item?.result?.memoryUsageMB / item?.budget.maxMemoryUsageMB) * 100)}%`,
                                   backgroundColor: getHealthColor(
-                                    item.result.memoryUsageMB,
-                                    item.budget.maxMemoryUsageMB,
+                                    item?.result?.memoryUsageMB,
+                                    item?.budget.maxMemoryUsageMB,
                                     'memoryUsage'
                                   ),
                                 }}
@@ -328,8 +328,8 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
                           </div>
                         ) : (
                           <div className="no-data">
-                            {item.budget.maxMemoryUsageMB
-                              ? `Max: ${item.budget.maxMemoryUsageMB} MB`
+                            {item?.budget.maxMemoryUsageMB
+                              ? `Max: ${item?.budget.maxMemoryUsageMB} MB`
                               : 'N/A'}
                           </div>
                         )}
@@ -338,33 +338,33 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
 
                     {results.some(r => r.budget.minOperationsPerSecond !== undefined) && (
                       <td className="budget-metric">
-                        {item.result?.operationsPerSecond !== undefined &&
-                        item.budget.minOperationsPerSecond !== undefined ? (
+                        {item?.result?.operationsPerSecond !== undefined &&
+                        item?.budget.minOperationsPerSecond !== undefined ? (
                           <div className="metric-comparison">
                             <div
                               className="actual-value"
                               style={{
                                 color: getHealthColor(
-                                  item.result.operationsPerSecond,
-                                  item.budget.minOperationsPerSecond,
+                                  item?.result?.operationsPerSecond,
+                                  item?.budget.minOperationsPerSecond,
                                   'operationsPerSecond'
                                 ),
                               }}
                             >
-                              {item.result.operationsPerSecond.toFixed(0)}
+                              {item?.result?.operationsPerSecond.toFixed(0)}
                             </div>
                             <div className="budget-value">
-                              / {item.budget.minOperationsPerSecond.toFixed(0)}
+                              / {item?.budget.minOperationsPerSecond.toFixed(0)}
                             </div>
 
                             <div className="health-indicator">
                               <div
                                 className="health-bar"
                                 style={{
-                                  width: `${Math.min(100, (item.result.operationsPerSecond / item.budget.minOperationsPerSecond) * 100)}%`,
+                                  width: `${Math.min(100, (item?.result?.operationsPerSecond / item?.budget.minOperationsPerSecond) * 100)}%`,
                                   backgroundColor: getHealthColor(
-                                    item.result.operationsPerSecond,
-                                    item.budget.minOperationsPerSecond,
+                                    item?.result?.operationsPerSecond,
+                                    item?.budget.minOperationsPerSecond,
                                     'operationsPerSecond'
                                   ),
                                 }}
@@ -373,8 +373,8 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
                           </div>
                         ) : (
                           <div className="no-data">
-                            {item.budget.minOperationsPerSecond
-                              ? `Min: ${item.budget.minOperationsPerSecond}`
+                            {item?.budget.minOperationsPerSecond
+                              ? `Min: ${item?.budget.minOperationsPerSecond}`
                               : 'N/A'}
                           </div>
                         )}
@@ -383,13 +383,13 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
 
                     <td>
                       <div
-                        className={`status-indicator ${item.violation ? (item.budget.critical ? 'critical' : 'failing') : 'passing'}`}
+                        className={`status-indicator ${item?.violation ? (item?.budget.critical ? 'critical' : 'failing') : 'passing'}`}
                       >
-                        {item.violation
-                          ? item.budget.critical
+                        {item?.violation
+                          ? item?.budget.critical
                             ? 'CRITICAL'
                             : 'FAILING'
-                          : item.result
+                          : item?.result
                             ? 'PASSING'
                             : 'NO DATA'}
                       </div>

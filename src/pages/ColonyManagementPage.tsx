@@ -1,7 +1,7 @@
-import { ResourceType } from "./../types/resources/ResourceTypes";
-import * as React from "react";
+import * as React from 'react';
 import { useState } from 'react';
 import { ColonyManagementSystem } from '../components/buildings/colony/ColonyManagementSystem';
+import { ResourceType } from './../types/resources/ResourceTypes';
 
 // Sample data for demo
 const sampleGrowthModifiers = [
@@ -10,7 +10,7 @@ const sampleGrowthModifiers = [
     name: 'Advanced Hydroponics',
     description: 'Efficient food production using advanced hydroponics technology.',
     effect: 1.12, // +12%
-    type: 'food' as const,
+    type: ResourceType.FOOD as const,
     active: true,
   },
   {
@@ -88,7 +88,7 @@ const sampleTradeRoutes = [
     resources: [
       {
         id: 'resource-1-1',
-        name: 'food',
+        name: ResourceType.FOOD,
         type: 'import' as const,
         amount: 75,
         value: 15,
@@ -283,7 +283,7 @@ const sampleResources = [
     capacity: 5000,
   },
   {
-    type: 'food' as const,
+    type: ResourceType.FOOD as const,
     name: 'Food',
     production: 600,
     consumption: 550,
@@ -317,7 +317,7 @@ const sampleSatisfactionFactors = [
     weight: 0.25,
   },
   {
-    type: 'food' as const,
+    type: ResourceType.FOOD as const,
     name: 'Food Supply',
     value: 92,
     weight: 0.2,
@@ -352,7 +352,7 @@ export function ColonyManagementPage() {
 
   // Handle quality change
   const handleQualityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setQuality(event.target.value as 'low' | 'medium' | 'high');
+    setQuality(event?.target.value as 'low' | 'medium' | 'high');
   };
 
   // Handle building click

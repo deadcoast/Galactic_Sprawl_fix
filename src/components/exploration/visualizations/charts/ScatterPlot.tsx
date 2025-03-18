@@ -141,16 +141,16 @@ export function ScatterPlot({
 }: ScatterPlotProps) {
   // Process data for the chart
   const processedData = useMemo(() => {
-    if (!data || data.length === 0) return [];
+    if (!data || data?.length === 0) return [];
 
-    return data.map(item => {
+    return data?.map(item => {
       let x, y, z, name;
 
       // Handle DataPoint objects
       if ('properties' in item && 'metadata' in item) {
         const dataPoint = item as DataPoint;
         const properties = { ...dataPoint.properties };
-        const metadata = dataPoint.metadata || {};
+        const metadata = dataPoint.metadata ?? {};
 
         // Try to find the required values in properties or metadata
         x = properties[xAxisKey] !== undefined ? properties[xAxisKey] : metadata[xAxisKey];
@@ -167,8 +167,8 @@ export function ScatterPlot({
           : dataPoint.name;
 
         // Ensure x and y values are numbers
-        x = typeof x === 'number' ? x : parseFloat(String(x)) || 0;
-        y = typeof y === 'number' ? y : parseFloat(String(y)) || 0;
+        x = typeof x === 'number' ? x : parseFloat(String(x)) ?? 0;
+        y = typeof y === 'number' ? y : parseFloat(String(y)) ?? 0;
         z = z && typeof z === 'number' ? z : z ? parseFloat(String(z)) || pointSize : pointSize;
 
         return {
@@ -191,8 +191,8 @@ export function ScatterPlot({
         name = nameKey ? record[nameKey] : undefined;
 
         // Ensure x and y values are numbers
-        x = typeof x === 'number' ? x : parseFloat(String(x)) || 0;
-        y = typeof y === 'number' ? y : parseFloat(String(y)) || 0;
+        x = typeof x === 'number' ? x : parseFloat(String(x)) ?? 0;
+        y = typeof y === 'number' ? y : parseFloat(String(y)) ?? 0;
         z = z && typeof z === 'number' ? z : z ? parseFloat(String(z)) || pointSize : pointSize;
 
         return {
@@ -207,7 +207,7 @@ export function ScatterPlot({
   }, [data, xAxisKey, yAxisKey, zAxisKey, nameKey, pointSize]);
 
   // If no data, show error
-  if (!data || data.length === 0) {
+  if (!data || data?.length === 0) {
     return (
       <BaseChart
         width={width}
@@ -226,17 +226,17 @@ export function ScatterPlot({
   const xValue =
     quadrantXValue !== undefined
       ? quadrantXValue
-      : processedData.reduce((sum, item) => sum + item.x, 0) / processedData.length;
+      : processedData.reduce((sum, item) => sum + item?.x, 0) / processedData.length;
 
   const yValue =
     quadrantYValue !== undefined
       ? quadrantYValue
-      : processedData.reduce((sum, item) => sum + item.y, 0) / processedData.length;
+      : processedData.reduce((sum, item) => sum + item?.y, 0) / processedData.length;
 
   // Handle click events
   const handlePointClick = (event: PointClickEvent) => {
-    if (onElementClick && event && event.payload) {
-      onElementClick(event.payload, 0);
+    if (onElementClick && event && event?.payload) {
+      onElementClick(event?.payload, 0);
     }
   };
 

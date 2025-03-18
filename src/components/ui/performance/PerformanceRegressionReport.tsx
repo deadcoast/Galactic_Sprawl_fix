@@ -59,7 +59,7 @@ export const PerformanceRegressionReport: React.FC<PerformanceRegressionReportPr
 
   // State
   const [baselineResults, setBaselineResults] = useState<BenchmarkResult[]>(
-    propBaselineResults || []
+    propBaselineResults ?? []
   );
   const [analysis, setAnalysis] = useState<ReturnType<typeof detectPerformanceRegressions> | null>(
     null
@@ -142,8 +142,8 @@ export const PerformanceRegressionReport: React.FC<PerformanceRegressionReportPr
 
         return {
           name,
-          baseline: baseline?.executionTimeMs || 0,
-          current: current?.executionTimeMs || 0,
+          baseline: baseline?.executionTimeMs ?? 0,
+          current: current?.executionTimeMs ?? 0,
           percentChange,
           status,
         };
@@ -176,7 +176,7 @@ export const PerformanceRegressionReport: React.FC<PerformanceRegressionReportPr
 
     const x = d3
       .scaleLinear()
-      .domain([0, d3.max(chartData, d => Math.max(d.baseline, d.current)) || 0])
+      .domain([0, d3.max(chartData, d => Math.max(d.baseline, d.current)) ?? 0])
       .range([0, chartWidth]);
 
     // Axes
@@ -206,7 +206,7 @@ export const PerformanceRegressionReport: React.FC<PerformanceRegressionReportPr
       .enter()
       .append('g')
       .attr('class', 'bar-group')
-      .attr('transform', d => `translate(0,${y(d.name) || 0})`);
+      .attr('transform', d => `translate(0,${y(d.name) ?? 0})`);
 
     // Baseline bars
     barGroups

@@ -142,23 +142,23 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
 
   private setupEventListeners(): void {
     moduleEventBus.subscribe('RESOURCE_TRANSFERRED', event => {
-      if (this.isResourceTransferEventData(event.data)) {
+      if (this.isResourceTransferEventData(event?.data)) {
         this.recordTrade(
-          event.data.sourceFaction,
-          event.data.targetFaction,
-          event.data.resourceType,
-          Number(event.data.amount)
+          event?.data?.sourceFaction,
+          event?.data?.targetFaction,
+          event?.data?.resourceType,
+          Number(event?.data?.amount)
         );
       }
     });
 
     moduleEventBus.subscribe('STATUS_CHANGED', event => {
-      if (this.isCombatEventData(event.data)) {
+      if (this.isCombatEventData(event?.data)) {
         this.recordConflict(
-          event.data.attackerFaction,
-          event.data.defenderFaction,
+          event?.data?.attackerFaction,
+          event?.data?.defenderFaction,
           'attack',
-          event.data.damage !== undefined ? Number(event.data.damage) : 1
+          event?.data?.damage !== undefined ? Number(event?.data?.damage) : 1
         );
       }
     });
@@ -189,7 +189,7 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
 
   public getRelationship(factionId: FactionId, targetId: FactionId): number {
     const key = this.getRelationshipKey(factionId, targetId);
-    return this.relationships.get(key)?.value || 0;
+    return this.relationships.get(key)?.value ?? 0;
   }
 
   public getTreatyStatus(

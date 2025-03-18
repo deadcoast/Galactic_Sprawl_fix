@@ -1,4 +1,80 @@
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(35,22): error TS2694: Namespace '"/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes".ResourceType' has no exported member 'FOOD'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(92,20): error TS2694: Namespace '"/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes".ResourceType' has no exported member 'FOOD'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(104,34): error TS2694: Namespace '"/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes".ResourceType' has no exported member 'FOOD'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(447,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(492,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(509,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(526,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/ColonyManagementSystem.tsx(544,20): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/GrowthRateModifiers.tsx(22,22): error TS2694: Namespace '"/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes".ResourceType' has no exported member 'FOOD'.
+../../../../src/components/buildings/colony/GrowthRateModifiers.tsx(112,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/GrowthRateModifiers.tsx(130,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/GrowthRateModifiers.tsx(160,18): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/HabitableWorld.tsx(13,16): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/buildings/colony/PopulationGrowthModule.tsx(15,22): error TS2694: Namespace '"/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes".ResourceType' has no exported member 'FOOD'.
+../../../../src/components/buildings/colony/PopulationGrowthModule.tsx(167,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/ResourceDashboard.tsx(20,20): error TS2694: Namespace '"/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes".ResourceType' has no exported member 'FOOD'.
+../../../../src/components/buildings/colony/ResourceDashboard.tsx(49,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/colony/SatisfactionMeter.tsx(18,34): error TS2694: Namespace '"/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/types/resources/ResourceTypes".ResourceType' has no exported member 'FOOD'.
+../../../../src/components/buildings/colony/SatisfactionMeter.tsx(68,25): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx(163,5): error TS2322: Type '"recon"' is not assignable to type 'ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx(181,5): error TS2322: Type '"recon"' is not assignable to type 'ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx(1116,44): error TS2345: Argument of type '(prev: AdvancedFilters) => { resourceTypes: string[]; minResourcePotential: number; minHabitabilityScore: number; hasAnomalies: boolean; anomalySeverity: "high" | "medium" | "low" | "any"; lastScannedWithin: number; }' is not assignable to parameter of type 'SetStateAction<AdvancedFilters>'.
+  Type '(prev: AdvancedFilters) => { resourceTypes: string[]; minResourcePotential: number; minHabitabilityScore: number; hasAnomalies: boolean; anomalySeverity: "high" | "medium" | "low" | "any"; lastScannedWithin: number; }' is not assignable to type '(prevState: AdvancedFilters) => AdvancedFilters'.
+    Call signature return types '{ resourceTypes: string[]; minResourcePotential: number; minHabitabilityScore: number; hasAnomalies: boolean; anomalySeverity: "high" | "medium" | "low" | "any"; lastScannedWithin: number; }' and 'AdvancedFilters' are incompatible.
+      The types of 'resourceTypes' are incompatible between these types.
+        Type 'string[]' is not assignable to type 'ResourceType[]'.
+          Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx(1118,70): error TS2345: Argument of type 'string' is not assignable to parameter of type 'ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx(1124,64): error TS2345: Argument of type 'string' is not assignable to parameter of type 'ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/MissionLog.tsx(16,11): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/MissionLog.tsx(20,11): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/buildings/modules/MiningHub/MineralProcessingCentre.tsx(268,19): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/components/buildings/modules/MiningHub/MineralProcessingCentre.tsx(269,19): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/components/buildings/modules/trading/TradingHub.tsx(9,13): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/buildings/modules/trading/TradingHub.tsx(19,13): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/exploration/RealTimeMapUpdates.tsx(221,9): error TS2345: Argument of type '(Sector | { resources: { type: string; amount: number; }[]; lastScanned: number; id: string; name: string; status: "unmapped" | "mapped" | "scanning" | "analyzed"; coordinates: { x: number; y: number; }; resourcePotential: number; habitabilityScore: number; anomalies: Anomaly[]; })[]' is not assignable to parameter of type 'Sector[]'.
+  Type 'Sector | { resources: { type: string; amount: number; }[]; lastScanned: number; id: string; name: string; status: "unmapped" | "mapped" | "scanning" | "analyzed"; coordinates: { x: number; y: number; }; resourcePotential: number; habitabilityScore: number; anomalies: Anomaly[]; }' is not assignable to type 'Sector'.
+    Type '{ resources: { type: string; amount: number; }[]; lastScanned: number; id: string; name: string; status: "unmapped" | "mapped" | "scanning" | "analyzed"; coordinates: { x: number; y: number; }; resourcePotential: number; habitabilityScore: number; anomalies: Anomaly[]; }' is not assignable to type 'Sector'.
+      Types of property 'resources' are incompatible.
+        Type '{ type: string; amount: number; }[]' is not assignable to type '{ type: ResourceType; amount: number; }[]'.
+          Type '{ type: string; amount: number; }' is not assignable to type '{ type: ResourceType; amount: number; }'.
+            Types of property 'type' are incompatible.
+              Type 'string' is not assignable to type 'ResourceType'.
 ../../../../src/components/ships/common/CommonShipMovement.tsx(49,7): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/components/ships/player/customization/PlayerShipUpgrade.tsx(31,13): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/ships/player/customization/PlayerShipUpgradeSystem.tsx(31,13): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/ships/player/variants/miningships/VoidDredgerMiner.tsx(18,13): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/trade/TradeRouteVisualizer.tsx(18,11): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/ui/GalaxyMap.tsx(31,15): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/ui/resource/ChainVisualization.tsx(25,11): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/ui/resource/ConverterDetailsView.tsx(8,9): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/ui/resource/ResourceFlowDiagram.tsx(84,5): error TS2322: Type '"ResourceFlowDiagram"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceForecastingVisualization.tsx(76,5): error TS2322: Type '"ResourceForecastingVisualization"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(14,7): error TS2322: Type '"⛏️"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(16,7): error TS2322: Type '"⚡"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(18,7): error TS2322: Type '"👥"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(20,7): error TS2322: Type '"🔬"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(22,7): error TS2322: Type '"🔮"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(24,7): error TS2322: Type '"💨"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(26,7): error TS2322: Type '"✨"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(28,7): error TS2322: Type '"🔧"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(30,7): error TS2322: Type '"🧡"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(32,7): error TS2322: Type '"🛡️"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(34,7): error TS2322: Type '"☢️"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(36,7): error TS2322: Type '"💧"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(38,7): error TS2322: Type '"🎈"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(40,7): error TS2322: Type '"🔹"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(42,7): error TS2322: Type '"⚛️"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(44,7): error TS2322: Type '"🌑"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(46,7): error TS2322: Type '"💫"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(48,7): error TS2322: Type '"📦"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceManagementDashboard.tsx(98,5): error TS2322: Type '"ResourceManagementDashboard"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceOptimizationSuggestions.tsx(60,5): error TS2322: Type '"ResourceOptimizationSuggestions"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceThresholdVisualization.tsx(219,5): error TS2322: Type '"ResourceThresholdVisualization"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/SprawlView.tsx(33,15): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/components/ui/visualization/CustomShaderVisualization.tsx(103,5): error TS2322: Type '"CustomShaderVisualization"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/visualization/DataTransitionParticleSystem.tsx(74,5): error TS2322: Type '"DataTransitionParticleSystem"' is not assignable to type 'ResourceType'.
 ../../../../src/config/automation/colonyRules.ts(27,30): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
 ../../../../src/config/automation/colonyRules.ts(67,30): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
 ../../../../src/config/buildings/defaultBuildings.ts(63,78): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
@@ -23,6 +99,9 @@
     Type '{ timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "auto_mine_toggle"; }' is not assignable to type 'ThresholdHistoryEntry'.
       Types of property 'resourceId' are incompatible.
         Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/effects/component_effects/HabitableWorld.tsx(12,14): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/effects/component_effects/MineralProcessing.tsx(9,9): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/hooks/game/useGameState.ts(48,11): error TS2304: Cannot find name 'ResourceType'.
 ../../../../src/initialization/moduleFrameworkInit.ts(218,11): error TS2322: Type '{ type: string; amount: number; }[]' is not assignable to type '{ type: ResourceType; amount: number; }[]'.
   Type '{ type: string; amount: number; }' is not assignable to type '{ type: ResourceType; amount: number; }'.
     Types of property 'type' are incompatible.
@@ -103,23 +182,32 @@
 ../../../../src/managers/weapons/WeaponUpgradeManager.ts(365,10): error TS2339: Property 'on' does not exist on type 'WeaponUpgradeManager'.
 ../../../../src/managers/weapons/WeaponUpgradeManager.ts(368,14): error TS2339: Property 'off' does not exist on type 'WeaponUpgradeManager'.
 ../../../../src/managers/weapons/WeaponUpgradeManager.ts(380,10): error TS2339: Property 'emit' does not exist on type 'WeaponUpgradeManager'.
-../../../../src/pages/ColonyManagementPage.tsx(418,11): error TS2322: Type '(resourceType: ResourceType) => void' is not assignable to type '(resourceType: ResourceType.ENERGY | ResourceType.POPULATION | ResourceType.RESEARCH | "food" | "technology" | "materials") => void'.
-  Types of parameters 'resourceType' and 'resourceType' are incompatible.
-    Type 'ResourceType.ENERGY | ResourceType.POPULATION | ResourceType.RESEARCH | "food" | "technology" | "materials"' is not assignable to type 'ResourceType'.
-      Type '"food"' is not assignable to type 'ResourceType'.
+../../../../src/pages/ColonyManagementPage.tsx(13,24): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/pages/ColonyManagementPage.tsx(91,28): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/pages/ColonyManagementPage.tsx(286,24): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
+../../../../src/pages/ColonyManagementPage.tsx(320,24): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
 ../../../../src/pages/performance/LongSessionMemoryPage.tsx(15,8): error TS2307: Cannot find module '../../tests/performance/LongSessionMemoryTestSuite' or its corresponding type declarations.
 ../../../../src/pages/performance/MultitabPerformanceTestPage.tsx(11,41): error TS2307: Cannot find module '../../components/performance/MultitabPerformanceLauncher' or its corresponding type declarations.
 ../../../../src/pages/performance/MultitabPerformanceTestPage.tsx(12,40): error TS2307: Cannot find module '../../components/performance/MultitabPerformanceResults' or its corresponding type declarations.
 ../../../../src/pages/performance/MultitabPerformanceTestPage.tsx(13,43): error TS2307: Cannot find module '../../tests/performance/MultitabPerformanceTestSuite' or its corresponding type declarations.
+../../../../src/pages/PerformanceAnalysisDashboard.tsx(107,9): error TS2322: Type '{ errorType: "rendering-error"; message: string; timestamp: number; componentId: string; }[]' is not assignable to type 'ErrorData[]'.
+  Type '{ errorType: "rendering-error"; message: string; timestamp: number; componentId: string; }' is not assignable to type 'ErrorData'.
+    Types of property 'errorType' are incompatible.
+      Type '"rendering-error"' is not assignable to type 'ResourceType'.
 ../../../../src/pages/ResourceRegistryDemo.tsx(103,19): error TS2304: Cannot find name 'ResourceCategory'.
 ../../../../src/pages/ResourceRegistryDemo.tsx(130,19): error TS2304: Cannot find name 'ResourceCategory'.
 ../../../../src/pages/ResourceRegistryDemo.tsx(162,38): error TS2304: Cannot find name 'ResourceCategory'.
 ../../../../src/pages/ResourceRegistryDemo.tsx(171,9): error TS2322: Type 'unknown' is not assignable to type 'ResourceCategory'.
 ../../../../src/pages/ResourceRegistryDemo.tsx(182,36): error TS18046: 'randomCategory' is of type 'unknown'.
+../../../../src/registry/ResourceRegistry.ts(529,23): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/registry/ResourceRegistry.ts(529,46): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/registry/ResourceRegistry.ts(574,23): error TS2322: Type 'string[]' is not assignable to type 'ResourceType[]'.
+  Type 'string' is not assignable to type 'ResourceType'.
 ../../../../src/registry/ResourceRegistryIntegration.ts(8,10): error TS2300: Duplicate identifier 'ResourceType'.
 ../../../../src/registry/ResourceRegistryIntegration.ts(9,10): error TS2300: Duplicate identifier 'ResourceType'.
 ../../../../src/registry/ResourceRegistryIntegration.ts(164,24): error TS2304: Cannot find name 'ResourceTypeConverter'.
 ../../../../src/registry/ResourceRegistryIntegration.ts(182,24): error TS2304: Cannot find name 'ResourceTypeConverter'.
+../../../../src/registry/ResourceRegistryIntegration.ts(184,9): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
 ../../../../src/registry/ResourceRegistryIntegration.ts(200,24): error TS2304: Cannot find name 'ResourceTypeConverter'.
 ../../../../src/registry/ResourceRegistryIntegration.ts(221,18): error TS2304: Cannot find name 'ResourceTypeConverter'.
 ../../../../src/registry/ResourceRegistryIntegration.ts(244,18): error TS2304: Cannot find name 'ResourceTypeConverter'.
@@ -239,6 +327,9 @@
 ../../../../src/services/AnalysisAlgorithmService.ts(2089,7): error TS2339: Property 'epochs' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
 ../../../../src/services/AnalysisAlgorithmService.ts(2680,11): error TS2588: Cannot assign to 'gradBias2' because it is a constant.
 ../../../../src/services/AnalysisAlgorithmService.ts(2697,9): error TS2588: Cannot assign to 'bias2' because it is a constant.
+../../../../src/services/AnalysisAlgorithmService.ts(3038,17): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/services/AnalysisAlgorithmService.ts(3226,75): error TS2304: Cannot find name 'ResourceType'.
+../../../../src/services/AnalysisAlgorithmService.ts(3307,74): error TS2304: Cannot find name 'ResourceType'.
 ../../../../src/services/AnomalyDetectionService.ts(25,7): error TS2417: Class static side 'typeof AnomalyDetectionServiceImpl' incorrectly extends base class static side 'typeof AbstractBaseService'.
   The types returned by 'getInstance()' are incompatible between these types.
     Type 'AnomalyDetectionServiceImpl' is not assignable to type 'T'.
@@ -273,6 +364,7 @@
     Type '{ effectiveType?: string | undefined; type?: string | undefined; } | undefined' is not assignable to type '{ saveData: boolean; } | undefined'.
       Property 'saveData' is missing in type '{ effectiveType?: string | undefined; type?: string | undefined; }' but required in type '{ saveData: boolean; }'.
 ../../../../src/services/telemetry/SessionPerformanceTracker.ts(280,45): error TS2554: Expected 2 arguments, but got 1.
+../../../../src/services/telemetry/SessionPerformanceTracker.ts(295,13): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
 ../../../../src/services/WorkerService.ts(28,7): error TS2417: Class static side 'typeof WorkerServiceImpl' incorrectly extends base class static side 'typeof AbstractBaseService'.
   The types returned by 'getInstance()' are incompatible between these types.
     Type 'WorkerServiceImpl' is not assignable to type 'T'.
@@ -605,6 +697,7 @@
     Type 'unknown' is not assignable to type 'T'.
       'T' could be instantiated with an arbitrary type which could be unrelated to 'unknown'.
 ../../../../src/utils/events/EventBatchingRxJS.ts(218,42): error TS2571: Object is of type 'unknown'.
+../../../../src/utils/modules/moduleValidation.ts(34,18): error TS2339: Property 'FOOD' does not exist on type 'typeof ResourceType'.
 ../../../../src/utils/performance/benchmarks/PerformanceBenchmarkTools.ts(19,30): error TS2307: Cannot find module '../../../types/resources/FlowTypes' or its corresponding type declarations.
 ../../../../src/utils/performance/benchmarks/PerformanceBenchmarkTools.ts(307,18): error TS2339: Property 'OXYGEN' does not exist on type 'typeof ResourceType'.
 ../../../../src/utils/performance/benchmarks/PerformanceBenchmarkTools.ts(308,18): error TS2339: Property 'SILICON' does not exist on type 'typeof ResourceType'.
@@ -825,3 +918,11 @@
 ../../../../src/utils/resources/ResourceTypeMigration.ts(48,3): error TS2561: Object literal may only specify known properties, but 'minerals' does not exist in type 'Record<"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER", ResourceType>'. Did you mean to write 'MINERALS'?
 ../../../../src/utils/resources/ResourceTypeMigration.ts(60,7): error TS2741: Property '[ResourceType.ORGANIC]' is missing in type '{ MINERALS: ResourceType; ENERGY: ResourceType; POPULATION: ResourceType; RESEARCH: ResourceType; PLASMA: ResourceType; ... 11 more ...; EXOTIC_MATTER: ResourceType; }' but required in type 'Record<ResourceType, string>'.
 ../../../../src/utils/resources/resourceUtils.ts(9,3): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(29,7): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(32,5): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(37,37): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(37,50): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(271,9): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(280,9): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(286,11): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(292,5): error TS2322: Type '"MINERALS"' is not assignable to type 'ResourceType'.

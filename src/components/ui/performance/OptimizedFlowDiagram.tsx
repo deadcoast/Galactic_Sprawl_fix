@@ -117,7 +117,7 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
       .attr('fill', '#999');
 
     // Prepare node data with D3 simulation properties
-    const nodes = data.nodes.map(node => ({
+    const nodes = data?.nodes.map(node => ({
       ...node,
       x: node.x || Math.random() * width,
       y: node.y || Math.random() * height,
@@ -138,7 +138,7 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
     nodes.forEach(node => nodeMap.set(node.id, node));
 
     // Prepare links with correct references
-    const links = data.links.map(link => {
+    const links = data?.links.map(link => {
       const sourceNode = nodeMap.get(link.source);
       const targetNode = nodeMap.get(link.target);
 
@@ -305,8 +305,8 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
     function dragStarted(
       event: d3.D3DragEvent<SVGGElement, d3.SimulationNodeDatum, d3.SimulationNodeDatum>
     ) {
-      if (!event.active && simulationRef.current) simulationRef.current.alphaTarget(0.3).restart();
-      const d = event.subject;
+      if (!event?.active && simulationRef.current) simulationRef.current.alphaTarget(0.3).restart();
+      const d = event?.subject;
       d.fx = d.x;
       d.fy = d.y;
     }
@@ -314,16 +314,16 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
     function dragging(
       event: d3.D3DragEvent<SVGGElement, d3.SimulationNodeDatum, d3.SimulationNodeDatum>
     ) {
-      const d = event.subject;
-      d.fx = event.x;
-      d.fy = event.y;
+      const d = event?.subject;
+      d.fx = event?.x;
+      d.fy = event?.y;
     }
 
     function dragEnded(
       event: d3.D3DragEvent<SVGGElement, d3.SimulationNodeDatum, d3.SimulationNodeDatum>
     ) {
-      if (!event.active && simulationRef.current) simulationRef.current.alphaTarget(0);
-      const d = event.subject;
+      if (!event?.active && simulationRef.current) simulationRef.current.alphaTarget(0);
+      const d = event?.subject;
       // Don't release fixed positions for source and sink nodes
       if ((d as FlowNode).type !== 'source' && (d as FlowNode).type !== 'sink') {
         d.fx = null;

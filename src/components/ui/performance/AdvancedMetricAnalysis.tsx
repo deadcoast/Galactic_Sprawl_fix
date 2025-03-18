@@ -430,7 +430,7 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
         sum += normalizedValues[i] * normalizedValues[i + lag];
       }
 
-      result.push(sum / (n - lag));
+      result?.push(sum / (n - lag));
     }
 
     return result;

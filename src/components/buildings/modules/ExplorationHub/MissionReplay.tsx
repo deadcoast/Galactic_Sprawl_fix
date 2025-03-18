@@ -66,7 +66,7 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
   const mission = gameState.missions.history.find(m => m.id === missionId);
   const events = gameState.events.filter(
     e =>
-      e.timestamp >= (mission?.timestamp || 0) && e.timestamp <= (mission?.timestamp || 0) + 3600000 // 1 hour window
+      e.timestamp >= (mission?.timestamp ?? 0) && e.timestamp <= (mission?.timestamp ?? 0) + 3600000 // 1 hour window
   );
 
   // Calculate total duration
@@ -124,22 +124,22 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
       // Calculate position based on event data or use random positioning as fallback
       const eventPosition: EventPosition = {
         x:
-          typeof event.data === 'object' &&
-          event.data !== null &&
-          'position' in event.data &&
-          typeof event.data.position === 'object' &&
-          event.data.position !== null &&
-          'x' in event.data.position
-            ? (event.data.position as Position).x
+          typeof event?.data === 'object' &&
+          event?.data !== null &&
+          'position' in event?.data &&
+          typeof event?.data?.position === 'object' &&
+          event?.data?.position !== null &&
+          'x' in event?.data?.position
+            ? (event?.data?.position as Position).x
             : Math.random() * 100,
         y:
-          typeof event.data === 'object' &&
-          event.data !== null &&
-          'position' in event.data &&
-          typeof event.data.position === 'object' &&
-          event.data.position !== null &&
-          'y' in event.data.position
-            ? (event.data.position as Position).y
+          typeof event?.data === 'object' &&
+          event?.data !== null &&
+          'position' in event?.data &&
+          typeof event?.data?.position === 'object' &&
+          event?.data?.position !== null &&
+          'y' in event?.data?.position
+            ? (event?.data?.position as Position).y
             : Math.random() * 100,
       };
 
@@ -169,7 +169,7 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
           style={{
             left: `${eventPosition.x}%`,
             top: `${eventPosition.y}%`,
-            backgroundColor: getEventColor(event.type),
+            backgroundColor: getEventColor(event?.type),
           }}
           onClick={() => {
             // Set current event index to this event when clicked
@@ -213,7 +213,7 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
                     index === currentEventIndex ? 'bg-white' : 'bg-teal-400'
                   }`}
                   style={{
-                    left: `${((event.timestamp - events[0].timestamp) / duration) * 100}%`,
+                    left: `${((event?.timestamp - events[0].timestamp) / duration) * 100}%`,
                   }}
                   onClick={() => setCurrentEventIndex(index)}
                 />

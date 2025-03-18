@@ -45,7 +45,7 @@ class APIServiceImpl extends AbstractBaseService {
 
   protected async onInitialize(): Promise<void> {
     // Initialize metrics
-    this.metadata.metrics = {
+    this.metadata?.metrics = {
       total_requests: 0,
       active_streams: 0,
       failed_requests: 0,
@@ -79,21 +79,21 @@ class APIServiceImpl extends AbstractBaseService {
 
       // Make request
       const response = await fetch(`${endpoint}?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response?.ok) {
+        throw new Error(`HTTP error! status: ${response?.status}`);
       }
 
-      const result = await response.json();
+      const result = await response?.json();
 
       // Update metrics
       this.updateMetrics('success', startTime);
 
       return {
-        data: result.data,
-        total: result.total,
+        data: result?.data,
+        total: result?.total,
         page: params.page,
         pageSize: params.pageSize,
-        hasMore: result.total > params.page * params.pageSize,
+        hasMore: result?.total > params.page * params.pageSize,
       };
     } catch (error) {
       this.updateMetrics('error', startTime);
@@ -123,9 +123,9 @@ class APIServiceImpl extends AbstractBaseService {
     this.streamData(endpoint, streamConfig, abortController.signal);
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.active_streams = this.activeStreams.size;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     return streamId;
   }
@@ -138,9 +138,9 @@ class APIServiceImpl extends AbstractBaseService {
     this.activeStreams.delete(streamId);
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.active_streams = this.activeStreams.size;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
   }
 
   private async streamData(
@@ -161,11 +161,11 @@ class APIServiceImpl extends AbstractBaseService {
 
         // Fetch next batch
         const response = await fetch(`${endpoint}?${queryParams}`, { signal });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response?.ok) {
+          throw new Error(`HTTP error! status: ${response?.status}`);
         }
 
-        const { data, lastItemId } = await response.json();
+        const { data, lastItemId } = await response?.json();
         lastId = lastItemId;
 
         // Notify listeners
@@ -220,11 +220,11 @@ class APIServiceImpl extends AbstractBaseService {
       });
 
       const response = await fetch(`${endpoint}/aggregate?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response?.ok) {
+        throw new Error(`HTTP error! status: ${response?.status}`);
       }
 
-      const result = await response.json();
+      const result = await response?.json();
 
       // Update metrics
       this.updateMetrics('success', startTime);
@@ -237,11 +237,11 @@ class APIServiceImpl extends AbstractBaseService {
   }
 
   private updateMetrics(status: 'success' | 'error', startTime: number): void {
-    const metrics = this.metadata.metrics || {};
-    metrics.total_requests = (metrics.total_requests || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.total_requests = (metrics.total_requests ?? 0) + 1;
 
     if (status === 'error') {
-      metrics.failed_requests = (metrics.failed_requests || 0) + 1;
+      metrics.failed_requests = (metrics.failed_requests ?? 0) + 1;
     }
 
     const responseTime = performance.now() - startTime;
@@ -249,7 +249,7 @@ class APIServiceImpl extends AbstractBaseService {
       ? (metrics.average_response_time + responseTime) / 2
       : responseTime;
 
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
   }
 
   public override handleError(error: Error): void {

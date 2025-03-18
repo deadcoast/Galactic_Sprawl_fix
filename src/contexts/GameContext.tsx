@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   ReactNode,
   useCallback,
@@ -12,6 +12,7 @@ import { EventBus } from '../lib/events/EventBus';
 import { gameManager, GameManager, GameManagerEvent } from '../managers/game/gameManager';
 import { GameEvent } from '../types/core/GameTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
+import { ResourceType } from '../types/resources/ResourceTypes';
 
 // Type definitions
 interface SectorData {
@@ -455,8 +456,8 @@ const handleGameStopped = (_event: GameManagerEvent, dispatch: React.Dispatch<Ga
 };
 
 const handleTimeUpdated = (event: GameManagerEvent, dispatch: React.Dispatch<GameAction>) => {
-  if (event.gameTime !== undefined) {
-    dispatch(createUpdateGameTimeAction(event.gameTime));
+  if (event?.gameTime !== undefined) {
+    dispatch(createUpdateGameTimeAction(event?.gameTime));
   }
 };
 
@@ -490,13 +491,13 @@ export const GameProvider: React.FC<GameProviderProps> = ({
           gameTime: manager.getGameTime(),
           isRunning: manager.isGameRunning(),
           isPaused: manager.isGamePaused(),
-          ...(initialGameState || {}),
+          ...(initialGameState ?? {}),
         };
       } catch (error) {
         console.error('Error getting game state from manager:', error);
       }
     }
-    return { ...initialState, ...(initialGameState || {}) };
+    return { ...initialState, ...(initialGameState ?? {}) };
   }, [manager, initialGameState]);
 
   // Create reducer

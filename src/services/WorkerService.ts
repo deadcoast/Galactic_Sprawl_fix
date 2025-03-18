@@ -66,7 +66,7 @@ class WorkerServiceImpl extends AbstractBaseService {
     }
 
     // Initialize metrics
-    this.metadata.metrics = {
+    this.metadata?.metrics = {
       total_tasks: 0,
       active_tasks: 0,
       completed_tasks: 0,
@@ -94,7 +94,7 @@ class WorkerServiceImpl extends AbstractBaseService {
 
   private setupWorker(worker: Worker): void {
     worker.onmessage = (event: MessageEvent) => {
-      const { taskId, type, data } = event.data;
+      const { taskId, type, data } = event?.data;
       const task = this.activeTasks.get(taskId);
 
       if (!task) return;
@@ -136,9 +136,9 @@ class WorkerServiceImpl extends AbstractBaseService {
     };
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.total_tasks = (metrics.total_tasks || 0) + 1;
-    this.metadata.metrics = metrics;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.total_tasks = (metrics.total_tasks ?? 0) + 1;
+    this.metadata?.metrics = metrics;
 
     return new Promise((resolve, reject) => {
       // Add task to queue
@@ -201,9 +201,9 @@ class WorkerServiceImpl extends AbstractBaseService {
     this.workerPool.set(availableWorker, task);
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.active_tasks = this.activeTasks.size;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     // Send task to worker
     availableWorker.postMessage({
@@ -221,16 +221,16 @@ class WorkerServiceImpl extends AbstractBaseService {
     task.result = result;
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.completed_tasks = (metrics.completed_tasks || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.completed_tasks = (metrics.completed_tasks ?? 0) + 1;
     metrics.active_tasks = this.activeTasks.size - 1;
 
-    const taskTime = task.endTime - (task.startTime || 0);
+    const taskTime = task.endTime - (task.startTime ?? 0);
     metrics.average_task_time = metrics.average_task_time
       ? (metrics.average_task_time + taskTime) / 2
       : taskTime;
 
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     // Release worker
     const worker = Array.from(this.workerPool.entries()).find(([, t]) => t === task)?.[0];
@@ -250,10 +250,10 @@ class WorkerServiceImpl extends AbstractBaseService {
     if (!task) return;
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.failed_tasks = (metrics.failed_tasks || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.failed_tasks = (metrics.failed_tasks ?? 0) + 1;
     metrics.active_tasks = this.activeTasks.size - 1;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     // Release worker
     const worker = Array.from(this.workerPool.entries()).find(([, t]) => t === task)?.[0];

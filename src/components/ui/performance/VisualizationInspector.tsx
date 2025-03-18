@@ -933,7 +933,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
       const margin = { top: 20, right: 80, bottom: 50, left: 150 };
       const chartWidth = width - margin.left - margin.right - 40;
       const chartHeight = height - margin.top - margin.bottom - 250;
-      const barHeight = Math.max(Math.min(30, chartHeight / data.length - 5), 10);
+      const barHeight = Math.max(Math.min(30, chartHeight / data?.length - 5), 10);
 
       // Create SVG
       const svg = chartContainer
@@ -941,7 +941,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
         .attr('width', chartWidth + margin.left + margin.right)
         .attr(
           'height',
-          Math.max(chartHeight, data.length * (barHeight + 5)) + margin.top + margin.bottom
+          Math.max(chartHeight, data?.length * (barHeight + 5)) + margin.top + margin.bottom
         )
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -954,8 +954,8 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
       const yScale = d3
         .scaleBand()
-        .domain(data.map(d => d.name))
-        .range([0, Math.max(chartHeight, data.length * (barHeight + 5))])
+        .domain(data?.map(d => d.name))
+        .range([0, Math.max(chartHeight, data?.length * (barHeight + 5))])
         .padding(0.2);
 
       // Create axes
@@ -965,7 +965,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
       // Add axes
       svg
         .append('g')
-        .attr('transform', `translate(0,${Math.max(chartHeight, data.length * (barHeight + 5))})`)
+        .attr('transform', `translate(0,${Math.max(chartHeight, data?.length * (barHeight + 5))})`)
         .call(xAxis)
         .append('text')
         .attr('x', chartWidth / 2)
@@ -1014,8 +1014,8 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
               <div>Memory: ${d.memoryUsage.toFixed(2)} MB</div>
             `
             )
-            .style('left', `${_event.pageX + 10}px`)
-            .style('top', `${_event.pageY - 28}px`);
+            .style('left', `${_event?.pageX + 10}px`)
+            .style('top', `${_event?.pageY - 28}px`);
 
           // Highlight bar
           d3.select(this).attr('fill', '#4285F4');

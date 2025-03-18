@@ -42,7 +42,7 @@ export function useSubModules(parentModuleId?: string) {
     }
 
     const handleSubModuleCreated = (event: ModuleEvent) => {
-      if (event.moduleId === parentModuleId) {
+      if (event?.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
         setSubModules(modules);
@@ -50,7 +50,7 @@ export function useSubModules(parentModuleId?: string) {
     };
 
     const handleSubModuleAttached = (event: ModuleEvent) => {
-      if (event.moduleId === parentModuleId) {
+      if (event?.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
         setSubModules(modules);
@@ -58,7 +58,7 @@ export function useSubModules(parentModuleId?: string) {
     };
 
     const handleSubModuleDetached = (event: ModuleEvent) => {
-      if (event.moduleId === parentModuleId) {
+      if (event?.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
         setSubModules(modules);
@@ -66,7 +66,7 @@ export function useSubModules(parentModuleId?: string) {
     };
 
     const handleSubModuleUpgraded = (event: ModuleEvent) => {
-      if (event.moduleId === parentModuleId) {
+      if (event?.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
         setSubModules(modules);
@@ -74,7 +74,7 @@ export function useSubModules(parentModuleId?: string) {
     };
 
     const handleSubModuleActivated = (event: ModuleEvent) => {
-      if (event.moduleId === parentModuleId) {
+      if (event?.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
         setSubModules(modules);
@@ -82,7 +82,7 @@ export function useSubModules(parentModuleId?: string) {
     };
 
     const handleSubModuleDeactivated = (event: ModuleEvent) => {
-      if (event.moduleId === parentModuleId) {
+      if (event?.moduleId === parentModuleId) {
         // Refresh sub-modules
         const modules = subModuleManager.getSubModulesForParent(parentModuleId);
         setSubModules(modules);
@@ -161,17 +161,17 @@ export function useSubModules(parentModuleId?: string) {
     }
 
     const result = subModuleManager.attachSubModule(subModuleId, parentId);
-    return result.success;
+    return result?.success;
   }, []);
 
   // Detach a sub-module
   const detachSubModule = useCallback((subModuleId: string) => {
     const result = subModuleManager.detachSubModule(subModuleId);
-    if (result.success) {
+    if (result?.success) {
       // Update local state
       setSubModules(prev => prev.filter(sm => sm.id !== subModuleId));
     }
-    return result.success;
+    return result?.success;
   }, []);
 
   // Activate a sub-module

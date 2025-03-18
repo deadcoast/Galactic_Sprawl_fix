@@ -187,7 +187,7 @@ export function useModuleHistory(moduleId?: string): ModuleManagerEvent[] {
 
   useEffect(() => {
     if (moduleId) {
-      setHistory(eventHistory.filter((event: ModuleManagerEvent) => event.moduleId === moduleId));
+      setHistory(eventHistory.filter((event: ModuleManagerEvent) => event?.moduleId === moduleId));
     } else {
       setHistory([...eventHistory]);
     }

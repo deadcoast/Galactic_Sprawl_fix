@@ -1,8 +1,7 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceAlert } from '../../hooks/resources/useResourceTracking';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
-  ResourceAlert,
   ResourceState,
   ResourceThreshold,
   ResourceType,
@@ -205,13 +204,13 @@ export class ResourceThresholdManager {
    * Update resource state
    */
   private handleResourceUpdate = (event: ModuleEvent): void => {
-    if (!event.data) {
+    if (!event?.data) {
       console.warn('Resource update event missing data');
       return;
     }
 
-    if (!isResourceUpdateEventData(event.data)) {
-      console.warn('Invalid resource update event data:', event.data);
+    if (!isResourceUpdateEventData(event?.data)) {
+      console.warn('Invalid resource update event data:', event?.data);
       return;
     }
 
@@ -423,7 +422,7 @@ export class ResourceThresholdManager {
             data: {
               type: config.threshold.type,
               target: action.target,
-              amount: action.amount || 0,
+              amount: action.amount ?? 0,
               priority: action.priority || 1,
               severity: 'info',
             },
@@ -439,7 +438,7 @@ export class ResourceThresholdManager {
             data: {
               type: config.threshold.type,
               target: action.target,
-              amount: action.amount || 0,
+              amount: action.amount ?? 0,
               priority: action.priority || 1,
               severity: 'info',
             },
@@ -455,7 +454,7 @@ export class ResourceThresholdManager {
             data: {
               type: config.threshold.type,
               target: action.target,
-              amount: action.amount || 0,
+              amount: action.amount ?? 0,
               priority: action.priority || 1,
               severity: 'info',
             },
@@ -497,7 +496,7 @@ export class ResourceThresholdManager {
         .map(action => ({
           type: action.type as 'production' | 'consumption' | 'transfer',
           target: action.target,
-          amount: action.amount || 0,
+          amount: action.amount ?? 0,
         })),
     };
 

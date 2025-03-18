@@ -1,5 +1,5 @@
 import { Position } from '../core/GameTypes';
-import { ResourceType } from "./../resources/ResourceTypes";
+import { ResourceType } from './../resources/ResourceTypes';
 // Base module interface that all modules share
 export interface BaseModule {
   id: string;
@@ -69,7 +69,7 @@ export type SubModuleEffectType =
 // Sub-module effect interface
 export interface SubModuleEffect {
   type: SubModuleEffectType;
-  target: ResourceType; // What the effect targets (stat name, resource type, etc.)
+  target: ResourceType | string; // What the effect targets (stat name, resource type, etc.)
   value: number; // Effect value (percentage or absolute)
   isPercentage: boolean; // Whether the value is a percentage
   description: string;

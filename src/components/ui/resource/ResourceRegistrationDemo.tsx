@@ -64,7 +64,7 @@ export const ResourceRegistrationDemo: React.FC = () => {
     const eventSubs: Record<string, number> = {};
     components.forEach((comp: ComponentRegistration) => {
       comp.eventSubscriptions.forEach((eventType: string) => {
-        eventSubs[eventType] = (eventSubs[eventType] || 0) + 1;
+        eventSubs[eventType] = (eventSubs[eventType] ?? 0) + 1;
       });
     });
 

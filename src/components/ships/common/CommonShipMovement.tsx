@@ -1,9 +1,11 @@
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import { shipBehaviorManager } from '../../../lib/ai/shipBehavior';
 import { shipMovementManager } from '../../../lib/ai/shipMovement';
 import { techTreeManager } from '../../../managers/game/techTreeManager';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { getDefaultCapabilities, getShipCategory } from '../../../types/ships/CommonShipTypes';
+import { ResourceTypeConverter } from '../../../utils/ResourceTypeConverter';
 
 interface Position {
   x: number;
@@ -46,7 +48,7 @@ export const CommonShipMovement: React.FC<CommonShipMovementProps> = ({
 
     shipBehaviorManager.registerShip({
       id,
-      type,
+      type: ResourceTypeConverter.stringToEnum(type) || ResourceType.MINERALS,
       category,
       capabilities,
       position: positionRef.current,
@@ -63,11 +65,13 @@ export const CommonShipMovement: React.FC<CommonShipMovementProps> = ({
 
     // Set up movement update listener
     const handlePositionUpdate = (event: CustomEvent) => {
-      const { shipId, position: newPosition, rotation: newRotation } = event.detail;
-      if (shipId === id) {
-        positionRef.current = newPosition;
-        rotationRef.current = newRotation;
-        onPositionUpdate(newPosition, newRotation);
+      if (event && event.detail) {
+        const { shipId, position: newPosition, rotation: newRotation } = event.detail;
+        if (shipId === id) {
+          positionRef.current = newPosition;
+          rotationRef.current = newRotation;
+          onPositionUpdate(newPosition, newRotation);
+        }
       }
     };
 

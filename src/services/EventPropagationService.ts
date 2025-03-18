@@ -48,13 +48,13 @@ class EventPropagationServiceImpl extends AbstractBaseService {
     subscribers.sort((a, b) => b.priority - a.priority);
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
+    const metrics = this.metadata?.metrics ?? {};
     metrics.total_subscriptions = Array.from(this.subscriptions.values()).reduce(
       (sum, subs) => sum + subs.length,
       0
     );
     metrics.total_event_types = this.subscriptions.size;
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     // Return unsubscribe function
     return () => {
@@ -66,13 +66,13 @@ class EventPropagationServiceImpl extends AbstractBaseService {
         }
 
         // Update metrics
-        const metrics = this.metadata.metrics || {};
+        const metrics = this.metadata?.metrics ?? {};
         metrics.total_subscriptions = Array.from(this.subscriptions.values()).reduce(
           (sum, subs) => sum + subs.length,
           0
         );
         metrics.total_event_types = this.subscriptions.size;
-        this.metadata.metrics = metrics;
+        this.metadata?.metrics = metrics;
       }
     };
   }
@@ -82,10 +82,10 @@ class EventPropagationServiceImpl extends AbstractBaseService {
     this.eventQueue.push({ type: eventType, data: eventData });
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.total_events_emitted = (metrics.total_events_emitted || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.total_events_emitted = (metrics.total_events_emitted ?? 0) + 1;
     metrics.last_event_timestamp = Date.now();
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     // Process queue if not already processing
     if (!this.isProcessing) {
@@ -103,7 +103,7 @@ class EventPropagationServiceImpl extends AbstractBaseService {
     try {
       while (this.eventQueue.length > 0) {
         const event = this.eventQueue.shift()!;
-        await this.processEvent(event.type, event.data);
+        await this.processEvent(event?.type, event?.data);
       }
     } catch (error) {
       this.handleError(error as Error);
@@ -114,7 +114,7 @@ class EventPropagationServiceImpl extends AbstractBaseService {
 
   private async processEvent(eventType: string, eventData: unknown): Promise<void> {
     // Get subscribers for this event type
-    const subscribers = this.subscriptions.get(eventType) || [];
+    const subscribers = this.subscriptions.get(eventType) ?? [];
 
     // Notify component registry
     componentRegistryService.notifyComponentsOfEvent(eventType, eventData);
@@ -129,18 +129,18 @@ class EventPropagationServiceImpl extends AbstractBaseService {
     }
 
     // Update metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.total_events_processed = (metrics.total_events_processed || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.total_events_processed = (metrics.total_events_processed ?? 0) + 1;
     metrics.last_processed_timestamp = Date.now();
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
   }
 
   public override handleError(error: Error): void {
     // Update error metrics
-    const metrics = this.metadata.metrics || {};
-    metrics.total_errors = (metrics.total_errors || 0) + 1;
+    const metrics = this.metadata?.metrics ?? {};
+    metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
-    this.metadata.metrics = metrics;
+    this.metadata?.metrics = metrics;
 
     // Log error in development
     if (process.env.NODE_ENV === 'development') {

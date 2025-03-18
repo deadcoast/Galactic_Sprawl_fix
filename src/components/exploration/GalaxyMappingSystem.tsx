@@ -156,7 +156,7 @@ export function GalaxyMappingSystem({
 
   // Use the affected sectors directly from the cosmic events
   const affectedSectorIds = useMemo(() => {
-    return cosmicEventsState.flatMap(event => event.affectedSectors);
+    return cosmicEventsState.flatMap(event => event?.affectedSectors);
   }, [cosmicEventsState]);
 
   return (
@@ -246,32 +246,32 @@ export function GalaxyMappingSystem({
       {/* Cosmic Events */}
       {cosmicEventsState.map(event => (
         <div
-          key={event.id}
+          key={event?.id}
           className="absolute z-20"
           style={{
-            left: `calc(50% + ${event.position.x}px)`,
-            top: `calc(50% + ${event.position.y}px)`,
+            left: `calc(50% + ${event?.position.x}px)`,
+            top: `calc(50% + ${event?.position.y}px)`,
             transform: 'translate(-50%, -50%)',
             pointerEvents: 'none',
           }}
         >
           <div
             className={`animate-pulse rounded-full ${
-              event.type === 'storm'
+              event?.type === 'storm'
                 ? 'bg-purple-500/20'
-                : event.type === 'solarFlare'
+                : event?.type === 'solarFlare'
                   ? 'bg-orange-500/20'
                   : 'bg-cyan-500/20'
             }`}
             style={{
-              width: `${event.radius * 2}px`,
-              height: `${event.radius * 2}px`,
+              width: `${event?.radius * 2}px`,
+              height: `${event?.radius * 2}px`,
             }}
           >
             <div className="absolute inset-0 flex items-center justify-center">
-              {event.type === 'storm' && <Zap className="h-8 w-8 text-purple-400" />}
-              {event.type === 'solarFlare' && <AlertTriangle className="h-8 w-8 text-orange-400" />}
-              {event.type === 'anomaly' && <div className="h-8 w-8 rounded-full bg-cyan-400/50" />}
+              {event?.type === 'storm' && <Zap className="h-8 w-8 text-purple-400" />}
+              {event?.type === 'solarFlare' && <AlertTriangle className="h-8 w-8 text-orange-400" />}
+              {event?.type === 'anomaly' && <div className="h-8 w-8 rounded-full bg-cyan-400/50" />}
             </div>
           </div>
         </div>

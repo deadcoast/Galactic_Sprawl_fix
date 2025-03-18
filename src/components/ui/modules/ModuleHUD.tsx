@@ -86,7 +86,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
   // Subscribe to module events
   useEffect(() => {
     const handleModuleUpdated = (event: ModuleEvent) => {
-      if (event.moduleId === moduleId) {
+      if (event?.moduleId === moduleId) {
         // Refresh module data
         const moduleData = moduleManager.getModule(moduleId);
         if (moduleData) {
@@ -156,7 +156,7 @@ export const ModuleHUD: React.FC<ModuleHUDProps> = ({
 
   // Render loading state
   if (isLoading) {
-    return <div className="module-hud module-hud--loading">Loading module data...</div>;
+    return <div className="module-hud module-hud--loading">Loading module data?...</div>;
   }
 
   // Render error state
@@ -347,7 +347,7 @@ export const BuildingModulesHUD: React.FC<{
   // Subscribe to module events
   useEffect(() => {
     const handleModuleAttached = (event: ModuleEvent) => {
-      if (event.data?.buildingId === buildingId) {
+      if (event?.data?.buildingId === buildingId) {
         // Refresh module list
         const building = moduleManager.getBuilding(buildingId);
         if (building) {
@@ -357,7 +357,7 @@ export const BuildingModulesHUD: React.FC<{
     };
 
     const handleModuleDetached = (event: ModuleEvent) => {
-      if (event.data?.buildingId === buildingId) {
+      if (event?.data?.buildingId === buildingId) {
         // Refresh module list
         const building = moduleManager.getBuilding(buildingId);
         if (building) {
@@ -376,7 +376,7 @@ export const BuildingModulesHUD: React.FC<{
      * 5. Log status changes for analytics and debugging
      */
     const handleModuleStatusChanged = (event: ModuleEvent) => {
-      if (event.data?.buildingId === buildingId) {
+      if (event?.data?.buildingId === buildingId) {
         // Future implementation will:
         // - Update status indicators with animation
         // - Trigger status-specific effects
@@ -396,7 +396,7 @@ export const BuildingModulesHUD: React.FC<{
      * 5. Track alert history for troubleshooting
      */
     const handleModuleAlertAdded = (event: ModuleEvent) => {
-      if (event.data?.buildingId === buildingId) {
+      if (event?.data?.buildingId === buildingId) {
         // Future implementation will:
         // - Create alert notification with appropriate styling
         // - Add alert to module's alert history

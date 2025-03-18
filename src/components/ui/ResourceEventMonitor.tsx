@@ -25,13 +25,13 @@ interface ResourceEventData {
 
 // Type guard for resource events
 function isResourceEvent(event: ModuleEvent): event is ModuleEvent & { data: ResourceEventData } {
-  if (!event.data) return false;
-  const data = event.data as Partial<ResourceEventData>;
+  if (!event?.data) return false;
+  const data = event?.data as Partial<ResourceEventData>;
   return (
     'resourceType' in data &&
     'amount' in data &&
-    typeof data.resourceType === 'string' &&
-    typeof data.amount === 'number'
+    typeof data?.resourceType === 'string' &&
+    typeof data?.amount === 'number'
   );
 }
 
@@ -65,20 +65,20 @@ export const ResourceEventMonitor: React.FC = () => {
     (event: ModuleEvent) => {
       if (isResourceEvent(event)) {
         addEventToLog({
-          id: `${event.type}-${event.moduleId}-${event.timestamp}`,
-          type: event.type,
-          moduleId: event.moduleId,
-          timestamp: event.timestamp,
-          resourceType: event.data.resourceType,
-          amount: event.data.amount,
-          source: event.data.source,
-          target: event.data.target,
+          id: `${event?.type}-${event?.moduleId}-${event?.timestamp}`,
+          type: event?.type,
+          moduleId: event?.moduleId,
+          timestamp: event?.timestamp,
+          resourceType: event?.data?.resourceType,
+          amount: event?.data?.amount,
+          source: event?.data?.source,
+          target: event?.data?.target,
         });
       }
     },
     {
       trackLatest: true,
-      filter: (event: ModuleEvent) => RESOURCE_EVENT_TYPES.includes(event.type as EventType),
+      filter: (event: ModuleEvent) => RESOURCE_EVENT_TYPES.includes(event?.type as EventType),
     }
   );
 

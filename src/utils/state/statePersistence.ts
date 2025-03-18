@@ -122,7 +122,7 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
           localStorage.setItem(key, serialized);
           lastSavedState = state;
 
-          log('State saved', { version, timestamp: data.timestamp });
+          log('State saved', { version, timestamp: data?.timestamp });
           resolve();
         } catch (error) {
           console.error(`[StatePersistence:${key}] Error saving state:`, error);
@@ -161,8 +161,8 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
       }
 
       // Check if we need to migrate
-      if (data.version !== version) {
-        log(`Version mismatch: saved=${data.version}, current=${version}`);
+      if (data?.version !== version) {
+        log(`Version mismatch: saved=${data?.version}, current=${version}`);
 
         if (!migrate) {
           log('No migration function provided, clearing saved state');
@@ -171,8 +171,8 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
         }
 
         try {
-          const migratedState = migrate(data.state, data.version);
-          log('State migrated successfully', { fromVersion: data.version, toVersion: version });
+          const migratedState = migrate(data?.state, data?.version);
+          log('State migrated successfully', { fromVersion: data?.version, toVersion: version });
 
           // Save the migrated state
           saveState(migratedState, true);
@@ -185,17 +185,17 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
       }
 
       // Validate the state if a validator is provided
-      if (validate && !validate(data.state)) {
+      if (validate && !validate(data?.state)) {
         log('State validation failed');
         return null;
       }
 
       log('State loaded successfully', {
-        version: data.version,
-        age: Date.now() - (data.timestamp || 0),
+        version: data?.version,
+        age: Date.now() - (data?.timestamp ?? 0),
       });
-      lastSavedState = data.state;
-      return data.state;
+      lastSavedState = data?.state;
+      return data?.state;
     } catch (error) {
       console.error(`[StatePersistence:${key}] Error loading state:`, error);
       return null;

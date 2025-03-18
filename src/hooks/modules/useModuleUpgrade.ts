@@ -43,7 +43,7 @@ export function useModuleUpgrade(moduleId?: string) {
     }
 
     const handleModuleEvent = (event: StandardizedEvent) => {
-      if (event.moduleId === moduleId) {
+      if (event?.moduleId === moduleId) {
         try {
           const status = moduleUpgradeManager.getUpgradeStatus(moduleId);
           setUpgradeStatus(status || null);

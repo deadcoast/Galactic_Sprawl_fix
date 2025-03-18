@@ -93,7 +93,7 @@ interface TemporalAnalysisViewProps {
  * Safely converts time data to D3-compatible format
  */
 const convertToTimeNodes = (data: TimeDataPoint[]): TimeNode[] => {
-  return data.map(point => {
+  return data?.map(point => {
     // Properly typed conversion with no type assertions
     const node: TimeNode = {
       id: point.id,
@@ -154,7 +154,7 @@ const TemporalAnalysisView: React.FC<TemporalAnalysisViewProps> = ({
   const [currentTimestamp, setCurrentTimestamp] = useState<Date | null>(null);
 
   // Extract unique categories from data
-  const categories = Array.from(new Set(data.map(d => d.category)));
+  const categories = Array.from(new Set(data?.map(d => d.category)));
 
   // Convert data to time nodes for visualization
   const timeNodes = convertToTimeNodes(data);
@@ -183,7 +183,7 @@ const TemporalAnalysisView: React.FC<TemporalAnalysisViewProps> = ({
    * Initialize chart
    */
   useEffect(() => {
-    if (!svgRef.current || !data.length) return;
+    if (!svgRef.current || !data?.length) return;
 
     // Select SVG element with proper typing
     const svg = d3.select<SVGSVGElement, unknown>(svgRef.current);
@@ -463,7 +463,7 @@ const TemporalAnalysisView: React.FC<TemporalAnalysisViewProps> = ({
       const category = node.category;
 
       // Safe D3 selection
-      const circle = d3.select<SVGCircleElement, TimeNode>(event.currentTarget);
+      const circle = d3.select<SVGCircleElement, TimeNode>(event?.currentTarget);
 
       // Type-safe transition
       circle.transition().duration(200).attr('r', 8).attr('stroke-width', 2);

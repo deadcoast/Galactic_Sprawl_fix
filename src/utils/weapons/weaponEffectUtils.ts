@@ -189,9 +189,9 @@ export function createStatusEffect(params: {
 export function createWeaponEffect(source: WeaponLike): WeaponEffectType {
   return createDamageEffect({
     id: `${source.id}-effect`,
-    magnitude: source.damage || 0,
+    magnitude: source.damage ?? 0,
     duration: source.cooldown,
-    strength: source.damage || 0,
+    strength: source.damage ?? 0,
     damageType: 'physical',
     penetration: 0,
     name: source.displayName || `${source.type} Effect`,
@@ -224,7 +224,7 @@ export function createCustomWeaponEffect(params: {
         duration: params.duration,
         strength: params.strength,
         damageType: params.damageType || 'physical',
-        penetration: params.penetration || 0,
+        penetration: params.penetration ?? 0,
         name: params.name,
         description: params.description,
       });
@@ -234,8 +234,8 @@ export function createCustomWeaponEffect(params: {
         magnitude: params.magnitude,
         duration: params.duration,
         strength: params.strength,
-        radius: params.radius || 0,
-        falloff: params.falloff || 0,
+        radius: params.radius ?? 0,
+        falloff: params.falloff ?? 0,
         name: params.name,
         description: params.description,
       });
@@ -328,8 +328,8 @@ export function validateEffect(effect: Partial<Effect>): Effect {
   return {
     id: effect.id,
     type: effect.type,
-    magnitude: effect.magnitude || 0,
-    duration: effect.duration || 0,
+    magnitude: effect.magnitude ?? 0,
+    duration: effect.duration ?? 0,
   };
 }
 

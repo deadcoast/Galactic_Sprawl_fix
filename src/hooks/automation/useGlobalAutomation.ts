@@ -46,9 +46,9 @@ export function useGlobalAutomation() {
 
     const handleAutomationEvent = (event: AutomationEvent) => {
       if (
-        event.type === 'AUTOMATION_STARTED' ||
-        event.type === 'AUTOMATION_STOPPED' ||
-        event.type === 'AUTOMATION_CYCLE_COMPLETE'
+        event?.type === 'AUTOMATION_STARTED' ||
+        event?.type === 'AUTOMATION_STOPPED' ||
+        event?.type === 'AUTOMATION_CYCLE_COMPLETE'
       ) {
         // Refresh routines
         const allRoutines = globalAutomationManager.getAllRoutines();
@@ -119,8 +119,8 @@ export function useGlobalAutomation() {
         systems,
         priority: options?.priority || MessagePriority.NORMAL,
         interval: options?.interval || 60000, // Default to 1 minute
-        enabled: options?.enabled !== undefined ? options.enabled : true,
-        tags: options?.tags || [],
+        enabled: options?.enabled !== undefined ? options?.enabled : true,
+        tags: options?.tags ?? [],
       };
 
       const routineId = globalAutomationManager.registerRoutine(routine);
@@ -237,7 +237,7 @@ export function useGlobalAutomation() {
         name,
         'system-maintenance',
         description,
-        options?.conditions || [],
+        options?.conditions ?? [],
         actions,
         systems,
         {
@@ -299,7 +299,7 @@ export function useGlobalAutomation() {
         name,
         'performance-optimization',
         description,
-        options?.conditions || [],
+        options?.conditions ?? [],
         actions,
         systems,
         {
@@ -332,7 +332,7 @@ export function useGlobalAutomation() {
       return createRoutine(name, 'emergency-response', description, conditions, actions, systems, {
         interval: 0, // Emergency routines are triggered by events, not time
         priority: options?.priority || MessagePriority.CRITICAL,
-        enabled: options?.enabled !== undefined ? options.enabled : true,
+        enabled: options?.enabled !== undefined ? options?.enabled : true,
         tags: options?.tags || ['emergency'],
       });
     },
@@ -360,7 +360,7 @@ export function useGlobalAutomation() {
         name,
         'scheduled-task',
         description,
-        options?.conditions || [],
+        options?.conditions ?? [],
         actions,
         systems,
         {

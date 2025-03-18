@@ -303,7 +303,7 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
     // Get initial modules from manager if available
     if (manager) {
       try {
-        const modules = manager.getActiveModules() || [];
+        const modules = manager.getActiveModules() ?? [];
         const moduleMap = modules.reduce((acc: Record<string, Module>, module: Module) => {
           acc[module.id] = module;
           return acc;
@@ -313,16 +313,16 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
           ...initialState,
           modules: moduleMap,
           activeModuleIds: modules.map(m => m.id),
-          categories: manager.getModuleCategories?.() || [],
-          buildings: manager.getBuildings?.() || [],
-          ...(initialStateOverride || {}),
+          categories: manager.getModuleCategories?.() ?? [],
+          buildings: manager.getBuildings?.() ?? [],
+          ...(initialStateOverride ?? {}),
         };
       } catch (error) {
         console.error('Error initializing module state from manager:', error);
       }
     }
 
-    return { ...initialState, ...(initialStateOverride || {}) };
+    return { ...initialState, ...(initialStateOverride ?? {}) };
   }, [manager, initialStateOverride]);
 
   // Create reducer
@@ -338,39 +338,39 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
 
     // Module event handlers
     const handleModuleCreated = (event: BaseEvent) => {
-      if (event.data && typeof event.data === 'object' && 'module' in event.data) {
-        const module = event.data.module as Module;
+      if (event?.data && typeof event?.data === 'object' && 'module' in event?.data) {
+        const module = event?.data?.module as Module;
         dispatch(createAddModuleAction(module));
       }
     };
 
     const handleModuleUpdated = (event: BaseEvent) => {
       if (
-        event.data &&
-        typeof event.data === 'object' &&
-        'moduleId' in event.data &&
-        'updates' in event.data
+        event?.data &&
+        typeof event?.data === 'object' &&
+        'moduleId' in event?.data &&
+        'updates' in event?.data
       ) {
-        const { moduleId, updates } = event.data as { moduleId: string; updates: Partial<Module> };
+        const { moduleId, updates } = event?.data as { moduleId: string; updates: Partial<Module> };
         dispatch(createUpdateModuleAction(moduleId, updates));
       }
     };
 
     const handleModuleRemoved = (event: BaseEvent) => {
-      if (event.data && typeof event.data === 'object' && 'moduleId' in event.data) {
-        const moduleId = event.data.moduleId as string;
+      if (event?.data && typeof event?.data === 'object' && 'moduleId' in event?.data) {
+        const moduleId = event?.data?.moduleId as string;
         dispatch(createRemoveModuleAction(moduleId));
       }
     };
 
     const handleStatusChanged = (event: BaseEvent) => {
       if (
-        event.data &&
-        typeof event.data === 'object' &&
-        'moduleId' in event.data &&
-        'status' in event.data
+        event?.data &&
+        typeof event?.data === 'object' &&
+        'moduleId' in event?.data &&
+        'status' in event?.data
       ) {
-        const { moduleId, status } = event.data as { moduleId: string; status: ModuleStatus };
+        const { moduleId, status } = event?.data as { moduleId: string; status: ModuleStatus };
         dispatch(createUpdateModuleAction(moduleId, { status }));
       }
     };
@@ -552,8 +552,8 @@ export function canBuildModule(
   _moduleType: ModuleType,
   cost: { minerals?: number; energy?: number }
 ) {
-  const mineralCost = cost.minerals || 0;
-  const energyCost = cost.energy || 0;
+  const mineralCost = cost.minerals ?? 0;
+  const energyCost = cost.energy ?? 0;
 
   // Check if the player has enough resources
   const resourceManager = serviceRegistry.getService('ResourceManager');
@@ -572,8 +572,8 @@ export function canBuildModule(
       getResourceAmount: (resourceType: ResourceType) => number;
     };
 
-    currentMinerals = typedResourceManager.getResourceAmount(ResourceType.MINERALS) || 0;
-    currentEnergy = typedResourceManager.getResourceAmount(ResourceType.ENERGY) || 0;
+    currentMinerals = typedResourceManager.getResourceAmount(ResourceType.MINERALS) ?? 0;
+    currentEnergy = typedResourceManager.getResourceAmount(ResourceType.ENERGY) ?? 0;
   } catch (error) {
     console.error('Error getting resource amounts:', error);
     return false;
@@ -601,7 +601,7 @@ export function buildModule(moduleType: ModuleType, _cost: { minerals?: number; 
   }
 
   // Get an available attachment point
-  const attachmentPoints = targetBuilding.attachmentPoints || [];
+  const attachmentPoints = targetBuilding.attachmentPoints ?? [];
 
   // Find modules attached to this building
   const modules = moduleManagerWrapper.getModules();

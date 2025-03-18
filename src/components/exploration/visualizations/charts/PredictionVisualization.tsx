@@ -92,16 +92,16 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
 
     const featureIndex = useMemo(() => {
       if (!selectedFeature) return -1;
-      return data.features.indexOf(selectedFeature);
-    }, [data.features, selectedFeature]);
+      return data?.features.indexOf(selectedFeature);
+    }, [data?.features, selectedFeature]);
 
     // Prepare time series data for date-based visualization
     const timeSeriesData = useMemo<TimeSeriesDataPoint[]>(() => {
       console.warn('Computing time series data'); // Helpful for debugging
       const result: TimeSeriesDataPoint[] = [];
       // Add historical data points
-      for (const point of data.predictions) {
-        result.push({
+      for (const point of data?.predictions) {
+        result?.push({
           timestamp: point.features[0], // Assume first feature is timestamp
           actual: point.actual,
           predicted: point.predicted,
@@ -111,8 +111,8 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
       }
 
       // Add forecast data points
-      for (const point of data.forecast) {
-        result.push({
+      for (const point of data?.forecast) {
+        result?.push({
           timestamp: point.features[0], // Assume first feature is timestamp
           predicted: point.predicted,
           lower: point.confidence ? point.confidence[0] : undefined,
@@ -122,29 +122,29 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
       }
 
       // Sort by timestamp
-      return result.sort((a, b) => a.timestamp - b.timestamp);
-    }, [data.predictions, data.forecast]);
+      return result?.sort((a, b) => a.timestamp - b.timestamp);
+    }, [data?.predictions, data?.forecast]);
 
     // Feature comparison data
     const featureComparisonData = useMemo<FeatureComparisonDataPoint[]>(() => {
       if (featureIndex < 0 || !selectedFeature) return [];
 
-      return data.predictions.map(point => ({
+      return data?.predictions.map(point => ({
         featureValue: point.features[featureIndex + 1], // Skip timestamp
         actual: point.actual,
         predicted: point.predicted,
         error: point.error,
       }));
-    }, [data.predictions, featureIndex, selectedFeature]);
+    }, [data?.predictions, featureIndex, selectedFeature]);
 
     // Residual plot data
     const residualData = useMemo<ResidualDataPoint[]>(() => {
-      return data.predictions.map(point => ({
+      return data?.predictions.map(point => ({
         predicted: point.predicted,
         residual: point.actual - point.predicted,
         actual: point.actual,
       }));
-    }, [data.predictions]);
+    }, [data?.predictions]);
 
     // Get forecast start timestamp
     const forecastStartTimestamp = useMemo(() => {
@@ -157,7 +157,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
     }, []);
 
     const handleFeatureChange = useCallback((event: SelectChangeEvent<string>) => {
-      setSelectedFeature(event.target.value);
+      setSelectedFeature(event?.target.value);
     }, []);
 
     // Custom tooltip renderers with proper typing
@@ -233,23 +233,23 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
             <TableBody>
               <TableRow>
                 <TableCell>MSE</TableCell>
-                <TableCell align="right">{data.metrics.mse.toFixed(4)}</TableCell>
+                <TableCell align="right">{data?.metrics.mse.toFixed(4)}</TableCell>
                 <TableCell>Mean Squared Error</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>RMSE</TableCell>
-                <TableCell align="right">{data.metrics.rmse.toFixed(4)}</TableCell>
+                <TableCell align="right">{data?.metrics.rmse.toFixed(4)}</TableCell>
                 <TableCell>Root Mean Squared Error</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>MAE</TableCell>
-                <TableCell align="right">{data.metrics.mae.toFixed(4)}</TableCell>
+                <TableCell align="right">{data?.metrics.mae.toFixed(4)}</TableCell>
                 <TableCell>Mean Absolute Error</TableCell>
               </TableRow>
-              {data.metrics.r2 !== undefined && (
+              {data?.metrics.r2 !== undefined && (
                 <TableRow>
                   <TableCell>R²</TableCell>
-                  <TableCell align="right">{data.metrics.r2.toFixed(4)}</TableCell>
+                  <TableCell align="right">{data?.metrics.r2.toFixed(4)}</TableCell>
                   <TableCell>Coefficient of Determination</TableCell>
                 </TableRow>
               )}
@@ -257,7 +257,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
           </Table>
         </TableContainer>
       ),
-      [data.metrics]
+      [data?.metrics]
     );
 
     // Determine if we should use virtualized rendering based on dataset size
@@ -405,9 +405,9 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                 onChange={handleFeatureChange}
                 label="Feature"
                 displayEmpty
-                disabled={data.features.length <= 1}
+                disabled={data?.features.length <= 1}
               >
-                {data.features.slice(1).map(feature => (
+                {data?.features.slice(1).map(feature => (
                   <MenuItem key={feature} value={feature}>
                     {feature}
                   </MenuItem>
@@ -435,7 +435,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                   dataKey="actual"
                   name="Value"
                   label={{
-                    value: data.targetVariable,
+                    value: data?.targetVariable,
                     angle: -90,
                     position: 'insideLeft',
                   }}
@@ -450,14 +450,14 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                 />
 
                 {/* Add trend line if using linear regression */}
-                {data.model === 'linear' &&
-                  data.modelDetails &&
-                  isLinearRegressionModel(data.modelDetails) && (
+                {data?.model === 'linear' &&
+                  data?.modelDetails &&
+                  isLinearRegressionModel(data?.modelDetails) && (
                     <Line
                       name="Model Trend"
                       type="monotone"
                       dataKey={(point: FeatureComparisonDataPoint) => {
-                        const coefficients = data.modelDetails as LinearRegressionModelDetails;
+                        const coefficients = data?.modelDetails as LinearRegressionModelDetails;
                         const intercept = coefficients.coefficients[0];
                         const featureCoef =
                           featureIndex >= 0 ? coefficients.coefficients[featureIndex + 1] : 0;
@@ -482,14 +482,14 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
         </>
       ),
       [
-        data.features,
+        data?.features,
         selectedFeature,
         handleFeatureChange,
-        data.targetVariable,
+        data?.targetVariable,
         featureComparisonData,
         FeatureComparisonTooltipComponent,
-        data.model,
-        data.modelDetails,
+        data?.model,
+        data?.modelDetails,
         featureIndex,
       ]
     );
@@ -531,8 +531,8 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
 
     const modelDetails = useMemo(() => {
       // Use type guards to safely access model-specific properties
-      if (data.model === 'linear' && isLinearRegressionModel(data.modelDetails)) {
-        const modelDetails = data.modelDetails;
+      if (data?.model === 'linear' && isLinearRegressionModel(data?.modelDetails)) {
+        const modelDetails = data?.modelDetails;
         const intercept = modelDetails.coefficients[0];
         const featureImportance = modelDetails.featureImportance;
 
@@ -546,8 +546,8 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
               Model Equation
             </Typography>
             <Typography variant="body2" sx={{ mb: 2, fontFamily: 'monospace' }}>
-              {data.targetVariable} = {intercept.toFixed(4)}
-              {data.features
+              {data?.targetVariable} = {intercept.toFixed(4)}
+              {data?.features
                 .slice(1)
                 .map((feature, i) => {
                   const coef = modelDetails.coefficients[i + 1];
@@ -573,9 +573,9 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                     </TableHead>
                     <TableBody>
                       {featureImportance.map(item => (
-                        <TableRow key={item.feature}>
-                          <TableCell>{item.feature}</TableCell>
-                          <TableCell align="right">{(item.importance * 100).toFixed(2)}%</TableCell>
+                        <TableRow key={item?.feature}>
+                          <TableCell>{item?.feature}</TableCell>
+                          <TableCell align="right">{(item?.importance * 100).toFixed(2)}%</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -585,8 +585,8 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
             )}
           </div>
         );
-      } else if (data.model === 'neuralNetwork' && isNeuralNetworkModel(data.modelDetails)) {
-        const modelDetails = data.modelDetails;
+      } else if (data?.model === 'neuralNetwork' && isNeuralNetworkModel(data?.modelDetails)) {
+        const modelDetails = data?.modelDetails;
 
         return (
           <div>
@@ -602,7 +602,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                 <TableBody>
                   <TableRow>
                     <TableCell>Input Features</TableCell>
-                    <TableCell>{data.features.length - 1}</TableCell>
+                    <TableCell>{data?.features.length - 1}</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>Hidden Layers</TableCell>
@@ -651,10 +651,10 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
 
       return (
         <Typography variant="body2">
-          Details not available for the {data.model} model type.
+          Details not available for the {data?.model} model type.
         </Typography>
       );
-    }, [data.model, data.modelDetails, data.targetVariable, data.features]);
+    }, [data?.model, data?.modelDetails, data?.targetVariable, data?.features]);
 
     return (
       <div className="h-full w-full overflow-auto" style={{ width, height }}>

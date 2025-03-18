@@ -192,7 +192,7 @@ export class TypeSafeConfigManager {
   get<T extends z.ZodType>(key: string): z.infer<T> | undefined {
     const config = this.configItems.get(key) as ConfigItem<T> | undefined;
     if (!config) {
-      if (this.options.strictMode) {
+      if (this.options?.strictMode) {
         throw new Error(`Config with key "${key}" is not registered`);
       }
       return undefined;
@@ -201,20 +201,20 @@ export class TypeSafeConfigManager {
     const value = this.configValues.get(key);
 
     // Validate on access if enabled
-    if (this.options.validateOnAccess) {
+    if (this.options?.validateOnAccess) {
       const validation = config.schema.safeParse(value);
       if (!validation.success) {
         const errors = this.formatZodErrors(key, validation.error);
 
-        if (this.options.logErrors) {
+        if (this.options?.logErrors) {
           console.error(`Config validation error for "${key}":`, errors);
         }
 
-        if (this.options.onValidationError) {
-          this.options.onValidationError(errors);
+        if (this.options?.onValidationError) {
+          this.options?.onValidationError(errors);
         }
 
-        if (this.options.strictMode) {
+        if (this.options?.strictMode) {
           throw new Error(`Config validation failed for "${key}": ${errors[0]?.message}`);
         }
 
@@ -231,7 +231,7 @@ export class TypeSafeConfigManager {
   set<T extends z.ZodType>(key: string, value: z.infer<T>): ConfigValidationResult {
     const config = this.configItems.get(key) as ConfigItem<T> | undefined;
     if (!config) {
-      if (this.options.strictMode) {
+      if (this.options?.strictMode) {
         throw new Error(`Config with key "${key}" is not registered`);
       }
       return { valid: false, errors: [{ key, message: `Config not registered` }] };
@@ -242,11 +242,11 @@ export class TypeSafeConfigManager {
 
     if (!validation.success) {
       const errors = this.formatZodErrors(key, validation.error);
-      if (this.options.logErrors) {
+      if (this.options?.logErrors) {
         console.error(`Config validation error for "${key}":`, errors);
       }
-      if (this.options.onValidationError) {
-        this.options.onValidationError(errors);
+      if (this.options?.onValidationError) {
+        this.options?.onValidationError(errors);
       }
       return { valid: false, errors };
     }
@@ -255,8 +255,8 @@ export class TypeSafeConfigManager {
     this.configValues.set(key, validation.data);
 
     // Call change handler if provided
-    if (this.options.onConfigChange) {
-      this.options.onConfigChange(key, validation.data, oldValue);
+    if (this.options?.onConfigChange) {
+      this.options?.onConfigChange(key, validation.data, oldValue);
     }
 
     return { valid: true, errors: [] };
@@ -268,7 +268,7 @@ export class TypeSafeConfigManager {
   isFeatureEnabled(key: string): boolean {
     const feature = this.featureFlags.get(key);
     if (!feature) {
-      if (this.options.strictMode) {
+      if (this.options?.strictMode) {
         throw new Error(`Feature flag "${key}" is not registered`);
       }
       return false;
@@ -305,7 +305,7 @@ export class TypeSafeConfigManager {
 
       // Check percentage rollout
       if (feature.targeting.percentageRollout !== undefined) {
-        const userId = this.userContext.id || '';
+        const userId = this.userContext.id ?? '';
         // Simple deterministic percentage rollout based on user ID
         const hash = this.simpleHash(key + userId);
         const percentage = hash % 100;
@@ -351,12 +351,12 @@ export class TypeSafeConfigManager {
     });
 
     const valid = errors.length === 0;
-    if (!valid && this.options.logErrors) {
+    if (!valid && this.options?.logErrors) {
       console.error('Configuration validation errors:', errors);
     }
 
-    if (!valid && this.options.onValidationError) {
-      this.options.onValidationError(errors);
+    if (!valid && this.options?.onValidationError) {
+      this.options?.onValidationError(errors);
     }
 
     return { valid, errors };
@@ -393,7 +393,7 @@ export class TypeSafeConfigManager {
     Object.entries(config).forEach(([key, value]) => {
       const configItem = this.configItems.get(key);
       if (!configItem) {
-        if (this.options.strictMode) {
+        if (this.options?.strictMode) {
           errors.push({ key, message: `Config not registered` });
         }
         return;
@@ -408,12 +408,12 @@ export class TypeSafeConfigManager {
     });
 
     const valid = errors.length === 0;
-    if (!valid && this.options.logErrors) {
+    if (!valid && this.options?.logErrors) {
       console.error('Configuration import errors:', errors);
     }
 
-    if (!valid && this.options.onValidationError) {
-      this.options.onValidationError(errors);
+    if (!valid && this.options?.onValidationError) {
+      this.options?.onValidationError(errors);
     }
 
     return { valid, errors };
@@ -486,14 +486,14 @@ export function createConfigItem<T extends z.ZodType>(
     key,
     schema,
     defaultValue,
-    name: options.name || key,
-    description: options.description || '',
-    category: options.category,
-    tags: options.tags || [],
-    metadata: options.metadata || {},
-    isSecret: options.isSecret || false,
-    isRequired: options.isRequired || false,
-    source: options.source,
+    name: options?.name || key,
+    description: options?.description ?? '',
+    category: options?.category,
+    tags: options?.tags ?? [],
+    metadata: options?.metadata ?? {},
+    isSecret: options?.isSecret || false,
+    isRequired: options?.isRequired || false,
+    source: options?.source,
   };
 }
 
@@ -508,11 +508,11 @@ export function createFeatureFlag(
   return {
     key,
     defaultValue,
-    name: options.name || key,
-    description: options.description || '',
-    status: options.status || FeatureStatus.DISABLED,
-    targeting: options.targeting,
-    metadata: options.metadata,
+    name: options?.name || key,
+    description: options?.description ?? '',
+    status: options?.status || FeatureStatus.DISABLED,
+    targeting: options?.targeting,
+    metadata: options?.metadata,
   };
 }
 

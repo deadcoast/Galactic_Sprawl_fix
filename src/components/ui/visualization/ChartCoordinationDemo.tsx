@@ -102,7 +102,7 @@ export const ChartCoordinationDemo: React.FC<ChartCoordinationDemoProps> = ({
 
   const handleScatterBrush = (x1: number, y1: number, x2: number, y2: number) => {
     // Find points within brush
-    const selectedPoints = data.filter(
+    const selectedPoints = data?.filter(
       point =>
         point.x >= Math.min(x1, x2) &&
         point.x <= Math.max(x1, x2) &&
@@ -125,7 +125,7 @@ export const ChartCoordinationDemo: React.FC<ChartCoordinationDemoProps> = ({
   };
 
   const handleBarHighlight = (category: string) => {
-    const selectedPoints = data.filter(point => point.category === category);
+    const selectedPoints = data?.filter(point => point.category === category);
 
     barCoordination.updateHighlight({
       active: true,
@@ -150,7 +150,7 @@ export const ChartCoordinationDemo: React.FC<ChartCoordinationDemoProps> = ({
               }}
             >
               {/* Plot points */}
-              {data.map(point => (
+              {data?.map(point => (
                 <div
                   key={point.id}
                   className={`absolute h-3 w-3 rounded-full transition-opacity ${
@@ -195,7 +195,7 @@ export const ChartCoordinationDemo: React.FC<ChartCoordinationDemoProps> = ({
             >
               {/* Category bars */}
               {['A', 'B'].map(category => {
-                const categoryPoints = data.filter(p => p.category === category);
+                const categoryPoints = data?.filter(p => p.category === category);
                 const average =
                   categoryPoints.reduce((sum, p) => sum + p.value, 0) / categoryPoints.length;
 

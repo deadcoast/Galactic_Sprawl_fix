@@ -121,7 +121,7 @@ export interface WithErrorBoundaryOptions extends Omit<ErrorBoundaryProps, 'chil
  * Higher-order component that wraps a component with an error boundary
  * 
  * This is a more flexible alternative to createTypedErrorBoundary that allows
- * passing any ErrorBoundary props.
+ * passing any ErrorBoundary props?.
  * 
  * @param Component The component to wrap
  * @param options Options for the error boundary
@@ -198,7 +198,7 @@ export function createSpecializedErrorBoundary(
         {...props}
         metadata={{
           ...defaultProps.metadata,
-          ...props.metadata,
+          ...props?.metadata,
         }}
       />
     );

@@ -267,7 +267,7 @@ const ResourceRegistryDemo: React.FC = () => {
         <div style={styles.card}>
           <h3>ResourceRegistry</h3>
           <p>
-            A singleton class that serves as the central registry for resource types and metadata.
+            A singleton class that serves as the central registry for resource types and metadata?.
             It provides methods for registering, unregistering, and querying resources, as well as
             managing conversion rates between resources.
           </p>

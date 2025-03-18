@@ -26,8 +26,8 @@ import {
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { BaseEvent, EventType } from '../../../../types/events/EventTypes';
 import { SectorType } from '../../../../types/exploration/ExplorationTypes';
+import { ResourceType } from '../../../../types/resources/ResourceTypes';
 import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
-import { ResourceType } from './../../../../types/resources/ResourceTypes';
 import { ExplorationControls } from './ExplorationControls';
 import { ExplorationTutorial } from './ExplorationTutorial';
 import { MissionLog } from './MissionLog';
@@ -63,7 +63,7 @@ type ReconShipStatusType = 'idle' | 'scanning' | 'returning' | 'investigating';
 interface ReconShip extends Omit<ReconShipType, 'status'> {
   id: string;
   name: string;
-  type: string;
+  type: 'recon';
   experience: number;
   specialization: 'mapping' | 'anomaly' | 'resource';
   efficiency: number;
@@ -285,8 +285,8 @@ const SectorComponent = memo(
         <DropTarget
           accept={['ship']}
           onDrop={(item: DragItem) => {
-            if (item.type === 'ship' && typeof item.data.id === 'string') {
-              const shipId = item.data.id;
+            if (item?.type === 'ship' && typeof item?.data?.id === 'string') {
+              const shipId = item?.data?.id;
               onShipAssign(shipId, sector.id);
             }
           }}
@@ -579,7 +579,7 @@ export function ExplorationHub() {
             ...ship,
             lastUpdate: Date.now(),
             status: ship.status || 'idle',
-            experience: ship.experience || 0,
+            experience: ship.experience ?? 0,
             specialization: ship.specialization || 'mapping',
             efficiency: ship.efficiency || 1.0,
           } as ReconShip;
@@ -611,7 +611,7 @@ export function ExplorationHub() {
   // Update task completion handler
   useEffect(() => {
     const handleTaskCompleted = (event: BaseEvent) => {
-      const { shipId, ship } = event.data as ShipEvent['data'];
+      const { shipId, ship } = event?.data as ShipEvent['data'];
       if (!shipId || !ship?.assignedSectorId) return;
 
       setShips((prevShips: ReconShip[]) =>
@@ -620,7 +620,7 @@ export function ExplorationHub() {
             ? {
                 ...s,
                 status: 'returning' as ReconShip['status'],
-                experience: (s.experience || 0) + 100,
+                experience: (s.experience ?? 0) + 100,
                 lastUpdate: Date.now(),
               }
             : s

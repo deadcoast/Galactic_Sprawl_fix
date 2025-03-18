@@ -215,7 +215,7 @@ export function BaseChart({
         <div className="flex h-64 items-center justify-center">
           <div className="text-center">
             <div className="mx-auto mb-2 h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
-            <p className="text-gray-500 dark:text-gray-400">Loading chart data...</p>
+            <p className="text-gray-500 dark:text-gray-400">Loading chart data?...</p>
           </div>
         </div>
       </div>
@@ -243,17 +243,17 @@ export function processChartData(
   yAxisKeys: string[] | string,
   dateFormat = false
 ) {
-  if (!data || data.length === 0) return [];
+  if (!data || data?.length === 0) return [];
 
   // Ensure yAxisKeys is an array
   const yKeys = Array.isArray(yAxisKeys) ? yAxisKeys : [yAxisKeys];
 
-  return data.map(item => {
+  return data?.map(item => {
     // Handle DataPoint objects
     if ('properties' in item && 'metadata' in item) {
       const dataPoint = item as DataPoint;
       const properties = { ...dataPoint.properties };
-      const metadata = dataPoint.metadata || {};
+      const metadata = dataPoint.metadata ?? {};
 
       // Create a new object with flattened structure for chart
       const processedPoint: Record<string, unknown> = {
@@ -284,8 +284,8 @@ export function processChartData(
       ...item,
       // Format date if it's a timestamp and dateFormat is true
       formattedDate:
-        dateFormat && xAxisKey === 'date' && typeof item.date === 'number'
-          ? new Date(item.date as number).toLocaleDateString()
+        dateFormat && xAxisKey === 'date' && typeof item?.date === 'number'
+          ? new Date(item?.date as number).toLocaleDateString()
           : undefined,
     };
 

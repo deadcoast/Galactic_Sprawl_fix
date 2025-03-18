@@ -117,7 +117,7 @@ export const HeatMap = React.memo(function HeatMap({
   // Process data into a 2D grid format for the heatmap
   const { processedData, xValues, yValues, dataMinValue, dataMaxValue } = useMemo(() => {
     console.warn('Processing heat map data'); // For debugging
-    if (!data || data.length === 0) {
+    if (!data || data?.length === 0) {
       return {
         processedData: [],
         xValues: [],
@@ -138,7 +138,7 @@ export const HeatMap = React.memo(function HeatMap({
     // Map to hold data by coordinates
     const dataByCoords = new Map<string, number>();
 
-    data.forEach(item => {
+    data?.forEach(item => {
       let x: number | undefined;
       let y: number | undefined;
 
@@ -233,7 +233,7 @@ export const HeatMap = React.memo(function HeatMap({
     sortedYCoords.forEach((y, yIndex) => {
       sortedXCoords.forEach((x, xIndex) => {
         const key = `${x},${y}`;
-        const value = dataByCoords.get(key) || 0;
+        const value = dataByCoords.get(key) ?? 0;
 
         rows.push({
           x: xIndex,
@@ -292,7 +292,7 @@ export const HeatMap = React.memo(function HeatMap({
         const cell = processedData.find(c => c.value === value);
         if (cell) {
           // Find the original data item
-          const originalItem = data.find(
+          const originalItem = data?.find(
             item =>
               (item[xKey] === cell.originalX ||
                 (typeof item[xKey] === 'object' &&
@@ -320,7 +320,7 @@ export const HeatMap = React.memo(function HeatMap({
   const handleCellClick = useCallback(
     (cell: HeatMapCell) => {
       if (onElementClick) {
-        const originalItem = data.find(
+        const originalItem = data?.find(
           item =>
             (item[xKey] === cell.originalX ||
               (typeof item[xKey] === 'object' &&
@@ -488,7 +488,7 @@ export const HeatMap = React.memo(function HeatMap({
       customTooltip={customTooltip as React.FC<ChartTooltipProps>}
       errorMessage={errorMessage}
     >
-      {data.length === 0 ? (
+      {data?.length === 0 ? (
         <div className="heat-map-no-data">No data available</div>
       ) : (
         <div

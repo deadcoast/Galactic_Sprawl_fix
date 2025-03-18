@@ -187,7 +187,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
             ...prev,
             resources: resourceMap,
             thresholds: thresholdMap,
-            alerts: parsed.alerts || [],
+            alerts: parsed.alerts ?? [],
             lastUpdated: parsed.timestamp || Date.now(),
           }));
         } else {
@@ -483,7 +483,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
   const setThreshold = useCallback(
     (type: ResourceType, threshold: ResourceThreshold) => {
       const thresholds = new Map(state.thresholds);
-      const currentThresholds = thresholds.get(type) || [];
+      const currentThresholds = thresholds.get(type) ?? [];
       thresholds.set(type, [...currentThresholds, threshold]);
       setState(prev => ({ ...prev, thresholds }));
     },
@@ -511,7 +511,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
   // Get history by type
   const getHistoryByType = useCallback(
     (type: ResourceType) => {
-      return state.history.filter(item => item.type === type);
+      return state.history.filter(item => item?.type === type);
     },
     [state.history]
   );
@@ -585,7 +585,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
         const resourcePercentage = (resource.current / resource.max) * 100;
 
         if (resourcePercentage >= percentage) {
-          result.push(type);
+          result?.push(type);
         }
       }
 
@@ -605,7 +605,7 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
         const resourcePercentage = (resource.current / resource.max) * 100;
 
         if (resourcePercentage <= percentage) {
-          result.push(type);
+          result?.push(type);
         }
       }
 

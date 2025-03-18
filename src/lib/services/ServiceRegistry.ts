@@ -167,7 +167,7 @@ export class ServiceRegistry {
     try {
       // Initialize dependencies first
       const dependencies: Record<string, BaseService> = {};
-      for (const depName of registration.config.dependencies || []) {
+      for (const depName of registration.config.dependencies ?? []) {
         dependencies[depName] = await this.getService(depName);
       }
 
@@ -204,7 +204,7 @@ export class ServiceRegistry {
 
       path.add(name);
 
-      for (const dep of registration.config.dependencies || []) {
+      for (const dep of registration.config.dependencies ?? []) {
         visit(dep, new Set(path));
       }
 
@@ -217,6 +217,6 @@ export class ServiceRegistry {
       visit(name, new Set());
     }
 
-    return sorted.sort((a, b) => (b.config.priority || 0) - (a.config.priority || 0));
+    return sorted.sort((a, b) => (b.config.priority ?? 0) - (a.config.priority ?? 0));
   }
 }

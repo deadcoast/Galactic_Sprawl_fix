@@ -204,7 +204,7 @@ const TypeSafeConfigDemo: React.FC = () => {
   const handleSelectConfig = (item: ConfigItem) => {
     setSelectedConfig(item);
     // Get current value and set as edit value
-    const value = configManager.get(item.key);
+    const value = configManager.get(item?.key);
     setEditValue(typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value));
   };
 
@@ -227,8 +227,8 @@ const TypeSafeConfigDemo: React.FC = () => {
 
       // Update the config
       const result = configManager.set(selectedConfig.key, parsedValue);
-      if (!result.valid) {
-        setValidationErrors(result.errors);
+      if (!result?.valid) {
+        setValidationErrors(result?.errors);
       } else {
         setValidationErrors([]);
         setConfigValues(configManager.exportConfig());
@@ -255,7 +255,7 @@ const TypeSafeConfigDemo: React.FC = () => {
 
   // Import config
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const file = event?.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -266,8 +266,8 @@ const TypeSafeConfigDemo: React.FC = () => {
 
         if (config.settings) {
           const result = configManager.importConfig(config.settings);
-          if (!result.valid) {
-            setValidationErrors(result.errors);
+          if (!result?.valid) {
+            setValidationErrors(result?.errors);
           } else {
             setValidationErrors([]);
             setConfigValues(configManager.exportConfig());
@@ -414,22 +414,22 @@ const TypeSafeConfigDemo: React.FC = () => {
 
             <div className="config-items">
               {configItems
-                .filter(item => item.category === selectedCategory)
+                .filter(item => item?.category === selectedCategory)
                 .map(item => (
                   <div
-                    key={item.key}
-                    className={`config-item ${selectedConfig?.key === item.key ? 'selected' : ''}`}
+                    key={item?.key}
+                    className={`config-item ${selectedConfig?.key === item?.key ? 'selected' : ''}`}
                     onClick={() => handleSelectConfig(item)}
                   >
-                    <h4>{item.name}</h4>
-                    <p>{item.description}</p>
+                    <h4>{item?.name}</h4>
+                    <p>{item?.description}</p>
                     <div className="config-value">
-                      {typeof configValues[item.key] === 'object'
-                        ? JSON.stringify(configValues[item.key])
-                        : String(configValues[item.key])}
+                      {typeof configValues[item?.key] === 'object'
+                        ? JSON.stringify(configValues[item?.key])
+                        : String(configValues[item?.key])}
                     </div>
                     <div className="config-tags">
-                      {item.tags?.map(tag => (
+                      {item?.tags?.map(tag => (
                         <span key={tag} className="tag">
                           {tag}
                         </span>
@@ -739,7 +739,7 @@ const TypeSafeConfigDemo: React.FC = () => {
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
         }
 
-        .config-item.selected {
+        .config-item?.selected {
           border: 2px solid #4a6cf7;
           box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.3);
         }

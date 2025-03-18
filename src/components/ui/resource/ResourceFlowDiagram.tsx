@@ -81,7 +81,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
 
   // Register with component registry
   useComponentRegistration({
-    type: 'ResourceFlowDiagram',
+    type: ResourceType.MINERALS,
     eventSubscriptions: [
       'RESOURCE_FLOW_UPDATED',
       'RESOURCE_NODE_ADDED',
@@ -101,14 +101,14 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       // Subscribe to resource flow events
       return moduleEventBus.subscribe('*' as ModuleEventType, event => {
         if (
-          event.type === ('RESOURCE_FLOW_UPDATED' as ModuleEventType) ||
-          event.type === ('RESOURCE_NODE_ADDED' as ModuleEventType) ||
-          event.type === ('RESOURCE_NODE_REMOVED' as ModuleEventType) ||
-          event.type === ('RESOURCE_CONNECTION_ADDED' as ModuleEventType) ||
-          event.type === ('RESOURCE_CONNECTION_REMOVED' as ModuleEventType) ||
-          event.type === ('RESOURCE_FLOW_OPTIMIZATION_COMPLETED' as ModuleEventType)
+          event?.type === ('RESOURCE_FLOW_UPDATED' as ModuleEventType) ||
+          event?.type === ('RESOURCE_NODE_ADDED' as ModuleEventType) ||
+          event?.type === ('RESOURCE_NODE_REMOVED' as ModuleEventType) ||
+          event?.type === ('RESOURCE_CONNECTION_ADDED' as ModuleEventType) ||
+          event?.type === ('RESOURCE_CONNECTION_REMOVED' as ModuleEventType) ||
+          event?.type === ('RESOURCE_FLOW_OPTIMIZATION_COMPLETED' as ModuleEventType)
         ) {
-          console.warn(`Resource flow event received: ${event.type}`);
+          console.warn(`Resource flow event received: ${event?.type}`);
           fetchResourceFlowData();
         }
       });
@@ -146,9 +146,9 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
 
   // Convert network data to particle data points
   const getParticleDataPoints = useCallback((data: FlowNetworkData): DataPoint[] => {
-    return data.nodes.map(node => ({
+    return data?.nodes.map(node => ({
       id: node.id,
-      position: { x: node.x || 0, y: node.y || 0 },
+      position: { x: node.x ?? 0, y: node.y ?? 0 },
       value: node.resources.length,
       resourceType: node.resources[0],
       size: 15,
@@ -180,7 +180,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
         .zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.1, 4])
         .on('zoom', event => {
-          container.attr('transform', event.transform);
+          container.attr('transform', event?.transform);
         });
 
       svg.call(zoom);
@@ -327,16 +327,16 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
         d3
           .drag<SVGGElement, NetworkNode>()
           .on('start', (event, d) => {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
+            if (!event?.active) simulation.alphaTarget(0.3).restart();
             d.fx = d.x;
             d.fy = d.y;
           })
           .on('drag', (event, d) => {
-            d.fx = event.x;
-            d.fy = event.y;
+            d.fx = event?.x;
+            d.fy = event?.y;
           })
           .on('end', (event, d) => {
-            if (!event.active) simulation.alphaTarget(0);
+            if (!event?.active) simulation.alphaTarget(0);
             d.fx = null;
             d.fy = null;
           })

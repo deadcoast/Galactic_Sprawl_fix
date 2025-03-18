@@ -12,7 +12,7 @@ import {
   ResourceQuality,
   ResourceRegistry,
 } from '../registry/ResourceRegistry';
-import { ResourceCategory, ResourceType } from './../types/resources/ResourceTypes';
+import { ResourceCategory, ResourceType } from '../types/resources/ResourceTypes';
 
 // Styles
 const styles = {
@@ -530,36 +530,36 @@ export const ResourceRegistryUI: React.FC<ResourceRegistryUIProps> = ({
       <div key={`${sourceType}-${targetType}`} style={styles.conversionCard}>
         <div style={styles.resourceHeader}>
           <div style={styles.resourceIcon}>
-            {sourceMetadata.icon ? (
+            {sourceMetadata?.icon ? (
               <img
-                src={sourceMetadata.icon}
-                alt={sourceMetadata.displayName}
+                src={sourceMetadata?.icon}
+                alt={sourceMetadata?.displayName}
                 width="24"
                 height="24"
               />
             ) : (
-              sourceMetadata.displayName.charAt(0)
+              sourceMetadata?.displayName.charAt(0)
             )}
           </div>
-          <h3 style={styles.resourceName}>{sourceMetadata.displayName}</h3>
+          <h3 style={styles.resourceName}>{sourceMetadata?.displayName}</h3>
         </div>
 
         <div style={styles.conversionArrow}>→</div>
 
         <div style={styles.resourceHeader}>
           <div style={styles.resourceIcon}>
-            {targetMetadata.icon ? (
+            {targetMetadata?.icon ? (
               <img
-                src={targetMetadata.icon}
-                alt={targetMetadata.displayName}
+                src={targetMetadata?.icon}
+                alt={targetMetadata?.displayName}
                 width="24"
                 height="24"
               />
             ) : (
-              targetMetadata.displayName.charAt(0)
+              targetMetadata?.displayName.charAt(0)
             )}
           </div>
-          <h3 style={styles.resourceName}>{targetMetadata.displayName}</h3>
+          <h3 style={styles.resourceName}>{targetMetadata?.displayName}</h3>
         </div>
 
         <div style={styles.conversionRate}>Rate: {rate.toFixed(2)}</div>
@@ -711,8 +711,8 @@ export const ResourceRegistryUI: React.FC<ResourceRegistryUIProps> = ({
                 if (!sourceMetadata || !targetMetadata) return false;
 
                 return (
-                  sourceMetadata.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  targetMetadata.displayName.toLowerCase().includes(searchQuery.toLowerCase())
+                  sourceMetadata?.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  targetMetadata?.displayName.toLowerCase().includes(searchQuery.toLowerCase())
                 );
               })
               .map(({ sourceType, targetType, rate }) =>

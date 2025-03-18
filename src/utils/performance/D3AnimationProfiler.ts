@@ -207,10 +207,10 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       frameStartTime: lastFrameTime,
       frameEndTime: now,
       frameDuration,
-      domUpdateCount: frameMetrics?.domUpdateCount || 0,
-      interpolationCount: frameMetrics?.interpolationCount || 0,
-      interpolationTime: frameMetrics?.interpolationTime || 0,
-      domUpdateTime: frameMetrics?.domUpdateTime || 0,
+      domUpdateCount: frameMetrics?.domUpdateCount ?? 0,
+      interpolationCount: frameMetrics?.interpolationCount ?? 0,
+      interpolationTime: frameMetrics?.interpolationTime ?? 0,
+      domUpdateTime: frameMetrics?.domUpdateTime ?? 0,
     };
 
     frames.push(metrics);
@@ -273,12 +273,12 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     // Calculate frame statistics
     const frameDurations = frames.map(f => f.frameDuration);
     const averageFrameDuration =
-      frameDurations.reduce((sum, duration) => sum + duration, 0) / frames.length || 0;
-    const minFrameDuration = Math.min(...frameDurations) || 0;
-    const maxFrameDuration = Math.max(...frameDurations) || 0;
-    const actualFps = 1000 / averageFrameDuration || 0;
+      frameDurations.reduce((sum, duration) => sum + duration, 0) / frames.length ?? 0;
+    const minFrameDuration = Math.min(...frameDurations) ?? 0;
+    const maxFrameDuration = Math.max(...frameDurations) ?? 0;
+    const actualFps = 1000 / averageFrameDuration ?? 0;
     const droppedFrames = frames.filter(f => f.frameDuration > targetFrameDuration).length;
-    const frameSuccessRate = 1 - droppedFrames / frames.length || 0;
+    const frameSuccessRate = 1 - droppedFrames / frames.length ?? 0;
 
     // Create performance data object
     const performanceData: AnimationPerformanceData = {
@@ -362,11 +362,11 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     const bottlenecks: AnimationBottleneck[] = [];
 
     // Check for frame rate issues
-    if (data.actualFps < targetFps * 0.9) {
+    if (data?.actualFps < targetFps * 0.9) {
       bottlenecks.push({
         type: 'unknown',
-        severity: Math.min(1, (targetFps - data.actualFps) / targetFps),
-        description: `Frame rate below target (${data.actualFps.toFixed(1)} fps vs target ${targetFps} fps)`,
+        severity: Math.min(1, (targetFps - data?.actualFps) / targetFps),
+        description: `Frame rate below target (${data?.actualFps.toFixed(1)} fps vs target ${targetFps} fps)`,
         suggestion: 'Review the animation for complexity and optimize rendering performance',
         affectedFrames: frames.map((_, index) => index),
       });
@@ -422,7 +422,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
         affectedFrames: frames
           .map((frame, index) => ({ index, duration: frame.frameDuration }))
           .filter(
-            frame => Math.abs(frame.duration - data.averageFrameDuration) > targetFrameDuration
+            frame => Math.abs(frame.duration - data?.averageFrameDuration) > targetFrameDuration
           )
           .map(frame => frame.index),
       });
@@ -449,10 +449,10 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     bottlenecks: AnimationBottleneck[]
   ): number {
     // Base score from frame success rate (0-50 points)
-    const frameRateScore = data.frameSuccessRate * 50;
+    const frameRateScore = data?.frameSuccessRate * 50;
 
     // Score from actual FPS vs target FPS (0-20 points)
-    const fpsRatio = Math.min(1, data.actualFps / targetFps);
+    const fpsRatio = Math.min(1, data?.actualFps / targetFps);
     const fpsScore = fpsRatio * 20;
 
     // Penalty from bottlenecks (0-30 points)
@@ -481,22 +481,22 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     });
 
     // Add general recommendations based on performance data
-    if (data.actualFps < targetFps * 0.8) {
+    if (data?.actualFps < targetFps * 0.8) {
       recommendations.push('Consider reducing animation complexity or extending duration');
     }
 
-    if (data.frames.some(f => f.domUpdateCount > 50)) {
+    if (data?.frames.some(f => f.domUpdateCount > 50)) {
       recommendations.push('Limit DOM updates per frame to improve performance');
     }
 
-    if (data.frames.some(f => f.interpolationCount > 100)) {
+    if (data?.frames.some(f => f.interpolationCount > 100)) {
       recommendations.push(
         'Reduce the number of interpolations per frame or implement memoization'
       );
     }
 
     // If performance is good, acknowledge it
-    if (data.frameSuccessRate > 0.95 && data.actualFps >= targetFps * 0.95) {
+    if (data?.frameSuccessRate > 0.95 && data?.actualFps >= targetFps * 0.95) {
       recommendations.push('Animation performance is good, no critical issues detected');
     }
 
@@ -636,7 +636,7 @@ export function profileAnimationSequence<
       'Animation Sequence',
       // Extract duration from the first transition if available
       sequence['config'] && sequence['config'].transitions && sequence['config'].transitions[0]
-        ? { duration: sequence['config'].transitions[0].duration || 0 }
+        ? { duration: sequence['config'].transitions[0].duration ?? 0 }
         : { duration: 0 }
     );
 

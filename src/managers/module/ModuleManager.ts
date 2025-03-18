@@ -81,29 +81,29 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
    */
   private handleModuleCreated = (event: ModuleManagerEvent): void => {
     // Handle module creation event
-    if (event.moduleId && event.moduleType) {
-      console.warn(`Module created: ${event.moduleId} of type ${event.moduleType}`);
+    if (event?.moduleId && event?.moduleType) {
+      console.warn(`Module created: ${event?.moduleId} of type ${event?.moduleType}`);
     }
   };
 
   private handleModuleAttached = (event: ModuleManagerEvent): void => {
     // Handle module attachment event
-    if (event.moduleId && event.buildingId) {
-      console.warn(`Module ${event.moduleId} attached to building ${event.buildingId}`);
+    if (event?.moduleId && event?.buildingId) {
+      console.warn(`Module ${event?.moduleId} attached to building ${event?.buildingId}`);
     }
   };
 
   private handleModuleUpgraded = (event: ModuleManagerEvent): void => {
     // Handle module upgrade event
-    if (event.moduleId) {
-      console.warn(`Module upgraded: ${event.moduleId}`);
+    if (event?.moduleId) {
+      console.warn(`Module upgraded: ${event?.moduleId}`);
     }
   };
 
   private handleModuleActivated = (event: ModuleManagerEvent): void => {
     // Handle module activation event
-    if (event.moduleId) {
-      console.warn(`Module activation state changed: ${event.moduleId}`);
+    if (event?.moduleId) {
+      console.warn(`Module activation state changed: ${event?.moduleId}`);
     }
   };
 

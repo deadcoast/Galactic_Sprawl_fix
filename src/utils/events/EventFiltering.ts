@@ -40,7 +40,7 @@ export class EventPriorityQueue<T extends { priority?: number }> {
    * @param event Event to add
    */
   public enqueue(event: T): void {
-    const priority = event.priority !== undefined ? event.priority : MessagePriority.NORMAL;
+    const priority = event?.priority !== undefined ? event?.priority : MessagePriority.NORMAL;
     const queue = this.queues.get(priority);
     if (queue) {
       queue.push(event);
@@ -217,7 +217,7 @@ export function filterEventsByType(
   events: Observable<ModuleEvent>,
   type: ModuleEventType
 ): Observable<ModuleEvent> {
-  return events.pipe(filter(event => event.type === type));
+  return events.pipe(filter(event => event?.type === type));
 }
 
 /**
@@ -229,7 +229,7 @@ export function filterEventsByModuleId(
   events: Observable<ModuleEvent>,
   moduleId: string
 ): Observable<ModuleEvent> {
-  return events.pipe(filter(event => event.moduleId === moduleId));
+  return events.pipe(filter(event => event?.moduleId === moduleId));
 }
 
 /**
@@ -241,7 +241,7 @@ export function filterEventsByModuleType(
   events: Observable<ModuleEvent>,
   moduleType: string
 ): Observable<ModuleEvent> {
-  return events.pipe(filter(event => event.moduleType === moduleType));
+  return events.pipe(filter(event => event?.moduleType === moduleType));
 }
 
 /**
@@ -488,7 +488,7 @@ export function createPriorityProcessor<T extends { priority?: number }>(
   defaultPriority: number = MessagePriority.NORMAL
 ): (event: T) => void {
   return (event: T) => {
-    const priority = event.priority !== undefined ? event.priority : defaultPriority;
+    const priority = event?.priority !== undefined ? event?.priority : defaultPriority;
     const processor = processors.get(priority);
 
     if (processor) {

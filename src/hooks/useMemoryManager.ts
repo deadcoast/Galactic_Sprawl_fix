@@ -244,7 +244,7 @@ export function useMemoryManager<T>(
     if (!item) return null;
 
     // Check if item has expired
-    if (item.expiry && Date.now() > item.expiry) {
+    if (item?.expiry && Date.now() > item?.expiry) {
       cacheRef.current.delete(cacheKey);
       if (enableLogging) {
         console.warn(`[MemoryManager:${key}] Cache expired: ${cacheKey}`);
@@ -255,7 +255,7 @@ export function useMemoryManager<T>(
     // Track interaction
     lastInteractionRef.current = Date.now();
 
-    return item.data;
+    return item?.data;
   };
 
   // Clear a specific cache entry
@@ -283,7 +283,7 @@ export function useMemoryManager<T>(
     // Clear expired cache entries
     const now = Date.now();
     for (const [cacheKey, item] of cacheRef.current.entries()) {
-      if (item.expiry && now > item.expiry) {
+      if (item?.expiry && now > item?.expiry) {
         cacheRef.current.delete(cacheKey);
       }
     }
@@ -355,7 +355,7 @@ export function useMemoryManager<T>(
       let removedCount = 0;
 
       for (const [cacheKey, item] of cacheRef.current.entries()) {
-        if (item.expiry && now > item.expiry) {
+        if (item?.expiry && now > item?.expiry) {
           cacheRef.current.delete(cacheKey);
           removedCount++;
         }

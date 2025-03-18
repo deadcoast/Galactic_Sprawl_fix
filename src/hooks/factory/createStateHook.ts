@@ -55,10 +55,10 @@ export function createStateHook<
     // Initialize state, handling both function and object initial states
     const getInitialState = useCallback(() => {
       // Check if we should use override
-      if (options.initialStateOverride !== undefined) {
-        return typeof options.initialStateOverride === 'function'
-          ? (options.initialStateOverride as () => TState)()
-          : options.initialStateOverride;
+      if (options?.initialStateOverride !== undefined) {
+        return typeof options?.initialStateOverride === 'function'
+          ? (options?.initialStateOverride as () => TState)()
+          : options?.initialStateOverride;
       }
 
       // Otherwise use the default initial state
@@ -67,9 +67,9 @@ export function createStateHook<
         : initialState;
 
       // If persistence is enabled, try to load from localStorage
-      if (options.persist && options.persistKey) {
+      if (options?.persist && options?.persistKey) {
         try {
-          const savedState = localStorage.getItem(options.persistKey);
+          const savedState = localStorage.getItem(options?.persistKey);
           if (savedState) {
             return { ...defaultState, ...JSON.parse(savedState) };
           }
@@ -101,14 +101,14 @@ export function createStateHook<
             const newState = { ...currentState, ...updates };
             
             // If custom equality function is provided, check if state actually changed
-            if (options.areEqual && options.areEqual(currentState, newState)) {
+            if (options?.areEqual && options?.areEqual(currentState, newState)) {
               return currentState;
             }
             
             // Persist state if enabled
-            if (options.persist && options.persistKey) {
+            if (options?.persist && options?.persistKey) {
               try {
-                localStorage.setItem(options.persistKey, JSON.stringify(newState));
+                localStorage.setItem(options?.persistKey, JSON.stringify(newState));
               } catch (error) {
                 console.error('Failed to persist state:', error);
               }
@@ -127,9 +127,9 @@ export function createStateHook<
       setState(getInitialState());
       
       // Clear persisted state if applicable
-      if (options.persist && options.persistKey) {
+      if (options?.persist && options?.persistKey) {
         try {
-          localStorage.removeItem(options.persistKey);
+          localStorage.removeItem(options?.persistKey);
         } catch (error) {
           console.error('Failed to clear persisted state:', error);
         }
@@ -144,13 +144,13 @@ export function createStateHook<
 
     // Run initialization and cleanup
     useEffect(() => {
-      if (options.onInit) {
-        options.onInit(state);
+      if (options?.onInit) {
+        options?.onInit(state);
       }
       
       return () => {
-        if (options.onCleanup) {
-          options.onCleanup(state);
+        if (options?.onCleanup) {
+          options?.onCleanup(state);
         }
       };
     }, []);

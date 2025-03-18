@@ -36,7 +36,7 @@ class ShipMovementManagerImpl extends EventEmitter<ShipMovementEvents> {
 
   private setupEventListeners(): void {
     window.addEventListener('taskAssigned', ((event: CustomEvent) => {
-      const { shipId, task } = event.detail;
+      const { shipId, task } = event?.detail;
       if (task.type === 'salvage' && task.target) {
         this.moveToPosition(shipId, task.target.position);
       }

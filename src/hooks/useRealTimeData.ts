@@ -71,7 +71,7 @@ export function useRealTimeData<T>({
 
     try {
       setError(null);
-      await service.startStream(endpoint || '', bufferId, config);
+      await service.startStream(endpoint ?? '', bufferId, config);
       setIsStreaming(true);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));

@@ -1,4 +1,45 @@
+../../../../src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx(163,5): error TS2322: Type '"recon"' is not assignable to type 'ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx(181,5): error TS2322: Type '"recon"' is not assignable to type 'ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx(1116,44): error TS2345: Argument of type '(prev: AdvancedFilters) => { resourceTypes: string[]; minResourcePotential: number; minHabitabilityScore: number; hasAnomalies: boolean; anomalySeverity: "high" | "medium" | "low" | "any"; lastScannedWithin: number; }' is not assignable to parameter of type 'SetStateAction<AdvancedFilters>'.
+  Type '(prev: AdvancedFilters) => { resourceTypes: string[]; minResourcePotential: number; minHabitabilityScore: number; hasAnomalies: boolean; anomalySeverity: "high" | "medium" | "low" | "any"; lastScannedWithin: number; }' is not assignable to type '(prevState: AdvancedFilters) => AdvancedFilters'.
+        Type 'string[]' is not assignable to type 'ResourceType[]'.
+          Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx(1118,70): error TS2345: Argument of type 'string' is not assignable to parameter of type 'ResourceType'.
+../../../../src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx(1124,64): error TS2345: Argument of type 'string' is not assignable to parameter of type 'ResourceType'.
+../../../../src/components/buildings/modules/MiningHub/MineralProcessingCentre.tsx(268,19): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/components/buildings/modules/MiningHub/MineralProcessingCentre.tsx(269,19): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/components/exploration/RealTimeMapUpdates.tsx(221,9): error TS2345: Argument of type '(Sector | { resources: { type: string; amount: number; }[]; lastScanned: number; id: string; name: string; status: "unmapped" | "mapped" | "scanning" | "analyzed"; coordinates: { x: number; y: number; }; resourcePotential: number; habitabilityScore: number; anomalies: Anomaly[]; })[]' is not assignable to parameter of type 'Sector[]'.
+  Type 'Sector | { resources: { type: string; amount: number; }[]; lastScanned: number; id: string; name: string; status: "unmapped" | "mapped" | "scanning" | "analyzed"; coordinates: { x: number; y: number; }; resourcePotential: number; habitabilityScore: number; anomalies: Anomaly[]; }' is not assignable to type 'Sector'.
+    Type '{ resources: { type: string; amount: number; }[]; lastScanned: number; id: string; name: string; status: "unmapped" | "mapped" | "scanning" | "analyzed"; coordinates: { x: number; y: number; }; resourcePotential: number; habitabilityScore: number; anomalies: Anomaly[]; }' is not assignable to type 'Sector'.
+        Type '{ type: string; amount: number; }[]' is not assignable to type '{ type: ResourceType; amount: number; }[]'.
+          Type '{ type: string; amount: number; }' is not assignable to type '{ type: ResourceType; amount: number; }'.
+              Type 'string' is not assignable to type 'ResourceType'.
 ../../../../src/components/ships/common/CommonShipMovement.tsx(49,7): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceFlowDiagram.tsx(84,5): error TS2322: Type '"ResourceFlowDiagram"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceForecastingVisualization.tsx(76,5): error TS2322: Type '"ResourceForecastingVisualization"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(14,7): error TS2322: Type '"⛏️"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(16,7): error TS2322: Type '"⚡"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(18,7): error TS2322: Type '"👥"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(20,7): error TS2322: Type '"🔬"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(22,7): error TS2322: Type '"🔮"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(24,7): error TS2322: Type '"💨"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(26,7): error TS2322: Type '"✨"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(28,7): error TS2322: Type '"🔧"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(30,7): error TS2322: Type '"🧡"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(32,7): error TS2322: Type '"🛡️"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(34,7): error TS2322: Type '"☢️"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(36,7): error TS2322: Type '"💧"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(38,7): error TS2322: Type '"🎈"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(40,7): error TS2322: Type '"🔹"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(42,7): error TS2322: Type '"⚛️"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(44,7): error TS2322: Type '"🌑"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(46,7): error TS2322: Type '"💫"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceIcon.tsx(48,7): error TS2322: Type '"📦"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceManagementDashboard.tsx(98,5): error TS2322: Type '"ResourceManagementDashboard"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceOptimizationSuggestions.tsx(60,5): error TS2322: Type '"ResourceOptimizationSuggestions"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/resource/ResourceThresholdVisualization.tsx(219,5): error TS2322: Type '"ResourceThresholdVisualization"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/visualization/CustomShaderVisualization.tsx(103,5): error TS2322: Type '"CustomShaderVisualization"' is not assignable to type 'ResourceType'.
+../../../../src/components/ui/visualization/DataTransitionParticleSystem.tsx(74,5): error TS2322: Type '"DataTransitionParticleSystem"' is not assignable to type 'ResourceType'.
 ../../../../src/contexts/ThresholdContext.tsx(75,9): error TS2322: Type '(ThresholdHistoryEntry | { timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "threshold_change"; })[]' is not assignable to type 'ThresholdHistoryEntry[]'.
   Type 'ThresholdHistoryEntry | { timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "threshold_change"; }' is not assignable to type 'ThresholdHistoryEntry'.
     Type '{ timestamp: number; resourceId: string; amount: number; thresholds: { min: number; max: number; }; event: "threshold_change"; }' is not assignable to type 'ThresholdHistoryEntry'.
@@ -38,10 +79,15 @@
   Type '"MINERALS"' is not assignable to type 'ResourceType'.
 ../../../../src/managers/resource/ResourceExchangeManager.ts(213,5): error TS2322: Type '"MINERALS-MINERALS" | "MINERALS-ENERGY" | "MINERALS-POPULATION" | "MINERALS-RESEARCH" | "MINERALS-PLASMA" | "MINERALS-GAS" | "MINERALS-EXOTIC" | "MINERALS-ORGANIC" | "MINERALS-IRON" | ... 314 more ... | "EXOTIC_MATTER-EXOTIC_MATTER"' is not assignable to type 'ResourceType'.
   Type '"MINERALS-MINERALS"' is not assignable to type 'ResourceType'.
-../../../../src/pages/ColonyManagementPage.tsx(418,11): error TS2322: Type '(resourceType: ResourceType) => void' is not assignable to type '(resourceType: ResourceType.ENERGY | ResourceType.POPULATION | ResourceType.RESEARCH | "food" | "technology" | "materials") => void'.
-    Type 'ResourceType.ENERGY | ResourceType.POPULATION | ResourceType.RESEARCH | "food" | "technology" | "materials"' is not assignable to type 'ResourceType'.
-      Type '"food"' is not assignable to type 'ResourceType'.
+../../../../src/pages/PerformanceAnalysisDashboard.tsx(107,9): error TS2322: Type '{ errorType: "rendering-error"; message: string; timestamp: number; componentId: string; }[]' is not assignable to type 'ErrorData[]'.
+  Type '{ errorType: "rendering-error"; message: string; timestamp: number; componentId: string; }' is not assignable to type 'ErrorData'.
+      Type '"rendering-error"' is not assignable to type 'ResourceType'.
 ../../../../src/pages/ResourceRegistryDemo.tsx(171,9): error TS2322: Type 'unknown' is not assignable to type 'ResourceCategory'.
+../../../../src/registry/ResourceRegistry.ts(529,23): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/registry/ResourceRegistry.ts(529,46): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/registry/ResourceRegistry.ts(574,23): error TS2322: Type 'string[]' is not assignable to type 'ResourceType[]'.
+  Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/registry/ResourceRegistryIntegration.ts(184,9): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
     Type 'ResourceSystem' is not assignable to type 'T'.
 ../../../../src/resource/ResourceSystem.ts(238,43): error TS2345: Argument of type '"MINERALS" | "ENERGY" | "POPULATION" | "RESEARCH" | "PLASMA" | "GAS" | "EXOTIC" | "ORGANIC" | "IRON" | "COPPER" | "TITANIUM" | "URANIUM" | "WATER" | "HELIUM" | "DEUTERIUM" | "ANTIMATTER" | "DARK_MATTER" | "EXOTIC_MATTER"' is not assignable to parameter of type 'ResourceType'.
   Type '"MINERALS"' is not assignable to type 'ResourceType'.
@@ -97,6 +143,7 @@
     Type 'RealTimeDataServiceImpl' is not assignable to type 'T'.
     Type 'RecoveryServiceImpl' is not assignable to type 'T'.
     Type '{ effectiveType?: string | undefined; type?: string | undefined; } | undefined' is not assignable to type '{ saveData: boolean; } | undefined'.
+../../../../src/services/telemetry/SessionPerformanceTracker.ts(295,13): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
     Type 'WorkerServiceImpl' is not assignable to type 'T'.
 ../../../../src/systems/exploration/DiscoveryClassification.ts(93,52): error TS2345: Argument of type '{ type: DiscoveryType; confidence: number; details: { resourceType: ResourceType; estimatedQuantity: number; extractionDifficulty: number; qualityIndicators: QualityIndicators; }; }' is not assignable to parameter of type 'ClassificationResult'.
 ../../../../src/types/config/TypeSafeConfig.ts(152,51): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ConfigItem<ZodType<any, ZodTypeDef, any>>'.
@@ -279,3 +326,11 @@
 ../../../../src/utils/performance/network/NetworkDegradationSimulator.ts(450,32): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[body?: Document | XMLHttpRequestBodyInit | null | undefined]'.
 ../../../../src/utils/performance/network/NetworkDegradationSimulator.ts(555,3): error TS2322: Type 'unknown' is not assignable to type '{ new (url: string | URL, protocols?: string | string[] | undefined): WebSocket; prototype: WebSocket; readonly CONNECTING: 0; readonly OPEN: 1; readonly CLOSING: 2; readonly CLOSED: 3; }'.
 ../../../../src/utils/resources/resourceUtils.ts(9,3): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(29,7): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(32,5): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(37,37): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(37,50): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(271,9): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(280,9): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(286,11): error TS2322: Type 'string' is not assignable to type 'ResourceType'.
+../../../../src/utils/ResourceTypeConverter.ts(292,5): error TS2322: Type '"MINERALS"' is not assignable to type 'ResourceType'.

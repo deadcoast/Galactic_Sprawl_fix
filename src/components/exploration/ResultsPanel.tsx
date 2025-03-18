@@ -31,10 +31,10 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, configs, onSelectR
       ) : (
         <List sx={{ maxHeight: 500, overflow: 'auto' }}>
           {sortedResults.map(result => {
-            const config = configs.find(c => c.id === result.analysisConfigId);
+            const config = configs.find(c => c.id === result?.analysisConfigId);
 
             return (
-              <React.Fragment key={result.id}>
+              <React.Fragment key={result?.id}>
                 <ListItem
                   button
                   onClick={() => onSelectResult(result)}
@@ -50,8 +50,8 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, configs, onSelectR
                       {config ? config.name : 'Unknown Analysis'}
                     </Typography>
                     <Chip
-                      label={result.status}
-                      color={_getStatusColor(result.status)}
+                      label={result?.status}
+                      color={_getStatusColor(result?.status)}
                       size="small"
                     />
                   </div>
@@ -62,18 +62,18 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, configs, onSelectR
 
                   <div className="mt-1 flex w-full justify-between">
                     <Typography variant="caption" color="text.secondary">
-                      Started: {new Date(result.startTime).toLocaleString()}
+                      Started: {new Date(result?.startTime).toLocaleString()}
                     </Typography>
-                    {result.endTime && (
+                    {result?.endTime && (
                       <Typography variant="caption" color="text.secondary">
-                        Duration: {((result.endTime - result.startTime) / 1000).toFixed(2)}s
+                        Duration: {((result?.endTime - result?.startTime) / 1000).toFixed(2)}s
                       </Typography>
                     )}
                   </div>
 
-                  {result.summary && (
+                  {result?.summary && (
                     <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
-                      {result.summary}
+                      {result?.summary}
                     </Typography>
                   )}
                 </ListItem>

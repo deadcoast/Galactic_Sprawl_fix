@@ -78,7 +78,7 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 
   // Initialize the visualization when data is available
   useEffect(() => {
-    if (!containerRef.current || !data.nodes.length) return;
+    if (!containerRef.current || !data?.nodes.length) return;
 
     // Clear any existing SVG
     d3.select(containerRef.current).selectAll('svg').remove();
@@ -115,10 +115,10 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 
     // Create node map for lookup
     const nodeMap = new Map<string, Node>();
-    data.nodes.forEach(node => nodeMap.set(node.id, node));
+    data?.nodes.forEach(node => nodeMap.set(node.id, node));
 
     // Process link references
-    const links = data.links.map(link => {
+    const links = data?.links.map(link => {
       return {
         ...link,
         source:
@@ -130,7 +130,7 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 
     // Create the simulation
     const simulation = d3
-      .forceSimulation<Node>(data.nodes)
+      .forceSimulation<Node>(data?.nodes)
       .force(
         'link',
         d3
@@ -163,7 +163,7 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
     // Create nodes with type-safe utilities
     const nodeElements = nodesGroup
       .selectAll<SVGGElement, Node>('g.node')
-      .data(data.nodes, d => d.id);
+      .data(data?.nodes, d => d.id);
 
     const nodeEnter = nodeElements.enter().append<SVGGElement>('g').attr('class', 'node');
 
@@ -193,7 +193,7 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
     const dragBehavior = createSimulationDragBehavior<Node, SVGGElement>(simulation, {
       onDragStart: event => {
         // Select node on drag start
-        setSelectedNodeId((event.subject as Node).id);
+        setSelectedNodeId((event?.subject as Node).id);
       },
     });
 
@@ -206,7 +206,7 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
       scaleExtentMax: 4,
       targetElement: container,
       onZoom: event => {
-        setZoomLevel(event.transform.k);
+        setZoomLevel(event?.transform.k);
       },
     });
 
@@ -218,7 +218,7 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 
     // Add click handler to select nodes
     node.on('click', (event, d) => {
-      event.stopPropagation();
+      event?.stopPropagation();
       setSelectedNodeId(d.id);
     });
 
@@ -231,13 +231,13 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
     simulation.on('tick', () => {
       // Update link positions with type-safe attribute setting
       link
-        .attr('x1', d => (d.source as Node).x || 0)
-        .attr('y1', d => (d.source as Node).y || 0)
-        .attr('x2', d => (d.target as Node).x || 0)
-        .attr('y2', d => (d.target as Node).y || 0);
+        .attr('x1', d => (d.source as Node).x ?? 0)
+        .attr('y1', d => (d.source as Node).y ?? 0)
+        .attr('x2', d => (d.target as Node).x ?? 0)
+        .attr('y2', d => (d.target as Node).y ?? 0);
 
       // Update node positions with type-safe attribute setting
-      node.attr('transform', d => `translate(${d.x || 0},${d.y || 0})`);
+      node.attr('transform', d => `translate(${d.x ?? 0},${d.y ?? 0})`);
     });
 
     // Cleanup function
@@ -317,11 +317,11 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 
   // Add a new node at a random position
   const handleAddNode = () => {
-    if (!data.nodes.length) return;
+    if (!data?.nodes.length) return;
 
     const newNode: Node = {
-      id: `node-${data.nodes.length}`,
-      name: `N${data.nodes.length}`,
+      id: `node-${data?.nodes.length}`,
+      name: `N${data?.nodes.length}`,
       group: Math.floor(Math.random() * 5),
       radius: 10 + Math.random() * 10,
       color: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'][Math.floor(Math.random() * 5)],
@@ -331,12 +331,12 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 
     // Add links to random existing nodes
     const newLinks: Link[] = Array.from({ length: 2 }, (_, i) => {
-      const targetIndex = Math.floor(Math.random() * data.nodes.length);
+      const targetIndex = Math.floor(Math.random() * data?.nodes.length);
 
       return {
-        id: `link-${data.links.length + i}`,
+        id: `link-${data?.links.length + i}`,
         source: newNode.id,
-        target: data.nodes[targetIndex].id,
+        target: data?.nodes[targetIndex].id,
         value: 1 + Math.random() * 5,
       };
     });

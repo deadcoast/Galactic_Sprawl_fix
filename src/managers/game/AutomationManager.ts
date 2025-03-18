@@ -717,7 +717,7 @@ export class AutomationManager {
    * Handles module activation
    */
   private handleModuleActivation = (event: ModuleEvent): void => {
-    const rules = Array.from(this.rules.values()).filter(rule => rule.moduleId === event.moduleId);
+    const rules = Array.from(this.rules.values()).filter(rule => rule.moduleId === event?.moduleId);
 
     rules.forEach(rule => {
       if (rule.enabled) {
@@ -730,7 +730,7 @@ export class AutomationManager {
    * Handles module deactivation
    */
   private handleModuleDeactivation = (event: ModuleEvent): void => {
-    const rules = Array.from(this.rules.values()).filter(rule => rule.moduleId === event.moduleId);
+    const rules = Array.from(this.rules.values()).filter(rule => rule.moduleId === event?.moduleId);
 
     rules.forEach(rule => {
       this.stopRule(rule.id);

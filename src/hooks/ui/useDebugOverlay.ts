@@ -116,7 +116,7 @@ export function useDebugOverlay() {
   // Enhanced performance monitoring
   const measurePerformance = useCallback(() => {
     const start = performance.now();
-    const memory = performance.memory?.usedJSHeapSize || 0;
+    const memory = performance.memory?.usedJSHeapSize ?? 0;
     const fps = 1000 / (performance.now() - start);
 
     // Network performance
@@ -152,18 +152,18 @@ export function useDebugOverlay() {
     const extendedManager = getCombatManager() as unknown as ExtendedCombatManager;
 
     // Get active projectiles with null check
-    const projectiles = extendedManager.getActiveProjectiles?.() || [];
+    const projectiles = extendedManager.getActiveProjectiles?.() ?? [];
     const activeProjectiles = projectiles.length;
 
     // Get combat zones with null check
-    const combatZones = extendedManager.getActiveCombatZones?.() || [];
+    const combatZones = extendedManager.getActiveCombatZones?.() ?? [];
     const activeCombatZones = combatZones.length;
 
     // Performance metrics
     const memory = performance.memory
       ? Math.round(performance.memory.usedJSHeapSize / (1024 * 1024))
       : 0;
-    const networkLatency = window.performance.getEntriesByType('navigation')[0]?.duration || 0;
+    const networkLatency = window.performance.getEntriesByType('navigation')[0]?.duration ?? 0;
     const frameDrops = window.performance
       .getEntriesByType('frame')
       .filter(entry => entry.duration > 16.67).length;
@@ -266,9 +266,9 @@ export function useDebugOverlay() {
       damageDealt: weaponEffects.reduce((total, w) => total + (w.firing ? w.damage : 0), 0),
       damageReceived: unit.maxHealth - unit.health + (unit.maxShield - unit.shield),
       accuracy: weaponEffects.reduce((sum, w) => sum + w.accuracy, 0) / weaponEffects.length,
-      evasion: unit.specialAbilities?.find(a => a.name === 'evasion')?.effectiveness || 0,
-      killCount: unit.combatStats?.kills || 0,
-      assistCount: unit.combatStats?.assists || 0,
+      evasion: unit.specialAbilities?.find(a => a.name === 'evasion')?.effectiveness ?? 0,
+      killCount: unit.combatStats?.kills ?? 0,
+      assistCount: unit.combatStats?.assists ?? 0,
       weaponEffects,
       shieldStatus,
       thrusterIntensity: unit.speed / unit.maxSpeed,
@@ -310,7 +310,7 @@ export function useDebugOverlay() {
             aiState: {
               behaviorState: unit.status,
               targetId: unit.target,
-              fleetStrength: factionState?.fleetStrength || 0,
+              fleetStrength: factionState?.fleetStrength ?? 0,
               threatLevel,
               lastAction: unitStatus.status || 'none',
               nextAction: unit.target ? 'engage' : 'patrol',
@@ -342,7 +342,7 @@ export function useDebugOverlay() {
                 unit.shield > 0 ? 1 : 0,
                 unit.speed > 0 ? 1 : 0,
                 unit.smokeTrail ? 1 : 0,
-                unit.explosions?.length || 0,
+                unit.explosions?.length ?? 0,
               ].reduce((a, b) => a + b, 0),
             },
             combatStats,

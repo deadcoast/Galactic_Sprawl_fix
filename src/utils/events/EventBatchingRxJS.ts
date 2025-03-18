@@ -149,7 +149,7 @@ export function createTimeBatchedStream<T>(
     const highPriorityStream = source.pipe(
       filter(
         (event: unknown) =>
-          event.priority !== undefined && event.priority < batchConfig.priorityThreshold!
+          event?.priority !== undefined && event?.priority < batchConfig.priorityThreshold!
       ),
       map(event => [event]),
       map(events => createBatchResult(events, batchConfig, false, false))
@@ -159,7 +159,7 @@ export function createTimeBatchedStream<T>(
     const lowPriorityStream = source.pipe(
       filter(
         (event: unknown) =>
-          event.priority === undefined || event.priority >= batchConfig.priorityThreshold!
+          event?.priority === undefined || event?.priority >= batchConfig.priorityThreshold!
       ),
       bufferTime(batchConfig.timeWindow, null, batchConfig.maxBatchSize || Number.MAX_SAFE_INTEGER),
       filter(events => events.length > 0),
@@ -232,7 +232,7 @@ function createBatchResult<T>(
   const endTime = Math.max(...timestamps);
 
   // Calculate events per second
-  const durationSec = (endTime - startTime) / 1000 || 0.001; // Avoid division by zero
+  const durationSec = (endTime - startTime) / 1000 ?? 0.001; // Avoid division by zero
   const eventsPerSecond = events.length / durationSec;
 
   // Create the result
@@ -283,7 +283,7 @@ export function createTimeBatchProcessor<T, R>(
 
   // Subscribe to the batched stream
   batchedStream.subscribe(result => {
-    processor(result.events);
+    processor(result?.events);
   });
 
   // Return a function that adds events to the subject

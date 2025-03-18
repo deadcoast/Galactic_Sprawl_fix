@@ -85,7 +85,7 @@ export class ModuleManagerWrapper implements IModuleManager {
    */
   getModules(): Module[] {
     // Convert internal modules to Module type
-    const internalModules = this.manager.getActiveModules() || [];
+    const internalModules = this.manager.getActiveModules() ?? [];
     return convertToModules(internalModules);
   }
 
@@ -101,7 +101,7 @@ export class ModuleManagerWrapper implements IModuleManager {
    * Get modules by type
    */
   getModulesByType(type: ModuleType): Module[] {
-    const modules = this.manager.getModulesByType(type) || [];
+    const modules = this.manager.getModulesByType(type) ?? [];
     return convertToModules(modules);
   }
 
@@ -109,7 +109,7 @@ export class ModuleManagerWrapper implements IModuleManager {
    * Get active modules
    */
   getActiveModules(): Module[] {
-    const modules = this.manager.getActiveModules() || [];
+    const modules = this.manager.getActiveModules() ?? [];
     return convertToModules(modules);
   }
 
@@ -119,7 +119,7 @@ export class ModuleManagerWrapper implements IModuleManager {
   getBuildings(): ModularBuilding[] {
     // Implementation depends on ModuleManager's methods
     // This is a compatibility layer
-    return this.manager.getBuildings?.() || [];
+    return this.manager.getBuildings?.() ?? [];
   }
 
   /**

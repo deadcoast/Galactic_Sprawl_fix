@@ -248,7 +248,7 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
       );
 
       // Update confidence based on current detection
-      let currentConfidence = confidenceMap.get(object.id) || 0;
+      let currentConfidence = confidenceMap.get(object.id) ?? 0;
 
       if (Math.random() < detectionProbability) {
         // Successful detection increases confidence
@@ -405,7 +405,7 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
    */
   public getDetectionConfidence(detectorId: string, objectId: string): number {
     const confidenceMap = this.detectionConfidenceCache.get(detectorId);
-    return confidenceMap ? confidenceMap.get(objectId) || 0 : 0;
+    return confidenceMap ? confidenceMap.get(objectId) ?? 0 : 0;
   }
 
   /**

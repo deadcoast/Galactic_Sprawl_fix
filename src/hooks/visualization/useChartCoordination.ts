@@ -56,8 +56,8 @@ export function useChartCoordination({
     if (onViewportChange) {
       subscriptions.push(
         manager.subscribe(chartId, 'viewport-change', event => {
-          if (event.state.viewport) {
-            onViewportChange(event.state.viewport);
+          if (event?.state.viewport) {
+            onViewportChange(event?.state.viewport);
           }
         })
       );
@@ -66,8 +66,8 @@ export function useChartCoordination({
     if (onBrushChange) {
       subscriptions.push(
         manager.subscribe(chartId, 'brush-change', event => {
-          if (event.state.brush) {
-            onBrushChange(event.state.brush);
+          if (event?.state.brush) {
+            onBrushChange(event?.state.brush);
           }
         })
       );
@@ -76,8 +76,8 @@ export function useChartCoordination({
     if (onHighlightChange) {
       subscriptions.push(
         manager.subscribe(chartId, 'highlight-change', event => {
-          if (event.state.highlight) {
-            onHighlightChange(event.state.highlight);
+          if (event?.state.highlight) {
+            onHighlightChange(event?.state.highlight);
           }
         })
       );
@@ -86,8 +86,8 @@ export function useChartCoordination({
     if (onColorScaleChange) {
       subscriptions.push(
         manager.subscribe(chartId, 'color-scale-change', event => {
-          if (event.state.colorScales) {
-            onColorScaleChange(event.state.colorScales);
+          if (event?.state.colorScales) {
+            onColorScaleChange(event?.state.colorScales);
           }
         })
       );

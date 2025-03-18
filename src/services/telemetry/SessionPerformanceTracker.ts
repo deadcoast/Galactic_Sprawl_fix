@@ -66,7 +66,7 @@ export interface UserInteractionData {
  * Error information for tracking performance-related errors
  */
 export interface ErrorData {
-  errorType: string;
+  errorType: ResourceType;
   message: string;
   timestamp: number;
   componentId?: string;
@@ -146,7 +146,7 @@ export class SessionPerformanceTracker {
 
     // Only enable tracking if it passes the sampling threshold
     const samplingValue = Math.random();
-    this.isEnabled = this.options.collectionEnabled && samplingValue <= this.options.samplingRate;
+    this.isEnabled = this.options?.collectionEnabled && samplingValue <= this.options?.samplingRate;
 
     if (!this.isEnabled) {
       console.warn('[SessionPerformanceTracker] Telemetry disabled due to sampling');
@@ -169,7 +169,7 @@ export class SessionPerformanceTracker {
     this.startTransmissionCycle();
 
     console.warn(
-      `[SessionPerformanceTracker] Initialized session: ${this.sessionMetadata.sessionId}`
+      `[SessionPerformanceTracker] Initialized session: ${this.sessionMetadata?.sessionId}`
     );
   }
 
@@ -178,7 +178,7 @@ export class SessionPerformanceTracker {
    */
   private generateSessionMetadata(): SessionMetadata {
     // Create an anonymous ID that doesn't contain PII
-    const sessionId = generateAnonymousId(this.options.anonymousIdSeed);
+    const sessionId = generateAnonymousId(this.options?.anonymousIdSeed);
 
     // Detect device type from user agent and screen size
     const userAgent = navigator.userAgent.toLowerCase();
@@ -225,7 +225,7 @@ export class SessionPerformanceTracker {
 
     // Optional geographic region if enabled (coarse-grained only)
     let geographicRegion: string | undefined;
-    if (this.options.geolocationEnabled) {
+    if (this.options?.geolocationEnabled) {
       // Only collect broad region data, not specific coordinates
       if (navigator.language) {
         // Just use language/region preference as a proxy
@@ -251,7 +251,7 @@ export class SessionPerformanceTracker {
    */
   private initializeCurrentSessionData(): void {
     const currentData: SessionPerformanceData = {
-      sessionId: this.sessionMetadata.sessionId,
+      sessionId: this.sessionMetadata?.sessionId,
       timestamp: Date.now(),
       metrics: {
         fps: 0,
@@ -283,20 +283,20 @@ export class SessionPerformanceTracker {
         this.trackEvent(event);
 
         // Track specific performance-related events
-        if (event.moduleId === 'game-loop-manager') {
-          if (event.data.type === 'performance_snapshot') {
-            this.trackPerformanceSnapshot(event.data);
+        if (event?.moduleId === 'game-loop-manager') {
+          if (event?.data?.type === 'performance_snapshot') {
+            this.trackPerformanceSnapshot(event?.data);
           }
         }
 
         // Track errors
-        if (event.type === 'ERROR') {
+        if (event?.type === 'ERROR') {
           this.trackError({
-            errorType: event.data.type || 'unknown',
-            message: (event.data.message as string) || 'Unknown error',
-            timestamp: event.timestamp,
-            componentId: event.moduleId,
-            affectedResource: event.data.resourceType as ResourceType,
+            errorType: event?.data?.type || 'unknown',
+            message: (event?.data?.message as string) || 'Unknown error',
+            timestamp: event?.timestamp,
+            componentId: event?.moduleId,
+            affectedResource: event?.data?.resourceType as ResourceType,
           });
         }
       },
@@ -375,7 +375,7 @@ export class SessionPerformanceTracker {
 
     this.transmitInterval = window.setInterval(() => {
       this.transmitTelemetryData();
-    }, this.options.transmitIntervalMs);
+    }, this.options?.transmitIntervalMs);
   }
 
   /**
@@ -385,11 +385,11 @@ export class SessionPerformanceTracker {
     if (!this.isEnabled) return;
 
     // Increment event count
-    const eventType = `${event.type}:${event.data.type || 'unknown'}`;
-    this.accumulatedEventCounts[eventType] = (this.accumulatedEventCounts[eventType] || 0) + 1;
+    const eventType = `${event?.type}:${event?.data?.type || 'unknown'}`;
+    this.accumulatedEventCounts[eventType] = (this.accumulatedEventCounts[eventType] ?? 0) + 1;
 
     // For detailed level, track event processing time
-    if (this.options.performanceDetailLevel === 'detailed') {
+    if (this.options?.performanceDetailLevel === 'detailed') {
       const startTime = performance.now();
 
       // Measure how long the event takes to be processed
@@ -414,29 +414,29 @@ export class SessionPerformanceTracker {
     const current = this.getCurrentSessionData();
 
     // Update general metrics
-    if (typeof data.fps === 'number') {
-      current.metrics.fps = data.fps;
+    if (typeof data?.fps === 'number') {
+      current.metrics.fps = data?.fps;
     }
 
-    if (typeof data.memoryUsage === 'number') {
-      current.metrics.memoryUsage = data.memoryUsage;
+    if (typeof data?.memoryUsage === 'number') {
+      current.metrics.memoryUsage = data?.memoryUsage;
     }
 
-    if (typeof data.cpuUsage === 'number') {
-      current.metrics.cpuUsage = data.cpuUsage;
+    if (typeof data?.cpuUsage === 'number') {
+      current.metrics.cpuUsage = data?.cpuUsage;
     }
 
     // Update resource utilization
-    if (data.resourceUtilization && typeof data.resourceUtilization === 'object') {
-      const utilization = data.resourceUtilization as Record<string, number>;
+    if (data?.resourceUtilization && typeof data?.resourceUtilization === 'object') {
+      const utilization = data?.resourceUtilization as Record<string, number>;
       for (const [resource, value] of Object.entries(utilization)) {
         current.metrics.resourceUtilization.set(resource as ResourceType, value);
       }
     }
 
     // Update render time
-    if (typeof data.renderTime === 'number') {
-      current.metrics.renderTime = data.renderTime;
+    if (typeof data?.renderTime === 'number') {
+      current.metrics.renderTime = data?.renderTime;
     }
   }
 
@@ -494,7 +494,7 @@ export class SessionPerformanceTracker {
     if (!this.isEnabled) return;
 
     // Apply error sampling
-    if (Math.random() > this.options.errorSamplingRate) {
+    if (Math.random() > this.options?.errorSamplingRate) {
       return;
     }
 
@@ -533,7 +533,7 @@ export class SessionPerformanceTracker {
     // Prepare data for transmission
     const dataToTransmit = {
       metadata: this.sessionMetadata,
-      performanceData: this.performanceData.slice(0, this.options.maxBatchSize),
+      performanceData: this.performanceData.slice(0, this.options?.maxBatchSize),
     };
 
     // In a real implementation, we would transmit this data to a telemetry server
@@ -542,7 +542,7 @@ export class SessionPerformanceTracker {
 
     // After transmission, remove the transmitted entries except the current one
     if (this.performanceData.length > 1) {
-      this.performanceData = this.performanceData.slice(this.options.maxBatchSize);
+      this.performanceData = this.performanceData.slice(this.options?.maxBatchSize);
     }
 
     // Ensure we always have at least one entry
@@ -595,7 +595,7 @@ export class SessionPerformanceTracker {
     this.accumulatedEventCounts = {};
 
     console.warn(
-      `[SessionPerformanceTracker] Cleaned up session: ${this.sessionMetadata.sessionId}`
+      `[SessionPerformanceTracker] Cleaned up session: ${this.sessionMetadata?.sessionId}`
     );
   }
 }

@@ -89,7 +89,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
 
     // Helper to track performance if enabled
     const trackRenderPerformance = useCallback(() => {
-      if (!options.trackPerformance) return;
+      if (!options?.trackPerformance) return;
 
       const now = performance.now();
       const perf = performanceRef.current;
@@ -103,7 +103,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
         perf.averageRenderTime = perf.totalRenderTime / perf.renderCount;
 
         // Report slow renders
-        if (options.performanceThreshold && renderTime > options.performanceThreshold) {
+        if (options?.performanceThreshold && renderTime > options?.performanceThreshold) {
           console.warn(
             `Slow render detected: ${renderTime.toFixed(2)}ms in component using lifecycle hook`
           );
@@ -115,7 +115,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
         // Start of render
         perf.renderStart = now;
       }
-    }, [options.trackPerformance, options.performanceThreshold]);
+    }, [options?.trackPerformance, options?.performanceThreshold]);
 
     // Error reporting function
     const reportError = useCallback(
@@ -130,9 +130,9 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
         });
 
         // Call onError handler if provided
-        if (options.onError) {
+        if (options?.onError) {
           try {
-            options.onError(err, phase, props);
+            options?.onError(err, phase, props);
           } catch (handlerError) {
             console.error('Error in onError handler:', handlerError);
           }
@@ -153,13 +153,13 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
       ) => {
         if (!fn) return;
 
-        const startTime = options.trackPerformance ? performance.now() : 0;
+        const startTime = options?.trackPerformance ? performance.now() : 0;
 
         try {
           await (fn as (...params: TProps[]) => void | Promise<void>)(...args);
 
           // Track performance for specific phases
-          if (options.trackPerformance) {
+          if (options?.trackPerformance) {
             const elapsedTime = performance.now() - startTime;
             if (phase === LifecyclePhase.MOUNT) {
               performanceRef.current.mountTime = elapsedTime;
@@ -172,7 +172,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
           reportError(err instanceof Error ? err : new Error(String(err)));
         }
       },
-      [options.trackPerformance, reportError]
+      [options?.trackPerformance, reportError]
     );
 
     // Handle mount
@@ -183,7 +183,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
       isMountedRef.current = true;
 
       // Execute mount lifecycle
-      safeExecute(options.onMount, LifecyclePhase.MOUNT, props);
+      safeExecute(options?.onMount, LifecyclePhase.MOUNT, props);
 
       // Set phase to idle after mount
       setPhase(LifecyclePhase.IDLE);
@@ -194,7 +194,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
         setPhase(LifecyclePhase.UNMOUNT);
 
         // Execute unmount lifecycle
-        safeExecute(options.onUnmount, LifecyclePhase.UNMOUNT, props);
+        safeExecute(options?.onUnmount, LifecyclePhase.UNMOUNT, props);
       };
     }, []);
 
@@ -207,14 +207,14 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
         trackRenderPerformance();
 
         // Skip if no update handler
-        if (!options.onUpdate) return;
+        if (!options?.onUpdate) return;
 
         // Set phase to update
         setPhase(LifecyclePhase.UPDATE);
 
         // Execute update lifecycle
         safeExecute(
-          options.onUpdate as (prevProps: TProps, nextProps: TProps) => void | Promise<void>,
+          options?.onUpdate as (prevProps: TProps, nextProps: TProps) => void | Promise<void>,
           LifecyclePhase.UPDATE,
           prevPropsRef.current,
           props
@@ -226,7 +226,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
         // Store current props as previous for next update
         prevPropsRef.current = props;
       },
-      options.updateDependencies ? options.updateDependencies(props) : [props]
+      options?.updateDependencies ? options?.updateDependencies(props) : [props]
     );
 
     // Record render end
@@ -256,7 +256,7 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
  * // Define the lifecycle hook
  * const useUserProfileLifecycle = createLifecycleHook<UserProfileProps>({
  *   onMount: (props) => {
- *     console.warn('UserProfile mounted with ID:', props.userId);
+ *     console.warn('UserProfile mounted with ID:', props?.userId);
  *     // Fetch data or set up subscriptions
  *   },
  *   onUpdate: (prevProps, nextProps) => {
@@ -266,10 +266,10 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
  *     }
  *   },
  *   onUnmount: (props) => {
- *     console.warn('UserProfile unmounting, cleanup for ID:', props.userId);
+ *     console.warn('UserProfile unmounting, cleanup for ID:', props?.userId);
  *     // Clean up subscriptions or timers
  *   },
- *   updateDependencies: (props) => [props.userId],
+ *   updateDependencies: (props) => [props?.userId],
  *   trackPerformance: true,
  *   performanceThreshold: 100
  * });

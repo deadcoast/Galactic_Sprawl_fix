@@ -42,7 +42,7 @@ export function FormationTacticsPage() {
   };
 
   // Get fleets for the active faction
-  const fleets = fleetsByFaction[activeFaction] || [];
+  const fleets = fleetsByFaction[activeFaction] ?? [];
 
   return (
     <div className="container mx-auto px-4 py-8">

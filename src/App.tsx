@@ -236,11 +236,11 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
             priority: 1,
             callback: (eventData: unknown) => {
               const event = eventData as ResourceEvent;
-              const resources = event.data.resources;
+              const resources = event?.data?.resources;
               const current = resources.current;
 
               return {
-                resourceId: event.moduleId,
+                resourceId: event?.moduleId,
                 details: {
                   current,
                   type: 'below_minimum',
@@ -261,11 +261,11 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
                 moduleType: 'resource' as ModuleType,
                 timestamp: Date.now(),
                 data: {
-                  resourceType: event.resourceId,
-                  thresholdType: event.details.type === 'below_minimum' ? 'min' : 'max',
-                  current: event.details.current,
+                  resourceType: event?.resourceId,
+                  thresholdType: event?.details.type === 'below_minimum' ? 'min' : 'max',
+                  current: event?.details.current,
                   threshold:
-                    event.details.type === 'below_minimum' ? event.details.min : event.details.max,
+                    event?.details.type === 'below_minimum' ? event?.details.min : event?.details.max,
                 },
               };
             },

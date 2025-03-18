@@ -332,7 +332,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
 
       // Create a map for node lookups (using validated nodes)
       const nodeMap = new Map<string, FlowNode>();
-      nodeResult.data.forEach(node => nodeMap.set(node.id, node));
+      nodeResult.data?.forEach(node => nodeMap.set(node.id, node));
 
       return {
         nodes: nodeResult.data,
@@ -379,12 +379,12 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
       setSelectedLinkId(prevId => (prevId === link.id ? null : link.id));
 
       // Find the original link data for the callback
-      const linkData = data.links.find(l => l.id === link.id);
+      const linkData = data?.links.find(l => l.id === link.id);
       if (onLinkClick && linkData) {
         onLinkClick(link.id, linkData);
       }
     },
-    [data.links, onLinkClick]
+    [data?.links, onLinkClick]
   );
 
   /**
@@ -416,7 +416,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
         .zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.1, 4])
         .on('zoom', event => {
-          container.attr('transform', event.transform);
+          container.attr('transform', event?.transform);
         });
 
       svg.call(zoom);
@@ -632,18 +632,18 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
 
     // Type-safe drag functions
     function dragStarted(event: d3.D3DragEvent<SVGGElement, FlowNode, FlowNode>, d: FlowNode) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
+      if (!event?.active) simulation.alphaTarget(0.3).restart();
       d.fx = d3Accessors.getX(d);
       d.fy = d3Accessors.getY(d);
     }
 
     function dragged(event: d3.D3DragEvent<SVGGElement, FlowNode, FlowNode>, d: FlowNode) {
-      d.fx = event.x;
-      d.fy = event.y;
+      d.fx = event?.x;
+      d.fy = event?.y;
     }
 
     function dragEnded(event: d3.D3DragEvent<SVGGElement, FlowNode, FlowNode>, d: FlowNode) {
-      if (!event.active) simulation.alphaTarget(0);
+      if (!event?.active) simulation.alphaTarget(0);
       if (!interactive) {
         d.fx = null;
         d.fy = null;

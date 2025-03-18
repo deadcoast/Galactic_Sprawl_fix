@@ -5,10 +5,8 @@ import { useResourceRates } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle, useComponentRegistration } from '../../../hooks/ui';
 import { EventType } from '../../../types/events/EventTypes';
-import {
-  ResourceType,
-  ResourceTypeHelpers,
-} from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
+import { ResourceTypeHelpers } from '../../../types/resources/StandardizedResourceTypes';
 import ChainManagementInterface from './ChainManagementInterface';
 import ConverterDashboard from './ConverterDashboard';
 import ResourceFlowDiagram from './ResourceFlowDiagram';
@@ -95,7 +93,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
 
   // Register with component registry
   useComponentRegistration({
-    type: 'ResourceManagementDashboard',
+    type: ResourceType.MINERALS,
     eventSubscriptions: componentEventSubscriptions,
     updatePriority: 'high',
   });
@@ -112,8 +110,8 @@ const ResourceManagementDashboardBase: React.FC = () => {
       {
         eventType: EventType.RESOURCE_UPDATED,
         handler: event => {
-          if (event.data?.resourceType) {
-            updateResourceData(event.data.resourceType as ResourceType, event.data);
+          if (event?.data?.resourceType) {
+            updateResourceData(event?.data?.resourceType as ResourceType, event?.data);
           }
         },
       },
@@ -121,16 +119,16 @@ const ResourceManagementDashboardBase: React.FC = () => {
         // Cast to EventType for compatibility
         eventType: EventType.RESOURCE_THRESHOLD_TRIGGERED,
         handler: event => {
-          if (event.data?.resourceId) {
+          if (event?.data?.resourceId) {
             // Show alert or notification
-            console.warn(`Threshold triggered for ${event.data.resourceId}`);
+            console.warn(`Threshold triggered for ${event?.data?.resourceId}`);
           }
         },
       },
     ],
   });
 
-  // Initialize resource data from contexts - convert to useMemo
+  // Initialize resource data from contexts
   const mockResourceData = useMemo(() => {
     // Mock data for demonstration - in a real implementation, this would come from the ResourceManager
     return {
@@ -138,7 +136,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
         type: ResourceType.MINERALS,
         value: 2500,
         maxValue: 10000,
-        rate: resourceRates[ResourceType.MINERALS].net,
+        rate: resourceRates[ResourceType.MINERALS as keyof typeof resourceRates]?.net ?? 0,
         cycleTime: 1000,
         thresholds: {
           critical: 0.1,
@@ -152,7 +150,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
         type: ResourceType.ENERGY,
         value: 7500,
         maxValue: 10000,
-        rate: resourceRates[ResourceType.ENERGY].net,
+        rate: resourceRates[ResourceType.ENERGY as keyof typeof resourceRates]?.net ?? 0,
         cycleTime: 1000,
         thresholds: {
           critical: 0.1,
@@ -166,7 +164,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
         type: ResourceType.POPULATION,
         value: 5000,
         maxValue: 10000,
-        rate: resourceRates[ResourceType.POPULATION].net,
+        rate: resourceRates[ResourceType.POPULATION as keyof typeof resourceRates]?.net ?? 0,
         cycleTime: 5000,
         thresholds: {
           critical: 0.1,
@@ -180,7 +178,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
         type: ResourceType.RESEARCH,
         value: 1500,
         maxValue: 10000,
-        rate: resourceRates[ResourceType.RESEARCH].net,
+        rate: resourceRates[ResourceType.RESEARCH as keyof typeof resourceRates]?.net ?? 0,
         cycleTime: 2000,
         thresholds: {
           critical: 0.1,
@@ -194,7 +192,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
         type: ResourceType.PLASMA,
         value: 800,
         maxValue: 5000,
-        rate: resourceRates[ResourceType.PLASMA]?.net || 1.2,
+        rate: resourceRates[ResourceType.PLASMA as keyof typeof resourceRates]?.net ?? 1.2,
         cycleTime: 1500,
         thresholds: {
           critical: 0.1,
@@ -208,7 +206,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
         type: ResourceType.GAS,
         value: 1200,
         maxValue: 5000,
-        rate: resourceRates[ResourceType.GAS]?.net || -0.8,
+        rate: resourceRates[ResourceType.GAS as keyof typeof resourceRates]?.net ?? -0.8,
         cycleTime: 1500,
         thresholds: {
           critical: 0.1,
@@ -222,7 +220,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
         type: ResourceType.EXOTIC,
         value: 250,
         maxValue: 2000,
-        rate: resourceRates[ResourceType.EXOTIC]?.net || 0.2,
+        rate: resourceRates[ResourceType.EXOTIC as keyof typeof resourceRates]?.net ?? 0.2,
         cycleTime: 3000,
         thresholds: {
           critical: 0.1,
@@ -240,16 +238,19 @@ const ResourceManagementDashboardBase: React.FC = () => {
     setResourceData(mockResourceData);
   }, [mockResourceData]);
 
-  // Create memoized callback functions
-  const updateResourceData = useCallback((type: ResourceType, data: Record<string, unknown>) => {
-    setResourceData(prev => ({
-      ...prev,
-      [type]: {
-        ...prev[type],
-        ...data,
-      },
-    }));
-  }, []);
+  // Helper function to update a specific resource's data
+  const updateResourceData = useCallback(
+    (resourceType: ResourceType, data: Partial<ResourceData>) => {
+      setResourceData(prevData => ({
+        ...prevData,
+        [resourceType]: {
+          ...prevData[resourceType],
+          ...data,
+        },
+      }));
+    },
+    []
+  );
 
   const _handleThresholdChange = useCallback(
     (resourceType: ResourceType, min: number, max: number) => {
@@ -303,12 +304,12 @@ const ResourceManagementDashboardBase: React.FC = () => {
             >
               <ResourceVisualizationWrapper
                 type={type}
-                value={resourceData[type]?.value || 0}
-                rate={resourceData[type]?.rate || 0}
+                value={resourceData[type]?.value ?? 0}
+                rate={resourceData[type]?.rate ?? 0}
                 capacity={resourceData[type]?.maxValue}
                 thresholds={{
-                  low: resourceData[type]?.thresholds?.low || 0.25,
-                  critical: resourceData[type]?.thresholds?.critical || 0.1,
+                  low: resourceData[type]?.thresholds?.low ?? 0.25,
+                  critical: resourceData[type]?.thresholds?.critical ?? 0.1,
                 }}
               />
             </div>
@@ -325,12 +326,12 @@ const ResourceManagementDashboardBase: React.FC = () => {
             >
               <ResourceVisualizationWrapper
                 type={type}
-                value={resourceData[type]?.value || 0}
-                rate={resourceData[type]?.rate || 0}
+                value={resourceData[type]?.value ?? 0}
+                rate={resourceData[type]?.rate ?? 0}
                 capacity={resourceData[type]?.maxValue}
                 thresholds={{
-                  low: resourceData[type]?.thresholds?.low || 0.25,
-                  critical: resourceData[type]?.thresholds?.critical || 0.1,
+                  low: resourceData[type]?.thresholds?.low ?? 0.25,
+                  critical: resourceData[type]?.thresholds?.critical ?? 0.1,
                 }}
               />
             </div>
@@ -342,9 +343,9 @@ const ResourceManagementDashboardBase: React.FC = () => {
             <h3>Detailed View: {selectedResource}</h3>
             <ResourceThresholdVisualization
               resourceType={selectedResource}
-              currentValue={resourceData[selectedResource]?.value || 0}
+              currentValue={resourceData[selectedResource]?.value ?? 0}
               maxValue={resourceData[selectedResource]?.maxValue || 1000}
-              rate={resourceData[selectedResource]?.rate || 0}
+              rate={resourceData[selectedResource]?.rate ?? 0}
               cycleTime={resourceData[selectedResource]?.cycleTime || 1000}
               thresholds={{
                 critical: resourceData[selectedResource]?.thresholds.critical,
@@ -528,9 +529,9 @@ const ResourceManagementDashboardBase: React.FC = () => {
           <div className="forecasting-container">
             <ResourceForecastingVisualization
               resourceType={selectedResource}
-              currentValue={resourceData[selectedResource]?.value || 0}
+              currentValue={resourceData[selectedResource]?.value ?? 0}
               maxValue={resourceData[selectedResource]?.maxValue || 1000}
-              rate={resourceData[selectedResource]?.rate || 0}
+              rate={resourceData[selectedResource]?.rate ?? 0}
               cycleTime={resourceData[selectedResource]?.cycleTime || 1000}
               forecastPeriod={120} // 2 hours
               dataPoints={24}
@@ -545,7 +546,7 @@ const ResourceManagementDashboardBase: React.FC = () => {
           </div>
         ) : (
           <div className="resource-selection-prompt">
-            <p>Please select a resource to view forecasting data.</p>
+            <p>Please select a resource to view forecasting data?.</p>
           </div>
         )}
       </div>
@@ -583,7 +584,16 @@ const ResourceManagementDashboardBase: React.FC = () => {
             focusedResource={selectedResource}
             showAllSuggestions={false}
             maxSuggestions={10}
-            onImplementSuggestion={suggestion => {
+            onImplementSuggestion={(suggestion: {
+              id: string;
+              title: string;
+              resourceType: ResourceType | 'all';
+              description: string;
+              impact: 'high' | 'medium' | 'low';
+              category: 'efficiency' | 'bottleneck' | 'allocation' | 'prediction';
+              actionable: boolean;
+              implemented: boolean;
+            }) => {
               // Handle suggestion implementation
               // This could trigger a resource reallocation, optimization routine, etc.
               console.warn(`Implementing suggestion: ${suggestion.id}`);

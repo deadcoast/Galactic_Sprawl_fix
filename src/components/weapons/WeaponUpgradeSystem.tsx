@@ -29,7 +29,7 @@ export function WeaponUpgradeSystem({ weapon, onUpgrade }: WeaponUpgradeSystemPr
 
   const canAffordUpgrade = (upgrade: WeaponUpgrade): boolean => {
     return upgrade.requirements.resources.every(
-      req => (weapon.resources[req.type] || 0) >= req.amount
+      req => (weapon.resources[req.type] ?? 0) >= req.amount
     );
   };
 
@@ -123,7 +123,7 @@ export function WeaponUpgradeSystem({ weapon, onUpgrade }: WeaponUpgradeSystemPr
                 >
                   <Zap className="mr-1 h-3 w-3" />
                   <span>
-                    {resource.type}: {weapon.resources[resource.type] || 0}/{resource.amount}
+                    {resource.type}: {weapon.resources[resource.type] ?? 0}/{resource.amount}
                   </span>
                 </div>
               ))}

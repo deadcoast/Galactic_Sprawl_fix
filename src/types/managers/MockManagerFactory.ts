@@ -36,17 +36,17 @@ export function createMockEventManager<E extends BaseEvent = BaseEvent>(
     // Basic EventEmitter methods
     emit: (event: E) => {
       emittedEvents.push(event);
-      const handlers = subscriptions.get(event.type) || [];
+      const handlers = subscriptions.get(event?.type) ?? [];
       handlers.forEach(handler => handler(event));
       return true;
     },
 
     on: (eventType: string, handler: (event: E) => void) => {
-      const handlers = subscriptions.get(eventType) || [];
+      const handlers = subscriptions.get(eventType) ?? [];
       handlers.push(handler);
       subscriptions.set(eventType, handlers);
       return () => {
-        const currentHandlers = subscriptions.get(eventType) || [];
+        const currentHandlers = subscriptions.get(eventType) ?? [];
         const index = currentHandlers.indexOf(handler);
         if (index !== -1) {
           currentHandlers.splice(index, 1);
@@ -56,7 +56,7 @@ export function createMockEventManager<E extends BaseEvent = BaseEvent>(
     },
 
     off: (eventType: string, handler: (event: E) => void) => {
-      const handlers = subscriptions.get(eventType) || [];
+      const handlers = subscriptions.get(eventType) ?? [];
       const index = handlers.indexOf(handler);
       if (index !== -1) {
         handlers.splice(index, 1);
@@ -114,7 +114,7 @@ export function createMockEventManager<E extends BaseEvent = BaseEvent>(
 
       mockEmitEvent: (event: E) => {
         emittedEvents.push(event);
-        const handlers = subscriptions.get(event.type) || [];
+        const handlers = subscriptions.get(event?.type) ?? [];
         handlers.forEach(handler => handler(event));
       },
 

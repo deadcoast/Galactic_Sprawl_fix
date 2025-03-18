@@ -8,12 +8,12 @@ export function isResourceUpdateEvent(
   event: ModuleEvent
 ): event is ModuleEvent & { data: { resourceAmounts: Partial<Record<ResourceType, number>> } } {
   return (
-    event.data !== undefined &&
-    typeof event.data === 'object' &&
-    event.data !== null &&
-    'resourceAmounts' in event.data &&
-    typeof event.data.resourceAmounts === 'object' &&
-    event.data.resourceAmounts !== null
+    event?.data !== undefined &&
+    typeof event?.data === 'object' &&
+    event?.data !== null &&
+    'resourceAmounts' in event?.data &&
+    typeof event?.data?.resourceAmounts === 'object' &&
+    event?.data?.resourceAmounts !== null
   );
 }
 
@@ -24,12 +24,12 @@ export function isResourceProductionEvent(
   event: ModuleEvent
 ): event is ModuleEvent & { data: { resourceType: ResourceType; amount: number } } {
   return (
-    event.data !== undefined &&
-    typeof event.data === 'object' &&
-    event.data !== null &&
-    'resourceType' in event.data &&
-    'amount' in event.data &&
-    typeof event.data.amount === 'number'
+    event?.data !== undefined &&
+    typeof event?.data === 'object' &&
+    event?.data !== null &&
+    'resourceType' in event?.data &&
+    'amount' in event?.data &&
+    typeof event?.data?.amount === 'number'
   );
 }
 
@@ -40,11 +40,11 @@ export function isResourceConsumptionEvent(
   event: ModuleEvent
 ): event is ModuleEvent & { data: { resourceType: ResourceType; amount: number } } {
   return (
-    event.data !== undefined &&
-    typeof event.data === 'object' &&
-    event.data !== null &&
-    'resourceType' in event.data &&
-    'amount' in event.data &&
-    typeof event.data.amount === 'number'
+    event?.data !== undefined &&
+    typeof event?.data === 'object' &&
+    event?.data !== null &&
+    'resourceType' in event?.data &&
+    'amount' in event?.data &&
+    typeof event?.data?.amount === 'number'
   );
 }

@@ -40,7 +40,7 @@ interface ResultVisualizationProps {
 
 function ResultVisualization({ result, config }: ResultVisualizationProps) {
   // Handle different result states
-  if (result.status === 'pending' || result.status === 'processing') {
+  if (result?.status === 'pending' || result?.status === 'processing') {
     return (
       <div className="flex h-[300px] items-center justify-center">
         <CircularProgress />
@@ -51,30 +51,30 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
     );
   }
 
-  if (result.status === 'failed') {
+  if (result?.status === 'failed') {
     return (
       <div className="rounded bg-red-50 p-3">
         <Typography variant="h6" color="error">
           Analysis Failed
         </Typography>
-        <Typography variant="body1">{result.error || 'Unknown error occurred'}</Typography>
+        <Typography variant="body1">{result?.error || 'Unknown error occurred'}</Typography>
       </div>
     );
   }
 
   return (
     <div>
-      {result.summary && (
+      {result?.summary && (
         <Typography variant="body1" sx={{ mb: 2 }}>
-          {result.summary}
+          {result?.summary}
         </Typography>
       )}
 
-      {result.insights && result.insights.length > 0 && (
+      {result?.insights && result?.insights.length > 0 && (
         <div className="mb-2">
           <Typography variant="h6">Key Insights</Typography>
           <ul>
-            {result.insights.map((insight, index) => (
+            {result?.insights.map((insight, index) => (
               <li key={index}>
                 <Typography variant="body2">{insight}</Typography>
               </li>
@@ -238,7 +238,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   // Get latest results for the selected config
   const currentResults = selectedConfig
     ? getAnalysisResultsByConfigId(selectedConfig.id).sort(
-        (a, b) => (b.startTime || 0) - (a.startTime || 0)
+        (a, b) => (b.startTime ?? 0) - (a.startTime ?? 0)
       )
     : [];
 
@@ -474,7 +474,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                 configs={analysisConfigs}
                 onSelectResult={result => {
                   // Find and select the config that was used for this result
-                  const config = analysisConfigs.find(c => c.id === result.analysisConfigId);
+                  const config = analysisConfigs.find(c => c.id === result?.analysisConfigId);
                   if (config) {
                     setSelectedConfig(config);
                     setActiveTab(1); // Switch to Analysis tab
@@ -557,7 +557,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
                 Filters
               </Typography>
               <DataFilterPanel
-                _datasetId={selectedDataset?.id || ''}
+                _datasetId={selectedDataset?.id ?? ''}
                 filters={filters}
                 onFilterChange={handleFilterChange}
               />

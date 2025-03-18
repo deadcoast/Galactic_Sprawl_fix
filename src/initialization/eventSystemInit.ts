@@ -142,7 +142,7 @@ export function initializeGlobalEventHandlers(): () => void {
 
   // Create a priority queue for processing events
   const eventQueue = new EventPriorityQueue<PriorityQueueEvent>(event => {
-    console.warn(`Processing event: ${event.type}`);
+    console.warn(`Processing event: ${event?.type}`);
     // Process the event based on its type
     return Promise.resolve();
   });
@@ -151,8 +151,8 @@ export function initializeGlobalEventHandlers(): () => void {
   const unsubscribe = subscribeToAllEvents(event => {
     // Enqueue the event for processing
     eventQueue.enqueue({
-      type: event.type,
-      priority: getPriorityForEventType(event.type),
+      type: event?.type,
+      priority: getPriorityForEventType(event?.type),
       data: event,
     });
   });

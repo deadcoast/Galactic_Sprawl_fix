@@ -16,7 +16,7 @@ const resourceManager = new ResourceManager();
 
 // Create a subject to handle condition state
 const conditionState = new Subject<{
-  resourceId: string;
+  resourceId: ResourceType;
   currentAmount: number;
   thresholds: { min: number; max: number };
 }>();
@@ -119,13 +119,13 @@ export class ConditionChecker {
 
     // Subscribe to threshold events
     thresholdEvents.subscribe(event => {
-      if (event.type === 'THRESHOLD_VIOLATED' || event.type === 'STORAGE_FULL') {
+      if (event?.type === 'THRESHOLD_VIOLATED' || event?.type === 'STORAGE_FULL') {
         conditionState.next({
-          resourceId: event.resourceId,
-          currentAmount: event.details?.current || 0,
+          resourceId: event?.resourceId,
+          currentAmount: event?.details?.current ?? 0,
           thresholds: {
-            min: event.details?.min || 0,
-            max: event.details?.max || Infinity,
+            min: event?.details?.min ?? 0,
+            max: event?.details?.max || Infinity,
           },
         });
       }
@@ -145,7 +145,7 @@ export class ConditionChecker {
   public async checkCondition(condition: AutomationCondition): Promise<boolean> {
     const now = Date.now();
     const key = this.getConditionKey(condition);
-    const lastChecked = this.lastCheckedTimes.get(key) || 0;
+    const lastChecked = this.lastCheckedTimes.get(key) ?? 0;
 
     // Implement debounce mechanism to prevent checking conditions too frequently
     const debounceTime = 100; // 100ms debounce
@@ -221,7 +221,7 @@ export class ConditionChecker {
     // For time conditions, we check if enough time has passed since the last check
     const now = Date.now();
     const key = this.getConditionKey(condition);
-    const lastChecked = this.lastCheckedTimes.get(key) || 0;
+    const lastChecked = this.lastCheckedTimes.get(key) ?? 0;
     const elapsed = now - lastChecked;
 
     return elapsed >= timeValue;
@@ -251,12 +251,12 @@ export class ConditionChecker {
       };
 
       // If getRecentEvents exists, use it; otherwise, return an empty array
-      const miningEvents = miningManagerWithEvents.getRecentEvents?.() || [];
+      const miningEvents = miningManagerWithEvents.getRecentEvents?.() ?? [];
 
       return miningEvents.some(
         (event: MiningEvent) =>
-          event.type === eventType &&
-          (!eventData || this.matchEventData(event.data || {}, eventData))
+          event?.type === eventType &&
+          (!eventData || this.matchEventData(event?.data ?? {}, eventData))
       );
     }
 

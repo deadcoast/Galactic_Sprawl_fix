@@ -116,7 +116,7 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
 
     // Apply event type filter
     if (eventTypeFilter && eventTypeFilter.length > 0) {
-      filtered = filtered.filter(event => eventTypeFilter.includes(event.type));
+      filtered = filtered.filter(event => eventTypeFilter.includes(event?.type));
     }
 
     // Apply custom filter function
@@ -147,7 +147,7 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
     // Initialize width
     setContainerSize(prev => ({
       ...prev,
-      width: containerRef.current?.clientWidth || 0,
+      width: containerRef.current?.clientWidth ?? 0,
     }));
 
     return () => {
@@ -216,7 +216,7 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
     onClick: () => void;
     isExpanded: boolean;
   }) => {
-    const eventId = event.moduleId + event.timestamp;
+    const eventId = event?.moduleId + event?.timestamp;
     return (
       <div
         style={style}
@@ -227,17 +227,17 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="rounded bg-blue-600 px-2 py-1 text-xs text-white">{event.type}</span>
-            <span className="text-sm text-gray-300">{event.moduleId}</span>
+            <span className="rounded bg-blue-600 px-2 py-1 text-xs text-white">{event?.type}</span>
+            <span className="text-sm text-gray-300">{event?.moduleId}</span>
           </div>
           <span className="text-xs text-gray-400">
-            {new Date(event.timestamp).toLocaleTimeString()}
+            {new Date(event?.timestamp).toLocaleTimeString()}
           </span>
         </div>
 
         {isExpanded && (
           <div className="mt-2 rounded bg-gray-800 p-2">
-            <pre className="text-xs text-gray-300">{JSON.stringify(event.data, null, 2)}</pre>
+            <pre className="text-xs text-gray-300">{JSON.stringify(event?.data, null, 2)}</pre>
           </div>
         )}
       </div>
@@ -249,7 +249,7 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
     const event = displayedEvents[index];
     if (!event) return null;
 
-    const eventId = event.moduleId + event.timestamp;
+    const eventId = event?.moduleId + event?.timestamp;
     const isExpanded = expandedEventIds.has(eventId);
     const onClick = () => handleEventClick(eventId);
 

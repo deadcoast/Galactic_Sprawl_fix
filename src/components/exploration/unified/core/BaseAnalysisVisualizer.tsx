@@ -240,7 +240,7 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
   const renderers = useMemo(() => {
     return {
       ...defaultRenderers,
-      ...(visualizationRenderers || {}),
+      ...(visualizationRenderers ?? {}),
     };
   }, [visualizationRenderers]);
 
@@ -288,7 +288,7 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
           <label className="text-sm font-medium text-gray-700">Legend:</label>
           <input
             type="checkbox"
-            checked={options.showLegend}
+            checked={options?.showLegend}
             onChange={e => handleOptionChange('showLegend', e.target.checked)}
             className="form-checkbox h-4 w-4 rounded text-blue-500 focus:ring-blue-500"
           />
@@ -298,7 +298,7 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
           <label className="text-sm font-medium text-gray-700">Grid:</label>
           <input
             type="checkbox"
-            checked={options.showGrid}
+            checked={options?.showGrid}
             onChange={e => handleOptionChange('showGrid', e.target.checked)}
             className="form-checkbox h-4 w-4 rounded text-blue-500 focus:ring-blue-500"
           />
@@ -308,7 +308,7 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
           <label className="text-sm font-medium text-gray-700">Animation:</label>
           <input
             type="checkbox"
-            checked={options.animate}
+            checked={options?.animate}
             onChange={e => handleOptionChange('animate', e.target.checked)}
             className="form-checkbox h-4 w-4 rounded text-blue-500 focus:ring-blue-500"
           />

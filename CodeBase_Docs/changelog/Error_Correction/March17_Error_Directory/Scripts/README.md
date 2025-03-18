@@ -1,204 +1,171 @@
-# Error Analysis and Correction Scripts
+# TypeScript Error Analysis & Fix Workflow
 
-This directory contains scripts for analyzing and fixing errors in the Galactic Sprawl codebase. Each script is designed to be self-contained and focused on a specific task.
+## Overview
 
-## Analysis Scripts
+This directory contains scripts for analyzing and fixing common TypeScript and ESLint errors in the Galactic Sprawl codebase. The workflow has been consolidated and standardized to provide a consistent approach to error management.
 
-### 1. `analyze_all.sh`
+## Directory Structure
 
-**Purpose**: Run a complete analysis of the codebase and generate comprehensive reports.
-
-**Usage**:
-
-```bash
-./analyze_all.sh
+```
+Scripts/
+├── Analysis/                  # Analysis scripts
+│   ├── analyze_typescript.sh
+│   ├── analyze_eslint.sh
+│   ├── analyze_error_patterns.sh
+│   ├── analyze_all.sh
+│   └── run_full_analysis.sh
+├── Fixes/                     # Fix scripts
+│   ├── fix_type_safety.sh
+│   ├── fix_null_safety.sh
+│   ├── fix_resource_types.sh
+│   ├── fix_resource_types_advanced.sh
+│   ├── fix_unused_vars.sh
+│   ├── run_targeted_fixes.sh
+│   └── ResourceTools/         # Additional resource-specific tools
+│       └── fix_resources.sh
+├── Backups/                   # Directory for backups
+├── manage_backups.sh          # Script to manage backup directories
+├── run_analysis_workflow.sh   # Master script to run the entire workflow
+└── README.md                  # This documentation
 ```
 
-**Output**:
+## Related Directories
 
-- Generates TypeScript error logs in `../Analysis/TypeScript/`
-- Generates ESLint error logs in `../Analysis/ESLint/`
-- Creates categorized error lists in `../Categories/`
-- Produces summary reports in `../Reports/`
-
-### 2. `analyze_typescript.sh`
-
-**Purpose**: Run TypeScript type checking and categorize errors by type.
-
-**Usage**:
-
-```bash
-./analyze_typescript.sh
+```
+Tests/
+├── essential/                 # Essential test cases
+│   └── test_master.sh
+├── FixTests/                  # Tests for fix scripts
+│   ├── test_null_safety_fixes.sh
+│   ├── test_resource_type_fixes.sh
+│   ├── test_type_safety_fixes.sh
+│   └── mock_fix_resource_types_advanced.sh
+└── run_all_tests.sh           # Run all tests
 ```
 
-**Output**:
+## Master Workflow
 
-- Generates type-specific error files in `../Analysis/TypeScript/`
-- Creates a summary report in `../Reports/typescript_summary.md`
-
-### 3. `analyze_eslint.sh`
-
-**Purpose**: Run ESLint and categorize errors by rule.
-
-**Usage**:
+The easiest way to run the entire workflow is using the master script:
 
 ```bash
-./analyze_eslint.sh
+./run_analysis_workflow.sh [--target=<directory>] [--analysis-only] [--fix-only]
 ```
 
-**Output**:
+Options:
 
-- Generates rule-specific error files in `../Analysis/ESLint/`
-- Creates a summary report in `../Reports/eslint_summary.md`
+- `--target=<directory>`: Specify a target directory (default: src/)
+- `--analysis-only`: Run only the analysis step, no fixes
+- `--fix-only`: Skip analysis and apply fixes directly
 
-### 4. `categorize_errors.sh`
+## Individual Scripts
 
-**Purpose**: Process raw error logs and categorize them by component, feature, or error type.
-
-**Usage**:
+### Analysis Scripts
 
 ```bash
-./categorize_errors.sh
+# Run TypeScript analysis
+./Analysis/analyze_typescript.sh [--verbose] [--output-dir=<dir>]
+
+# Run ESLint analysis
+./Analysis/analyze_eslint.sh [--verbose] [--output-dir=<dir>]
+
+# Run both analyses with a combined report
+./Analysis/run_full_analysis.sh [--verbose]
+
+# Run comprehensive error analysis
+./Analysis/analyze_error_patterns.sh [--target=<directory>]
+
+# Run all analyses
+./Analysis/analyze_all.sh
 ```
 
-**Output**:
-
-- Populates the `../Categories/` directory with categorized error files
-- Updates the priority report in `../Reports/priority_report.md`
-
-## Reporting Scripts
-
-### 1. `generate_summary.sh`
-
-**Purpose**: Generate a comprehensive summary of all errors.
-
-**Usage**:
+### Fix Scripts
 
 ```bash
-./generate_summary.sh
+# Apply type safety fixes
+./Fixes/fix_type_safety.sh --target=<file-or-directory>
+
+# Apply null safety fixes
+./Fixes/fix_null_safety.sh --target=<file-or-directory>
+
+# Apply resource type fixes (basic version)
+./Fixes/fix_resource_types.sh --target=<file-or-directory>
+
+# Apply resource type fixes (advanced version)
+./Fixes/fix_resource_types_advanced.sh --target=<file-or-directory>
+
+# Apply resource-specific fixes (comprehensive)
+./Fixes/ResourceTools/fix_resources.sh --target=<file-or-directory>
+
+# Fix unused variables
+./Fixes/fix_unused_vars.sh --target=<file-or-directory>
+
+# Run targeted fixes based on analysis
+./Fixes/run_targeted_fixes.sh --target=<file-or-directory> [--fix-type=<type>]
 ```
 
-**Output**:
-
-- Creates `../Reports/error_summary.md` with detailed statistics
-- Includes charts and trend analysis if previous reports exist
-
-### 2. `track_progress.sh`
-
-**Purpose**: Track progress over time by comparing current errors with previous runs.
-
-**Usage**:
+### Testing
 
 ```bash
-./track_progress.sh
+# Run all tests for the fix scripts
+../Tests/run_all_tests.sh
+
+# Run tests for specific fix scripts
+../Tests/FixTests/test_null_safety_fixes.sh
+../Tests/FixTests/test_resource_type_fixes.sh
+../Tests/FixTests/test_type_safety_fixes.sh
 ```
 
-**Output**:
+### Backup Management
 
-- Creates `../Reports/daily_progress.md` with progress metrics
-- Updates trend charts and projections
-
-## Fix Scripts
-
-### 1. `fix_resource_types.sh`
-
-**Purpose**: Automatically fix common resource type errors.
-
-**Usage**:
+All fix scripts automatically create backups in the `../Fixes/Backups/` directory with timestamped subdirectories. You can manage these backups using:
 
 ```bash
-./fix_resource_types.sh [--dry-run]
+./manage_backups.sh [--clean=<days>] [--archive]
 ```
 
-**Options**:
+Options:
 
-- `--dry-run`: Show proposed changes without applying them
+- `--clean=<days>`: Remove backups older than the specified number of days
+- `--archive`: Create a compressed archive of all backups
 
-**Output**:
+## Fix Types
 
-- Makes changes to files with resource type errors
-- Generates a report of changes made in `../Reports/fixes/resource_types_fixes.md`
+### Type Safety Fixes
 
-### 2. `fix_unused_vars.sh`
+- Converts explicit `any` types to more specific types
+- Fixes array type declarations
+- Adds function return types
+- Adds type assertions for common patterns
 
-**Purpose**: Automatically prefix unused variables with underscore.
+### Null Safety Fixes
 
-**Usage**:
+- Adds optional chaining (`?.`) for object property access
+- Adds nullish coalescing (`??`) for default values
+- Adds null checks in conditions
+- Adds non-null assertions where appropriate
 
-```bash
-./fix_unused_vars.sh [--dry-run]
-```
+### Resource Type Fixes
 
-**Options**:
+- Converts string literals to ResourceType enum values
+- Fixes function signatures that use strings instead of ResourceType
+- Corrects imports to include ResourceType when needed
+- Fixes object property access patterns related to resources
 
-- `--dry-run`: Show proposed changes without applying them
+### Unused Variables Fixes
 
-**Output**:
+- Prefixes unused variables with underscore to match ESLint rules
+- Updates function arguments that are unused
+- Handles unused catch clause variables
 
-- Makes changes to files with unused variable warnings
-- Generates a report of changes made in `../Reports/fixes/unused_vars_fixes.md`
+## Best Practices
 
-### 3. `template_generator.sh`
-
-**Purpose**: Generate fix templates for common error patterns.
-
-**Usage**:
-
-```bash
-./template_generator.sh <error_type>
-```
-
-**Options**:
-
-- `<error_type>`: Type of error to generate templates for (e.g., resource_type, event_system)
-
-**Output**:
-
-- Creates template files in `../Fixes/Templates/`
-- Includes implementation examples and usage notes
-
-## Utility Scripts
-
-### 1. `setup_environment.sh`
-
-**Purpose**: Set up the error correction environment and dependencies.
-
-**Usage**:
-
-```bash
-./setup_environment.sh
-```
-
-**Output**:
-
-- Creates necessary directories
-- Installs required tools if missing
-- Sets up configuration files
-
-### 2. `update_config.sh`
-
-**Purpose**: Update ESLint or TypeScript configuration to improve error detection.
-
-**Usage**:
-
-```bash
-./update_config.sh <config_type>
-```
-
-**Options**:
-
-- `<config_type>`: Type of configuration to update (eslint or typescript)
-
-**Output**:
-
-- Updates configuration files
-- Generates a report of changes made
-
-## Adding New Scripts
-
-When adding new scripts to this directory:
-
-1. Make sure the script is executable (`chmod +x script_name.sh`)
-2. Add detailed documentation within the script itself
-3. Update this README with information about the script
-4. Add any necessary dependencies to the `setup_environment.sh` script
+1. Always run tests first to ensure scripts are working as expected
+2. Run the full analysis workflow to understand what errors exist before applying fixes
+3. Make sure to check backups before running large-scale fixes
+4. Address one type of issue at a time in this order:
+   - Resource type issues (most impactful)
+   - Type safety issues
+   - Null safety issues
+   - Unused variables
+5. Verify fixes with TypeScript compiler and ESLint after each major change
+6. Use the backup management script regularly to keep the backups directory organized

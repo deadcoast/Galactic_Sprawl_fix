@@ -14,7 +14,7 @@ const FACTION_COLORS = {
 
 // Helper function to get behavior string from FactionBehaviorConfig
 const getBehaviorString = (behavior: FactionBehaviorConfig): string => {
-  return behavior.behavior || '';
+  return behavior.behavior ?? '';
 };
 
 // Add a helper function to format the behavior string

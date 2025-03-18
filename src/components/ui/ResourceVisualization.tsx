@@ -56,6 +56,18 @@ export const resourceIcons: Record<ResourceType, React.FC<{ className?: string }
   [ResourceType.DARK_MATTER]: Beaker,
   [ResourceType.EXOTIC_MATTER]: Beaker,
   [ResourceType.ORGANIC]: Beaker,
+  [ResourceType.FOOD]: ({ className }) => (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
+      <path d="M6 12h12" />
+    </svg>
+  ),
 };
 
 // Resource color mapping
@@ -176,6 +188,12 @@ export const resourceColors: Record<
     border: 'border-teal-700/30',
     fill: 'bg-teal-500',
   },
+  [ResourceType.FOOD]: {
+    base: 'text-yellow-400',
+    bg: 'bg-yellow-900/20',
+    border: 'border-yellow-700/30',
+    fill: 'bg-yellow-500',
+  },
 };
 
 // Resource name mapping
@@ -198,6 +216,7 @@ export const resourceNames: Record<ResourceType, string> = {
   [ResourceType.DARK_MATTER]: 'Dark Matter',
   [ResourceType.EXOTIC_MATTER]: 'Exotic Matter',
   [ResourceType.ORGANIC]: 'Organic',
+  [ResourceType.FOOD]: 'Food',
 };
 
 function getResourceStatus(

@@ -31,7 +31,7 @@ interface SpringProps {
 const useSpring = (props: SpringProps): { opacity: { get: () => number } } => {
   return {
     opacity: {
-      get: () => props.opacity || 0,
+      get: () => props?.opacity ?? 0,
     },
   };
 };
@@ -50,7 +50,7 @@ const gsap = {
     // Mock implementation
     if (target && typeof target === 'object' && 'value' in target) {
       // Safe type assertion for this mock implementation
-      (target as { value: number }).value = props.value || 0;
+      (target as { value: number }).value = props?.value ?? 0;
     }
     return { kill: () => {} };
   },
@@ -117,11 +117,11 @@ const shaderMaterial = (
   // This is a mock implementation that returns a component
   return (props: ShaderMaterialProps) => {
     // Merge the default uniforms with any provided in props
-    const mergedUniforms = { ...processedUniforms, ...props.uniforms };
+    const mergedUniforms = { ...processedUniforms, ...props?.uniforms };
 
     // Use the provided shaders or fall back to the defaults
-    const finalVertexShader = props.vertexShader || vertexShader;
-    const finalFragmentShader = props.fragmentShader || fragmentShader;
+    const finalVertexShader = props?.vertexShader || vertexShader;
+    const finalFragmentShader = props?.fragmentShader || fragmentShader;
 
     return React.createElement('shaderMaterial', {
       ...props,

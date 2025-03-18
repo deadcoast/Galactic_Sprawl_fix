@@ -432,13 +432,13 @@ export function createSmoothUIUpdateProcessor<T extends BaseEvent>(
     }),
 
     // Group by approximate throttle interval range (rounded to nearest 50ms)
-    groupBy(data => Math.round(data.throttleInterval / 50) * 50),
+    groupBy(data => Math.round(data?.throttleInterval / 50) * 50),
 
     // Apply appropriate throttling to each group
     mergeMap(group =>
       group.pipe(
         throttleTime(+group.key, undefined, { leading: true, trailing: true }),
-        map(data => data.event)
+        map(data => data?.event)
       )
     )
   );

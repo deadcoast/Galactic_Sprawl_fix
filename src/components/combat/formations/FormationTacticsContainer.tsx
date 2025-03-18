@@ -15,7 +15,7 @@ interface FormationTacticsContainerProps {
  * across multiple fleets. Provides context and data for the tactics panel.
  */
 export function FormationTacticsContainer({ fleetIds, factionId }: FormationTacticsContainerProps) {
-  const [activeFleetId, setActiveFleetId] = useState<string>(fleetIds[0] || '');
+  const [activeFleetId, setActiveFleetId] = useState<string>(fleetIds[0] ?? '');
   const combatSystem = useCombatSystem();
 
   // Update active fleet if fleetIds changes

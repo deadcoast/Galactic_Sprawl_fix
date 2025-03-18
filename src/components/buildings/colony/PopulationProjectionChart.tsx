@@ -29,7 +29,7 @@ export function PopulationProjectionChart({
       // Calculate time for this cycle
       const time = (i + 1) * cycleLength;
 
-      result.push({
+      result?.push({
         cycle: i + 1,
         population,
         time,

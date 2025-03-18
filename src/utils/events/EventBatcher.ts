@@ -146,7 +146,7 @@ export function createBatchedEventStream(
   batchSubjects.set(batchKey, batchSubject);
 
   // Create a filtered stream for the specified event types
-  const filteredEvents$ = moduleEvents$.pipe(filter(event => eventTypes.includes(event.type)));
+  const filteredEvents$ = moduleEvents$.pipe(filter(event => eventTypes.includes(event?.type)));
 
   // Create a batched stream
   filteredEvents$
@@ -161,8 +161,8 @@ export function createBatchedEventStream(
         timestamp: Date.now(),
         size: events.length,
         timeWindow: batchConfig.timeWindow,
-        eventTypes: new Set(events.map(event => event.type)),
-        moduleIds: new Set(events.map(event => event.moduleId)),
+        eventTypes: new Set(events.map(event => event?.type)),
+        moduleIds: new Set(events.map(event => event?.moduleId)),
       };
 
       // Emit the batch
@@ -230,10 +230,10 @@ export function groupBatchByEventType(batch: EventBatch): Record<ModuleEventType
   >;
 
   batch.events.forEach(event => {
-    if (!result[event.type]) {
-      result[event.type] = [];
+    if (!result[event?.type]) {
+      result[event?.type] = [];
     }
-    result[event.type].push(event);
+    result[event?.type].push(event);
   });
 
   return result;
@@ -246,10 +246,10 @@ export function groupBatchByModuleId(batch: EventBatch): Record<string, ModuleEv
   const result: Record<string, ModuleEvent[]> = {};
 
   batch.events.forEach(event => {
-    if (!result[event.moduleId]) {
-      result[event.moduleId] = [];
+    if (!result[event?.moduleId]) {
+      result[event?.moduleId] = [];
     }
-    result[event.moduleId].push(event);
+    result[event?.moduleId].push(event);
   });
 
   return result;
@@ -268,8 +268,8 @@ export function filterBatch(
     ...batch,
     events: filteredEvents,
     size: filteredEvents.length,
-    eventTypes: new Set(filteredEvents.map(event => event.type)),
-    moduleIds: new Set(filteredEvents.map(event => event.moduleId)),
+    eventTypes: new Set(filteredEvents.map(event => event?.type)),
+    moduleIds: new Set(filteredEvents.map(event => event?.moduleId)),
   };
 }
 
@@ -306,16 +306,16 @@ export function getBatchStats(batch: EventBatch): {
 
   batch.events.forEach(event => {
     // Count event types
-    if (!eventTypeCounts[event.type]) {
-      eventTypeCounts[event.type] = 0;
+    if (!eventTypeCounts[event?.type]) {
+      eventTypeCounts[event?.type] = 0;
     }
-    eventTypeCounts[event.type]++;
+    eventTypeCounts[event?.type]++;
 
     // Count module IDs
-    if (!moduleIdCounts[event.moduleId]) {
-      moduleIdCounts[event.moduleId] = 0;
+    if (!moduleIdCounts[event?.moduleId]) {
+      moduleIdCounts[event?.moduleId] = 0;
     }
-    moduleIdCounts[event.moduleId]++;
+    moduleIdCounts[event?.moduleId]++;
   });
 
   return {

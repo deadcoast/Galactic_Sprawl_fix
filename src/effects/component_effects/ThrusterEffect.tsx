@@ -223,7 +223,7 @@ function ThrusterParticles({ size, color, intensity }: ThrusterEffectProps) {
     const time = clock.elapsedTime;
 
     // Use a default value for delta if it's not available (for compatibility)
-    const deltaTime = clock.delta || 0.016; // Default to ~60fps if delta not available
+    const deltaTime = clock.delta ?? 0.016; // Default to ~60fps if delta not available
 
     const { geometry } = pointsRef.current;
 

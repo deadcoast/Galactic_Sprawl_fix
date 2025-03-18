@@ -38,7 +38,7 @@ export const CustomShaderDemo: React.FC<CustomShaderDemoProps> = ({
         const distToCenter = Math.sqrt(Math.pow(posX - centerX, 2) + Math.pow(posY - centerY, 2));
         const value = 1 - Math.min(1, distToCenter / (Math.min(width, height) / 2));
 
-        data.push({
+        data?.push({
           x: posX,
           y: posY,
           value,
