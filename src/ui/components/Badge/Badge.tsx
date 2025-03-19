@@ -1,11 +1,19 @@
-import * as React from "react";
+import * as React from 'react';
 import { forwardRef, HTMLAttributes } from 'react';
 import { cn } from '../../../utils/cn';
 
 /**
  * Badge variants
  */
-export type BadgeVariant = 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'outline';
+export type BadgeVariant =
+  | 'default'
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'outline';
 
 /**
  * Badge sizes
@@ -38,22 +46,25 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 
 /**
  * Badge component
- * 
+ *
  * A versatile badge component for displaying status, count or categories.
  */
 export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ 
-    variant = 'default', 
-    size = 'md', 
-    bordered = false,
-    rounded = true,
-    withDot = false,
-    dotColor,
-    interactive = false,
-    className,
-    children,
-    ...props 
-  }, ref) => {
+  (
+    {
+      variant = 'default',
+      size = 'md',
+      bordered = false,
+      rounded = true,
+      withDot = false,
+      dotColor,
+      interactive = false,
+      className,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     // Variant classes
     const variantClasses: Record<BadgeVariant, string> = {
       default: 'bg-gray-100 text-gray-800',
@@ -75,19 +86,13 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     };
 
     // Border classes
-    const borderClasses = bordered
-      ? 'border border-current border-opacity-20'
-      : '';
+    const borderClasses = bordered ? 'border border-current border-opacity-20' : '';
 
     // Rounded classes
-    const roundedClasses = rounded
-      ? 'rounded-full'
-      : 'rounded';
+    const roundedClasses = rounded ? 'rounded-full' : 'rounded';
 
     // Interactive classes
-    const interactiveClasses = interactive
-      ? 'cursor-pointer hover:bg-opacity-80'
-      : '';
+    const interactiveClasses = interactive ? 'cursor-pointer hover:bg-opacity-80' : '';
 
     // Combine all classes
     const badgeClasses = cn(
@@ -110,10 +115,10 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     return (
       <span ref={ref} className={badgeClasses} {...props}>
         {withDot && (
-          <span 
+          <span
             className={cn(
-              "w-2 h-2 rounded-full mr-1.5",
-              dotColor ? `bg-${dotColor}` : "bg-current"
+              'mr-1.5 h-2 w-2 rounded-full',
+              dotColor ? `bg-${dotColor}` : 'bg-current'
             )}
           />
         )}

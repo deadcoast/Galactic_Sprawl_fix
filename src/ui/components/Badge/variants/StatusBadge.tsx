@@ -1,12 +1,11 @@
-import * as React from "react";
 import { forwardRef } from 'react';
-import { Badge, BadgeProps } from '../Badge';
 import { cn } from '../../../../utils/cn';
+import { Badge, BadgeProps } from '../Badge';
 
 /**
  * Status types for the game
  */
-export type StatusType = 
+export type StatusType =
   | 'online'
   | 'offline'
   | 'idle'
@@ -42,7 +41,10 @@ export interface StatusBadgeProps extends Omit<BadgeProps, 'variant'> {
 /**
  * Map of status types to badge variants and colors
  */
-const STATUS_MAPPINGS: Record<StatusType, { variant: BadgeProps['variant'], dotColor?: string, pulseByDefault?: boolean }> = {
+const STATUS_MAPPINGS: Record<
+  StatusType,
+  { variant: BadgeProps['variant']; dotColor?: string; pulseByDefault?: boolean }
+> = {
   online: { variant: 'success', dotColor: 'green-500', pulseByDefault: false },
   offline: { variant: 'default', dotColor: 'gray-500', pulseByDefault: false },
   idle: { variant: 'warning', dotColor: 'yellow-500', pulseByDefault: false },
@@ -87,25 +89,18 @@ const STATUS_TEXT: Record<StatusType, string> = {
 
 /**
  * StatusBadge component
- * 
+ *
  * A specialized badge for displaying system statuses with appropriate colors,
  * indicator dots, and optional pulse effects for dynamic statuses.
  */
 export const StatusBadge = forwardRef<HTMLSpanElement, StatusBadgeProps>(
-  ({ 
-    status,
-    pulseEffect,
-    showText = true,
-    customText,
-    className,
-    ...props 
-  }, ref) => {
+  ({ status, pulseEffect, showText = true, customText, className, ...props }, ref) => {
     const { variant, dotColor, pulseByDefault } = STATUS_MAPPINGS[status] || STATUS_MAPPINGS.normal;
     const shouldPulse = pulseEffect === undefined ? pulseByDefault : pulseEffect;
-    
+
     // Pulse animation class
     const pulseClass = shouldPulse ? 'animate-pulse' : '';
-    
+
     return (
       <Badge
         ref={ref}

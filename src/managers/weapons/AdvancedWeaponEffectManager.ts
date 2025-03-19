@@ -1,4 +1,4 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 /**
  * Advanced Weapon Effect Manager
  *

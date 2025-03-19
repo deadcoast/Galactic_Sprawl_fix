@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ChevronRight, Shield, Star, Sword, Users, X, Zap } from 'lucide-react';
 
 interface Officer {

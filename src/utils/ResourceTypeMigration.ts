@@ -7,7 +7,6 @@
  */
 
 import { ResourceType, ResourceTypeString } from '../types/resources/ResourceTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
 import { ResourceTypeConverter } from './ResourceTypeConverter';
 
 /**

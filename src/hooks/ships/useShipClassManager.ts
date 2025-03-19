@@ -133,7 +133,7 @@ export function useShipClassManager() {
 
   const getAvailableShipClasses = useCallback((factionId: FactionId): FactionShipClass[] => {
     const configKey = factionConfigMap[factionId];
-    return configKey ? shipClassConfigs[configKey]?.classes ?? [] : [];
+    return configKey ? (shipClassConfigs[configKey]?.classes ?? []) : [];
   }, []);
 
   const getFleet = useCallback(

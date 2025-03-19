@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Heart, Star, Users, Zap } from 'lucide-react';
 
 interface CulturalCenterProps {

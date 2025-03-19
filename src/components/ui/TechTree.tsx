@@ -9,7 +9,7 @@ import {
   Sword,
   Zap,
 } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { TechNode } from '../../managers/game/techTreeManager';
 import {

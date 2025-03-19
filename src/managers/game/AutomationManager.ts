@@ -1,7 +1,7 @@
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { moduleManager } from '../module/ModuleManager';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 import { ResourceManager } from './ResourceManager';
 
 // Create an instance of ResourceManager

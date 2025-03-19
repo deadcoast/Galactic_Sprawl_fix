@@ -11,7 +11,6 @@
  */
 
 import { useCallback, useEffect } from 'react';
-import { ResourceType } from '../../types/resources/ResourceTypes';
 import {
   GameActionType,
   selectGameTime,
@@ -29,6 +28,7 @@ import {
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { gameManager } from '../../managers/game/gameManager';
 import { GameEvent } from '../../types/core/GameTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 import {
   HookPerformanceConfig,
   defaultPerformanceConfig,

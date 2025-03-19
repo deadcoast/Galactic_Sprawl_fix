@@ -361,7 +361,7 @@ export function ColonyManagementPage() {
   };
 
   // Handle resource click
-  const handleResourceClick = (resourceType: ResourceType) => {
+  const handleResourceClick = (resourceType: ResourceType | 'technology' | 'materials') => {
     console.warn(`Resource clicked: ${resourceType}`);
   };
 

@@ -1,11 +1,11 @@
 /**
  * Type-Safe State Management
- * 
+ *
  * This module provides utilities for creating strongly typed reducers, actions,
  * and state transitions to enhance the type safety of application state management.
  */
 
-import React, { Reducer, useReducer, useMemo, useState, useCallback, useContext } from 'react';
+import React, { Reducer, useCallback, useContext, useMemo, useReducer, useState } from 'react';
 
 /**
  * Base Action interface that all action types should extend
@@ -27,7 +27,8 @@ export interface PayloadAction<T extends string, P> extends Action<T> {
  * Helper type to define a discriminated union of action types based on a record
  * Makes it easy to define all the possible action types for a reducer
  */
-export type ActionUnion<T extends Record<string, (...args: unknown[]) => Action<string>>> = ReturnType<T[keyof T]>;
+export type ActionUnion<T extends Record<string, (...args: unknown[]) => Action<string>>> =
+  ReturnType<T[keyof T]>;
 
 /**
  * Type for a function that creates a PayloadAction
@@ -41,20 +42,20 @@ export type SimpleActionCreator<T extends string> = () => Action<T>;
 
 /**
  * Creates an action creator for actions with payloads
- * 
+ *
  * @param type The action type string
  * @returns An action creator function that takes a payload and returns a properly typed action
  */
 export function createAction<T extends string, P>(type: T): ActionCreator<T, P> {
   return (payload: P): PayloadAction<T, P> => ({
     type,
-    payload
+    payload,
   });
 }
 
 /**
  * Creates an action creator for actions without payloads
- * 
+ *
  * @param type The action type string
  * @returns An action creator function that returns a properly typed action
  */
@@ -64,13 +65,13 @@ export function createSimpleAction<T extends string>(type: T): SimpleActionCreat
 
 /**
  * Helper to create a record of action creators from a record of action types
- * 
+ *
  * @param actionMap Record of action types mapped to their payload types
  * @returns Record of action creators
  */
 export function createActionCreators<
   T extends Record<string, unknown>,
-  K extends keyof T = keyof T
+  K extends keyof T = keyof T,
 >(actionMap: { [P in K]: T[P] extends undefined ? string : [string, T[P]] }) {
   const creators: Record<string, ActionCreator<string, unknown> | SimpleActionCreator<string>> = {};
 
@@ -84,9 +85,7 @@ export function createActionCreators<
   }
 
   return creators as {
-    [P in K]: T[P] extends undefined
-      ? SimpleActionCreator<string>
-      : ActionCreator<string, T[P]>
+    [P in K]: T[P] extends undefined ? SimpleActionCreator<string> : ActionCreator<string, T[P]>;
   };
 }
 
@@ -99,7 +98,7 @@ export class ReducerBuilder<S, A extends Action = Action> {
 
   /**
    * Add a handler for a specific action type
-   * 
+   *
    * @param type The action type to handle
    * @param handler The handler function for this action type
    * @returns The builder for chaining
@@ -114,18 +113,18 @@ export class ReducerBuilder<S, A extends Action = Action> {
 
   /**
    * Add a default handler for unmatched action types
-   * 
+   *
    * @param handler The default handler function
    * @returns The builder for chaining
    */
   addDefaultCase(handler: (state: S) => S): ReducerBuilder<S, A> {
-    this.handlers['DEFAULT'] = (state) => handler(state);
+    this.handlers['DEFAULT'] = state => handler(state);
     return this;
   }
 
   /**
    * Build the reducer function
-   * 
+   *
    * @returns A properly typed reducer function
    */
   build(): Reducer<S, A> {
@@ -138,19 +137,17 @@ export class ReducerBuilder<S, A extends Action = Action> {
 
 /**
  * Creates a reducer builder for a specific state and action type
- * 
+ *
  * @param initialState The initial state (used for type inference)
  * @returns A reducer builder instance
  */
-export function createReducer<S, A extends Action = Action>(
-  initialState: S
-): ReducerBuilder<S, A> {
+export function createReducer<S, A extends Action = Action>(initialState: S): ReducerBuilder<S, A> {
   return new ReducerBuilder<S, A>();
 }
 
 /**
  * Hook to create a state slice with type-safe actions and reducer
- * 
+ *
  * @param reducer The reducer function
  * @param initialState The initial state
  * @param actions Object of action creators
@@ -159,7 +156,7 @@ export function createReducer<S, A extends Action = Action>(
 export function useTypedReducer<
   S,
   A extends Action,
-  AC extends Record<string, (...args: unknown[]) => A>
+  AC extends Record<string, (...args: unknown[]) => A>,
 >(
   reducer: Reducer<S, A>,
   initialState: S,
@@ -182,7 +179,7 @@ export function useTypedReducer<
 /**
  * Creates a type-safe state slice
  * Combines reducer creation and action binding in one utility
- * 
+ *
  * @param initialState The initial state
  * @param reducerMap Map of action type to reducer handlers
  * @param actionMap Map of action creators
@@ -191,12 +188,8 @@ export function useTypedReducer<
 export function createTypedStateSlice<
   S,
   AM extends Record<string, (...args: unknown[]) => Action>,
-  A extends ReturnType<AM[keyof AM]>
->(
-  initialState: S,
-  reducerMap: Record<A['type'], (state: S, action: A) => S>,
-  actionMap: AM
-) {
+  A extends ReturnType<AM[keyof AM]>,
+>(initialState: S, reducerMap: Record<A['type'], (state: S, action: A) => S>, actionMap: AM) {
   // Create the reducer
   const reducer: Reducer<S, A> = (state = initialState, action) => {
     const handler = reducerMap[action.type];
@@ -231,7 +224,7 @@ export type StateTransitionFn<S, R = void> = (
 
 /**
  * Hook to manage complex state transitions in a type-safe way
- * 
+ *
  * @param initialState The initial state
  * @returns A tuple of [state, setState, runTransition]
  */
@@ -251,19 +244,20 @@ export function useTypedTransitions<S>(initialState: S) {
   /**
    * Run a complex state transition with proper typing
    */
-  const runTransition = useCallback(<R = void>(
-    transitionFn: StateTransitionFn<S, R>
-  ): Promise<R> => {
-    const getState = () => state;
-    return Promise.resolve(transitionFn(getState, setTypedState));
-  }, [state, setTypedState]);
+  const runTransition = useCallback(
+    <R = void>(transitionFn: StateTransitionFn<S, R>): Promise<R> => {
+      const getState = () => state;
+      return Promise.resolve(transitionFn(getState, setTypedState));
+    },
+    [state, setTypedState]
+  );
 
   return [state, setTypedState, runTransition] as const;
 }
 
 /**
  * Type-safe selector hook
- * 
+ *
  * @param state The state object
  * @param selector (...args: unknown[]) => unknown to select a portion of state
  * @returns The selected state portion
@@ -275,7 +269,7 @@ export function useTypedSelector<S, R>(state: S, selector: (state: S) => R): R {
 /**
  * Creates a type-safe async reducer
  * Handles loading, error, and success states for async operations
- * 
+ *
  * @param actionType Base action type for the async action
  * @param handler (...args: unknown[]) => unknown that processes the action payload
  * @returns An object with action creators and a reducer
@@ -301,10 +295,12 @@ export function createAsyncReducer<S, P, R>(
         dispatch(actionCreators.fulfilled(result));
         return result;
       } catch (error) {
-        dispatch(actionCreators.rejected(error instanceof Error ? error : new Error(String(error))));
+        dispatch(
+          actionCreators.rejected(error instanceof Error ? error : new Error(String(error)))
+        );
         throw error;
       }
-    }
+    },
   };
 
   // Create reducer
@@ -316,45 +312,44 @@ export function createAsyncReducer<S, P, R>(
 
   type AsyncReducerState = S & AsyncState;
 
-  const reducer = createReducer<AsyncReducerState, Action>(
-    { loading: false, error: null, data: null } as AsyncReducerState
-  )
-    .addCase(PENDING, (state) => ({
+  const reducer = createReducer<AsyncReducerState, Action>({
+    loading: false,
+    error: null,
+    data: null,
+  } as AsyncReducerState)
+    .addCase(PENDING, state => ({
       ...state,
       loading: true,
-      error: null
+      error: null,
     }))
     .addCase(FULFILLED, (state, action) => ({
       ...state,
       loading: false,
       data: action.payload,
-      error: null
+      error: null,
     }))
     .addCase(REJECTED, (state, action) => ({
       ...state,
       loading: false,
-      error: action.payload
+      error: action.payload,
     }))
     .build();
 
   return {
     actions: actionCreators,
-    reducer
+    reducer,
   };
 }
 
 /**
  * Type-safe context state utility
  * Combines the createReducer and useReducer patterns specifically for React contexts
- * 
+ *
  * @param reducer The reducer function
  * @param initialState The initial state
  * @returns A context provider and hooks to use the state
  */
-export function createTypedContext<
-  S,
-  A extends Action = Action
->(
+export function createTypedContext<S, A extends Action = Action>(
   reducer: Reducer<S, A>,
   initialState: S
 ) {
@@ -364,10 +359,10 @@ export function createTypedContext<
   const Provider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
 
-    return (
-      React.createElement(StateContext.Provider, { value: state },
-        React.createElement(DispatchContext.Provider, { value: dispatch }, children)
-      )
+    return React.createElement(
+      StateContext.Provider,
+      { value: state },
+      React.createElement(DispatchContext.Provider, { value: dispatch }, children)
     );
   };
 
@@ -390,6 +385,6 @@ export function createTypedContext<
   return {
     Provider,
     useStateContext,
-    useDispatchContext
+    useDispatchContext,
   };
-} 
+}

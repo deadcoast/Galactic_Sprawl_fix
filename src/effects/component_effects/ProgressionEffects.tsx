@@ -1,7 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { Star, Zap } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 
 interface ProgressionEffectsProps {
   tier: 1 | 2 | 3;

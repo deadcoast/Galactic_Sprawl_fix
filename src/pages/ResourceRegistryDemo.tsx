@@ -5,11 +5,11 @@
  * the functionality of the ResourceRegistry.
  */
 
-import * as React from "react";
+import * as React from 'react';
 import { useEffect } from 'react';
 import { ResourceRegistryUI } from '../components/ResourceRegistryUI';
 import { ResourceRegistry } from '../registry/ResourceRegistry';
-import { ResourceType } from "./../types/resources/ResourceTypes";
+import { ResourceCategory, ResourceType } from '../types/resources/ResourceTypes';
 
 const styles = {
   container: {

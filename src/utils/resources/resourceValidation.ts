@@ -1,5 +1,4 @@
 import {
-import { ResourceType } from '../../types/resources/ResourceTypes';
   ResourceConsumption,
   ResourceCost,
   ResourceFlow,

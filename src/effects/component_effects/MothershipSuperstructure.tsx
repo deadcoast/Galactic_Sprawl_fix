@@ -1,7 +1,6 @@
-import * as React from "react";
-import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Cpu, Shield, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface MothershipSuperstructureProps {
   tier: 1 | 2 | 3;

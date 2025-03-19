@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useSubModules } from '../../../hooks/modules/useSubModules';
 import { moduleManager } from '../../../managers/module/ModuleManager';
@@ -115,7 +115,9 @@ export const SubModuleHUD: React.FC<SubModuleHUDProps> = ({
 
   // Render loading state
   if (isLoading) {
-    return <div className="sub-module-hud sub-module-hud--loading">Loading sub-module data?...</div>;
+    return (
+      <div className="sub-module-hud sub-module-hud--loading">Loading sub-module data?...</div>
+    );
   }
 
   // Render error state

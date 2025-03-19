@@ -1,4 +1,3 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   AutomationRule,
@@ -6,6 +5,7 @@ import {
   EventConditionValue,
 } from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * Automation rules for colony management

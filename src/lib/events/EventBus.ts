@@ -10,7 +10,6 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { ResourceType } from '../../types/resources/ResourceTypes';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
   BaseEvent,

@@ -1,6 +1,5 @@
-import * as React from "react";
-import { useCallback, useEffect, useState } from 'react';
 import { Pause, Play, SkipBack, SkipForward, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { useGameState } from '../../../../contexts/GameContext';
 import { GameEvent, GameEventType, Position } from '../../../../types/core/GameTypes';
 

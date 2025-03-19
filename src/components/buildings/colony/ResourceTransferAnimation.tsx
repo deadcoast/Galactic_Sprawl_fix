@@ -1,7 +1,6 @@
-import * as React from "react";
-import { useEffect, useState } from 'react';
 import { ArrowRight, Package } from 'lucide-react';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { useEffect, useState } from 'react';
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 interface CargoShipProps {
   id: string;

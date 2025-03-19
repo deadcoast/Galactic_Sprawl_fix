@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { errorLoggingService, ErrorType } from '../../services/ErrorLoggingService';
 
 /**
@@ -80,7 +80,7 @@ export function createDataFetchHook<T, P extends any[] = []>(
         setRetryCount(0);
       } catch (err) {
         setError(err instanceof Error ? err : new Error(String(err)));
-        
+
         // Log error to the error service
         errorLoggingService.logError(
           err instanceof Error ? err : new Error(String(err)),
@@ -92,10 +92,10 @@ export function createDataFetchHook<T, P extends any[] = []>(
         // Retry logic
         if (defaultOptions.maxRetries && retryCount < defaultOptions.maxRetries) {
           setRetryCount(current => current + 1);
-          
+
           // Exponential backoff
           const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 30000);
-          
+
           setTimeout(() => {
             fetch();
           }, backoffTime);
@@ -147,28 +147,28 @@ export function createDataFetchHook<T, P extends any[] = []>(
       fetch,
       reset,
       lastFetched,
-      retryCount
+      retryCount,
     };
   };
 }
 
 /**
  * Example usage:
- * 
+ *
  * ```typescript
  * // Define the hook
  * const useUserData = createDataFetchHook(
  *   (userId: string) => fetch(`/api/users/${userId}`).then(res => res.json()),
  *   { fetchOnMount: true }
  * );
- * 
+ *
  * // Use in component
  * function UserProfile({ userId }) {
  *   const { data, isLoading, error, fetch } = useUserData(userId);
- *   
+ *
  *   if (isLoading) return <Loading />;
  *   if (error) return <Error message={error.message} />;
- *   
+ *
  *   return (
  *     <div>
  *       <h1>{data?.name}</h1>

@@ -1,4 +1,3 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   BaseModule,
   BuildingType,
@@ -16,6 +15,7 @@ import {
   SubModuleType,
 } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * Type guard for ModuleType

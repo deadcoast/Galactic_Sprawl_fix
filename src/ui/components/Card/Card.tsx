@@ -1,4 +1,3 @@
-import * as React from "react";
 import { forwardRef, HTMLAttributes, ReactNode } from 'react';
 import { cn } from '../../../utils/cn';
 
@@ -41,26 +40,29 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 /**
  * Card component
- * 
+ *
  * A versatile card component for displaying related content in a container.
  */
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({
-    variant = 'default',
-    hoverable = false,
-    selectable = false,
-    selected = false,
-    disabled = false,
-    header,
-    footer,
-    title,
-    subtitle,
-    children,
-    background,
-    compact = false,
-    className,
-    ...props
-  }, ref) => {
+  (
+    {
+      variant = 'default',
+      hoverable = false,
+      selectable = false,
+      selected = false,
+      disabled = false,
+      header,
+      footer,
+      title,
+      subtitle,
+      children,
+      background,
+      compact = false,
+      className,
+      ...props
+    },
+    ref
+  ) => {
     // Card variant styles
     const variantClasses: Record<CardVariant, string> = {
       default: 'bg-white border border-gray-200',
@@ -97,27 +99,14 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
 
       return (
         <div className={`${contentPadding} border-b border-gray-200`}>
-          {title && (
-            <h3 className="text-lg font-medium text-gray-900">
-              {title}
-            </h3>
-          )}
-          {subtitle && (
-            <p className="text-sm text-gray-500 mt-1">
-              {subtitle}
-            </p>
-          )}
+          {title && <h3 className="text-lg font-medium text-gray-900">{title}</h3>}
+          {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
         </div>
       );
     };
 
     return (
-      <div
-        ref={ref}
-        className={cardClasses}
-        style={backgroundStyle}
-        {...props}
-      >
+      <div ref={ref} className={cardClasses} style={backgroundStyle} {...props}>
         {/* Card header */}
         {header && (
           <div className={`${headerFooterPadding} border-b border-gray-200 bg-gray-50`}>
@@ -129,9 +118,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         {renderTitle()}
 
         {/* Main content */}
-        <div className={contentPadding}>
-          {children}
-        </div>
+        <div className={contentPadding}>{children}</div>
 
         {/* Card footer */}
         {footer && (

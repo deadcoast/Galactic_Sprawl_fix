@@ -1,4 +1,3 @@
-import { ResourceType } from "./../resources/ResourceTypes";
 /**
  * Module Event Types
  *

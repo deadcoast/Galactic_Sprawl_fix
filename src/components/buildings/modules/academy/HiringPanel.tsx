@@ -1,7 +1,6 @@
-import * as React from "react";
-import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, ChevronRight, Filter, Search, Star, Users, X } from 'lucide-react';
+import { useState } from 'react';
 
 interface HiringPanelProps {
   tier: 1 | 2 | 3;

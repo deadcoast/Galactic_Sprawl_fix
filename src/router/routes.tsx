@@ -1,4 +1,3 @@
-import * as React from "react";
 import { lazy, Suspense } from 'react';
 // Import React.lazy for code splitting
 

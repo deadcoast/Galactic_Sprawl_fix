@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Check, Crosshair, Palette, Rocket, Shield } from 'lucide-react';
 
 interface CustomizationOption {

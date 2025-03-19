@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useMemo } from 'react';
 import {
   CartesianGrid,
@@ -167,8 +166,8 @@ export function ScatterPlot({
           : dataPoint.name;
 
         // Ensure x and y values are numbers
-        x = typeof x === 'number' ? x : parseFloat(String(x)) ?? 0;
-        y = typeof y === 'number' ? y : parseFloat(String(y)) ?? 0;
+        x = typeof x === 'number' ? x : (parseFloat(String(x)) ?? 0);
+        y = typeof y === 'number' ? y : (parseFloat(String(y)) ?? 0);
         z = z && typeof z === 'number' ? z : z ? parseFloat(String(z)) || pointSize : pointSize;
 
         return {
@@ -191,8 +190,8 @@ export function ScatterPlot({
         name = nameKey ? record[nameKey] : undefined;
 
         // Ensure x and y values are numbers
-        x = typeof x === 'number' ? x : parseFloat(String(x)) ?? 0;
-        y = typeof y === 'number' ? y : parseFloat(String(y)) ?? 0;
+        x = typeof x === 'number' ? x : (parseFloat(String(x)) ?? 0);
+        y = typeof y === 'number' ? y : (parseFloat(String(y)) ?? 0);
         z = z && typeof z === 'number' ? z : z ? parseFloat(String(z)) || pointSize : pointSize;
 
         return {

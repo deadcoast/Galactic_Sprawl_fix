@@ -10,11 +10,11 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { ResourceType } from '../../types/resources/ResourceTypes';
 import { EventBus } from '../../lib/events/EventBus';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 
 // Define Exploration specific event types
 export enum ExplorationEvents {

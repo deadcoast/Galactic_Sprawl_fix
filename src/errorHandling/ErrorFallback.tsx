@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { cn } from '../utils/cn';
 
 /**
@@ -23,7 +23,7 @@ export interface ErrorFallbackProps {
 
 /**
  * Default error fallback component
- * 
+ *
  * This component renders a user-friendly error message with optional details
  * and a button to reset the error boundary.
  */
@@ -34,20 +34,17 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
   showDetails = process.env.NODE_ENV !== 'production',
   className,
   actionText,
-  onAction
+  onAction,
 }) => {
   return (
     <div
-      className={cn(
-        'p-6 rounded-lg bg-red-50 border border-red-200 text-red-800',
-        className
-      )}
+      className={cn('rounded-lg border border-red-200 bg-red-50 p-6 text-red-800', className)}
       role="alert"
     >
-      <div className="flex items-center mb-3">
+      <div className="mb-3 flex items-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 mr-2 text-red-600"
+          className="mr-2 h-6 w-6 text-red-600"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -61,46 +58,43 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
         </svg>
         <h2 className="text-lg font-semibold">{title}</h2>
       </div>
-      
+
       <p className="mb-4">
-        An error occurred while rendering this component. 
-        {process.env.NODE_ENV !== 'production' 
+        An error occurred while rendering this component.
+        {process.env.NODE_ENV !== 'production'
           ? " You're seeing this because you're in development mode."
-          : " Our team has been notified."
-        }
+          : ' Our team has been notified.'}
       </p>
-      
+
       {showDetails && (
         <div className="mb-4">
-          <p className="font-medium mb-1">Error message:</p>
-          <pre className="bg-red-100 p-2 rounded overflow-auto text-sm whitespace-pre-wrap">
+          <p className="mb-1 font-medium">Error message:</p>
+          <pre className="overflow-auto whitespace-pre-wrap rounded bg-red-100 p-2 text-sm">
             {error.message || 'Unknown error'}
           </pre>
           {error.stack && (
             <details className="mt-2">
-              <summary className="cursor-pointer text-sm font-medium">
-                Stack trace
-              </summary>
-              <pre className="bg-red-100 p-2 mt-2 rounded overflow-auto text-xs whitespace-pre-wrap">
+              <summary className="cursor-pointer text-sm font-medium">Stack trace</summary>
+              <pre className="mt-2 overflow-auto whitespace-pre-wrap rounded bg-red-100 p-2 text-xs">
                 {error.stack}
               </pre>
             </details>
           )}
         </div>
       )}
-      
+
       <div className="flex flex-wrap gap-2">
         <button
           onClick={resetErrorBoundary}
-          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+          className="rounded bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700"
         >
           Try again
         </button>
-        
+
         {actionText && onAction && (
           <button
             onClick={onAction}
-            className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+            className="rounded bg-gray-200 px-4 py-2 text-gray-800 transition-colors hover:bg-gray-300"
           >
             {actionText}
           </button>

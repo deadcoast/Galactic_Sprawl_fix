@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useEffect, useState } from 'react';
 import { FleetFormation } from '../../../types/combat/CombatTypes';
 import { FormationVisualizer } from './FormationVisualizer';

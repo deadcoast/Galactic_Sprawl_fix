@@ -5,7 +5,6 @@
  */
 
 import { ResourceType, ResourceTypeString } from '../../types/resources/ResourceTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
 
 /**
  * Convert a string resource type to enum ResourceType

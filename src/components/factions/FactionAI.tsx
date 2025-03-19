@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AlertTriangle, Shield, Sword, Zap } from 'lucide-react';
 import type { FactionId } from '../../types/ships/FactionTypes';
 

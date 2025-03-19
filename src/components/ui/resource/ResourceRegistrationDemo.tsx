@@ -1,11 +1,11 @@
-import * as React from "react";
+import * as React from 'react';
 import { useState } from 'react';
 import { moduleEventBus, ModuleEventType } from '../../../lib/modules/ModuleEvents';
 import {
   ComponentRegistration,
   componentRegistryService,
 } from '../../../services/ComponentRegistryService';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 import { ResourceDisplay } from './ResourceDisplay';
 
 /**

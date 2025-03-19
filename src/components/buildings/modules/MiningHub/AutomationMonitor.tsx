@@ -1,7 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Bell, Settings } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useThreshold } from '../../../../contexts/ThresholdContext';
 
 interface Alert {

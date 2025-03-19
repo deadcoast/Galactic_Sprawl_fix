@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { ResourceType } from "./../resources/ResourceTypes";
+import { ResourceType } from './../resources/ResourceTypes';
 import { AnalysisResult, DataPoint } from './DataAnalysisTypes';
 
 /**

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AlertTriangle, Crosshair, Shield } from 'lucide-react';
 import { PlayerShipProps } from '../../../../types/ships/PlayerShipTypes';
 import { canFireWeapon } from '../../../../utils/ships/shipUtils';

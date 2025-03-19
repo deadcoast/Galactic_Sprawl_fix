@@ -1,7 +1,6 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
 export interface DragItem<T = Record<string, unknown>> {

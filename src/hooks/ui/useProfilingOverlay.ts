@@ -116,7 +116,11 @@ export function useProfilingOverlay(options: ProfilingOverlayOptions = {}) {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       // Check if Alt+Shift+toggleKey is pressed
-      if (event?.altKey && event?.shiftKey && event?.key.toLowerCase() === toggleKey.toLowerCase()) {
+      if (
+        event?.altKey &&
+        event?.shiftKey &&
+        event?.key.toLowerCase() === toggleKey.toLowerCase()
+      ) {
         toggleOverlay();
       }
     };

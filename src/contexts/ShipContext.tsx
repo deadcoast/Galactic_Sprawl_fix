@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { createContext, ReactNode, useContext, useReducer } from 'react';
 import { BaseEffect, EffectStack } from '../effects/types_effects/EffectTypes';
 import { CommonShipStats } from '../types/ships/CommonShipTypes';

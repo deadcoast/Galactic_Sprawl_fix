@@ -1,6 +1,6 @@
 import * as React from 'react';
+import { ResourceRegistryIntegration } from '../registry/ResourceRegistryIntegration';
 import { ResourceType } from '../types/resources/ResourceTypes';
-import { ResourceTypeHelpers } from '../types/resources/StandardizedResourceTypes';
 import { ThresholdAction, ThresholdState, initialState, thresholdEvents } from './ThresholdTypes';
 
 // Types
@@ -43,7 +43,8 @@ interface ThresholdContextType {
 
 // Helper function to get resource name for display
 const getResourceName = (resourceType: ResourceType): string => {
-  return ResourceTypeHelpers.getDisplayName(resourceType);
+  const resourceRegistry = ResourceRegistryIntegration.getInstance();
+  return resourceRegistry.getDisplayName(resourceType);
 };
 
 // Reducer

@@ -1,7 +1,7 @@
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FixedSizeList as List, ListChildComponentProps, VariableSizeList } from 'react-window';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 export interface ResourceItem {
   id: string;

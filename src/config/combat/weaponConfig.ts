@@ -1,4 +1,3 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { AreaEffect, DamageEffect } from '../../effects/types_effects/WeaponEffects';
 import {
   WeaponCategory,
@@ -6,6 +5,7 @@ import {
   WeaponType,
   WeaponVariant,
 } from '../../types/weapons/WeaponTypes';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Base stats for each weapon category
 const baseWeaponStats: Record<WeaponCategory, WeaponStats> = {

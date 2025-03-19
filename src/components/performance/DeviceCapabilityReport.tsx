@@ -6,7 +6,7 @@
  * device types, capabilities, and hardware configurations.
  */
 
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import useSessionPerformance from '../../hooks/performance/useSessionPerformance';
 
@@ -403,7 +403,9 @@ const CapabilityMetricsTable: React.FC<{
                 {item?.count.toLocaleString()}
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                <span className={`rounded-full px-2 py-1 text-xs ${getFpsColorClass(item?.avgFps)}`}>
+                <span
+                  className={`rounded-full px-2 py-1 text-xs ${getFpsColorClass(item?.avgFps)}`}
+                >
                   {item?.avgFps.toFixed(1)}
                 </span>
               </td>

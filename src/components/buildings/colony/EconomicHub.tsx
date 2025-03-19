@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AlertTriangle, ArrowUpRight, TrendingUp } from 'lucide-react';
 
 interface EconomicHubProps {

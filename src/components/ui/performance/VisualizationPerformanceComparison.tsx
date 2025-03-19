@@ -6,7 +6,7 @@
  * comparison of the original and optimized flow diagram components.
  */
 
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useState } from 'react';
 import { PerformanceOptimizationConfig } from '../../../utils/performance/D3PerformanceOptimizations';
 import OptimizedFlowDiagram, { FlowData, FlowNode } from './OptimizedFlowDiagram';

@@ -1,4 +1,4 @@
-import { ResourceType } from "./ResourceTypes";
+import { ResourceType } from './ResourceTypes';
 
 /**
  * Interface for serialized resource data

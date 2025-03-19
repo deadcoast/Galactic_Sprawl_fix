@@ -1,4 +1,4 @@
-import { ResourceType } from "./../types/resources/ResourceTypes";
+import { ResourceType } from './../types/resources/ResourceTypes';
 /**
  * @file DataCollectionService.ts
  * Service for collecting and preprocessing data for analysis
@@ -555,8 +555,8 @@ export class DataCollectionService {
     // Convert anomaly.severity from string to number
     const severityAsNumber =
       typeof anomaly.severity === 'string'
-        ? parseFloat(anomaly.severity) ?? 0
-        : anomaly.severity ?? 0;
+        ? (parseFloat(anomaly.severity) ?? 0)
+        : (anomaly.severity ?? 0);
 
     // Calculate risk assessment based on severity and type
     const riskAssessment = this.calculateRiskAssessment(severityAsNumber, anomaly.type);

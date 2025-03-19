@@ -6,7 +6,7 @@
  * common operations on resource types.
  */
 
-import { ResourceType } from "./ResourceTypes";
+import { ResourceType } from './ResourceTypes';
 
 /**
  * Gets the display name for a resource type

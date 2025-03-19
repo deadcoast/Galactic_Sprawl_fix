@@ -3,9 +3,8 @@ import {
   ResourceTransfer as StringResourceTransfer,
   ResourceType as StringResourceType,
 } from '../../types/resources/ResourceTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * ResourceTransferSubsystem

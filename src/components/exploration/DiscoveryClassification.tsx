@@ -1,4 +1,3 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   AlertTriangle,
   Brain,
@@ -10,7 +9,7 @@ import {
   Search,
   X,
 } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useClassification } from '../../contexts/ClassificationContext';
 import {

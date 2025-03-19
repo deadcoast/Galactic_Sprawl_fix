@@ -1,11 +1,18 @@
-import * as React from "react";
-import { forwardRef, ButtonHTMLAttributes, ReactNode } from 'react';
+import { ButtonHTMLAttributes, forwardRef, ReactNode } from 'react';
 import { cn } from '../../../utils/cn';
 
 /**
  * Button variants
  */
-export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'danger' | 'success' | 'warning' | 'info' | 'ghost';
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'danger'
+  | 'success'
+  | 'warning'
+  | 'info'
+  | 'ghost';
 
 /**
  * Button sizes
@@ -40,7 +47,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
 
 /**
  * Base Button component
- * 
+ *
  * Provides consistent styling, sizes, and variants for buttons throughout the application.
  * Can be extended with specialized buttons for specific use cases.
  */
@@ -64,20 +71,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     // Map variants to class names
     const variantClasses: Record<ButtonVariant, string> = {
-      primary:
-        'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-400',
+      primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-400',
       secondary:
         'bg-gray-200 text-gray-800 hover:bg-gray-300 active:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400',
       tertiary:
         'bg-transparent text-gray-600 hover:bg-gray-100 active:bg-gray-200 disabled:text-gray-300',
-      danger:
-        'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 disabled:bg-red-400',
+      danger: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 disabled:bg-red-400',
       success:
         'bg-green-600 text-white hover:bg-green-700 active:bg-green-800 disabled:bg-green-400',
       warning:
         'bg-yellow-600 text-white hover:bg-yellow-700 active:bg-yellow-800 disabled:bg-yellow-400',
-      info:
-        'bg-cyan-600 text-white hover:bg-cyan-700 active:bg-cyan-800 disabled:bg-cyan-400',
+      info: 'bg-cyan-600 text-white hover:bg-cyan-700 active:bg-cyan-800 disabled:bg-cyan-400',
       ghost:
         'bg-transparent hover:bg-gray-100 active:bg-gray-200 disabled:bg-transparent disabled:text-gray-300',
     };
@@ -126,7 +130,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // Loading spinner component
     const LoadingSpinner = () => (
       <svg
-        className="animate-spin -ml-1 mr-2 h-4 w-4"
+        className="-ml-1 mr-2 h-4 w-4 animate-spin"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"

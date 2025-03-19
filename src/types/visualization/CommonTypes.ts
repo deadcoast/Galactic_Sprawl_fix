@@ -6,7 +6,7 @@
  * that can be extended by specialized visualization components.
  */
 import * as React from 'react';
-import { ResourceType } from "./../resources/ResourceTypes";
+import { ResourceType } from './../resources/ResourceTypes';
 
 // =========================================
 // Base Visualization Data Types
@@ -66,10 +66,7 @@ export interface BaseLink {
 /**
  * Base network/graph data structure
  */
-export interface NetworkData<
-  N extends BasePoint = BasePoint,
-  L extends BaseLink = BaseLink
-> {
+export interface NetworkData<N extends BasePoint = BasePoint, L extends BaseLink = BaseLink> {
   nodes: N[];
   links: L[];
 }
@@ -84,16 +81,16 @@ export interface NetworkData<
 export interface BaseChartComponentProps {
   /** Width of the visualization */
   width?: number | string;
-  
+
   /** Height of the visualization */
   height?: number | string;
-  
+
   /** Optional title for the visualization */
   title?: string;
-  
+
   /** CSS class names */
   className?: string;
-  
+
   /** Error message to display if visualization fails */
   errorMessage?: string;
 
@@ -121,28 +118,28 @@ export interface VisualizationTooltipProps {
 export interface BaseVisualizationProps extends BaseChartComponentProps {
   /** Data to visualize */
   data: ChartDataRecord[];
-  
+
   /** Key for accessing the X-axis value */
   xKey: string;
-  
+
   /** Key for accessing the Y-axis value */
   yKey: string;
-  
+
   /** Whether to show a legend */
   showLegend?: boolean;
-  
+
   /** Whether to animate transitions */
   animate?: boolean;
-  
+
   /** Custom tooltip component or renderer */
   customTooltip?: React.FC<VisualizationTooltipProps> | TooltipRenderer<ChartDataRecord>;
-  
+
   /** (...args: unknown[]) => unknown to determine color based on data point */
   colorAccessor?: ColorAccessorFn<ChartDataRecord>;
-  
+
   /** Click handler for chart elements */
   onElementClick?: (data: ChartDataRecord) => void;
-  
+
   /** Grid display options */
   grid?: GridOptions;
 
@@ -227,19 +224,19 @@ export type EasingFn = (normalizedTime: number) => number;
 export interface AnimationConfig {
   /** Duration in milliseconds */
   duration: number;
-  
+
   /** Delay before starting in milliseconds */
   delay?: number;
-  
+
   /** Easing function name or implementation */
   easing?: string | EasingFn;
-  
+
   /** Whether the animation should loop */
   loop?: boolean;
-  
+
   /** Delay between each iteration when looping */
   loopDelay?: number;
-  
+
   /** Number of times to loop (undefined for infinite) */
   loopCount?: number;
 }
@@ -281,16 +278,16 @@ export interface TypedInterpolator<T> {
 export interface MemoryOptimizationOptions {
   /** Whether to use memory optimization */
   enabled?: boolean;
-  
+
   /** Maximum number of elements to render at once */
   maxItemsToRender?: number;
-  
+
   /** Whether to use virtualization */
   useVirtualization?: boolean;
-  
+
   /** Whether to dispose off-screen elements */
   disposeOffscreen?: boolean;
-  
+
   /** Threshold (in pixels) for considering elements off-screen */
   offscreenThreshold?: number;
 }
@@ -301,16 +298,16 @@ export interface MemoryOptimizationOptions {
 export interface ViewportConfig {
   /** Visible width */
   width: number;
-  
+
   /** Visible height */
   height: number;
-  
+
   /** X offset of the viewport */
   x: number;
-  
+
   /** Y offset of the viewport */
   y: number;
-  
+
   /** Scale/zoom level */
   scale: number;
 }
@@ -411,7 +408,8 @@ export interface SimulationNodeDatum<T = unknown> extends BasePoint {
 /**
  * Generic Link type for D3 force simulations
  */
-export interface SimulationLinkDatum<N extends SimulationNodeDatum = SimulationNodeDatum> extends BaseLink {
+export interface SimulationLinkDatum<N extends SimulationNodeDatum = SimulationNodeDatum>
+  extends BaseLink {
   source: string | N;
   target: string | N;
   value?: number;

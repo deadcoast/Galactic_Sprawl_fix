@@ -1,5 +1,5 @@
 import { Chip, Divider, List, ListItem, Typography } from '@mui/material';
-import * as React from "react";
+import * as React from 'react';
 import { AnalysisConfig, AnalysisResult } from '../../types/exploration/DataAnalysisTypes';
 
 interface ResultsPanelProps {

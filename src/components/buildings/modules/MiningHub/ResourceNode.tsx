@@ -1,8 +1,8 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database, Truck, Zap } from 'lucide-react';
-import * as React from "react";
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import * as React from 'react';
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 interface Resource {
   id: string;
   name: string;

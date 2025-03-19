@@ -1,6 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 import { Effect } from '../../types/core/GameTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 // Base Effect Types
 // ------------------------------------------------------------
 
@@ -56,7 +56,13 @@ export type StatusEffectType =
 /**
  * Visual effect types
  */
-export type VisualEffectType = ResourceType.PLASMA | 'spark' | 'gauss' | 'explosive' | 'beam' | 'particle';
+export type VisualEffectType =
+  | ResourceType.PLASMA
+  | 'spark'
+  | 'gauss'
+  | 'explosive'
+  | 'beam'
+  | 'particle';
 
 /**
  * Environmental effect types

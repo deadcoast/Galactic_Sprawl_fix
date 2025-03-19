@@ -1,9 +1,15 @@
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 interface BuildingData {
   id: string;
-  type: 'housing' | 'industry' | 'agriculture' | ResourceType.ENERGY | ResourceType.RESEARCH | 'infrastructure';
+  type:
+    | 'housing'
+    | 'industry'
+    | 'agriculture'
+    | ResourceType.ENERGY
+    | ResourceType.RESEARCH
+    | 'infrastructure';
   name: string;
   level: number;
   position: { x: number; y: number };

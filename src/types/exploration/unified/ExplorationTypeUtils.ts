@@ -1,28 +1,26 @@
 /**
  * Exploration Type Utilities
- * 
+ *
  * This file contains utility functions for working with exploration types,
  * including type conversion functions, validation, and helper functions.
  */
 
+import { DataPoint } from '../DataAnalysisTypes';
+import { ResourceType } from './../../resources/ResourceTypes';
 import {
-  Anomaly,
-  AnomalyType,
   AnalysisResult,
   AnalysisType,
+  Anomaly,
+  AnomalyType,
   Coordinates,
   DangerLevel,
-  EffectType,
   Effect,
+  EffectType,
   ExplorationStatus,
   InvestigationStage,
+  ResourceDeposit,
   Sector,
-  StarSystem,
-  Planet,
-  ResourceDeposit
 } from './ExplorationTypes';
-import { DataPoint } from '../DataAnalysisTypes';
-import { ResourceType } from "./../../resources/ResourceTypes";
 
 // =========================================
 // Type Conversion Utilities
@@ -38,7 +36,7 @@ export function dataPointToCoordinates(dataPoint: DataPoint): Coordinates {
     y: dataPoint.coordinates.y,
     z: dataPoint.properties?.z as number | undefined,
     sector: dataPoint.properties?.sector as string | undefined,
-    quadrant: dataPoint.properties?.quadrant as string | undefined
+    quadrant: dataPoint.properties?.quadrant as string | undefined,
   };
 }
 
@@ -63,11 +61,11 @@ export function dataPointToAnomaly(dataPoint: DataPoint): Anomaly {
       progress: 0,
       findings: [],
       requiredEquipment: [],
-      recommendedActions: []
+      recommendedActions: [],
     },
     potentialUses: [],
     dangerLevel: determineDangerLevel(dataPoint),
-    visualData: dataPoint.properties?.visualData as unknown || undefined
+    visualData: (dataPoint.properties?.visualData as unknown) || undefined,
   };
 }
 
@@ -83,7 +81,7 @@ export function dataPointToResourceDeposit(dataPoint: DataPoint): ResourceDeposi
     accessibility: (dataPoint.properties?.accessibility as number) || 50,
     coordinates: dataPointToCoordinates(dataPoint),
     explorationStatus: ExplorationStatus.DETECTED,
-    discoveredAt: dataPoint.date
+    discoveredAt: dataPoint.date,
   };
 }
 
@@ -103,7 +101,7 @@ export function dataPointToSector(dataPoint: DataPoint): Sector {
     anomalies: [],
     tradeRoutes: [],
     dangerLevel: determineDangerLevel(dataPoint),
-    environmentalConditions: []
+    environmentalConditions: [],
   };
 }
 
@@ -118,7 +116,7 @@ export function anomalyToDataPoint(anomaly: Anomaly): DataPoint {
     date: anomaly.discoveredAt,
     coordinates: {
       x: anomaly.coordinates.x,
-      y: anomaly.coordinates.y
+      y: anomaly.coordinates.y,
     },
     properties: {
       anomalyType: anomaly.anomalyType,
@@ -128,8 +126,8 @@ export function anomalyToDataPoint(anomaly: Anomaly): DataPoint {
       z: anomaly.coordinates.z,
       sector: anomaly.coordinates.sector,
       quadrant: anomaly.coordinates.quadrant,
-      visualData: anomaly.visualData
-    }
+      visualData: anomaly.visualData,
+    },
   };
 }
 
@@ -144,7 +142,7 @@ export function resourceDepositToDataPoint(resource: ResourceDeposit): DataPoint
     date: resource.discoveredAt || Date.now(),
     coordinates: {
       x: resource.coordinates.x,
-      y: resource.coordinates.y
+      y: resource.coordinates.y,
     },
     properties: {
       resourceType: resource.type,
@@ -153,8 +151,8 @@ export function resourceDepositToDataPoint(resource: ResourceDeposit): DataPoint
       accessibility: resource.accessibility,
       z: resource.coordinates.z,
       sector: resource.coordinates.sector,
-      quadrant: resource.coordinates.quadrant
-    }
+      quadrant: resource.coordinates.quadrant,
+    },
   };
 }
 
@@ -169,7 +167,7 @@ export function sectorToDataPoint(sector: Sector): DataPoint {
     date: sector.discoveredAt,
     coordinates: {
       x: sector.coordinates.x,
-      y: sector.coordinates.y
+      y: sector.coordinates.y,
     },
     properties: {
       dangerLevel: sector.dangerLevel,
@@ -178,8 +176,8 @@ export function sectorToDataPoint(sector: Sector): DataPoint {
       resourceCount: sector.resources.length,
       z: sector.coordinates.z,
       quadrant: sector.coordinates.quadrant,
-      factionControl: sector.factionControl?.factionName
-    }
+      factionControl: sector.factionControl?.factionName,
+    },
   };
 }
 
@@ -192,16 +190,18 @@ export function sectorToDataPoint(sector: Sector): DataPoint {
  */
 function determineAnomalyType(dataPoint: DataPoint): AnomalyType {
   const typeProperty = dataPoint.properties?.anomalyType as string | undefined;
-  
+
   if (typeProperty && Object.values(AnomalyType).includes(typeProperty as AnomalyType)) {
     return typeProperty as AnomalyType;
   }
-  
+
   // Try to determine based on other properties
   const energySignature = dataPoint.properties?.energySignature as number | undefined;
-  const gravitationalDistortion = dataPoint.properties?.gravitationalDistortion as number | undefined;
+  const gravitationalDistortion = dataPoint.properties?.gravitationalDistortion as
+    | number
+    | undefined;
   const temporalFlux = dataPoint.properties?.temporalFlux as number | undefined;
-  
+
   if (energySignature && energySignature > 70) {
     return AnomalyType.ENERGY_SIGNATURE;
   } else if (gravitationalDistortion && gravitationalDistortion > 70) {
@@ -209,7 +209,7 @@ function determineAnomalyType(dataPoint: DataPoint): AnomalyType {
   } else if (temporalFlux && temporalFlux > 70) {
     return AnomalyType.TEMPORAL_ANOMALY;
   }
-  
+
   // Default case
   return AnomalyType.UNKNOWN;
 }
@@ -219,11 +219,11 @@ function determineAnomalyType(dataPoint: DataPoint): AnomalyType {
  */
 function determineResourceType(dataPoint: DataPoint): ResourceType {
   const typeProperty = dataPoint.properties?.resourceType as string | undefined;
-  
+
   if (typeProperty && Object.values(ResourceType).includes(typeProperty as ResourceType)) {
     return typeProperty as ResourceType;
   }
-  
+
   // Default case
   return ResourceType.MINERALS;
 }
@@ -233,28 +233,30 @@ function determineResourceType(dataPoint: DataPoint): ResourceType {
  */
 function determineDangerLevel(dataPoint: DataPoint): DangerLevel {
   const dangerProperty = dataPoint.properties?.dangerLevel as string | undefined;
-  
+
   if (dangerProperty && Object.values(DangerLevel).includes(dangerProperty as DangerLevel)) {
     return dangerProperty as DangerLevel;
   }
-  
+
   // Try to determine based on other properties
   const radiationLevel = dataPoint.properties?.radiationLevel as number | undefined;
   const hostileActivity = dataPoint.properties?.hostileActivity as number | undefined;
   const instability = dataPoint.properties?.instability as number | undefined;
-  
+
   if (radiationLevel && radiationLevel > 80) {
     return DangerLevel.EXTREME;
   } else if (hostileActivity && hostileActivity > 70) {
     return DangerLevel.HIGH;
   } else if (instability && instability > 60) {
     return DangerLevel.MODERATE;
-  } else if ((radiationLevel && radiationLevel > 30) || 
-            (hostileActivity && hostileActivity > 30) || 
-            (instability && instability > 30)) {
+  } else if (
+    (radiationLevel && radiationLevel > 30) ||
+    (hostileActivity && hostileActivity > 30) ||
+    (instability && instability > 30)
+  ) {
     return DangerLevel.LOW;
   }
-  
+
   // Default case
   return DangerLevel.UNKNOWN;
 }
@@ -264,7 +266,7 @@ function determineDangerLevel(dataPoint: DataPoint): DangerLevel {
  */
 export function createDefaultEffect(type: EffectType): Effect {
   const id = `effect-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-  
+
   switch (type) {
     case EffectType.BUFF:
       return {
@@ -274,9 +276,9 @@ export function createDefaultEffect(type: EffectType): Effect {
         strength: 50,
         duration: -1,
         description: 'A positive effect that enhances capabilities.',
-        impactedSystems: ['shields', 'sensors']
+        impactedSystems: ['shields', 'sensors'],
       };
-    
+
     case EffectType.DEBUFF:
       return {
         id,
@@ -285,9 +287,9 @@ export function createDefaultEffect(type: EffectType): Effect {
         strength: 40,
         duration: 300,
         description: 'A negative effect that impairs capabilities.',
-        impactedSystems: ['engines', 'weapons']
+        impactedSystems: ['engines', 'weapons'],
       };
-    
+
     case EffectType.DAMAGE:
       return {
         id,
@@ -296,9 +298,9 @@ export function createDefaultEffect(type: EffectType): Effect {
         strength: 60,
         duration: 60,
         description: 'An effect that causes damage over time.',
-        impactedSystems: ['hull', 'components']
+        impactedSystems: ['hull', 'components'],
       };
-    
+
     case EffectType.ENVIRONMENTAL:
       return {
         id,
@@ -307,9 +309,9 @@ export function createDefaultEffect(type: EffectType): Effect {
         strength: 30,
         duration: -1,
         description: 'An environmental effect that alters the surroundings.',
-        impactedSystems: ['scanners', 'mining']
+        impactedSystems: ['scanners', 'mining'],
       };
-    
+
     default:
       return {
         id,
@@ -318,7 +320,7 @@ export function createDefaultEffect(type: EffectType): Effect {
         strength: 50,
         duration: 120,
         description: 'A special effect with unique properties.',
-        impactedSystems: ['all']
+        impactedSystems: ['all'],
       };
   }
 }
@@ -326,9 +328,12 @@ export function createDefaultEffect(type: EffectType): Effect {
 /**
  * Create a default analysis result
  */
-export function createDefaultAnalysisResult(type: AnalysisType, entityIds: string[]): AnalysisResult {
+export function createDefaultAnalysisResult(
+  type: AnalysisType,
+  entityIds: string[]
+): AnalysisResult {
   const id = `analysis-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-  
+
   return {
     id,
     name: `${type.charAt(0).toUpperCase() + type.slice(1)} Analysis`,
@@ -338,7 +343,7 @@ export function createDefaultAnalysisResult(type: AnalysisType, entityIds: strin
     data: {},
     insights: [],
     summary: 'Analysis complete. Review results for more information.',
-    confidence: 75
+    confidence: 75,
   };
 }
 
@@ -371,7 +376,7 @@ export function calculateDistance(coord1: Coordinates, coord2: Coordinates): num
   const dx = coord2.x - coord1.x;
   const dy = coord2.y - coord1.y;
   const dz = (coord2.z ?? 0) - (coord1.z ?? 0);
-  
+
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
@@ -386,7 +391,7 @@ export function findNearestEntities<T extends { coordinates: Coordinates }>(
   return [...entities]
     .map(entity => ({
       entity,
-      distance: calculateDistance(entity.coordinates, targetCoord)
+      distance: calculateDistance(entity.coordinates, targetCoord),
     }))
     .sort((a, b) => a.distance - b.distance)
     .slice(0, limit)
@@ -407,27 +412,27 @@ export function createEmptyExplorationState() {
     activities: [],
     analysisResults: [],
     loading: false,
-    error: null
+    error: null,
   };
 }
 
 // Export utility functions
 export {
-  dataPointToCoordinates,
+  anomalyToDataPoint,
+  calculateDistance,
+  createDefaultAnalysisResult,
+  createDefaultEffect,
+  createEmptyExplorationState,
   dataPointToAnomaly,
+  dataPointToCoordinates,
   dataPointToResourceDeposit,
   dataPointToSector,
-  anomalyToDataPoint,
+  determineAnomalyType,
+  determineDangerLevel,
+  determineResourceType,
+  filterByExplorationStatus,
+  findNearestEntities,
   resourceDepositToDataPoint,
   sectorToDataPoint,
-  determineAnomalyType,
-  determineResourceType,
-  determineDangerLevel,
-  createDefaultEffect,
-  createDefaultAnalysisResult,
-  filterByExplorationStatus,
   sortByDiscoveryDate,
-  calculateDistance,
-  findNearestEntities,
-  createEmptyExplorationState
 };

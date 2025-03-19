@@ -1,5 +1,4 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -9,6 +8,7 @@ import {
   AutomationConditionType,
   AutomationRule,
 } from '../../../managers/game/AutomationManager';
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 import './AutomationRuleEditor.css';
 
 interface AutomationRuleEditorProps {
@@ -653,7 +653,12 @@ const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({ node, onUpdate }) =
                 }}
               >
                 <option value="">Select Resource</option>
-                {[ResourceType.MINERALS, ResourceType.ENERGY, ResourceType.POPULATION, ResourceType.RESEARCH].map(resource => (
+                {[
+                  ResourceType.MINERALS,
+                  ResourceType.ENERGY,
+                  ResourceType.POPULATION,
+                  ResourceType.RESEARCH,
+                ].map(resource => (
                   <option key={resource} value={resource}>
                     {resource}
                   </option>
@@ -771,7 +776,12 @@ const NodeDetailsPanel: React.FC<NodeDetailsPanelProps> = ({ node, onUpdate }) =
                 }}
               >
                 <option value="">Select Resource</option>
-                {[ResourceType.MINERALS, ResourceType.ENERGY, ResourceType.POPULATION, ResourceType.RESEARCH].map(resource => (
+                {[
+                  ResourceType.MINERALS,
+                  ResourceType.ENERGY,
+                  ResourceType.POPULATION,
+                  ResourceType.RESEARCH,
+                ].map(resource => (
                   <option key={resource} value={resource}>
                     {resource}
                   </option>

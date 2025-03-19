@@ -5,7 +5,7 @@ import { FlowConnection, FlowNode } from '../../resource/subsystems/ResourceFlow
 import { StorageContainerConfig } from '../../resource/subsystems/ResourceStorageSubsystem';
 import { ResourceThreshold } from '../../resource/subsystems/ResourceThresholdSubsystem';
 import { ResourceState, ResourceTransfer } from '../../types/resources/ResourceTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Make sure ResourceSystem is initialized
 resourceSystem.initialize().catch(error => {

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 /**
  * Action creator type
@@ -40,7 +40,7 @@ export interface StateHookOptions<TState> {
  */
 export function createStateHook<
   TState extends Record<string, unknown>,
-  TActions extends Record<string, ActionCreator<TState, unknown>>
+  TActions extends Record<string, ActionCreator<TState, unknown>>,
 >(
   initialState: TState | (() => TState),
   actions: TActions,
@@ -62,9 +62,8 @@ export function createStateHook<
       }
 
       // Otherwise use the default initial state
-      const defaultState = typeof initialState === 'function'
-        ? (initialState as () => TState)()
-        : initialState;
+      const defaultState =
+        typeof initialState === 'function' ? (initialState as () => TState)() : initialState;
 
       // If persistence is enabled, try to load from localStorage
       if (options?.persist && options?.persistKey) {
@@ -89,22 +88,22 @@ export function createStateHook<
       const result = {} as BoundActions;
 
       for (const [key, actionCreator] of Object.entries(actions)) {
-        result[key as keyof TActions] = (payload) => {
-          setState((currentState) => {
+        result[key as keyof TActions] = payload => {
+          setState(currentState => {
             const updates = actionCreator(currentState, payload);
-            
+
             // If updates is empty, return the current state
             if (!updates || Object.keys(updates).length === 0) {
               return currentState;
             }
-            
+
             const newState = { ...currentState, ...updates };
-            
+
             // If custom equality function is provided, check if state actually changed
             if (options?.areEqual && options?.areEqual(currentState, newState)) {
               return currentState;
             }
-            
+
             // Persist state if enabled
             if (options?.persist && options?.persistKey) {
               try {
@@ -113,7 +112,7 @@ export function createStateHook<
                 console.error('Failed to persist state:', error);
               }
             }
-            
+
             return newState;
           });
         };
@@ -125,7 +124,7 @@ export function createStateHook<
     // Reset action
     const reset = useCallback(() => {
       setState(getInitialState());
-      
+
       // Clear persisted state if applicable
       if (options?.persist && options?.persistKey) {
         try {
@@ -137,17 +136,20 @@ export function createStateHook<
     }, [getInitialState]);
 
     // Add reset to bound actions
-    const actionsWithReset = useMemo(() => ({
-      ...boundActions,
-      reset
-    }), [boundActions, reset]);
+    const actionsWithReset = useMemo(
+      () => ({
+        ...boundActions,
+        reset,
+      }),
+      [boundActions, reset]
+    );
 
     // Run initialization and cleanup
     useEffect(() => {
       if (options?.onInit) {
         options?.onInit(state);
       }
-      
+
       return () => {
         if (options?.onCleanup) {
           options?.onCleanup(state);
@@ -161,14 +163,14 @@ export function createStateHook<
 
 /**
  * Example usage:
- * 
+ *
  * ```typescript
  * // Define the state type
  * interface CounterState {
  *   count: number;
  *   lastUpdated: number | null;
  * }
- * 
+ *
  * // Define action creators
  * const counterActions = {
  *   increment: (state: CounterState, step: number = 1) => ({
@@ -184,18 +186,18 @@ export function createStateHook<
  *     lastUpdated: Date.now()
  *   })
  * };
- * 
+ *
  * // Create the hook
  * const useCounter = createStateHook<CounterState, typeof counterActions>(
  *   { count: 0, lastUpdated: null },
  *   counterActions,
  *   { persist: true, persistKey: 'app-counter' }
  * );
- * 
+ *
  * // Use in component
  * function Counter() {
  *   const [state, actions] = useCounter();
- *   
+ *
  *   return (
  *     <div>
  *       <p>Count: {state.count}</p>

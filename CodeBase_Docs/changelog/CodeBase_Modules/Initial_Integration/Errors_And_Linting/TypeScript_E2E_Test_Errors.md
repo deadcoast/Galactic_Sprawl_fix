@@ -4,8 +4,14 @@
 
 TypeScript errors in E2E tests when using template literals in JavaScript code inside `page.setContent()`:
 
-```
-Property 'resource' does not exist on type '"\n      <html>\n        <head>\n          <title>Mining Operations</title>\n          <style>\n            .resource-list { display: block; border: 1px solid #ccc; padding: 10px; }\n            .resource-item { margin: 5px 0; padding: 5px; border-bottom: 1px solid #eee; }\n          </style>\n          <script>\n  ...'.
+```tsx
+Property 'resource' does not exist on type
+'"\n
+<html>\n        <head>\n
+<title>Mining Operations
+</title>\n          <style>\n
+.resource-list { display: block; border: 1px solid #ccc; padding: 10px; }\n
+.resource-item { margin: 5px 0; padding: 5px; border-bottom: 1px solid #eee; }\n          <style>\n          <script>\n  ...'.
 Cannot find name 'item'.
 ',' expected.
 Cannot find name 'has'.

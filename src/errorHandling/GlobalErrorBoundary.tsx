@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { ErrorBoundary, ErrorBoundaryProps } from './ErrorBoundary';
 
 /**
@@ -11,7 +11,7 @@ export interface GlobalErrorBoundaryProps extends Omit<ErrorBoundaryProps, 'cont
 
 /**
  * Global application error boundary
- * 
+ *
  * This component is designed to be used at the application root level
  * to catch any unhandled errors that bubble up through the component tree.
  */
@@ -29,7 +29,7 @@ export const GlobalErrorBoundary: React.FC<GlobalErrorBoundaryProps> = ({
       window.location.reload();
       return;
     }
-    
+
     // Otherwise, just clear any application state as needed
     // This could include resetting global state, clearing caches, etc.
   };
@@ -37,10 +37,10 @@ export const GlobalErrorBoundary: React.FC<GlobalErrorBoundaryProps> = ({
   // Custom fallback UI for global error
   const globalFallback = (error: Error, reset: () => void) => {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-        <div className="max-w-lg w-full bg-white rounded-lg shadow-lg p-8">
-          <div className="flex items-center mb-6">
-            <div className="bg-red-100 p-3 rounded-full mr-4">
+      <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
+        <div className="w-full max-w-lg rounded-lg bg-white p-8 shadow-lg">
+          <div className="mb-6 flex items-center">
+            <div className="mr-4 rounded-full bg-red-100 p-3">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 text-red-600"
@@ -56,19 +56,18 @@ export const GlobalErrorBoundary: React.FC<GlobalErrorBoundaryProps> = ({
                 />
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-gray-800">
-              Something went wrong
-            </h1>
+            <h1 className="text-xl font-bold text-gray-800">Something went wrong</h1>
           </div>
-          
-          <p className="text-gray-600 mb-6">
-            We're sorry, but something went wrong. Our team has been notified and is working to fix the issue.
+
+          <p className="mb-6 text-gray-600">
+            We're sorry, but something went wrong. Our team has been notified and is working to fix
+            the issue.
           </p>
-          
+
           {process.env.NODE_ENV !== 'production' && (
-            <div className="mb-6 bg-gray-50 p-4 rounded border border-gray-200">
-              <h3 className="font-medium text-gray-800 mb-2">Error Details:</h3>
-              <pre className="text-sm text-red-600 whitespace-pre-wrap break-all">
+            <div className="mb-6 rounded border border-gray-200 bg-gray-50 p-4">
+              <h3 className="mb-2 font-medium text-gray-800">Error Details:</h3>
+              <pre className="whitespace-pre-wrap break-all text-sm text-red-600">
                 {error.message}
               </pre>
               {error.stack && (
@@ -76,28 +75,28 @@ export const GlobalErrorBoundary: React.FC<GlobalErrorBoundaryProps> = ({
                   <summary className="cursor-pointer text-sm font-medium text-gray-600">
                     Stack trace
                   </summary>
-                  <pre className="mt-2 text-xs text-gray-600 whitespace-pre-wrap break-all">
+                  <pre className="mt-2 whitespace-pre-wrap break-all text-xs text-gray-600">
                     {error.stack}
                   </pre>
                 </details>
               )}
             </div>
           )}
-          
+
           <div className="flex justify-between">
             <button
               onClick={() => reset()}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              className="rounded bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700"
             >
               {isRoot ? 'Reload Application' : 'Try Again'}
             </button>
-            
+
             <button
               onClick={() => {
                 // Navigate to a safe page, like the home page
                 window.location.href = '/';
               }}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+              className="rounded bg-gray-200 px-4 py-2 text-gray-800 transition-colors hover:bg-gray-300"
             >
               Return to Home
             </button>
@@ -118,16 +117,16 @@ export const GlobalErrorBoundary: React.FC<GlobalErrorBoundaryProps> = ({
           try {
             if (window.gtag) {
               window.gtag('event', 'error', {
-                'event_category': 'Error',
-                'event_label': error.message,
-                'value': 1
+                event_category: 'Error',
+                event_label: error.message,
+                value: 1,
               });
             }
           } catch (e) {
             console.error('Failed to log error to analytics:', e);
           }
         }
-        
+
         // Call original onError handler
         if (onError) {
           onError(error, errorInfo);

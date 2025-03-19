@@ -1,7 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { Crown, Zap } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 
 interface CentralMothershipProps {
   tier: 1 | 2 | 3;

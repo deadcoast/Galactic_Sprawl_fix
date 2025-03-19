@@ -6,7 +6,7 @@
 
 import { EventType } from '../../types/events/EventTypes';
 import { Module, ModuleStatus } from '../../types/modules/ModuleTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * Base interface for all event data

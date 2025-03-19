@@ -1,4 +1,3 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { SessionPerformanceData, UserInteractionData } from './SessionPerformanceTracker';
 
 /**

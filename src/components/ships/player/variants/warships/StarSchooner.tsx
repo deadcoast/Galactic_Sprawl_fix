@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Crosshair, Shield } from 'lucide-react';
 
 interface StarSchoonerProps {

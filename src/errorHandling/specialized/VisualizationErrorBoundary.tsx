@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { ErrorBoundary, ErrorBoundaryProps } from '../ErrorBoundary';
 import { ErrorFallback } from '../ErrorFallback';
 
@@ -18,7 +18,7 @@ export interface VisualizationErrorBoundaryProps extends Omit<ErrorBoundaryProps
 
 /**
  * Specialized error boundary for visualization components
- * 
+ *
  * This error boundary is designed specifically for visualization components
  * like charts, graphs, maps, etc. It provides specialized error handling and
  * fallback UIs for visualization-specific errors.
@@ -52,14 +52,14 @@ export const VisualizationErrorBoundary: React.FC<VisualizationErrorBoundaryProp
       }
       return fallback;
     }
-    
+
     // Otherwise, use a specialized fallback for visualizations
     if (compact) {
       return (
-        <div className="p-3 bg-gray-100 border border-gray-300 rounded text-sm text-gray-700 flex flex-col items-center justify-center h-full">
+        <div className="flex h-full flex-col items-center justify-center rounded border border-gray-300 bg-gray-100 p-3 text-sm text-gray-700">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 text-gray-500 mb-2"
+            className="mb-2 h-6 w-6 text-gray-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -80,14 +80,14 @@ export const VisualizationErrorBoundary: React.FC<VisualizationErrorBoundaryProp
           <p className="mb-2 text-center">Visualization Error</p>
           <button
             onClick={reset}
-            className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
           >
             Reset
           </button>
         </div>
       );
     }
-    
+
     return (
       <ErrorFallback
         error={error}

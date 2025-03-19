@@ -1,9 +1,9 @@
-import { ResourceType } from "./../types/resources/ResourceTypes";
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
 import { gameLoopManager, UpdatePriority } from '../managers/game/GameLoopManager';
 import { getSystemCommunication } from '../utils/events/EventCommunication';
 import { EventPriorityQueue } from '../utils/events/EventFiltering';
 import { initializeRxJSIntegration } from '../utils/events/rxjsIntegration';
+import { ResourceType } from './../types/resources/ResourceTypes';
 import { initializeAutomationSystem } from './automationSystemInit';
 import { integrateWithGameSystems } from './gameSystemsIntegration';
 

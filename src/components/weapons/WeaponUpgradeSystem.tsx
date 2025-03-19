@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AlertTriangle, Crosshair, Shield, Zap } from 'lucide-react';
 import {
   BaseWeaponStats,

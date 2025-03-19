@@ -1,6 +1,5 @@
-import * as React from "react";
-import { useEffect } from 'react';
 import { ArrowRight, Database, Package } from 'lucide-react';
+import { useEffect } from 'react';
 import { salvageManager } from '../../managers/game/salvageManager';
 import { Salvage } from '../../types/combat/SalvageTypes';
 import { ShipType } from '../../types/ships/CommonShipTypes';

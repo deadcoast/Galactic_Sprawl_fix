@@ -189,10 +189,20 @@ export class RenderBatcher extends EventEmitter<RenderBatcherEvent> {
     // Draw
     if (item?.texture) {
       // Draw textured quad
-      ctx.fillRect(-item?.size.width / 2, -item?.size.height / 2, item?.size.width, item?.size.height);
+      ctx.fillRect(
+        -item?.size.width / 2,
+        -item?.size.height / 2,
+        item?.size.width,
+        item?.size.height
+      );
     } else {
       // Draw colored quad
-      ctx.fillRect(-item?.size.width / 2, -item?.size.height / 2, item?.size.width, item?.size.height);
+      ctx.fillRect(
+        -item?.size.width / 2,
+        -item?.size.height / 2,
+        item?.size.width,
+        item?.size.height
+      );
     }
 
     ctx.restore();

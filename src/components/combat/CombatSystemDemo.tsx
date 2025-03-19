@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useEffect, useState } from 'react';
 import { Alert, AlertLevel, AlertSystemUI } from './alerts/AlertSystemUI';
 import { DetectionVisualization } from './radar/DetectionVisualization';

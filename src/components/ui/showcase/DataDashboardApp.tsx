@@ -1446,11 +1446,11 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           const prevValue =
             catIdx === 0
               ? 0
-              : data?.find(
+              : (data?.find(
                   d =>
                     d.category === categories[catIdx] &&
                     d.timePeriod === timePeriods[periodIdx === 0 ? 3 : periodIdx - 1]
-                )?.value ?? 0;
+                )?.value ?? 0);
 
           const randomChange = Math.random() * 20 - 10; // -10 to +10
           const value = Math.max(0, prevValue + randomChange + Math.random() * 5 + 50);

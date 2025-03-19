@@ -1,7 +1,7 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { AutomationRule } from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * Default automation rules for exploration modules

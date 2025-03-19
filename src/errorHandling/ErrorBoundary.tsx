@@ -1,7 +1,6 @@
-import * as React from "react";
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { ErrorFallback } from './ErrorFallback';
 import { errorLoggingService, ErrorType } from '../services/ErrorLoggingService';
+import { ErrorFallback } from './ErrorFallback';
 
 /**
  * Error boundary props
@@ -40,7 +39,7 @@ interface ErrorBoundaryState {
 
 /**
  * Error Boundary component
- * 
+ *
  * This component catches JavaScript errors anywhere in its child component tree,
  * logs those errors, and displays a fallback UI instead of the component tree that crashed.
  */
@@ -63,16 +62,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Only log to error service if not suppressed
     if (!this.props?.suppressErrorLogging) {
-      errorLoggingService.logError(
-        error,
-        ErrorType.RUNTIME,
-        undefined,
-        {
-          componentStack: errorInfo.componentStack,
-          context: this.props?.context || 'ErrorBoundary',
-          ...this.props?.metadata
-        }
-      );
+      errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
+        componentStack: errorInfo.componentStack,
+        context: this.props?.context || 'ErrorBoundary',
+        ...this.props?.metadata,
+      });
     }
 
     // Call the onError callback if provided
@@ -86,7 +80,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
    */
   componentDidUpdate(prevProps: ErrorBoundaryProps): void {
     const { resetKeys, onResetKeysChange } = this.props;
-    
+
     // If we have an error and resetKeys have changed, reset the error state
     if (
       this.state.hasError &&
@@ -98,7 +92,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       if (onResetKeysChange) {
         onResetKeysChange(prevProps.resetKeys, resetKeys);
       }
-      
+
       // Reset the error state
       this.resetErrorBoundary();
     }
@@ -115,12 +109,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (!Array.isArray(prevResetKeys) || !Array.isArray(nextResetKeys)) {
       return true;
     }
-    
+
     // If they have different lengths, they've changed
     if (prevResetKeys.length !== nextResetKeys.length) {
       return true;
     }
-    
+
     // Check if any of the values have changed
     return prevResetKeys.some((value, index) => value !== nextResetKeys[index]);
   }
@@ -152,12 +146,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     // If no fallback is provided, use the default ErrorFallback
-    return (
-      <ErrorFallback
-        error={error!}
-        resetErrorBoundary={this.resetErrorBoundary}
-      />
-    );
+    return <ErrorFallback error={error!} resetErrorBoundary={this.resetErrorBoundary} />;
   }
 }
 

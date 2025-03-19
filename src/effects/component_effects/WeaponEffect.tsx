@@ -3,7 +3,7 @@
 import { useSpring } from '@react-spring/three';
 import { Trail } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
-import * as React from "react";
+import * as React from 'react';
 import { useRef } from 'react';
 import * as THREE from 'three';
 import { RenderBatcher } from '../../lib/optimization/RenderBatcher';

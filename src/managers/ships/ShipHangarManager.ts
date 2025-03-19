@@ -83,6 +83,10 @@ interface ShipHangarEvents {
   'cargo:unloaded': { shipId: string; resourceType: ResourceType; amount: number };
   'hangar:capacity-changed': { oldCapacity: number; newCapacity: number };
   'ship-type:available': { shipType: ShipType; requirements: Record<string, unknown> };
+  /**
+   * Index signature for any other events
+   */
+  [key: string]: unknown;
 }
 
 /**

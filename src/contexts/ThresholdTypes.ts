@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { ResourceType } from "./../types/resources/ResourceTypes";
+import { ResourceType } from './../types/resources/ResourceTypes';
 
 // Types
 export interface Resource {

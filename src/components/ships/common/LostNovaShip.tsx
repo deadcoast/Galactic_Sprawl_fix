@@ -1,5 +1,3 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
-import React from "react";
 import { ReactNode } from 'react';
 import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
@@ -10,6 +8,7 @@ import {
 } from '../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../types/ships/FactionTypes';
 import { WeaponMount } from '../../../types/weapons/WeaponTypes';
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 import { FactionShipBase } from './FactionShipBase';
 
 // Import the correct WeaponEffect type

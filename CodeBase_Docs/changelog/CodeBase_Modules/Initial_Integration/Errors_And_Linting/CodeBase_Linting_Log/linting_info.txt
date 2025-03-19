@@ -1,5 +1,0 @@
-## Linting Tools and Fixed Files
-
-### Linting Tools
-
-1. **ESLint Configuration**: eslint.config.js

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AlertTriangle } from 'lucide-react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { ShipStatus } from '../../../../types/ships/ShipTypes';

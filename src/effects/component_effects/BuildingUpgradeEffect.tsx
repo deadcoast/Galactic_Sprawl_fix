@@ -1,8 +1,8 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { Crown, Star, Zap } from 'lucide-react';
-import * as React from "react";
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import * as React from 'react';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 interface BuildingUpgradeEffectProps {
   tier: 1 | 2 | 3;
   type: 'radar' | 'mining' | ResourceType.RESEARCH | 'defense';

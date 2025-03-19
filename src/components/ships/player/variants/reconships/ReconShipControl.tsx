@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AlertTriangle, Database, Eye, Map, Radar, Rocket } from 'lucide-react';
 
 interface ReconShip {

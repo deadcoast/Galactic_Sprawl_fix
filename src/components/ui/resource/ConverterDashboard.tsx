@@ -1,8 +1,8 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useState } from 'react';
 import { ResourceConversionRecipe } from '../../../types/resources/ResourceTypes';
 import { FlowNode } from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 import ChainVisualization from './ChainVisualization';
 import './ConverterDashboard.css';
 

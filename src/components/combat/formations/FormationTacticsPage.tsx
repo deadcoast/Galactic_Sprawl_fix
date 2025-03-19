@@ -1,6 +1,5 @@
-import * as React from "react";
-import { useState } from 'react';
 import { ChevronDown, ChevronUp, Shield, Ship, Star, Swords } from 'lucide-react';
+import { useState } from 'react';
 import {
   Card,
   CardContent,

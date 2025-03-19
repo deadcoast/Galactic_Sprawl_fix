@@ -54,7 +54,9 @@ const useClusterData = (result: AnalysisResult, allData: ChartDataRecord[]) => {
     }
 
     const clusters = result?.data?.clusters;
-    const features = Array.isArray(result?.data?.features) ? (result?.data?.features as string[]) : [];
+    const features = Array.isArray(result?.data?.features)
+      ? (result?.data?.features as string[])
+      : [];
 
     // Extract all points data from the clustering result
     const clusterPoints: ClusterPoint[] = [];
@@ -113,7 +115,9 @@ const usePredictionData = (result: AnalysisResult, config: PredictionAnalysisCon
       ? (result?.data?.forecast as ForecastPoint[])
       : [];
 
-    const features = Array.isArray(result?.data?.features) ? (result?.data?.features as string[]) : [];
+    const features = Array.isArray(result?.data?.features)
+      ? (result?.data?.features as string[])
+      : [];
 
     const metrics = (result?.data?.metrics as ModelMetrics) || {
       mse: 0,
@@ -752,11 +756,7 @@ export function AnalysisVisualization({
       {!showRawData && result?.insights && result?.insights.length > 0 && (
         <div className="analysis-insights">
           <h4>Key Insights</h4>
-          <ul>
-            {result?.insights.map((insight, index) => (
-              <li key={index}>{insight}</li>
-            ))}
-          </ul>
+          <ul>{result?.insights.map((insight, index) => <li key={index}>{insight}</li>)}</ul>
         </div>
       )}
 

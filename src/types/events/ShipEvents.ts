@@ -126,4 +126,9 @@ export interface ShipEvents {
     shipType: ShipType;
     requirements: Record<string, unknown>;
   };
+
+  /**
+   * Index signature for any other events
+   */
+  [key: string]: unknown;
 }

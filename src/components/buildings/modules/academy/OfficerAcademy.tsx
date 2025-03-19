@@ -1,5 +1,3 @@
-import * as React from "react";
-import { useState } from 'react';
 import {
   AlertTriangle,
   ChevronRight,
@@ -11,6 +9,7 @@ import {
   Sword,
   Users,
 } from 'lucide-react';
+import { useState } from 'react';
 import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
 import { HiringPanel } from './HiringPanel';
 import { OfficerCard } from './OfficerCard';

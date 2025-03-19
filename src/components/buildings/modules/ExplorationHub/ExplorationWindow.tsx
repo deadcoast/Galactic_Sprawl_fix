@@ -12,7 +12,7 @@ import {
 import * as React from 'react';
 import { useRef, useState } from 'react';
 import { ResourceTransfer } from '../MiningHub/ResourceTransfer';
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 import { ExplorationControls } from './ExplorationControls';
 import { ExplorationTutorial } from './ExplorationTutorial';
 import { MissionLog } from './MissionLog';

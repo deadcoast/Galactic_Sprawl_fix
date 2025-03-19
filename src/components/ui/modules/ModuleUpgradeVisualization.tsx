@@ -1,9 +1,8 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
-import React from "react";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useModuleStatus } from '../../../hooks/modules/useModuleStatus';
 import { moduleManager } from '../../../managers/module/ModuleManager';
 import { BaseEvent, EventType } from '../../../types/events/EventTypes';
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 import './ModuleUpgradeVisualization.css';
 
 // Progress tracker for the upgrade process

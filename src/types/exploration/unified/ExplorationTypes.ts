@@ -1,13 +1,13 @@
 /**
  * Unified Exploration Types
- * 
+ *
  * This file contains all type definitions used across the exploration system.
  * It provides a single source of truth for exploration-related types,
  * eliminating duplication and ensuring consistency across components.
  */
 
-import { ResourceType } from "./../../resources/ResourceTypes";
 import { BasePoint } from '../../visualization/CommonTypes';
+import { ResourceType } from './../../resources/ResourceTypes';
 
 // =========================================
 // Base Types
@@ -44,7 +44,7 @@ export enum ExplorationStatus {
   DETECTED = 'detected',
   SCANNED = 'scanned',
   ANALYZED = 'analyzed',
-  FULLY_EXPLORED = 'fully_explored'
+  FULLY_EXPLORED = 'fully_explored',
 }
 
 // =========================================
@@ -91,7 +91,7 @@ export enum StarType {
   NEUTRON_STAR = 'neutron_star',
   BLACK_HOLE = 'black_hole',
   BINARY = 'binary',
-  TRINARY = 'trinary'
+  TRINARY = 'trinary',
 }
 
 /**
@@ -121,7 +121,7 @@ export enum PlanetType {
   OCEAN = 'ocean',
   DESERT = 'desert',
   JUNGLE = 'jungle',
-  TERRAN = 'terran'
+  TERRAN = 'terran',
 }
 
 /**
@@ -169,7 +169,7 @@ export enum JumpPointStatus {
   UNSTABLE = 'unstable',
   COLLAPSING = 'collapsing',
   DORMANT = 'dormant',
-  ACTIVE = 'active'
+  ACTIVE = 'active',
 }
 
 /**
@@ -191,7 +191,7 @@ export enum SpecialFeatureType {
   ANCIENT_STRUCTURE = 'ancient_structure',
   SPATIAL_ANOMALY = 'spatial_anomaly',
   DEBRIS_FIELD = 'debris_field',
-  RESEARCH_STATION = 'research_station'
+  RESEARCH_STATION = 'research_station',
 }
 
 // =========================================
@@ -242,7 +242,7 @@ export enum AnomalyType {
   RADIATION_SOURCE = 'radiation_source',
   QUANTUM_FLUCTUATION = 'quantum_fluctuation',
   TEMPORAL_ANOMALY = 'temporal_anomaly',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -276,7 +276,7 @@ export enum EffectType {
   DAMAGE = 'damage',
   HEALING = 'healing',
   ENVIRONMENTAL = 'environmental',
-  SPECIAL = 'special'
+  SPECIAL = 'special',
 }
 
 /**
@@ -298,7 +298,7 @@ export enum InvestigationStage {
   INITIAL_SCAN = 'initial_scan',
   DETAILED_ANALYSIS = 'detailed_analysis',
   COMPREHENSIVE_STUDY = 'comprehensive_study',
-  FULLY_UNDERSTOOD = 'fully_understood'
+  FULLY_UNDERSTOOD = 'fully_understood',
 }
 
 /**
@@ -321,7 +321,7 @@ export enum FindingCategory {
   TECHNOLOGICAL = 'technological',
   BIOLOGICAL = 'biological',
   HISTORICAL = 'historical',
-  STRATEGIC = 'strategic'
+  STRATEGIC = 'strategic',
 }
 
 /**
@@ -362,7 +362,7 @@ export enum DangerLevel {
   MODERATE = 'moderate',
   HIGH = 'high',
   EXTREME = 'extreme',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -387,7 +387,7 @@ export enum EnvironmentalConditionType {
   PRESSURE = 'pressure',
   SOLAR_ACTIVITY = 'solar_activity',
   COSMIC_STORM = 'cosmic_storm',
-  SPECIAL = 'special'
+  SPECIAL = 'special',
 }
 
 // =========================================
@@ -414,7 +414,7 @@ export enum Disposition {
   UNFRIENDLY = 'unfriendly',
   NEUTRAL = 'neutral',
   FRIENDLY = 'friendly',
-  ALLIED = 'allied'
+  ALLIED = 'allied',
 }
 
 /**
@@ -462,7 +462,7 @@ export enum AnalysisType {
   TEMPORAL = 'temporal',
   RESOURCE = 'resource',
   STRATEGIC = 'strategic',
-  PREDICTIVE = 'predictive'
+  PREDICTIVE = 'predictive',
 }
 
 /**
@@ -509,7 +509,7 @@ export enum ExplorationActivityType {
   SAMPLE = 'sample',
   INVESTIGATE = 'investigate',
   RESEARCH = ResourceType.RESEARCH,
-  EXPLOIT = 'exploit'
+  EXPLOIT = 'exploit',
 }
 
 /**
@@ -541,7 +541,7 @@ export enum RewardType {
   REPUTATION = 'reputation',
   CREDITS = 'credits',
   EXPERIENCE = 'experience',
-  SPECIAL = 'special'
+  SPECIAL = 'special',
 }
 
 // =========================================
@@ -580,7 +580,7 @@ export enum DetailLevel {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  ULTRA = 'ultra'
+  ULTRA = 'ultra',
 }
 
 /**
@@ -591,7 +591,7 @@ export enum MapTheme {
   DARK = 'dark',
   LIGHT = 'light',
   SATELLITE = 'satellite',
-  TACTICAL = 'tactical'
+  TACTICAL = 'tactical',
 }
 
 /**
@@ -634,34 +634,34 @@ export interface ExplorationContextType {
   getSectors: () => Sector[];
   getSectorById: (id: string) => Sector | undefined;
   updateSector: (sector: Sector) => void;
-  
+
   // System operations
   getSystemsBySectorId: (sectorId: string) => StarSystem[];
   getSystemById: (id: string) => StarSystem | undefined;
   updateSystem: (system: StarSystem) => void;
-  
+
   // Planet operations
   getPlanetsBySystemId: (systemId: string) => Planet[];
   getPlanetById: (id: string) => Planet | undefined;
   updatePlanet: (planet: Planet) => void;
-  
+
   // Anomaly operations
   getAnomaliesBySectorId: (sectorId: string) => Anomaly[];
   getAnomalyById: (id: string) => Anomaly | undefined;
   updateAnomaly: (anomaly: Anomaly) => void;
-  
+
   // Resource operations
   getResourcesByEntityId: (entityId: string) => ResourceDeposit[];
   updateResource: (resource: ResourceDeposit) => void;
-  
+
   // Analysis operations
   getAnalysisResultsByEntityId: (entityId: string) => AnalysisResult[];
   createAnalysis: (config: Omit<AnalysisResult, 'id' | 'createdAt'>) => string;
-  
+
   // Activity operations
   recordActivity: (activity: Omit<ExplorationActivity, 'id' | 'timestamp'>) => string;
   getActivitiesByEntityId: (entityId: string) => ExplorationActivity[];
-  
+
   // General operations
   refreshData: () => Promise<void>;
 }
@@ -692,62 +692,62 @@ export enum ExplorationEventType {
   ANALYSIS_COMPLETED = 'analysis_completed',
   ACTIVITY_RECORDED = 'activity_recorded',
   MAP_INTERACTION = 'map_interaction',
-  ERROR_OCCURRED = 'error_occurred'
+  ERROR_OCCURRED = 'error_occurred',
 }
 
 // Export all types
 export type {
-  ExplorationEntity,
-  Coordinates,
-  Sector,
-  StarSystem,
-  Planet,
-  Moon,
-  AsteroidBelt,
-  JumpPoint,
-  SpecialFeature,
-  ResourceDeposit,
+  AnalysisResult,
   Anomaly,
   AnomalyComposition,
+  AsteroidBelt,
+  Coordinates,
   Effect,
-  InvestigationStatus,
-  Finding,
-  PotentialUse,
-  VisualData,
   EnvironmentalCondition,
-  FactionControl,
-  TradeRoute,
-  AnalysisResult,
-  Insight,
   ExplorationActivity,
+  ExplorationContextType,
+  ExplorationEntity,
+  ExplorationEvent,
   ExplorationResult,
-  Reward,
+  ExplorationState,
+  FactionControl,
+  Finding,
+  Insight,
+  InvestigationStatus,
+  JumpPoint,
+  MapSelection,
   MapViewport,
   MapVisualSettings,
-  MapSelection,
-  ExplorationState,
-  ExplorationContextType,
-  ExplorationEvent
+  Moon,
+  Planet,
+  PotentialUse,
+  ResourceDeposit,
+  Reward,
+  Sector,
+  SpecialFeature,
+  StarSystem,
+  TradeRoute,
+  VisualData,
 };
 
 // Export all enums
 export {
-  ExplorationStatus,
-  StarType,
-  PlanetType,
-  JumpPointStatus,
-  SpecialFeatureType,
-  AnomalyType,
-  EffectType,
-  InvestigationStage,
-  FindingCategory,
-  DangerLevel,
-  EnvironmentalConditionType,
-  Disposition,
   AnalysisType,
-  ExplorationActivityType,
-  RewardType,
+  AnomalyType,
+  DangerLevel,
   DetailLevel,
+  Disposition,
+  EffectType,
+  EnvironmentalConditionType,
+  ExplorationActivityType,
+  ExplorationEventType,
+  ExplorationStatus,
+  FindingCategory,
+  InvestigationStage,
+  JumpPointStatus,
   MapTheme,
-  ExplorationEventType
+  PlanetType,
+  RewardType,
+  SpecialFeatureType,
+  StarType,
 };

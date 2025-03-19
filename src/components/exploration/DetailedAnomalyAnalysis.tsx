@@ -1,5 +1,3 @@
-import * as React from "react";
-import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowRight,
@@ -18,7 +16,8 @@ import {
   Shield,
   Zap,
 } from 'lucide-react';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { useEffect, useMemo, useState } from 'react';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 // Enhanced Anomaly interface with additional properties for detailed analysis
 interface Anomaly {
   id: string;
@@ -132,9 +131,9 @@ export function DetailedAnomalyAnalysis({
   const [analysisInProgress, setAnalysisInProgress] = useState<Record<string, boolean>>({});
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'detailed' | ResourceType.RESEARCH | 'exploitation'>(
-    'overview'
-  );
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'detailed' | ResourceType.RESEARCH | 'exploitation'
+  >('overview');
   const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
 
   // Initialize expanded sections

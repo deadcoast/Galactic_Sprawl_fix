@@ -1,4 +1,4 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 import { AreaEffect as BaseAreaEffect, BaseEffect } from './EffectTypes';
 import { DamageEffect, AreaEffect as WeaponAreaEffect } from './WeaponEffects';
 

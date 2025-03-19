@@ -1,8 +1,8 @@
-import { ResourceType } from "./../types/resources/ResourceTypes";
 import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
 import { globalAutomationManager } from '../managers/automation/GlobalAutomationManager';
 import { automationManager } from '../managers/game/AutomationManager';
 import { MessagePriority } from '../utils/events/EventCommunication';
+import { ResourceType } from './../types/resources/ResourceTypes';
 
 /**
  * Initialize the automation system

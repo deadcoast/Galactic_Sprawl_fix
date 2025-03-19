@@ -289,11 +289,11 @@ export function createCoordinateCache(nodes: d3.SimulationNodeDatum[]): {
   return {
     getX: (node: d3.SimulationNodeDatum): number => {
       const id = (node as unknown).id ?? '';
-      return xCache.has(id) ? xCache.get(id) ?? 0 : memoizedD3Accessors.getX(node);
+      return xCache.has(id) ? (xCache.get(id) ?? 0) : memoizedD3Accessors.getX(node);
     },
     getY: (node: d3.SimulationNodeDatum): number => {
       const id = (node as unknown).id ?? '';
-      return yCache.has(id) ? yCache.get(id) ?? 0 : memoizedD3Accessors.getY(node);
+      return yCache.has(id) ? (yCache.get(id) ?? 0) : memoizedD3Accessors.getY(node);
     },
   };
 }

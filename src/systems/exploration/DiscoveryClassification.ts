@@ -7,7 +7,7 @@ import {
   Discovery,
   DiscoveryType,
 } from '../../types/exploration/ExplorationTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 export interface ClassificationConfig {
   minAnalysisThreshold: number;

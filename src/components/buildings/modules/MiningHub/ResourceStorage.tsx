@@ -1,8 +1,8 @@
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 
 interface StorageData {
   id: string;

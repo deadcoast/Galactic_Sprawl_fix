@@ -1,12 +1,11 @@
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
-import * as React from "react";
-import { useEffect, useState } from 'react';
 import { Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
 import { ShipStatus } from '../../../../types/ships/ShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { LostNovaShip } from '../../common/LostNovaShip';
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 
 interface DarkMatterReaperProps {
   id: string;

@@ -327,13 +327,13 @@ export class ResourceRegistry {
       return false;
     }
 
-    const metadata = this.resourceMetadata?.get(resourceType)!;
+    const metadata = this.resourceMetadata?.get(resourceType);
 
     // Remove from metadata
     this.resourceMetadata?.delete(resourceType);
 
     // Remove from category
-    const categorySet = this.resourcesByCategory.get(metadata?.category);
+    const categorySet = this.resourcesByCategory.get(metadata?.category as ResourceCategory);
     if (categorySet) {
       categorySet.delete(resourceType);
     }
@@ -350,7 +350,7 @@ export class ResourceRegistry {
     });
 
     // Remove from quality levels
-    Object.keys(metadata?.qualityLevels).forEach(quality => {
+    Object.keys(metadata?.qualityLevels ?? {}).forEach(quality => {
       const qualityMap = this.resourcesByQuality.get(quality as ResourceQuality);
       if (qualityMap) {
         qualityMap.delete(resourceType);
@@ -448,9 +448,9 @@ export class ResourceRegistry {
     const metadata = this.resourceMetadata?.get(sourceType);
     if (metadata) {
       if (!metadata?.conversionRates) {
-        metadata?.conversionRates = {};
+        metadata.conversionRates = {};
       }
-      metadata?.conversionRates[targetType] = rate;
+      metadata.conversionRates[targetType] = rate;
     }
 
     // Emit conversion rate changed event
@@ -525,7 +525,7 @@ export class ResourceRegistry {
    */
   public getDisplayName(resourceType: ResourceType): ResourceType {
     const metadata = this.resourceMetadata?.get(resourceType);
-    return metadata ? metadata?.displayName : String(resourceType);
+    return metadata ? (metadata?.displayName as ResourceType) : resourceType;
   }
 
   /**
@@ -570,7 +570,7 @@ export class ResourceRegistry {
    */
   public getTags(resourceType: ResourceType): ResourceType[] {
     const metadata = this.resourceMetadata?.get(resourceType);
-    return metadata ? metadata?.tags : [];
+    return metadata ? (metadata?.tags as ResourceType[]) : [];
   }
 
   /**
@@ -707,7 +707,7 @@ export class ResourceRegistry {
       return false;
     }
 
-    metadata?.qualityLevels[quality] = value;
+    metadata.qualityLevels[quality] = value;
 
     // Update quality mapping
     const qualityMap = this.resourcesByQuality.get(quality) || new Map();
@@ -835,7 +835,7 @@ export class ResourceRegistry {
       // Import resources
       Object.entries(data?.resources).forEach(([resourceType, metadata]) => {
         this.registerResource({
-          metadata: metadata,
+          metadata: metadata as ExtendedResourceMetadata,
           overrideExisting: true,
         });
       });

@@ -5,7 +5,6 @@ import {
   ResourceTransfer,
   ResourceType as StringResourceType,
 } from '../../types/resources/ResourceTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   isStringResourceType,
   toStringResourceType,
@@ -13,6 +12,7 @@ import {
 import { validateResourceTransfer } from '../../utils/resources/resourceValidation';
 import { ResourceFlowWorkerUtil } from '../../utils/workers/ResourceFlowWorkerUtil';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * Flow node types

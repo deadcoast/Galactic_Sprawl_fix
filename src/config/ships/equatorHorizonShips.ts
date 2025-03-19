@@ -1,4 +1,3 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { DamageEffect } from '../../effects/types_effects/WeaponEffects';
 import {
   DAMAGE_BOOST_EFFECT,
@@ -16,6 +15,7 @@ import {
   WeaponMountSize,
   WeaponStatus,
 } from '../../types/weapons/WeaponTypes';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Special weapon effects for Equator Horizon
 const _TEMPORAL_EFFECT = {

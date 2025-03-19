@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Shield, Sword, Zap } from 'lucide-react';
 
 interface TacticalBonusCardProps {

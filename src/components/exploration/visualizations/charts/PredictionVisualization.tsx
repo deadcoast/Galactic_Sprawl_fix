@@ -575,7 +575,9 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
                       {featureImportance.map(item => (
                         <TableRow key={item?.feature}>
                           <TableCell>{item?.feature}</TableCell>
-                          <TableCell align="right">{(item?.importance * 100).toFixed(2)}%</TableCell>
+                          <TableCell align="right">
+                            {(item?.importance * 100).toFixed(2)}%
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

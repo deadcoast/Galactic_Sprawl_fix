@@ -71,7 +71,7 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
 
   // Register with component registry
   useComponentRegistration({
-    type: 'DataTransitionParticleSystem',
+    type: ResourceType.EXOTIC,
     eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_FLOW_UPDATED', 'RESOURCE_THRESHOLD_CHANGED'],
     updatePriority: 'high',
   });
@@ -131,7 +131,7 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
     // Create transition particles
     sourceData.forEach((source, index) => {
       const target = targetData[index] || targetData[targetData.length - 1];
-      const delay = index * staggerDelay;
+      const _delay = index * staggerDelay;
 
       particleSystemRef.current?.createParticleSystem(`transition-${index}`, {
         ...particleConfig,
@@ -158,7 +158,7 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
         const target = targetData[index] || targetData[targetData.length - 1];
         const particleProgress = easing(progress);
 
-        const currentPosition = {
+        const _currentPosition = {
           x: source.position.x + (target.position.x - source.position.x) * particleProgress,
           y: source.position.y + (target.position.y - source.position.y) * particleProgress,
         };

@@ -1,8 +1,7 @@
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { ShipBlueprint, getAvailableShips } from '../../../../config/ShipBlueprints';
 import { techTreeManager } from '../../../../managers/game/techTreeManager';
 import { ShipHangarManager } from '../../../../managers/module/ShipHangarManager';

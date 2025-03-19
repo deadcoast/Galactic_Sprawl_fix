@@ -1,6 +1,6 @@
 /**
  * Unified Exploration Types
- * 
+ *
  * This file exports all exploration types and utilities from a single entry point.
  */
 

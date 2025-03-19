@@ -265,7 +265,9 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
                   thresholdType: event?.details.type === 'below_minimum' ? 'min' : 'max',
                   current: event?.details.current,
                   threshold:
-                    event?.details.type === 'below_minimum' ? event?.details.min : event?.details.max,
+                    event?.details.type === 'below_minimum'
+                      ? event?.details.min
+                      : event?.details.max,
                 },
               };
             },

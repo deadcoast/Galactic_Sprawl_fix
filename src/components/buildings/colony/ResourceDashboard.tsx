@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   AlertTriangle,
   Battery,
@@ -11,7 +10,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 interface ResourceData {
   type:

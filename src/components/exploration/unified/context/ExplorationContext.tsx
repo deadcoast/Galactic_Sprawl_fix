@@ -464,7 +464,8 @@ export const ExplorationProvider: React.FC<ExplorationProviderProps> = ({
       ) {
         dispatch({ type: ActionType.SET_TRADE_ROUTES, payload: data?.tradeRoutes });
       }
-      if (data?.activities) dispatch({ type: ActionType.SET_ACTIVITIES, payload: data?.activities });
+      if (data?.activities)
+        dispatch({ type: ActionType.SET_ACTIVITIES, payload: data?.activities });
       if (data?.analysisResults)
         dispatch({ type: ActionType.SET_ANALYSIS_RESULTS, payload: data?.analysisResults });
     } catch (error) {

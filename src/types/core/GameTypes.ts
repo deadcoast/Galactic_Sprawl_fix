@@ -1,7 +1,7 @@
 /**
  * Core game types used throughout the project
  */
-import { ResourceType } from "./../resources/ResourceTypes";
+import { ResourceType } from './../resources/ResourceTypes';
 
 // Base Types
 export type Quality = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';

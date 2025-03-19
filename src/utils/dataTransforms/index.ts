@@ -1,9 +1,9 @@
 /**
  * Data Transformation Utilities
- * 
+ *
  * This module exports consolidated utilities for transforming data
  * for visualization components, filtering, and scientific analysis.
- * 
+ *
  * Each utility is organized by purpose to make it easier to find
  * and use the appropriate transformation functions.
  */
@@ -16,51 +16,50 @@ export * from './scientificTransforms';
 
 // Export all filter transformation utilities
 export * from './filterTransforms';
+export { calculateDomain, calculateDomains };
 
 // Re-export specific utilities with more descriptive names to improve discoverability
 
 // Domain calculation
 import { calculateDomain, calculateDomains } from './chartTransforms';
-export { calculateDomain, calculateDomains };
 
 // Color utilities
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 export { createColorScale, getResourceTypeColor, hexToRgb };
 
-// Safe data extraction 
-import { 
-  safelyExtractNumber, 
-  safelyExtractString, 
-  safelyExtractArray, 
-  safelyExtractObject, 
-  safelyExtractPath 
+// Safe data extraction
+import {
+  safelyExtractArray,
+  safelyExtractNumber,
+  safelyExtractObject,
+  safelyExtractPath,
+  safelyExtractString,
 } from './chartTransforms';
 export {
-  safelyExtractNumber, 
-  safelyExtractString, 
-  safelyExtractArray, 
-  safelyExtractObject, 
-  safelyExtractPath
+  safelyExtractArray,
+  safelyExtractNumber,
+  safelyExtractObject,
+  safelyExtractPath,
+  safelyExtractString,
 };
 
 // Type guards
-import { isNumber, isString, isArray, isObject } from './chartTransforms';
-export { isNumber, isString, isArray, isObject };
+import { isArray, isNumber, isObject, isString } from './chartTransforms';
+export { isArray, isNumber, isObject, isString };
 
 // Data transformations for specific visualization types
-import { 
-  transformClusterData, 
-  transformPredictionData, 
+import {
+  transformClusterData,
+  transformPredictionData,
   transformResourceMappingData,
+  transformToHeatMapFormat,
   transformToScatterFormat,
-  transformToHeatMapFormat
 } from './chartTransforms';
 export {
-  transformClusterData, 
-  transformPredictionData, 
+  transformClusterData,
+  transformPredictionData,
   transformResourceMappingData,
+  transformToHeatMapFormat,
   transformToScatterFormat,
-  transformToHeatMapFormat
 };
 
 // Pagination
@@ -68,55 +67,55 @@ import { paginateData } from './chartTransforms';
 export { paginateData };
 
 // Scientific transformations
-import { 
-  transformTimeSeriesData, 
-  calculateResiduals,
+import {
+  calculateClusterCentroids,
   calculateCorrelationMatrix,
+  calculateDistancesToCentroids,
+  calculateResiduals,
   calculateStatistics,
   extractFeatureImportance,
   isLinearRegressionModel,
   isNeuralNetworkModel,
-  calculateClusterCentroids,
-  calculateDistancesToCentroids
+  transformTimeSeriesData,
 } from './scientificTransforms';
 export {
-  transformTimeSeriesData, 
-  calculateResiduals,
+  calculateClusterCentroids,
   calculateCorrelationMatrix,
+  calculateDistancesToCentroids,
+  calculateResiduals,
   calculateStatistics,
   extractFeatureImportance,
   isLinearRegressionModel,
   isNeuralNetworkModel,
-  calculateClusterCentroids,
-  calculateDistancesToCentroids
+  transformTimeSeriesData,
 };
 
-// Filter transformations 
+// Filter transformations
 import {
-  createFilter,
-  validateFilter,
-  convertFilterValue,
-  formatFilterValue,
-  formatFilter,
-  getInputTypeForOperator,
-  applyFilter,
-  applyFilters, 
   applyComplexFilter,
+  applyFilter,
+  applyFilters,
+  convertFilterValue,
+  createFilter,
   detectFieldTypes,
+  formatFilter,
+  formatFilterValue,
+  getFieldRange,
+  getInputTypeForOperator,
   getUniqueValues,
-  getFieldRange
+  validateFilter,
 } from './filterTransforms';
 export {
-  createFilter,
-  validateFilter,
-  convertFilterValue,
-  formatFilterValue,
-  formatFilter,
-  getInputTypeForOperator,
-  applyFilter,
-  applyFilters, 
   applyComplexFilter,
+  applyFilter,
+  applyFilters,
+  convertFilterValue,
+  createFilter,
   detectFieldTypes,
+  formatFilter,
+  formatFilterValue,
+  getFieldRange,
+  getInputTypeForOperator,
   getUniqueValues,
-  getFieldRange
+  validateFilter,
 };

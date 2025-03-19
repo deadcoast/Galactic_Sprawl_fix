@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
@@ -9,6 +9,7 @@ import {
   WebGLShaderManager,
 } from '../../../lib/optimization/WebGLShaderManager';
 import { Position } from '../../../types/core/Position';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
 
 export interface CustomShaderDefinition {
   vertexShader?: string;
@@ -100,7 +101,7 @@ export const CustomShaderVisualization: React.FC<CustomShaderVisualizationProps>
 
   // Register with component registry
   useComponentRegistration({
-    type: 'CustomShaderVisualization',
+    type: ResourceType.EXOTIC,
     eventSubscriptions: ['RESOURCE_UPDATED', 'RESOURCE_FLOW_UPDATED'],
     updatePriority: 'high',
   });

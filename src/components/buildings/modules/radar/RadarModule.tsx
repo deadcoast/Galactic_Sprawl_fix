@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Radar } from 'lucide-react';
 import { BaseModule } from '../../../../types/buildings/ModuleTypes';
 

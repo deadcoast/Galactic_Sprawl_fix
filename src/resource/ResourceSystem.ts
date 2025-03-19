@@ -3,11 +3,11 @@ import { Singleton } from '../lib/patterns/Singleton';
 import { ModuleType } from '../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { ResourceState, ResourceTransfer } from '../types/resources/ResourceTypes';
-import { ResourceType } from "./../types/resources/ResourceTypes";
 import {
-  ensureEnumResourceType,
+  ensureStringResourceType,
   toStringResourceType,
 } from '../utils/resources/ResourceTypeConverter';
+import { ResourceType } from './../types/resources/ResourceTypes';
 import { ResourceFlowSubsystem } from './subsystems/ResourceFlowSubsystem';
 import { ResourceStorageSubsystem } from './subsystems/ResourceStorageSubsystem';
 import { ResourceThresholdSubsystem } from './subsystems/ResourceThresholdSubsystem';
@@ -64,6 +64,9 @@ const DEFAULT_CONFIG: ResourceSystemConfig = {
  * - Threshold: Monitors resource levels and triggers actions when thresholds are reached
  */
 export class ResourceSystem extends Singleton<ResourceSystem> {
+  // Singleton instance
+  private static _instance: ResourceSystem | null = null;
+
   // Configuration
   private config: ResourceSystemConfig;
 
@@ -110,7 +113,10 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
    * Creates a new instance if one doesn't exist yet.
    */
   public static getInstance(): ResourceSystem {
-    return super.getInstance() as ResourceSystem;
+    if (!ResourceSystem._instance) {
+      ResourceSystem._instance = new ResourceSystem();
+    }
+    return ResourceSystem._instance;
   }
 
   /**
@@ -227,24 +233,24 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
    */
   private handleStorageOverflow(type: ResourceType, amount: number, sourceId: string): void {
     // Ensure type is enum ResourceType
-    const resourceType = ensureEnumResourceType(type);
+    const resourceType = ensureStringResourceType(type);
 
     // Convert to string type for subsystems that still use string-based types
-    const stringType = toStringResourceType(resourceType);
+    const stringType = toStringResourceType(resourceType as ResourceType);
 
     switch (this.config.overflowPolicy) {
       case 'redistribute': {
         // Find other containers with available space
-        this.storage.redistributeOverflow(stringType, amount, sourceId);
+        this.storage.redistributeOverflow(stringType as ResourceType, amount, sourceId);
         break;
       }
       case 'convert': {
         // Convert to another resource type if possible
         // For example, excess energy might be converted to heat
-        const alternativeType = this.getAlternativeResourceType(resourceType);
+        const alternativeType = this.getAlternativeResourceType(resourceType as ResourceType);
         if (alternativeType) {
           this.convertResources(
-            resourceType,
+            resourceType as ResourceType,
             amount,
             alternativeType,
             amount * 0.5, // Conversion ratio
@@ -261,7 +267,7 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
           moduleId: sourceId,
           moduleType: 'resource-manager' as ModuleType,
           data: {
-            resourceType,
+            resourceType: resourceType as ResourceType,
             amount,
             sourceId,
           },
@@ -329,13 +335,13 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
    */
   public getResourceState(type: ResourceType): ResourceState | undefined {
     // Ensure type is enum ResourceType
-    const resourceType = ensureEnumResourceType(type);
+    const resourceType = ensureStringResourceType(type);
 
     // Convert to string type for subsystems that still use string-based types
-    const stringType = toStringResourceType(resourceType);
+    const stringType = toStringResourceType(resourceType as ResourceType);
 
     // Check cache first
-    const cached = this.resourceCache.get(resourceType);
+    const cached = this.resourceCache.get(resourceType as ResourceType);
     const now = Date.now();
 
     if (cached && cached.expiresAt > now) {
@@ -343,11 +349,11 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
     }
 
     // Cache miss or expired, get fresh state from flow subsystem
-    const state = this.flow.getResourceState(stringType);
+    const state = this.flow.getResourceState(stringType as ResourceType);
 
     if (state) {
       // Update cache
-      this.resourceCache.set(resourceType, {
+      this.resourceCache.set(resourceType as ResourceType, {
         state,
         lastUpdated: now,
         expiresAt: now + this.config.cacheTTL,
@@ -366,18 +372,18 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
    */
   public updateResourceState(type: ResourceType, state: ResourceState): void {
     // Ensure type is enum ResourceType
-    const resourceType = ensureEnumResourceType(type);
+    const resourceType = ensureStringResourceType(type);
 
     // Convert to string type for subsystems that still use string-based types
-    const stringType = toStringResourceType(resourceType);
+    const stringType = toStringResourceType(resourceType as ResourceType);
 
     // Update in flow subsystem
-    this.flow.updateResourceState(stringType, state);
-    this.invalidateCache(resourceType);
+    this.flow.updateResourceState(stringType as ResourceType, state);
+    this.invalidateCache(resourceType as ResourceType);
 
     // Notify threshold subsystem of the update
     if (state && typeof state === 'object') {
-      this.threshold.checkThresholds(stringType, state);
+      this.threshold.checkThresholds(stringType as ResourceType, state);
     }
   }
 
@@ -388,8 +394,8 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
    */
   private invalidateCache(type: ResourceType): void {
     // Ensure type is enum ResourceType
-    const resourceType = ensureEnumResourceType(type);
-    this.resourceCache.delete(resourceType);
+    const resourceType = ensureStringResourceType(type);
+    this.resourceCache.delete(resourceType as ResourceType);
   }
 
   /**
@@ -461,9 +467,9 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
     const stringType = toStringResourceType(type);
 
     if (targetId) {
-      return this.storage.storeResource(targetId, stringType, amount);
+      return this.storage.storeResource(targetId, stringType as ResourceType, amount);
     } else {
-      return this.storage.storeResourceOptimal(stringType, amount);
+      return this.storage.storeResourceOptimal(stringType as ResourceType, amount);
     }
   }
 
@@ -475,9 +481,9 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
     const stringType = toStringResourceType(type);
 
     if (sourceId) {
-      return this.storage.retrieveResource(sourceId, stringType, amount);
+      return this.storage.retrieveResource(sourceId, stringType as ResourceType, amount);
     } else {
-      return this.storage.retrieveResourceOptimal(stringType, amount);
+      return this.storage.retrieveResourceOptimal(stringType as ResourceType, amount);
     }
   }
 
@@ -491,8 +497,8 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
     targetId: string
   ): number {
     // Convert to string type for subsystems that still use string-based types
-    const stringType = toStringResourceType(type);
-    return this.transfer.transferResource(stringType, amount, sourceId, targetId);
+    const stringType = toStringResourceType(type as ResourceType);
+    return this.transfer.transferResource(stringType as ResourceType, amount, sourceId, targetId);
   }
 
   /**
@@ -505,8 +511,8 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
     rate: number
   ): boolean {
     // Convert to string type for subsystems that still use string-based types
-    const stringType = toStringResourceType(type);
-    return this.flow.registerResourceFlow(sourceId, targetId, stringType, rate);
+    const stringType = toStringResourceType(type as ResourceType);
+    return this.flow.registerResourceFlow(sourceId, targetId, stringType as ResourceType, rate);
   }
 
   /**
@@ -546,8 +552,8 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
    */
   public getTransfersByType(type: ResourceType): ResourceTransfer[] {
     // Convert to string type for subsystems that still use string-based types
-    const stringType = toStringResourceType(type);
-    return this.transfer.getTransfersByType(stringType);
+    const stringType = toStringResourceType(type as ResourceType);
+    return this.transfer.getTransfersByType(stringType as ResourceType);
   }
 }
 

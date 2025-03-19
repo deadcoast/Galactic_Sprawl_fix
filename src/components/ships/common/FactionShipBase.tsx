@@ -1,4 +1,3 @@
-import React from "react";
 import { ReactNode, useEffect } from 'react';
 import { useShipState } from '../../../contexts/ShipContext';
 import { BaseEffect } from '../../../effects/types_effects/EffectTypes';

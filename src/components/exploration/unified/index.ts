@@ -1,6 +1,6 @@
 /**
  * Unified Exploration System
- * 
+ *
  * This file exports all components of the unified exploration system.
  */
 
@@ -11,7 +11,7 @@ export * from './core';
 export { ExplorationProvider, useExploration } from './context/ExplorationContext';
 
 // Export system components
-export { 
+export {
   default as GalaxyExplorationSystem,
-  type GalaxyExplorationSystemProps
+  type GalaxyExplorationSystemProps,
 } from './system/GalaxyExplorationSystem';

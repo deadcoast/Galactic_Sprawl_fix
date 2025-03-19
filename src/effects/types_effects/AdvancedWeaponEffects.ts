@@ -1,4 +1,4 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";/**
+import { ResourceType } from './../../types/resources/ResourceTypes'; /**
  * Advanced weapon effect types and interfaces
  * @module AdvancedWeaponEffects
  */

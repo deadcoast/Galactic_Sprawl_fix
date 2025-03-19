@@ -1,4 +1,4 @@
-import { ResourceType } from "./../resources/ResourceTypes";
+import { ResourceType } from './../resources/ResourceTypes';
 
 /**
  * Mining experience interface

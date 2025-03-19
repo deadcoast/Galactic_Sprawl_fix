@@ -1,5 +1,3 @@
-import * as React from "react";
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Apple,
@@ -13,7 +11,8 @@ import {
   Plus,
   Zap,
 } from 'lucide-react';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { useState } from 'react';
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 interface GrowthModifier {
   id: string;
   name: string;

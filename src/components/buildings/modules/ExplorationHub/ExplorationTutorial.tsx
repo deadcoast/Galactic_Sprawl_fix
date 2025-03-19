@@ -1,5 +1,5 @@
 import { AlertTriangle, ChevronRight, History, Map, Rocket, X } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 
 interface TutorialStep {
   title: string;

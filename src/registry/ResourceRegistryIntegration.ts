@@ -5,8 +5,8 @@
  * resource type handling throughout the application.
  */
 
-import { ResourceType } from "./../types/resources/ResourceTypes";
-import { ResourceType } from "./../types/resources/ResourceTypes";
+import { ResourceType } from '../types/resources/ResourceTypes';
+import { ResourceTypeConverter } from '../utils/ResourceTypeConverter';
 import { RegistryEventData, ResourceRegistry } from './ResourceRegistry';
 
 // Forward declaration of ResourceFlowManager to avoid circular dependencies
@@ -122,6 +122,7 @@ export class ResourceRegistryIntegration {
     // });
   }
 
+  // TODO: Implement this placeholder function
   /**
    * Get conversion rates from ResourceRegistry and update ResourceFlowManager
    *
@@ -181,7 +182,7 @@ export class ResourceRegistryIntegration {
     if (typeof resourceType === 'string') {
       const enumType = ResourceTypeConverter.stringToEnum(resourceType);
       if (!enumType) {
-        return resourceType;
+        return resourceType as ResourceType;
       }
       return this.registry.getDisplayName(enumType);
     }

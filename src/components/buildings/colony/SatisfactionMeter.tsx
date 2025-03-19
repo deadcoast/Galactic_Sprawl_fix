@@ -1,4 +1,3 @@
-import * as React from "react";
 import { motion } from 'framer-motion';
 import {
   Frown,
@@ -12,7 +11,7 @@ import {
   Utensils,
   Zap,
 } from 'lucide-react';
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 interface SatisfactionFactor {
   type: 'housing' | ResourceType.FOOD | 'healthcare' | ResourceType.ENERGY | 'security';

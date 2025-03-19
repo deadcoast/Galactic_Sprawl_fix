@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 import { motion } from 'framer-motion';
 import { AlertTriangle, Check, TrendingDown, TrendingUp } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 
 interface ThresholdStatusIndicatorProps {
   currentAmount: number;

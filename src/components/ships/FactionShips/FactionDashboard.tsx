@@ -1,5 +1,5 @@
 import { AlertTriangle, Crown, Shield } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { AIDebugOverlay } from '../../../components/debug/AIDebugOverlay';
 import { FactionAI } from '../../../components/factions/FactionAI';

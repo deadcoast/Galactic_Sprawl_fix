@@ -1,6 +1,6 @@
 import { Tier } from '../types/core/GameTypes';
-import { ResourceType } from "./../types/resources/ResourceTypes";
 import { PlayerShipCategory, PlayerShipClass } from '../types/ships/PlayerShipTypes';
+import { ResourceType } from './../types/resources/ResourceTypes';
 
 export interface ShipBlueprint {
   shipClass: PlayerShipClass;

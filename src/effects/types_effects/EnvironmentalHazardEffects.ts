@@ -4,7 +4,7 @@
  */
 
 import { Effect } from '../../types/core/GameTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 // Base Hazard Types
 // ------------------------------------------------------------
 

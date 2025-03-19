@@ -1,8 +1,8 @@
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import UserBehaviorCorrelationView from '../components/ui/performance/UserBehaviorCorrelationView';
 import { SessionPerformanceData } from '../services/telemetry/SessionPerformanceTracker';
-import { ResourceType } from "./../types/resources/ResourceTypes";
+import { ResourceType } from './../types/resources/ResourceTypes';
 
 /**
  * Performance Analysis Dashboard that showcases various performance

@@ -1,6 +1,6 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -88,7 +88,9 @@ export function ContextMenu({ items, x, y, onClose }: ContextMenuProps) {
               }}
               disabled={item?.disabled}
               className={`group flex w-full items-center justify-between px-4 py-2 text-left ${
-                item?.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-800'
+                item?.disabled
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'cursor-pointer hover:bg-gray-800'
               }`}
             >
               <div className="flex items-center space-x-3">

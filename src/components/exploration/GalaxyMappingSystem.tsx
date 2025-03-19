@@ -1,7 +1,6 @@
-import * as React from "react";
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Compass, Info, Layers, Route, Users, Zap } from 'lucide-react';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 import { GalaxyMapSystem } from './GalaxyMapSystem';
 
 // Interfaces
@@ -270,7 +269,9 @@ export function GalaxyMappingSystem({
           >
             <div className="absolute inset-0 flex items-center justify-center">
               {event?.type === 'storm' && <Zap className="h-8 w-8 text-purple-400" />}
-              {event?.type === 'solarFlare' && <AlertTriangle className="h-8 w-8 text-orange-400" />}
+              {event?.type === 'solarFlare' && (
+                <AlertTriangle className="h-8 w-8 text-orange-400" />
+              )}
               {event?.type === 'anomaly' && <div className="h-8 w-8 rounded-full bg-cyan-400/50" />}
             </div>
           </div>

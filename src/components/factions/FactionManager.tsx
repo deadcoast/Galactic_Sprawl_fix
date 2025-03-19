@@ -1,5 +1,5 @@
 import { AlertTriangle, Crown, Shield } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { factionConfigs } from '../../config/factions/factions';
 import { useFactionBehavior } from '../../hooks/factions/useFactionBehavior';

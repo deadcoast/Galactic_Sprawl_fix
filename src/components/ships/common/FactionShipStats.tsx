@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AlertTriangle, Shield, Sword } from 'lucide-react';
 import { SHIP_STATS } from '../../../config/ships/shipStats';
 import type { FactionShipProps, ShipStatsWithWeapons } from '../../../types/ships/FactionShipTypes';

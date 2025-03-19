@@ -1,24 +1,20 @@
 /**
  * Chart Data Transformation Utilities
- * 
+ *
  * This module provides standardized utilities for transforming data
  * for visualization components. It consolidates common patterns for
  * extracting, processing, and formatting chart data?.
  */
 
-import { 
+import {
   ChartDataRecord,
   ClusterPoint,
   ForecastPoint,
   PredictionPoint,
   ResourceGridCell,
 } from '../../types/exploration/AnalysisComponentTypes';
-import { 
-  AnalysisResult, 
-  DataPoint,
-  AnalysisType
-} from '../../types/exploration/DataAnalysisTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { AnalysisResult, DataPoint } from '../../types/exploration/DataAnalysisTypes';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 //=============================================================================
 // Type Guards
@@ -117,7 +113,7 @@ export function safelyExtractObject<T extends Record<string, unknown>>(
 ): T {
   if (!obj) return defaultValue;
   const value = obj[key];
-  return isObject(value) ? value as T : defaultValue;
+  return isObject(value) ? (value as T) : defaultValue;
 }
 
 /**
@@ -132,18 +128,18 @@ export function safelyExtractPath<T>(
   defaultValue: T
 ): T {
   if (!obj) return defaultValue;
-  
+
   const keys = path.split('.');
   let current: unknown = obj;
-  
+
   for (const key of keys) {
     if (current === null || current === undefined || typeof current !== 'object') {
       return defaultValue;
     }
-    current = current[key];
+    current = (current as Record<string, unknown>)[key];
   }
-  
-  return (current !== null && current !== undefined) ? current as T : defaultValue;
+
+  return current !== null && current !== undefined ? (current as T) : defaultValue;
 }
 
 //=============================================================================
@@ -164,10 +160,10 @@ export function calculateDomain(
   if (!data || data?.length === 0) {
     return [0, 1];
   }
-  
+
   let min = Infinity;
   let max = -Infinity;
-  
+
   for (const item of data) {
     const value = safelyExtractNumber(item, key, NaN);
     if (!isNaN(value)) {
@@ -175,12 +171,12 @@ export function calculateDomain(
       max = Math.max(max, value);
     }
   }
-  
+
   // Handle edge cases
   if (!isFinite(min) || !isFinite(max) || min === max) {
     return min === max ? [min - 1, max + 1] : [0, 1];
   }
-  
+
   // Apply padding
   const range = max - min;
   const paddingAmount = range * padding;
@@ -199,11 +195,11 @@ export function calculateDomains(
   padding = 0.05
 ): Record<string, [number, number]> {
   const domains: Record<string, [number, number]> = {};
-  
+
   for (const [outputKey, dataKey] of Object.entries(keys)) {
     domains[outputKey] = calculateDomain(data, dataKey, padding);
   }
-  
+
   return domains;
 }
 
@@ -223,7 +219,7 @@ export function createColorScale(
   return (value: number) => {
     // Normalize value to 0-1 range
     const normalizedValue = Math.max(0, Math.min(1, (value - domain[0]) / (domain[1] - domain[0])));
-    
+
     // Map to color index
     const index = Math.min(range.length - 1, Math.floor(normalizedValue * range.length));
     return range[index];
@@ -240,15 +236,15 @@ export function getResourceTypeColor(
   defaultColor = '#888888'
 ): string {
   const resourceTypeColors: Record<ResourceType, string> = {
-    minerals: '#3D85C6', // Blue
-    energy: '#F1C232',   // Yellow/gold
-    population: '#6AA84F', // Green
-    research: '#9FC5E8',  // Light blue
-    plasma: '#D5A6BD',   // Purple
-    gas: '#C27BA0',      // Pink
-    exotic: '#CC0000',   // Red
+    MINERALS: '#3D85C6', // Blue
+    ENERGY: '#F1C232', // Yellow/gold
+    POPULATION: '#6AA84F', // Green
+    RESEARCH: '#9FC5E8', // Light blue
+    PLASMA: '#D5A6BD', // Purple
+    GAS: '#C27BA0', // Pink
+    EXOTIC: '#CC0000', // Red
   };
-  
+
   return (resourceTypeColors as Record<string, string>)[resourceType] || defaultColor;
 }
 
@@ -259,17 +255,17 @@ export function getResourceTypeColor(
 export function hexToRgb(hex: string): { r: number; g: number; b: number } {
   // Default to black if invalid hex
   const defaultRgb = { r: 0, g: 0, b: 0 };
-  
+
   // Remove # if present
   const sanitizedHex = hex.replace(/^#/, '');
-  
+
   // Handle different hex formats
   if (!/^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(sanitizedHex)) {
     return defaultRgb;
   }
-  
+
   let r, g, b;
-  
+
   if (sanitizedHex.length === 3) {
     // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
     r = parseInt(sanitizedHex.charAt(0) + sanitizedHex.charAt(0), 16);
@@ -280,7 +276,7 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } {
     g = parseInt(sanitizedHex.substring(2, 4), 16);
     b = parseInt(sanitizedHex.substring(4, 6), 16);
   }
-  
+
   return { r, g, b };
 }
 
@@ -308,29 +304,29 @@ export function transformClusterData(
       clusterPoints: [],
     };
   }
-  
+
   const clusters = result?.data?.clusters as unknown[];
   const features = safelyExtractArray<string>(result?.data, 'features', []);
   const clusterPoints: ClusterPoint[] = [];
-  
+
   clusters.forEach(cluster => {
     const clusterIndex = safelyExtractNumber(cluster, 'cluster', 0);
     const pointIds = safelyExtractArray<string>(cluster, 'pointIds', []);
-    
+
     pointIds.forEach(pointId => {
       const originalPoint = allData.find(p => p.id === pointId);
       if (!originalPoint) return;
-      
+
       const featureValues = features.map(feature => {
         const value = safelyExtractPath<unknown>(
-          originalPoint, 
-          feature, 
+          originalPoint,
+          feature,
           safelyExtractPath<unknown>(originalPoint, `properties.${feature}`, null)
         );
-        
+
         return isNumber(value) ? value : null;
       });
-      
+
       clusterPoints.push({
         id: pointId,
         name: safelyExtractString(originalPoint, 'name', `Point-${pointId}`),
@@ -342,7 +338,7 @@ export function transformClusterData(
       });
     });
   });
-  
+
   return {
     clusters,
     features,
@@ -354,9 +350,7 @@ export function transformClusterData(
  * Transforms prediction data from analysis results
  * @param result Analysis result containing prediction data
  */
-export function transformPredictionData(
-  result: AnalysisResult
-): {
+export function transformPredictionData(result: AnalysisResult): {
   predictions: PredictionPoint[];
   forecast: ForecastPoint[];
   model: string;
@@ -372,15 +366,11 @@ export function transformPredictionData(
   const metrics = safelyExtractObject(result?.data, 'metrics', { mse: 0, rmse: 0, mae: 0 });
   const modelDetails = safelyExtractObject(result?.data, 'modelDetails', {});
   const model = safelyExtractString(result?.data, 'model', 'unknown');
-  const targetVariable = safelyExtractString(
-    result?.config?.parameters ?? {}, 
-    'target', 
-    ''
-  );
-  
+  const targetVariable = safelyExtractString(result?.config?.parameters ?? {}, 'target', '');
+
   // Process model details based on model type
   let typedModelDetails: unknown;
-  
+
   if (model === 'linear') {
     typedModelDetails = {
       coefficients: safelyExtractArray<number>(modelDetails, 'coefficients', [0]),
@@ -393,15 +383,15 @@ export function transformPredictionData(
       hiddenUnits: 0,
       activation: 'relu',
     });
-    
+
     const training = safelyExtractObject(modelDetails, 'training', {
       epochs: 0,
       learningRate: 0,
       batchSize: 0,
     });
-    
+
     const normalization = safelyExtractObject(modelDetails, 'normalization', undefined);
-    
+
     typedModelDetails = {
       architecture: {
         inputSize: safelyExtractNumber(architecture, 'inputSize', 0),
@@ -413,10 +403,12 @@ export function transformPredictionData(
         learningRate: safelyExtractNumber(training, 'learningRate', 0),
         batchSize: safelyExtractNumber(training, 'batchSize', 0),
       },
-      normalization: normalization ? {
-        means: safelyExtractArray<number>(normalization, 'means', []),
-        stdDevs: safelyExtractArray<number>(normalization, 'stdDevs', []),
-      } : undefined,
+      normalization: normalization
+        ? {
+            means: safelyExtractArray<number>(normalization, 'means', []),
+            stdDevs: safelyExtractArray<number>(normalization, 'stdDevs', []),
+          }
+        : undefined,
     };
   } else {
     typedModelDetails = {
@@ -424,7 +416,7 @@ export function transformPredictionData(
       featureImportance: [],
     };
   }
-  
+
   return {
     predictions,
     forecast,
@@ -440,9 +432,7 @@ export function transformPredictionData(
  * Transforms resource mapping data from analysis results
  * @param result Analysis result containing resource mapping data
  */
-export function transformResourceMappingData(
-  result: AnalysisResult
-): {
+export function transformResourceMappingData(result: AnalysisResult): {
   resourcePoints: DataPoint[];
   gridCells: ResourceGridCell[];
   resourceTypes: ResourceType[];
@@ -458,19 +448,19 @@ export function transformResourceMappingData(
   const resourcePoints = safelyExtractArray<DataPoint>(result?.data, 'resourcePoints', []);
   const gridCells = safelyExtractArray<ResourceGridCell>(result?.data, 'gridCells', []);
   const resourceTypes = safelyExtractArray<ResourceType>(result?.data, 'resourceTypes', []);
-  
-  const valueMetric = safelyExtractString(
-    result?.data, 
-    'valueMetric', 
-    'amount'
-  ) as 'amount' | 'quality' | 'accessibility' | 'estimatedValue';
-  
+
+  const valueMetric = safelyExtractString(result?.data, 'valueMetric', 'amount') as
+    | 'amount'
+    | 'quality'
+    | 'accessibility'
+    | 'estimatedValue';
+
   const regionSize = safelyExtractNumber(result?.data, 'regionSize', 1);
-  
+
   // Ensure ranges are properly formatted
   let xRange: [number, number] = [0, 0];
   let yRange: [number, number] = [0, 0];
-  
+
   if (
     isArray(result?.data?.xRange) &&
     result?.data?.xRange.length === 2 &&
@@ -479,7 +469,7 @@ export function transformResourceMappingData(
   ) {
     xRange = result?.data?.xRange as [number, number];
   }
-  
+
   if (
     isArray(result?.data?.yRange) &&
     result?.data?.yRange.length === 2 &&
@@ -488,12 +478,12 @@ export function transformResourceMappingData(
   ) {
     yRange = result?.data?.yRange as [number, number];
   }
-  
+
   // Extract remaining data
   const density = safelyExtractObject(result?.data, 'density', {});
   const insights = safelyExtractArray<string>(result, 'insights', []);
   const summary = safelyExtractString(result, 'summary', '');
-  
+
   return {
     resourcePoints,
     gridCells,
@@ -528,20 +518,24 @@ export function transformToScatterFormat(
   if (!isArray(dataPoints) || dataPoints.length === 0) {
     return [];
   }
-  
+
   return dataPoints.map(point => {
     // Safely extract properties
     const properties = safelyExtractObject(point, 'properties', {});
-    const resourceType = safelyExtractString(properties, 'resourceType', 
+    const resourceType = safelyExtractString(
+      properties,
+      'resourceType',
       safelyExtractString(properties, 'type', 'unknown')
     );
-    
-    const value = safelyExtractNumber(properties, valueMetric, 
+
+    const value = safelyExtractNumber(
+      properties,
+      valueMetric,
       safelyExtractNumber(properties, 'amount', 1)
     );
-    
+
     const coordinates = safelyExtractObject(point, 'coordinates', { x: 0, y: 0 });
-    
+
     return {
       id: safelyExtractString(point, 'id', `point-${Math.random().toString(36).substr(2, 9)}`),
       name: safelyExtractString(point, 'name', `Resource ${point.id || 'Unknown'}`),
@@ -582,25 +576,27 @@ export function transformToHeatMapFormat(
   if (!isArray(gridCells) || gridCells.length === 0) {
     return [];
   }
-  
+
   return gridCells.map(cell => {
     let value = 0;
-    
+
     if (selectedResourceType === 'all') {
       value = safelyExtractNumber(cell, 'totalValue', 0);
     } else {
       const resources = safelyExtractArray(cell, 'resources', []);
-      const resourceData = resources.find(r => 
-        safelyExtractString(r, 'type', '') === selectedResourceType
+      const resourceData = resources.find(
+        r => safelyExtractString(r, 'type', '') === selectedResourceType
       );
-      
+
       if (resourceData) {
-        value = safelyExtractNumber(resourceData, valueMetric, 
+        value = safelyExtractNumber(
+          resourceData,
+          valueMetric,
           safelyExtractNumber(resourceData, 'amount', 0)
         );
       }
     }
-    
+
     return {
       ...cell,
       value,
@@ -628,13 +624,13 @@ export function convertFilterValue(
     if (!isNaN(num)) {
       return num;
     }
-    
+
     // Handle boolean values
     if (value === 'true' || value === 'false') {
       return value === 'true';
     }
   }
-  
+
   // Between operator (expects a range)
   if (operator === 'between' && value.includes(',')) {
     const [minStr, maxStr] = value.split(',');
@@ -644,7 +640,7 @@ export function convertFilterValue(
       return [min, max];
     }
   }
-  
+
   // Default to string
   return value;
 }
@@ -676,46 +672,56 @@ export function applyFilters(
   if (!filters || filters.length === 0) {
     return data;
   }
-  
+
   return data?.filter(item => {
     // Apply all filters (AND logic)
     return filters.every(filter => {
       const { field, operator, value } = filter;
-      
+
       // Extract the field value, supporting dot notation for nested properties
       const fieldValue = safelyExtractPath(item, field, null);
-      
+
       // Skip invalid values
       if (fieldValue === null || fieldValue === undefined) {
         return false;
       }
-      
+
       // Apply appropriate comparison based on operator
       switch (operator) {
         case 'equals':
           return fieldValue === value;
-        
+
         case 'notEquals':
           return fieldValue !== value;
-        
+
         case 'greaterThan':
           return isNumber(fieldValue) && isNumber(value) && fieldValue > value;
-        
+
         case 'lessThan':
           return isNumber(fieldValue) && isNumber(value) && fieldValue < value;
-        
+
         case 'contains':
-          return isString(fieldValue) && isString(value) && 
-            fieldValue.toLowerCase().includes(value.toLowerCase());
-        
+          return (
+            isString(fieldValue) &&
+            isString(value) &&
+            fieldValue.toLowerCase().includes(value.toLowerCase())
+          );
+
         case 'notContains':
-          return isString(fieldValue) && isString(value) && 
-            !fieldValue.toLowerCase().includes(value.toLowerCase());
-        
+          return (
+            isString(fieldValue) &&
+            isString(value) &&
+            !fieldValue.toLowerCase().includes(value.toLowerCase())
+          );
+
         case 'between':
-          return isNumber(fieldValue) && Array.isArray(value) && 
-            fieldValue >= value[0] && fieldValue <= value[1];
-        
+          return (
+            isNumber(fieldValue) &&
+            Array.isArray(value) &&
+            fieldValue >= value[0] &&
+            fieldValue <= value[1]
+          );
+
         default:
           return true;
       }
@@ -755,14 +761,14 @@ export function paginateData<T>(
       hasPreviousPage: false,
     };
   }
-  
+
   const totalItems = data?.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const safePage = Math.max(0, Math.min(currentPage, totalPages - 1));
-  
+
   const startIndex = safePage * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
-  
+
   return {
     items: data?.slice(startIndex, endIndex),
     totalItems,

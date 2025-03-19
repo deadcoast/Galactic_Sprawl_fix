@@ -1,7 +1,7 @@
 import { Check, ChevronDown, ChevronUp, Filter, Search, X } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Anomaly types and severities
 const ANOMALY_TYPES = ['artifact', 'signal', 'phenomenon'] as const;

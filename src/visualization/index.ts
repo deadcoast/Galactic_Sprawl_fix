@@ -1,34 +1,34 @@
 export { Chart } from './Chart';
 export type {
-  ChartProps,
+  ChartAnimation,
+  ChartAxes,
   ChartData,
   ChartDataPoint,
-  ChartOptions,
-  ChartType,
-  ChartAxes,
   ChartLegend,
+  ChartOptions,
+  ChartProps,
+  ChartRenderer,
   ChartTooltip,
-  ChartAnimation,
-  ChartRenderer
+  ChartType,
 } from './Chart';
 
 /**
  * Chart Visualization System
- * 
+ *
  * This module provides a flexible chart visualization system with multiple rendering strategies.
  * It automatically selects the most appropriate rendering method based on the data size and device capabilities.
- * 
+ *
  * Features:
  * - Strategy pattern for different rendering methods (Canvas, SVG, WebGL)
  * - Support for various chart types (line, bar, scatter, area, pie, radar, heatmap)
  * - Automatic performance optimization for large datasets
  * - Consistent API across rendering methods
  * - Support for theming, animations, and interactive tooltips
- * 
+ *
  * @example
  * ```tsx
  * import { Chart } from './visualization';
- * 
+ *
  * function LineChartExample() {
  *   const data = {
  *     datasets: [
@@ -43,7 +43,7 @@ export type {
  *       }
  *     ]
  *   };
- *   
+ *
  *   const options = {
  *     axes: {
  *       x: { label: 'X Axis', grid: true },
@@ -51,7 +51,7 @@ export type {
  *     },
  *     legend: { visible: true, position: 'top' }
  *   };
- *   
+ *
  *   return <Chart data={data} options={options} type="line" />;
  * }
  * ```

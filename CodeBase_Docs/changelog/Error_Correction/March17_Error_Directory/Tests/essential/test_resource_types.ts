@@ -13,8 +13,8 @@ function processResourceString(resourceType: string): ResourceType {
   } else if (resourceType === GAS_STR) {
     return GAS_STR;
   } else {
-    return "unknown";
+    return 'unknown';
   }
 }
 
-export { MINERALS_STR, GAS_STR, ENERGY_STR, processResourceString };
+export { ENERGY_STR, GAS_STR, MINERALS_STR, processResourceString };

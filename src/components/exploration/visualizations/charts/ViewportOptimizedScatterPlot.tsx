@@ -1,5 +1,5 @@
 import { debounce } from 'lodash';
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CartesianGrid,

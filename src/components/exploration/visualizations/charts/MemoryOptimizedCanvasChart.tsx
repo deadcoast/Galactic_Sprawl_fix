@@ -1,5 +1,5 @@
 import { Alert, CircularProgress, Typography } from '@mui/material';
-import * as React from "react";
+import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MemoryManagerOptions, useMemoryManager } from '../../../../hooks/useMemoryManager';
 import { ChartDataRecord } from '../../../../types/exploration/AnalysisComponentTypes';

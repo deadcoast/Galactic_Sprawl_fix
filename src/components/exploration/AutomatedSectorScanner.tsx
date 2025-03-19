@@ -1,7 +1,5 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
-import * as React from "react";
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Cpu, Database, Radar, Settings, Zap } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   automationManager,
@@ -9,6 +7,7 @@ import {
   EmitEventValue,
 } from '../../managers/game/AutomationManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 interface Sector {
   id: string;

@@ -1,5 +1,3 @@
-import { ResourceType } from "./../../../types/resources/ResourceTypes";
-import React from "react";
 import { Shield, Target } from 'lucide-react';
 import { ReactNode, useCallback } from 'react';
 import { CombatEffectType } from '../../../effects/types_effects/EffectTypes';
@@ -12,6 +10,7 @@ import { WeaponMount } from '../../../types/weapons/WeaponTypes';
 import { createDamageEffect } from '../../../utils/weapons/weaponEffectUtils';
 import { AbilityButton } from '../../ui/buttons/AbilityButton';
 import { StatusEffect } from '../../ui/status/StatusEffect';
+import { ResourceType } from './../../../types/resources/ResourceTypes';
 import { FactionShipBase } from './FactionShipBase';
 
 interface EquatorHorizonShipProps {

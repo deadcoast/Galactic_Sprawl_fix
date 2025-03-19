@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { useState } from 'react';
 import {
   benchmarkAccessors,
@@ -315,7 +315,9 @@ const D3AccessorBenchmarkView: React.FC = () => {
                         <td className="border p-2 text-right">
                           {result?.iterations.toLocaleString()}
                         </td>
-                        <td className="border p-2 text-right">{result?.averageTimeMs.toFixed(6)}</td>
+                        <td className="border p-2 text-right">
+                          {result?.averageTimeMs.toFixed(6)}
+                        </td>
                         <td className="border p-2 text-right">{result?.medianTimeMs.toFixed(6)}</td>
                         <td className="border p-2 text-right">{result?.totalTimeMs.toFixed(2)}</td>
                       </tr>

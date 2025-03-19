@@ -1,6 +1,5 @@
-import * as React from "react";
-import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
 interface Range {
   id: string;

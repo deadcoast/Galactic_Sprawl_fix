@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AlertTriangle, Crosshair, Shield } from 'lucide-react';
 import { WeaponCategory, WeaponStatus } from '../../../../../types/weapons/WeaponTypes';
 

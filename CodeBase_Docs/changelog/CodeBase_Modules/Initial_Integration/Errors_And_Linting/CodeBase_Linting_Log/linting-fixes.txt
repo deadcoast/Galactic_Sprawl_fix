@@ -1,3 +1,0 @@
-Linting fixes applied to key files
-- WeaponEffectManager.ts: Fixed 17 issues (console.debug, any types)
-- useFactionBehavior.ts: Fixed 16 issues (unused vars, any types)

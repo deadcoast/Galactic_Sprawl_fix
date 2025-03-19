@@ -1,7 +1,6 @@
-import * as React from "react";
-import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Bell, BellOff, Info, Shield, Volume2, VolumeX, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export type AlertLevel = 'info' | 'warning' | 'danger' | 'critical';
 

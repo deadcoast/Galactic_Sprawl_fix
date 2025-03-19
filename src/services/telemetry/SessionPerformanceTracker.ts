@@ -8,8 +8,8 @@
 
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { ModuleEvent } from '../../types/events/ModuleEventTypes';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { generateAnonymousId } from '../../utils/idGenerator';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * Session identification data

@@ -1,5 +1,5 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
-import * as React from "react";
+import * as React from 'react';
 import { useState } from 'react';
 import {
   CartesianGrid,
@@ -108,7 +108,7 @@ export const ClusterVisualization: React.FC<ClusterVisualizationProps> = ({
   // State for selected features for visualization
   const [xAxisFeature, setXAxisFeature] = useState<string>(data?.features[0] ?? '');
   const [yAxisFeature, setYAxisFeature] = useState<string>(
-    data?.features.length > 1 ? data?.features[1] : data?.features[0] ?? ''
+    data?.features.length > 1 ? data?.features[1] : (data?.features[0] ?? '')
   );
 
   // Get feature indices for easier access

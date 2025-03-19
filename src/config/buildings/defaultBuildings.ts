@@ -1,5 +1,5 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import { ModularBuilding } from '../../types/buildings/ModuleTypes';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 export const defaultMothership: ModularBuilding = {
   id: 'mothership-1',

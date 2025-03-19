@@ -163,7 +163,9 @@ export class EventFilter {
 
       // Filter by module ID
       if (criteria.moduleIds?.length) {
-        filteredBatch = filteredBatch.filter(event => criteria.moduleIds!.includes(event?.moduleId));
+        filteredBatch = filteredBatch.filter(event =>
+          criteria.moduleIds!.includes(event?.moduleId)
+        );
       }
 
       // Filter by time range

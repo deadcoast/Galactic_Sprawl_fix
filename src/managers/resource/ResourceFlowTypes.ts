@@ -7,13 +7,13 @@
  */
 
 import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   FlowNode,
   ResourceConversionProcess,
   ResourceState,
 } from '../../types/resources/StandardizedResourceTypes';
 import { SpatialObject } from '../../utils/spatial/SpatialPartitioning';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * Extended FlowNode with spatial coordinates for geographical networks

@@ -1,6 +1,6 @@
-import * as React from "react";
-import { cn } from '../../utils/cn';
+import * as React from 'react';
 import { Card as NewCard } from '../../ui/components/Card';
+import { cn } from '../../utils/cn';
 
 /**
  * @deprecated Use the new Card component from ui/components/Card instead
@@ -79,7 +79,7 @@ CardFooter.displayName = 'CardFooter';
 if (process.env.NODE_ENV === 'development') {
   console.warn(
     'The Card components from components/ui/Card are deprecated. ' +
-    'Please use the new Card component from ui/components/Card instead.'
+      'Please use the new Card component from ui/components/Card instead.'
   );
 }
 

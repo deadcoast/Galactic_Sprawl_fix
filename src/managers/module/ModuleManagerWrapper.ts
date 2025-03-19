@@ -1,4 +1,4 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
+import { ResourceType } from './../../types/resources/ResourceTypes';
 /**
  * @file ModuleManagerWrapper.ts
  * Wrapper for ModuleManager that implements IModuleManager interface.

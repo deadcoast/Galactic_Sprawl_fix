@@ -1,9 +1,9 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database } from 'lucide-react';
-import { ResourceType } from '../../types/resources/ResourceTypes';
-import * as React from "react";
+import * as React from 'react';
 import { useState } from 'react';
+import { ResourceType } from '../../types/resources/ResourceTypes';
 
 interface HabitableWorldProps {
   name: string;

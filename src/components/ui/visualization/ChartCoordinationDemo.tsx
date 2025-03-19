@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { useState } from 'react';
 import { useChartCoordination } from '../../../hooks/visualization/useChartCoordination';
 import {

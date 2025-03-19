@@ -240,7 +240,7 @@ export class ResourceThresholdManager {
 
       // Use _deltaTime to calculate rate of change for time-sensitive thresholds
       if (_deltaTime > 0 && state) {
-        const resourceType = config.threshold.type;
+        const resourceType = config.threshold.resourceId;
         const resourceState = this.resourceStates.get(resourceType);
 
         if (resourceState && state.lastValue !== undefined) {
@@ -275,7 +275,7 @@ export class ResourceThresholdManager {
         continue;
       }
 
-      const resourceState = this.resourceStates.get(config.threshold.type);
+      const resourceState = this.resourceStates.get(config.threshold.resourceId);
       if (!resourceState) {
         continue;
       }
@@ -300,7 +300,7 @@ export class ResourceThresholdManager {
           timestamp: now,
           data: {
             id,
-            type: config.threshold.type,
+            type: config.threshold.resourceId,
             status: state.status,
             timestamp: now,
             severity: state.status === 'critical' ? 'high' : 'medium',
@@ -324,7 +324,7 @@ export class ResourceThresholdManager {
           timestamp: now,
           data: {
             id,
-            type: config.threshold.type,
+            type: config.threshold.resourceId,
             timestamp: now,
             severity: 'info',
           },
@@ -344,6 +344,11 @@ export class ResourceThresholdManager {
    * Check if a threshold is triggered
    */
   private isThresholdTriggered(threshold: ResourceThreshold, state: ResourceState): boolean {
+    const resourceType = threshold.resourceId;
+    if (!state) {
+      return false;
+    }
+
     if (threshold.min !== undefined && state.current < threshold.min) {
       return true;
     }
@@ -371,6 +376,11 @@ export class ResourceThresholdManager {
     threshold: ResourceThreshold,
     state: ResourceState
   ): ThresholdStatus {
+    const resourceType = threshold.resourceId;
+    if (!state) {
+      return 'inactive';
+    }
+
     if (threshold.min !== undefined && state.current < threshold.min) {
       const ratio = state.current / threshold.min;
 
@@ -409,6 +419,8 @@ export class ResourceThresholdManager {
    * Execute threshold actions
    */
   private executeThresholdActions(config: ThresholdConfig, status: ThresholdStatus): void {
+    const resourceType = config.threshold.resourceId;
+    const state = this.resourceStates.get(resourceType);
     const now = Date.now();
 
     for (const action of config.actions) {
@@ -420,7 +432,7 @@ export class ResourceThresholdManager {
             moduleType: RESOURCE_MANAGER_TYPE,
             timestamp: now,
             data: {
-              type: config.threshold.type,
+              type: resourceType,
               target: action.target,
               amount: action.amount ?? 0,
               priority: action.priority || 1,
@@ -436,7 +448,7 @@ export class ResourceThresholdManager {
             moduleType: RESOURCE_MANAGER_TYPE,
             timestamp: now,
             data: {
-              type: config.threshold.type,
+              type: resourceType,
               target: action.target,
               amount: action.amount ?? 0,
               priority: action.priority || 1,
@@ -452,7 +464,7 @@ export class ResourceThresholdManager {
             moduleType: RESOURCE_MANAGER_TYPE,
             timestamp: now,
             data: {
-              type: config.threshold.type,
+              type: resourceType,
               target: action.target,
               amount: action.amount ?? 0,
               priority: action.priority || 1,
@@ -469,7 +481,7 @@ export class ResourceThresholdManager {
             timestamp: now,
             data: {
               type: 'resource',
-              message: action.message || `Resource ${config.threshold.type} threshold triggered`,
+              message: action.message || `Resource ${resourceType} threshold triggered`,
               severity: status === 'critical' ? 'high' : 'medium',
               timestamp: now,
             },
@@ -483,34 +495,26 @@ export class ResourceThresholdManager {
    * Create a resource alert
    */
   private createAlert(config: ThresholdConfig, status: ThresholdStatus): void {
-    const now = Date.now();
+    const resourceType = config.threshold.resourceId;
+    const state = this.resourceStates.get(resourceType);
+    if (!state) return;
+
     const alert: ResourceAlert = {
       id: config.id,
-      type: config.threshold.type,
-      threshold: config.threshold,
-      message: `Resource ${config.threshold.type} threshold triggered`,
+      type: resourceType,
+      message: `Resource ${resourceType} threshold triggered`,
       severity: status === 'critical' ? 'critical' : 'medium',
-      autoResolve: config.autoResolve,
-      actions: config.actions
-        .filter(action => action.type !== 'notification') // Filter out notification actions
-        .map(action => ({
-          type: action.type as 'production' | 'consumption' | 'transfer',
-          target: action.target,
-          amount: action.amount ?? 0,
-        })),
+      timestamp: Date.now(),
+      threshold: config.threshold,
     };
 
     this.activeAlerts.set(config.id, alert);
-
     moduleEventBus.emit({
       type: RESOURCE_ALERT_CREATED,
       moduleId: RESOURCE_MANAGER_ID,
       moduleType: RESOURCE_MANAGER_TYPE,
-      timestamp: now,
-      data: {
-        ...alert,
-        severity: status === 'critical' ? 'high' : 'medium',
-      },
+      timestamp: Date.now(),
+      data: { ...alert },
     });
   }
 
@@ -518,23 +522,23 @@ export class ResourceThresholdManager {
    * Clear a resource alert
    */
   private clearAlert(id: string): void {
-    const now = Date.now();
     const alert = this.activeAlerts.get(id);
-    if (!alert) {
-      return;
-    }
+    if (!alert) return;
+
+    const resourceType = alert.type;
+    const state = this.resourceStates.get(resourceType);
+    if (!state) return;
 
     this.activeAlerts.delete(id);
-
     moduleEventBus.emit({
       type: RESOURCE_ALERT_CLEARED,
       moduleId: RESOURCE_MANAGER_ID,
       moduleType: RESOURCE_MANAGER_TYPE,
-      timestamp: now,
+      timestamp: Date.now(),
       data: {
         id,
-        type: alert.type,
-        timestamp: now,
+        type: resourceType,
+        timestamp: Date.now(),
         severity: 'info',
       },
     });

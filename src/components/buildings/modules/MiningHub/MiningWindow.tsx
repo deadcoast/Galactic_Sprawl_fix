@@ -18,7 +18,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
 import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
 import { MiningResource } from '../../../../types/mining/MiningTypes';
-import { ResourceType } from "./../../../../types/resources/ResourceTypes";
+import { ResourceType } from './../../../../types/resources/ResourceTypes';
 import { MiningMap } from './MiningMap';
 import { MiningTutorial } from './MiningTutorial';
 import { ResourceNode } from './ResourceNode';

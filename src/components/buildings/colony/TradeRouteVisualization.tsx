@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Package, TrendingDown, TrendingUp, Truck } from 'lucide-react';
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
 interface TradePartner {

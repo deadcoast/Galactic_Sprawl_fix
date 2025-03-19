@@ -1,7 +1,7 @@
-import { ResourceType } from "./../resources/ResourceTypes";
 import { BaseStats, Effect, Tier } from '../core/GameTypes';
 import { ResourceCost } from '../resources/ResourceTypes';
 import { WeaponMount, WeaponType as WeaponTypeBase } from '../weapons/WeaponTypes';
+import { ResourceType } from './../resources/ResourceTypes';
 
 // Ship Type Interface
 export interface ShipType {

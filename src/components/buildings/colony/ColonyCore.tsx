@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Database, GraduationCap, Leaf, Map, Radar, Rocket, X } from 'lucide-react';
 import { ContextMenuItem, useContextMenu } from '../../../components/ui/ContextMenu';
 import { Draggable, DragItem, DropTarget } from '../../../components/ui/DragAndDrop';

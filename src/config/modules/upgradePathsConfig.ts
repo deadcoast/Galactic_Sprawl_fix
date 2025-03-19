@@ -1,8 +1,8 @@
-import { ResourceType } from "./../../types/resources/ResourceTypes";
 import {
   ModuleUpgradeManager,
   ModuleUpgradePath,
 } from '../../managers/module/ModuleUpgradeManager';
+import { ResourceType } from './../../types/resources/ResourceTypes';
 
 /**
  * Sample upgrade paths for different module types

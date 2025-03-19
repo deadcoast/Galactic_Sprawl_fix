@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Crosshair } from 'lucide-react';
 import {
   CombatWeaponStats,
