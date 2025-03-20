@@ -1,16 +1,9 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Heading,
-  Input,
-  Select,
-  Stack,
-  Switch,
-  Text,
-} from '@chakra-ui/react';
+import { Button, Card, Col, Form, InputNumber, Row, Select, Space, Switch, Typography } from 'antd';
 import React, { useState } from 'react';
+import { MultitabPerformanceResult } from '../../tests/performance/MultitabPerformanceTestSuite';
+
+const { Title, Text } = Typography;
+const { Option } = Select;
 
 export interface MultitabLaunchConfig {
   tabCount: number;
@@ -22,9 +15,14 @@ export interface MultitabLaunchConfig {
   preserveData: boolean;
 }
 
+// Define the ResultSet type to match the page component
+type ResultSet = MultitabPerformanceResult[] | Record<string, MultitabPerformanceResult[]>;
+
 interface MultitabPerformanceLauncherProps {
   onLaunch: (config: MultitabLaunchConfig) => void;
   isRunning: boolean;
+  isCoordinator?: boolean;
+  onTestResults?: (results: ResultSet) => void;
 }
 
 export const MultitabPerformanceLauncher: React.FC<MultitabPerformanceLauncherProps> = ({
@@ -51,135 +49,114 @@ export const MultitabPerformanceLauncher: React.FC<MultitabPerformanceLauncherPr
   };
 
   return (
-    <Box p={4} borderWidth="1px" borderRadius="lg" bg="white" shadow="md">
-      <Heading size="md" mb={4}>
-        Multitab Performance Test Launcher
-      </Heading>
+    <Card style={{ borderRadius: '8px' }}>
+      <Title level={5}>Multitab Performance Test Launcher</Title>
       <form onSubmit={handleSubmit}>
-        <Stack spacing={4}>
-          <FormControl>
-            <FormLabel>Number of Tabs</FormLabel>
-            <Input
-              type="number"
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Form.Item label="Number of Tabs" help="How many tabs to open (1-10)">
+            <InputNumber
               value={config.tabCount}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange('tabCount', parseInt(e.target.value) || 1)
-              }
+              onChange={(value: number | null) => handleChange('tabCount', value || 1)}
               min={1}
               max={10}
-              isDisabled={isRunning}
+              disabled={isRunning}
+              style={{ width: '100%' }}
             />
-            <Text fontSize="sm" color="gray.500">
-              How many tabs to open (1-10)
-            </Text>
-          </FormControl>
+          </Form.Item>
 
-          <FormControl>
-            <FormLabel>Scenario Type</FormLabel>
+          <Form.Item label="Scenario Type" help="Type of performance scenario to run">
             <Select
               value={config.scenarioType}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                handleChange('scenarioType', e.target.value)
-              }
-              isDisabled={isRunning}
+              onChange={(value: string) => handleChange('scenarioType', value)}
+              disabled={isRunning}
+              style={{ width: '100%' }}
             >
-              <option value="resource-intensive">Resource Intensive</option>
-              <option value="memory-intensive">Memory Intensive</option>
-              <option value="network-intensive">Network Intensive</option>
-              <option value="ui-intensive">UI Intensive</option>
+              <Option value="resource-intensive">Resource Intensive</Option>
+              <Option value="memory-intensive">Memory Intensive</Option>
+              <Option value="network-intensive">Network Intensive</Option>
+              <Option value="ui-intensive">UI Intensive</Option>
             </Select>
-            <Text fontSize="sm" color="gray.500">
-              Type of performance scenario to run
-            </Text>
-          </FormControl>
+          </Form.Item>
 
-          <FormControl>
-            <FormLabel>Test Duration (seconds)</FormLabel>
-            <Input
-              type="number"
+          <Form.Item
+            label="Test Duration (seconds)"
+            help="How long each test should run (5-300 seconds)"
+          >
+            <InputNumber
               value={config.duration}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange('duration', parseInt(e.target.value) || 10)
-              }
+              onChange={(value: number | null) => handleChange('duration', value || 10)}
               min={5}
               max={300}
-              isDisabled={isRunning}
+              disabled={isRunning}
+              style={{ width: '100%' }}
             />
-            <Text fontSize="sm" color="gray.500">
-              How long each test should run (5-300 seconds)
-            </Text>
-          </FormControl>
+          </Form.Item>
 
-          <FormControl>
-            <FormLabel>Delay Between Tabs (ms)</FormLabel>
-            <Input
-              type="number"
+          <Form.Item
+            label="Delay Between Tabs (ms)"
+            help="Delay before opening next tab (0-5000 ms)"
+          >
+            <InputNumber
               value={config.delayBetweenTabs}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange('delayBetweenTabs', parseInt(e.target.value) || 0)
-              }
+              onChange={(value: number | null) => handleChange('delayBetweenTabs', value || 0)}
               min={0}
               max={5000}
               step={100}
-              isDisabled={isRunning}
+              disabled={isRunning}
+              style={{ width: '100%' }}
             />
-            <Text fontSize="sm" color="gray.500">
-              Delay before opening next tab (0-5000 ms)
-            </Text>
-          </FormControl>
+          </Form.Item>
 
-          <FormControl>
-            <FormLabel>Report Frequency (ms)</FormLabel>
-            <Input
-              type="number"
+          <Form.Item
+            label="Report Frequency (ms)"
+            help="How often to collect performance data (500-10000 ms)"
+          >
+            <InputNumber
               value={config.reportFrequency}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange('reportFrequency', parseInt(e.target.value) || 500)
-              }
+              onChange={(value: number | null) => handleChange('reportFrequency', value || 500)}
               min={500}
               max={10000}
               step={100}
-              isDisabled={isRunning}
+              disabled={isRunning}
+              style={{ width: '100%' }}
             />
-            <Text fontSize="sm" color="gray.500">
-              How often to collect performance data (500-10000 ms)
-            </Text>
-          </FormControl>
+          </Form.Item>
 
-          <FormControl display="flex" alignItems="center">
-            <FormLabel mb="0">Auto-close tabs when finished</FormLabel>
-            <Switch
-              isChecked={config.autoClose}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange('autoClose', e.target.checked)
-              }
-              isDisabled={isRunning}
-            />
-          </FormControl>
+          <Form.Item>
+            <Row>
+              <Col span={16}>
+                <Text>Auto-close tabs when finished</Text>
+              </Col>
+              <Col span={8}>
+                <Switch
+                  checked={config.autoClose}
+                  onChange={(checked: boolean) => handleChange('autoClose', checked)}
+                  disabled={isRunning}
+                />
+              </Col>
+            </Row>
+          </Form.Item>
 
-          <FormControl display="flex" alignItems="center">
-            <FormLabel mb="0">Preserve test data between runs</FormLabel>
-            <Switch
-              isChecked={config.preserveData}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange('preserveData', e.target.checked)
-              }
-              isDisabled={isRunning}
-            />
-          </FormControl>
+          <Form.Item>
+            <Row>
+              <Col span={16}>
+                <Text>Preserve test data between runs</Text>
+              </Col>
+              <Col span={8}>
+                <Switch
+                  checked={config.preserveData}
+                  onChange={(checked: boolean) => handleChange('preserveData', checked)}
+                  disabled={isRunning}
+                />
+              </Col>
+            </Row>
+          </Form.Item>
 
-          <Button
-            mt={4}
-            colorScheme="blue"
-            type="submit"
-            isDisabled={isRunning}
-            isLoading={isRunning}
-            loadingText="Running Test..."
-          >
-            Launch Test
+          <Button type="primary" htmlType="submit" disabled={isRunning} loading={isRunning}>
+            {isRunning ? 'Running Test...' : 'Launch Test'}
           </Button>
-        </Stack>
+        </Space>
       </form>
-    </Box>
+    </Card>
   );
 };

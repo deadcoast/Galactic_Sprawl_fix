@@ -8,13 +8,18 @@
  * @example
  * ```typescript
  * class MyService extends Singleton<MyService> {
- *   protected constructor() {
+ *   private constructor() {
  *     super();
  *     // initialization code
  *   }
  *
  *   public doSomething(): void {
  *     // implementation
+ *   }
+ *
+ *   // Override getInstance with proper return type
+ *   public static getInstance(): MyService {
+ *     return Singleton.getInstance.call(this);
  *   }
  * }
  *

@@ -10,7 +10,6 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { ResourceType } from '../../types/resources/ResourceTypes';
 import {
   AnalysisConfig,
   AnalysisResult,
@@ -25,6 +24,7 @@ import {
   SectorAnalysisConfig,
   TrendAnalysisConfig,
 } from '../types/exploration/DataAnalysisTypes';
+import { ResourceType } from '../types/resources/ResourceTypes';
 
 /**
  * Interface for algorithm options
@@ -42,6 +42,29 @@ interface AlgorithmOptions {
 
 // Type definition for property extraction and value memoization
 type PropertyExtractor = (point: DataPoint) => unknown;
+
+/**
+ * Interface for distribution bins
+ */
+interface DistributionBin {
+  binStart: number;
+  binEnd: number;
+  count: number;
+  normalizedCount?: number;
+}
+
+/**
+ * Interface for resource cells in mapping
+ */
+interface ResourceCell {
+  x: number;
+  y: number;
+  resources: Array<{ type: string; amount: number }>;
+  totalValue: number;
+  dominantResource?: string;
+  dominantPercentage?: number;
+  totalResourceCount: number;
+}
 
 /**
  * Service for implementing analysis algorithms
@@ -206,8 +229,13 @@ export class AnalysisAlgorithmService {
       }
 
       // Add data sampling info to result if sampling was used
-      if (effectiveOptions.sampleData && dataset.dataPoints.length > effectiveOptions.sampleSize) {
-        result?.data?.samplingInfo = {
+      if (
+        effectiveOptions.sampleData &&
+        dataset.dataPoints.length > effectiveOptions.sampleSize &&
+        result &&
+        result.data
+      ) {
+        result.data.samplingInfo = {
           originalSize: dataset.dataPoints.length,
           sampleSize: effectiveOptions.sampleSize,
           samplingRatio: effectiveOptions.sampleSize / dataset.dataPoints.length,
@@ -300,13 +328,17 @@ export class AnalysisAlgorithmService {
    * Sample dataset for faster processing
    */
   private getSampledDataset(dataset: Dataset, options: AlgorithmOptions): Dataset {
-    if (!options?.sampleData || dataset.dataPoints.length <= options?.sampleSize!) {
+    if (
+      !options?.sampleData ||
+      !options?.sampleSize ||
+      dataset.dataPoints.length <= options.sampleSize
+    ) {
       return dataset;
     }
 
     // Create a sampled copy of the dataset
-    const sampleRate = options?.sampleSize! / dataset.dataPoints.length;
-    const sampledPoints = this.stratifiedSample(dataset.dataPoints, options?.sampleSize!);
+    const sampleRate = options.sampleSize / dataset.dataPoints.length;
+    const sampledPoints = this.stratifiedSample(dataset.dataPoints, options.sampleSize);
 
     return {
       ...dataset,
@@ -518,7 +550,7 @@ export class AnalysisAlgorithmService {
         return undefined;
       } else {
         // Handle nested properties
-        let current: any = obj;
+        let current: Record<string, unknown> = obj as Record<string, unknown>;
         for (let i = 0; i < parts.length; i++) {
           if (current === null || current === undefined) {
             return undefined;
@@ -526,16 +558,16 @@ export class AnalysisAlgorithmService {
 
           // Check in standard properties
           if (current[parts[i]] !== undefined) {
-            current = current[parts[i]];
+            current = current[parts[i]] as Record<string, unknown>;
             continue;
           }
 
           // Check in DataPoint's properties or metadata
           if (i === 0) {
             if (parts[i] === 'properties' && obj.properties) {
-              current = obj.properties;
+              current = obj.properties as Record<string, unknown>;
             } else if (parts[i] === 'metadata' && obj.metadata) {
-              current = obj.metadata;
+              current = obj.metadata as Record<string, unknown>;
             } else {
               return undefined;
             }
@@ -1026,15 +1058,16 @@ export class AnalysisAlgorithmService {
   ): Promise<AnalysisResult> {
     const startTime = Date.now();
 
-    // Extract parameters
-    const {
-      algorithm = 'kmeans',
-      features = [],
-      k = 3,
-      maxIterations = 100,
-      distanceMetric = 'euclidean',
-      normalize = true,
-    } = config.parameters;
+    // Extract parameters from the config
+    const { variables, clusters: clusterCount = 3, method = 'kmeans' } = config.parameters;
+
+    // Map to the expected variable names
+    const features = variables;
+    const k = clusterCount;
+    const algorithm = method;
+    const maxIterations = 100;
+    const distanceMetric = 'euclidean';
+    const normalize = true;
 
     // Validate input parameters
     if (features.length < 1) {
@@ -1140,29 +1173,33 @@ export class AnalysisAlgorithmService {
     });
 
     // Group points by cluster
-    const clusters: Record<string, any[]> = {};
+    const clusterGroups: Record<string, unknown[]> = {};
     clusteredPoints.forEach(point => {
       const clusterKey = String(point.cluster);
-      if (!clusters[clusterKey]) {
-        clusters[clusterKey] = [];
+      if (!clusterGroups[clusterKey]) {
+        clusterGroups[clusterKey] = [];
       }
-      clusters[clusterKey].push(point);
+      clusterGroups[clusterKey].push(point);
     });
 
     // Calculate statistics for each cluster
-    const clusterStats = Object.entries(clusters).map(([clusterKey, points]) => {
+    const clusterStats = Object.entries(clusterGroups).map(([clusterKey, points]) => {
       const clusterIndex = parseInt(clusterKey, 10);
       const centroid = clusterResult.centroids[clusterIndex];
 
       // Calculate statistics for each feature within this cluster
-      const featureStats = features.map((feature, featureIndex) => {
-        const values = points
+      const featureStats = features.map((feature: string, featureIndex: number) => {
+        const typedPoints = points as Array<{ features: number[]; id: string }>;
+        const values = typedPoints
           .map(p => p.features[featureIndex])
-          .filter((v): v is number => v !== null);
+          .filter((v: unknown): v is number => v !== null);
 
         return {
           feature,
-          mean: values.length > 0 ? values.reduce((sum, v) => sum + v, 0) / values.length : 0,
+          mean:
+            values.length > 0
+              ? values.reduce((sum: number, v: number) => sum + v, 0) / values.length
+              : 0,
           min: values.length > 0 ? Math.min(...values) : 0,
           max: values.length > 0 ? Math.max(...values) : 0,
           count: values.length,
@@ -1175,7 +1212,7 @@ export class AnalysisAlgorithmService {
         percentage: (points.length / clusteredPoints.length) * 100,
         centroid,
         featureStats,
-        pointIds: points.map(p => p.id),
+        pointIds: (points as Array<{ id: string }>).map(p => p.id),
       };
     });
 
@@ -1394,12 +1431,14 @@ export class AnalysisAlgorithmService {
       case 'manhattan':
         return a.reduce((sum, val, i) => sum + Math.abs(val - b[i]), 0);
 
+      case 'cosine': {
         const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
         const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
         const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
 
         if (magnitudeA === 0 || magnitudeB === 0) return 1; // Maximum distance
         return 1 - dotProduct / (magnitudeA * magnitudeB);
+      }
 
       default:
         return Math.sqrt(a.reduce((sum, val, i) => sum + Math.pow(val - b[i], 2), 0));
@@ -1424,14 +1463,27 @@ export class AnalysisAlgorithmService {
    */
   private generateClusteringInsights(data: Record<string, unknown>): string[] {
     const insights: string[] = [];
-    const clusters = data?.clusters as any[];
-    const algorithm = data?.algorithm as string;
-    const k = data?.k as number;
 
-    // Overall clustering quality
-    if (clusters.length > 0) {
+    // Extract relevant data
+    const numClusters = data.numClusters ? (data.numClusters as number) : 0;
+    const inertia = data.inertia ? (data.inertia as number) : undefined;
+    const clusters = data.clusters
+      ? (data.clusters as Array<{
+          id: number;
+          size: number;
+          featureStats: Array<{
+            feature: string;
+            mean: number;
+            min: number;
+            max: number;
+          }>;
+        }>)
+      : [];
+
+    // Generate general insights
+    if (numClusters > 0) {
       // Check for imbalanced clusters
-      const clusterSizes = clusters.map(c => c.size);
+      const clusterSizes = clusters.map(c => (c as { size: number }).size);
       const maxSize = Math.max(...clusterSizes);
       const minSize = Math.min(...clusterSizes);
       const sizeRatio = maxSize / minSize;
@@ -1449,13 +1501,12 @@ export class AnalysisAlgorithmService {
       }
 
       // Add algorithm-specific insights
-      if (algorithm === 'kmeans') {
+      if (data.algorithm === 'kmeans') {
         insights.push(
-          `K-means clustering identified ${k} clusters based on the specified features.`
+          `K-means clustering identified ${numClusters} clusters based on the specified features.`
         );
 
         // Check inertia
-        const inertia = data?.inertia as number;
         if (inertia !== undefined) {
           insights.push(
             `The clustering has an inertia (sum of squared distances) of ${inertia.toFixed(2)}.`
@@ -1464,21 +1515,35 @@ export class AnalysisAlgorithmService {
       }
 
       // Add feature-specific insights
-      clusters.forEach((cluster, i) => {
-        // Find distinctive features for this cluster
-        const distinctiveFeatures = cluster.featureStats
-          .filter((stat: unknown) => stat.mean > 0.5 || stat.mean < -0.5)
-          .sort((a: unknown, b: unknown) => Math.abs(b.mean) - Math.abs(a.mean));
+      clusters.forEach(
+        (
+          cluster: {
+            id: number;
+            size: number;
+            featureStats: Array<{
+              feature: string;
+              mean: number;
+              min: number;
+              max: number;
+            }>;
+          },
+          i
+        ) => {
+          // Find distinctive features for this cluster
+          const distinctiveFeatures = cluster.featureStats
+            .filter(stat => stat.mean > 0.5 || stat.mean < -0.5)
+            .sort((a, b) => Math.abs(b.mean) - Math.abs(a.mean));
 
-        if (distinctiveFeatures.length > 0) {
-          const topFeature = distinctiveFeatures[0];
-          const featureType = topFeature.mean > 0 ? 'high' : 'low';
+          if (distinctiveFeatures.length > 0) {
+            const topFeature = distinctiveFeatures[0];
+            const featureType = topFeature.mean > 0 ? 'high' : 'low';
 
-          insights.push(
-            `Cluster ${cluster.cluster} is characterized by ${featureType} values of ${topFeature.feature}.`
-          );
+            insights.push(
+              `Cluster ${cluster.id} is characterized by ${featureType} values of ${topFeature.feature}.`
+            );
+          }
         }
-      });
+      );
     }
 
     return insights;
@@ -1786,7 +1851,7 @@ export class AnalysisAlgorithmService {
     const binWidth = range / bins;
 
     // Initialize bins
-    const distribution = Array.from({ length: bins }, (_, i) => {
+    const distribution: DistributionBin[] = Array.from({ length: bins }, (_, i) => {
       const binStart = min + i * binWidth;
       const binEnd = binStart + binWidth;
 
@@ -1794,7 +1859,7 @@ export class AnalysisAlgorithmService {
         binStart,
         binEnd,
         count: 0,
-        normalizedCount: undefined,
+        normalizedCount: undefined, // Set to undefined initially
       };
     });
 
@@ -1812,6 +1877,7 @@ export class AnalysisAlgorithmService {
     if (normalize) {
       const maxCount = Math.max(...distribution.map(bin => bin.count));
       for (const bin of distribution) {
+        // Now this assignment is safe because normalizedCount is optional
         bin.normalizedCount = bin.count / (maxCount || 1);
       }
     }
@@ -2080,15 +2146,15 @@ export class AnalysisAlgorithmService {
   ): Promise<AnalysisResult> {
     const startTime = Date.now();
 
-    // Extract parameters
-    const {
-      targetVariable,
-      features = [],
-      predictionHorizon = 1,
-      model = 'linear',
-      testSplit = 0.2,
-      epochs = 100, // For neural network
-    } = config.parameters;
+    // Extract parameters from config
+    const { target, features = [], method = 'linear', testSize = 0.2 } = config.parameters;
+
+    // Map to the expected variable names
+    const targetVariable = target;
+    const model = method;
+    const testSplit = testSize;
+    const epochs = 100; // Default value for neural network
+    const predictionHorizon = 1; // Default prediction horizon
 
     // Validate input parameters
     if (!targetVariable) {
@@ -2598,7 +2664,7 @@ export class AnalysisAlgorithmService {
     const weights2 = Array(hiddenSize)
       .fill(0)
       .map(() => (Math.random() - 0.5) * 0.1);
-    const bias2 = (Math.random() - 0.5) * 0.1;
+    let bias2 = (Math.random() - 0.5) * 0.1; // Change from const to let
 
     // Training parameters
     const learningRate = 0.01;
@@ -2630,7 +2696,7 @@ export class AnalysisAlgorithmService {
           .map(() => Array(hiddenSize).fill(0));
         const gradBias1 = Array(hiddenSize).fill(0);
         const gradWeights2 = Array(hiddenSize).fill(0);
-        const gradBias2 = 0;
+        let gradBias2 = 0; // Change from const to let
 
         let batchLoss = 0;
 
@@ -2695,7 +2761,7 @@ export class AnalysisAlgorithmService {
           weights2[i] -= learningRate * gradWeights2[i] * batchScale;
         }
 
-        bias2 -= learningRate * gradBias2 * batchScale;
+        bias2 -= learningRate * gradBias2 * batchScale; // This is fine, bias2 is a let
       }
     }
 
@@ -2903,23 +2969,26 @@ export class AnalysisAlgorithmService {
     );
 
     // Feature importance for linear models
-    if (model === 'linear' && data?.modelDetails && (data?.modelDetails as any).featureImportance) {
-      const featureImportance = (data?.modelDetails as any).featureImportance as Array<{
-        feature: string;
-        importance: number;
-      }>;
+    if (model === 'linear' && data?.modelDetails) {
+      const modelDetails = data.modelDetails as Record<string, unknown>;
+      if ('featureImportance' in modelDetails) {
+        const featureImportance = modelDetails.featureImportance as Array<{
+          feature: string;
+          importance: number;
+        }>;
 
-      // Sort features by importance
-      const sortedFeatures = [...featureImportance].sort((a, b) => b.importance - a.importance);
+        // Sort features by importance
+        const sortedFeatures = [...featureImportance].sort((a, b) => b.importance - a.importance);
 
-      if (sortedFeatures.length > 0) {
-        const topFeatures = sortedFeatures.slice(0, Math.min(3, sortedFeatures.length));
+        if (sortedFeatures.length > 0) {
+          const topFeatures = sortedFeatures.slice(0, Math.min(3, sortedFeatures.length));
 
-        insights.push(
-          `Top influential features: ${topFeatures
-            .map(f => `${f.feature} (importance: ${f.importance.toFixed(3)})`)
-            .join(', ')}.`
-        );
+          insights.push(
+            `Top influential features: ${topFeatures
+              .map(f => `${f.feature} (importance: ${f.importance.toFixed(3)})`)
+              .join(', ')}.`
+          );
+        }
       }
     }
 
@@ -2996,8 +3065,9 @@ export class AnalysisAlgorithmService {
 
     if (resourceTypes.length > 0) {
       resourcePoints = resourcePoints.filter(point => {
-        const type = point.properties.resourceType || point.properties.type;
-        return resourceTypes.includes(type as any);
+        const typeValue = point.properties.resourceType || point.properties.type;
+        // Handle type conversion more safely
+        return resourceTypes.some(rt => rt.toString() === typeValue.toString());
       });
     }
 
@@ -3109,7 +3179,7 @@ export class AnalysisAlgorithmService {
       } else {
         // Add new resource type to the cell
         gridCells[cellKey].resources.push({
-          type: resourceType as string,
+          type: resourceType as unknown as ResourceType,
           amount,
           quality,
           accessibility,
@@ -3224,11 +3294,13 @@ export class AnalysisAlgorithmService {
   /**
    * Generate insights from resource mapping analysis
    */
-  private generateResourceMappingInsights(data: Record<string, unknown>): ResourceType[] {
+  private generateResourceMappingInsights(data: Record<string, unknown>): string[] {
     const insights: string[] = [];
-    const cells = data?.cells as any[];
-    const resourceDensity = data?.resourceDensity as Record<string, number>;
-    const valueMetric = data?.valueMetric as string;
+    const resourceDensity = data.resourceDensity as Record<string, number>;
+    const valueMetric = data.valueMetric as string;
+
+    // Cast cells to the proper type
+    const typedCells = (data.cells || []) as ResourceCell[];
 
     // Add insights about most abundant resource types
     const sortedDensities = Object.entries(resourceDensity).sort(([, a], [, b]) => b - a);
@@ -3252,18 +3324,20 @@ export class AnalysisAlgorithmService {
     }
 
     // Find resource-rich regions
-    if (cells.length > 0) {
-      const sortedCells = [...cells].sort((a, b) => b.totalValue - a.totalValue);
+    if (typedCells.length > 0) {
+      const sortedCells = [...typedCells].sort((a, b) => b.totalValue - a.totalValue);
       const topCell = sortedCells[0];
 
-      insights.push(
-        `The region with the highest ${valueMetric} concentration is located at coordinates (${topCell.x}, ${topCell.y}), containing primarily ${topCell.dominantResource}.`
-      );
+      if (topCell && topCell.dominantResource) {
+        insights.push(
+          `The region with the highest ${valueMetric} concentration is located at coordinates (${topCell.x}, ${topCell.y}), containing primarily ${topCell.dominantResource}.`
+        );
+      }
 
       // Find clusters of similar resources
       const resourceClusters: Record<string, number> = {};
 
-      cells.forEach(cell => {
+      typedCells.forEach(cell => {
         if (cell.dominantResource) {
           if (!resourceClusters[cell.dominantResource]) {
             resourceClusters[cell.dominantResource] = 0;
@@ -3287,7 +3361,9 @@ export class AnalysisAlgorithmService {
 
     // Identify resource diversity
     const avgResourceTypesPerCell =
-      cells.reduce((sum, cell) => sum + cell.resources.length, 0) / cells.length;
+      typedCells.length > 0
+        ? typedCells.reduce((sum, cell) => sum + cell.resources.length, 0) / typedCells.length
+        : 0;
 
     if (avgResourceTypesPerCell > 2.5) {
       insights.push(
@@ -3305,12 +3381,12 @@ export class AnalysisAlgorithmService {
   /**
    * Generate summary from resource mapping analysis
    */
-  private generateResourceMappingSummary(data: Record<string, unknown>): ResourceType {
-    const cells = data?.cells as any[];
-    const resourceDensity = data?.resourceDensity as Record<string, number>;
-    const xRange = data?.xRange as [number, number];
-    const yRange = data?.yRange as [number, number];
-    const valueMetric = data?.valueMetric as string;
+  private generateResourceMappingSummary(data: Record<string, unknown>): string {
+    const typedCells = (data.cells || []) as ResourceCell[];
+    const resourceDensity = data.resourceDensity as Record<string, number>;
+    const xRange = data.xRange as [number, number];
+    const yRange = data.yRange as [number, number];
+    const valueMetric = data.valueMetric as string;
 
     const sortedDensities = Object.entries(resourceDensity)
       .sort(([, a], [, b]) => b - a)
@@ -3321,8 +3397,8 @@ export class AnalysisAlgorithmService {
       .join(', ');
 
     const mapSize = `${xRange[1] - xRange[0]}x${yRange[1] - yRange[0]}`;
-    const regionCount = cells.length;
-    const totalResourceAmount = cells.reduce((sum, cell) => sum + cell.totalResourceCount, 0);
+    const regionCount = typedCells.length;
+    const totalResourceAmount = typedCells.reduce((sum, cell) => sum + cell.totalResourceCount, 0);
 
     return `Resource mapping analysis of a ${mapSize} area identified ${regionCount} resource regions containing a total of ${totalResourceAmount} resource units. The predominant resource types are ${topResourceTypes}. This analysis used ${valueMetric} as the primary metric for evaluation.`;
   }

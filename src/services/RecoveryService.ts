@@ -1,4 +1,5 @@
 /**
+ * @context: service-system, error-handling
  * RecoveryService - Provides mechanisms for recovering from critical application failures
  *
  * This service handles:
@@ -36,8 +37,7 @@ export interface RecoveryConfig {
   strategyByErrorType: Partial<Record<ErrorType, RecoveryStrategy>>;
 }
 
-class RecoveryServiceImpl extends AbstractBaseService {
-  private static instance: RecoveryServiceImpl;
+class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
   private snapshots: StateSnapshot[] = [];
   private config: RecoveryConfig = {
     maxSnapshots: 10,
@@ -51,18 +51,16 @@ class RecoveryServiceImpl extends AbstractBaseService {
     },
   };
 
-  private constructor() {
+  public constructor() {
     super('RecoveryService', '1.0.0');
   }
 
-  public static getInstance(): RecoveryServiceImpl {
-    if (!RecoveryServiceImpl.instance) {
-      RecoveryServiceImpl.instance = new RecoveryServiceImpl();
-    }
-    return RecoveryServiceImpl.instance;
-  }
-
   protected async onInitialize(): Promise<void> {
+    // Initialize metrics
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+
     // Load any existing snapshots from localStorage
     try {
       const savedSnapshots = localStorage.getItem('recovery_snapshots');
@@ -102,10 +100,13 @@ class RecoveryServiceImpl extends AbstractBaseService {
     }
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.total_snapshots = this.snapshots.length;
     metrics.latest_snapshot_timestamp = snapshot.timestamp;
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
 
     return snapshot.id;
   }
@@ -117,10 +118,13 @@ class RecoveryServiceImpl extends AbstractBaseService {
     }
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.total_restores = (metrics.total_restores ?? 0) + 1;
     metrics.last_restore_timestamp = Date.now();
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
 
     return snapshot.state;
   }
@@ -131,7 +135,11 @@ class RecoveryServiceImpl extends AbstractBaseService {
 
   public clearSnapshots(): void {
     this.snapshots = [];
-    this.metadata?.metrics = {};
+
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    this.metadata.metrics = {};
   }
 
   public getRecoveryStrategy(
@@ -143,10 +151,13 @@ class RecoveryServiceImpl extends AbstractBaseService {
 
   public override handleError(error: Error): void {
     // Update error metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
 
     // Log error in development
     if (process.env.NODE_ENV === 'development') {
@@ -155,8 +166,8 @@ class RecoveryServiceImpl extends AbstractBaseService {
   }
 }
 
-// Export singleton instance
-export const recoveryService = RecoveryServiceImpl.getInstance();
+// Export singleton instance using direct instantiation
+export const recoveryService = new RecoveryServiceImpl();
 
 // Export default for easier imports
 export default recoveryService;

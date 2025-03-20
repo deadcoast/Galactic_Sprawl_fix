@@ -63,7 +63,11 @@ export function optimizeForceSimulation(
 
   if (linkForce && 'distance' in linkForce) {
     // Adjust link distance based on node count
-    (linkForce as unknown).distance(nodeCount > 100 ? 30 : nodeCount > 50 ? 40 : 50);
+    // Type assertion with interface for link force with distance method
+    interface LinkForceWithDistance {
+      distance(distance: number): unknown;
+    }
+    (linkForce as LinkForceWithDistance).distance(nodeCount > 100 ? 30 : nodeCount > 50 ? 40 : 50);
   }
 
   if (chargeForce) {
@@ -161,7 +165,9 @@ export function createOptimizedTicker(
  * @param updateFn The function that performs updates on the selection
  * @param config Optimization configuration
  */
-export function optimizeSelectionUpdates<T extends d3.Selection<SVGElement, unknown, any, unknown>>(
+export function optimizeSelectionUpdates<
+  T extends d3.Selection<SVGElement, unknown, Element, unknown>,
+>(
   selection: T,
   updateFn: (selection: T) => void,
   config: Partial<PerformanceOptimizationConfig> = {}
@@ -239,8 +245,9 @@ export function createOptimizedAccessor<T>(
       return defaultValue;
     }
 
-    // Type-safe property access
-    return (node as unknown)[propName] !== undefined ? (node as unknown)[propName] : defaultValue;
+    // Type-safe property access using type assertion and index access
+    const nodeObj = node as Record<string, unknown>;
+    return propName in nodeObj ? (nodeObj[propName] as T) : defaultValue;
   };
 
   // Return memoized version if requested
@@ -281,18 +288,24 @@ export function createCoordinateCache(nodes: d3.SimulationNodeDatum[]): {
 
   // Populate caches
   nodes.forEach(node => {
-    const id = (node as unknown).id || Math.random().toString();
+    // Type-safe property access
+    const nodeObj = node as Record<string, unknown>;
+    const id = typeof nodeObj.id === 'string' ? nodeObj.id : Math.random().toString();
     xCache.set(id, memoizedD3Accessors.getX(node));
     yCache.set(id, memoizedD3Accessors.getY(node));
   });
 
   return {
     getX: (node: d3.SimulationNodeDatum): number => {
-      const id = (node as unknown).id ?? '';
+      // Type-safe property access
+      const nodeObj = node as Record<string, unknown>;
+      const id = typeof nodeObj.id === 'string' ? nodeObj.id : '';
       return xCache.has(id) ? (xCache.get(id) ?? 0) : memoizedD3Accessors.getX(node);
     },
     getY: (node: d3.SimulationNodeDatum): number => {
-      const id = (node as unknown).id ?? '';
+      // Type-safe property access
+      const nodeObj = node as Record<string, unknown>;
+      const id = typeof nodeObj.id === 'string' ? nodeObj.id : '';
       return yCache.has(id) ? (yCache.get(id) ?? 0) : memoizedD3Accessors.getY(node);
     },
   };
@@ -326,7 +339,7 @@ export function memoizeTransform<T, R>(transformFn: (data: T) => R): (data: T) =
  * Apply all available performance optimizations to a D3 visualization
  *
  * @param simulation The force simulation to optimize
- * @param selectionUpdater (...args: unknown[]) => unknown that updates the visualization's DOM elements
+ * @param selectionUpdater Function that updates the visualization's DOM elements
  * @param config Optimization configuration
  * @returns Controls for the optimized simulation
  */

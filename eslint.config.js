@@ -35,9 +35,12 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
+          vars: 'all', // Check all variables
+          args: 'after-used', // Check only unused args after the last used one
+          ignoreRestSiblings: true, // Ignore rest siblings in destructuring (removes redundancy warnings)
+          destructuredArrayIgnorePattern: '^_', // Only ignore intentionally marked variables in array destructuring
+          caughtErrors: 'none', // Don't check error objects in catch clauses
+          varsIgnorePattern: '^ignored|^temp', // Custom pattern for variables you want to ignore
         },
       ],
       'no-console': ['warn', { allow: ['warn', 'error'] }],

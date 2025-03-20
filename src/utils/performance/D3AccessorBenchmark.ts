@@ -7,6 +7,9 @@
 
 import { d3Accessors, SimulationNodeDatum } from '../../types/visualizations/D3Types';
 
+// Array to store benchmark transform results for preventing optimization
+let benchmarkTransformResults: number[] = [];
+
 /**
  * Test case configuration
  */
@@ -192,6 +195,8 @@ export function benchmarkAccessors(
   iterations: number = 10000
 ): BenchmarkComparison {
   const nodes = generateTestNodes(nodeCount);
+  // Reset transform results array for this benchmark
+  benchmarkTransformResults = [];
 
   // Test case for direct property access
   const directAccessTest: BenchmarkTestCase = {
@@ -207,6 +212,8 @@ export function benchmarkAccessors(
         const y = node.y ?? 0;
         // Do something with coordinates (simulate transform application)
         const transform = `translate(${x}, ${y})`;
+        // Use the transform string to force evaluation
+        benchmarkTransformResults.push(transform.length);
       }
     },
   };
@@ -225,6 +232,8 @@ export function benchmarkAccessors(
         const y = d3Accessors.getY(node);
         // Do something with coordinates (simulate transform application)
         const transform = `translate(${x}, ${y})`;
+        // Use the transform string to force evaluation
+        benchmarkTransformResults.push(transform.length);
       }
     },
   };
@@ -246,6 +255,8 @@ export function runComprehensiveBenchmarks(): {
 } {
   const results: BenchmarkResult[] = [];
   const comparisons: BenchmarkComparison[] = [];
+  // Reset transform results array for these benchmarks
+  benchmarkTransformResults = [];
 
   // Test scenario 1: Basic coordinate access (small dataset)
   const nodes100 = generateTestNodes(100);
@@ -260,6 +271,8 @@ export function runComprehensiveBenchmarks(): {
         const x = node.x ?? 0;
         const y = node.y ?? 0;
         const transform = `translate(${x}, ${y})`;
+        // Use the transform string to force evaluation
+        benchmarkTransformResults.push(transform.length);
       }
     },
   });
@@ -275,6 +288,8 @@ export function runComprehensiveBenchmarks(): {
         const x = d3Accessors.getX(node);
         const y = d3Accessors.getY(node);
         const transform = `translate(${x}, ${y})`;
+        // Use the transform string to force evaluation
+        benchmarkTransformResults.push(transform.length);
       }
     },
   });
@@ -296,6 +311,8 @@ export function runComprehensiveBenchmarks(): {
         const x = node.x ?? 0;
         const y = node.y ?? 0;
         const transform = `translate(${x}, ${y})`;
+        // Use the transform string to force evaluation
+        benchmarkTransformResults.push(transform.length);
       }
     },
   });
@@ -311,6 +328,8 @@ export function runComprehensiveBenchmarks(): {
         const x = d3Accessors.getX(node);
         const y = d3Accessors.getY(node);
         const transform = `translate(${x}, ${y})`;
+        // Use the transform string to force evaluation
+        benchmarkTransformResults.push(transform.length);
       }
     },
   });

@@ -14,22 +14,12 @@
  */
 
 import { moduleEventBus } from '../../../lib/modules/ModuleEvents';
-import { ModuleType } from '../../../types/events/ModuleEventTypes';
 
-// Define TypeScript interfaces for browser APIs that might not have type definitions
-interface PerformanceMemory {
+// Define our memory metrics interface for internal use without extending global interfaces
+interface MemoryMetrics {
   usedJSHeapSize: number;
   totalJSHeapSize: number;
   jsHeapSizeLimit: number;
-}
-
-// Extend the Performance interface to include the memory property
-// Use a module augmentation approach to avoid conflicts with existing definitions
-declare global {
-  interface Performance {
-    // Use a non-colliding property name
-    memory?: PerformanceMemory;
-  }
 }
 
 // Extend the Window interface to potentially support manual GC
@@ -230,7 +220,9 @@ export class LongSessionMemoryTracker {
 
     // Check Memory API support (Chrome)
     this.browserSupport.memoryAPI =
-      this.browserSupport.performanceAPI && typeof (performance as unknown).memory !== 'undefined';
+      this.browserSupport.performanceAPI &&
+      typeof performance !== 'undefined' &&
+      'memory' in performance;
 
     // Check DOM Count API support
     this.browserSupport.domCountAPI =
@@ -260,8 +252,8 @@ export class LongSessionMemoryTracker {
    */
   public startTracking(): void {
     if (this.isTracking) return;
-
     this.isTracking = true;
+
     this.startTime = Date.now();
     this.snapshots = [];
     this.sessionMarkers = [];
@@ -272,14 +264,14 @@ export class LongSessionMemoryTracker {
     // Set up periodic snapshots
     this.snapshotIntervalId = window.setInterval(
       () => this.takeSnapshot(),
-      this.options?.snapshotIntervalMs!
+      this.options?.snapshotIntervalMs ?? DEFAULT_OPTIONS.snapshotIntervalMs!
     );
 
     // Set up periodic reporting if enabled
     if (this.options?.reportToEventBus) {
       this.reportIntervalId = window.setInterval(
         () => this.sendMemoryReport(),
-        this.options?.reportIntervalMs!
+        this.options?.reportIntervalMs ?? DEFAULT_OPTIONS.reportIntervalMs!
       );
     }
 
@@ -325,16 +317,15 @@ export class LongSessionMemoryTracker {
    * Take a memory snapshot
    */
   public takeSnapshot(): MemorySnapshot {
-    // Attempt garbage collection if configured and supported
+    // Run garbage collection if configured and supported
     if (this.options?.attemptGarbageCollection && this.browserSupport.gc) {
       try {
-        window.gc!();
-      } catch (e) {
-        // Ignore, GC might fail or be unavailable
+        this.attemptGarbageCollection();
+      } catch (_e) {
+        // Ignore errors from GC attempts
       }
     }
 
-    // Create base snapshot
     const snapshot: MemorySnapshot = {
       timestamp: Date.now(),
       usedHeapSizeMB: 0,
@@ -343,13 +334,14 @@ export class LongSessionMemoryTracker {
     };
 
     // Add memory info if available
-    if (this.browserSupport.memoryAPI) {
-      // Use explicit casting to access the browser-specific memory properties
-      // This avoids TypeScript errors while still allowing us to access these properties
-      const memoryInfo = (performance as unknown).memory as PerformanceMemory;
-      snapshot.usedHeapSizeMB = memoryInfo.usedJSHeapSize / (1024 * 1024);
-      snapshot.totalHeapSizeMB = memoryInfo.totalJSHeapSize / (1024 * 1024);
-      snapshot.heapLimitMB = memoryInfo.jsHeapSizeLimit / (1024 * 1024);
+    if (this.browserSupport.memoryAPI && performance && 'memory' in performance) {
+      // Type assertion as our internal interface
+      const memoryInfo = performance.memory as unknown as MemoryMetrics;
+
+      // Access properties safely with nullish coalescing for defaults
+      snapshot.usedHeapSizeMB = (memoryInfo.usedJSHeapSize ?? 0) / (1024 * 1024);
+      snapshot.totalHeapSizeMB = (memoryInfo.totalJSHeapSize ?? 0) / (1024 * 1024);
+      snapshot.heapLimitMB = (memoryInfo.jsHeapSizeLimit ?? 0) / (1024 * 1024);
     }
 
     // Count DOM nodes if configured and supported
@@ -359,7 +351,7 @@ export class LongSessionMemoryTracker {
 
     // Add to snapshots array, ensuring we don't exceed maximum
     this.snapshots.push(snapshot);
-    if (this.snapshots.length > this.options?.maxSnapshots!) {
+    if (this.snapshots.length > (this.options?.maxSnapshots ?? DEFAULT_OPTIONS.maxSnapshots!)) {
       this.snapshots.shift();
     }
 
@@ -370,7 +362,7 @@ export class LongSessionMemoryTracker {
 
     // Notify via callback if configured
     if (this.options?.onSnapshot) {
-      this.options?.onSnapshot(snapshot);
+      this.options.onSnapshot(snapshot);
     }
 
     return snapshot;
@@ -380,38 +372,40 @@ export class LongSessionMemoryTracker {
    * Analyze memory usage trend
    */
   private analyzeMemoryTrend(): void {
-    // Need at least 3 snapshots for basic trend analysis
+    // Need at least 3 snapshots for a meaningful trend analysis
     if (this.snapshots.length < 3) return;
 
-    const snapshots = this.snapshots;
-    const timeSpanMs = snapshots[snapshots.length - 1].timestamp - snapshots[0].timestamp;
-
-    // Skip analysis if time span is too short (avoid division by zero issues)
-    if (timeSpanMs < 10000) return; // Need at least 10 seconds of data
-
-    // Extract memory usage values
-    const memoryValues = snapshots.map(s => s.usedHeapSizeMB);
+    // Extract data points for analysis
+    const snapshots = [...this.snapshots];
     const timestamps = snapshots.map(s => s.timestamp);
+    const memoryValues = snapshots.map(s => s.usedHeapSizeMB);
 
-    // Calculate overall trend (linear regression)
-    const { slope, correlation } = this.calculateLinearRegression(timestamps, memoryValues);
+    // Calculate trend with linear regression
+    const {
+      slope,
+      intercept: _intercept,
+      correlation,
+    } = this.calculateLinearRegression(timestamps, memoryValues);
 
-    // Calculate rates
-    const growthRatePerMinute = slope * 60000; // Convert to MB per minute
-    const growthRatePerHour = growthRatePerMinute * 60; // Convert to MB per hour
+    // Convert to more meaningful metrics
+    // MB per millisecond to MB per minute
+    const growthRatePerMinute = slope * 60000;
+    // MB per minute to MB per hour
+    const growthRatePerHour = growthRatePerMinute * 60;
 
-    // Skip processing if we don't have memory limit data
+    // Calculate estimated time until memory limit (if we have memory limit info)
     let estimatedTimeToLimit = Number.POSITIVE_INFINITY;
-    if (snapshots[snapshots.length - 1].heapLimitMB > 0 && growthRatePerMinute > 0) {
-      const latestSnapshot = snapshots[snapshots.length - 1];
-      const remainingMemoryMB = latestSnapshot.heapLimitMB - latestSnapshot.usedHeapSizeMB;
-      estimatedTimeToLimit = (remainingMemoryMB / growthRatePerMinute) * 60000; // in ms
+    const latestSnapshot = snapshots[snapshots.length - 1];
+
+    if (slope > 0 && latestSnapshot.heapLimitMB > 0) {
+      const remainingMemory = latestSnapshot.heapLimitMB - latestSnapshot.usedHeapSizeMB;
+      estimatedTimeToLimit = remainingMemory / slope; // in ms
     }
 
-    // Detect if growth is accelerating
+    // Is memory growth accelerating?
     const isAccelerating = this.isGrowthAccelerating(timestamps, memoryValues);
 
-    // Determine confidence level (based on data points and correlation strength)
+    // Calculate confidence level
     const confidence =
       Math.min(
         snapshots.length / 10, // More data points = higher confidence, max at 10 points
@@ -420,7 +414,8 @@ export class LongSessionMemoryTracker {
 
     // Detect potential memory leak
     const suspectedLeak =
-      growthRatePerMinute > this.options?.leakThresholdMBPerMinute! &&
+      growthRatePerMinute >
+        (this.options?.leakThresholdMBPerMinute ?? DEFAULT_OPTIONS.leakThresholdMBPerMinute!) &&
       confidence > 0.7 &&
       snapshots.length >= 5; // Need at least 5 data points
 
@@ -433,33 +428,39 @@ export class LongSessionMemoryTracker {
       isAccelerating,
       confidence,
       suspectedLeak,
-      leakSeverity: suspectedLeak ? this.calculateLeakSeverity(growthRatePerMinute) : undefined,
     };
 
-    this.latestAnalysis = analysis;
+    // Add leak severity if a leak is suspected
+    if (suspectedLeak) {
+      analysis.leakSeverity = this.calculateLeakSeverity(growthRatePerMinute);
 
-    // Trigger callbacks if configured
-    if (this.options?.onAnalysisUpdate) {
-      this.options?.onAnalysisUpdate(analysis);
+      // Try to identify the cause
+      if (isAccelerating) {
+        analysis.leakCause = 'Accelerating memory growth suggests an uncontrolled object creation';
+      } else if (this.sessionMarkers.length > 0) {
+        // Check if there's correlation with session markers
+        // This is a simplified approach - a real implementation would need more sophisticated analysis
+        analysis.leakCause = 'Possible correlation with recent system events';
+      }
     }
 
-    // Log potential leak detection
-    if (suspectedLeak) {
-      if (this.options?.loggingLevel && this.options?.loggingLevel >= 2) {
-        console.warn(
-          `[LongSessionMemoryTracker] Potential memory leak detected! Memory growing at ${growthRatePerMinute.toFixed(2)} MB/minute`
-        );
-      }
+    // Update latest analysis
+    this.latestAnalysis = analysis;
 
-      if (this.options?.onLeakDetected) {
-        this.options?.onLeakDetected(analysis);
-      }
+    // Notify via callbacks if configured
+    if (this.options?.onAnalysisUpdate) {
+      this.options.onAnalysisUpdate(analysis);
+    }
 
-      // Add marker for leak detection
-      this.addSessionMarker('leak_detected', {
-        growthRatePerMinute,
-        severity: analysis.leakSeverity,
-      });
+    if (suspectedLeak && this.options?.onLeakDetected) {
+      this.options.onLeakDetected(analysis);
+    }
+
+    // Log results if configured
+    if (this.options?.loggingLevel && this.options?.loggingLevel >= 3) {
+      console.warn('[LongSessionMemoryTracker] Memory trend analysis:', analysis);
+    } else if (suspectedLeak && this.options?.loggingLevel && this.options?.loggingLevel >= 2) {
+      console.warn('[LongSessionMemoryTracker] Potential memory leak detected:', analysis);
     }
   }
 
@@ -616,7 +617,7 @@ export class LongSessionMemoryTracker {
     moduleEventBus.emit({
       type: 'STATUS_CHANGED',
       moduleId: 'long-session-memory-tracker',
-      moduleType: 'resource-manager' as ModuleType, // Use a valid ModuleType
+      moduleType: 'resource-manager', // Using the correct ModuleType from ModuleEventTypes
       timestamp: Date.now(),
       data: {
         type: 'memory_report',
@@ -639,15 +640,17 @@ export class LongSessionMemoryTracker {
    * Force run garbage collection (if supported)
    */
   public attemptGarbageCollection(): boolean {
-    if (this.browserSupport.gc && window.gc) {
-      try {
-        window.gc();
-        return true;
-      } catch (e) {
-        // GC failed or unavailable
-      }
+    if (!this.browserSupport.gc || !window.gc) {
+      return false;
     }
-    return false;
+
+    try {
+      window.gc();
+      return true;
+    } catch (_e) {
+      // Silent fail - GC is not critical
+      return false;
+    }
   }
 
   /**

@@ -50,13 +50,13 @@ export interface BaseService {
  * Abstract base class that provides common service functionality
  * Extends the Singleton pattern to ensure only one instance exists
  */
-export abstract class AbstractBaseService
-  extends Singleton<AbstractBaseService>
+export abstract class AbstractBaseService<T extends AbstractBaseService<T>>
+  extends Singleton<T>
   implements BaseService
 {
   protected metadata: ServiceMetadata;
 
-  protected constructor(name: string, version: string) {
+  public constructor(name: string, version: string) {
     super();
     this.metadata = {
       name,

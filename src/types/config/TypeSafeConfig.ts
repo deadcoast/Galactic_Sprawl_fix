@@ -149,7 +149,7 @@ export class TypeSafeConfigManager {
    * Register multiple configuration items
    */
   registerConfigs(configs: ConfigItem[]): void {
-    configs.forEach(config => this.registerConfig(config as unknown));
+    configs.forEach(config => this.registerConfig(config));
   }
 
   /**
@@ -200,25 +200,27 @@ export class TypeSafeConfigManager {
 
     const value = this.configValues.get(key);
 
-    // Validate on access if enabled
+    // Validate if required
     if (this.options?.validateOnAccess) {
-      const validation = config.schema.safeParse(value);
-      if (!validation.success) {
-        const errors = this.formatZodErrors(key, validation.error);
+      try {
+        return config.schema.parse(value) as z.infer<T>;
+      } catch (error) {
+        const zodError = error as z.ZodError;
+        const validationErrors = this.formatZodErrors(key, zodError);
 
         if (this.options?.logErrors) {
-          console.error(`Config validation error for "${key}":`, errors);
+          console.error(`Validation failed for config "${key}":`, validationErrors);
         }
 
         if (this.options?.onValidationError) {
-          this.options?.onValidationError(errors);
+          this.options.onValidationError(validationErrors);
         }
 
         if (this.options?.strictMode) {
-          throw new Error(`Config validation failed for "${key}": ${errors[0]?.message}`);
+          throw new Error(`Validation failed for config "${key}": ${validationErrors[0]?.message}`);
         }
 
-        return config.defaultValue;
+        return config.defaultValue as z.infer<T>;
       }
     }
 
@@ -234,32 +236,42 @@ export class TypeSafeConfigManager {
       if (this.options?.strictMode) {
         throw new Error(`Config with key "${key}" is not registered`);
       }
-      return { valid: false, errors: [{ key, message: `Config not registered` }] };
+      return {
+        valid: false,
+        errors: [{ key, message: `Config with key "${key}" is not registered` }],
+      };
     }
 
-    const oldValue = this.configValues.get(key);
-    const validation = config.schema.safeParse(value);
+    // Validate the value
+    try {
+      const validValue = config.schema.parse(value);
+      const oldValue = this.configValues.get(key);
+      this.configValues.set(key, validValue);
 
-    if (!validation.success) {
-      const errors = this.formatZodErrors(key, validation.error);
+      // Trigger onChange callback
+      if (this.options?.onConfigChange && oldValue !== validValue) {
+        this.options.onConfigChange(key, validValue, oldValue);
+      }
+
+      return { valid: true, errors: [] };
+    } catch (error) {
+      const zodError = error as z.ZodError;
+      const validationErrors = this.formatZodErrors(key, zodError);
+
       if (this.options?.logErrors) {
-        console.error(`Config validation error for "${key}":`, errors);
+        console.error(`Validation failed for config "${key}":`, validationErrors);
       }
+
       if (this.options?.onValidationError) {
-        this.options?.onValidationError(errors);
+        this.options.onValidationError(validationErrors);
       }
-      return { valid: false, errors };
+
+      if (this.options?.strictMode) {
+        throw new Error(`Validation failed for config "${key}": ${validationErrors[0]?.message}`);
+      }
+
+      return { valid: false, errors: validationErrors };
     }
-
-    // Update the value
-    this.configValues.set(key, validation.data);
-
-    // Call change handler if provided
-    if (this.options?.onConfigChange) {
-      this.options?.onConfigChange(key, validation.data, oldValue);
-    }
-
-    return { valid: true, errors: [] };
   }
 
   /**
@@ -269,13 +281,13 @@ export class TypeSafeConfigManager {
     const feature = this.featureFlags.get(key);
     if (!feature) {
       if (this.options?.strictMode) {
-        throw new Error(`Feature flag "${key}" is not registered`);
+        throw new Error(`Feature flag with key "${key}" is not registered`);
       }
       return false;
     }
 
-    // If feature is disabled or deprecated, it's always disabled
-    if (feature.status === FeatureStatus.DISABLED || feature.status === FeatureStatus.DEPRECATED) {
+    // Check if feature is globally disabled
+    if (feature.status === FeatureStatus.DISABLED) {
       return false;
     }
 
@@ -287,7 +299,7 @@ export class TypeSafeConfigManager {
         feature.targeting.userRoles.length > 0 &&
         this.userContext.role
       ) {
-        if (!feature.targeting.userRoles.includes(this.userContext.role)) {
+        if (!feature.targeting.userRoles.includes(this.userContext.role as string)) {
           return false;
         }
       }
@@ -298,7 +310,7 @@ export class TypeSafeConfigManager {
         feature.targeting.environments.length > 0 &&
         this.userContext.environment
       ) {
-        if (!feature.targeting.environments.includes(this.userContext.environment)) {
+        if (!feature.targeting.environments.includes(this.userContext.environment as string)) {
           return false;
         }
       }
@@ -307,7 +319,7 @@ export class TypeSafeConfigManager {
       if (feature.targeting.percentageRollout !== undefined) {
         const userId = this.userContext.id ?? '';
         // Simple deterministic percentage rollout based on user ID
-        const hash = this.simpleHash(key + userId);
+        const hash = this.simpleHash(key + (userId as string));
         const percentage = hash % 100;
         if (percentage >= feature.targeting.percentageRollout) {
           return false;
@@ -339,109 +351,106 @@ export class TypeSafeConfigManager {
    * Validate all configuration values
    */
   validateAllConfigs(): ConfigValidationResult {
-    const errors: ConfigValidationError[] = [];
+    const result: ConfigValidationResult = { valid: true, errors: [] };
 
-    this.configItems.forEach((config, key) => {
+    for (const [key, config] of this.configItems.entries()) {
       const value = this.configValues.get(key);
-      const validation = config.schema.safeParse(value);
-
-      if (!validation.success) {
-        errors.push(...this.formatZodErrors(key, validation.error));
+      try {
+        config.schema.parse(value);
+      } catch (error) {
+        const zodError = error as z.ZodError;
+        const validationErrors = this.formatZodErrors(key, zodError);
+        result.valid = false;
+        result.errors.push(...validationErrors);
       }
-    });
-
-    const valid = errors.length === 0;
-    if (!valid && this.options?.logErrors) {
-      console.error('Configuration validation errors:', errors);
     }
 
-    if (!valid && this.options?.onValidationError) {
-      this.options?.onValidationError(errors);
+    if (!result.valid && this.options?.onValidationError) {
+      this.options.onValidationError(result.errors);
     }
 
-    return { valid, errors };
+    return result;
   }
 
   /**
-   * Export all configuration values
+   * Export the current configuration values
    */
   exportConfig(): Record<string, unknown> {
-    const result: Record<string, unknown> = {};
-    this.configValues.forEach((value, key) => {
-      result[key] = value;
-    });
-    return result;
+    const config: Record<string, unknown> = {};
+    for (const [key, value] of this.configValues.entries()) {
+      config[key] = value;
+    }
+    return config;
   }
 
   /**
-   * Export all feature flags with their status
+   * Export the current feature flag values
    */
   exportFeatures(): Record<string, boolean> {
-    const result: Record<string, boolean> = {};
-    this.featureFlags.forEach((feature, key) => {
-      result[key] = this.isFeatureEnabled(key);
-    });
-    return result;
+    const features: Record<string, boolean> = {};
+    for (const [key] of this.featureFlags.entries()) {
+      features[key] = this.isFeatureEnabled(key);
+    }
+    return features;
   }
 
   /**
-   * Import configuration from an object
+   * Import configuration values from an object
    */
   importConfig(config: Record<string, unknown>): ConfigValidationResult {
-    const errors: ConfigValidationError[] = [];
+    const result: ConfigValidationResult = { valid: true, errors: [] };
 
-    Object.entries(config).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(config)) {
       const configItem = this.configItems.get(key);
       if (!configItem) {
         if (this.options?.strictMode) {
-          errors.push({ key, message: `Config not registered` });
+          result.valid = false;
+          result.errors.push({ key, message: `Config with key "${key}" is not registered` });
         }
-        return;
+        continue;
       }
 
-      const validation = configItem.schema.safeParse(value);
-      if (!validation.success) {
-        errors.push(...this.formatZodErrors(key, validation.error));
-      } else {
-        this.configValues.set(key, validation.data);
+      try {
+        const validatedValue = configItem.schema.parse(value);
+        this.configValues.set(key, validatedValue);
+      } catch (error) {
+        const zodError = error as z.ZodError;
+        const validationErrors = this.formatZodErrors(key, zodError);
+        result.valid = false;
+        result.errors.push(...validationErrors);
       }
-    });
-
-    const valid = errors.length === 0;
-    if (!valid && this.options?.logErrors) {
-      console.error('Configuration import errors:', errors);
     }
 
-    if (!valid && this.options?.onValidationError) {
-      this.options?.onValidationError(errors);
+    if (!result.valid && this.options?.onValidationError) {
+      this.options.onValidationError(result.errors);
     }
 
-    return { valid, errors };
+    return result;
   }
 
   /**
-   * Get a list of all config items
+   * Get all registered config items
    */
   getConfigItems(): ConfigItem[] {
     return Array.from(this.configItems.values());
   }
 
   /**
-   * Get a list of all categories
+   * Get all registered categories
    */
   getCategories(): ConfigCategory[] {
     return Array.from(this.categories.values());
   }
 
   /**
-   * Get a list of all feature flags
+   * Get all registered feature flags
    */
   getFeatureFlags(): FeatureFlag[] {
     return Array.from(this.featureFlags.values());
   }
 
   /**
-   * Helper to format Zod errors into ConfigValidationErrors
+   * Format zod errors into a more usable format
    */
   private formatZodErrors(key: string, error: z.ZodError): ConfigValidationError[] {
     return error.errors.map(err => ({
@@ -453,7 +462,7 @@ export class TypeSafeConfigManager {
   }
 
   /**
-   * Simple hash function for percentage rollout
+   * Simple hash function for deterministic feature flag targeting
    */
   private simpleHash(str: string): number {
     let hash = 0;
@@ -467,14 +476,14 @@ export class TypeSafeConfigManager {
 }
 
 /**
- * Create a type-safe config manager instance with default options
+ * Create a new config manager instance
  */
 export function createConfigManager(options?: ConfigManagerOptions): TypeSafeConfigManager {
   return new TypeSafeConfigManager(options);
 }
 
 /**
- * Helper to create a typed config item
+ * Helper to create a config item with type safety
  */
 export function createConfigItem<T extends z.ZodType>(
   key: string,
@@ -487,12 +496,12 @@ export function createConfigItem<T extends z.ZodType>(
     schema,
     defaultValue,
     name: options?.name || key,
-    description: options?.description ?? '',
+    description: options?.description || '',
     category: options?.category,
-    tags: options?.tags ?? [],
-    metadata: options?.metadata ?? {},
-    isSecret: options?.isSecret || false,
-    isRequired: options?.isRequired || false,
+    tags: options?.tags || [],
+    metadata: options?.metadata,
+    isSecret: options?.isSecret,
+    isRequired: options?.isRequired,
     source: options?.source,
   };
 }
@@ -503,13 +512,13 @@ export function createConfigItem<T extends z.ZodType>(
 export function createFeatureFlag(
   key: string,
   defaultValue: boolean,
-  options: Omit<FeatureFlag, 'key' | 'defaultValue'> = {} as unknown
+  options: Partial<Omit<FeatureFlag, 'key' | 'defaultValue'>> = {}
 ): FeatureFlag {
   return {
     key,
     defaultValue,
     name: options?.name || key,
-    description: options?.description ?? '',
+    description: options?.description || '',
     status: options?.status || FeatureStatus.DISABLED,
     targeting: options?.targeting,
     metadata: options?.metadata,
@@ -536,5 +545,6 @@ export function useFeatureFlag(
   key: string,
   defaultValue = false
 ): boolean {
-  return configManager.isFeatureEnabled(key) || defaultValue;
+  const isEnabled = configManager.isFeatureEnabled(key);
+  return isEnabled !== undefined ? isEnabled : defaultValue;
 }

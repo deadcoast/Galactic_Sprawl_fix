@@ -1,3 +1,7 @@
+/**
+ * @context: type-definitions, vector-math
+ * Vector type definitions and utility functions
+ */
 export interface Vector2D {
   x: number;
   y: number;
@@ -73,27 +77,56 @@ export function vectorAdd(a: Vector, b: Vector): Vector {
   throw new Error('Vectors must be of the same dimension');
 }
 
+/**
+ * Scale a 2D vector by a scalar value
+ */
+function scaleVector2D(vector: Vector2D, scale: number): Vector2D {
+  return {
+    x: vector.x * scale,
+    y: vector.y * scale,
+  };
+}
+
+/**
+ * Scale a 3D vector by a scalar value
+ */
+function scaleVector3D(vector: Vector3D, scale: number): Vector3D {
+  return {
+    x: vector.x * scale,
+    y: vector.y * scale,
+    z: vector.z * scale,
+  };
+}
+
+/**
+ * Scale a 4D vector by a scalar value
+ */
+function scaleVector4D(vector: Vector4D, scale: number): Vector4D {
+  return {
+    x: vector.x * scale,
+    y: vector.y * scale,
+    z: vector.z * scale,
+    w: vector.w * scale,
+  };
+}
+
+/**
+ * Scale a vector by a scalar value
+ */
 export function vectorScale(vector: Vector, scale: number): Vector {
   if (isVector2D(vector)) {
-    return {
-      x: vector.x * scale,
-      y: vector.y * scale,
-    };
-  } else if (isVector3D(vector)) {
-    return {
-      x: vector.x * scale,
-      y: vector.y * scale,
-      z: vector.z * scale,
-    };
-  } else {
-    // Must be Vector4D by exhaustion
-    return {
-      x: (vector as Vector4D).x * scale,
-      y: (vector as Vector4D).y * scale,
-      z: (vector as Vector4D).z * scale,
-      w: (vector as Vector4D).w * scale,
-    };
+    return scaleVector2D(vector, scale);
   }
+
+  if (isVector3D(vector)) {
+    return scaleVector3D(vector, scale);
+  }
+
+  if (isVector4D(vector)) {
+    return scaleVector4D(vector, scale);
+  }
+
+  throw new Error('Unknown vector type');
 }
 
 export function vectorNormalize(vector: Vector): Vector {
@@ -104,16 +137,46 @@ export function vectorNormalize(vector: Vector): Vector {
   return vectorScale(vector, 1 / magnitude);
 }
 
+/**
+ * Calculate the magnitude of a 2D vector
+ */
+function magnitudeVector2D(vector: Vector2D): number {
+  return Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
+}
+
+/**
+ * Calculate the magnitude of a 3D vector
+ */
+function magnitudeVector3D(vector: Vector3D): number {
+  return Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2) + Math.pow(vector.z, 2));
+}
+
+/**
+ * Calculate the magnitude of a 4D vector
+ */
+function magnitudeVector4D(vector: Vector4D): number {
+  return Math.sqrt(
+    Math.pow(vector.x, 2) + Math.pow(vector.y, 2) + Math.pow(vector.z, 2) + Math.pow(vector.w, 2)
+  );
+}
+
+/**
+ * Calculate the magnitude of a vector
+ */
 export function vectorMagnitude(vector: Vector): number {
   if (isVector2D(vector)) {
-    return Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
-  } else if (isVector3D(vector)) {
-    return Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2) + Math.pow(vector.z, 2));
-  } else {
-    // Must be Vector4D by exhaustion
-    const v = vector as Vector4D;
-    return Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2) + Math.pow(v.z, 2) + Math.pow(v.w, 2));
+    return magnitudeVector2D(vector);
   }
+
+  if (isVector3D(vector)) {
+    return magnitudeVector3D(vector);
+  }
+
+  if (isVector4D(vector)) {
+    return magnitudeVector4D(vector);
+  }
+
+  throw new Error('Unknown vector type');
 }
 
 export function vectorDot(a: Vector, b: Vector): number {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useEventSubscription } from '../../lib/events/UnifiedEventSystem';
-import { resourceSystem } from '../../resource/ResourceSystem';
+import { ResourceSystem } from '../../resource/ResourceSystem';
 import { FlowConnection, FlowNode } from '../../resource/subsystems/ResourceFlowSubsystem';
 import { StorageContainerConfig } from '../../resource/subsystems/ResourceStorageSubsystem';
 import { ResourceThreshold } from '../../resource/subsystems/ResourceThresholdSubsystem';
@@ -8,9 +8,11 @@ import { ResourceState, ResourceTransfer } from '../../types/resources/ResourceT
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Make sure ResourceSystem is initialized
-resourceSystem.initialize().catch(error => {
-  console.error('Failed to initialize ResourceSystem:', error);
-});
+ResourceSystem.getInstance()
+  .initialize()
+  .catch(error => {
+    console.error('Failed to initialize ResourceSystem:', error);
+  });
 
 /**
  * Hook to access the resource system
@@ -25,7 +27,7 @@ export function useResourceSystem() {
   useEffect(() => {
     let isMounted = true;
 
-    resourceSystem
+    ResourceSystem.getInstance()
       .initialize()
       .then(() => {
         if (isMounted) {
@@ -54,56 +56,56 @@ export function useResourceSystem() {
    * Get a resource state
    */
   function getResourceState(type: ResourceType): ResourceState | undefined {
-    return resourceSystem.getResourceState(type);
+    return ResourceSystem.getInstance().getResourceState(type);
   }
 
   /**
    * Update a resource state
    */
   function updateResourceState(type: ResourceType, state: ResourceState): void {
-    resourceSystem.updateResourceState(type, state);
+    ResourceSystem.getInstance().updateResourceState(type, state);
   }
 
   /**
    * Get the current resource total
    */
   function getResourceTotal(type: ResourceType): number {
-    return resourceSystem.getResourceTotal(type);
+    return ResourceSystem.getInstance().getResourceTotal(type);
   }
 
   /**
    * Check if a resource exists
    */
   function hasResource(type: ResourceType): boolean {
-    return resourceSystem.hasResource(type);
+    return ResourceSystem.getInstance().hasResource(type);
   }
 
   /**
    * Check if a resource has at least the specified amount
    */
   function hasResourceAmount(type: ResourceType, amount: number): boolean {
-    return resourceSystem.hasResourceAmount(type, amount);
+    return ResourceSystem.getInstance().hasResourceAmount(type, amount);
   }
 
   /**
    * Get available resource space
    */
   function getAvailableSpace(type: ResourceType): number {
-    return resourceSystem.getAvailableSpace(type);
+    return ResourceSystem.getInstance().getAvailableSpace(type);
   }
 
   /**
    * Store a resource
    */
   function storeResource(type: ResourceType, amount: number, targetId?: string): number {
-    return resourceSystem.storeResource(type, amount, targetId);
+    return ResourceSystem.getInstance().storeResource(type, amount, targetId);
   }
 
   /**
    * Retrieve a resource
    */
   function retrieveResource(type: ResourceType, amount: number, sourceId?: string): number {
-    return resourceSystem.retrieveResource(type, amount, sourceId);
+    return ResourceSystem.getInstance().retrieveResource(type, amount, sourceId);
   }
 
   /**
@@ -115,7 +117,7 @@ export function useResourceSystem() {
     sourceId: string,
     targetId: string
   ): number {
-    return resourceSystem.transferResource(type, amount, sourceId, targetId);
+    return ResourceSystem.getInstance().transferResource(type, amount, sourceId, targetId);
   }
 
   /**
@@ -127,7 +129,7 @@ export function useResourceSystem() {
     type: ResourceType,
     rate: number
   ): boolean {
-    return resourceSystem.registerResourceFlow(sourceId, targetId, type, rate);
+    return ResourceSystem.getInstance().registerResourceFlow(sourceId, targetId, type, rate);
   }
 
   /**
@@ -140,7 +142,7 @@ export function useResourceSystem() {
     outputAmount: number,
     sourceId: string
   ): boolean {
-    return resourceSystem.convertResources(
+    return ResourceSystem.getInstance().convertResources(
       inputType,
       inputAmount,
       outputType,
@@ -153,56 +155,56 @@ export function useResourceSystem() {
    * Get all recent resource transfers
    */
   function getTransferHistory(): ResourceTransfer[] {
-    return resourceSystem.getTransferHistory();
+    return ResourceSystem.getInstance().getTransferHistory();
   }
 
   /**
    * Register a storage container
    */
   function registerContainer(config: StorageContainerConfig): boolean {
-    return resourceSystem.getStorageSubsystem().registerContainer(config);
+    return ResourceSystem.getInstance().getStorageSubsystem().registerContainer(config);
   }
 
   /**
    * Get a storage container
    */
   function getContainer(id: string) {
-    return resourceSystem.getStorageSubsystem().getContainer(id);
+    return ResourceSystem.getInstance().getStorageSubsystem().getContainer(id);
   }
 
   /**
    * Register a flow node
    */
   function registerNode(node: FlowNode): boolean {
-    return resourceSystem.getFlowSubsystem().registerNode(node);
+    return ResourceSystem.getInstance().getFlowSubsystem().registerNode(node);
   }
 
   /**
    * Get a flow node
    */
   function getNode(id: string) {
-    return resourceSystem.getFlowSubsystem().getNode(id);
+    return ResourceSystem.getInstance().getFlowSubsystem().getNode(id);
   }
 
   /**
    * Register a threshold
    */
   function registerThreshold(threshold: ResourceThreshold): boolean {
-    return resourceSystem.getThresholdSubsystem().registerThreshold(threshold);
+    return ResourceSystem.getInstance().getThresholdSubsystem().registerThreshold(threshold);
   }
 
   /**
    * Get a threshold
    */
   function getThreshold(id: string) {
-    return resourceSystem.getThresholdSubsystem().getThreshold(id);
+    return ResourceSystem.getInstance().getThresholdSubsystem().getThreshold(id);
   }
 
   /**
    * Optimize resource flows
    */
   async function optimizeFlows() {
-    return resourceSystem.getFlowSubsystem().optimizeFlows();
+    return ResourceSystem.getInstance().getFlowSubsystem().optimizeFlows();
   }
 
   return {
@@ -224,43 +226,46 @@ export function useResourceSystem() {
     // Storage subsystem
     registerContainer,
     getContainer,
-    getAllContainers: () => resourceSystem.getStorageSubsystem().getAllContainers(),
+    getAllContainers: () => ResourceSystem.getInstance().getStorageSubsystem().getAllContainers(),
     getContainersByResourceType: (type: ResourceType) =>
-      resourceSystem.getStorageSubsystem().getContainersByResourceType(type),
+      ResourceSystem.getInstance().getStorageSubsystem().getContainersByResourceType(type),
     transferBetweenContainers: (
       sourceId: string,
       targetId: string,
       type: ResourceType,
       amount: number
     ) =>
-      resourceSystem
+      ResourceSystem.getInstance()
         .getStorageSubsystem()
         .transferBetweenContainers(sourceId, targetId, type, amount),
 
     // Flow subsystem
     registerNode,
     getNode,
-    getAllNodes: () => resourceSystem.getFlowSubsystem().getNodes(),
+    getAllNodes: () => ResourceSystem.getInstance().getFlowSubsystem().getNodes(),
     registerConnection: (connection: FlowConnection) =>
-      resourceSystem.getFlowSubsystem().registerConnection(connection),
-    getConnection: (id: string) => resourceSystem.getFlowSubsystem().getConnection(id),
-    getAllConnections: () => resourceSystem.getFlowSubsystem().getConnections(),
+      ResourceSystem.getInstance().getFlowSubsystem().registerConnection(connection),
+    getConnection: (id: string) =>
+      ResourceSystem.getInstance().getFlowSubsystem().getConnection(id),
+    getAllConnections: () => ResourceSystem.getInstance().getFlowSubsystem().getConnections(),
     optimizeFlows,
 
     // Threshold subsystem
     registerThreshold,
     getThreshold,
-    getAllThresholds: () => resourceSystem.getThresholdSubsystem().getAllThresholds(),
+    getAllThresholds: () => ResourceSystem.getInstance().getThresholdSubsystem().getAllThresholds(),
     getThresholdsByResourceType: (type: ResourceType) =>
-      resourceSystem.getThresholdSubsystem().getThresholdsByResourceType(type),
-    enableThreshold: (id: string) => resourceSystem.getThresholdSubsystem().enableThreshold(id),
-    disableThreshold: (id: string) => resourceSystem.getThresholdSubsystem().disableThreshold(id),
+      ResourceSystem.getInstance().getThresholdSubsystem().getThresholdsByResourceType(type),
+    enableThreshold: (id: string) =>
+      ResourceSystem.getInstance().getThresholdSubsystem().enableThreshold(id),
+    disableThreshold: (id: string) =>
+      ResourceSystem.getInstance().getThresholdSubsystem().disableThreshold(id),
 
     // Direct access to subsystems (for advanced use cases)
-    storageSubsystem: resourceSystem.getStorageSubsystem(),
-    flowSubsystem: resourceSystem.getFlowSubsystem(),
-    thresholdSubsystem: resourceSystem.getThresholdSubsystem(),
-    transferSubsystem: resourceSystem.getTransferSubsystem(),
+    storageSubsystem: ResourceSystem.getInstance().getStorageSubsystem(),
+    flowSubsystem: ResourceSystem.getInstance().getFlowSubsystem(),
+    thresholdSubsystem: ResourceSystem.getInstance().getThresholdSubsystem(),
+    transferSubsystem: ResourceSystem.getInstance().getTransferSubsystem(),
   };
 }
 

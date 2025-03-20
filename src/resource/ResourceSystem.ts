@@ -38,21 +38,6 @@ export interface ResourceSystemConfig {
 }
 
 /**
- * Default configuration for the resource system
- */
-const DEFAULT_CONFIG: ResourceSystemConfig = {
-  cacheTTL: 2000,
-  optimizationInterval: 5000,
-  batchSize: 50,
-  useWorkerOffloading: true,
-  useSpatialPartitioning: true,
-  defaultAllocationStrategy: 'balanced',
-  overflowPolicy: 'redistribute',
-  autoRebalance: true,
-  maxHistorySize: 100,
-};
-
-/**
  * Unified Resource Management System
  *
  * This system consolidates multiple resource-related managers into a cohesive architecture
@@ -64,9 +49,6 @@ const DEFAULT_CONFIG: ResourceSystemConfig = {
  * - Threshold: Monitors resource levels and triggers actions when thresholds are reached
  */
 export class ResourceSystem extends Singleton<ResourceSystem> {
-  // Singleton instance
-  private static _instance: ResourceSystem | null = null;
-
   // Configuration
   private config: ResourceSystemConfig;
 
@@ -90,12 +72,19 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
   private optimizationInterval: NodeJS.Timeout | null = null;
   private isInitialized = false;
 
-  protected constructor(config?: Partial<ResourceSystemConfig>) {
+  public constructor(config?: Partial<ResourceSystemConfig>) {
     super();
-    // Merge provided config with defaults
+    // Initialize with default or provided configuration
     this.config = {
-      ...DEFAULT_CONFIG,
-      ...config,
+      cacheTTL: config?.cacheTTL ?? 5000,
+      optimizationInterval: config?.optimizationInterval ?? 10000,
+      batchSize: config?.batchSize ?? 100,
+      useWorkerOffloading: config?.useWorkerOffloading ?? false,
+      useSpatialPartitioning: config?.useSpatialPartitioning ?? false,
+      defaultAllocationStrategy: config?.defaultAllocationStrategy ?? 'balanced',
+      overflowPolicy: config?.overflowPolicy ?? 'redistribute',
+      autoRebalance: config?.autoRebalance ?? true,
+      maxHistorySize: config?.maxHistorySize ?? 1000,
     };
 
     // Initialize subsystems
@@ -104,19 +93,7 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
     this.transfer = new ResourceTransferSubsystem(this, this.config);
     this.threshold = new ResourceThresholdSubsystem(this, this.config);
 
-    // Subscribe to subsystem events
     this.initializeEventSubscriptions();
-  }
-
-  /**
-   * Gets the singleton instance of the ResourceSystem.
-   * Creates a new instance if one doesn't exist yet.
-   */
-  public static getInstance(): ResourceSystem {
-    if (!ResourceSystem._instance) {
-      ResourceSystem._instance = new ResourceSystem();
-    }
-    return ResourceSystem._instance;
   }
 
   /**
@@ -557,8 +534,5 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
   }
 }
 
-// Export singleton instance
-export const resourceSystem = ResourceSystem.getInstance();
-
 // Export default for easier imports
-export default resourceSystem;
+export default ResourceSystem.getInstance();

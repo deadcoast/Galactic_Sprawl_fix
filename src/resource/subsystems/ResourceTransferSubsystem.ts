@@ -3,6 +3,10 @@ import {
   ResourceTransfer as StringResourceTransfer,
   ResourceType as StringResourceType,
 } from '../../types/resources/ResourceTypes';
+import {
+  ensureStringResourceType,
+  toEnumResourceType,
+} from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -136,7 +140,7 @@ export class ResourceTransferSubsystem {
 
     // Record transfer
     this.recordTransfer({
-      type: stringType,
+      type: toEnumResourceType(stringType),
       source: sourceId,
       target: targetId,
       amount: storedAmount,

@@ -66,7 +66,7 @@ export interface UserInteractionData {
  * Error information for tracking performance-related errors
  */
 export interface ErrorData {
-  errorType: ResourceType;
+  errorType: string;
   message: string;
   timestamp: number;
   componentId?: string;

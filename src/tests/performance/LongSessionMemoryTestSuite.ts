@@ -4,6 +4,11 @@
  * Test suite for long-term memory performance testing
  */
 
+import {
+  MemorySnapshot,
+  MemoryTrendAnalysis,
+} from '../../utils/performance/longsession/LongSessionMemoryTracker';
+
 export interface MemoryTestResult {
   testName: string;
   startTime: number;
@@ -22,6 +27,36 @@ export interface MemorySuiteConfig {
   allowGC: boolean;
   trackDetailedStats: boolean;
   delayBetweenTests: number;
+  snapshotIntervalMs?: number;
+  leakThresholdMBPerMinute?: number;
+  durationMs?: number;
+}
+
+export interface LongSessionMemoryResult {
+  testName: string;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  durationMs: number; // Same as duration but explicitly in milliseconds
+  initialMemoryMB: number;
+  finalMemoryMB: number;
+  memoryGrowthRateMBPerHour: number;
+  leakDetected: boolean;
+  leakSeverity?: number;
+  snapshots: MemorySnapshot[];
+  analysis: MemoryTrendAnalysis;
+  memorySnapshots: {
+    timestamp: number;
+    memoryUsage: number;
+  }[];
+  analysisResults: {
+    averageUsage: number;
+    peakUsage: number;
+    growthRate: number;
+    isLeakDetected: boolean;
+    leakSeverity?: number;
+  };
+  passed: boolean;
 }
 
 /**
@@ -42,6 +77,9 @@ export class LongSessionMemoryTestSuite {
       allowGC: config.allowGC !== undefined ? config.allowGC : true,
       trackDetailedStats: config.trackDetailedStats || false,
       delayBetweenTests: config.delayBetweenTests || 1000,
+      snapshotIntervalMs: config.snapshotIntervalMs || 5000,
+      leakThresholdMBPerMinute: config.leakThresholdMBPerMinute || 0.5,
+      durationMs: config.durationMs || 60000,
     };
   }
 
@@ -87,6 +125,269 @@ export class LongSessionMemoryTestSuite {
 
   public getResults(): MemoryTestResult[] {
     return [...this.results];
+  }
+
+  public async runTest(): Promise<LongSessionMemoryResult> {
+    return this.createMemoryTest('Standard Memory Test', this.config.durationMs || 60000);
+  }
+
+  public async runMemoryLeakDetectionTest(
+    leakRate: number,
+    duration: number
+  ): Promise<LongSessionMemoryResult> {
+    return this.createMemoryTest('Memory Leak Detection Test', duration, leakRate);
+  }
+
+  public async runTestBattery(): Promise<Record<string, LongSessionMemoryResult>> {
+    const results: Record<string, LongSessionMemoryResult> = {};
+
+    // Run a standard memory test
+    results.standard = await this.runTest();
+
+    // Run tests with different loads
+    results.lightweight = await this.createMemoryTest(
+      'Lightweight Test',
+      this.config.durationMs || 60000,
+      0
+    );
+    results.moderate = await this.createMemoryTest(
+      'Moderate Load Test',
+      this.config.durationMs || 60000,
+      0.5
+    );
+    results.intensive = await this.createMemoryTest(
+      'Intensive Load Test',
+      this.config.durationMs || 60000,
+      2
+    );
+
+    return results;
+  }
+
+  private async createMemoryTest(
+    testName: string,
+    duration: number,
+    leakRate = 0
+  ): Promise<LongSessionMemoryResult> {
+    const startTime = Date.now();
+    const snapshots: { timestamp: number; memoryUsage: number }[] = [];
+    const snapshotInterval = this.config.snapshotIntervalMs || 5000;
+    let testEndTime: number;
+
+    // Initial memory snapshot
+    snapshots.push({
+      timestamp: startTime,
+      memoryUsage: this.getMemoryUsage(),
+    });
+
+    // Create artificial memory usage based on leakRate if specified
+    if (leakRate > 0) {
+      const leakObjects: unknown[] = [];
+
+      // Run until test duration is complete
+      const intervalId = setInterval(() => {
+        if (!this.isRunning || Date.now() - startTime >= duration) {
+          clearInterval(intervalId);
+          return;
+        }
+
+        // Create objects to simulate memory leak based on leakRate
+        const objsToCreate = Math.floor(leakRate * 100);
+        for (let i = 0; i < objsToCreate; i++) {
+          leakObjects.push(new Array(10000).fill(Math.random()));
+        }
+
+        // Take memory snapshot
+        snapshots.push({
+          timestamp: Date.now(),
+          memoryUsage: this.getMemoryUsage(),
+        });
+      }, snapshotInterval);
+
+      // Wait for test to complete
+      await new Promise<void>(resolve => {
+        const checkComplete = setInterval(() => {
+          if (!this.isRunning || Date.now() - startTime >= duration) {
+            clearInterval(checkComplete);
+            resolve();
+          }
+        }, 100);
+      });
+    } else {
+      // For tests without artificial leak, just take snapshots at intervals
+      const intervalId = setInterval(() => {
+        if (!this.isRunning || Date.now() - startTime >= duration) {
+          clearInterval(intervalId);
+          return;
+        }
+
+        snapshots.push({
+          timestamp: Date.now(),
+          memoryUsage: this.getMemoryUsage(),
+        });
+      }, snapshotInterval);
+
+      // Wait for test to complete
+      await new Promise<void>(resolve => {
+        const checkComplete = setInterval(() => {
+          if (!this.isRunning || Date.now() - startTime >= duration) {
+            clearInterval(checkComplete);
+            resolve();
+          }
+        }, 100);
+      });
+    }
+
+    testEndTime = Date.now();
+
+    // Final memory snapshot
+    snapshots.push({
+      timestamp: testEndTime,
+      memoryUsage: this.getMemoryUsage(),
+    });
+
+    // Analyze results
+    const averageUsage =
+      snapshots.reduce((sum, snapshot) => sum + snapshot.memoryUsage, 0) / snapshots.length;
+    const peakUsage = Math.max(...snapshots.map(s => s.memoryUsage));
+
+    // Calculate growth rate in MB per minute
+    const firstSnapshot = snapshots[0];
+    const lastSnapshot = snapshots[snapshots.length - 1];
+    const memoryDiff = lastSnapshot.memoryUsage - firstSnapshot.memoryUsage;
+    const timeDiffMinutes = (lastSnapshot.timestamp - firstSnapshot.timestamp) / (1000 * 60);
+    const growthRate = timeDiffMinutes > 0 ? memoryDiff / timeDiffMinutes : 0;
+
+    // Determine if a leak is detected
+    const isLeakDetected = growthRate > (this.config.leakThresholdMBPerMinute || 0.5);
+
+    // Calculate leak severity (1-5 scale)
+    let leakSeverity: number | undefined;
+    if (isLeakDetected) {
+      const baseThreshold = this.config.leakThresholdMBPerMinute || 0.5;
+      leakSeverity = Math.min(5, Math.ceil(growthRate / baseThreshold));
+    }
+
+    const initialMemoryMB = firstSnapshot.memoryUsage;
+    const finalMemoryMB = lastSnapshot.memoryUsage;
+    const memoryGrowthRateMBPerHour = growthRate * 60; // Convert from per minute to per hour
+
+    // Convert to MemorySnapshot format required by the visualizer
+    const memorySnapshots: MemorySnapshot[] = snapshots.map(snapshot => ({
+      timestamp: snapshot.timestamp,
+      usedHeapSizeMB: snapshot.memoryUsage,
+      totalHeapSizeMB: snapshot.memoryUsage * 1.5, // Estimate total heap size
+      heapLimitMB: snapshot.memoryUsage * 4, // Estimate heap limit
+    }));
+
+    // Create MemoryTrendAnalysis object required by the visualizer
+    const memoryAnalysis: MemoryTrendAnalysis = {
+      overallTrend: growthRate > 0 ? 1 : growthRate < 0 ? -1 : 0,
+      growthRatePerMinute: growthRate,
+      growthRatePerHour: memoryGrowthRateMBPerHour,
+      estimatedTimeToLimit: isLeakDetected
+        ? ((memorySnapshots[0].heapLimitMB - memorySnapshots[0].usedHeapSizeMB) / growthRate) *
+          60 *
+          1000 // Convert to ms
+        : Number.POSITIVE_INFINITY,
+      isAccelerating: false, // We don't calculate acceleration in this simple test
+      confidence: 0.8, // Reasonable confidence
+      suspectedLeak: isLeakDetected,
+      leakCause: isLeakDetected ? 'Simulated memory leak' : undefined,
+      leakSeverity: leakSeverity,
+    };
+
+    return {
+      testName,
+      startTime,
+      endTime: testEndTime,
+      duration: testEndTime - startTime,
+      durationMs: duration,
+      initialMemoryMB,
+      finalMemoryMB,
+      memoryGrowthRateMBPerHour,
+      leakDetected: isLeakDetected,
+      leakSeverity,
+      snapshots: memorySnapshots, // Use the converted format
+      analysis: memoryAnalysis, // Use the converted format
+      memorySnapshots: snapshots,
+      analysisResults: {
+        averageUsage,
+        peakUsage,
+        growthRate,
+        isLeakDetected,
+        leakSeverity,
+      },
+      passed: !isLeakDetected,
+    };
+  }
+
+  public static generateReport(
+    results: LongSessionMemoryResult | Record<string, LongSessionMemoryResult>
+  ): string {
+    let report = '# Memory Test Report\n\n';
+    report += `Generated: ${new Date().toLocaleString()}\n\n`;
+
+    if ('testName' in results) {
+      // Single test result
+      const result = results as LongSessionMemoryResult;
+      report += this.formatSingleTestReport(result);
+    } else {
+      // Multiple test results
+      const testResults = results as Record<string, LongSessionMemoryResult>;
+      report += '## Test Battery Results\n\n';
+
+      for (const [testKey, result] of Object.entries(testResults)) {
+        report += `### ${testKey.charAt(0).toUpperCase() + testKey.slice(1)} Test\n\n`;
+        report += this.formatSingleTestReport(result);
+        report += '---\n\n';
+      }
+
+      // Add comparison table
+      report += '## Test Comparison\n\n';
+      report += '| Test | Duration | Average Memory | Peak Memory | Growth Rate | Status |\n';
+      report += '|------|----------|----------------|-------------|-------------|--------|\n';
+
+      for (const [testKey, result] of Object.entries(testResults)) {
+        const { analysisResults, duration, passed } = result;
+        report += `| ${testKey} | ${(duration / 1000).toFixed(1)}s | ${analysisResults.averageUsage.toFixed(1)} MB | ${analysisResults.peakUsage.toFixed(1)} MB | ${analysisResults.growthRate.toFixed(2)} MB/min | ${passed ? '✅ Pass' : '❌ Fail'} |\n`;
+      }
+    }
+
+    return report;
+  }
+
+  private static formatSingleTestReport(result: LongSessionMemoryResult): string {
+    const { testName, startTime, endTime, duration, memorySnapshots, analysisResults, passed } =
+      result;
+    let report = `## ${testName}\n\n`;
+
+    report += `- **Start Time**: ${new Date(startTime).toLocaleString()}\n`;
+    report += `- **End Time**: ${new Date(endTime).toLocaleString()}\n`;
+    report += `- **Duration**: ${(duration / 1000).toFixed(1)} seconds\n`;
+    report += `- **Average Memory Usage**: ${analysisResults.averageUsage.toFixed(1)} MB\n`;
+    report += `- **Peak Memory Usage**: ${analysisResults.peakUsage.toFixed(1)} MB\n`;
+    report += `- **Memory Growth Rate**: ${analysisResults.growthRate.toFixed(2)} MB/min\n`;
+    report += `- **Memory Leak Detected**: ${analysisResults.isLeakDetected ? 'Yes' : 'No'}\n`;
+
+    if (analysisResults.leakSeverity !== undefined) {
+      report += `- **Leak Severity**: ${analysisResults.leakSeverity}/5\n`;
+    }
+
+    report += `- **Test Status**: ${passed ? '✅ Passed' : '❌ Failed'}\n\n`;
+
+    // Add snapshot data
+    report += '### Memory Snapshots\n\n';
+    report += '| Time | Memory Usage (MB) | Elapsed (s) |\n';
+    report += '|------|-------------------|-------------|\n';
+
+    for (const snapshot of memorySnapshots) {
+      const elapsedSeconds = ((snapshot.timestamp - startTime) / 1000).toFixed(1);
+      report += `| ${new Date(snapshot.timestamp).toLocaleTimeString()} | ${snapshot.memoryUsage.toFixed(1)} | ${elapsedSeconds} |\n`;
+    }
+
+    report += '\n';
+    return report;
   }
 
   private async runMemoryLeakTest(): Promise<void> {

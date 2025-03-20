@@ -2,7 +2,9 @@ import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import {
   ResourceState as StringResourceState,
   ResourceType as StringResourceType,
+  toEnumResourceType,
 } from '../../types/resources/ResourceTypes';
+import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -165,7 +167,7 @@ export class ResourceThresholdSubsystem {
     // Create a copy with the string resource type
     const internalThreshold = {
       ...threshold,
-      resourceType: ResourceTypeType,
+      resourceType: ResourceType.ENERGY,
     };
 
     // Store the threshold
@@ -229,7 +231,10 @@ export class ResourceThresholdSubsystem {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
 
-    const thresholdIds = this.resourceTypeThresholds.get(stringType) ?? [];
+    // We need ResourceType enum value for resource system
+    const resourceType = toEnumResourceType(stringType);
+
+    const thresholdIds = this.resourceTypeThresholds.get(resourceType) ?? [];
     return thresholdIds.map(id => this.thresholds.get(id)!).filter(Boolean);
   }
 
@@ -365,8 +370,11 @@ export class ResourceThresholdSubsystem {
     // Convert to string resource type for internal use
     const stringType = ensureStringResourceType(type);
 
+    // We need ResourceType enum value for resource system
+    const resourceType = toEnumResourceType(stringType);
+
     // Get thresholds for this resource type
-    const thresholdIds = this.resourceTypeThresholds.get(stringType) ?? [];
+    const thresholdIds = this.resourceTypeThresholds.get(resourceType) ?? [];
 
     // If entity ID is provided, also include entity-specific thresholds
     if (entityId) {

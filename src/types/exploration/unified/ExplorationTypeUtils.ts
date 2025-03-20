@@ -1,4 +1,6 @@
 /**
+ * @context: type-definitions, exploration-system
+ *
  * Exploration Type Utilities
  *
  * This file contains utility functions for working with exploration types,
@@ -20,6 +22,7 @@ import {
   InvestigationStage,
   ResourceDeposit,
   Sector,
+  VisualData,
 } from './ExplorationTypes';
 
 // =========================================
@@ -44,6 +47,26 @@ export function dataPointToCoordinates(dataPoint: DataPoint): Coordinates {
  * Convert a DataPoint to an Anomaly
  */
 export function dataPointToAnomaly(dataPoint: DataPoint): Anomaly {
+  // Create default visual data if not provided
+  const defaultVisualData: VisualData = {
+    primaryColor: '#FF5500',
+    secondaryColor: '#AA3300',
+    pattern: 'pulse',
+    intensity: 75,
+    size: 2,
+    animation: 'flicker',
+  };
+
+  // Get visual data from properties or use default
+  // Must cast to unknown first before casting to VisualData to avoid type errors
+  let visualData: VisualData | undefined;
+  if (dataPoint.properties?.visualData) {
+    // Safe type casting pattern following Type Safety Pattern
+    visualData = dataPoint.properties.visualData as unknown as VisualData;
+  } else {
+    visualData = defaultVisualData;
+  }
+
   return {
     id: dataPoint.id,
     name: dataPoint.name,
@@ -65,7 +88,7 @@ export function dataPointToAnomaly(dataPoint: DataPoint): Anomaly {
     },
     potentialUses: [],
     dangerLevel: determineDangerLevel(dataPoint),
-    visualData: (dataPoint.properties?.visualData as unknown) || undefined,
+    visualData,
   };
 }
 
@@ -102,6 +125,8 @@ export function dataPointToSector(dataPoint: DataPoint): Sector {
     tradeRoutes: [],
     dangerLevel: determineDangerLevel(dataPoint),
     environmentalConditions: [],
+    // Required property for Sector - add with default value
+    accessibility: (dataPoint.properties?.accessibility as number) || 50,
   };
 }
 
@@ -109,6 +134,32 @@ export function dataPointToSector(dataPoint: DataPoint): Sector {
  * Convert an Anomaly to a DataPoint
  */
 export function anomalyToDataPoint(anomaly: Anomaly): DataPoint {
+  // Safe properties that follow type requirements for DataPoint.properties
+  const safeProperties: Record<string, string | number | boolean | string[]> = {
+    anomalyType: anomaly.anomalyType,
+    intensity: anomaly.intensity,
+    stability: anomaly.stability,
+    dangerLevel: anomaly.dangerLevel,
+  };
+
+  // Add coordinates properties safely with proper type guards
+  if (typeof anomaly.coordinates.z === 'number') {
+    safeProperties.z = anomaly.coordinates.z;
+  }
+
+  if (typeof anomaly.coordinates.sector === 'string') {
+    safeProperties.sector = anomaly.coordinates.sector;
+  }
+
+  if (typeof anomaly.coordinates.quadrant === 'string') {
+    safeProperties.quadrant = anomaly.coordinates.quadrant;
+  }
+
+  // Serialize visualData as JSON string if available
+  if (anomaly.visualData) {
+    safeProperties.serializedVisualData = JSON.stringify(anomaly.visualData);
+  }
+
   return {
     id: anomaly.id,
     type: 'anomaly',
@@ -118,23 +169,36 @@ export function anomalyToDataPoint(anomaly: Anomaly): DataPoint {
       x: anomaly.coordinates.x,
       y: anomaly.coordinates.y,
     },
-    properties: {
-      anomalyType: anomaly.anomalyType,
-      intensity: anomaly.intensity,
-      stability: anomaly.stability,
-      dangerLevel: anomaly.dangerLevel,
-      z: anomaly.coordinates.z,
-      sector: anomaly.coordinates.sector,
-      quadrant: anomaly.coordinates.quadrant,
-      visualData: anomaly.visualData,
-    },
+    properties: safeProperties,
   };
 }
 
 /**
  * Convert a ResourceDeposit to a DataPoint
+ * @private Use the exported version from the export statement below
  */
-export function resourceDepositToDataPoint(resource: ResourceDeposit): DataPoint {
+function _resourceDepositToDataPoint(resource: ResourceDeposit): DataPoint {
+  // Safe properties that follow type requirements for DataPoint.properties
+  const safeProperties: Record<string, string | number | boolean | string[]> = {
+    resourceType: resource.type,
+    amount: resource.amount,
+    quality: resource.quality,
+    accessibility: resource.accessibility,
+  };
+
+  // Add coordinates properties safely with proper type guards
+  if (typeof resource.coordinates.z === 'number') {
+    safeProperties.z = resource.coordinates.z;
+  }
+
+  if (typeof resource.coordinates.sector === 'string') {
+    safeProperties.sector = resource.coordinates.sector;
+  }
+
+  if (typeof resource.coordinates.quadrant === 'string') {
+    safeProperties.quadrant = resource.coordinates.quadrant;
+  }
+
   return {
     id: resource.id,
     type: 'resource',
@@ -144,22 +208,38 @@ export function resourceDepositToDataPoint(resource: ResourceDeposit): DataPoint
       x: resource.coordinates.x,
       y: resource.coordinates.y,
     },
-    properties: {
-      resourceType: resource.type,
-      amount: resource.amount,
-      quality: resource.quality,
-      accessibility: resource.accessibility,
-      z: resource.coordinates.z,
-      sector: resource.coordinates.sector,
-      quadrant: resource.coordinates.quadrant,
-    },
+    properties: safeProperties,
   };
 }
 
 /**
  * Convert a Sector to a DataPoint
+ * @private Use the exported version from the export statement below
  */
-export function sectorToDataPoint(sector: Sector): DataPoint {
+function _sectorToDataPoint(sector: Sector): DataPoint {
+  // Safe properties that follow type requirements for DataPoint.properties
+  const safeProperties: Record<string, string | number | boolean | string[]> = {
+    dangerLevel: sector.dangerLevel,
+    systemCount: sector.systems.length,
+    anomalyCount: sector.anomalies.length,
+    resourceCount: sector.resources.length,
+    accessibility: sector.accessibility,
+  };
+
+  // Add coordinates properties safely with proper type guards
+  if (typeof sector.coordinates.z === 'number') {
+    safeProperties.z = sector.coordinates.z;
+  }
+
+  if (typeof sector.coordinates.quadrant === 'string') {
+    safeProperties.quadrant = sector.coordinates.quadrant;
+  }
+
+  // Add faction control if available
+  if (sector.factionControl?.factionName) {
+    safeProperties.factionControl = sector.factionControl.factionName;
+  }
+
   return {
     id: sector.id,
     type: 'sector',
@@ -169,20 +249,12 @@ export function sectorToDataPoint(sector: Sector): DataPoint {
       x: sector.coordinates.x,
       y: sector.coordinates.y,
     },
-    properties: {
-      dangerLevel: sector.dangerLevel,
-      systemCount: sector.systems.length,
-      anomalyCount: sector.anomalies.length,
-      resourceCount: sector.resources.length,
-      z: sector.coordinates.z,
-      quadrant: sector.coordinates.quadrant,
-      factionControl: sector.factionControl?.factionName,
-    },
+    properties: safeProperties,
   };
 }
 
 // =========================================
-// Helper (...args: unknown[]) => unknowns
+// Helper Functions
 // =========================================
 
 /**
@@ -249,12 +321,6 @@ function determineDangerLevel(dataPoint: DataPoint): DangerLevel {
     return DangerLevel.HIGH;
   } else if (instability && instability > 60) {
     return DangerLevel.MODERATE;
-  } else if (
-    (radiationLevel && radiationLevel > 30) ||
-    (hostileActivity && hostileActivity > 30) ||
-    (instability && instability > 30)
-  ) {
-    return DangerLevel.LOW;
   }
 
   // Default case
@@ -262,88 +328,97 @@ function determineDangerLevel(dataPoint: DataPoint): DangerLevel {
 }
 
 /**
- * Create a default effect based on type
+ * Create a default effect based on effect type
+ * @private Use the exported version from the export statement below
  */
-export function createDefaultEffect(type: EffectType): Effect {
-  const id = `effect-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+function _createDefaultEffect(type: EffectType): Effect {
+  const effectId = `effect-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
   switch (type) {
     case EffectType.BUFF:
       return {
-        id,
-        name: 'Positive Effect',
+        id: effectId,
+        name: 'Enhancement Field',
         type: EffectType.BUFF,
         strength: 50,
-        duration: -1,
-        description: 'A positive effect that enhances capabilities.',
+        duration: 60,
+        description: 'Enhances the performance of nearby systems.',
         impactedSystems: ['shields', 'sensors'],
       };
 
     case EffectType.DEBUFF:
       return {
-        id,
-        name: 'Negative Effect',
+        id: effectId,
+        name: 'Interference Field',
         type: EffectType.DEBUFF,
         strength: 40,
-        duration: 300,
-        description: 'A negative effect that impairs capabilities.',
-        impactedSystems: ['engines', 'weapons'],
+        duration: 45,
+        description: 'Causes interference in nearby systems.',
+        impactedSystems: ['communications', 'sensors'],
       };
 
     case EffectType.DAMAGE:
       return {
-        id,
-        name: 'Damage Effect',
+        id: effectId,
+        name: 'Corrosive Radiation',
         type: EffectType.DAMAGE,
         strength: 60,
-        duration: 60,
-        description: 'An effect that causes damage over time.',
-        impactedSystems: ['hull', 'components'],
+        duration: 30,
+        description: 'Gradually damages hull integrity.',
+        impactedSystems: ['hull', 'external_systems'],
+      };
+
+    case EffectType.HEALING:
+      return {
+        id: effectId,
+        name: 'Restorative Field',
+        type: EffectType.HEALING,
+        strength: 45,
+        duration: 90,
+        description: 'Gradually repairs damaged systems.',
+        impactedSystems: ['all'],
       };
 
     case EffectType.ENVIRONMENTAL:
       return {
-        id,
-        name: 'Environmental Effect',
+        id: effectId,
+        name: 'Gravitational Distortion',
         type: EffectType.ENVIRONMENTAL,
-        strength: 30,
-        duration: -1,
-        description: 'An environmental effect that alters the surroundings.',
-        impactedSystems: ['scanners', 'mining'],
+        strength: 70,
+        duration: -1, // Permanent
+        description: 'Alters the gravitational field in the area.',
+        impactedSystems: ['navigation', 'propulsion'],
       };
 
+    case EffectType.SPECIAL:
     default:
       return {
-        id,
-        name: 'Special Effect',
+        id: effectId,
+        name: 'Unknown Phenomenon',
         type: EffectType.SPECIAL,
         strength: 50,
         duration: 120,
-        description: 'A special effect with unique properties.',
-        impactedSystems: ['all'],
+        description: 'Has unpredictable effects on nearby systems.',
+        impactedSystems: ['random'],
       };
   }
 }
 
 /**
  * Create a default analysis result
+ * @private Use the exported version from the export statement below
  */
-export function createDefaultAnalysisResult(
-  type: AnalysisType,
-  entityIds: string[]
-): AnalysisResult {
-  const id = `analysis-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
+function _createDefaultAnalysisResult(type: AnalysisType, entityIds: string[]): AnalysisResult {
   return {
-    id,
+    id: `analysis-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     name: `${type.charAt(0).toUpperCase() + type.slice(1)} Analysis`,
     type,
     createdAt: Date.now(),
-    entityIds,
     data: {},
+    entityIds,
     insights: [],
-    summary: 'Analysis complete. Review results for more information.',
-    confidence: 75,
+    summary: `Default ${type} analysis of ${entityIds.length} entities.`,
+    confidence: 70,
   };
 }
 
@@ -364,24 +439,24 @@ export function sortByDiscoveryDate<T extends { discoveredAt: number }>(
   entities: T[],
   ascending: boolean = false
 ): T[] {
-  return [...entities].sort((a, b) => {
-    return ascending ? a.discoveredAt - b.discoveredAt : b.discoveredAt - a.discoveredAt;
-  });
+  return [...entities].sort((a, b) =>
+    ascending ? a.discoveredAt - b.discoveredAt : b.discoveredAt - a.discoveredAt
+  );
 }
 
 /**
- * Calculate distance between two coordinates
+ * Calculate the distance between two coordinates
  */
 export function calculateDistance(coord1: Coordinates, coord2: Coordinates): number {
-  const dx = coord2.x - coord1.x;
-  const dy = coord2.y - coord1.y;
-  const dz = (coord2.z ?? 0) - (coord1.z ?? 0);
+  const x = coord2.x - coord1.x;
+  const y = coord2.y - coord1.y;
+  const z = (coord2.z || 0) - (coord1.z || 0);
 
-  return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  return Math.sqrt(x * x + y * y + z * z);
 }
 
 /**
- * Find nearest entities to a given coordinate
+ * Find the nearest entities to a target coordinate
  */
 export function findNearestEntities<T extends { coordinates: Coordinates }>(
   entities: T[],
@@ -395,11 +470,11 @@ export function findNearestEntities<T extends { coordinates: Coordinates }>(
     }))
     .sort((a, b) => a.distance - b.distance)
     .slice(0, limit)
-    .map(item => item?.entity);
+    .map(item => item.entity);
 }
 
 /**
- * Create a blank exploration state
+ * Create an empty exploration state for initialization
  */
 export function createEmptyExplorationState() {
   return {
@@ -416,23 +491,9 @@ export function createEmptyExplorationState() {
   };
 }
 
-// Export utility functions
-export {
-  anomalyToDataPoint,
-  calculateDistance,
-  createDefaultAnalysisResult,
-  createDefaultEffect,
-  createEmptyExplorationState,
-  dataPointToAnomaly,
-  dataPointToCoordinates,
-  dataPointToResourceDeposit,
-  dataPointToSector,
-  determineAnomalyType,
-  determineDangerLevel,
-  determineResourceType,
-  filterByExplorationStatus,
-  findNearestEntities,
-  resourceDepositToDataPoint,
-  sectorToDataPoint,
-  sortByDiscoveryDate,
-};
+// Export functions with renamed private implementations to avoid redeclaration errors
+// following the pattern from resources.mdc
+export const resourceDepositToDataPoint = _resourceDepositToDataPoint;
+export const sectorToDataPoint = _sectorToDataPoint;
+export const createDefaultEffect = _createDefaultEffect;
+export const createDefaultAnalysisResult = _createDefaultAnalysisResult;

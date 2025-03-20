@@ -68,7 +68,7 @@ interface FilteringPayload {
 
 // Listen for messages from the main thread
 self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
-  const { type, id, payload } = event?.data;
+  const { type, id, payload } = event?.data ?? {};
 
   try {
     let result;
@@ -267,14 +267,14 @@ function calculateStatistics(payload: StatisticsPayload): StatisticsResult {
   operations.forEach(op => {
     switch (op) {
       case 'mean': {
-        result?.mean = numericData.reduce((sum, value) => sum + value, 0) / numericData.length;
+        result.mean = numericData.reduce((sum, value) => sum + value, 0) / numericData.length;
         break;
       }
 
       case 'median': {
         const sorted = [...numericData].sort((a, b) => a - b);
         const middle = Math.floor(sorted.length / 2);
-        result?.median =
+        result.median =
           sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
         break;
       }
@@ -298,28 +298,28 @@ function calculateStatistics(payload: StatisticsPayload): StatisticsResult {
           }
         }
 
-        result?.mode = modes;
+        result.mode = modes;
         break;
       }
 
       case 'min': {
-        result?.min = Math.min(...numericData);
+        result.min = Math.min(...numericData);
         break;
       }
 
       case 'max': {
-        result?.max = Math.max(...numericData);
+        result.max = Math.max(...numericData);
         break;
       }
 
       case 'sum': {
-        result?.sum = numericData.reduce((sum, value) => sum + value, 0);
+        result.sum = numericData.reduce((sum, value) => sum + value, 0);
         break;
       }
 
       case 'variance': {
         const mean = numericData.reduce((sum, value) => sum + value, 0) / numericData.length;
-        result?.variance =
+        result.variance =
           numericData.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) /
           numericData.length;
         break;
@@ -331,7 +331,7 @@ function calculateStatistics(payload: StatisticsPayload): StatisticsResult {
         const variance =
           numericData.reduce((sum, value) => sum + Math.pow(value - meanForStdDev, 2), 0) /
           numericData.length;
-        result?.stdDev = Math.sqrt(variance);
+        result.stdDev = Math.sqrt(variance);
         break;
       }
     }

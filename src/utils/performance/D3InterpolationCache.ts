@@ -139,14 +139,15 @@ export class InterpolationCache<T> {
         0
       );
     } else if (typeof value === 'object') {
-      let size = 0;
-      for (const key in value) {
-        if (Object.prototype.hasOwnProperty.call(value, key)) {
-          size += key.length * 2; // Key size
-          size += this.estimateSize((value as unknown)[key]); // Value size
+      let estimatedSize = 0;
+      const valueAsRecord = value as Record<string, unknown>;
+      for (const key in valueAsRecord) {
+        if (Object.prototype.hasOwnProperty.call(valueAsRecord, key)) {
+          estimatedSize += key.length * 2; // Key size
+          estimatedSize += this.estimateSize(valueAsRecord[key] as unknown as T); // Value size
         }
       }
-      return size;
+      return estimatedSize;
     }
     return 16; // Default estimation for unknown types
   }
@@ -673,48 +674,100 @@ export function optimizeD3Transitions<
   selection: d3.Selection<GElement, Datum, PElement, PDatum>,
   config?: InterpolationCacheConfig
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
+  const cacheId = 'd3-transition-' + Math.random().toString(36).substring(2);
+
   // Store original transition method
   const originalTransition = selection.transition;
 
-  // Replace with memoized version
-  selection.transition = function (...args: unknown[]): unknown {
+  // Override transition method
+  type TransitionFn = typeof originalTransition;
+  (selection.transition as unknown) = function (
+    this: d3.Selection<GElement, Datum, PElement, PDatum>,
+    ...args: Parameters<TransitionFn>
+  ): ReturnType<TransitionFn> {
+    // Call original transition method
     const transition = originalTransition.apply(this, args);
 
-    // Store original interpolation functions
-    const originalAttrTween = transition.attrTween;
-    const originalStyleTween = transition.styleTween;
+    // Store original tween method
+    const originalTween = transition.tween;
 
-    // Replace with memoized versions
-    transition.attrTween = function (name: string, factory: unknown): unknown {
-      // Create a memoized version of the factory function
-      const memoizedFactory = function (d: Datum, i: number, a: unknown) {
-        const interpolator = factory(d, i, a);
-        if (typeof interpolator === 'function') {
-          const cache = new InterpolationCache<unknown>(config);
-          return cache.memoize(interpolator);
-        }
-        return interpolator;
+    // Define factory function types
+    type TweenFactory =
+      | null
+      | ((
+          this: GElement,
+          d: Datum,
+          i: number,
+          nodes: GElement[]
+        ) => (this: GElement, t: number) => void);
+
+    // Override tween method
+    type TweenFn = typeof originalTween;
+    (transition.tween as unknown) = function (
+      this: d3.Transition<GElement, Datum, PElement, PDatum>,
+      name: string,
+      factory: TweenFactory
+    ): ReturnType<TweenFn> {
+      if (factory === null) {
+        return originalTween.call(this, name, null);
+      }
+
+      // Create memoized factory
+      const memoizedFactory = function (this: GElement, d: Datum, i: number, a: GElement[]) {
+        const originalInterpolator = factory.call(this, d, i, a);
+        return createMemoizedAnimation(cacheId + '-' + name, originalInterpolator, config);
       };
 
-      return originalAttrTween.call(this, name, memoizedFactory);
+      // Call original tween with memoized factory
+      return originalTween.call(this, name, memoizedFactory as unknown as TweenFactory);
     };
 
-    transition.styleTween = function (name: string, factory: unknown): unknown {
-      // Create a memoized version of the factory function
-      const memoizedFactory = function (d: Datum, i: number, a: unknown) {
-        const interpolator = factory(d, i, a);
-        if (typeof interpolator === 'function') {
-          const cache = new InterpolationCache<unknown>(config);
-          return cache.memoize(interpolator);
-        }
-        return interpolator;
+    // Store original styleTween method
+    const originalStyleTween = transition.styleTween;
+
+    // Define style factory function type
+    type StyleFactory =
+      | null
+      | ((
+          this: GElement,
+          d: Datum,
+          i: number,
+          nodes: GElement[]
+        ) => (this: GElement, t: number) => string);
+
+    // Override styleTween method
+    type StyleTweenFn = typeof originalStyleTween;
+    (transition.styleTween as unknown) = function (
+      this: d3.Transition<GElement, Datum, PElement, PDatum>,
+      name: string,
+      factory: StyleFactory,
+      priority?: 'important' | null
+    ): ReturnType<StyleTweenFn> {
+      if (factory === null) {
+        return originalStyleTween.call(this, name, null, priority);
+      }
+
+      // Create memoized factory
+      const memoizedFactory = function (this: GElement, d: Datum, i: number, a: GElement[]) {
+        const originalInterpolator = factory.call(this, d, i, a);
+        return createMemoizedAnimation(
+          cacheId + '-style-' + name + (priority || ''),
+          originalInterpolator as (t: number) => unknown,
+          config
+        );
       };
 
-      return originalStyleTween.call(this, name, memoizedFactory);
+      // Call original styleTween with memoized factory
+      return originalStyleTween.call(
+        this,
+        name,
+        memoizedFactory as unknown as StyleFactory,
+        priority
+      );
     };
 
     return transition;
-  } as unknown;
+  };
 
   return selection;
 }

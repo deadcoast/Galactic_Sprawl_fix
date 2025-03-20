@@ -68,6 +68,12 @@ export interface AnimationPerformanceData {
   droppedFrames: number;
   /** Percentage of frames that met the target duration */
   frameSuccessRate: number;
+  /** Total number of DOM updates (only present if detailedMetrics=true) */
+  totalDomUpdates?: number;
+  /** Total number of interpolations (only present if detailedMetrics=true) */
+  totalInterpolations?: number;
+  /** Total time spent on interpolations (only present if detailedMetrics=true) */
+  totalInterpolationTime?: number;
 }
 
 /**
@@ -145,7 +151,8 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
   let frames: AnimationFrameMetrics[] = [];
   let lastFrameTime = 0;
   let animationConfig: AnimationConfig = { duration: 0 };
-  let selectionUpdates = 0;
+  // Track total DOM updates (for detailed metrics reporting)
+  let totalDomUpdates = 0;
   let interpolationMeasurements: Array<{ count: number; duration: number }> = [];
 
   const targetFrameDuration = 1000 / targetFps;
@@ -179,7 +186,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     lastFrameTime = startTime;
     frameCount = 0;
     frames = [];
-    selectionUpdates = 0;
+    totalDomUpdates = 0;
     interpolationMeasurements = [];
 
     // Set up duration-limited profiling if requested
@@ -227,7 +234,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
   function recordDomUpdates(updateCount: number, duration: number) {
     if (!isRunning || !trackDomUpdates) return;
 
-    selectionUpdates += updateCount;
+    totalDomUpdates += updateCount;
 
     // Update the last frame with DOM update information
     if (frames.length > 0) {
@@ -273,12 +280,14 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     // Calculate frame statistics
     const frameDurations = frames.map(f => f.frameDuration);
     const averageFrameDuration =
-      frameDurations.reduce((sum, duration) => sum + duration, 0) / frames.length ?? 0;
-    const minFrameDuration = Math.min(...frameDurations) ?? 0;
-    const maxFrameDuration = Math.max(...frameDurations) ?? 0;
-    const actualFps = 1000 / averageFrameDuration ?? 0;
+      frames.length > 0
+        ? frameDurations.reduce((sum, duration) => sum + duration, 0) / frames.length
+        : 0;
+    const minFrameDuration = frameDurations.length > 0 ? Math.min(...frameDurations) : 0;
+    const maxFrameDuration = frameDurations.length > 0 ? Math.max(...frameDurations) : 0;
+    const actualFps = averageFrameDuration > 0 ? 1000 / averageFrameDuration : 0;
     const droppedFrames = frames.filter(f => f.frameDuration > targetFrameDuration).length;
-    const frameSuccessRate = 1 - droppedFrames / frames.length ?? 0;
+    const frameSuccessRate = frames.length > 0 ? 1 - droppedFrames / frames.length : 0;
 
     // Create performance data object
     const performanceData: AnimationPerformanceData = {
@@ -297,6 +306,19 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       droppedFrames,
       frameSuccessRate,
     };
+
+    // Add detailed metrics if enabled
+    if (detailedMetrics) {
+      performanceData.totalDomUpdates = totalDomUpdates;
+      performanceData.totalInterpolations = interpolationMeasurements.reduce(
+        (sum, m) => sum + m.count,
+        0
+      );
+      performanceData.totalInterpolationTime = interpolationMeasurements.reduce(
+        (sum, m) => sum + m.duration,
+        0
+      );
+    }
 
     // Identify bottlenecks
     const bottlenecks = identifyBottlenecks(performanceData);
@@ -362,11 +384,11 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     const bottlenecks: AnimationBottleneck[] = [];
 
     // Check for frame rate issues
-    if (data?.actualFps < targetFps * 0.9) {
+    if (data.actualFps < targetFps * 0.9) {
       bottlenecks.push({
         type: 'unknown',
-        severity: Math.min(1, (targetFps - data?.actualFps) / targetFps),
-        description: `Frame rate below target (${data?.actualFps.toFixed(1)} fps vs target ${targetFps} fps)`,
+        severity: Math.min(1, (targetFps - data.actualFps) / targetFps),
+        description: `Frame rate below target (${data.actualFps.toFixed(1)} fps vs target ${targetFps} fps)`,
         suggestion: 'Review the animation for complexity and optimize rendering performance',
         affectedFrames: frames.map((_, index) => index),
       });
@@ -522,7 +544,10 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
     const originalStyle = selection.style;
 
     // Wrap transition method
-    selection.transition = function (...args: unknown[]): unknown {
+    (selection.transition as unknown) = function (
+      this: d3.Selection<GElement, Datum, PElement, PDatum>,
+      ...args: Parameters<typeof originalTransition>
+    ): ReturnType<typeof originalTransition> {
       const startTime = performance.now();
       const result = originalTransition.apply(this, args);
       const duration = performance.now() - startTime;
@@ -531,10 +556,13 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       recordDomUpdates(1, duration);
 
       return result;
-    } as unknown;
+    };
 
     // Wrap attr method
-    selection.attr = function (...args: unknown[]): unknown {
+    (selection.attr as unknown) = function (
+      this: d3.Selection<GElement, Datum, PElement, PDatum>,
+      ...args: Parameters<typeof originalAttr>
+    ): ReturnType<typeof originalAttr> {
       const startTime = performance.now();
       const result = originalAttr.apply(this, args);
       const duration = performance.now() - startTime;
@@ -543,10 +571,13 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       recordDomUpdates(selection.size(), duration);
 
       return result;
-    } as unknown;
+    };
 
     // Wrap style method
-    selection.style = function (...args: unknown[]): unknown {
+    (selection.style as unknown) = function (
+      this: d3.Selection<GElement, Datum, PElement, PDatum>,
+      ...args: Parameters<typeof originalStyle>
+    ): ReturnType<typeof originalStyle> {
       const startTime = performance.now();
       const result = originalStyle.apply(this, args);
       const duration = performance.now() - startTime;
@@ -555,7 +586,7 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
       recordDomUpdates(selection.size(), duration);
 
       return result;
-    } as unknown;
+    };
 
     return selection;
   }
@@ -630,13 +661,21 @@ export function profileAnimationSequence<
       onComplete: report => resolve(report),
     });
 
+    // Define animation sequence config interface
+    interface AnimationSequenceConfig {
+      transitions?: Array<{ duration?: number }>;
+      loop?: boolean;
+      onComplete?: () => void;
+    }
+
     // Start profiling
+    const sequenceConfig = (sequence as unknown as { config?: AnimationSequenceConfig }).config;
     profiler.start(
       'sequence-' + Date.now(),
       'Animation Sequence',
       // Extract duration from the first transition if available
-      sequence['config'] && sequence['config'].transitions && sequence['config'].transitions[0]
-        ? { duration: sequence['config'].transitions[0].duration ?? 0 }
+      sequenceConfig && sequenceConfig.transitions && sequenceConfig.transitions[0]
+        ? { duration: sequenceConfig.transitions[0].duration ?? 0 }
         : { duration: 0 }
     );
 
@@ -662,10 +701,9 @@ export function profileAnimationSequence<
     }, config.profileDuration || 10000); // Default to 10 seconds max
 
     // Try to access private property to detect completion
-    const privateConfig = (sequence as unknown).config;
-    if (privateConfig && !privateConfig.loop && privateConfig.onComplete) {
-      const originalOnComplete = privateConfig.onComplete;
-      privateConfig.onComplete = () => {
+    if (sequenceConfig && !sequenceConfig.loop && sequenceConfig.onComplete) {
+      const originalOnComplete = sequenceConfig.onComplete;
+      sequenceConfig.onComplete = () => {
         originalOnComplete();
         clearTimeout(stopTimeout);
         if (profiler.getStatus().isRunning) {

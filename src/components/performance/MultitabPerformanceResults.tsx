@@ -1,47 +1,42 @@
-import {
-  Badge,
-  Box,
-  Flex,
-  Heading,
-  SimpleGrid,
-  Stat,
-  StatLabel,
-  StatNumber,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from '@chakra-ui/react';
+import { Badge, Card, Col, Divider, Empty, Row, Statistic, Table, Tag, Typography } from 'antd';
 import React from 'react';
 import { MultitabPerformanceResult } from '../../tests/performance/MultitabPerformanceTestSuite';
 
+const { Title, Text } = Typography;
+
+// Define the ResultSet type to match the page component
+type ResultSet = MultitabPerformanceResult[] | Record<string, MultitabPerformanceResult[]>;
+
 interface MultitabPerformanceResultsProps {
-  results: MultitabPerformanceResult[];
-  isRunning: boolean;
+  results: ResultSet;
+  isRunning?: boolean;
+  _onReportGenerated?: (report: string) => void;
 }
 
 export const MultitabPerformanceResults: React.FC<MultitabPerformanceResultsProps> = ({
   results,
-  isRunning,
+  isRunning = false,
+  _onReportGenerated,
 }) => {
+  // Normalize results to always work with an array
+  const resultsArray = Array.isArray(results) ? results : Object.values(results).flat();
+
   // Calculate aggregate metrics
   const calculateAverages = () => {
-    if (results.length === 0) return null;
+    if (resultsArray.length === 0) return null;
 
     const avgMemory =
-      results.reduce((sum, result) => sum + result.memory.average, 0) / results.length;
-    const avgCPU = results.reduce((sum, result) => sum + result.cpu.average, 0) / results.length;
+      resultsArray.reduce((sum, result) => sum + result.memory.average, 0) / resultsArray.length;
+    const avgCPU =
+      resultsArray.reduce((sum, result) => sum + result.cpu.average, 0) / resultsArray.length;
     const avgFPS =
-      results.reduce((sum, result) => {
+      resultsArray.reduce((sum, result) => {
         // Some tabs might not have FPS data
         return sum + (result.fps?.average || 0);
-      }, 0) / results.length;
+      }, 0) / resultsArray.length;
 
-    const maxMemory = Math.max(...results.map(r => r.memory.max));
-    const maxCPU = Math.max(...results.map(r => r.cpu.max));
+    const maxMemory = Math.max(...resultsArray.map(r => r.memory.max));
+    const maxCPU = Math.max(...resultsArray.map(r => r.cpu.max));
 
     return {
       avgMemory,
@@ -76,123 +71,161 @@ export const MultitabPerformanceResults: React.FC<MultitabPerformanceResultsProp
     const rating = getPerformanceRating();
     switch (rating) {
       case 'Excellent':
-        return 'green';
+        return 'success';
       case 'Good':
-        return 'blue';
+        return 'processing';
       case 'Fair':
-        return 'orange';
+        return 'warning';
       case 'Poor':
-        return 'red';
+        return 'error';
       default:
-        return 'gray';
+        return 'default';
     }
   };
 
-  return (
-    <Box p={4} borderWidth="1px" borderRadius="lg" bg="white" shadow="md">
-      <Heading size="md" mb={4}>
-        Multitab Performance Results
-      </Heading>
+  const columns = [
+    {
+      title: 'Tab ID',
+      dataIndex: 'tabId',
+      key: 'tabId',
+    },
+    {
+      title: 'Memory (MB)',
+      dataIndex: 'memory',
+      key: 'memory',
+      render: (memory: { average: number; max: number }) => (
+        <span>
+          {memory.average.toFixed(1)}
+          <Text type="secondary" style={{ fontSize: '12px', marginLeft: '4px' }}>
+            (max: {memory.max.toFixed(1)})
+          </Text>
+        </span>
+      ),
+    },
+    {
+      title: 'CPU (%)',
+      dataIndex: 'cpu',
+      key: 'cpu',
+      render: (cpu: { average: number; max: number }) => (
+        <span>
+          {cpu.average.toFixed(1)}
+          <Text type="secondary" style={{ fontSize: '12px', marginLeft: '4px' }}>
+            (max: {cpu.max.toFixed(1)})
+          </Text>
+        </span>
+      ),
+    },
+    {
+      title: 'FPS',
+      dataIndex: 'fps',
+      key: 'fps',
+      render: (fps: { average: number; min: number } | undefined) =>
+        fps ? (
+          <span>
+            {fps.average.toFixed(1)}
+            <Text type="secondary" style={{ fontSize: '12px', marginLeft: '4px' }}>
+              (min: {fps.min.toFixed(1)})
+            </Text>
+          </span>
+        ) : (
+          'N/A'
+        ),
+    },
+    {
+      title: 'Errors',
+      dataIndex: 'errors',
+      key: 'errors',
+      render: (errors: unknown[]) => errors.length,
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => {
+        let color = 'default';
+        if (status === 'completed') color = 'success';
+        else if (status === 'running') color = 'processing';
+        else color = 'error';
 
-      {results.length === 0 ? (
-        <Text fontSize="lg" color="gray.500" py={4} textAlign="center">
-          {isRunning
-            ? 'Test is running...'
-            : 'No test results yet. Start a test to see results here.'}
-        </Text>
+        return <Tag color={color}>{status}</Tag>;
+      },
+    },
+  ];
+
+  return (
+    <Card style={{ borderRadius: '8px' }}>
+      <Title level={5}>Multitab Performance Results</Title>
+
+      {resultsArray.length === 0 ? (
+        <Empty
+          description={
+            isRunning
+              ? 'Test is running...'
+              : 'No test results yet. Start a test to see results here.'
+          }
+          style={{ padding: '2rem' }}
+        />
       ) : (
         <>
-          <Flex justifyContent="space-between" alignItems="center" mb={4}>
-            <Heading size="sm">Overall Performance</Heading>
-            <Badge colorScheme={getRatingColor()} fontSize="md" py={1} px={2} borderRadius="md">
-              {getPerformanceRating()}
-            </Badge>
-          </Flex>
+          <Row justify="space-between" align="middle" style={{ marginBottom: '16px' }}>
+            <Col>
+              <Text strong>Overall Performance</Text>
+            </Col>
+            <Col>
+              <Badge
+                status={
+                  getRatingColor() as 'success' | 'error' | 'default' | 'processing' | 'warning'
+                }
+                text={getPerformanceRating()}
+                style={{ fontSize: '16px' }}
+              />
+            </Col>
+          </Row>
 
           {avgMetrics && (
-            <SimpleGrid columns={{ base: 2, md: 5 }} spacing={4} mb={6}>
-              <Stat>
-                <StatLabel>Avg. Memory Usage</StatLabel>
-                <StatNumber>{avgMetrics.avgMemory.toFixed(1)} MB</StatNumber>
-              </Stat>
-              <Stat>
-                <StatLabel>Avg. CPU Usage</StatLabel>
-                <StatNumber>{avgMetrics.avgCPU.toFixed(1)}%</StatNumber>
-              </Stat>
-              <Stat>
-                <StatLabel>Avg. FPS</StatLabel>
-                <StatNumber>{avgMetrics.avgFPS.toFixed(1)}</StatNumber>
-              </Stat>
-              <Stat>
-                <StatLabel>Peak Memory</StatLabel>
-                <StatNumber>{avgMetrics.maxMemory.toFixed(1)} MB</StatNumber>
-              </Stat>
-              <Stat>
-                <StatLabel>Peak CPU</StatLabel>
-                <StatNumber>{avgMetrics.maxCPU.toFixed(1)}%</StatNumber>
-              </Stat>
-            </SimpleGrid>
+            <>
+              <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+                <Col xs={12} md={4.8}>
+                  <Statistic
+                    title="Avg. Memory Usage"
+                    value={avgMetrics.avgMemory.toFixed(1)}
+                    suffix="MB"
+                  />
+                </Col>
+                <Col xs={12} md={4.8}>
+                  <Statistic
+                    title="Avg. CPU Usage"
+                    value={avgMetrics.avgCPU.toFixed(1)}
+                    suffix="%"
+                  />
+                </Col>
+                <Col xs={12} md={4.8}>
+                  <Statistic title="Avg. FPS" value={avgMetrics.avgFPS.toFixed(1)} />
+                </Col>
+                <Col xs={12} md={4.8}>
+                  <Statistic
+                    title="Peak Memory"
+                    value={avgMetrics.maxMemory.toFixed(1)}
+                    suffix="MB"
+                  />
+                </Col>
+                <Col xs={12} md={4.8}>
+                  <Statistic title="Peak CPU" value={avgMetrics.maxCPU.toFixed(1)} suffix="%" />
+                </Col>
+              </Row>
+              <Divider style={{ margin: '0 0 24px 0' }} />
+            </>
           )}
 
-          <Table variant="simple" size="sm">
-            <Thead>
-              <Tr>
-                <Th>Tab ID</Th>
-                <Th>Memory (MB)</Th>
-                <Th>CPU (%)</Th>
-                <Th>FPS</Th>
-                <Th>Errors</Th>
-                <Th>Status</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {results.map(result => (
-                <Tr key={result.tabId}>
-                  <Td>{result.tabId}</Td>
-                  <Td>
-                    {result.memory.average.toFixed(1)}
-                    <Text as="span" fontSize="xs" color="gray.500" ml={1}>
-                      (max: {result.memory.max.toFixed(1)})
-                    </Text>
-                  </Td>
-                  <Td>
-                    {result.cpu.average.toFixed(1)}
-                    <Text as="span" fontSize="xs" color="gray.500" ml={1}>
-                      (max: {result.cpu.max.toFixed(1)})
-                    </Text>
-                  </Td>
-                  <Td>
-                    {result.fps ? (
-                      <>
-                        {result.fps.average.toFixed(1)}
-                        <Text as="span" fontSize="xs" color="gray.500" ml={1}>
-                          (min: {result.fps.min.toFixed(1)})
-                        </Text>
-                      </>
-                    ) : (
-                      'N/A'
-                    )}
-                  </Td>
-                  <Td>{result.errors.length}</Td>
-                  <Td>
-                    <Badge
-                      colorScheme={
-                        result.status === 'completed'
-                          ? 'green'
-                          : result.status === 'running'
-                            ? 'blue'
-                            : 'red'
-                      }
-                    >
-                      {result.status}
-                    </Badge>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
+          <Table
+            dataSource={resultsArray}
+            columns={columns}
+            rowKey="tabId"
+            size="small"
+            pagination={false}
+          />
         </>
       )}
-    </Box>
+    </Card>
   );
 };

@@ -1,0 +1,358 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# GALACTIC SPRAWL (GS) - Anti Pattern Rules
+
+## String Literal Anti-Pattern Rule
+
+// .cursor/rules/string-literal-antipattern.json
+
+```json
+{
+  "name": "String Literal Anti-Pattern Rule",
+  "description": "Identifies and prevents the use of string literals where enum types exist",
+  "filePattern": ["src/**/*.ts", "src/**/*.tsx"],
+  "content": "Do not use string literals for values that have corresponding enum types. Always use the appropriate enum type to ensure type safety and consistency across the codebase."
+}
+```
+
+Anti-patterns to avoid:
+
+1. String literals for resource types:
+
+```typescript
+// INCORRECT: Using string literals for resource types
+const resourceType = 'energy';
+if (resourceType === 'minerals') {
+  /* ... */
+}
+```
+
+Correct implementation:
+
+```typescript
+// CORRECT: Using ResourceType enum
+const resourceType = ResourceType.ENERGY;
+if (resourceType === ResourceType.MINERALS) {
+  /* ... */
+}
+```
+
+2. String literals for event types:
+
+```typescript
+// INCORRECT: Using string literals for event types
+moduleEventBus.subscribe('RESOURCE_PRODUCED', event => {
+  /* ... */
+});
+```
+
+Correct implementation:
+
+```typescript
+// CORRECT: Using EventType enum
+moduleEventBus.subscribe(EventType.RESOURCE_PRODUCED, event => {
+  /* ... */
+});
+```
+
+3. String literals for module types:
+
+```typescript
+// INCORRECT: Using string literals for module types
+const moduleType = 'resource-manager';
+```
+
+Correct implementation:
+
+```typescript
+// CORRECT: Using ModuleType type
+const moduleType: ModuleType = 'resource-manager';
+```
+
+4. String literals for flow node types:
+
+```typescript
+// INCORRECT: Using string literals for flow node types
+const nodeType = 'producer';
+```
+
+Correct implementation:
+
+```typescript
+// CORRECT: Using FlowNodeType enum
+const nodeType = FlowNodeType.PRODUCER;
+```
+
+Always use the appropriate enum type for predefined values to leverage TypeScript's type checking capabilities." }
+
+### Type Assertion Anti-Pattern Rule
+
+// .cursor/rules/type-assertion-antipattern.json
+
+```json
+{
+  "name": "Type Assertion Anti-Pattern Rule",
+  "description": "Prevents unsafe type assertions without validation",
+  "filePattern": ["src/**/*.ts", "src/**/*.tsx"],
+  "content": "Avoid direct type assertions without validation. Always use type guards to validate types at runtime before performing operations that assume a specific type"
+}
+```
+
+Anti-patterns to avoid:
+
+1. Direct type assertion without validation:
+
+```typescript
+// INCORRECT: Unsafe type assertion
+function processEvent(event: unknown): void {
+  const typedEvent = event as BaseEvent;
+  handleEvent(typedEvent);
+}
+```
+
+Correct implementation using type guards:
+
+```typescript
+// CORRECT: Using type guards for validation
+function processEvent(event: unknown): void {
+  if (!isValidEvent(event)) {
+    console.error('Invalid event received:', event);
+    return;
+  }
+
+  // Now it's safe to use the event
+  handleEvent(event);
+}
+
+// Type guard implementation
+function isValidEvent(value: unknown): value is BaseEvent {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    'moduleId' in value &&
+    'timestamp' in value
+  );
+}
+```
+
+2. Direct property access without validation:
+
+```typescript
+// INCORRECT: Unsafe property access on potentially undefined objects
+function displayResourceEvent(event: BaseEvent): void {
+  // Might cause a runtime error if event.data doesn't exist or doesn't have resourceType/amount
+  console.log(`Resource: ${event.data.resourceType}, Amount: ${event.data.amount}`);
+}
+```
+
+Correct implementation using type guards:
+
+```typescript
+// CORRECT: Using type guards for validation
+function displayResourceEvent(event: BaseEvent): void {
+  // First validate the event has the expected data structure
+  if (!isResourceProductionEventData(event.data)) {
+    console.error('Invalid resource event data:', event);
+    return;
+  }
+
+  // Now it's safe to access the properties
+  const { resourceType, amount } = event.data;
+  console.log(`Resource: ${resourceType}, Amount: ${amount}`);
+}
+
+// Using existing type guard from the codebase
+function isResourceProductionEventData(data: unknown): data is ResourceProductionEventData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'resourceType' in data &&
+    'amount' in data &&
+    typeof data.amount === 'number'
+  );
+}
+```
+
+Always validate types at runtime before performing operations that assume a specific type structure.
+
+### Direct Manager Instantiation Anti-Pattern Rule
+
+```json
+// .cursor/rules/direct-manager-instantiation-antipattern.json
+{
+  "name": "Direct Manager Instantiation Anti-Pattern Rule",
+  "description": "Prevents direct instantiation of manager classes",
+  "filePattern": ["src/**/*.ts", "src/**/*.tsx"],
+  "content": "Never directly instantiate manager classes in components, hooks, or services. Always use the manager registry pattern to access manager instances."
+}
+```
+
+Anti-patterns to avoid:
+
+1. Direct manager class instantiation:
+
+```typescript
+// INCORRECT: Direct instantiation of manager class
+import { CombatManager } from '../managers/combat/CombatManager';
+
+function useCombatData() {
+  // INCORRECT: Creating a new instance
+  const combatManager = new CombatManager();
+  return combatManager.getAllUnits();
+}
+```
+
+Correct implementation using manager registry:
+
+```typescript
+// CORRECT: Using manager registry
+import { getCombatManager } from '../managers/ManagerRegistry';
+
+function useCombatData() {
+  // CORRECT: Getting the singleton instance
+  const combatManager = getCombatManager();
+  return combatManager.getAllUnits();
+}
+```
+
+2. Instance recreation in hooks or components:
+
+```typescript
+// INCORRECT: Creating manager in component render
+function CombatDisplay() {
+  // This creates a new instance on every render
+  const combatManager = new CombatManager();
+  const combatUnits = combatManager.getAllUnits();
+  // ...
+}
+```
+
+Correct implementation in components:
+
+```typescript
+// CORRECT: Using manager registry in effect hook
+function CombatDisplay() {
+  const [combatUnits, setCombatUnits] = useState([]);
+
+  useEffect(() => {
+    const combatManager = getCombatManager();
+    setCombatUnits(combatManager.getAllUnits());
+  }, []);
+  // ...
+}
+```
+
+Always use the manager registry to access manager instances to ensure proper singleton management and prevent circular dependencies.
+
+### Service Implementation Anti-Pattern Rule
+
+// .cursor/rules/service-implementation-antipattern.json
+
+```json
+{
+  "name": "Service Implementation Anti-Pattern Rule",
+  "description": "Identifies incorrect service implementation patterns",
+  "filePattern": ["src/services/**/*.ts"],
+  "content": "Avoid incorrect implementations of services that extend AbstractBaseService. Always use proper generic type parameters, constructor visibility, and property access."
+}
+```
+
+Anti-patterns to avoid:
+
+1. Missing or incorrect generic type parameter:
+
+```typescript
+// INCORRECT: Missing generic type parameter
+class ExampleServiceImpl extends AbstractBaseService {
+  // Implementation...
+}
+
+// CORRECT: Using proper generic type parameter
+class ExampleServiceImpl extends AbstractBaseService<ExampleServiceImpl> {
+  // Implementation...
+}
+```
+
+2. Unsafe optional chaining with metadata:
+
+```typescript
+// INCORRECT: Using optional chaining with metadata
+protected async onInitialize(): Promise<void> {
+  this.metadata?.metrics = {
+    counter: 0
+  };
+}
+
+// CORRECT: Using proper null checks
+protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
+  if (!this.metadata.metrics) {
+    this.metadata.metrics = {};
+  }
+  this.metadata.metrics = {
+    counter: 0
+  };
+}
+```
+
+3. Private constructor preventing direct instantiation:
+
+```typescript
+// INCORRECT: Private constructor blocking instantiation
+private constructor() {
+  super('ServiceName', '1.0.0');
+}
+
+// CORRECT: Public constructor allowing instantiation
+public constructor() {
+  super('ServiceName', '1.0.0');
+}
+```
+
+4. Custom getInstance implementation:
+
+```typescript
+// INCORRECT: Custom getInstance implementation that doesn't use super
+public static getInstance(): ErrorLoggingServiceImpl {
+  if (!ErrorLoggingServiceImpl.instance) {
+    ErrorLoggingServiceImpl.instance = new ErrorLoggingServiceImpl();
+  }
+  return ErrorLoggingServiceImpl.instance;
+}
+
+// CORRECT: Static getInstance implementation that properly uses super
+public static override getInstance(): ErrorLoggingServiceImpl {
+  return super.getInstance.call(this) as ErrorLoggingServiceImpl;
+}
+```
+
+5. Incorrect service export:
+
+```typescript
+// INCORRECT: Using getInstance method when service needs direct instantiation
+export const exampleService = ExampleServiceImpl.getInstance();
+
+// CORRECT: Direct instantiation for proper service integration
+export const exampleService = new ExampleServiceImpl();
+```
+
+6. Incorrect error handling implementation:
+
+```typescript
+// INCORRECT: Not handling errors with the proper error logging service
+public override handleError(error: Error): void {
+  console.error('Service error:', error);
+}
+
+// CORRECT: Using the error logging service with proper typing
+public override handleError(error: Error): void {
+  errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
+    service: 'ServiceName',
+  });
+}
+```
+
+Always follow these patterns to ensure type-safe implementations and seamless integration with the ServiceRegistry system.

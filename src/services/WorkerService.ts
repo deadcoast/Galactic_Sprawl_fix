@@ -1,3 +1,14 @@
+/**
+ * @context: service-system, worker-management
+ * WorkerService - Provides web worker management for background task processing
+ *
+ * This service handles:
+ * - Creating and managing a pool of workers
+ * - Submitting tasks to workers
+ * - Tracking task progress and completion
+ * - Handling worker errors and timeouts
+ */
+
 import { AbstractBaseService } from '../lib/services/BaseService';
 import { ErrorType, errorLoggingService } from './ErrorLoggingService';
 
@@ -25,8 +36,7 @@ export interface WorkerConfig {
   };
 }
 
-class WorkerServiceImpl extends AbstractBaseService {
-  private static instance: WorkerServiceImpl;
+class WorkerServiceImpl extends AbstractBaseService<WorkerServiceImpl> {
   private workers: Worker[] = [];
   private taskQueue: WorkerTask[] = [];
   private activeTasks: Map<string, WorkerTask> = new Map();
@@ -43,15 +53,8 @@ class WorkerServiceImpl extends AbstractBaseService {
     },
   };
 
-  private constructor() {
+  public constructor() {
     super('WorkerService', '1.0.0');
-  }
-
-  public static getInstance(): WorkerServiceImpl {
-    if (!WorkerServiceImpl.instance) {
-      WorkerServiceImpl.instance = new WorkerServiceImpl();
-    }
-    return WorkerServiceImpl.instance;
   }
 
   protected async onInitialize(): Promise<void> {
@@ -66,7 +69,10 @@ class WorkerServiceImpl extends AbstractBaseService {
     }
 
     // Initialize metrics
-    this.metadata?.metrics = {
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    this.metadata.metrics = {
       total_tasks: 0,
       active_tasks: 0,
       completed_tasks: 0,
@@ -94,7 +100,7 @@ class WorkerServiceImpl extends AbstractBaseService {
 
   private setupWorker(worker: Worker): void {
     worker.onmessage = (event: MessageEvent) => {
-      const { taskId, type, data } = event?.data;
+      const { taskId, type, data } = event.data;
       const task = this.activeTasks.get(taskId);
 
       if (!task) return;
@@ -136,11 +142,14 @@ class WorkerServiceImpl extends AbstractBaseService {
     };
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.total_tasks = (metrics.total_tasks ?? 0) + 1;
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
 
-    return new Promise((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       // Add task to queue
       this.taskQueue.push(task);
       this.taskQueue.sort((a, b) => b.priority - a.priority);
@@ -186,9 +195,9 @@ class WorkerServiceImpl extends AbstractBaseService {
 
   private async processNextTask(): Promise<void> {
     // Find available worker
-    const availableWorker = Array.from(this.workerPool.entries()).find(
-      ([, task]) => task === null
-    )?.[0];
+    const workerEntry = Array.from(this.workerPool.entries()).find(([, task]) => task === null);
+
+    const availableWorker = workerEntry?.[0];
 
     if (!availableWorker || this.taskQueue.length === 0) return;
 
@@ -201,9 +210,12 @@ class WorkerServiceImpl extends AbstractBaseService {
     this.workerPool.set(availableWorker, task);
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.active_tasks = this.activeTasks.size;
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
 
     // Send task to worker
     availableWorker.postMessage({
@@ -221,7 +233,10 @@ class WorkerServiceImpl extends AbstractBaseService {
     task.result = result;
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.completed_tasks = (metrics.completed_tasks ?? 0) + 1;
     metrics.active_tasks = this.activeTasks.size - 1;
 
@@ -230,16 +245,18 @@ class WorkerServiceImpl extends AbstractBaseService {
       ? (metrics.average_task_time + taskTime) / 2
       : taskTime;
 
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
 
     // Release worker
-    const worker = Array.from(this.workerPool.entries()).find(([, t]) => t === task)?.[0];
+    const workerEntry = Array.from(this.workerPool.entries()).find(([, t]) => t === task);
+    const worker = workerEntry?.[0];
     if (worker) {
       this.workerPool.set(worker, null);
     }
 
     // Call completion handler
-    (task as any).onComplete?.(result);
+    const typedTask = task as WorkerTask<unknown> & { onComplete?: (result: unknown) => void };
+    typedTask.onComplete?.(result);
 
     // Process next task
     this.processNextTask();
@@ -250,31 +267,38 @@ class WorkerServiceImpl extends AbstractBaseService {
     if (!task) return;
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.failed_tasks = (metrics.failed_tasks ?? 0) + 1;
     metrics.active_tasks = this.activeTasks.size - 1;
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
 
     // Release worker
-    const worker = Array.from(this.workerPool.entries()).find(([, t]) => t === task)?.[0];
+    const workerEntry = Array.from(this.workerPool.entries()).find(([, t]) => t === task);
+    const worker = workerEntry?.[0];
     if (worker) {
       this.workerPool.set(worker, null);
     }
 
     // Call error handler
-    (task as any).onError?.(error);
+    const typedTask = task as WorkerTask<unknown> & { onError?: (error: Error) => void };
+    typedTask.onError?.(error);
 
     // Process next task
     this.processNextTask();
   }
 
   public override handleError(error: Error): void {
-    errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, { service: 'WorkerService' });
+    errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
+      service: 'WorkerService',
+    });
   }
 }
 
-// Export singleton instance
-export const workerService = WorkerServiceImpl.getInstance();
+// Export singleton instance using direct instantiation
+export const workerService = new WorkerServiceImpl();
 
 // Export default for easier imports
 export default workerService;

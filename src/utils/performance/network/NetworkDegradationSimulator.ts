@@ -362,7 +362,7 @@ function proxyFetch(condition: NetworkCondition): void {
         headers: response?.headers,
       });
     } catch (error) {
-      if (error.message.includes('Simulated packet loss')) {
+      if (error instanceof Error && error.message.includes('Simulated packet loss')) {
         throw new TypeError('NetworkError when attempting to fetch resource');
       }
       throw error;
@@ -386,23 +386,36 @@ function proxyXHR(condition: NetworkCondition): void {
   // Override XHR open method
   XMLHttpRequest.prototype.open = function (this: XMLHttpRequest, ...args: unknown[]) {
     // Store network condition in the XHR instance
-    (this as unknown).__networkCondition = simulationState.enabled ? condition : null;
-    return originalOpen.apply(this, args);
+    (this as unknown as { __networkCondition: NetworkCondition | null }).__networkCondition =
+      simulationState.enabled ? condition : null;
+
+    // Call the original method with correct typing
+    return originalOpen.apply(
+      this,
+      args as [
+        method: string,
+        url: string | URL,
+        async: boolean,
+        username?: string | null,
+        password?: string | null,
+      ]
+    );
   };
 
   // Override XHR send method
   XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, ...args: unknown[]) {
-    const xhrNetworkCondition = (this as unknown).__networkCondition;
+    const xhrNetworkCondition = (this as unknown as { __networkCondition: NetworkCondition | null })
+      .__networkCondition;
 
     if (!xhrNetworkCondition) {
-      return originalSend.apply(this, args);
+      return originalSend.apply(this, args as [body?: Document | XMLHttpRequestBodyInit | null]);
     }
 
     // Calculate request latency
     const latency = calculateDelay(xhrNetworkCondition);
 
     // Store original callbacks
-    const originalOnload = this.onload;
+    const _originalOnload = this.onload;
     const originalOnerror = this.onerror;
     const originalOnreadystatechange = this.onreadystatechange;
 
@@ -413,7 +426,8 @@ function proxyXHR(condition: NetworkCondition): void {
           const errorEvent = new ErrorEvent('error', {
             message: 'Simulated packet loss',
           });
-          originalOnerror.call(this, errorEvent);
+          // Use type assertion to handle the type mismatch
+          originalOnerror.call(this, errorEvent as unknown as ProgressEvent<EventTarget>);
         }
       }, latency);
 
@@ -421,7 +435,7 @@ function proxyXHR(condition: NetworkCondition): void {
     }
 
     // Handle readystatechange
-    this.onreadystatechange = function (this: XMLHttpRequest, ...rsArgs: unknown[]) {
+    this.onreadystatechange = function (this: XMLHttpRequest) {
       if (this.readyState === 4) {
         // Calculate throughput delay for the response
         let throughputDelay = 0;
@@ -433,7 +447,9 @@ function proxyXHR(condition: NetworkCondition): void {
         // Delay the readystatechange with both latency and throughput delay
         setTimeout(() => {
           if (typeof originalOnreadystatechange === 'function') {
-            originalOnreadystatechange.apply(this, rsArgs);
+            // Create a proper Event object for the callback
+            const event = new Event('readystatechange');
+            originalOnreadystatechange.call(this, event);
           }
         }, latency + throughputDelay);
 
@@ -441,13 +457,15 @@ function proxyXHR(condition: NetworkCondition): void {
       }
 
       if (typeof originalOnreadystatechange === 'function') {
-        originalOnreadystatechange.apply(this, rsArgs);
+        // Create a proper Event object for the callback
+        const event = new Event('readystatechange');
+        originalOnreadystatechange.call(this, event);
       }
     };
 
     // Delay the actual send
     setTimeout(() => {
-      originalSend.apply(this, args);
+      originalSend.apply(this, args as [body?: Document | XMLHttpRequestBodyInit | null]);
     }, latency);
   };
 
@@ -467,7 +485,9 @@ function proxyWebSocket(condition: NetworkCondition): void {
   // Create a proxy WebSocket class
   class DegradedWebSocket extends OriginalWebSocket {
     constructor(...args: unknown[]) {
-      super(...args);
+      // Cast args as tuple type to allow spread
+      const typedArgs = args as [url: string | URL, protocols?: string | string[]];
+      super(...typedArgs);
 
       if (!simulationState.enabled) return;
 
@@ -541,7 +561,7 @@ function proxyWebSocket(condition: NetworkCondition): void {
         setTimeout(() => {
           try {
             originalSend.call(this, data);
-          } catch (e) {
+          } catch (_e) {
             if (typeof this.onerror === 'function') {
               this.onerror.call(this, new Event('error'));
             }
@@ -552,7 +572,7 @@ function proxyWebSocket(condition: NetworkCondition): void {
   }
 
   // Replace global WebSocket with our degraded version
-  window.WebSocket = DegradedWebSocket as unknown;
+  window.WebSocket = DegradedWebSocket as unknown as typeof WebSocket;
 
   simulationState.proxiedWebSocket = true;
 }
@@ -696,7 +716,7 @@ export function createCustomNetworkCondition(
  * @param fn The function to degrade
  * @returns A new function with network degradation applied
  */
-export function withNetworkDegradation<T extends (...args: unknown[]) => any>(
+export function withNetworkDegradation<T extends (...args: unknown[]) => unknown>(
   condition: NetworkCondition,
   fn: T
 ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
@@ -723,7 +743,7 @@ export function withNetworkDegradation<T extends (...args: unknown[]) => any>(
       try {
         const resultString = JSON.stringify(result);
         byteSize = new TextEncoder().encode(resultString).length;
-      } catch (e) {
+      } catch (_e) {
         // Ignore, use default size
       }
     } else if (typeof result === 'string') {
@@ -741,7 +761,8 @@ export function withNetworkDegradation<T extends (...args: unknown[]) => any>(
       throw new Error(`Network error: Simulated packet loss (${condition.name})`);
     }
 
-    return result;
+    // Add type assertion to ensure compatibility with ReturnType<T>
+    return result as ReturnType<T>;
   };
 }
 
@@ -794,10 +815,13 @@ export async function runAcrossNetworkConditions<T>(
       // Store result
       results.push({ condition, result });
     } catch (error) {
-      // Store error as result
+      // Store error as result with proper type handling
       results.push({
         condition,
-        result: { error, message: error.message } as unknown as T,
+        result: {
+          error,
+          message: error instanceof Error ? error.message : String(error),
+        } as unknown as T,
       });
     } finally {
       // Disable network degradation between tests

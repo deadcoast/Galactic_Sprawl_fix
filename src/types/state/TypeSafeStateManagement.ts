@@ -1,11 +1,13 @@
 /**
- * Type-Safe State Management
- *
+ * @context: type - definitions, state - management
+ * @description: Type-safe state management utilities for React applications
+ * @file: src/types/state/TypeSafeStateManagement.ts
  * This module provides utilities for creating strongly typed reducers, actions,
- * and state transitions to enhance the type safety of application state management.
+ * and state transitions to enhance the type safety of application state management
  */
 
-import React, { Reducer, useCallback, useContext, useMemo, useReducer, useState } from 'react';
+import * as React from 'react';
+import { Reducer, useCallback, useContext, useMemo, useReducer, useState } from 'react';
 
 /**
  * Base Action interface that all action types should extend
@@ -80,7 +82,7 @@ export function createActionCreators<
     if (typeof value === 'string') {
       creators[key] = createSimpleAction(value);
     } else {
-      creators[key] = createAction<string, T[K]>(value[0]);
+      creators[key] = createAction<string, unknown>(value[0]);
     }
   }
 
@@ -94,7 +96,7 @@ export function createActionCreators<
  * Ensures that action types are properly typed and matched in the reducer
  */
 export class ReducerBuilder<S, A extends Action = Action> {
-  private handlers: Partial<Record<A['type'], (state: S, action: unknown) => S>> = {};
+  private handlers: Partial<Record<A['type'] | 'DEFAULT', (state: S, action: unknown) => S>> = {};
 
   /**
    * Add a handler for a specific action type
@@ -107,7 +109,7 @@ export class ReducerBuilder<S, A extends Action = Action> {
     type: T,
     handler: (state: S, action: AC) => S
   ): ReducerBuilder<S, A> {
-    this.handlers[type] = handler as unknown;
+    this.handlers[type] = (state: S, action: unknown) => handler(state, action as AC);
     return this;
   }
 
@@ -118,7 +120,7 @@ export class ReducerBuilder<S, A extends Action = Action> {
    * @returns The builder for chaining
    */
   addDefaultCase(handler: (state: S) => S): ReducerBuilder<S, A> {
-    this.handlers['DEFAULT'] = state => handler(state);
+    this.handlers['DEFAULT'] = (state: S) => handler(state);
     return this;
   }
 
@@ -129,7 +131,8 @@ export class ReducerBuilder<S, A extends Action = Action> {
    */
   build(): Reducer<S, A> {
     return (state: S, action: A) => {
-      const handler = this.handlers[action.type] || this.handlers['DEFAULT'];
+      const actionType = action.type as A['type'] | 'DEFAULT';
+      const handler = this.handlers[actionType] || this.handlers['DEFAULT'];
       return handler ? handler(state, action) : state;
     };
   }
@@ -138,10 +141,9 @@ export class ReducerBuilder<S, A extends Action = Action> {
 /**
  * Creates a reducer builder for a specific state and action type
  *
- * @param initialState The initial state (used for type inference)
  * @returns A reducer builder instance
  */
-export function createReducer<S, A extends Action = Action>(initialState: S): ReducerBuilder<S, A> {
+export function createReducer<S, A extends Action = Action>(): ReducerBuilder<S, A> {
   return new ReducerBuilder<S, A>();
 }
 
@@ -189,7 +191,7 @@ export function createTypedStateSlice<
   S,
   AM extends Record<string, (...args: unknown[]) => Action>,
   A extends ReturnType<AM[keyof AM]>,
->(initialState: S, reducerMap: Record<A['type'], (state: S, action: A) => S>, actionMap: AM) {
+>(initialState: S, reducerMap: Record<string, (state: S, action: A) => S>, actionMap: AM) {
   // Create the reducer
   const reducer: Reducer<S, A> = (state = initialState, action) => {
     const handler = reducerMap[action.type];
@@ -204,7 +206,7 @@ export function createTypedStateSlice<
       const result: Record<string, unknown> = {};
       for (const key in actionMap) {
         const actionCreator = actionMap[key];
-        result[key] = (...args: unknown[]) => dispatch(actionCreator(...args));
+        result[key] = (...args: unknown[]) => dispatch(actionCreator(...args) as A);
       }
       return result as { [K in keyof AM]: (...args: Parameters<AM[K]>) => void };
     }, [dispatch]);
@@ -288,7 +290,7 @@ export function createAsyncReducer<S, P, R>(
     pending: createSimpleAction(PENDING),
     fulfilled: createAction<typeof FULFILLED, R>(FULFILLED),
     rejected: createAction<typeof REJECTED, Error>(REJECTED),
-    trigger: (payload: P) => async (dispatch: (action: Action) => void) => {
+    trigger: (payload: P) => async (dispatch: (action: Action<string>) => void) => {
       dispatch(actionCreators.pending());
       try {
         const result = await handler(payload);
@@ -312,23 +314,19 @@ export function createAsyncReducer<S, P, R>(
 
   type AsyncReducerState = S & AsyncState;
 
-  const reducer = createReducer<AsyncReducerState, Action>({
-    loading: false,
-    error: null,
-    data: null,
-  } as AsyncReducerState)
+  const reducer = createReducer<AsyncReducerState, PayloadAction<string, unknown>>()
     .addCase(PENDING, state => ({
       ...state,
       loading: true,
       error: null,
     }))
-    .addCase(FULFILLED, (state, action) => ({
+    .addCase(FULFILLED, (state, action: PayloadAction<typeof FULFILLED, R>) => ({
       ...state,
       loading: false,
       data: action.payload,
       error: null,
     }))
-    .addCase(REJECTED, (state, action) => ({
+    .addCase(REJECTED, (state, action: PayloadAction<typeof REJECTED, Error>) => ({
       ...state,
       loading: false,
       error: action.payload,

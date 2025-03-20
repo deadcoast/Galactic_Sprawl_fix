@@ -1,19 +1,21 @@
 /**
- * Resource Type Utilities
+ * @context: type-definitions, resource-system
+ * @description: Utility functions for working with resource types
+ * @file: src/types/resources/ResourceTypeUtils.ts
  *
  * This file provides utility functions for working with resource types.
  * It complements the StandardizedResourceTypes.ts file and helps with
  * common operations on resource types.
  */
 
-import { ResourceType } from './ResourceTypes';
+import { ResourceCategory, ResourceType, ResourceTypeInfo } from './ResourceTypes';
 
 /**
  * Gets the display name for a resource type
  * @param resourceType The resource type
  * @returns The display name
  */
-export function getResourceDisplayName(resourceType: ResourceType): ResourceType {
+export function getResourceDisplayName(resourceType: ResourceType): string {
   return ResourceTypeInfo[resourceType].displayName;
 }
 
@@ -22,7 +24,7 @@ export function getResourceDisplayName(resourceType: ResourceType): ResourceType
  * @param resourceType The resource type
  * @returns The description
  */
-export function getResourceDescription(resourceType: ResourceType): ResourceType {
+export function getResourceDescription(resourceType: ResourceType): string {
   return ResourceTypeInfo[resourceType].description;
 }
 
@@ -31,7 +33,7 @@ export function getResourceDescription(resourceType: ResourceType): ResourceType
  * @param resourceType The resource type
  * @returns The icon name
  */
-export function getResourceIcon(resourceType: ResourceType): ResourceType {
+export function getResourceIcon(resourceType: ResourceType): string {
   return ResourceTypeInfo[resourceType].icon;
 }
 
@@ -118,7 +120,7 @@ export function isSpecialResource(resourceType: ResourceType): boolean {
  * @param resourceType The resource type
  * @returns A color string (hex or CSS color)
  */
-export function getResourceTypeColor(resourceType: ResourceType): ResourceType {
+export function getResourceTypeColor(resourceType: ResourceType): string {
   // Define a color mapping for resource types
   const colorMap: Record<ResourceType, string> = {
     [ResourceType.MINERALS]: '#8B4513', // SaddleBrown
@@ -128,6 +130,8 @@ export function getResourceTypeColor(resourceType: ResourceType): ResourceType {
     [ResourceType.PLASMA]: '#FF1493', // DeepPink
     [ResourceType.GAS]: '#00FFFF', // Cyan
     [ResourceType.EXOTIC]: '#9932CC', // DarkOrchid
+    [ResourceType.ORGANIC]: '#228B22', // ForestGreen
+    [ResourceType.FOOD]: '#FFA500', // Orange
     [ResourceType.IRON]: '#A52A2A', // Brown
     [ResourceType.COPPER]: '#B87333', // Copper
     [ResourceType.TITANIUM]: '#C0C0C0', // Silver
@@ -148,7 +152,7 @@ export function getResourceTypeColor(resourceType: ResourceType): ResourceType {
  * @param resourceType The resource type
  * @returns A lighter color string (hex or CSS color)
  */
-export function getResourceTypeHighlightColor(resourceType: ResourceType): ResourceType {
+export function getResourceTypeHighlightColor(resourceType: ResourceType): string {
   // Define a highlight color mapping for resource types
   const highlightColorMap: Record<ResourceType, string> = {
     [ResourceType.MINERALS]: '#CD853F', // Peru (lighter brown)
@@ -158,6 +162,8 @@ export function getResourceTypeHighlightColor(resourceType: ResourceType): Resou
     [ResourceType.PLASMA]: '#FF69B4', // HotPink
     [ResourceType.GAS]: '#AFEEEE', // PaleTurquoise
     [ResourceType.EXOTIC]: '#BA55D3', // MediumOrchid
+    [ResourceType.ORGANIC]: '#66CD00', // LightForestGreen
+    [ResourceType.FOOD]: '#FFD700', // LightOrange
     [ResourceType.IRON]: '#CD5C5C', // IndianRed
     [ResourceType.COPPER]: '#DAA520', // GoldenRod
     [ResourceType.TITANIUM]: '#E0E0E0', // Lighter silver
@@ -178,7 +184,7 @@ export function getResourceTypeHighlightColor(resourceType: ResourceType): Resou
  * @param resourceType The resource type
  * @returns A darker color string (hex or CSS color)
  */
-export function getResourceTypeDarkColor(resourceType: ResourceType): ResourceType {
+export function getResourceTypeDarkColor(resourceType: ResourceType): string {
   // Define a dark color mapping for resource types
   const darkColorMap: Record<ResourceType, string> = {
     [ResourceType.MINERALS]: '#5C2E0E', // Darker brown
@@ -188,6 +194,8 @@ export function getResourceTypeDarkColor(resourceType: ResourceType): ResourceTy
     [ResourceType.PLASMA]: '#C71585', // MediumVioletRed
     [ResourceType.GAS]: '#008B8B', // DarkCyan
     [ResourceType.EXOTIC]: '#6A0DAD', // DarkerPurple
+    [ResourceType.ORGANIC]: '#006400', // DarkerGreen
+    [ResourceType.FOOD]: '#CD8500', // DarkOrange
     [ResourceType.IRON]: '#8B0000', // DarkRed
     [ResourceType.COPPER]: '#8B4513', // SaddleBrown
     [ResourceType.TITANIUM]: '#A9A9A9', // DarkGray
@@ -206,10 +214,9 @@ export function getResourceTypeDarkColor(resourceType: ResourceType): ResourceTy
 /**
  * Formats a resource amount for display
  * @param amount The resource amount
- * @param resourceType Optional resource type for specialized formatting
  * @returns Formatted string representation of the amount
  */
-export function formatResourceAmount(amount: number, resourceType?: ResourceType): ResourceType {
+export function formatResourceAmount(amount: number): string {
   // For large numbers, use abbreviations
   if (amount >= 1_000_000) {
     return `${(amount / 1_000_000).toFixed(1)}M`;

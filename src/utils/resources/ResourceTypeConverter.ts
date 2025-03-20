@@ -45,6 +45,33 @@ export function ensureStringResourceType(
 }
 
 /**
+ * Check if a value is a string resource type
+ */
+export function isStringResourceType(value: unknown): value is ResourceTypeString {
+  if (typeof value !== 'string') {
+    return false;
+  }
+
+  // Get all string values from the ResourceType enum
+  const resourceTypeValues = Object.keys(ResourceType)
+    .filter(key => isNaN(Number(key))) // Filter out numeric keys
+    .map(key => key as ResourceTypeString);
+
+  // Check if the string value is in the valid resource type strings
+  return resourceTypeValues.includes(value as ResourceTypeString);
+}
+
+/**
+ * Ensure a resource type is represented as an enum
+ */
+export function ensureEnumResourceType(type: ResourceType | ResourceTypeString): ResourceType {
+  if (typeof type !== 'string') {
+    return type as ResourceType;
+  }
+  return toEnumResourceType(type as ResourceTypeString);
+}
+
+/**
  * Default converter functions
  */
 export default {

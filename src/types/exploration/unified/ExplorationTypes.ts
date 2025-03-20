@@ -1,4 +1,6 @@
 /**
+ * @context: type-definitions, exploration-system
+ *
  * Unified Exploration Types
  *
  * This file contains all type definitions used across the exploration system.
@@ -694,60 +696,3 @@ export enum ExplorationEventType {
   MAP_INTERACTION = 'map_interaction',
   ERROR_OCCURRED = 'error_occurred',
 }
-
-// Export all types
-export type {
-  AnalysisResult,
-  Anomaly,
-  AnomalyComposition,
-  AsteroidBelt,
-  Coordinates,
-  Effect,
-  EnvironmentalCondition,
-  ExplorationActivity,
-  ExplorationContextType,
-  ExplorationEntity,
-  ExplorationEvent,
-  ExplorationResult,
-  ExplorationState,
-  FactionControl,
-  Finding,
-  Insight,
-  InvestigationStatus,
-  JumpPoint,
-  MapSelection,
-  MapViewport,
-  MapVisualSettings,
-  Moon,
-  Planet,
-  PotentialUse,
-  ResourceDeposit,
-  Reward,
-  Sector,
-  SpecialFeature,
-  StarSystem,
-  TradeRoute,
-  VisualData,
-};
-
-// Export all enums
-export {
-  AnalysisType,
-  AnomalyType,
-  DangerLevel,
-  DetailLevel,
-  Disposition,
-  EffectType,
-  EnvironmentalConditionType,
-  ExplorationActivityType,
-  ExplorationEventType,
-  ExplorationStatus,
-  FindingCategory,
-  InvestigationStage,
-  JumpPointStatus,
-  MapTheme,
-  PlanetType,
-  RewardType,
-  SpecialFeatureType,
-  StarType,
-};

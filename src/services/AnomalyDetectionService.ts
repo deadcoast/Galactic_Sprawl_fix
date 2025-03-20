@@ -22,8 +22,7 @@ export interface StatisticalThresholds {
   minSampleSize: number; // Minimum samples needed for statistical validity
 }
 
-class AnomalyDetectionServiceImpl extends AbstractBaseService {
-  private static instance: AnomalyDetectionServiceImpl;
+class AnomalyDetectionServiceImpl extends AbstractBaseService<AnomalyDetectionServiceImpl> {
   private dataPoints: DataPoint[] = [];
   private anomalyScores: Map<string, AnomalyScore> = new Map();
   private thresholds: StatisticalThresholds = {
@@ -32,20 +31,16 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService {
     minSampleSize: 30,
   };
 
-  private constructor() {
+  public constructor() {
     super('AnomalyDetectionService', '1.0.0');
-  }
-
-  public static getInstance(): AnomalyDetectionServiceImpl {
-    if (!AnomalyDetectionServiceImpl.instance) {
-      AnomalyDetectionServiceImpl.instance = new AnomalyDetectionServiceImpl();
-    }
-    return AnomalyDetectionServiceImpl.instance;
   }
 
   protected async onInitialize(): Promise<void> {
     // Initialize metrics
-    this.metadata?.metrics = {
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    this.metadata.metrics = {
       total_datapoints: 0,
       total_anomalies: 0,
       last_detection_run: 0,
@@ -63,9 +58,12 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService {
     this.dataPoints.push(...points);
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.total_datapoints = this.dataPoints.length;
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
   }
 
   public async detectAnomalies(
@@ -86,7 +84,10 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService {
       scores.forEach(score => this.anomalyScores.set(score.dataPointId, score));
 
       // Update metrics
-      const metrics = this.metadata?.metrics ?? {};
+      if (!this.metadata.metrics) {
+        this.metadata.metrics = {};
+      }
+      const metrics = this.metadata.metrics;
       metrics.total_anomalies = scores.filter(s => s.score > 0.7).length;
       metrics.last_detection_run = Date.now();
 
@@ -95,7 +96,7 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService {
         ? (metrics.average_detection_time + detectionTime) / 2
         : detectionTime;
 
-      this.metadata?.metrics = metrics;
+      this.metadata.metrics = metrics;
 
       return scores;
     } catch (error) {
@@ -163,7 +164,7 @@ class AnomalyDetectionServiceImpl extends AbstractBaseService {
 }
 
 // Export singleton instance
-export const anomalyDetectionService = AnomalyDetectionServiceImpl.getInstance();
+export const anomalyDetectionService = new AnomalyDetectionServiceImpl();
 
 // Export default for easier imports
 export default anomalyDetectionService;

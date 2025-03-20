@@ -6,6 +6,10 @@ import {
   ResourceType as StringResourceType,
 } from '../../types/resources/ResourceTypes';
 import {
+  FlowNode as StandardizedFlowNode,
+  FlowNodeType as StandardizedFlowNodeType,
+} from '../../types/resources/StandardizedResourceTypes';
+import {
   isStringResourceType,
   toStringResourceType,
 } from '../../utils/resources/ResourceTypeConverter';
@@ -73,6 +77,34 @@ export interface ResourceFlow {
 export interface FlowOptimizationResult {
   transfers: ResourceTransfer[];
   updatedConnections: FlowConnection[];
+  bottlenecks: string[];
+  underutilized: string[];
+  performanceMetrics?: {
+    executionTimeMs: number;
+    nodesProcessed: number;
+    connectionsProcessed: number;
+    transfersGenerated: number;
+  };
+}
+
+/**
+ * Interface for worker connection results
+ */
+interface WorkerConnectionResult {
+  id: string;
+  source: string;
+  target: string;
+  resourceType?: StringResourceType;
+  resourceTypes?: StringResourceType[];
+  maxRate?: number;
+  currentRate?: number;
+  priority?: number | { priority: number };
+  active?: boolean;
+}
+
+interface WorkerOptimizationResult {
+  transfers: ResourceTransfer[];
+  updatedConnections: WorkerConnectionResult[];
   bottlenecks: string[];
   underutilized: string[];
   performanceMetrics?: {
@@ -450,13 +482,13 @@ export class ResourceFlowSubsystem {
     }
 
     // Check if source produces this resource
-    if (!source.resources.includes(stringType)) {
+    if (!source.resources.includes(stringType as ResourceType)) {
       console.error(`Source node ${sourceId} does not produce ${stringType}`);
       return false;
     }
 
     // Check if target accepts this resource
-    if (!target.resources.includes(stringType)) {
+    if (!target.resources.includes(stringType as ResourceType)) {
       console.error(`Target node ${targetId} does not accept ${stringType}`);
       return false;
     }
@@ -469,11 +501,11 @@ export class ResourceFlowSubsystem {
       id: connectionId,
       source: sourceId,
       target: targetId,
-      resourceType: ResourceTypeType,
+      resourceType: stringType as StringResourceType,
       maxRate: rate,
       currentRate: 0,
       priority: {
-        type: stringType,
+        type: stringType as StringResourceType,
         priority: 1,
         consumers: [targetId],
       },
@@ -493,8 +525,8 @@ export class ResourceFlowSubsystem {
       ? (type as StringResourceType)
       : toStringResourceType(type as ResourceType);
 
-    this.resourceStates.set(stringType, state);
-    this.invalidateCache(stringType);
+    this.resourceStates.set(stringType as ResourceType, state);
+    this.invalidateCache(stringType as StringResourceType);
   }
 
   /**
@@ -506,7 +538,7 @@ export class ResourceFlowSubsystem {
       ? (type as StringResourceType)
       : toStringResourceType(type as ResourceType);
 
-    return this.resourceStates.get(stringType);
+    return this.resourceStates.get(stringType as ResourceType);
   }
 
   /**
@@ -562,27 +594,67 @@ export class ResourceFlowSubsystem {
         try {
           // Offload optimization to Web Worker
           const result = await this.workerUtil.optimizeFlows(
-            activeNodes,
-            activeConnections,
-            Object.fromEntries(this.resourceStates)
+            // Convert to the expected FlowNode type from StandardizedResourceTypes
+            activeNodes.map(node => {
+              // Create a Map from the string array for the resources property
+              const resourcesMap = new Map<ResourceType, number>();
+              node.resources.forEach(resource => {
+                resourcesMap.set(resource as unknown as ResourceType, 0);
+              });
+
+              // Cast to StandardizedFlowNode type
+              return {
+                id: node.id,
+                type: node.type as unknown as StandardizedFlowNodeType,
+                name: node.id, // Use ID as name since our internal nodes don't have names
+                capacity: 100, // Default values for required fields
+                currentLoad: 0,
+                efficiency: node.efficiency || 1.0,
+                status: node.active ? 'active' : 'inactive',
+                resources: resourcesMap,
+              } as StandardizedFlowNode;
+            }),
+            // Convert to the expected FlowConnection type
+            activeConnections.map(conn => ({
+              id: conn.id,
+              source: conn.source,
+              target: conn.target,
+              resourceTypes: [conn.resourceType as unknown as ResourceType],
+              resourceType: conn.resourceType as unknown as ResourceType,
+              maxRate: conn.maxRate,
+              currentRate: conn.currentRate,
+              active: conn.active,
+            })),
+            // Convert Map to expected parameter type
+            new Map(
+              Object.entries(Object.fromEntries(this.resourceStates)).map(([key, value]) => [
+                key as unknown as ResourceType,
+                value as ResourceState,
+              ])
+            )
           );
 
           // Apply the results from the worker
-          this.applyOptimizationResults(result);
+          this.applyOptimizationResults(this.convertWorkerResult(result));
 
           // Add execution time to performance metrics
-          result?.performanceMetrics = result?.performanceMetrics || {
-            executionTimeMs: 0,
-            nodesProcessed: activeNodes.length,
-            connectionsProcessed: activeConnections.length,
-            transfersGenerated: result?.transfers.length,
-          };
+          if (!result.performanceMetrics) {
+            result.performanceMetrics = {
+              executionTimeMs: 0,
+              nodesProcessed: activeNodes.length,
+              connectionsProcessed: activeConnections.length,
+              transfersGenerated: result.transfers?.length || 0,
+            };
+          }
 
-          result?.performanceMetrics.executionTimeMs = Date.now() - startTime;
+          if (result.performanceMetrics) {
+            result.performanceMetrics.executionTimeMs = Date.now() - startTime;
+          }
 
-          this.lastOptimizationResult = result;
+          const convertedResult = this.convertWorkerResult(result);
+          this.lastOptimizationResult = convertedResult;
           this.lastOptimizationTime = Date.now();
-          return result;
+          return convertedResult;
         } catch (error) {
           console.warn('Web Worker optimization failed, falling back to main thread:', error);
           // Fall back to main thread optimization
@@ -647,17 +719,23 @@ export class ResourceFlowSubsystem {
    * Apply optimization results
    */
   private applyOptimizationResults(result: FlowOptimizationResult): void {
+    if (!result) return;
+
     // Update connections with optimized rates
-    for (const connection of result?.updatedConnections) {
-      if (this.connections.has(connection.id)) {
-        this.connections.set(connection.id, connection);
+    if (result.updatedConnections) {
+      for (const connection of result.updatedConnections) {
+        if (this.connections.has(connection.id)) {
+          this.connections.set(connection.id, connection);
+        }
       }
     }
 
     // Process transfers
-    for (const transfer of result?.transfers) {
-      if (validateResourceTransfer(transfer)) {
-        this.addToTransferHistory(transfer);
+    if (result.transfers) {
+      for (const transfer of result.transfers) {
+        if (validateResourceTransfer(transfer)) {
+          this.addToTransferHistory(transfer);
+        }
       }
     }
   }
@@ -666,22 +744,21 @@ export class ResourceFlowSubsystem {
    * Process converters
    */
   private processConverters(converters: FlowNode[], activeConnections: FlowConnection[]): void {
-    // Process each converter
-    for (const converter of converters) {
-      if (converter.config?.type === 'advanced') {
-        this.processAdvancedConverter(converter, activeConnections);
-      } else {
-        // Basic converter processing
-      }
-    }
+    // Process each converter node
+    converters.forEach(converter => {
+      this.processAdvancedConverter(converter, activeConnections);
+    });
   }
 
   /**
    * Process an advanced converter
    */
-  private processAdvancedConverter(converter: FlowNode, activeConnections: FlowConnection[]): void {
-    // This would implement advanced converter logic
-    // For now, we'll leave it as a placeholder
+  private processAdvancedConverter(
+    converter: FlowNode,
+    _activeConnections: FlowConnection[]
+  ): void {
+    // Implementation of advanced converter logic will go here
+    console.warn(`Processing advanced converter: ${converter.id}`);
   }
 
   /**
@@ -927,24 +1004,37 @@ export class ResourceFlowSubsystem {
 
   // Module event handlers
   private handleModuleCreated = (event: unknown): void => {
-    const { moduleId, moduleType, resources } = event;
+    // Type guard to ensure the event has the expected properties
+    if (!event || typeof event !== 'object') return;
+
+    const eventData = event as {
+      moduleId?: string;
+      moduleType?: string;
+      resources?: StringResourceType[];
+    };
+
+    if (!eventData.moduleId || !eventData.moduleType) return;
 
     // Determine node type based on module type
     let nodeType: FlowNodeType = 'consumer';
-    if (moduleType === 'producer' || moduleType === 'mining') {
+    if (eventData.moduleType === 'producer' || eventData.moduleType === 'mining') {
       nodeType = 'producer';
-    } else if (moduleType === 'storage') {
+    } else if (eventData.moduleType === 'storage') {
       nodeType = 'storage';
-    } else if (moduleType === 'converter') {
+    } else if (eventData.moduleType === 'converter') {
       nodeType = 'converter';
     }
 
     // Create and register node
     const node: FlowNode = {
-      id: moduleId,
+      id: eventData.moduleId,
       type: nodeType,
-      resources: resources ?? [],
-      priority: { type: resources?.[0] || ResourceType.ENERGY, priority: 1, consumers: [] },
+      resources: eventData.resources ?? [],
+      priority: {
+        type: eventData.resources?.[0] || ResourceType.ENERGY,
+        priority: 1,
+        consumers: [],
+      },
       active: true,
     };
 
@@ -952,27 +1042,39 @@ export class ResourceFlowSubsystem {
   };
 
   private handleModuleUpdated = (event: unknown): void => {
-    const { moduleId, changes } = event;
+    // Type guard to ensure the event has the expected properties
+    if (!event || typeof event !== 'object') return;
+
+    const eventData = event as {
+      moduleId?: string;
+      changes?: {
+        resources?: StringResourceType[];
+        active?: boolean;
+        efficiency?: number;
+      };
+    };
+
+    if (!eventData.moduleId || !eventData.changes) return;
 
     // Get existing node
-    const node = this.nodes.get(moduleId);
+    const node = this.nodes.get(eventData.moduleId);
     if (!node) return;
 
     // Apply changes
-    if (changes.resources) {
-      node.resources = changes.resources;
+    if (eventData.changes.resources) {
+      node.resources = eventData.changes.resources;
     }
 
-    if (changes.active !== undefined) {
-      node.active = changes.active;
+    if (eventData.changes.active !== undefined) {
+      node.active = eventData.changes.active;
     }
 
-    if (changes.efficiency !== undefined) {
-      node.efficiency = changes.efficiency;
+    if (eventData.changes.efficiency !== undefined) {
+      node.efficiency = eventData.changes.efficiency;
     }
 
     // Update node
-    this.nodes.set(moduleId, node);
+    this.nodes.set(eventData.moduleId, node);
 
     // Invalidate cache for affected resources
     for (const resource of node.resources) {
@@ -981,26 +1083,85 @@ export class ResourceFlowSubsystem {
   };
 
   private handleModuleDestroyed = (event: unknown): void => {
-    const { moduleId } = event;
-    this.unregisterNode(moduleId);
+    // Type guard to ensure the event has the expected properties
+    if (!event || typeof event !== 'object') return;
+
+    const eventData = event as { moduleId?: string };
+    if (!eventData.moduleId) return;
+
+    this.unregisterNode(eventData.moduleId);
   };
 
   private handleModuleStateChanged = (event: unknown): void => {
-    const { moduleId, active } = event;
+    // Type guard to ensure the event has the expected properties
+    if (!event || typeof event !== 'object') return;
+
+    const eventData = event as { moduleId?: string; active?: boolean };
+    if (!eventData.moduleId || eventData.active === undefined) return;
 
     // Get existing node
-    const node = this.nodes.get(moduleId);
+    const node = this.nodes.get(eventData.moduleId);
     if (!node) return;
 
     // Update active state
-    node.active = active;
+    node.active = eventData.active;
 
     // Update node
-    this.nodes.set(moduleId, node);
+    this.nodes.set(eventData.moduleId, node);
 
     // Invalidate cache for affected resources
     for (const resource of node.resources) {
       this.invalidateCache(resource);
     }
   };
+
+  /**
+   * Convert worker result to the format expected by the subsystem
+   */
+  private convertWorkerResult(result: WorkerOptimizationResult): FlowOptimizationResult {
+    if (!result) {
+      return {
+        transfers: [],
+        updatedConnections: [],
+        bottlenecks: [],
+        underutilized: [],
+      };
+    }
+
+    // Convert the connections to our internal format
+    const updatedConnections =
+      result.updatedConnections?.map((conn: WorkerConnectionResult) => {
+        return {
+          id: conn.id,
+          source: conn.source,
+          target: conn.target,
+          resourceType:
+            conn.resourceType ||
+            (conn.resourceTypes && conn.resourceTypes[0]) ||
+            ResourceType.ENERGY,
+          maxRate: conn.maxRate || 0,
+          currentRate: conn.currentRate || 0,
+          priority: {
+            type:
+              conn.resourceType ||
+              (conn.resourceTypes && conn.resourceTypes[0]) ||
+              ResourceType.ENERGY,
+            priority:
+              typeof conn.priority === 'number'
+                ? conn.priority
+                : (conn.priority as { priority: number })?.priority || 1,
+            consumers: [conn.target],
+          },
+          active: conn.active !== undefined ? conn.active : true,
+        } as FlowConnection;
+      }) || [];
+
+    return {
+      transfers: result.transfers || [],
+      updatedConnections,
+      bottlenecks: result.bottlenecks || [],
+      underutilized: result.underutilized || [],
+      performanceMetrics: result.performanceMetrics,
+    };
+  }
 }

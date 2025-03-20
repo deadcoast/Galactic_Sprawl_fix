@@ -8,6 +8,11 @@
 import * as d3 from 'd3';
 import { d3Accessors, SimulationNodeDatum } from '../../types/visualizations/D3Types';
 
+// Create a common interface for a D3 force that has an 'on' method
+interface ForceWithOnMethod {
+  on(typenames: string, listener: null | (() => void)): unknown;
+}
+
 /**
  * Types of performance measurements
  */
@@ -171,15 +176,22 @@ export class D3Profiler {
   }
 
   /**
+   * Get the bottleneck threshold
+   */
+  getBottleneckThreshold(): number {
+    return this.bottleneckThreshold;
+  }
+
+  /**
    * Generate optimization recommendations based on the profile
    *
    * @param bottlenecks The identified bottlenecks
-   * @param totalDurationMs Total duration of all measurements
+   * @param _totalDurationMs Total duration of all measurements
    * @returns Array of recommendation strings
    */
   private generateRecommendations(
     bottlenecks: PerformanceMeasurement[],
-    totalDurationMs: number
+    _totalDurationMs: number
   ): string[] {
     const recommendations: string[] = [];
 
@@ -251,7 +263,7 @@ export class D3Profiler {
  */
 export class ForceSimulationProfiler {
   private profiler: D3Profiler;
-  private originalTick: (...args: unknown[]) => unknown | null = null;
+  private originalTick: ((...args: unknown[]) => unknown) | null = null;
   private simulation: d3.Simulation<d3.SimulationNodeDatum, undefined> | null = null;
   private tickMeasurements: PerformanceMeasurement[] = [];
   private forceMeasurements: Record<string, PerformanceMeasurement[]> = {};
@@ -267,25 +279,27 @@ export class ForceSimulationProfiler {
    */
   attachToSimulation(simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>): void {
     this.simulation = simulation;
-    this.originalTick = simulation.tick;
+    this.originalTick = simulation.tick as (...args: unknown[]) => unknown;
 
     // Wrap the tick function to measure performance
     const originalTick = this.originalTick;
-    const profiler = this;
+    // Store the profiler instance for use in the customTick function
+    const profilerInstance = this.profiler;
+    const tickMeasurements = this.tickMeasurements;
 
-    // Need to use a proper type that matches D3's expected return type
-    simulation.tick = function customTick() {
+    // Define a function that returns a simulation
+    const customTick = function (this: d3.Simulation<d3.SimulationNodeDatum, undefined>) {
       const startTime = performance.now();
       // Call original tick in the context of the simulation
-      const result = originalTick?.apply(simulation);
+      originalTick?.apply(simulation, []);
       const endTime = performance.now();
 
-      profiler.tickMeasurements.push({
+      tickMeasurements.push({
         type: ProfilerMeasurementType.SIMULATION_TICK,
         name: 'Simulation Tick',
         durationMs: endTime - startTime,
         operationCount: simulation.nodes().length,
-        isBottleneck: endTime - startTime > (profiler.profiler as unknown).bottleneckThreshold,
+        isBottleneck: endTime - startTime > profilerInstance.getBottleneckThreshold(),
         metadata: {
           nodeCount: simulation.nodes().length,
           alpha: simulation.alpha(),
@@ -293,30 +307,36 @@ export class ForceSimulationProfiler {
         timestamp: new Date(),
       });
 
-      return result;
+      return this;
     };
 
+    // Assign the custom tick function
+    simulation.tick = customTick;
+
     // Wrap each force to measure performance
-    // Use proper typings for on() method (which is available in D3 force objects)
+    // Use proper typings for on() method
     const linkForce = simulation.force('link');
     const chargeForce = simulation.force('charge');
     const centerForce = simulation.force('center');
     const collisionForce = simulation.force('collision');
 
     if (linkForce && 'on' in linkForce) {
-      (linkForce as unknown).on('tick.profile', this.measureForce('link'));
+      (linkForce as unknown as ForceWithOnMethod).on('tick.profile', this.measureForce('link'));
     }
 
     if (chargeForce && 'on' in chargeForce) {
-      (chargeForce as unknown).on('tick.profile', this.measureForce('charge'));
+      (chargeForce as unknown as ForceWithOnMethod).on('tick.profile', this.measureForce('charge'));
     }
 
     if (centerForce && 'on' in centerForce) {
-      (centerForce as unknown).on('tick.profile', this.measureForce('center'));
+      (centerForce as unknown as ForceWithOnMethod).on('tick.profile', this.measureForce('center'));
     }
 
     if (collisionForce && 'on' in collisionForce) {
-      (collisionForce as unknown).on('tick.profile', this.measureForce('collision'));
+      (collisionForce as unknown as ForceWithOnMethod).on(
+        'tick.profile',
+        this.measureForce('collision')
+      );
     }
   }
 
@@ -341,7 +361,7 @@ export class ForceSimulationProfiler {
         name: `${forceName} Force Calculation`,
         durationMs: endTime - startTime,
         operationCount: this.simulation?.nodes().length ?? 0,
-        isBottleneck: endTime - startTime > (this.profiler as unknown).bottleneckThreshold,
+        isBottleneck: endTime - startTime > this.profiler.getBottleneckThreshold(),
         metadata: {
           forceName,
           nodeCount: this.simulation?.nodes().length ?? 0,
@@ -359,7 +379,10 @@ export class ForceSimulationProfiler {
     if (!this.simulation || !this.originalTick) return;
 
     // Restore original tick function
-    this.simulation.tick = this.originalTick as unknown;
+    this.simulation.tick = this.originalTick as d3.Simulation<
+      d3.SimulationNodeDatum,
+      undefined
+    >['tick'];
 
     // Remove event listeners from forces
     const linkForce = this.simulation.force('link');
@@ -368,19 +391,19 @@ export class ForceSimulationProfiler {
     const collisionForce = this.simulation.force('collision');
 
     if (linkForce && 'on' in linkForce) {
-      (linkForce as unknown).on('tick.profile', null);
+      (linkForce as unknown as ForceWithOnMethod).on('tick.profile', null);
     }
 
     if (chargeForce && 'on' in chargeForce) {
-      (chargeForce as unknown).on('tick.profile', null);
+      (chargeForce as unknown as ForceWithOnMethod).on('tick.profile', null);
     }
 
     if (centerForce && 'on' in centerForce) {
-      (centerForce as unknown).on('tick.profile', null);
+      (centerForce as unknown as ForceWithOnMethod).on('tick.profile', null);
     }
 
     if (collisionForce && 'on' in collisionForce) {
-      (collisionForce as unknown).on('tick.profile', null);
+      (collisionForce as unknown as ForceWithOnMethod).on('tick.profile', null);
     }
 
     this.simulation = null;
@@ -405,7 +428,7 @@ export class ForceSimulationProfiler {
 
     const bottlenecks = allMeasurements.filter(
       measurement =>
-        measurement.durationMs > (this.profiler as unknown).bottleneckThreshold ||
+        measurement.durationMs > this.profiler.getBottleneckThreshold() ||
         measurement.durationMs / totalDurationMs > 0.1 // >10% of total time
     );
 
@@ -536,7 +559,7 @@ export function profileCoordinateAccess(
         for (const node of nodes) {
           const x = node.x ?? 0;
           const y = node.y ?? 0;
-          const transform = `translate(${x}, ${y})`;
+          const _transform = `translate(${x}, ${y})`;
         }
       }
     },
@@ -544,7 +567,7 @@ export function profileCoordinateAccess(
 
   // Profile type-safe accessor functions
   profiler.measureSection({
-    name: 'Type-Safe Accessor (...args: unknown[]) => unknowns',
+    name: 'Type-Safe Accessor Functions',
     type: ProfilerMeasurementType.COORDINATE_ACCESS,
     operationCount: nodes.length * iterations,
     fn: () => {
@@ -552,7 +575,7 @@ export function profileCoordinateAccess(
         for (const node of nodes) {
           const x = d3Accessors.getX(node);
           const y = d3Accessors.getY(node);
-          const transform = `translate(${x}, ${y})`;
+          const _transform = `translate(${x}, ${y})`;
         }
       }
     },
@@ -599,9 +622,18 @@ export function profileDOMOperations(
         .data(nodes)
         .enter()
         .append('circle')
-        .attr('cx', d => (d as unknown).x)
-        .attr('cy', d => (d as unknown).y)
-        .attr('r', d => (d as unknown).value / 10)
+        .attr('cx', d => {
+          const node = d as { x: number };
+          return node.x;
+        })
+        .attr('cy', d => {
+          const node = d as { y: number };
+          return node.y;
+        })
+        .attr('r', d => {
+          const node = d as { value: number };
+          return node.value / 10;
+        })
         .attr('fill', 'steelblue');
     },
   });
@@ -614,9 +646,18 @@ export function profileDOMOperations(
     fn: () => {
       container
         .selectAll('circle')
-        .attr('cx', d => (d as unknown).x + Math.random() * 10 - 5)
-        .attr('cy', d => (d as unknown).y + Math.random() * 10 - 5)
-        .attr('r', d => (d as unknown).value / 10 + Math.random() * 2);
+        .attr('cx', d => {
+          const node = d as { x: number };
+          return node.x + Math.random() * 10 - 5;
+        })
+        .attr('cy', d => {
+          const node = d as { y: number };
+          return node.y + Math.random() * 10 - 5;
+        })
+        .attr('r', d => {
+          const node = d as { value: number };
+          return node.value / 10 + Math.random() * 2;
+        });
     },
   });
 
@@ -630,8 +671,14 @@ export function profileDOMOperations(
         .selectAll('circle')
         .transition()
         .duration(500)
-        .attr('cx', d => (d as unknown).x + Math.random() * 20 - 10)
-        .attr('cy', d => (d as unknown).y + Math.random() * 20 - 10);
+        .attr('cx', d => {
+          const node = d as { x: number };
+          return node.x + Math.random() * 20 - 10;
+        })
+        .attr('cy', d => {
+          const node = d as { y: number };
+          return node.y + Math.random() * 20 - 10;
+        });
     },
   });
 
@@ -667,13 +714,13 @@ export const memoizedD3Accessors = {
     }
 
     // Check cache first
-    if (memoizedD3Accessors.xCache.has(node)) {
-      return memoizedD3Accessors.xCache.get(node) ?? 0;
+    if (memoizedD3Accessors.xCache.has(node as object)) {
+      return memoizedD3Accessors.xCache.get(node as object) ?? 0;
     }
 
     // Calculate and cache result
     const result = d3Accessors.getX(node);
-    memoizedD3Accessors.xCache.set(node, result);
+    memoizedD3Accessors.xCache.set(node as object, result);
     return result;
   },
 
@@ -686,13 +733,13 @@ export const memoizedD3Accessors = {
     }
 
     // Check cache first
-    if (memoizedD3Accessors.yCache.has(node)) {
-      return memoizedD3Accessors.yCache.get(node) ?? 0;
+    if (memoizedD3Accessors.yCache.has(node as object)) {
+      return memoizedD3Accessors.yCache.get(node as object) ?? 0;
     }
 
     // Calculate and cache result
     const result = d3Accessors.getY(node);
-    memoizedD3Accessors.yCache.set(node, result);
+    memoizedD3Accessors.yCache.set(node as object, result);
     return result;
   },
 

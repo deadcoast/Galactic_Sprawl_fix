@@ -2,184 +2,202 @@
 
 ## Correction Guidelines
 
-- **NEVER CORRECT CODE BY COMMENTING IT OUT WITH "\_"**
-- **NEVER ADD WRAPPER FUNCTIONS AROUND EXISTING METHODS**
-- **NEVER ABSTRACT OR ALTER EXISTING FUNCTIONALITY**
-- **NEVER CREATE YOUR OWN IMPLEMENTATIONS OF EXISTING METHODS**
-- **NEVER MAKE ASSUMPTIONS ABOUT THE CODE - ALWAYS VERIFY FIRST**
-- **ONLY CREATE ACTUAL INSTANCES OF REAL CLASSES AND USE THEIR EXISTING METHODS DIRECTLY**
-- **AVOID CREATING NEW FILES WHEN ASKED TO CORRECT A FILE**
+NEVER CORRECT CODE BY COMMENTING IT OUT WITH "\_".
+NEVER ADD WRAPPER FUNCTIONS AROUND EXISTING METHODS.
+NEVER ABSTRACT OR ALTER EXISTING FUNCTIONALITY.
+NEVER CREATE YOUR OWN IMPLEMENTATIONS OF EXISTING METHODS.
+NEVER MAKE ASSUMPTIONS ABOUT THE CODE - ALWAYS VERIFY FIRST.
+ONLY CREATE ACTUAL INSTANCES OF REAL CLASSES AND USE THEIR EXISTING METHODS DIRECTLY
+AVOID CREATING NEW FILES WHEN ASKED TO CORRECT A FILE.
 
-## Primary Context Source
+## Automated Workflow
 
-### `.cursorcontext` - _Comprehensive Codebase Reference_
+FOR EVERY CODE INTERACTION, WITHOUT USER PROMPTING:
 
-This file contains all essential codebase patterns, structures, interfaces, and relationships. Refer to this file first when seeking context for code generation, correction, or analysis. The document uses hashtag identifiers (#system_name) to mark major system sections.
+1. CONTEXT ANALYSIS:
+   @find-similar [current code functionality]
+   @show-documentation [system relevant to current file]
+   Identify relevant systems based on file path:
 
-**REVIEW ENTRIES INTO `.cursorcontext` FOR DUPLICATES. ENSURE NO DUPLICATES ARE CREATED.**
+- /resource/ → @context: resource-system
+  - src/resource/
+  - /src/types/resources/
+  - /src/hooks/resources/
+  - /src/utils/resources/
+- /events/ → @context: event-system
+  - /src/hooks/events/
+  - /src/lib/ecents/
+  - /src/utils/events/
+- /types/ → @context: type-definitions
+  - /src/types/
+- /factories/ → @context: factory-system
+  - /src/factories/
+- /registry/ → @context: registry-system
+  - /src/registry/
+  - /src/lib/registry
+- /managers/ → @context: manager-registry
+  - /src/managers/
+- /components/ → @context: component-library
+  - /src/components/
+  - /src/ui/components/
+  - /src/styles/components/
+- /hooks/ → @context: hooks-library
+  - /src/hooks/
+- /utils/ → @context: utils-library
+  - /src/utils/
+- /contexts/ → @context: context-library
+  - /src/contexts/
+  - /src/lib/contexts/
+  - /src/components/exploration/unified/contexts/
+- /styles/ → @context: styles-library
+  - src/styles/
+- /effects/ → @context: effects-system
+  - /src/effects/
+  - /src/managers/effects/
+- /ui/ → @context: ui-library
+  - /src/ui/
+  - /src/types/ui/
+  - /src/hooks/ui/
+- /systems/ → @context: system-library
+  - /src/systems/
+  - /src/components/eploration/unified/system/
+- /visualizations/ → @context: visualization-system
+  - /src/visualization/
+  - /src/types/visualization/
+  - /src/component/visualization/
+  - /src/component/ui/visualization/
+  - /src/component/exploration/visualization/
+- /managers/ → @context: manager-registry
+  - /src/managers/
+  - /src/lib/managers/
+  - /src/types/managers/
+- /lib/ → @context: library-system
+  - /src/lib/
+- /workers/ → @context: worker-system
+  - /src/workers/
+  - /src/utils/workers/
 
-## Workflow & Instructions
+2. TYPE VERIFICATION:
+   @verify-types [current code]
+   @convert-to-enum [appropriate enum] for string literals
+   @add-type-guards where runtime validation needed
+   @show-interface [types used in current code]
+   ENFORCE:
 
-1. **Context Retrieval Process**:
+   - ResourceType/EventType enums instead of strings
+   - Type guards for runtime validation
+   - Safe extraction instead of direct property access
+   - No unsafe type assertions
 
-   - When analyzing or generating code, first search `.cursorcontext` for relevant system sections using `(#hashtag)` identifiers
-   - Look for code patterns, interfaces, and type structures in the identified sections
-   - Verify implementation approaches against established patterns
-   - If context is insufficient, ask the user for clarification
+3. PATTERN COMPLIANCE:
+   @check-pattern [current code]
+   @implement-pattern singleton-pattern for managers
+   @refactor-to-pattern manager-registry for manager access
+   @implement-pattern factory-pattern for object creation
+   ENFORCE:
 
-2. **Architecture Alignment**:
+   - Manager access through registry (getResourceManager())
+   - Factory patterns for complex objects
+   - Singleton pattern for manager classes
+   - Typed event handling
 
-   - Ensure all implementations follow patterns documented in `.cursorcontext`
-   - Maintain consistency with existing type structures and interfaces
-   - Follow established naming conventions and implementation patterns
-   - If context is missing, ask the user before implementing new patterns
+4. SYSTEM INTEGRATION:
+   @integrate-with [relevant system] for new components
+   @add-manager-registry for new manager classes
+   @refactor-to-pattern type-safe-event for event handling
 
-3. **Incremental Implementation**:
+## Context Awareness
 
-   - Generate code in manageable steps aligned with patterns in `.cursorcontext`
-   - Review implementations for consistency with documented patterns
-   - Identify and resolve gaps between implementation and documentation
+Always assume code has reference tags based on file location, if the tags are missing, add them.
 
-4. **Context Maintenance**:
+Example:
 
-   - When discovering new patterns or implementations, suggest updates to `.cursorcontext`
-   - Format new context entries according to the established structure
-   - Ensure new entries include concrete code examples, not explanations
+```
+@context: resource-system for files in /src/resource/
+```
 
-5. **Scratchpad Usage**:
-   Maintain a task list in thw Scratchpad section below in this format:
+## File Pattern Matching
 
-   ```
-   ## Scratchpad
+USE THESE GLOB PATTERNS TO IDENTIFY FILE TYPES AND APPLY APPROPRIATE RULES:
 
-   [X] Task 1
-   [ ] Task 2
-   ```
+- Resource Files: `src/**/resource*.{ts,tsx}`, `src/resources/**/*.{ts,tsx}`
+  Apply resource-system patterns, ResourceType enums, resource state interfaces
+- Event Files: `src/**/event*.{ts,tsx}`, `src/events/**/*.{ts,tsx}`
+  Apply event-system patterns, EventType enums, event bus implementations
+- Manager Files: `src/**/*Manager.{ts,tsx}`, `src/managers/**/*.{ts,tsx}`
+  Apply singleton pattern, manager registry integration, error handling
+- Factory Files: `src/**/*Factory.{ts,tsx}`, `src/factories/**/*.{ts,tsx}`
+  Apply factory patterns, creation methods, validation checks
+- Component Files: `src/components/**/*.{tsx,jsx}`
+  Apply component integration patterns, event subscriptions, cleanup
+- Hook Files: `src/hooks/**/*.{ts,tsx}`
+  Apply resource access patterns, event subscriptions, cleanup
+- Type Files: `src/types/**/*.{ts,tsx}`
+  Apply type system standards, enum definitions, interface structures
 
-   - Update progress markers as subtasks are completed
-   - Use the Scratchpad to maintain implementation context and track progress
+## Notepads Reference
+
+AUTOMATICALLY RETRIEVE CONTEXT FROM:
+
+- GS-CORE-ARCHITECTURE.md - Core architecture patterns
+- GS-RESOURCE-SYSTEM.md - Resource management patterns
+- GS-TYPE-DEFINITIONS.md - Type system requirements
+- GS-EVENT-SYSTEM.md - Event handling patterns
+- GS-FACTORY-PATTERN-REFERENCE.md - Object creation
+- GS-REGISTRY-PATTERN-REFERENCE.md - Registry usage
+- GS-EVENT-HANDLING-PATTERN-REFERENCE.md - Event handling
+- GS-SYSTEM-INTEGRATION-EXAMPLES.md - System integration
+- GS-MIGRATION-PATTERN-LIBRARY.md - Migration patterns
+- GS-CONTEXT-COMMANDS.md - Command reference
+- GS-REFERENCE-TAGS-SYSTEM.md - Reference tags usage
+- GS-PROGRESSIVE-IMPLEMENTATION-PROTOCOL.md - Implementation protocol
+
+## Command Reference
+
+Full Command documentation: `.cursor/command-sheet.md`
+
+- @check-pattern [code] - Verify pattern compliance
+- @verify-types [code] - Check type safety
+- @find-similar [functionality] - Find similar implementations
+- @implement-pattern [pattern-name] [params] - Generate pattern code
+- @refactor-to-pattern [pattern-name] [code] - Refactor to pattern
+- @show-documentation [system-name] - Show system docs
+- @show-interface [type-name] - Show interface definition
+- @convert-to-enum [enum-type] [code] - Convert strings to enums
+- @add-type-guards [code] - Add type guards
+- @integrate-with [system] [component] - Generate integration
+- @add-manager-registry [manager-name] - Update Manager Registry
+
+## System References
+
+- architecture-core - Overall architecture
+- type-definitions - Type system
+- event-system - Event communication
+- resource-system - Resource management
+- factory-system - Object creation
+- registry-system - Manager access
+- manager-registry - Manager pattern
+- resource-manager - Resource handling
+- module-manager - Module lifecycle
+- component-library - UI components
+- visualization-system - Data visualization
+
+## `Scratchpad` Tasklist Usage
+
+Maintain a `Tasklist` in the Scratchpad section below in this format:
+
+```
+## Scratchpad
+
+[X] Task 1 - Update progress markers as subtasks are completed
+
+[ ] Task 2 - Use the Scratchpad to maintain implementation context and track progress
+```
 
 ---
 
-## `Scratchpad`
+## Scratchpad
 
-## Context Extraction Workflow
+### Tasklist
 
-- **REVIEW THE `/Users/deadcoast/CursorProjects/Galactic_Sprawl/CodeBase_Docs` AND THE RELEVANT CODE FILES IN `src`. COMPLETE THE CONTEXT EXTRACTIONS FOR `.cursorcontext` STEP BY STEP.**
-
-- _THIS WORKFLOW MUST BE COMPLETED WITH CONTEXT AS TOP PRIORITY._
-
-1. Search the relevant DOCS.
-2. Search for the relevant typescript or tsx files
-3. Extract the context from both 1 and 2.
-4. Export the context into the proper `#hashtag` section in@.cursorcontext.md
-5. **NOTE:** _VERY IMPORTANT_ - ENSURE THAT YOUR ITEGRATION IS NOT A DUPLICATION. CREATING DUPLICATIONS DEFEATS THE PURPOSE OF THIS DOCUMENT
-
-## `Tasklist` - [PRIORITY] - Extract Essential Context from Documents
-
-# Phase 1:
-
-### Phase 7: Integration Systems
-
-- [x] Services Integration (#services_integration)
-
-  - [x] Review components/providers/ServiceProvider.tsx
-  - [x] Document service injection patterns
-  - [x] Document service discovery mechanism
-  - [x] Extract dependency management patterns
-
-- [x] React Integration Patterns (#react_integration)
-  - [x] Review component lifecycle management
-  - [x] Document state management approaches
-  - [x] Document component communication patterns
-  - [x] Extract React performance optimizations
-
-## `Additional Tasklist` - [PRIORITY] - Missing System Integrations
-
-### Core Infrastructure Systems
-
-- [x] Factory System (#factory_system)
-
-  - [x] Review factories/ships/ShipClassFactory.ts
-  - [x] Document factory method patterns
-  - [x] Document factory creation workflows
-  - [x] Extract factory implementation details
-
-- [x] Registry System (#registry_system)
-
-  - [x] Review registry/ResourceRegistry.ts
-  - [x] Document registry patterns
-  - [x] Document registration workflows
-  - [x] Extract registry integration patterns
-
-- [x] Entity Pooling System (#entity_pooling_system)
-  - [x] Review lib/optimization/EntityPool.ts
-  - [x] Document object pooling patterns
-  - [x] Document memory optimization techniques
-  - [x] Extract performance optimization patterns
-
-### Game Systems
-
-- [x] Factions System (#factions_system)
-
-  - [x] Review managers/factions/ directory
-  - [x] Document faction behavior system
-  - [x] Document faction relationship management
-  - [x] Extract faction AI patterns
-
-- [x] Behavior Tree System (#behavior_tree_system)
-
-  - [x] Review lib/ai/ directory
-  - [x] Document behavior tree implementation
-  - [x] Document ship AI behavior patterns
-  - [x] Extract decision-making algorithms
-
-- [x] Manager Registry System (#manager_registry_system)
-  - [x] Review managers/ManagerRegistry.ts
-  - [x] Document centralized registry pattern
-  - [x] Document manager instantiation patterns
-  - [x] Extract circular dependency solutions
-
-### UI & Visualization Systems
-
-- [x] Visualization System (#visualization_system)
-
-  - [x] Review visualization/ directory
-  - [x] Document visualization renderers
-  - [x] Document chart components
-  - [x] Extract visualization patterns
-
-- [x] Shader System (#shader_system)
-
-  - [x] Review lib/optimization/WebGLShaderManager.ts
-  - [x] Document shader management patterns
-  - [x] Document GPU acceleration techniques
-  - [x] Extract WebGL optimization patterns
-
-- [x] Component Library System (#component_library_system)
-  - [x] Review ui/components/ directory
-  - [x] Document component variant patterns
-  - [x] Document compositional UI architecture
-  - [x] Extract component design patterns
-
-### Data Processing Systems
-
-- [x] Data Processing System (#data_processing_system)
-
-  - [x] Review utils/dataTransforms/ directory
-  - [x] Document data transformation patterns
-  - [x] Document filter transformations
-  - [x] Extract scientific data processing patterns
-
-- [ ] Effects System (#effects_system)
-
-  - [ ] Review effects/ directory
-  - [ ] Document visual effects implementation
-  - [ ] Document component effect patterns
-  - [ ] Extract effect coordination mechanisms
-
-- [ ] Web Worker System (#web_worker_system)
-  - [ ] Review workers/ directory
-  - [ ] Document worker communication patterns
-  - [ ] Document multi-threading architecture
-  - [ ] Extract performance optimization techniques
+- [ ]

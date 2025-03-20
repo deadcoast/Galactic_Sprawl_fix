@@ -1,12 +1,35 @@
 /**
- * D3 Selection Types
+ * @context: type-definitions, visualization-system
+ * @description: Type-safe D3 selection utilities
+ * @file: src/types/visualizations/D3SelectionTypes.ts
  *
  * This module provides type-safe wrappers and utilities for D3 selections.
  * It ensures proper typing for selection operations, data binding, and DOM manipulations
  * while maintaining compatibility with D3's selection API.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// D3's complex typings require using 'any' in some places to bridge the gap
+// between D3's native API and our type-safe wrappers
+
 import * as d3 from 'd3';
+
+// Define a local EasingFn type since d3 doesn't export it directly
+type EasingFn = (normalizedTime: number) => number;
+
+/**
+ * Type definitions for D3 function value parameters
+ */
+type D3ValueFn<GElement, Datum, Result> = (
+  this: GElement,
+  datum: Datum,
+  index: number,
+  groups: GElement[] | d3.ArrayLike<GElement>
+) => Result;
+
+// This type is not currently used but kept for future reference
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type D3KeyFn<Datum> = (datum: Datum, index: number, groups: Datum[]) => string;
 
 /**
  * Type-safe selection creator for SVG elements
@@ -36,12 +59,10 @@ export function selectGroup(
  * Type-safe selection creator for any SVG element
  *
  * @param selector CSS selector string
- * @param elementType Type of SVG element to select
  * @returns A properly typed D3 selection
  */
 export function selectSvgElement<E extends SVGElement>(
-  selector: string,
-  elementType: new () => E
+  selector: string
 ): d3.Selection<E, unknown, HTMLElement, unknown> {
   return d3.select<E, unknown>(selector);
 }
@@ -50,12 +71,10 @@ export function selectSvgElement<E extends SVGElement>(
  * Type-safe selection creator for HTML elements
  *
  * @param selector CSS selector string
- * @param elementType Type of HTML element to select
  * @returns A properly typed D3 selection
  */
 export function selectHtmlElement<E extends HTMLElement>(
-  selector: string,
-  elementType: new () => E
+  selector: string
 ): d3.Selection<E, unknown, HTMLElement, unknown> {
   return d3.select<E, unknown>(selector);
 }
@@ -88,12 +107,10 @@ export function selectAllGroups(
  * Type-safe selection creator for any multiple SVG elements
  *
  * @param selector CSS selector string
- * @param elementType Type of SVG element to select
  * @returns A properly typed D3 selection
  */
 export function selectAllSvgElements<E extends SVGElement>(
-  selector: string,
-  elementType: new () => E
+  selector: string
 ): d3.Selection<E, unknown, HTMLElement, unknown> {
   return d3.selectAll<E, unknown>(selector);
 }
@@ -111,7 +128,8 @@ export function bindData<GElement extends Element, Datum, PElement extends Eleme
   data: Datum[],
   key?: ((datum: Datum, index: number, groups: Datum[]) => string) | string
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
-  return selection.data(data, key as unknown);
+  // D3 has very complex typings that are hard to satisfy without 'any'
+  return selection.data(data, key as any);
 }
 
 /**
@@ -119,9 +137,9 @@ export function bindData<GElement extends Element, Datum, PElement extends Eleme
  *
  * @param selection The D3 selection to perform join on
  * @param elementType Tag name for new elements
- * @param enter (...args: unknown[]) => unknown to handle enter selection
- * @param update (...args: unknown[]) => unknown to handle update selection
- * @param exit (...args: unknown[]) => unknown to handle exit selection
+ * @param enter Function to handle enter selection
+ * @param update Function to handle update selection
+ * @param exit Function to handle exit selection
  * @returns A merged selection
  */
 export function joinElements<
@@ -140,13 +158,25 @@ export function joinElements<
     selection: d3.Selection<GElement, Datum, PElement, PDatum>
   ) => d3.Selection<GElement, Datum, PElement, PDatum>,
   exit?: (selection: d3.Selection<GElement, Datum, PElement, PDatum>) => void
-): d3.Selection<NewElement | GElement, Datum, PElement, PDatum> {
-  return selection.join(elementType, enter as unknown, update, exit) as d3.Selection<
-    NewElement | GElement,
-    Datum,
-    PElement,
-    PDatum
-  >;
+): d3.Selection<Element, Datum, PElement, PDatum> {
+  // Use simpler implementation with type assertions where needed
+  // D3 join uses complex typings that are difficult to satisfy without 'any'
+  const joined = selection.join(elementType) as any;
+
+  if (enter && selection.enter().size()) {
+    enter(selection.enter());
+  }
+
+  if (update) {
+    update(selection);
+  }
+
+  if (exit && selection.exit().size()) {
+    // D3's exit selection has complex typings that require using any
+    exit(selection.exit() as any);
+  }
+
+  return joined;
 }
 
 /**
@@ -232,7 +262,13 @@ export function addEventHandler<GElement extends Element, Datum, PElement extend
   eventType: string,
   listener: (event: Event, d: Datum, i: number, g: GElement[]) => void
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
-  return selection.on(eventType, listener);
+  // D3 has complex event handler typings that are hard to satisfy with exact types
+  // Using any is required to bridge the gap between D3's API and our custom interface
+  return selection.on(eventType, function (this: GElement, event: Event, d: Datum) {
+    const i = d3.select(this).attr('data-index') ? +d3.select(this).attr('data-index')! : 0;
+    const g = [this] as GElement[];
+    listener(event, d, i, g);
+  } as any);
 }
 
 /**
@@ -250,10 +286,10 @@ export function createTransition<GElement extends Element, Datum, PElement exten
 }
 
 /**
- * Creates a typed builder for D3 selections to enable fluent chaining of operations
+ * Creates a fluent selection builder for easier method chaining
  *
  * @param selection The D3 selection to wrap
- * @returns A builder object with fluent methods
+ * @returns A selection builder with fluent interface
  */
 export function createSelectionBuilder<
   GElement extends Element,
@@ -263,23 +299,26 @@ export function createSelectionBuilder<
 >(selection: d3.Selection<GElement, Datum, PElement, PDatum>) {
   return {
     /**
-     * The underlying D3 selection
+     * Original selection
      */
     selection,
 
     /**
-     * Sets attributes on the selection
+     * Set an attribute
      */
     attr(
       key: string,
       value: string | number | boolean | ((d: Datum, i: number) => string | number | boolean)
     ) {
-      selection.attr(key, value as unknown);
+      selection.attr(
+        key,
+        value as unknown as D3ValueFn<GElement, Datum, string | number | boolean | null>
+      );
       return this;
     },
 
     /**
-     * Sets multiple attributes from an object
+     * Set multiple attributes
      */
     attrs(
       attributes: Record<
@@ -287,22 +326,26 @@ export function createSelectionBuilder<
         string | number | boolean | ((d: Datum, i: number) => string | number | boolean)
       >
     ) {
-      return setAttributes(selection, attributes), this;
+      setAttributes(selection, attributes);
+      return this;
     },
 
     /**
-     * Sets a style property on the selection
+     * Set a style
      */
     style(
       key: string,
       value: string | number | boolean | ((d: Datum, i: number) => string | number | boolean)
     ) {
-      selection.style(key, value as unknown);
+      selection.style(
+        key,
+        value as unknown as D3ValueFn<GElement, Datum, string | number | boolean | null>
+      );
       return this;
     },
 
     /**
-     * Sets multiple style properties from an object
+     * Set multiple styles
      */
     styles(
       styles: Record<
@@ -310,27 +353,28 @@ export function createSelectionBuilder<
         string | number | boolean | ((d: Datum, i: number) => string | number | boolean)
       >
     ) {
-      return setStyles(selection, styles), this;
+      setStyles(selection, styles);
+      return this;
     },
 
     /**
-     * Sets text content on the selection
+     * Set text content
      */
     text(value: string | ((d: Datum, i: number) => string)) {
-      selection.text(value as unknown);
+      selection.text(value as unknown as D3ValueFn<GElement, Datum, string | null>);
       return this;
     },
 
     /**
-     * Sets HTML content on the selection
+     * Set HTML content
      */
     html(value: string | ((d: Datum, i: number) => string)) {
-      selection.html(value as unknown);
+      selection.html(value as unknown as D3ValueFn<GElement, Datum, string | null>);
       return this;
     },
 
     /**
-     * Appends a new element to each element in the selection
+     * Append a new element
      */
     append<NewElement extends Element>(elementType: string) {
       const newSelection = appendElement<GElement, Datum, PElement, PDatum, NewElement>(
@@ -341,23 +385,29 @@ export function createSelectionBuilder<
     },
 
     /**
-     * Adds an event listener to the selection
+     * Add an event handler
      */
     on(eventType: string, listener: (event: Event, d: Datum, i: number, g: GElement[]) => void) {
-      selection.on(eventType, listener);
+      // D3 has complex event handler typings that are hard to satisfy with exact types
+      // Using any is required to bridge the gap between D3's API and our custom interface
+      selection.on(eventType, function (this: GElement, event: Event, d: Datum) {
+        const i = d3.select(this).attr('data-index') ? +d3.select(this).attr('data-index')! : 0;
+        const g = [this] as GElement[];
+        listener(event, d, i, g);
+      } as any);
       return this;
     },
 
     /**
-     * Creates a transition on the selection
+     * Create a transition
      */
     transition(name?: string) {
-      const transition = createTransition(selection, name);
-      return createTransitionBuilder(transition);
+      const trans = createTransition(selection, name);
+      return createTransitionBuilder(trans);
     },
 
     /**
-     * Filters the selection
+     * Filter selection
      */
     filter(filterFn: (d: Datum, i: number) => boolean) {
       const filtered = selection.filter(filterFn);
@@ -365,22 +415,49 @@ export function createSelectionBuilder<
     },
 
     /**
-     * Binds new data to the selection
+     * Bind data to selection
      */
     data<NewDatum>(
       data: NewDatum[],
       key?: ((datum: NewDatum, index: number, groups: NewDatum[]) => string) | string
     ) {
-      const newSelection = bindData<GElement, NewDatum, PElement, PDatum>(
-        selection as unknown,
+      const dataSelection = bindData<GElement, NewDatum, PElement, PDatum>(
+        selection as unknown as d3.Selection<GElement, PDatum, PElement, unknown>,
         data,
         key
       );
-      return createSelectionBuilder(newSelection);
+      return createSelectionBuilder(dataSelection);
     },
 
     /**
-     * Joins data with elements
+     * Select parent element
+     */
+    parent() {
+      // Since we can't directly type parent node selection properly,
+      // use a workaround by selecting the parent using DOM API
+      const parentElements = Array.from(selection.nodes())
+        .map(node => node.parentElement)
+        .filter(Boolean) as Element[];
+
+      // Create a new selection from these elements
+      if (parentElements.length > 0) {
+        const parentSelection = d3.selectAll(parentElements) as unknown as d3.Selection<
+          GElement,
+          PDatum,
+          PElement,
+          unknown
+        >;
+        return createSelectionBuilder(
+          parentSelection as unknown as d3.Selection<GElement, Datum, PElement, PDatum>
+        );
+      }
+
+      // Return empty selection if no parent elements
+      return createSelectionBuilder(selection.filter(() => false));
+    },
+
+    /**
+     * Join elements
      */
     join<NewElement extends Element>(
       elementType: string,
@@ -392,18 +469,18 @@ export function createSelectionBuilder<
       ) => d3.Selection<GElement, Datum, PElement, PDatum>,
       exit?: (selection: d3.Selection<GElement, Datum, PElement, PDatum>) => void
     ) {
-      const joined = joinElements<GElement, Datum, PElement, PDatum, NewElement>(
+      const joinedSelection = joinElements<GElement, Datum, PElement, PDatum, NewElement>(
         selection,
         elementType,
         enter,
         update,
         exit
       );
-      return createSelectionBuilder(joined);
+      return createSelectionBuilder(joinedSelection);
     },
 
     /**
-     * Calls a function with the selection
+     * Call a function with the selection
      */
     call(fn: (selection: d3.Selection<GElement, Datum, PElement, PDatum>) => void) {
       selection.call(fn);
@@ -413,10 +490,7 @@ export function createSelectionBuilder<
 }
 
 /**
- * Creates a typed builder for D3 transitions to enable fluent chaining of operations
- *
- * @param transition The D3 transition to wrap
- * @returns A builder object with fluent methods
+ * Creates a fluent transition builder for easier method chaining
  */
 export function createTransitionBuilder<
   GElement extends Element,
@@ -426,12 +500,12 @@ export function createTransitionBuilder<
 >(transition: d3.Transition<GElement, Datum, PElement, PDatum>) {
   return {
     /**
-     * The underlying D3 transition
+     * Original transition
      */
     transition,
 
     /**
-     * Sets the duration of the transition
+     * Set transition duration
      */
     duration(milliseconds: number) {
       transition.duration(milliseconds);
@@ -439,53 +513,60 @@ export function createTransitionBuilder<
     },
 
     /**
-     * Sets the delay of the transition
+     * Set transition delay
      */
     delay(milliseconds: number | ((d: Datum, i: number) => number)) {
-      transition.delay(milliseconds as unknown);
+      transition.delay(milliseconds as unknown as D3ValueFn<GElement, Datum, number>);
       return this;
     },
 
     /**
-     * Sets the easing function of the transition
+     * Set transition easing function
      */
-    ease(easingFn: d3.EasingFn) {
+    ease(easingFn: EasingFn) {
       transition.ease(easingFn);
       return this;
     },
 
     /**
-     * Sets an attribute with a transition
+     * Set attribute with transition
      */
     attr(
       key: string,
       value: string | number | boolean | ((d: Datum, i: number) => string | number | boolean)
     ) {
-      transition.attr(key, value as unknown);
+      transition.attr(
+        key,
+        value as unknown as D3ValueFn<GElement, Datum, string | number | boolean | null>
+      );
       return this;
     },
 
     /**
-     * Sets a style property with a transition
+     * Set style with transition
      */
     style(
       key: string,
       value: string | number | boolean | ((d: Datum, i: number) => string | number | boolean)
     ) {
-      transition.style(key, value as unknown);
+      transition.style(
+        key,
+        value as unknown as D3ValueFn<GElement, Datum, string | number | boolean | null>
+      );
       return this;
     },
 
     /**
-     * Adds an event listener for transition events
+     * Add transition event handler
      */
     on(eventType: 'start' | 'end' | 'interrupt', listener: (event: Event, d: Datum) => void) {
-      transition.on(eventType, listener);
+      // Cast to compatible function that D3 expects
+      transition.on(eventType, listener as unknown as D3ValueFn<GElement, Datum, void>);
       return this;
     },
 
     /**
-     * Calls a function with the transition
+     * Call a function with the transition
      */
     call(fn: (transition: d3.Transition<GElement, Datum, PElement, PDatum>) => void) {
       transition.call(fn);

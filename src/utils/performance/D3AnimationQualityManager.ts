@@ -14,6 +14,7 @@
  */
 
 import * as d3 from 'd3';
+import * as React from 'react';
 
 /**
  * Performance tier categorization
@@ -354,14 +355,21 @@ export class D3AnimationQualityManager {
         window.WebGLRenderingContext &&
         (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
       );
-    } catch (e) {
+    } catch (_e) {
       capabilities.hasWebGL = false;
     }
 
     // Battery API check
     if ('getBattery' in navigator) {
       try {
-        const battery = await (navigator as any).getBattery();
+        // Define a proper interface for Battery API
+        interface BatteryManager {
+          charging: boolean;
+          level: number;
+          addEventListener(event: string, listener: () => void): void;
+        }
+
+        const battery = await (navigator as { getBattery(): Promise<BatteryManager> }).getBattery();
         capabilities.isBatterySaving = battery.charging === false && battery.level < 0.2;
 
         // Listen for battery changes
@@ -372,7 +380,7 @@ export class D3AnimationQualityManager {
             this.adjustQualityIfNeeded();
           }
         });
-      } catch (e) {
+      } catch (_e) {
         // Battery API not available
       }
     }
@@ -395,7 +403,11 @@ export class D3AnimationQualityManager {
 
     // Connection type detection
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
+      interface NetworkInformation {
+        effectiveType: string;
+      }
+
+      const connection = (navigator as { connection?: NetworkInformation }).connection;
       if (connection) {
         const effectiveType = connection.effectiveType;
         if (effectiveType === '4g') {
@@ -410,9 +422,9 @@ export class D3AnimationQualityManager {
 
     // Perform quick CPU benchmark
     const cpuBenchmarkStart = performance.now();
-    let benchmarkResult = 0;
+    let sum = 0;
     for (let i = 0; i < 1000000; i++) {
-      benchmarkResult += Math.sqrt(i);
+      sum += Math.sqrt(i);
     }
     const cpuBenchmarkTime = performance.now() - cpuBenchmarkStart;
 
@@ -431,7 +443,11 @@ export class D3AnimationQualityManager {
 
     // Attempt to estimate available memory
     if ('deviceMemory' in navigator) {
-      const deviceMemory = (navigator as any).deviceMemory;
+      interface NavigatorWithMemory extends Navigator {
+        deviceMemory?: number;
+      }
+
+      const deviceMemory = (navigator as NavigatorWithMemory).deviceMemory;
       if (typeof deviceMemory === 'number') {
         // deviceMemory is in GB, normalize to 0-100 scale
         // Assuming 8GB as high-end, 16GB+ as maximum
@@ -772,7 +788,10 @@ export class D3AnimationQualityManager {
   /**
    * Set user preference override for specific settings
    */
-  public setUserPreference(settingKey: keyof QualitySettings, value: unknown): void {
+  public setUserPreference<K extends keyof QualitySettings>(
+    settingKey: K,
+    value: QualitySettings[K]
+  ): void {
     this.userOverrides[settingKey] = value;
 
     // Apply the change immediately
@@ -899,8 +918,21 @@ export function createQualityAdaptiveVisualization<GElement extends Element = SV
   ) => void,
   qualityOverrides?: Partial<QualitySettings>
 ): d3.Selection<GElement, unknown, null, undefined> {
-  // Select the container element
-  const selection = d3.select(selector) as d3.Selection<GElement, unknown, null, undefined>;
+  // Handle string selector and element selector separately with proper typing
+  let selection: d3.Selection<GElement, unknown, null, undefined>;
+
+  if (typeof selector === 'string') {
+    // For string selectors, cast after selection
+    selection = d3.select(selector) as unknown as d3.Selection<GElement, unknown, null, undefined>;
+  } else {
+    // For element selectors, cast the element first
+    selection = d3.select(selector as Element) as unknown as d3.Selection<
+      GElement,
+      unknown,
+      null,
+      undefined
+    >;
+  }
 
   // Register with the quality manager
   animationQualityManager.registerAnimation(
@@ -940,8 +972,8 @@ export function createQualityAdaptiveTransition<
     adjustedDuration = duration * settings.animationStepFactor;
   }
 
-  // Create transition with quality-appropriate settings
-  const transition = selection.transition().duration(adjustedDuration);
+  // Create transition with quality-appropriate settings - fix for undefined duration
+  const transition = selection.transition().duration(adjustedDuration ?? 0);
 
   // If precise timing isn't needed, use a more efficient easing function
   if (!settings.preciseTiming) {
@@ -976,8 +1008,20 @@ export function bindDataWithQualityAdjustment<
     limitedData = data?.slice(0, maxElements);
   }
 
-  // Bind the data, potentially with a key function
-  return key ? selection.data(limitedData, key) : selection.data(limitedData);
+  // Bind the data - handle key function with proper casting
+  if (key) {
+    // Cast the key function to the expected type for d3 data binding
+    const typedKeyFn = (d: unknown, i: number, data: unknown[]): string =>
+      key(d as NewDatum, i, data as NewDatum[]);
+
+    // Use the proper d3 ValueFn type here
+    return selection.data(
+      limitedData,
+      typedKeyFn as d3.ValueFn<GElement | PElement, OldDatum | NewDatum, string>
+    );
+  } else {
+    return selection.data(limitedData);
+  }
 }
 
 /**

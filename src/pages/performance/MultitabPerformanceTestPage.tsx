@@ -8,8 +8,11 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import MultitabPerformanceLauncher from '../../components/performance/MultitabPerformanceLauncher';
-import MultitabPerformanceResults from '../../components/performance/MultitabPerformanceResults';
+import {
+  MultitabLaunchConfig,
+  MultitabPerformanceLauncher,
+} from '../../components/performance/MultitabPerformanceLauncher';
+import { MultitabPerformanceResults } from '../../components/performance/MultitabPerformanceResults';
 import { MultitabPerformanceResult } from '../../tests/performance/MultitabPerformanceTestSuite';
 
 type ResultSet = MultitabPerformanceResult[] | Record<string, MultitabPerformanceResult[]>;
@@ -21,7 +24,8 @@ const MultitabPerformanceTestPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [results, setResults] = useState<ResultSet | null>(null);
   const [isCoordinator, setIsCoordinator] = useState(true);
-  const [report, setReport] = useState<string>('');
+  const [_report, setReport] = useState<string>('');
+  const [isRunning, setIsRunning] = useState(false);
 
   // Check URL parameters to determine if this is a worker tab
   useEffect(() => {
@@ -48,6 +52,20 @@ const MultitabPerformanceTestPage: React.FC = () => {
    */
   const handleReportGenerated = (generatedReport: string) => {
     setReport(generatedReport);
+  };
+
+  /**
+   * Handle the launch of the performance test
+   */
+  const handleLaunch = (config: MultitabLaunchConfig) => {
+    setIsRunning(true);
+    // Implementation would go here to actually launch the test
+    console.warn('Launching test with config:', config);
+
+    // Simulate a test running for a few seconds
+    setTimeout(() => {
+      setIsRunning(false);
+    }, 5000);
   };
 
   // Try to load previous results from localStorage
@@ -78,6 +96,8 @@ const MultitabPerformanceTestPage: React.FC = () => {
           <MultitabPerformanceLauncher
             isCoordinator={isCoordinator}
             onTestResults={handleTestResults}
+            onLaunch={handleLaunch}
+            isRunning={isRunning}
           />
         </section>
 
@@ -85,7 +105,7 @@ const MultitabPerformanceTestPage: React.FC = () => {
           <section className="results-section">
             <MultitabPerformanceResults
               results={results}
-              onReportGenerated={handleReportGenerated}
+              _onReportGenerated={handleReportGenerated}
             />
           </section>
         )}

@@ -1,4 +1,5 @@
 /**
+ * @context: service-system, error-handling
  * ErrorLoggingService - Provides structured error logging capabilities for the application
  *
  * This service handles:
@@ -60,24 +61,19 @@ export interface ErrorLogEntry {
   metadata?: Record<string, unknown>;
 }
 
-class ErrorLoggingServiceImpl extends AbstractBaseService {
+class ErrorLoggingServiceImpl extends AbstractBaseService<ErrorLoggingServiceImpl> {
   private errorLog: ErrorLogEntry[] = [];
   private maxLogSize = 1000;
-  private static instance: ErrorLoggingServiceImpl | null = null;
 
-  protected constructor() {
+  public constructor() {
     super('ErrorLoggingService', '1.0.0');
   }
 
-  public static override getInstance(): ErrorLoggingServiceImpl {
-    if (!ErrorLoggingServiceImpl.instance) {
-      ErrorLoggingServiceImpl.instance = new ErrorLoggingServiceImpl();
-    }
-    return ErrorLoggingServiceImpl.instance;
-  }
-
   protected async onInitialize(): Promise<void> {
-    // No initialization needed
+    // Initialize metrics
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
   }
 
   protected async onDispose(): Promise<void> {
@@ -109,7 +105,10 @@ class ErrorLoggingServiceImpl extends AbstractBaseService {
     }
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics[`errors_${type}`] = (metrics[`errors_${type}`] ?? 0) + 1;
     metrics[`errors_${severity}`] = (metrics[`errors_${severity}`] ?? 0) + 1;
     this.metadata.metrics = metrics;
@@ -136,6 +135,10 @@ class ErrorLoggingServiceImpl extends AbstractBaseService {
 
   public clearErrors(): void {
     this.errorLog = [];
+
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
     this.metadata.metrics = {};
   }
 
@@ -144,8 +147,8 @@ class ErrorLoggingServiceImpl extends AbstractBaseService {
   }
 }
 
-// Export singleton instance
-export const errorLoggingService = ErrorLoggingServiceImpl.getInstance();
+// Export singleton instance using direct instantiation
+export const errorLoggingService = new ErrorLoggingServiceImpl();
 
 // Export default for easier imports
 export default errorLoggingService;
