@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import { shipBehaviorManager } from '../../../lib/ai/shipBehavior';
 import { shipMovementManager } from '../../../lib/ai/shipMovement';
-import { techTreeManager } from '../../../managers/game/techTreeManager';
+import { TechTreeManager } from '../../../managers/game/techTreeManager';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { getDefaultCapabilities, getShipCategory } from '../../../types/ships/CommonShipTypes';
 import { ResourceTypeConverter } from '../../../utils/ResourceTypeConverter';
@@ -42,7 +42,7 @@ export const CommonShipMovement: React.FC<CommonShipMovementProps> = ({
     const capabilities = getDefaultCapabilities(category);
 
     // Enable salvage for war ships if they have the cutting laser
-    if (category === 'war' && techTreeManager.hasWarShipSalvage()) {
+    if (category === 'war' && TechTreeManager.hasWarShipSalvage()) {
       capabilities.canSalvage = true;
     }
 

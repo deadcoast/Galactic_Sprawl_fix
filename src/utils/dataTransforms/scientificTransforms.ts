@@ -422,7 +422,7 @@ export function isLinearRegressionModel(modelDetails: Record<string, unknown>): 
  */
 export function isNeuralNetworkModel(modelDetails: Record<string, unknown>): boolean {
   // Check for architecture which is typical for neural networks
-  const architecture = safelyExtractObject(modelDetails, 'architecture', undefined);
+  const architecture = safelyExtractObject(modelDetails, 'architecture', {});
   return !!architecture && typeof architecture === 'object';
 }
 

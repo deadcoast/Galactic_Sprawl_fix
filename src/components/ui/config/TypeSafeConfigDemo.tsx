@@ -460,7 +460,7 @@ const TypeSafeConfigDemo: React.FC = () => {
                       value={editValue}
                       onChange={e => setEditValue(e.target.value)}
                     >
-                      {(selectedConfig.schema as any)._def.values.map((val: string) => (
+                      {(selectedConfig.schema as any)._def.typeEnum(selectedConfig.schema as any)._def.values.map((val: string) => (
                         <option key={val} value={val}>
                           {val}
                         </option>

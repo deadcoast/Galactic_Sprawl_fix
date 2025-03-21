@@ -173,9 +173,12 @@ export interface CombatMechanicsSystem {
 }
 
 /**
- * Implementation of the combat mechanics system
+ * @context: combat-system.mechanics, manager-registry
+ * Implementation of the combat mechanics system following the singleton pattern
  */
 export class CombatMechanicsSystemImpl implements CombatMechanicsSystem {
+  private static instance: CombatMechanicsSystemImpl | null = null;
+  
   private combatUnits: Map<string, CombatUnit> = new Map();
   private projectiles: Map<string, Projectile> = new Map();
   private activeEffects: Map<string, CombatEffect> = new Map();
@@ -194,8 +197,21 @@ export class CombatMechanicsSystemImpl implements CombatMechanicsSystem {
   private readonly SHIELD_DAMAGE_REDUCTION = 0.7; // Shields reduce damage by 30%
   private readonly ARMOR_DAMAGE_REDUCTION_PER_POINT = 0.02; // Each armor point reduces damage by 2%
 
-  constructor(detectionSystem?: ObjectDetectionSystem) {
+  /**
+   * Private constructor to enforce singleton pattern
+   */
+  private constructor(detectionSystem?: ObjectDetectionSystem) {
     this.detectionSystem = detectionSystem;
+  }
+  
+  /**
+   * Get the singleton instance of CombatMechanicsSystemImpl
+   */
+  public static getInstance(detectionSystem?: ObjectDetectionSystem): CombatMechanicsSystemImpl {
+    if (!CombatMechanicsSystemImpl.instance) {
+      CombatMechanicsSystemImpl.instance = new CombatMechanicsSystemImpl(detectionSystem);
+    }
+    return CombatMechanicsSystemImpl.instance;
   }
 
   /**

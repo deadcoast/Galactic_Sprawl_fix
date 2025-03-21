@@ -747,6 +747,7 @@ const LongSessionMemoryVisualizer: React.FC<LongSessionMemoryVisualizerProps> = 
         </div>
       )}
 
+      {/* @ts-expect-error jsx property is not recognized on style element */}
       <style jsx>{`
         .long-session-memory-visualizer {
           font-family:

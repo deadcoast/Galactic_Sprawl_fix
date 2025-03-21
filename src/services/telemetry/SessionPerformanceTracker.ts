@@ -1,13 +1,15 @@
-/**
- * SessionPerformanceTracker
+/** 
+ * @context: service-system, service-telemetry, service-performance,
+ * service-error-logging, service-component-registry, service-data-transforms,
+ * service-id-generator, service-performance-tracker, service-resource-manager,
+ * service-user-interaction, service-user-session
  *
  * A service that anonymously tracks performance metrics during user sessions.
  * Collects, aggregates, and reports performance data without storing personally
  * identifiable information.
  */
 
-import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { ModuleEvent } from '../../types/events/ModuleEventTypes';
+import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { generateAnonymousId } from '../../utils/idGenerator';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -94,6 +96,7 @@ interface NavigatorExtended extends Navigator {
   connection?: {
     effectiveType?: string;
     type?: string;
+    saveData: boolean;
   };
   getBattery?: () => Promise<{
     charging: boolean;
@@ -183,7 +186,6 @@ export class SessionPerformanceTracker {
     // Detect device type from user agent and screen size
     const userAgent = navigator.userAgent.toLowerCase();
     const screenWidth = window.screen.width;
-    const screenHeight = window.screen.height;
 
     let deviceCategory: 'desktop' | 'tablet' | 'mobile' | 'unknown' = 'unknown';
     if (/mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(userAgent)) {
@@ -277,29 +279,38 @@ export class SessionPerformanceTracker {
   private subscribeToEvents(): void {
     if (!this.isEnabled) return;
 
-    this.eventSubscription = moduleEventBus.subscribe({
-      topic: 'STATUS_CHANGED',
-      callback: (event: ModuleEvent) => {
-        this.trackEvent(event);
+    this.eventSubscription = moduleEventBus.subscribe('STATUS_CHANGED', (event: ModuleEvent) => {
+      this.trackEvent(event);
 
-        // Track specific performance-related events
-        if (event?.moduleId === 'game-loop-manager') {
-          if (event?.data?.type === 'performance_snapshot') {
-            this.trackPerformanceSnapshot(event?.data);
-          }
+      // Track specific performance-related events
+      if (event?.moduleId === 'game-loop-manager') {
+        if (
+          event?.data &&
+          typeof event.data === 'object' &&
+          'type' in event.data &&
+          event.data.type === 'performance_snapshot'
+        ) {
+          this.trackPerformanceSnapshot(event.data as Record<string, unknown>);
         }
+      }
 
-        // Track errors
-        if (event?.type === 'ERROR') {
-          this.trackError({
-            errorType: event?.data?.type || 'unknown',
-            message: (event?.data?.message as string) || 'Unknown error',
-            timestamp: event?.timestamp,
-            componentId: event?.moduleId,
-            affectedResource: event?.data?.resourceType as ResourceType,
-          });
-        }
-      },
+      // Track errors
+      if (event?.type === 'ERROR_OCCURRED') {
+        const errorData = event?.data as Record<string, unknown> | undefined;
+        this.trackError({
+          errorType: errorData && typeof errorData.type === 'string' ? errorData.type : 'unknown',
+          message:
+            errorData && typeof errorData.message === 'string'
+              ? errorData.message
+              : 'Unknown error',
+          timestamp: event?.timestamp,
+          componentId: event?.moduleId,
+          affectedResource:
+            errorData && typeof errorData.resourceType === 'string'
+              ? (errorData.resourceType as ResourceType)
+              : undefined,
+        });
+      }
     });
   }
 

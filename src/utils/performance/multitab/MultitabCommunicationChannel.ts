@@ -214,9 +214,10 @@ export class MultitabCommunicationChannel {
       // New tab joined
       this.knownTabs.set(message.senderId, {
         id: message.senderId,
-        role: message.payload?.role || 'worker',
+        role: (message.payload?.role as 'coordinator' | 'worker') || 'worker',
         joinedAt: message.timestamp,
-        state: message.payload?.state || 'idle',
+        state:
+          (message.payload?.state as 'idle' | 'ready' | 'testing' | 'complete' | 'error') || 'idle',
         lastSeenAt: Date.now(),
       });
 
@@ -381,7 +382,7 @@ export class MultitabCommunicationChannel {
     // Announce our departure
     this.sendMessage({
       type: 'GOODBYE',
-      payload: null,
+      payload: undefined,
     });
 
     // Clean up

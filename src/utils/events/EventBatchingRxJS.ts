@@ -147,20 +147,24 @@ export function createTimeBatchedStream<T>(
   if (batchConfig.priorityThreshold !== undefined) {
     // High priority stream (process immediately)
     const highPriorityStream = source.pipe(
-      filter(
-        (event: unknown) =>
-          event?.priority !== undefined && event?.priority < batchConfig.priorityThreshold!
-      ),
+      filter((event: unknown) => {
+        const eventObj = event as { priority?: EventPriority };
+        return (
+          eventObj.priority !== undefined && eventObj.priority < batchConfig.priorityThreshold!
+        );
+      }),
       map(event => [event]),
       map(events => createBatchResult(events, batchConfig, false, false))
     );
 
     // Low priority stream (batch)
     const lowPriorityStream = source.pipe(
-      filter(
-        (event: unknown) =>
-          event?.priority === undefined || event?.priority >= batchConfig.priorityThreshold!
-      ),
+      filter((event: unknown) => {
+        const eventObj = event as { priority?: EventPriority };
+        return (
+          eventObj.priority === undefined || eventObj.priority >= batchConfig.priorityThreshold!
+        );
+      }),
       bufferTime(batchConfig.timeWindow, null, batchConfig.maxBatchSize || Number.MAX_SAFE_INTEGER),
       filter(events => events.length > 0),
       map(events =>
@@ -183,7 +187,7 @@ export function createTimeBatchedStream<T>(
           catchError(() => of(result))
         )
       )
-    );
+    ) as Observable<TimeBatchResult<T>>;
   }
 
   // Standard batching approach
@@ -215,7 +219,10 @@ function createBatchResult<T>(
 ): TimeBatchResult<T> {
   // Get timestamps (if available)
   const now = Date.now();
-  const timestamps = events.map(event => (event as unknown).timestamp || now);
+  const timestamps = events.map(event => {
+    const eventObj = event as { timestamp?: number };
+    return eventObj.timestamp || now;
+  });
 
   // Sort events by timestamp if configured
   if (config.sortByTimestamp && events.length > 1) {
@@ -232,7 +239,7 @@ function createBatchResult<T>(
   const endTime = Math.max(...timestamps);
 
   // Calculate events per second
-  const durationSec = (endTime - startTime) / 1000 ?? 0.001; // Avoid division by zero
+  const durationSec = Math.max((endTime - startTime) / 1000, 0.001); // Ensure minimum duration to avoid division by zero
   const eventsPerSecond = events.length / durationSec;
 
   // Create the result

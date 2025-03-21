@@ -52,7 +52,7 @@ export interface Module {
 /**
  * ModuleCard props
  */
-export interface ModuleCardProps extends Omit<CardProps, 'title' | 'subtitle'> {
+export interface ModuleCardProps extends Omit<CardProps, 'title' | 'subtitle' | 'onSelect'> {
   /** The module to display */
   module: Module;
   /** Whether to show the module level */

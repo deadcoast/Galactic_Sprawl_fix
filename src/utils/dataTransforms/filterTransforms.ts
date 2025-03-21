@@ -1,4 +1,6 @@
 /**
+ * @context: utils
+ *
  * Filter Transformation Utilities
  *
  * This module provides utilities for filtering and transforming data
@@ -229,12 +231,13 @@ export function convertFilterValue(
   operator: FilterOperator
 ): string | number | boolean | string[] | [number, number] {
   switch (operator) {
-    case 'greaterThan':
+    case 'greaterThan': {
       const num = parseFloat(value);
       return isNaN(num) ? value : num;
+    }
 
     case 'equals':
-    case 'notEquals':
+    case 'notEquals': {
       // Try to convert to number first
       const numVal = parseFloat(value);
       if (!isNaN(numVal) && numVal.toString() === value) {
@@ -245,8 +248,9 @@ export function convertFilterValue(
       if (value === 'false') return false;
       // Otherwise, keep as string
       return value;
+    }
 
-    case 'between':
+    case 'between': {
       if (value.includes(',')) {
         const [minStr, maxStr] = value.split(',');
         const min = parseFloat(minStr.trim());
@@ -256,10 +260,12 @@ export function convertFilterValue(
         }
       }
       return value;
+    }
 
     case 'in':
-    case 'notIn':
+    case 'notIn': {
       return value.split(',').map(v => v.trim());
+    }
 
     default:
       return value;
@@ -351,7 +357,7 @@ export function getInputTypeForOperator(
 //=============================================================================
 
 /**
- * Applies a filter to a single data item
+ * Applies a filter to a data item
  * @param item Data item to filter
  * @param filter Filter to apply
  */
@@ -359,7 +365,8 @@ export function applyFilter(item: Record<string, unknown>, filter: Filter): bool
   const { field, operator, value } = filter;
 
   // Extract field value, supporting dot notation for nested properties
-  const fieldValue = safelyExtractPath(item, field, null);
+  // Using unknown instead of null to be more type-safe
+  const fieldValue = safelyExtractPath<unknown>(item, field, null);
 
   // Skip invalid values (except for exists/notExists operators)
   if (fieldValue === null || fieldValue === undefined) {
@@ -381,6 +388,7 @@ export function applyFilter(item: Record<string, unknown>, filter: Filter): bool
       return isNumber(fieldValue) && isNumber(value) && fieldValue < value;
 
     case 'contains':
+      // Type guard before using toLowerCase
       return (
         isString(fieldValue) &&
         isString(value) &&
@@ -388,6 +396,7 @@ export function applyFilter(item: Record<string, unknown>, filter: Filter): bool
       );
 
     case 'notContains':
+      // Type guard before using toLowerCase
       return (
         isString(fieldValue) &&
         isString(value) &&
@@ -395,9 +404,13 @@ export function applyFilter(item: Record<string, unknown>, filter: Filter): bool
       );
 
     case 'between':
+      // Type guard before comparison
       return (
         isNumber(fieldValue) &&
         Array.isArray(value) &&
+        value.length === 2 &&
+        isNumber(value[0]) &&
+        isNumber(value[1]) &&
         fieldValue >= value[0] &&
         fieldValue <= value[1]
       );
@@ -593,7 +606,7 @@ export function getUniqueValues(
   const valueSet = new Set<string>();
 
   for (const item of data) {
-    const value = safelyExtractPath(item, field, null);
+    const value = safelyExtractPath<unknown>(item, field, null);
     if (value === null || value === undefined) {
       continue;
     }
@@ -602,6 +615,7 @@ export function getUniqueValues(
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       valueSet.add(String(value));
     } else if (Array.isArray(value)) {
+      // Type guard for array to safely access length
       valueSet.add(`Array(${value.length})`);
     } else if (typeof value === 'object' && value !== null) {
       valueSet.add('Object');
@@ -621,11 +635,11 @@ export function getUniqueValues(
       return num;
     }
 
-    // Handle booleans
+    // Try parsing as boolean
     if (value === 'true') return true;
     if (value === 'false') return false;
 
-    // Keep as string
+    // Default to string
     return value;
   });
 }

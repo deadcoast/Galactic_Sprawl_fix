@@ -1,4 +1,13 @@
-import { isEqual } from 'lodash';
+/**
+ * @context: state-system, persistence
+ * 
+ * State persistence utilities for storing and loading application state.
+ * These utilities handle localStorage persistence with versioning, migration,
+ * and optional compression.
+ */
+
+import { isEqual as lodashIsEqual } from 'lodash';
+import { useEffect, useRef, useState } from 'react';
 
 interface PersistenceOptions<T> {
   /**
@@ -50,8 +59,27 @@ interface PersistenceOptions<T> {
    * @default false
    */
   debug?: boolean;
+
+  /**
+   * Optional flag to enable compression for larger states
+   * @default false
+   */
+  compress?: boolean;
+
+  /**
+   * Optional custom storage mechanism
+   * @default localStorage
+   */
+  storage?: {
+    getItem: (key: string) => string | null | Promise<string | null>;
+    setItem: (key: string, value: string) => void | Promise<void>;
+    removeItem: (key: string) => void | Promise<void>;
+  };
 }
 
+/**
+ * Data structure for persisted state
+ */
 interface PersistedData<T> {
   version: number;
   timestamp: number;
@@ -59,159 +87,296 @@ interface PersistedData<T> {
 }
 
 /**
- * Creates a state persistence manager that handles saving and loading state
- * from localStorage with versioning support.
- *
- * @param options Configuration options for persistence
- * @returns An object with methods to save, load, and clear state
+ * Error types for state persistence
+ */
+export enum PersistenceErrorType {
+  SERIALIZATION = 'serialization',
+  DESERIALIZATION = 'deserialization',
+  STORAGE_FULL = 'storage_full',
+  VALIDATION = 'validation',
+  MIGRATION = 'migration',
+  STORAGE_UNAVAILABLE = 'storage_unavailable',
+}
+
+/**
+ * Error class for state persistence
+ */
+export class PersistenceError extends Error {
+  constructor(public type: PersistenceErrorType, message: string, public originalError?: unknown) {
+    super(message);
+    this.name = 'PersistenceError';
+  }
+}
+
+/**
+ * Creates utilities for persisting and loading state
  */
 export function createStatePersistence<T>(options: PersistenceOptions<T>) {
   const {
     key,
     version,
-    migrate,
-    validate,
+    migrate = undefined,
+    validate = () => true,
     serialize = JSON.stringify,
     deserialize = JSON.parse,
-    isEqual: equalityFn = isEqual,
+    isEqual = lodashIsEqual,
     debounceTime = 1000,
     debug = false,
+    compress = false,
+    storage = localStorage,
   } = options;
 
-  // Keep a reference to the last saved state to avoid unnecessary saves
-  let lastSavedState: T | null = null;
-  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+  // Timeout for debounced saves
+  let saveTimeout: ReturnType<typeof setTimeout> | undefined;
 
+  /**
+   * Internal debug logging
+   */
   const log = (message: string, ...args: unknown[]) => {
     if (debug) {
-      console.warn(`[StatePersistence:${key}] ${message}`, ...args);
+      console.debug(`[StatePersistence:${key}] ${message}`, ...args);
     }
   };
 
   /**
-   * Saves the state to localStorage
-   *
-   * @param state The state to save
-   * @param immediate Whether to save immediately or debounce
-   * @returns A promise that resolves when the state is saved
+   * Compress a string using basic encoding
    */
-  const saveState = (state: T, immediate = false): Promise<void> => {
-    return new Promise(resolve => {
-      // If the state hasn't changed, don't save it
-      if (lastSavedState && equalityFn(state, lastSavedState)) {
-        log('State unchanged, skipping save');
-        resolve();
-        return;
+  const compressString = (str: string): string => {
+    if (!compress) return str;
+    
+    try {
+      // Use lz-string if available, otherwise use basic btoa
+      if (typeof window !== 'undefined' && 'lzstring' in window) {
+        return ((window as unknown) as { lzstring: { compressToUTF16: (str: string) => string } }).lzstring.compressToUTF16(str);
       }
+      
+      // Fallback to basic encoding
+      return typeof btoa === 'function' ? btoa(str) : str;
+    } catch (error) {
+      log('Compression failed, using uncompressed data', error);
+      return str;
+    }
+  };
+  
+  /**
+   * Decompress a string
+   */
+  const decompressString = (str: string): string => {
+    if (!compress) return str;
 
-      // Clear any existing timeout
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
-        saveTimeout = null;
+    try {
+      // Use lz-string if available, otherwise use basic atob
+      if (typeof window !== 'undefined' && 'lzstring' in window) {
+        return ((window as unknown) as { lzstring: { decompressFromUTF16: (str: string) => string } }).lzstring.decompressFromUTF16(str);
       }
-
-      const performSave = () => {
-        try {
-          const data: PersistedData<T> = {
-            version,
-            timestamp: Date.now(),
-            state,
-          };
-
-          const serialized = serialize(data as unknown as T);
-          localStorage.setItem(key, serialized);
-          lastSavedState = state;
-
-          log('State saved', { version, timestamp: data?.timestamp });
-          resolve();
-        } catch (error) {
-          console.error(`[StatePersistence:${key}] Error saving state:`, error);
-          resolve();
-        }
-      };
-
-      if (immediate) {
-        performSave();
-      } else {
-        saveTimeout = setTimeout(performSave, debounceTime);
-      }
-    });
+      
+      // Fallback to basic decoding
+      return typeof atob === 'function' ? atob(str) : str;
+    } catch (error) {
+      log('Decompression failed, using raw data', error);
+      return str;
+    }
   };
 
   /**
-   * Loads the state from localStorage
-   *
-   * @returns The loaded state, or null if no state was found or it was invalid
+   * Save the state to storage
    */
-  const loadState = (): T | null => {
+  const saveState = async (state: T, immediate = false): Promise<void> => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+      saveTimeout = undefined;
+    }
+
+    const saveFunc = async () => {
+      try {
+        const persistedData: PersistedData<T> = {
+          version,
+          timestamp: Date.now(),
+          state,
+        };
+
+        log('Saving state', persistedData);
+
+        // Try to serialize the state
+        let serialized: string;
+        try {
+          serialized = serialize(state);
+        } catch (error) {
+          throw new PersistenceError(
+            PersistenceErrorType.SERIALIZATION,
+            `Failed to serialize state: ${error instanceof Error ? error.message : String(error)}`,
+            error
+          );
+        }
+
+        // Compress if enabled
+        const compressed = compressString(serialized);
+        
+        // Try to save to storage
+        try {
+          const persistedStr = JSON.stringify(persistedData);
+          await storage.setItem(key, compressed);
+        } catch (error) {
+          // Check if it's a quota exceeded error
+          if (
+            error instanceof Error &&
+            (error.name === 'QuotaExceededError' || error.message.includes('quota'))
+          ) {
+            throw new PersistenceError(
+              PersistenceErrorType.STORAGE_FULL,
+              'Storage quota exceeded, cannot save state',
+              error
+            );
+          }
+          
+          throw new PersistenceError(
+            PersistenceErrorType.STORAGE_UNAVAILABLE,
+            `Failed to save state: ${error instanceof Error ? error.message : String(error)}`,
+            error
+          );
+        }
+      } catch (error) {
+        log('Error saving state', error);
+        
+        if (error instanceof PersistenceError) {
+          throw error;
+        }
+        
+        throw new PersistenceError(
+          PersistenceErrorType.SERIALIZATION,
+          `Unexpected error saving state: ${error instanceof Error ? error.message : String(error)}`,
+          error
+        );
+      }
+    };
+
+    if (immediate) {
+      await saveFunc();
+    } else {
+      saveTimeout = setTimeout(saveFunc, debounceTime);
+    }
+  };
+
+  /**
+   * Load the state from storage
+   */
+  const loadState = async (): Promise<T | null> => {
     try {
-      const serialized = localStorage.getItem(key);
+      log('Loading state');
+
+      // Try to get from storage
+      let serialized: string | null;
+      try {
+        serialized = await storage.getItem(key);
+      } catch (error) {
+        throw new PersistenceError(
+          PersistenceErrorType.STORAGE_UNAVAILABLE,
+          `Failed to access storage: ${error instanceof Error ? error.message : String(error)}`,
+          error
+        );
+      }
 
       if (!serialized) {
         log('No saved state found');
         return null;
       }
 
-      const data = deserialize(serialized) as PersistedData<T>;
+      // Decompress if needed
+      const decompressed = decompressString(serialized);
 
-      // Validate the data structure
-      if (!data || typeof data !== 'object' || !('version' in data) || !('state' in data)) {
-        log('Invalid state format', data);
-        return null;
+      // Try to parse the persisted data
+      let persistedData: PersistedData<unknown>;
+      try {
+        persistedData = JSON.parse(decompressed);
+      } catch (error) {
+        throw new PersistenceError(
+          PersistenceErrorType.DESERIALIZATION,
+          `Failed to parse persisted data: ${error instanceof Error ? error.message : String(error)}`,
+          error
+        );
       }
 
-      // Check if we need to migrate
-      if (data?.version !== version) {
-        log(`Version mismatch: saved=${data?.version}, current=${version}`);
-
-        if (!migrate) {
-          log('No migration function provided, clearing saved state');
-          clearState();
-          return null;
+      // Check version and migrate if needed
+      let migratedState: unknown;
+      try {
+        if (persistedData.version !== version && migrate) {
+          log(
+            `Version mismatch (saved: ${persistedData.version}, current: ${version}), migrating state`
+          );
+          migratedState = migrate(persistedData.state, persistedData.version);
+        } else {
+          migratedState = persistedData.state;
         }
+      } catch (error) {
+        throw new PersistenceError(
+          PersistenceErrorType.MIGRATION,
+          `Failed to migrate state: ${error instanceof Error ? error.message : String(error)}`,
+          error
+        );
+      }
 
-        try {
-          const migratedState = migrate(data?.state, data?.version);
-          log('State migrated successfully', { fromVersion: data?.version, toVersion: version });
-
-          // Save the migrated state
-          saveState(migratedState, true);
-          return migratedState;
-        } catch (error) {
-          console.error(`[StatePersistence:${key}] Migration error:`, error);
-          clearState();
-          return null;
+      // Validate the state
+      try {
+        if (!validate(migratedState)) {
+          throw new PersistenceError(
+            PersistenceErrorType.VALIDATION,
+            'State validation failed'
+          );
         }
+      } catch (error) {
+        if (error instanceof PersistenceError) {
+          throw error;
+        }
+        
+        throw new PersistenceError(
+          PersistenceErrorType.VALIDATION,
+          `State validation error: ${error instanceof Error ? error.message : String(error)}`,
+          error
+        );
       }
 
-      // Validate the state if a validator is provided
-      if (validate && !validate(data?.state)) {
-        log('State validation failed');
-        return null;
+      // Try to deserialize the state
+      try {
+        const deserialized = migratedState as T;
+        log('State loaded successfully', deserialized);
+        return deserialized;
+      } catch (error) {
+        throw new PersistenceError(
+          PersistenceErrorType.DESERIALIZATION,
+          `Failed to deserialize state: ${error instanceof Error ? error.message : String(error)}`,
+          error
+        );
       }
-
-      log('State loaded successfully', {
-        version: data?.version,
-        age: Date.now() - (data?.timestamp ?? 0),
-      });
-      lastSavedState = data?.state;
-      return data?.state;
     } catch (error) {
-      console.error(`[StatePersistence:${key}] Error loading state:`, error);
-      return null;
+      log('Error loading state', error);
+      
+      if (error instanceof PersistenceError) {
+        throw error;
+      }
+      
+      throw new PersistenceError(
+        PersistenceErrorType.DESERIALIZATION,
+        `Unexpected error loading state: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
     }
   };
 
   /**
-   * Clears the saved state from localStorage
+   * Clear the saved state
    */
-  const clearState = (): void => {
+  const clearState = async (): Promise<void> => {
     try {
-      localStorage.removeItem(key);
-      lastSavedState = null;
-      log('State cleared');
+      log('Clearing state');
+      await storage.removeItem(key);
     } catch (error) {
-      console.error(`[StatePersistence:${key}] Error clearing state:`, error);
+      log('Error clearing state', error);
+      
+      throw new PersistenceError(
+        PersistenceErrorType.STORAGE_UNAVAILABLE,
+        `Failed to clear state: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
     }
   };
 
@@ -223,83 +388,149 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
 }
 
 /**
- * Creates a hook-friendly state persistence manager
- *
- * @param options Configuration options for persistence
- * @returns An object with methods to use in React components
+ * Hook for persisting and loading state
  */
 export function createStatePersistenceHook<T>(options: PersistenceOptions<T>) {
-  const persistence = createStatePersistence(options);
+  const { saveState, loadState, clearState } = createStatePersistence<T>(options);
 
-  return {
-    /**
-     * Loads the persisted state
-     *
-     * @returns The loaded state or null
-     */
-    loadPersistedState: persistence.loadState,
+  return function useStatePersistence() {
+    const initialized = useRef(false);
 
-    /**
-     * Saves the current state
-     *
-     * @param state The state to save
-     * @param immediate Whether to save immediately
-     */
-    persistState: persistence.saveState,
-
-    /**
-     * Clears the persisted state
-     */
-    clearPersistedState: persistence.clearState,
+    return {
+      saveState,
+      loadState,
+      clearState,
+      initialized,
+    };
   };
 }
 
 /**
- * Creates a simple localStorage getter/setter for a specific key
- *
- * @param key The localStorage key
- * @param defaultValue The default value to return if the key doesn't exist
- * @returns An object with get and set methods
+ * Creates a hook that persists a React state
+ */
+export function createPersistedState<T>(
+  defaultValue: T,
+  options: Omit<PersistenceOptions<T>, 'compress' | 'storage'>
+) {
+  const persistence = createStatePersistence<T>(options);
+
+  return function usePersistedState(): [T, (newState: T) => void] {
+    const [state, setState] = useState<T>(defaultValue);
+    const initialized = useRef(false);
+
+    // Load state on mount
+    useEffect(() => {
+      const loadPersistedState = async () => {
+        try {
+          const savedState = await persistence.loadState();
+          if (savedState !== null) {
+            setState(savedState);
+          }
+          initialized.current = true;
+        } catch (error) {
+          console.error('Failed to load persisted state:', error);
+          initialized.current = true;
+        }
+      };
+
+      loadPersistedState();
+    }, []);
+
+    // Save state when it changes
+    useEffect(() => {
+      if (!initialized.current) {
+        return;
+      }
+
+      persistence.saveState(state).catch(error => {
+        console.error('Failed to save persisted state:', error);
+      });
+    }, [state]);
+
+    return [state, setState];
+  };
+}
+
+/**
+ * Create a simple localStorage item with a default value
  */
 export function createLocalStorageItem<T>(key: string, defaultValue: T) {
   return {
-    /**
-     * Gets the value from localStorage
-     *
-     * @returns The parsed value or the default value
-     */
     get: (): T => {
       try {
         const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultValue;
+        return item ? (JSON.parse(item) as T) : defaultValue;
       } catch (error) {
-        console.error(`[LocalStorage:${key}] Error getting item:`, error);
+        console.error(`Error getting localStorage item ${key}:`, error);
         return defaultValue;
       }
     },
-
-    /**
-     * Sets the value in localStorage
-     *
-     * @param value The value to set
-     */
     set: (value: T): void => {
       try {
         localStorage.setItem(key, JSON.stringify(value));
       } catch (error) {
-        console.error(`[LocalStorage:${key}] Error setting item:`, error);
+        console.error(`Error setting localStorage item ${key}:`, error);
       }
     },
-
-    /**
-     * Removes the item from localStorage
-     */
     remove: (): void => {
       try {
         localStorage.removeItem(key);
       } catch (error) {
-        console.error(`[LocalStorage:${key}] Error removing item:`, error);
+        console.error(`Error removing localStorage item ${key}:`, error);
       }
     },
+  };
+}
+
+/**
+ * Creates a hook that automatically persists a context state
+ */
+export function createContextPersistence<T, A>(
+  contextHook: () => T,
+  dispatchHook: () => React.Dispatch<A>,
+  options: PersistenceOptions<T>
+) {
+  const persistence = createStatePersistence<T>(options);
+
+  return function usePersistContext() {
+    const state = contextHook();
+    const dispatch = dispatchHook();
+    const initialized = useRef(false);
+
+    // Load state on mount
+    useEffect(() => {
+      const loadContextState = async () => {
+        try {
+          const savedState = await persistence.loadState();
+          if (savedState !== null && dispatch) {
+            // If the context uses a reducer pattern, dispatch an initialization action
+            dispatch({ type: 'INITIALIZE_FROM_STORAGE', payload: savedState } as unknown as A);
+          }
+          initialized.current = true;
+        } catch (error) {
+          console.error('Failed to load context state:', error);
+          initialized.current = true;
+        }
+      };
+
+      loadContextState();
+    }, [dispatch]);
+
+    // Save state when it changes
+    useEffect(() => {
+      if (!initialized.current) {
+        return;
+      }
+
+      persistence.saveState(state).catch(error => {
+        console.error('Failed to save context state:', error);
+      });
+    }, [state]);
+
+    return {
+      state,
+      dispatch,
+      persistence,
+    };
   };
 }

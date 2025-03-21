@@ -24,6 +24,7 @@ export { calculateDomain, calculateDomains };
 import { calculateDomain, calculateDomains } from './chartTransforms';
 
 // Color utilities
+import { createColorScale, getResourceTypeColor, hexToRgb } from './chartTransforms';
 export { createColorScale, getResourceTypeColor, hexToRgb };
 
 // Safe data extraction

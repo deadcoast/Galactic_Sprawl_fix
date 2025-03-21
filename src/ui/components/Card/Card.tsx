@@ -9,7 +9,7 @@ export type CardVariant = 'default' | 'bordered' | 'elevated' | 'flat';
 /**
  * Card props
  */
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   /** Card variant */
   variant?: CardVariant;
   /** Whether the card should have hover effects */

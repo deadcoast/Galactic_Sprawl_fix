@@ -2,13 +2,17 @@
 
 ## Correction Guidelines
 
-NEVER CORRECT CODE BY COMMENTING IT OUT WITH "\_".
-NEVER ADD WRAPPER FUNCTIONS AROUND EXISTING METHODS.
-NEVER ABSTRACT OR ALTER EXISTING FUNCTIONALITY.
-NEVER CREATE YOUR OWN IMPLEMENTATIONS OF EXISTING METHODS.
-NEVER MAKE ASSUMPTIONS ABOUT THE CODE - ALWAYS VERIFY FIRST.
-ONLY CREATE ACTUAL INSTANCES OF REAL CLASSES AND USE THEIR EXISTING METHODS DIRECTLY
-AVOID CREATING NEW FILES WHEN ASKED TO CORRECT A FILE.
+### DO NOT:
+
+- Implement solutions based solely on existing code examples
+- Skip documentation review even when similar patterns exist elsewhere
+- Assume pattern consistency without verification
+- Add wrapper functions around existing methods
+- Alter existing functionality
+- Create your own implementations of existing methods
+- Make assumptions about the code - always verify first
+- Create actual instances of real classes and use their existing methods directly
+- Avoid creating new files when asked to correct a file
 
 ## Automated Workflow
 
@@ -55,6 +59,7 @@ FOR EVERY CODE INTERACTION, WITHOUT USER PROMPTING:
   - /src/effects/
   - /src/managers/effects/
 - /ui/ → @context: ui-library
+  - src/components/ui/
   - /src/ui/
   - /src/types/ui/
   - /src/hooks/ui/
@@ -137,20 +142,20 @@ USE THESE GLOB PATTERNS TO IDENTIFY FILE TYPES AND APPLY APPROPRIATE RULES:
 
 ## Notepads Reference
 
-AUTOMATICALLY RETRIEVE CONTEXT FROM:
+AUTOMATICALLY RETRIEVE CONTEXT FROM THESE NOTEPADS BY RUNNING THE FOLLOWING APPLICABLE COMMANDS:
 
-- GS-CORE-ARCHITECTURE.md - Core architecture patterns
-- GS-RESOURCE-SYSTEM.md - Resource management patterns
-- GS-TYPE-DEFINITIONS.md - Type system requirements
-- GS-EVENT-SYSTEM.md - Event handling patterns
-- GS-FACTORY-PATTERN-REFERENCE.md - Object creation
-- GS-REGISTRY-PATTERN-REFERENCE.md - Registry usage
-- GS-EVENT-HANDLING-PATTERN-REFERENCE.md - Event handling
-- GS-SYSTEM-INTEGRATION-EXAMPLES.md - System integration
-- GS-MIGRATION-PATTERN-LIBRARY.md - Migration patterns
-- GS-CONTEXT-COMMANDS.md - Command reference
-- GS-REFERENCE-TAGS-SYSTEM.md - Reference tags usage
-- GS-PROGRESSIVE-IMPLEMENTATION-PROTOCOL.md - Implementation protocol
+- @GS-CORE-ARCHITECTURE.md - Core architecture patterns
+- @GS-RESOURCE-SYSTEM.md - Resource management patterns
+- @GS-TYPE-DEFINITIONS.md - Type system requirements
+- @GS-EVENT-SYSTEM.md - Event handling patterns
+- @GS-FACTORY-PATTERN-REFERENCE.md - Object creation
+- @GS-REGISTRY-PATTERN-REFERENCE.md - Registry usage
+- @GS-EVENT-HANDLING-PATTERN-REFERENCE.md - Event handling
+- @GS-SYSTEM-INTEGRATION-EXAMPLES.md - System integration
+- @GS-MIGRATION-PATTERN-LIBRARY.md - Migration patterns
+- @GS-CONTEXT-COMMANDS.md - Command reference
+- @GS-REFERENCE-TAGS-SYSTEM.md - Reference tags usage
+- @GS-PROGRESSIVE-IMPLEMENTATION-PROTOCOL.md - Implementation protocol
 
 ## Command Reference
 
@@ -198,6 +203,135 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
 
 ## Scratchpad
 
-### Tasklist
+### UI Implementation Tasklist
 
-- [ ]
+#### Phase 1: Core Infrastructure
+
+- [x] **Task 1: Implement UI Theme System**
+
+  - [x] Create `src/types/ui/ThemeTypes.ts` with theme type definitions
+  - [x] Create `src/ui/theme/defaultTheme.ts` with default theme values
+  - [x] Implement `src/contexts/ThemeContext.tsx` for theme provider
+  - [x] Create theme utility hooks in `src/hooks/ui/useTheme.ts`
+  - [x] Develop `src/styles/themeUtils.ts` for theme helpers and CSS functions
+
+- [x] **Task 2: Implement Responsive Design System**
+
+  - [x] Create `src/hooks/ui/useBreakpoint.ts` for responsive breakpoints
+  - [x] Create `src/ui/layout/Responsive.tsx` for responsive container components
+  - [x] Build `src/hooks/ui/useMediaQuery.ts` for media query detection
+  - [x] Implement `src/styles/mediaQueries.ts` for CSS media query utilities
+
+- [x] **Task 3: Create UI Type System**
+  - [x] Implement `src/types/ui/ComponentTypes.ts` with common component props
+  - [x] Create `src/types/ui/ThemeTypes.ts` with theme-related types
+  - [x] Build `src/types/ui/EventTypes.ts` for UI-specific events
+  - [x] Implement type guards in `src/types/ui/typeGuards.ts`
+
+#### Phase 2: Base Components
+
+- [x] **Task 4: Implement Basic UI Elements**
+
+  - [x] Create `src/ui/components/Button.tsx`
+  - [x] Create `src/ui/components/Card.tsx`
+  - [x] Create `src/ui/components/Icon.tsx`
+  - [x] Create `src/ui/components/Badge.tsx`
+  - [x] Create `src/ui/components/Tooltip.tsx`
+  - [x] Create `src/ui/components/Divider.tsx`
+
+- [x] **Task 5: Implement Typography Components**
+
+  - [x] Create `src/ui/components/typography/Heading.tsx`
+  - [x] Create `src/ui/components/typography/Text.tsx`
+  - [x] Create `src/ui/components/typography/Label.tsx`
+
+- [x] **Task 6: Implement Layout Components**
+
+  - [x] Create `src/ui/components/layout/Container.tsx`
+  - [x] Create `src/ui/components/layout/Grid.tsx`
+  - [x] Create `src/ui/components/layout/Flex.tsx`
+  - [x] Create `src/ui/components/layout/Stack.tsx`
+  - [x] Create `src/ui/components/layout/Spacer.tsx`
+
+- [x] **Task 7: Implement Input Components**
+  - [x] Create `src/ui/components/inputs/Input.tsx`
+  - [x] Create `src/ui/components/inputs/Checkbox.tsx`
+  - [x] Create `src/ui/components/inputs/Radio.tsx`
+  - [x] Create `src/ui/components/inputs/Select.tsx`
+  - [x] Create `src/ui/components/inputs/Slider.tsx`
+  - [x] Create `src/ui/components/inputs/Switch.tsx`
+
+#### Phase 3: Game-Specific UI Components
+
+- [x] **Task 8: Implement Resource Components**
+
+  - [x] Create `src/components/ui/resource/ResourceDisplay.tsx`
+  - [x] Create `src/components/ui/resource/ResourceBar.tsx`
+  - [x] Create `src/components/ui/resource/ResourceIcon.tsx`
+  - [x] Create `src/components/ui/resource/ResourceGrid.tsx`
+
+- [x] **Task 9: Implement Module Components**
+
+  - [x] Create `src/components/ui/modules/ModuleCard.tsx`
+  - [x] Create `src/components/ui/modules/ModuleGrid.tsx`
+  - [x] Create `src/components/ui/modules/ModuleStatusIndicator.tsx`
+  - [x] Create `src/components/ui/modules/ModuleControls.tsx`
+
+- [x] **Task 10: Implement Game-Specific Components**
+  - [x] Create `src/components/ui/game/ShipDisplay.tsx`
+  - [x] Create `src/components/ui/game/FactionBadge.tsx`
+  - [x] Create `src/components/ui/game/TechTree.tsx`
+  - [x] Create `src/components/ui/game/MiniMap.tsx`
+
+#### Phase 4: Advanced Components and Integration
+
+- [ ] **Task 11: Implement Visualization Components**
+
+  - [ ] Create `src/components/ui/visualizations/Chart.tsx`
+  - [ ] Create `src/components/ui/visualizations/LineGraph.tsx`
+  - [ ] Create `src/components/ui/visualizations/BarChart.tsx`
+  - [ ] Create `src/components/ui/visualizations/NetworkGraph.tsx`
+  - [ ] Create `src/components/ui/visualizations/ResourceFlowDiagram.tsx`
+
+- [ ] **Task 12: Implement Modal Components**
+
+  - [ ] Create `src/components/ui/overlays/Modal.tsx`
+  - [ ] Create `src/components/ui/overlays/Drawer.tsx`
+  - [ ] Create `src/components/ui/overlays/Dialog.tsx`
+  - [ ] Create `src/components/ui/overlays/Popover.tsx`
+
+- [ ] **Task 13: UI System Integration**
+  - [ ] Integrate with Resource System
+  - [ ] Integrate with Event System
+  - [ ] Integrate with Module System
+  - [ ] Integrate with Manager Registry
+
+#### Phase 5: Performance and Optimization
+
+- [ ] **Task 14: Implement Performance Optimizations**
+
+  - [ ] Add memoization to pure components
+  - [ ] Implement virtualization for long lists
+  - [ ] Add lazy loading for heavy components
+  - [ ] Optimize rendering with useCallback and useMemo
+
+- [ ] **Task 15: Error Handling Implementation**
+  - [ ] Create `src/components/ui/errors/ErrorBoundary.tsx`
+  - [ ] Implement component-specific error states
+  - [ ] Create fallback UI components
+  - [ ] Integrate with error logging system
+
+#### Phase 6: Documentation and Testing
+
+- [ ] **Task 16: Create Documentation**
+
+  - [ ] Document component API and props
+  - [ ] Create usage examples
+  - [ ] Document theme customization
+  - [ ] Create UI component storybook
+
+- [ ] **Task 17: Implement Testing**
+  - [ ] Create unit tests for base components
+  - [ ] Create integration tests for component interactions
+  - [ ] Test responsive behavior
+  - [ ] Test accessibility compliance

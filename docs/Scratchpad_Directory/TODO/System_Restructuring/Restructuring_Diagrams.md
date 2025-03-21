@@ -1,5 +1,7 @@
 # System Architecture Diagrams
 
+./bin/deepsource report --analyzer test-coverage --key XML (Cobertura), LCOV --value-file <absolute-path-of-the-coverage report>
+
 This document contains architectural diagrams for the complex systems in Galactic Sprawl, explaining how components interact and how data flows through the system.
 
 ## Table of Contents

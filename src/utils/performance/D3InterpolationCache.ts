@@ -135,7 +135,7 @@ export class InterpolationCache<T> {
       return 0;
     } else if (Array.isArray(value)) {
       return (value as unknown[]).reduce(
-        (size, item) => size + this.estimateSize(item as unknown as T),
+        (size: number, item) => size + this.estimateSize(item as unknown as T),
         0
       );
     } else if (typeof value === 'object') {
@@ -143,8 +143,11 @@ export class InterpolationCache<T> {
       const valueAsRecord = value as Record<string, unknown>;
       for (const key in valueAsRecord) {
         if (Object.prototype.hasOwnProperty.call(valueAsRecord, key)) {
-          estimatedSize += key.length * 2; // Key size
-          estimatedSize += this.estimateSize(valueAsRecord[key] as unknown as T); // Value size
+          const propValue = valueAsRecord[key];
+          // Add size of the key
+          estimatedSize += key.length * 2;
+          // Add size of the value (with type safety)
+          estimatedSize += this.estimateSize(propValue as unknown as T);
         }
       }
       return estimatedSize;
@@ -703,13 +706,17 @@ export function optimizeD3Transitions<
 
     // Override tween method
     type TweenFn = typeof originalTween;
+    // Safe type casting for the D3 API
+    type D3TweenValueFn = d3.ValueFn<GElement, Datum, (this: GElement, t: number) => void>;
+
     (transition.tween as unknown) = function (
       this: d3.Transition<GElement, Datum, PElement, PDatum>,
       name: string,
       factory: TweenFactory
     ): ReturnType<TweenFn> {
       if (factory === null) {
-        return originalTween.call(this, name, null);
+        // Type assertion for null case to match D3's expected type
+        return originalTween.call(this, name, null as unknown as D3TweenValueFn);
       }
 
       // Create memoized factory
@@ -719,7 +726,7 @@ export function optimizeD3Transitions<
       };
 
       // Call original tween with memoized factory
-      return originalTween.call(this, name, memoizedFactory as unknown as TweenFactory);
+      return originalTween.call(this, name, memoizedFactory as unknown as D3TweenValueFn);
     };
 
     // Store original styleTween method
@@ -737,6 +744,9 @@ export function optimizeD3Transitions<
 
     // Override styleTween method
     type StyleTweenFn = typeof originalStyleTween;
+    // Safe type casting for the D3 API
+    type D3StyleValueFn = d3.ValueFn<GElement, Datum, (this: GElement, t: number) => string>;
+
     (transition.styleTween as unknown) = function (
       this: d3.Transition<GElement, Datum, PElement, PDatum>,
       name: string,
@@ -744,7 +754,8 @@ export function optimizeD3Transitions<
       priority?: 'important' | null
     ): ReturnType<StyleTweenFn> {
       if (factory === null) {
-        return originalStyleTween.call(this, name, null, priority);
+        // Type assertion for null case to match D3's expected type
+        return originalStyleTween.call(this, name, null as unknown as D3StyleValueFn, priority);
       }
 
       // Create memoized factory
@@ -761,7 +772,7 @@ export function optimizeD3Transitions<
       return originalStyleTween.call(
         this,
         name,
-        memoizedFactory as unknown as StyleFactory,
+        memoizedFactory as unknown as D3StyleValueFn,
         priority
       );
     };

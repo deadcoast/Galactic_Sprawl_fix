@@ -123,9 +123,12 @@ export interface ThreatAssessmentManager {
 }
 
 /**
- * Implementation of the ThreatAssessmentManager
+ * @context: combat-system.threat-assessment, manager-registry
+ * Implementation of the threat assessment manager following the singleton pattern
  */
 export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
+  private static instance: ThreatAssessmentManagerImpl | null = null;
+  
   // Maps observerId -> targetId -> assessment
   private threatAssessments: Map<string, Map<string, ThreatAssessment>> = new Map();
 
@@ -142,8 +145,21 @@ export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
   private readonly MEDIUM_THREAT_DISTANCE = 1000;
   private readonly LOW_THREAT_DISTANCE = 2000;
 
-  constructor() {
+  /**
+   * Private constructor to enforce singleton pattern
+   */
+  private constructor() {
     // Initialize any required setup
+  }
+  
+  /**
+   * Get the singleton instance of ThreatAssessmentManagerImpl
+   */
+  public static getInstance(): ThreatAssessmentManagerImpl {
+    if (!ThreatAssessmentManagerImpl.instance) {
+      ThreatAssessmentManagerImpl.instance = new ThreatAssessmentManagerImpl();
+    }
+    return ThreatAssessmentManagerImpl.instance;
   }
 
   /**

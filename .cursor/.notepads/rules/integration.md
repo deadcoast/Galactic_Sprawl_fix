@@ -1,0 +1,447 @@
+# GALACTIC SPRAWL (GS) - Integration Pattern Rules
+
+## Manager Registry Integration Rule
+
+// .cursor/rules/manager-registry-integration.json
+
+```json
+{
+  "name": "Manager Registry Integration Rule",
+  "description": "Defines how to integrate with the Manager Registry System",
+  "filePattern": ["src/managers/**/*.ts", "src/**/*Manager.ts"],
+  "content": "When implementing a new manager class, ensure proper integration with the Manager Registry System. This includes implementing the singleton pattern and adding accessor functions to the ManagerRegistry."
+}
+```
+
+Example manager implementation:
+
+```typescript
+// CombatManager.ts
+export class CombatManager {
+  private static instance: CombatManager | null = null;
+
+  private constructor() {
+    // Private constructor prevents direct instantiation
+  }
+
+  public static getInstance(): CombatManager {
+    if (!CombatManager.instance) {
+      CombatManager.instance = new CombatManager();
+    }
+    return CombatManager.instance;
+  }
+
+  // Manager implementation methods
+  public getAllUnits() {
+    // Implementation details...
+    return [];
+  }
+}
+```
+
+Example Manager Registry integration:
+
+```typescript
+// ManagerRegistry.ts
+import { CombatManager } from './combat/CombatManager';
+
+// Singleton instances
+let combatManagerInstance: CombatManager | null = null;
+
+/**
+ * Get the singleton instance of CombatManager
+ * @returns The CombatManager instance
+ */
+export function getCombatManager(): CombatManager {
+  if (!combatManagerInstance) {
+    combatManagerInstance = CombatManager.getInstance();
+  }
+  return combatManagerInstance;
+}
+
+/**
+ * Reset all manager instances - primarily used for testing
+ */
+export function resetManagers(): void {
+  combatManagerInstance = null;
+}
+
+// Export manager classes for type usage
+export { CombatManager };
+```
+
+When using a manager in any other class or component, always access it through the registry:
+
+```typescript
+import { getCombatManager } from '../managers/ManagerRegistry';
+
+function useCombatUnits() {
+  const [units, setUnits] = useState([]);
+
+  useEffect(() => {
+    const combatManager = getCombatManager();
+    setUnits(combatManager.getAllUnits());
+  }, []);
+
+  return units;
+}
+```
+
+### Event Handling Integration Rule
+
+// .cursor/rules/event-handling-integration.json
+
+```json
+{
+  "name": "Event Handling Integration Rule",
+  "description": "Defines proper event handling patterns for components",
+  "filePattern": ["src/components/**/*.tsx", "src/hooks/use*Events.ts"],
+  "content": "When integrating components with the Event System, follow these patterns to ensure proper subscription and cleanup:"
+}
+```
+
+1. Use the `useEventSubscription` hook when available:
+
+```typescript
+// CORRECT: Using the event subscription hook
+import { useEventSubscription } from '../../hooks/events/useEventSubscription';
+import { EventType } from '../../types/events/EventTypes';
+import { isResourceProductionEventData } from '../../types/events/EventTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
+
+function ResourceMonitor() {
+  const [resources, setResources] = useState<Record<ResourceType, number>>({});
+
+  useEventSubscription(EventType.RESOURCE_PRODUCED, (event) => {
+    if (isResourceProductionEventData(event.data)) {
+      setResources(prev => ({
+        ...prev,
+        [event.data.resourceType]: (prev[event.data.resourceType] || 0) + event.data.amount
+      }));
+    }
+  });
+
+  return (
+    // Component UI
+    <div>Resource Monitor</div>
+  );
+}
+```
+
+2. Always clean up event subscriptions in useEffect:
+
+```typescript
+// CORRECT: Manual subscription with cleanup
+import { moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { EventType, BaseEvent } from '../../types/events/EventTypes';
+import { isResourceProductionEventData } from '../../types/events/EventTypes';
+
+function ResourceMonitor() {
+  const [resources, setResources] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    // Subscribe to event
+    const unsubscribe = moduleEventBus.subscribe(
+      EventType.RESOURCE_PRODUCED,
+      handleResourceProduced
+    );
+
+    // Return cleanup function
+    return unsubscribe;
+  }, []);
+
+  // Handler function
+  const handleResourceProduced = (event: BaseEvent) => {
+    if (isResourceProductionEventData(event.data)) {
+      setResources(prev => ({
+        ...prev,
+        [event.data.resourceType]: (prev[event.data.resourceType] || 0) + event.data.amount
+      }));
+    }
+  };
+
+  return (
+    // Component UI
+    <div>Resource Monitor</div>
+  );
+}
+```
+
+3. Use type guards for event validation:
+
+```typescript
+// CORRECT: Using type guards for event validation
+import { BaseEvent } from '../../types/events/EventTypes';
+import { ResourceType } from '../../types/resources/ResourceTypes';
+
+const handleResourceEvent = (event: BaseEvent) => {
+  // Validate event has the expected data structure
+  if (
+    event?.data &&
+    'resourceType' in event.data &&
+    'amount' in event.data &&
+    typeof event.data.amount === 'number'
+  ) {
+    // It's safe to use the event data
+    updateResource(event.data.resourceType as ResourceType, event.data.amount);
+  }
+};
+
+// Better: Use predefined type guards
+import { isResourceProductionEventData } from '../../types/events/EventTypes';
+
+const handleResourceEvent = (event: BaseEvent) => {
+  if (isResourceProductionEventData(event.data)) {
+    // TypeScript knows event.data has resourceType and amount
+    updateResource(event.data.resourceType, event.data.amount);
+  }
+};
+```
+
+4. Custom hook pattern for reusable event handling:
+
+```typescript
+// CORRECT: Custom hook for specific event handling
+import { ResourceType } from '../../types/resources/ResourceTypes';
+import { moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { EventType, BaseEvent } from '../../types/events/EventTypes';
+import { isResourceProductionEventData } from '../../types/events/EventTypes';
+
+export function useResourceProductionEvents(
+  callback: (resourceType: ResourceType, amount: number) => void
+) {
+  useEffect(() => {
+    const handleEvent = (event: BaseEvent) => {
+      if (isResourceProductionEventData(event.data)) {
+        callback(event.data.resourceType, event.data.amount);
+      }
+    };
+
+    const unsubscribe = moduleEventBus.subscribe(
+      EventType.RESOURCE_PRODUCED,
+      handleEvent
+    );
+
+    return unsubscribe;
+  }, [callback]);
+}
+
+// Usage in component
+function ResourceDisplay() {
+  const [resources, setResources] = useState<Record<ResourceType, number>>({});
+
+  const handleProduction = useCallback((resourceType: ResourceType, amount: number) => {
+    setResources(prev => ({
+      ...prev,
+      [resourceType]: (prev[resourceType] || 0) + amount
+    }));
+  }, []);
+
+  useResourceProductionEvents(handleProduction);
+
+  return (
+    // Component UI
+    <div>Resource Display</div>
+  );
+}
+```
+
+### Error Handling Integration Rule
+
+// .cursor/rules/error-handling-integration.json
+
+```json
+{
+  "name": "Error Handling Integration Rule",
+  "description": "Specifies error handling requirements for different code contexts",
+  "filePattern": ["src/**/*.ts", "src/**/*.tsx"],
+  "content": "Implement consistent error handling patterns across the codebase:
+  Always follow these patterns to ensure proper event handling and cleanup in components."
+}
+```
+
+1. Manager Error Handling:
+
+```typescript
+// CORRECT: Error handling in manager methods
+import { moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { EventType } from '../../types/events/EventTypes';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
+
+public performAction(id: string): boolean {
+  try {
+    // Validate inputs
+    if (!id) {
+      console.warn('[ResourceManager] Cannot perform action with empty ID');
+      return false;
+    }
+
+    // Implementation...
+    return true;
+  } catch (error) {
+    console.error('[ResourceManager] Error performing action:', error);
+
+    // Emit error event
+    moduleEventBus.emit({
+      type: EventType.ERROR_OCCURRED,
+      moduleId: 'resource-manager',
+      moduleType: ModuleType.RESOURCE_GENERATOR,
+      timestamp: Date.now(),
+      data: {
+        error: error instanceof Error ? error.message : String(error),
+        context: { action: 'performAction', id }
+      }
+    });
+
+    return false;
+  }
+}
+```
+
+2. Component Error Handling:
+
+```typescript
+// CORRECT: Using error boundaries for component error handling
+import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/ErrorLoggingService';
+
+function ResourceSection() {
+  return (
+    <ErrorBoundary
+      fallback={<ResourceErrorFallback />}
+      onError={(error, errorInfo) => {
+        console.error('Resource error:', error);
+
+        // Log error to monitoring service
+        errorLoggingService.logError(
+          error,
+          ErrorType.RUNTIME,
+          ErrorSeverity.HIGH,
+          {
+            componentName: 'ResourceSection',
+            componentStack: errorInfo.componentStack,
+          }
+        );
+      }}
+    >
+      <ResourceDisplay />
+    </ErrorBoundary>
+  );
+}
+```
+
+3. Async Function Error Handling:
+
+```typescript
+// CORRECT: Error handling in async functions
+import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/ErrorLoggingService';
+
+async function fetchResourceData() {
+  try {
+    const data = await resourceService.getData();
+    return processData(data);
+  } catch (error) {
+    console.error('Failed to fetch resource data:', error);
+
+    // Report error to tracking
+    errorLoggingService.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      ErrorType.NETWORK,
+      ErrorSeverity.MEDIUM,
+      {
+        action: 'fetchResourceData',
+      }
+    );
+
+    // Return empty data as fallback
+    return [];
+  }
+}
+```
+
+4. Event Handler Error Handling:
+
+```typescript
+// CORRECT: Error handling in event handlers
+import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/ErrorLoggingService';
+
+const handleResourceClick = (resource: Resource) => {
+  try {
+    resourceManager.selectResource(resource.id);
+  } catch (error) {
+    console.error('Error selecting resource:', error);
+
+    // Log error to monitoring service
+    errorLoggingService.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      ErrorType.RUNTIME,
+      ErrorSeverity.MEDIUM,
+      {
+        action: 'handleResourceClick',
+        resourceId: resource.id,
+      }
+    );
+
+    // Show user-friendly error message
+    setError('Unable to select resource. Please try again.');
+  }
+};
+```
+
+5. Hook Error Handling:
+
+```typescript
+// CORRECT: Error handling in custom hooks
+import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/ErrorLoggingService';
+import { getResourceManager } from '../../managers/ManagerRegistry';
+
+function useResourceData(resourceId: string) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const resourceManager = getResourceManager();
+        const resourceData = await resourceManager.getResourceData(resourceId);
+
+        if (isMounted) {
+          setData(resourceData);
+          setError(null);
+        }
+      } catch (error) {
+        console.error('Error fetching resource data:', error);
+
+        if (isMounted) {
+          const typedError = error instanceof Error ? error : new Error(String(error));
+          setError(typedError);
+          setData(null);
+
+          // Log the error
+          errorLoggingService.logError(typedError, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
+            hook: 'useResourceData',
+            resourceId,
+          });
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [resourceId]);
+
+  return { data, error, loading };
+}
+```
+
+Always handle errors appropriately for the context, log relevant information, and provide fallback mechanisms when possible.

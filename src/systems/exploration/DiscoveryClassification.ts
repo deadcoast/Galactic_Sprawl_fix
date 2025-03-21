@@ -1,6 +1,6 @@
 import { EventBus } from '../../lib/events/EventBus';
 import { Vector3D } from '../../types/common/VectorTypes';
-import { ExplorationEvents } from '../../types/events/ExplorationEvents';
+import { EventType } from '../../types/events/EventTypes';
 import {
   Classification,
   ClassificationResult,
@@ -88,6 +88,9 @@ export class DiscoveryClassification {
         extractionDifficulty: this.calculateExtractionDifficulty(discovery),
         qualityIndicators: this.analyzeResourceQuality(discovery),
       },
+      timestamp: Date.now(),
+      analysisTime: 0,
+      enhancementApplied: false,
     };
 
     analysis.confidence = this.calculateConfidence(analysis);
@@ -157,18 +160,35 @@ export class DiscoveryClassification {
   }
 
   private estimateResourceQuantity(discovery: Discovery): number {
-    const { densityMapping } = discovery.metadata?.scanData;
+    const densityMapping =
+      discovery.metadata && discovery.metadata.scanData
+        ? discovery.metadata.scanData.densityMapping || []
+        : [];
     return densityMapping.reduce((sum, density) => sum + density, 0) * 100;
   }
 
   private calculateExtractionDifficulty(discovery: Discovery): number {
-    const { structuralIntegrity } = discovery.metadata?.scanData;
+    const structuralIntegrity =
+      discovery.metadata && discovery.metadata.scanData
+        ? discovery.metadata.scanData.structuralIntegrity || 0.5
+        : 0.5;
     return 1 - structuralIntegrity;
   }
 
   private analyzeResourceQuality(discovery: Discovery): QualityIndicators {
-    const { elementalComposition, structuralIntegrity } = discovery.metadata?.scanData;
-    const { pressure, temperature } = discovery.metadata?.initialReadings;
+    const scanData =
+      discovery.metadata && discovery.metadata.scanData
+        ? discovery.metadata.scanData
+        : { elementalComposition: new Map(), structuralIntegrity: 0.5 };
+    const initialReadings =
+      discovery.metadata && discovery.metadata.initialReadings
+        ? discovery.metadata.initialReadings
+        : { pressure: 0, temperature: 0 };
+
+    const elementalComposition = scanData.elementalComposition || new Map();
+    const structuralIntegrity = scanData.structuralIntegrity || 0.5;
+    const pressure = initialReadings.pressure || 0;
+    const temperature = initialReadings.temperature || 0;
 
     return {
       purity: this.calculatePurity(elementalComposition),
@@ -330,18 +350,87 @@ export class DiscoveryClassification {
     result: ClassificationResult,
     duration: number
   ): void {
-    this.eventBus.publish({
-      type: ExplorationEvents.DISCOVERY_ANALYZED,
+    this.eventBus.emit({
+      type: EventType.EXPLORATION_SECTOR_SCANNED,
       timestamp: Date.now(),
-      id: discovery.id,
-      payload: {
+      moduleId: 'discovery-classification',
+      moduleType: 'exploration',
+      data: {
         discoveryId: discovery.id,
-        classificationType: result?.type,
-        confidence: result?.confidence,
+        discoveryType: discovery.type,
+        confidence: result.confidence,
         duration,
-        enhancementApplied: result?.enhancementApplied,
+        enhancementApplied: result.enhancementApplied,
       },
     });
+  }
+
+  private async enhanceAnalysis(
+    discovery: Discovery,
+    result: ClassificationResult
+  ): Promise<ClassificationResult> {
+    const enhancedResult = { ...result };
+
+    let enhancementApplied = false;
+
+    switch (discovery.type) {
+      case DiscoveryType.RESOURCE_DEPOSIT:
+        enhancedResult.confidence += 0.1;
+        enhancementApplied = true;
+        break;
+      case DiscoveryType.ALIEN_ARTIFACT:
+        enhancedResult.confidence += 0.15;
+        enhancementApplied = true;
+        break;
+      case DiscoveryType.ANOMALY:
+        enhancedResult.confidence += 0.12;
+        enhancementApplied = true;
+        break;
+      case DiscoveryType.DERELICT:
+        enhancedResult.confidence += 0.08;
+        enhancementApplied = true;
+        break;
+      case DiscoveryType.SPATIAL_PHENOMENON:
+        enhancedResult.confidence += 0.1;
+        enhancementApplied = true;
+        break;
+    }
+
+    enhancedResult.enhancementApplied = enhancementApplied;
+
+    enhancedResult.confidence = Math.min(1.0, enhancedResult.confidence);
+
+    enhancedResult.analysisTime = (enhancedResult.analysisTime || 0) + 500;
+
+    return enhancedResult;
+  }
+
+  private analyzeResourceSignature(discovery: Discovery): ResourceSignature {
+    const spectralProfile = this.analyzeSpectralProfile(discovery.metadata?.scanData || {});
+    const densityProfile = this.analyzeDensityProfile(discovery.metadata?.scanData || {});
+    const thermalProfile = this.analyzeThermalProfile(discovery.metadata?.initialReadings || {});
+
+    return {
+      spectralProfile,
+      densityProfile,
+      thermalProfile,
+    };
+  }
+
+  private analyzeComposition(discovery: Discovery): CompositionAnalysis {
+    const elements = this.identifyElements(discovery.metadata?.scanData || {});
+    const structure = this.analyzeStructure(discovery.metadata?.scanData || {});
+
+    const purity =
+      discovery.metadata && discovery.metadata.scanData
+        ? this.calculatePurity(discovery.metadata.scanData.elementalComposition || new Map())
+        : 0.5;
+
+    return {
+      elements,
+      structure,
+      purity,
+    };
   }
 }
 
@@ -349,7 +438,6 @@ interface EnhancementStrategy {
   execute(discovery: Discovery, initialResult: ClassificationResult): Promise<ClassificationResult>;
 }
 
-// Helper interfaces
 interface ResourceSignature {
   spectralProfile: SpectralProfile;
   densityProfile: DensityProfile;

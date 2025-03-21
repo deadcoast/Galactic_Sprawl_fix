@@ -98,11 +98,12 @@ export interface ObjectDetectionSystem {
 }
 
 /**
- * Implementation of the ObjectDetectionSystem
- * Handles detection of objects in space based on scanner capabilities
- * and environmental factors
+ * @context: combat-system.detection, manager-registry
+ * Implementation of the object detection system following the singleton pattern
  */
 export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
+  private static instance: ObjectDetectionSystemImpl | null = null;
+  
   private detectors: Map<string, DetectorUnit> = new Map();
   private detectables: Map<string, DetectableObject> = new Map();
   private detectedObjectsCache: Map<string, Set<string>> = new Map();
@@ -117,9 +118,22 @@ export class ObjectDetectionSystemImpl implements ObjectDetectionSystem {
   private readonly DETECTION_THRESHOLD = 0.3; // Minimum confidence to register a detection
   private readonly FORGET_THRESHOLD = 0.1; // Below this confidence, object is forgotten
 
-  constructor(environmentalFactors: EnvironmentalFactors = {}) {
+  /**
+   * Private constructor to enforce singleton pattern
+   */
+  private constructor(environmentalFactors: EnvironmentalFactors = {}) {
     this.environmentalFactors = environmentalFactors;
     this.startScanLoop();
+  }
+  
+  /**
+   * Get the singleton instance of ObjectDetectionSystemImpl
+   */
+  public static getInstance(environmentalFactors: EnvironmentalFactors = {}): ObjectDetectionSystemImpl {
+    if (!ObjectDetectionSystemImpl.instance) {
+      ObjectDetectionSystemImpl.instance = new ObjectDetectionSystemImpl(environmentalFactors);
+    }
+    return ObjectDetectionSystemImpl.instance;
   }
 
   /**

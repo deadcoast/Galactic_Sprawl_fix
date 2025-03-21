@@ -1,13 +1,14 @@
-import { ResourceType } from './resources/ResourceTypes';
 /**
- * Shared type definitions for common patterns across the codebase.
- * These types are designed to be reusable and type-safe alternatives to 'any'.
- */
+ * @context: type-definitions
+ * @description: Shared type definitions for common patterns across the codebase.
+ * @file: src/types/shared/index.ts
+*/
+
+import { ResourceType } from '../resources/ResourceTypes';
 
 /**
  * Event System Types
  */
-
 export type EventCallback<T = unknown> = (event: T) => void;
 
 export type EventHandler<T = unknown> = {

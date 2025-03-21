@@ -14,6 +14,8 @@ import { useTooltip } from './useTooltip';
 import { useVPR } from './useVPR';
 import { useVPRInteractivity } from './useVPRInteractivity';
 import { useVPRSystem } from './useVPRSystem';
+import { useBreakpoint } from './useBreakpoint';
+import { useEnhancedComponentProfiler } from '../../utils/profiling/enhancedComponentProfiler';
 
 export {
   // Component lifecycle hooks
@@ -21,6 +23,7 @@ export {
   // Profiling hooks
   useComponentProfiler,
   useComponentProfilerWithUpdates,
+  useEnhancedComponentProfiler,
   // Component registration hooks
   useComponentRegistration,
   useComponentRegistrationWithManualUpdates,
@@ -31,6 +34,8 @@ export {
   useStableCallback,
   // UI hooks
   useTooltip,
+  // Responsive hooks
+  useBreakpoint,
 
   // VPR hooks
   useVPR,

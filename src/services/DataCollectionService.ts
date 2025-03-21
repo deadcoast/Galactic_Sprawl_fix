@@ -14,7 +14,7 @@ import { ResourceType } from './../types/resources/ResourceTypes';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Anomaly,
-  ExplorationEvents,
+  EXPLORATION_EVENTS,
   ExplorationManager,
   Sector,
 } from '../managers/exploration/ExplorationManager';
@@ -25,16 +25,16 @@ import { DataPoint, ResourceData } from '../types/exploration/DataAnalysisTypes'
  * Map of ExplorationEvents to EventType enums
  * This mapping ensures type safety and proper integration between systems
  */
-const EVENT_TYPE_MAPPING: Record<ExplorationEvents, EventType> = {
-  [ExplorationEvents.SECTOR_DISCOVERED]: 'EXPLORATION_SECTOR_DISCOVERED' as EventType,
-  [ExplorationEvents.SECTOR_SCANNED]: 'EXPLORATION_SECTOR_SCANNED' as EventType,
-  [ExplorationEvents.ANOMALY_DETECTED]: 'EXPLORATION_ANOMALY_DETECTED' as EventType,
-  [ExplorationEvents.RESOURCE_DETECTED]: 'EXPLORATION_RESOURCE_DETECTED' as EventType,
-  [ExplorationEvents.SCAN_STARTED]: 'EXPLORATION_SCAN_STARTED' as EventType,
-  [ExplorationEvents.SCAN_COMPLETED]: 'EXPLORATION_SCAN_COMPLETED' as EventType,
-  [ExplorationEvents.SCAN_FAILED]: 'EXPLORATION_SCAN_FAILED' as EventType,
-  [ExplorationEvents.SHIP_ASSIGNED]: 'EXPLORATION_SHIP_ASSIGNED' as EventType,
-  [ExplorationEvents.SHIP_UNASSIGNED]: 'EXPLORATION_SHIP_UNASSIGNED' as EventType,
+const EVENT_TYPE_MAPPING: Record<keyof typeof EXPLORATION_EVENTS, EventType> = {
+  SECTOR_DISCOVERED: EventType.EXPLORATION_SECTOR_DISCOVERED,
+  SECTOR_SCANNED: EventType.EXPLORATION_SECTOR_SCANNED,
+  ANOMALY_DETECTED: EventType.EXPLORATION_ANOMALY_DETECTED,
+  RESOURCE_DETECTED: EventType.EXPLORATION_RESOURCE_DETECTED,
+  SCAN_STARTED: EventType.EXPLORATION_SCAN_STARTED,
+  SCAN_COMPLETED: EventType.EXPLORATION_SCAN_COMPLETED,
+  SCAN_FAILED: EventType.EXPLORATION_SCAN_FAILED,
+  SHIP_ASSIGNED: EventType.EXPLORATION_SHIP_ASSIGNED,
+  SHIP_UNASSIGNED: EventType.EXPLORATION_SHIP_UNASSIGNED,
 };
 
 // Define PropertyType for DataPoint properties to fix type issues
@@ -121,22 +121,25 @@ function isResourceData(obj: unknown): obj is ResourceData {
 }
 
 /**
- * Safely converts an ExplorationEvents enum value to the corresponding EventType
- * with proper type validation
- *
- * @param event ExplorationEvents enum value to convert
- * @returns The corresponding EventType or undefined if not found
+ * Convert exploration event key to EventType
+ * @param event The exploration event key
+ * @returns The corresponding EventType
  */
-function asEventType(event: ExplorationEvents): EventType {
-  const mappedEventType = EVENT_TYPE_MAPPING[event];
+function asEventType(event: keyof typeof EXPLORATION_EVENTS): EventType {
+  return EXPLORATION_EVENTS[event];
+}
 
-  if (!mappedEventType) {
-    console.warn(`Unknown exploration event type: ${event}`);
-    // Fallback to the original string value, but with a warning
-    return event as unknown as EventType;
-  }
-
-  return mappedEventType;
+/**
+ * Check if a BaseEvent has the expected exploration event type
+ * @param event The event to check
+ * @param expectedType The expected exploration event type
+ * @returns True if the event is of the expected type, false otherwise
+ */
+function isExplorationEventOfType(
+  event: BaseEvent,
+  expectedType: keyof typeof EXPLORATION_EVENTS
+): boolean {
+  return event?.type === EXPLORATION_EVENTS[expectedType];
 }
 
 /**
@@ -194,17 +197,6 @@ function isResourceDetectionEventData(data: unknown): data is ResourceDetectionE
 }
 
 /**
- * Helper function to validate that an event is of a specific exploration event type
- *
- * @param event The event to validate
- * @param expectedType The expected exploration event type
- * @returns True if the event is of the expected type, false otherwise
- */
-function isExplorationEventOfType(event: BaseEvent, expectedType: ExplorationEvents): boolean {
-  return event?.type === asEventType(expectedType);
-}
-
-/**
  * Type definitions for aggregation operations
  */
 
@@ -223,7 +215,7 @@ interface AggregationOperation {
 }
 
 /**
- * Interface for aggregation result
+ * Aggregation result interface with properly typed groupValue
  */
 interface AggregationResult extends Record<string, unknown> {
   groupValue: string | number | boolean;
@@ -255,6 +247,7 @@ export class DataCollectionService {
     totalResources: 0,
     lastCollectionTime: 0,
     processingTimes: [] as number[],
+    averageProcessingTime: 0,
   };
 
   constructor(private explorationManager: ExplorationManager) {}
@@ -318,69 +311,75 @@ export class DataCollectionService {
    * Subscribe to relevant exploration events
    */
   private subscribeToEvents(): void {
-    // Subscribe to sector discovery events
-    const unsubscribeSectorDiscovered = this.explorationManager.subscribeToEvent(
-      asEventType(ExplorationEvents.SECTOR_DISCOVERED),
-      this.handleSectorDiscovered.bind(this)
-    );
-    this.eventSubscriptions.push(unsubscribeSectorDiscovered);
+    try {
+      // Subscribe to sector discovery events
+      const unsubscribeSectorDiscovered = this.explorationManager.subscribeToEvent(
+        EXPLORATION_EVENTS.SECTOR_DISCOVERED,
+        this.handleSectorDiscovered.bind(this)
+      );
 
-    // Subscribe to sector scanning events
-    const unsubscribeSectorScanned = this.explorationManager.subscribeToEvent(
-      asEventType(ExplorationEvents.SECTOR_SCANNED),
-      this.handleSectorScanned.bind(this)
-    );
-    this.eventSubscriptions.push(unsubscribeSectorScanned);
+      // Subscribe to sector scanning events
+      const unsubscribeSectorScanned = this.explorationManager.subscribeToEvent(
+        EXPLORATION_EVENTS.SECTOR_SCANNED,
+        this.handleSectorScanned.bind(this)
+      );
 
-    // Subscribe to anomaly detection events
-    const unsubscribeAnomalyDetected = this.explorationManager.subscribeToEvent(
-      asEventType(ExplorationEvents.ANOMALY_DETECTED),
-      this.handleAnomalyDetected.bind(this)
-    );
-    this.eventSubscriptions.push(unsubscribeAnomalyDetected);
+      // Subscribe to anomaly detection events
+      const unsubscribeAnomalyDetected = this.explorationManager.subscribeToEvent(
+        EXPLORATION_EVENTS.ANOMALY_DETECTED,
+        this.handleAnomalyDetected.bind(this)
+      );
 
-    // Subscribe to resource detection events
-    const unsubscribeResourceDetected = this.explorationManager.subscribeToEvent(
-      asEventType(ExplorationEvents.RESOURCE_DETECTED),
-      this.handleResourceDetected.bind(this)
-    );
-    this.eventSubscriptions.push(unsubscribeResourceDetected);
+      // Subscribe to resource detection events
+      const unsubscribeResourceDetected = this.explorationManager.subscribeToEvent(
+        EXPLORATION_EVENTS.RESOURCE_DETECTED,
+        this.handleResourceDetected.bind(this)
+      );
+
+      // Store unsubscribe functions for cleanup
+      this.eventSubscriptions.push(
+        unsubscribeSectorDiscovered,
+        unsubscribeSectorScanned,
+        unsubscribeAnomalyDetected,
+        unsubscribeResourceDetected
+      );
+    } catch (error) {
+      console.error('Error subscribing to exploration events:', error);
+    }
   }
 
   /**
    * Handle sector discovery events with proper type validation
    */
   private handleSectorDiscovered(event: BaseEvent): void {
-    const startTime = performance.now();
-
     // Ensure this is the correct event type
-    if (!isExplorationEventOfType(event, ExplorationEvents.SECTOR_DISCOVERED)) {
+    if (!isExplorationEventOfType(event, 'SECTOR_DISCOVERED')) {
       console.warn('Incorrect event type received:', event?.type);
       return;
     }
 
-    // Validate sector data using type guard
-    if (!event?.data || !isSectorDiscoveryEventData(event?.data)) {
-      console.error('Invalid sector data received:', event?.data);
+    // Validate event data
+    if (!isSectorDiscoveryEventData(event.data)) {
+      console.warn('Invalid sector discovery event data:', event.data);
       return;
     }
 
-    const sector = event?.data?.sector;
+    const { sector } = event.data;
     const dataPoint = this.processSectorData(sector);
 
-    this.cache.sectors.set(sector.id, dataPoint);
-    this.cache.lastUpdated.sectors = Date.now();
-    this.stats.totalSectors++;
+    // Calculate processing time and update stats
+    const processingTime = Date.now() - (event.timestamp || Date.now());
+    this.stats.totalSectors += 1;
+    this.stats.averageProcessingTime =
+      (this.stats.averageProcessingTime * (this.stats.totalSectors - 1) + processingTime) /
+      this.stats.totalSectors;
     this.stats.lastCollectionTime = Date.now();
 
-    const processingTime = performance.now() - startTime;
-    this.stats.processingTimes.push(processingTime);
+    // Store in cache
+    this.cache.sectors.set(dataPoint.id, dataPoint);
+    this.cache.lastUpdated.sectors = Date.now();
 
-    // Keep only the last 100 processing times to avoid memory growth
-    if (this.stats.processingTimes.length > 100) {
-      this.stats.processingTimes.shift();
-    }
-
+    // Notify listener if registered
     if (this.onDataUpdated) {
       this.onDataUpdated('sector', dataPoint);
     }
@@ -391,24 +390,25 @@ export class DataCollectionService {
    */
   private handleSectorScanned(event: BaseEvent): void {
     // Ensure this is the correct event type
-    if (!isExplorationEventOfType(event, ExplorationEvents.SECTOR_SCANNED)) {
+    if (!isExplorationEventOfType(event, 'SECTOR_SCANNED')) {
       console.warn('Incorrect event type received:', event?.type);
       return;
     }
 
-    // Validate sector data using type guard
-    if (!event?.data || !isSectorDiscoveryEventData(event?.data)) {
-      console.error('Invalid sector data received:', event?.data);
+    // Similar to sector discovery but with updated data
+    if (!isSectorDiscoveryEventData(event.data)) {
+      console.warn('Invalid sector scan event data:', event.data);
       return;
     }
 
-    const sector = event?.data?.sector;
+    const { sector } = event.data;
     const dataPoint = this.processSectorData(sector);
 
-    this.cache.sectors.set(sector.id, dataPoint);
+    // Update cache
+    this.cache.sectors.set(dataPoint.id, dataPoint);
     this.cache.lastUpdated.sectors = Date.now();
-    this.stats.lastCollectionTime = Date.now();
 
+    // Notify listener if registered
     if (this.onDataUpdated) {
       this.onDataUpdated('sector', dataPoint);
     }
@@ -419,25 +419,29 @@ export class DataCollectionService {
    */
   private handleAnomalyDetected(event: BaseEvent): void {
     // Ensure this is the correct event type
-    if (!isExplorationEventOfType(event, ExplorationEvents.ANOMALY_DETECTED)) {
+    if (!isExplorationEventOfType(event, 'ANOMALY_DETECTED')) {
       console.warn('Incorrect event type received:', event?.type);
       return;
     }
 
-    // Validate anomaly data using type guard
-    if (!event?.data || !isAnomalyDetectionEventData(event?.data)) {
-      console.error('Invalid anomaly data received:', event?.data);
+    // Validate event data
+    if (!isAnomalyDetectionEventData(event.data)) {
+      console.warn('Invalid anomaly detection event data:', event.data);
       return;
     }
 
-    const anomaly = event?.data?.anomaly;
+    const { anomaly } = event.data;
     const dataPoint = this.processAnomalyData(anomaly);
 
-    this.cache.anomalies.set(anomaly.id, dataPoint);
-    this.cache.lastUpdated.anomalies = Date.now();
-    this.stats.totalAnomalies++;
+    // Update stats
+    this.stats.totalAnomalies += 1;
     this.stats.lastCollectionTime = Date.now();
 
+    // Store in cache
+    this.cache.anomalies.set(dataPoint.id, dataPoint);
+    this.cache.lastUpdated.anomalies = Date.now();
+
+    // Notify listener if registered
     if (this.onDataUpdated) {
       this.onDataUpdated('anomaly', dataPoint);
     }
@@ -448,25 +452,29 @@ export class DataCollectionService {
    */
   private handleResourceDetected(event: BaseEvent): void {
     // Ensure this is the correct event type
-    if (!isExplorationEventOfType(event, ExplorationEvents.RESOURCE_DETECTED)) {
+    if (!isExplorationEventOfType(event, 'RESOURCE_DETECTED')) {
       console.warn('Incorrect event type received:', event?.type);
       return;
     }
 
-    // Validate resource data using type guard
-    if (!event?.data || !isResourceDetectionEventData(event?.data)) {
-      console.error('Invalid resource data received:', event?.data);
+    // Validate event data
+    if (!isResourceDetectionEventData(event.data)) {
+      console.warn('Invalid resource detection event data:', event.data);
       return;
     }
 
-    const resource = event?.data?.resource;
+    const { resource } = event.data;
     const dataPoint = this.processResourceData(resource);
 
-    this.cache.resources.set(uuidv4(), dataPoint);
-    this.cache.lastUpdated.resources = Date.now();
-    this.stats.totalResources++;
+    // Update stats
+    this.stats.totalResources += 1;
     this.stats.lastCollectionTime = Date.now();
 
+    // Store in cache
+    this.cache.resources.set(dataPoint.id, dataPoint);
+    this.cache.lastUpdated.resources = Date.now();
+
+    // Notify listener if registered
     if (this.onDataUpdated) {
       this.onDataUpdated('resource', dataPoint);
     }
@@ -491,7 +499,7 @@ export class DataCollectionService {
 
     // Add region information if available
     if (sector.coordinates) {
-      metadata?.region = `${sector.coordinates.x},${sector.coordinates.y}`;
+      metadata.region = `${sector.coordinates.x},${sector.coordinates.y}`;
     }
 
     // Calculate additional derived properties
@@ -526,13 +534,12 @@ export class DataCollectionService {
    * Process anomaly data into a standardized format
    */
   private processAnomalyData(anomaly: Anomaly): DataPoint {
-    // Create a safe metadata object with proper types
-    const metadata: Record<string, PropertyType> = {};
+    // Create enhanced metadata
+    let metadata: Record<string, PropertyType> = {};
 
-    // Convert anomaly.data to properly typed metadata if it exists
-    if (anomaly.data) {
+    // Add any existing metadata from anomaly.data
+    if (typeof anomaly.data === 'object' && anomaly.data !== null) {
       Object.entries(anomaly.data).forEach(([key, value]) => {
-        // Only include values that match our PropertyType
         if (
           typeof value === 'string' ||
           typeof value === 'number' ||
@@ -548,8 +555,8 @@ export class DataCollectionService {
     }
 
     // Add investigation status metadata
-    metadata?.investigated = anomaly.investigatedAt ? true : false;
-    metadata?.investigationAge = anomaly.investigatedAt ? Date.now() - anomaly.investigatedAt : 0;
+    metadata.investigated = anomaly.investigatedAt ? true : false;
+    metadata.investigationAge = anomaly.investigatedAt ? Date.now() - anomaly.investigatedAt : 0;
 
     // Fix the type mismatch in calculateRiskAssessment call
     // Convert anomaly.severity from string to number
@@ -560,7 +567,10 @@ export class DataCollectionService {
 
     // Calculate risk assessment based on severity and type
     const riskAssessment = this.calculateRiskAssessment(severityAsNumber, anomaly.type);
-    metadata?.riskAssessment = riskAssessment;
+    if (!metadata) {
+      metadata = {};
+    }
+    metadata.riskAssessment = riskAssessment;
 
     // Ensure coordinates are valid
     const coordinates: Coordinates = {
@@ -610,11 +620,15 @@ export class DataCollectionService {
 
     // Add extraction difficulty if available
     if (resource.extractionDifficulty !== undefined) {
-      metadata?.extractionDifficulty = Number(resource.extractionDifficulty);
+      metadata.extractionDifficulty = Number(resource.extractionDifficulty);
     }
 
     // Add purity grade based on quality
-    metadata?.purityGrade = this.calculatePurityGrade(resource.quality || 1);
+    metadata.purityGrade = this.calculatePurityGrade(resource.quality || 1);
+
+    // Add resource density if available or calculate a default
+    metadata.density =
+      resource.density !== undefined ? Number(resource.density) : resource.amount / 100;
 
     // Calculate resource potential score
     const potentialScore = this.calculateResourcePotential(
@@ -622,10 +636,6 @@ export class DataCollectionService {
       resource.quality || 1,
       accessibility
     );
-
-    // Add resource density if available or calculate a default
-    metadata?.density =
-      resource.density !== undefined ? Number(resource.density) : resource.amount / 100; // Default density calculation
 
     // Add additional resource data if available
     if (typeof resource.data === 'object' && resource.data !== null) {
@@ -925,44 +935,53 @@ export class DataCollectionService {
     });
   }
 
+  private isStringOrNumberOrBoolean(value: unknown): value is string | number | boolean {
+    return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+  }
+
   /**
-   * Apply an aggregation function to an array of values with type safety
+   * Apply an aggregation function to a set of values
    *
    * @param values Array of values to aggregate
-   * @param aggregationFn Aggregation function to apply
-   * @returns The aggregated value
+   * @param aggregationFn The aggregation function to apply
+   * @returns The result of the aggregation
    */
   private applyAggregation(values: unknown[], aggregationFn: AggregationFunction): number {
-    // Filter to only numeric values for mathematical operations
-    const numericValues = values.filter(v => typeof v === 'number') as number[];
+    // Filter out non-numeric values
+    const numericValues = values.filter(
+      value => typeof value === 'number' || (typeof value === 'string' && !isNaN(Number(value)))
+    );
 
-    if (numericValues.length === 0) {
+    // Convert to numbers
+    const numbers = numericValues.map(v => (typeof v === 'number' ? v : Number(v)));
+
+    if (numbers.length === 0) {
       return 0;
     }
 
+    // Apply the aggregation function
     switch (aggregationFn) {
       case 'sum':
-        return numericValues.reduce((sum, value) => sum + value, 0);
+        return numbers.reduce((sum, value) => sum + value, 0);
       case 'avg':
-        return numericValues.reduce((sum, value) => sum + value, 0) / numericValues.length;
+        return numbers.reduce((sum, value) => sum + value, 0) / numbers.length;
       case 'min':
-        return Math.min(...numericValues);
+        return Math.min(...numbers);
       case 'max':
-        return Math.max(...numericValues);
+        return Math.max(...numbers);
       case 'count':
-        return numericValues.length;
+        return numbers.length;
       default:
         return 0;
     }
   }
 
   /**
-   * Aggregate data by a grouping field and apply aggregation functions to fields
-   * with enhanced type safety
+   * Aggregate data by a group field and apply aggregation functions
    *
-   * @param data Array of DataPoints to aggregate
-   * @param groupByField Field to group by (supports dot notation for nested fields)
-   * @param aggregations Array of aggregation operations to apply
+   * @param data The data points to aggregate
+   * @param groupByField The field to group by
+   * @param aggregations The aggregation operations to perform
    * @returns Array of aggregation results
    */
   public aggregateData(
@@ -977,8 +996,8 @@ export class DataCollectionService {
     data?.forEach(dataPoint => {
       const groupValue = getNestedProperty(dataPoint, groupByField);
 
-      // Skip items where the group value isn't a valid property type
-      if (!isValidDataPointProperty(groupValue)) {
+      // Skip items where the group value isn't a valid primitive type
+      if (!this.isStringOrNumberOrBoolean(groupValue)) {
         return;
       }
 
@@ -1001,7 +1020,7 @@ export class DataCollectionService {
         // Get values for the field from all items in the group
         const values = groupData.map(dataPoint => getNestedProperty(dataPoint, agg.field));
 
-        // Apply aggregation function and store result
+        // Apply the aggregation function
         result[agg.outputField] = this.applyAggregation(values, agg.function);
       });
 

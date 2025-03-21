@@ -3,7 +3,8 @@ import { getCombatManager } from '../../managers/ManagerRegistry';
 import { factionManager } from '../../managers/factions/factionManager';
 import { CombatStats, DebugState } from '../../types/debug/DebugTypes';
 
-interface PerformanceMetrics {
+// Export the PerformanceMetrics interface for reuse
+export interface PerformanceMetrics {
   usedJSHeapSize: number;
   networkLatency?: number;
   frameDrops?: number;

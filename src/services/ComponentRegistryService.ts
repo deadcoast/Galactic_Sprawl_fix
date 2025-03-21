@@ -1,4 +1,5 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
+import { ErrorType, errorLoggingService } from './ErrorLoggingService';
 
 /**
  * Metadata for a registered UI component
@@ -25,25 +26,32 @@ export interface ComponentRegistration {
   renderCount?: number;
 }
 
-class ComponentRegistryServiceImpl extends AbstractBaseService {
-  private static instance: ComponentRegistryServiceImpl;
+/**
+ * @context: service-system
+ * Service for registering and tracking UI components and their event subscriptions
+ */
+class ComponentRegistryServiceImpl extends AbstractBaseService<ComponentRegistryServiceImpl> {
   private components: Map<string, ComponentRegistration> = new Map();
   private typeIndex: Map<string, Set<string>> = new Map();
   private eventIndex: Map<string, Set<string>> = new Map();
 
-  private constructor() {
+  public constructor() {
     super('ComponentRegistryService', '1.0.0');
   }
 
-  public static getInstance(): ComponentRegistryServiceImpl {
-    if (!ComponentRegistryServiceImpl.instance) {
-      ComponentRegistryServiceImpl.instance = new ComponentRegistryServiceImpl();
+  protected async onInitialize(dependencies?: Record<string, unknown>): Promise<void> {
+    // Initialize metrics
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
     }
-    return ComponentRegistryServiceImpl.instance;
-  }
-
-  protected async onInitialize(): Promise<void> {
-    // No initialization needed
+    this.metadata.metrics = {
+      total_components: 0,
+      total_types: 0,
+      total_event_types: 0,
+      total_renders: 0,
+      total_notifications: 0,
+      total_errors: 0,
+    };
   }
 
   protected async onDispose(): Promise<void> {
@@ -79,11 +87,14 @@ class ComponentRegistryServiceImpl extends AbstractBaseService {
     }
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.total_components = this.components.size;
     metrics.total_types = this.typeIndex.size;
     metrics.total_event_types = this.eventIndex.size;
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
 
     return id;
   }
@@ -112,11 +123,14 @@ class ComponentRegistryServiceImpl extends AbstractBaseService {
     this.components.delete(id);
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.total_components = this.components.size;
     metrics.total_types = this.typeIndex.size;
     metrics.total_event_types = this.eventIndex.size;
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
   }
 
   public getComponent(id: string): ComponentRegistration | undefined {
@@ -155,21 +169,27 @@ class ComponentRegistryServiceImpl extends AbstractBaseService {
     registration.renderCount = (registration.renderCount ?? 0) + 1;
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.total_renders = (metrics.total_renders ?? 0) + 1;
     metrics.last_render_timestamp = registration.lastRenderTime;
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
   }
 
   public notifyComponentsOfEvent(eventType: string, eventData: unknown): void {
     const components = this.getComponentsByEvent(eventType);
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.total_notifications = (metrics.total_notifications ?? 0) + 1;
     metrics.last_notification_timestamp = Date.now();
     metrics.components_notified = components.length;
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
 
     // Log in development
     if (process.env.NODE_ENV === 'development') {
@@ -179,12 +199,21 @@ class ComponentRegistryServiceImpl extends AbstractBaseService {
     }
   }
 
-  public override handleError(error: Error): void {
+  public override handleError(error: Error, context?: Record<string, unknown>): void {
     // Update error metrics
-    const metrics = this.metadata?.metrics ?? {};
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const metrics = this.metadata.metrics;
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
+
+    // Forward to error logging service
+    errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {
+      service: 'ComponentRegistryService',
+      ...context,
+    });
 
     // Log error in development
     if (process.env.NODE_ENV === 'development') {
@@ -193,5 +222,8 @@ class ComponentRegistryServiceImpl extends AbstractBaseService {
   }
 }
 
-// Export singleton instance
-export const componentRegistryService = ComponentRegistryServiceImpl.getInstance();
+// Export singleton instance using direct instantiation
+export const componentRegistryService = new ComponentRegistryServiceImpl();
+
+// Export default for easier imports
+export default componentRegistryService;

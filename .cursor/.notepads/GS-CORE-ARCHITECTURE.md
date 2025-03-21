@@ -1,0 +1,137 @@
+# GALACTIC SPRAWL (GS) - Core Architecture
+
+## Overview
+This notepad provides a high-level overview of the Galactic Sprawl architecture. It documents key system relationships, dependency hierarchies, and module interactions to ensure consistent implementation patterns across the codebase.
+
+## System Hierarchy
+
+The architecture follows a modular approach with clear separation of concerns:
+
+1. Type System - Foundation of type safety and data structures
+2. Event System - Communication backbone between systems
+3. Registry System - Central access point for managers and services
+4. Manager Systems - Domain-specific business logic
+5. Component Systems - UI representation and user interaction
+
+## Key System Relationships
+
+### Core Dependencies
+
+```
+Type System ← Event System ← Registry System ← Manager Systems ← Component Systems
+```
+
+### Manager Dependencies
+
+```
+ResourceManager 
+	├── ResourceFlowManager 
+	├── ResourceThresholdManager 
+	├── ResourceConversionManager 
+	└── ResourceStorageManager
+
+ModuleManager 
+	├── ModuleStatusManager 
+	├── ModuleUpgradeManager 
+	└── SubModuleManager
+
+FactionManager 
+	├── FactionBehaviorManager 
+	└── FactionRelationshipManager
+```
+
+## Critical Type Standards
+
+### Enum-Based Types
+All systems must use enum-based types rather than string literals:
+
+- `ResourceType` instead of string literals for resources
+- `EventType` instead of string literals for events
+- `FactionId` instead of string literals for factions
+- `ModuleType` instead of string literals for modules
+
+### Type Safety Patterns
+
+1. Type Guards: All runtime type checking must use explicit type guards
+2. Safe Extraction: Use safe extraction utilities for accessing potentially undefined properties
+3. Exhaustive Type Checking: Switch statements must handle all enum cases
+
+## System Integration Principles
+
+### Manager Access Pattern
+
+```typescript
+// ALWAYS: Access managers through the registry
+import { getCombatManager } from '../managers/ManagerRegistry';
+
+// NEVER: Import manager classes directly
+// import { CombatManager } from '../managers/combat/CombatManager';
+```
+
+### Event Communication Pattern
+
+```typescript
+// ALWAYS: Use typed events
+moduleEventBus.emit({
+  type: EventType.RESOURCE_PRODUCED,
+  moduleId: 'resource-module-1',
+  moduleType: ModuleType.RESOURCE_PROCESSOR,
+  timestamp: Date.now(),
+  data: {
+    resourceType: ResourceType.ENERGY,
+    amount: 100
+  }
+});
+
+// NEVER: Use string literals for event types
+// moduleEventBus.emit({
+//   type: 'RESOURCE_PRODUCED',
+//   moduleId: 'resource-module-1',
+//   moduleType: 'resource-processor',
+//   timestamp: Date.now(),
+//   data: {
+//     resourceType: 'energy',
+//     amount: 100
+//   }
+// });
+```
+
+### Component Integration Pattern
+
+```typescript
+// ALWAYS: Use hooks for component integration
+function ResourceDisplay() {
+  // Access service through hooks
+  const resourceData = useResourceData();
+  
+  // Handle events through hooks
+  useResourceEvents((event) => {
+    // Update state based on events
+  });
+  
+  return (
+    // Component UI
+  );
+}
+
+// NEVER: Create manager instances in components
+// function ResourceDisplay() {
+//   const resourceManager = new ResourceManager();
+//   // ...
+// }
+```
+
+## Related Systems
+
+- See @GS-Resource-System for resource management details
+- See @GS-Event-System for event communication details
+- See @GS-Type-Definitions for complete type definitions
+
+## Implementation Guidelines
+
+- Always use factory methods for creating complex objects
+- Always handle potential null/undefined values
+- Always unsubscribe from events when components unmount
+- Always use the manager registry to access managers
+- Never use string literals where enum types exist
+- Never create direct circular dependencies between systems

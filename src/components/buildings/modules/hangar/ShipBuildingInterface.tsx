@@ -3,7 +3,7 @@
 import { AlertTriangle } from 'lucide-react';
 import * as React from 'react';
 import { ShipBlueprint, getAvailableShips } from '../../../../config/ShipBlueprints';
-import { techTreeManager } from '../../../../managers/game/techTreeManager';
+import { TechTreeManager } from '../../../../managers/game/techTreeManager';
 import { ShipHangarManager } from '../../../../managers/module/ShipHangarManager';
 import { ResourceCost } from '../../../../types/resources/ResourceTypes';
 import { PlayerShipCategory, PlayerShipClass } from '../../../../types/ships/PlayerShipTypes';
@@ -37,7 +37,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
       // Check tech requirements
       if (ship.requirements.prerequisites?.technology) {
         const missingTech = ship.requirements.prerequisites.technology.filter(
-          tech => !techTreeManager.getNode(tech)?.unlocked
+          tech => !TechTreeManager.getNode(tech)?.unlocked
         );
         if (missingTech.length > 0) {
           errors.push(`Missing technologies: ${missingTech.join(', ')}`);

@@ -243,6 +243,18 @@ export function getResourceTypeColor(
     PLASMA: '#D5A6BD', // Purple
     GAS: '#C27BA0', // Pink
     EXOTIC: '#CC0000', // Red
+    ORGANIC: '#B6D7A8', // Light green
+    FOOD: '#93C47D', // Darker green
+    IRON: '#A2C4C9', // Steel blue
+    COPPER: '#E69138', // Copper orange
+    TITANIUM: '#CCCCCC', // Silver
+    URANIUM: '#76A5AF', // Blue-green
+    WATER: '#9FC5E8', // Light blue
+    HELIUM: '#EAD1DC', // Light pink
+    DEUTERIUM: '#CFE2F3', // Very light blue
+    ANTIMATTER: '#FF0000', // Bright red
+    DARK_MATTER: '#351C75', // Deep purple
+    EXOTIC_MATTER: '#FF00FF', // Magenta
   };
 
   return (resourceTypeColors as Record<string, string>)[resourceType] || defaultColor;
@@ -297,7 +309,7 @@ export function transformClusterData(
   features: string[];
   clusterPoints: ClusterPoint[];
 } {
-  if (!isArray(result?.data?.clusters)) {
+  if (!result || typeof result !== 'object') {
     return {
       clusters: [],
       features: [],
@@ -305,23 +317,32 @@ export function transformClusterData(
     };
   }
 
-  const clusters = result?.data?.clusters as unknown[];
-  const features = safelyExtractArray<string>(result?.data, 'features', []);
+  const resultData =
+    result.data && typeof result.data === 'object' ? (result.data as Record<string, unknown>) : {};
+
+  const clusters = safelyExtractArray(resultData, 'clusters', []);
+  const features = safelyExtractArray<string>(resultData, 'features', []);
   const clusterPoints: ClusterPoint[] = [];
 
   clusters.forEach(cluster => {
-    const clusterIndex = safelyExtractNumber(cluster, 'cluster', 0);
-    const pointIds = safelyExtractArray<string>(cluster, 'pointIds', []);
+    if (!cluster || typeof cluster !== 'object') return;
+
+    const clusterObj = cluster as Record<string, unknown>;
+    const clusterIndex = safelyExtractNumber(clusterObj, 'cluster', 0);
+    const pointIds = safelyExtractArray<string>(clusterObj, 'pointIds', []);
 
     pointIds.forEach(pointId => {
       const originalPoint = allData.find(p => p.id === pointId);
       if (!originalPoint) return;
 
+      // Type cast to Record<string, unknown> for proper extraction
+      const originalPointObj = originalPoint as Record<string, unknown>;
+
       const featureValues = features.map(feature => {
         const value = safelyExtractPath<unknown>(
-          originalPoint,
+          originalPointObj,
           feature,
-          safelyExtractPath<unknown>(originalPoint, `properties.${feature}`, null)
+          safelyExtractPath<unknown>(originalPointObj, `properties.${feature}`, null)
         );
 
         return isNumber(value) ? value : null;
@@ -359,14 +380,34 @@ export function transformPredictionData(result: AnalysisResult): {
   metrics: unknown;
   modelDetails: unknown;
 } {
+  if (!result || typeof result !== 'object') {
+    return {
+      predictions: [],
+      forecast: [],
+      model: 'unknown',
+      targetVariable: '',
+      features: [],
+      metrics: { mse: 0, rmse: 0, mae: 0 },
+      modelDetails: {},
+    };
+  }
+
   // Extract data with type safety
-  const predictions = safelyExtractArray<PredictionPoint>(result?.data, 'predictions', []);
-  const forecast = safelyExtractArray<ForecastPoint>(result?.data, 'forecast', []);
-  const features = safelyExtractArray<string>(result?.data, 'features', []);
-  const metrics = safelyExtractObject(result?.data, 'metrics', { mse: 0, rmse: 0, mae: 0 });
-  const modelDetails = safelyExtractObject(result?.data, 'modelDetails', {});
-  const model = safelyExtractString(result?.data, 'model', 'unknown');
-  const targetVariable = safelyExtractString(result?.config?.parameters ?? {}, 'target', '');
+  const resultData = result.data && typeof result.data === 'object' ? result.data : {};
+  const predictions = safelyExtractArray<PredictionPoint>(resultData, 'predictions', []);
+  const forecast = safelyExtractArray<ForecastPoint>(resultData, 'forecast', []);
+  const features = safelyExtractArray<string>(resultData, 'features', []);
+  const metrics = safelyExtractObject(resultData, 'metrics', { mse: 0, rmse: 0, mae: 0 });
+  const modelDetails = safelyExtractObject(resultData, 'modelDetails', {});
+  const model = safelyExtractString(resultData, 'model', 'unknown');
+
+  // Get the target variable safely
+  let targetVariable = '';
+  if (resultData && typeof resultData === 'object') {
+    const config = safelyExtractObject(resultData, 'config', {});
+    const params = safelyExtractObject(config, 'parameters', {});
+    targetVariable = safelyExtractString(params, 'target', '');
+  }
 
   // Process model details based on model type
   let typedModelDetails: unknown;
@@ -374,47 +415,28 @@ export function transformPredictionData(result: AnalysisResult): {
   if (model === 'linear') {
     typedModelDetails = {
       coefficients: safelyExtractArray<number>(modelDetails, 'coefficients', [0]),
-      weights: safelyExtractArray<number>(modelDetails, 'weights', undefined),
+      weights: safelyExtractArray<number>(modelDetails, 'weights', []),
       featureImportance: safelyExtractArray(modelDetails, 'featureImportance', []),
     };
   } else if (model === 'neuralNetwork') {
-    const architecture = safelyExtractObject(modelDetails, 'architecture', {
-      inputSize: 0,
-      hiddenUnits: 0,
-      activation: 'relu',
-    });
-
-    const training = safelyExtractObject(modelDetails, 'training', {
-      epochs: 0,
-      learningRate: 0,
-      batchSize: 0,
-    });
-
-    const normalization = safelyExtractObject(modelDetails, 'normalization', undefined);
-
     typedModelDetails = {
-      architecture: {
-        inputSize: safelyExtractNumber(architecture, 'inputSize', 0),
-        hiddenUnits: safelyExtractNumber(architecture, 'hiddenUnits', 0),
-        activation: safelyExtractString(architecture, 'activation', 'relu'),
-      },
-      training: {
-        epochs: safelyExtractNumber(training, 'epochs', 0),
-        learningRate: safelyExtractNumber(training, 'learningRate', 0),
-        batchSize: safelyExtractNumber(training, 'batchSize', 0),
-      },
-      normalization: normalization
-        ? {
-            means: safelyExtractArray<number>(normalization, 'means', []),
-            stdDevs: safelyExtractArray<number>(normalization, 'stdDevs', []),
-          }
-        : undefined,
+      architecture: safelyExtractObject(modelDetails, 'architecture', {
+        inputSize: 0,
+        hiddenUnits: 0,
+        activation: 'unknown',
+      }),
+      training: safelyExtractObject(modelDetails, 'training', {
+        epochs: 0,
+        learningRate: 0,
+        batchSize: 0,
+      }),
+      normalization: safelyExtractObject(modelDetails, 'normalization', {
+        means: [],
+        stdDevs: [],
+      }),
     };
   } else {
-    typedModelDetails = {
-      coefficients: [0],
-      featureImportance: [],
-    };
+    typedModelDetails = modelDetails;
   }
 
   return {
@@ -444,45 +466,70 @@ export function transformResourceMappingData(result: AnalysisResult): {
   insights: string[];
   summary: string;
 } {
-  // Safely extract all data with proper type checking
-  const resourcePoints = safelyExtractArray<DataPoint>(result?.data, 'resourcePoints', []);
-  const gridCells = safelyExtractArray<ResourceGridCell>(result?.data, 'gridCells', []);
-  const resourceTypes = safelyExtractArray<ResourceType>(result?.data, 'resourceTypes', []);
+  if (!result || typeof result !== 'object') {
+    return {
+      resourcePoints: [],
+      gridCells: [],
+      resourceTypes: [],
+      valueMetric: 'amount',
+      regionSize: 0,
+      xRange: [0, 0],
+      yRange: [0, 0],
+      density: {},
+      insights: [],
+      summary: '',
+    };
+  }
 
-  const valueMetric = safelyExtractString(result?.data, 'valueMetric', 'amount') as
+  // Extract with type guards
+  const resultData =
+    result.data && typeof result.data === 'object' ? (result.data as Record<string, unknown>) : {};
+
+  // Safely extract all data with proper type checking
+  const resourcePoints = safelyExtractArray<DataPoint>(resultData, 'resourcePoints', []);
+  const gridCells = safelyExtractArray<ResourceGridCell>(resultData, 'gridCells', []);
+  const resourceTypes = safelyExtractArray<ResourceType>(resultData, 'resourceTypes', []);
+
+  const valueMetric = safelyExtractString(resultData, 'valueMetric', 'amount') as
     | 'amount'
     | 'quality'
     | 'accessibility'
     | 'estimatedValue';
 
-  const regionSize = safelyExtractNumber(result?.data, 'regionSize', 1);
+  const regionSize = safelyExtractNumber(resultData, 'regionSize', 1);
 
   // Ensure ranges are properly formatted
   let xRange: [number, number] = [0, 0];
   let yRange: [number, number] = [0, 0];
 
   if (
-    isArray(result?.data?.xRange) &&
-    result?.data?.xRange.length === 2 &&
-    isNumber(result?.data?.xRange[0]) &&
-    isNumber(result?.data?.xRange[1])
+    isArray(resultData?.xRange) &&
+    resultData?.xRange.length === 2 &&
+    isNumber(resultData?.xRange[0]) &&
+    isNumber(resultData?.xRange[1])
   ) {
-    xRange = result?.data?.xRange as [number, number];
+    xRange = resultData?.xRange as [number, number];
   }
 
   if (
-    isArray(result?.data?.yRange) &&
-    result?.data?.yRange.length === 2 &&
-    isNumber(result?.data?.yRange[0]) &&
-    isNumber(result?.data?.yRange[1])
+    isArray(resultData?.yRange) &&
+    resultData?.yRange.length === 2 &&
+    isNumber(resultData?.yRange[0]) &&
+    isNumber(resultData?.yRange[1])
   ) {
-    yRange = result?.data?.yRange as [number, number];
+    yRange = resultData?.yRange as [number, number];
   }
 
-  // Extract remaining data
-  const density = safelyExtractObject(result?.data, 'density', {});
-  const insights = safelyExtractArray<string>(result, 'insights', []);
-  const summary = safelyExtractString(result, 'summary', '');
+  // Extract remaining data safely
+  const density = safelyExtractObject<Record<string, number>>(resultData, 'density', {});
+
+  // Use type guards for direct property access
+  const insightsData =
+    result.insights && Array.isArray(result.insights)
+      ? (result.insights.filter(insight => typeof insight === 'string') as string[])
+      : [];
+
+  const summaryText = result.summary && typeof result.summary === 'string' ? result.summary : '';
 
   return {
     resourcePoints,
@@ -493,8 +540,8 @@ export function transformResourceMappingData(result: AnalysisResult): {
     xRange,
     yRange,
     density,
-    insights,
-    summary,
+    insights: insightsData,
+    summary: summaryText,
   };
 }
 
@@ -573,33 +620,40 @@ export function transformToHeatMapFormat(
     estimatedValue?: number;
   }>;
 }> {
-  if (!isArray(gridCells) || gridCells.length === 0) {
+  if (!Array.isArray(gridCells)) {
     return [];
   }
 
   return gridCells.map(cell => {
+    // Convert ResourceGridCell to Record<string, unknown> via unknown
+    const cellObj = cell as unknown as Record<string, unknown>;
     let value = 0;
 
     if (selectedResourceType === 'all') {
-      value = safelyExtractNumber(cell, 'totalValue', 0);
+      value = safelyExtractNumber(cellObj, 'totalValue', 0);
     } else {
-      const resources = safelyExtractArray(cell, 'resources', []);
+      const resources = safelyExtractArray(cellObj, 'resources', []);
       const resourceData = resources.find(
-        r => safelyExtractString(r, 'type', '') === selectedResourceType
+        r =>
+          typeof r === 'object' &&
+          r !== null &&
+          safelyExtractString(r as Record<string, unknown>, 'type', '') === selectedResourceType
       );
 
-      if (resourceData) {
+      if (resourceData && typeof resourceData === 'object') {
         value = safelyExtractNumber(
-          resourceData,
+          resourceData as Record<string, unknown>,
           valueMetric,
-          safelyExtractNumber(resourceData, 'amount', 0)
+          safelyExtractNumber(resourceData as Record<string, unknown>, 'amount', 0)
         );
       }
     }
 
     return {
-      ...cell,
+      x: safelyExtractNumber(cellObj, 'x', 0),
+      y: safelyExtractNumber(cellObj, 'y', 0),
       value,
+      resources: safelyExtractArray(cellObj, 'resources', []),
     };
   });
 }
@@ -669,24 +723,30 @@ export function applyFilters(
     value: string | number | boolean | [number, number];
   }>
 ): Array<Record<string, unknown>> {
-  if (!filters || filters.length === 0) {
-    return data;
+  if (!Array.isArray(data) || !Array.isArray(filters)) {
+    return [];
   }
 
-  return data?.filter(item => {
-    // Apply all filters (AND logic)
+  return data.filter(item => {
+    if (!item || typeof item !== 'object') {
+      return false;
+    }
+
     return filters.every(filter => {
       const { field, operator, value } = filter;
+      const fieldPath = field.split('.');
 
-      // Extract the field value, supporting dot notation for nested properties
-      const fieldValue = safelyExtractPath(item, field, null);
-
-      // Skip invalid values
-      if (fieldValue === null || fieldValue === undefined) {
-        return false;
+      // Safely extract the field value
+      let currentObj: unknown = item;
+      for (const key of fieldPath) {
+        if (!currentObj || typeof currentObj !== 'object') {
+          return false;
+        }
+        currentObj = (currentObj as Record<string, unknown>)[key];
       }
 
-      // Apply appropriate comparison based on operator
+      const fieldValue = currentObj;
+
       switch (operator) {
         case 'equals':
           return fieldValue === value;
@@ -718,6 +778,9 @@ export function applyFilters(
           return (
             isNumber(fieldValue) &&
             Array.isArray(value) &&
+            value.length === 2 &&
+            isNumber(value[0]) &&
+            isNumber(value[1]) &&
             fieldValue >= value[0] &&
             fieldValue <= value[1]
           );

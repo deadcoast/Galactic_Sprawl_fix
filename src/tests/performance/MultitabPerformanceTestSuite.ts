@@ -4,6 +4,8 @@
  * Test suite for multitab performance testing
  */
 
+import { PerformanceMetrics } from '../../hooks/ui/useDebugOverlay';
+
 export interface PerformanceMetric {
   average: number;
   min: number;
@@ -294,7 +296,7 @@ export class MultitabPerformanceTestSuite {
       this.updateMetric(tabId, 'cpu', Math.min(100, cpuUsage)); // Cap at 100%
 
       // FPS (in a real app, you would use requestAnimationFrame)
-      if (tabWindow.requestAnimationFrame) {
+      if (typeof tabWindow.requestAnimationFrame === 'function') {
         // We can't actually measure frames here, but in a real app we would
         // This is just an approximation for the example
         fps = 60 - cpuUsage / 5; // Rough estimate - higher CPU = lower FPS
@@ -382,10 +384,6 @@ export class MultitabPerformanceTestSuite {
 // Add the window.performance.memory TypeScript declaration
 declare global {
   interface Performance {
-    memory?: {
-      usedJSHeapSize: number;
-      totalJSHeapSize: number;
-      jsHeapSizeLimit: number;
-    };
+    memory?: PerformanceMetrics;
   }
 }

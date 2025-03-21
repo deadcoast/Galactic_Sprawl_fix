@@ -1,4 +1,6 @@
 /**
+ * @context: type-definitions, visualization-system
+ *
  * D3 Data Validation Utilities
  *
  * This module provides schema-based validators for D3 data structures.
@@ -38,6 +40,7 @@ export interface SchemaProperty {
   validate?: (value: unknown) => boolean | string;
   properties?: Record<string, SchemaProperty>;
   items?: SchemaProperty;
+  additionalProperties?: boolean;
 }
 
 /**
@@ -131,8 +134,8 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
   const result: ValidationResult = { valid: true, errors: [] };
 
   if (!data || typeof data !== 'object') {
-    result?.valid = false;
-    result?.errors.push({
+    result.valid = false;
+    result.errors.push({
       path,
       message: `Expected object but got ${data === null ? 'null' : typeof data}`,
       value: data,
@@ -147,8 +150,8 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
 
     // Check if required property is missing
     if (propSchema.required && (value === undefined || value === null) && !propSchema.nullable) {
-      result?.valid = false;
-      result?.errors.push({
+      result.valid = false;
+      result.errors.push({
         path: propPath,
         message: `Required property "${propName}" is missing`,
       });
@@ -162,8 +165,8 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
 
     // Validate type
     if (!validateType(value, propSchema.type)) {
-      result?.valid = false;
-      result?.errors.push({
+      result.valid = false;
+      result.errors.push({
         path: propPath,
         message: `Expected type ${propSchema.type} but got ${typeof value}`,
         value,
@@ -174,8 +177,8 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
     // Validate min/max for numbers
     if (propSchema.type === 'number' && typeof value === 'number') {
       if (propSchema.min !== undefined && value < propSchema.min) {
-        result?.valid = false;
-        result?.errors.push({
+        result.valid = false;
+        result.errors.push({
           path: propPath,
           message: `Value ${value} is less than minimum ${propSchema.min}`,
           value,
@@ -183,8 +186,8 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
       }
 
       if (propSchema.max !== undefined && value > propSchema.max) {
-        result?.valid = false;
-        result?.errors.push({
+        result.valid = false;
+        result.errors.push({
           path: propPath,
           message: `Value ${value} is greater than maximum ${propSchema.max}`,
           value,
@@ -195,8 +198,8 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
     // Validate min/max for strings (length)
     if (propSchema.type === 'string' && typeof value === 'string') {
       if (propSchema.min !== undefined && value.length < propSchema.min) {
-        result?.valid = false;
-        result?.errors.push({
+        result.valid = false;
+        result.errors.push({
           path: propPath,
           message: `String length ${value.length} is less than minimum ${propSchema.min}`,
           value,
@@ -204,8 +207,8 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
       }
 
       if (propSchema.max !== undefined && value.length > propSchema.max) {
-        result?.valid = false;
-        result?.errors.push({
+        result.valid = false;
+        result.errors.push({
           path: propPath,
           message: `String length ${value.length} is greater than maximum ${propSchema.max}`,
           value,
@@ -214,8 +217,8 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
 
       // Validate pattern
       if (propSchema.pattern && !propSchema.pattern.test(value)) {
-        result?.valid = false;
-        result?.errors.push({
+        result.valid = false;
+        result.errors.push({
           path: propPath,
           message: `String does not match pattern ${propSchema.pattern}`,
           value,
@@ -225,8 +228,8 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
 
     // Validate enum
     if (propSchema.enum && !propSchema.enum.includes(value)) {
-      result?.valid = false;
-      result?.errors.push({
+      result.valid = false;
+      result.errors.push({
         path: propPath,
         message: `Value must be one of [${propSchema.enum.join(', ')}]`,
         value,
@@ -237,8 +240,8 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
     if (propSchema.validate) {
       const validationResult = propSchema.validate(value);
       if (validationResult !== true) {
-        result?.valid = false;
-        result?.errors.push({
+        result.valid = false;
+        result.errors.push({
           path: propPath,
           message:
             typeof validationResult === 'string' ? validationResult : 'Failed custom validation',
@@ -254,61 +257,55 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
       typeof value === 'object' &&
       value !== null
     ) {
-      const nestedResult = validateSchema(
-        value,
-        {
-          name: propName,
-          description: `Nested ${propName}`,
-          properties: propSchema.properties,
-          additionalProperties: schema.additionalProperties,
-        },
-        propPath
-      );
+      const nestedSchema: Schema = {
+        name: `${schema.name}.${propName}`,
+        description: `Nested object schema for ${propPath}`,
+        properties: propSchema.properties,
+        additionalProperties: schema.additionalProperties,
+      };
 
+      const nestedResult = validateSchema(value, nestedSchema, propPath);
       if (!nestedResult.valid) {
-        result?.valid = false;
-        result?.errors.push(...nestedResult.errors);
+        result.valid = false;
+        result.errors.push(...nestedResult.errors);
       }
     }
 
     // Validate arrays
     if (propSchema.type === 'array' && propSchema.items && Array.isArray(value)) {
+      // Validate each item in the array
       value.forEach((item, index) => {
-        if (propSchema.items) {
-          const itemPath = `${propPath}[${index}]`;
+        const itemPath = `${propPath}[${index}]`;
 
-          // Validate type of array item
-          if (!validateType(item, propSchema.items.type)) {
-            result?.valid = false;
-            result?.errors.push({
-              path: itemPath,
-              message: `Expected array item of type ${propSchema.items.type} but got ${typeof item}`,
-              value: item,
-            });
-          }
+        // Validate type of each item
+        if (!validateType(item, propSchema.items!.type)) {
+          result.valid = false;
+          result.errors.push({
+            path: itemPath,
+            message: `Expected array item to be of type ${propSchema.items!.type} but got ${typeof item}`,
+            value: item,
+          });
+          return; // Skip further validation for this item
+        }
 
-          // Validate nested object in array
-          if (
-            propSchema.items.type === 'object' &&
-            propSchema.items.properties &&
-            typeof item === 'object' &&
-            item !== null
-          ) {
-            const nestedResult = validateSchema(
-              item,
-              {
-                name: `${propName}Item`,
-                description: `Item in ${propName} array`,
-                properties: propSchema.items.properties,
-                additionalProperties: schema.additionalProperties,
-              },
-              itemPath
-            );
+        // Validate nested schema for object items
+        if (
+          propSchema.items!.type === 'object' &&
+          propSchema.items!.properties &&
+          typeof item === 'object' &&
+          item !== null
+        ) {
+          const itemSchema: Schema = {
+            name: `${schema.name}.${propName}[${index}]`,
+            description: `Array item schema for ${itemPath}`,
+            properties: propSchema.items!.properties,
+            additionalProperties: schema.additionalProperties,
+          };
 
-            if (!nestedResult.valid) {
-              result?.valid = false;
-              result?.errors.push(...nestedResult.errors);
-            }
+          const nestedResult = validateSchema(item, itemSchema, itemPath);
+          if (!nestedResult.valid) {
+            result.valid = false;
+            result.errors.push(...nestedResult.errors);
           }
         }
       });
@@ -323,9 +320,9 @@ export function validateSchema<T>(data: T, schema: Schema, path: string = ''): V
     const unexpectedProps = actualProps.filter(prop => !allowedProps.includes(prop));
 
     if (unexpectedProps.length > 0) {
-      result?.valid = false;
+      result.valid = false;
       unexpectedProps.forEach(prop => {
-        result?.errors.push({
+        result.errors.push({
           path: path ? `${path}.${prop}` : prop,
           message: `Unexpected property "${prop}"`,
           value: (data as Record<string, unknown>)[prop],
@@ -409,9 +406,9 @@ export function validateNodes<T extends SimulationNodeDatum>(
     const nodeResult = validateNode(node, customSchema);
 
     if (!nodeResult.valid) {
-      result?.valid = false;
+      result.valid = false;
       nodeResult.errors.forEach(error => {
-        result?.errors.push({
+        result.errors.push({
           path: `nodes[${index}]${error.path ? '.' + error.path : ''}`,
           message: error.message,
           value: error.value,
@@ -447,9 +444,9 @@ export function validateLinks<N extends SimulationNodeDatum, L extends Simulatio
     const linkResult = validateLink(link, customSchema);
 
     if (!linkResult.valid) {
-      result?.valid = false;
+      result.valid = false;
       linkResult.errors.forEach(error => {
-        result?.errors.push({
+        result.errors.push({
           path: `links[${index}]${error.path ? '.' + error.path : ''}`,
           message: error.message,
           value: error.value,
@@ -509,7 +506,7 @@ function validateType(value: unknown, type: SchemaProperty['type']): boolean {
  * Helper function to create error message with path
  */
 export function formatValidationErrors(result: ValidationResult): string[] {
-  return result?.errors.map(error => `${error.path}: ${error.message}`);
+  return result.errors.map(error => `${error.path}: ${error.message}`);
 }
 
 /**
@@ -521,7 +518,7 @@ export function assertValid<T>(
   errorPrefix: string = 'Validation error'
 ): void {
   const result = validateSchema(data, schema);
-  if (!result?.valid) {
+  if (!result.valid) {
     const messages = formatValidationErrors(result);
     throw new Error(`${errorPrefix}: ${messages.join('; ')}`);
   }

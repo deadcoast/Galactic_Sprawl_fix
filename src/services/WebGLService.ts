@@ -266,7 +266,10 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       }
 
       // Initialize metrics
-      this.metadata?.metrics = {
+      if (!this.metadata.metrics) {
+        this.metadata.metrics = {};
+      }
+      this.metadata.metrics = {
         shader_compile_time: 0,
         active_programs: 0,
         render_targets: 0,
@@ -274,7 +277,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
         storage_buffers: 0,
       };
 
-      this.metadata?.status = 'ready';
+      this.metadata.status = 'ready';
 
       // Create default shaders
       await this.createDefaultShaders();
@@ -295,7 +298,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
         }
       }
     } catch (error) {
-      this.metadata?.status = 'error';
+      this.metadata.status = 'error';
       this.handleError(error as Error);
       throw error;
     }
@@ -307,7 +310,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       this.disposeResources();
       this.gl = null;
       this.canvas = null;
-      this.metadata?.status = 'disposed';
+      this.metadata.status = 'disposed';
     } catch (error) {
       this.handleError(error as Error);
       throw error;
@@ -319,14 +322,23 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
   }
 
   public isReady(): boolean {
-    return this.metadata?.status === 'ready';
+    return this.metadata.status === 'ready';
   }
 
   public handleError(error: Error, context?: Record<string, unknown>): void {
-    this.metadata?.lastError = {
+    if (!this.metadata.lastError) {
+      // Initialize with required properties
+      this.metadata.lastError = {
+        type: ErrorType.RUNTIME,
+        message: error.message,
+        timestamp: Date.now(),
+      };
+    }
+    this.metadata.lastError = {
       type: ErrorType.RUNTIME,
       message: error.message,
       timestamp: Date.now(),
+      ...(context ? { context } : {}),
     };
     errorLoggingService.logError(error, ErrorType.RUNTIME, ErrorSeverity.HIGH, context);
   }
@@ -360,9 +372,9 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
     this.storageBuffers.clear();
 
     // Update metrics
-    if (this.metadata?.metrics) {
-      this.metadata?.metrics.shader_compile_time +=
-        performance.now() - this.metadata?.metrics.shader_compile_time;
+    if (this.metadata.metrics) {
+      this.metadata.metrics.shader_compile_time +=
+        performance.now() - this.metadata.metrics.shader_compile_time;
     }
   }
 
@@ -461,9 +473,9 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       this.programs.set(name, shaderProgram);
 
       // Update metrics
-      if (this.metadata?.metrics) {
-        this.metadata?.metrics.shader_compile_time += performance.now() - startTime;
-        this.metadata?.metrics.active_programs = this.programs.size;
+      if (this.metadata.metrics) {
+        this.metadata.metrics.shader_compile_time += performance.now() - startTime;
+        this.metadata.metrics.active_programs = this.programs.size;
       }
 
       return shaderProgram;
@@ -539,8 +551,8 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       this.renderTargets.set(name, renderTarget);
 
       // Update metrics
-      if (this.metadata?.metrics) {
-        this.metadata?.metrics.render_targets = this.renderTargets.size;
+      if (this.metadata.metrics) {
+        this.metadata.metrics.render_targets = this.renderTargets.size;
       }
 
       return renderTarget;
@@ -642,10 +654,10 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       this.computePrograms.set(name, computeProgram);
 
       // Update metrics
-      const metrics = this.metadata?.metrics ?? {};
+      const metrics = this.metadata.metrics ?? {};
       metrics.active_programs = this.programs.size + this.computePrograms.size;
       metrics.shader_compile_time += performance.now() - startTime;
-      this.metadata?.metrics = metrics;
+      this.metadata.metrics = metrics;
 
       return computeProgram;
     } catch (error) {
@@ -741,9 +753,9 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
     computeExt.memoryBarrier(computeExt.SHADER_STORAGE_BARRIER_BIT);
 
     // Update metrics
-    const metrics = this.metadata?.metrics ?? {};
+    const metrics = this.metadata.metrics ?? {};
     metrics.draw_calls = (metrics.draw_calls ?? 0) + 1;
-    this.metadata?.metrics = metrics;
+    this.metadata.metrics = metrics;
   }
 
   public disposeStorageBuffer(name: string): void {
