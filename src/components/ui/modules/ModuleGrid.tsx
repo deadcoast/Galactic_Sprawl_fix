@@ -6,6 +6,7 @@ import { ExtendedModuleStatus } from '../../../managers/module/ModuleStatusManag
 import { BaseModule, ModuleType } from '../../../types/buildings/ModuleTypes';
 import { ModuleCard } from './ModuleCard';
 import './ModuleGrid.css';
+import { useVirtualization } from '../../../utils/performance/ComponentOptimizer';
 
 interface ModuleGridProps {
   title?: string;
@@ -16,14 +17,30 @@ interface ModuleGridProps {
   compact?: boolean;
   maxItems?: number;
   buildingId?: string;
+  /** 
+   * Whether to enable virtualization for large module lists
+   * @default true
+   */
+  virtualized?: boolean;
+  /**
+   * Fixed height for each module card when using virtualization
+   * @default 180
+   */
+  moduleHeight?: number;
 }
 
 type SortOption = 'name' | 'type' | 'level' | 'status' | 'efficiency';
+
+// Extend BaseModule to include optional efficiency property for sorting
+interface ExtendedBaseModule extends BaseModule {
+  efficiency?: number;
+}
 
 /**
  * ModuleGrid component for displaying multiple modules in a grid layout
  *
  * Uses standardized patterns for event subscriptions and filtering
+ * @context: ui-system, component-library, performance-optimization
  */
 export function ModuleGrid({
   title = 'Modules',
@@ -34,6 +51,8 @@ export function ModuleGrid({
   compact = false,
   maxItems,
   buildingId,
+  virtualized = true,
+  moduleHeight = 180,
 }: ModuleGridProps) {
   // Get modules data using our standardized hook
   const { modules, statusMap, isLoading, error } = useModulesWithStatus();
@@ -42,12 +61,30 @@ export function ModuleGrid({
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [filteredModules, setFilteredModules] = useState<BaseModule[]>([]);
+  const [containerHeight, setContainerHeight] = useState(600);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Measure container height for virtualization
+  useEffect(() => {
+    if (containerRef.current && virtualized) {
+      const resizeObserver = new ResizeObserver(entries => {
+        const { height } = entries[0].contentRect;
+        setContainerHeight(height);
+      });
+      
+      resizeObserver.observe(containerRef.current);
+      
+      return () => {
+        if (containerRef.current) {
+          resizeObserver.unobserve(containerRef.current);
+        }
+      };
+    }
+  }, [virtualized]);
 
   // Filter and sort modules based on current filters
-  // Convert this to useMemo to avoid unnecessary recalculations
-  const computedFilteredModules = useMemo(() => {
-    let filtered = [...modules];
+  const filteredModules = useMemo(() => {
+    let filtered = [...modules] as ExtendedBaseModule[];
 
     // Filter by module type if specified
     if (moduleType) {
@@ -80,37 +117,41 @@ export function ModuleGrid({
       );
     }
 
-    // Sort modules
+    // Apply sorting
     filtered.sort((a, b) => {
-      let result = 0;
-
-      // Extract values outside of switch to avoid lexical declaration issues
-      const statusA = statusMap[a.id] || 'unknown';
-      const statusB = statusMap[b.id] || 'unknown';
+      let comparison = 0;
 
       switch (sortBy) {
         case 'name':
-          result = a.name.localeCompare(b.name);
+          comparison = a.name.localeCompare(b.name);
           break;
         case 'type':
-          result = a.type.localeCompare(b.type);
+          comparison = a.type.localeCompare(b.type);
           break;
         case 'level':
-          result = a.level - b.level;
+          comparison = (a.level || 0) - (b.level || 0);
           break;
-        case 'status':
-          result = statusA.localeCompare(statusB);
+        case 'status': {
+          const statusA = statusMap[a.id] || 'unknown';
+          const statusB = statusMap[b.id] || 'unknown';
+          comparison = statusA.localeCompare(statusB);
           break;
-        case 'efficiency':
-          // Would need to get efficiency from metrics
-          result = 0;
+        }
+        case 'efficiency': {
+          // Handle efficiency data which might not be available on all modules
+          const effA = a.efficiency || 0;
+          const effB = b.efficiency || 0;
+          comparison = effA - effB;
           break;
+        }
+        default:
+          comparison = a.name.localeCompare(b.name);
       }
 
-      return sortDirection === 'asc' ? result : -result;
+      return sortDirection === 'asc' ? comparison : -comparison;
     });
 
-    // Limit the number of items if specified
+    // Apply max items limit if specified
     if (maxItems && filtered.length > maxItems) {
       filtered = filtered.slice(0, maxItems);
     }
@@ -119,39 +160,45 @@ export function ModuleGrid({
   }, [
     modules,
     moduleType,
+    buildingId,
     statusFilter,
+    statusMap,
+    searchTerm,
     sortBy,
     sortDirection,
-    searchTerm,
-    buildingId,
-    statusMap,
     maxItems,
   ]);
 
-  // Update filtered modules when computed value changes
-  useEffect(() => {
-    setFilteredModules(computedFilteredModules);
-  }, [computedFilteredModules]);
+  // Setup virtualization if enabled
+  const virtualization = useMemo(() => {
+    if (!virtualized) {
+      return null;
+    }
+    
+    return useVirtualization({
+      itemCount: filteredModules.length,
+      itemHeight: moduleHeight,
+      containerHeight,
+      overscan: 2
+    });
+  }, [virtualized, filteredModules.length, moduleHeight, containerHeight]);
 
-  // Memoize handler functions to prevent unnecessary rerenders
-  const handleSort = useCallback(
-    (option: SortOption) => {
-      if (sortBy === option) {
-        // Toggle direction
-        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-      } else {
-        // New sort option
-        setSortBy(option);
-        setSortDirection('asc');
-      }
-    },
-    [sortBy, sortDirection]
-  );
-
-  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-  }, []);
+  };
 
+  const handleSortChange = (sortOption: SortOption) => {
+    if (sortOption === sortBy) {
+      // Toggle sort direction if clicking the same option
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new sort option and reset direction to ascending
+      setSortBy(sortOption);
+      setSortDirection('asc');
+    }
+  };
+
+  // Handle module selection
   const handleModuleSelect = useCallback(
     (moduleId: string) => {
       if (onModuleSelect) {
@@ -161,83 +208,65 @@ export function ModuleGrid({
     [onModuleSelect]
   );
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="module-grid module-grid--loading">
-        <h2 className="module-grid__title">{title}</h2>
-        <div className="module-grid__loading">Loading modules...</div>
-      </div>
-    );
-  }
+  // Render module cards
+  const renderModuleCards = () => {
+    if (isLoading) {
+      return <div className="module-grid-loading">Loading modules...</div>;
+    }
 
-  // Error state
-  if (error) {
-    return (
-      <div className="module-grid module-grid--error">
-        <h2 className="module-grid__title">{title}</h2>
-        <div className="module-grid__error">{error}</div>
-      </div>
-    );
-  }
+    if (error) {
+      return <div className="module-grid-error">Error loading modules: {error}</div>;
+    }
 
-  // Empty state
-  if (filteredModules.length === 0) {
-    return (
-      <div className="module-grid module-grid--empty">
-        <h2 className="module-grid__title">{title}</h2>
-        <div className="module-grid__empty-message">
-          {searchTerm || moduleType || statusFilter
-            ? 'No modules match the current filters'
-            : 'No modules available'}
-        </div>
-      </div>
-    );
-  }
+    if (filteredModules.length === 0) {
+      return <div className="module-grid-empty">No modules found</div>;
+    }
 
-  return (
-    <div className="module-grid">
-      <div className="module-grid__header">
-        <h2 className="module-grid__title">{title}</h2>
+    if (virtualized && virtualization) {
+      // Virtualized rendering for better performance with large lists
+      const { startIndex, endIndex, totalHeight, offsetY } = virtualization;
+      const visibleModules = filteredModules.slice(startIndex, endIndex + 1);
 
-        <div className="module-grid__controls">
-          {/* Search */}
-          <div className="module-grid__search">
-            <input
-              type="text"
-              placeholder="Search modules..."
-              value={searchTerm}
-              onChange={handleSearch}
-              className="module-grid__search-input"
-            />
-          </div>
-
-          {/* Sort controls */}
-          <div className="module-grid__sort">
-            <label className="module-grid__sort-label">Sort by:</label>
-            <select
-              value={sortBy}
-              onChange={e => handleSort(e.target.value as SortOption)}
-              className="module-grid__sort-select"
+      return (
+        <div 
+          className="module-grid-virtual-container"
+          style={{ height: `${containerHeight}px`, position: 'relative', overflow: 'auto' }}
+          onScroll={virtualization.handleScroll}
+        >
+          <div 
+            className="module-grid-virtual-content"
+            style={{ height: `${totalHeight}px`, position: 'relative' }}
+          >
+            <div 
+              className="module-grid-virtual-items"
+              style={{ 
+                position: 'absolute', 
+                top: `${offsetY}px`, 
+                left: 0, 
+                right: 0,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '16px'
+              }}
             >
-              <option value="name">Name</option>
-              <option value="type">Type</option>
-              <option value="level">Level</option>
-              <option value="status">Status</option>
-              <option value="efficiency">Efficiency</option>
-            </select>
-
-            <button
-              className="module-grid__sort-direction"
-              onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-            >
-              {sortDirection === 'asc' ? '↑' : '↓'}
-            </button>
+              {visibleModules.map(module => (
+                <ModuleCard
+                  key={module.id}
+                  moduleId={module.id}
+                  onSelect={handleModuleSelect}
+                  isSelected={selectedModuleId === module.id}
+                  compact={compact}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      );
+    }
 
-      <div className={`module-grid__items ${compact ? 'module-grid__items--compact' : ''}`}>
+    // Standard rendering for smaller lists
+    return (
+      <div className="module-grid-items">
         {filteredModules.map(module => (
           <ModuleCard
             key={module.id}
@@ -248,6 +277,60 @@ export function ModuleGrid({
           />
         ))}
       </div>
+    );
+  };
+
+  return (
+    <div className="module-grid" ref={containerRef}>
+      <div className="module-grid-header">
+        <h2>{title}</h2>
+
+        <div className="module-grid-controls">
+          <input
+            type="text"
+            placeholder="Search modules..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="module-grid-search"
+          />
+
+          <div className="module-grid-sort">
+            <span>Sort by:</span>
+            <button
+              className={sortBy === 'name' ? 'active' : ''}
+              onClick={() => handleSortChange('name')}
+            >
+              Name {sortBy === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </button>
+            <button
+              className={sortBy === 'type' ? 'active' : ''}
+              onClick={() => handleSortChange('type')}
+            >
+              Type {sortBy === 'type' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </button>
+            <button
+              className={sortBy === 'level' ? 'active' : ''}
+              onClick={() => handleSortChange('level')}
+            >
+              Level {sortBy === 'level' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </button>
+            <button
+              className={sortBy === 'status' ? 'active' : ''}
+              onClick={() => handleSortChange('status')}
+            >
+              Status {sortBy === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </button>
+            <button
+              className={sortBy === 'efficiency' ? 'active' : ''}
+              onClick={() => handleSortChange('efficiency')}
+            >
+              Efficiency {sortBy === 'efficiency' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {renderModuleCards()}
     </div>
   );
 }

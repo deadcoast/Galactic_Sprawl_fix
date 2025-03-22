@@ -32,7 +32,7 @@ import {
   WeaponStatus,
 } from '../../types/weapons/WeaponTypes';
 import { ResourceManager } from '../game/ResourceManager';
-import { techTreeManager } from '../game/techTreeManager';
+import { TechTreeManager } from '../game/techTreeManager';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 import { OfficerManager } from './OfficerManager';
 
@@ -120,6 +120,7 @@ export class ShipHangarManager
     }
   > = new Map();
   private assignedOfficers: Map<string, string> = new Map(); // shipId -> officerId
+  private techTreeInstance: TechTreeManager | null = TechTreeManager.getInstance();
 
   constructor(resourceManager: ResourceManager, officerManager: OfficerManager) {
     super();
@@ -152,6 +153,11 @@ export class ShipHangarManager
         this.handleModuleStatusChange(event.moduleId, status);
       }
     });
+
+    // Add built-in ships
+    this.addShipDesign(DEFAULT_SCOUT_SHIP_DESIGN);
+    this.addShipDesign(DEFAULT_MINING_SHIP_DESIGN);
+    this.addShipDesign(DEFAULT_COMBAT_SHIP_DESIGN);
   }
 
   /**
@@ -186,14 +192,16 @@ export class ShipHangarManager
    * Set up event listeners
    */
   private setupEventListeners(): void {
-    techTreeManager.on('nodeUnlocked', ((event: {
-      nodeId: string;
-      node: { type: string; tier: number };
-    }) => {
-      if (event?.node.type === 'hangar') {
-        this.handleTierUpgrade(event?.node.tier as Tier);
-      }
-    }) as (data: unknown) => void);
+    if (this.techTreeInstance) {
+      this.techTreeInstance.on('nodeUnlocked', ((event: {
+        nodeId: string;
+        node: { type: string; tier: number };
+      }) => {
+        if (event?.node.type === 'hangar') {
+          this.handleTierUpgrade(event?.node.tier as Tier);
+        }
+      }) as (data: unknown) => void);
+    }
   }
 
   /**
@@ -330,13 +338,8 @@ export class ShipHangarManager
     }
 
     // Check tech requirements
-    if (requirements.prerequisites?.technology) {
-      const missingTech = requirements.prerequisites.technology.filter(
-        techId => !techTreeManager.getNode(techId)?.unlocked
-      );
-      if (missingTech.length > 0) {
-        throw new Error(`Missing required technologies: ${missingTech.join(', ')}`);
-      }
+    if (!this.checkTechRequirements(requirements)) {
+      throw new Error('Missing required technologies');
     }
 
     // Check officer requirements
@@ -1205,11 +1208,18 @@ export class ShipHangarManager
 
     // Tech tree requirements
     if (blueprint.requirements.prerequisites?.technology) {
+      const missingTech = blueprint.requirements.prerequisites.technology.filter(
+        techId => !this.techTreeInstance?.getNode(techId)?.unlocked
+      );
+      if (missingTech.length > 0) {
+        throw new Error(`Missing required technologies: ${missingTech.join(', ')}`);
+      }
+
       blueprint.requirements.prerequisites.technology.forEach(tech => {
         requirements.push({
           type: 'tech',
           name: tech,
-          met: techTreeManager.getNode(tech)?.unlocked || false,
+          met: this.techTreeInstance?.getNode(tech)?.unlocked || false,
         });
       });
     }
@@ -2241,5 +2251,36 @@ export class ShipHangarManager
       }
     }
     return undefined;
+  }
+
+  private checkTechRequirements(requirements: ShipBuildRequirements): boolean {
+    if (!requirements.prerequisites?.technology || !this.techTreeInstance) {
+      return true; // No tech requirements or tech tree unavailable
+    }
+    
+    const missingTech = requirements.prerequisites.technology.filter(
+      techId => !this.techTreeInstance?.getNode(techId)?.unlocked
+    );
+    
+    return missingTech.length === 0;
+  }
+
+  private getRequirementsStatus(requirements: ShipRequirements): RequirementCheckResult[] {
+    const result: RequirementCheckResult[] = [];
+    
+    // Check tech requirements
+    if (requirements.prerequisites?.technology && this.techTreeInstance) {
+      requirements.prerequisites.technology.forEach(tech => {
+        result.push({
+          type: 'tech',
+          name: tech,
+          met: this.techTreeInstance?.getNode(tech)?.unlocked || false,
+        });
+      });
+    }
+    
+    // Rest of method...
+    
+    return result;
   }
 }

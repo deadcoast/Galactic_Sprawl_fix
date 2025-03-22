@@ -126,6 +126,34 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
 
     return super.subscribe(eventType, wrappedListener, options);
   }
+
+  /**
+   * Subscribe to multiple event types with a single listener
+   * 
+   * @param eventTypes Array of event types to subscribe to
+   * @param listener Event listener function
+   * @param options Subscription options
+   * @returns Function to unsubscribe from all events
+   */
+  public subscribeToMany(
+    eventTypes: EventType[],
+    listener: EventListener<ModuleEvent>,
+    options?: SubscriptionOptions & { moduleId?: string; moduleType?: ModuleType }
+  ): () => void {
+    // Create array to hold all unsubscribe functions
+    const unsubscribers: Array<() => void> = [];
+    
+    // Subscribe to each event type
+    for (const eventType of eventTypes) {
+      const unsubscribe = this.subscribe(eventType, listener, options);
+      unsubscribers.push(unsubscribe);
+    }
+    
+    // Return a function that unsubscribes from all event types
+    return () => {
+      unsubscribers.forEach(unsubscribe => unsubscribe());
+    };
+  }
 }
 
 export const moduleEventBus = ModuleEventBus.getInstance();

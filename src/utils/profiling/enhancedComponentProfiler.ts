@@ -1,5 +1,5 @@
 /**
- * @context: ui-system, performance-optimization
+ * @context: ui-system, performance-optimization, profiling-system
  * 
  * Enhanced component profiler with additional metrics for layout issues,
  * re-render causes, and interaction delays for better performance debugging.
@@ -201,6 +201,12 @@ export interface EnhancedComponentProfilingResult extends ComponentProfilingResu
   }) => void;
 }
 
+// Add Performance Entry interface for type safety
+interface PerformanceEntryWithProcessing extends PerformanceEntry {
+  processingStart: number;
+  startTime: number;
+}
+
 /**
  * Default enhanced profiling options
  */
@@ -255,7 +261,12 @@ export function createEnhancedComponentProfiler(
     slowInteractions: 0,
   };
   
-  const dependencies = {
+  // Initialize with proper typing
+  const dependencies: {
+    contexts: string[];
+    hooks: string[];
+    childComponents: string[];
+  } = {
     contexts: [],
     hooks: [],
     childComponents: [],
@@ -277,7 +288,9 @@ export function createEnhancedComponentProfiler(
    * Set up layout observer to monitor layout shifts
    */
   function setupLayoutObserver() {
-    if (typeof PerformanceObserver === 'undefined') return;
+    if (typeof PerformanceObserver === 'undefined') {
+      return;
+    }
     
     try {
       layoutObserver = new PerformanceObserver((list) => {
@@ -310,7 +323,9 @@ export function createEnhancedComponentProfiler(
    * Set up interaction observer to monitor interactions
    */
   function setupInteractionObserver() {
-    if (typeof PerformanceObserver === 'undefined') return;
+    if (typeof PerformanceObserver === 'undefined') {
+      return;
+    }
     
     try {
       interactionObserver = new PerformanceObserver((list) => {
@@ -319,7 +334,9 @@ export function createEnhancedComponentProfiler(
           if (entry.name.includes(componentName)) {
             // Process interaction metrics
             if (entry.entryType === 'first-input' && interactionMetrics.firstInputDelay === null) {
-              interactionMetrics.firstInputDelay = (entry as any).processingStart - (entry as any).startTime;
+              // Use type assertion with specific interface instead of 'any'
+              const typedEntry = entry as PerformanceEntryWithProcessing;
+              interactionMetrics.firstInputDelay = typedEntry.processingStart - typedEntry.startTime;
             } else if (entry.entryType === 'event') {
               recordInteraction(
                 entry.duration,
@@ -391,7 +408,9 @@ export function createEnhancedComponentProfiler(
    * Record a layout shift
    */
   function recordLayoutShift(score: number, sourceElement?: string) {
-    if (!profilingOptions.trackLayoutMetrics) return;
+    if (!profilingOptions.trackLayoutMetrics) {
+      return;
+    }
     
     layoutMetrics.layoutShifts++;
     layoutMetrics.cumulativeLayoutShift += score;
@@ -404,7 +423,7 @@ export function createEnhancedComponentProfiler(
     });
     
     // Trim history if needed
-    if (layoutMetrics.layoutShiftHistory.length > profilingOptions.maxRenderHistory) {
+    if (layoutMetrics.layoutShiftHistory.length > (profilingOptions.maxRenderHistory || 100)) {
       layoutMetrics.layoutShiftHistory.shift();
     }
     
@@ -421,7 +440,9 @@ export function createEnhancedComponentProfiler(
    * Record an interaction
    */
   function recordInteraction(duration: number, eventType: string) {
-    if (!profilingOptions.trackInteractionMetrics) return;
+    if (!profilingOptions.trackInteractionMetrics) {
+      return;
+    }
     
     // Add to history
     interactionMetrics.interactionToNextPaint.push({
@@ -431,7 +452,7 @@ export function createEnhancedComponentProfiler(
     });
     
     // Trim history if needed
-    if (interactionMetrics.interactionToNextPaint.length > profilingOptions.maxRenderHistory) {
+    if (interactionMetrics.interactionToNextPaint.length > (profilingOptions.maxRenderHistory || 100)) {
       interactionMetrics.interactionToNextPaint.shift();
     }
     
@@ -467,10 +488,14 @@ export function createEnhancedComponentProfiler(
     parentRender?: boolean;
     effect?: boolean;
   }) {
-    if (!profilingOptions.trackRenderCauses) return;
+    if (!profilingOptions.trackRenderCauses) {
+      return;
+    }
     
     // Skip if history is empty
-    if (enhancedRenderHistory.length === 0 || baseProfiler.renderHistory.length === 0) return;
+    if (enhancedRenderHistory.length === 0 || baseProfiler.renderHistory.length === 0) {
+      return;
+    }
     
     // Get the latest render info
     const latestRender = enhancedRenderHistory[enhancedRenderHistory.length - 1];
@@ -490,18 +515,23 @@ export function createEnhancedComponentProfiler(
     hooks?: string[];
     childComponents?: string[];
   }) {
-    if (!profilingOptions.analyzeDependencies) return;
-    
-    if (deps.contexts) {
-      dependencies.contexts = [...new Set([...dependencies.contexts, ...deps.contexts])];
+    if (!profilingOptions.analyzeDependencies) {
+      return;
     }
     
-    if (deps.hooks) {
-      dependencies.hooks = [...new Set([...dependencies.hooks, ...deps.hooks])];
+    if (deps.contexts && deps.contexts.length > 0) {
+      // Use a safe array spread that respects types
+      dependencies.contexts = Array.from(new Set([...dependencies.contexts, ...deps.contexts]));
     }
     
-    if (deps.childComponents) {
-      dependencies.childComponents = [...new Set([...dependencies.childComponents, ...deps.childComponents])];
+    if (deps.hooks && deps.hooks.length > 0) {
+      // Use a safe array spread that respects types
+      dependencies.hooks = Array.from(new Set([...dependencies.hooks, ...deps.hooks]));
+    }
+    
+    if (deps.childComponents && deps.childComponents.length > 0) {
+      // Use a safe array spread that respects types
+      dependencies.childComponents = Array.from(new Set([...dependencies.childComponents, ...deps.childComponents]));
     }
   }
   
@@ -557,7 +587,8 @@ export function createEnhancedComponentProfiler(
         timestamp: latestBaseRender.timestamp,
         renderTime: latestBaseRender.renderTime,
         wasted: latestBaseRender.wasted,
-        changedProps: [...latestBaseRender.changedProps],
+        // Use null checking before spreading array to avoid Symbol.iterator error
+        changedProps: latestBaseRender.changedProps ? [...latestBaseRender.changedProps] : [],
         // Start with undefined cause - will be filled in later
         causedByStateChange: undefined,
         causedByContextChange: undefined,
@@ -569,7 +600,7 @@ export function createEnhancedComponentProfiler(
       enhancedRenderHistory.push(enhancedRender);
       
       // Trim history if needed
-      if (enhancedRenderHistory.length > profilingOptions.maxRenderHistory) {
+      if (enhancedRenderHistory.length > (profilingOptions.maxRenderHistory || 100)) {
         enhancedRenderHistory.shift();
       }
     }
@@ -689,17 +720,22 @@ export function withEnhancedProfiling<Props extends object>(
       (props: Props) => {
         // Create a ref for previous props
         const prevPropsRef = React.useRef<Props | null>(null);
-        
-        // Profile the render
-        const renderedOutput = profiler.profileRender<Props, React.ReactElement>(
-          (renderProps) => <Component {...renderProps} />,
+
+        // Profile the render with proper type assertion to avoid untyped function call error
+        const renderedOutput = (profiler.profileRender as <P, R>(
+          renderFn: (props: P) => R,
+          prevProps: P | null,
+          nextProps: P
+        ) => R)<Props, React.ReactElement>(
+          // Use Props type instead of any
+          (renderProps: Props) => React.createElement(Component, renderProps),
           prevPropsRef.current,
           props
         );
-        
+
         // Update previous props
         prevPropsRef.current = props;
-        
+
         return renderedOutput;
       },
       (prevProps, nextProps) => {
@@ -707,18 +743,18 @@ export function withEnhancedProfiling<Props extends object>(
         if (!options.enabled) {
           return true;
         }
-        
+
         // Check for prop changes
         const hasChanged = !isEqual(prevProps, nextProps);
-        
+
         // Record as a wasted render if props haven't changed
         if (!hasChanged && profiler.metrics.renderCount > 0) {
           profiler.metrics.wastedRenders++;
         }
-        
+
         return !hasChanged;
       }
-    ) as React.FC<Props> & { profiler: EnhancedComponentProfilingResult };
+    ) as unknown as React.FC<Props> & { profiler: EnhancedComponentProfilingResult };
   
   // Add profiler to component
   WithProfiling.profiler = profiler;

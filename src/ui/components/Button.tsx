@@ -4,7 +4,7 @@
  * Button component that provides consistent styling and behavior across the application
  */
 import * as React from 'react';
-import { forwardRef, useMemo, useCallback } from 'react';
+import { forwardRef, useMemo, useCallback, memo } from 'react';
 import { 
   BaseComponentProps, 
   ComponentSize, 
@@ -73,7 +73,7 @@ export interface ButtonProps extends BaseComponentProps {
  * 
  * Basic button with consistent styling, available in different variants and sizes
  */
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+const ButtonComponent = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ 
     variant = ComponentVariant.PRIMARY,
     size = ComponentSize.MEDIUM,
@@ -99,24 +99,24 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     
     // Compute button classes based on props
     const buttonClasses = useMemo(() => {
-      const classes = [
-        'gs-button',
-        `gs-button--${safeVariant}`,
-        `gs-button--${safeSize}`,
-        disabled ? 'gs-button--disabled' : '',
-        fullWidth ? 'gs-button--full-width' : '',
-        loading ? 'gs-button--loading' : '',
-        leadingIcon ? 'gs-button--with-leading-icon' : '',
-        trailingIcon ? 'gs-button--with-trailing-icon' : '',
-        className
-      ].filter(Boolean).join(' ');
-      
-      return classes;
+      return [
+              'gs-button',
+              `gs-button--${safeVariant}`,
+              `gs-button--${safeSize}`,
+              disabled ? 'gs-button--disabled' : '',
+              fullWidth ? 'gs-button--full-width' : '',
+              loading ? 'gs-button--loading' : '',
+              leadingIcon ? 'gs-button--with-leading-icon' : '',
+              trailingIcon ? 'gs-button--with-trailing-icon' : '',
+              className
+            ].filter(Boolean).join(' ');
     }, [safeVariant, safeSize, disabled, fullWidth, loading, leadingIcon, trailingIcon, className]);
     
     // Handle click with error boundary
     const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-      if (disabled || loading) return;
+      if (disabled || loading) {
+        return;
+      }
       
       try {
         onClick?.(event);
@@ -165,6 +165,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   }
 );
 
-Button.displayName = 'Button';
+ButtonComponent.displayName = 'Button';
+
+/**
+ * Memoized Button component to prevent unnecessary re-renders
+ */
+export const Button = memo(ButtonComponent);
 
 export default Button; 

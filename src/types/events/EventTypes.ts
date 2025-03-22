@@ -315,6 +315,24 @@ export interface ResourceShortageEventData {
 }
 
 /**
+ * Type guard for checking if a value is a ResourceUpdateEventData
+ */
+export function isResourceUpdateEventData(data: unknown): data is ResourceUpdateEventData {
+  if (!data || typeof data !== 'object') return false;
+  
+  const d = data as Partial<ResourceUpdateEventData>;
+  return (
+    typeof d.resourceType === 'string' &&
+    (d.amount === undefined || typeof d.amount === 'number') &&
+    (d.production === undefined || typeof d.production === 'number') &&
+    (d.consumption === undefined || typeof d.consumption === 'number') &&
+    (d.rate === undefined || typeof d.rate === 'number') &&
+    (d.max === undefined || typeof d.max === 'number') &&
+    (d.min === undefined || typeof d.min === 'number')
+  );
+}
+
+/**
  * Module event interfaces for strongly-typed payloads
  */
 

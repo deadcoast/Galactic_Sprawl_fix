@@ -159,7 +159,8 @@ const MultitabPerformanceTestPage: React.FC = () => {
         )}
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         .multitab-performance-test-page {
           max-width: 1200px;
           margin: 0 auto;
@@ -266,7 +267,8 @@ const MultitabPerformanceTestPage: React.FC = () => {
             font-size: 16px;
           }
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

@@ -37,7 +37,7 @@ export function ShipBuildingInterface({ manager, onStartBuild }: ShipBuildingInt
       // Check tech requirements
       if (ship.requirements.prerequisites?.technology) {
         const missingTech = ship.requirements.prerequisites.technology.filter(
-          tech => !TechTreeManager.getNode(tech)?.unlocked
+          tech => !TechTreeManager.getInstance().getNode(tech)?.unlocked
         );
         if (missingTech.length > 0) {
           errors.push(`Missing technologies: ${missingTech.join(', ')}`);

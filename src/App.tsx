@@ -12,13 +12,14 @@ import { ResourceRatesProvider } from './contexts/ResourceRatesContext';
 import { ThresholdProvider } from './contexts/ThresholdContext';
 import { assetManager } from './managers/game/assetManager';
 import { ResourceManager } from './managers/game/ResourceManager';
-import { TechNode, techTreeManager } from './managers/game/techTreeManager';
+import { TechNode, TechTreeManager } from './managers/game/techTreeManager';
 import { moduleManager } from './managers/module/ModuleManager';
 import { OfficerManager } from './managers/module/OfficerManager';
 import { ShipHangarManager } from './managers/module/ShipHangarManager';
 import { ModuleType } from './types/buildings/ModuleTypes';
 import { ModuleStatus } from './types/modules/ModuleTypes';
 import { ResourceType } from './types/resources/ResourceTypes';
+import { getTechTreeManager } from './managers/ManagerRegistry';
 
 // Import the GlobalErrorBoundary component
 import { GlobalErrorBoundary } from './components/ui/GlobalErrorBoundary';
@@ -181,7 +182,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
             initialTechs.forEach(tech => {
               if (tech) {
                 console.warn(`Registering tech: ${tech.id}`);
-                techTreeManager.registerNode(tech);
+                getTechTreeManager().registerNode(tech);
               }
             });
           } else {
@@ -237,7 +238,7 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
             callback: (eventData: unknown) => {
               const event = eventData as ResourceEvent;
               const resources = event?.data?.resources;
-              const current = resources.current;
+              const {current} = resources;
 
               return {
                 resourceId: event?.moduleId,

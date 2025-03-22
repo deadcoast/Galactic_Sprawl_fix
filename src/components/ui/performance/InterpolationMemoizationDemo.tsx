@@ -519,7 +519,8 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
 
       {renderCacheStats()}
 
-      <style jsx>{`
+      <style>
+        {`
         .interpolation-memoization-demo {
           width: 100%;
           max-width: ${width}px;
@@ -719,7 +720,8 @@ const InterpolationMemoizationDemo: React.FC<InterpolationMemoizationDemoProps> 
           border-radius: 2px;
           transition: width 0.5s ease;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

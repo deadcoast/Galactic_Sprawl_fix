@@ -1,5 +1,5 @@
 import { EventEmitter } from '../../lib/events/EventEmitter';
-import { techTreeManager } from '../../managers/game/techTreeManager';
+import { TechTreeManager } from '../../managers/game/techTreeManager';
 import { Salvage } from '../../types/combat/SalvageTypes';
 import {
   CommonShipCapabilities,
@@ -80,7 +80,8 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
         const capabilities = getDefaultCapabilities(category);
 
         // War ships can salvage if they have the cutting laser
-        if (category === 'war' && techTreeManager.hasWarShipSalvage()) {
+        const techTreeInstance = TechTreeManager.getInstance();
+        if (category === 'war' && techTreeInstance && techTreeInstance.hasWarShipSalvage()) {
           capabilities.canSalvage = true;
         }
 

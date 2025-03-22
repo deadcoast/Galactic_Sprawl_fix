@@ -404,7 +404,9 @@ export const ResourceRegistryUI: React.FC<ResourceRegistryUIProps> = ({
 
   // Get conversion data for the selected resource
   const resourceConversions = useMemo(() => {
-    if (!selectedResource) return { inputs: [], outputs: [] };
+    if (!selectedResource) {
+      return { inputs: [], outputs: [] };
+    }
 
     const inputs = Array.from(registry.findConversionSources(selectedResource).entries()).map(
       ([sourceType, rate]) => ({
@@ -703,12 +705,16 @@ export const ResourceRegistryUI: React.FC<ResourceRegistryUIProps> = ({
           {allConversions.length > 0 ? (
             allConversions
               .filter(({ sourceType, targetType }) => {
-                if (searchQuery === '') return true;
+                if (searchQuery === '') {
+                  return true;
+                }
 
                 const sourceMetadata = registry.getResourceMetadata(sourceType);
                 const targetMetadata = registry.getResourceMetadata(targetType);
 
-                if (!sourceMetadata || !targetMetadata) return false;
+                if (!sourceMetadata || !targetMetadata) {
+                  return false;
+                }
 
                 return (
                   sourceMetadata?.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||

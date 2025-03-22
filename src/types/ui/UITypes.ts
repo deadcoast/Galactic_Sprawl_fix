@@ -102,6 +102,7 @@ export interface ComponentProfilingOptions {
  * Component profiling result
  */
 export interface ComponentProfilingResult {
+  profileRender: any;
   /**
    * Component metrics
    */

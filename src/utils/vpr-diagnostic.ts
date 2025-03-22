@@ -14,9 +14,15 @@ import { Position } from '../types/core/GameTypes';
 export function mapModuleTypeToVPRType(
   moduleType: ModuleType
 ): 'mothership' | 'colony' | 'planet' | 'exploration' | 'mining' {
-  if (moduleType === 'exploration') return 'exploration';
-  if (['hangar', 'mineral'].includes(moduleType)) return 'mining';
-  if (['resource-manager'].includes(moduleType)) return 'colony';
+  if (moduleType === 'exploration') {
+    return 'exploration';
+  }
+  if (['hangar', 'mineral'].includes(moduleType)) {
+    return 'mining';
+  }
+  if (['resource-manager'].includes(moduleType)) {
+    return 'colony';
+  }
   return 'mothership';
 }
 

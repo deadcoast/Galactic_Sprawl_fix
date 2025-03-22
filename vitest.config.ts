@@ -9,7 +9,7 @@ export default defineConfig({
     // Use jsdom in development and node in CI for better performance
     environment: process.env.CI ? 'node' : 'jsdom',
     globals: true,
-    setupFiles: ['./src/tests/setup.ts', './src/tests/setup/testingLibrary.setup.ts'],
+    setupFiles: ['./src/tests/setupTests.ts'],
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     exclude: [
       '**/node_modules/**',

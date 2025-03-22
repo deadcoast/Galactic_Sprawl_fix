@@ -210,7 +210,9 @@ const TypeSafeConfigDemo: React.FC = () => {
 
   // Handle value change
   const handleSaveValue = () => {
-    if (!selectedConfig) return;
+    if (!selectedConfig) {
+      return;
+    }
 
     // Parse the value based on the schema type
     let parsedValue: unknown;
@@ -255,8 +257,10 @@ const TypeSafeConfigDemo: React.FC = () => {
 
   // Import config
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event?.target.files?.[0];
-    if (!file) return;
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = e => {
@@ -460,11 +464,17 @@ const TypeSafeConfigDemo: React.FC = () => {
                       value={editValue}
                       onChange={e => setEditValue(e.target.value)}
                     >
-                      {(selectedConfig.schema as any)._def.typeEnum(selectedConfig.schema as any)._def.values.map((val: string) => (
-                        <option key={val} value={val}>
-                          {val}
-                        </option>
-                      ))}
+                      {(() => {
+                        const enumValues = (selectedConfig.schema as z.ZodEnum<[string, ...string[]]>)._def?.values;
+                        if (Array.isArray(enumValues)) {
+                          return enumValues.map((val: string) => (
+                            <option key={val} value={val}>
+                              {val}
+                            </option>
+                          ));
+                        }
+                        return null;
+                      })()}
                     </select>
                   ) : (
                     <input
@@ -560,7 +570,8 @@ const TypeSafeConfigDemo: React.FC = () => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>
+        {`
         .config-demo {
           font-family:
             system-ui,
@@ -1062,7 +1073,8 @@ const TypeSafeConfigDemo: React.FC = () => {
           overflow: hidden;
           z-index: -1;
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 };

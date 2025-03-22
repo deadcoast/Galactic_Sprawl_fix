@@ -4,7 +4,7 @@
  * Card component that provides a container with consistent styling
  */
 import * as React from 'react';
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo, memo } from 'react';
 import { BaseComponentProps } from '../../types/ui/ComponentTypes';
 
 /**
@@ -82,7 +82,7 @@ function isCardElevation(value: unknown): value is CardElevation {
  * 
  * Container component with consistent styling, available with different elevation levels
  */
-export const Card = forwardRef<HTMLDivElement, CardProps>(
+const CardComponent = forwardRef<HTMLDivElement, CardProps>(
   ({
     children,
     title,
@@ -109,21 +109,21 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     
     // Compute card classes based on props
     const cardClasses = useMemo(() => {
-      const classes = [
-        'gs-card',
-        `gs-card--elevation-${safeElevation}`,
-        disabled ? 'gs-card--disabled' : '',
-        fullWidth ? 'gs-card--full-width' : '',
-        interactive ? 'gs-card--interactive' : '',
-        className
-      ].filter(Boolean).join(' ');
-      
-      return classes;
+      return [
+              'gs-card',
+              `gs-card--elevation-${safeElevation}`,
+              disabled ? 'gs-card--disabled' : '',
+              fullWidth ? 'gs-card--full-width' : '',
+              interactive ? 'gs-card--interactive' : '',
+              className
+            ].filter(Boolean).join(' ');
     }, [safeElevation, disabled, fullWidth, interactive, className]);
     
     // Custom style with potential padding override
     const customStyle = useMemo(() => {
-      if (!padding) return style;
+      if (!padding) {
+        return style;
+      }
       
       return {
         ...style,
@@ -133,7 +133,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     
     // Handle click for interactive cards
     const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-      if (disabled || !interactive) return;
+      if (disabled || !interactive) {
+        return;
+      }
       
       try {
         onClick?.(event);
@@ -186,6 +188,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   }
 );
 
-Card.displayName = 'Card';
+CardComponent.displayName = 'Card';
+
+/**
+ * Memoized Card component to prevent unnecessary re-renders
+ */
+export const Card = memo(CardComponent);
 
 export default Card; 

@@ -378,7 +378,8 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>
+        {`
         .optimized-flow-diagram {
           position: relative;
           border: 1px solid #ddd;
@@ -433,7 +434,8 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
         .restart-btn:hover {
           background: #388e3c;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

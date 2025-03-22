@@ -4,7 +4,7 @@
  * Heading component for displaying headings with consistent styling
  */
 import * as React from 'react';
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo, memo } from 'react';
 import { 
   BaseComponentProps,
   TextComponentProps
@@ -79,7 +79,7 @@ function isHeadingLevel(value: unknown): value is HeadingLevel {
  * 
  * Renders a heading element with consistent styling
  */
-export const Heading = forwardRef<HTMLHeadingElement, HeadingProps>(
+const HeadingComponent = forwardRef<HTMLHeadingElement, HeadingProps>(
   ({
     children,
     level = HeadingLevel.H2,
@@ -105,22 +105,20 @@ export const Heading = forwardRef<HTMLHeadingElement, HeadingProps>(
     
     // Compute heading classes
     const headingClasses = useMemo(() => {
-      const classes = [
-        'gs-heading',
-        `gs-heading--${safeLevel}`,
-        `gs-heading--align-${align || textAlign || 'left'}`,
-        withMargin ? 'gs-heading--with-margin' : '',
-        withDivider ? 'gs-heading--with-divider' : '',
-        responsive ? 'gs-heading--responsive' : '',
-        color ? `gs-heading--color-${color}` : '',
-        fontSize ? `gs-heading--font-size-${fontSize}` : '',
-        fontWeight ? `gs-heading--font-weight-${fontWeight}` : '',
-        truncate ? 'gs-heading--truncate' : '',
-        textTransform ? `gs-heading--text-transform-${textTransform}` : '',
-        className
-      ].filter(Boolean).join(' ');
-      
-      return classes;
+      return [
+              'gs-heading',
+              `gs-heading--${safeLevel}`,
+              `gs-heading--align-${align || textAlign || 'left'}`,
+              withMargin ? 'gs-heading--with-margin' : '',
+              withDivider ? 'gs-heading--with-divider' : '',
+              responsive ? 'gs-heading--responsive' : '',
+              color ? `gs-heading--color-${color}` : '',
+              fontSize ? `gs-heading--font-size-${fontSize}` : '',
+              fontWeight ? `gs-heading--font-weight-${fontWeight}` : '',
+              truncate ? 'gs-heading--truncate' : '',
+              textTransform ? `gs-heading--text-transform-${textTransform}` : '',
+              className
+            ].filter(Boolean).join(' ');
     }, [
       safeLevel,
       align,
@@ -155,6 +153,11 @@ export const Heading = forwardRef<HTMLHeadingElement, HeadingProps>(
   }
 );
 
-Heading.displayName = 'Heading';
+HeadingComponent.displayName = 'Heading';
+
+/**
+ * Memoized Heading component to prevent unnecessary re-renders
+ */
+export const Heading = memo(HeadingComponent);
 
 export default Heading; 

@@ -29,7 +29,7 @@ export function generateAnonymousId(seed?: string): string {
     let hashCode = 0;
     for (let i = 0; i < seed.length; i++) {
       hashCode = (hashCode << 5) - hashCode + seed.charCodeAt(i);
-      hashCode = hashCode & hashCode; // Convert to 32bit integer
+      hashCode &= hashCode; // Convert to 32bit integer
     }
     randomPart = Math.abs(hashCode).toString(36);
   } else {

@@ -354,7 +354,9 @@ export class MultitabCommunicationChannel {
    * Activate the communication channel and announce presence
    */
   public activate(): void {
-    if (this.active) return;
+    if (this.active) {
+      return;
+    }
 
     this.active = true;
 
@@ -377,7 +379,9 @@ export class MultitabCommunicationChannel {
    * Deactivate the communication channel and clean up
    */
   public deactivate(): void {
-    if (!this.active) return;
+    if (!this.active) {
+      return;
+    }
 
     // Announce our departure
     this.sendMessage({

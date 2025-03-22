@@ -19,10 +19,19 @@ import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
-import { Module } from '../../types/modules/ModuleTypes';
+import { Module, ModuleStatus } from '../../types/modules/ModuleTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 import { NotificationSystem, notificationManager } from './NotificationSystem';
 import ResourceVisualization from './ResourceVisualization';
+import { useLazyComponent, useRenderPerformance } from '../../utils/performance/ComponentOptimizer';
+
+// Temporary Settings Panel component
+const _SettingsPanel = () => (
+  <div className="p-4 bg-gray-900 border border-gray-800 rounded-lg">
+    <h2 className="text-xl font-bold mb-4">Settings</h2>
+    <p className="text-gray-400 mb-4">Game settings will be implemented here.</p>
+  </div>
+);
 
 interface GameHUDProps {
   empireName: string;
@@ -75,6 +84,7 @@ interface _Notification {
  * in the upcoming notification system upgrade. It is kept here for reference.
  */
 
+// Prefixed with underscore to indicate it's intentionally unused
 function _createNotification(type: 'success' | 'error', message: string): _Notification {
   return {
     id: `notification-${Date.now()}`,
@@ -115,21 +125,122 @@ const categoryIcons: Record<MenuCategory, React.ReactNode> = {
   colony: <Crown size={18} />,
 };
 
+/**
+ * GameHUD component for displaying game interface
+ * @context: ui-system, game-hud, performance-optimization
+ */
 export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: GameHUDProps) {
+  // Track render performance in development
+  useRenderPerformance('GameHUD');
+  
+  // Game state
+  const gameState = useGameState(state => state);
+  const gameDispatch = useGameDispatch();
+  
+  // Module state
+  const modules = useModules(state => state);
+  const moduleDispatch = useModuleDispatch();
+  
+  // VPR state
+  const vprSystem = useVPRSystem();
+  
+  // Local state
+  const [activeMenu, setActiveMenu] = useState<MenuCategory | null>(null);
   const [activeCategory, setActiveCategory] = useState<MenuCategory | null>(null);
   const [showTechTree, setShowTechTree] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [tooltipInfo, setTooltipInfo] = useState<{ text: string; position: Position } | null>(null);
   const [showTooltip, setShowTooltip] = useState<{ id: string; x: number; y: number } | null>(null);
+  
+  // Lazy load heavy components to improve initial load time
+  const { Component: TechTreeComponent, loading: techTreeLoading } = useLazyComponent<{
+    visible: boolean;
+    onClose: () => void;
+  }>(
+    () => import('./TechTree'),
+    [showTechTree]
+  );
+  
+  const { Component: ResourceVisualizationComponent, loading: resourceVisLoading } = useLazyComponent<{
+    type: ResourceType;
+    value: number;
+  }>(
+    () => import('./ResourceVisualization'),
+    []
+  );
+  
+  // Using direct import for SettingsPanel since we have the component defined above
+  const settingsLoading = false;
+  
+  // Define simple type here to avoid import issues
+  type MiniMapStarStatus = 'locked' | 'unlocked' | 'colonized' | 'hostile';
+  
+  const { Component: MiniMapComponent, loading: miniMapLoading } = useLazyComponent<{
+    stars: Array<{id: string; name: string; position: Position; status: MiniMapStarStatus}>;
+    viewport: {position: Position; zoom: number; width: number; height: number};
+  }>(
+    () => import('./game/MiniMap').then(module => ({ 
+      default: (props: {
+        stars: Array<{id: string; name: string; position: Position; status: MiniMapStarStatus}>;
+        viewport: {position: Position; zoom: number; width: number; height: number};
+      }) => <module.MiniMap {...props} /> 
+    })),
+    []
+  );
 
-  // Get contexts
-  const gameState = useGameState(state => state);
-  const gameDispatch = useGameDispatch();
-  const moduleState = useModules(state => state);
-  const moduleDispatch = useModuleDispatch();
-  const vprSystem = useVPRSystem();
+  // Add keyboard shortcut handling
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    // Function keys for special actions
+    if (event.key === 'F1') {
+      event.preventDefault();
+      setShowTechTree(prev => !prev);
+    } else if (event.key === 'F2') {
+      event.preventDefault();
+      setShowSettings(prev => !prev);
+    } else if (event.key === 'Escape') {
+      if (showTechTree) {
+        setShowTechTree(false);
+      } else if (showSettings) {
+        setShowSettings(false);
+      } else if (activeCategory) {
+        setActiveCategory(null);
+      }
+    }
 
+    // Alt + key combinations for menu categories
+    if (event.altKey) {
+      if (event.key === 'm') {
+        event.preventDefault();
+        setActiveCategory('mining');
+      } else if (event.key === 'e') {
+        event.preventDefault();
+        setActiveCategory('exploration');
+      } else if (event.key === 's') {
+        event.preventDefault();
+        setActiveCategory('mothership');
+      } else if (event.key === 'c') {
+        event.preventDefault();
+        setActiveCategory('colony');
+      }
+    }
+  }, [activeCategory, showSettings, showTechTree]);
+
+  // Set up keyboard shortcuts
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
+  // Toggle sidebar collapsed state
+  const toggleSidebar = useCallback(() => {
+    setSidebarCollapsed(prev => !prev);
+  }, []);
+  
   // Ensure contexts are available
-  if (!gameState || !moduleState) {
+  if (!gameState || !modules) {
     return null;
   }
 
@@ -151,7 +262,7 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
     }
 
     // Find a suitable building and attachment point
-    for (const building of moduleState.buildings) {
+    for (const building of modules.buildings) {
       for (const point of building.attachmentPoints) {
         if (point.allowedTypes.includes(moduleType) && !point.currentModule) {
           console.warn('Found suitable attachment point for module');
@@ -164,621 +275,469 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
     return false;
   };
 
-  // Updated buildModuleLocally function with improved error handling and logging
+  // Build a module
   const buildModuleLocally = (
     moduleType: ModuleType,
     cost: { minerals?: number; energy?: number }
   ): boolean => {
-    console.warn('Building module:', moduleType, cost);
+    const existingModules = Object.values(modules.modules);
+    const totalModulesOfType = existingModules.filter(m => m.type === moduleType).length;
 
-    if (!moduleDispatch) {
-      console.error('Module context dispatch is not available');
-      return false;
-    }
+    // Set module ID with a counter for easy identification
+    const moduleId = `${moduleType.toLowerCase()}_${totalModulesOfType + 1}_${Date.now()}`;
 
-    // Find a suitable building and attachment point
-    let targetBuilding = undefined;
-    let targetPoint = undefined;
+    // Find a building to attach to
+    let buildingId: string | null = null;
+    let attachmentPointId: string | null = null;
 
-    // Get first available building with a suitable attachment point
-    for (const building of moduleState.buildings) {
+    buildingLoop: for (const building of modules.buildings) {
       for (const point of building.attachmentPoints) {
         if (point.allowedTypes.includes(moduleType) && !point.currentModule) {
-          targetBuilding = building;
-          targetPoint = point.id;
-          break;
+          buildingId = building.id;
+          attachmentPointId = point.id;
+          break buildingLoop;
         }
       }
-      if (targetBuilding && targetPoint) {
-        break;
-      }
     }
 
-    if (!targetBuilding || !targetPoint) {
-      console.error('No suitable attachment point found for module:', moduleType);
+    if (!buildingId || !attachmentPointId) {
+      console.error('No suitable attachment point found for module', moduleType);
       return false;
     }
 
-    // Create and attach the module
-    const position: Position = targetBuilding.attachmentPoints.find(p => p.id === targetPoint)
-      ?.position || {
-      x: 0,
-      y: 0,
+    // Create the module
+    const module: Module = {
+      id: moduleId,
+      name: `${moduleType} Module ${totalModulesOfType + 1}`,
+      type: moduleType,
+      status: ModuleStatus.ACTIVE,
+      buildingId,
+      attachmentPointId,
+      position: { x: 0, y: 0 }, // Default position, will be updated based on attachment point
+      isActive: true,
+      level: 1
     };
 
-    console.warn('Creating module at position:', position);
-
-    try {
-      // Create the module
-      const module: Module = {
-        id: uuidv4(),
-        name: `${moduleType} Module`,
-        type: moduleType,
-        position,
-        status: 'active',
-        isActive: true,
-        level: 1,
-      };
-
-      moduleDispatch({
-        type: ModuleActionType.ADD_MODULE,
+    // Update game state for minerals
+    if (cost.minerals) {
+      gameDispatch({
+        type: GameActionType.UPDATE_RESOURCES,
         payload: {
-          module,
+          minerals: gameState.resources.minerals - cost.minerals,
         },
       });
-
-      // Get the newly created module's ID (it will be the last one created)
-      const newModule = moduleManager.getModulesByType(moduleType).pop();
-      if (!newModule) {
-        console.error('Failed to create module:', moduleType);
-        return false;
-      }
-
-      console.warn('Created module:', newModule);
-
-      // Attach the module
-      moduleDispatch({
-        type: ModuleActionType.UPDATE_MODULE,
-        payload: {
-          moduleId: newModule.id,
-          updates: {
-            buildingId: targetBuilding.id,
-            attachmentPointId: targetPoint,
-          },
-        },
-      });
-
-      // Activate the module
-      moduleDispatch({
-        type: ModuleActionType.SET_ACTIVE_MODULES,
-        payload: {
-          activeModuleIds: [...moduleState.activeModuleIds, newModule.id],
-        },
-      });
-
-      // Register with VPR system for visualization if it's a relevant type
-      if (
-        vprSystem &&
-        ['exploration', 'mining', 'colony', 'hangar', 'mineral', 'resource-manager'].includes(
-          moduleType
-        )
-      ) {
-        // Map module type to VPR type
-        const vprType =
-          moduleType === 'exploration'
-            ? 'exploration'
-            : moduleType === 'hangar'
-              ? 'mining'
-              : moduleType === 'mineral'
-                ? 'mining'
-                : moduleType === 'resource-manager'
-                  ? 'colony'
-                  : 'mothership';
-
-        // Use the new addModule function to add the module to the VPR system
-        vprSystem.addModule(newModule.id, vprType, 1, 'active');
-
-        // Emit an event to notify the system of the new module
-        moduleEventBus.emit({
-          type: 'MODULE_UPDATED',
-          moduleId: newModule.id,
-          moduleType: moduleType,
-          timestamp: Date.now(),
-          data: {
-            vprRegistered: true,
-            vprType: vprType,
-          },
-        });
-      }
-
-      console.warn(`Successfully built module of type ${moduleType} with ID ${newModule.id}`);
-      return true;
-    } catch (error) {
-      console.error('Error building module:', error);
-      return false;
     }
+
+    // Update game state for energy
+    if (cost.energy) {
+      gameDispatch({
+        type: GameActionType.UPDATE_RESOURCES,
+        payload: {
+          energy: gameState.resources.energy - cost.energy,
+        },
+      });
+    }
+
+    // Register with module system
+    moduleDispatch({
+      type: ModuleActionType.ADD_MODULE,
+      payload: {
+        module,
+      },
+    });
+
+    // Register with the VPR system for visualization
+    vprSystem.addModule(
+      moduleId,
+      moduleType === 'resource-manager'
+        ? 'mining'
+        : moduleType === 'radar'
+        ? 'exploration'
+        : moduleType === 'hangar'
+        ? 'mothership'
+        : 'colony'
+    );
+
+    // Emit module created event for the event system
+    moduleEventBus.emit({
+      type: 'MODULE_CREATED',
+      moduleId,
+      moduleType,
+      timestamp: Date.now(),
+      data: module as unknown as Record<string, unknown>,
+    });
+
+    console.warn('New module built:', module); // Changed from console.log to console.warn
+    return true;
   };
 
-  // Add notification
+  // Add notification to the notification system
   const addNotification = (
     type: 'success' | 'error' | 'info' | 'warning',
     title: string,
     message: string
   ): void => {
-    // Current implementation using the notification manager
     notificationManager.show({
+      type,
       title,
       message,
-      type,
     });
   };
 
-  // Toggle tech tree
+  // Toggle tech tree display
   const toggleTechTree = () => {
-    setShowTechTree(!showTechTree);
+    setShowTechTree(prev => !prev);
   };
 
-  // Toggle settings
+  // Toggle settings panel
   const toggleSettings = () => {
-    setShowSettings(!showSettings);
+    setShowSettings(prev => !prev);
   };
 
-  // Add keyboard shortcuts for menu navigation
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      // Mapping keys to categories
-      const keyMap: Record<string, MenuCategory> = {
-        m: 'mining',
-        e: 'exploration',
-        h: 'mothership',
-        c: 'colony',
-      };
+  // Function to format tooltip display
+  const _formatTooltip = (item: MenuItem): string => {
+    let tooltip = `<div class="tooltip-content">
+      <h3 class="tooltip-title">${item.name}</h3>
+      <p class="tooltip-desc">${item.description}</p>`;
 
-      // Function keys mapping
-      if (event?.key === 'F1') {
-        toggleTechTree();
-        return;
+    if (item.cost) {
+      tooltip += '<div class="tooltip-cost">';
+      if (item.cost.minerals) {
+        tooltip += `<div class="tooltip-resource">
+          <span class="tooltip-resource-icon">💎</span>
+          <span class="tooltip-resource-amount">${item.cost.minerals} minerals</span>
+        </div>`;
       }
-
-      if (event?.key === 'F2') {
-        toggleSettings();
-        return;
+      if (item.cost.energy) {
+        tooltip += `<div class="tooltip-resource">
+          <span class="tooltip-resource-icon">⚡</span>
+          <span class="tooltip-resource-amount">${item.cost.energy} energy</span>
+        </div>`;
       }
-
-      // Alt + key combinations for categories
-      if (event?.altKey && keyMap[event?.key]) {
-        setActiveCategory(keyMap[event?.key]);
-        event?.preventDefault();
-      }
-
-      // Escape key to close active category
-      if (event?.key === 'Escape' && activeCategory) {
-        setActiveCategory(null);
-        event?.preventDefault();
-      }
-    },
-    [activeCategory, toggleTechTree, toggleSettings]
-  );
-
-  // Set up keyboard shortcut listeners
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyDown]);
-
-  // Resource status indicators
-  const getResourceStatus = useCallback((current: number, min: number, max: number) => {
-    if (current < min) {
-      return {
-        status: 'critical',
-        color: 'text-red-400',
-        icon: <AlertTriangle size={14} className="text-red-400" />,
-      };
-    } else if (current > max) {
-      return {
-        status: 'abundant',
-        color: 'text-green-400',
-        icon: <Info size={14} className="text-green-400" />,
-      };
-    } else {
-      return { status: 'normal', color: 'text-gray-300', icon: null };
+      tooltip += '</div>';
     }
-  }, []);
 
-  // Enhanced tooltip display
+    tooltip += '</div>';
+    return tooltip;
+  };
+
+  // Render tooltip content
   const renderTooltip = () => {
-    if (!showTooltip) return null;
+    if (!showTooltip) {
+      return null;
+    }
 
-    const menuCategory = Object.keys(menuItems).find(category =>
-      menuItems[category as MenuCategory].some(item => item?.id === showTooltip.id)
-    ) as MenuCategory | undefined;
+    const activeItems = menuItems[activeCategory as MenuCategory];
+    if (!activeItems) {
+      return null;
+    }
 
-    if (!menuCategory) return null;
-
-    const menuItem = menuItems[menuCategory].find(item => item?.id === showTooltip.id);
-    if (!menuItem) return null;
-
-    const canBuild =
-      menuItem.moduleType && menuItem.cost
-        ? canBuildModule(menuItem.moduleType, menuItem.cost)
-        : false;
+    const currentItem = activeItems.find(item => item.id === showTooltip.id);
+    if (!currentItem) {
+      return null;
+    }
 
     return (
       <div
-        className="absolute z-50 w-72 rounded-lg border border-gray-700 bg-gray-800 p-3 shadow-lg"
-        style={{ top: showTooltip.y + 10, left: showTooltip.x }}
+        className="absolute z-50 w-64 rounded-lg border border-gray-800 bg-gray-900 p-3 shadow-lg"
+        style={{
+          left: `${showTooltip.x}px`,
+          top: `${showTooltip.y}px`,
+        }}
       >
-        <h4 className="text-md font-semibold text-white">{menuItem.name}</h4>
-        <p className="mt-1 text-sm text-gray-300">{menuItem.description}</p>
-
-        {menuItem.cost && (
-          <div className="mt-2 space-y-1 text-sm">
-            <h5 className="font-medium text-gray-200">Required Resources:</h5>
-            <div className="flex justify-between">
-              {menuItem.cost.minerals && (
-                <div
-                  className={`flex items-center space-x-1 ${
-                    gameState.resources.minerals >= menuItem.cost.minerals
-                      ? 'text-amber-300'
-                      : 'text-red-400'
-                  }`}
-                >
-                  <span>Minerals:</span>
-                  <span className="font-medium">{menuItem.cost.minerals}</span>
-                </div>
-              )}
-              {menuItem.cost.energy && (
-                <div
-                  className={`flex items-center space-x-1 ${
-                    gameState.resources.energy >= menuItem.cost.energy
-                      ? 'text-cyan-300'
-                      : 'text-red-400'
-                  }`}
-                >
-                  <span>Energy:</span>
-                  <span className="font-medium">{menuItem.cost.energy}</span>
-                </div>
-              )}
-            </div>
+        <h3 className="mb-1 text-lg font-bold text-white">{currentItem.name}</h3>
+        <p className="mb-2 text-sm text-gray-300">{currentItem.description}</p>
+        {currentItem.cost && (
+          <div className="mt-2 flex flex-col space-y-1 text-sm">
+            {currentItem.cost.minerals && (
+              <div
+                className={`flex items-center space-x-1 ${
+                  gameState.resources.minerals < (currentItem.cost.minerals ?? 0)
+                    ? 'text-red-400'
+                    : 'text-amber-300'
+                }`}
+              >
+                <span>💎</span>
+                <span>
+                  {currentItem.cost.minerals} minerals{' '}
+                  {gameState.resources.minerals < (currentItem.cost.minerals ?? 0) && (
+                    <span className="text-red-400">(insufficient)</span>
+                  )}
+                </span>
+              </div>
+            )}
+            {currentItem.cost.energy && (
+              <div
+                className={`flex items-center space-x-1 ${
+                  gameState.resources.energy < (currentItem.cost.energy ?? 0)
+                    ? 'text-red-400'
+                    : 'text-cyan-300'
+                }`}
+              >
+                <span>⚡</span>
+                <span>
+                  {currentItem.cost.energy} energy{' '}
+                  {gameState.resources.energy < (currentItem.cost.energy ?? 0) && (
+                    <span className="text-red-400">(insufficient)</span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
         )}
-
-        <div className="mt-3 text-sm">
-          <span className={`font-medium ${canBuild ? 'text-green-400' : 'text-red-400'}`}>
-            {canBuild ? 'Available to build' : 'Cannot build'}
-          </span>
-        </div>
       </div>
     );
   };
 
-  // Define menu items with actions
-  const getMenuItems = () => {
+  // Define menu items for each category
+  const menuItems: Record<MenuCategory, MenuItem[]> = {
+    mining: [
+      {
+        id: 'mining_resource_generator',
+        name: 'Energy Generator',
+        description: 'Generates energy for your empire',
+        moduleType: 'resource-manager',
+        cost: {
+          minerals: 50,
+        },
+        action: () => {
+          const canBuild = canBuildModule('resource-manager', { minerals: 50 });
+          if (canBuild) {
+            if (buildModuleLocally('resource-manager', { minerals: 50 })) {
+              addNotification(
+                'success',
+                'Module Built',
+                'Energy Generator has been successfully constructed.'
+              );
+            }
+          } else {
+            addNotification(
+              'error',
+              'Cannot Build',
+              'Insufficient resources or no suitable attachment point.'
+            );
+          }
+        },
+      },
+      {
+        id: 'mining_mineral_extractor',
+        name: 'Mineral Extractor',
+        description: 'Extracts minerals from nearby sources',
+        moduleType: 'mineral',
+        cost: {
+          minerals: 30,
+          energy: 20,
+        },
+        action: () => {
+          const canBuild = canBuildModule('mineral', { minerals: 30, energy: 20 });
+          if (canBuild) {
+            if (buildModuleLocally('mineral', { minerals: 30, energy: 20 })) {
+              addNotification(
+                'success',
+                'Module Built',
+                'Mineral Extractor has been successfully constructed.'
+              );
+            }
+          } else {
+            addNotification(
+              'error',
+              'Cannot Build',
+              'Insufficient resources or no suitable attachment point.'
+            );
+          }
+        },
+      },
+    ],
+    exploration: [
+      {
+        id: 'exploration_research_lab',
+        name: 'Research Laboratory',
+        description: 'Conducts research to unlock new technologies',
+        moduleType: ResourceType.RESEARCH,
+        cost: {
+          minerals: 40,
+          energy: 30,
+        },
+        action: () => {
+          const canBuild = canBuildModule(ResourceType.RESEARCH, { minerals: 40, energy: 30 });
+          if (canBuild) {
+            if (buildModuleLocally(ResourceType.RESEARCH, { minerals: 40, energy: 30 })) {
+              addNotification(
+                'success',
+                'Module Built',
+                'Research Laboratory has been successfully constructed.'
+              );
+            }
+          } else {
+            addNotification(
+              'error',
+              'Cannot Build',
+              'Insufficient resources or no suitable attachment point.'
+            );
+          }
+        },
+      },
+    ],
+    mothership: [
+      {
+        id: 'mothership_command_center',
+        name: 'Command Center',
+        description: 'Central hub for managing empire operations',
+        moduleType: 'hangar',
+        cost: {
+          minerals: 100,
+          energy: 80,
+        },
+        action: () => {
+          const canBuild = canBuildModule('hangar', { minerals: 100, energy: 80 });
+          if (canBuild) {
+            if (buildModuleLocally('hangar', { minerals: 100, energy: 80 })) {
+              addNotification(
+                'success',
+                'Module Built',
+                'Command Center has been successfully constructed.'
+              );
+            }
+          } else {
+            addNotification(
+              'error',
+              'Cannot Build',
+              'Insufficient resources or no suitable attachment point.'
+            );
+          }
+        },
+      },
+    ],
+    colony: [
+      {
+        id: 'colony_habitat',
+        name: 'Habitat Module',
+        description: 'Living quarters for your colonists',
+        moduleType: ResourceType.POPULATION,
+        cost: {
+          minerals: 60,
+          energy: 40,
+        },
+        action: () => {
+          const canBuild = canBuildModule(ResourceType.POPULATION, { minerals: 60, energy: 40 });
+          if (canBuild) {
+            if (buildModuleLocally(ResourceType.POPULATION, { minerals: 60, energy: 40 })) {
+              addNotification(
+                'success',
+                'Module Built',
+                'Habitat Module has been successfully constructed.'
+              );
+            }
+          } else {
+            addNotification(
+              'error',
+              'Cannot Build',
+              'Insufficient resources or no suitable attachment point.'
+            );
+          }
+        },
+      },
+    ],
+  };
+
+  // Get updated menu items based on current game state
+  const getUpdatedMenuItems = () => {
     return {
-      mining: [
-        {
-          id: 'mineral-processing',
-          name: 'Mineral Processing',
-          description: 'Process raw minerals and manage resource extraction',
-          moduleType: 'mineral' as ModuleType,
-          cost: {
-            minerals: 500,
-            energy: 300,
-          },
-          action: () => {},
-        },
-        {
-          id: 'mining-fleet',
-          name: 'Mining Fleet',
-          description: 'Manage mining ships and automated resource collection',
-          moduleType: 'hangar' as ModuleType,
-          cost: {
-            minerals: 400,
-            energy: 200,
-          },
-          action: () => {},
-        },
-        {
-          id: 'resource-storage',
-          name: 'Resource Storage',
-          description: 'Monitor and manage resource stockpiles',
-          moduleType: 'resource-manager' as ModuleType,
-          cost: {
-            minerals: 300,
-            energy: 100,
-          },
-          action: () => {},
-        },
-      ],
-      exploration: [
-        {
-          id: 'recon-hub',
-          name: 'Recon Hub',
-          description: 'Coordinate exploration missions and scout ships',
-          moduleType: 'exploration' as ModuleType,
-          cost: {
-            minerals: 400,
-            energy: 300,
-          },
-          action: () => {},
-        },
-        {
-          id: 'galaxy-map',
-          name: 'Galaxy Map',
-          description: 'View and analyze discovered sectors',
-          moduleType: 'radar' as ModuleType,
-          cost: {
-            minerals: 200,
-            energy: 400,
-          },
-          action: () => {},
-        },
-      ],
-      mothership: [
-        {
-          id: 'command-center',
-          name: 'Command Center',
-          description: 'Central command and control for your mothership',
-          moduleType: 'hangar' as ModuleType,
-          cost: {
-            minerals: 600,
-            energy: 500,
-          },
-          action: () => {},
-        },
-        {
-          id: 'research-lab',
-          name: 'Research Lab',
-          description: 'Research new technologies and upgrades',
-          moduleType: ResourceType.RESEARCH as ModuleType,
-          cost: {
-            minerals: 500,
-            energy: 600,
-          },
-          action: () => {},
-        },
-      ],
-      colony: [
-        {
-          id: 'habitat-dome',
-          name: 'Habitat Dome',
-          description: 'Living quarters for your colonists',
-          moduleType: 'resource-manager' as ModuleType,
-          cost: {
-            minerals: 500,
-            energy: 400,
-          },
-          action: () => {},
-        },
-        {
-          id: 'trade-hub',
-          name: 'Trade Hub',
-          description: 'Establish and monitor trade routes',
-          moduleType: 'trading' as ModuleType,
-          cost: {
-            minerals: 400,
-            energy: 300,
-          },
-          action: () => {},
-        },
-      ],
+      ...menuItems,
     };
   };
 
-  // Update the getUpdateMenuItems function to properly implement actions
-  const getUpdatedMenuItems = () => {
-    const menuItems = getMenuItems();
-
-    // Add the real actions
-    Object.keys(menuItems).forEach(category => {
-      menuItems[category as MenuCategory] = menuItems[category as MenuCategory].map(item => ({
-        ...item,
-        action: () => {
-          console.warn(`Attempting to build ${item?.name}...`);
-          if (item?.moduleType && item?.cost) {
-            if (canBuildModule(item?.moduleType, item?.cost)) {
-              // Actually build the module using our local implementation
-              const success = buildModuleLocally(item?.moduleType, item?.cost);
-
-              if (success) {
-                // Update resources in game state
-                gameDispatch({
-                  type: GameActionType.UPDATE_RESOURCES,
-                  payload: {
-                    minerals: gameState.resources.minerals - (item?.cost?.minerals ?? 0),
-                    energy: gameState.resources.energy - (item?.cost?.energy ?? 0),
-                  },
-                });
-
-                // Show success notification
-                addNotification(
-                  'success',
-                  `Successfully built ${item?.name}`,
-                  `Your ${item?.name} module is now operational.`
-                );
-
-                console.warn(`Successfully built ${item?.name}!`);
-
-                // Activate the appropriate view based on module type
-                if (category === 'mining') {
-                  onToggleSprawlView();
-                } else if (category === 'exploration') {
-                  onToggleVPRView();
-                }
-              } else {
-                // Show error notification if building failed
-                addNotification(
-                  'error',
-                  `Failed to build ${item?.name}`,
-                  `Technical error occurred while building ${item?.name}. Please try again.`
-                );
-              }
-            } else {
-              // Show error notification
-              const missingResources = [];
-              if ((item?.cost?.minerals ?? 0) > gameState.resources.minerals) {
-                missingResources.push(
-                  `${item?.cost?.minerals - gameState.resources.minerals} minerals`
-                );
-              }
-              if ((item?.cost?.energy ?? 0) > gameState.resources.energy) {
-                missingResources.push(`${item?.cost?.energy - gameState.resources.energy} energy`);
-              }
-
-              const resourceMessage =
-                missingResources.length > 0
-                  ? `You need ${missingResources.join(' and ')} more.`
-                  : 'No suitable attachment point available.';
-
-              addNotification(
-                'error',
-                `Cannot build ${item?.name}`,
-                `Insufficient resources to build ${item?.name}. ${resourceMessage}`
-              );
-            }
-          }
-        },
-      }));
-    });
-
-    return menuItems;
-  };
-
-  // Get menu items with actions
-  const menuItems = getUpdatedMenuItems();
-
-  // Enhanced UI for the category style with better visual feedback
+  // Get dynamic style for category button based on state
   const getCategoryStyle = (category: MenuCategory) => {
-    const baseStyle =
-      'flex w-full items-center rounded-lg border px-4 py-2 transition-colors duration-200';
-    const activeStyle = `${baseStyle} ${categoryColors[category].border} bg-gradient-to-r ${categoryColors[category].bg} text-white shadow-md`;
-    const inactiveStyle = `${baseStyle} border-gray-700/50 bg-gray-800/30 text-gray-300 hover:bg-gray-700/40 hover:border-gray-600/50`;
-
-    return activeCategory === category ? activeStyle : inactiveStyle;
+    return `flex items-center rounded-lg border p-3 transition-colors duration-200 ${
+      categoryColors[category].border
+    } ${categoryColors[category].bg} ${
+      category === activeCategory ? 'ring-2 ring-white/20' : categoryColors[category].hover
+    }`;
   };
 
-  // Resource statistics for basic display
-  const resourceStats = useMemo(
-    () => ({
-      minerals: {
-        currentAmount: gameState.resources.minerals,
-        minThreshold: 200,
-        maxThreshold: 2000,
-        maxCapacity: 3000,
-        extractionRate: gameState.resourceRates?.minerals ?? 0,
-      },
-      energy: {
-        currentAmount: gameState.resources.energy,
-        minThreshold: 100,
-        maxThreshold: 1500,
-        maxCapacity: 2000,
-        extractionRate: gameState.resourceRates?.energy ?? 0,
-      },
-    }),
-    [gameState.resources, gameState.resourceRates]
-  );
+  // Memoized menu items
+  const menuItemsMemo = useMemo(() => getUpdatedMenuItems(), [
+    gameState.resources.minerals,
+    gameState.resources.energy,
+    modules.buildings,
+  ]);
 
-  // Display resource warnings based on thresholds
-  useEffect(() => {
-    if (
-      resourceStats.minerals.currentAmount < resourceStats.minerals.minThreshold ||
-      resourceStats.energy.currentAmount < resourceStats.energy.minThreshold
-    ) {
-      // Only show the warning if it's critical (less than half of the min threshold)
-      if (
-        resourceStats.minerals.currentAmount < resourceStats.minerals.minThreshold / 2 ||
-        resourceStats.energy.currentAmount < resourceStats.energy.minThreshold / 2
-      ) {
-        addNotification(
-          'error',
-          'Critical Resource Shortage',
-          'Resources are critically low. Prioritize resource collection immediately.'
-        );
-      } else {
-        addNotification(
-          'warning',
-          'Low Resources',
-          'Resource levels are getting low. Consider increasing production.'
-        );
-      }
-    }
-  }, [resourceStats]);
-
-  // Render the component
   return (
-    <div className="flex h-screen flex-col overflow-hidden rounded-lg border border-gray-800 bg-gray-900 bg-opacity-80 shadow-lg">
-      {/* Top bar with empire name and resource visualization */}
-      <div className="flex items-center justify-between border-b border-gray-700 bg-gray-800 bg-opacity-50 px-4 py-3">
-        <div className="flex items-center">
-          <h1 className="text-xl font-bold text-white">{empireName}</h1>
-          <div className="ml-4 rounded-md bg-gray-700 bg-opacity-50 px-3 py-1">
-            <div className="flex items-center space-x-4 text-sm">
-              <div className="flex items-center">
-                <span className="font-medium text-amber-300">
-                  Minerals: {gameState.resources.minerals}
-                </span>
-                {resourceStats.minerals.extractionRate !== 0 && (
-                  <span
-                    className={`ml-1 text-xs ${resourceStats.minerals.extractionRate > 0 ? 'text-green-400' : 'text-red-400'}`}
-                  >
-                    ({resourceStats.minerals.extractionRate > 0 ? '+' : ''}
-                    {resourceStats.minerals.extractionRate}/s)
-                  </span>
-                )}
-                {
-                  getResourceStatus(
-                    resourceStats.minerals.currentAmount,
-                    resourceStats.minerals.minThreshold,
-                    resourceStats.minerals.maxThreshold
-                  ).icon
-                }
-              </div>
-              <span className="text-gray-400">|</span>
-              <div className="flex items-center">
-                <span className="font-medium text-cyan-300">
-                  Energy: {gameState.resources.energy}
-                </span>
-                {resourceStats.energy.extractionRate !== 0 && (
-                  <span
-                    className={`ml-1 text-xs ${resourceStats.energy.extractionRate > 0 ? 'text-green-400' : 'text-red-400'}`}
-                  >
-                    ({resourceStats.energy.extractionRate > 0 ? '+' : ''}
-                    {resourceStats.energy.extractionRate}/s)
-                  </span>
-                )}
-                {
-                  getResourceStatus(
-                    resourceStats.energy.currentAmount,
-                    resourceStats.energy.minThreshold,
-                    resourceStats.energy.maxThreshold
-                  ).icon
-                }
-              </div>
-            </div>
+    <div className="flex h-screen flex-col bg-gray-900 font-sans text-white">
+      {/* Top header with empire info and resources */}
+      <div className="flex items-center justify-between border-b border-gray-800 bg-gray-900 bg-opacity-90 p-2">
+        <div className="flex items-center space-x-4">
+          <button
+            className="flex items-center rounded border border-gray-700 bg-gray-800 px-3 py-1 text-xs"
+            onClick={onToggleSprawlView}
+          >
+            <span className="mr-1">⚡</span>
+            {empireName}
+          </button>
+          <button
+            className="flex items-center rounded border border-purple-900 bg-purple-950 px-3 py-1 text-xs text-purple-200"
+            onClick={onToggleVPRView}
+          >
+            <Info size={12} className="mr-1" />
+            Toggle VPR Mode
+          </button>
+          <div className="flex items-center rounded-lg border border-gray-800 bg-gray-800 px-3 py-1 text-xs">
+            <AlertTriangle size={12} className="mr-1 text-yellow-400" />
+            <span className="text-yellow-300">Alert Level: Normal</span>
           </div>
+          {/* Add sidebar collapse toggle */}
+          <button
+            className="flex items-center rounded border border-gray-700 bg-gray-800 px-3 py-1 text-xs"
+            onClick={toggleSidebar}
+          >
+            <span className="mr-1">{sidebarCollapsed ? '→' : '←'}</span>
+            {sidebarCollapsed ? 'Expand' : 'Collapse'}
+          </button>
         </div>
-        <ResourceVisualization type={ResourceType.MINERALS} value={gameState.resources.minerals} />
-        <ResourceVisualization type={ResourceType.ENERGY} value={gameState.resources.energy} />
+        <div className="game-hud__resources-container">
+          {resourceVisLoading ? (
+            <div className="loading-placeholder">Loading resources...</div>
+          ) : (
+            ResourceVisualizationComponent && 
+            <ResourceVisualizationComponent 
+              type={ResourceType.MINERALS} 
+              value={gameState.resources.minerals} 
+            />
+          )}
+        </div>
+        <div className="flex space-x-4">
+          <ResourceVisualization 
+            type={ResourceType.MINERALS} 
+            value={gameState.resources.minerals} 
+          />
+          <ResourceVisualization 
+            type={ResourceType.ENERGY} 
+            value={gameState.resources.energy} 
+          />
+        </div>
       </div>
       {/* Main content with menu and active panel */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left menu with categories */}
-        <div className="flex w-64 flex-col overflow-y-auto border-r border-gray-800 bg-gray-900 bg-opacity-60">
+        <div className={`flex ${sidebarCollapsed ? 'w-16' : 'w-64'} flex-col overflow-y-auto border-r border-gray-800 bg-gray-900 bg-opacity-60 transition-all duration-300`}>
           {/* Menu categories */}
           <div className="space-y-2 p-4">
-            {Object.keys(menuItems).map(category => (
+            {Object.keys(menuItems).map((category) => (
               <button
                 key={category}
                 className={getCategoryStyle(category as MenuCategory)}
                 onClick={() => setActiveCategory(category as MenuCategory)}
               >
                 {categoryIcons[category as MenuCategory]}
-                <span className="ml-2 font-medium">
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </span>
-                <span className="ml-auto text-xs text-gray-400">Alt+{category.charAt(0)}</span>
+                {!sidebarCollapsed && (
+                  <>
+                    <span className="ml-2 font-medium">
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </span>
+                    <span className="ml-auto text-xs text-gray-400">Alt+{category.charAt(0)}</span>
+                  </>
+                )}
               </button>
             ))}
           </div>
@@ -789,16 +748,24 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
               onClick={toggleTechTree}
             >
               <Terminal size={18} />
-              <span className="ml-2 font-medium text-white">Tech Tree</span>
-              <span className="ml-auto text-xs text-gray-400">F1</span>
+              {!sidebarCollapsed && (
+                <>
+                  <span className="ml-2 font-medium text-white">Tech Tree</span>
+                  <span className="ml-auto text-xs text-gray-400">F1</span>
+                </>
+              )}
             </button>
             <button
               className="flex w-full items-center rounded-lg border border-gray-700/50 bg-gray-900/30 px-4 py-2 transition-colors duration-200 hover:bg-gray-800/40"
               onClick={toggleSettings}
             >
               <Settings size={18} />
-              <span className="ml-2 font-medium text-white">Settings</span>
-              <span className="ml-auto text-xs text-gray-400">F2</span>
+              {!sidebarCollapsed && (
+                <>
+                  <span className="ml-2 font-medium text-white">Settings</span>
+                  <span className="ml-auto text-xs text-gray-400">F2</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -827,17 +794,17 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
               </div>
               {/* Category items */}
               <div className="space-y-3">
-                {menuItems[activeCategory].map(item => (
+                {menuItemsMemo[activeCategory].map((item) => (
                   <button
-                    key={item?.id}
+                    key={item.id}
                     className={`w-full rounded-lg border p-4 text-left ${
                       categoryColors[activeCategory].border
                     } bg-gray-800 bg-opacity-50 transition-colors duration-200 hover:bg-opacity-70`}
-                    onClick={item?.action}
-                    onMouseEnter={e => {
+                    onClick={item.action}
+                    onMouseEnter={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect();
                       setShowTooltip({
-                        id: item?.id,
+                        id: item.id,
                         x: rect.right,
                         y: rect.top,
                       });
@@ -845,35 +812,35 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
                     onMouseLeave={() => setShowTooltip(null)}
                   >
                     <div className="flex items-start justify-between">
-                      <h3 className="text-lg font-medium text-white">{item?.name}</h3>
-                      {item?.cost ? (
+                      <h3 className="text-lg font-medium text-white">{item.name}</h3>
+                      {item.cost ? (
                         <div className="flex space-x-3 text-sm">
-                          {item?.cost.minerals ? (
+                          {item.cost.minerals ? (
                             <span
                               className={`rounded px-2 py-1 ${
-                                gameState.resources.minerals < (item?.cost.minerals ?? 0)
+                                gameState.resources.minerals < (item.cost.minerals ?? 0)
                                   ? 'bg-red-900/60 text-red-300'
                                   : 'bg-amber-900/60 text-amber-300'
                               }`}
                             >
-                              {item?.cost.minerals} minerals
+                              {item.cost.minerals} minerals
                             </span>
                           ) : null}
-                          {item?.cost.energy ? (
+                          {item.cost.energy ? (
                             <span
                               className={`rounded px-2 py-1 ${
-                                gameState.resources.energy < (item?.cost.energy ?? 0)
+                                gameState.resources.energy < (item.cost.energy ?? 0)
                                   ? 'bg-red-900/60 text-red-300'
                                   : 'bg-cyan-900/60 text-cyan-300'
                               }`}
                             >
-                              {item?.cost.energy} energy
+                              {item.cost.energy} energy
                             </span>
                           ) : null}
                         </div>
                       ) : null}
                     </div>
-                    <p className="mt-1 text-gray-300">{item?.description}</p>
+                    <p className="mt-1 text-gray-300">{item.description}</p>
                   </button>
                 ))}
               </div>
@@ -887,7 +854,7 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
                 your capabilities.
               </p>
               <div className="grid w-full max-w-md grid-cols-2 gap-4">
-                {Object.keys(menuItems).map(category => (
+                {Object.keys(menuItems).map((category) => (
                   <button
                     key={category}
                     className={`rounded-lg border p-4 ${
@@ -909,6 +876,50 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
           )}
         </div>
       </div>
+
+      {/* Tech Tree Modal */}
+      {showTechTree && TechTreeComponent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-6">
+          <div className="max-h-[90vh] max-w-[90vw] overflow-auto rounded-lg border border-gray-700 bg-gray-900 shadow-lg">
+            <TechTreeComponent visible={showTechTree} onClose={() => setShowTechTree(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-6">
+          <div className="max-h-[90vh] max-w-[90vw] overflow-auto rounded-lg border border-gray-700 bg-gray-900 shadow-lg">
+            <div className="flex items-center justify-between border-b border-gray-700 p-4">
+              <h2 className="text-xl font-bold text-white">Settings</h2>
+              <button
+                className="rounded-full p-1 text-gray-400 hover:bg-gray-800 hover:text-white"
+                onClick={() => setShowSettings(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6">
+              <_SettingsPanel />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mini Map (if needed) */}
+      {!miniMapLoading && MiniMapComponent && activeMenu === 'exploration' && (
+        <div className="absolute bottom-4 right-4 h-64 w-64 rounded-lg border border-gray-700 bg-gray-900 shadow-lg">
+          <MiniMapComponent
+            stars={[
+              { id: '1', name: 'Alpha', position: { x: 10, y: 10 }, status: 'colonized' },
+              { id: '2', name: 'Beta', position: { x: 50, y: 30 }, status: 'unlocked' },
+              { id: '3', name: 'Gamma', position: { x: 30, y: 60 }, status: 'locked' },
+            ]}
+            viewport={{ position: { x: 0, y: 0 }, zoom: 1, width: 64, height: 64 }}
+          />
+        </div>
+      )}
+
       {/* Tooltips */}
       {renderTooltip()}
       {/* Notification system */}

@@ -92,6 +92,7 @@ export function createComponentProfiler(
     renderHistory,
     reset,
     updateOptions,
+    profileRender,
   };
 }
 

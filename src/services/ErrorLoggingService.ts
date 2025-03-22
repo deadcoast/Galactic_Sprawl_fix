@@ -31,6 +31,8 @@ export enum ErrorType {
   INITIALIZATION = 'initialization', // Initialization-related errors
   RUNTIME = 'runtime', // Runtime errors
   INTEGRATION = 'integration', // Integration-related errors
+  EVENT_HANDLING = 'event_handling', // Event handling errors
+  UI = 'ui', // UI-related errors
 }
 
 // Structure for error metadata

@@ -27,17 +27,17 @@ export function generateThemeVariables(theme: Theme, prefix = 'gs'): string {
   
   // Generate font variables
   // Family
-  Object.entries(theme.fonts.family).forEach(([key, value]) => {
+  Object.entries(theme.typography.fontFamily).forEach(([key, value]) => {
     lines.push(`--${prefix}-font-family-${key}: ${value};`);
   });
   
   // Size
-  Object.entries(theme.fonts.size).forEach(([key, value]) => {
+  Object.entries(theme.typography.fontSizes).forEach(([key, value]) => {
     lines.push(`--${prefix}-font-size-${key}: ${value};`);
   });
   
   // Weight
-  Object.entries(theme.fonts.weight).forEach(([key, value]) => {
+  Object.entries(theme.typography.fontWeights).forEach(([key, value]) => {
     lines.push(`--${prefix}-font-weight-${key}: ${value};`);
   });
   
@@ -59,17 +59,17 @@ export function generateThemeVariables(theme: Theme, prefix = 'gs'): string {
   
   // Generate animation variables
   // Duration
-  Object.entries(theme.animations.duration).forEach(([key, value]) => {
+  Object.entries(theme.transitions.duration).forEach(([key, value]) => {
     lines.push(`--${prefix}-duration-${key}: ${value};`);
   });
   
   // Easing
-  Object.entries(theme.animations.easing).forEach(([key, value]) => {
+  Object.entries(theme.transitions.timing).forEach(([key, value]) => {
     lines.push(`--${prefix}-easing-${key}: ${value};`);
   });
   
   // Generate z-index variables
-  Object.entries(theme.zIndex).forEach(([key, value]) => {
+  Object.entries(theme.zIndices).forEach(([key, value]) => {
     lines.push(`--${prefix}-z-index-${key}: ${value};`);
   });
   

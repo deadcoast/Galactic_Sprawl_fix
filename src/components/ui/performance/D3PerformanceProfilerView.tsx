@@ -381,7 +381,8 @@ const D3PerformanceProfilerView: React.FC = () => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>
+        {`
         .d3-performance-profiler {
           padding: 20px;
           max-width: 1200px;
@@ -479,7 +480,8 @@ const D3PerformanceProfilerView: React.FC = () => {
         .bottleneck-row {
           background-color: #ffe6e6;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

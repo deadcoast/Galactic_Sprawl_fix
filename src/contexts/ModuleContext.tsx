@@ -330,48 +330,70 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
 
   // Set up event subscriptions
   useEffect(() => {
-    if (!manager) return undefined;
+    if (!manager) {
+      return undefined;
+    }
 
     // Use eventBus instead of 'events' - fixed property name
     const moduleEvents = manager.eventBus;
-    if (!moduleEvents) return undefined;
+    if (!moduleEvents) {
+      return undefined;
+    }
 
     // Module event handlers
     const handleModuleCreated = (event: BaseEvent) => {
-      if (event?.data && typeof event?.data === 'object' && 'module' in event?.data) {
-        const module = event?.data?.module as Module;
-        dispatch(createAddModuleAction(module));
+      if (event?.data && typeof event.data === 'object' && 'module' in event.data) {
+        // Safely access module property with proper type checking
+        const moduleData = event.data;
+        if (moduleData && 'module' in moduleData && moduleData.module) {
+          const module = moduleData.module as Module;
+          dispatch(createAddModuleAction(module));
+        }
       }
     };
 
     const handleModuleUpdated = (event: BaseEvent) => {
       if (
         event?.data &&
-        typeof event?.data === 'object' &&
-        'moduleId' in event?.data &&
-        'updates' in event?.data
+        typeof event.data === 'object' &&
+        'moduleId' in event.data &&
+        'updates' in event.data
       ) {
-        const { moduleId, updates } = event?.data as { moduleId: string; updates: Partial<Module> };
-        dispatch(createUpdateModuleAction(moduleId, updates));
+        // Safely extract values with proper type checking
+        const eventData = event.data;
+        if (eventData && 'moduleId' in eventData && 'updates' in eventData) {
+          const moduleId = eventData.moduleId as string;
+          const updates = eventData.updates as Partial<Module>;
+          dispatch(createUpdateModuleAction(moduleId, updates));
+        }
       }
     };
 
     const handleModuleRemoved = (event: BaseEvent) => {
-      if (event?.data && typeof event?.data === 'object' && 'moduleId' in event?.data) {
-        const moduleId = event?.data?.moduleId as string;
-        dispatch(createRemoveModuleAction(moduleId));
+      if (event?.data && typeof event.data === 'object' && 'moduleId' in event.data) {
+        // Safely access moduleId property with proper type checking
+        const eventData = event.data;
+        if (eventData && 'moduleId' in eventData && eventData.moduleId) {
+          const moduleId = eventData.moduleId as string;
+          dispatch(createRemoveModuleAction(moduleId));
+        }
       }
     };
 
     const handleStatusChanged = (event: BaseEvent) => {
       if (
         event?.data &&
-        typeof event?.data === 'object' &&
-        'moduleId' in event?.data &&
-        'status' in event?.data
+        typeof event.data === 'object' &&
+        'moduleId' in event.data &&
+        'status' in event.data
       ) {
-        const { moduleId, status } = event?.data as { moduleId: string; status: ModuleStatus };
-        dispatch(createUpdateModuleAction(moduleId, { status }));
+        // Safely extract values with proper type checking
+        const eventData = event.data;
+        if (eventData && 'moduleId' in eventData && 'status' in eventData) {
+          const moduleId = eventData.moduleId as string;
+          const status = eventData.status as ModuleStatus;
+          dispatch(createUpdateModuleAction(moduleId, { status }));
+        }
       }
     };
 
@@ -402,10 +424,18 @@ export const ModuleProvider: React.FC<ModuleProviderProps> = ({
 
     // Clean up subscriptions
     return () => {
-      if (unsubModuleCreated) unsubModuleCreated();
-      if (unsubModuleUpdated) unsubModuleUpdated();
-      if (unsubModuleRemoved) unsubModuleRemoved();
-      if (unsubStatusChanged) unsubStatusChanged();
+      if (unsubModuleCreated) {
+        unsubModuleCreated();
+      }
+      if (unsubModuleUpdated) {
+        unsubModuleUpdated();
+      }
+      if (unsubModuleRemoved) {
+        unsubModuleRemoved();
+      }
+      if (unsubStatusChanged) {
+        unsubStatusChanged();
+      }
     };
   }, [manager]);
 

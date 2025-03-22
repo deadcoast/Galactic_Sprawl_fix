@@ -1,5 +1,6 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react';
 import { Button as NewButton } from '../../../ui/components/Button';
+import { ComponentSize, ComponentVariant } from '../../../types/ui/ComponentTypes';
 
 interface LegacyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'success';
@@ -18,17 +19,17 @@ export const Button = forwardRef<HTMLButtonElement, LegacyButtonProps>(
   ({ children, variant = 'primary', size = 'medium', className = '', ...props }, ref) => {
     // Map old sizes to new sizes
     const sizeMap = {
-      small: 'sm',
-      medium: 'md',
-      large: 'lg',
+      small: ComponentSize.SMALL,
+      medium: ComponentSize.MEDIUM,
+      large: ComponentSize.LARGE,
     } as const;
 
     // Map old variants to new variants
     const variantMap = {
-      primary: 'primary',
-      secondary: 'secondary',
-      danger: 'danger',
-      success: 'success',
+      primary: ComponentVariant.PRIMARY,
+      secondary: ComponentVariant.SECONDARY,
+      danger: ComponentVariant.DANGER,
+      success: ComponentVariant.SUCCESS,
     } as const;
 
     // Convert props to new format

@@ -473,7 +473,8 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>
+        {`
         .optimization-comparison-view {
           padding: 20px;
           font-family:
@@ -662,7 +663,8 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
         .comparison-table td.negative {
           color: #ea4335;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

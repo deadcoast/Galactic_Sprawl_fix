@@ -75,7 +75,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   // Effect for handling system theme preference
   useEffect(() => {
     // Skip if not using system preference
-    if (mode !== 'system') return;
+    if (mode !== 'system') {
+      return;
+    }
     
     // Check system preference
     const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;

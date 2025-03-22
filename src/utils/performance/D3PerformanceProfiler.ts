@@ -186,12 +186,12 @@ export class D3Profiler {
    * Generate optimization recommendations based on the profile
    *
    * @param bottlenecks The identified bottlenecks
-   * @param _totalDurationMs Total duration of all measurements
+   * @param totalDurationMs Total duration of all measurements
    * @returns Array of recommendation strings
    */
   private generateRecommendations(
     bottlenecks: PerformanceMeasurement[],
-    _totalDurationMs: number
+    totalDurationMs: number
   ): string[] {
     const recommendations: string[] = [];
 
@@ -282,10 +282,10 @@ export class ForceSimulationProfiler {
     this.originalTick = simulation.tick as (...args: unknown[]) => unknown;
 
     // Wrap the tick function to measure performance
-    const originalTick = this.originalTick;
+    const {originalTick} = this;
     // Store the profiler instance for use in the customTick function
     const profilerInstance = this.profiler;
-    const tickMeasurements = this.tickMeasurements;
+    const {tickMeasurements} = this;
 
     // Define a function that returns a simulation
     const customTick = function (this: d3.Simulation<d3.SimulationNodeDatum, undefined>) {
@@ -376,7 +376,9 @@ export class ForceSimulationProfiler {
    * Detach the profiler from the simulation
    */
   detachFromSimulation(): void {
-    if (!this.simulation || !this.originalTick) return;
+    if (!this.simulation || !this.originalTick) {
+      return;
+    }
 
     // Restore original tick function
     this.simulation.tick = this.originalTick as d3.Simulation<
@@ -559,7 +561,7 @@ export function profileCoordinateAccess(
         for (const node of nodes) {
           const x = node.x ?? 0;
           const y = node.y ?? 0;
-          const _transform = `translate(${x}, ${y})`;
+          const transform = `translate(${x}, ${y})`;
         }
       }
     },
@@ -575,7 +577,7 @@ export function profileCoordinateAccess(
         for (const node of nodes) {
           const x = d3Accessors.getX(node);
           const y = d3Accessors.getY(node);
-          const _transform = `translate(${x}, ${y})`;
+          const transform = `translate(${x}, ${y})`;
         }
       }
     },

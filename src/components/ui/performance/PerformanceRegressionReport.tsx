@@ -524,7 +524,8 @@ export const PerformanceRegressionReport: React.FC<PerformanceRegressionReportPr
         )}
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         .performance-regression-report {
           font-family:
             -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
@@ -669,7 +670,8 @@ export const PerformanceRegressionReport: React.FC<PerformanceRegressionReportPr
           text-align: center;
           color: #666;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

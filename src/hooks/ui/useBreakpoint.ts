@@ -6,17 +6,23 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Theme } from '../../types/ui/ThemeTypes';
+import { Theme, ThemeBreakpoint } from '../../types/ui/ThemeTypes';
 
 /**
  * Breakpoint keys in order from smallest to largest
  */
-const BREAKPOINT_KEYS: Array<keyof Theme['breakpoints']> = ['xs', 'sm', 'md', 'lg', 'xl'];
+const BREAKPOINT_KEYS: Array<ThemeBreakpoint> = [
+  ThemeBreakpoint.XS,
+  ThemeBreakpoint.SM,
+  ThemeBreakpoint.MD,
+  ThemeBreakpoint.LG,
+  ThemeBreakpoint.XL
+];
 
 /**
  * Available breakpoint sizes
  */
-export type Breakpoint = keyof Theme['breakpoints'];
+export type Breakpoint = ThemeBreakpoint;
 
 /**
  * Results from the useBreakpoint hook
@@ -84,8 +90,8 @@ export function useBreakpoint(): UseBreakpointResult {
   
   // Determine current breakpoint based on window width
   const current = useMemo<Breakpoint>(() => {
-    // Default to xs for SSR
-    if (windowWidth === 0) return 'xs';
+    // Default to XS for SSR
+    if (windowWidth === 0) return ThemeBreakpoint.XS;
     
     // Find the largest breakpoint that is less than or equal to the window width
     for (let i = BREAKPOINT_KEYS.length - 1; i >= 0; i--) {
@@ -95,7 +101,7 @@ export function useBreakpoint(): UseBreakpointResult {
       }
     }
     
-    return 'xs';
+    return ThemeBreakpoint.XS;
   }, [windowWidth, breakpointValues]);
   
   // Update window width on resize
@@ -116,9 +122,9 @@ export function useBreakpoint(): UseBreakpointResult {
   // Create result object with various helper properties and functions
   return {
     current,
-    isMobile: current === 'xs' || current === 'sm',
-    isTablet: current === 'md',
-    isDesktop: current === 'lg' || current === 'xl',
+    isMobile: current === ThemeBreakpoint.XS || current === ThemeBreakpoint.SM,
+    isTablet: current === ThemeBreakpoint.MD,
+    isDesktop: current === ThemeBreakpoint.LG || current === ThemeBreakpoint.XL,
     
     isAtLeast: (breakpoint: Breakpoint) => {
       const currentIndex = BREAKPOINT_KEYS.indexOf(current);

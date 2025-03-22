@@ -187,7 +187,9 @@ export class D3BatchUpdateManager {
    * Schedule a batch flush with the appropriate timing
    */
   private scheduleFlush(mode?: BatchSchedulingMode): void {
-    if (this.flushScheduled) return;
+    if (this.flushScheduled) {
+      return;
+    }
 
     this.flushScheduled = true;
     const schedulingMode = mode || this.determineBestSchedulingMode();
@@ -241,13 +243,16 @@ export class D3BatchUpdateManager {
 
     // Filter operations based on options
     const filterOperation = (op: BatchOperation): boolean => {
-      if (options?.forElement && op.element !== options?.forElement) return false;
-      if (options?.forAnimation && op.animationId !== options?.forAnimation) return false;
-      if (
-        options?.minPriority &&
-        this.priorityOrder[op.priority] > this.priorityOrder[options?.minPriority]
-      )
+      if (options?.forElement && op.element !== options?.forElement) {
         return false;
+      }
+      if (options?.forAnimation && op.animationId !== options?.forAnimation) {
+        return false;
+      }
+      if (options?.minPriority &&
+              this.priorityOrder[op.priority] > this.priorityOrder[options?.minPriority]) {
+        return false;
+      }
       return true;
     };
 
@@ -482,7 +487,7 @@ export function batchWrite<T>(
 }
 
 // Define a more permissive type for D3 transition methods when using unknown/dynamic types
-type _D3GenericFunction = (...args: unknown[]) => unknown;
+type D3GenericFunction = (...args: unknown[]) => unknown;
 
 // Redefine D3MethodOverride to use any instead of unknown for better D3 compatibility
 type D3MethodOverride = any; // Use any to avoid type conflicts with complex D3 method signatures
@@ -610,7 +615,7 @@ interface D3TransitionMethods<GElement extends BaseType, Datum, PElement extends
 /**
  * Type for D3 selection method override
  */
-type _D3SelectionMethodOverride<
+type D3SelectionMethodOverride<
   GElement extends Element,
   Datum,
   PElement extends Element,
@@ -623,7 +628,7 @@ type _D3SelectionMethodOverride<
 /**
  * Type for D3 property method override
  */
-type _D3PropertyMethodOverride<
+type D3PropertyMethodOverride<
   GElement extends Element,
   Datum,
   PElement extends Element,
@@ -649,11 +654,11 @@ export function createBatchedSelection<
   const batchedSelection = selection.clone() as d3.Selection<GElement, Datum, PElement, PDatum>;
 
   // Store original methods
-  const _originalAttr = batchedSelection.attr;
-  const _originalStyle = batchedSelection.style;
-  const _originalProperty = batchedSelection.property;
-  const _originalHtml = batchedSelection.html;
-  const _originalText = batchedSelection.text;
+  const origAttr = batchedSelection.attr;
+  const origStyle = batchedSelection.style;
+  const origProperty = batchedSelection.property;
+  const origHtml = batchedSelection.html;
+  const origText = batchedSelection.text;
 
   // Override attr to use batched writes
   const origAttr = batchedSelection.attr;
@@ -859,7 +864,7 @@ export function createBatchedSelectionFactory<GElement extends Element = HTMLEle
 /**
  * Type for D3 transition attr method override
  */
-type _AttrTweenFunctionType<
+type AttrTweenFunctionType<
   GElement extends BaseType,
   Datum,
   PElement extends BaseType,
@@ -869,7 +874,7 @@ type _AttrTweenFunctionType<
 /**
  * Type for D3 transition style method override
  */
-type _StyleTweenFunctionType<
+type StyleTweenFunctionType<
   GElement extends BaseType,
   Datum,
   PElement extends BaseType,
@@ -879,7 +884,7 @@ type _StyleTweenFunctionType<
 /**
  * Type for D3 transition override
  */
-type _TransitionFunctionType<
+type TransitionFunctionType<
   GElement extends BaseType,
   Datum,
   PElement extends BaseType,
@@ -899,10 +904,9 @@ export function createBatchedTransition<
   options: BatchOperationOptions = {}
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
   // Store original transition method
-  const _originalTransition = selection.transition;
+  const origTransition = selection.transition;
 
   // Override transition to batch operations
-  const origTransition = selection.transition;
   selection.transition = function (
     this: d3.Selection<GElement, Datum, PElement, PDatum>,
     nameOrTransition?: string | d3.Transition<BaseType, unknown, unknown, unknown>
@@ -991,7 +995,5 @@ export function optimizeWithBatchedUpdates<
   const batchedSelection = createBatchedSelection(selection, batchOptions);
 
   // Apply batched transitions
-  const transitionSelection = createBatchedTransition(batchedSelection, batchOptions);
-
-  return transitionSelection;
+  return createBatchedTransition(batchedSelection, batchOptions);
 }

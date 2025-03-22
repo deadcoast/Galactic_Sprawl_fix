@@ -26,6 +26,31 @@ export enum ThemeColorName {
 }
 
 /**
+ * Theme mode options (light, dark, or system preference)
+ */
+export type ThemeMode = 'light' | 'dark' | 'system';
+
+/**
+ * Theme context value interface
+ */
+export interface ThemeContextValue {
+  /**
+   * Current theme object
+   */
+  theme: Theme;
+  
+  /**
+   * Current theme mode
+   */
+  mode: ThemeMode;
+  
+  /**
+   * Function to set the theme mode
+   */
+  setMode: (mode: ThemeMode) => void;
+}
+
+/**
  * Valid font size names within the theme
  */
 export enum ThemeFontSizeName {

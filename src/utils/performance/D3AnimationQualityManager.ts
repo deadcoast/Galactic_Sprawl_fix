@@ -407,9 +407,9 @@ export class D3AnimationQualityManager {
         effectiveType: string;
       }
 
-      const connection = (navigator as { connection?: NetworkInformation }).connection;
+      const {connection} = navigator as { connection?: NetworkInformation };
       if (connection) {
-        const effectiveType = connection.effectiveType;
+        const {effectiveType} = connection;
         if (effectiveType === '4g') {
           capabilities.connectionType = 'fast';
         } else if (effectiveType === '3g') {
@@ -447,7 +447,7 @@ export class D3AnimationQualityManager {
         deviceMemory?: number;
       }
 
-      const deviceMemory = (navigator as NavigatorWithMemory).deviceMemory;
+      const {deviceMemory} = navigator as NavigatorWithMemory;
       if (typeof deviceMemory === 'number') {
         // deviceMemory is in GB, normalize to 0-100 scale
         // Assuming 8GB as high-end, 16GB+ as maximum

@@ -4,7 +4,7 @@
  * Media query utilities for CSS-in-JS libraries
  */
 
-import { Theme } from '../types/ui/ThemeTypes';
+import { Theme, ThemeBreakpoint } from '../types/ui/ThemeTypes';
 
 /**
  * Generate media query breakpoints from theme
@@ -15,7 +15,13 @@ export function createMediaQueries(theme: Theme) {
   /**
    * Breakpoint keys in order from smallest to largest
    */
-  const BREAKPOINT_KEYS: Array<keyof Theme['breakpoints']> = ['xs', 'sm', 'md', 'lg', 'xl'];
+  const BREAKPOINT_KEYS: Array<ThemeBreakpoint> = [
+    ThemeBreakpoint.XS,
+    ThemeBreakpoint.SM,
+    ThemeBreakpoint.MD,
+    ThemeBreakpoint.LG,
+    ThemeBreakpoint.XL
+  ];
   
   return {
     /**
@@ -48,7 +54,7 @@ export function createMediaQueries(theme: Theme) {
      * ```
      */
     down: (key: keyof Theme['breakpoints']) => {
-      const nextIndex = BREAKPOINT_KEYS.indexOf(key) + 1;
+      const nextIndex = BREAKPOINT_KEYS.indexOf(key as ThemeBreakpoint) + 1;
       
       // Handle the largest breakpoint
       if (nextIndex === BREAKPOINT_KEYS.length) {
@@ -76,7 +82,7 @@ export function createMediaQueries(theme: Theme) {
      */
     between: (start: keyof Theme['breakpoints'], end: keyof Theme['breakpoints']) => {
       const startValue = parseInt(theme.breakpoints[start].replace('px', ''), 10);
-      const endIndex = BREAKPOINT_KEYS.indexOf(end) + 1;
+      const endIndex = BREAKPOINT_KEYS.indexOf(end as ThemeBreakpoint) + 1;
       
       // Handle the largest breakpoint
       if (endIndex === BREAKPOINT_KEYS.length) {
@@ -102,7 +108,7 @@ export function createMediaQueries(theme: Theme) {
      * ```
      */
     only: (key: keyof Theme['breakpoints']) => {
-      const keyIndex = BREAKPOINT_KEYS.indexOf(key);
+      const keyIndex = BREAKPOINT_KEYS.indexOf(key as ThemeBreakpoint);
       
       // If it's the largest breakpoint, use up
       if (keyIndex === BREAKPOINT_KEYS.length - 1) {
@@ -171,11 +177,12 @@ export function createMediaQueries(theme: Theme) {
  */
 export const mediaQueries = createMediaQueries({
   breakpoints: {
-    xs: '0px',
-    sm: '600px',
-    md: '960px',
-    lg: '1280px',
-    xl: '1920px',
+    [ThemeBreakpoint.XS]: '0px',
+    [ThemeBreakpoint.SM]: '600px',
+    [ThemeBreakpoint.MD]: '960px',
+    [ThemeBreakpoint.LG]: '1280px',
+    [ThemeBreakpoint.XL]: '1920px',
+    [ThemeBreakpoint.XXL]: '2560px', // Add XXL breakpoint to match ThemeBreakpoint enum
   },
 } as Theme);
 

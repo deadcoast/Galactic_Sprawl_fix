@@ -480,7 +480,8 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
         </div>
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         .animation-frame-manager-demo {
           width: 100%;
           max-width: ${width + 400}px;
@@ -751,7 +752,8 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
         .action-buttons button:hover {
           background: #dee2e6;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

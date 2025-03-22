@@ -142,7 +142,9 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
    * Compress a string using basic encoding
    */
   const compressString = (str: string): string => {
-    if (!compress) return str;
+    if (!compress) {
+      return str;
+    }
     
     try {
       // Use lz-string if available, otherwise use basic btoa
@@ -162,7 +164,9 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
    * Decompress a string
    */
   const decompressString = (str: string): string => {
-    if (!compress) return str;
+    if (!compress) {
+      return str;
+    }
 
     try {
       // Use lz-string if available, otherwise use basic atob

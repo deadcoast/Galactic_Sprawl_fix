@@ -200,7 +200,8 @@ const PerformanceAnalysisDashboard: React.FC = () => {
         )}
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         .performance-analysis-dashboard {
           font-family:
             -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
@@ -328,7 +329,8 @@ const PerformanceAnalysisDashboard: React.FC = () => {
           color: #4a5568;
           margin-top: 0;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

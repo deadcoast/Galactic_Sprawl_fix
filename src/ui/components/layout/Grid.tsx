@@ -221,14 +221,12 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
   }, ref) => {
     // Compute grid classes
     const gridClasses = useMemo(() => {
-      const classes = [
-        'gs-grid',
-        fullWidth ? 'gs-grid--full-width' : '',
-        fullHeight ? 'gs-grid--full-height' : '',
-        className
-      ].filter(Boolean).join(' ');
-      
-      return classes;
+      return [
+              'gs-grid',
+              fullWidth ? 'gs-grid--full-width' : '',
+              fullHeight ? 'gs-grid--full-height' : '',
+              className
+            ].filter(Boolean).join(' ');
     }, [fullWidth, fullHeight, className]);
     
     // Compute grid styles

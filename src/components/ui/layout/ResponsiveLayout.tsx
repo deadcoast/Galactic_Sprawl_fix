@@ -8,6 +8,7 @@
 import * as React from 'react';
 import { CSSProperties, ReactNode, useMemo } from 'react';
 import { useBreakpoint } from '../../../hooks/ui/useBreakpoint';
+import { ThemeBreakpoint } from '../../../types/ui/ThemeTypes';
 
 export type LayoutDirection = 'row' | 'column';
 export type LayoutGap = number | string;
@@ -317,7 +318,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     };
     
     // Add extra padding on mobile if needed
-    if (mobileExtraPadding && breakpoint.down.sm) {
+    if (mobileExtraPadding && breakpoint.isAtMost(ThemeBreakpoint.SM)) {
       const paddingValue = typeof currentPadding === 'number' 
         ? currentPadding 
         : parseInt(currentPadding.toString(), 10);
@@ -331,7 +332,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     // Add flex or grid styles
     if (useGrid && currentColumns > 0) {
       const fillMode = gridAutoFill ? 'auto-fill' : 'auto-fit';
-      const minWidth = breakpoint.down.sm ? '100%' : `${100 / currentColumns}%`;
+      const minWidth = breakpoint.isAtMost(ThemeBreakpoint.SM) ? '100%' : `${100 / currentColumns}%`;
       
       Object.assign(baseStyles, {
         gridTemplateColumns: `repeat(${fillMode}, minmax(${minWidth}, 1fr))`,

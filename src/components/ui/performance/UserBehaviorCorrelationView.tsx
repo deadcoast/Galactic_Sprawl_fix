@@ -621,7 +621,8 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
         </>
       )}
 
-      <style jsx>{`
+      <style>
+        {`
         .user-behavior-correlation-view {
           font-family:
             -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
@@ -772,7 +773,8 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
         .close-btn:hover {
           background-color: #f7fafc;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

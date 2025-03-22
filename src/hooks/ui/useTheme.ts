@@ -6,7 +6,7 @@
 
 import { useContext, useMemo } from 'react';
 import ThemeContext from '../../contexts/ThemeContext';
-import { Theme, ThemeMode } from '../../types/ui/ThemeTypes';
+import { Theme } from '../../types/ui/ThemeTypes';
 
 /**
  * Hook for accessing specific theme colors
@@ -22,7 +22,8 @@ export function useThemeColors() {
      * @returns The color value
      */
     getColor: (colorPath: keyof Theme['colors']): string => {
-      return theme.colors[colorPath];
+      const color = theme.colors[colorPath];
+      return typeof color === 'string' ? color : '';
     },
     
     /**
@@ -33,6 +34,7 @@ export function useThemeColors() {
      */
     getColorWithOpacity: (colorPath: keyof Theme['colors'], opacity: number): string => {
       const color = theme.colors[colorPath];
+      if (typeof color !== 'string') return '';
       
       // Convert hex to rgba
       if (color.startsWith('#')) {
@@ -80,7 +82,8 @@ export function useThemeSpacing() {
      * @returns The spacing value in pixels
      */
     getSpacing: (key: keyof Theme['spacing']): number => {
-      return theme.spacing[key];
+      const value = theme.spacing[key];
+      return typeof value === 'number' ? value : parseInt(String(value), 10) || 0;
     },
     
     /**
@@ -89,7 +92,8 @@ export function useThemeSpacing() {
      * @returns The spacing value as a pixel string (e.g., '8px')
      */
     getSpacingPx: (key: keyof Theme['spacing']): string => {
-      return `${theme.spacing[key]}px`;
+      const value = theme.spacing[key];
+      return `${typeof value === 'number' ? value : parseInt(String(value), 10) || 0}px`;
     },
     
     /**
@@ -99,7 +103,9 @@ export function useThemeSpacing() {
      * @returns The multiplied spacing value
      */
     getSpacingMultiple: (key: keyof Theme['spacing'], multiplier: number): number => {
-      return theme.spacing[key] * multiplier;
+      const value = theme.spacing[key];
+      const numValue = typeof value === 'number' ? value : parseInt(String(value), 10) || 0;
+      return numValue * multiplier;
     },
     
     /**
@@ -109,7 +115,9 @@ export function useThemeSpacing() {
      * @returns The multiplied spacing value as a pixel string
      */
     getSpacingMultiplePx: (key: keyof Theme['spacing'], multiplier: number): string => {
-      return `${theme.spacing[key] * multiplier}px`;
+      const value = theme.spacing[key];
+      const numValue = typeof value === 'number' ? value : parseInt(String(value), 10) || 0;
+      return `${numValue * multiplier}px`;
     },
   }), [theme.spacing]);
 }
@@ -174,8 +182,8 @@ export function useThemeAnimations() {
      * @param key Duration key (e.g., 'fast', 'normal')
      * @returns The duration value
      */
-    getDuration: (key: keyof Theme['animations']['duration']): string => {
-      return theme.animations.duration[key];
+    getDuration: (key: keyof Theme['transitions']['duration']): string => {
+      return theme.transitions.duration[key];
     },
     
     /**
@@ -183,8 +191,8 @@ export function useThemeAnimations() {
      * @param key Easing key (e.g., 'easeIn', 'easeOut')
      * @returns The easing function
      */
-    getEasing: (key: keyof Theme['animations']['easing']): string => {
-      return theme.animations.easing[key];
+    getEasing: (key: keyof Theme['transitions']['timing']): string => {
+      return theme.transitions.timing[key];
     },
     
     /**
@@ -196,12 +204,12 @@ export function useThemeAnimations() {
      */
     getTransition: (
       property: string,
-      durationKey: keyof Theme['animations']['duration'] = 'normal',
-      easingKey: keyof Theme['animations']['easing'] = 'easeInOut'
+      durationKey: keyof Theme['transitions']['duration'] = 'normal',
+      easingKey: keyof Theme['transitions']['timing'] = 'easeInOut'
     ): string => {
-      return `${property} ${theme.animations.duration[durationKey]} ${theme.animations.easing[easingKey]}`;
+      return `${property} ${theme.transitions.duration[durationKey]} ${theme.transitions.timing[easingKey]}`;
     },
-  }), [theme.animations]);
+  }), [theme.transitions]);
 }
 
 /**

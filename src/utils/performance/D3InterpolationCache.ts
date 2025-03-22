@@ -1,5 +1,6 @@
 /**
  * D3 Interpolation Cache
+ * @context: visualization-system, performance-optimization
  *
  * This module provides utilities for memoizing D3 interpolation calculations
  * to improve animation performance. It includes:
@@ -13,6 +14,7 @@
 import * as d3 from 'd3';
 import { TypedInterpolator, typedInterpolators } from '../../types/visualizations/D3AnimationTypes';
 import { animationFrameManager } from './D3AnimationFrameManager';
+import { ErrorType, ErrorSeverity, errorLoggingService } from '../../services/ErrorLoggingService';
 
 /**
  * Configuration for interpolation caching
@@ -73,6 +75,42 @@ interface CacheEntry<T> {
 }
 
 /**
+ * Validates that the provided config contains valid values
+ * 
+ * @param config The configuration to validate
+ * @returns True if the config is valid, false otherwise
+ */
+function isValidCacheConfig(config: unknown): config is InterpolationCacheConfig {
+  if (!config || typeof config !== 'object') {
+    return false;
+  }
+  
+  const typedConfig = config as Record<string, unknown>;
+  
+  // Check each property has the right type if provided
+  if (typedConfig.maxCacheSize !== undefined && typeof typedConfig.maxCacheSize !== 'number') {
+    return false;
+  }
+  if (typedConfig.cacheTTL !== undefined && typeof typedConfig.cacheTTL !== 'number') {
+    return false;
+  }
+  if (typedConfig.useLRU !== undefined && typeof typedConfig.useLRU !== 'boolean') {
+    return false;
+  }
+  if (typedConfig.resolution !== undefined && typeof typedConfig.resolution !== 'number') {
+    return false;
+  }
+  if (typedConfig.trackStats !== undefined && typeof typedConfig.trackStats !== 'boolean') {
+    return false;
+  }
+  if (typedConfig.profilePerformance !== undefined && typeof typedConfig.profilePerformance !== 'boolean') {
+    return false;
+  }
+  
+  return true;
+}
+
+/**
  * Base memoization cache for any interpolation function
  */
 export class InterpolationCache<T> {
@@ -91,25 +129,53 @@ export class InterpolationCache<T> {
 
   /**
    * Create a new interpolation cache
+   * 
+   * @param config Optional configuration settings for the cache
+   * @throws Error if the configuration is invalid
    */
   constructor(private config: InterpolationCacheConfig = {}) {
-    const {
-      maxCacheSize = 5000,
-      cacheTTL = 30000, // 30 seconds
-      useLRU = true,
-      resolution = 0.001,
-      trackStats = true,
-      profilePerformance = true,
-    } = config;
+    try {
+      if (!isValidCacheConfig(config)) {
+        throw new Error('Invalid cache configuration provided');
+      }
 
-    this.config = {
-      maxCacheSize,
-      cacheTTL,
-      useLRU,
-      resolution,
-      trackStats,
-      profilePerformance,
-    };
+      const {
+        maxCacheSize = 5000,
+        cacheTTL = 30000, // 30 seconds
+        useLRU = true,
+        resolution = 0.001,
+        trackStats = true,
+        profilePerformance = true,
+      } = config;
+
+      this.config = {
+        maxCacheSize,
+        cacheTTL,
+        useLRU,
+        resolution,
+        trackStats,
+        profilePerformance,
+      };
+    } catch (error) {
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        ErrorType.INITIALIZATION,
+        ErrorSeverity.MEDIUM,
+        {
+          component: 'InterpolationCache',
+          config
+        }
+      );
+      // Use sensible defaults even when error occurs
+      this.config = {
+        maxCacheSize: 5000,
+        cacheTTL: 30000,
+        useLRU: true,
+        resolution: 0.001,
+        trackStats: true,
+        profilePerformance: true,
+      };
+    }
   }
 
   /**
@@ -160,80 +226,134 @@ export class InterpolationCache<T> {
    *
    * @param interpolator Original interpolator function
    * @returns Memoized interpolator function
+   * @example
+   * ```typescript
+   * // Create a simple number interpolator
+   * const rawInterpolator = (t: number) => t * 100;
+   * const cache = new InterpolationCache<number>();
+   * const memoizedInterpolator = cache.memoize(rawInterpolator);
+   * 
+   * // Now use the memoized version which will cache results
+   * const value = memoizedInterpolator(0.5); // Computes and caches
+   * const cachedValue = memoizedInterpolator(0.5); // Uses cached value
+   * ```
    */
   memoize(interpolator: TypedInterpolator<T>): TypedInterpolator<T> {
-    return (t: number): T => {
-      // Skip caching logic if t is outside 0-1 range
-      if (t < 0 || t > 1) {
-        return interpolator(t);
-      }
-
-      const key = this.generateKey(t);
-      const now = performance.now();
-
-      if (this.config.trackStats) {
-        this.stats.lookups++;
-      }
-
-      // Check cache
-      if (this.cache.has(key)) {
-        const entry = this.cache.get(key)!;
-
-        // Check if entry is expired
-        if (this.config.cacheTTL && now - entry.created > this.config.cacheTTL) {
-          this.cache.delete(key);
-          if (this.config.trackStats) {
-            this.stats.evictions++;
-          }
-        } else {
-          // Cache hit
-          if (this.config.trackStats) {
-            this.stats.hits++;
-            this.stats.hitRate = this.stats.hits / this.stats.lookups;
-            this.stats.totalTimeSaved += entry.computeTime;
-            this.stats.avgTimeSaved = this.stats.totalTimeSaved / this.stats.hits;
-          }
-
-          // Update last accessed time for LRU
-          if (this.config.useLRU) {
-            entry.lastAccessed = now;
-          }
-
-          return entry.value;
+    if (typeof interpolator !== 'function') {
+      const error = new Error('Invalid interpolator function provided');
+      errorLoggingService.logError(
+        error,
+        ErrorType.VALIDATION,
+        ErrorSeverity.MEDIUM,
+        {
+          component: 'InterpolationCache',
+          method: 'memoize'
         }
+      );
+      // Return a safe fallback function that doesn't call the invalid interpolator
+      return (t: number): T => {
+        errorLoggingService.logError(
+          new Error(`Attempted to use invalid interpolator with value ${t}`),
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          {
+            component: 'InterpolationCache',
+            method: 'memoize.fallback',
+            parameter: t
+          }
+        );
+        // We need to return something of type T, but we don't know what T is
+        // This will likely cause a runtime error, but it's the best we can do
+        throw new Error(`Cannot interpolate: invalid interpolator function provided`);
+      };
+    }
+
+    return (t: number): T => {
+      try {
+        // Skip caching logic if t is outside 0-1 range
+        if (t < 0 || t > 1) {
+          return interpolator(t);
+        }
+
+        const key = this.generateKey(t);
+        const now = performance.now();
+
+        if (this.config.trackStats) {
+          this.stats.lookups++;
+        }
+
+        // Check cache
+        if (this.cache.has(key)) {
+          const entry = this.cache.get(key)!;
+
+          // Check if entry is expired
+          if (this.config.cacheTTL && now - entry.created > this.config.cacheTTL) {
+            this.cache.delete(key);
+            if (this.config.trackStats) {
+              this.stats.evictions++;
+            }
+          } else {
+            // Cache hit
+            if (this.config.trackStats) {
+              this.stats.hits++;
+              this.stats.hitRate = this.stats.hits / this.stats.lookups;
+              this.stats.totalTimeSaved += entry.computeTime;
+              this.stats.avgTimeSaved = this.stats.totalTimeSaved / this.stats.hits;
+            }
+
+            // Update last accessed time for LRU
+            if (this.config.useLRU) {
+              entry.lastAccessed = now;
+            }
+
+            return entry.value;
+          }
+        }
+
+        // Cache miss - compute the value
+        const startTime = this.config.profilePerformance ? performance.now() : 0;
+        const value = interpolator(t);
+        const computeTime = this.config.profilePerformance ? performance.now() - startTime : 0;
+
+        if (this.config.trackStats) {
+          this.stats.misses++;
+          this.stats.hitRate = this.stats.hits / this.stats.lookups;
+        }
+
+        // Check if we need to evict entries before adding a new one
+        if (this.config.maxCacheSize && this.cache.size >= this.config.maxCacheSize) {
+          this.evictEntries();
+        }
+
+        // Add to cache
+        const size = this.estimateSize(value);
+        this.cache.set(key, {
+          value,
+          lastAccessed: now,
+          created: now,
+          size,
+          computeTime,
+        });
+
+        if (this.config.trackStats) {
+          this.stats.entryCount = this.cache.size;
+          this.stats.estimatedMemoryUsage += size;
+        }
+
+        return value;
+      } catch (error) {
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          {
+            component: 'InterpolationCache',
+            method: 'memoize.interpolator',
+            parameter: t
+          }
+        );
+        throw error;
       }
-
-      // Cache miss - compute the value
-      const startTime = this.config.profilePerformance ? performance.now() : 0;
-      const value = interpolator(t);
-      const computeTime = this.config.profilePerformance ? performance.now() - startTime : 0;
-
-      if (this.config.trackStats) {
-        this.stats.misses++;
-        this.stats.hitRate = this.stats.hits / this.stats.lookups;
-      }
-
-      // Check if we need to evict entries before adding a new one
-      if (this.config.maxCacheSize && this.cache.size >= this.config.maxCacheSize) {
-        this.evictEntries();
-      }
-
-      // Add to cache
-      const size = this.estimateSize(value);
-      this.cache.set(key, {
-        value,
-        lastAccessed: now,
-        created: now,
-        size,
-        computeTime,
-      });
-
-      if (this.config.trackStats) {
-        this.stats.entryCount = this.cache.size;
-        this.stats.estimatedMemoryUsage += size;
-      }
-
-      return value;
     };
   }
 
@@ -241,7 +361,9 @@ export class InterpolationCache<T> {
    * Evict entries based on the configured policy
    */
   private evictEntries(): void {
-    if (this.cache.size === 0) return;
+    if (this.cache.size === 0) {
+      return;
+    }
 
     if (this.config.useLRU) {
       // Find the least recently used entry
@@ -513,17 +635,61 @@ export const globalInterpolationCache = new GlobalInterpolationCache();
 
 /**
  * Integration with the animation frame manager to memoize animations automatically
+ * 
+ * @param animationId Animation ID to enhance with memoization
+ * @param memoizationFn Interpolation function to memoize
+ * @param config Optional configuration settings for the cache
+ * @returns Memoized interpolation function
+ * @example
+ * ```typescript
+ * // Create a basic animation function
+ * const animateOpacity = (t: number) => t; // Linear opacity from 0 to 1
+ * 
+ * // Enable memoization to improve performance
+ * const memoizedAnimation = createMemoizedAnimation(
+ *   'fade-animation',
+ *   animateOpacity,
+ *   { maxCacheSize: 200, resolution: 0.01 }
+ * );
+ * 
+ * // Use the memoized animation in your render loop
+ * const opacity = memoizedAnimation(progress);
+ * element.style.opacity = String(opacity);
+ * ```
  */
 export function createMemoizedAnimation<T>(
   animationId: string,
   memoizationFn: (t: number) => T,
   config?: InterpolationCacheConfig
 ): (t: number) => T {
-  // Get or create a cache for this animation
-  const cache = globalInterpolationCache.getCache<T>(animationId, config);
+  try {
+    if (!animationId || typeof animationId !== 'string') {
+      throw new Error('Invalid animation ID provided');
+    }
+    
+    if (typeof memoizationFn !== 'function') {
+      throw new Error('Invalid memoization function provided');
+    }
 
-  // Memoize the function
-  return cache.memoize(memoizationFn);
+    // Get or create a cache for this animation
+    const cache = globalInterpolationCache.getCache<T>(animationId, config);
+
+    // Memoize the function
+    return cache.memoize(memoizationFn);
+  } catch (error) {
+    errorLoggingService.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      ErrorType.RUNTIME,
+      ErrorSeverity.MEDIUM,
+      {
+        component: 'createMemoizedAnimation',
+        animationId
+      }
+    );
+    
+    // Return the original function as a fallback
+    return memoizationFn;
+  }
 }
 
 /**
@@ -667,6 +833,28 @@ export function getMemoizationStats(): CacheStats {
 
 /**
  * Utility to optimize an entire D3 selection's transitions with memoization
+ * 
+ * @param selection D3 selection to optimize transitions for
+ * @param config Optional configuration settings for the cache
+ * @returns The enhanced D3 selection with memoized transitions
+ * @example
+ * ```typescript
+ * // Create a standard D3 selection
+ * const circles = d3.select('svg')
+ *   .selectAll('circle')
+ *   .data(dataset);
+ *   
+ * // Optimize all transitions on this selection
+ * const optimizedCircles = optimizeD3Transitions(circles);
+ * 
+ * // Now all transitions will use memoized interpolators
+ * optimizedCircles.transition()
+ *   .duration(1000)
+ *   .attr('r', d => d.radius)
+ *   .attr('cx', d => d.x)
+ *   .attr('cy', d => d.y)
+ *   .style('fill-opacity', 0.8);
+ * ```
  */
 export function optimizeD3Transitions<
   GElement extends Element,
@@ -677,108 +865,142 @@ export function optimizeD3Transitions<
   selection: d3.Selection<GElement, Datum, PElement, PDatum>,
   config?: InterpolationCacheConfig
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
-  const cacheId = 'd3-transition-' + Math.random().toString(36).substring(2);
+  try {
+    if (!selection) {
+      throw new Error('Invalid D3 selection provided');
+    }
+    
+    const cacheId = 'd3-transition-' + Math.random().toString(36).substring(2);
 
-  // Store original transition method
-  const originalTransition = selection.transition;
+    // Store original transition method
+    const originalTransition = selection.transition;
 
-  // Override transition method
-  type TransitionFn = typeof originalTransition;
-  (selection.transition as unknown) = function (
-    this: d3.Selection<GElement, Datum, PElement, PDatum>,
-    ...args: Parameters<TransitionFn>
-  ): ReturnType<TransitionFn> {
-    // Call original transition method
-    const transition = originalTransition.apply(this, args);
+    // Override transition method
+    type TransitionFn = typeof originalTransition;
+    (selection.transition as unknown) = function (
+      this: d3.Selection<GElement, Datum, PElement, PDatum>,
+      ...args: Parameters<TransitionFn>
+    ): ReturnType<TransitionFn> {
+      try {
+        // Call original transition method
+        const transition = originalTransition.apply(this, args);
 
-    // Store original tween method
-    const originalTween = transition.tween;
+        // Store original tween method
+        const originalTween = transition.tween;
 
-    // Define factory function types
-    type TweenFactory =
-      | null
-      | ((
-          this: GElement,
-          d: Datum,
-          i: number,
-          nodes: GElement[]
-        ) => (this: GElement, t: number) => void);
+        // Define factory function types
+        type TweenFactory =
+          | null
+          | ((
+              this: GElement,
+              d: Datum,
+              i: number,
+              nodes: GElement[]
+            ) => (this: GElement, t: number) => void);
 
-    // Override tween method
-    type TweenFn = typeof originalTween;
-    // Safe type casting for the D3 API
-    type D3TweenValueFn = d3.ValueFn<GElement, Datum, (this: GElement, t: number) => void>;
+        // Override tween method
+        type TweenFn = typeof originalTween;
+        // Safe type casting for the D3 API
+        type D3TweenValueFn = d3.ValueFn<GElement, Datum, (this: GElement, t: number) => void>;
 
-    (transition.tween as unknown) = function (
-      this: d3.Transition<GElement, Datum, PElement, PDatum>,
-      name: string,
-      factory: TweenFactory
-    ): ReturnType<TweenFn> {
-      if (factory === null) {
-        // Type assertion for null case to match D3's expected type
-        return originalTween.call(this, name, null as unknown as D3TweenValueFn);
-      }
+        (transition.tween as unknown) = function (
+          this: d3.Transition<GElement, Datum, PElement, PDatum>,
+          name: string,
+          factory: TweenFactory
+        ): ReturnType<TweenFn> {
+          if (factory === null) {
+            // Type assertion for null case to match D3's expected type
+            return originalTween.call(this, name, null as unknown as D3TweenValueFn);
+          }
 
-      // Create memoized factory
-      const memoizedFactory = function (this: GElement, d: Datum, i: number, a: GElement[]) {
-        const originalInterpolator = factory.call(this, d, i, a);
-        return createMemoizedAnimation(cacheId + '-' + name, originalInterpolator, config);
-      };
+          // Create memoized factory
+          const memoizedFactory = function (this: GElement, d: Datum, i: number, a: GElement[]) {
+            const originalInterpolator = factory.call(this, d, i, a);
+            return createMemoizedAnimation(cacheId + '-' + name, originalInterpolator, config);
+          };
 
-      // Call original tween with memoized factory
-      return originalTween.call(this, name, memoizedFactory as unknown as D3TweenValueFn);
-    };
+          // Call original tween with memoized factory
+          return originalTween.call(this, name, memoizedFactory as unknown as D3TweenValueFn);
+        };
 
-    // Store original styleTween method
-    const originalStyleTween = transition.styleTween;
+        // Store original styleTween method
+        const originalStyleTween = transition.styleTween;
 
-    // Define style factory function type
-    type StyleFactory =
-      | null
-      | ((
-          this: GElement,
-          d: Datum,
-          i: number,
-          nodes: GElement[]
-        ) => (this: GElement, t: number) => string);
+        // Define style factory function type
+        type StyleFactory =
+          | null
+          | ((
+              this: GElement,
+              d: Datum,
+              i: number,
+              nodes: GElement[]
+            ) => (this: GElement, t: number) => string);
 
-    // Override styleTween method
-    type StyleTweenFn = typeof originalStyleTween;
-    // Safe type casting for the D3 API
-    type D3StyleValueFn = d3.ValueFn<GElement, Datum, (this: GElement, t: number) => string>;
+        // Override styleTween method
+        type StyleTweenFn = typeof originalStyleTween;
+        // Safe type casting for the D3 API
+        type D3StyleValueFn = d3.ValueFn<GElement, Datum, (this: GElement, t: number) => string>;
 
-    (transition.styleTween as unknown) = function (
-      this: d3.Transition<GElement, Datum, PElement, PDatum>,
-      name: string,
-      factory: StyleFactory,
-      priority?: 'important' | null
-    ): ReturnType<StyleTweenFn> {
-      if (factory === null) {
-        // Type assertion for null case to match D3's expected type
-        return originalStyleTween.call(this, name, null as unknown as D3StyleValueFn, priority);
-      }
+        (transition.styleTween as unknown) = function (
+          this: d3.Transition<GElement, Datum, PElement, PDatum>,
+          name: string,
+          factory: StyleFactory,
+          priority?: 'important' | null
+        ): ReturnType<StyleTweenFn> {
+          if (factory === null) {
+            // Type assertion for null case to match D3's expected type
+            return originalStyleTween.call(this, name, null as unknown as D3StyleValueFn, priority);
+          }
 
-      // Create memoized factory
-      const memoizedFactory = function (this: GElement, d: Datum, i: number, a: GElement[]) {
-        const originalInterpolator = factory.call(this, d, i, a);
-        return createMemoizedAnimation(
-          cacheId + '-style-' + name + (priority || ''),
-          originalInterpolator as (t: number) => unknown,
-          config
+          // Create memoized factory
+          const memoizedFactory = function (this: GElement, d: Datum, i: number, a: GElement[]) {
+            const originalInterpolator = factory.call(this, d, i, a);
+            return createMemoizedAnimation(
+              cacheId + '-style-' + name + (priority || ''),
+              originalInterpolator as (t: number) => unknown,
+              config
+            );
+          };
+
+          // Call original styleTween with memoized factory
+          return originalStyleTween.call(
+            this,
+            name,
+            memoizedFactory as unknown as D3StyleValueFn,
+            priority
+          );
+        };
+
+        return transition;
+      } catch (error) {
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)), 
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          {
+            component: 'optimizeD3Transitions',
+            selectionType: selection?.constructor?.name
+          }
         );
-      };
-
-      // Call original styleTween with memoized factory
-      return originalStyleTween.call(
-        this,
-        name,
-        memoizedFactory as unknown as D3StyleValueFn,
-        priority
-      );
+        
+        // Fall back to original transition
+        return originalTransition.apply(this, args);
+      }
     };
 
-    return transition;
-  };
-
-  return selection;
+    return selection;
+  } catch (error) {
+    errorLoggingService.logError(
+      error instanceof Error ? error : new Error(String(error)),
+      ErrorType.RUNTIME,
+      ErrorSeverity.MEDIUM,
+      {
+        component: 'optimizeD3Transitions',
+        function: 'setup'
+      }
+    );
+    
+    // Return original selection without optimization
+    return selection;
+  }
 }

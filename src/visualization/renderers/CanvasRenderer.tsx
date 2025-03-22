@@ -145,7 +145,9 @@ export class CanvasRenderer implements ChartRenderer {
 
     // Render the chart based on type
     this.animationFrame = requestAnimationFrame(() => {
-      if (!this.ctx || !this.canvas) return;
+      if (!this.ctx || !this.canvas) {
+        return;
+      }
 
       // Clear the canvas
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -283,7 +285,9 @@ export class CanvasRenderer implements ChartRenderer {
    * Update canvas dimensions based on container size
    */
   private updateDimensions(container: HTMLElement): void {
-    if (!this.canvas || !this.ctx) return;
+    if (!this.canvas || !this.ctx) {
+      return;
+    }
 
     const rect = container.getBoundingClientRect();
     this.containerWidth = rect.width;
@@ -301,14 +305,20 @@ export class CanvasRenderer implements ChartRenderer {
    * Render line chart
    */
   private renderLineChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
-    const ctx = this.ctx;
-    if (!ctx) return;
+    const {ctx} = this;
+    if (!ctx) {
+      return;
+    }
 
     const axes = options?.axes;
-    if (!axes?.x || !axes?.y) return;
+    if (!axes?.x || !axes?.y) {
+      return;
+    }
 
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
-    if (!scales) return;
+    if (!scales) {
+      return;
+    }
 
     // Draw grid lines if enabled
     if (axes.x.grid || axes.y.grid) {
@@ -331,7 +341,9 @@ export class CanvasRenderer implements ChartRenderer {
         }
       });
 
-      if (points.length === 0) return;
+      if (points.length === 0) {
+        return;
+      }
 
       // Draw lines connecting points
       ctx.beginPath();
@@ -351,7 +363,9 @@ export class CanvasRenderer implements ChartRenderer {
    * Render bar chart
    */
   private renderBarChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
-    if (!this.ctx) return;
+    if (!this.ctx) {
+      return;
+    }
 
     const { datasets } = data;
     const axes = options?.axes || {
@@ -400,14 +414,20 @@ export class CanvasRenderer implements ChartRenderer {
    * Render scatter chart
    */
   private renderScatterChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
-    const ctx = this.ctx;
-    if (!ctx) return;
+    const {ctx} = this;
+    if (!ctx) {
+      return;
+    }
 
     const axes = options?.axes;
-    if (!axes?.x || !axes?.y) return;
+    if (!axes?.x || !axes?.y) {
+      return;
+    }
 
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
-    if (!scales) return;
+    if (!scales) {
+      return;
+    }
 
     // Draw grid lines if enabled
     if (axes.x.grid || axes.y.grid) {
@@ -419,7 +439,9 @@ export class CanvasRenderer implements ChartRenderer {
       dataset.data?.forEach(point => {
         const x = this.normalizeValue(point.x);
         const y = this.normalizeValue(point.y);
-        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          return;
+        }
 
         const cx = this.mapValueToPixel(x, scales.x, chartArea.left, chartArea.right);
         const cy = this.mapValueToPixel(y, scales.y, chartArea.bottom, chartArea.top, true);
@@ -438,7 +460,9 @@ export class CanvasRenderer implements ChartRenderer {
    * Render area chart
    */
   private renderAreaChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
-    if (!this.ctx) return;
+    if (!this.ctx) {
+      return;
+    }
 
     const { datasets } = data;
     const axes = options?.axes || {
@@ -461,7 +485,9 @@ export class CanvasRenderer implements ChartRenderer {
         y: this.normalizeValue(point.y),
       }));
 
-      if (points.length === 0 || !this.ctx) return;
+      if (points.length === 0 || !this.ctx) {
+        return;
+      }
 
       // Draw filled area
       this.ctx.beginPath();
@@ -507,7 +533,9 @@ export class CanvasRenderer implements ChartRenderer {
    * Render pie chart
    */
   private renderPieChart(data: ChartData, options: ChartOptions): void {
-    if (!this.ctx || !this.canvas) return;
+    if (!this.ctx || !this.canvas) {
+      return;
+    }
 
     const { datasets } = data;
     const centerX = this.canvas.width / (2 * this.resolutionScale);
@@ -518,14 +546,18 @@ export class CanvasRenderer implements ChartRenderer {
       ? Math.min(centerX, centerY) * 0.7 - options?.padding.right
       : Math.min(centerX, centerY) * 0.7;
 
-    if (datasets.length === 0 || datasets[0].data?.length === 0) return;
+    if (datasets.length === 0 || datasets[0].data?.length === 0) {
+      return;
+    }
 
     // Get the first dataset for pie chart
     const dataset = datasets[0];
 
     // Calculate total value for proportions
     const total = dataset.data?.reduce((sum, point) => sum + point.y, 0);
-    if (total <= 0) return;
+    if (total <= 0) {
+      return;
+    }
 
     // Draw pie slices
     let startAngle = 0;
@@ -571,10 +603,14 @@ export class CanvasRenderer implements ChartRenderer {
    * Render radar chart
    */
   private renderRadarChart(data: ChartData, options: ChartOptions): void {
-    if (!this.ctx || !this.canvas) return;
+    if (!this.ctx || !this.canvas) {
+      return;
+    }
 
     const { datasets } = data;
-    if (datasets.length === 0 || datasets[0].data?.length === 0) return;
+    if (datasets.length === 0 || datasets[0].data?.length === 0) {
+      return;
+    }
 
     const centerX = this.canvas.width / (2 * this.resolutionScale);
     const centerY = this.canvas.height / (2 * this.resolutionScale);
@@ -647,7 +683,9 @@ export class CanvasRenderer implements ChartRenderer {
         points.push({ x, y });
       });
 
-      if (points.length < 3) return;
+      if (points.length < 3) {
+        return;
+      }
 
       // Draw filled area
       this.ctx!.beginPath();
@@ -682,10 +720,14 @@ export class CanvasRenderer implements ChartRenderer {
    * Render heatmap chart
    */
   private renderHeatmapChart(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
-    if (!this.ctx) return;
+    if (!this.ctx) {
+      return;
+    }
 
     const { datasets } = data;
-    if (datasets.length === 0 || datasets[0].data?.length === 0) return;
+    if (datasets.length === 0 || datasets[0].data?.length === 0) {
+      return;
+    }
 
     const axes = options?.axes || {
       x: { type: ChartScaleType.Category as const },
@@ -739,16 +781,22 @@ export class CanvasRenderer implements ChartRenderer {
     // Draw cells
     datasets.forEach(dataset => {
       dataset.data?.forEach(point => {
-        if (!this.ctx) return;
+        if (!this.ctx) {
+          return;
+        }
 
         const pointData = point as ChartPoint;
         const xIndex = xValues.indexOf(String(point.x));
         const yIndex = yValues.indexOf(String(point.y));
 
-        if (xIndex === -1 || yIndex === -1) return;
+        if (xIndex === -1 || yIndex === -1) {
+          return;
+        }
 
         const value = pointData.value !== undefined ? pointData.value : pointData.y;
-        if (typeof value !== 'number') return;
+        if (typeof value !== 'number') {
+          return;
+        }
 
         const normalizedValue = (value - minValue) / (maxValue - minValue);
         const x = chartArea.left + xIndex * cellWidth;
@@ -768,14 +816,20 @@ export class CanvasRenderer implements ChartRenderer {
    * Render axes for charts
    */
   private renderAxes(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
-    const ctx = this.ctx;
-    if (!ctx) return;
+    const {ctx} = this;
+    if (!ctx) {
+      return;
+    }
 
     const axes = options?.axes;
-    if (!axes?.x || !axes?.y) return;
+    if (!axes?.x || !axes?.y) {
+      return;
+    }
 
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
-    if (!scales) return;
+    if (!scales) {
+      return;
+    }
 
     const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
@@ -882,7 +936,9 @@ export class CanvasRenderer implements ChartRenderer {
     chartArea: ChartArea,
     options: ChartOptions
   ): void {
-    if (!this.ctx) return;
+    if (!this.ctx) {
+      return;
+    }
 
     const cellWidth = (chartArea.right - chartArea.left) / xCategories.length;
     const cellHeight = (chartArea.bottom - chartArea.top) / yCategories.length;
@@ -915,12 +971,16 @@ export class CanvasRenderer implements ChartRenderer {
    * Draw grid lines
    */
   private drawGrid(scales: ChartScales, chartArea: ChartArea, options: ChartOptions): void {
-    const ctx = this.ctx;
-    if (!ctx) return;
+    const {ctx} = this;
+    if (!ctx) {
+      return;
+    }
 
     const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
     const axes = options?.axes;
-    if (!axes?.x || !axes?.y) return;
+    if (!axes?.x || !axes?.y) {
+      return;
+    }
 
     // Draw x-axis grid lines
     if (axes.y.grid) {
@@ -963,7 +1023,9 @@ export class CanvasRenderer implements ChartRenderer {
    * Render legend
    */
   private renderLegend(data: ChartData, options: ChartOptions, chartArea: ChartArea): void {
-    if (!this.ctx || !this.canvas) return;
+    if (!this.ctx || !this.canvas) {
+      return;
+    }
 
     const { datasets } = data;
     const legend: ChartLegend = {
@@ -971,7 +1033,9 @@ export class CanvasRenderer implements ChartRenderer {
       display: options?.legend?.visible || false,
     };
 
-    if (!legend.display || datasets.length === 0) return;
+    if (!legend.display || datasets.length === 0) {
+      return;
+    }
 
     const padding = 10;
     const itemHeight = 20;
@@ -1041,7 +1105,9 @@ export class CanvasRenderer implements ChartRenderer {
    * Set up tooltip for chart
    */
   private setupTooltip(container: HTMLElement, data: ChartData, options: ChartOptions): void {
-    if (!this.canvas) return;
+    if (!this.canvas) {
+      return;
+    }
 
     // Remove existing tooltip if any
     if (this.tooltipElement) {
@@ -1085,7 +1151,9 @@ export class CanvasRenderer implements ChartRenderer {
     options: ChartOptions,
     container: HTMLElement
   ): void {
-    if (!this.canvas || !this.ctx || !this.tooltipElement) return;
+    if (!this.canvas || !this.ctx || !this.tooltipElement) {
+      return;
+    }
 
     const rect = this.canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -1283,8 +1351,12 @@ export class CanvasRenderer implements ChartRenderer {
   private normalizeValue(
     value: ChartDataPoint['x'] | ChartDataPoint['y'] | null | undefined
   ): number {
-    if (value === null || value === undefined) return 0;
-    if (value instanceof Date) return value.getTime();
+    if (value === null || value === undefined) {
+      return 0;
+    }
+    if (value instanceof Date) {
+      return value.getTime();
+    }
     if (typeof value === 'string') {
       const parsed = parseFloat(value);
       return isFinite(parsed) ? parsed : 0;

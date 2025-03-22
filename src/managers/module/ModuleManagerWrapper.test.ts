@@ -4,6 +4,7 @@ import { BaseModule, ModularBuilding } from '../../types/buildings/ModuleTypes';
 import { BaseEvent } from '../../types/events/EventTypes';
 import { ModuleManager } from './ModuleManager';
 import { ModuleManagerWrapper, convertToModule, convertToModules } from './ModuleManagerWrapper';
+import type { Mock } from 'vitest';
 
 // Define a mock interface for the ModuleManager to avoid 'any'
 interface MockModuleManager {
@@ -129,7 +130,7 @@ describe('ModuleManagerWrapper', () => {
         },
       ];
 
-      (mockModuleManager.getActiveModules as jest.Mock).mockReturnValue(mockModules);
+      (mockModuleManager.getActiveModules as Mock).mockReturnValue(mockModules);
 
       // Call the method
       const results = wrapper.getModules();
@@ -155,7 +156,7 @@ describe('ModuleManagerWrapper', () => {
         status: 'active',
       };
 
-      (mockModuleManager.getModule as jest.Mock).mockReturnValue(mockModule);
+      (mockModuleManager.getModule as Mock).mockReturnValue(mockModule);
 
       // Call the method
       const result = wrapper.getModule('module-1');

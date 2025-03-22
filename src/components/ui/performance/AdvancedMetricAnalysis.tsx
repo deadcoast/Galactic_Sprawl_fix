@@ -568,7 +568,8 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>
+        {`
         .advanced-metric-analysis {
           padding: 20px;
           font-family:
@@ -727,7 +728,8 @@ const AdvancedMetricAnalysis: React.FC<AdvancedMetricAnalysisProps> = ({
           flex: 1;
           min-width: 300px;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

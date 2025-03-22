@@ -447,7 +447,8 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
         </div>
       )}
 
-      <style jsx>{`
+      <style>
+        {`
         .performance-benchmark-dashboard {
           font-family:
             -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
@@ -676,7 +677,8 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
           width: 100%;
           margin-bottom: 20px;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

@@ -131,14 +131,18 @@ const HookPerformanceDashboard: React.FC<HookPerformanceDashboardProps> = ({
 
   // Get selected hook report
   const selectedHookReport = useMemo(() => {
-    if (!selectedHook) return null;
+    if (!selectedHook) {
+      return null;
+    }
     return getHookPerformanceReport(selectedHook);
   }, [selectedHook]);
 
   // Calculate average time from a record of arrays
   function calculateAverageTime(timeRecord: Record<string, number[]>): number {
     const allTimes = Object.values(timeRecord).flat();
-    if (allTimes.length === 0) return 0;
+    if (allTimes.length === 0) {
+      return 0;
+    }
     return allTimes.reduce((sum, time) => sum + time, 0) / allTimes.length;
   }
 

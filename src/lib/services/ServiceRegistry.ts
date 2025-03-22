@@ -52,7 +52,7 @@ export class ServiceRegistry {
   private services: Map<string, ServiceRegistration> = new Map();
   private initializing: Set<string> = new Set();
 
-  private constructor() {}
+  protected constructor() {}
 
   /**
    * Get the singleton instance of the service registry

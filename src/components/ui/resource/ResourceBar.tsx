@@ -86,7 +86,9 @@ function isResourceEvent(event: ModuleEvent): event is ModuleEvent & { data: Res
  * Safely extract resource amount from event data
  */
 function safelyExtractAmount(event: ModuleEvent): number {
-  if (!event || !event.data) return 0;
+  if (!event || !event.data) {
+    return 0;
+  }
   
   return typeof event.data.amount === 'number' ? event.data.amount : 0;
 }

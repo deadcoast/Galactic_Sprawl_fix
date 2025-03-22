@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { OFFICER_TRAITS, SQUAD_CONFIG, TRAINING_CONFIG } from '../../config/OfficerConfig';
 import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { techTreeManager } from '../../managers/game/techTreeManager';
+import { TechTreeManager } from '../../managers/game/techTreeManager';
 import type { ModuleType } from '../../types/buildings/ModuleTypes';
 import type {
   OfficerManager as IOfficerManager,
@@ -44,11 +44,14 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
    * Set up event listeners for tech tree unlocks and other relevant events
    */
   private setupEventListeners(): void {
-    techTreeManager.on('nodeUnlocked', ((event: TechNodeUnlockedEvent) => {
-      if (event?.node.type === 'academy') {
-        this.handleAcademyUpgrade(event?.node.tier as OfficerTier);
-      }
-    }) as (data: unknown) => void);
+    const techTreeInstance = TechTreeManager.getInstance();
+    if (techTreeInstance) {
+      techTreeInstance.on('nodeUnlocked', ((event: TechNodeUnlockedEvent) => {
+        if (event?.node.type === 'academy') {
+          this.handleAcademyUpgrade(event?.node.tier as OfficerTier);
+        }
+      }) as (data: unknown) => void);
+    }
 
     moduleEventBus.subscribe('MODULE_ACTIVATED', (event: ModuleEvent) => {
       if (event?.moduleType === 'academy') {

@@ -28,6 +28,29 @@ export { FactionBadge } from './game/FactionBadge';
 export { MiniMap } from './game/MiniMap';
 export type { MiniMapStar, ViewportConfig } from './game/MiniMap';
 
+// Visualization Components
+export { Chart } from './visualizations/Chart';
+export { LineGraph } from './visualizations/LineGraph';
+export { BarChart } from './visualizations/BarChart';
+export { NetworkGraph } from './visualizations/NetworkGraph';
+export { ResourceFlowDiagram } from './visualizations/ResourceFlowDiagram';
+export type { 
+  ChartProps, 
+  ChartData, 
+  DataPoint,
+  LineGraphProps,
+  BarChartProps,
+  NetworkNode,
+  NetworkEdge,
+  NetworkGraphProps,
+  ResourceFlowNode,
+  ResourceFlowConnection,
+  ResourceFlowDiagramProps
+} from './visualizations';
+
+// Examples
+export * from './examples';
+
 /* 
 The following components are commented out until they're implemented:
 
@@ -69,19 +92,6 @@ export { Tabs } from './navigation/Tabs';
 export { Menu } from './navigation/Menu';
 export { Breadcrumb } from './navigation/Breadcrumb';
 export { Pagination } from './navigation/Pagination';
-
-// Visualization Components
-export { Chart } from './visualizations/Chart';
-export { LineGraph } from './visualizations/LineGraph';
-export { BarChart } from './visualizations/BarChart';
-export { NetworkGraph } from './visualizations/NetworkGraph';
-export { ResourceFlowDiagram } from './visualizations/ResourceFlowDiagram';
-
-// Modal Components
-export { Modal } from './overlays/Modal';
-export { Drawer } from './overlays/Drawer';
-export { Dialog } from './overlays/Dialog';
-export { Popover } from './overlays/Popover';
 
 // Game-Specific Components
 export { TechTree } from './game/TechTree';

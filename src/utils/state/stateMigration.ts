@@ -297,7 +297,9 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
    * Check if direct migration from a specific version is supported
    */
   const canMigrateFrom = (version: number) => {
-    if (version === currentVersion) return true;
+    if (version === currentVersion) {
+      return true;
+    }
     
     // Check if we have all required migrations to get from version to current
     const versions = Array.from(migrationsByVersion.keys()).sort((a, b) => a - b);

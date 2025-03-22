@@ -143,7 +143,7 @@ export class SVGRenderer implements ChartRenderer {
     data?.datasets.forEach(dataset => {
       dataset.data?.forEach(point => {
         const x = this.normalizeValue(point.x);
-        const y = point.y;
+        const {y} = point;
         if (Number.isFinite(x) && Number.isFinite(y)) {
           xValues.push(x);
           yValues.push(y);
@@ -189,7 +189,9 @@ export class SVGRenderer implements ChartRenderer {
     }
 
     const range = scale.max - scale.min;
-    if (range === 0) return start;
+    if (range === 0) {
+      return start;
+    }
 
     const normalizedValue = (value - scale.min) / range;
     return isVertical
@@ -224,10 +226,14 @@ export class SVGRenderer implements ChartRenderer {
     chartGroup: SVGGElement
   ): void {
     const axes = options?.axes;
-    if (!axes?.x || !axes?.y) return;
+    if (!axes?.x || !axes?.y) {
+      return;
+    }
 
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
-    if (!scales) return;
+    if (!scales) {
+      return;
+    }
 
     const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
@@ -263,7 +269,9 @@ export class SVGRenderer implements ChartRenderer {
         }
       });
 
-      if (points.length === 0) return;
+      if (points.length === 0) {
+        return;
+      }
 
       // Create the line path
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -292,10 +300,14 @@ export class SVGRenderer implements ChartRenderer {
     chartGroup: SVGGElement
   ): void {
     const axes = options?.axes;
-    if (!axes?.x || !axes?.y) return;
+    if (!axes?.x || !axes?.y) {
+      return;
+    }
 
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
-    if (!scales) return;
+    if (!scales) {
+      return;
+    }
 
     const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
@@ -315,7 +327,9 @@ export class SVGRenderer implements ChartRenderer {
       dataset.data?.forEach((point, pointIndex) => {
         const x = this.normalizeValue(point.x);
         const y = this.normalizeValue(point.y);
-        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          return;
+        }
 
         const cx = this.mapValueToPixel(x, scales.x, chartArea.left, chartArea.right);
         const cy = this.mapValueToPixel(y, scales.y, chartArea.bottom, chartArea.top, true);
@@ -351,10 +365,14 @@ export class SVGRenderer implements ChartRenderer {
     chartGroup: SVGGElement
   ): void {
     const axes = options?.axes;
-    if (!axes?.x || !axes?.y) return;
+    if (!axes?.x || !axes?.y) {
+      return;
+    }
 
     const scales = this.calculateScales(data, chartArea, axes.x, axes.y);
-    if (!scales) return;
+    if (!scales) {
+      return;
+    }
 
     const themeColors = options?.theme === 'dark' ? this.theme.dark : this.theme.light;
 
@@ -369,7 +387,9 @@ export class SVGRenderer implements ChartRenderer {
 
     for (let i = 0; i < xTickCount; i++) {
       const value = scales.x.min + i * xStep;
-      if (!Number.isFinite(value)) continue;
+      if (!Number.isFinite(value)) {
+        continue;
+      }
 
       const x = this.mapValueToPixel(value, scales.x, chartArea.left, chartArea.right);
       const y = chartArea.bottom;
@@ -411,7 +431,9 @@ export class SVGRenderer implements ChartRenderer {
 
     for (let i = 0; i < yTickCount; i++) {
       const value = scales.y.min + i * yStep;
-      if (!Number.isFinite(value)) continue;
+      if (!Number.isFinite(value)) {
+        continue;
+      }
 
       const x = chartArea.left;
       const y = this.mapValueToPixel(value, scales.y, chartArea.bottom, chartArea.top, true);

@@ -565,7 +565,8 @@ const LongSessionMemoryPage: React.FC = () => {
         )}
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         .long-session-memory-page {
           font-family:
             system-ui,
@@ -916,7 +917,8 @@ const LongSessionMemoryPage: React.FC = () => {
           border-radius: 8px;
           text-align: center;
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 };

@@ -17,6 +17,19 @@ interface AnimationPerformanceProfilerDemoProps {
   height?: number;
 }
 
+// Define the interface for the animation data
+interface AnimationDataItem {
+  id: string;
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  targetX: number;
+  targetY: number;
+  targetSize: number;
+  targetColor: string;
+}
+
 /**
  * Demo component showcasing the animation performance profiler
  *
@@ -104,7 +117,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
 
     // Add circles for each data point
     const circles = svg
-      .selectAll<SVGCircleElement, any>('circle')
+      .selectAll<SVGCircleElement, AnimationDataItem>('circle')
       .data(data, d => d.id)
       .join('circle')
       .attr('cx', d => d.x)
@@ -274,8 +287,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
                 {performanceData.frames.map((frame, i) => {
                   const x = (i / performanceData.frames.length) * (width - 40);
                   const frameHeight = (frame.frameDuration / (1000 / 30)) * 150;
-                  const targetHeight = (1000 / performanceData.targetFps / (1000 / 30)) * 150;
-
+                  
                   return (
                     <g key={i}>
                       <rect
@@ -484,7 +496,8 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
         </div>
       )}
 
-      <style jsx>{`
+      <style>
+        {`
         .animation-performance-profiler-demo {
           width: 100%;
           max-width: ${width}px;
@@ -834,7 +847,8 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
           max-height: 300px;
           overflow-y: auto;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

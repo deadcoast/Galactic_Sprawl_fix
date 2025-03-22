@@ -402,7 +402,8 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
         ))}
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         .performance-budget-tracker {
           font-family:
             -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
@@ -600,7 +601,8 @@ export const PerformanceBudgetTracker: React.FC<PerformanceBudgetTrackerProps> =
         tr.critical-violation {
           background-color: #ffebee;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

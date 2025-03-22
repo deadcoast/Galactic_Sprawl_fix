@@ -11,6 +11,7 @@ import { ObjectDetectionSystemImpl, ObjectDetectionSystem } from './combat/Objec
 import { ThreatAssessmentManagerImpl, ThreatAssessmentManager } from './combat/ThreatAssessmentManager';
 import { CombatMechanicsSystemImpl, CombatMechanicsSystem } from './combat/CombatMechanicsSystem';
 import { TechTreeManager } from './game/techTreeManager';
+import { ResourceManager } from './game/ResourceManager';
 
 // Singleton instances
 let combatManagerInstance: CombatManager | null = null;
@@ -18,6 +19,7 @@ let objectDetectionSystemInstance: ObjectDetectionSystem | null = null;
 let threatAssessmentManagerInstance: ThreatAssessmentManager | null = null;
 let combatMechanicsSystemInstance: CombatMechanicsSystem | null = null;
 let techTreeManagerInstance: TechTreeManager | null = null;
+let resourceManagerInstance: ResourceManager | null = null;
 
 /**
  * Get the singleton instance of CombatManager
@@ -77,6 +79,17 @@ export function getTechTreeManager(): TechTreeManager {
 }
 
 /**
+ * Get the singleton instance of ResourceManager
+ * @returns The ResourceManager instance 
+ */
+export function getResourceManager(): ResourceManager {
+  if (!resourceManagerInstance) {
+    resourceManagerInstance = ResourceManager.getInstance();
+  }
+  return resourceManagerInstance;
+}
+
+/**
  * Reset all manager instances - primarily used for testing
  */
 export function resetManagers(): void {
@@ -85,6 +98,7 @@ export function resetManagers(): void {
   threatAssessmentManagerInstance = null;
   combatMechanicsSystemInstance = null;
   techTreeManagerInstance = null;
+  resourceManagerInstance = null;
 }
 
 // Export manager classes for type usage
@@ -93,5 +107,6 @@ export type {
   ObjectDetectionSystem, 
   ThreatAssessmentManager, 
   CombatMechanicsSystem,
-  TechTreeManager
+  TechTreeManager,
+  ResourceManager
 };

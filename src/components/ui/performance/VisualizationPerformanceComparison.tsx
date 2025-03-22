@@ -299,7 +299,8 @@ const VisualizationPerformanceComparison: React.FC<VisualizationPerformanceCompa
         </div>
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         .visualization-performance-comparison {
           padding: 20px;
           font-family:
@@ -451,7 +452,8 @@ const VisualizationPerformanceComparison: React.FC<VisualizationPerformanceCompa
           color: #4285f4;
           margin-top: 0;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

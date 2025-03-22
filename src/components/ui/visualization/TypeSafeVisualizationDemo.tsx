@@ -78,7 +78,9 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 
   // Initialize the visualization when data is available
   useEffect(() => {
-    if (!containerRef.current || !data?.nodes.length) return;
+    if (!containerRef.current || !data?.nodes.length) {
+      return;
+    }
 
     // Clear any existing SVG
     d3.select(containerRef.current).selectAll('svg').remove();
@@ -248,7 +250,9 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 
   // Update node highlighting when selection changes
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current) {
+      return;
+    }
 
     const svg = d3.select(svgRef.current);
 
@@ -317,7 +321,9 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 
   // Add a new node at a random position
   const handleAddNode = () => {
-    if (!data?.nodes.length) return;
+    if (!data?.nodes.length) {
+      return;
+    }
 
     const newNode: Node = {
       id: `node-${data?.nodes.length}`,
@@ -350,7 +356,9 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
 
   // Reset zoom to fit the entire graph
   const handleResetZoom = () => {
-    if (!svgRef.current || !simulationRef.current) return;
+    if (!svgRef.current || !simulationRef.current) {
+      return;
+    }
 
     const svg = d3.select(svgRef.current);
     const zoom = d3.zoom<SVGSVGElement, unknown>().on('zoom', null);
@@ -406,7 +414,8 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
         </ul>
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         .type-safe-visualization-demo {
           display: flex;
           flex-direction: column;
@@ -484,7 +493,8 @@ const TypeSafeVisualizationDemo: React.FC<TypeSafeVisualizationDemoProps> = ({
         .instructions li {
           margin-bottom: 5px;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
 import { CombatManager } from '../managers/ManagerRegistry';
 import { gameLoopManager, UpdatePriority } from '../managers/game/GameLoopManager';
 import { ResourceManager } from '../managers/game/ResourceManager';
-import { techTreeManager } from '../managers/game/techTreeManager';
+import { TechTreeManager } from '../managers/game/techTreeManager';
 import { MiningResourceIntegration } from '../managers/mining/MiningResourceIntegration';
 import { MiningShipManagerImpl } from '../managers/mining/MiningShipManagerImpl';
 import { ResourceCostManager } from '../managers/resource/ResourceCostManager';
@@ -275,61 +275,67 @@ export function integrateWithGameSystems(): () => void {
 
   // ===== Tech Tree System Integration =====
 
+  // Get the TechTreeManager instance
+  const techTreeManager = TechTreeManager.getInstance();
+  
   if (techTreeManager) {
     // Tech unlocked listener
     const techUnlockedListener = (data: unknown) => {
       try {
-        const techData = data as TechUpdatePayload;
-        if (!techData || !techData.nodeId || !techData.node || !techData.node.category) {
+        // Handle the data as TechUpdatePayload
+        const payload = data as TechUpdatePayload;
+        if (!payload.nodeId || !payload.node) {
           return;
         }
-
-        console.warn(`Tech node unlocked: ${techData.nodeId}`);
-
-        // Emit tech unlocked event
+        
+        console.log('Tech unlocked:', payload.nodeId, payload.node.category);
+        
+        // Notify the rest of the game that a tech was unlocked
         moduleEventBus.emit({
           type: 'TECH_UNLOCKED' as ModuleEventType,
-          moduleId: 'tech-system',
-          moduleType: ResourceType.RESEARCH as ModuleType, // Using a valid ModuleType for tech
+          moduleId: 'tech-tree',
+          moduleType: 'resource-manager' as ModuleType,
           timestamp: Date.now(),
-          data: {
-            nodeId: techData.nodeId,
-            node: techData.node,
-          },
+          data: payload
         });
-
-        // Send message to other systems
-        techSystemComm.sendMessage('resource-system', 'tech-unlocked', {
-          nodeId: techData.nodeId,
-          category: techData.node.category,
-        });
-
-        // If it's a combat tech, notify combat system
-        if (
-          techData.node.category &&
-          ['warFleet', 'weapons', 'defense'].includes(techData.node.category)
-        ) {
-          techSystemComm.sendMessage('combat-system', 'tech-unlocked', {
-            nodeId: techData.nodeId,
-            category: techData.node.category,
-          });
-        }
-
-        // If it's a mining tech, notify mining system
-        if (techData.node.category && ['miningFleet'].includes(techData.node.category)) {
-          techSystemComm.sendMessage('mining-system', 'tech-unlocked', {
-            nodeId: techData.nodeId,
-            category: techData.node.category,
-          });
+        
+        // Handle different tech categories
+        switch(payload.node.category) {
+          case 'mining':
+          case 'miningFleet':
+            // Notify mining systems of the new tech
+            console.log('Mining tech unlocked:', payload.nodeId);
+            break;
+            
+          case 'warFleet':
+          case 'weapons':
+          case 'defense':
+            // Notify combat systems of the new tech
+            console.log('Combat tech unlocked:', payload.nodeId);
+            break;
+            
+          case 'infrastructure':
+            // Notify resource and production systems
+            console.log('Infrastructure tech unlocked:', payload.nodeId);
+            break;
+            
+          case 'special':
+            // Special techs might need custom handling
+            console.log('Special tech unlocked:', payload.nodeId);
+            break;
+            
+          default:
+            // Unknown category
+            console.log('Unknown tech category unlocked:', payload.node.category);
         }
       } catch (error) {
-        console.error('Error in tech unlocked listener:', error);
+        console.error('Error handling tech unlocked event:', error);
       }
     };
-
+    
     // Register the listener using subscribe
-    techTreeManager.subscribe('nodeUnlocked', techUnlockedListener);
-
+    techTreeManager.on('nodeUnlocked', techUnlockedListener);
+    
     // Register tech system event handlers
     const unregisterTechHandler = techSystemComm.registerHandler(
       'tech-update',
@@ -364,7 +370,7 @@ export function integrateWithGameSystems(): () => void {
 
     // Add cleanup function
     cleanupFunctions.push(() => {
-      techTreeManager.unsubscribe('nodeUnlocked', techUnlockedListener);
+      techTreeManager.off('nodeUnlocked', techUnlockedListener);
       unregisterTechHandler();
       // Additional tech system cleanup if needed
     });

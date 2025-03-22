@@ -839,7 +839,9 @@ export default function TechTree() {
   // Check if a node can be unlocked
   const canUnlockNode = (nodeId: string): boolean => {
     const node = managedTechNodes.find(n => n.id === nodeId);
-    if (!node || node.unlocked) return false;
+    if (!node || node.unlocked) {
+      return false;
+    }
 
     // Check if all requirements are unlocked
     return node.requirements.every(reqId => {
@@ -855,7 +857,9 @@ export default function TechTree() {
 
   // Start research on a node
   const startResearch = (nodeId: string) => {
-    if (activeResearch) return;
+    if (activeResearch) {
+      return;
+    }
 
     setActiveResearch(nodeId);
     setResearchProgress(prev => ({
@@ -972,7 +976,9 @@ export default function TechTree() {
       const fromPos = nodeRefs.current[connection.from];
       const toPos = nodeRefs.current[connection.to];
 
-      if (!fromPos || !toPos) return null;
+      if (!fromPos || !toPos) {
+        return null;
+      }
 
       const progress =
         connection.status === 'unlocked' ? 1 : connection.status === 'available' ? 0.5 : 0.2;

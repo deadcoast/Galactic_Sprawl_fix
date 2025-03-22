@@ -503,7 +503,8 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
         )}
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         .dynamic-budget-adjustment-panel {
           font-family:
             -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
@@ -851,7 +852,8 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
           background-color: #e8f5e9;
           color: #388e3c;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

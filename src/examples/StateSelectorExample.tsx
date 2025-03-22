@@ -5,6 +5,7 @@
  */
 import React, { createContext, useReducer } from 'react';
 import { createStandardContextSelectors } from '../utils/state/contextSelectors';
+import { ResourceType } from '../types/resources/ResourceTypes';
 
 // Define our application state
 interface AppState {

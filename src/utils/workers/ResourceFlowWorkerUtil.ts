@@ -120,7 +120,7 @@ export class ResourceFlowWorkerUtil {
    * Handle messages received from the worker
    */
   private handleWorkerMessage = (event: MessageEvent<WorkerOutput>): void => {
-    const { taskId, result, error } = event?.data;
+    const { taskId, result, error } = event?.data ?? {};
 
     // Find the task in our tracking map
     const task = this.tasks.get(taskId);
@@ -144,7 +144,9 @@ export class ResourceFlowWorkerUtil {
    * Process any tasks that were queued before the worker was ready
    */
   private processPendingTasks(): void {
-    if (!this.worker || this.pendingTasks.length === 0) return;
+    if (!this.worker || this.pendingTasks.length === 0) {
+      return;
+    }
 
     // Process all pending tasks
     for (const task of this.pendingTasks) {

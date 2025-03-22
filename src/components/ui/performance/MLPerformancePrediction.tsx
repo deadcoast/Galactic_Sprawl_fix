@@ -714,7 +714,8 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>
+        {`
         .ml-performance-prediction {
           padding: 20px;
           font-family:
@@ -848,7 +849,8 @@ const MLPerformancePrediction: React.FC<MLPerformancePredictionProps> = ({
           border-radius: 8px;
           color: #666;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

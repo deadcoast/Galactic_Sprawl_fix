@@ -146,9 +146,13 @@ export function runBenchmark<T>(fn: () => T, options: BenchmarkOptions = {}): Be
 
   // Run warmup iterations
   for (let i = 0; i < warmupIterations; i++) {
-    if (setupFn) setupFn();
+    if (setupFn) {
+      setupFn();
+    }
     fn();
-    if (teardownFn) teardownFn();
+    if (teardownFn) {
+      teardownFn();
+    }
   }
 
   // Prepare for actual benchmark
@@ -157,7 +161,9 @@ export function runBenchmark<T>(fn: () => T, options: BenchmarkOptions = {}): Be
 
   // Execute the benchmark
   for (let i = 0; i < iterations; i++) {
-    if (setupFn) setupFn();
+    if (setupFn) {
+      setupFn();
+    }
 
     if (memoryMeasurement && i === Math.floor(iterations / 2)) {
       // Measure memory usage halfway through the iterations
@@ -169,7 +175,9 @@ export function runBenchmark<T>(fn: () => T, options: BenchmarkOptions = {}): Be
       executionTimes.push(endTime - startTime);
     }
 
-    if (teardownFn) teardownFn();
+    if (teardownFn) {
+      teardownFn();
+    }
   }
 
   // Calculate statistics
@@ -225,9 +233,13 @@ export async function runAsyncBenchmark<T>(
 
   // Run warmup iterations
   for (let i = 0; i < warmupIterations; i++) {
-    if (setupFn) setupFn();
+    if (setupFn) {
+      setupFn();
+    }
     await fn();
-    if (teardownFn) teardownFn();
+    if (teardownFn) {
+      teardownFn();
+    }
   }
 
   // Prepare for actual benchmark
@@ -236,7 +248,9 @@ export async function runAsyncBenchmark<T>(
 
   // Execute the benchmark
   for (let i = 0; i < iterations; i++) {
-    if (setupFn) setupFn();
+    if (setupFn) {
+      setupFn();
+    }
 
     if (memoryMeasurement && i === Math.floor(iterations / 2)) {
       // Measure memory usage halfway through the iterations
@@ -256,7 +270,9 @@ export async function runAsyncBenchmark<T>(
       executionTimes.push(endTime - startTime);
     }
 
-    if (teardownFn) teardownFn();
+    if (teardownFn) {
+      teardownFn();
+    }
   }
 
   // Calculate statistics
@@ -751,7 +767,9 @@ export function detectPerformanceRegressions(
   // Compare each new result with its baseline
   for (const newResult of newResults) {
     const baselineResult = baselineMap.get(newResult.name);
-    if (!baselineResult) continue;
+    if (!baselineResult) {
+      continue;
+    }
 
     const baselineTime = baselineResult.executionTimeMs;
     const newTime = newResult.executionTimeMs;
