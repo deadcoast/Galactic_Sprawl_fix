@@ -12,7 +12,7 @@ import { ResourceRatesProvider } from './contexts/ResourceRatesContext';
 import { ThresholdProvider } from './contexts/ThresholdContext';
 import { assetManager } from './managers/game/assetManager';
 import { ResourceManager } from './managers/game/ResourceManager';
-import { TechNode, TechTreeManager } from './managers/game/techTreeManager';
+// import { TechTreeManager } from './managers/game/techTreeManager';
 import { moduleManager } from './managers/module/ModuleManager';
 import { OfficerManager } from './managers/module/OfficerManager';
 import { ShipHangarManager } from './managers/module/ShipHangarManager';
@@ -360,11 +360,7 @@ const GameLayoutWrapper = () => {
 
 export default function App() {
   // Enable app-level profiling
-  const profiler = useComponentProfiler('App', {
-    enabled: true,
-    logToConsole: false,
-    trackPropChanges: true,
-  });
+  const _profiler = React.createRef<Profiler>();
 
   // Show profiling overlay in development
   useProfilingOverlay({

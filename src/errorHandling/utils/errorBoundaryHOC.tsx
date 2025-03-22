@@ -154,13 +154,11 @@ export function withErrorBoundary<P extends object>(
 }
 
 /**
- * Create safer versions of components by wrapping them with error boundaries
- *
- * This utility function takes a record of components and wraps each one with
+ * Creates a record of "safe" components by wrapping each component in
  * an error boundary, creating a new record of "safe" components.
  *
  * @param components Record of components to wrap
- * @param getOptions (...args: unknown[]) => unknown to generate options for each component
+ * @param getOptions Function to generate options for each component
  * @returns Record of wrapped components
  */
 export function createSafeComponents<T extends Record<string, ComponentType<any>>>(

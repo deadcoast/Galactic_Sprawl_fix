@@ -266,6 +266,11 @@ export interface RadioGroupProps extends
    * Radio items
    */
   children?: React.ReactNode;
+
+  /**
+   * Helper text to display below the radio group
+   */
+  helperText?: React.ReactNode;
 }
 
 export const RadioGroup: React.FC<RadioGroupProps> = ({
@@ -337,8 +342,8 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
       label={option.label}
       checked={currentValue === option.value}
       onChange={handleRadioChange}
-      variant={variant}
-      size={size}
+      variant={variant as ComponentVariant}
+      size={size as ComponentSize}
       disabled={option.disabled}
     />
   ));
@@ -350,9 +355,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
         name,
         checked: currentValue === child.props.value,
         onChange: handleRadioChange,
-        variant,
-        size,
-      });
+      } as React.ComponentProps<typeof Radio>);
     }
     return child;
   });

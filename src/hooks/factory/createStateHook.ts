@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 /**
  * Action creator type
  */
-export type ActionCreator<TState, TPayload = any> = (
+export type ActionCreator<TState, TPayload = unknown> = (
   state: TState,
   payload: TPayload
 ) => Partial<TState>;
@@ -11,7 +11,7 @@ export type ActionCreator<TState, TPayload = any> = (
 /**
  * Bound action type
  */
-export type BoundAction<TPayload = any> = (payload: TPayload) => void;
+export type BoundAction<TPayload = unknown> = (payload: TPayload) => void;
 
 /**
  * State hook options

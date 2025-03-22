@@ -166,6 +166,7 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(
     'aria-labelledby': ariaLabelledBy,
     'aria-label': ariaLabel,
     'data-testid': dataTestId,
+    ...rest
   }, ref) => {
     // Convert maxWidth to CSS value
     const maxWidthValue = getMaxWidthValue(maxWidth, customMaxWidth);
@@ -229,20 +230,37 @@ export const Container = forwardRef<HTMLElement, ContainerProps>(
     ]);
     
     // Render the component with the element specified by the 'as' prop
-    const Component = as;
+    if (as === 'div') {
+      return (
+        <div
+          ref={ref as React.ForwardedRef<HTMLDivElement>}
+          className={containerClasses}
+          style={containerStyles}
+          id={id}
+          aria-labelledby={ariaLabelledBy}
+          aria-label={ariaLabel}
+          data-testid={dataTestId}
+          {...rest}
+        >
+          {children}
+        </div>
+      );
+    }
     
-    return (
-      <Component
-        ref={ref}
-        id={id}
-        className={containerClasses}
-        style={containerStyles}
-        aria-labelledby={ariaLabelledBy}
-        aria-label={ariaLabel}
-        data-testid={dataTestId}
-      >
-        {children}
-      </Component>
+    // For other elements, use createElement to avoid type issues
+    return React.createElement(
+      as,
+      {
+        className: containerClasses,
+        style: containerStyles,
+        // Only add additional props when they are defined and relevant
+        ...(id ? { id } : {}),
+        ...(ariaLabelledBy ? { 'aria-labelledby': ariaLabelledBy } : {}),
+        ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
+        ...(dataTestId ? { 'data-testid': dataTestId } : {}),
+        ...rest
+      },
+      children
     );
   }
 );

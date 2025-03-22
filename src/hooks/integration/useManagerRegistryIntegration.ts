@@ -171,8 +171,8 @@ export function useServiceRegistry() {
   // Get the registry instance
   useEffect(() => {
     try {
-      // Fixed: Use call() to properly bind the 'this' context
-      // @ts-expect-error - ServiceRegistry's getInstance is safe to use this way
+      // We need to use call to properly bind the 'this' context because of the protected constructor
+      // @ts-expect-error - ServiceRegistry's getInstance needs to be called this way
       const registryInstance = ServiceRegistry.getInstance.call(ServiceRegistry);
       setRegistry(registryInstance);
       setError(null);
@@ -191,7 +191,9 @@ export function useServiceRegistry() {
   
   // Check if a manager is registered
   const hasManager = useCallback((name: string): boolean => {
-    if (!registry) return false;
+    if (!registry) {
+      return false;
+    }
     
     try {
       return registry.hasManager(name);
@@ -203,7 +205,9 @@ export function useServiceRegistry() {
   // Get a manager by name
   // Use a generic with the RegistryCompatibleManager constraint to match ServiceRegistry
   const getManager = useCallback(<T extends RegistryCompatibleManager>(name: string): T | null => {
-    if (!registry) return null;
+    if (!registry) {
+      return null;
+    }
     
     try {
       // ServiceRegistry.getManager returns T extends BaseManager

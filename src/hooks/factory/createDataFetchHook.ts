@@ -47,7 +47,7 @@ export interface DataFetchResult<T> {
  * @param defaultOptions Default options for the hook
  * @returns A React hook that manages data fetching
  */
-export function createDataFetchHook<T, P extends any[] = []>(
+export function createDataFetchHook<T, P extends unknown[] = []>(
   fetchFn: (...args: P) => Promise<T>,
   defaultOptions: DataFetchOptions = {}
 ) {

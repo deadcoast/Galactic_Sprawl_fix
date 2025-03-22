@@ -41,7 +41,7 @@ export interface ErrorHandlerState<E = Error> {
   logError: (error: E, additionalMetadata?: Record<string, unknown>) => void;
   
   /** Higher-order function that wraps callbacks with error handling */
-  withErrorHandling: <T extends (...args: any[]) => any>(
+  withErrorHandling: <T extends (...args: unknown[]) => unknown>(
     fn: T,
     options?: {
       onError?: (error: Error) => void;
@@ -122,7 +122,7 @@ export function useErrorHandler<E = Error>(config: ErrorHandlerConfig): ErrorHan
   }, []);
   
   // Wrap a function with error handling
-  const withErrorHandling = useCallback(<T extends (...args: any[]) => any>(
+  const withErrorHandling = useCallback(<T extends (...args: unknown[]) => unknown>(
     fn: T,
     options: {
       onError?: (error: Error) => void;
@@ -131,32 +131,19 @@ export function useErrorHandler<E = Error>(config: ErrorHandlerConfig): ErrorHan
   ) => {
     return (...args: Parameters<T>): ReturnType<T> | undefined => {
       try {
-        const result = fn(...args);
-        
-        // Handle promises
-        if (result instanceof Promise) {
-          return result.catch((err: Error) => {
-            setError(err as unknown as E);
-            
-            if (options.onError) {
-              options.onError(err);
-            }
-            
-            if (options.rethrow) {
-              throw err;
-            }
-            
-            return undefined as unknown as ReturnType<T>;
-          }) as ReturnType<T>;
-        }
-        
+        const result = fn(...args) as ReturnType<T>;
         return result;
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error(String(err));
-        setError(error as unknown as E);
+      } catch (e) {
+        const error = e instanceof Error ? e : new Error(String(e));
         
+        // Call error handler first
         if (options.onError) {
           options.onError(error);
+        }
+        
+        // Then log error
+        if (autoLog !== false) {
+          logError(error);
         }
         
         if (options.rethrow) {
@@ -166,7 +153,7 @@ export function useErrorHandler<E = Error>(config: ErrorHandlerConfig): ErrorHan
         return undefined;
       }
     };
-  }, [setError]);
+  }, [logError, autoLog]);
   
   return {
     hasError: error !== null,

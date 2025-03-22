@@ -100,77 +100,88 @@ function getJustifyContent(justify?: 'start' | 'center' | 'end' | 'between' | 'a
 }
 
 /**
- * Stack component for arranging children vertically or horizontally
+ * Stack component for creating vertical or horizontal layouts 
  * with consistent spacing between them.
  */
 export const Stack = forwardRef<HTMLDivElement, StackProps>(({
+  children,
+  className,
+  style,
   direction = 'vertical',
   spacing = 'medium',
-  align = 'start',
+  align,
   justify = 'start',
   wrap = false,
   fullSize = false,
   dividers = false,
   gap,
-  children,
-  className,
-  style,
-  as: Component = 'div',
+  as = 'div',
   ...rest
 }, ref) => {
   // Memoize styles for better performance
   const stackStyles = useMemo(() => {
-    const baseStyles: React.CSSProperties = {
+    return {
+      ...style,
       display: 'flex',
-      flexDirection: direction === 'vertical' ? 'column' : 'row',
+      flexDirection: direction === 'vertical' ? ('column' as const) : ('row' as const),
       alignItems: getAlignItems(align),
       justifyContent: getJustifyContent(justify),
-      flexWrap: wrap ? 'wrap' : 'nowrap',
-      gap: gap !== undefined ? gap : spacing,
-      ...style
+      gap: gap !== undefined ? (typeof gap === 'number' ? `${gap}px` : gap) : undefined,
+      flexWrap: wrap ? ('wrap' as const) : ('nowrap' as const),
+      width: fullSize ? '100%' : undefined,
+      height: direction === 'vertical' && fullSize ? '100%' : undefined
     };
-    
-    if (fullSize) {
-      if (direction === 'vertical') {
-        baseStyles.width = '100%';
-      } else {
-        baseStyles.height = '100%';
-      }
-    }
-    
-    return baseStyles;
-  }, [direction, spacing, align, justify, wrap, fullSize, gap, style]);
-
-  // Build class name
+  }, [style, direction, align, justify, gap, wrap, fullSize]);
+  
+  // Compute classes
   const stackClassName = useMemo(() => {
     const classes = ['ui-stack'];
     
-    if (className) {
-      classes.push(className);
+    // Add direction class
+    classes.push(`ui-stack-${direction}`);
+    
+    // Add spacing class if no custom gap
+    if (gap === undefined) {
+      classes.push(`ui-stack-spacing-${spacing}`);
     }
     
+    // Add divider class if needed
     if (dividers) {
       classes.push('ui-stack-dividers');
     }
     
-    if (direction === 'vertical') {
-      classes.push('ui-stack-vertical');
-    } else {
-      classes.push('ui-stack-horizontal');
+    // Add custom class if provided
+    if (className) {
+      classes.push(className);
     }
     
     return classes.join(' ');
-  }, [className, dividers, direction]);
+  }, [className, dividers, direction, gap, spacing]);
+
+  // The specific component type to render, but we use div for the ref type
+  if (as === 'div') {
+    return (
+      <div
+        ref={ref}
+        className={stackClassName}
+        style={stackStyles}
+        {...rest}
+      >
+        {children}
+      </div>
+    );
+  }
   
-  return (
-    <Component
-      ref={ref}
-      className={stackClassName}
-      style={stackStyles}
-      {...rest}
-    >
-      {children}
-    </Component>
+  // For other HTML elements, we need to use createElement
+  // This avoids the type conflicts with the ref
+  return React.createElement(
+    as,
+    {
+      className: stackClassName,
+      style: stackStyles,
+      ...rest
+    },
+    children
   );
 });
 

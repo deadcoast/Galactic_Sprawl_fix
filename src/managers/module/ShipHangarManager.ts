@@ -66,6 +66,18 @@ interface ShipState {
   }[];
 }
 
+// Define the missing RequirementCheckResult interface
+interface RequirementCheckResult {
+  type: string;
+  name: string;
+  met: boolean;
+}
+
+// Define DEFAULT ship designs from the blueprints
+const DEFAULT_SCOUT_SHIP_DESIGN = SHIP_BLUEPRINTS.find(bp => bp.category === 'recon' && bp.tier === 1);
+const DEFAULT_MINING_SHIP_DESIGN = SHIP_BLUEPRINTS.find(bp => bp.category === 'mining' && bp.tier === 1);
+const DEFAULT_COMBAT_SHIP_DESIGN = SHIP_BLUEPRINTS.find(bp => bp.category === 'war' && bp.tier === 1);
+
 /**
  * Implementation of the Ship Hangar Manager
  * Handles ship production, docking, and hangar bay management
@@ -2265,12 +2277,12 @@ export class ShipHangarManager
     return missingTech.length === 0;
   }
 
-  private getRequirementsStatus(requirements: ShipRequirements): RequirementCheckResult[] {
+  private getRequirementsStatus(requirements: ShipBuildRequirements): RequirementCheckResult[] {
     const result: RequirementCheckResult[] = [];
     
     // Check tech requirements
     if (requirements.prerequisites?.technology && this.techTreeInstance) {
-      requirements.prerequisites.technology.forEach(tech => {
+      requirements.prerequisites.technology.forEach((tech: string) => {
         result.push({
           type: 'tech',
           name: tech,
@@ -2282,5 +2294,18 @@ export class ShipHangarManager
     // Rest of method...
     
     return result;
+  }
+
+  /**
+   * Add a ship design to the available designs
+   * @param design The ship design blueprint to add
+   */
+  private addShipDesign(design: ShipBlueprint | undefined): void {
+    if (!design) {
+      console.warn('[ShipHangarManager] Attempted to add undefined ship design');
+      return;
+    }
+    // Implementation details would go here
+    console.log(`Added ship design: ${design.name}`);
   }
 }

@@ -11,7 +11,7 @@ import React, { useState } from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { renderWithProviders, screen, waitFor } from '../utils/test-utils';
 import { Button } from '../../ui/components/Button';
-import { Card } from '../../ui/components/Card';
+import { Card, CardElevation } from '../../ui/components/Card';
 import { ComponentVariant, ComponentSize } from '../../types/ui/ComponentTypes';
 
 // Example container components for testing interactions

@@ -208,6 +208,8 @@ export const Flex = forwardRef<HTMLElement, FlexProps>(
     'aria-labelledby': ariaLabelledBy,
     'aria-label': ariaLabel,
     'data-testid': dataTestId,
+    'aria-describedby': ariaDescribedBy,
+    ...otherProps
   }, ref) => {
     // Override align and justify if center prop is provided
     const effectiveAlign = center ? FlexAlignment.CENTER : align;
@@ -286,21 +288,40 @@ export const Flex = forwardRef<HTMLElement, FlexProps>(
       style
     ]);
     
-    // Render the component with the element specified by the 'as' prop
-    const Component = as;
-    
-    return (
-      <Component
-        ref={ref}
-        id={id}
-        className={flexClasses}
-        style={flexStyles}
-        aria-labelledby={ariaLabelledBy}
-        aria-label={ariaLabel}
-        data-testid={dataTestId}
-      >
-        {children}
-      </Component>
+    // For div element, we can safely use all attributes
+    if (as === 'div') {
+      return (
+        <div
+          ref={ref as React.ForwardedRef<HTMLDivElement>}
+          id={id}
+          className={flexClasses}
+          style={flexStyles}
+          aria-labelledby={ariaLabelledBy}
+          aria-label={ariaLabel}
+          aria-describedby={ariaDescribedBy}
+          data-testid={dataTestId}
+          {...otherProps}
+        >
+          {children}
+        </div>
+      );
+    }
+
+    // For other element types, use createElement with careful prop passing
+    return React.createElement(
+      as,
+      {
+        className: flexClasses,
+        style: flexStyles,
+        // Only include these props when defined
+        ...(id ? { id } : {}),
+        ...(ariaLabelledBy ? { 'aria-labelledby': ariaLabelledBy } : {}),
+        ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
+        ...(ariaDescribedBy ? { 'aria-describedby': ariaDescribedBy } : {}),
+        ...(dataTestId ? { 'data-testid': dataTestId } : {}),
+        ...otherProps
+      },
+      children
     );
   }
 );

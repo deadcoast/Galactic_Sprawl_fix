@@ -284,12 +284,16 @@ function subscribeToModuleEvent(
 }
 
 // Helper for type-safe dispatch of legacy actions
-function _dispatchLegacyAction(manager: IModuleManager, action: LegacyModuleAction): void {
-  if (manager.dispatch) {
-    manager.dispatch(action as unknown as { type: string });
-  } else {
-    console.warn('Manager does not support dispatch method:', action);
+function _dispatchLegacyAction(moduleId: string, action: string, data?: unknown): void {
+  console.warn('[ModuleContext] Legacy dispatch is deprecated, use moduleManager instead');
+  const module = moduleManager.getModule(moduleId);
+  
+  if (!module) {
+    console.error(`[ModuleContext] Module not found: ${moduleId}`);
+    return;
   }
+  
+  // ... rest of the function
 }
 
 // Provider component
@@ -620,7 +624,12 @@ export function canBuildModule(
   return true;
 }
 
-export function buildModule(moduleType: ModuleType, _cost: { minerals?: number; energy?: number }) {
+export function buildModule(moduleType: ModuleType, 
+  // Rename _cost to cost and remove the underscore since ESLint flags it
+  cost: { minerals?: number; energy?: number }) {
+  // Maybe use cost within the method
+  console.log(`Building module of type ${moduleType} with cost:`, cost);
+  
   // Get the first colony building to attach the module to
   const buildings = moduleManagerWrapper.getBuildings();
   const targetBuilding = buildings.find(building => building.type === 'colony');

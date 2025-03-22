@@ -9,7 +9,8 @@ import { moduleEventBus } from '../../lib/events/ModuleEventBus';
 import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/ErrorLoggingService';
 
 /**
- * Hook for subscribing to a specific event type
+ * Hook for subscribing to a single event type
+ * Automatically handles unsubscribing when the component unmounts
  * 
  * @param eventType The event type to subscribe to
  * @param handler The event handler function
@@ -18,7 +19,7 @@ import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/Er
 export function useEventSubscription(
   eventType: EventType,
   handler: (event: BaseEvent) => void,
-  deps: any[] = []
+  deps: unknown[] = []
 ) {
   // Use ref to store the handler to prevent unnecessary re-subscriptions
   const handlerRef = useRef(handler);
@@ -28,44 +29,19 @@ export function useEventSubscription(
     handlerRef.current = handler;
   }, [handler]);
   
-  // Set up subscription
+  // Subscribe to the event and return cleanup function
   useEffect(() => {
-    try {
-      const unsubscribe = moduleEventBus.subscribe(eventType, (event) => {
-        try {
-          handlerRef.current(event);
-        } catch (e) {
-          const error = e instanceof Error ? e : new Error(String(e));
-          
-          // Log error
-          errorLoggingService.logError(error, ErrorType.EVENT_HANDLING, ErrorSeverity.MEDIUM, {
-            component: 'useEventSubscription',
-            eventType,
-            eventData: JSON.stringify(event)
-          });
-        }
-      });
-      
-      // Return cleanup function
-      return unsubscribe;
-    } catch (e) {
-      const error = e instanceof Error ? e : new Error(String(e));
-      
-      // Log error
-      errorLoggingService.logError(error, ErrorType.EVENT_HANDLING, ErrorSeverity.HIGH, {
-        component: 'useEventSubscription',
-        eventType,
-        message: 'Failed to set up event subscription'
-      });
-      
-      // Return empty cleanup function
-      return () => {};
-    }
-  }, [eventType, ...deps]);
+    const wrappedHandler = (event: BaseEvent) => {
+      handlerRef.current(event);
+    };
+    
+    return moduleEventBus.subscribe(eventType, wrappedHandler);
+  }, [eventType, ...deps]); // Include deps in the dependency array
 }
 
 /**
  * Hook for subscribing to multiple event types
+ * Automatically handles unsubscribing when the component unmounts
  * 
  * @param eventTypes Array of event types to subscribe to
  * @param handler The event handler function
@@ -74,7 +50,7 @@ export function useEventSubscription(
 export function useMultiEventSubscription(
   eventTypes: EventType[],
   handler: (event: BaseEvent) => void,
-  deps: any[] = []
+  deps: unknown[] = []
 ) {
   // Use ref to store the handler to prevent unnecessary re-subscriptions
   const handlerRef = useRef(handler);

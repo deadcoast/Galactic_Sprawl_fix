@@ -134,21 +134,24 @@ const HeadingComponent = forwardRef<HTMLHeadingElement, HeadingProps>(
       className
     ]);
     
-    // Dynamically select the heading element based on level
+    // Render the heading with the appropriate HTML element
     const Component = safeLevel as keyof JSX.IntrinsicElements;
     
-    return (
-      <Component
-        ref={ref}
-        id={id}
-        className={headingClasses}
-        style={style}
-        aria-labelledby={ariaLabelledBy}
-        aria-label={ariaLabel}
-        data-testid={dataTestId}
-      >
-        {children}
-      </Component>
+    // Use createElement to avoid type issues
+    return React.createElement(
+      Component,
+      {
+        ref,
+        className: headingClasses,
+        style: style,
+        ...(Component === 'h1' || Component === 'h2' || Component === 'h3' || 
+           Component === 'h4' || Component === 'h5' || Component === 'h6' 
+           ? { id } : {}),
+        'aria-labelledby': ariaLabelledBy,
+        'aria-label': ariaLabel,
+        'data-testid': dataTestId
+      },
+      children
     );
   }
 );

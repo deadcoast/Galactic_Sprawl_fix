@@ -294,18 +294,16 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
     // Render the component with the element specified by the 'as' prop
     const Component = as;
     
-    return (
-      <Component
-        ref={ref}
-        id={id}
-        className={gridClasses}
-        style={gridStyles}
-        aria-labelledby={ariaLabelledBy}
-        aria-label={ariaLabel}
-        data-testid={dataTestId}
-      >
-        {children}
-      </Component>
+    // Use createElement to avoid type issues
+    return React.createElement(
+      Component,
+      {
+        className: gridClasses,
+        style: gridStyles,
+        ...(as === 'div' ? { id } : {}),
+        ...(as === 'div' ? { 'aria-labelledby': ariaLabelledBy, 'aria-label': ariaLabel, 'data-testid': dataTestId } : {})
+      },
+      children
     );
   }
 );
