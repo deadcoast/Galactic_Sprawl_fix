@@ -1,0 +1,144 @@
+../../../../src/services/AnalysisAlgorithmService.ts(1030,7): error TS2339: Property 'algorithm' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1031,7): error TS2339: Property 'features' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1032,7): error TS2339: Property 'k' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1033,7): error TS2339: Property 'maxIterations' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1034,7): error TS2339: Property 'distanceMetric' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1035,7): error TS2339: Property 'normalize' does not exist on type '{ variables: string[]; clusters?: number | undefined; method?: "kmeans" | "hierarchical" | "dbscan" | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(1814,9): error TS2322: Type 'number' is not assignable to type 'undefined'.
+../../../../src/services/AnalysisAlgorithmService.ts(2084,7): error TS2339: Property 'targetVariable' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(2086,7): error TS2339: Property 'predictionHorizon' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(2087,7): error TS2339: Property 'model' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(2088,7): error TS2339: Property 'testSplit' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
+../../../../src/services/AnalysisAlgorithmService.ts(2089,7): error TS2339: Property 'epochs' does not exist on type '{ target: string; features: string[]; method?: "linear" | "randomForest" | "neuralNetwork" | undefined; testSize?: number | undefined; }'.
+    Type '{ effectiveType?: string | undefined; type?: string | undefined; } | undefined' is not assignable to type '{ saveData: boolean; } | undefined'.
+      Property 'saveData' is missing in type '{ effectiveType?: string | undefined; type?: string | undefined; }' but required in type '{ saveData: boolean; }'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(70,5): error TS2322: Type '{} | undefined' is not assignable to type 'VisualData | undefined'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(128,7): error TS2322: Type 'number | undefined' is not assignable to type 'string | number | boolean | string[]'.
+  Type 'undefined' is not assignable to type 'string | number | boolean | string[]'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(129,7): error TS2322: Type 'string | undefined' is not assignable to type 'string | number | boolean | string[]'.
+  Type 'undefined' is not assignable to type 'string | number | boolean | string[]'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(130,7): error TS2322: Type 'string | undefined' is not assignable to type 'string | number | boolean | string[]'.
+  Type 'undefined' is not assignable to type 'string | number | boolean | string[]'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(131,7): error TS2322: Type 'VisualData | undefined' is not assignable to type 'string | number | boolean | string[]'.
+  Type 'undefined' is not assignable to type 'string | number | boolean | string[]'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(154,7): error TS2322: Type 'number | undefined' is not assignable to type 'string | number | boolean | string[]'.
+  Type 'undefined' is not assignable to type 'string | number | boolean | string[]'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(155,7): error TS2322: Type 'string | undefined' is not assignable to type 'string | number | boolean | string[]'.
+  Type 'undefined' is not assignable to type 'string | number | boolean | string[]'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(156,7): error TS2322: Type 'string | undefined' is not assignable to type 'string | number | boolean | string[]'.
+  Type 'undefined' is not assignable to type 'string | number | boolean | string[]'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(179,7): error TS2322: Type 'number | undefined' is not assignable to type 'string | number | boolean | string[]'.
+  Type 'undefined' is not assignable to type 'string | number | boolean | string[]'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(180,7): error TS2322: Type 'string | undefined' is not assignable to type 'string | number | boolean | string[]'.
+  Type 'undefined' is not assignable to type 'string | number | boolean | string[]'.
+../../../../src/types/exploration/unified/ExplorationTypeUtils.ts(181,7): error TS2322: Type 'string | undefined' is not assignable to type 'string | number | boolean | string[]'.
+  Type 'undefined' is not assignable to type 'string | number | boolean | string[]'.
+../../../../src/types/state/TypeSafeStateManagement.ts(111,5): error TS2322: Type 'unknown' is not assignable to type '((state: S, action: unknown) => S) | undefined'.
+../../../../src/types/visualizations/D3SelectionTypes.ts(114,31): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ValueFn<GElement | PElement, Datum | PDatum, KeyType> | undefined'.
+  Overload 1 of 3, '(typenames: string, listener: null): Selection<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type '(event: Event, d: Datum, i: number, g: GElement[]) => void' is not assignable to parameter of type 'null'.
+../../../../src/types/visualizations/D3SelectionTypes.ts(277,27): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | number | boolean | readonly (string | number)[] | ValueFn<GElement, Datum, string | number | boolean | readonly (string | number)[] | null> | null'.
+  Overload 1 of 4, '(name: string, value: null): Selection<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'null'.
+  Overload 2 of 4, '(name: string, value: string | number | boolean, priority?: "important" | null | undefined): Selection<GElement, Datum, PElement, PDatum>', gave the following error.
+  Overload 3 of 4, '(name: string, value: ValueFn<GElement, Datum, string | number | boolean | null>, priority?: "important" | null | undefined): Selection<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'ValueFn<GElement, Datum, string | number | boolean | null>'.
+../../../../src/types/visualizations/D3SelectionTypes.ts(320,22): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | number | boolean | ValueFn<GElement, Datum, string | number | boolean | null> | null'.
+../../../../src/types/visualizations/D3SelectionTypes.ts(328,22): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | ValueFn<GElement, Datum, string | null> | null'.
+  Overload 1 of 3, '(typenames: string, listener: null): Selection<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type '(event: Event, d: Datum, i: number, g: GElement[]) => void' is not assignable to parameter of type 'null'.
+  Overload 1 of 2, '(name: string, value: string | number | boolean | null): Transition<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number | boolean | null'.
+  Overload 2 of 2, '(name: string, value: ValueFn<GElement, Datum, string | number | boolean | null>): Transition<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'ValueFn<GElement, Datum, string | number | boolean | null>'.
+  Overload 1 of 3, '(name: string, value: null): Transition<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'null'.
+  Overload 2 of 3, '(name: string, value: string | number | boolean, priority?: "important" | null | undefined): Transition<GElement, Datum, PElement, PDatum>', gave the following error.
+  Overload 3 of 3, '(name: string, value: ValueFn<GElement, Datum, string | number | boolean | null>, priority?: "important" | null | undefined): Transition<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'ValueFn<GElement, Datum, string | number | boolean | null>'.
+  Overload 1 of 3, '(typenames: string, listener: null): Transition<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type '(event: Event, d: Datum) => void' is not assignable to parameter of type 'null'.
+    Type 'null' is not assignable to type 'Element'.
+    Type 'null' is not assignable to type 'Element'.
+    Type 'null' is not assignable to type 'Element'.
+../../../../src/types/visualizations/D3ZoomTypes.ts(135,22): error TS2345: Argument of type '((a: ZoomView, b: ZoomView) => ZoomInterpolator) | null' is not assignable to parameter of type '(a: ZoomView, b: ZoomView) => (t: number) => ZoomView'.
+  Type 'null' is not assignable to type '(a: ZoomView, b: ZoomView) => (t: number) => ZoomView'.
+    Type 'null' is not assignable to type 'Element'.
+    Type 'ReactNode' is not assignable to type 'string | undefined'.
+      Type 'null' is not assignable to type 'string | undefined'.
+    Type '((module: Module) => void) | undefined' is not assignable to type 'ReactEventHandler<HTMLDivElement> | undefined'.
+../../../../src/utils/dataTransforms/chartTransforms.ts(317,46): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown> | null | undefined'.
+../../../../src/utils/dataTransforms/chartTransforms.ts(318,49): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown> | null | undefined'.
+../../../../src/utils/dataTransforms/chartTransforms.ts(403,78): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'Record<string, unknown>'.
+../../../../src/utils/dataTransforms/scientificTransforms.ts(425,74): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'Record<string, unknown>'.
+../../../../src/utils/performance/D3AnimationProfiler.ts(525,5): error TS2322: Type 'unknown' is not assignable to type '{ (name?: string | undefined): Transition<GElement, Datum, PElement, PDatum>; (transition: Transition<BaseType, any, any, any>): Transition<...>; }'.
+../../../../src/utils/performance/D3AnimationProfiler.ts(537,5): error TS2322: Type 'unknown' is not assignable to type '{ (name: string): string; (name: string, value: string | number | boolean | readonly (string | number)[] | ValueFn<GElement, Datum, string | number | boolean | readonly (string | number)[] | null> | null): Selection<...>; }'.
+../../../../src/utils/performance/D3AnimationProfiler.ts(539,47): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[name: string, value: string | number | boolean | readonly (string | number)[] | ValueFn<GElement, Datum, string | number | boolean | readonly (string | number)[] | null> | null]'.
+../../../../src/utils/performance/D3AnimationProfiler.ts(549,5): error TS2322: Type 'unknown' is not assignable to type '{ (name: string): string; (name: string, value: null): Selection<GElement, Datum, PElement, PDatum>; (name: string, value: string | number | boolean, priority?: "important" | ... 1 more ... | undefined): Selection<...>; (name: string, value: ValueFn<...>, priority?: "important" | ... 1 more ... | undefined): Selecti...'.
+../../../../src/utils/performance/D3AnimationProfiler.ts(551,48): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[name: string, value: ValueFn<GElement, Datum, string | number | boolean | null>, priority?: "important" | null | undefined]'.
+../../../../src/utils/performance/D3AnimationQualityManager.ts(776,5): error TS2322: Type 'unknown' is not assignable to type 'undefined'.
+../../../../src/utils/performance/D3AnimationQualityManager.ts(903,21): error TS2352: Conversion of type 'Selection<GElement, unknown, HTMLElement, any>' to type 'Selection<GElement, unknown, null, undefined>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+    Type 'Selection<null, undefined, HTMLElement, any>' is not comparable to type 'Selection<null, undefined, null, undefined>'.
+      Type 'HTMLElement' is not comparable to type 'null'.
+  Overload 2 of 2, '(node: BaseType): Selection<BaseType, unknown, null, undefined>', gave the following error.
+    Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+      Type 'undefined' is not assignable to type 'number'.
+    Argument of type 'number | undefined' is not assignable to parameter of type 'ValueFn<GElement, Datum, number>'.
+      Type 'undefined' is not assignable to type 'ValueFn<GElement, Datum, number>'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(498,3): error TS2322: Type 'unknown' is not assignable to type '{ (name: string): string; (name: string, value: string | number | boolean | readonly (string | number)[] | ValueFn<GElement, Datum, string | number | boolean | readonly (string | number)[] | null> | null): Selection<...>; }'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(501,39): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[name: string, value: string | number | boolean | readonly (string | number)[] | ValueFn<GElement, Datum, string | number | boolean | readonly (string | number)[] | null> | null]'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(507,46): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[name: string, value: string | number | boolean | readonly (string | number)[] | ValueFn<GElement, Datum, string | number | boolean | readonly (string | number)[] | null> | null]'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(519,3): error TS2322: Type 'unknown' is not assignable to type '{ (name: string): string; (name: string, value: null): Selection<GElement, Datum, PElement, PDatum>; (name: string, value: string | number | boolean, priority?: "important" | ... 1 more ... | undefined): Selection<...>; (name: string, value: ValueFn<...>, priority?: "important" | ... 1 more ... | undefined): Selecti...'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(522,40): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[name: string, value: ValueFn<GElement, Datum, string | number | boolean | null>, priority?: "important" | null | undefined]'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(528,47): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[name: string, value: ValueFn<GElement, Datum, string | number | boolean | null>, priority?: "important" | null | undefined]'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(540,3): error TS2322: Type 'unknown' is not assignable to type '{ (name: string): any; <T>(name: Local<T>): T | undefined; (name: string, value: ValueFn<GElement, Datum, any> | null): Selection<GElement, Datum, PElement, PDatum>; (name: string, value: any): Selection<...>; <T>(name: Local<...>, value: ValueFn<...>): Selection<...>; <T>(name: Local<...>, value: T): Selection<...>...'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(561,3): error TS2322: Type 'unknown' is not assignable to type '{ (): string; (value: string | ValueFn<GElement, Datum, string | null> | null): Selection<GElement, Datum, PElement, PDatum>; }'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(564,39): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[value: string | ValueFn<GElement, Datum, string | null> | null]'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(570,46): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[value: string | ValueFn<GElement, Datum, string | null> | null]'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(582,3): error TS2322: Type 'unknown' is not assignable to type '{ (): string; (value: string | number | boolean | ValueFn<GElement, Datum, string | number | boolean | null> | null): Selection<GElement, Datum, PElement, PDatum>; }'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(585,39): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[value: string | number | boolean | ValueFn<GElement, Datum, string | number | boolean | null> | null]'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(591,46): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[value: string | number | boolean | ValueFn<GElement, Datum, string | number | boolean | null> | null]'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(614,23): error TS2352: Conversion of type 'Selection<GElement, Datum, HTMLElement, any>' to type 'Selection<GElement, Datum, null, undefined>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+    Type 'Selection<any, Datum, HTMLElement, any>' is not comparable to type 'Selection<any, Datum, null, undefined>'.
+      Type 'HTMLElement' is not comparable to type 'null'.
+  Overload 2 of 2, '(node: BaseType): Selection<BaseType, Datum, null, undefined>', gave the following error.
+../../../../src/utils/performance/D3BatchedUpdates.ts(615,5): error TS2322: Type 'Selection<GElement, Datum, Element, undefined>' is not assignable to type 'Selection<GElement, Datum, null, undefined>'.
+    Type '{ (): Datum[]; <NewDatum>(data: NewDatum[] | Iterable<NewDatum> | ValueFn<Element, undefined, NewDatum[] | Iterable<NewDatum>>, key?: ValueFn<...> | undefined): Selection<...>; }' is not assignable to type '{ (): Datum[]; <NewDatum>(data: NewDatum[] | Iterable<NewDatum> | ValueFn<null, undefined, NewDatum[] | Iterable<NewDatum>>, key?: ValueFn<...> | undefined): Selection<...>; }'.
+        Type 'any[] | Iterable<any> | ValueFn<null, undefined, any[] | Iterable<any>>' is not assignable to type 'any[] | Iterable<any> | ValueFn<Element, undefined, any[] | Iterable<any>>'.
+          Type 'ValueFn<null, undefined, any[] | Iterable<any>>' is not assignable to type 'any[] | Iterable<any> | ValueFn<Element, undefined, any[] | Iterable<any>>'.
+            Type 'ValueFn<null, undefined, any[] | Iterable<any>>' is not assignable to type 'ValueFn<Element, undefined, any[] | Iterable<any>>'.
+              Type 'Element' is not assignable to type 'null'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(615,35): error TS2345: Argument of type 'Selection<GElement, Datum, null, undefined>' is not assignable to parameter of type 'Selection<GElement, Datum, Element, undefined>'.
+    Type '{ (): Datum[]; <NewDatum>(data: NewDatum[] | Iterable<NewDatum> | ValueFn<null, undefined, NewDatum[] | Iterable<NewDatum>>, key?: ValueFn<...> | undefined): Selection<...>; }' is not assignable to type '{ (): Datum[]; <NewDatum>(data: NewDatum[] | Iterable<NewDatum> | ValueFn<Element, undefined, NewDatum[] | Iterable<NewDatum>>, key?: ValueFn<...> | undefined): Selection<...>; }'.
+        Type 'any[] | Iterable<any> | ValueFn<Element, undefined, any[] | Iterable<any>>' is not assignable to type 'any[] | Iterable<any> | ValueFn<null, undefined, any[] | Iterable<any>>'.
+          Type 'ValueFn<Element, undefined, any[] | Iterable<any>>' is not assignable to type 'any[] | Iterable<any> | ValueFn<null, undefined, any[] | Iterable<any>>'.
+            Type 'ValueFn<Element, undefined, any[] | Iterable<any>>' is not assignable to type 'ValueFn<null, undefined, any[] | Iterable<any>>'.
+              Type 'null' is not assignable to type 'Element'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(635,3): error TS2322: Type 'unknown' is not assignable to type '{ (name?: string | undefined): Transition<GElement, Datum, PElement, PDatum>; (transition: Transition<BaseType, any, any, any>): Transition<...>; }'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(643,5): error TS2322: Type 'unknown' is not assignable to type '{ (name: string, value: string | number | boolean | null): Transition<GElement, Datum, PElement, PDatum>; (name: string, value: ValueFn<...>): Transition<...>; }'.
+  Overload 1 of 3, '(name: string, factory: null): Transition<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type '(this: Transition<GElement, Datum, PElement, PDatum>, d: Datum, i: number, nodes: GElement[]) => (this: GElement, t: number) => any' is not assignable to parameter of type 'null'.
+../../../../src/utils/performance/D3BatchedUpdates.ts(686,5): error TS2322: Type 'unknown' is not assignable to type '{ (name: string, value: null): Transition<GElement, Datum, PElement, PDatum>; (name: string, value: string | number | boolean, priority?: "important" | ... 1 more ... | undefined): Transition<...>; (name: string, value: ValueFn<...>, priority?: "important" | ... 1 more ... | undefined): Transition<...>; }'.
+  Overload 1 of 3, '(name: string, factory: null): Transition<GElement, Datum, PElement, PDatum>', gave the following error.
+    Argument of type '(this: Transition<GElement, Datum, PElement, PDatum>, d: Datum, i: number, nodes: GElement[]) => (this: GElement, t: number) => any' is not assignable to parameter of type 'null'.
+  Overload 2 of 3, '(name: string, factory: ValueFn<GElement, Datum, (this: GElement, t: number) => string>, priority?: "important" | null | undefined): Transition<...>', gave the following error.
+  Overload 1 of 4, '(name: string, value: string | number | boolean, priority?: "important" | null | undefined): Selection<GElement, unknown, null, undefined>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"important" | null | undefined'.
+  Overload 2 of 4, '(name: string, value: ValueFn<GElement, unknown, string | number | boolean | null>, priority?: "important" | null | undefined): Selection<GElement, unknown, null, undefined>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"important" | null | undefined'.
+../../../../src/utils/performance/D3InterpolationCache.ts(680,3): error TS2322: Type 'unknown' is not assignable to type '{ (name?: string | undefined): Transition<GElement, Datum, PElement, PDatum>; (transition: Transition<BaseType, any, any, any>): Transition<...>; }'.
+../../../../src/utils/performance/D3InterpolationCache.ts(688,5): error TS2322: Type '(name: string, factory: unknown) => unknown' is not assignable to type '{ (name: string): ValueFn<GElement, Datum, (this: GElement, t: number) => string> | undefined; (name: string, factory: null): Transition<GElement, Datum, PElement, PDatum>; (name: string, factory: ValueFn<...>): Transition<...>; }'.
+../../../../src/utils/performance/D3InterpolationCache.ts(702,5): error TS2322: Type '(name: string, factory: unknown) => unknown' is not assignable to type '{ (name: string): ValueFn<GElement, Datum, (this: GElement, t: number) => string> | undefined; (name: string, factory: null): Transition<GElement, Datum, PElement, PDatum>; (name: string, factory: ValueFn<...>, priority?: "important" | ... 1 more ... | undefined): Transition<...>; }'.
+../../../../src/utils/performance/D3PerformanceProfiler.ts(254,11): error TS2322: Type 'null' is not assignable to type '(...args: unknown[]) => unknown'.
+../../../../src/utils/performance/D3PerformanceProfiler.ts(270,5): error TS2322: Type '(iterations?: number | undefined) => Simulation<SimulationNodeDatum, undefined>' is not assignable to type '(...args: unknown[]) => unknown'.
+    Type 'unknown' is not assignable to type 'number | undefined'.
+../../../../src/utils/performance/D3PerformanceProfiler.ts(277,5): error TS2322: Type '() => unknown' is not assignable to type '(iterations?: number | undefined) => Simulation<SimulationNodeDatum, undefined>'.
+  Type 'unknown' is not assignable to type 'Simulation<SimulationNodeDatum, undefined>'.
+../../../../src/utils/performance/D3PerformanceProfiler.ts(362,5): error TS2322: Type 'unknown' is not assignable to type '(iterations?: number | undefined) => Simulation<SimulationNodeDatum, undefined>'.
+../../../../src/utils/performance/D3PerformanceProfiler.ts(387,5): error TS2322: Type 'null' is not assignable to type '(...args: unknown[]) => unknown'.
+../../../../src/utils/performance/longsession/LongSessionMemoryTracker.ts(31,5): error TS2717: Subsequent property declarations must have the same type.  Property 'memory' must be of type 'PerformanceMetrics | undefined', but here has type 'PerformanceMemory | undefined'.
+../../../../src/utils/performance/multitab/MultitabCommunicationChannel.ts(384,7): error TS2322: Type 'null' is not assignable to type 'Record<string, unknown> | undefined'.
+../../../../src/utils/performance/network/NetworkDegradationSimulator.ts(390,37): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[method: string, url: string | URL, async: boolean, username?: string | null | undefined, password?: string | null | undefined]'.
+../../../../src/utils/performance/network/NetworkDegradationSimulator.ts(398,39): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[body?: Document | XMLHttpRequestBodyInit | null | undefined]'.
+../../../../src/utils/performance/network/NetworkDegradationSimulator.ts(450,32): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '[body?: Document | XMLHttpRequestBodyInit | null | undefined]'.
+../../../../src/utils/performance/network/NetworkDegradationSimulator.ts(555,3): error TS2322: Type 'unknown' is not assignable to type '{ new (url: string | URL, protocols?: string | string[] | undefined): WebSocket; prototype: WebSocket; readonly CONNECTING: 0; readonly OPEN: 1; readonly CLOSING: 2; readonly CLOSED: 3; }'.

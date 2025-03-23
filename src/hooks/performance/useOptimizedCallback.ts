@@ -5,6 +5,7 @@
  */
 
 import { useCallback, useRef } from 'react';
+import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/ErrorLoggingService';
 
 /**
  * A hook that provides an optimized version of useCallback with better dependency handling
@@ -26,9 +27,10 @@ import { useCallback, useRef } from 'react';
  * }, [isSelected, selectItem]);
  * ```
  */
-export function useOptimizedCallback<T extends (...args: any[]) => any>(
+export function useOptimizedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T, 
-  dependencies: ReadonlyArray<any>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  dependencies: ReadonlyArray<unknown>
 ): T {
   // Ref to store the latest callback
   const callbackRef = useRef<T>(callback);
@@ -38,7 +40,7 @@ export function useOptimizedCallback<T extends (...args: any[]) => any>(
   
   // Create a stable callback that calls the latest version
   return useCallback(
-    ((...args: any[]) => {
+    ((...args: unknown[]) => {
       return callbackRef.current(...args);
     }) as T,
     // Only add an empty dependency array to ensure this callback is stable
@@ -55,28 +57,37 @@ export function useOptimizedCallback<T extends (...args: any[]) => any>(
  * @param debugName Optional name for the callback for debugging
  * @returns Memoized callback function
  */
-export function useTrackedCallback<T extends (...args: any[]) => any>(
+export function useTrackedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
-  dependencies: ReadonlyArray<any>,
+  dependencies: ReadonlyArray<unknown>,
   debugName?: string
 ): T {
   // Store previous dependencies for comparison
-  const prevDepsRef = useRef<ReadonlyArray<any>>([]);
+  const prevDepsRef = useRef<ReadonlyArray<unknown>>([]);
   
   // Flag to track if this is the initial render
   const isInitialRender = useRef(true);
   
   // Check if dependencies have changed and log changes
   if (!isInitialRender.current) {
-    const changedDeps = dependencies.reduce((acc, dep, index) => {
+    const changedDeps = dependencies.reduce<number[]>((acc, dep, index) => {
       if (prevDepsRef.current[index] !== dep) {
         acc.push(index);
       }
       return acc;
-    }, [] as number[]);
+    }, []);
     
     if (changedDeps.length > 0 && debugName) {
-      console.log(`[useTrackedCallback] ${debugName} deps changed at indices:`, changedDeps);
+      // Use error logging service instead of console.log
+      errorLoggingService.logError(
+        new Error(`Callback dependencies changed: ${debugName}`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.LOW,
+        {
+          changedIndices: changedDeps,
+          callbackName: debugName
+        }
+      );
     }
   } else {
     isInitialRender.current = false;

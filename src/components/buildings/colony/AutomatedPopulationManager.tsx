@@ -114,7 +114,9 @@ export function AutomatedPopulationManager({
 
   // Handle population growth cycle
   useEffect(() => {
-    if (!isRunning) return;
+    if (!isRunning) {
+      return;
+    }
 
     let lastUpdate = Date.now();
     let progress = 0;

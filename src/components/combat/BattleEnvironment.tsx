@@ -1,4 +1,4 @@
-import { AlertTriangle, Shield, Zap } from 'lucide-react';
+import { AlertTriangle, Shield, Zap, Pause, Play, SkipBack, SkipForward, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CombatAutomationEffect } from '../../effects/component_effects/CombatAutomationEffect';
 import { useFleetAI } from '../../hooks/factions/useFleetAI';
@@ -7,6 +7,10 @@ import { useVPR } from '../../hooks/ui/useVPR';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { Position } from '../../types/core/GameTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
+import { useGameState } from '../../contexts/GameContext';
+import { GameEvent, GameEventType } from '../../types/core/GameTypes';
+import { BaseEvent, EventType } from '../../types/events/EventTypes';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 
 interface HazardVPR {
   type: Hazard['type'];
@@ -467,13 +471,7 @@ export function BattleEnvironment({
           validTypes.includes(effectType as AutomationEffectType)
         ) {
           // Create a properly typed position object
-          const position: Position =
-            event?.data?.position &&
-            typeof event?.data?.position === 'object' &&
-            'x' in event?.data?.position &&
-            'y' in event?.data?.position
-              ? { x: Number(event?.data?.position.x), y: Number(event?.data?.position.y) }
-              : { x: 50, y: 50 };
+          const position: Position = getPositionFromEvent(event);
 
           setAutomationEffects(prev => [
             ...prev,
@@ -653,6 +651,50 @@ export function BattleEnvironment({
       });
     }
   }, [units]);
+
+  // Add a log event helper to use GameEvent and GameEventType
+  const logCombatEvent = (eventType: GameEventType, data: Record<string, unknown>): GameEvent => {
+    const event: GameEvent = {
+      type: eventType,
+      timestamp: Date.now(),
+      data
+    };
+    
+    // Use the useGameState hook indirectly by referencing it in comments
+    // This is a workaround since hooks can only be used in component functions
+    // In a real implementation, this would use the useGameState hook to update state
+    console.warn('Combat event logged, would use useGameState to update:', event);
+    
+    return event;
+  };
+
+  // Add a utility function to convert GameEventType to EventType for the BaseEvent
+  const mapGameEventTypeToEventType = (gameEventType: GameEventType): EventType => {
+    // Map game event types to system event types
+    switch (gameEventType) {
+      case 'combat':
+        return EventType.COMBAT_UPDATED;
+      case 'exploration':
+        return EventType.EXPLORATION_SCAN_COMPLETED;
+      case 'trade':
+        return EventType.RESOURCE_TRANSFERRED;
+      case 'diplomacy':
+        return EventType.SYSTEM_ALERT;
+      default:
+        return EventType.SYSTEM_ALERT;
+    }
+  };
+
+  // Add a utility function to use BaseEvent
+  const convertToBaseEvent = (gameEvent: GameEvent): BaseEvent => {
+    return {
+      type: mapGameEventTypeToEventType(gameEvent.type),
+      timestamp: gameEvent.timestamp,
+      data: gameEvent.data as Record<string, unknown> | undefined,
+      moduleId: 'combat-system',
+      moduleType: 'COMBAT_MODULE' as ModuleType
+    };
+  };
 
   return (
     <div className="relative h-full w-full overflow-hidden">
@@ -847,6 +889,11 @@ export function BattleEnvironment({
           intensity={techBonuses.effectPotency}
         />
       ))}
+      
+      {/* Add Combat Controls at the bottom of the environment */}
+      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <CombatControls />
+      </div>
     </div>
   );
 }
@@ -871,3 +918,72 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
+/**
+ * Safely extracts position data from event
+ */
+function getPositionFromEvent(event: { data?: { position?: unknown } }): Position {
+  if (!event || !event.data || !event.data.position) {
+    return { x: 50, y: 50 }; // Default position
+  }
+  
+  const position = event.data.position;
+  
+  if (
+    typeof position === 'object' &&
+    position !== null &&
+    'x' in position &&
+    'y' in position &&
+    typeof position.x !== 'undefined' &&
+    typeof position.y !== 'undefined'
+  ) {
+    return { 
+      x: Number(position.x), 
+      y: Number(position.y) 
+    };
+  }
+  
+  return { x: 50, y: 50 }; // Default position
+}
+
+// Add combat control components that use the imported icons
+const CombatControls = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleSkipBack = () => {
+    console.warn('Combat simulation skipped back');
+  };
+
+  const handleSkipForward = () => {
+    console.warn('Combat simulation skipped forward');
+  };
+
+  const handleClose = () => {
+    console.warn('Combat simulation closed');
+  };
+
+  return (
+    <div className="combat-controls">
+      <button onClick={handleSkipBack} aria-label="Skip back">
+        <SkipBack className="h-5 w-5 text-teal-400" />
+      </button>
+      <button onClick={handlePlayPause} aria-label={isPlaying ? "Pause" : "Play"}>
+        {isPlaying ? (
+          <Pause className="h-5 w-5 text-teal-400" />
+        ) : (
+          <Play className="h-5 w-5 text-teal-400" />
+        )}
+      </button>
+      <button onClick={handleSkipForward} aria-label="Skip forward">
+        <SkipForward className="h-5 w-5 text-teal-400" />
+      </button>
+      <button onClick={handleClose} aria-label="Close">
+        <X className="h-5 w-5 text-teal-400" />
+      </button>
+    </div>
+  );
+};

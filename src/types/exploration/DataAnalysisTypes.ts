@@ -243,47 +243,78 @@ export interface ResourceData {
  * Context for the data analysis system
  */
 export interface DataAnalysisContextType {
+  // Datasets and related operations
   datasets: Dataset[];
-  analysisConfigs: AnalysisConfig[];
-  analysisResults: AnalysisResult[];
+  addDataset: (dataset: Dataset) => void;
+  removeDataset: (datasetId: string) => void;
+  clearDatasets: () => void;
   createDataset: (dataset: Omit<Dataset, 'id' | 'createdAt' | 'updatedAt'>) => string;
   updateDataset: (
     id: string,
     updates: Partial<Omit<Dataset, 'id' | 'createdAt' | 'updatedAt'>>
   ) => void;
   deleteDataset: (id: string) => void;
-  getDatasetById: (id: string) => Dataset | undefined;
+  getDatasetById?: (id: string) => Dataset | undefined;
+  
+  // Analysis configurations
+  analysisConfigs: AnalysisConfig[];
   createAnalysisConfig: (config: Omit<AnalysisConfig, 'id' | 'createdAt' | 'updatedAt'>) => string;
   updateAnalysisConfig: (
     id: string,
     updates: Partial<Omit<AnalysisConfig, 'id' | 'createdAt' | 'updatedAt'>>
   ) => void;
   deleteAnalysisConfig: (id: string) => void;
-  getAnalysisConfigById: (id: string) => AnalysisConfig | undefined;
-  runAnalysis: (configId: string) => Promise<string>;
-  getAnalysisResultById: (id: string) => AnalysisResult | undefined;
+  getAnalysisConfigById?: (id: string) => AnalysisConfig | undefined;
+  
+  // Analysis results 
+  analysisResults: AnalysisResult[];
+  getAnalysisResultById?: (id: string) => AnalysisResult | undefined;
   getAnalysisResultsByConfigId: (configId: string) => AnalysisResult[];
-  // New functions for handling exploration data
+  runAnalysis: (configId: string) => Promise<string>;
+  
+  // Data point management
   addDataPointToDataset: (datasetId: string, dataPoint: DataPoint) => void;
+  removeDataPointFromDataset: (datasetId: string, dataPointId: string) => void;
+  
+  // Dataset utilities
   getOrCreateDatasetBySource: (
     source: 'sectors' | 'anomalies' | 'resources' | 'mixed',
     name?: string
   ) => string;
-  // Enhanced data management functions
+  
+  // Data operations
   refreshData: () => void;
   filterDataset: (
-    datasetId: string,
+    datasetId: string, 
     filters: Array<{
       field: string;
-      operator:
-        | 'equals'
-        | 'notEquals'
-        | 'greaterThan'
-        | 'lessThan'
-        | 'contains'
-        | 'notContains'
-        | 'between';
+      operator: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan' | 'contains' | 'notContains' | 'between';
       value: string | number | boolean | string[] | [number, number];
     }>
   ) => DataPoint[];
+  
+  // Conversion utilities
+  sectorToDataPoint: (sector: Record<string, unknown>) => DataPoint;
+  anomalyToDataPoint: (anomaly: Record<string, unknown>) => DataPoint;
+  resourceToDataPoint: (
+    resource: Record<string, unknown>,
+    sectorId?: string,
+    coordinates?: { x: number; y: number }
+  ) => DataPoint;
+  
+  // Analysis and stats
+  calculateStatistics?: (datasetId: string) => Record<string, unknown>;
+  applyFilter?: (datasetId: string, filter: unknown) => DataPoint[];
+  
+  // Linked data system for cross-referencing entities
+  linkedData: Record<string, unknown>;
+  storeLinkedData: (key: string, data: unknown) => void;
+  
+  // Statistics tracking for anomalies
+  anomalyStats: Record<string, unknown>;
+  updateAnomalyStats: (data: {
+    anomalyId: string;
+    sectorData: unknown;
+    discoveryTime: number;
+  }) => void;
 }

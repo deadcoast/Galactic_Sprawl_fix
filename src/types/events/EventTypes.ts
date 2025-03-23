@@ -318,7 +318,9 @@ export interface ResourceShortageEventData {
  * Type guard for checking if a value is a ResourceUpdateEventData
  */
 export function isResourceUpdateEventData(data: unknown): data is ResourceUpdateEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
   
   const d = data as Partial<ResourceUpdateEventData>;
   return (
@@ -383,7 +385,9 @@ export interface ThresholdTriggeredEventData {
  */
 
 export function isResourceProductionEventData(data: unknown): data is ResourceProductionEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
 
   const castData = data as Partial<ResourceProductionEventData>;
   return 'resourceType' in castData && 'amount' in castData && typeof castData.amount === 'number';
@@ -392,14 +396,18 @@ export function isResourceProductionEventData(data: unknown): data is ResourcePr
 export function isResourceConsumptionEventData(
   data: unknown
 ): data is ResourceConsumptionEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
 
   const castData = data as Partial<ResourceConsumptionEventData>;
   return 'resourceType' in castData && 'amount' in castData && typeof castData.amount === 'number';
 }
 
 export function isThresholdTriggeredEventData(data: unknown): data is ThresholdTriggeredEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
 
   const castData = data as Partial<ThresholdTriggeredEventData>;
   return (

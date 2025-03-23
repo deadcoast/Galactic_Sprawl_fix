@@ -16,7 +16,7 @@ export interface NetworkNode {
   position?: { x: number; y: number };
   fixed?: boolean;
   metadata?: Record<string, string | number | boolean>;
-  data?: any; // Add data property for custom data
+  data?: Record<string, unknown>; // Replace any with Record<string, unknown>
 }
 
 // Network edge/link interface
@@ -30,7 +30,7 @@ export interface NetworkEdge {
   bidirectional?: boolean;
   weight?: number;
   metadata?: Record<string, string | number | boolean>;
-  data?: any; // Add data property for custom data
+  data?: Record<string, unknown>; // Replace any with Record<string, unknown>
 }
 
 // NetworkGraph props
@@ -178,9 +178,9 @@ export function NetworkGraph({
   
   // State for simulation
   const [simulationNodes, setSimulationNodes] = useState<NetworkNode[]>([]);
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [hoveredEdge, setHoveredEdge] = useState<string | null>(null);
-  const [dragNode, setDragNode] = useState<string | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<NetworkNode | null>(null);
+  const [hoveredEdge, setHoveredEdge] = useState<NetworkEdge | null>(null);
+  const [dragNode, setDragNode] = useState<NetworkNode | null>(null);
   const [simulationRunning, setSimulationRunning] = useState(physics);
   
   // Map node IDs to nodes for faster access
@@ -194,7 +194,9 @@ export function NetworkGraph({
   useEffect(() => {
     // Copy nodes and assign positions if not provided
     const processed = nodes.map(node => {
-      if (node.position) return node;
+      if (node.position) {
+        return node;
+      }
       
       return {
         ...node,
@@ -215,6 +217,14 @@ export function NetworkGraph({
     let frameId: number;
     
     const runSimulation = () => {
+      if (!canvasRef.current || !canvasRef.current.getContext('2d')) {
+        return;
+      }
+
+      if (dragNode && !simulationRunning) {
+        return;
+      }
+      
       // Simple force-directed layout
       const forces = simulationNodes.map(() => ({ x: 0, y: 0 }));
       
@@ -279,9 +289,14 @@ export function NetworkGraph({
       }
       
       // Apply forces
-      const newNodes = simulationNodes.map((node, i) => {
-        if (node.fixed || !node.position) return node;
-        if (node.id === dragNode) return node;
+      const updatedNodes = simulationNodes.map((node, i) => {
+        if (node.fixed || !node.position) {
+          return node;
+        }
+        
+        if (node.id === dragNode?.id) {
+          return node;
+        }
         
         const updatedPosition = {
           x: node.position.x + forces[i].x * physicsStrength,
@@ -292,13 +307,26 @@ export function NetworkGraph({
         updatedPosition.x = Math.max(20, Math.min(width - 20, updatedPosition.x));
         updatedPosition.y = Math.max(20, Math.min(height - 20, updatedPosition.y));
         
+        // Calculate distance for damping effect
+        const dx = updatedPosition.x - node.position.x;
+        const dy = updatedPosition.y - node.position.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < 5 || !physics) {
+          return { ...node, position: { ...node.position } };
+        }
+        
+        if (!node.position) {
+          return node;
+        }
+        
         return {
           ...node,
           position: updatedPosition,
         };
       });
       
-      setSimulationNodes(newNodes);
+      setSimulationNodes(updatedNodes);
       
       // Continue simulation
       frameId = requestAnimationFrame(runSimulation);
@@ -334,7 +362,7 @@ export function NetworkGraph({
       ctx.lineTo(target.position.x, target.position.y);
       
       // Set edge color
-      if (edge.id === hoveredEdge) {
+      if (edge.id === hoveredEdge?.id) {
         ctx.strokeStyle = edgeColorMap.highlighted;
       } else if (edge.bidirectional) {
         ctx.strokeStyle = edge.color || edgeColorMap.bidirectional;
@@ -373,7 +401,7 @@ export function NetworkGraph({
       }
       
       // Draw edge label
-      if (showEdgeLabels && edge.label) {
+      if (showEdgeLabels && edge.label && typeof edge.label === 'string') {
         const midX = (source.position.x + target.position.x) / 2;
         const midY = (source.position.y + target.position.y) / 2;
         
@@ -388,7 +416,7 @@ export function NetworkGraph({
         ctx.fillRect(midX - textWidth / 2 - 2, midY - 12, textWidth + 4, 14);
         
         ctx.fillStyle = '#333333';
-        ctx.fillText(edge.label, midX, midY);
+        ctx.fillText(edge.label, midX, midY - 5);
       }
     });
     
@@ -404,7 +432,7 @@ export function NetworkGraph({
       ctx.arc(x, y, size, 0, Math.PI * 2);
       
       // Set node color
-      if (node.id === hoveredNode) {
+      if (node.id === hoveredNode?.id) {
         ctx.fillStyle = nodeColorMap.highlighted;
       } else if (node.color) {
         ctx.fillStyle = node.color;
@@ -422,7 +450,7 @@ export function NetworkGraph({
       ctx.stroke();
       
       // Draw node label
-      if (showNodeLabels && node.label) {
+      if (showNodeLabels && node.label && typeof node.label === 'string') {
         ctx.font = '12px Arial';
         ctx.fillStyle = '#333333';
         ctx.textAlign = 'center';
@@ -455,10 +483,14 @@ export function NetworkGraph({
   
   // Handle mouse events
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!interactive) return;
+    if (!interactive) {
+      return;
+    }
     
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
     
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -478,12 +510,12 @@ export function NetworkGraph({
       const distance = Math.sqrt(dx * dx + dy * dy);
       
       if (distance <= size) {
-        setHoveredNode(node.id);
+        setHoveredNode(node);
         setHoveredEdge(null);
         foundNode = true;
         
         // If dragging, update node position
-        if (dragNode === node.id) {
+        if (dragNode?.id === node.id) {
           const updatedNodes = simulationNodes.map(n => {
             if (n.id === node.id) {
               return {
@@ -519,7 +551,7 @@ export function NetworkGraph({
         );
         
         if (edgeDist < 5) {
-          setHoveredEdge(edge.id);
+          setHoveredEdge(edge);
           setHoveredNode(null);
           foundEdge = true;
           canvas.style.cursor = 'pointer';
@@ -537,7 +569,12 @@ export function NetworkGraph({
   };
   
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!interactive) return;
+    if (!interactive) {
+      return;
+    }
+    
+    // Check which mouse button was pressed (0 = left, 1 = middle, 2 = right)
+    if (e.button !== 0) return; // Only handle left-click
     
     // Start dragging if hovering over a node
     if (hoveredNode) {
@@ -549,7 +586,9 @@ export function NetworkGraph({
   };
   
   const handleMouseUp = () => {
-    if (!interactive) return;
+    if (!interactive) {
+      return;
+    }
     
     setDragNode(null);
     
@@ -560,11 +599,13 @@ export function NetworkGraph({
   };
   
   const handleClick = () => {
-    if (!interactive) return;
+    if (!interactive) {
+      return;
+    }
     
     // Handle node click
     if (hoveredNode && onNodeClick) {
-      const node = nodeMap.get(hoveredNode);
+      const node = nodeMap.get(hoveredNode.id);
       if (node) {
         onNodeClick(node);
       }
@@ -572,12 +613,26 @@ export function NetworkGraph({
     
     // Handle edge click
     if (hoveredEdge && onEdgeClick) {
-      const edge = edges.find(e => e.id === hoveredEdge);
+      const edge = edges.find(e => e.id === hoveredEdge.id);
       if (edge) {
         onEdgeClick(edge);
       }
     }
   };
+  
+  // Update the hover handlers for nodes
+  useEffect(() => {
+    if (onNodeHover) {
+      onNodeHover(hoveredNode);
+    }
+  }, [hoveredNode, onNodeHover]);
+
+  // Update the hover handlers for edges
+  useEffect(() => {
+    if (onEdgeHover) {
+      onEdgeHover(hoveredEdge);
+    }
+  }, [hoveredEdge, onEdgeHover]);
   
   return (
     <div 

@@ -419,6 +419,23 @@ function proxyXHR(condition: NetworkCondition): void {
     const originalOnerror = this.onerror;
     const originalOnreadystatechange = this.onreadystatechange;
 
+    // Override onload to handle throttled responses
+    this.onload = function(this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) {
+      // Calculate throughput delay for the response size
+      let throughputDelay = 0;
+      if (this.responseText) {
+        const byteSize = new TextEncoder().encode(this.responseText).length;
+        throughputDelay = calculateThroughputDelay(byteSize, xhrNetworkCondition);
+      }
+      
+      // Apply the throttled delay before calling the original onload
+      setTimeout(() => {
+        if (typeof _originalOnload === 'function') {
+          _originalOnload.call(this, ev);
+        }
+      }, throughputDelay);
+    };
+
     // Simulate packet loss
     if (Math.random() < xhrNetworkCondition.packetLoss) {
       setTimeout(() => {

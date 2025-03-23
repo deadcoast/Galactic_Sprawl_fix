@@ -136,7 +136,9 @@ const D3PerformanceProfilerView: React.FC = () => {
 
   // Apply optimizations based on profiling results
   const applyOptimizations = () => {
-    if (!profileData) return;
+    if (!profileData) {
+      return;
+    }
 
     // Implementation will vary based on optimization strategy selected
     // For now, we'll just toggle memoized accessors as an example
@@ -150,7 +152,9 @@ const D3PerformanceProfilerView: React.FC = () => {
 
   // Render bar chart for measurement durations
   const renderMeasurementChart = () => {
-    if (!profileData || profileData.measurements.length === 0) return null;
+    if (!profileData || profileData.measurements.length === 0) {
+      return null;
+    }
 
     const margin = { top: 20, right: 30, bottom: 80, left: 60 };
     const width = 800 - margin.left - margin.right;
@@ -170,7 +174,9 @@ const D3PerformanceProfilerView: React.FC = () => {
 
     // Use useEffect to create the chart
     useEffect(() => {
-      if (!profileData) return;
+      if (!profileData) {
+        return;
+      }
 
       // Clear previous chart
       d3.select('#measurement-chart').selectAll('*').remove();

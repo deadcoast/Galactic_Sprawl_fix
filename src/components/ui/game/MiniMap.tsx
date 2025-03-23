@@ -145,10 +145,14 @@ export function MiniMap({
   // Handle canvas drawing
   const drawMiniMap = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
     
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
     
     // Clear the canvas
     ctx.clearRect(0, 0, width, height);
@@ -219,7 +223,9 @@ export function MiniMap({
   
   // Handle mouse down event
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!interactive) return;
+    if (!interactive) {
+      return;
+    }
     
     setIsDragging(true);
     const rect = e.currentTarget.getBoundingClientRect();
@@ -231,7 +237,9 @@ export function MiniMap({
   
   // Handle mouse move event
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!interactive || !isDragging) return;
+    if (!interactive || !isDragging) {
+      return;
+    }
     
     const rect = e.currentTarget.getBoundingClientRect();
     const mousePos = {
@@ -266,7 +274,9 @@ export function MiniMap({
   
   // Handle click event
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!interactive || isDragging || !onStarSelected) return;
+    if (!interactive || isDragging || !onStarSelected) {
+      return;
+    }
     
     const rect = e.currentTarget.getBoundingClientRect();
     const clickPos = {
@@ -299,7 +309,9 @@ export function MiniMap({
   
   // Handle zoom in button click
   const handleZoomIn = () => {
-    if (!interactive) return;
+    if (!interactive) {
+      return;
+    }
     
     const newViewport = {
       ...viewport,
@@ -313,7 +325,9 @@ export function MiniMap({
   
   // Handle zoom out button click
   const handleZoomOut = () => {
-    if (!interactive) return;
+    if (!interactive) {
+      return;
+    }
     
     const newViewport = {
       ...viewport,
@@ -327,7 +341,9 @@ export function MiniMap({
   
   // Handle reset view button click
   const handleResetView = () => {
-    if (!interactive) return;
+    if (!interactive) {
+      return;
+    }
     
     const newViewport = {
       ...viewport,
@@ -342,7 +358,9 @@ export function MiniMap({
   
   // Center on player button click
   const handleCenterOnPlayer = () => {
-    if (!interactive || !playerPosition) return;
+    if (!interactive || !playerPosition) {
+      return;
+    }
     
     const newViewport = {
       ...viewport,

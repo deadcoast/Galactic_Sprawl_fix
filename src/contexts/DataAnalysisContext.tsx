@@ -59,6 +59,12 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   const analysisAlgorithmServiceRef = useRef<AnalysisAlgorithmService | null>(null);
   const dataProcessingServiceRef = useRef<DataProcessingService | null>(null);
 
+  // Store for linked data between entities
+  const [linkedData, setLinkedData] = useState<Record<string, unknown>>({});
+
+  // Anomaly statistics for tracking
+  const [anomalyStats, setAnomalyStats] = useState<Record<string, unknown>>({});
+
   // Initialize services
   useEffect(() => {
     if (explorationManager) {
@@ -241,7 +247,14 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       type: 'sector',
       name: sector.name,
       date: sector.discoveredAt || Date.now(),
-      coordinates: sector.coordinates,
+      coordinates: {
+        x: Number(typeof sector.coordinates === 'object' && sector.coordinates 
+          ? (sector.coordinates as { x?: number })?.x || 0 
+          : 0),
+        y: Number(typeof sector.coordinates === 'object' && sector.coordinates 
+          ? (sector.coordinates as { y?: number })?.y || 0 
+          : 0)
+      },
       properties: {
         status: sector.status,
         resourcePotential: sector.resourcePotential,
@@ -260,7 +273,14 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       type: 'anomaly',
       name: `${anomaly.type} Anomaly`,
       date: anomaly.discoveredAt,
-      coordinates: anomaly.position,
+      coordinates: {
+        x: Number(typeof anomaly.position === 'object' && anomaly.position 
+          ? (anomaly.position as { x?: number })?.x || 0 
+          : 0),
+        y: Number(typeof anomaly.position === 'object' && anomaly.position 
+          ? (anomaly.position as { y?: number })?.y || 0 
+          : 0)
+      },
       properties: {
         type: anomaly.type,
         severity: anomaly.severity,
@@ -312,14 +332,88 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
 
     // Handle anomaly detected events
     const handleAnomalyDetected = (event: BaseEvent) => {
+      // Use proper type assertion to ensure Sector has the expected properties
       const { anomaly, sector: _ } = event?.data as { anomaly: Anomaly; sector: Sector };
       if (!anomaly) return;
+
+      // Extract sector information if available, using the sector variable we previously marked with _
+      let sectorInfo: {
+        id: string;
+        name: string; 
+        coordinates: { x: number; y: number };
+        discoveredAt?: number;
+      } | null = null;
+      
+      if (_) {
+        sectorInfo = {
+          id: _.id,
+          name: _.name,
+          coordinates: _.coordinates,
+          discoveredAt: _.discoveredAt
+        };
+        
+        // Log sector where anomaly was discovered for reference
+        console.warn(`Anomaly detected in sector: ${_.name} (${_.id}) at coordinates [${_.coordinates.x}, ${_.coordinates.y}]`);
+        
+        // Update or add sector data if not already present
+        const sectorsDatasetId = getOrCreateDatasetBySource('sectors', 'Explored Sectors');
+        const sectorPoint = sectorToDataPoint(_);
+        
+        // Check if the sector data point already exists by finding the dataset and checking its dataPoints
+        const existingSectorDataset = datasets.find(dataset => dataset.id === sectorsDatasetId);
+        const existingSector = existingSectorDataset?.dataPoints.find((p: DataPoint) => p.id === _.id);
+        
+        if (!existingSector) {
+          addDataPointToDataset(sectorsDatasetId, sectorPoint);
+        }
+      }
 
       // Get or create the anomalies dataset
       const anomaliesDatasetId = getOrCreateDatasetBySource('anomalies', 'Detected Anomalies');
 
-      // Add the anomaly as a data point
+      // Add the anomaly as a data point with sector reference if available
       const dataPoint = anomalyToDataPoint(anomaly);
+      
+      // Attach sector reference if available
+      if (sectorInfo) {
+        // Convert the complex sectorInfo object to a serializable format
+        const serializableSectorInfo = {
+          id: sectorInfo.id,
+          name: sectorInfo.name,
+          coordinateX: sectorInfo.coordinates.x,
+          coordinateY: sectorInfo.coordinates.y,
+          discoveredAt: sectorInfo.discoveredAt || 0
+        };
+        
+        // Use the serializable format for metadata to ensure proper data storage
+        dataPoint.metadata = {
+          ...dataPoint.metadata,
+          sectorId: sectorInfo.id,
+          sectorName: sectorInfo.name,
+          sectorCoordinateX: sectorInfo.coordinates.x,
+          sectorCoordinateY: sectorInfo.coordinates.y,
+          sectorDiscoveredAt: sectorInfo.discoveredAt || 0
+        };
+        
+        // Store the serialized sector info in the anomaly's linked data for cross-reference
+        const linkedDataKey = `sector-reference-${sectorInfo.id}`;
+        storeLinkedData(linkedDataKey, serializableSectorInfo);
+        
+        // Add the linked data reference to the datapoint 
+        dataPoint.properties = {
+          ...dataPoint.properties,
+          linkedSectorData: linkedDataKey,
+          hasLinkedSectorData: true
+        };
+        
+        // Update related anomaly stats with this sector association
+        updateAnomalyStats({
+          anomalyId: anomaly.id,
+          sectorData: serializableSectorInfo,
+          discoveryTime: Date.now()
+        });
+      }
+      
       addDataPointToDataset(anomaliesDatasetId, dataPoint);
     };
 
@@ -341,21 +435,15 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
       return EventType[`EXPLORATION_${event}`] as EventType;
     };
 
-    // Subscribe to exploration events
-    const unsubscribeSector = explorationManager.subscribeToEvent(
-      EventType.EXPLORATION_SECTOR_DISCOVERED,
-      handleSectorDiscovered
-    );
+    // Subscribe to exploration events including custom exploration events that may be added in the future
+    const subscribeToExplorationEvent = (eventKey: keyof typeof EXPLORATION_EVENTS, handler: (event: BaseEvent) => void) => {
+      return explorationManager.subscribeToEvent(asEventType(eventKey), handler);
+    };
 
-    const unsubscribeAnomaly = explorationManager.subscribeToEvent(
-      EventType.EXPLORATION_ANOMALY_DETECTED,
-      handleAnomalyDetected
-    );
-
-    const unsubscribeResource = explorationManager.subscribeToEvent(
-      EventType.EXPLORATION_RESOURCE_DETECTED,
-      handleResourceDetected
-    );
+    // Subscribe to common exploration events
+    const unsubscribeSector = subscribeToExplorationEvent('SECTOR_DISCOVERED', handleSectorDiscovered);
+    const unsubscribeAnomaly = subscribeToExplorationEvent('ANOMALY_DETECTED', handleAnomalyDetected); 
+    const unsubscribeResource = subscribeToExplorationEvent('RESOURCE_DETECTED', handleResourceDetected);
 
     // Unsubscribe when component unmounts
     return () => {
@@ -830,27 +918,173 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
     }
   };
 
+  // Function to store linked data between entities
+  const storeLinkedData = useCallback((key: string, data: unknown) => {
+    setLinkedData(prev => ({
+      ...prev,
+      [key]: data
+    }));
+  }, []);
+
+  // Function to update anomaly statistics
+  const updateAnomalyStats = useCallback((data: {
+    anomalyId: string;
+    sectorData: unknown;
+    discoveryTime: number;
+  }) => {
+    setAnomalyStats(prev => ({
+      ...prev,
+      [data.anomalyId]: {
+        ...(prev[data.anomalyId] as Record<string, unknown> || {}),
+        sectorData: data.sectorData,
+        discoveryTime: data.discoveryTime,
+        lastUpdated: Date.now()
+      }
+    }));
+  }, []);
+
   // Create the context value object
   const contextValue: DataAnalysisContextType = {
+    // Datasets and management
     datasets,
-    analysisConfigs,
-    analysisResults,
+    addDataset: createDataset,
+    removeDataset: deleteDataset,
+    clearDatasets: () => setDatasets([]),
     createDataset,
     updateDataset,
     deleteDataset,
     getDatasetById,
+    
+    // Analysis configurations
+    analysisConfigs,
     createAnalysisConfig,
     updateAnalysisConfig,
     deleteAnalysisConfig,
     getAnalysisConfigById,
-    runAnalysis,
+    
+    // Analysis results
+    analysisResults,
     getAnalysisResultById,
     getAnalysisResultsByConfigId,
-    getOrCreateDatasetBySource,
+    runAnalysis,
+    
+    // Data point management
     addDataPointToDataset,
+    removeDataPointFromDataset: (datasetId: string, dataPointId: string) => {
+      setDatasets(prev =>
+        prev.map(dataset => {
+          if (dataset.id === datasetId) {
+            return {
+              ...dataset,
+              dataPoints: dataset.dataPoints.filter(point => point.id !== dataPointId),
+              updatedAt: Date.now(),
+            };
+          }
+          return dataset;
+        })
+      );
+    },
+    
+    // Dataset utilities
+    getOrCreateDatasetBySource,
+    
+    // Conversion utilities
+    sectorToDataPoint: (sector: Record<string, unknown>) => {
+      // Validate and safely map to a DataPoint
+      if (!sector || typeof sector !== 'object') {
+        throw new Error('Invalid sector data');
+      }
+      
+      return {
+        id: String(sector.id || uuidv4()),
+        type: 'sector',
+        name: String(sector.name || 'Unknown Sector'),
+        date: Number(sector.discoveredAt || Date.now()),
+        coordinates: {
+          x: Number(typeof sector.coordinates === 'object' && sector.coordinates 
+            ? (sector.coordinates as { x?: number })?.x || 0 
+            : 0),
+          y: Number(typeof sector.coordinates === 'object' && sector.coordinates 
+            ? (sector.coordinates as { y?: number })?.y || 0 
+            : 0)
+        },
+        properties: {
+          status: String(sector.status || 'unknown'),
+          resourcePotential: Number(sector.resourcePotential || 0),
+          habitabilityScore: Number(sector.habitabilityScore || 0),
+          anomalyCount: Number((sector.anomalies as unknown[])?.length || 0),
+          resourceCount: Number((sector.resources as unknown[])?.length || 0),
+          lastScanned: Number(sector.lastScanned || 0),
+        },
+      };
+    },
+    anomalyToDataPoint: (anomaly: Record<string, unknown>) => {
+      // Validate and safely map to a DataPoint
+      if (!anomaly || typeof anomaly !== 'object') {
+        throw new Error('Invalid anomaly data');
+      }
+      
+      return {
+        id: String(anomaly.id || uuidv4()),
+        type: 'anomaly',
+        name: `${String(anomaly.type || 'Unknown')} Anomaly`,
+        date: Number(anomaly.discoveredAt || Date.now()),
+        coordinates: {
+          x: Number(typeof anomaly.position === 'object' && anomaly.position 
+            ? (anomaly.position as { x?: number })?.x || 0 
+            : 0),
+          y: Number(typeof anomaly.position === 'object' && anomaly.position 
+            ? (anomaly.position as { y?: number })?.y || 0 
+            : 0)
+        },
+        properties: {
+          type: String(anomaly.type || 'unknown'),
+          severity: String(anomaly.severity || 'low'),
+          description: String(anomaly.description || ''),
+          sectorId: String(anomaly.sectorId || 'unknown'),
+          investigated: Boolean(anomaly.investigatedAt)
+        },
+      };
+    },
+    resourceToDataPoint: (
+      resource: Record<string, unknown>,
+      sectorId?: string,
+      coordinates?: { x: number; y: number }
+    ) => {
+      // Validate and safely map to a DataPoint
+      if (!resource || typeof resource !== 'object') {
+        throw new Error('Invalid resource data');
+      }
+      
+      const safeCoordinates = coordinates || { x: 0, y: 0 };
+      const safeSectorId = sectorId || 'unknown';
+      
+      return {
+        id: `${safeSectorId}-${String(resource.type || 'unknown')}-${Date.now()}`,
+        type: 'resource',
+        name: `${String(resource.type || 'Unknown')} Resource`,
+        date: Date.now(),
+        coordinates: safeCoordinates,
+        properties: {
+          type: String(resource.type || 'unknown'),
+          amount: Number(resource.amount || 0),
+          quality: Number(resource.quality || 0),
+          sectorId: safeSectorId,
+        },
+      };
+    },
+    
+    // Data operations
     refreshData,
-    // Use the original filterDataset function but make it synchronous
-    filterDataset: (datasetId, filters) => {
+    // Fix filterDataset to have proper typings
+    filterDataset: (
+      datasetId: string, 
+      filters: Array<{
+        field: string;
+        operator: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan' | 'contains' | 'notContains' | 'between';
+        value: string | number | boolean | string[] | [number, number];
+      }>
+    ) => {
       // This is a workaround to convert the async function to a sync one
       // In a real application, you would refactor the interface to be async
       const emptyResult: DataPoint[] = [];
@@ -868,6 +1102,14 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
 
       return emptyResult;
     },
+    
+    // Linked data system
+    linkedData,
+    storeLinkedData,
+    
+    // Anomaly stats tracking
+    anomalyStats,
+    updateAnomalyStats,
   };
 
   return (

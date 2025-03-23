@@ -32,9 +32,75 @@ const useChartCoordination = ({
   onViewportChange: (viewport: ViewportState) => void;
   onHighlightChange: (point: DataPoint | null) => void;
 }): ChartCoordination => {
+  // Use unique chart ID for storage/retrieval of viewport state
+  const chartStorageKey = React.useMemo(() => 
+    `chart-state-${_chartId}${_groupId ? `-${_groupId}` : ''}`,
+  [_chartId, _groupId]);
+  
+  // Initialize state from stored settings or initialState
+  React.useEffect(() => {
+    try {
+      const storedState = localStorage.getItem(chartStorageKey);
+      if (storedState) {
+        const parsedState = JSON.parse(storedState);
+        // Apply initial viewport from storage or use the provided initial state
+        onViewportChange(parsedState.viewport || _initialState.viewport);
+        
+        // Apply initial highlight from storage if available
+        if (parsedState.highlight) {
+          onHighlightChange(parsedState.highlight);
+        }
+      } else {
+        // No stored state, use the initialState
+        onViewportChange(_initialState.viewport);
+        if (_initialState.highlight) {
+          onHighlightChange(_initialState.highlight);
+        }
+      }
+    } catch (error) {
+      console.error(`Error initializing chart state for ${_chartId}:`, error);
+      // Fallback to initial state on error
+      onViewportChange(_initialState.viewport);
+    }
+  }, [_chartId, _groupId, chartStorageKey, _initialState, onViewportChange, onHighlightChange]);
+  
+  // Save viewport state when it changes
+  const updateViewport = React.useCallback((viewport: ViewportState) => {
+    onViewportChange(viewport);
+    
+    // Persist chart settings using chart ID and group ID
+    try {
+      const currentState = localStorage.getItem(chartStorageKey);
+      const newState = currentState 
+        ? { ...JSON.parse(currentState), viewport } 
+        : { viewport };
+      localStorage.setItem(chartStorageKey, JSON.stringify(newState));
+    } catch (error) {
+      console.warn(`Could not save viewport state for chart ${_chartId}:`, error);
+    }
+  }, [chartStorageKey, _chartId, onViewportChange]);
+  
+  // Save highlighted point when it changes
+  const updateHighlight = React.useCallback((point: DataPoint | null) => {
+    onHighlightChange(point);
+    
+    // Persist highlight state if point is not null
+    if (point) {
+      try {
+        const currentState = localStorage.getItem(chartStorageKey);
+        const newState = currentState 
+          ? { ...JSON.parse(currentState), highlight: point } 
+          : { highlight: point };
+        localStorage.setItem(chartStorageKey, JSON.stringify(newState));
+      } catch (error) {
+        console.warn(`Could not save highlight state for chart ${_chartId}:`, error);
+      }
+    }
+  }, [chartStorageKey, _chartId, onHighlightChange]);
+
   return {
-    updateViewport: onViewportChange,
-    updateHighlight: onHighlightChange,
+    updateViewport,
+    updateHighlight,
   };
 };
 

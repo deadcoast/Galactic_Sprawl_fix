@@ -99,9 +99,14 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
     const timeSeriesData = useMemo<TimeSeriesDataPoint[]>(() => {
       console.warn('Computing time series data'); // Helpful for debugging
       const result: TimeSeriesDataPoint[] = [];
+      
+      // Safely handle predictions
+      const predictions = data && data.predictions ? data.predictions : [];
       // Add historical data points
-      for (const point of data?.predictions) {
-        result?.push({
+      for (const point of predictions) {
+        if (!point) continue;
+        
+        result.push({
           timestamp: point.features[0], // Assume first feature is timestamp
           actual: point.actual,
           predicted: point.predicted,
@@ -110,9 +115,13 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
         });
       }
 
+      // Safely handle forecast
+      const forecast = data && data.forecast ? data.forecast : [];
       // Add forecast data points
-      for (const point of data?.forecast) {
-        result?.push({
+      for (const point of forecast) {
+        if (!point) continue;
+        
+        result.push({
           timestamp: point.features[0], // Assume first feature is timestamp
           predicted: point.predicted,
           lower: point.confidence ? point.confidence[0] : undefined,
@@ -122,7 +131,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
       }
 
       // Sort by timestamp
-      return result?.sort((a, b) => a.timestamp - b.timestamp);
+      return result.sort((a, b) => a.timestamp - b.timestamp);
     }, [data?.predictions, data?.forecast]);
 
     // Feature comparison data

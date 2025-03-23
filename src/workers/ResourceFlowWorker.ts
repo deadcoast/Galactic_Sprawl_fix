@@ -140,25 +140,31 @@ const ctx: Worker = self as unknown as Worker;
 
 // Handle messages from main thread
 ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
-  const { type, data, taskId } = event?.data;
+  if (!event || !event.data) {
+    console.error('Received invalid message event in ResourceFlowWorker');
+    return;
+  }
+
+  const { type, data, taskId } = event.data;
   const startTime = Date.now();
-
-  let result: unknown;
-
+  
+  let result;
   try {
     switch (type) {
-      case 'OPTIMIZE_FLOWS':
+      case 'OPTIMIZE_FLOWS': {
         if (!isOptimizeFlowsData(data)) {
-          throw new Error('Invalid data format for OPTIMIZE_FLOWS');
+          throw new Error('Invalid data for OPTIMIZE_FLOWS');
         }
-        result = optimizeFlows(data?.nodes, data?.connections, data?.resourceStates);
+        const { nodes, connections, resourceStates } = data;
+        result = optimizeFlows(nodes, connections, resourceStates);
         break;
+      }
 
       case 'BATCH_PROCESS':
         if (!isBatchProcessData(data)) {
           throw new Error('Invalid data format for BATCH_PROCESS');
         }
-        result = processBatch(data?.nodes, data?.connections, data?.batchSize);
+        result = processBatch(data.nodes, data.connections, data.batchSize);
         break;
 
       case 'CALCULATE_RESOURCE_BALANCE':
@@ -166,10 +172,10 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
           throw new Error('Invalid data format for CALCULATE_RESOURCE_BALANCE');
         }
         result = calculateResourceBalance(
-          data?.producers,
-          data?.consumers,
-          data?.storages,
-          data?.connections
+          data.producers,
+          data.consumers,
+          data.storages,
+          data.connections
         );
         break;
 
@@ -177,14 +183,14 @@ ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
         if (!isOptimizeFlowRatesData(data)) {
           throw new Error('Invalid data format for OPTIMIZE_FLOW_RATES');
         }
-        result = optimizeFlowRates(data?.connections, data?.availability, data?.demand);
+        result = optimizeFlowRates(data.connections, data.availability, data.demand);
         break;
 
       case 'CALCULATE_EFFICIENCY':
         if (!isCalculateEfficiencyData(data)) {
           throw new Error('Invalid data format for CALCULATE_EFFICIENCY');
         }
-        result = calculateNetworkEfficiency(data?.network);
+        result = calculateNetworkEfficiency(data.network);
         break;
 
       default:

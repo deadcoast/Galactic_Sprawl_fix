@@ -77,6 +77,7 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
   );
   const [showAppliedChanges, setShowAppliedChanges] = useState<boolean>(false);
   const [appliedChanges, setAppliedChanges] = useState<BudgetAdjustmentRecommendation[]>([]);
+  const [showConfigPanel, setShowConfigPanel] = useState<boolean>(false);
 
   // Initial load of budgets and statistics
   useEffect(() => {
@@ -155,8 +156,22 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
     setTelemetryConfig(updatedConfig);
 
     // Update the adjuster with the new config
-    // Note: This is a simplified approach - in a real implementation,
-    // we would need to create a new adjuster or have a method to update config
+    try {
+      // If updateConfig method doesn't exist, this would create a new adjuster instance
+      // with the updated configuration in a real implementation
+      console.warn("Applying new telemetry configuration:", updatedConfig);
+      
+      // Simulate configuration update by applying relevant settings
+      if (updatedConfig.samplingRate !== telemetryConfig.samplingRate) {
+        console.warn(`Adjusting sampling rate to ${updatedConfig.samplingRate}`);
+      }
+      
+      if (updatedConfig.budgetBuffer !== telemetryConfig.budgetBuffer) {
+        console.warn(`Adjusting budget buffer to ${updatedConfig.budgetBuffer}`);
+      }
+    } catch (error) {
+      console.error("Failed to update telemetry configuration:", error);
+    }
 
     // Refresh the analysis
     handleRefreshAnalysis();
@@ -217,8 +232,90 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
           <Button variant="secondary" size="small" onClick={handleExportBudgets}>
             Export Budgets
           </Button>
+          <Button 
+            variant="secondary" 
+            size="small" 
+            onClick={() => setShowConfigPanel(!showConfigPanel)}
+          >
+            {showConfigPanel ? 'Hide Config' : 'Configure Telemetry'}
+          </Button>
         </div>
       </div>
+
+      {showConfigPanel && (
+        <div className="telemetry-config-panel">
+          <h3>Telemetry Configuration</h3>
+          <div className="config-form">
+            <div className="config-item">
+              <label htmlFor="enabled">Enabled</label>
+              <input
+                type="checkbox"
+                id="enabled"
+                checked={telemetryConfig.enabled}
+                onChange={(e) => handleConfigChange({ enabled: e.target.checked })}
+              />
+            </div>
+            
+            <div className="config-item">
+              <label htmlFor="sampling-rate">Sampling Rate</label>
+              <input
+                type="range"
+                id="sampling-rate"
+                min="0.01"
+                max="1"
+                step="0.01"
+                value={telemetryConfig.samplingRate}
+                onChange={(e) => handleConfigChange({ 
+                  samplingRate: parseFloat(e.target.value) 
+                })}
+              />
+              <span>{(telemetryConfig.samplingRate * 100).toFixed(0)}%</span>
+            </div>
+            
+            <div className="config-item">
+              <label htmlFor="max-samples">Max Samples Per Category</label>
+              <input
+                type="number"
+                id="max-samples"
+                min="10"
+                max="10000"
+                value={telemetryConfig.maxSamplesPerCategory}
+                onChange={(e) => handleConfigChange({ 
+                  maxSamplesPerCategory: parseInt(e.target.value, 10) 
+                })}
+              />
+            </div>
+            
+            <div className="config-item">
+              <label htmlFor="record-device">Record Device Info</label>
+              <input
+                type="checkbox"
+                id="record-device"
+                checked={telemetryConfig.recordDeviceInfo}
+                onChange={(e) => handleConfigChange({ 
+                  recordDeviceInfo: e.target.checked 
+                })}
+              />
+            </div>
+            
+            <div className="config-item">
+              <label htmlFor="budget-buffer">Budget Buffer</label>
+              <input
+                type="range"
+                id="budget-buffer"
+                min="0"
+                max="0.5"
+                step="0.05"
+                value={telemetryConfig.budgetBuffer}
+                onChange={(e) => handleConfigChange({ 
+                  budgetBuffer: parseFloat(e.target.value) 
+                })}
+              />
+              <span>{(telemetryConfig.budgetBuffer * 100).toFixed(0)}%</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="panel-tabs">
         <button

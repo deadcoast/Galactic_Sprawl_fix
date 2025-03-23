@@ -5,4 +5,5 @@
  * Exports example components demonstrating various UI integration patterns
  */
 
-export { SystemIntegrationExample } from './SystemIntegrationExample'; 
+export { SystemIntegrationExample } from './SystemIntegrationExample';
+export { FactionCombatEquipmentExample } from './FactionCombatEquipmentExample'; 

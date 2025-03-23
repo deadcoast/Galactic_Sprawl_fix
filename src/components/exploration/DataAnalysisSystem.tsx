@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { Compass, Database, Layers, Map, RadioTower } from 'lucide-react';
 import * as React from 'react';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, Component, ErrorInfo } from 'react';
 import { useDataAnalysis } from '../../contexts/DataAnalysisContext';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
 import { EventType } from '../../types/events/EventTypes';
@@ -27,6 +27,7 @@ import DataPointVirtualList from './DataPointVirtualList';
 import DatasetManager from './DatasetManager';
 import ResultsPanel from './ResultsPanel';
 import { AnalysisVisualization } from './visualizations/AnalysisVisualization';
+import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/ErrorLoggingService';
 
 interface DataAnalysisSystemProps {
   className?: string;
@@ -91,53 +92,258 @@ function ResultVisualization({ result, config }: ResultVisualizationProps) {
   );
 }
 
+// Simple ErrorBoundary implementation
+interface ErrorBoundaryProps {
+  fallbackComponent: React.ComponentType<{ error: Error | null }>;
+  children: React.ReactNode;
+  onError?: (error: Error, info: ErrorInfo) => void;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class SimpleErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo): void {
+    if (this.props.onError) {
+      this.props.onError(error, info);
+    }
+  }
+
+  render(): React.ReactNode {
+    const { fallbackComponent: FallbackComponent, children } = this.props;
+    
+    if (this.state.hasError) {
+      return <FallbackComponent error={this.state.error} />;
+    }
+
+    return children;
+  }
+}
+
 // Dataset info component
 interface DatasetInfoProps {
   dataset: Dataset;
 }
 
-function _DatasetInfo({ dataset }: DatasetInfoProps) {
-  // Count data points by type
-  const counts = React.useMemo(() => {
-    const typeCounts = {
-      sector: 0,
-      anomaly: 0,
-      resource: 0,
+function DatasetInfo({ dataset }: DatasetInfoProps) {
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<Error | null>(null);
+  const [datasetDetails, setDatasetDetails] = React.useState(dataset);
+  
+  // Subscribe to module update events for datasets
+  useEffect(() => {
+    const handleModuleUpdate = (event: StandardizedEvent) => {
+      try {
+        // Check if this is an update for our dataset
+        if (event?.data && 
+            typeof event.data === 'object' && 
+            'datasetId' in event.data && 
+            event.data.datasetId === dataset.id) {
+          
+          // In a real implementation, you would get updates from a manager/registry
+          // For now, simulate with dataset refreshes
+          console.warn(`Dataset ${dataset.id} has been updated externally`);
+          
+          // For demo purposes, clone and modify the dataset
+          setDatasetDetails({
+            ...dataset,
+            updatedAt: Date.now(),
+          });
+        }
+      } catch (error) {
+        console.error('Error handling dataset update event:', error);
+        setError(error instanceof Error ? error : new Error(String(error)));
+        
+        // Log error to monitoring service
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          {
+            componentName: 'DatasetInfo',
+            datasetId: dataset.id,
+            eventType: EventType.MODULE_UPDATED
+          }
+        );
+      }
     };
 
-    dataset.dataPoints.forEach(dp => {
-      if (dp.type in typeCounts) {
-        typeCounts[dp.type as keyof typeof typeCounts]++;
-      }
-    });
+    // Subscribe to module update events
+    const unsubscribe = moduleEventBus.subscribe(EventType.MODULE_UPDATED, handleModuleUpdate);
+    
+    // Cleanup subscription on unmount
+    return () => {
+      unsubscribe();
+    };
+  }, [dataset.id]);
+  
+  // Count data points by type
+  const counts = React.useMemo(() => {
+    try {
+      const typeCounts = {
+        sector: 0,
+        anomaly: 0,
+        resource: 0,
+      };
 
-    return typeCounts;
-  }, [dataset]);
+      datasetDetails.dataPoints.forEach(dp => {
+        if (dp.type in typeCounts) {
+          typeCounts[dp.type as keyof typeof typeCounts]++;
+        }
+      });
+
+      return typeCounts;
+    } catch (error) {
+      console.error('Error calculating counts:', error);
+      setError(error instanceof Error ? error : new Error(String(error)));
+      
+      // Log error to monitoring service
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        ErrorType.RUNTIME,
+        ErrorSeverity.LOW,
+        {
+          componentName: 'DatasetInfo',
+          datasetId: dataset.id,
+          action: 'calculateCounts'
+        }
+      );
+      
+      // Return default counts on error
+      return {
+        sector: 0,
+        anomaly: 0,
+        resource: 0,
+      };
+    }
+  }, [datasetDetails]);
 
   // Get icon for dataset source
   const getSourceIcon = (source: string) => {
-    switch (source) {
-      case 'sectors':
-        return <Map className="mr-2" size={16} />;
-      case 'anomalies':
-        return <RadioTower className="mr-2" size={16} />;
-      case 'resources':
-        return <Layers className="mr-2" size={16} />;
-      case 'mixed':
-        return <Compass className="mr-2" size={16} />;
-      default:
-        return <Database className="mr-2" size={16} />;
+    try {
+      switch (source) {
+        case 'sectors':
+          return <Map className="mr-2" size={16} />;
+        case 'anomalies':
+          return <RadioTower className="mr-2" size={16} />;
+        case 'resources':
+          return <Layers className="mr-2" size={16} />;
+        case 'mixed':
+          return <Compass className="mr-2" size={16} />;
+        default:
+          return <Database className="mr-2" size={16} />;
+      }
+    } catch (error) {
+      console.error('Error getting source icon:', error);
+      
+      // Log error to monitoring service
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        ErrorType.RUNTIME,
+        ErrorSeverity.LOW,
+        {
+          componentName: 'DatasetInfo',
+          datasetId: dataset.id,
+          source: source
+        }
+      );
+      
+      // Return default icon on error
+      return <Database className="mr-2" size={16} />;
     }
   };
+  
+  // Handle refresh dataset
+  const handleRefreshDataset = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Simulate a refresh operation
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Update the details with a refreshed timestamp
+      setDatasetDetails({
+        ...datasetDetails,
+        updatedAt: Date.now(),
+      });
+      
+      // Emit an event to notify other components
+      moduleEventBus.emit({
+        type: EventType.MODULE_UPDATED,
+        moduleId: datasetDetails.id,
+        moduleType: 'exploration',
+        timestamp: Date.now(),
+        data: {
+          action: 'refresh_dataset',
+          datasetId: datasetDetails.id,
+        },
+      });
+      
+    } catch (error) {
+      console.error('Error refreshing dataset:', error);
+      setError(error instanceof Error ? error : new Error(String(error)));
+      
+      // Log error to monitoring service
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        ErrorType.RUNTIME,
+        ErrorSeverity.MEDIUM,
+        {
+          componentName: 'DatasetInfo',
+          datasetId: dataset.id,
+          action: 'refreshDataset'
+        }
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Show error state
+  if (error) {
+    return (
+      <div className="rounded border border-red-200 bg-red-50 p-4">
+        <h3 className="mb-2 font-medium text-red-700">Error loading dataset details</h3>
+        <p className="text-sm text-red-600">{error.message}</p>
+        <button 
+          className="mt-2 rounded bg-red-100 px-2 py-1 text-sm text-red-700 hover:bg-red-200"
+          onClick={() => setError(null)}
+        >
+          Dismiss
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-4 rounded border bg-white p-4">
-      <div className="mb-2 flex items-center">
-        {getSourceIcon(dataset.source)}
-        <h3 className="font-medium">{dataset.name}</h3>
+      <div className="mb-2 flex items-center justify-between">
+        <div className="flex items-center">
+          {getSourceIcon(datasetDetails.source)}
+          <h3 className="font-medium">{datasetDetails.name}</h3>
+        </div>
+        <button 
+          className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+          onClick={handleRefreshDataset}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
 
-      <p className="mb-2 text-sm text-gray-600">{dataset.description}</p>
+      <p className="mb-2 text-sm text-gray-600">{datasetDetails.description}</p>
 
       <div className="mb-2 grid grid-cols-3 gap-2 text-sm">
         <div className="rounded bg-blue-50 p-2 text-center">
@@ -157,25 +363,55 @@ function _DatasetInfo({ dataset }: DatasetInfoProps) {
       <div className="text-xs text-gray-500">
         <div>
           <span className="font-medium">Created:</span>{' '}
-          {new Date(dataset.createdAt).toLocaleDateString()}
+          {new Date(datasetDetails.createdAt).toLocaleDateString()}
         </div>
         <div>
           <span className="font-medium">Updated:</span>{' '}
-          {new Date(dataset.updatedAt).toLocaleDateString()}
+          {new Date(datasetDetails.updatedAt).toLocaleDateString()}
         </div>
         <div>
-          <span className="font-medium">Total Points:</span> {dataset.dataPoints.length}
+          <span className="font-medium">Total Points:</span> {datasetDetails.dataPoints.length}
         </div>
       </div>
     </div>
   );
 }
 
-// Utility function that uses _DatasetInfo for development purposes
+// Wrapper component with error boundary
+function DatasetInfoWrapper({ dataset }: DatasetInfoProps) {
+  return (
+    <SimpleErrorBoundary
+      fallbackComponent={({ error }) => (
+        <div className="rounded border border-red-200 bg-red-50 p-3">
+          <h3 className="text-sm font-medium text-red-700">Error loading dataset info</h3>
+          <p className="text-xs text-red-600">{error?.message || 'An unexpected error occurred'}</p>
+        </div>
+      )}
+      onError={(error: Error, info: ErrorInfo) => {
+        console.error('Error in DatasetInfo component:', error);
+        
+        // Log error to monitoring service
+        errorLoggingService.logError(
+          error,
+          ErrorType.RUNTIME,
+          ErrorSeverity.HIGH,
+          {
+            componentName: 'DatasetInfo',
+            componentStack: info.componentStack,
+            datasetId: dataset.id
+          }
+        );
+      }}
+    >
+      <DatasetInfo dataset={dataset} />
+    </SimpleErrorBoundary>
+  );
+}
+
+// Utility function that uses DatasetInfo for development purposes
 const _logDatasetDetails = (dataset: Dataset): void => {
   if (process.env.NODE_ENV === 'development') {
     console.warn(`Dataset loaded: ${dataset.id} with ${dataset.dataPoints.length} data points`);
-    // In a real implementation, we might render _DatasetInfo to a debug panel
   }
 };
 
@@ -238,7 +474,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   // Get latest results for the selected config
   const currentResults = selectedConfig
     ? getAnalysisResultsByConfigId(selectedConfig.id).sort(
-        (a, b) => (b.startTime ?? 0) - (a.startTime ?? 0)
+        (a: AnalysisResult, b: AnalysisResult) => (b.startTime ?? 0) - (a.startTime ?? 0)
       )
     : [];
 
@@ -472,9 +708,9 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
               <ResultsPanel
                 results={analysisResults}
                 configs={analysisConfigs}
-                onSelectResult={result => {
+                onSelectResult={(c: AnalysisResult) => {
                   // Find and select the config that was used for this result
-                  const config = analysisConfigs.find(c => c.id === result?.analysisConfigId);
+                  const config = analysisConfigs.find(conf => conf.id === c?.analysisConfigId);
                   if (config) {
                     setSelectedConfig(config);
                     setActiveTab(1); // Switch to Analysis tab
@@ -553,6 +789,15 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
         {activeTab === 0 && (
           <Grid item xs={12} md={4}>
             <Paper sx={{ p: 2 }}>
+              {selectedDataset && (
+                <div className="mb-4">
+                  <Typography variant="h6" gutterBottom>
+                    Dataset Summary
+                  </Typography>
+                  <DatasetInfoWrapper dataset={selectedDataset} />
+                </div>
+              )}
+              
               <Typography variant="h6" gutterBottom>
                 Filters
               </Typography>

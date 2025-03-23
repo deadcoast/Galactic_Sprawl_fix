@@ -1,7 +1,7 @@
 ---
 description: 
-globs: 
-alwaysApply: true
+globs: src/**/*.ts,src/services/**/*.ts
+alwaysApply: false
 ---
 # GALACTIC SPRAWL (GS) - Anti Pattern Rules
 

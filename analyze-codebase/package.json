@@ -1,0 +1,36 @@
+{
+  "name": "galactic-sprawl-analyze-codebase",
+  "version": "1.0.0",
+  "description": "Code analysis tool for the Galactic Sprawl project",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "analyze": "node main.js analyze",
+    "report": "node main.js report",
+    "consolidate": "node main.js consolidate",
+    "help": "node main.js help"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.23.5",
+    "@babel/traverse": "^7.26.10",
+    "chalk": "^5.3.0",
+    "commander": "^13.1.0",
+    "complexity-report": "^2.0.0-alpha",
+    "escomplex": "^2.0.0-alpha",
+    "jscpd": "^3.5.10",
+    "lodash": "^4.17.21",
+    "madge": "^6.1.0",
+    "precinct": "^11.0.5",
+    "simian": "^2.0.1",
+    "string-similarity": "^4.0.4"
+  },
+  "devDependencies": {
+    "eslint": "^9.23.0",
+    "prettier": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "author": "Galactic Sprawl Development Team",
+  "license": "MIT"
+}

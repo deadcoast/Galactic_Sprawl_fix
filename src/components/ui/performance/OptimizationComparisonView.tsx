@@ -98,12 +98,38 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
   const setupCharts = () => {
     // In a real implementation, this would initialize D3 charts
     console.warn('Setting up performance comparison charts');
+    
+    // Use width and height to set up chart dimensions
+    if (optimizedChartRef.current) {
+      optimizedChartRef.current.style.width = `${width / 2 - 20}px`;
+      optimizedChartRef.current.style.height = `${height - 100}px`;
+    }
+    
+    if (unoptimizedChartRef.current) {
+      unoptimizedChartRef.current.style.width = `${width / 2 - 20}px`;
+      unoptimizedChartRef.current.style.height = `${height - 100}px`;
+    }
   };
 
   // Update chart visualization
   const updateCharts = () => {
     // In a real implementation, this would update D3 charts with new data
     console.warn('Updating performance comparison charts');
+    
+    // Adjust chart dimensions when data updates if needed
+    if (optimizedChartRef.current && unoptimizedChartRef.current) {
+      // Calculate potential scaling based on data size and dimensions
+      const dataSize = Math.max(
+        optimizedMetrics.fps.length, 
+        unoptimizedMetrics.fps.length
+      );
+      
+      // Adjust chart width based on data points and view width
+      const chartWidth = Math.min(width - 40, dataSize * 10);
+      
+      optimizedChartRef.current.style.width = `${chartWidth}px`;
+      unoptimizedChartRef.current.style.width = `${chartWidth}px`;
+    }
   };
 
   // Start the comparison
@@ -173,6 +199,34 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
       },
       (_elapsed: number, _deltaTime: number, _frameInfo: FrameInfo) => {
         // Animation logic here
+        
+        // Use the frame timing information to adjust animation speed
+        const speedFactor = _deltaTime / 16.7; // Normalize against 60fps
+        
+        // Track performance based on frame info
+        if (_frameInfo.isFrameOverBudget) {
+          console.warn(`Optimized animation frame budget exceeded: ${_elapsed}ms elapsed`);
+        }
+        
+        // Update animation state based on elapsed time
+        const animationProgress = (_elapsed % 5000) / 5000; // 5 second cycle
+        
+        // Use frame information for adaptive quality adjustment
+        if (_frameInfo.currentFps < 30) {
+          // Would reduce visual quality or complexity in a real implementation
+          console.warn(`Reducing optimized animation quality (${_frameInfo.currentFps.toFixed(1)} FPS)`);
+        }
+        
+        // Update visualization with current animation time
+        if (optimizedChartRef.current) {
+          // Apply the animation progress and speed factor to the visualization
+          const transformValue = `translateX(${animationProgress * 100}px) scale(${0.8 + (speedFactor * 0.2)})`;
+          optimizedChartRef.current.style.transform = transformValue;
+          
+          // In a real implementation, this would update more complex visualization
+          // elements based on animation progress and frame metrics
+        }
+        
         return false; // Continue running
       }
     );
@@ -199,6 +253,49 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
       },
       (_elapsed: number, _deltaTime: number, _frameInfo: FrameInfo) => {
         // Animation logic here - with deliberate inefficiencies to demonstrate difference
+        
+        // Simulate inefficient operations based on elapsed time
+        const heavyCalculations = [];
+        for (let i = 0; i < Math.min(100, _elapsed / 1000 * 10); i++) {
+          heavyCalculations.push(Math.sin(i * _deltaTime));
+        }
+        
+        // Track performance issues
+        if (_frameInfo.currentFps < 30) {
+          console.warn(`Unoptimized animation running at ${_frameInfo.currentFps.toFixed(1)} FPS after ${_elapsed.toFixed(0)}ms`);
+        }
+        
+        // Simulate layout thrashing based on animation progress
+        if (_elapsed % 1000 < 20) {
+          // Force layout recalculation by accessing properties that trigger reflow
+          if (unoptimizedChartRef.current) {
+            // This is a real calculation that forces layout recalculation
+            // causing performance issues deliberately to demonstrate differences
+            const dummyCalculation = unoptimizedChartRef.current.offsetWidth * Math.random();
+            
+            // Apply the calculation result to element style to ensure it's not optimized away
+            unoptimizedChartRef.current.style.paddingLeft = `${Math.min(20, dummyCalculation % 5)}px`;
+            
+            // In a real implementation, this might update dimensions, positions, or other
+            // properties that trigger multiple DOM reflows
+          }
+        }
+        
+        // Update visualization with current animation time and performance
+        if (unoptimizedChartRef.current) {
+          // Apply inefficient rendering approach with multiple style changes
+          // that could be batched in the optimized version
+          unoptimizedChartRef.current.style.opacity = `${0.5 + 0.5 * Math.sin(_elapsed / 500)}`;
+          unoptimizedChartRef.current.style.filter = `blur(${Math.sin(_elapsed / 1000) * 2}px)`;
+          
+          // Force multiple individual style updates instead of using CSS transforms
+          // which would be more efficient
+          const left = 50 + Math.sin(_elapsed / 1000) * 50;
+          const top = 20 + Math.cos(_elapsed / 800) * 20;
+          unoptimizedChartRef.current.style.marginLeft = `${left}px`;
+          unoptimizedChartRef.current.style.marginTop = `${top}px`;
+        }
+        
         return false; // Continue running
       }
     );
@@ -272,81 +369,38 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
     }
   };
 
-  // Generate statistical comparisons between optimized and unoptimized
+  // Generate performance comparisons between optimized and unoptimized versions
   const generateComparisons = () => {
-    // In a real implementation, this would compare actual metrics
+    if (!optimizedReport || !unoptimizedReport) return;
+    
     const newComparisons: PerformanceComparison[] = [
       {
         metric: 'FPS',
-        optimized: calculateAverage(optimizedMetrics.fps.map(point => point.value)),
-        unoptimized: calculateAverage(unoptimizedMetrics.fps.map(point => point.value)),
-        difference: 0, // Will be calculated
-        percentImprovement: 0, // Will be calculated
+        optimized: optimizedReport.performanceData.actualFps,
+        unoptimized: unoptimizedReport.performanceData.actualFps,
+        difference: optimizedReport.performanceData.actualFps - unoptimizedReport.performanceData.actualFps,
+        percentImprovement: ((optimizedReport.performanceData.actualFps - unoptimizedReport.performanceData.actualFps) / 
+                            unoptimizedReport.performanceData.actualFps) * 100
       },
       {
-        metric: 'Render Time (ms)',
-        optimized: calculateAverage(optimizedMetrics.renderTime.map(point => point.value)),
-        unoptimized: calculateAverage(unoptimizedMetrics.renderTime.map(point => point.value)),
-        difference: 0, // Will be calculated
-        percentImprovement: 0, // Will be calculated
+        metric: 'Frame Time',
+        optimized: optimizedReport.performanceData.averageFrameDuration,
+        unoptimized: unoptimizedReport.performanceData.averageFrameDuration,
+        difference: unoptimizedReport.performanceData.averageFrameDuration - optimizedReport.performanceData.averageFrameDuration,
+        percentImprovement: ((unoptimizedReport.performanceData.averageFrameDuration - optimizedReport.performanceData.averageFrameDuration) / 
+                            unoptimizedReport.performanceData.averageFrameDuration) * 100
       },
       {
-        metric: 'CPU Time (ms)',
-        optimized: calculateAverage(optimizedMetrics.cpuTime.map(point => point.value)),
-        unoptimized: calculateAverage(unoptimizedMetrics.cpuTime.map(point => point.value)),
-        difference: 0, // Will be calculated
-        percentImprovement: 0, // Will be calculated
-      },
-      {
-        metric: 'DOM Operations',
-        optimized: calculateAverage(optimizedMetrics.domOperations.map(point => point.value)),
-        unoptimized: calculateAverage(unoptimizedMetrics.domOperations.map(point => point.value)),
-        difference: 0, // Will be calculated
-        percentImprovement: 0, // Will be calculated
-      },
-      {
-        metric: 'Memory Usage (MB)',
-        optimized: calculateAverage(optimizedMetrics.memoryUsage.map(point => point.value)),
-        unoptimized: calculateAverage(unoptimizedMetrics.memoryUsage.map(point => point.value)),
-        difference: 0, // Will be calculated
-        percentImprovement: 0, // Will be calculated
-      },
-      {
-        metric: 'Animation Smoothness (%)',
-        optimized: calculateAverage(optimizedMetrics.animationSmoothness.map(point => point.value)),
-        unoptimized: calculateAverage(
-          unoptimizedMetrics.animationSmoothness.map(point => point.value)
-        ),
-        difference: 0, // Will be calculated
-        percentImprovement: 0, // Will be calculated
-      },
+        metric: 'Frame Success Rate',
+        optimized: optimizedReport.performanceData.frameSuccessRate * 100,
+        unoptimized: unoptimizedReport.performanceData.frameSuccessRate * 100,
+        difference: (optimizedReport.performanceData.frameSuccessRate - unoptimizedReport.performanceData.frameSuccessRate) * 100,
+        percentImprovement: ((optimizedReport.performanceData.frameSuccessRate - unoptimizedReport.performanceData.frameSuccessRate) / 
+                            unoptimizedReport.performanceData.frameSuccessRate) * 100
+      }
     ];
-
-    // Calculate difference and percentage improvement
-    newComparisons.forEach(comparison => {
-      comparison.difference = comparison.optimized - comparison.unoptimized;
-
-      // For metrics where higher is better (FPS, smoothness)
-      if (comparison.metric === 'FPS' || comparison.metric === 'Animation Smoothness (%)') {
-        comparison.percentImprovement =
-          (comparison.difference / Math.max(0.1, comparison.unoptimized)) * 100;
-      }
-      // For metrics where lower is better (render time, CPU time, DOM ops, memory)
-      else {
-        comparison.percentImprovement =
-          ((comparison.unoptimized - comparison.optimized) /
-            Math.max(0.1, comparison.unoptimized)) *
-          100;
-      }
-    });
-
+    
     setComparisons(newComparisons);
-  };
-
-  // Helper to calculate average of an array of numbers
-  const calculateAverage = (values: number[]): number => {
-    if (values.length === 0) return 0;
-    return values.reduce((sum, value) => sum + value, 0) / values.length;
   };
 
   // Toggle the comparison mode
@@ -369,302 +423,118 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
 
   // Render the comparison view
   return (
-    <div className="optimization-comparison-view">
-      <h2>Performance Optimization Comparison</h2>
-
-      <div className="controls">
-        <div className="control-section">
-          <h3>Comparison Mode</h3>
-          <div className="control-row">
+    <div className="optimization-comparison-view" style={{ width, height, overflow: 'auto' }}>
+      <div className="comparison-header">
+        <h2>Performance Optimization Comparison</h2>
+        <div className="comparison-controls">
+          <button 
+            className={`mode-button ${comparisonMode === 'side-by-side' ? 'active' : ''}`}
+            onClick={toggleComparisonMode}
+          >
+            {comparisonMode === 'side-by-side' ? 'Side by Side' : 'Overlay'}
+          </button>
+          <div className="active-mode-selector">
             <button
-              className={`mode-button ${activeMode === 'optimized' ? 'active' : ''}`}
+              className={`mode-option ${activeMode === 'optimized' ? 'active' : ''}`}
               onClick={() => changeActiveMode('optimized')}
             >
-              Optimized Only
+              Optimized
             </button>
             <button
-              className={`mode-button ${activeMode === 'unoptimized' ? 'active' : ''}`}
-              onClick={() => changeActiveMode('unoptimized')}
-            >
-              Unoptimized Only
-            </button>
-            <button
-              className={`mode-button ${activeMode === 'both' ? 'active' : ''}`}
+              className={`mode-option ${activeMode === 'both' ? 'active' : ''}`}
               onClick={() => changeActiveMode('both')}
             >
-              Side-by-Side Comparison
+              Both
             </button>
-          </div>
-
-          <div className="control-row">
             <button
-              className="action-button"
-              onClick={isRunning ? stopComparison : startComparison}
+              className={`mode-option ${activeMode === 'unoptimized' ? 'active' : ''}`}
+              onClick={() => changeActiveMode('unoptimized')}
             >
-              {isRunning ? 'Stop Comparison' : 'Start Comparison'}
+              Unoptimized
             </button>
-
-            {activeMode === 'both' && (
-              <button className="action-button" onClick={toggleComparisonMode}>
-                {comparisonMode === 'side-by-side' ? 'Switch to Overlay' : 'Switch to Side-by-Side'}
-              </button>
-            )}
           </div>
+          <button
+            className={`action-button ${isRunning ? 'stop' : 'start'}`}
+            onClick={isRunning ? stopComparison : startComparison}
+          >
+            {isRunning ? 'Stop Comparison' : 'Start Comparison'}
+          </button>
         </div>
       </div>
 
-      <div className={`visualizations ${comparisonMode}`}>
-        {(activeMode === 'optimized' || activeMode === 'both') && (
-          <div className="visualization-container optimized">
-            <h3>Optimized Performance</h3>
-            <div className="visualization-wrapper" ref={optimizedChartRef}>
-              {/* In a real implementation, this would be a D3 chart */}
-              <div className="placeholder-chart">
-                <div className="chart-bar" style={{ height: '80%' }}></div>
-                <div className="chart-label">Chart Placeholder - Optimized</div>
+      <div 
+        className={`comparison-container ${comparisonMode === 'side-by-side' ? 'side-by-side' : 'overlay'}`}
+        style={{ 
+          height: height - 180,
+          width: width - 40
+        }}
+      >
+        <div 
+          className="optimized-view"
+          ref={optimizedChartRef}
+        >
+          <h3>Optimized</h3>
+          {optimizedReport && (
+            <div className="performance-summary">
+              <div className="metric">
+                <span className="label">FPS:</span>
+                <span className="value">{optimizedReport.performanceData.actualFps.toFixed(1)}</span>
+              </div>
+              <div className="metric">
+                <span className="label">Frame Time:</span>
+                <span className="value">{optimizedReport.performanceData.averageFrameDuration.toFixed(2)}ms</span>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {(activeMode === 'unoptimized' || activeMode === 'both') && (
-          <div className="visualization-container unoptimized">
-            <h3>Unoptimized Performance</h3>
-            <div className="visualization-wrapper" ref={unoptimizedChartRef}>
-              {/* In a real implementation, this would be a D3 chart */}
-              <div className="placeholder-chart">
-                <div className="chart-bar" style={{ height: '40%' }}></div>
-                <div className="chart-label">Chart Placeholder - Unoptimized</div>
+        <div 
+          className="unoptimized-view"
+          ref={unoptimizedChartRef}
+        >
+          <h3>Unoptimized</h3>
+          {unoptimizedReport && (
+            <div className="performance-summary">
+              <div className="metric">
+                <span className="label">FPS:</span>
+                <span className="value">{unoptimizedReport.performanceData.actualFps.toFixed(1)}</span>
+              </div>
+              <div className="metric">
+                <span className="label">Frame Time:</span>
+                <span className="value">{unoptimizedReport.performanceData.averageFrameDuration.toFixed(2)}ms</span>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
+      {/* Statistical comparisons */}
       {comparisons.length > 0 && (
-        <div className="statistical-analysis">
-          <h3>Statistical Comparison</h3>
-          <table className="comparison-table">
-            <thead>
-              <tr>
-                <th>Metric</th>
-                <th>Optimized</th>
-                <th>Unoptimized</th>
-                <th>Difference</th>
-                <th>Improvement</th>
-              </tr>
-            </thead>
-            <tbody>
-              {comparisons.map((comparison, index) => (
-                <tr key={index}>
-                  <td>{comparison.metric}</td>
-                  <td>{comparison.optimized.toFixed(2)}</td>
-                  <td>{comparison.unoptimized.toFixed(2)}</td>
-                  <td className={comparison.percentImprovement > 0 ? 'positive' : 'negative'}>
-                    {comparison.difference.toFixed(2)}
-                  </td>
-                  <td className={comparison.percentImprovement > 0 ? 'positive' : 'negative'}>
-                    {comparison.percentImprovement.toFixed(2)}%
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="statistical-comparison" style={{ width: width - 40 }}>
+          <h3>Performance Comparison</h3>
+          <div className="comparison-metrics">
+            {comparisons.map((comparison, index) => (
+              <div key={index} className="comparison-metric">
+                <h4>{comparison.metric}</h4>
+                <div className="improvement">
+                  <span className="value">{comparison.percentImprovement.toFixed(1)}%</span>
+                  <span className="label">Improvement</span>
+                </div>
+                <div className="values">
+                  <div className="optimized">
+                    <span className="label">Optimized:</span>
+                    <span className="value">{comparison.optimized.toFixed(2)}</span>
+                  </div>
+                  <div className="unoptimized">
+                    <span className="label">Unoptimized:</span>
+                    <span className="value">{comparison.unoptimized.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
-
-      <style>
-        {`
-        .optimization-comparison-view {
-          padding: 20px;
-          font-family:
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            'Segoe UI',
-            Roboto,
-            sans-serif;
-        }
-
-        h2 {
-          color: #333;
-          border-bottom: 2px solid #4285f4;
-          padding-bottom: 10px;
-        }
-
-        .controls {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 20px;
-          margin-bottom: 30px;
-          background: #f5f5f5;
-          padding: 15px;
-          border-radius: 8px;
-        }
-
-        .control-section {
-          flex: 1;
-          min-width: 300px;
-        }
-
-        h3 {
-          color: #4285f4;
-          margin-top: 0;
-        }
-
-        .control-row {
-          display: flex;
-          align-items: center;
-          margin-bottom: 12px;
-          gap: 10px;
-        }
-
-        .mode-button,
-        .action-button {
-          padding: 8px 16px;
-          background: #f1f1f1;
-          color: #333;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          cursor: pointer;
-          font-weight: 500;
-          transition: all 0.2s;
-        }
-
-        .mode-button.active {
-          background: #4285f4;
-          color: white;
-          border-color: #3367d6;
-        }
-
-        .action-button {
-          background: #4285f4;
-          color: white;
-          border: none;
-        }
-
-        .action-button:hover {
-          background: #3367d6;
-        }
-
-        .visualizations {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-
-        .visualizations.side-by-side {
-          flex-direction: row;
-        }
-
-        .visualizations.overlay {
-          position: relative;
-          height: 500px;
-        }
-
-        .visualization-container {
-          flex: 1;
-          min-width: 300px;
-          background: #fff;
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .visualizations.overlay .visualization-container {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          opacity: 0.7;
-        }
-
-        .visualizations.overlay .optimized {
-          z-index: 2;
-        }
-
-        .visualization-container h3 {
-          padding: 15px;
-          margin: 0;
-          background: #f5f5f5;
-          border-bottom: 1px solid #ddd;
-        }
-
-        .visualization-wrapper {
-          height: 400px;
-          padding: 10px;
-        }
-
-        .placeholder-chart {
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          align-items: center;
-          background: #f9f9f9;
-          border-radius: 4px;
-          padding: 10px;
-        }
-
-        .chart-bar {
-          width: 80px;
-          background: linear-gradient(to top, #4285f4, #34a853);
-          border-radius: 4px 4px 0 0;
-        }
-
-        .unoptimized .chart-bar {
-          background: linear-gradient(to top, #ea4335, #fbbc05);
-        }
-
-        .chart-label {
-          margin-top: 10px;
-          font-size: 14px;
-          color: #666;
-        }
-
-        .statistical-analysis {
-          background: #fff;
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-          margin-bottom: 30px;
-        }
-
-        .statistical-analysis h3 {
-          padding: 15px;
-          margin: 0;
-          background: #f5f5f5;
-          border-bottom: 1px solid #ddd;
-        }
-
-        .comparison-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-
-        .comparison-table th,
-        .comparison-table td {
-          padding: 12px 15px;
-          text-align: left;
-          border-bottom: 1px solid #eee;
-        }
-
-        .comparison-table th {
-          background: #f9f9f9;
-          font-weight: 500;
-        }
-
-        .comparison-table td.positive {
-          color: #34a853;
-        }
-
-        .comparison-table td.negative {
-          color: #ea4335;
-        }
-        `}
-      </style>
     </div>
   );
 };

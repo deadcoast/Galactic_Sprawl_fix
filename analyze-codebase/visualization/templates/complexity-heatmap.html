@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Complexity Heatmap - Galactic Sprawl</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .container { width: 100%; padding: 20px; }
+    .cell { 
+      stroke: #fff; 
+      stroke-width: 1px; 
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .cell:hover { 
+      stroke: #000;
+      stroke-width: 2px;
+      transform: scale(1.1);
+    }
+    .cell.selected {
+      stroke: #000;
+      stroke-width: 3px;
+      stroke-dasharray: 3,3;
+    }
+    .legend { 
+      display: flex; 
+      justify-content: center; 
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .legend-item { 
+      display: flex; 
+      align-items: center; 
+      margin-right: 20px; 
+    }
+    .legend-color { 
+      width: 20px; 
+      height: 20px; 
+      margin-right: 5px; 
+      border-radius: 3px;
+    }
+    .legend-label { 
+      font-size: 14px; 
+    }
+    .tooltip {
+      position: absolute;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      border-radius: 6px;
+      pointer-events: none;
+      font-size: 14px;
+      z-index: 100;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      max-width: 300px;
+    }
+    #controls {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 15px;
+    }
+    #sort-by {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    #filter-input {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      width: 200px;
+      font-size: 14px;
+    }
+    #complexity-threshold {
+      margin: 0 10px;
+      width: 80px;
+    }
+    .filter-section {
+      display: flex;
+      align-items: center;
+      margin-left: 15px;
+    }
+    .filter-label {
+      margin-right: 8px;
+      font-weight: 500;
+    }
+    .instructions {
+      background: #f8f9fa;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      border-left: 4px solid #2ca02c;
+    }
+    .details-panel {
+      position: fixed;
+      right: 20px;
+      top: 20px;
+      width: 350px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      padding: 20px;
+      display: none;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+    }
+    .close-button:hover {
+      color: #000;
+    }
+    /* Color classes with proper contrast */
+    .color-low { background-color: #d4eac7; }
+    .color-medium { background-color: #c6deff; }
+    .color-high { background-color: #ffb347; }
+    .color-very-high { background-color: #ff6961; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Code Complexity Heatmap</h1>
+    
+    <div class="instructions">
+      <p><strong>Interact with the heatmap:</strong> Hover over cells to see file details. Click on a cell to view more information about the file's complexity. Use the filters and sorting options to focus on specific areas of interest.</p>
+    </div>
+    
+    <div id="controls">
+      <div>
+        <label for="sort-by" class="filter-label">Sort by: </label>
+        <select id="sort-by">
+          <option value="complexity-desc">Complexity (Highest First)</option>
+          <option value="complexity-asc">Complexity (Lowest First)</option>
+          <option value="filename">Filename (A-Z)</option>
+          <option value="filename-desc">Filename (Z-A)</option>
+        </select>
+      </div>
+      
+      <div class="filter-section">
+        <label for="filter-input" class="filter-label">Filter files: </label>
+        <input type="text" id="filter-input" placeholder="Type to filter by filename...">
+      </div>
+      
+      <div class="filter-section">
+        <label for="complexity-threshold" class="filter-label">Min complexity: </label>
+        <input type="number" id="complexity-threshold" min="0" value="0">
+      </div>
+      
+      <div class="filter-section">
+        <label for="category-filter" class="filter-label">Category: </label>
+        <select id="category-filter">
+          <option value="all">All Categories</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+          <option value="Very High">Very High</option>
+        </select>
+      </div>
+    </div>
+    
+    <div id="stats-summary">
+      <p>Showing <span id="visible-count">0</span> of <span id="total-count">0</span> files. Average complexity: <span id="avg-complexity">0</span></p>
+    </div>
+    
+    <div id="heatmap"></div>
+    
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color color-low"></div>
+        <div class="legend-label">Low (1-5)</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color color-medium"></div>
+        <div class="legend-label">Medium (6-10)</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color color-high"></div>
+        <div class="legend-label">High (11-20)</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color color-very-high"></div>
+        <div class="legend-label">Very High (21+)</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="details-panel" class="details-panel">
+    <button class="close-button" id="close-details">×</button>
+    <h2 id="details-filename">Filename</h2>
+    <div id="details-content"></div>
+  </div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    // The data will be inserted here by the visualization generator
+    const data = __DATA__;
+    
+    // Keep track of the original data
+    const originalData = [...data];
+    let filteredData = [...data];
+    let selectedCell = null;
+    
+    // Define color scale
+    const colorScale = d3.scaleOrdinal()
+      .domain(['Low', 'Medium', 'High', 'Very High'])
+      .range(['#d4eac7', '#c6deff', '#ffb347', '#ff6961']);
+    
+    // Create tooltip
+    const tooltip = d3.select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+    
+    // Set dimensions
+    const margin = { top: 20, right: 20, bottom: 60, left: 40 };
+    const width = 1000 - margin.left - margin.right;
+    const height = 600 - margin.top - margin.bottom;
+    
+    // Create SVG
+    const svg = d3.select("#heatmap")
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Define cell dimensions
+    const cellSize = 20;
+    const cellPadding = 2;
+    
+    // Create heatmap cells
+    function renderHeatmap(data) {
+      // Clear previous content
+      svg.selectAll("*").remove();
+      
+      // Calculate grid layout
+      const numColumns = Math.floor(width / (cellSize + cellPadding));
+      const cells = svg.selectAll(".cell")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("class", "cell")
+        .attr("x", (d, i) => (i % numColumns) * (cellSize + cellPadding))
+        .attr("y", (d, i) => Math.floor(i / numColumns) * (cellSize + cellPadding))
+        .attr("width", cellSize)
+        .attr("height", cellSize)
+        .attr("fill", d => colorScale(d.category))
+        .on("mouseover", (event, d) => {
+          tooltip.transition()
+            .duration(200)
+            .style("opacity", .9);
+          tooltip.html(`
+            <strong>${d.name}</strong><br>
+            Complexity: ${d.value.toFixed(2)}<br>
+            Category: ${d.category}
+          `)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", () => {
+          tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+        })
+        .on("click", function(event, d) {
+          event.stopPropagation();
+          
+          // Clear previous selection
+          if (selectedCell) {
+            d3.select(selectedCell).classed("selected", false);
+          }
+          
+          // Set new selection
+          selectedCell = this;
+          d3.select(selectedCell).classed("selected", true);
+          
+          // Show details panel
+          showDetailsPanel(d);
+        });
+        
+      // Update stats
+      updateStats(data);
+    }
+    
+    // Show file details in panel
+    function showDetailsPanel(d) {
+      const panel = document.getElementById("details-panel");
+      const filename = document.getElementById("details-filename");
+      const content = document.getElementById("details-content");
+      
+      // Set file name
+      filename.textContent = d.name;
+      
+      // Build content
+      let detailsHtml = `
+        <div>
+          <p><strong>Complexity Score:</strong> ${d.value.toFixed(2)}</p>
+          <p><strong>Complexity Category:</strong> ${d.category}</p>
+          <hr>
+          <p><strong>Recommendations:</strong></p>
+          <ul>
+      `;
+      
+      // Add recommendations based on complexity
+      if (d.value > 50) {
+        detailsHtml += `
+          <li>Consider breaking this file into smaller, more focused modules</li>
+          <li>Identify complex methods that can be simplified</li>
+          <li>This file is a high priority for refactoring</li>
+        `;
+      } else if (d.value > 20) {
+        detailsHtml += `
+          <li>Review for opportunities to simplify logic</li>
+          <li>Consider adding more unit tests for this file</li>
+        `;
+      } else if (d.value > 10) {
+        detailsHtml += `
+          <li>This file has moderate complexity and may need attention in future refactoring</li>
+        `;
+      } else {
+        detailsHtml += `
+          <li>This file has good complexity metrics</li>
+        `;
+      }
+      
+      detailsHtml += `
+        </ul>
+        <hr>
+        <p><em>Click elsewhere to close this panel or use the X button.</em></p>
+      `;
+      
+      content.innerHTML = detailsHtml;
+      panel.style.display = "block";
+    }
+    
+    // Close details panel
+    document.getElementById("close-details").addEventListener("click", () => {
+      document.getElementById("details-panel").style.display = "none";
+      if (selectedCell) {
+        d3.select(selectedCell).classed("selected", false);
+        selectedCell = null;
+      }
+    });
+    
+    // Click outside to close details panel
+    document.addEventListener("click", (event) => {
+      const panel = document.getElementById("details-panel");
+      if (panel.style.display === "block" && 
+          !panel.contains(event.target) && 
+          !event.target.classList.contains("cell")) {
+        panel.style.display = "none";
+        if (selectedCell) {
+          d3.select(selectedCell).classed("selected", false);
+          selectedCell = null;
+        }
+      }
+    });
+    
+    // Update statistics summary
+    function updateStats(data) {
+      document.getElementById("visible-count").textContent = data.length;
+      document.getElementById("total-count").textContent = originalData.length;
+      
+      const avgComplexity = data.length > 0 
+        ? data.reduce((sum, d) => sum + d.value, 0) / data.length 
+        : 0;
+      document.getElementById("avg-complexity").textContent = avgComplexity.toFixed(2);
+    }
+    
+    // Apply all current filters and sorting
+    function applyFilters() {
+      const searchText = document.getElementById("filter-input").value.toLowerCase();
+      const complexityThreshold = parseFloat(document.getElementById("complexity-threshold").value) || 0;
+      const categoryFilter = document.getElementById("category-filter").value;
+      
+      // Apply filters
+      filteredData = originalData.filter(d => {
+        return d.name.toLowerCase().includes(searchText) && 
+               d.value >= complexityThreshold &&
+               (categoryFilter === "all" || d.category === categoryFilter);
+      });
+      
+      // Apply sorting
+      applySorting(filteredData);
+    }
+    
+    // Apply sorting to the filtered data and render
+    function applySorting(dataToSort) {
+      const sortValue = document.getElementById("sort-by").value;
+      let sortedData = [...dataToSort];
+      
+      switch(sortValue) {
+        case "complexity-desc":
+          sortedData.sort((a, b) => b.value - a.value);
+          break;
+        case "complexity-asc":
+          sortedData.sort((a, b) => a.value - b.value);
+          break;
+        case "filename":
+          sortedData.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+        case "filename-desc":
+          sortedData.sort((a, b) => b.name.localeCompare(a.name));
+          break;
+      }
+      
+      renderHeatmap(sortedData);
+    }
+    
+    // Set up event listeners
+    document.getElementById("sort-by").addEventListener("change", () => applyFilters());
+    document.getElementById("filter-input").addEventListener("input", () => applyFilters());
+    document.getElementById("complexity-threshold").addEventListener("change", () => applyFilters());
+    document.getElementById("category-filter").addEventListener("change", () => applyFilters());
+    
+    // Initial render
+    applyFilters();
+  </script>
+</body>
+</html> 

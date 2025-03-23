@@ -1,6 +1,6 @@
 ---
 description: 
-globs: 
+globs: src/components/ui/**/*.tsx,src/ui/**/*.tsx,src/hooks/ui/**/*.ts,src/components/ui/visualizations/**/*.tsx,src/components/ui/visualizations/**/*.tsx
 alwaysApply: false
 ---
 # GALACTIC SPRAWL (GS) - User Interface Rules

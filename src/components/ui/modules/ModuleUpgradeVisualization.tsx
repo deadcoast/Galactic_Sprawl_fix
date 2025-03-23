@@ -44,7 +44,9 @@ export function ModuleUpgradeVisualization({
 
   // Define upgrade stages based on module type
   const upgradeStages = useMemo((): UpgradeStage[] => {
-    if (!module) return [];
+    if (!module) {
+      return [];
+    }
 
     // Default stages
     const stages: UpgradeStage[] = [
@@ -115,40 +117,48 @@ export function ModuleUpgradeVisualization({
   // Subscribe to upgrade progress events
   useEffect(() => {
     const handleUpgradeProgress = (event: BaseEvent) => {
-      if (
-        event?.moduleId === moduleId &&
-        event?.data &&
-        typeof event?.data === 'object' &&
-        'progress' in event?.data &&
-        typeof event?.data?.progress === 'number'
-      ) {
-        const newProgress = event?.data?.progress;
-        setProgress(newProgress);
+      // First, check if the event exists
+      if (!event) return;
+      
+      // Check moduleId match
+      if (event.moduleId !== moduleId) return;
+      
+      // Validate data exists and is an object
+      if (!event.data || typeof event.data !== 'object') return;
+      
+      // Check if data has progress property of type number
+      const data = event.data;
+      if (!('progress' in data) || typeof data.progress !== 'number') return;
+      
+      // Now it's safe to use the progress value
+      const newProgress = data.progress;
+      setProgress(newProgress);
 
-        // Determine current stage
-        const stageIndex = upgradeStages.findIndex(
-          stage => newProgress >= stage.startPercentage && newProgress < stage.endPercentage
-        );
+      // Determine current stage
+      const stageIndex = upgradeStages.findIndex(
+        stage => newProgress >= stage.startPercentage && newProgress < stage.endPercentage
+      );
+      
+      if (stageIndex !== -1) {
+        setCurrentStage(stageIndex);
+      }
 
-        if (stageIndex !== -1) {
-          setCurrentStage(stageIndex);
-        }
+      // Update time remaining if upgrade is in progress
+      if (newProgress > 0 && newProgress < 100 && startTime) {
+        const elapsedSeconds = (Date.now() - startTime) / 1000;
+        const estimatedTotalSeconds = (elapsedSeconds * 100) / newProgress;
+        const remainingSeconds = estimatedTotalSeconds - elapsedSeconds;
+        setEstimatedTimeRemaining(remainingSeconds);
+      }
 
-        // Update time remaining if upgrade is in progress
-        if (newProgress > 0 && newProgress < 100 && startTime) {
-          const elapsedSeconds = (Date.now() - startTime) / 1000;
-          const estimatedTotalSeconds = (elapsedSeconds * 100) / newProgress;
-          const remainingSeconds = estimatedTotalSeconds - elapsedSeconds;
-          setEstimatedTimeRemaining(remainingSeconds);
-        }
-
-        // Handle completion
-        if (newProgress >= 100) {
-          setIsUpgrading(false);
-          setEstimatedTimeRemaining(null);
-          if (onUpgradeComplete) {
-            onUpgradeComplete();
-          }
+      // Handle upgrade completion
+      if (newProgress >= 100) {
+        setIsUpgrading(false);
+        setEstimatedTimeRemaining(null);
+        
+        // Call onUpgradeComplete callback if provided
+        if (onUpgradeComplete) {
+          onUpgradeComplete();
         }
       }
     };
@@ -226,7 +236,9 @@ export function ModuleUpgradeVisualization({
 
             setTimeout(() => {
               // Only update if still upgrading
-              if (!isUpgrading) return;
+              if (!isUpgrading) {
+                return;
+              }
 
               currentProgress += progressPerUpdate;
 

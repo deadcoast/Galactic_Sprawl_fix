@@ -20,6 +20,8 @@ import { ModuleType } from './types/buildings/ModuleTypes';
 import { ModuleStatus } from './types/modules/ModuleTypes';
 import { ResourceType } from './types/resources/ResourceTypes';
 import { getTechTreeManager } from './managers/ManagerRegistry';
+import { TechNode } from './managers/game/techTreeManager';
+import { Profiler } from 'react';
 
 // Import the GlobalErrorBoundary component
 import { GlobalErrorBoundary } from './components/ui/GlobalErrorBoundary';
@@ -349,6 +351,13 @@ const handleGlobalError = (error: Error, errorInfo: React.ErrorInfo) => {
 
 // A wrapper for the GameLayout component to provide the required props
 const GameLayoutWrapper = () => {
+  // Use component profiler to track performance
+  const profiler = useComponentProfiler('GameLayoutWrapper', {
+    enabled: process.env.NODE_ENV === 'development',
+    logToConsole: true,
+    slowRenderThreshold: 16
+  });
+
   return (
     <GameLayout empireName="Stellar Dominion" bannerColor="#4FD1C5">
       <div className="min-h-screen bg-gray-900">
@@ -359,8 +368,25 @@ const GameLayoutWrapper = () => {
 };
 
 export default function App() {
-  // Enable app-level profiling
-  const _profiler = React.createRef<Profiler>();
+  // Enable app-level profiling with React Profiler API
+  const profilerRef = React.createRef<typeof Profiler>();
+  
+  // Set up callback for the React Profiler
+  const handleProfilerRender = (
+    id: string,
+    phase: string,
+    actualDuration: number,
+    baseDuration: number,
+    startTime: number,
+    commitTime: number
+  ) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(
+        `[Profiler] ${id} ${phase}: actual=${actualDuration.toFixed(2)}ms, ` +
+        `base=${baseDuration.toFixed(2)}ms, at ${new Date(commitTime).toLocaleTimeString()}`
+      );
+    }
+  };
 
   // Show profiling overlay in development
   useProfilingOverlay({
@@ -384,24 +410,26 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <GlobalErrorBoundary onError={handleGlobalError}>
-        <GameProvider>
-          <ModuleProvider>
-            <ResourceRatesProvider>
-              <ThresholdProvider>
-                <TooltipProvider>
-                  <GameInitializer>
-                    <Suspense fallback={<LoadingComponent />}>
-                      <GameLayoutWrapper />
-                      {showDebugTools && <GameStateMonitor expanded={false} />}
-                    </Suspense>
-                  </GameInitializer>
-                </TooltipProvider>
-              </ThresholdProvider>
-            </ResourceRatesProvider>
-          </ModuleProvider>
-        </GameProvider>
-      </GlobalErrorBoundary>
+      <Profiler id="GalacticSprawl-App" onRender={handleProfilerRender}>
+        <GlobalErrorBoundary onError={handleGlobalError}>
+          <GameProvider>
+            <ModuleProvider>
+              <ResourceRatesProvider>
+                <ThresholdProvider>
+                  <TooltipProvider>
+                    <GameInitializer>
+                      <Suspense fallback={<LoadingComponent />}>
+                        <GameLayoutWrapper />
+                        {showDebugTools && <GameStateMonitor expanded={false} />}
+                      </Suspense>
+                    </GameInitializer>
+                  </TooltipProvider>
+                </ThresholdProvider>
+              </ResourceRatesProvider>
+            </ModuleProvider>
+          </GameProvider>
+        </GlobalErrorBoundary>
+      </Profiler>
     </div>
   );
 }

@@ -161,9 +161,9 @@ export function withErrorBoundary<P extends object>(
  * @param getOptions Function to generate options for each component
  * @returns Record of wrapped components
  */
-export function createSafeComponents<T extends Record<string, ComponentType<any>>>(
+export function createSafeComponents<T extends Record<string, ComponentType<object>>>(
   components: T,
-  getOptions?: (key: string, Component: ComponentType<any>) => WithErrorBoundaryOptions
+  getOptions?: (key: string, Component: ComponentType<object>) => WithErrorBoundaryOptions
 ): { [K in keyof T]: React.FC<React.ComponentProps<T[K]>> } {
   const safeComponents = {} as { [K in keyof T]: React.FC<React.ComponentProps<T[K]>> };
 

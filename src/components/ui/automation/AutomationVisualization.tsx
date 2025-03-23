@@ -102,7 +102,12 @@ export const AutomationVisualization: React.FC<AutomationVisualizationProps> = (
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
-    const { name, value } = event?.target;
+    // Validate event and target
+    if (!event || !event.target) {
+      return;
+    }
+    
+    const { name, value } = event.target;
     setFilter(prev => ({
       ...prev,
       [name]: value,

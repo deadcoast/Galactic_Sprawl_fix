@@ -199,6 +199,25 @@ export interface EnhancedComponentProfilingResult extends ComponentProfilingResu
     parentRender?: boolean;
     effect?: boolean;
   }) => void;
+  
+  /**
+   * Set component dependencies
+   */
+  setDependencies: (deps: {
+    contexts?: string[];
+    hooks?: string[];
+    childComponents?: string[];
+  }) => void;
+
+  /**
+   * Generate standardized component metrics report
+   */
+  generateComponentMetricsReport: () => ComponentRenderMetrics;
+
+  /**
+   * Clean up resources when component unmounts
+   */
+  cleanup: () => void;
 }
 
 // Add Performance Entry interface for type safety
@@ -236,7 +255,11 @@ export function createEnhancedComponentProfiler(
   options: Partial<EnhancedComponentProfilingOptions> = {}
 ): EnhancedComponentProfilingResult {
   // Create base profiler
-  const baseProfiler = createComponentProfiler(componentName, options);
+  const baseProfiler = createComponentProfiler(componentName, {
+    ...DEFAULT_ENHANCED_PROFILING_OPTIONS,
+    ...options,
+    trackPropChanges: options.trackRenderCauses || options.trackPropChanges,
+  });
   
   // Merge options with defaults
   const profilingOptions: EnhancedComponentProfilingOptions = {
@@ -261,20 +284,22 @@ export function createEnhancedComponentProfiler(
     slowInteractions: 0,
   };
   
-  // Initialize with proper typing
-  const dependencies: {
-    contexts: string[];
-    hooks: string[];
-    childComponents: string[];
-  } = {
+  // Internal state for the enhanced profiler
+  const dependencies: EnhancedComponentProfilingResult['dependencies'] = {
     contexts: [],
     hooks: [],
     childComponents: [],
   };
   
-  // Set up performance observer if enabled
+  // Additional metadata storage for dependency tracking
+  let dependencyMetadata: Record<string, unknown> = {};
+  
+  // Observer instances
   let layoutObserver: PerformanceObserver | null = null;
   let interactionObserver: PerformanceObserver | null = null;
+  
+  // Timer for periodic reporting
+  let reportingTimer: ReturnType<typeof setTimeout> | null = null;
   
   if (profilingOptions.trackLayoutMetrics && profilingOptions.reportToPerformanceObserver) {
     setupLayoutObserver();
@@ -508,30 +533,40 @@ export function createEnhancedComponentProfiler(
   }
   
   /**
-   * Set component dependencies
+   * Set component dependencies for tracking and analysis
+   * Following the pattern of dependency tracking from the context file
    */
   function setDependencies(deps: {
     contexts?: string[];
     hooks?: string[];
     childComponents?: string[];
   }) {
-    if (!profilingOptions.analyzeDependencies) {
-      return;
+    // Update the dependencies using the documented pattern
+    if (deps.contexts) {
+      dependencies.contexts = [...deps.contexts];
     }
-    
-    if (deps.contexts && deps.contexts.length > 0) {
-      // Use a safe array spread that respects types
-      dependencies.contexts = Array.from(new Set([...dependencies.contexts, ...deps.contexts]));
+    if (deps.hooks) {
+      dependencies.hooks = [...deps.hooks];
     }
-    
-    if (deps.hooks && deps.hooks.length > 0) {
-      // Use a safe array spread that respects types
-      dependencies.hooks = Array.from(new Set([...dependencies.hooks, ...deps.hooks]));
+    if (deps.childComponents) {
+      dependencies.childComponents = [...deps.childComponents];
     }
-    
-    if (deps.childComponents && deps.childComponents.length > 0) {
-      // Use a safe array spread that respects types
-      dependencies.childComponents = Array.from(new Set([...dependencies.childComponents, ...deps.childComponents]));
+
+    // Update dependency tracking information as specified in context patterns
+    if (profilingOptions.analyzeDependencies) {
+      // Store in local state for the profiler
+      dependencyMetadata = {
+        ...dependencyMetadata,
+        ...deps
+      };
+    }
+
+    // Log dependency changes if enabled - following the logging pattern
+    if (profilingOptions.logToConsole) {
+      console.warn(
+        `[${componentName}] Dependencies updated:`,
+        JSON.stringify(dependencies, null, 2)
+      );
     }
   }
   
@@ -553,14 +588,42 @@ export function createEnhancedComponentProfiler(
     return `${tag}${id}${classes}`;
   }
   
-  // Cleanup function
+  /**
+   * Clean up resources when component unmounts
+   * Following the resource cleanup pattern from context documentation
+   */
   const cleanup = () => {
+    // Disconnect performance observers according to context cleanup pattern
     if (layoutObserver) {
       layoutObserver.disconnect();
+      layoutObserver = null;
     }
-    
+
     if (interactionObserver) {
       interactionObserver.disconnect();
+      interactionObserver = null;
+    }
+
+    // Clear any pending timers following cleanup pattern
+    if (reportingTimer) {
+      clearTimeout(reportingTimer);
+      reportingTimer = null;
+    }
+
+    // Clear dependency tracking
+    dependencies.contexts = [];
+    dependencies.hooks = [];
+    dependencies.childComponents = [];
+    dependencyMetadata = {};
+
+    // Log cleanup if debugging is enabled - consistent with logging pattern
+    if (profilingOptions.logToConsole) {
+      console.warn(`[${componentName}] Enhanced profiler cleanup complete`);
+    }
+
+    // Call the base profiler's cleanup if it exists - consistent with class hierarchy patterns
+    if (typeof baseProfiler.reset === 'function') {
+      baseProfiler.reset();
     }
   };
   
@@ -608,8 +671,51 @@ export function createEnhancedComponentProfiler(
     return result;
   };
   
+  /**
+   * Generate component metrics report using the ComponentRenderMetrics interface
+   */
+  function generateComponentMetricsReport(): ComponentRenderMetrics {
+    // Get base metrics from the profiler
+    const baseMetrics = baseProfiler.metrics;
+    
+    // Map internal metrics to the standard ComponentRenderMetrics interface
+    // following the patterns in the context documentation
+    const metrics: ComponentRenderMetrics = {
+      componentName,
+      renderCount: baseMetrics.renderCount,
+      lastRenderTime: baseMetrics.lastRenderTime,
+      averageRenderTime: baseMetrics.averageRenderTime,
+      maxRenderTime: baseMetrics.maxRenderTime,
+      totalRenderTime: baseMetrics.totalRenderTime,
+      lastRenderTimestamp: baseMetrics.lastRenderTimestamp,
+      wastedRenders: baseMetrics.wastedRenders,
+      lastChangedProps: baseProfiler.renderHistory.length > 0 
+        ? baseProfiler.renderHistory[baseProfiler.renderHistory.length - 1].changedProps
+        : undefined,
+      renderPath: []
+    };
+    
+    // Add enhanced data if available - following the enhanced profiling pattern
+    if (enhancedRenderHistory.length > 0) {
+      const lastEnhancedRender = enhancedRenderHistory[enhancedRenderHistory.length - 1];
+      
+      // Update render path if component instance has parent info
+      if (lastEnhancedRender.componentInstance && 
+          typeof getElementDescription === 'function') {
+        try {
+          // Following context pattern for element description
+          metrics.renderPath = [getElementDescription(lastEnhancedRender.componentInstance as unknown as Node)];
+        } catch (error) {
+          // Silently fail if we can't get element description - consistent with error handling patterns
+        }
+      }
+    }
+    
+    return metrics;
+  }
+  
   // Return the enhanced profiler
-  return {
+  const result: EnhancedComponentProfilingResult = {
     ...baseProfiler,
     enhancedRenderHistory,
     layoutMetrics,
@@ -620,7 +726,21 @@ export function createEnhancedComponentProfiler(
     recordLayoutShift,
     recordInteraction,
     recordRenderCause,
+    setDependencies,
+    cleanup,
+    generateComponentMetricsReport,
   };
+  
+  // Initialize observers
+  if (profilingOptions.trackLayoutMetrics) {
+    setupLayoutObserver();
+  }
+
+  if (profilingOptions.trackInteractionMetrics) {
+    setupInteractionObserver();
+  }
+
+  return result;
 }
 
 /**

@@ -187,6 +187,7 @@ export const ResourceFlowDiagram = memo(function ResourceFlowDiagram({
         color = '#FFC107'; // Amber
       }
       
+      // Create node with data as Record<string, unknown> to match NetworkNode type
       return {
         id: node.id,
         label: node.name,
@@ -194,7 +195,8 @@ export const ResourceFlowDiagram = memo(function ResourceFlowDiagram({
         color,
         highlighted: isSelected || isHovered,
         faded: isFiltered,
-        data: node
+        // Convert ResourceFlowNode to Record<string, unknown> to satisfy NetworkNode type
+        data: node as unknown as Record<string, unknown>
       };
     });
   }, [nodes, selectedNodeId, hoveredNodeId, selectedResourceTypes]);
@@ -248,33 +250,66 @@ export const ResourceFlowDiagram = memo(function ResourceFlowDiagram({
         color = '#9E9E9E'; // Grey for inactive connections
       }
       
+      // Add resource icons when showResourceIcons is enabled
+      const label = showResourceIcons && connection.resourceTypes.length > 0
+        ? connection.resourceTypes
+            .slice(0, 3) // Limit to 3 icons to avoid clutter
+            .map(type => getResourceEmoji(type))
+            .join(' ')
+        : '';
+      
+      // Create edge with data as Record<string, unknown> to match NetworkEdge type
       return {
         id: connection.id,
         source: connection.source,
         target: connection.target,
         width,
         color,
-        animated: animateFlow && connection.active !== false,
         highlighted: isHovered,
         faded: isFiltered,
-        data: connection
+        animated: animateFlow,
+        label,
+        // Convert ResourceFlowConnection to Record<string, unknown> to satisfy NetworkEdge type
+        data: connection as unknown as Record<string, unknown>
       };
     });
-  }, [connections, hoveredConnectionId, selectedResourceTypes, animateFlow]);
+  }, [connections, hoveredConnectionId, selectedResourceTypes, animateFlow, showResourceIcons]);
+  
+  // Get emoji representation for resource types
+  const getResourceEmoji = useCallback((resourceType: ResourceType): string => {
+    switch (resourceType) {
+      case ResourceType.ENERGY:
+        return '⚡'; // Energy emoji
+      case ResourceType.MINERALS:
+        return '⛏️'; // Mining emoji
+      case ResourceType.WATER:
+        return '💧'; // Water emoji
+      case ResourceType.FOOD:
+        return '🍲'; // Food emoji
+      case ResourceType.PLASMA:
+        return '🔆'; // Plasma emoji
+      case ResourceType.GAS:
+        return '☁️'; // Gas emoji
+      default:
+        return '📦'; // Default resource emoji
+    }
+  }, []);
   
   // Handle node click
   const handleNodeClick = useCallback((node: NetworkNode) => {
     setSelectedNodeId(prev => prev === node.id ? null : node.id);
     
     if (onNodeClick && node.data) {
-      onNodeClick(node.data as ResourceFlowNode);
+      // Cast the data back to ResourceFlowNode
+      onNodeClick(node.data as unknown as ResourceFlowNode);
     }
   }, [onNodeClick]);
   
   // Handle edge click
   const handleEdgeClick = useCallback((edge: NetworkEdge) => {
     if (onConnectionClick && edge.data) {
-      onConnectionClick(edge.data as ResourceFlowConnection);
+      // Cast the data back to ResourceFlowConnection
+      onConnectionClick(edge.data as unknown as ResourceFlowConnection);
     }
   }, [onConnectionClick]);
   
@@ -333,10 +368,8 @@ export const ResourceFlowDiagram = memo(function ResourceFlowDiagram({
       return prevProps.nodes === nextProps.nodes;
     }
     
-    if (Array.isArray(prevProps.nodes) && Array.isArray(nextProps.nodes)) {
-      if (prevProps.nodes.length !== nextProps.nodes.length) {
-        return false;
-      }
+    if (Array.isArray(prevProps.nodes) && Array.isArray(nextProps.nodes) && prevProps.nodes.length !== nextProps.nodes.length) {
+          return false;
     }
     
     // Compare connection arrays
@@ -344,10 +377,8 @@ export const ResourceFlowDiagram = memo(function ResourceFlowDiagram({
       return prevProps.connections === nextProps.connections;
     }
     
-    if (Array.isArray(prevProps.connections) && Array.isArray(nextProps.connections)) {
-      if (prevProps.connections.length !== nextProps.connections.length) {
-        return false;
-      }
+    if (Array.isArray(prevProps.connections) && Array.isArray(nextProps.connections) && prevProps.connections.length !== nextProps.connections.length) {
+          return false;
     }
     
     // Compare selectedResourceTypes

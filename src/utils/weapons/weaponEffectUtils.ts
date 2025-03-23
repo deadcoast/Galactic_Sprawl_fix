@@ -395,3 +395,64 @@ export function createEffectChain(effects: Effect[]): Effect[] {
     };
   });
 }
+
+/**
+ * Creates a ship ability using the CommonShipAbility interface
+ * Following the factory pattern similar to other creation methods in the codebase
+ */
+export function createShipAbility(params: {
+  name: string;
+  type?: string;
+  cooldown: number;
+  damage?: number;
+  id?: string;
+}): CommonShipAbility {
+  return {
+    id: params.id || `ability-${Math.random().toString(36).substring(2, 9)}`,
+    name: params.name,
+    type: params.type || 'offensive',
+    cooldown: params.cooldown,
+    damage: params.damage
+  };
+}
+
+/**
+ * Converts a weapon system to a ship ability
+ * Following the conversion pattern between related types
+ */
+export function weaponToShipAbility(weapon: WeaponSystem): CommonShipAbility {
+  return {
+    id: weapon.id,
+    name: `${weapon.type} Weapon`, // Convert weapon type to a name
+    type: 'offensive',
+    cooldown: weapon.cooldown,
+    damage: weapon.damage
+  };
+}
+
+/**
+ * Creates a customized ship ability based on a template
+ * Following the customization pattern with defaults and overrides
+ */
+export function createCustomShipAbility(
+  baseAbility: Partial<CommonShipAbility>,
+  customizations: Partial<CommonShipAbility>
+): CommonShipAbility {
+  // Start with default values based on patterns in context file
+  const defaultAbility: CommonShipAbility = {
+    id: `ability-${Math.random().toString(36).substring(2, 9)}`,
+    name: 'Unnamed Ability',
+    type: 'utility',
+    cooldown: 30,
+    damage: undefined
+  };
+
+  // Merge with base ability and then customizations - following standard object merging pattern
+  return {
+    ...defaultAbility,
+    ...baseAbility,
+    ...customizations,
+    // Always ensure an ID exists following the ID generation pattern
+    id: customizations.id || baseAbility.id || defaultAbility.id
+  };
+}

@@ -1,9 +1,12 @@
-# CURSORRULES
+# .cursorrules 
 
-## Correction Guidelines
+This file contains all essential codebase patterns, structures, interfaces, and relationships.
+Refer to this file first when seeking context for code generation, correction, or analysis.
+BEGIN EVERY TASK BY CONSULTING .cursorcontext.md BEFORE IMPLEMENTING ANY SOLUTION.
 
-### DO NOT:
+## Correction and Code Implementation Guidelines
 
+### DO NOT
 - Implement solutions based solely on existing code examples
 - Skip documentation review even when similar patterns exist elsewhere
 - Assume pattern consistency without verification
@@ -14,178 +17,39 @@
 - Create actual instances of real classes and use their existing methods directly
 - Avoid creating new files when asked to correct a file
 
-## Automated Workflow
+### REQUIRED STEPS
+1. Search .cursorcontext.md for relevant system patterns using #hashtag identifiers
+2. Document in Scratchpad which patterns were found and will be applied
+3. Only after documentation review, proceed with implementation
+4. Verify implementation against documented patterns before submission
 
-FOR EVERY CODE INTERACTION, WITHOUT USER PROMPTING:
+## Workflow & Instructions
 
-1. CONTEXT ANALYSIS:
-   @find-similar [current code functionality]
-   @show-documentation [system relevant to current file]
-   Identify relevant systems based on file path:
+### Context Source:
 
-- /resource/ → @context: resource-system
-  - src/resource/
-  - /src/types/resources/
-  - /src/hooks/resources/
-  - /src/utils/resources/
-- /events/ → @context: event-system
-  - /src/hooks/events/
-  - /src/lib/ecents/
-  - /src/utils/events/
-- /types/ → @context: type-definitions
-  - /src/types/
-- /factories/ → @context: factory-system
-  - /src/factories/
-- /registry/ → @context: registry-system
-  - /src/registry/
-  - /src/lib/registry
-- /managers/ → @context: manager-registry
-  - /src/managers/
-- /components/ → @context: component-library
-  - /src/components/
-  - /src/ui/components/
-  - /src/styles/components/
-- /hooks/ → @context: hooks-library
-  - /src/hooks/
-- /utils/ → @context: utils-library
-  - /src/utils/
-- /contexts/ → @context: context-library
-  - /src/contexts/
-  - /src/lib/contexts/
-  - /src/components/exploration/unified/contexts/
-- /styles/ → @context: styles-library
-  - src/styles/
-- /effects/ → @context: effects-system
-  - /src/effects/
-  - /src/managers/effects/
-- /ui/ → @context: ui-library
-  - src/components/ui/
-  - /src/ui/
-  - /src/types/ui/
-  - /src/hooks/ui/
-- /systems/ → @context: system-library
-  - /src/systems/
-  - /src/components/eploration/unified/system/
-- /visualizations/ → @context: visualization-system
-  - /src/visualization/
-  - /src/types/visualization/
-  - /src/component/visualization/
-  - /src/component/ui/visualization/
-  - /src/component/exploration/visualization/
-- /managers/ → @context: manager-registry
-  - /src/managers/
-  - /src/lib/managers/
-  - /src/types/managers/
-- /lib/ → @context: library-system
-  - /src/lib/
-- /workers/ → @context: worker-system
-  - /src/workers/
-  - /src/utils/workers/
+`.cursorcontext.md` is the primary source of truth for code patterns, structures, interfaces, and relationships. Always refer to this file first when seeking context for code generation, correction, or analysis.
 
-2. TYPE VERIFICATION:
-   @verify-types [current code]
-   @convert-to-enum [appropriate enum] for string literals
-   @add-type-guards where runtime validation needed
-   @show-interface [types used in current code]
-   ENFORCE:
+### Context Retrieval Process:
+- When analyzing or generating code, first search `.cursorcontext` for relevant system sections using `(#hashtag)` identifiers
+- Look for code patterns, interfaces, and type structures in the identified sections
+- Verify implementation approaches against established patterns
+- If context is insufficient, ask the user for clarification
 
-   - ResourceType/EventType enums instead of strings
-   - Type guards for runtime validation
-   - Safe extraction instead of direct property access
-   - No unsafe type assertions
+### Architecture Alignment:
+- Ensure all implementations follow patterns in `.cursorcontext`
+- Maintain consistency with existing type structures and interfaces
+- Follow established naming conventions and implementation patterns
+- If context is missing, ask the user before implementing new patterns
 
-3. PATTERN COMPLIANCE:
-   @check-pattern [current code]
-   @implement-pattern singleton-pattern for managers
-   @refactor-to-pattern manager-registry for manager access
-   @implement-pattern factory-pattern for object creation
-   ENFORCE:
+### Incremental Implementation:
+- Generate code in manageable steps aligned with patterns in `.cursorcontext`
+- Review implementations for consistency with documented patterns
+- Identify and resolve gaps between implementation and documentation
 
-   - Manager access through registry (getResourceManager())
-   - Factory patterns for complex objects
-   - Singleton pattern for manager classes
-   - Typed event handling
-
-4. SYSTEM INTEGRATION:
-   @integrate-with [relevant system] for new components
-   @add-manager-registry for new manager classes
-   @refactor-to-pattern type-safe-event for event handling
-
-## Context Awareness
-
-Always assume code has reference tags based on file location, if the tags are missing, add them.
-
-Example:
-
-```
-@context: resource-system for files in /src/resource/
-```
-
-## File Pattern Matching
-
-USE THESE GLOB PATTERNS TO IDENTIFY FILE TYPES AND APPLY APPROPRIATE RULES:
-
-- Resource Files: `src/**/resource*.{ts,tsx}`, `src/resources/**/*.{ts,tsx}`
-  Apply resource-system patterns, ResourceType enums, resource state interfaces
-- Event Files: `src/**/event*.{ts,tsx}`, `src/events/**/*.{ts,tsx}`
-  Apply event-system patterns, EventType enums, event bus implementations
-- Manager Files: `src/**/*Manager.{ts,tsx}`, `src/managers/**/*.{ts,tsx}`
-  Apply singleton pattern, manager registry integration, error handling
-- Factory Files: `src/**/*Factory.{ts,tsx}`, `src/factories/**/*.{ts,tsx}`
-  Apply factory patterns, creation methods, validation checks
-- Component Files: `src/components/**/*.{tsx,jsx}`
-  Apply component integration patterns, event subscriptions, cleanup
-- Hook Files: `src/hooks/**/*.{ts,tsx}`
-  Apply resource access patterns, event subscriptions, cleanup
-- Type Files: `src/types/**/*.{ts,tsx}`
-  Apply type system standards, enum definitions, interface structures
-
-## Notepads Reference
-
-AUTOMATICALLY RETRIEVE CONTEXT FROM THESE NOTEPADS BY RUNNING THE FOLLOWING APPLICABLE COMMANDS:
-
-- @GS-CORE-ARCHITECTURE.md - Core architecture patterns
-- @GS-RESOURCE-SYSTEM.md - Resource management patterns
-- @GS-TYPE-DEFINITIONS.md - Type system requirements
-- @GS-EVENT-SYSTEM.md - Event handling patterns
-- @GS-FACTORY-PATTERN-REFERENCE.md - Object creation
-- @GS-REGISTRY-PATTERN-REFERENCE.md - Registry usage
-- @GS-EVENT-HANDLING-PATTERN-REFERENCE.md - Event handling
-- @GS-SYSTEM-INTEGRATION-EXAMPLES.md - System integration
-- @GS-MIGRATION-PATTERN-LIBRARY.md - Migration patterns
-- @GS-CONTEXT-COMMANDS.md - Command reference
-- @GS-REFERENCE-TAGS-SYSTEM.md - Reference tags usage
-- @GS-PROGRESSIVE-IMPLEMENTATION-PROTOCOL.md - Implementation protocol
-
-## Command Reference
-
-Full Command documentation: `.cursor/command-sheet.md`
-
-- @check-pattern [code] - Verify pattern compliance
-- @verify-types [code] - Check type safety
-- @find-similar [functionality] - Find similar implementations
-- @implement-pattern [pattern-name] [params] - Generate pattern code
-- @refactor-to-pattern [pattern-name] [code] - Refactor to pattern
-- @show-documentation [system-name] - Show system docs
-- @show-interface [type-name] - Show interface definition
-- @convert-to-enum [enum-type] [code] - Convert strings to enums
-- @add-type-guards [code] - Add type guards
-- @integrate-with [system] [component] - Generate integration
-- @add-manager-registry [manager-name] - Update Manager Registry
-
-## System References
-
-- architecture-core - Overall architecture
-- type-definitions - Type system
-- event-system - Event communication
-- resource-system - Resource management
-- factory-system - Object creation
-- registry-system - Manager access
-- manager-registry - Manager pattern
-- resource-manager - Resource handling
-- module-manager - Module lifecycle
-- component-library - UI components
-- visualization-system - Data visualization
+### Context Maintenance:
+- When discovering new patterns or implementations, suggest updates to `.cursorcontext`
+- Format new context entries according to the established structure
+- Ensure new entries include concrete code examples, not explanations
 
 ## `Scratchpad` Tasklist Usage
 
@@ -195,7 +59,6 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
 ## Scratchpad
 
 [X] Task 1 - Update progress markers as subtasks are completed
-
 [ ] Task 2 - Use the Scratchpad to maintain implementation context and track progress
 ```
 
@@ -203,135 +66,79 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
 
 ## Scratchpad
 
-### UI Implementation Tasklist
+## Patterns Found in .cursorcontext.md
 
-#### Phase 1: Core Infrastructure
+## Category 1: Unused Variables and Methods (406 instances)
+- We are not removing these as the codebase is under active development and they will be integrated later.
+- Added ESLint disable comments to analysis tools (consolidate.js and main.js) for unused variables without removing them.
 
-- [x] **Task 1: Implement UI Theme System**
+## Category 2: Type Safety Issues (74 instances)
+- [ ] **Task 2: Implement Proper Type Definitions**
+  - [ ] Create concrete type definitions to replace all 'any' types
+  - [ ] Implement strict type checking across all components
+  - [ ] Add proper generic implementations for container classes
+  - [ ] Create type utilities for complex type relationships
+  
+  **Primary Files with Any Types:**
+  - [ ] `src/utils/performance/D3BatchedUpdates.ts`: 25 instances of 'any' type usage
+  - [ ] `src/types/visualizations/D3SelectionTypes.ts`: Multiple 'any' type usages in selection interfaces
 
-  - [x] Create `src/types/ui/ThemeTypes.ts` with theme type definitions
-  - [x] Create `src/ui/theme/defaultTheme.ts` with default theme values
-  - [x] Implement `src/contexts/ThemeContext.tsx` for theme provider
-  - [x] Create theme utility hooks in `src/hooks/ui/useTheme.ts`
-  - [x] Develop `src/styles/themeUtils.ts` for theme helpers and CSS functions
+## Category 3: Optional Chaining Errors (34 instances)
+- [X] **Task 3: Implement Proper Null Checking**
+  - [X] Fix ResourceFlowWorker.ts with proper null validation logic (line 143)
+  - [X] Fix worker.ts with appropriate null-safe access patterns (line 31)
+  - [ ] Implement proper error handlers for null conditions
+  - [ ] Add validation functions to ensure data structures are complete before access
 
-- [x] **Task 2: Implement Responsive Design System**
+## Category 4: Console Statement Violations (23 instances)
+- [X] **Task 4: Implement Structured Logging System**
+  - [X] Create a centralized logging service with proper severity levels
+  - [X] Replace console statements with structured logging calls (started with stateMigration.ts)
+  - [ ] Implement environment-specific logging configuration
+  - [ ] Add context information to all log messages
 
-  - [x] Create `src/hooks/ui/useBreakpoint.ts` for responsive breakpoints
-  - [x] Create `src/ui/layout/Responsive.tsx` for responsive container components
-  - [x] Build `src/hooks/ui/useMediaQuery.ts` for media query detection
-  - [x] Implement `src/styles/mediaQueries.ts` for CSS media query utilities
+## Category 5: TypeScript Comment Violations (14 instances)
+- [ ] **Task 5: Implement Proper Type Definitions for Ignored Cases**
+  - [ ] Create proper interfaces for all @ts-ignore cases
+  - [ ] Implement type utilities for complex type scenarios
+  - [ ] Refactor code to properly handle edge cases with type safety
+  - [ ] Create unit tests validating type correctness
 
-- [x] **Task 3: Create UI Type System**
-  - [x] Implement `src/types/ui/ComponentTypes.ts` with common component props
-  - [x] Create `src/types/ui/ThemeTypes.ts` with theme-related types
-  - [x] Build `src/types/ui/EventTypes.ts` for UI-specific events
-  - [x] Implement type guards in `src/types/ui/typeGuards.ts`
+## Category 6: Miscellaneous Issues (3 instances)
+- [X] **Task 6: Fix Remaining Type and Immutability Issues**
+  - [X] Implement proper typed object definitions
+  - [X] Enforce immutability with proper readonly modifiers
+  - [X] Create validation functions for complex type scenarios
+  
+  **Specific Issues:**
+  - [X] Empty object type definitions (2 instances) - Fixed SystemOptions and ExtendedProps
+  - [X] Non-const declaration (1 instance) - Fixed PI_VALUE in calculations.ts
 
-#### Phase 2: Base Components
+## Category 7: Code Integration
+- [ ] **Task 7: Complete System Integration**
+  - [ ] Connect all implemented components to their respective systems
+  - [ ] Implement all missing functionality in resource flow system
+  - [ ] Complete event system implementation with proper type safety
+  - [ ] Ensure full integration between worker system and main application
 
-- [x] **Task 4: Implement Basic UI Elements**
+## Category 7: Code Integration Issues
 
-  - [x] Create `src/ui/components/Button.tsx`
-  - [x] Create `src/ui/components/Card.tsx`
-  - [x] Create `src/ui/components/Icon.tsx`
-  - [x] Create `src/ui/components/Badge.tsx`
-  - [x] Create `src/ui/components/Tooltip.tsx`
-  - [x] Create `src/ui/components/Divider.tsx`
+### Key Integration Files:
 
-- [x] **Task 5: Implement Typography Components**
+#### src/workers/ResourceFlowWorker.ts
+- Missing proper validation for incoming messages
+- Insufficient error handling for worker communication
+- No robust retry mechanism for failed operations
+- Lacks proper typeguards for cross-thread messaging
 
-  - [x] Create `src/ui/components/typography/Heading.tsx`
-  - [x] Create `src/ui/components/typography/Text.tsx`
-  - [x] Create `src/ui/components/typography/Label.tsx`
+#### src/workers/worker.ts
+- Generic message handler without proper type checking
+- No structured error reporting system
+- Missing proper task scheduling and prioritization
+- Insufficient task cancellation implementation
 
-- [x] **Task 6: Implement Layout Components**
-
-  - [x] Create `src/ui/components/layout/Container.tsx`
-  - [x] Create `src/ui/components/layout/Grid.tsx`
-  - [x] Create `src/ui/components/layout/Flex.tsx`
-  - [x] Create `src/ui/components/layout/Stack.tsx`
-  - [x] Create `src/ui/components/layout/Spacer.tsx`
-
-- [x] **Task 7: Implement Input Components**
-  - [x] Create `src/ui/components/inputs/Input.tsx`
-  - [x] Create `src/ui/components/inputs/Checkbox.tsx`
-  - [x] Create `src/ui/components/inputs/Radio.tsx`
-  - [x] Create `src/ui/components/inputs/Select.tsx`
-  - [x] Create `src/ui/components/inputs/Slider.tsx`
-  - [x] Create `src/ui/components/inputs/Switch.tsx`
-
-#### Phase 3: Game-Specific UI Components
-
-- [x] **Task 8: Implement Resource Components**
-
-  - [x] Create `src/components/ui/resource/ResourceDisplay.tsx`
-  - [x] Create `src/components/ui/resource/ResourceBar.tsx`
-  - [x] Create `src/components/ui/resource/ResourceIcon.tsx`
-  - [x] Create `src/components/ui/resource/ResourceGrid.tsx`
-
-- [x] **Task 9: Implement Module Components**
-
-  - [x] Create `src/components/ui/modules/ModuleCard.tsx`
-  - [x] Create `src/components/ui/modules/ModuleGrid.tsx`
-  - [x] Create `src/components/ui/modules/ModuleStatusIndicator.tsx`
-  - [x] Create `src/components/ui/modules/ModuleControls.tsx`
-
-- [x] **Task 10: Implement Game-Specific Components**
-  - [x] Create `src/components/ui/game/ShipDisplay.tsx`
-  - [x] Create `src/components/ui/game/FactionBadge.tsx`
-  - [x] Create `src/components/ui/game/TechTree.tsx`
-  - [x] Create `src/components/ui/game/MiniMap.tsx`
-
-#### Phase 4: Advanced Components and Integration
-
-- [x] **Task 11: Implement Visualization Components**
-
-  - [x] Create `src/components/ui/visualizations/Chart.tsx`
-  - [x] Create `src/components/ui/visualizations/LineGraph.tsx`
-  - [x] Create `src/components/ui/visualizations/BarChart.tsx`
-  - [x] Create `src/components/ui/visualizations/NetworkGraph.tsx`
-  - [x] Create `src/components/ui/visualizations/ResourceFlowDiagram.tsx`
-
-- [x] **Task 12: Implement Modal Components**
-
-  - [x] Create `src/components/ui/overlays/Modal.tsx`
-  - [x] Create `src/components/ui/overlays/Drawer.tsx`
-  - [x] Create `src/components/ui/overlays/Dialog.tsx`
-  - [x] Create `src/components/ui/overlays/Popover.tsx`
-
-- [x] **Task 13: UI System Integration**
-  - [x] Integrate with Resource System
-  - [x] Integrate with Event System
-  - [x] Integrate with Module System
-  - [x] Integrate with Manager Registry
-
-#### Phase 5: Performance and Optimization
-
-- [ ] **Task 14: Implement Performance Optimizations**
-
-  - [ ] Add memoization to pure components
-  - [ ] Implement virtualization for long lists
-  - [ ] Add lazy loading for heavy components
-  - [ ] Optimize rendering with useCallback and useMemo
-
-- [ ] **Task 15: Error Handling Implementation**
-  - [ ] Create `src/components/ui/errors/ErrorBoundary.tsx`
-  - [ ] Implement component-specific error states
-  - [ ] Create fallback UI components
-  - [ ] Integrate with error logging system
-
-#### Phase 6: Documentation and Testing
-
-- [ ] **Task 16: Create Documentation**
-
-  - [ ] Document component API and props
-  - [ ] Create usage examples
-  - [ ] Document theme customization
-  - [ ] Create UI component storybook
-
-- [ ] **Task 17: Implement Testing**
-  - [ ] Create unit tests for base components
-  - [ ] Create integration tests for component interactions
-  - [ ] Test responsive behavior
-  - [ ] Test accessibility compliance
+### Additional Integration Issues:
+- Incomplete event system implementation in src/lib/events/
+- Missing connections between resource system components
+- Unfinished worker communication protocol
+- Incomplete error propagation across system boundaries 

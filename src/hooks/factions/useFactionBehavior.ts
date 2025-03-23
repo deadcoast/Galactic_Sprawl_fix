@@ -99,7 +99,7 @@ export interface FactionWeaponSystem extends WeaponSystem {
  * @returns A fully configured weapon instance
  */
 
-function _convertToWeaponInstance(weapon: WeaponSystem): WeaponInstance {
+function convertToWeaponInstance(weapon: WeaponSystem): WeaponInstance {
   const config: WeaponConfig = {
     id: weapon.id,
     name: weapon.type,
@@ -156,7 +156,7 @@ function _convertToWeaponInstance(weapon: WeaponSystem): WeaponInstance {
  * @returns Array of weapon mounts
  */
 
-function _convertToWeaponMounts(weapons: WeaponSystem[]): WeaponMount[] {
+function convertToWeaponMounts(weapons: WeaponSystem[]): WeaponMount[] {
   return weapons.map((weapon, index) => convertWeaponSystemToMount(weapon, index));
 }
 
@@ -238,7 +238,7 @@ export interface FactionCombatUnit
  * @returns Whether the unit has the specified status
  */
 
-function _hasStatus(unit: CombatUnit | FactionCombatUnit, statusToCheck: string): boolean {
+function hasStatus(unit: CombatUnit | FactionCombatUnit, statusToCheck: string): boolean {
   if (isFactionCombatUnit(unit)) {
     // For FactionCombatUnit, check main status, secondary status, and effects
     return (
@@ -1671,7 +1671,7 @@ function calculateBehaviorState(
  * @returns The distance between the two positions
  */
 
-function _calculateDistance(a: { x: number; y: number }, b: { x: number; y: number }): number {
+function calculateDistance(a: { x: number; y: number }, b: { x: number; y: number }): number {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   return Math.sqrt(dx * dx + dy * dy);
@@ -1892,7 +1892,7 @@ const SHIP_STATS: Partial<Record<ShipClass, ShipStats>> = {
  * @returns The determined ship class for the unit
  */
 
-function _determineShipClass(unit: FactionCombatUnit): ShipClass {
+function determineShipClass(unit: FactionCombatUnit): ShipClass {
   const { status } = unit;
   const factionShips = FACTION_SHIPS[unit.faction] ?? [];
 
@@ -1935,7 +1935,7 @@ function _determineShipClass(unit: FactionCombatUnit): ShipClass {
  * @returns The current status of the ship
  */
 
-function _determineShipStatus(unit: FactionCombatUnit): CommonShipStatus {
+function determineShipStatus(unit: FactionCombatUnit): CommonShipStatus {
   const status = unit.status.main;
   if (status === 'active') {
     return 'ready' as CommonShipStatus;
@@ -1964,7 +1964,7 @@ function _determineShipStatus(unit: FactionCombatUnit): CommonShipStatus {
  * @returns The optimal formation configuration for the units
  */
 
-function _determineFormation(units: FactionCombatUnit[]): FactionFleet['formation'] {
+function determineFormation(units: FactionCombatUnit[]): FactionFleet['formation'] {
   return {
     type: 'defensive',
     spacing: 50,
@@ -1996,7 +1996,9 @@ function findNearbyEnemies(state: FactionBehaviorState): FactionCombatUnit[] {
 // Helper function to calculate player power
 function calculatePlayerPower(): number {
   const playerState = factionManager.getFactionState('player');
-  if (!playerState) return 0;
+  if (!playerState) {
+    return 0;
+  }
 
   // Use a simplified power calculation based on fleet count and territory
   const fleetCount = Array.isArray(playerState.fleets) ? playerState.fleets.length : 0;
@@ -2120,7 +2122,7 @@ function calculateThreatLevel(
  * @returns The normalized ship class name as a FactionShipClass
  */
 
-function _normalizeShipClass(shipClass: string): FactionShipClass {
+function normalizeShipClass(shipClass: string): FactionShipClass {
   const camelCase = shipClass.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
   return camelCase as FactionShipClass;
 }
@@ -2417,5 +2419,247 @@ function convertToEventTerritory(
   return {
     ...territory,
     factionId,
+  };
+}
+
+// After the existing useFactionBehavior hook, add the new hook
+
+/**
+ * Hook for managing faction combat equipment and ship configurations
+ * 
+ * Provides utility functions for:
+ * - Converting weapon systems to proper instances and mounts
+ * - Checking ship status conditions
+ * - Determining optimal ship configurations
+ * - Calculating distances and formations
+ * 
+ * @param factionId The ID of the faction
+ * @returns Faction combat equipment utilities
+ */
+export function useFactionCombatEquipment(factionId: FactionId) {
+  const [combatEquipment, setCombatEquipment] = useState<{
+    weaponInstances: Map<string, WeaponInstance>;
+    weaponMounts: Map<string, WeaponMount[]>;
+    shipClassMap: Map<string, FactionShipClass>;
+    shipStatusMap: Map<string, CommonShipStatus>;
+    formationConfigs: Record<string, {
+      type: 'offensive' | 'defensive' | 'balanced' | 'stealth';
+      spacing: number;
+      facing: number;
+    }>;
+  }>({
+    weaponInstances: new Map(),
+    weaponMounts: new Map(),
+    shipClassMap: new Map(),
+    shipStatusMap: new Map(),
+    formationConfigs: {},
+  });
+
+  /**
+   * Convert a weapon system to a weapon instance with faction-specific adjustments
+   * @param weapon The weapon system to convert
+   * @param factionModifiers Optional faction-specific modifiers
+   * @returns A fully configured weapon instance
+   */
+  const createWeaponInstance = useCallback(
+    (
+      weapon: WeaponSystem,
+      factionModifiers?: {
+        damageMultiplier?: number;
+        rangeMultiplier?: number;
+        cooldownReduction?: number;
+      }
+    ): WeaponInstance => {
+      // Use the existing convertToWeaponInstance function
+      const baseInstance = convertToWeaponInstance(weapon);
+      
+      // Apply faction-specific modifications if provided
+      if (factionModifiers) {
+        const { damageMultiplier = 1, rangeMultiplier = 1, cooldownReduction = 0 } = factionModifiers;
+        
+        // Apply modifiers to the weapon stats
+        if (damageMultiplier !== 1) {
+          baseInstance.state.currentStats.damage = Math.round(
+            baseInstance.state.currentStats.damage * damageMultiplier
+          );
+        }
+        
+        if (rangeMultiplier !== 1) {
+          baseInstance.state.currentStats.range = Math.round(
+            baseInstance.state.currentStats.range * rangeMultiplier
+          );
+        }
+        
+        if (cooldownReduction > 0) {
+          baseInstance.state.currentStats.cooldown = Math.max(
+            0.25,
+            baseInstance.state.currentStats.cooldown - cooldownReduction
+          );
+        }
+      }
+      
+      // Add to our managed state
+      setCombatEquipment(prev => {
+        const updatedInstances = new Map(prev.weaponInstances);
+        updatedInstances.set(weapon.id, baseInstance);
+        return { ...prev, weaponInstances: updatedInstances };
+      });
+      
+      return baseInstance;
+    },
+    [factionId]
+  );
+
+  /**
+   * Generate weapon mounts for a ship with faction-specific configurations
+   * @param weapons The weapon systems to convert to mounts
+   * @param shipId The ID of the ship
+   * @returns Array of weapon mounts
+   */
+  const createWeaponMounts = useCallback(
+    (weapons: WeaponSystem[], shipId: string): WeaponMount[] => {
+      // Use the existing convertToWeaponMounts function
+      const mounts = convertToWeaponMounts(weapons);
+      
+      // Store the mounts by ship ID
+      setCombatEquipment(prev => {
+        const updatedMounts = new Map(prev.weaponMounts);
+        updatedMounts.set(shipId, mounts);
+        return { ...prev, weaponMounts: updatedMounts };
+      });
+      
+      return mounts;
+    },
+    []
+  );
+
+  /**
+   * Check if a unit has a specific status effect
+   * @param unit The combat unit to check
+   * @param statusToCheck The status to check for
+   * @returns Whether the unit has the specified status
+   */
+  const checkUnitStatus = useCallback((unit: CombatUnit | FactionCombatUnit, statusToCheck: string): boolean => {
+    return hasStatus(unit, statusToCheck);
+  }, []);
+
+  /**
+   * Calculate distance between two positions
+   * @param a First position
+   * @param b Second position
+   * @returns Distance between positions
+   */
+  const getDistanceBetween = useCallback((a: Position, b: Position): number => {
+    return calculateDistance(a, b);
+  }, []);
+
+  /**
+   * Determine appropriate ship class based on faction and unit characteristics
+   * @param unit The faction combat unit
+   * @returns Appropriate ship class
+   */
+  const getShipClass = useCallback(
+    (unit: FactionCombatUnit): ShipClass => {
+      const shipClass = determineShipClass(unit);
+      
+      // Update our tracked ship classes
+      setCombatEquipment(prev => {
+        const updatedShipClassMap = new Map(prev.shipClassMap);
+        updatedShipClassMap.set(unit.id, unit.class);
+        return { ...prev, shipClassMap: updatedShipClassMap };
+      });
+      
+      return shipClass;
+    },
+    []
+  );
+
+  /**
+   * Determine the current status of a faction ship based on health and other factors
+   * @param unit The faction combat unit
+   * @returns Current ship status
+   */
+  const getShipStatus = useCallback(
+    (unit: FactionCombatUnit): CommonShipStatus => {
+      const status = determineShipStatus(unit);
+      
+      // Update our tracked ship statuses
+      setCombatEquipment(prev => {
+        const updatedStatusMap = new Map(prev.shipStatusMap);
+        updatedStatusMap.set(unit.id, status);
+        return { ...prev, shipStatusMap: updatedStatusMap };
+      });
+      
+      return status;
+    },
+    []
+  );
+
+  /**
+   * Calculate optimal formation for a group of ships
+   * @param units Array of faction combat units
+   * @param formationName Optional name to track this formation
+   * @returns Optimal formation configuration
+   */
+  const getOptimalFormation = useCallback(
+    (
+      units: FactionCombatUnit[],
+      formationName?: string
+    ): FactionFleet['formation'] => {
+      const formation = determineFormation(units);
+      
+      // If a name was provided, track this formation
+      if (formationName) {
+        setCombatEquipment(prev => {
+          return {
+            ...prev,
+            formationConfigs: {
+              ...prev.formationConfigs,
+              [formationName]: {
+                type: formation.type,
+                spacing: formation.spacing,
+                facing: formation.facing,
+              },
+            },
+          };
+        });
+      }
+      
+      return formation;
+    },
+    []
+  );
+
+  /**
+   * Normalize and validate a ship class string
+   * @param shipClass The ship class string to normalize
+   * @returns Normalized faction ship class
+   */
+  const standardizeShipClass = useCallback(
+    (shipClass: string): FactionShipClass => {
+      return normalizeShipClass(shipClass);
+    },
+    []
+  );
+
+  return {
+    // Weapon management
+    createWeaponInstance,
+    createWeaponMounts,
+    
+    // Status and position utilities
+    checkUnitStatus,
+    getDistanceBetween,
+    
+    // Ship classification
+    getShipClass,
+    getShipStatus,
+    standardizeShipClass,
+    
+    // Formation management
+    getOptimalFormation,
+    
+    // Current state
+    combatEquipment,
   };
 }

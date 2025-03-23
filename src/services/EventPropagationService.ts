@@ -16,6 +16,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
   private subscriptions: Map<string, EventSubscription[]> = new Map();
   private eventQueue: Array<{ type: string; data: unknown }> = [];
   private isProcessing = false;
+  private customErrorHandler?: (error: Error, context?: Record<string, unknown>) => void;
 
   public constructor() {
     super('EventPropagationService', '1.0.0');
@@ -33,6 +34,50 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
       total_events_processed: 0,
       total_errors: 0,
     };
+    
+    // Check if we have access to the component registry service
+    if (dependencies && 'componentRegistry' in dependencies) {
+      const componentRegistry = dependencies.componentRegistry as typeof componentRegistryService;
+      
+      // Notify registry that this service is available (using existing method rather than non-existent registerService)
+      if (componentRegistry) {
+        // Register the service availability as an event
+        componentRegistry.notifyComponentsOfEvent('SERVICE_INITIALIZED', {
+          serviceId: 'eventPropagation',
+          serviceName: 'EventPropagationService',
+          timestamp: Date.now(),
+        });
+        console.warn('[EventPropagationService] Notified component registry of initialization');
+      }
+    } else {
+      // Log that we're initializing without component registry
+      console.warn('[EventPropagationService] Initializing without component registry dependency');
+    }
+    
+    // Handle other dependencies that might be passed in
+    if (dependencies) {
+      // Log the dependencies we received
+      const dependencyNames = Object.keys(dependencies).join(', ');
+      console.warn(`[EventPropagationService] Initialized with dependencies: ${dependencyNames || 'none'}`);
+      
+      // Initialize with error logging service if provided
+      if ('errorLogging' in dependencies) {
+        const errorLogging = dependencies.errorLogging as typeof errorLoggingService;
+        
+        // Configure error handling with the error logging service
+        if (errorLogging) {
+          console.warn('[EventPropagationService] Error logging service available');
+          
+          // Set up a custom error handler using the provided error logging service
+          this.customErrorHandler = (error: Error, context?: Record<string, unknown>) => {
+            errorLogging.logError(error, ErrorType.RUNTIME, undefined, {
+              service: 'EventPropagationService',
+              ...context
+            });
+          };
+        }
+      }
+    }
   }
 
   protected async onDispose(): Promise<void> {
@@ -163,6 +208,12 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
     this.metadata.metrics = metrics;
+
+    // Use custom error handler if available
+    if (this.customErrorHandler) {
+      this.customErrorHandler(error, context);
+      return;
+    }
 
     // Forward to error logging service
     errorLoggingService.logError(error, ErrorType.RUNTIME, undefined, {

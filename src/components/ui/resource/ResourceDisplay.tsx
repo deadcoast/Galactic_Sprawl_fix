@@ -31,12 +31,12 @@ interface ResourceEventData {
 }
 
 function isResourceEvent(event: ModuleEvent): event is ModuleEvent & { data: ResourceEventData } {
-  return Boolean(
-    event?.data &&
-      typeof event?.data === 'object' &&
-      'resourceType' in event?.data &&
-      'amount' in event?.data
-  );
+  if (!event || !event.data || typeof event.data !== 'object') {
+    return false;
+  }
+  
+  const data = event.data;
+  return 'resourceType' in data && 'amount' in data;
 }
 
 /**
@@ -55,32 +55,90 @@ export function ResourceDisplay({
   const [amount, setAmount] = useState<number>(initialAmount);
   const [productionRate, setProductionRate] = useState<number>(0);
   const [consumptionRate, setConsumptionRate] = useState<number>(0);
+  const [lastTransfer, setLastTransfer] = useState<{ source?: string; target?: string } | null>(null);
+  const [showTransferInfo, setShowTransferInfo] = useState<boolean>(false);
 
   useComponentLifecycle({
     eventSubscriptions: [
       {
         eventType: EventType.RESOURCE_PRODUCED,
         handler: (event: ModuleEvent) => {
-          if (isResourceEvent(event) && event?.data?.resourceType === resourceType) {
-            setAmount(prev => prev + event?.data?.amount);
-            setProductionRate(prev => prev + event?.data?.amount);
+          if (isResourceEvent(event) && event.data.resourceType === resourceType) {
+            setAmount(prev => prev + event.data.amount);
+            setProductionRate(prev => prev + event.data.amount);
+            
+            // Track source information if available - following resource event pattern
+            if (event.data.source) {
+              setLastTransfer({
+                source: event.data.source,
+                target: event.data.target || 'current'
+              });
+              setShowTransferInfo(true);
+              
+              // Auto-hide transfer info after 3 seconds
+              setTimeout(() => setShowTransferInfo(false), 3000);
+            }
           }
         },
       },
       {
         eventType: EventType.RESOURCE_CONSUMED,
         handler: (event: ModuleEvent) => {
-          if (isResourceEvent(event) && event?.data?.resourceType === resourceType) {
-            setAmount(prev => prev - event?.data?.amount);
-            setConsumptionRate(prev => prev + event?.data?.amount);
+          if (isResourceEvent(event) && event.data.resourceType === resourceType) {
+            setAmount(prev => prev - event.data.amount);
+            setConsumptionRate(prev => prev + event.data.amount);
+            
+            // Track target information if available - following resource event pattern
+            if (event.data.target) {
+              setLastTransfer({
+                source: event.data.source || 'current',
+                target: event.data.target
+              });
+              setShowTransferInfo(true);
+              
+              // Auto-hide transfer info after 3 seconds
+              setTimeout(() => setShowTransferInfo(false), 3000);
+            }
           }
         },
       },
       {
         eventType: EventType.RESOURCE_UPDATED,
         handler: (event: ModuleEvent) => {
-          if (isResourceEvent(event) && event?.data?.resourceType === resourceType) {
-            setAmount(event?.data?.amount);
+          if (isResourceEvent(event) && event.data.resourceType === resourceType) {
+            setAmount(event.data.amount);
+            
+            // Update transfer info if both source and target are available
+            if (event.data.source && event.data.target) {
+              setLastTransfer({
+                source: event.data.source,
+                target: event.data.target
+              });
+              setShowTransferInfo(true);
+              
+              // Auto-hide transfer info after 3 seconds
+              setTimeout(() => setShowTransferInfo(false), 3000);
+            }
+          }
+        },
+      },
+      // New subscription for transfer events - following resource event pattern
+      {
+        eventType: EventType.RESOURCE_TRANSFERRED,
+        handler: (event: ModuleEvent) => {
+          if (isResourceEvent(event) && event.data.resourceType === resourceType) {
+            // For transfer events, we don't modify the amount as that's handled by produced/consumed
+            // But we do track the transfer information for display
+            if (event.data.source && event.data.target) {
+              setLastTransfer({
+                source: event.data.source,
+                target: event.data.target
+              });
+              setShowTransferInfo(true);
+              
+              // Auto-hide transfer info after 5 seconds for transfers (longer display time)
+              setTimeout(() => setShowTransferInfo(false), 5000);
+            }
           }
         },
       },
@@ -104,6 +162,16 @@ export function ResourceDisplay({
             </span>
           )}
         </div>
+        {/* Display transfer information when available - following ResourceTransferEventData pattern */}
+        {showTransferInfo && lastTransfer && (
+          <div className="text-xs text-slate-400 mt-1">
+            {lastTransfer.source && lastTransfer.target && (
+              <>
+                Transfer: {lastTransfer.source} → {lastTransfer.target}
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

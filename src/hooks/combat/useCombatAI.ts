@@ -24,6 +24,13 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     damageTaken: 0,
     killCount: 0,
   });
+  
+  // Add state for current formation
+  const [currentFormation, setCurrentFormation] = useState<UnitFormation>({
+    type: 'balanced',
+    spacing: 100,
+    facing: 0,
+  });
 
   useEffect(() => {
     const combatManager = getCombatManager();
@@ -95,7 +102,9 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
     // Update behavior tree periodically
     const updateInterval = setInterval(() => {
       const unit = combatManager.getUnitStatus?.(unitId);
-      if (!unit) return;
+      if (!unit) {
+        return;
+      }
 
       const convertStatus = (status: string): CombatUnitStatus => ({
         main: status === 'destroyed' ? 'destroyed' : status === 'disabled' ? 'disabled' : 'active',
@@ -146,6 +155,9 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
         },
       }));
 
+      // Update formation based on combat situation
+      updateFormation(nearbyEnemies.length, nearbyAllies.length);
+
       // Update behavior tree context
       behaviorTreeManager.updateContext?.(unitId, {
         unit: {
@@ -171,11 +183,7 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
         threatLevel: nearbyEnemies.reduce((sum, enemy) => sum + enemy.stats.health, 0),
         nearbyEnemies,
         nearbyAllies,
-        currentFormation: {
-          type: 'balanced',
-          spacing: 100,
-          facing: 0,
-        },
+        currentFormation,
         lastAction: undefined,
         cooldowns: {},
       });
@@ -192,16 +200,64 @@ export function useCombatAI(unitId: string, factionId: FactionId) {
 
     return () => {
       clearInterval(updateInterval);
-      if (typeof unsubscribeNodeExecuted === 'function') unsubscribeNodeExecuted();
-      if (typeof unsubscribeActionStarted === 'function') unsubscribeActionStarted();
-      if (typeof unsubscribeTreeCompleted === 'function') unsubscribeTreeCompleted();
-      if (typeof unsubscribeDamaged === 'function') unsubscribeDamaged();
-      if (typeof unsubscribeStatusChanged === 'function') unsubscribeStatusChanged();
+      if (typeof unsubscribeNodeExecuted === 'function') {
+        unsubscribeNodeExecuted();
+      }
+      if (typeof unsubscribeActionStarted === 'function') {
+        unsubscribeActionStarted();
+      }
+      if (typeof unsubscribeTreeCompleted === 'function') {
+        unsubscribeTreeCompleted();
+      }
+      if (typeof unsubscribeDamaged === 'function') {
+        unsubscribeDamaged();
+      }
+      if (typeof unsubscribeStatusChanged === 'function') {
+        unsubscribeStatusChanged();
+      }
     };
-  }, [unitId, factionId]);
+  }, [unitId, factionId, currentFormation]);
+
+  // Update formation based on combat situation
+  const updateFormation = (enemyCount: number, allyCount: number) => {
+    // Dynamically adjust formation based on combat situation
+    if (enemyCount > allyCount * 2) {
+      // Defensive formation when outnumbered
+      setCurrentFormation({
+        type: 'defensive',
+        spacing: 50, // Tighter spacing for defense
+        facing: 0,   // Face toward enemies
+      });
+    } else if (allyCount > enemyCount * 1.5) {
+      // Offensive formation when we outnumber enemies
+      setCurrentFormation({
+        type: 'offensive',
+        spacing: 150, // Wider spacing for attack
+        facing: 0,    // Face toward enemies
+      });
+    } else {
+      // Balanced formation for even engagements
+      setCurrentFormation({
+        type: 'balanced',
+        spacing: 100,
+        facing: 0,
+      });
+    }
+  };
+
+  // Expose function to manually set formation
+  const setFormation = (formationType: 'offensive' | 'defensive' | 'balanced', spacing?: number) => {
+    setCurrentFormation({
+      type: formationType,
+      spacing: spacing || (formationType === 'offensive' ? 150 : formationType === 'defensive' ? 50 : 100),
+      facing: 0,
+    });
+  };
 
   return {
     status,
     performance,
+    currentFormation,
+    setFormation
   };
 }

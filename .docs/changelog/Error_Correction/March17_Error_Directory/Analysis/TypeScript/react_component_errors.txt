@@ -1,0 +1,10 @@
+../../../../src/services/ComponentRegistryService.ts(28,7): error TS2417: Class static side 'typeof ComponentRegistryServiceImpl' incorrectly extends base class static side 'typeof AbstractBaseService'.
+    Type 'ComponentRegistryServiceImpl' is not assignable to type 'T'.
+      'ComponentRegistryServiceImpl' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'Singleton<T>'.
+../../../../src/ui/components/Card/Card.tsx(13,18): error TS2430: Interface 'CardProps' incorrectly extends interface 'HTMLAttributes<HTMLDivElement>'.
+    Type 'ReactNode' is not assignable to type 'string | undefined'.
+../../../../src/ui/components/Card/variants/ModuleCard.tsx(56,18): error TS2430: Interface 'ModuleCardProps' incorrectly extends interface 'Omit<CardProps, "title" | "subtitle">'.
+    Type '((module: Module) => void) | undefined' is not assignable to type 'ReactEventHandler<HTMLDivElement> | undefined'.
+      Type '(module: Module) => void' is not assignable to type 'ReactEventHandler<HTMLDivElement>'.
+../../../../src/utils/performance/D3AnimationQualityManager.ts(1047,49): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+../../../../src/utils/performance/D3AnimationQualityManager.ts(1051,3): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.

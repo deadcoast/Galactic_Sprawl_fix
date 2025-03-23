@@ -13,6 +13,80 @@ type EnumResourceType = ResourceType;
 type StringResourceType = ResourceTypeString;
 
 /**
+ * Validate that a value is a valid EnumResourceType
+ * Following the type guard pattern from context documentation
+ * @param value The value to check
+ * @returns True if the value is a valid EnumResourceType
+ */
+export function validateEnumResourceType(value: unknown): value is EnumResourceType {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  
+  // Check if the value is in the ResourceType enum - following the pattern in context
+  return Object.values(ResourceType).includes(value as ResourceType);
+}
+
+/**
+ * Generate a mapping of string literals to EnumResourceType
+ * Following the resource type conversion pattern from context documentation
+ * @returns Record mapping string literals to EnumResourceType values
+ */
+export function getMigrationMapping(): Record<string, EnumResourceType> {
+  const mapping: Record<string, EnumResourceType> = {};
+  
+  // Map string literals to enum values - consistent with resource system patterns
+  Object.values(ResourceType).forEach(resourceType => {
+    // Convert to lowercase for case-insensitive matching
+    const lowerCaseKey = resourceType.toLowerCase();
+    mapping[lowerCaseKey] = resourceType as EnumResourceType;
+    
+    // Add additional common variations - following the pattern for handling variations
+    if (lowerCaseKey === ResourceType.DARK_MATTER.toLowerCase()) {
+      mapping['darkmatter'] = ResourceType.DARK_MATTER;
+      mapping['dark-matter'] = ResourceType.DARK_MATTER;
+    } else if (lowerCaseKey === ResourceType.EXOTIC_MATTER.toLowerCase()) {
+      mapping['exoticmatter'] = ResourceType.EXOTIC_MATTER;
+      mapping['exotic-matter'] = ResourceType.EXOTIC_MATTER;
+    }
+  });
+  
+  return mapping;
+}
+
+/**
+ * Find an EnumResourceType by a fuzzy string match
+ * Implements the resource type lookup pattern from context docs
+ * @param value A string that might represent a resource type
+ * @returns The matching EnumResourceType or undefined if no match
+ */
+export function findEnumResourceType(value: string): EnumResourceType | undefined {
+  // Get the mapping of string literals to enum values
+  const mapping = getMigrationMapping();
+  
+  // Try exact match first - following lookup pattern in context
+  if (value in mapping) {
+    return mapping[value];
+  }
+  
+  // Try lowercase match - consistent with case-insensitive patterns
+  const lowerValue = value.toLowerCase();
+  if (lowerValue in mapping) {
+    return mapping[lowerValue];
+  }
+  
+  // Try to find a partial match - following fuzzy matching pattern
+  const keys = Object.keys(mapping);
+  for (const key of keys) {
+    if (key.includes(lowerValue) || lowerValue.includes(key)) {
+      return mapping[key];
+    }
+  }
+  
+  return undefined;
+}
+
+/**
  * Generates a migration guide for resource types
  * @returns A markdown string with a migration guide
  */

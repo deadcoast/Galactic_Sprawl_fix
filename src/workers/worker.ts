@@ -28,7 +28,12 @@ taskHandlers.set('heavyComputation', async (data: unknown, reportProgress) => {
 
 // Handle messages from the main thread
 self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
-  const { taskId, type, data } = event?.data;
+  if (!event || !event.data) {
+    console.error('Received invalid message event in worker');
+    return;
+  }
+
+  const { taskId, type, data } = event.data;
 
   try {
     const handler = taskHandlers.get(type);

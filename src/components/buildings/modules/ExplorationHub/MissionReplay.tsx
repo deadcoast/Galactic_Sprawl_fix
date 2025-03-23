@@ -48,6 +48,39 @@ const selectGameState = (state: unknown): GameState => {
   };
 };
 
+/**
+ * Helper function to safely extract position from event data
+ * Prevents unsafe optional chaining errors
+ */
+function getPositionFromEventData(event: GameEvent): Position | null {
+  if (!event || !event.data) {
+    return null;
+  }
+  
+  const data = event.data;
+  
+  if (
+    typeof data === 'object' &&
+    data !== null &&
+    'position' in data
+  ) {
+    const position = data.position;
+    
+    if (
+      typeof position === 'object' &&
+      position !== null &&
+      'x' in position &&
+      'y' in position &&
+      typeof position.x === 'number' &&
+      typeof position.y === 'number'
+    ) {
+      return position as Position;
+    }
+  }
+  
+  return null;
+}
+
 export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
   const gameState = useGameState(selectGameState);
 
@@ -121,25 +154,10 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
   const renderEvents = (events: GameEvent[]) => {
     return events.map((event: GameEvent, index: number) => {
       // Calculate position based on event data or use random positioning as fallback
+      const position = getPositionFromEventData(event);
       const eventPosition: EventPosition = {
-        x:
-          typeof event?.data === 'object' &&
-          event?.data !== null &&
-          'position' in event?.data &&
-          typeof event?.data?.position === 'object' &&
-          event?.data?.position !== null &&
-          'x' in event?.data?.position
-            ? (event?.data?.position as Position).x
-            : Math.random() * 100,
-        y:
-          typeof event?.data === 'object' &&
-          event?.data !== null &&
-          'position' in event?.data &&
-          typeof event?.data?.position === 'object' &&
-          event?.data?.position !== null &&
-          'y' in event?.data?.position
-            ? (event?.data?.position as Position).y
-            : Math.random() * 100,
+        x: position ? position.x : Math.random() * 100,
+        y: position ? position.y : Math.random() * 100,
       };
 
       // Determine event marker appearance based on event type
@@ -164,7 +182,7 @@ export function MissionReplay({ missionId, onClose }: MissionReplayProps) {
       return (
         <div
           key={`event-${index}`}
-          className="absolute h-2 w-2 rounded-full"
+          className={`absolute h-2 w-2 rounded-full ${isCurrentEvent ? 'ring-2 ring-white' : ''}`}
           style={{
             left: `${eventPosition.x}%`,
             top: `${eventPosition.y}%`,

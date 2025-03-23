@@ -29,6 +29,18 @@ export function SystemIntegrationExample() {
   // State for UI
   const [activeTab, setActiveTab] = useState<'resources' | 'events' | 'modules' | 'managers'>('resources');
   
+  // Use effect for initialization and cleanup
+  useEffect(() => {
+    console.warn('SystemIntegrationExample component mounted');
+    
+    // Any initialization logic here
+    
+    return () => {
+      console.warn('SystemIntegrationExample component unmounted');
+      // Cleanup logic here
+    };
+  }, []);
+  
   return (
     <div className="system-integration-example">
       <h2>System Integration Example</h2>
@@ -310,25 +322,76 @@ function ModuleSystemExample() {
  * Manager Registry integration example
  */
 function ManagerRegistryExample() {
-  // Use our fixed useManager hook to get a combat manager
+  // Define manager type with IBaseManager interface
+  type IGenericManager = IBaseManager & {
+    getName(): string;
+    getStatus(): string;
+  };
+  
+  // Get a manager instance through the registry
   const { 
-    manager, 
-    loading, 
-    error, 
-    isInitialized 
-  } = useManager(() => {
-    // This function safely gets a manager instance
+    manager,
+    loading,
+    error
+  } = useManager<IGenericManager>(() => {
     try {
-      return getCombatManager();
+      // Use proper type conversion with unknown intermediate step
+      return getCombatManager() as unknown as IGenericManager;
     } catch (err) {
-      // If real manager fails, return a simple object that matches interface
-      return { 
-        id: 'combat-manager-fallback',
-        getName: () => 'CombatManager',
-        isInitialized: () => true
-      };
+      console.error('Failed to get combat manager:', err);
+      throw new Error('Unable to get combat manager');
     }
   });
+  
+  // State for manager display
+  const [managerInfo, setManagerInfo] = useState<{
+    id: string;
+    name: string;
+    status: string;
+  } | null>(null);
+  
+  // Update manager info on manager changes
+  useEffect(() => {
+    if (manager && !loading) {
+      try {
+        setManagerInfo({
+          id: getManagerId(),
+          name: getManagerName(),
+          status: manager.getStatus()
+        });
+      } catch (error) {
+        console.error('Error getting manager info:', error);
+      }
+    }
+  }, [manager, loading]);
+  
+  // Get the manager id (with type checking)
+  const getManagerId = (): string => {
+    if (!manager) {
+      return 'unknown';
+    }
+    
+    // Check if the manager has an id property using type guard
+    if ('id' in manager) {
+      return (manager as unknown as { id: string }).id;
+    }
+    
+    return 'unknown-id';
+  };
+  
+  // Get the manager name with type safety
+  const getManagerName = (): string => {
+    if (!manager) {
+      return 'Unknown Manager';
+    }
+    
+    // Type guard to check if manager implements getName method
+    if (hasGetNameMethod(manager)) {
+      return manager.getName();
+    }
+    
+    return 'Unnamed Manager';
+  };
   
   if (loading) {
     return <div>Loading manager...</div>;
@@ -338,59 +401,30 @@ function ManagerRegistryExample() {
     return <div>Error loading manager: {error.message}</div>;
   }
   
-  // Safely extract manager ID using type checking
-  const getManagerId = (): string => {
-    if (!manager) return 'unknown';
-    
-    // Check if manager has an id property
-    if ('id' in manager) {
-      return (manager as {id: string}).id;
-    }
-    
-    // Fallback to a default value
-    return 'combat-manager';
-  };
-  
-  // Safely get manager name
-  const getManagerName = (): string => {
-    if (!manager) return 'unknown';
-    
-    // Check if manager has a getName method
-    if (hasGetNameMethod(manager)) {
-      return manager.getName();
-    }
-    
-    // Try different property access patterns
-    if ('name' in manager) {
-      return (manager as {name: string}).name;
-    }
-    
-    return 'Combat Manager';
-  };
-  
-  // Type guard for getName method
+  // Type guard function for checking if an object has getName method
   function hasGetNameMethod(obj: unknown): obj is { getName: () => string } {
-    return obj !== null && 
-           typeof obj === 'object' && 
-           'getName' in obj && 
-           typeof (obj as { getName: unknown }).getName === 'function';
+    return (
+      typeof obj === 'object' &&
+      obj !== null &&
+      'getName' in obj &&
+      typeof (obj as { getName: unknown }).getName === 'function'
+    );
   }
   
   return (
     <div className="manager-registry-example">
       <h3>Manager Registry Integration</h3>
       
-      {/* Combat Manager */}
-      <div className="manager-display">
-        <h4>Combat Manager</h4>
-        <div>Initialized: {isInitialized ? 'Yes' : 'No'}</div>
-        {manager && (
-          <>
-            <div>Manager ID: {getManagerId()}</div>
-            <div>Manager Name: {getManagerName()}</div>
-          </>
-        )}
-      </div>
+      {managerInfo ? (
+        <div className="manager-info">
+          <h4>Manager Info</h4>
+          <div>ID: {managerInfo.id}</div>
+          <div>Name: {managerInfo.name}</div>
+          <div>Status: {managerInfo.status}</div>
+        </div>
+      ) : (
+        <div>No manager found</div>
+      )}
     </div>
   );
 } 

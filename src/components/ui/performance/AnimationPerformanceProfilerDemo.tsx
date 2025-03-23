@@ -84,7 +84,9 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
 
   // Run animation with performance profiling
   useEffect(() => {
-    if (!svgRef.current || !isAnimating) return;
+    if (!svgRef.current || !isAnimating) {
+      return;
+    }
 
     // Clear any existing content
     d3.select(svgRef.current).selectAll('*').remove();

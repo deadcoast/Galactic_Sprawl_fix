@@ -6,6 +6,8 @@
  * with support for validation, type checking, and complex transformations.
  */
 
+import { logger } from '../logging/loggerService';
+
 /**
  * Represents a migration function that transforms state from one version to another
  */
@@ -112,9 +114,7 @@ export function createMigrationManager<T>(options: MigrationManagerOptions<T>) {
    * Internal debug logging
    */
   const log = (message: string, ...args: unknown[]) => {
-    if (debug) {
-      console.debug(`[MigrationManager] ${message}`, ...args);
-    }
+    logger.debug(message, { module: 'MigrationManager' }, ...args);
   };
 
   /**

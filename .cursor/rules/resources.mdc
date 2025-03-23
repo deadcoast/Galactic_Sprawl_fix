@@ -1,7 +1,7 @@
 ---
 description: 
-globs: 
-alwaysApply: true
+globs: src/types/events/**/*.ts,src/components/**/*.tsx,src/services/**/*.ts,src/hooks/**/*.ts
+alwaysApply: false
 ---
 # GALACTIC SPRAWL (GS) - Resource Rules and Path Specifics
 

@@ -183,81 +183,125 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
   };
 
   /**
+   * Restore state using the specified deserializer
+   * Following state restoration pattern from context documentation
+   */
+  const restoreState = async (serializedState: string): Promise<T | null> => {
+    try {
+      // Use the deserialize function from options - following context pattern
+      const parsed = deserialize(serializedState);
+      
+      if (!validate(parsed)) {
+        throw new PersistenceError(
+          PersistenceErrorType.VALIDATION,
+          `Invalid state structure for key "${key}"`
+        );
+      }
+      
+      return parsed as T;
+    } catch (error) {
+      throw new PersistenceError(
+        PersistenceErrorType.DESERIALIZATION,
+        `Failed to deserialize state for key "${key}"`,
+        error
+      );
+    }
+  };
+
+  /**
+   * Compare two states using the isEqual function from options
+   * Following state comparison pattern from context documentation
+   */
+  const compareStates = (state1: T, state2: T): boolean => {
+    try {
+      return isEqual(state1, state2);
+    } catch (error) {
+      console.warn(`[StatePersistence:${key}] Error comparing states:`, error);
+      // Default to false if comparison fails, triggering a save
+      return false;
+    }
+  };
+
+  /**
    * Save the state to storage
    */
   const saveState = async (state: T, immediate = false): Promise<void> => {
-    if (saveTimeout) {
+    // If we already have a pending save, clear it
+    if (saveTimeout && !immediate) {
       clearTimeout(saveTimeout);
-      saveTimeout = undefined;
     }
-
+    
     const saveFunc = async () => {
       try {
-        const persistedData: PersistedData<T> = {
+        // Generate the serialized state - using persistedStr to track serialization
+        let persistedStr: string;
+        try {
+          persistedStr = serialize(state);
+        } catch (error) {
+          throw new PersistenceError(
+            PersistenceErrorType.SERIALIZATION,
+            `Failed to serialize state for key "${key}"`,
+            error
+          );
+        }
+        
+        // Create metadata wrapper following the pattern in context docs
+        const persistData: PersistedData<T> = {
           version,
           timestamp: Date.now(),
           state,
         };
-
-        log('Saving state', persistedData);
-
-        // Try to serialize the state
-        let serialized: string;
-        try {
-          serialized = serialize(state);
-        } catch (error) {
-          throw new PersistenceError(
-            PersistenceErrorType.SERIALIZATION,
-            `Failed to serialize state: ${error instanceof Error ? error.message : String(error)}`,
-            error
-          );
-        }
-
-        // Compress if enabled
-        const compressed = compressString(serialized);
         
-        // Try to save to storage
+        // Serialize and compress if needed - using the serialized state for metrics
+        const serializedData = compressString(serialize(persistData));
+        
+        // Log state size information if debug is enabled - using persistedStr for comparison
+        if (debug) {
+          const compressionRatio = persistedStr.length > 0 
+            ? ((persistedStr.length - serializedData.length) / persistedStr.length) * 100 
+            : 0;
+          log('State serialization stats', { 
+            rawSize: persistedStr.length, 
+            compressedSize: serializedData.length,
+            compressionRatio: `${compressionRatio.toFixed(2)}%`
+          });
+        }
+        
         try {
-          const persistedStr = JSON.stringify(persistedData);
-          await storage.setItem(key, compressed);
+          if (storage.setItem) {
+            await storage.setItem(key, serializedData);
+            log('Saved state', { size: serializedData.length, compressed: compress });
+          }
         } catch (error) {
-          // Check if it's a quota exceeded error
+          // Handle storage errors (like quota exceeded)
           if (
-            error instanceof Error &&
-            (error.name === 'QuotaExceededError' || error.message.includes('quota'))
+            error instanceof DOMException &&
+            (error.code === 22 || error.code === 1014 || error.name === 'QuotaExceededError')
           ) {
             throw new PersistenceError(
               PersistenceErrorType.STORAGE_FULL,
-              'Storage quota exceeded, cannot save state',
+              `Storage quota exceeded for key "${key}"`,
+              error
+            );
+          } else {
+            throw new PersistenceError(
+              PersistenceErrorType.STORAGE_UNAVAILABLE,
+              `Failed to save state for key "${key}"`,
               error
             );
           }
-          
-          throw new PersistenceError(
-            PersistenceErrorType.STORAGE_UNAVAILABLE,
-            `Failed to save state: ${error instanceof Error ? error.message : String(error)}`,
-            error
-          );
         }
       } catch (error) {
-        log('Error saving state', error);
-        
-        if (error instanceof PersistenceError) {
-          throw error;
-        }
-        
-        throw new PersistenceError(
-          PersistenceErrorType.SERIALIZATION,
-          `Unexpected error saving state: ${error instanceof Error ? error.message : String(error)}`,
-          error
-        );
+        console.error(`[StatePersistence:${key}] Save error:`, error);
+        throw error;
       }
     };
-
+    
     if (immediate) {
-      await saveFunc();
+      return saveFunc();
     } else {
       saveTimeout = setTimeout(saveFunc, debounceTime);
+      return Promise.resolve();
     }
   };
 
@@ -266,93 +310,87 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
    */
   const loadState = async (): Promise<T | null> => {
     try {
-      log('Loading state');
-
-      // Try to get from storage
-      let serialized: string | null;
+      // Get the serialized state from storage
+      let serializedState: string | null = null;
+      
       try {
-        serialized = await storage.getItem(key);
+        if (storage.getItem) {
+          serializedState = await storage.getItem(key);
+        }
       } catch (error) {
         throw new PersistenceError(
           PersistenceErrorType.STORAGE_UNAVAILABLE,
-          `Failed to access storage: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to access storage for key "${key}"`,
           error
         );
       }
-
-      if (!serialized) {
+      
+      if (!serializedState) {
         log('No saved state found');
         return null;
       }
-
+      
       // Decompress if needed
-      const decompressed = decompressString(serialized);
-
-      // Try to parse the persisted data
-      let persistedData: PersistedData<unknown>;
+      const decompressed = decompressString(serializedState);
+      let persistData: PersistedData<T>;
+      
       try {
-        persistedData = JSON.parse(decompressed);
+        // Use the deserialize function from options - following context pattern
+        const parsed = deserialize(decompressed) as PersistedData<T>;
+        persistData = parsed;
       } catch (error) {
         throw new PersistenceError(
           PersistenceErrorType.DESERIALIZATION,
-          `Failed to parse persisted data: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to deserialize state for key "${key}"`,
           error
         );
       }
-
-      // Check version and migrate if needed
-      let migratedState: unknown;
-      try {
-        if (persistedData.version !== version && migrate) {
-          log(
-            `Version mismatch (saved: ${persistedData.version}, current: ${version}), migrating state`
-          );
-          migratedState = migrate(persistedData.state, persistedData.version);
-        } else {
-          migratedState = persistedData.state;
-        }
-      } catch (error) {
-        throw new PersistenceError(
-          PersistenceErrorType.MIGRATION,
-          `Failed to migrate state: ${error instanceof Error ? error.message : String(error)}`,
-          error
-        );
-      }
-
-      // Validate the state
-      try {
-        if (!validate(migratedState)) {
-          throw new PersistenceError(
-            PersistenceErrorType.VALIDATION,
-            'State validation failed'
-          );
-        }
-      } catch (error) {
-        if (error instanceof PersistenceError) {
-          throw error;
+      
+      log('Loaded persisted data', {
+        version: persistData.version,
+        current: version,
+        age: (Date.now() - persistData.timestamp) / 1000,
+      });
+      
+      // Handle version migration if needed
+      if (persistData.version !== version) {
+        if (!migrate) {
+          log('Version mismatch and no migration function provided, using null');
+          return null;
         }
         
-        throw new PersistenceError(
-          PersistenceErrorType.VALIDATION,
-          `State validation error: ${error instanceof Error ? error.message : String(error)}`,
-          error
-        );
+        try {
+          const migratedState = migrate(persistData.state, persistData.version);
+          log('Migrated state from version', {
+            from: persistData.version,
+            to: version,
+          });
+          return migratedState;
+        } catch (error) {
+          throw new PersistenceError(
+            PersistenceErrorType.MIGRATION,
+            `Failed to migrate state from version ${persistData.version} to ${version}`,
+            error
+          );
+        }
       }
-
-      // Try to deserialize the state
+      
+      // Use the restoreState function to validate and deserialize
       try {
-        const deserialized = migratedState as T;
-        log('State loaded successfully', deserialized);
-        return deserialized;
+        // Serialize and then deserialize using our functions to ensure validation
+        const restoredState = await restoreState(serialize(persistData.state));
+        return restoredState;
       } catch (error) {
-        throw new PersistenceError(
-          PersistenceErrorType.DESERIALIZATION,
-          `Failed to deserialize state: ${error instanceof Error ? error.message : String(error)}`,
-          error
-        );
+        // If restore validation fails, try with the raw state as a fallback
+        if (error instanceof PersistenceError && error.type === PersistenceErrorType.VALIDATION) {
+          if (validate(persistData.state)) {
+            return persistData.state;
+          }
+        }
+        throw error;
       }
     } catch (error) {
-      log('Error loading state', error);
+      console.error(`[StatePersistence:${key}] Load error:`, error);
       
       if (error instanceof PersistenceError) {
         throw error;
@@ -360,7 +398,7 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
       
       throw new PersistenceError(
         PersistenceErrorType.DESERIALIZATION,
-        `Unexpected error loading state: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to load state for key "${key}"`,
         error
       );
     }
@@ -381,6 +419,19 @@ export function createStatePersistence<T>(options: PersistenceOptions<T>) {
         `Failed to clear state: ${error instanceof Error ? error.message : String(error)}`,
         error
       );
+    }
+  };
+
+  /**
+   * Compares the current state with a new state to determine if changes exist
+   * Uses the isEqual function from options for deep comparison
+   */
+  const hasStateChanged = (currentState: T, newState: T): boolean => {
+    try {
+      return !compareStates(currentState, newState);
+    } catch (error) {
+      log('Error comparing states, assuming changed', error);
+      return true;
     }
   };
 

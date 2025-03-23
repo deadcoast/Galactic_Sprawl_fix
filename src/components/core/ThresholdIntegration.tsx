@@ -73,16 +73,18 @@ export function ThresholdIntegration({ resourceManager, children }: ThresholdInt
 
   // Handle resource update events from ResourceManager
   const handleResourceUpdate = (event: BaseEvent) => {
-    if (!event?.data || typeof event?.data !== 'object') return;
+    if (!event || !event.data || typeof event.data !== 'object') return;
 
-    const resources = 'resources' in event?.data ? event?.data?.resources : null;
+    // Safely extract resources from event data
+    const resources = event.data && typeof event.data === 'object' && 'resources' in event.data ? 
+      event.data.resources : null;
 
     if (!resources || typeof resources !== 'object') return;
 
     // Update each resource in the ThresholdContext
     Object.entries(resources).forEach(([type, data]) => {
       if (typeof data === 'object' && data !== null && 'current' in data) {
-        const current = data?.current as number;
+        const current = typeof data.current === 'number' ? data.current : 0;
         dispatch({
           type: 'UPDATE_AMOUNT',
           payload: {

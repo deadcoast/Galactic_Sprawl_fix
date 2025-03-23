@@ -205,7 +205,9 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
    * @param frameMetrics Optional metrics to include
    */
   function recordFrame(frameMetrics?: Partial<AnimationFrameMetrics>) {
-    if (!isRunning) return;
+    if (!isRunning) {
+      return;
+    }
 
     const now = performance.now();
     const frameDuration = now - lastFrameTime;
@@ -232,7 +234,9 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
    * @param duration Time taken for the updates
    */
   function recordDomUpdates(updateCount: number, duration: number) {
-    if (!isRunning || !trackDomUpdates) return;
+    if (!isRunning || !trackDomUpdates) {
+      return;
+    }
 
     totalDomUpdates += updateCount;
 
@@ -251,7 +255,9 @@ export function createAnimationProfiler(config: AnimationProfilerConfig = {}) {
    * @param duration Time taken for the interpolations
    */
   function recordInterpolation(count: number, duration: number) {
-    if (!isRunning || !trackInterpolation) return;
+    if (!isRunning || !trackInterpolation) {
+      return;
+    }
 
     interpolationMeasurements.push({ count, duration });
 

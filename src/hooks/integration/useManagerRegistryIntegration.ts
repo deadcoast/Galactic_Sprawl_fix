@@ -174,7 +174,8 @@ export function useServiceRegistry() {
       // We need to use call to properly bind the 'this' context because of the protected constructor
       // @ts-expect-error - ServiceRegistry's getInstance needs to be called this way
       const registryInstance = ServiceRegistry.getInstance.call(ServiceRegistry);
-      setRegistry(registryInstance);
+      // Cast the instance to ServiceRegistry since we know that's what it returns
+      setRegistry(registryInstance as unknown as ServiceRegistry);
       setError(null);
     } catch (e) {
       const error = e instanceof Error ? e : new Error(String(e));

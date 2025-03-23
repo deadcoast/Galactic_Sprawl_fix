@@ -24,7 +24,7 @@ export interface ErrorHandlerConfig {
   autoLog?: boolean;
 }
 
-export interface ErrorHandlerState<E = Error> {
+export interface ErrorHandlerState<E extends Error = Error> {
   /** Whether there is an active error */
   hasError: boolean;
   
@@ -76,7 +76,7 @@ export interface ErrorHandlerState<E = Error> {
  * }
  * ```
  */
-export function useErrorHandler<E = Error>(config: ErrorHandlerConfig): ErrorHandlerState<E> {
+export function useErrorHandler<E extends Error = Error>(config: ErrorHandlerConfig): ErrorHandlerState<E> {
   const {
     componentName,
     errorType = ErrorType.RUNTIME,
@@ -131,8 +131,7 @@ export function useErrorHandler<E = Error>(config: ErrorHandlerConfig): ErrorHan
   ) => {
     return (...args: Parameters<T>): ReturnType<T> | undefined => {
       try {
-        const result = fn(...args) as ReturnType<T>;
-        return result;
+        return fn(...args) as ReturnType<T>;
       } catch (e) {
         const error = e instanceof Error ? e : new Error(String(e));
         
@@ -143,7 +142,8 @@ export function useErrorHandler<E = Error>(config: ErrorHandlerConfig): ErrorHan
         
         // Then log error
         if (autoLog !== false) {
-          logError(error);
+          // Cast error to type E since we've constrained E to extend Error
+          logError(error as unknown as E);
         }
         
         if (options.rethrow) {

@@ -345,10 +345,14 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
    */
   public canUnlock(nodeId: string): boolean {
     const node = this.techNodes.get(nodeId);
-    if (!node) return false;
+    if (!node) {
+      return false;
+    }
     
     // If already unlocked, it can't be unlocked again
-    if (node.unlocked) return false;
+    if (node.unlocked) {
+      return false;
+    }
     
     // Check if all requirements are met
     return node.requirements.every(reqId => this.isUnlocked(reqId));
@@ -449,7 +453,9 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
     const nodesToUnlock = new Set<string>();
     const collectRequirements = (nodeId: string) => {
       const node = this.techNodes.get(nodeId);
-      if (!node) return;
+      if (!node) {
+        return;
+      }
       
       if (!node.unlocked) {
         nodesToUnlock.add(nodeId);
@@ -474,7 +480,9 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
       const nodeA = this.techNodes.get(a);
       const nodeB = this.techNodes.get(b);
       
-      if (!nodeA || !nodeB) return 0;
+      if (!nodeA || !nodeB) {
+        return 0;
+      }
       
       // Sort by tier first
       if (nodeA.tier !== nodeB.tier) {

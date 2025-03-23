@@ -189,6 +189,12 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
   private handlers: Map<string, Set<EventHandler>> = new Map();
   private onceHandlers: Map<string, Set<EventHandler>> = new Map();
 
+  // Map to store pattern-based subscriptions (using regular expressions)
+  private patternSubscriptions: Map<string, Set<Subscription<T>>> = new Map();
+  
+  // Store filters for advanced filtering
+  private eventFilters: Map<SubscriptionId, (event: T) => boolean> = new Map();
+
   /**
    * Creates a new EventBus instance
    * @param maxHistorySize Maximum number of events to keep in history
@@ -369,6 +375,22 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
       const endTime = performance.now();
       const processingTime = endTime - startTime;
       this.updatePerformanceMetrics(event?.type, processingTime, allSubscriptions.length);
+    }
+
+    // Also check pattern subscriptions
+    for (const [pattern, subscriptions] of this.patternSubscriptions.entries()) {
+      const regex = new RegExp(pattern);
+      
+      // If event type matches pattern, notify all matching subscribers
+      if (regex.test(event.type)) {
+        for (const subscription of subscriptions) {
+          try {
+            subscription.listener(event);
+          } catch (error) {
+            console.error(`Error in pattern subscription handler (pattern: ${pattern}):`, error);
+          }
+        }
+      }
     }
   }
 
@@ -684,6 +706,139 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
   public clearAllListeners(): void {
     this.handlers.clear();
     this.onceHandlers.clear();
+  }
+
+  /**
+   * Subscribe to events using a pattern (regular expression)
+   * Allows subscribing to multiple event types matching a pattern
+   * Following the subscription pattern from context documentation
+   */
+  subscribePattern(
+    pattern: string | RegExp,
+    listener: EventListener<T>,
+    options: SubscriptionOptions = {}
+  ): () => void {
+    const patternString = pattern instanceof RegExp ? pattern.source : pattern;
+    const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
+    
+    // Create a unique ID for this subscription - following ID generation pattern
+    const subscriptionId = this.generateSubscriptionId();
+    
+    // Create subscription object - following context subscription object pattern
+    const subscription: Subscription<T> = {
+      id: subscriptionId,
+      eventType: '*', // Using * since it matches multiple event types
+      listener,
+      priority: options.priority ?? 0,
+      source: options.source,
+      createdAt: Date.now(),
+    };
+    
+    // Ensure we have a set for this pattern
+    if (!this.patternSubscriptions.has(patternString)) {
+      this.patternSubscriptions.set(patternString, new Set());
+    }
+    
+    // Add subscription to the pattern map
+    this.patternSubscriptions.get(patternString)?.add(subscription);
+    
+    // When emitting events, we'll check if the event type matches any patterns
+    
+    return () => {
+      // Find and remove the pattern subscription - following cleanup pattern
+      const subscriptions = this.patternSubscriptions.get(patternString);
+      if (subscriptions) {
+        subscriptions.delete(subscription);
+        if (subscriptions.size === 0) {
+          this.patternSubscriptions.delete(patternString);
+        }
+      }
+    };
+  }
+
+  /**
+   * Subscribe with advanced filtering capabilities
+   * Allows complex event filtering beyond simple event types
+   * Following context pattern for enhanced filtering
+   */
+  subscribeWithFilter(
+    eventType: EventType | '*',
+    filter: (event: T) => boolean,
+    listener: EventListener<T>,
+    options: SubscriptionOptions = {}
+  ): () => void {
+    // Create standard subscription first - reusing existing functionality
+    const unsubscribe = this.subscribe(eventType, (event: T) => {
+      // Only call listener if filter passes
+      if (filter(event)) {
+        listener(event);
+      }
+    }, options);
+    
+    // Return unsubscribe function
+    return unsubscribe;
+  }
+
+  /**
+   * Subscribe to multiple event types at once
+   * Following context pattern for bulk operations
+   */
+  subscribeMultiple(
+    eventTypes: Array<EventType | '*'>,
+    listener: EventListener<T>,
+    options: SubscriptionOptions = {}
+  ): () => void {
+    // Create subscriptions for each event type
+    const unsubscribers = eventTypes.map(eventType => 
+      this.subscribe(eventType, listener, options)
+    );
+    
+    // Return a function that unsubscribes from all
+    return () => {
+      unsubscribers.forEach(unsubscribe => unsubscribe());
+    };
+  }
+
+  /**
+   * Subscribe with debounce
+   * Only calls the listener after events have stopped firing for the specified time
+   * Following context pattern for throttled event handlers
+   */
+  subscribeDebounced(
+    eventType: EventType | '*',
+    listener: EventListener<T>,
+    debounceMs: number = 100,
+    options: SubscriptionOptions = {}
+  ): () => void {
+    let timeoutId: NodeJS.Timeout | null = null;
+    let lastEvent: T | null = null;
+    
+    // Create a subscription that debounces the listener
+    const unsubscribe = this.subscribe(eventType, (event: T) => {
+      lastEvent = event;
+      
+      // Clear existing timeout if there is one
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+      
+      // Set a new timeout
+      timeoutId = setTimeout(() => {
+        if (lastEvent) {
+          listener(lastEvent);
+        }
+        timeoutId = null;
+        lastEvent = null;
+      }, debounceMs);
+    }, options);
+    
+    // Return enhanced unsubscribe that also clears the timeout
+    return () => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+      unsubscribe();
+    };
   }
 }
 

@@ -317,4 +317,100 @@ export function useLazyComponent<T>(
   }, dependencies);
   
   return { Component, loading, error };
+}
+
+/**
+ * Creates a memoized component with enhanced optimizations
+ * 
+ * @param Component The component to optimize
+ * @param options Optimization options
+ * @returns A memoized component with enhanced optimizations
+ */
+export function createOptimizedComponent<P extends Record<string, unknown>>(
+  Component: React.ComponentType<P>, 
+  options: MemoizationConfig
+): React.ComponentType<P> {
+  const { componentName } = options;
+
+  // Create an enhanced component that uses useMemo for expensive calculations
+  // Using standard functional component to avoid ref forwarding type issues
+  const EnhancedComponent = (props: P): React.ReactElement => {
+    // Track render time
+    const renderStart = performance.now();
+    
+    // Use memoization for expensive calculations within the component
+    const memoizedProps = useMemo(() => {
+      // Filter props that should be memoized (e.g., large arrays, objects)
+      const propsToMemoize: Partial<P> = {};
+      
+      // Identify potentially expensive props to memoize
+      Object.entries(props).forEach(([key, value]) => {
+        if (
+          Array.isArray(value) ||
+          (typeof value === 'object' && value !== null) ||
+          typeof value === 'function'
+        ) {
+          // These are types that benefit from memoization
+          (propsToMemoize as Record<string, unknown>)[key] = value;
+        }
+      });
+      
+      return propsToMemoize;
+    }, [props]);
+    
+    // Apply optimizations based on memoizedProps
+    const optimizedRenderProps = useMemo(() => {
+      // Create optimized rendering props by combining the original props with optimized handlers
+      return {
+        ...props,
+        // Enhance with performance optimization wrappers for event handlers
+        ...(Object.entries(memoizedProps).reduce((acc, [key, value]) => {
+          // If the prop is a function (like an event handler), wrap it with performance tracking
+          if (typeof value === 'function') {
+            acc[key] = (...args: unknown[]) => {
+              const startTime = performance.now();
+              // Use a properly typed function call instead of the generic Function type
+              const result = (value as (...fnArgs: unknown[]) => unknown)(...args);
+              const endTime = performance.now();
+              
+              // Log slow handler executions
+              if (options.logPerformance && (endTime - startTime > (options.renderTimeThreshold || 16))) {
+                console.warn(
+                  `[ComponentOptimizer] Slow handler execution for ${componentName}.${key}: ${(endTime - startTime).toFixed(2)}ms`
+                );
+              }
+              
+              return result;
+            };
+          }
+          return acc;
+        }, {} as Record<string, unknown>))
+      } as P;
+    }, [props, memoizedProps]);
+    
+    // Render the component - using React.createElement for cleaner typing
+    // Now using the optimized props that include performance monitoring
+    const result = React.createElement(Component, optimizedRenderProps);
+    
+    // Log render time if needed
+    if (options.logPerformance) {
+      const renderEnd = performance.now();
+      const renderTime = renderEnd - renderStart;
+      
+      if (renderTime > (options.renderTimeThreshold || 16)) {
+        console.warn(
+          `[ComponentOptimizer] Slow render detected for ${componentName}: ${renderTime.toFixed(2)}ms`
+        );
+      }
+    }
+    
+    return result;
+  };
+  
+  // Set display name for dev tools
+  EnhancedComponent.displayName = `Optimized(${componentName})`;
+  
+  // Return memoized version - use type assertion after casting to unknown
+  // This approach is safer than direct casting between incompatible types
+  return React.memo(EnhancedComponent) as unknown as React.ComponentType<P>;
 } 
