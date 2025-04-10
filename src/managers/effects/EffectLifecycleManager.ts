@@ -1,5 +1,10 @@
-import { TypedEventEmitter } from '../../lib/events/EventEmitter';
+import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { Position } from '../../types/core/GameTypes';
+import {
+    EffectCleanedEventData,
+    EffectStartedEventData,
+    EventType
+} from '../../types/events/EventTypes';
 import { particleSystemManager } from './ParticleSystemManager';
 
 interface Effect {
@@ -12,14 +17,7 @@ interface Effect {
   cleanup?: () => void;
 }
 
-interface EffectEvents {
-  effectStarted: { effectId: string; type: string };
-  effectEnded: { effectId: string; type: string };
-  effectCleaned: { effectId: string; type: string };
-  [key: string]: unknown;
-}
-
-export class EffectLifecycleManager extends TypedEventEmitter<EffectEvents> {
+export class EffectLifecycleManager {
   private static instance: EffectLifecycleManager;
   private effects: Map<string, Effect>;
   private cleanupInterval: number = 0;
@@ -27,7 +25,6 @@ export class EffectLifecycleManager extends TypedEventEmitter<EffectEvents> {
   private readonly BATCH_SIZE = 10;
 
   private constructor() {
-    super();
     this.effects = new Map();
     this.startCleanupInterval();
   }
@@ -64,7 +61,13 @@ export class EffectLifecycleManager extends TypedEventEmitter<EffectEvents> {
     };
 
     this.effects.set(id, effect);
-    this.emit('effectStarted', { effectId: id, type });
+    const eventData: EffectStartedEventData = { effectId: id, effectType: type };
+    eventSystem.publish({
+        type: EventType.EFFECT_STARTED,
+        managerId: 'EffectLifecycleManager',
+        timestamp: Date.now(),
+        data: eventData
+    });
 
     // Schedule cleanup
     if (duration > 0) {
@@ -113,7 +116,13 @@ export class EffectLifecycleManager extends TypedEventEmitter<EffectEvents> {
     }
 
     this.effects.delete(id);
-    this.emit('effectCleaned', { effectId: id, type: effect.type });
+    const eventData: EffectCleanedEventData = { effectId: id, effectType: effect.type };
+    eventSystem.publish({
+        type: EventType.EFFECT_CLEANED,
+        managerId: 'EffectLifecycleManager',
+        timestamp: Date.now(),
+        data: eventData
+    });
   }
 
   public cleanupEffectsByType(type: string): void {
@@ -154,9 +163,6 @@ export class EffectLifecycleManager extends TypedEventEmitter<EffectEvents> {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
     }
-
-    // Clear event listeners
-    this.removeAllListeners();
   }
 }
 

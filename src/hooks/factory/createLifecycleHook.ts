@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { errorLoggingService, ErrorType } from '../../services/ErrorLoggingService';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 
 /**
  * Component lifecycle phases
@@ -89,7 +89,9 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
 
     // Helper to track performance if enabled
     const trackRenderPerformance = useCallback(() => {
-      if (!options?.trackPerformance) return;
+      if (!options?.trackPerformance) {
+        return;
+      }
 
       const now = performance.now();
       const perf = performanceRef.current;
@@ -134,11 +136,16 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
           try {
             options?.onError(err, phase, props);
           } catch (handlerError) {
-            console.error('Error in onError handler:', handlerError);
+            errorLoggingService.logError(
+              handlerError instanceof Error ? handlerError : new Error('Error in lifecycle onError handler'),
+              ErrorType.EVENT_HANDLING,
+              ErrorSeverity.HIGH,
+              { componentName: 'createLifecycleHook', action: 'reportError (onError handler)', originalError: err.message }
+            );
           }
         }
       },
-      [phase, props]
+      [phase, props, options?.onError]
     );
 
     // Helper to safely execute lifecycle methods
@@ -151,7 +158,9 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
         phase: LifecyclePhase,
         ...args: TProps[]
       ) => {
-        if (!fn) return;
+        if (!fn) {
+          return;
+        }
 
         const startTime = options?.trackPerformance ? performance.now() : 0;
 
@@ -202,12 +211,16 @@ export function createLifecycleHook<TProps = Record<string, unknown>>(
     useEffect(
       () => {
         // Skip first run (mount)
-        if (!isMountedRef.current) return;
+        if (!isMountedRef.current) {
+          return;
+        }
 
         trackRenderPerformance();
 
         // Skip if no update handler
-        if (!options?.onUpdate) return;
+        if (!options?.onUpdate) {
+          return;
+        }
 
         // Set phase to update
         setPhase(LifecyclePhase.UPDATE);

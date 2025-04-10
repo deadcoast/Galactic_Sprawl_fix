@@ -1,8 +1,7 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
-import { ResourceTypeHelpers } from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
 import { SimulationNodeDatum, d3Accessors } from '../../../types/visualizations/D3Types';
 
 /**
@@ -275,7 +274,9 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
       event: d3.D3DragEvent<SVGGElement, ResourceNode, ResourceNode>,
       d: ResourceNode
     ) {
-      if (!event?.active) simulation.alphaTarget(0.3).restart();
+      if (!event?.active) {
+        simulation.alphaTarget(0.3).restart();
+      }
       d.fx = d3Accessors.getX(d);
       d.fy = d3Accessors.getY(d);
     }
@@ -292,7 +293,9 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
       event: d3.D3DragEvent<SVGGElement, ResourceNode, ResourceNode>,
       d: ResourceNode
     ) {
-      if (!event?.active) simulation.alphaTarget(0);
+      if (!event?.active) {
+        simulation.alphaTarget(0);
+      }
       d.fx = null;
       d.fy = null;
     }

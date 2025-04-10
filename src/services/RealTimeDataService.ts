@@ -104,7 +104,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.total_data_points += newData.length;
     metrics.buffer_utilization = this.calculateBufferUtilization(buffer);
     this.metadata.metrics = metrics;
@@ -150,7 +150,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.active_streams = this.streamIds.size;
     this.metadata.metrics = metrics;
   }
@@ -170,7 +170,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.active_streams = this.streamIds.size;
     metrics.generators_active = this.generators.size;
     this.metadata.metrics = metrics;
@@ -211,7 +211,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.generators_active = this.generators.size;
     this.metadata.metrics = metrics;
   }
@@ -232,11 +232,21 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
         return noisyValue;
       },
       configureGenerator: (config: Record<string, unknown>) => {
-        if (typeof config.amplitude === 'number') amplitude = config.amplitude;
-        if (typeof config.offset === 'number') offset = config.offset;
-        if (typeof config.period === 'number') period = config.period;
-        if (typeof config.noise === 'number') noise = config.noise;
-        if (config.resetStep) step = 0;
+        if (typeof config.amplitude === 'number') {
+          amplitude = config.amplitude;
+        }
+        if (typeof config.offset === 'number') {
+          offset = config.offset;
+        }
+        if (typeof config.period === 'number') {
+          period = config.period;
+        }
+        if (typeof config.noise === 'number') {
+          noise = config.noise;
+        }
+        if (config.resetStep) {
+          step = 0;
+        }
       },
     };
   }
@@ -255,11 +265,15 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
         return currentValue;
       },
       configureGenerator: (config: Record<string, unknown>) => {
-        if (typeof config.step === 'number') step = config.step;
+        if (typeof config.step === 'number') {
+          step = config.step;
+        }
         if (Array.isArray(config.bounds) && config.bounds.length === 2) {
           bounds = config.bounds as [number, number];
         }
-        if (typeof config.reset === 'number') currentValue = config.reset;
+        if (typeof config.reset === 'number') {
+          currentValue = config.reset;
+        }
       },
     };
   }
@@ -270,7 +284,7 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     const config = this.streamConfigs.get(bufferId);
     if (config) {
       metrics.update_rate = data.length / (config.updateInterval / 1000);
@@ -280,7 +294,9 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
 
   private startGeneratorStream(bufferId: string, interval: number): void {
     const generator = this.generators.get(bufferId);
-    if (!generator) return;
+    if (!generator) {
+      return;
+    }
 
     const intervalId = setInterval(() => {
       const data = generator.generateData();
@@ -293,7 +309,9 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
 
   private notifyListeners(bufferId: string): void {
     const listeners = this.listeners.get(bufferId);
-    if (!listeners) return;
+    if (!listeners) {
+      return;
+    }
 
     const data = this.getBufferData(bufferId);
     listeners.forEach(callback => {
@@ -306,7 +324,9 @@ class RealTimeDataServiceImpl extends AbstractBaseService<RealTimeDataServiceImp
   }
 
   private calculateBufferUtilization(buffer: DataBuffer<unknown>): number {
-    if (buffer.isFull) return 1;
+    if (buffer.isFull) {
+      return 1;
+    }
     return buffer.tail >= buffer.head
       ? (buffer.tail - buffer.head) / buffer.capacity
       : (buffer.capacity - buffer.head + buffer.tail) / buffer.capacity;

@@ -29,6 +29,11 @@ export enum EventCategory {
   SYSTEM = 'system',
   THRESHOLD = 'threshold',
   EXPLORATION = 'exploration',
+  FACTION = 'faction',
+  EFFECTS = 'effects',
+  MINING = 'mining',
+  AI = 'ai',
+  OFFICER = 'officer',
 }
 
 /**
@@ -106,6 +111,8 @@ export enum EventType {
 
   // Combat events
   COMBAT_UPDATED = 'COMBAT_UPDATED',
+  HAZARD_CREATED = 'HAZARD_CREATED',
+  HAZARD_REMOVED = 'HAZARD_REMOVED',
 
   // Tech events
   TECH_UNLOCKED = 'TECH_UNLOCKED',
@@ -116,6 +123,7 @@ export enum EventType {
   SYSTEM_STARTUP = 'SYSTEM_STARTUP',
   SYSTEM_SHUTDOWN = 'SYSTEM_SHUTDOWN',
   SYSTEM_ALERT = 'SYSTEM_ALERT',
+  PARTICLE_SYSTEM_UPDATED = 'PARTICLE_SYSTEM_UPDATED',
 
   // Game manager events
   GAME_STARTED = 'GAME_STARTED',
@@ -140,6 +148,55 @@ export enum EventType {
   EXPLORATION_TASK_COMPLETED = 'EXPLORATION_TASK_COMPLETED',
   EXPLORATION_TASK_PROGRESS = 'EXPLORATION_TASK_PROGRESS',
   EXPLORATION_POSITION_UPDATED = 'EXPLORATION_POSITION_UPDATED',
+
+  // Faction events
+  FACTION_RELATIONSHIP_CHANGED = 'FACTION_RELATIONSHIP_CHANGED',
+  FACTION_TREATY_STATUS_CHANGED = 'FACTION_TREATY_STATUS_CHANGED',
+  FACTION_TRADE_ESTABLISHED = 'FACTION_TRADE_ESTABLISHED',
+  FACTION_CONFLICT_RECORDED = 'FACTION_CONFLICT_RECORDED',
+
+  // Asteroid Field Events (Added)
+  ASTEROID_FIELD_GENERATED = 'ASTEROID_FIELD_GENERATED',
+  ASTEROID_FIELD_DEPLETED = 'ASTEROID_FIELD_DEPLETED',
+  ASTEROID_FIELD_RESOURCE_DISCOVERED = 'ASTEROID_FIELD_RESOURCE_DISCOVERED',
+  ASTEROID_FIELD_HAZARD_CREATED = 'ASTEROID_FIELD_HAZARD_CREATED',
+  ASTEROID_FIELD_HAZARD_REMOVED = 'ASTEROID_FIELD_HAZARD_REMOVED',
+  ASTEROID_FIELD_RESOURCE_NODE_REGISTERED = 'ASTEROID_FIELD_RESOURCE_NODE_REGISTERED',
+  ASTEROID_FIELD_RESOURCE_EXTRACTED = 'ASTEROID_FIELD_RESOURCE_EXTRACTED',
+  ASTEROID_FIELD_SHIP_POSITION_UPDATED = 'ASTEROID_FIELD_SHIP_POSITION_UPDATED',
+  ASTEROID_FIELD_SHIP_HAZARD_COLLISION = 'ASTEROID_FIELD_SHIP_HAZARD_COLLISION',
+
+  // Effects events (Added)
+  EFFECT_STARTED = 'EFFECT_STARTED',
+  EFFECT_ENDED = 'EFFECT_ENDED',
+  EFFECT_CLEANED = 'EFFECT_CLEANED',
+
+  // Mining events (Added)
+  MINING_TASK_COMPLETED = 'MINING_TASK_COMPLETED',
+  MINING_TASK_ASSIGNED = 'MINING_TASK_ASSIGNED',
+  MINING_TASK_FAILED = 'MINING_TASK_FAILED',
+  MINING_SHIP_REGISTERED = 'MINING_SHIP_REGISTERED',
+  MINING_SHIP_UNREGISTERED = 'MINING_SHIP_UNREGISTERED',
+  MINING_SHIP_STATUS_CHANGED = 'MINING_SHIP_STATUS_CHANGED',
+  MINING_RESOURCE_COLLECTED = 'MINING_RESOURCE_COLLECTED',
+
+  // AI Behavior events (Added)
+  BEHAVIOR_NODE_EXECUTED = 'BEHAVIOR_NODE_EXECUTED',
+  BEHAVIOR_ACTION_STARTED = 'BEHAVIOR_ACTION_STARTED',
+  BEHAVIOR_TREE_COMPLETED = 'BEHAVIOR_TREE_COMPLETED',
+  BEHAVIOR_ACTION_COMPLETED = 'BEHAVIOR_ACTION_COMPLETED',
+
+  // Officer & Squad events (Added)
+  OFFICER_ACADEMY_ACTIVATED = 'OFFICER_ACADEMY_ACTIVATED',
+  OFFICER_TIER_UPGRADED = 'OFFICER_TIER_UPGRADED',
+  OFFICER_HIRED = 'OFFICER_HIRED',
+  OFFICER_TRAINING_STARTED = 'OFFICER_TRAINING_STARTED',
+  OFFICER_TRAINING_COMPLETED = 'OFFICER_TRAINING_COMPLETED',
+  OFFICER_ASSIGNED = 'OFFICER_ASSIGNED',
+  OFFICER_LEVELED_UP = 'OFFICER_LEVELED_UP',
+  OFFICER_EXPERIENCE_GAINED = 'OFFICER_EXPERIENCE_GAINED',
+  SQUAD_CREATED = 'SQUAD_CREATED',
+  SQUAD_UPDATED = 'SQUAD_UPDATED',
 }
 
 /**
@@ -216,6 +273,8 @@ export const EVENT_CATEGORY_MAP: Record<EventType, EventCategory> = {
 
   // Combat events
   [EventType.COMBAT_UPDATED]: EventCategory.COMBAT,
+  [EventType.HAZARD_CREATED]: EventCategory.COMBAT,
+  [EventType.HAZARD_REMOVED]: EventCategory.COMBAT,
 
   // Tech events
   [EventType.TECH_UNLOCKED]: EventCategory.TECH,
@@ -226,6 +285,7 @@ export const EVENT_CATEGORY_MAP: Record<EventType, EventCategory> = {
   [EventType.SYSTEM_STARTUP]: EventCategory.SYSTEM,
   [EventType.SYSTEM_SHUTDOWN]: EventCategory.SYSTEM,
   [EventType.SYSTEM_ALERT]: EventCategory.SYSTEM,
+  [EventType.PARTICLE_SYSTEM_UPDATED]: EventCategory.SYSTEM,
 
   // Game manager events
   [EventType.GAME_STARTED]: EventCategory.SYSTEM,
@@ -250,6 +310,55 @@ export const EVENT_CATEGORY_MAP: Record<EventType, EventCategory> = {
   [EventType.EXPLORATION_TASK_COMPLETED]: EventCategory.EXPLORATION,
   [EventType.EXPLORATION_TASK_PROGRESS]: EventCategory.EXPLORATION,
   [EventType.EXPLORATION_POSITION_UPDATED]: EventCategory.EXPLORATION,
+
+  // Faction events
+  [EventType.FACTION_RELATIONSHIP_CHANGED]: EventCategory.FACTION,
+  [EventType.FACTION_TREATY_STATUS_CHANGED]: EventCategory.FACTION,
+  [EventType.FACTION_TRADE_ESTABLISHED]: EventCategory.FACTION,
+  [EventType.FACTION_CONFLICT_RECORDED]: EventCategory.FACTION,
+
+  // Asteroid Field Events (Added)
+  [EventType.ASTEROID_FIELD_GENERATED]: EventCategory.SYSTEM,
+  [EventType.ASTEROID_FIELD_DEPLETED]: EventCategory.SYSTEM,
+  [EventType.ASTEROID_FIELD_RESOURCE_DISCOVERED]: EventCategory.SYSTEM,
+  [EventType.ASTEROID_FIELD_HAZARD_CREATED]: EventCategory.SYSTEM,
+  [EventType.ASTEROID_FIELD_HAZARD_REMOVED]: EventCategory.SYSTEM,
+  [EventType.ASTEROID_FIELD_RESOURCE_NODE_REGISTERED]: EventCategory.SYSTEM,
+  [EventType.ASTEROID_FIELD_RESOURCE_EXTRACTED]: EventCategory.SYSTEM,
+  [EventType.ASTEROID_FIELD_SHIP_POSITION_UPDATED]: EventCategory.SYSTEM,
+  [EventType.ASTEROID_FIELD_SHIP_HAZARD_COLLISION]: EventCategory.SYSTEM,
+
+  // Effects events (Added)
+  [EventType.EFFECT_STARTED]: EventCategory.EFFECTS,
+  [EventType.EFFECT_ENDED]: EventCategory.EFFECTS,
+  [EventType.EFFECT_CLEANED]: EventCategory.EFFECTS,
+
+  // Mining events (Added)
+  [EventType.MINING_TASK_COMPLETED]: EventCategory.MINING,
+  [EventType.MINING_TASK_ASSIGNED]: EventCategory.MINING,
+  [EventType.MINING_TASK_FAILED]: EventCategory.MINING,
+  [EventType.MINING_SHIP_REGISTERED]: EventCategory.MINING,
+  [EventType.MINING_SHIP_UNREGISTERED]: EventCategory.MINING,
+  [EventType.MINING_SHIP_STATUS_CHANGED]: EventCategory.MINING,
+  [EventType.MINING_RESOURCE_COLLECTED]: EventCategory.MINING,
+
+  // AI Behavior events (Added)
+  [EventType.BEHAVIOR_NODE_EXECUTED]: EventCategory.AI,
+  [EventType.BEHAVIOR_ACTION_STARTED]: EventCategory.AI,
+  [EventType.BEHAVIOR_TREE_COMPLETED]: EventCategory.AI,
+  [EventType.BEHAVIOR_ACTION_COMPLETED]: EventCategory.AI,
+
+  // Officer & Squad events (Added)
+  [EventType.OFFICER_ACADEMY_ACTIVATED]: EventCategory.OFFICER,
+  [EventType.OFFICER_TIER_UPGRADED]: EventCategory.OFFICER,
+  [EventType.OFFICER_HIRED]: EventCategory.OFFICER,
+  [EventType.OFFICER_TRAINING_STARTED]: EventCategory.OFFICER,
+  [EventType.OFFICER_TRAINING_COMPLETED]: EventCategory.OFFICER,
+  [EventType.OFFICER_ASSIGNED]: EventCategory.OFFICER,
+  [EventType.OFFICER_LEVELED_UP]: EventCategory.OFFICER,
+  [EventType.OFFICER_EXPERIENCE_GAINED]: EventCategory.OFFICER,
+  [EventType.SQUAD_CREATED]: EventCategory.OFFICER,
+  [EventType.SQUAD_UPDATED]: EventCategory.OFFICER,
 };
 
 /**
@@ -466,4 +575,258 @@ export function createEvent<T extends Record<string, unknown>>(
     timestamp: Date.now(),
     data,
   };
+}
+
+/**
+ * Payload for PARTICLE_SYSTEM_UPDATED event
+ */
+export interface ParticleSystemUpdateEventData {
+  activeCount: number;
+}
+
+/**
+ * Payload for HAZARD_CREATED event
+ */
+export interface HazardCreatedEventData {
+  hazardId: string;
+  hazardType: string; // Consider using a HazardType enum if available
+  position: { x: number; y: number }; // Use Position type if available
+}
+
+/**
+ * Payload for HAZARD_REMOVED event
+ */
+export interface HazardRemovedEventData {
+  hazardId: string;
+}
+
+/**
+ * Payload for FACTION_RELATIONSHIP_CHANGED event
+ */
+export interface FactionRelationshipChangedEventData {
+  factionId: string; // Consider using FactionId type if globally available
+  targetFactionId: string; // Consider using FactionId type
+  oldValue: number;
+  newValue: number;
+  reason?: string;
+}
+
+/**
+ * Payload for FACTION_TREATY_STATUS_CHANGED event
+ */
+export interface FactionTreatyStatusChangedEventData {
+  factionId: string; // Consider using FactionId type
+  targetFactionId: string; // Consider using FactionId type
+  oldStatus: string; // Consider enum: 'none' | 'ceasefire' | 'trade' | 'alliance'
+  newStatus: string; // Consider enum
+}
+
+/**
+ * Payload for FACTION_TRADE_ESTABLISHED event
+ */
+export interface FactionTradeEstablishedEventData {
+  factionId: string; // Consider using FactionId type
+  targetFactionId: string; // Consider using FactionId type
+  resourceType: ResourceType;
+  amount: number;
+}
+
+/**
+ * Payload for FACTION_CONFLICT_RECORDED event
+ */
+export interface FactionConflictRecordedEventData {
+  factionId: string; // Consider using FactionId type
+  targetFactionId: string; // Consider using FactionId type
+  conflictType: string; // Consider enum: 'attack' | 'territory' | 'trade'
+  severity: number;
+}
+
+// Define simplified interfaces for complex payloads used by AsteroidFieldManager
+interface HazardEffectInfo {
+  type: string; // 'damage' | 'slow' | 'shield' | 'weapon'
+  value: number;
+}
+interface HazardInfo {
+  id: string;
+  type: string; // 'asteroids' | 'debris' | 'radiation' | 'anomaly'
+  position: { x: number; y: number }; // Use Position type if available
+  radius: number;
+  severity: string; // 'low' | 'medium' | 'high'
+  effect: HazardEffectInfo;
+}
+
+export interface AsteroidFieldGeneratedEventData {
+  fieldId: string;
+  position: { x: number; y: number }; // Use Position type if available
+}
+
+export interface AsteroidFieldDepletedEventData {
+  fieldId: string;
+}
+
+export interface AsteroidFieldResourceDiscoveredEventData {
+  fieldId: string;
+  resourceType: ResourceType;
+  amount: number;
+}
+
+export interface AsteroidFieldHazardCreatedEventData {
+  fieldId: string;
+  hazard: HazardInfo; // Using simplified HazardInfo
+}
+
+export interface AsteroidFieldHazardRemovedEventData {
+  fieldId: string;
+  hazardId: string;
+}
+
+export interface AsteroidFieldResourceNodeRegisteredEventData {
+  nodeId: string;
+  fieldId: string;
+  type: ResourceType;
+  position: { x: number; y: number }; // Use Position type if available
+}
+
+export interface AsteroidFieldResourceExtractedEventData {
+  nodeId: string;
+  type: ResourceType;
+  amount: number;
+  remaining: number;
+}
+
+export interface AsteroidFieldShipPositionUpdatedEventData {
+  shipId: string;
+  position: { x: number; y: number }; // Use Position type if available
+  inField: boolean;
+}
+
+export interface AsteroidFieldShipHazardCollisionEventData {
+  shipId: string;
+  hazardId: string;
+  effect: HazardEffectInfo; // Using simplified HazardEffectInfo
+}
+
+/**
+ * Payload for EFFECT_STARTED event
+ */
+export interface EffectStartedEventData {
+  effectId: string;
+  effectType: string;
+}
+
+/**
+ * Payload for EFFECT_ENDED event
+ */
+export interface EffectEndedEventData {
+  effectId: string;
+  effectType: string;
+}
+
+/**
+ * Payload for EFFECT_CLEANED event
+ */
+export interface EffectCleanedEventData {
+  effectId: string;
+  effectType: string;
+}
+
+// Simplified interfaces for MiningTask and MiningShip for event payloads
+// Replace with actual imports if these types are exported centrally
+interface MiningTaskInfo {
+  id: string;
+  shipId: string;
+  nodeId: string;
+  resourceType: ResourceType;
+  priority: number;
+  status: string; // Consider enum: 'QUEUED' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED'
+}
+interface MiningShipInfo {
+  id: string;
+  name: string;
+  type: string; // 'rockBreaker' | 'voidDredger'
+  status: string; // Consider enum
+  capacity: number;
+  currentLoad: number;
+  targetNode?: string;
+  efficiency: number;
+}
+
+export interface MiningTaskCompletedEventData {
+  task: MiningTaskInfo;
+}
+export interface MiningTaskAssignedEventData {
+  task: MiningTaskInfo;
+}
+export interface MiningTaskFailedEventData {
+  task: MiningTaskInfo;
+  reason: string;
+}
+export interface MiningShipRegisteredEventData {
+  ship: MiningShipInfo;
+}
+export interface MiningShipUnregisteredEventData {
+  shipId: string;
+}
+export interface MiningShipStatusChangedEventData {
+  shipId: string;
+  oldStatus: string; // Consider enum
+  newStatus: string; // Consider enum
+}
+export interface MiningResourceCollectedEventData {
+  shipId: string;
+  resourceType: ResourceType;
+  amount: number;
+}
+
+/**
+ * Payload for BEHAVIOR_NODE_EXECUTED event
+ */
+export interface BehaviorNodeExecutedEventData {
+  nodeId: string;
+  success: boolean;
+  unitId?: string; // Optional context
+}
+
+/**
+ * Payload for BEHAVIOR_ACTION_STARTED event
+ */
+export interface BehaviorActionStartedEventData {
+  unitId: string;
+  actionType: string;
+}
+
+/**
+ * Payload for BEHAVIOR_TREE_COMPLETED event
+ */
+export interface BehaviorTreeCompletedEventData {
+  unitId: string;
+  treeId: string;
+  success: boolean;
+}
+
+/**
+ * Payload for BEHAVIOR_ACTION_COMPLETED event
+ */
+export interface BehaviorActionCompletedEventData {
+  unitId: string;
+  actionType: string;
+  success: boolean;
+}
+
+// Simplified interfaces for Officer/Squad/Training for event payloads
+interface OfficerSkillsInfo { combat: number; leadership: number; technical: number; }
+interface OfficerInfo { id: string; name: string; level: number; role: string; specialization: string; skills: OfficerSkillsInfo; stats: OfficerSkillsInfo; traits: string[]; status: string; assignedTo?: string; }
+interface TrainingProgramInfo { id: string; officerId: string; specialization: string; progress: number; startTime: number; duration: number; bonuses: { xpMultiplier: number; skillGainRate: number; }; }
+interface SquadInfo { id: string; name: string; members: OfficerInfo[]; specialization: string; leader?: OfficerInfo; bonuses: { combat: number; efficiency: number; survival: number; }; }
+
+export interface OfficerAcademyActivatedEventData { moduleId: string; }
+export interface OfficerTierUpgradedEventData { tier: number; }
+export interface OfficerHiredEventData { officer: OfficerInfo; }
+export interface OfficerTrainingStartedEventData { officerId: string; program: TrainingProgramInfo; }
+export interface OfficerTrainingCompletedEventData { officerId: string; specialization: string; skills: OfficerSkillsInfo; }
+export interface OfficerAssignedEventData { officerId: string; assignmentId: string; }
+export interface OfficerLeveledUpEventData { officerId: string; newLevel: number; skills: OfficerSkillsInfo; }
+export interface OfficerExperienceGainedEventData { officerId: string; amount: number; newTotal: number; nextLevel: number; }
+export interface SquadCreatedEventData { squad: SquadInfo; }
+export interface SquadUpdatedEventData { squadId: string; officerId?: string; // Optional: if update is due to officer assignment
 }

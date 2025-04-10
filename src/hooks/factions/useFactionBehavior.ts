@@ -1,43 +1,43 @@
 import { useCallback, useEffect, useState } from 'react';
 import { SHIP_STATS as CONFIG_SHIP_STATS } from '../../config/ships';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { AsteroidFieldManager } from '../../managers/game/AsteroidFieldManager';
+import { getAsteroidFieldManager, getFactionBehaviorManager } from '../../managers/ManagerRegistry'; // Import registry accessors
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { Position } from '../../types/core/GameTypes';
 import { CommonShipStats, ShipStatus as CommonShipStatus } from '../../types/ships/CommonShipTypes';
 import { FactionFleet, FactionShip, FactionShipClass } from '../../types/ships/FactionShipTypes';
 import {
-  FactionBehaviorConfig,
-  FactionBehaviorType,
-  FactionId,
-  FactionState,
+    FactionBehaviorConfig,
+    FactionBehaviorType,
+    FactionId,
+    FactionState,
 } from '../../types/ships/FactionTypes';
 import {
-  WeaponCategory,
-  WeaponConfig,
-  WeaponInstance,
-  WeaponMount,
-  WeaponMountPosition,
-  WeaponMountSize,
-  WeaponSystem,
+    WeaponCategory,
+    WeaponConfig,
+    WeaponInstance,
+    WeaponMount,
+    WeaponMountPosition,
+    WeaponMountSize,
+    WeaponSystem,
 } from '../../types/weapons/WeaponTypes';
 import { getDistance } from '../../utils/geometry';
 import {
-  convertToFactionCombatUnit,
-  convertWeaponSystemToMount,
-  isFactionCombatUnit,
+    convertToFactionCombatUnit,
+    convertWeaponSystemToMount,
+    isFactionCombatUnit,
 } from '../../utils/typeConversions';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Import faction event types and interfaces
 import {
-  FactionBehaviorChangedEvent,
-  FactionCombatTacticsEvent,
-  FactionEventType,
-  FactionFleetEvent,
-  FactionRelationshipEvent,
-  FactionResourceEvent,
-  FactionTerritoryEvent,
+    FactionBehaviorChangedEvent,
+    FactionCombatTacticsEvent,
+    FactionEventType,
+    FactionFleetEvent,
+    FactionRelationshipEvent,
+    FactionResourceEvent,
+    FactionTerritoryEvent,
 } from '../../types/events/FactionEvents';
 
 /**
@@ -525,13 +525,8 @@ export interface FactionBehaviorState {
   };
 }
 
-// Create faction behavior event emitter
-// class FactionBehaviorEventEmitter extends EventEmitter<FactionBehaviorEvents> {}
-// const factionBehaviorEvents = new FactionBehaviorEventEmitter();
-
 // Use the standardized FactionBehaviorManager instead
-import { FactionBehaviorManager } from '../../managers/factions/FactionBehaviorManager';
-const factionBehaviorManager = new FactionBehaviorManager();
+const factionBehaviorManager = getFactionBehaviorManager();
 
 export type ShipClass =
   // Base Ships
@@ -629,121 +624,6 @@ export type FactionEvent =
   | 'OBJECTIVE_COMPLETE'
   | 'WITHDRAWAL_COMPLETE'
   | 'NO_TARGETS';
-
-export interface StateMachineTransition {
-  currentState: FactionStateType;
-  event: FactionEvent;
-  nextState: FactionStateType;
-}
-
-// Update FACTION_CONFIGS to include all factions
-export const FACTION_CONFIGS: Record<
-  FactionId,
-  {
-    baseAggression: number;
-    expansionRate: number;
-    tradingPreference: number;
-    maxShips: number;
-    spawnRules: {
-      minTier: 1 | 2 | 3;
-      requiresCondition?: string;
-      spawnInterval: number;
-    };
-    specialRules: {
-      alwaysHostile?: boolean;
-      requiresProvocation?: boolean;
-      powerThreshold?: number;
-    };
-  }
-> = {
-  player: {
-    baseAggression: 0.5,
-    expansionRate: 0.5,
-    tradingPreference: 0.5,
-    maxShips: 20,
-    spawnRules: {
-      minTier: 1,
-      spawnInterval: 300,
-    },
-    specialRules: {},
-  },
-  enemy: {
-    baseAggression: 0.7,
-    expansionRate: 0.6,
-    tradingPreference: 0.3,
-    maxShips: 25,
-    spawnRules: {
-      minTier: 1,
-      spawnInterval: 300,
-    },
-    specialRules: {
-      alwaysHostile: true,
-    },
-  },
-  neutral: {
-    baseAggression: 0.2,
-    expansionRate: 0.3,
-    tradingPreference: 0.8,
-    maxShips: 15,
-    spawnRules: {
-      minTier: 1,
-      spawnInterval: 600,
-    },
-    specialRules: {},
-  },
-  ally: {
-    baseAggression: 0.4,
-    expansionRate: 0.4,
-    tradingPreference: 0.6,
-    maxShips: 20,
-    spawnRules: {
-      minTier: 1,
-      spawnInterval: 450,
-    },
-    specialRules: {},
-  },
-  'space-rats': {
-    baseAggression: 0.8,
-    expansionRate: 0.6,
-    tradingPreference: 0.2,
-    maxShips: 30,
-    spawnRules: {
-      minTier: 1,
-      spawnInterval: 300,
-    },
-    specialRules: {
-      alwaysHostile: true,
-    },
-  },
-  'lost-nova': {
-    baseAggression: 0.4,
-    expansionRate: 0.3,
-    tradingPreference: 0.5,
-    maxShips: 25,
-    spawnRules: {
-      minTier: 2,
-      requiresCondition: 'player-expansion',
-      spawnInterval: 600,
-    },
-    specialRules: {
-      requiresProvocation: true,
-    },
-  },
-  'equator-horizon': {
-    baseAggression: 0.6,
-    expansionRate: 0.4,
-    tradingPreference: 0.3,
-    maxShips: 20,
-    spawnRules: {
-      minTier: 3,
-      requiresCondition: 'power-threshold',
-      spawnInterval: 900,
-    },
-    specialRules: {
-      powerThreshold: 0.8,
-    },
-  },
-};
 
 interface CombatManager {
   getUnitsInRange: (position: { x: number; y: number }, range: number) => CombatUnit[];
@@ -1022,7 +902,7 @@ function handleStateMachineTriggers(state: FactionBehaviorState): void {
 }
 
 // Create AsteroidFieldManager instance
-const asteroidFieldManager = new AsteroidFieldManager();
+const asteroidFieldManager = getAsteroidFieldManager();
 
 // Add resource value multiplier function
 function getResourceValueMultiplier(type: ResourceType): number {

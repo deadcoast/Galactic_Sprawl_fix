@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { ModuleEvent, moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { EventType } from '../../types/events/EventTypes';
 
 /**
@@ -78,7 +79,12 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
       try {
         options?.onMount();
       } catch (error) {
-        console.error('Error in onMount callback:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Error in onMount callback'),
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          { componentName: 'useComponentLifecycle', action: 'onMount' }
+        );
       }
     }
 
@@ -94,7 +100,12 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
             try {
               subscription.handler(event);
             } catch (error) {
-              console.error(`Error handling event ${subscription.eventType} in component:`, error);
+              errorLoggingService.logError(
+                error instanceof Error ? error : new Error(`Error handling event ${subscription.eventType}`),
+                ErrorType.EVENT_HANDLING,
+                ErrorSeverity.MEDIUM,
+                { componentName: 'useComponentLifecycle', action: 'eventHandler', eventType: subscription.eventType }
+              );
             }
           }
         });
@@ -114,7 +125,12 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
         try {
           options?.onUnmount();
         } catch (error) {
-          console.error('Error in onUnmount callback:', error);
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error('Error in onUnmount callback'),
+            ErrorType.RUNTIME,
+            ErrorSeverity.MEDIUM,
+            { componentName: 'useComponentLifecycle', action: 'onUnmount' }
+          );
         }
       }
 
@@ -123,7 +139,12 @@ export function useComponentLifecycle(options: ComponentLifecycleOptions): void 
         try {
           unsubscribe();
         } catch (error) {
-          console.error('Error during event unsubscription:', error);
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error('Error during event unsubscription'),
+            ErrorType.EVENT_HANDLING,
+            ErrorSeverity.LOW,
+            { componentName: 'useComponentLifecycle', action: 'cleanup (unsubscription)' }
+          );
         }
       });
     };
@@ -147,11 +168,9 @@ export function useStableCallback<T extends (...args: unknown[]) => unknown>(cal
   }, [callback]);
 
   // Create a stable function that calls the current callback
-  const stableCallback = useRef<T>(((...args: unknown[]) => {
-    return callbackRef.current(...args);
-  }) as T).current;
-
-  return stableCallback;
+  return useRef<T>(((...args: unknown[]) => {
+      return callbackRef.current(...args);
+    }) as T).current;
 }
 
 /**
@@ -202,7 +221,12 @@ export function useDynamicComponentLifecycle(
         try {
           options?.onMount();
         } catch (error) {
-          console.error('Error in onMount callback:', error);
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error('Error in onMount callback'),
+            ErrorType.RUNTIME,
+            ErrorSeverity.MEDIUM,
+            { componentName: 'useDynamicComponentLifecycle', action: 'onMount' }
+          );
         }
       }
     }
@@ -219,7 +243,12 @@ export function useDynamicComponentLifecycle(
             try {
               subscription.handler(event);
             } catch (error) {
-              console.error(`Error handling event ${subscription.eventType} in component:`, error);
+              errorLoggingService.logError(
+                error instanceof Error ? error : new Error(`Error handling event ${subscription.eventType}`),
+                ErrorType.EVENT_HANDLING,
+                ErrorSeverity.MEDIUM,
+                { componentName: 'useDynamicComponentLifecycle', action: 'eventHandler', eventType: subscription.eventType }
+              );
             }
           }
         });
@@ -241,7 +270,12 @@ export function useDynamicComponentLifecycle(
           try {
             options?.onUnmount();
           } catch (error) {
-            console.error('Error in onUnmount callback:', error);
+            errorLoggingService.logError(
+              error instanceof Error ? error : new Error('Error in onUnmount callback'),
+              ErrorType.RUNTIME,
+              ErrorSeverity.MEDIUM,
+              { componentName: 'useDynamicComponentLifecycle', action: 'onUnmount' }
+            );
           }
         }
       }
@@ -251,7 +285,12 @@ export function useDynamicComponentLifecycle(
         try {
           unsubscribe();
         } catch (error) {
-          console.error('Error during event unsubscription:', error);
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error('Error during event unsubscription'),
+            ErrorType.EVENT_HANDLING,
+            ErrorSeverity.LOW,
+            { componentName: 'useDynamicComponentLifecycle', action: 'cleanup (unsubscription)' }
+          );
         }
       });
     };

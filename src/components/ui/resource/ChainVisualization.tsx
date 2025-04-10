@@ -1,8 +1,7 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ResourceConversionRecipe, ResourceType } from '../../../types/resources/ResourceTypes';
-import { FlowNode } from '../../../types/resources/StandardizedResourceTypes';
+import { FlowNode, ResourceConversionRecipe, ResourceType } from '../../../types/resources/ResourceTypes';
 import { d3Accessors } from '../../../types/visualizations/D3Types';
 
 // Define the ChainStatus interface since it's missing from ResourceTypes

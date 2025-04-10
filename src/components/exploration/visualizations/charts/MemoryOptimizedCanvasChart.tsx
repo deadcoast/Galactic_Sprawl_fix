@@ -2,6 +2,7 @@ import { Alert, CircularProgress, Typography } from '@mui/material';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MemoryManagerOptions, useMemoryManager } from '../../../../hooks/useMemoryManager';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../../services/ErrorLoggingService';
 import { ChartDataRecord } from '../../../../types/exploration/AnalysisComponentTypes';
 import { BaseChartProps } from './BaseChart';
 import CanvasChartFactory, { ChartType } from './CanvasChartFactory';
@@ -153,7 +154,9 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
 
   // Set up intersection observer to track visibility
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) {
+      return;
+    }
 
     const options = {
       root: null,
@@ -180,10 +183,14 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
   const calculateOptimalQualityLevel = useCallback(
     (dataLength: number, visibility: number, qualityLevels: number[]): number => {
       // If data is small, use highest quality
-      if (dataLength < maxPoints) return 1.0;
+      if (dataLength < maxPoints) {
+        return 1.0;
+      }
 
       // If component is barely visible, use lowest quality
-      if (visibility < visibilityThreshold) return qualityLevels[0];
+      if (visibility < visibilityThreshold) {
+        return qualityLevels[0];
+      }
 
       // Scale quality based on visibility and data size
       const visibilityFactor = Math.min(1, visibility / 0.5); // Full quality at 50% visibility
@@ -205,7 +212,9 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
   // Apply quality level (downsample data if needed)
   const applyQualityLevel = useCallback(
     (inputData: unknown[], quality: number): ChartDataRecord[] => {
-      if (!inputData.length) return [];
+      if (!inputData.length) {
+        return [];
+      }
 
       // If quality is 1.0, use all data points
       if (quality >= 1.0) {
@@ -302,7 +311,9 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
   // Cleanup unused canvas buffers and cached renders
   useEffect(() => {
     // Only clean up if component is not visible
-    if (isVisible && visibilityPercentage > visibilityThreshold) return;
+    if (isVisible && visibilityPercentage > visibilityThreshold) {
+      return;
+    }
 
     // Clean up canvas buffers
     setCanvasBuffers(prev => {
@@ -360,7 +371,12 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
         buffer = new OffscreenCanvas(width, height);
         context = buffer.getContext('2d') as OffscreenCanvasRenderingContext2D;
       } catch (error) {
-        console.error('Failed to create OffscreenCanvas:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Failed to create OffscreenCanvas'),
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          { componentName: 'MemoryOptimizedCanvasChart', action: 'getCanvasBuffer' }
+        );
         // If OffscreenCanvas is not supported, we'll fall back to regular canvas
         // in the render method
       }
@@ -396,7 +412,9 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
   // Calculate a hash for the data (for caching)
   const calculateDataHash = useCallback((data: ChartDataRecord[]): string => {
     // Simple hash based on data length and some sample points
-    if (!data?.length) return '0';
+    if (!data?.length) {
+      return '0';
+    }
 
     const samples = [data[0], data[Math.floor(data?.length / 2)], data[data?.length - 1]];
     return `${data?.length}_${JSON.stringify(samples)}`;
@@ -404,7 +422,9 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
 
   // Integrate the functions into the component's functionality
   useEffect(() => {
-    if (!processedData || !processedData.length) return;
+    if (!processedData || !processedData.length) {
+      return;
+    }
 
     // Use our functions to manage canvas rendering and caching
     const canvasKey = `main_${instanceIdRef.current}`;

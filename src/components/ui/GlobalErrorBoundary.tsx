@@ -1,6 +1,7 @@
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import * as React from 'react';
 import { Component, ErrorInfo } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 
 interface Props {
   children: React.ReactNode;
@@ -35,12 +36,18 @@ export class GlobalErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log the error to the console
-    console.error('Global error caught by GlobalErrorBoundary:', error, errorInfo);
+    // Log the error to the console - REMOVED as it's handled by onError or default logging service
+    // console.error('Global error caught by GlobalErrorBoundary:', error, errorInfo);
 
     // Send the error to any error logging service
     if (this.props?.onError) {
       this.props?.onError(error, errorInfo);
+    } else {
+      // Default logging if no onError prop is provided
+      errorLoggingService.logError(error, ErrorType.UI, ErrorSeverity.CRITICAL, {
+        componentName: 'GlobalErrorBoundary',
+        componentStack: errorInfo?.componentStack,
+      });
     }
 
     // Update state with error details

@@ -13,21 +13,21 @@ import { ThresholdProvider } from './contexts/ThresholdContext';
 import { assetManager } from './managers/game/assetManager';
 import { ResourceManager } from './managers/game/ResourceManager';
 // import { TechTreeManager } from './managers/game/techTreeManager';
+import { Profiler } from 'react';
+import { TechNode } from './managers/game/techTreeManager';
+import { getTechTreeManager } from './managers/ManagerRegistry';
 import { moduleManager } from './managers/module/ModuleManager';
 import { OfficerManager } from './managers/module/OfficerManager';
 import { ShipHangarManager } from './managers/module/ShipHangarManager';
 import { ModuleType } from './types/buildings/ModuleTypes';
 import { ModuleStatus } from './types/modules/ModuleTypes';
 import { ResourceType } from './types/resources/ResourceTypes';
-import { getTechTreeManager } from './managers/ManagerRegistry';
-import { TechNode } from './managers/game/techTreeManager';
-import { Profiler } from 'react';
 
 // Import the GlobalErrorBoundary component
 import { GlobalErrorBoundary } from './components/ui/GlobalErrorBoundary';
 // Import error services
 import { IntegrationErrorHandler } from './components/core/IntegrationErrorHandler';
-import ResourceVisualization from './components/ui/ResourceVisualization';
+import ResourceVisualization from './components/ui/visualization/ResourceVisualization';
 import { useComponentProfiler } from './hooks/ui/useComponentProfiler';
 import { useProfilingOverlay } from './hooks/ui/useProfilingOverlay';
 import { errorLoggingService, ErrorSeverity, ErrorType } from './services/ErrorLoggingService';

@@ -11,6 +11,9 @@ import {
 } from '../../types/resources/ResourceTypes';
 import { ResourceTypeConverter } from '../ResourceTypeConverter';
 
+// Re-export converter for use elsewhere
+export { ResourceTypeConverter };
+
 // Define interfaces for resource types that are missing from ResourceTypes.ts
 export interface BasicResource {
   id: string;

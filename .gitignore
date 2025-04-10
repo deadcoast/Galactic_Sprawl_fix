@@ -27,3 +27,4 @@ dist-ssr
 # Tools
 tools/
 lint-errors.txt
+.qodo

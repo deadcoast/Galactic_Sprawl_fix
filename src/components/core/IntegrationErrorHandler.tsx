@@ -74,8 +74,6 @@ export class IntegrationErrorHandler extends Component<
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     const { componentName, onError } = this.props;
 
-    console.error(`Error in ${componentName}:`, error);
-
     const now = Date.now();
     this.errorCount += 1;
 

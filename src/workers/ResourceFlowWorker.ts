@@ -8,11 +8,14 @@ import { ResourceType } from './../types/resources/ResourceTypes';
  */
 
 import {
-  FlowConnection,
-  FlowNode,
-  ResourceState,
-  ResourceTransfer,
+    FlowConnection,
+    FlowNode,
+    ResourceState,
+    ResourceTransfer,
 } from '../types/resources/ResourceTypes';
+
+// Correct import for error logging service (if main thread context available, otherwise use postMessage)
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
 
 // Message types for communication with the main thread
 type WorkerMessageType =
@@ -141,7 +144,14 @@ const ctx: Worker = self as unknown as Worker;
 // Handle messages from main thread
 ctx.addEventListener('message', (event: MessageEvent<WorkerInput>) => {
   if (!event || !event.data) {
-    console.error('Received invalid message event in ResourceFlowWorker');
+    // Replace console.error with errorLoggingService.logError
+    // TODO: Refine worker error reporting (postMessage back to main thread is safer)
+    errorLoggingService.logError(
+      new Error('Received invalid message event in ResourceFlowWorker'),
+      ErrorType.NETWORK,
+      ErrorSeverity.MEDIUM,
+      { componentName: 'ResourceFlowWorker', action: 'onmessage' }
+    );
     return;
   }
 

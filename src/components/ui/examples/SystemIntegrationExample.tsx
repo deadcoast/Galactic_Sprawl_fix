@@ -3,23 +3,23 @@
  * 
  * Example component demonstrating integration with all core systems
  */
-import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
-import { EventType, BaseEvent } from '../../../types/events/EventTypes';
-import { ModuleType } from '../../../types/buildings/ModuleTypes';
-import { getCombatManager } from '../../../managers/ManagerRegistry';
+import { useEffect, useState } from 'react';
 import {
-  useResource,
-  useResources,
-  useResourceActions,
-  useEventSubscription,
-  useEventMonitor,
-  useModule,
-  useModules,
-  useManager
+    useEventMonitor,
+    useEventSubscription,
+    useManager,
+    useModule,
+    useModules,
+    useResource,
+    useResourceActions,
+    useResources
 } from '../../../hooks/integration';
 import { IBaseManager } from '../../../lib/managers/BaseManager';
+import { getCombatManager } from '../../../managers/ManagerRegistry';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import { ModuleType } from '../../../types/buildings/ModuleTypes';
+import { BaseEvent, EventType } from '../../../types/events/EventTypes';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
 
 /**
  * System Integration Example component
@@ -338,7 +338,12 @@ function ManagerRegistryExample() {
       // Use proper type conversion with unknown intermediate step
       return getCombatManager() as unknown as IGenericManager;
     } catch (err) {
-      console.error('Failed to get combat manager:', err);
+      errorLoggingService.logError(
+        err instanceof Error ? err : new Error('Failed to get combat manager'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        { componentName: 'ManagerRegistryExample', action: 'useManager (factory)' }
+      );
       throw new Error('Unable to get combat manager');
     }
   });
@@ -360,7 +365,12 @@ function ManagerRegistryExample() {
           status: manager.getStatus()
         });
       } catch (error) {
-        console.error('Error getting manager info:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Error getting manager info'),
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          { componentName: 'ManagerRegistryExample', action: 'useEffect (update manager info)' }
+        );
       }
     }
   }, [manager, loading]);

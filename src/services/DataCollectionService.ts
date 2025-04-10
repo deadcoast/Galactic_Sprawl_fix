@@ -13,13 +13,14 @@ import { ResourceType } from './../types/resources/ResourceTypes';
 
 import { v4 as uuidv4 } from 'uuid';
 import {
-  Anomaly,
-  EXPLORATION_EVENTS,
-  ExplorationManager,
-  Sector,
+    Anomaly,
+    EXPLORATION_EVENTS,
+    ExplorationManager,
+    Sector,
 } from '../managers/exploration/ExplorationManager';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { DataPoint, ResourceData } from '../types/exploration/DataAnalysisTypes';
+import { errorLoggingService, ErrorSeverity, ErrorType } from './ErrorLoggingService';
 
 /**
  * Map of ExplorationEvents to EventType enums
@@ -93,7 +94,9 @@ function isValidDataPointProperty(value: unknown): value is PropertyType {
 
 // Custom type guard to validate Sector objects
 function isSector(obj: unknown): obj is Sector {
-  if (!obj || typeof obj !== 'object') return false;
+  if (!obj || typeof obj !== 'object') {
+    return false;
+  }
   const sector = obj as Partial<Sector>;
   return (
     typeof sector.id === 'string' &&
@@ -104,7 +107,9 @@ function isSector(obj: unknown): obj is Sector {
 
 // Custom type guard to validate Anomaly objects
 function isAnomaly(obj: unknown): obj is Anomaly {
-  if (!obj || typeof obj !== 'object') return false;
+  if (!obj || typeof obj !== 'object') {
+    return false;
+  }
   const anomaly = obj as Partial<Anomaly>;
   return (
     typeof anomaly.id === 'string' &&
@@ -115,7 +120,9 @@ function isAnomaly(obj: unknown): obj is Anomaly {
 
 // Custom type guard to validate ResourceData objects
 function isResourceData(obj: unknown): obj is ResourceData {
-  if (!obj || typeof obj !== 'object') return false;
+  if (!obj || typeof obj !== 'object') {
+    return false;
+  }
   const resource = obj as Partial<ResourceData>;
   return typeof resource.type === 'string' && typeof resource.amount === 'number';
 }
@@ -155,7 +162,9 @@ interface SectorDiscoveryEventData {
 }
 
 function isSectorDiscoveryEventData(data: unknown): data is SectorDiscoveryEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
   const eventData = data as Partial<SectorDiscoveryEventData>;
   return !!eventData.sector && isSector(eventData.sector);
 }
@@ -170,7 +179,9 @@ interface AnomalyDetectionEventData {
 }
 
 function isAnomalyDetectionEventData(data: unknown): data is AnomalyDetectionEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
   const eventData = data as Partial<AnomalyDetectionEventData>;
   return (
     !!eventData.anomaly && isAnomaly(eventData.anomaly) && typeof eventData.sectorId === 'string'
@@ -187,7 +198,9 @@ interface ResourceDetectionEventData {
 }
 
 function isResourceDetectionEventData(data: unknown): data is ResourceDetectionEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
   const eventData = data as Partial<ResourceDetectionEventData>;
   return (
     !!eventData.resource &&
@@ -344,7 +357,12 @@ export class DataCollectionService {
         unsubscribeResourceDetected
       );
     } catch (error) {
-      console.error('Error subscribing to exploration events:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Error subscribing to exploration events'),
+        ErrorType.EVENT_HANDLING,
+        ErrorSeverity.HIGH,
+        { componentName: 'DataCollectionService', action: 'subscribeToEvents' }
+      );
     }
   }
 
@@ -555,7 +573,7 @@ export class DataCollectionService {
     }
 
     // Add investigation status metadata
-    metadata.investigated = anomaly.investigatedAt ? true : false;
+    metadata.investigated = !!anomaly.investigatedAt;
     metadata.investigationAge = anomaly.investigatedAt ? Date.now() - anomaly.investigatedAt : 0;
 
     // Fix the type mismatch in calculateRiskAssessment call
@@ -763,10 +781,18 @@ export class DataCollectionService {
    * Determine purity grade based on quality value
    */
   private calculatePurityGrade(quality: number): string {
-    if (quality >= 9) return 'Ultra-Pure';
-    if (quality >= 7) return 'Premium';
-    if (quality >= 5) return 'Standard';
-    if (quality >= 3) return 'Low-Grade';
+    if (quality >= 9) {
+      return 'Ultra-Pure';
+    }
+    if (quality >= 7) {
+      return 'Premium';
+    }
+    if (quality >= 5) {
+      return 'Standard';
+    }
+    if (quality >= 3) {
+      return 'Low-Grade';
+    }
     return 'Impure';
   }
 
@@ -832,7 +858,9 @@ export class DataCollectionService {
       value: string | number | boolean | string[] | [number, number];
     }>
   ): DataPoint[] {
-    if (!filters.length) return data;
+    if (!filters.length) {
+      return data;
+    }
 
     return data?.filter(dataPoint => {
       return filters.every(filter => {
@@ -841,7 +869,9 @@ export class DataCollectionService {
 
         // Traverse nested properties
         for (const part of fieldParts) {
-          if (currentValue === undefined || currentValue === null) return false;
+          if (currentValue === undefined || currentValue === null) {
+            return false;
+          }
           currentValue = (currentValue as Record<string, unknown>)[part];
         }
 

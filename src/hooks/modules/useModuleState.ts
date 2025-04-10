@@ -14,17 +14,17 @@ import { useCallback, useMemo } from 'react';
 import { ModuleActionType, useModuleContext, useModules } from '../../contexts/ModuleContext';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import {
-  BaseModule,
-  BuildingType,
-  ModularBuilding,
-  ModuleType,
+    BaseModule,
+    BuildingType,
+    ModularBuilding,
+    ModuleType,
 } from '../../types/buildings/ModuleTypes';
 import {
-  HookPerformanceConfig,
-  defaultPerformanceConfig,
-  measureComputationTime,
-  measureSelectorTime,
-  trackHookRender,
+    HookPerformanceConfig,
+    defaultPerformanceConfig,
+    measureComputationTime,
+    measureSelectorTime,
+    trackHookRender,
 } from '../../utils/performance/hookPerformanceMonitor';
 
 // Performance monitoring configuration
@@ -177,7 +177,9 @@ export function useModuleState() {
   const upgradeModule = useCallback(
     (moduleId: string) => {
       const module = state.modules[moduleId];
-      if (!module) return;
+      if (!module) {
+        return;
+      }
 
       dispatch({
         type: ModuleActionType.UPDATE_MODULE,
@@ -218,8 +220,7 @@ export function useModuleState() {
   const selectBuilding = useCallback(
     (buildingId: string) => {
       // Use a valid ModuleActionType and include the buildingId in the payload
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (dispatch as any)({
+      dispatch({
         type: ModuleActionType.SELECT_MODULE,
         payload: { selectedBuildingId: buildingId },
       });
@@ -230,8 +231,7 @@ export function useModuleState() {
   const registerBuilding = useCallback(
     (building: ModularBuilding) => {
       // Use a valid ModuleActionType and include the building in the payload
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (dispatch as any)({
+      dispatch({
         type: ModuleActionType.UPDATE_MODULE,
         payload: { building },
       });
@@ -291,7 +291,9 @@ export function useModuleState() {
 
   const getAvailableAttachmentPoints = useCallback(
     (building: ModularBuilding, moduleType: ModuleType) => {
-      if (!building || !building.attachmentPoints) return [];
+      if (!building || !building.attachmentPoints) {
+        return [];
+      }
 
       return building.attachmentPoints.filter(
         p => p.allowedTypes.includes(moduleType) && !p.currentModule

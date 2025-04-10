@@ -8,10 +8,10 @@
 
 import { BaseEvent } from '../../lib/events/UnifiedEventSystem';
 import {
-  FlowNode,
-  ResourceConversionProcess,
-  ResourceState,
-} from '../../types/resources/StandardizedResourceTypes';
+    FlowNode,
+    ResourceConversionProcess,
+    ResourceState,
+} from '../../types/resources/ResourceTypes';
 import { SpatialObject } from '../../utils/spatial/SpatialPartitioning';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 

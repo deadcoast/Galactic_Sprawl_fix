@@ -2,6 +2,7 @@
 /** @jsxFrag React.Fragment */
 import { AlertTriangle, Database, Star, Users } from 'lucide-react';
 import * as React from 'react';
+import { ResourceType, ResourceTypeHelpers } from '../../types/resources/ResourceTypes';
 
 interface ColonyModule {
   id: string;
@@ -213,7 +214,7 @@ export function ColonyStarStation({
                 React.createElement(
                   'span',
                   { className: 'text-gray-400', key: 'pop-label' },
-                  'Population'
+                  ResourceTypeHelpers.getDisplayName(ResourceType.POPULATION)
                 ),
                 React.createElement(
                   'span',

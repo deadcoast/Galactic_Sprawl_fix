@@ -4,7 +4,7 @@ import { ServiceRegistry } from '../../lib/services/ServiceRegistry';
 import { anomalyDetectionService } from '../../services/AnomalyDetectionService';
 import { apiService } from '../../services/APIService';
 import { componentRegistryService } from '../../services/ComponentRegistryService';
-import { errorLoggingService } from '../../services/ErrorLoggingService';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { eventPropagationService } from '../../services/EventPropagationService';
 import { realTimeDataService } from '../../services/RealTimeDataService';
 import { recoveryService } from '../../services/RecoveryService';
@@ -85,7 +85,14 @@ export function ServiceProvider({ children }: ServiceProviderProps) {
     // Cleanup on unmount
     return () => {
       const registry = ServiceRegistry.getInstance();
-      registry.dispose().catch(console.error);
+      registry.dispose().catch(err => {
+        errorLoggingService.logError(
+          err instanceof Error ? err : new Error('Error disposing ServiceRegistry'),
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          { componentName: 'ServiceProvider', action: 'cleanupEffect' }
+        );
+      });
     };
   }, []);
 

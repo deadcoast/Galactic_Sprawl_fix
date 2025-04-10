@@ -7,44 +7,27 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
  */
 
 import {
-  AnomalyHazardEffect,
-  DamageHazardEffect,
-  FieldHazardEffect,
-  HazardEffectType,
-  HazardGenerationConfig,
-  MovingHazard,
-  SplittingHazard,
-  WeatherHazardEffect,
+    AnomalyHazardEffect,
+    DamageHazardEffect,
+    FieldHazardEffect,
+    HazardEffectType,
+    HazardGenerationConfig,
+    MovingHazard,
+    SplittingHazard,
+    WeatherHazardEffect,
 } from '../../effects/types_effects/EnvironmentalHazardEffects';
-import { EventEmitter } from '../../lib/events/EventEmitter';
+import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { Position } from '../../types/core/GameTypes';
-
-// Event types for the hazard manager
-interface HazardEvents {
-  hazardCreated: {
-    hazardId: string;
-    type: HazardEffectType['type'];
-    position: Position;
-  };
-  hazardRemoved: {
-    hazardId: string;
-  };
-  hazardModified: {
-    hazardId: string;
-    changes: Partial<HazardEffectType>;
-  };
-  hazardCollision: {
-    hazardId: string;
-    targetId: string;
-    effect: Partial<HazardEffectType>;
-  };
-  [key: string]: unknown; // Index signature to satisfy Record<string, unknown>
-}
+import {
+    EventType,
+    HazardCreatedEventData,
+    HazardRemovedEventData
+} from '../../types/events/EventTypes';
 
 /**
  * Manager class for environmental hazards in combat
  */
-export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
+export class EnvironmentalHazardManager {
   private static instance: EnvironmentalHazardManager;
 
   // Store active hazards with their complete data
@@ -60,7 +43,6 @@ export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
   private hazardTimers: Map<string, number> = new Map();
 
   private constructor() {
-    super();
   }
 
   /**
@@ -263,11 +245,17 @@ export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
     // Set up lifecycle management
     this.setupHazardLifecycle(hazardId, hazard);
 
-    // Emit creation event
-    this.emit('hazardCreated', {
+    // Emit creation event using eventSystem
+    const eventData: HazardCreatedEventData = {
       hazardId,
-      type: hazard.type,
+      hazardType: hazard.type,
       position,
+    };
+    eventSystem.publish({
+      type: EventType.HAZARD_CREATED,
+      managerId: 'EnvironmentalHazardManager',
+      timestamp: Date.now(),
+      data: eventData,
     });
 
     return hazardId;
@@ -400,8 +388,14 @@ export class EnvironmentalHazardManager extends EventEmitter<HazardEvents> {
     this.movingHazards.delete(hazardId);
     this.splittingHazards.delete(hazardId);
 
-    // Emit removal event
-    this.emit('hazardRemoved', { hazardId });
+    // Emit removal event using eventSystem
+    const eventData: HazardRemovedEventData = { hazardId };
+    eventSystem.publish({
+      type: EventType.HAZARD_REMOVED,
+      managerId: 'EnvironmentalHazardManager',
+      timestamp: Date.now(),
+      data: eventData,
+    });
   }
 
   /**

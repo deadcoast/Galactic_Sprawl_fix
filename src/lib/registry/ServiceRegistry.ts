@@ -140,7 +140,9 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
       const serviceInitOrder = this.getInitializationOrder([...this.services.keys()], true);
       for (const serviceName of serviceInitOrder) {
         const entry = this.services.get(serviceName);
-        if (!entry) continue;
+        if (!entry) {
+          continue;
+        }
 
         try {
           await entry.instance.initialize();
@@ -157,7 +159,9 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
       const managerInitOrder = this.getInitializationOrder([...this.managers.keys()], false);
       for (const managerName of managerInitOrder) {
         const entry = this.managers.get(managerName);
-        if (!entry) continue;
+        if (!entry) {
+          continue;
+        }
 
         try {
           await entry.instance.initialize();
@@ -192,7 +196,9 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
       const managerInitOrder = this.getInitializationOrder([...this.managers.keys()], false);
       for (const managerName of managerInitOrder.reverse()) {
         const entry = this.managers.get(managerName);
-        if (!entry || !entry.initialized) continue;
+        if (!entry || !entry.initialized) {
+          continue;
+        }
 
         try {
           await entry.instance.dispose();
@@ -208,7 +214,9 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
       const serviceInitOrder = this.getInitializationOrder([...this.services.keys()], true);
       for (const serviceName of serviceInitOrder.reverse()) {
         const entry = this.services.get(serviceName);
-        if (!entry || !entry.initialized) continue;
+        if (!entry || !entry.initialized) {
+          continue;
+        }
 
         try {
           await entry.instance.dispose();
@@ -240,12 +248,16 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
     const result: string[] = [];
 
     const visit = (name: string) => {
-      if (visited.has(name)) return;
+      if (visited.has(name)) {
+        return;
+      }
       visited.add(name);
 
       const entries = isService ? this.services : this.managers;
       const entry = entries.get(name);
-      if (!entry) return;
+      if (!entry) {
+        return;
+      }
 
       // Visit dependencies first
       for (const dep of entry.dependencies) {
@@ -275,7 +287,9 @@ export class ServiceRegistry extends Singleton<ServiceRegistry> {
         throw new Error(`Circular dependency detected involving ${name}`);
       }
 
-      if (visited.has(name)) return false;
+      if (visited.has(name)) {
+        return false;
+      }
 
       visited.add(name);
       recursionStack.add(name);

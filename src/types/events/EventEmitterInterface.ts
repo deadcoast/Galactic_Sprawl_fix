@@ -8,19 +8,21 @@
 import { EventType } from './EventTypes';
 
 /**
- * Standard event handler type
+ * Type definition for an event handler function
+ * @template T The type of data associated with the event (defaults to any)
  */
-export type EventHandler<T = any> = (data: T) => void;
+export type EventHandler<T> = (data: T) => void;
 
 /**
- * Standard event predicate type for filtering events
+ * Type definition for an event predicate function used for filtering
+ * @template T The type of data associated with the event (defaults to any)
  */
-export type EventPredicate<T = any> = (data: T) => boolean;
+export type EventPredicate<T> = (data: T) => boolean;
 
 /**
  * Options for event subscription
  */
-export interface SubscriptionOptions {
+export interface SubscriptionOptions<T> {
   /**
    * Call listener immediately with last event of this type if available
    */
@@ -44,33 +46,32 @@ export interface SubscriptionOptions {
 export interface IEventEmitter {
   /**
    * Subscribe to an event
-   *
+   * @template T The type of data associated with the event
    * @param eventType The type of event to subscribe to
    * @param handler The function to call when the event is emitted
-   * @param options Additional subscription options
    * @returns A function to unsubscribe the handler
    */
-  on<T = any>(
+  on<T>(
     eventType: EventType | string,
     handler: EventHandler<T>,
-    options?: SubscriptionOptions
+    options?: SubscriptionOptions<T>
   ): () => void;
 
   /**
-   * Unsubscribe from an event
-   *
+   * Unsubscribe a handler from an event type
+   * @template T The type of data associated with the event
    * @param eventType The type of event to unsubscribe from
    * @param handler The handler function to remove
    */
-  off<T = any>(eventType: EventType | string, handler: EventHandler<T>): void;
+  off<T>(eventType: EventType | string, handler: EventHandler<T>): void;
 
   /**
    * Emit an event
-   *
+   * @template T The type of data associated with the event
    * @param eventType The type of event to emit
-   * @param data The data to pass to the event handlers
+   * @param data The data associated with the event
    */
-  emit<T = any>(eventType: EventType | string, data: T): void;
+  emit<T>(eventType: EventType | string, data: T): void;
 
   /**
    * Remove all event listeners

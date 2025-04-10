@@ -109,6 +109,9 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
   - [X] Implement proper typed object definitions
   - [X] Enforce immutability with proper readonly modifiers
   - [X] Create validation functions for complex type scenarios
+  - [X] Fixed various type errors and property access issues in `ResourceFlowManager.ts`.
+  - [X] Fixed type errors and property access in `ResourceFlowSubsystem.ts`.
+  - [X] Fixed type errors and property access in `ResourceFlowDiagram.tsx`.
   
   **Specific Issues:**
   - [X] Empty object type definitions (2 instances) - Fixed SystemOptions and ExtendedProps
@@ -142,3 +145,179 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
 - Missing connections between resource system components
 - Unfinished worker communication protocol
 - Incomplete error propagation across system boundaries 
+
+---
+
+### Refactoring Plan
+
+1.  [ ] **Task 8: Global Type Safety & Validation:**
+    *   [ ] Replace remaining `any` types with concrete types or generics (excluding D3 files for now).
+    *   [X] Eliminate unsafe type assertions (`as Type`) by implementing proper type guards or refactoring logic (in `ResourceFlowSubsystem.ts`, `ResourceFlowDiagram.tsx`).
+    *   [ ] Add comprehensive validation/guarding for function inputs and complex data structures, especially in managers and services.
+    *   [X] Address linter errors related to type safety (in `ResourceFlowSubsystem.ts`, `ResourceFlowDiagram.tsx`).
+
+2.  [ ] **Task 9: Logging Strategy Implementation:**
+    *   [ ] Decide whether to extend `errorLoggingService` for `info`/`warn`/`debug` or adopt a different library/strategy.
+    *   [ ] Replace all remaining `console.error` calls with `errorLoggingService.logError`.
+    *   [ ] Replace `console.warn`/`log`/`info`/`debug` calls based on the chosen strategy.
+    *   [ ] Ensure consistent logging context (service/module name, action) across the application.
+
+3.  [ ] **Task 10: D3 Refactoring & Typing:**
+    *   [ ] Replace `any` types in `src/utils/performance/D3BatchedUpdates.ts` with proper types.
+    *   [ ] Replace `any` types in `src/types/visualizations/D3SelectionTypes.ts` with stricter interfaces.
+    *   [ ] Address `@ts-ignore` comments in D3-related files by implementing correct types or refactoring.
+    *   [ ] Fix `Font` / `FontFaceSet` issues in `src/types/declarations.d.ts`.
+
+4.  [ ] **Task 11: Manager Registry Completion:**
+    *   [ ] Identify all manager classes currently not in the registry.
+    *   [ ] Add missing managers to `src/managers/ManagerRegistry.ts`.
+    *   [ ] Replace all direct instantiations (`new Manager()`) with registry accessors (`getManager()`).
+    *   [ ] Fix remaining Manager Access Rule violations.
+    *   [ ] Address linter errors related to `FACTION_CONFIGS` in `useFactionBehavior.ts` (likely needs import from a config manager added to the registry).
+    *   [ ] Address linter errors related to `StateMachineTransition` (likely needs import).
+
+5.  [ ] **Task 12: Event System Consolidation:**
+    *   [ ] Analyze the different event buses/emitters (`moduleEventBus`, `systemCommunications`, potentially others).
+    *   [ ] Design a unified event bus strategy (e.g., using `EventPropagationService` more broadly or a dedicated global bus).
+    *   [ ] Refactor code to use the chosen unified event system.
+    *   [X] Ensure consistent event type definitions (`EventType`, `ModuleEventType`) and address string literal usage (partially in `ResourceFlowDiagram.tsx`, `ResourceFlowSubsystem.ts`).
+
+6.  [ ] **Task 13: Worker System Enhancement:**
+    *   [ ] Implement structured error reporting from workers (using `errorLoggingService` or similar).
+    *   [ ] Add robust type checking/guards for `postMessage` data in `worker.ts` and `ResourceFlowManager.ts`.
+    *   [ ] Implement retry mechanisms for failed worker operations in `ResourceFlowWorker.ts`.
+    *   [ ] Implement task scheduling/prioritization and cancellation logic in `worker.ts`.
+
+7.  [ ] **Task 14: Rule System Review:**
+    *   [ ] Clarify the contradiction between Service Implementation Anti-Pattern Rule #4 (`getInstance` override) and #5 (direct export). Update rules if necessary.
+    *   [X] Review Resource Types Rule and Event Types Rule for violations (addressed in `ResourceFlowSubsystem.ts`, `ResourceFlowDiagram.tsx`).
+  
+## 1. Type System Standardization
+
+- [ ] Consolidate ResourceType definitions into a single source of truth
+- [ ] Create migration utilities for string-to-enum type conversion
+- [ ] Document type system best practices in a central location
+- [ ] Create type guard utilities for runtime validation
+- [ ] Add safe extraction utilities for working with potentially undefined objects
+- [ ] Replace all `any` types with proper type definitions or `unknown`
+- [ ] Implement proper error handling with typed error objects
+*   [ ] **Task 1.1: Consolidate Resource Type Definitions:**
+    *   [ ] Merge `src/types/resources/ResourceTypes.ts` and `src/types/resources/StandardizedResourceTypes.ts` into a single source of truth.
+    *   [ ] Standardize on the enum-based `ResourceType`.
+    *   [ ] Fix the 51 TS2307 errors (\"Cannot find module\") related to `StandardizedResourceTypes`.
+*   [X] **Task 1.2: Update Resource Type Usage:**
+    *   [ ] Update all components and code currently using string-based resource types to use the standardized `ResourceType` enum.
+    *   [ ] Fix the 119 TS2820 errors (\"Type 'string' is not assignable to type 'ResourceType'\").
+    *   [ ] Fix the 17 TS2551 errors (\"Property 'lowercase' does not exist... Did you mean 'UPPERCASE'?\").
+    *   [ ] Fix the 1086 ESLint warnings for string resource types.
+    *   [ ] Optionally, create migration utilities for string-to-enum conversion if needed for complex cases.
+    *   [X] Partially addressed in `ResourceFlowManager.ts` (record initialization, event data).
+    *   [X] Addressed in `ResourceFlowSubsystem.ts` (event handlers, map keys).
+    *   [X] Addressed in `ResourceFlowDiagram.tsx` (state, D3 types, event subscription, indicators).
+*   [ ] **Task 1.3: Standardize Event Handling in Managers:**
+    *   [ ] Define or identify a standardized `EventEmitter` base class/interface with consistent `on`/`off`/`emit` methods.
+    *   [ ] Update all manager classes (e.g., `ShipHangarManager`, `FactionBehaviorEventEmitter`) to implement/use this standard interface.
+    *   [ ] Add any missing standard event methods to manager classes.
+    *   [ ] Update components and hooks (`ShipHangar.tsx`, `useCombatAI.ts`, `useFactionBehavior.ts`, etc.) to use the standardized event methods.
+    *   [ ] Fix the 383 TS2339 errors (\"Property 'on'/'emit' does not exist on type...\").
+    *   [X] Partially addressed in `ResourceFlowManager.ts` (using `EventType` enum with `publish`).
+*   [ ] **Task 1.4: Eliminate `any` Type Usage:**
+    *   [ ] Replace `any` with specific types, `unknown`, or generics, prioritizing visualization components, chart renderers, UI components, and type utilities.
+    *   [ ] Create/use proper interfaces for complex data structures currently typed as `any`.
+    *   [X] Implement type guards where necessary for runtime validation (`ResourceFlowSubsystem.ts`, `ResourceFlowDiagram.tsx`).
+    *   [ ] Fix the 18 TS7031 errors (\"Binding element implicitly has an 'any' type\").
+*   [X] **Task 1.5: Shared Types & Validation:**
+    *   [ ] Create/consolidate shared type definitions (e.g., for D3 selections, event handlers).
+    *   [X] Create/consolidate type guard utilities for runtime validation (`isResourceType` used).
+    *   [ ] Add type validation tests for critical paths.
+    *   [X] Partially addressed in `ResourceFlowManager.ts` (FlowNode properties, ResourceState records).
+    *   [X] Addressed D3 type constraints (`FlowNode`, `FlowConnection`) in `ResourceTypes.ts`.
+
+## 2. Manager Implementation Standards
+
+- [ ] Standardize manager class implementation patterns
+- [ ] Implement consistent event handling across all managers
+- [x] Fix protected constructor access with proper getInstance() patterns
+- [x] Ensure all managers are properly integrated with ManagerRegistry
+- [ ] Add proper typing to manager methods and properties
+- [ ] Document manager implementation standards
+*   [ ] **Task 2.1: Clean Up Unused Code:**
+    *   [ ] Remove or prefix unused variables and function parameters (`_variableName`).
+    *   [ ] Remove unused imports.
+    *   [ ] Clean up commented-out code blocks.
+    *   [ ] Fix the 367 TS6133 errors ("Variable is declared but its value is never read").
+    *   [ ] Address the 289 ESLint warnings for unused variables.
+*   [ ] **Task 2.2: Fix Dependency Issues:**
+    *   [ ] Install missing dependencies (`lodash`, `eventemitter3`, `geojson`, `d3-scale`, `d3-scale-chromatic`, `@testing-library/react-hooks`).
+    *   [ ] Remove unused dependencies (`@pixi/particle-emitter`, `pixi-spine`, `three-mesh-bvh`, `xstate`).
+    *   [ ] Review and potentially remove unused dev dependencies (list provided in `.cursorTODO.md`).
+    *   [ ] Update import statements if paths changed due to consolidation (e.g., for ResourceTypes).
+*   [X] **Task 2.3: Address Minor Structural Issues:**
+    *   [X] Fixed duplicate function implementation in `ResourceFlowManager.ts`.
+    *   [X] Fix case block declarations in switch statements (ensure lexical declarations are scoped) (in `ResourceFlowSubsystem.ts`).
+
+## 3. Component Compatibility
+
+- [ ] Update components to use enum-based ResourceType
+- [ ] Fix property access patterns (ResourceType.MINERALS vs 'minerals')
+- [ ] Implement proper event subscription cleanup in components
+- [ ] Use correct type assertions and validation
+- [ ] Update UI components with proper prop typing
+*   [ ] **Task 3.1: Implement Centralized Logging:**
+    *   [ ] Define a clear console usage policy (e.g., allow `warn`/`error` in prod, allow all in tests/tools).
+    *   [ ] Implement or enhance a centralized logging service with levels and categories.
+    *   [ ] Replace `console.*` statements according to the policy (especially the 1078 instances mentioned).
+    *   [ ] Add production logging configuration.
+*   [ ] **Task 3.2: Improve Documentation:**
+    *   [ ] Add JSDoc comments to public functions, classes, and complex types.
+    *   [ ] Document shared type definitions and utilities.
+    *   [ ] Document manager implementation standards and event handling patterns.
+
+## 4. Performance Utilities
+
+- [ ] Fix MultitabCommunicationChannel type issues
+- [x] Update D3InterpolationCache type safety
+- [x] Ensure PerformanceBenchmarkTools uses correct interface implementations
+- [x] Fix FlowNode and FlowNodeType implementations
+*   [ ] **Task 4.1: Fix `ShipHangar` Component:**
+    *   [ ] Ensure `ShipHangarManager` uses standard event handling (Covered by Task 1.3).
+    *   [ ] Add proper typing to event handlers (Covered by Task 1.4).
+    *   [ ] Fix duplicate JSX attributes.
+    *   [ ] Use proper type comparisons for `ShipStatus`.
+*   [ ] **Task 4.2: Fix `ResourceDiscoveryDemo` Component:**
+    *   [ ] Update to use standardized resource types (Covered by Task 1.2).
+    *   [ ] Ensure `ResourceDiscovery` and `ResourceData` types are consistent with standardized types.
+*   [ ] **Task 4.3: Fix `SystemIntegration` Component:**
+    *   [ ] Update property access to use enum values (e.g., `resources[ResourceType.MINERALS]`) (Covered by Task 1.2).
+
+## 5. Dependency Management
+
+- [x] Install missing dependencies (lodash, eventemitter3, geojson, d3-scale, d3-scale-chromatic)
+- [x] Remove unused dependencies
+- [x] Clean up unused dev dependencies
+- [ ] Update import statements to use correct paths
+*   [ ] **Task 5.1: Enhance Linting/Type Checking:**
+    *   [ ] Review and potentially improve ESLint configuration for better error detection.
+    *   [ ] Set up automated type coverage reporting (Goal > 95%).
+*   [ ] **Task 5.2: Documentation:**
+    *   [ ] Document type system best practices.
+
+## 6. Code Cleanup
+
+- [ ] Remove or prefix unused variables
+- [ ] Fix case block declarations
+- [ ] Clean up commented-out code
+- [ ] Implement consistent error logging
+- [ ] Update console statements with central logging service
+- [X] Addressed various type errors, property access, and structural issues in `ResourceFlowManager.ts`.
+- [X] Addressed type errors, property access, and structural issues in `ResourceFlowSubsystem.ts`.
+- [X] Addressed type errors, property access, and structural issues in `ResourceFlowDiagram.tsx`.
+
+## 7. Documentation and Testing
+
+- [ ] Add type validation tests
+- [ ] Document shared type definitions
+- [ ] Create examples of correct implementation patterns
+- [ ] Add automated type coverage reporting
+- [ ] Improve ESLint configuration for better error detection
+

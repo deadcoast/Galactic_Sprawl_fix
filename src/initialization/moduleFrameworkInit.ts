@@ -1,6 +1,6 @@
 import { initializeModuleUpgradePaths } from '../config/modules/upgradePathsConfig';
 import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
-import { ResourceManager } from '../managers/game/ResourceManager';
+import { getResourceManager } from '../managers/ManagerRegistry';
 import { moduleManager } from '../managers/module/ModuleManager';
 import { moduleStatusManager } from '../managers/module/ModuleStatusManager';
 import { moduleUpgradeManager } from '../managers/module/ModuleUpgradeManager';
@@ -8,8 +8,9 @@ import { subModuleManager } from '../managers/module/SubModuleManager';
 import { ModuleType, SubModuleEffect, SubModuleType } from '../types/buildings/ModuleTypes';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
-// Create an instance of ResourceManager
-const resourceManager = new ResourceManager();
+// Mock data for demonstration
+// const resourceManager = new ResourceManager();
+const resourceManager = getResourceManager(); // Use registry accessor
 
 // Define interfaces for event data types
 interface ResourceThresholdEventData {

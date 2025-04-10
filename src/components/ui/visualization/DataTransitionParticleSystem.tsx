@@ -4,7 +4,7 @@ import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { ParticleSystemManager } from '../../../managers/effects/ParticleSystemManager';
 import { Position } from '../../../types/core/Position';
-import { ResourceType } from './../../../types/resources/ResourceTypes';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
 
 export interface DataPoint {
   id: string;
@@ -78,7 +78,9 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
 
   // Initialize particle system
   useEffect(() => {
-    if (!canvasRef.current || isInitialized) return;
+    if (!canvasRef.current || isInitialized) {
+      return;
+    }
 
     particleSystemRef.current = ParticleSystemManager.getInstance();
     setIsInitialized(true);
@@ -102,7 +104,9 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
 
   // Start transition when data changes
   useEffect(() => {
-    if (!particleSystemRef.current || !isInitialized) return;
+    if (!particleSystemRef.current || !isInitialized) {
+      return;
+    }
 
     // Create particle configuration
     const particleConfig = {
@@ -222,7 +226,9 @@ export const DataTransitionParticleSystem: React.FC<DataTransitionParticleSystem
 
 // Helper function to get color for resource type
 const getResourceColor = (resourceType?: ResourceType): string => {
-  if (!resourceType) return '#ffffff';
+  if (!resourceType) {
+    return '#ffffff';
+  }
 
   switch (resourceType) {
     case ResourceType.MINERALS:

@@ -1,6 +1,5 @@
 import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
 import { globalAutomationManager } from '../managers/automation/GlobalAutomationManager';
-import { automationManager } from '../managers/game/AutomationManager';
 import { MessagePriority } from '../utils/events/EventCommunication';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
@@ -10,12 +9,9 @@ import { ResourceType } from './../types/resources/ResourceTypes';
 export function initializeAutomationSystem(): () => void {
   console.warn('Initializing Automation System...');
 
-  // Set the automation manager in the global automation manager
-  // NOTE: Using 'any' here is necessary because automationManager is a private property
-  // that needs to be set during initialization. This is a special case where we need
-  // to access a private property from outside the class.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (globalAutomationManager as any).automationManager = automationManager;
+  // The AutomationManager dependency is now injected via the registry when
+  // GlobalAutomationManager is first instantiated in getGlobalAutomationManager().
+  // globalAutomationManager.setAutomationManager(automationManager); // No longer needed
 
   // Initialize the global automation manager
   globalAutomationManager.initialize();

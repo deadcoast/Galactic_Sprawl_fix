@@ -1,4 +1,5 @@
 import { WorkerMessageType } from '../workers/DataProcessingWorker';
+import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService';
 
 /**
  * Service for interfacing with the DataProcessingWorker
@@ -43,7 +44,12 @@ export class DataProcessingService {
 
         // Set up error handler
         this.worker.addEventListener('error', error => {
-          console.error('Web worker error:', error);
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error(`Web worker error: ${error}`),
+            ErrorType.RUNTIME,
+            ErrorSeverity.HIGH,
+            { componentName: 'DataProcessingService', action: 'initWorker' }
+          );
           this.pendingRequests.forEach(request => {
             request.reject(new Error('Web worker encountered an error.'));
           });
@@ -54,7 +60,12 @@ export class DataProcessingService {
         this.isWorkerInitialized = true;
         resolve();
       } catch (error) {
-        console.error('Failed to initialize web worker:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(`Failed to initialize web worker: ${error}`),
+          ErrorType.INITIALIZATION,
+          ErrorSeverity.CRITICAL,
+          { componentName: 'DataProcessingService', action: 'initWorker' }
+        );
         reject(error);
       }
     });

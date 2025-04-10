@@ -1,20 +1,49 @@
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
-  getSystemCommunication,
-  MessagePriority,
-  SystemId,
+    getSystemCommunication,
+    MessagePriority,
+    SystemId,
 } from '../../utils/events/EventCommunication';
 import { EventPriorityQueue } from '../../utils/events/EventFiltering';
 import {
-  AutomationAction,
-  AutomationCondition,
-  AutomationManager,
-  AutomationRule,
-  ResourceConditionValue,
+    AutomationAction,
+    AutomationCondition,
+    AutomationManager,
+    AutomationRule,
+    ResourceConditionValue,
 } from '../game/AutomationManager';
 import { gameLoopManager, UpdatePriority } from '../game/GameLoopManager';
 import { ResourceType } from './../../types/resources/ResourceTypes';
+
+// Interfaces for specific event data payloads
+interface ResourceShortageEventData {
+  resourceType: ResourceType;
+}
+
+interface StatusChangedEventData {
+  status: string; // TODO: Use a specific status enum/type if available
+}
+
+// Type Guards for event data
+function isResourceShortageData(data: unknown): data is ResourceShortageEventData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'resourceType' in data &&
+    typeof (data as Record<string, unknown>).resourceType === 'string' &&
+    Object.values(ResourceType).includes((data as ResourceShortageEventData).resourceType)
+  );
+}
+
+function isStatusChangedData(data: unknown): data is StatusChangedEventData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'status' in data &&
+    typeof (data as Record<string, unknown>).status === 'string'
+  );
+}
 
 /**
  * Global routine type
@@ -622,16 +651,14 @@ export class GlobalAutomationManager {
    * Handle resource shortage events
    */
   private handleResourceShortage = (event: ModuleEvent): void => {
+    let tag = 'general';
+    if (event.data && isResourceShortageData(event.data)) {
+      tag = event.data.resourceType;
+    }
+
     // Find resource balancing routines
     const resourceRoutines = Array.from(this.routines.values()).filter(
-      routine =>
-        routine.enabled &&
-        routine.type === 'resource-balancing' &&
-        routine.tags.includes(
-          event?.data && typeof event?.data === 'object' && 'resourceType' in event?.data
-            ? String(event?.data?.resourceType)
-            : 'general'
-        )
+      routine => routine.enabled && routine.type === 'resource-balancing' && routine.tags.includes(tag)
     );
 
     // Schedule resource routines with high priority
@@ -648,16 +675,17 @@ export class GlobalAutomationManager {
    * Handle status changed events
    */
   private handleStatusChanged = (event: ModuleEvent): void => {
+    let tag = 'general';
+    if (event.data && isStatusChangedData(event.data)) {
+      tag = event.data.status;
+    }
+
     // Find relevant routines based on status
     const statusRoutines = Array.from(this.routines.values()).filter(
       routine =>
         routine.enabled &&
         (routine.type === 'system-maintenance' || routine.type === 'performance-optimization') &&
-        routine.tags.includes(
-          event?.data && typeof event?.data === 'object' && 'status' in event?.data
-            ? String(event?.data?.status)
-            : 'general'
-        )
+        routine.tags.includes(tag)
     );
 
     // Schedule status routines
@@ -793,6 +821,18 @@ export class GlobalAutomationManager {
       timestamp: Date.now(),
       data: { ruleId: rule.id, rule },
     });
+  }
+
+  /**
+   * Set the internal AutomationManager instance.
+   * Primarily used during initialization.
+   * @param manager The AutomationManager instance to use.
+   */
+  public setAutomationManager(manager: AutomationManager): void {
+    if (this._automationManager && this.isInitialized) {
+      console.warn('[GlobalAutomationManager] Replacing AutomationManager after initialization.');
+    }
+    this._automationManager = manager;
   }
 }
 

@@ -1,17 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  GlobalAutomationManager,
-  GlobalRoutine,
+    GlobalRoutine
 } from '../../managers/automation/GlobalAutomationManager';
-import { AutomationManager } from '../../managers/game/AutomationManager';
+import {
+    AutomationRule
+} from '../../managers/game/AutomationManager';
+import { getAutomationManager, getGlobalAutomationManager } from '../../managers/ManagerRegistry'; // Import registry accessors
+import {
+    ErrorSeverity,
+    ErrorType,
+    errorLoggingService,
+} from '../../services/ErrorLoggingService'; // Import logging service
 
 // Define SystemId type to match what's expected
 type SystemId = string;
 
 // Singleton instance of the automation manager
-let globalAutomationManager: GlobalAutomationManager | null = null;
+// let globalAutomationManager: GlobalAutomationManager | null = null; // Old way
 // We need an instance of AutomationManager to pass to GlobalAutomationManager
-let automationManagerInstance: AutomationManager | null = null;
+// let automationManagerInstance: AutomationManager | null = null; // Old way
 
 /**
  * Hook to access the global automation system
@@ -22,33 +29,32 @@ export const useAutomation = () => {
   const [activeRoutines, setActiveRoutines] = useState<GlobalRoutine[]>([]);
   const [lastUpdate, setLastUpdate] = useState<number>(0);
 
+  // Get managers from registry
+  const globalAutomationManager = getGlobalAutomationManager();
+  const automationManager = getAutomationManager(); // Get this too if needed directly
+
   // Initialize the automation manager if it doesn't exist
   useEffect(() => {
-    if (!globalAutomationManager) {
-      // Create AutomationManager instance if needed
-      if (!automationManagerInstance) {
-        automationManagerInstance = new AutomationManager();
-      }
+    // Initialization is handled by automationSystemInit.ts, which calls
+    // globalAutomationManager.initialize(). The registry ensures we get the
+    // initialized instance.
 
-      // Create GlobalAutomationManager with the AutomationManager instance
-      globalAutomationManager = new GlobalAutomationManager(automationManagerInstance);
-      globalAutomationManager.initialize();
-    }
-
-    // Set initial state
-    setIsInitialized(true);
+    // Set initial state - assume initialized by the time hook runs
+    setIsInitialized(true); // Or potentially check a status if manager provides one
     updateRoutines();
 
-    // Subscribe to automation events
-    const unsubscribe = subscribeToEvents();
+    // Subscribe to automation events (if event system is integrated)
+    // const unsubscribe = subscribeToEvents();
+    const unsubscribe = () => {}; // Placeholder
 
     return () => {
       unsubscribe();
     };
-  }, []);
+    // Dependencies: ensure effect runs if manager instances change (though they shouldn't)
+  }, [globalAutomationManager]); 
 
   // Update routines state
-  const updateRoutines = () => {
+  const updateRoutines = useCallback(() => {
     if (!globalAutomationManager) {
       return;
     }
@@ -59,9 +65,16 @@ export const useAutomation = () => {
       setActiveRoutines(allRoutines.filter(r => r.enabled));
       setLastUpdate(Date.now());
     } catch (error) {
-      console.error('Failed to update automation routines:', error);
+      // Use error logging service
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        ErrorType.RUNTIME,
+        ErrorSeverity.MEDIUM,
+        { hook: 'useAutomation', action: 'updateRoutines' }
+      );
+      // console.error('Failed to update automation routines:', error); // Keep commented out or remove
     }
-  };
+  }, [globalAutomationManager]);
 
   // Subscribe to automation events
   const subscribeToEvents = () => {
@@ -69,106 +82,28 @@ export const useAutomation = () => {
       return () => {};
     }
 
-    // This would be implemented with the event system
-    // For now, we'll just return an empty function
+    // Placeholder: This should use the event bus provided by the manager or a global one
+    // e.g., globalAutomationManager.eventBus.subscribe('routineUpdated', updateRoutines);
     return () => {};
   };
 
-  // Enable a routine
-  const enableRoutine = (routineId: string) => {
-    if (!globalAutomationManager) {
-      return;
-    }
-
-    try {
-      globalAutomationManager.enableRoutine(routineId);
-      updateRoutines();
-    } catch (error) {
-      console.error(`Failed to enable routine ${routineId}:`, error);
-    }
-  };
-
-  // Disable a routine
-  const disableRoutine = (routineId: string) => {
-    if (!globalAutomationManager) {
-      return;
-    }
-
-    try {
-      globalAutomationManager.disableRoutine(routineId);
-      updateRoutines();
-    } catch (error) {
-      console.error(`Failed to disable routine ${routineId}:`, error);
-    }
-  };
-
-  // Remove a routine
-  const removeRoutine = (routineId: string) => {
-    if (!globalAutomationManager) {
-      return;
-    }
-
-    try {
-      globalAutomationManager.unregisterRoutine(routineId);
-      updateRoutines();
-    } catch (error) {
-      console.error(`Failed to remove routine ${routineId}:`, error);
-    }
-  };
-
-  // Get routines by type
-  const getRoutinesByType = (type: string) => {
-    return routines.filter(routine => routine.type === type);
-  };
-
-  // Get routines by tag
-  const getRoutinesByTag = (tag: string) => {
-    return routines.filter(routine => Array.isArray(routine.tags) && routine.tags.includes(tag));
-  };
-
-  // Get routines by system
-  const getRoutinesBySystem = (system: string) => {
-    return routines.filter(
-      routine =>
-        Array.isArray(routine.systems) &&
-        routine.systems.some(sys => sys === (system as unknown as SystemId))
-    );
-  };
-
-  // Create a new routine
-  const createRoutine = (routine: Omit<GlobalRoutine, 'id'>) => {
-    if (!globalAutomationManager) {
-      return;
-    }
-
-    try {
-      // Generate a unique ID
-      const id = `routine-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const newRoutine = { ...routine, id } as GlobalRoutine;
-
-      globalAutomationManager.registerRoutine(newRoutine);
-      updateRoutines();
-
-      return newRoutine;
-    } catch (error) {
-      console.error('Failed to create routine:', error);
-      return null;
-    }
-  };
+  // Memoized actions to interact with the managers
+  const actions = useMemo(() => ({
+    enableRoutine: (id: string) => globalAutomationManager?.enableRoutine(id),
+    disableRoutine: (id: string) => globalAutomationManager?.disableRoutine(id),
+    registerRoutine: (routine: GlobalRoutine) => globalAutomationManager?.registerRoutine(routine),
+    // Add more actions for AutomationManager if needed
+    getRule: (id: string) => automationManager?.getRule(id),
+    registerRule: (rule: AutomationRule) => automationManager?.registerRule(rule),
+  }), [globalAutomationManager, automationManager]);
 
   return {
     isInitialized,
     routines,
     activeRoutines,
     lastUpdate,
-    enableRoutine,
-    disableRoutine,
-    removeRoutine,
-    getRoutinesByType,
-    getRoutinesByTag,
-    getRoutinesBySystem,
-    createRoutine,
-    automationManager: globalAutomationManager,
+    actions,
+    updateRoutines, // Expose manual update if needed
   };
 };
 

@@ -6,8 +6,7 @@ import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { EventType } from '../../../types/events/EventTypes';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
-import { ResourceTypeHelpers } from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
 import './ResourceOptimizationSuggestions.css';
 
 // Define the ResourceRateDetail interface locally since it's not exported
@@ -38,7 +37,9 @@ interface ResourceOptimizationSuggestionsProps {
 
 // Helper function to get resource name for display
 const getResourceName = (resourceType: ResourceType | 'all'): string => {
-  if (resourceType === 'all') return 'All Resources';
+  if (resourceType === 'all') {
+    return 'All Resources';
+  }
   return ResourceTypeHelpers.getDisplayName(resourceType);
 };
 

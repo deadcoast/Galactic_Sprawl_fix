@@ -9,13 +9,14 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import LongSessionMemoryVisualizer from '../../components/performance/LongSessionMemoryVisualizer';
+import { ErrorSeverity, ErrorType, errorLoggingService } from '../../services/ErrorLoggingService';
 import {
-  LongSessionMemoryResult,
-  LongSessionMemoryTestSuite,
+    LongSessionMemoryResult,
+    LongSessionMemoryTestSuite,
 } from '../../tests/performance/LongSessionMemoryTestSuite';
 import {
-  LongSessionMemoryTracker,
-  MemoryTrendAnalysis,
+    LongSessionMemoryTracker,
+    MemoryTrendAnalysis,
 } from '../../utils/performance/longsession/LongSessionMemoryTracker';
 
 /**
@@ -71,7 +72,9 @@ const LongSessionMemoryPage: React.FC = () => {
    * Handle starting memory tracking
    */
   const handleStartTracking = () => {
-    if (!memoryTracker) return;
+    if (!memoryTracker) {
+      return;
+    }
 
     // Update tracker settings before starting
     memoryTracker.clearData();
@@ -86,7 +89,9 @@ const LongSessionMemoryPage: React.FC = () => {
    * Handle stopping memory tracking
    */
   const handleStopTracking = () => {
-    if (!memoryTracker) return;
+    if (!memoryTracker) {
+      return;
+    }
 
     memoryTracker.stopTracking();
     setIsTracking(false);
@@ -99,7 +104,9 @@ const LongSessionMemoryPage: React.FC = () => {
    * Handle running a memory test
    */
   const handleRunTest = async () => {
-    if (!testSuite) return;
+    if (!testSuite) {
+      return;
+    }
 
     setIsRunningTest(true);
 
@@ -144,7 +151,12 @@ const LongSessionMemoryPage: React.FC = () => {
       // Switch to results tab
       setActiveTab('results');
     } catch (error) {
-      console.error('Error running test:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Error running memory test'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        { componentName: 'LongSessionMemoryPage', action: 'handleRunTest', testType: selectedTest }
+      );
       showNotification('Error running test');
     } finally {
       setIsRunningTest(false);
@@ -177,7 +189,9 @@ const LongSessionMemoryPage: React.FC = () => {
    * Download the test report
    */
   const downloadReport = () => {
-    if (!report) return;
+    if (!report) {
+      return;
+    }
 
     const blob = new Blob([report], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);

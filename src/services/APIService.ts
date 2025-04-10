@@ -129,7 +129,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.active_streams = this.activeStreams.size;
     this.metadata.metrics = metrics;
 
@@ -138,7 +138,9 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
 
   public async stopStream(streamId: string): Promise<void> {
     const controller = this.activeStreams.get(streamId);
-    if (!controller) return;
+    if (!controller) {
+      return;
+    }
 
     controller.abort();
     this.activeStreams.delete(streamId);
@@ -147,7 +149,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.active_streams = this.activeStreams.size;
     this.metadata.metrics = metrics;
   }
@@ -176,8 +178,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
 
         // Safely parse JSON
         const result = await response.json();
-        const data = result.data;
-        const lastItemId = result.lastItemId;
+        const {data, lastItemId} = result;
         if (lastItemId) {
           lastId = lastItemId;
         }
@@ -194,7 +195,9 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
         // Wait for next interval
         await new Promise(resolve => setTimeout(resolve, config.interval));
       } catch (error) {
-        if (signal.aborted) break;
+        if (signal.aborted) {
+          break;
+        }
 
         retryCount++;
         if (retryCount >= config.maxRetries) {
@@ -254,7 +257,7 @@ class APIServiceImpl extends AbstractBaseService<APIServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.total_requests = (metrics.total_requests ?? 0) + 1;
 
     if (status === 'error') {

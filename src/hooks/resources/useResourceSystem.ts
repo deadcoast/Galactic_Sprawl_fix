@@ -4,6 +4,7 @@ import { ResourceSystem } from '../../resource/ResourceSystem';
 import { FlowConnection, FlowNode } from '../../resource/subsystems/ResourceFlowSubsystem';
 import { StorageContainerConfig } from '../../resource/subsystems/ResourceStorageSubsystem';
 import { ResourceThreshold } from '../../resource/subsystems/ResourceThresholdSubsystem';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { ResourceState, ResourceTransfer } from '../../types/resources/ResourceTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -11,7 +12,12 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
 ResourceSystem.getInstance()
   .initialize()
   .catch(error => {
-    console.error('Failed to initialize ResourceSystem:', error);
+    errorLoggingService.logError(
+      error instanceof Error ? error : new Error('Failed to initialize ResourceSystem (global instance)'),
+      ErrorType.INITIALIZATION,
+      ErrorSeverity.CRITICAL,
+      { componentName: 'useResourceSystem (global scope)', action: 'initialize' }
+    );
   });
 
 /**
@@ -35,7 +41,12 @@ export function useResourceSystem() {
         }
       })
       .catch(error => {
-        console.error('Failed to initialize ResourceSystem in hook:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Failed to initialize ResourceSystem in hook'),
+          ErrorType.INITIALIZATION,
+          ErrorSeverity.CRITICAL,
+          { componentName: 'useResourceSystem', action: 'useEffect (initialize)' }
+        );
       });
 
     return () => {

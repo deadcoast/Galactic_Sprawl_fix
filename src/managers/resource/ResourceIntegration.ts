@@ -1,17 +1,17 @@
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
-  FlowConnection,
-  FlowNode,
-  FlowNodeType,
-  ResourcePriorityConfig,
-  ResourceState,
-  ResourceTransfer,
-  ResourceType,
-  ResourceTypeString,
-  toEnumResourceType,
+    FlowConnection,
+    FlowNode,
+    FlowNodeType,
+    ResourcePriorityConfig,
+    ResourceState,
+    ResourceTransfer,
+    ResourceType,
+    ResourceTypeString,
+    FlowNode as StandardizedFlowNode,
+    toEnumResourceType,
 } from '../../types/resources/ResourceTypes';
-import { FlowNode as StandardizedFlowNode } from '../../types/resources/StandardizedResourceTypes';
 import { ResourceManager } from '../game/ResourceManager';
 import { ResourceCostManager } from './ResourceCostManager';
 import { ResourceExchangeManager } from './ResourceExchangeManager';
@@ -432,33 +432,14 @@ export class ResourceIntegration {
   }
 
   /**
-   * Helper method to convert FlowNode from ResourceTypes to StandardizedResourceTypes format
+   * Helper method to adapt FlowNode structure (currently a pass-through)
    */
   private adaptFlowNode(node: FlowNode): StandardizedFlowNode {
-    // Convert resources from Record to Map if it exists
-    const resourcesMap = new Map<ResourceType, number>();
-    if (node.resources) {
-      Object.entries(node.resources).forEach(([key, value]) => {
-        // Convert the key string to ResourceType enum
-        const resourceType = key as unknown as ResourceType;
-        // Get the current value from ResourceState
-        resourcesMap.set(resourceType, value.current ?? 0);
-      });
-    }
-
-    // Create a StandardizedFlowNode with all required properties
-    return {
-      id: node.id,
-      type: node.type,
-      name: node.id, // Use ID as name if not provided
-      description: `Auto-generated ${node.type} node for resource ${node.id}`,
-      currentLoad: 0, // Default value
-      efficiency: 1.0, // Default value (100% efficiency)
-      status: 'active', // Default to active status
-      capacity: node.capacity || 100, // Ensure capacity is always a number, default to 100
-      resources: resourcesMap,
-      active: node.active !== undefined ? node.active : true,
-    };
+    // Since both types now point to the same interface after consolidation,
+    // this is currently just a pass-through.
+    // TODO: Re-evaluate if this adapter is still needed or if conversion logic
+    // is required elsewhere.
+    return node;
   }
 
   /**

@@ -1,3 +1,4 @@
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 
 /**
@@ -228,7 +229,17 @@ export class ModuleEventBus {
         try {
           listener(event);
         } catch (error) {
-          console.error('Error in module event listener:', error);
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error('Error in module event listener'),
+            ErrorType.EVENT_HANDLING,
+            ErrorSeverity.MEDIUM,
+            {
+              componentName: 'ModuleEventBus',
+              action: 'emit (listener execution)',
+              eventType: event?.type,
+              moduleId: event?.moduleId,
+            }
+          );
         }
       });
     }

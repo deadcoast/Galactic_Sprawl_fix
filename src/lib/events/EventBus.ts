@@ -768,15 +768,12 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     options: SubscriptionOptions = {}
   ): () => void {
     // Create standard subscription first - reusing existing functionality
-    const unsubscribe = this.subscribe(eventType, (event: T) => {
-      // Only call listener if filter passes
-      if (filter(event)) {
-        listener(event);
-      }
-    }, options);
-    
-    // Return unsubscribe function
-    return unsubscribe;
+    return this.subscribe(eventType, (event: T) => {
+          // Only call listener if filter passes
+          if (filter(event)) {
+            listener(event);
+          }
+        }, options);
   }
 
   /**

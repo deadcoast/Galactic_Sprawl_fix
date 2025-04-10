@@ -2,6 +2,7 @@ import { Loader2, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTooltip } from '../../hooks/ui/useTooltip';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { ResourceTypeConverter } from '../../utils/ResourceTypeConverter';
 
@@ -108,7 +109,9 @@ export function RealTimeMapUpdates({
   // Handle sector scan events
   useEffect(() => {
     const handleSectorScan = (event: ModuleEvent) => {
-      if (!event?.data || !event?.data?.sectorId) return;
+      if (!event?.data || !event?.data?.sectorId) {
+        return;
+      }
 
       const sectorId = event?.data?.sectorId as string;
       const shipId = event?.data?.shipId as string;
@@ -148,7 +151,9 @@ export function RealTimeMapUpdates({
     };
 
     const handleScanComplete = (event: ModuleEvent) => {
-      if (!event?.data || !event?.data?.sectorId) return;
+      if (!event?.data || !event?.data?.sectorId) {
+        return;
+      }
 
       const sectorId = event?.data?.sectorId as string;
 
@@ -187,7 +192,9 @@ export function RealTimeMapUpdates({
     };
 
     const handleAnomalyDetected = (event: ModuleEvent) => {
-      if (!event?.data || !event?.data?.sectorId || !event?.data?.anomaly) return;
+      if (!event?.data || !event?.data?.sectorId || !event?.data?.anomaly) {
+        return;
+      }
 
       const sectorId = event?.data?.sectorId as string;
       const anomaly = event?.data?.anomaly as Anomaly;
@@ -212,7 +219,9 @@ export function RealTimeMapUpdates({
     };
 
     const handleResourceDiscovered = (event: ModuleEvent) => {
-      if (!event?.data || !event?.data?.sectorId || !event?.data?.resource) return;
+      if (!event?.data || !event?.data?.sectorId || !event?.data?.resource) {
+        return;
+      }
 
       const sectorId = event?.data?.sectorId as string;
       const resourceData = event?.data?.resource as { type: string; amount: number };
@@ -305,10 +314,14 @@ export function RealTimeMapUpdates({
 
       onShipsUpdate(
         ships.map(ship => {
-          if (ship.status === 'idle' || !ship.targetSector) return ship;
+          if (ship.status === 'idle' || !ship.targetSector) {
+            return ship;
+          }
 
           const targetSector = sectors.find(s => s.id === ship.targetSector);
-          if (!targetSector) return ship;
+          if (!targetSector) {
+            return ship;
+          }
 
           // Calculate progress based on efficiency and time
           const lastUpdateTime = ship.lastUpdate || Date.now();
@@ -347,7 +360,9 @@ export function RealTimeMapUpdates({
 
       onTransfersUpdate(
         transfers.map(transfer => {
-          if (transfer.progress >= 1) return transfer;
+          if (transfer.progress >= 1) {
+            return transfer;
+          }
 
           // Calculate progress based on elapsed time
           const elapsedTime = Date.now() - transfer.startTime;
@@ -390,7 +405,16 @@ export function RealTimeMapUpdates({
         setLastUpdateTime(Date.now());
         setIsConnected(true);
       } catch (error) {
-        console.error('Error updating map data:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Error updating map data'),
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          {
+            componentName: 'RealTimeMapUpdates',
+            action: 'performUpdate',
+            currentErrorCount: errorCount,
+          }
+        );
         setErrorCount(prev => prev + 1);
 
         // If we have too many consecutive errors, mark as disconnected

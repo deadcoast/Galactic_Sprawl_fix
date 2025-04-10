@@ -11,19 +11,18 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { GameActionType, useGameDispatch, useGameState } from '../../contexts/GameContext';
 import { ModuleActionType, useModuleDispatch, useModules } from '../../contexts/ModuleContext';
 import { useVPRSystem } from '../../hooks/ui/useVPRSystem';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
-import { moduleManager } from '../../managers/module/ModuleManager';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
 import { Module, ModuleStatus } from '../../types/modules/ModuleTypes';
-import { ResourceType } from './../../types/resources/ResourceTypes';
-import { NotificationSystem, notificationManager } from './NotificationSystem';
-import ResourceVisualization from './ResourceVisualization';
 import { useLazyComponent, useRenderPerformance } from '../../utils/performance/ComponentOptimizer';
+import { ResourceType } from './../../types/resources/ResourceTypes';
+import { notificationManager, NotificationSystem } from './NotificationSystem';
+import ResourceVisualization from './visualization/ResourceVisualization';
 
 // Temporary Settings Panel component
 const _SettingsPanel = () => (
@@ -166,7 +165,7 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
     type: ResourceType;
     value: number;
   }>(
-    () => import('./ResourceVisualization'),
+    () => import('./visualization/ResourceVisualization'),
     []
   );
   
@@ -301,7 +300,17 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
     }
 
     if (!buildingId || !attachmentPointId) {
-      console.error('No suitable attachment point found for module', moduleType);
+      errorLoggingService.logError(
+        new Error(`No suitable attachment point found for module ${moduleType}`),
+        ErrorType.CONFIGURATION,
+        ErrorSeverity.MEDIUM,
+        {
+          componentName: 'GameHUD',
+          action: 'buildModuleLocally',
+          moduleType,
+          availableBuildings: modules.buildings.map(b => b.id).join(','),
+        }
+      );
       return false;
     }
 

@@ -1,9 +1,22 @@
 import { ThresholdEvent, thresholdEvents } from '../../contexts/ThresholdTypes';
 import { shipBehaviorManager } from '../../lib/ai/shipBehavior';
 import { shipMovementManager } from '../../lib/ai/shipMovement';
-import { TypedEventEmitter } from '../../lib/events/EventEmitter';
+import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { Position } from '../../types/core/GameTypes';
-import { ResourceType } from '../../types/resources/StandardizedResourceTypes';
+import {
+  EventType,
+  MiningResourceCollectedEventData,
+  MiningShipRegisteredEventData,
+  MiningShipStatusChangedEventData,
+  MiningShipUnregisteredEventData,
+  MiningTaskAssignedEventData,
+  MiningTaskCompletedEventData
+} from '../../types/events/EventTypes';
+import {
+  ResourceType,
+  ResourceTypeHelpers,
+  ResourceTypeString
+} from '../../types/resources/ResourceTypes';
 
 // Define ship status and task status as enums for type safety
 enum ShipStatus {
@@ -42,29 +55,12 @@ interface MiningTask {
   endTime?: number;
 }
 
-// Define event types
-type MiningEvents = {
-  [K in keyof MiningEventMap]: MiningEventMap[K];
-};
-
-interface MiningEventMap {
-  shipRegistered: { ship: MiningShip };
-  shipUnregistered: { shipId: string };
-  taskAssigned: { task: MiningTask };
-  taskCompleted: { task: MiningTask };
-  taskFailed: { task: MiningTask; reason: string };
-  shipStatusChanged: { shipId: string; oldStatus: ShipStatus; newStatus: ShipStatus };
-  resourceCollected: { shipId: string; resourceType: ResourceType; amount: number };
-}
-
-export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
+export class MiningShipManagerImpl {
   private ships: Map<string, MiningShip> = new Map();
   private tasks: Map<string, MiningTask> = new Map();
   private nodeAssignments: Map<string, string> = new Map(); // nodeId -> shipId
 
   constructor() {
-    super();
-
     // Listen for threshold events
     thresholdEvents.subscribe((event: ThresholdEvent) => {
       if (event?.type === 'THRESHOLD_VIOLATED') {
@@ -114,7 +110,13 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
         task.status = TaskStatus.COMPLETED;
         task.endTime = Date.now();
         this.nodeAssignments.delete(task.nodeId);
-        this.emit('taskCompleted', { task });
+        const eventData: MiningTaskCompletedEventData = { task };
+        eventSystem.publish({
+            type: EventType.MINING_TASK_COMPLETED,
+            managerId: 'MiningShipManager',
+            timestamp: Date.now(),
+            data: eventData
+        });
       });
 
     // Update ship status
@@ -164,8 +166,14 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
       },
     });
 
-    // Emit event
-    this.emit('shipRegistered', { ship });
+    // Publish using eventSystem
+    const eventData: MiningShipRegisteredEventData = { ship };
+    eventSystem.publish({
+        type: EventType.MINING_SHIP_REGISTERED,
+        managerId: 'MiningShipManager',
+        timestamp: Date.now(),
+        data: eventData
+    });
   }
 
   /**
@@ -173,7 +181,9 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
    */
   unregisterShip(shipId: string): void {
     const ship = this.ships.get(shipId);
-    if (!ship) return;
+    if (!ship) {
+      return;
+    }
 
     this.ships.delete(shipId);
     shipBehaviorManager.unregisterShip(shipId);
@@ -183,7 +193,13 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
       .filter(task => task.shipId === shipId)
       .forEach(task => {
         this.tasks.delete(task.id);
-        this.emit('taskCompleted', { task });
+        const eventData: MiningTaskCompletedEventData = { task };
+        eventSystem.publish({
+            type: EventType.MINING_TASK_COMPLETED,
+            managerId: 'MiningShipManager',
+            timestamp: Date.now(),
+            data: eventData
+        });
       });
 
     // Clean up node assignments
@@ -191,8 +207,14 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
       .filter(([_, assignedShipId]) => assignedShipId === shipId)
       .forEach(([nodeId]) => this.nodeAssignments.delete(nodeId));
 
-    // Emit event
-    this.emit('shipUnregistered', { shipId });
+    // Publish using eventSystem
+    const eventData: MiningShipUnregisteredEventData = { shipId };
+    eventSystem.publish({
+        type: EventType.MINING_SHIP_UNREGISTERED,
+        managerId: 'MiningShipManager',
+        timestamp: Date.now(),
+        data: eventData
+    });
   }
 
   /**
@@ -201,7 +223,13 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
   private updateShipStatus(ship: MiningShip, newStatus: ShipStatus): void {
     const oldStatus = ship.status;
     ship.status = newStatus;
-    this.emit('shipStatusChanged', { shipId: ship.id, oldStatus, newStatus });
+    const eventData: MiningShipStatusChangedEventData = { shipId: ship.id, oldStatus, newStatus };
+    eventSystem.publish({
+        type: EventType.MINING_SHIP_STATUS_CHANGED,
+        managerId: 'MiningShipManager',
+        timestamp: Date.now(),
+        data: eventData
+    });
   }
 
   /**
@@ -231,8 +259,14 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
     this.updateShipStatus(ship, ShipStatus.MINING);
     ship.targetNode = resourceId;
 
-    // Emit event
-    this.emit('taskAssigned', { task });
+    // Publish using eventSystem
+    const eventData: MiningTaskAssignedEventData = { task };
+    eventSystem.publish({
+        type: EventType.MINING_TASK_ASSIGNED,
+        managerId: 'MiningShipManager',
+        timestamp: Date.now(),
+        data: eventData
+    });
 
     // Assign task to behavior system
     shipBehaviorManager.assignTask({
@@ -251,15 +285,15 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
    * Get resource type from node ID
    */
   private getResourceTypeFromNodeId(nodeId: string): ResourceType {
-    const resourceStr = nodeId.split('-')[0]; // e.g., "iron" from "iron-belt-1"
-    switch (resourceStr.toLowerCase()) {
-      case 'iron':
+    const resourceStr = nodeId.split('-')[0]?.toUpperCase(); // e.g., "IRON" from "iron-belt-1"
+    switch (resourceStr) {
+      case ResourceType.IRON:
         return ResourceType.IRON;
-      case 'copper':
+      case ResourceType.COPPER:
         return ResourceType.COPPER;
       case ResourceType.GAS:
         return ResourceType.GAS;
-      case ResourceType.MINERALS:
+      case ResourceType.MINERALS: // Keep existing enum cases
         return ResourceType.MINERALS;
       case ResourceType.EXOTIC:
         return ResourceType.EXOTIC;
@@ -267,8 +301,14 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
         return ResourceType.PLASMA;
       case ResourceType.ENERGY:
         return ResourceType.ENERGY;
+      // Add other expected ResourceType enum values here if needed
       default:
-        return ResourceType.MINERALS; // Default to minerals
+         // Try to map any other string to enum, default to MINERALS
+        try {
+           return ResourceTypeHelpers.stringToEnum(resourceStr as ResourceTypeString) || ResourceType.MINERALS;
+        } catch {
+            return ResourceType.MINERALS; // Fallback
+        }
     }
   }
 
@@ -306,11 +346,17 @@ export class MiningShipManagerImpl extends TypedEventEmitter<MiningEvents> {
           const collectedAmount = ship.efficiency * deltaTime;
           ship.currentLoad += collectedAmount;
 
-          // Emit resource collection event
-          this.emit('resourceCollected', {
+          // Publish using eventSystem
+          const eventData: MiningResourceCollectedEventData = {
             shipId: ship.id,
             resourceType: task.resourceType,
             amount: collectedAmount,
+          };
+          eventSystem.publish({
+              type: EventType.MINING_RESOURCE_COLLECTED,
+              managerId: 'MiningShipManager',
+              timestamp: Date.now(),
+              data: eventData
           });
 
           // Check if cargo is full

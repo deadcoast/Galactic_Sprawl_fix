@@ -1,11 +1,11 @@
 import React, {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useReducer,
 } from 'react';
 import { BaseState } from '../lib/contexts/BaseContext';
 import { serviceRegistry } from '../lib/managers/ServiceRegistry';
@@ -14,12 +14,12 @@ import { moduleManagerWrapper } from '../managers/module/ModuleManagerWrapper';
 import { ModularBuilding, ModuleType } from '../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import {
-  IModuleManager,
-  LegacyModuleAction,
-  Module,
-  moduleEventToEventType,
-  ModuleEventType,
-  ModuleStatus,
+    IModuleManager,
+    LegacyModuleAction,
+    Module,
+    moduleEventToEventType,
+    ModuleEventType,
+    ModuleStatus,
 } from '../types/modules/ModuleTypes';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
@@ -48,6 +48,8 @@ export interface ModuleAction {
     updates?: Partial<Module>;
     activeModuleIds?: string[];
     selectedModuleId?: string | null;
+    selectedBuildingId?: string;
+    building?: ModularBuilding;
     categories?: string[];
     isLoading?: boolean;
     error?: string | null;

@@ -1,3 +1,5 @@
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
+
 interface WorkerMessage {
   taskId: string;
   type: string;
@@ -13,7 +15,7 @@ const taskHandlers = new Map<string, TaskHandler>();
 // Register task handlers
 taskHandlers.set('heavyComputation', async (data: unknown, reportProgress) => {
   // Example heavy computation task
-  const iterations = (data as { iterations: number }).iterations;
+  const {iterations} = data as { iterations: number };
   let result = 0;
 
   for (let i = 0; i < iterations; i++) {
@@ -29,7 +31,12 @@ taskHandlers.set('heavyComputation', async (data: unknown, reportProgress) => {
 // Handle messages from the main thread
 self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   if (!event || !event.data) {
-    console.error('Received invalid message event in worker');
+    errorLoggingService.logError(
+      new Error('Received invalid message event in worker'),
+      ErrorType.NETWORK,
+      ErrorSeverity.MEDIUM,
+      { componentName: 'GenericWorker', action: 'onmessage' }
+    );
     return;
   }
 

@@ -1,11 +1,12 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
-  ResourceTransfer as StringResourceTransfer,
-  ResourceType as StringResourceType,
+    ResourceTransfer as StringResourceTransfer,
+    ResourceType as StringResourceType,
 } from '../../types/resources/ResourceTypes';
 import {
-  ensureStringResourceType,
-  toEnumResourceType,
+    ensureStringResourceType,
+    toEnumResourceType,
 } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
 import { ResourceType } from './../../types/resources/ResourceTypes';
@@ -43,7 +44,12 @@ export class ResourceTransferSubsystem {
 
       this.isInitialized = true;
     } catch (error) {
-      console.error('Failed to initialize ResourceTransferSubsystem:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to initialize ResourceTransferSubsystem'),
+        ErrorType.INITIALIZATION,
+        ErrorSeverity.CRITICAL,
+        { componentName: 'ResourceTransferSubsystem', action: 'initialize' }
+      );
       throw error;
     }
   }
@@ -62,7 +68,12 @@ export class ResourceTransferSubsystem {
 
       this.isInitialized = false;
     } catch (error) {
-      console.error('Failed to dispose ResourceTransferSubsystem:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to dispose ResourceTransferSubsystem'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        { componentName: 'ResourceTransferSubsystem', action: 'dispose' }
+      );
       throw error;
     }
   }

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VariableSizeList } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 
 export interface ResourceDataItem {
@@ -202,7 +203,9 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
 
   // Handle container resizing
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) {
+      return;
+    }
 
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -238,14 +241,21 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
 
   // Load more items function for InfiniteLoader
   const loadMore = useCallback(async () => {
-    if (isLoadingMore || !loadMoreItems || !hasMoreItems) return;
+    if (isLoadingMore || !loadMoreItems || !hasMoreItems) {
+      return;
+    }
 
     setIsLoadingMore(true);
     try {
       const hasMore = await loadMoreItems();
       setHasMoreItems(hasMore);
     } catch (error) {
-      console.error('Failed to load more items:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to load more items'),
+        ErrorType.NETWORK,
+        ErrorSeverity.MEDIUM,
+        { componentName: 'VirtualizedResourceDataset', action: 'loadMore' }
+      );
     } finally {
       setIsLoadingMore(false);
     }
@@ -255,7 +265,9 @@ export function VirtualizedResourceDataset<T extends ResourceDataItem>({
   const defaultRowRenderer = useCallback(
     ({ index, style }: { index: number; style: React.CSSProperties }) => {
       const item = processedItems[index];
-      if (!item) return null;
+      if (!item) {
+        return null;
+      }
 
       return (
         <div

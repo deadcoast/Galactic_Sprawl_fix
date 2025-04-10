@@ -2,7 +2,7 @@ import { BaseTypedEventEmitter } from '../../lib/modules/BaseTypedEventEmitter';
 import { Position } from '../../types/core/GameTypes';
 import { WeaponCategory, WeaponVariant } from '../../types/weapons/WeaponTypes';
 import { effectLifecycleManager } from '../effects/EffectLifecycleManager';
-import { particleSystemManager } from '../effects/ParticleSystemManager';
+import { ParticleSystemConfig, particleSystemManager } from '../effects/ParticleSystemManager';
 
 interface WeaponEffectEvents {
   effectStarted: { weaponId: string; effectType: string };
@@ -163,68 +163,191 @@ export class WeaponEffectManager extends BaseTypedEventEmitter<WeaponEffectEvent
 
   private createMainEffect(
     weaponId: string,
-    _position: Position,
-    _direction: number,
-    _config: WeaponEffectConfig,
-    _quality: 'low' | 'medium' | 'high'
+    position: Position,
+    direction: number,
+    config: WeaponEffectConfig,
+    quality: 'low' | 'medium' | 'high'
   ): string {
-    return `${weaponId}-main-${Date.now()}`;
+    const adjustedParticleCount = this._getQualityAdjustedParticleCount(
+      Math.max(5, config.particleCount * 0.2),
+      quality
+    );
+
+    const systemId = `${weaponId}-main-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+
+    const particleConfig: ParticleSystemConfig = {
+      maxParticles: adjustedParticleCount,
+      spawnRate: adjustedParticleCount,
+      position: position,
+      spread: config.spread * 10,
+      initialVelocity: {
+        min: { x: Math.cos(direction) * config.speed * 80, y: Math.sin(direction) * config.speed * 80 },
+        max: { x: Math.cos(direction) * config.speed * 90, y: Math.sin(direction) * config.speed * 90 },
+      },
+      acceleration: { x: 0, y: 0 },
+      size: {
+        min: config.size,
+        max: config.size * 1.3,
+      },
+      life: {
+        min: config.duration / 1000 * 0.9,
+        max: config.duration / 1000 * 1.1,
+      },
+      color: config.color,
+      blendMode: 'normal',
+      quality: quality,
+    };
+
+    particleSystemManager.createParticleSystem(systemId, particleConfig);
+
+    console.warn(
+      `[WeaponEffectManager] Creating main effect with ID ${systemId} at quality ${quality}`
+    );
+
+    return systemId;
   }
 
   private createBeamEffect(
-    _position: Position,
-    _direction: number,
-    _config: WeaponEffectConfig,
-    _quality: 'low' | 'medium' | 'high'
+    position: Position,
+    direction: number,
+    config: WeaponEffectConfig,
+    quality: 'low' | 'medium' | 'high'
   ): string[] {
-    // Adjust particle count based on quality setting
     const adjustedParticleCount = this._getQualityAdjustedParticleCount(
-      _config.particleCount,
-      _quality
+      config.particleCount,
+      quality
     );
+
+    // Generate a unique ID for this particle system instance
+    const systemId = `beam-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+
+    // Define particle config based on weapon config
+    const particleConfig: ParticleSystemConfig = {
+      maxParticles: adjustedParticleCount,
+      spawnRate: adjustedParticleCount * 2,
+      position: position,
+      spread: config.spread * 50,
+      initialVelocity: {
+        min: { x: Math.cos(direction) * config.speed * 50, y: Math.sin(direction) * config.speed * 50 },
+        max: { x: Math.cos(direction) * config.speed * 60, y: Math.sin(direction) * config.speed * 60 },
+      },
+      acceleration: { x: 0, y: 0 },
+      size: {
+        min: config.size * 0.8,
+        max: config.size * 1.2,
+      },
+      life: {
+        min: config.duration / 1000 * 0.5,
+        max: config.duration / 1000,
+      },
+      color: config.color,
+      blendMode: 'additive',
+      quality: quality,
+    };
+
+    // Create the particle system
+    particleSystemManager.createParticleSystem(systemId, particleConfig);
 
     console.warn(
-      `[WeaponEffectManager] Creating beam effect with ${adjustedParticleCount} particles at quality ${_quality}`
+      `[WeaponEffectManager] Creating beam effect with ID ${systemId} using ${adjustedParticleCount} particles at quality ${quality}`
     );
 
-    return [`beam-${Date.now()}`];
+    return [systemId];
   }
 
   private createExplosionEffect(
-    _position: Position,
-    _config: WeaponEffectConfig,
-    _quality: 'low' | 'medium' | 'high'
+    position: Position,
+    config: WeaponEffectConfig,
+    quality: 'low' | 'medium' | 'high'
   ): string[] {
-    // Adjust particle count based on quality setting
     const adjustedParticleCount = this._getQualityAdjustedParticleCount(
-      _config.particleCount,
-      _quality
+      config.particleCount * 5,
+      quality
     );
+
+    // Generate a unique ID
+    const systemId = `explosion-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+
+    // Define particle config - Explosions often burst outwards
+    const particleConfig: ParticleSystemConfig = {
+      maxParticles: adjustedParticleCount,
+      spawnRate: adjustedParticleCount * 10,
+      position: position,
+      spread: config.spread * 100,
+      initialVelocity: {
+        min: { x: -config.speed * 50, y: -config.speed * 50 },
+        max: { x: config.speed * 50, y: config.speed * 50 },
+      },
+      acceleration: { x: 0, y: 0 },
+      size: {
+        min: config.size * 1.5,
+        max: config.size * 2.5,
+      },
+      life: {
+        min: config.duration / 1000 * 0.2,
+        max: config.duration / 1000 * 0.5,
+      },
+      color: config.color,
+      blendMode: 'additive',
+      quality: quality,
+    };
+
+    // Create the particle system
+    particleSystemManager.createParticleSystem(systemId, particleConfig);
 
     console.warn(
-      `[WeaponEffectManager] Creating explosion effect with ${adjustedParticleCount} particles at quality ${_quality}`
+      `[WeaponEffectManager] Creating explosion effect with ID ${systemId} using ${adjustedParticleCount} particles at quality ${quality}`
     );
 
-    return [`explosion-${Date.now()}`];
+    return [systemId];
   }
 
   private createContinuousEffect(
-    _position: Position,
-    _direction: number,
-    _config: WeaponEffectConfig,
-    _quality: 'low' | 'medium' | 'high'
+    position: Position,
+    direction: number,
+    config: WeaponEffectConfig,
+    quality: 'low' | 'medium' | 'high'
   ): string[] {
-    // Adjust particle count based on quality setting
     const adjustedParticleCount = this._getQualityAdjustedParticleCount(
-      _config.particleCount,
-      _quality
+      config.particleCount * 0.5,
+      quality
     );
+
+    // Generate a unique ID
+    const systemId = `continuous-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+
+    // Define particle config - Continuous emission
+    const particleConfig: ParticleSystemConfig = {
+      maxParticles: adjustedParticleCount * 10,
+      spawnRate: adjustedParticleCount,
+      position: position,
+      spread: config.spread * 30,
+      initialVelocity: {
+        min: { x: Math.cos(direction) * config.speed * 10, y: Math.sin(direction) * config.speed * 10 },
+        max: { x: Math.cos(direction) * config.speed * 15, y: Math.sin(direction) * config.speed * 15 },
+      },
+      acceleration: { x: 0, y: 0 },
+      size: {
+        min: config.size * 0.7,
+        max: config.size * 1.1,
+      },
+      life: {
+        min: config.duration / 1000 * 0.8,
+        max: config.duration / 1000 * 1.2,
+      },
+      color: config.color,
+      blendMode: 'normal',
+      quality: quality,
+    };
+
+    // Create the particle system
+    particleSystemManager.createParticleSystem(systemId, particleConfig);
 
     console.warn(
-      `[WeaponEffectManager] Creating continuous effect with ${adjustedParticleCount} particles at quality ${_quality}`
+      `[WeaponEffectManager] Creating continuous effect with ID ${systemId} using ${adjustedParticleCount} particles/tick at quality ${quality}`
     );
 
-    return [`continuous-${Date.now()}`];
+    return [systemId];
   }
 
   private cleanupWeaponEffect(weaponId: string, systemIds: string[]): void {

@@ -1,13 +1,13 @@
 import {
-  CategoryScale,
-  Chart as ChartJS,
-  ChartOptions,
-  Legend,
-  LinearScale,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
+    CategoryScale,
+    Chart as ChartJS,
+    ChartOptions,
+    Legend,
+    LinearScale,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
 } from 'chart.js';
 import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -16,8 +16,7 @@ import { useResourceRate } from '../../../contexts/ResourceRatesContext';
 import { useThreshold } from '../../../contexts/ThresholdContext';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
-import { ResourceTypeHelpers } from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
 import './ResourceForecastingVisualization.css';
 
 // Register the Chart.js components
@@ -132,7 +131,9 @@ const ResourceForecastingVisualization: React.FC<ResourceForecastingVisualizatio
 
   // Calculate when critical thresholds will be reached (if applicable)
   const criticalEvents = useMemo(() => {
-    if (rate === 0) return null;
+    if (rate === 0) {
+      return null;
+    }
 
     const events = [];
     const resourceThresholds = thresholds || {
@@ -348,10 +349,18 @@ const getResourceStatus = (
   const { critical, low, high, maximum } = { ...defaultThresholds, ...thresholds };
   const percentage = value / maxValue;
 
-  if (percentage <= critical) return 'critical';
-  if (percentage <= low) return 'low';
-  if (percentage >= maximum) return 'maximum';
-  if (percentage >= high) return 'high';
+  if (percentage <= critical) {
+    return 'critical';
+  }
+  if (percentage <= low) {
+    return 'low';
+  }
+  if (percentage >= maximum) {
+    return 'maximum';
+  }
+  if (percentage >= high) {
+    return 'high';
+  }
   return 'normal';
 };
 

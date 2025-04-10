@@ -13,7 +13,6 @@ import {
   Users,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { useModuleEvents } from '../../../hooks/events/useModuleEvents';
 import { moduleEventBus } from '../../../lib/events/ModuleEventBus';
 import { EventType } from '../../../types/events/EventTypes';
 import { StandardizedEvent } from '../../../types/events/StandardizedEvents';
@@ -29,7 +28,6 @@ interface PopulationEvent {
 
 interface AutomatedPopulationManagerProps {
   colonyId: string;
-  colonyName: string;
   currentPopulation: number;
   maxPopulation: number;
   growthRate: number; // Effective growth rate per cycle
@@ -50,7 +48,6 @@ interface AutomatedPopulationManagerProps {
  */
 export function AutomatedPopulationManager({
   colonyId,
-  colonyName,
   currentPopulation,
   maxPopulation,
   growthRate,
@@ -69,8 +66,6 @@ export function AutomatedPopulationManager({
   const [showSettings, setShowSettings] = useState(false);
   const [customCycleLength, setCustomCycleLength] = useState(cycleLength);
   const [showEvents, setShowEvents] = useState(false);
-
-  const { subscribe } = useModuleEvents();
 
   // Calculate the next growth amount based on current population and growth rate
   const calculateNextGrowthAmount = useCallback(() => {

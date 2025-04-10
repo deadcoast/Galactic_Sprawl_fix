@@ -13,29 +13,29 @@ import { moduleEventBus } from '../../../../lib/events/ModuleEventBus';
 import { EventType } from '../../../../types/events/EventTypes';
 import { StandardizedEvent } from '../../../../types/events/StandardizedEvents';
 import {
-  AnalysisResult,
-  AnalysisType,
-  Anomaly,
-  DetailLevel,
-  ExplorationStatus,
-  MapSelection,
-  MapTheme,
-  MapViewport,
-  MapVisualSettings,
-  Planet,
-  ResourceDeposit,
-  Sector,
-  StarSystem,
-  TradeRoute,
+    AnalysisResult,
+    AnalysisType,
+    Anomaly,
+    DetailLevel,
+    ExplorationStatus,
+    MapSelection,
+    MapTheme,
+    MapViewport,
+    MapVisualSettings,
+    Planet,
+    ResourceDeposit,
+    Sector,
+    StarSystem,
+    TradeRoute,
 } from '../../../../types/exploration/unified';
 import { cn } from '../../../../utils/cn';
 import { ExplorationProvider, useExploration } from '../context/ExplorationContext';
 import {
-  BaseAnalysisVisualizer,
-  BaseDataTable,
-  BaseMap,
-  type DataColumn,
-  type MapLayer,
+    BaseAnalysisVisualizer,
+    BaseDataTable,
+    BaseMap,
+    type DataColumn,
+    type MapLayer,
 } from '../core';
 
 // View mode for the system
@@ -357,7 +357,7 @@ const GalaxyExplorationSystemInner: React.FC<
         viewport: MapViewport,
         settings: MapVisualSettings
       ) => {
-        const systems = exploration.state.systems;
+        const {systems} = exploration.state;
 
         systems.forEach(system => {
           const { x, y } = system.coordinates;
@@ -423,7 +423,7 @@ const GalaxyExplorationSystemInner: React.FC<
           viewport: MapViewport,
           settings: MapVisualSettings
         ) => {
-          const anomalies = exploration.state.anomalies;
+          const {anomalies} = exploration.state;
 
           anomalies.forEach(anomaly => {
             const { x, y } = anomaly.coordinates;
@@ -552,7 +552,7 @@ const GalaxyExplorationSystemInner: React.FC<
           viewport: MapViewport,
           settings: MapVisualSettings
         ) => {
-          const resources = exploration.state.resources;
+          const {resources} = exploration.state;
 
           resources.forEach(resource => {
             const { x, y } = resource.coordinates;
@@ -562,7 +562,9 @@ const GalaxyExplorationSystemInner: React.FC<
             const screenY = (y - viewport.y) * viewport.scale + viewport.height / 2;
 
             // Only draw if detail level is sufficient
-            if (settings.detailLevel === DetailLevel.LOW && viewport.scale < 0.5) return;
+            if (settings.detailLevel === DetailLevel.LOW && viewport.scale < 0.5) {
+              return;
+            }
 
             // Draw resource
             ctx.beginPath();
@@ -575,29 +577,29 @@ const GalaxyExplorationSystemInner: React.FC<
 
             // Set color based on resource type and theme
             const alpha = settings.theme === MapTheme.DARK ? 0.9 : 0.8;
-            switch (resource.type as string) {
+            switch (resource.type) {
               case ResourceType.MINERALS:
                 ctx.fillStyle = `rgba(150, 150, 150, ${alpha})`;
                 break;
-              case 'iron':
+              case ResourceType.IRON:
                 ctx.fillStyle = `rgba(130, 130, 130, ${alpha})`;
                 break;
-              case 'copper':
+              case ResourceType.COPPER:
                 ctx.fillStyle = `rgba(180, 120, 70, ${alpha})`;
                 break;
-              case 'titanium':
+              case ResourceType.TITANIUM:
                 ctx.fillStyle = `rgba(200, 200, 200, ${alpha})`;
                 break;
-              case 'uranium':
+              case ResourceType.URANIUM:
                 ctx.fillStyle = `rgba(100, 200, 100, ${alpha})`;
                 break;
               case ResourceType.WATER:
                 ctx.fillStyle = `rgba(100, 150, 200, ${alpha})`;
                 break;
-              case 'helium':
+              case ResourceType.HELIUM:
                 ctx.fillStyle = `rgba(200, 200, 255, ${alpha})`;
                 break;
-              case 'deuterium':
+              case ResourceType.DEUTERIUM:
                 ctx.fillStyle = `rgba(150, 200, 255, ${alpha})`;
                 break;
               case ResourceType.ENERGY:
@@ -648,7 +650,7 @@ const GalaxyExplorationSystemInner: React.FC<
           viewport: MapViewport,
           settings: MapVisualSettings
         ) => {
-          const tradeRoutes = exploration.state.tradeRoutes;
+          const {tradeRoutes} = exploration.state;
 
           tradeRoutes.forEach(route => {
             // Find source and target entities
@@ -660,10 +662,14 @@ const GalaxyExplorationSystemInner: React.FC<
               exploration.state.sectors.find(s => s.id === route.targetId) ||
               exploration.state.systems.find(s => s.id === route.targetId);
 
-            if (!source || !target) return;
+            if (!source || !target) {
+              return;
+            }
 
             // Skip if detail level is low and route is not significant
-            if (settings.detailLevel === DetailLevel.LOW && route.volume < 50) return;
+            if (settings.detailLevel === DetailLevel.LOW && route.volume < 50) {
+              return;
+            }
 
             // Convert coordinates to screen space
             const sourceX =
@@ -958,7 +964,7 @@ const GalaxyExplorationSystemInner: React.FC<
       }
 
       // Check systems
-      const systems = exploration.state.systems;
+      const {systems} = exploration.state;
       const clickedSystem = systems.find(system => {
         const { x, y } = system.coordinates;
         const dx = x - worldX;
@@ -995,7 +1001,7 @@ const GalaxyExplorationSystemInner: React.FC<
       }
 
       // Check anomalies
-      const anomalies = exploration.state.anomalies;
+      const {anomalies} = exploration.state;
       const clickedAnomaly = anomalies.find(anomaly => {
         const { x, y } = anomaly.coordinates;
         const dx = x - worldX;
@@ -1095,7 +1101,9 @@ const GalaxyExplorationSystemInner: React.FC<
 
   // Handle analyze with standardized events
   const handleAnalyze = useCallback(() => {
-    if (selection.length === 0) return;
+    if (selection.length === 0) {
+      return;
+    }
 
     const entity = selection[0];
     const analysisTarget = entity.entityType;
@@ -1504,11 +1512,9 @@ const GalaxyExplorationSystemInner: React.FC<
 
   // Cleanup subscriptions on unmount
   useEffect(() => {
-    const cleanup = () => {
-      // Any cleanup needed for event subscriptions
-    };
-
-    return cleanup;
+    return () => {
+          // Any cleanup needed for event subscriptions
+        };
   }, []);
 
   return (

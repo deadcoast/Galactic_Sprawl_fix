@@ -1,4 +1,6 @@
-import { ResourceType } from './../../types/resources/ResourceTypes'; /**
+import { Position } from '../../types/geometry';
+import { ResourceType } from './../../types/resources/ResourceTypes';
+/**
  * Advanced weapon effect types and interfaces
  * @module AdvancedWeaponEffects
  */
@@ -30,19 +32,23 @@ export interface ChainEffect extends BaseAdvancedWeaponEffect {
   chainRange: number; // Range for chain jumps
   chainFalloff: number; // Damage reduction per jump (0-1)
   prioritizeClosest: boolean; // Whether to prioritize closest targets
+  position: Position; // Added: Initial position of the effect
+  direction: number; // Added: Initial direction/orientation
 }
 
 /**
- * Shield Bypass Effect - Penetrates shields
+ * Represents an effect that bypasses a portion of shield defenses
  */
 export interface ShieldBypassEffect extends BaseAdvancedWeaponEffect {
   type: 'damage';
-  damageType: ResourceType.ENERGY | 'kinetic' | 'explosive';
-  penetration: number; // Penetration value (0-1)
-  bypassRatio: number; // How much shield protection is bypassed (0-1)
-  directHullDamage: number; // Direct damage to hull regardless of shields (0-1)
-  hasVisualEffect: boolean;
-  visualColorTheme?: string;
+  damageType: ResourceType | 'physical' | 'corrosive' | 'thermal'; // Type of damage dealt
+  penetration: number; // Base shield penetration factor (0 to 1)
+  bypassRatio: number; // Percentage of shield bypassed (0 to 1)
+  directHullDamage?: number; // Additional flat damage applied directly to hull
+  hasVisualEffect: boolean; // Whether the bypass has a visual representation
+  visualColorTheme?: string; // Theme color for visuals
+  position: Position; // Added: Initial position of the effect
+  direction: number; // Added: Initial direction/velocity vector
 }
 
 /**
@@ -56,6 +62,8 @@ export interface DelayedEffect extends BaseAdvancedWeaponEffect {
   hasWarningIndicator: boolean;
   warningFrequency: number; // How often the warning flashes (Hz)
   falloffRange: number; // Range at which falloff begins
+  position: Position; // Added
+  direction: number; // Added (initial direction if projectile)
 }
 
 /**
@@ -82,6 +90,7 @@ export interface EnhancedStatusEffect extends BaseAdvancedWeaponEffect {
   isStackable: boolean; // Whether the effect can stack
   maxStacks?: number; // Maximum number of stacks
   stackingBehavior?: 'additive' | 'multiplicative' | 'max';
+  position: Position; // Added (position where status is applied)
 }
 
 /**
@@ -98,6 +107,8 @@ export interface BeamEffect extends BaseAdvancedWeaponEffect {
   visualIntensity: number; // Visual effect intensity
   isPulsing: boolean; // Whether the beam pulses
   pulseFrequency?: number; // Pulse frequency in Hz
+  position: Position; // Added (beam origin)
+  direction: number; // Added (beam direction)
 }
 
 /**
@@ -114,6 +125,8 @@ export interface MultiStageEffect extends BaseAdvancedWeaponEffect {
   currentStage: number;
   autoProgress: boolean; // Whether stages progress automatically
   isLooping: boolean; // Whether the effect loops after completion
+  position: Position; // Added
+  direction: number; // Added (initial direction if applicable)
 }
 
 /**
@@ -128,6 +141,8 @@ export interface HomingEffect extends BaseAdvancedWeaponEffect {
   maxVelocity: number; // Maximum velocity
   hasCountermeasures: boolean; // Whether it can be countered
   countermeasureEvadeChance?: number; // Chance to evade countermeasures (0-1)
+  position: Position; // Added
+  direction: number; // Added (initial direction)
 }
 
 /**
@@ -145,6 +160,8 @@ export interface EnvironmentalInteractionEffect extends BaseAdvancedWeaponEffect
   canCreateHazards: boolean;
   createdHazardType?: 'damage' | 'field' | 'weather' | 'anomaly';
   hazardCreationChance?: number; // Chance to create a hazard (0-1)
+  position: Position; // Added
+  direction: number; // Added
 }
 
 /**
@@ -172,6 +189,8 @@ export interface TacticalEffect extends BaseAdvancedWeaponEffect {
   tacticalCooldown: number; // Cooldown between tactical uses
   hasLimitedUses: boolean; // Whether it has limited uses
   usesRemaining?: number; // Number of uses remaining
+  position: Position; // Added
+  direction: number; // Added (direction for area or utility effects)
 }
 
 // Advanced Weapon Effect Collections

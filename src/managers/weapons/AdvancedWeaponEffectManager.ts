@@ -8,18 +8,18 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
 
 import EventEmitter from 'eventemitter3';
 import {
-  AdvancedEffectVisualConfig,
-  AdvancedWeaponEffectType,
-  BeamEffect,
-  ChainEffect,
-  DelayedEffect,
-  EffectCreationConfig,
-  EnhancedStatusEffect,
-  EnvironmentalInteractionEffect,
-  HomingEffect,
-  MultiStageEffect,
-  ShieldBypassEffect,
-  TacticalEffect,
+    AdvancedEffectVisualConfig,
+    AdvancedWeaponEffectType,
+    BeamEffect,
+    ChainEffect,
+    DelayedEffect,
+    EffectCreationConfig,
+    EnhancedStatusEffect,
+    EnvironmentalInteractionEffect,
+    HomingEffect,
+    MultiStageEffect,
+    ShieldBypassEffect,
+    TacticalEffect,
 } from '../../effects/types_effects/AdvancedWeaponEffects';
 import { Position } from '../../types/geometry';
 
@@ -358,8 +358,8 @@ export class AdvancedWeaponEffectManager
    */
   private createChainEffect(
     id: string,
-    _position: Position,
-    _direction: number,
+    position: Position,
+    direction: number,
     config: EffectCreationConfig
   ): ChainEffect {
     // Calculate base values based on tier and quality
@@ -388,6 +388,8 @@ export class AdvancedWeaponEffectManager
       prioritizeClosest,
       active: true,
       cooldown: 0,
+      position: position,
+      direction: direction,
     };
   }
 
@@ -396,8 +398,8 @@ export class AdvancedWeaponEffectManager
    */
   private createShieldBypassEffect(
     id: string,
-    _position: Position,
-    _direction: number,
+    position: Position,
+    direction: number,
     config: EffectCreationConfig
   ): ShieldBypassEffect {
     // Calculate base values based on tier and quality
@@ -423,6 +425,8 @@ export class AdvancedWeaponEffectManager
       visualColorTheme: config.visualTheme || 'blue',
       active: true,
       cooldown: 0,
+      position: position,
+      direction: direction,
     };
   }
 
@@ -431,8 +435,8 @@ export class AdvancedWeaponEffectManager
    */
   private createDelayedEffect(
     id: string,
-    _position: Position,
-    _direction: number,
+    position: Position,
+    direction: number,
     config: EffectCreationConfig
   ): DelayedEffect {
     // Calculate base values based on tier and quality
@@ -458,6 +462,8 @@ export class AdvancedWeaponEffectManager
       falloffRange: radius * 0.8,
       active: true,
       cooldown: 0,
+      position: position,
+      direction: direction,
     };
   }
 
@@ -466,7 +472,7 @@ export class AdvancedWeaponEffectManager
    */
   private createEnhancedStatusEffect(
     id: string,
-    _position: Position,
+    position: Position,
     statusType: EnhancedStatusEffect['statusType'],
     config: EffectCreationConfig
   ): EnhancedStatusEffect {
@@ -547,6 +553,7 @@ export class AdvancedWeaponEffectManager
       stackingBehavior: 'additive',
       active: true,
       cooldown: 0,
+      position: position,
     };
   }
 
@@ -555,8 +562,8 @@ export class AdvancedWeaponEffectManager
    */
   private createBeamEffect(
     id: string,
-    _position: Position,
-    _direction: number,
+    position: Position,
+    direction: number,
     config: EffectCreationConfig
   ): BeamEffect {
     // Calculate base values based on tier and quality
@@ -588,6 +595,8 @@ export class AdvancedWeaponEffectManager
       pulseFrequency: isPulsing ? 2 + config.targetTier : undefined,
       active: true,
       cooldown: 0,
+      position: position,
+      direction: direction,
     };
   }
 
@@ -596,8 +605,8 @@ export class AdvancedWeaponEffectManager
    */
   private createMultiStageEffect(
     id: string,
-    _position: Position,
-    _direction: number,
+    position: Position,
+    direction: number,
     config: EffectCreationConfig
   ): MultiStageEffect {
     // Calculate base values based on tier and quality
@@ -657,6 +666,8 @@ export class AdvancedWeaponEffectManager
       isLooping: config.targetTier >= 3,
       active: true,
       cooldown: 0,
+      position: position,
+      direction: direction,
     };
   }
 
@@ -665,8 +676,8 @@ export class AdvancedWeaponEffectManager
    */
   private createHomingEffect(
     id: string,
-    _position: Position,
-    _direction: number,
+    position: Position,
+    direction: number,
     config: EffectCreationConfig
   ): HomingEffect {
     // Calculate base values based on tier and quality
@@ -697,6 +708,8 @@ export class AdvancedWeaponEffectManager
       countermeasureEvadeChance: hasCountermeasures ? 0.3 + 0.1 * config.targetTier : undefined,
       active: true,
       cooldown: 0,
+      position: position,
+      direction: direction,
     };
   }
 
@@ -705,8 +718,8 @@ export class AdvancedWeaponEffectManager
    */
   private createEnvironmentalInteractionEffect(
     id: string,
-    _position: Position,
-    _direction: number,
+    position: Position,
+    direction: number,
     config: EffectCreationConfig
   ): EnvironmentalInteractionEffect {
     // Calculate base values based on tier and quality
@@ -743,6 +756,8 @@ export class AdvancedWeaponEffectManager
       hazardCreationChance: config.targetTier >= 2 ? 0.3 + 0.1 * config.targetTier : undefined,
       active: true,
       cooldown: 0,
+      position: position,
+      direction: direction,
     };
   }
 
@@ -751,8 +766,8 @@ export class AdvancedWeaponEffectManager
    */
   private createTacticalEffect(
     id: string,
-    _position: Position,
-    _direction: number,
+    position: Position,
+    direction: number,
     config: EffectCreationConfig
   ): TacticalEffect {
     // Calculate base values based on tier and quality
@@ -806,6 +821,8 @@ export class AdvancedWeaponEffectManager
       usesRemaining: 3 + config.targetTier,
       active: true,
       cooldown: 0,
+      position: position,
+      direction: direction,
     };
   }
 

@@ -10,7 +10,7 @@
  */
 
 import { AbstractBaseService } from '../lib/services/BaseService';
-import { ErrorType } from './ErrorLoggingService';
+import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService';
 
 // Types of recovery strategies that can be applied
 export enum RecoveryStrategy {
@@ -40,14 +40,14 @@ export interface RecoveryConfig {
 class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
   private snapshots: StateSnapshot[] = [];
   private config: RecoveryConfig = {
-    maxSnapshots: 10,
-    autoSaveInterval: 60000, // 1 minute
-    enableAutoRecover: true,
+    maxSnapshots: 100,
+    autoSaveInterval: 60000, // Save every 60 seconds
+    enableAutoRecover: false,
     defaultStrategy: RecoveryStrategy.RETRY,
     strategyByErrorType: {
+      [ErrorType.VALIDATION]: RecoveryStrategy.IGNORE,
       [ErrorType.NETWORK]: RecoveryStrategy.RETRY,
-      [ErrorType.RESOURCE]: RecoveryStrategy.ROLLBACK,
-      [ErrorType.UNKNOWN]: RecoveryStrategy.RESET,
+      [ErrorType.RUNTIME]: RecoveryStrategy.RESET,
     },
   };
 
@@ -103,7 +103,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.total_snapshots = this.snapshots.length;
     metrics.latest_snapshot_timestamp = snapshot.timestamp;
     this.metadata.metrics = metrics;
@@ -121,7 +121,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.total_restores = (metrics.total_restores ?? 0) + 1;
     metrics.last_restore_timestamp = Date.now();
     this.metadata.metrics = metrics;
@@ -154,19 +154,25 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
     this.metadata.metrics = metrics;
 
-    // Log error in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('[RecoveryService] Error:', error);
-    }
+    // Log error using the imported singleton errorLoggingService
+    errorLoggingService.logError(
+      error,
+      ErrorType.RUNTIME, // Defaulting to RUNTIME as this is a general handler
+      ErrorSeverity.HIGH, // Defaulting to HIGH as it's a service-level error
+      {
+        service: 'RecoveryService', // Add service context
+        action: 'handleError', // Indicate the action
+      }
+    );
   }
 }
 
-// Export singleton instance using direct instantiation
+// Export singleton instance using direct instantiation (no constructor args needed)
 export const recoveryService = new RecoveryServiceImpl();
 
 // Export default for easier imports

@@ -3,18 +3,35 @@
  * 
  * ShipDisplay component for showing ship information and status
  */
-import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { 
-  Anchor, 
-  Shield, 
-  Zap, 
-  Box, 
-  Navigation,
-  AlertTriangle,
-  Eye, 
-  Rocket
+import {
+    AlertTriangle,
+    Anchor,
+    Atom,
+    Box,
+    CircleDashed,
+    Cloud,
+    Diamond,
+    Droplet,
+    Eye,
+    Flame,
+    Hammer,
+    Hexagon,
+    Leaf,
+    Microscope,
+    MountainSnow,
+    Navigation,
+    Radiation,
+    Rocket,
+    Shield,
+    Sparkles,
+    Star,
+    Users,
+    Wheat,
+    Wind,
+    Zap
 } from 'lucide-react';
+import * as React from 'react';
+import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { Ship } from '../../../types/ships/Ship';
 
 // Ship status types with visual indicators
@@ -57,6 +74,28 @@ const SHIP_TYPE_ICONS: Record<string, React.ReactNode> = {
   'mining': <Box className="h-5 w-5" />,
   'war': <Shield className="h-5 w-5" />,
   'ENERGY': <Zap className="h-5 w-5" />
+};
+
+const resourceIcons: Record<ResourceType, JSX.Element> = {
+  [ResourceType.ENERGY]: <Zap className="h-5 w-5 text-yellow-400" />,
+  [ResourceType.MINERALS]: <MountainSnow className="h-5 w-5 text-gray-400" />,
+  [ResourceType.FOOD]: <Wheat className="h-5 w-5 text-green-400" />,
+  [ResourceType.POPULATION]: <Users className="h-5 w-5 text-blue-400" />,
+  [ResourceType.RESEARCH]: <Microscope className="h-5 w-5 text-purple-400" />,
+  [ResourceType.PLASMA]: <Flame className="h-5 w-5 text-red-500" />,
+  [ResourceType.GAS]: <Cloud className="h-5 w-5 text-cyan-400" />,
+  [ResourceType.EXOTIC]: <Diamond className="h-5 w-5 text-pink-400" />,
+  [ResourceType.IRON]: <Hammer className="h-5 w-5 text-slate-500" />,
+  [ResourceType.COPPER]: <Hexagon className="h-5 w-5 text-orange-500" />,
+  [ResourceType.TITANIUM]: <Shield className="h-5 w-5 text-blue-500" />,
+  [ResourceType.URANIUM]: <Radiation className="h-5 w-5 text-lime-500" />,
+  [ResourceType.WATER]: <Droplet className="h-5 w-5 text-sky-400" />,
+  [ResourceType.HELIUM]: <Wind className="h-5 w-5 text-indigo-400" />,
+  [ResourceType.DEUTERIUM]: <Atom className="h-5 w-5 text-teal-400" />,
+  [ResourceType.ANTIMATTER]: <Sparkles className="h-5 w-5 text-yellow-300" />,
+  [ResourceType.DARK_MATTER]: <CircleDashed className="h-5 w-5 text-violet-500" />,
+  [ResourceType.EXOTIC_MATTER]: <Star className="h-5 w-5 text-fuchsia-500" />,
+  [ResourceType.ORGANIC]: <Leaf className="h-5 w-5 text-emerald-500" />,
 };
 
 interface ShipDisplayProps {

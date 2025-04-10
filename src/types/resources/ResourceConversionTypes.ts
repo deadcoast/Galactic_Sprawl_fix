@@ -4,8 +4,7 @@
  * This file contains types and interfaces for resource conversion functionality.
  */
 
-import { ResourceType } from './ResourceTypes';
-import { FlowNode } from './StandardizedResourceTypes';
+import { FlowNode, ResourceState, ResourceType } from './ResourceTypes';
 
 /**
  * Status of a conversion chain execution
@@ -25,7 +24,7 @@ export interface ChainExecutionStatus {
   errorMessage?: string;
   stepStatus: Array<{
     recipeId: string;
-    status: 'pending' | 'in-progress' | 'in_progress' | 'completed' | 'failed';
+    status: 'pending' | 'in-progress' | 'in_progress' | 'completed' | 'failed' | 'paused';
     startTime: number;
     endTime: number;
     processId: string;
@@ -118,13 +117,16 @@ export interface ExtendedResourceConversionRecipe {
 }
 
 /**
- * Extended FlowNode with converter properties
+ * Extends FlowNode with converter-specific properties
  */
 export interface ConverterFlowNode extends FlowNode {
-  resources?: Map<ResourceType, number>;
-  converterStatus?: ConverterStatus;
-  converterConfig?: ConverterNodeConfig;
-  active?: boolean;
+  converterId: string;
+  supportedRecipeIds?: string[];
+  status: ConverterStatus;
+  efficiency: number;
+  resources: Record<ResourceType, ResourceState>; // Align with base FlowNode
+  configuration?: ConverterNodeConfig;
+  tags?: string[];
 }
 
 /**

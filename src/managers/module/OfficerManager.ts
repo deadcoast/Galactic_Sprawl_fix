@@ -1,34 +1,37 @@
 import { v4 as uuidv4 } from 'uuid';
 import { OFFICER_TRAITS, SQUAD_CONFIG, TRAINING_CONFIG } from '../../config/OfficerConfig';
-import { TypedEventEmitter } from '../../lib/events/EventEmitter';
+import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { TechTreeManager } from '../../managers/game/techTreeManager';
 import type { ModuleType } from '../../types/buildings/ModuleTypes';
+import {
+    EventType,
+    OfficerAcademyActivatedEventData,
+    OfficerAssignedEventData,
+    OfficerExperienceGainedEventData,
+    OfficerHiredEventData,
+    OfficerLeveledUpEventData,
+    OfficerTierUpgradedEventData,
+    OfficerTrainingCompletedEventData,
+    OfficerTrainingStartedEventData,
+    SquadCreatedEventData,
+    SquadUpdatedEventData
+} from '../../types/events/EventTypes';
 import type {
-  OfficerManager as IOfficerManager,
-  Officer,
-  OfficerEvents,
-  OfficerRole,
-  OfficerSkills,
-  OfficerSpecialization,
-  OfficerTier,
-  Squad,
-  TrainingProgram,
+    OfficerManager as IOfficerManager,
+    Officer,
+    OfficerRole,
+    OfficerSkills,
+    OfficerSpecialization,
+    OfficerTier,
+    Squad,
+    TrainingProgram,
 } from '../../types/officers/OfficerTypes';
-
-type TechNodeUnlockedEvent = {
-  nodeId: string;
-  node: {
-    type: string;
-    tier: number;
-  };
-};
 
 /**
  * Implementation of the Officer Manager
- * Handles officer hiring, training, assignment, squad management, and progression
  */
-export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements IOfficerManager {
+export class OfficerManager implements IOfficerManager {
   private officers: Map<string, Officer> = new Map();
   private squads: Map<string, Squad> = new Map();
   private trainingPrograms: Map<string, TrainingProgram> = new Map();
@@ -36,38 +39,48 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
   private moduleId: string = 'academy'; // Default module ID for academy
 
   constructor() {
-    super();
     this.setupEventListeners();
   }
 
-  /**
-   * Set up event listeners for tech tree unlocks and other relevant events
-   */
   private setupEventListeners(): void {
     const techTreeInstance = TechTreeManager.getInstance();
     if (techTreeInstance) {
-      techTreeInstance.on('nodeUnlocked', ((event: TechNodeUnlockedEvent) => {
-        if (event?.node.type === 'academy') {
-          this.handleAcademyUpgrade(event?.node.tier as OfficerTier);
+        // Cast the event data for type safety
+      techTreeInstance.on('nodeUnlocked', (event: unknown) => {
+        const typedEvent = event as { node: { type: string; tier: number } };
+        if (typedEvent?.node?.type === 'academy') {
+          this.handleAcademyUpgrade(typedEvent.node.tier as OfficerTier);
         }
-      }) as (data: unknown) => void);
+      });
     }
 
     moduleEventBus.subscribe('MODULE_ACTIVATED', (event: ModuleEvent) => {
       if (event?.moduleType === 'academy') {
         this.moduleId = event?.moduleId;
-        this.emit('academyActivated', { moduleId: event?.moduleId });
+        // Use eventSystem.publish
+        const eventData: OfficerAcademyActivatedEventData = { moduleId: event.moduleId };
+        eventSystem.publish({
+            type: EventType.OFFICER_ACADEMY_ACTIVATED,
+            managerId: 'OfficerManager',
+            timestamp: Date.now(),
+            data: eventData
+        });
       }
     });
   }
 
-  /**
-   * Handle academy tier upgrades
-   */
   private handleAcademyUpgrade(tier: OfficerTier): void {
     if (tier > this.currentTier) {
       this.currentTier = tier;
-      this.emit('tierUpgraded', { tier });
+      // Use eventSystem.publish
+      const eventData: OfficerTierUpgradedEventData = { tier };
+      eventSystem.publish({
+          type: EventType.OFFICER_TIER_UPGRADED,
+          managerId: 'OfficerManager',
+          timestamp: Date.now(),
+          data: eventData
+      });
+      // Keep moduleEventBus emit for now
       moduleEventBus.emit({
         type: 'MODULE_UPGRADED',
         moduleId: this.moduleId,
@@ -273,7 +286,15 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
 
     this.applyTraitEffects(officer);
     this.officers.set(id, officer);
-    this.emit('officerHired', { officer });
+    // Use eventSystem.publish
+    const eventData: OfficerHiredEventData = { officer };
+    eventSystem.publish({
+        type: EventType.OFFICER_HIRED,
+        managerId: 'OfficerManager',
+        timestamp: Date.now(),
+        data: eventData
+    });
+    // Keep moduleEventBus emit for now
     this.emitModuleEvent('MODULE_CREATED', { officer });
     return officer;
   }
@@ -306,10 +327,15 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
     this.trainingPrograms.set(program.id, program);
     this.officers.set(officerId, officer);
 
-    this.emit('trainingStarted', {
-      officerId,
-      program,
+    // Use eventSystem.publish
+    const eventData: OfficerTrainingStartedEventData = { officerId, program };
+    eventSystem.publish({
+        type: EventType.OFFICER_TRAINING_STARTED,
+        managerId: 'OfficerManager',
+        timestamp: Date.now(),
+        data: eventData
     });
+    // Keep moduleEventBus emit for now
     this.emitModuleEvent('AUTOMATION_STARTED', { officerId, program });
   }
 
@@ -326,10 +352,15 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
     officer.assignedTo = assignmentId;
     this.officers.set(officerId, officer);
 
-    this.emit('officerAssigned', {
-      officerId,
-      assignmentId,
+    // Use eventSystem.publish
+    const eventData: OfficerAssignedEventData = { officerId, assignmentId };
+    eventSystem.publish({
+        type: EventType.OFFICER_ASSIGNED,
+        managerId: 'OfficerManager',
+        timestamp: Date.now(),
+        data: eventData
     });
+    // Keep moduleEventBus emit for now
     this.emitModuleEvent('STATUS_CHANGED', { officerId, assignmentId, status: 'assigned' });
   }
 
@@ -350,7 +381,15 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
     };
 
     this.squads.set(squad.id, squad);
-    this.emit('squadCreated', { squad });
+    // Use eventSystem.publish
+    const eventData: SquadCreatedEventData = { squad };
+    eventSystem.publish({
+        type: EventType.SQUAD_CREATED,
+        managerId: 'OfficerManager',
+        timestamp: Date.now(),
+        data: eventData
+    });
+    // Keep moduleEventBus emit for now
     this.emitModuleEvent('MODULE_CREATED', { squad });
     return squad;
   }
@@ -381,7 +420,15 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
     officer.assignedTo = squadId;
 
     this.updateSquadBonuses(squad);
-    this.emit('squadUpdated', { squadId, officer: officerId });
+    // Use eventSystem.publish
+    const eventData: SquadUpdatedEventData = { squadId, officerId };
+     eventSystem.publish({
+        type: EventType.SQUAD_UPDATED,
+        managerId: 'OfficerManager',
+        timestamp: Date.now(),
+        data: eventData
+    });
+    // Keep moduleEventBus emit for now
     this.emitModuleEvent('STATUS_CHANGED', { squadId, officer: officerId });
   }
 
@@ -493,24 +540,37 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
       officer.nextLevelXp = this.calculateNextLevelXp(officer.level);
       this.improveSkills(officer);
 
-      // Emit level up event
-      this.emit('officerLeveledUp', {
+      // Use eventSystem.publish for level up
+      const levelUpData: OfficerLeveledUpEventData = {
         officerId,
         newLevel: officer.level,
         skills: officer.skills,
+      };
+      eventSystem.publish({
+          type: EventType.OFFICER_LEVELED_UP,
+          managerId: 'OfficerManager',
+          timestamp: Date.now(),
+          data: levelUpData
       });
     }
 
     // Update officer in storage
     this.officers.set(officerId, officer);
 
-    // Emit experience gained event
-    this.emit('experienceGained', {
+    // Use eventSystem.publish for xp gain
+    const xpEventData: OfficerExperienceGainedEventData = {
       officerId,
       amount: adjustedAmount,
       newTotal: officer.xp,
       nextLevel: officer.nextLevelXp,
+    };
+    eventSystem.publish({
+        type: EventType.OFFICER_EXPERIENCE_GAINED,
+        managerId: 'OfficerManager',
+        timestamp: Date.now(),
+        data: xpEventData
     });
+    // Keep moduleEventBus emit for now
     this.emitModuleEvent('STATUS_CHANGED', {
       officerId,
       amount: adjustedAmount,
@@ -594,12 +654,19 @@ export class OfficerManager extends TypedEventEmitter<OfficerEvents> implements 
     this.officers.set(officer.id, officer);
     this.trainingPrograms.delete(programId);
 
-    // Emit completion event
-    this.emit('trainingCompleted', {
+    // Use eventSystem.publish
+    const eventData: OfficerTrainingCompletedEventData = {
       officerId: officer.id,
       specialization: program.specialization,
       skills: officer.skills,
+    };
+    eventSystem.publish({
+        type: EventType.OFFICER_TRAINING_COMPLETED,
+        managerId: 'OfficerManager',
+        timestamp: Date.now(),
+        data: eventData
     });
+    // Keep moduleEventBus emit for now
     this.emitModuleEvent('AUTOMATION_CYCLE_COMPLETE', {
       officerId: officer.id,
       specialization: program.specialization,

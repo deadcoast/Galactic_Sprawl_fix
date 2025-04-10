@@ -66,7 +66,9 @@ export function useModuleEvents(
 
   // Subscribe to events with cleanup
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
 
     const unsubscribe = eventBus.on(eventType, (event: ModuleManagerEvent) => {
       handlerRef.current(event);
@@ -96,7 +98,9 @@ export function useMultipleModuleEvents(
 
   // Subscribe to events with cleanup
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
 
     const unsubscribers = eventTypes.map(eventType =>
       eventBus.on(eventType, (event: ModuleManagerEvent) => {

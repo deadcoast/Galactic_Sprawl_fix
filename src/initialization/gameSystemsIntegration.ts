@@ -1,4 +1,4 @@
-import { moduleEventBus, ModuleEventType } from '../lib/modules/ModuleEvents';
+import { moduleEventBus } from '../lib/modules/ModuleEvents';
 import { CombatManager } from '../managers/ManagerRegistry';
 import { gameLoopManager, UpdatePriority } from '../managers/game/GameLoopManager';
 import { ResourceManager } from '../managers/game/ResourceManager';
@@ -12,7 +12,6 @@ import { ResourceIntegration } from '../managers/resource/ResourceIntegration';
 import { ResourcePoolManager } from '../managers/resource/ResourcePoolManager';
 import { ResourceStorageManager } from '../managers/resource/ResourceStorageManager';
 import { ResourceThresholdManager } from '../managers/resource/ResourceThresholdManager';
-import { ModuleType } from '../types/buildings/ModuleTypes';
 import { getSystemCommunication, SystemMessage } from '../utils/events/EventCommunication';
 import { EventPriorityQueue } from '../utils/events/EventFiltering';
 import { getService } from '../utils/services/ServiceAccess';
@@ -41,6 +40,54 @@ interface TechUpdatePayload {
     [key: string]: unknown;
   };
   [key: string]: unknown;
+}
+
+// Type Guards
+function isResourceUpdatePayload(payload: unknown): payload is ResourceUpdatePayload {
+  return (
+    typeof payload === 'object' &&
+    payload !== null &&
+    'resourceType' in payload &&
+    typeof (payload as Record<string, unknown>).resourceType === 'string' &&
+    Object.values(ResourceType).includes((payload as ResourceUpdatePayload).resourceType)
+  );
+}
+
+function isMiningUpdatePayload(payload: unknown): payload is MiningUpdatePayload {
+  return (
+    typeof payload === 'object' && payload !== null && 'shipId' in payload && typeof (payload as Record<string, unknown>).shipId === 'string'
+  );
+}
+
+function isCombatUpdatePayload(payload: unknown): payload is CombatUpdatePayload {
+  return (
+    typeof payload === 'object' && payload !== null && 'type' in payload && typeof (payload as Record<string, unknown>).type === 'string'
+  );
+}
+
+function isTechUpdatePayload(payload: unknown): payload is TechUpdatePayload {
+  if (
+    typeof payload !== 'object' ||
+    payload === null ||
+    !('nodeId' in payload) ||
+    typeof (payload as Record<string, unknown>).nodeId !== 'string'
+  ) {
+    return false;
+  }
+  // Check 'node' structure only if it exists
+  if ('node' in payload) {
+    const {node} = payload as Record<string, unknown>;
+    if (typeof node !== 'object' || node === null || !('category' in node)) {
+      // Node exists but has wrong structure - treat as invalid for safety?
+      // Or allow it if partial node updates are possible?
+      // For now, let's be strict:
+      // console.warn("Invalid node structure in TechUpdatePayload", node);
+      // return false; 
+      // Or allow it if node is optional:
+      return true;
+    }
+  }
+  return true;
 }
 
 /**
@@ -98,24 +145,27 @@ export function integrateWithGameSystems(): () => void {
         'resource-update',
         (message: SystemMessage) => {
           try {
-            const payload = message.payload as ResourceUpdatePayload;
-            if (!payload || typeof payload.resourceType !== 'string') {
-              console.error('Invalid resource update payload:', payload);
+            if (!isResourceUpdatePayload(message.payload)) {
+              console.error('Invalid resource update payload:', message.payload);
               return;
             }
+            const {payload} = message;
 
             console.warn(`Resource update message received: ${payload.resourceType}`);
 
             // Emit resource event
             moduleEventBus.emit({
-              type: 'RESOURCE_UPDATED' as ModuleEventType,
+              type: 'RESOURCE_UPDATED',
               moduleId: 'resource-system',
-              moduleType: 'resource-manager' as ModuleType,
+              moduleType: 'resource-manager',
               timestamp: Date.now(),
               data: payload,
             });
           } catch (error) {
-            console.error('Error handling resource update:', error);
+            console.error(
+              'Error handling resource update:',
+              error instanceof Error ? error.message : error
+            );
           }
         }
       );
@@ -155,24 +205,27 @@ export function integrateWithGameSystems(): () => void {
       'mining-update',
       (message: SystemMessage) => {
         try {
-          const payload = message.payload as MiningUpdatePayload;
-          if (!payload || typeof payload.shipId !== 'string') {
-            console.error('Invalid mining update payload:', payload);
+          if (!isMiningUpdatePayload(message.payload)) {
+            console.error('Invalid mining update payload:', message.payload);
             return;
           }
+          const {payload} = message;
 
           console.warn(`Mining update message received: ${payload.shipId}`);
 
           // Emit mining event
           moduleEventBus.emit({
-            type: 'MODULE_UPDATED' as ModuleEventType,
+            type: 'MODULE_UPDATED',
             moduleId: payload.shipId,
-            moduleType: 'mineral' as ModuleType, // Using a valid ModuleType for mining
+            moduleType: 'mineral',
             timestamp: Date.now(),
             data: payload,
           });
         } catch (error) {
-          console.error('Error handling mining update:', error);
+          console.error(
+            'Error handling mining update:',
+            error instanceof Error ? error.message : error
+          );
         }
       }
     );
@@ -215,11 +268,11 @@ export function integrateWithGameSystems(): () => void {
       'combat-update',
       (message: SystemMessage) => {
         try {
-          const payload = message.payload as CombatUpdatePayload;
-          if (!payload || typeof payload.type !== 'string') {
-            console.error('Invalid combat update payload:', payload);
+          if (!isCombatUpdatePayload(message.payload)) {
+            console.error('Invalid combat update payload:', message.payload);
             return;
           }
+          const {payload} = message;
 
           console.warn(`Combat update message received: ${payload.type}`);
 
@@ -232,14 +285,17 @@ export function integrateWithGameSystems(): () => void {
 
           // Emit combat event
           moduleEventBus.emit({
-            type: 'COMBAT_UPDATED' as ModuleEventType,
+            type: 'COMBAT_UPDATED',
             moduleId: 'combat-system',
-            moduleType: 'defense' as ModuleType, // Using a valid ModuleType for combat
+            moduleType: 'defense',
             timestamp: Date.now(),
             data: payload,
           });
         } catch (error) {
-          console.error('Error handling combat update:', error);
+          console.error(
+            'Error handling combat update:',
+            error instanceof Error ? error.message : error
+          );
         }
       }
     );
@@ -282,19 +338,25 @@ export function integrateWithGameSystems(): () => void {
     // Tech unlocked listener
     const techUnlockedListener = (data: unknown) => {
       try {
-        // Handle the data as TechUpdatePayload
-        const payload = data as TechUpdatePayload;
-        if (!payload.nodeId || !payload.node) {
+        if (!isTechUpdatePayload(data)) {
+          console.error('Invalid tech unlocked data:', data);
           return;
         }
-        
-        console.log('Tech unlocked:', payload.nodeId, payload.node.category);
+        const payload = data;
+
+        if (!payload.node) {
+          console.warn('Tech unlocked payload missing node details:', payload);
+          // Decide if we should proceed without node details or return
+          // return;
+        }
+
+        console.log('Tech unlocked:', payload.nodeId, payload.node?.category);
         
         // Notify the rest of the game that a tech was unlocked
         moduleEventBus.emit({
-          type: 'TECH_UNLOCKED' as ModuleEventType,
+          type: 'TECH_UNLOCKED',
           moduleId: 'tech-tree',
-          moduleType: 'resource-manager' as ModuleType,
+          moduleType: 'resource-manager',
           timestamp: Date.now(),
           data: payload
         });
@@ -329,7 +391,10 @@ export function integrateWithGameSystems(): () => void {
             console.log('Unknown tech category unlocked:', payload.node.category);
         }
       } catch (error) {
-        console.error('Error handling tech unlocked event:', error);
+        console.error(
+          'Error handling tech unlocked event:',
+          error instanceof Error ? error.message : error
+        );
       }
     };
     
@@ -341,29 +406,32 @@ export function integrateWithGameSystems(): () => void {
       'tech-update',
       (message: SystemMessage) => {
         try {
-          const payload = message.payload as TechUpdatePayload;
-          if (!payload || typeof payload.nodeId !== 'string') {
-            console.error('Invalid tech update payload:', payload);
+          if (!isTechUpdatePayload(message.payload)) {
+            console.error('Invalid tech update payload:', message.payload);
             return;
           }
+          const {payload} = message;
 
           console.warn(`Tech update message received: ${payload.nodeId}`);
 
           // Emit tech event
           moduleEventBus.emit({
-            type: 'TECH_UPDATED' as ModuleEventType,
+            type: 'TECH_UPDATED',
             moduleId: 'tech-system',
-            moduleType: ResourceType.RESEARCH as ModuleType, // Using a valid ModuleType for tech
+            moduleType: ResourceType.RESEARCH,
             timestamp: Date.now(),
             data: payload,
           });
 
           // Check if this is a tech unlock event
-          if (payload.node && payload.node.category) {
+          if (payload.node?.category) {
             techUnlockedListener(payload);
           }
         } catch (error) {
-          console.error('Error handling tech update:', error);
+          console.error(
+            'Error handling tech update:',
+            error instanceof Error ? error.message : error
+          );
         }
       }
     );
@@ -387,7 +455,10 @@ export function integrateWithGameSystems(): () => void {
       try {
         cleanup();
       } catch (error) {
-        console.error('Error during cleanup:', error);
+        console.error(
+          'Error during cleanup:',
+          error instanceof Error ? error.message : error
+        );
       }
     });
   };

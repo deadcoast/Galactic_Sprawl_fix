@@ -609,6 +609,16 @@ export interface FlowNode {
   priority?: ResourcePriorityConfig;
   capacity?: number;
   active?: boolean;
+  // Properties for D3 simulation - x and y are required for BasePoint compatibility
+  x: number;
+  y: number;
+  // vx, vy, fx, fy remain optional as they are managed by D3
+  vx?: number;
+  vy?: number;
+  fx?: number | null;
+  fy?: number | null;
+  // Index signature to satisfy BasePoint constraint, using unknown for better type safety than any
+  [key: string]: unknown;
 }
 
 /**
@@ -625,6 +635,8 @@ export interface FlowConnection {
   currentRate?: number;
   priority?: ResourcePriorityConfig;
   active?: boolean;
+  // Index signature to satisfy BaseLink constraint
+  [key: string]: unknown;
 }
 
 /**
@@ -679,3 +691,15 @@ export interface ResourcePool {
   maxCapacity?: number;
   lastUpdated: number;
 }
+
+// Export types from ResourceConversionTypes.ts
+export type {
+    ChainExecutionStatus,
+    ConversionChain,
+    ConverterFlowNode,
+    ConverterNodeConfig,
+    ConverterStatus,
+    ExtendedResourceConversionRecipe,
+    ResourceConversionProcess
+} from './ResourceConversionTypes';
+

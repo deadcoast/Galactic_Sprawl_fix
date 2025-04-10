@@ -6,15 +6,12 @@
  */
 
 import {
-  FlowNode,
-  ResourceState,
-  ResourceTransfer,
-} from '../../types/resources/StandardizedResourceTypes';
-
-import { ResourceType } from '../../types/resources/ResourceTypes';
-
-// We need to import FlowConnection from ResourceTypes since it's not in StandardizedResourceTypes
-import { FlowConnection } from '../../types/resources/ResourceTypes';
+    FlowConnection,
+    FlowNode,
+    ResourceState,
+    ResourceTransfer,
+    ResourceType
+} from '../../types/resources/ResourceTypes';
 
 // Input message types that can be sent to the worker
 type WorkerMessageType =

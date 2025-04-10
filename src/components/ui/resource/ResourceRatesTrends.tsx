@@ -1,20 +1,17 @@
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+    CartesianGrid,
+    Legend,
+    Line,
+    LineChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
 } from 'recharts';
 import { useAllResourceRates } from '../../../contexts/ResourceRatesContext';
-import {
-  ResourceType,
-  ResourceTypeHelpers,
-} from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
 
 // Number of data points to keep in history
 const MAX_HISTORY_POINTS = 30;
@@ -120,7 +117,9 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
 
     // (...args: unknown[]) => unknown to collect current rate data
     const collectRateData = () => {
-      if (!allResourceRates) return;
+      if (!allResourceRates) {
+        return;
+      }
 
       const newDataPoint: RateDataPoint = { timestamp: Date.now() };
 

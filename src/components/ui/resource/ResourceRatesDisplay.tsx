@@ -3,8 +3,7 @@ import { ArrowDownIcon, ArrowUpIcon, BarChart4, ChevronDown, ChevronUp } from 'l
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useAllResourceRates, useResourceRate } from '../../../contexts/ResourceRatesContext';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
-import { ResourceTypeHelpers } from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
 import { useTooltipContext } from '../tooltip-context';
 
 // Resource type colors matching existing styles

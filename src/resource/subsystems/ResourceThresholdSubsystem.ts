@@ -1,8 +1,9 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
-  ResourceState as StringResourceState,
-  ResourceType as StringResourceType,
-  toEnumResourceType,
+    ResourceState as StringResourceState,
+    ResourceType as StringResourceType,
+    toEnumResourceType,
 } from '../../types/resources/ResourceTypes';
 import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
@@ -87,7 +88,12 @@ export class ResourceThresholdSubsystem {
 
       this.isInitialized = true;
     } catch (error) {
-      console.error('Failed to initialize ResourceThresholdSubsystem:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to initialize ResourceThresholdSubsystem'),
+        ErrorType.INITIALIZATION,
+        ErrorSeverity.CRITICAL,
+        { componentName: 'ResourceThresholdSubsystem', action: 'initialize' }
+      );
       throw error;
     }
   }
@@ -108,7 +114,12 @@ export class ResourceThresholdSubsystem {
 
       this.isInitialized = false;
     } catch (error) {
-      console.error('Failed to dispose ResourceThresholdSubsystem:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to dispose ResourceThresholdSubsystem'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        { componentName: 'ResourceThresholdSubsystem', action: 'dispose' }
+      );
       throw error;
     }
   }
@@ -157,7 +168,12 @@ export class ResourceThresholdSubsystem {
    */
   public registerThreshold(threshold: ResourceThreshold): boolean {
     if (!threshold.id || !threshold.resourceType) {
-      console.error('Invalid threshold configuration:', threshold);
+      errorLoggingService.logError(
+        new Error(`Invalid threshold configuration: ${JSON.stringify(threshold)}`),
+        ErrorType.CONFIGURATION,
+        ErrorSeverity.MEDIUM,
+        { componentName: 'ResourceThresholdSubsystem', action: 'registerThreshold' }
+      );
       return false;
     }
 
@@ -385,13 +401,19 @@ export class ResourceThresholdSubsystem {
     // Process each threshold
     for (const id of thresholdIds) {
       const threshold = this.thresholds.get(id);
-      if (!threshold) continue;
+      if (!threshold) {
+        continue;
+      }
 
       // Skip if resource type doesn't match
-      if (ensureStringResourceType(threshold.resourceType) !== stringType) continue;
+      if (ensureStringResourceType(threshold.resourceType) !== stringType) {
+        continue;
+      }
 
       // Skip if entity ID doesn't match (for entity-specific thresholds)
-      if (threshold.entityId && threshold.entityId !== entityId) continue;
+      if (threshold.entityId && threshold.entityId !== entityId) {
+        continue;
+      }
 
       // Check if triggered
       if (this.isThresholdTriggered(threshold, state)) {

@@ -65,7 +65,9 @@ export interface TradeRouteEventData {
  */
 
 export function isValidStandardizedEvent(event: unknown): event is StandardizedEvent {
-  if (!event || typeof event !== 'object') return false;
+  if (!event || typeof event !== 'object') {
+    return false;
+  }
 
   const e = event as StandardizedEvent;
   return (
@@ -77,7 +79,9 @@ export function isValidStandardizedEvent(event: unknown): event is StandardizedE
 }
 
 export function isValidResourceEventData(data: unknown): data is ResourceEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
 
   const d = data as ResourceEventData;
   return (
@@ -88,7 +92,9 @@ export function isValidResourceEventData(data: unknown): data is ResourceEventDa
 }
 
 export function isValidPopulationEventData(data: unknown): data is PopulationEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
 
   const d = data as PopulationEventData;
   return (
@@ -100,7 +106,9 @@ export function isValidPopulationEventData(data: unknown): data is PopulationEve
 }
 
 export function isValidModuleStatusEventData(data: unknown): data is ModuleStatusEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
 
   const d = data as ModuleStatusEventData;
   const validStatuses = ['active', 'inactive', 'error', 'maintenance'];
@@ -112,7 +120,9 @@ export function isValidModuleStatusEventData(data: unknown): data is ModuleStatu
 }
 
 export function isValidTradeRouteEventData(data: unknown): data is TradeRouteEventData {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
 
   const d = data as TradeRouteEventData;
   return (

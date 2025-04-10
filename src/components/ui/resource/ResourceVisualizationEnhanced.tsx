@@ -6,8 +6,8 @@ import { ModuleEvent } from '../../../lib/events/ModuleEventBus';
 import { EventType } from '../../../types/events/EventTypes';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { isResourceUpdateEvent } from '../../../utils/events/eventTypeGuards';
-import { resourceColors, resourceIcons, resourceNames } from '../ResourceVisualization';
 import { useTooltipContext } from '../tooltip-context';
+import { resourceColors, resourceIcons, resourceNames } from '../visualization/ResourceVisualization';
 
 /**
  * Enhanced version of ResourceVisualization that uses the component registration system

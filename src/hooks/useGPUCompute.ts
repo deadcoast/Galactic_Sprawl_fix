@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
 import { webglService } from '../services/WebGLService';
 import { useService } from './services/useService';
 
@@ -31,7 +32,9 @@ export function useGPUCompute({
 
   // Initialize buffers
   useEffect(() => {
-    if (!service) return;
+    if (!service) {
+      return;
+    }
 
     try {
       // Create input buffers
@@ -52,19 +55,31 @@ export function useGPUCompute({
 
     // Cleanup
     return () => {
-      if (!service) return;
+      if (!service) {
+        return;
+      }
       inputBuffersRef.current.forEach(name => {
         try {
           service.disposeStorageBuffer(name);
         } catch (err) {
-          console.error(`Error deleting input buffer ${name}:`, err);
+          errorLoggingService.logError(
+            err instanceof Error ? err : new Error(`Error deleting input buffer ${name}`),
+            ErrorType.RUNTIME,
+            ErrorSeverity.MEDIUM,
+            { componentName: 'useGPUCompute', action: 'cleanupEffect (input buffer)', bufferName: name }
+          );
         }
       });
       if (outputBufferRef.current) {
         try {
           service.disposeStorageBuffer(outputBufferRef.current);
         } catch (err) {
-          console.error('Error deleting output buffer:', err);
+          errorLoggingService.logError(
+            err instanceof Error ? err : new Error('Error deleting output buffer'),
+            ErrorType.RUNTIME,
+            ErrorSeverity.MEDIUM,
+            { componentName: 'useGPUCompute', action: 'cleanupEffect (output buffer)', bufferName: outputBufferRef.current }
+          );
         }
       }
     };

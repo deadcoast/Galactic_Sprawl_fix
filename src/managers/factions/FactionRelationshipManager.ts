@@ -1,16 +1,16 @@
 import { factionConfigs } from '../../config/factions/factions';
-import { TypedEventEmitter } from '../../lib/events/EventEmitter';
+import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
+import {
+    EventType,
+    FactionConflictRecordedEventData,
+    FactionRelationshipChangedEventData,
+    FactionTradeEstablishedEventData,
+    FactionTreatyStatusChangedEventData
+} from '../../types/events/EventTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
-
-export enum FactionEventType {
-  RELATIONSHIP_CHANGED = 'relationshipChanged',
-  TREATY_STATUS_CHANGED = 'treatyStatusChanged',
-  TRADE_ESTABLISHED = 'tradeEstablished',
-  CONFLICT_RECORDED = 'conflictRecorded',
-}
 
 interface RelationshipState {
   value: number; // -1 to 1
@@ -20,39 +20,10 @@ interface RelationshipState {
   treatyStatus: 'none' | 'ceasefire' | 'trade' | 'alliance';
 }
 
-interface FactionEvents extends Record<string, unknown> {
-  [FactionEventType.RELATIONSHIP_CHANGED]: {
-    factionId: FactionId;
-    targetFactionId: FactionId;
-    oldValue: number;
-    newValue: number;
-    reason?: string;
-  };
-  [FactionEventType.TREATY_STATUS_CHANGED]: {
-    factionId: FactionId;
-    targetFactionId: FactionId;
-    oldStatus: string;
-    newStatus: string;
-  };
-  [FactionEventType.TRADE_ESTABLISHED]: {
-    factionId: FactionId;
-    targetFactionId: FactionId;
-    resourceType: ResourceType;
-    amount: number;
-  };
-  [FactionEventType.CONFLICT_RECORDED]: {
-    factionId: FactionId;
-    targetFactionId: FactionId;
-    type: string;
-    severity: number;
-  };
-}
-
-export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents> {
+export class FactionRelationshipManager {
   private relationships: Map<string, RelationshipState> = new Map();
 
   constructor() {
-    super();
     this.initializeRelationships();
     this.setupEventListeners();
   }
@@ -249,18 +220,22 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
       state.value = Math.max(-1, Math.min(1, state.value + change));
       state.lastUpdate = Date.now();
 
-      this.emit(FactionEventType.RELATIONSHIP_CHANGED, {
+      const eventData: FactionRelationshipChangedEventData = {
         factionId,
         targetFactionId: targetId,
         oldValue,
         newValue: state.value,
         reason,
+      };
+      eventSystem.publish({
+        type: EventType.FACTION_RELATIONSHIP_CHANGED,
+        managerId: 'FactionRelationshipManager',
+        timestamp: Date.now(),
+        data: eventData,
       });
 
-      // Update treaty status based on new relationship value
       this.updateTreatyStatus(factionId, targetId);
 
-      // Emit module event for status change
       this.emitModuleEvent(factionId, 'relationship', {
         type: 'relationship',
         targetFaction: targetId,
@@ -293,14 +268,20 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
 
     if (newStatus !== oldStatus) {
       state.treatyStatus = newStatus;
-      this.emit(FactionEventType.TREATY_STATUS_CHANGED, {
+
+      const eventData: FactionTreatyStatusChangedEventData = {
         factionId,
         targetFactionId: targetId,
         oldStatus,
         newStatus,
+      };
+      eventSystem.publish({
+        type: EventType.FACTION_TREATY_STATUS_CHANGED,
+        managerId: 'FactionRelationshipManager',
+        timestamp: Date.now(),
+        data: eventData,
       });
 
-      // Emit module event for treaty change
       this.emitModuleEvent(factionId, 'treaty', {
         type: 'treaty',
         targetFaction: targetId,
@@ -331,11 +312,17 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
 
       this.modifyRelationship(factionId, targetId, relationshipChange, 'trade');
 
-      this.emit(FactionEventType.TRADE_ESTABLISHED, {
+      const eventData: FactionTradeEstablishedEventData = {
         factionId,
         targetFactionId: targetId,
         resourceType,
         amount,
+      };
+      eventSystem.publish({
+        type: EventType.FACTION_TRADE_ESTABLISHED,
+        managerId: 'FactionRelationshipManager',
+        timestamp: Date.now(),
+        data: eventData,
       });
     }
   }
@@ -361,11 +348,17 @@ export class FactionRelationshipManager extends TypedEventEmitter<FactionEvents>
 
       this.modifyRelationship(factionId, targetId, relationshipChange, `conflict_${type}`);
 
-      this.emit(FactionEventType.CONFLICT_RECORDED, {
+      const eventData: FactionConflictRecordedEventData = {
         factionId,
         targetFactionId: targetId,
-        type,
+        conflictType: type,
         severity,
+      };
+      eventSystem.publish({
+        type: EventType.FACTION_CONFLICT_RECORDED,
+        managerId: 'FactionRelationshipManager',
+        timestamp: Date.now(),
+        data: eventData,
       });
     }
   }

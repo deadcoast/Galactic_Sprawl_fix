@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 
 /**
  * Action creator type
@@ -73,7 +74,12 @@ export function createStateHook<
             return { ...defaultState, ...JSON.parse(savedState) };
           }
         } catch (error) {
-          console.error('Failed to load persisted state:', error);
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error('Failed to load persisted state'),
+            ErrorType.INITIALIZATION,
+            ErrorSeverity.MEDIUM,
+            { componentName: 'createStateHook', action: 'getInitialState', persistKey: options?.persistKey }
+          );
         }
       }
 

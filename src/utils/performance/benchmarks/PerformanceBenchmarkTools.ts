@@ -16,8 +16,7 @@
 import * as d3 from 'd3';
 import { performance } from 'perf_hooks';
 import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowManager';
-import { FlowNodeType } from '../../../types/resources/StandardizedResourceTypes';
-import { ResourceType } from './../../../types/resources/ResourceTypes';
+import { FlowNodeType, ResourceType } from '../../../types/resources/ResourceTypes';
 
 /**
  * Performance benchmark result

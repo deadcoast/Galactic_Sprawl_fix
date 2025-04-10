@@ -3,7 +3,7 @@
 import { AlertTriangle, Database } from 'lucide-react';
 import * as React from 'react';
 import { useState } from 'react';
-import { ResourceType } from '../../types/resources/ResourceTypes';
+import { ResourceType, ResourceTypeHelpers } from '../../types/resources/ResourceTypes';
 
 interface HabitableWorldProps {
   name: string;
@@ -175,11 +175,15 @@ export function HabitableWorld({
         React.createElement(
           'div',
           { className: 'mb-1 flex justify-between text-xs' },
-          React.createElement('span', { className: 'text-gray-400' }, 'Population'),
           React.createElement(
-            'span',
-            { className: 'text-gray-300' },
-            `${Math.round((population / maxPopulation) * 100)}%`
+            'div',
+            { className: 'text-sm' },
+            React.createElement('span', { className: 'text-gray-400' }, ResourceTypeHelpers.getDisplayName(ResourceType.POPULATION)),
+            React.createElement(
+              'span',
+              { className: 'text-gray-300' },
+              `${Math.round((population / maxPopulation) * 100)}%`
+            )
           )
         ),
         React.createElement(

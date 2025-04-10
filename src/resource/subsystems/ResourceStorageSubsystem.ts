@@ -1,9 +1,10 @@
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
-  ResourceType,
-  ResourceTypeString,
-  ResourceState as StringResourceState,
-  ResourceTransfer as StringResourceTransfer,
+    ResourceType,
+    ResourceTypeString,
+    ResourceState as StringResourceState,
+    ResourceTransfer as StringResourceTransfer,
 } from '../../types/resources/ResourceTypes';
 import { ensureStringResourceType } from '../../utils/resources/ResourceTypeConverter';
 import { ResourceSystem, ResourceSystemConfig } from '../ResourceSystem';
@@ -116,7 +117,12 @@ export class ResourceStorageSubsystem {
       // Additional initialization logic can go here
       this.isInitialized = true;
     } catch (error) {
-      console.error('Failed to initialize ResourceStorageSubsystem:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to initialize ResourceStorageSubsystem'),
+        ErrorType.INITIALIZATION,
+        ErrorSeverity.CRITICAL,
+        { componentName: 'ResourceStorageSubsystem', action: 'initialize' }
+      );
       throw error;
     }
   }
@@ -137,7 +143,12 @@ export class ResourceStorageSubsystem {
 
       this.isInitialized = false;
     } catch (error) {
-      console.error('Failed to dispose ResourceStorageSubsystem:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to dispose ResourceStorageSubsystem'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        { componentName: 'ResourceStorageSubsystem', action: 'dispose' }
+      );
       throw error;
     }
   }
@@ -147,7 +158,12 @@ export class ResourceStorageSubsystem {
    */
   public registerContainer(config: StorageContainerConfig): boolean {
     if (!config.id || !config.resourceTypes || config.resourceTypes.length === 0) {
-      console.error('Invalid storage container configuration:', config);
+      errorLoggingService.logError(
+        new Error(`Invalid storage container configuration: ${JSON.stringify(config)}`),
+        ErrorType.CONFIGURATION,
+        ErrorSeverity.MEDIUM,
+        { componentName: 'ResourceStorageSubsystem', action: 'registerContainer' }
+      );
       return false;
     }
 
@@ -350,7 +366,9 @@ export class ResourceStorageSubsystem {
       .sort((a, b) => b.config.priority - a.config.priority);
 
     for (const container of availableContainers) {
-      if (amount <= 0) break;
+      if (amount <= 0) {
+        break;
+      }
 
       const stored = this.storeResource(container.config.id, type, amount);
       totalStored += stored;
@@ -561,12 +579,16 @@ export class ResourceStorageSubsystem {
 
       // Calculate available space in all eligible containers
       for (const container of eligibleContainers) {
-        if (remainingAmount <= 0) break;
+        if (remainingAmount <= 0) {
+          break;
+        }
 
         const resourceState = container.resources.get(type as ResourceTypeString)!;
         const availableSpace = resourceState.max - resourceState.current;
 
-        if (availableSpace <= 0) continue;
+        if (availableSpace <= 0) {
+          continue;
+        }
 
         const amountToStore = Math.min(remainingAmount, availableSpace);
         const stored = this.storeResource(container.config.id, type, amountToStore);

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { applicationProfiler } from '../../utils/profiling/applicationProfiler';
 
 interface ProfilingOverlayOptions {
@@ -60,7 +61,12 @@ export function useProfilingOverlay(options: ProfilingOverlayOptions = {}) {
           return savedState === 'true';
         }
       } catch (error) {
-        console.error('Error reading profiling overlay state from localStorage:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Error reading profiling overlay state from localStorage'),
+          ErrorType.INITIALIZATION,
+          ErrorSeverity.LOW,
+          { componentName: 'useProfilingOverlay', action: 'getInitialState' }
+        );
       }
     }
     return enabledByDefault;
@@ -85,7 +91,12 @@ export function useProfilingOverlay(options: ProfilingOverlayOptions = {}) {
         try {
           localStorage.setItem('profiling-overlay-visible', String(newState));
         } catch (error) {
-          console.error('Error saving profiling overlay state to localStorage:', error);
+          errorLoggingService.logError(
+            error instanceof Error ? error : new Error('Error saving profiling overlay state to localStorage'),
+            ErrorType.RUNTIME,
+            ErrorSeverity.LOW,
+            { componentName: 'useProfilingOverlay', action: 'toggleOverlay (persistence)' }
+          );
         }
       }
 

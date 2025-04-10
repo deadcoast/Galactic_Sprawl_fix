@@ -1,9 +1,8 @@
 import { thresholdEvents } from '../../contexts/ThresholdTypes';
 import { shipBehaviorManager } from '../../lib/ai/shipBehavior';
 import { shipMovementManager } from '../../lib/ai/shipMovement';
-import { EventEmitter } from '../../lib/events/EventEmitter';
 import { Position } from '../../types/core/GameTypes';
-import { ResourceType } from '../../types/resources/StandardizedResourceTypes';
+import { ResourceType, ResourceTypeHelpers, ResourceTypeString } from '../../types/resources/ResourceTypes';
 
 // Define ship status and task status as enums for type safety
 enum ShipStatus {
@@ -45,14 +44,12 @@ interface MiningTask {
 /**
  * Manages automated mining operations
  */
-export class MiningShipManagerImpl extends EventEmitter {
+export class MiningShipManagerImpl {
   private ships: Map<string, MiningShip> = new Map();
   private tasks: Map<string, MiningTask> = new Map();
   private nodeAssignments: Map<string, string> = new Map(); // nodeId -> shipId
 
   constructor() {
-    super();
-
     // Listen for threshold events
     thresholdEvents.subscribe(event => {
       if (event?.type === 'THRESHOLD_VIOLATED') {
@@ -117,8 +114,8 @@ export class MiningShipManagerImpl extends EventEmitter {
     if (details.type === 'below_minimum') {
       // Find available mining ship
       const availableShip = Array.from(this.ships.values()).find(
-        ship => ship.status === ShipStatus.IDLE && ship.currentLoad === 0
-      );
+                                    ship => ship.status === ShipStatus.IDLE && ship.currentLoad === 0
+                                  ).slice();
 
       if (availableShip) {
         this.dispatchShipToResource(availableShip.id, resourceId);
@@ -136,24 +133,30 @@ export class MiningShipManagerImpl extends EventEmitter {
    * Get resource type from node ID
    */
   private getResourceTypeFromNodeId(nodeId: string): ResourceType {
-    const resourceStr = nodeId.split('-')[0]; // e.g., "iron" from "iron-belt-1"
-    switch (resourceStr.toLowerCase()) {
-      case 'iron':
+    const resourceStr = nodeId.split('-')[0]?.toUpperCase(); // e.g., "IRON" from "iron-belt-1"
+    switch (resourceStr) {
+      case ResourceType.IRON:
         return ResourceType.IRON;
-      case 'copper':
+      case ResourceType.COPPER:
         return ResourceType.COPPER;
+      // Add cases for other resource types as needed, comparing with ResourceType enum
       case ResourceType.GAS:
-        return ResourceType.GAS;
+          return ResourceType.GAS;
       case ResourceType.MINERALS:
-        return ResourceType.MINERALS;
+          return ResourceType.MINERALS;
       case ResourceType.EXOTIC:
-        return ResourceType.EXOTIC;
+          return ResourceType.EXOTIC;
       case ResourceType.PLASMA:
-        return ResourceType.PLASMA;
+          return ResourceType.PLASMA;
       case ResourceType.ENERGY:
-        return ResourceType.ENERGY;
+          return ResourceType.ENERGY;
       default:
-        return ResourceType.MINERALS; // Default to minerals
+         // Try to map any other string to enum, default to MINERALS
+        try {
+           return ResourceTypeHelpers.stringToEnum(resourceStr as ResourceTypeString) || ResourceType.MINERALS;
+        } catch {
+            return ResourceType.MINERALS; // Fallback
+        }
     }
   }
 

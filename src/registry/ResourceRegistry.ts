@@ -1,6 +1,6 @@
 import { EventEmitter } from '../lib/events/EventEmitter';
-import { ResourceType, ResourceTypeMetadata } from '../types/resources/ResourceTypes';
-import { ResourceCategory } from '../types/resources/StandardizedResourceTypes';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
+import { ResourceCategory, ResourceType, ResourceTypeMetadata } from '../types/resources/ResourceTypes';
 /**
  * ResourceRegistry.ts
  *
@@ -271,7 +271,7 @@ export class ResourceRegistry {
    */
   public registerResource(options: ResourceRegistrationOptions): boolean {
     const { metadata, overrideExisting = false } = options;
-    const { id, category, tags, qualityLevels, relatedResources, conversionRates } = metadata;
+    const { id, category, tags, qualityLevels, conversionRates } = metadata;
 
     // Check if resource already exists
     if (this.resourceMetadata?.has(id) && !overrideExisting) {
@@ -769,7 +769,12 @@ export class ResourceRegistry {
       // Emit initialization complete event
       this.emit('initializationComplete', { resourceCount: resources.length });
     } catch (error) {
-      console.error('Error initializing resource registry:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Error initializing resource registry'),
+        ErrorType.INITIALIZATION,
+        ErrorSeverity.CRITICAL,
+        { componentName: 'ResourceRegistry', action: 'initializeFromDataSource' }
+      );
       throw error;
     }
   }
@@ -833,7 +838,7 @@ export class ResourceRegistry {
       });
 
       // Import resources
-      Object.entries(data?.resources).forEach(([resourceType, metadata]) => {
+      Object.entries(data?.resources).forEach(([, metadata]) => {
         this.registerResource({
           metadata: metadata as ExtendedResourceMetadata,
           overrideExisting: true,
@@ -855,7 +860,12 @@ export class ResourceRegistry {
 
       return true;
     } catch (error) {
-      console.error('Error importing registry data:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Error importing registry data'),
+        ErrorType.INITIALIZATION,
+        ErrorSeverity.HIGH,
+        { componentName: 'ResourceRegistry', action: 'importRegistryData' }
+      );
       return false;
     }
   }

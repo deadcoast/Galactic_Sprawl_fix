@@ -83,6 +83,13 @@ class ErrorLoggingServiceImpl extends AbstractBaseService<ErrorLoggingServiceImp
     this.errorLog = [];
   }
 
+  // Add standard getInstance method to comply with Singleton pattern from base class
+  public static override getInstance(): ErrorLoggingServiceImpl {
+    // Explicitly call super.getInstance with the correct 'this' context
+    // Using 'as any' to bypass complex static typing issues with Singleton<T>
+    return super.getInstance.call(this) as any;
+  }
+
   public logError(
     error: Error,
     type: ErrorType = ErrorType.UNKNOWN,
@@ -110,7 +117,7 @@ class ErrorLoggingServiceImpl extends AbstractBaseService<ErrorLoggingServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics[`errors_${type}`] = (metrics[`errors_${type}`] ?? 0) + 1;
     metrics[`errors_${severity}`] = (metrics[`errors_${severity}`] ?? 0) + 1;
     this.metadata.metrics = metrics;

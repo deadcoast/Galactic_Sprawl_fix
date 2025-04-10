@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import ResourceVisualization from '../../../../components/ui/ResourceVisualization';
 import {
   Ship,
   ShipHangarManager,
@@ -9,6 +8,7 @@ import {
 } from '../../../../managers/ships/ShipHangarManager';
 import { Effect } from '../../../../types/core/GameTypes';
 import { WeaponCategory, WeaponStatus } from '../../../../types/weapons/WeaponTypes';
+import ResourceVisualization from '../../../ui/visualization/ResourceVisualization';
 import { ResourceType } from './../../../../types/resources/ResourceTypes';
 
 interface HangarWeaponSystem {

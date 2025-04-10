@@ -10,43 +10,36 @@ export { Button } from './Button';
 export { Card } from './Card';
 
 // Resource Components
-export { ResourceDisplay } from './resource/ResourceDisplay';
 export { ResourceBar } from './resource/ResourceBar';
-export { ResourceIcon } from './resource/ResourceIcon';
+export { ResourceDisplay } from './resource/ResourceDisplay';
 export { ResourceGrid } from './resource/ResourceGrid';
-export type { ResourceGridItem, ResourceDisplayMode } from './resource/ResourceGrid';
+export type { ResourceDisplayMode, ResourceGridItem } from './resource/ResourceGrid';
+export { ResourceIcon } from './resource/ResourceIcon';
 
 // Module Components
 export { ModuleCard } from './modules/ModuleCard';
+export { ModuleControls } from './modules/ModuleControls';
 export { ModuleGrid } from './modules/ModuleGrid';
 export { ModuleStatusIndicator } from './modules/ModuleStatusIndicator';
-export { ModuleControls } from './modules/ModuleControls';
 
 // Game Components
-export { ShipDisplay } from './game/ShipDisplay';
 export { FactionBadge } from './game/FactionBadge';
 export { MiniMap } from './game/MiniMap';
 export type { MiniMapStar, ViewportConfig } from './game/MiniMap';
+export { ShipDisplay } from './game/ShipDisplay';
 
 // Visualization Components
-export { Chart } from './visualizations/Chart';
-export { LineGraph } from './visualizations/LineGraph';
-export { BarChart } from './visualizations/BarChart';
-export { NetworkGraph } from './visualizations/NetworkGraph';
-export { ResourceFlowDiagram } from './visualizations/ResourceFlowDiagram';
-export type { 
-  ChartProps, 
-  ChartData, 
-  DataPoint,
-  LineGraphProps,
-  BarChartProps,
-  NetworkNode,
-  NetworkEdge,
-  NetworkGraphProps,
-  ResourceFlowNode,
-  ResourceFlowConnection,
-  ResourceFlowDiagramProps
-} from './visualizations';
+export type {
+  BarChartProps, ChartData, ChartProps, DataPoint,
+  LineGraphProps, NetworkEdge,
+  NetworkGraphProps, NetworkNode, ResourceFlowConnection,
+  ResourceFlowDiagramProps, ResourceFlowNode
+} from './visualization';
+export { BarChart } from './visualization/BarChart';
+export { Chart } from './visualization/Chart';
+export { LineGraph } from './visualization/LineGraph';
+export { NetworkGraph } from './visualization/NetworkGraph';
+export { ResourceFlowDiagram } from './visualization/ResourceFlowDiagram';
 
 // Examples
 export * from './examples';

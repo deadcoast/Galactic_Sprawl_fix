@@ -7,15 +7,16 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { EventType } from '../../types/events/EventTypes';
 import {
-  StandardizedEvent,
-  isValidModuleStatusEventData,
-  isValidPopulationEventData,
-  isValidResourceEventData,
-  isValidStandardizedEvent,
-  isValidTradeRouteEventData,
+    isValidModuleStatusEventData,
+    isValidPopulationEventData,
+    isValidResourceEventData,
+    isValidStandardizedEvent,
+    isValidTradeRouteEventData,
+    StandardizedEvent,
 } from '../../types/events/StandardizedEvents';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { EventBus, EventListener, SubscriptionOptions } from './EventBus';
@@ -75,7 +76,12 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
     // Handle ModuleEvent
     const event = eventOrName as ModuleEvent;
     if (!isValidStandardizedEvent(event)) {
-      console.error('Invalid event structure:', event);
+      errorLoggingService.logError(
+        new Error(`Invalid event structure: ${JSON.stringify(event)}`),
+        ErrorType.EVENT_HANDLING,
+        ErrorSeverity.MEDIUM,
+        { componentName: 'ModuleEventBus', action: 'emit' }
+      );
       return;
     }
 
@@ -102,7 +108,12 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
       }
 
       if (!isValid) {
-        console.error('Invalid event data for type:', event?.type, event?.data);
+        errorLoggingService.logError(
+          new Error(`Invalid event data for type: ${event?.type} Data: ${JSON.stringify(event?.data)}`),
+          ErrorType.EVENT_HANDLING,
+          ErrorSeverity.MEDIUM,
+          { componentName: 'ModuleEventBus', action: 'emit', eventType: event?.type }
+        );
         return;
       }
     }
@@ -119,8 +130,12 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
     options?: SubscriptionOptions & { moduleId?: string; moduleType?: ModuleType }
   ): () => void {
     const wrappedListener: EventListener<ModuleEvent> = (event: ModuleEvent) => {
-      if (options?.moduleId && event?.moduleId !== options?.moduleId) return;
-      if (options?.moduleType && event?.moduleType !== options?.moduleType) return;
+      if (options?.moduleId && event?.moduleId !== options?.moduleId) {
+        return;
+      }
+      if (options?.moduleType && event?.moduleType !== options?.moduleType) {
+        return;
+      }
       listener(event);
     };
 

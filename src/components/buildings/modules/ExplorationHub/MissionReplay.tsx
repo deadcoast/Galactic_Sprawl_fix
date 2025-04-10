@@ -57,14 +57,14 @@ function getPositionFromEventData(event: GameEvent): Position | null {
     return null;
   }
   
-  const data = event.data;
+  const {data} = event;
   
   if (
     typeof data === 'object' &&
     data !== null &&
     'position' in data
   ) {
-    const position = data.position;
+    const {position} = data;
     
     if (
       typeof position === 'object' &&

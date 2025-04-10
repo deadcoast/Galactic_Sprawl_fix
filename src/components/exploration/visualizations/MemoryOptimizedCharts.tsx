@@ -4,6 +4,8 @@ import { ViewportOptimizedHeatMap } from './charts/ViewportOptimizedHeatMap';
 import { ViewportOptimizedScatterPlot } from './charts/ViewportOptimizedScatterPlot';
 import { VirtualizedLineChart } from './charts/VirtualizedLineChart';
 import withMemoryManagement from './withMemoryManagement';
+// Corrected import path
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 
 /**
  * Memory-optimized version of VirtualizedLineChart that includes automatic
@@ -107,7 +109,9 @@ export function cleanupChartSvgNodes(containerSelector: string): void {
   try {
     // Find the chart container
     const container = document.querySelector(containerSelector);
-    if (!container) return;
+    if (!container) {
+      return;
+    }
 
     // Find all SVG elements in the container
     const svgElements = container.querySelectorAll('svg');
@@ -126,7 +130,13 @@ export function cleanupChartSvgNodes(containerSelector: string): void {
       (window as { gc: () => void }).gc();
     }
   } catch (e) {
-    console.error('Error cleaning up chart SVG nodes:', e);
+    // Use correctly imported service
+    errorLoggingService.logError(
+      e instanceof Error ? e : new Error('Error cleaning up chart SVG nodes'),
+      ErrorType.RUNTIME,
+      ErrorSeverity.LOW,
+      { componentName: 'MemoryOptimizedCharts', action: 'cleanupChartSvgNodes', containerSelector }
+    );
   }
 }
 

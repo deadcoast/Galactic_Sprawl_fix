@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
 import { DataGenerator, realTimeDataService, StreamConfig } from '../services/RealTimeDataService';
 import { useService } from './services/useService';
 
@@ -45,7 +46,9 @@ export function useRealTimeData<T>({
 
   // Subscribe to data updates
   useEffect(() => {
-    if (!service) return;
+    if (!service) {
+      return;
+    }
 
     const unsubscribe = service.subscribe<unknown>(bufferId, handleData);
     return () => {
@@ -55,7 +58,9 @@ export function useRealTimeData<T>({
 
   // Register generator if provided
   useEffect(() => {
-    if (!service || !generator) return;
+    if (!service || !generator) {
+      return;
+    }
     service.registerGenerator(bufferId, generator);
   }, [service, bufferId, generator]);
 
@@ -82,7 +87,9 @@ export function useRealTimeData<T>({
 
   // Stop streaming
   const stopStream = useCallback(async () => {
-    if (!service) return;
+    if (!service) {
+      return;
+    }
 
     try {
       await service.stopStream(bufferId);
@@ -98,10 +105,21 @@ export function useRealTimeData<T>({
   useEffect(() => {
     return () => {
       if (isStreaming) {
-        stopStream().catch(console.error);
+        stopStream().catch(err => {
+          errorLoggingService.logError(
+            err instanceof Error ? err : new Error('Error stopping stream on unmount'),
+            ErrorType.RUNTIME,
+            ErrorSeverity.MEDIUM,
+            {
+              componentName: 'useRealTimeData',
+              action: 'cleanupEffect',
+              bufferId,
+            }
+          );
+        });
       }
     };
-  }, [isStreaming, stopStream]);
+  }, [isStreaming, stopStream, bufferId]);
 
   return {
     data,

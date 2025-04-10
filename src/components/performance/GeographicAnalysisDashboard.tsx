@@ -8,6 +8,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import useSessionPerformance from '../../hooks/performance/useSessionPerformance';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 
 interface RegionPerformanceData {
   region: string;
@@ -222,10 +223,18 @@ const PerformanceBar: React.FC<PerformanceBarProps> = ({
     // When low values are good (e.g., load time), reverse the logic
     const normalizedValue = isGoodWhenLow ? 1 - value / maxValue : value / maxValue;
 
-    if (normalizedValue > 0.8) return 'bg-green-500';
-    if (normalizedValue > 0.6) return 'bg-green-400';
-    if (normalizedValue > 0.4) return 'bg-yellow-400';
-    if (normalizedValue > 0.2) return 'bg-orange-400';
+    if (normalizedValue > 0.8) {
+      return 'bg-green-500';
+    }
+    if (normalizedValue > 0.6) {
+      return 'bg-green-400';
+    }
+    if (normalizedValue > 0.4) {
+      return 'bg-yellow-400';
+    }
+    if (normalizedValue > 0.2) {
+      return 'bg-orange-400';
+    }
     return 'bg-red-500';
   };
 
@@ -566,7 +575,16 @@ const GeographicAnalysisDashboard: React.FC = () => {
         setRegionData(SAMPLE_REGION_DATA);
         setSelectedRegion(SAMPLE_REGION_DATA[0]);
       } catch (error) {
-        console.error('Failed to load region data:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Failed to load region data'),
+          ErrorType.NETWORK,
+          ErrorSeverity.MEDIUM,
+          {
+            componentName: 'GeographicAnalysisDashboard',
+            action: 'loadData',
+            timeRange,
+          }
+        );
       } finally {
         setIsLoading(false);
       }

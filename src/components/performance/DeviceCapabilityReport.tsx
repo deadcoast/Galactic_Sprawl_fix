@@ -9,6 +9,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import useSessionPerformance from '../../hooks/performance/useSessionPerformance';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 
 interface DeviceCapabilityData {
   category: string;
@@ -692,7 +693,15 @@ const DeviceCapabilityReport: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, 800));
         setDeviceData(SAMPLE_DEVICE_DATA);
       } catch (error) {
-        console.error('Failed to load device capability data:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Failed to load device capability data'),
+          ErrorType.NETWORK,
+          ErrorSeverity.MEDIUM,
+          {
+            componentName: 'DeviceCapabilityReport',
+            action: 'loadData',
+          }
+        );
       } finally {
         setIsLoading(false);
       }

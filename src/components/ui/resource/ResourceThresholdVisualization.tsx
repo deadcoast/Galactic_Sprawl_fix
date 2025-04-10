@@ -2,10 +2,7 @@ import * as React from 'react';
 import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
 import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
 import { EventType } from '../../../types/events/EventTypes';
-import {
-  ResourceType,
-  ResourceTypeHelpers,
-} from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
 
 interface ResourceThresholdVisualizationProps {
   resourceType: ResourceType;
@@ -171,7 +168,9 @@ const getResourceStatus = (
  * Format time in minutes to a human-readable format
  */
 const formatTime = (minutes?: number): string => {
-  if (minutes === undefined) return 'N/A';
+  if (minutes === undefined) {
+    return 'N/A';
+  }
 
   if (minutes < 0) {
     return `${Math.ceil(Math.abs(minutes))} min until depletion`;

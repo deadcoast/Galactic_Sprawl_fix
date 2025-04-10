@@ -3,8 +3,7 @@ import { ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
 import * as React from 'react';
 import { useState } from 'react';
 import { useAllResourceRates } from '../../../contexts/ResourceRatesContext';
-import { ResourceType } from '../../../types/resources/ResourceTypes';
-import { ResourceTypeHelpers } from '../../../types/resources/StandardizedResourceTypes';
+import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
 
 // Resource type colors matching existing styles
 const resourceColors: Record<ResourceType, { base: string; bgLight: string; bgSelected: string }> =
@@ -168,7 +167,9 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
 
   // Set all resources as selected or none
   const toggleAllResources = () => {
-    if (!allResourceRates) return;
+    if (!allResourceRates) {
+      return;
+    }
 
     const allResources = Object.keys(allResourceRates) as ResourceType[];
     const allSelected = allResources.length === selectedResources.length;
@@ -196,11 +197,15 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
   // Check if a resource passes the current filter
   const passesFilter = (resourceType: ResourceType): boolean => {
     // Check if the resource type exists in allResourceRates
-    if (!allResourceRates) return true;
+    if (!allResourceRates) {
+      return true;
+    }
 
     const resourceKey = ResourceTypeHelpers.enumToString(resourceType).toLowerCase();
     const rate = allResourceRates[resourceKey as keyof typeof allResourceRates];
-    if (!rate) return true;
+    if (!rate) {
+      return true;
+    }
 
     const netRate = rate.net;
 
@@ -220,7 +225,9 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
 
   // Get available resources after filtering
   const getAvailableResources = (): ResourceType[] => {
-    if (!allResourceRates) return [];
+    if (!allResourceRates) {
+      return [];
+    }
 
     return Object.keys(allResourceRates)
       .map(key =>

@@ -1,25 +1,26 @@
 import {
-  Button,
-  CircularProgress,
-  Divider,
-  Grid,
-  Paper,
-  Tab,
-  Tabs,
-  Typography,
+    Button,
+    CircularProgress,
+    Divider,
+    Grid,
+    Paper,
+    Tab,
+    Tabs,
+    Typography,
 } from '@mui/material';
 import { Compass, Database, Layers, Map, RadioTower } from 'lucide-react';
 import * as React from 'react';
-import { useCallback, useEffect, Component, ErrorInfo } from 'react';
+import { Component, ErrorInfo, useCallback, useEffect } from 'react';
 import { useDataAnalysis } from '../../contexts/DataAnalysisContext';
 import { moduleEventBus } from '../../lib/events/ModuleEventBus';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { EventType } from '../../types/events/EventTypes';
 import { StandardizedEvent } from '../../types/events/StandardizedEvents';
 import {
-  AnalysisConfig,
-  AnalysisResult,
-  DataPoint,
-  Dataset,
+    AnalysisConfig,
+    AnalysisResult,
+    DataPoint,
+    Dataset,
 } from '../../types/exploration/DataAnalysisTypes';
 import AnalysisConfigManager from './AnalysisConfigManager';
 import DataFilterPanel from './DataFilterPanel';
@@ -27,7 +28,6 @@ import DataPointVirtualList from './DataPointVirtualList';
 import DatasetManager from './DatasetManager';
 import ResultsPanel from './ResultsPanel';
 import { AnalysisVisualization } from './visualizations/AnalysisVisualization';
-import { errorLoggingService, ErrorType, ErrorSeverity } from '../../services/ErrorLoggingService';
 
 interface DataAnalysisSystemProps {
   className?: string;
@@ -162,13 +162,9 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
           });
         }
       } catch (error) {
-        console.error('Error handling dataset update event:', error);
-        setError(error instanceof Error ? error : new Error(String(error)));
-        
-        // Log error to monitoring service
         errorLoggingService.logError(
-          error instanceof Error ? error : new Error(String(error)),
-          ErrorType.RUNTIME,
+          error instanceof Error ? error : new Error('Error handling dataset update event'),
+          ErrorType.EVENT_HANDLING,
           ErrorSeverity.MEDIUM,
           {
             componentName: 'DatasetInfo',
@@ -176,6 +172,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
             eventType: EventType.MODULE_UPDATED
           }
         );
+        setError(error instanceof Error ? error : new Error(String(error)));
       }
     };
 
@@ -205,12 +202,8 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
 
       return typeCounts;
     } catch (error) {
-      console.error('Error calculating counts:', error);
-      setError(error instanceof Error ? error : new Error(String(error)));
-      
-      // Log error to monitoring service
       errorLoggingService.logError(
-        error instanceof Error ? error : new Error(String(error)),
+        error instanceof Error ? error : new Error('Error calculating counts'),
         ErrorType.RUNTIME,
         ErrorSeverity.LOW,
         {
@@ -219,6 +212,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
           action: 'calculateCounts'
         }
       );
+      setError(error instanceof Error ? error : new Error(String(error)));
       
       // Return default counts on error
       return {
@@ -245,11 +239,8 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
           return <Database className="mr-2" size={16} />;
       }
     } catch (error) {
-      console.error('Error getting source icon:', error);
-      
-      // Log error to monitoring service
       errorLoggingService.logError(
-        error instanceof Error ? error : new Error(String(error)),
+        error instanceof Error ? error : new Error('Error getting source icon'),
         ErrorType.RUNTIME,
         ErrorSeverity.LOW,
         {
@@ -292,12 +283,8 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
       });
       
     } catch (error) {
-      console.error('Error refreshing dataset:', error);
-      setError(error instanceof Error ? error : new Error(String(error)));
-      
-      // Log error to monitoring service
       errorLoggingService.logError(
-        error instanceof Error ? error : new Error(String(error)),
+        error instanceof Error ? error : new Error('Error refreshing dataset'),
         ErrorType.RUNTIME,
         ErrorSeverity.MEDIUM,
         {
@@ -306,6 +293,7 @@ function DatasetInfo({ dataset }: DatasetInfoProps) {
           action: 'refreshDataset'
         }
       );
+      setError(error instanceof Error ? error : new Error(String(error)));
     } finally {
       setIsLoading(false);
     }
@@ -388,15 +376,12 @@ function DatasetInfoWrapper({ dataset }: DatasetInfoProps) {
         </div>
       )}
       onError={(error: Error, info: ErrorInfo) => {
-        console.error('Error in DatasetInfo component:', error);
-        
-        // Log error to monitoring service
         errorLoggingService.logError(
           error,
           ErrorType.RUNTIME,
           ErrorSeverity.HIGH,
           {
-            componentName: 'DatasetInfo',
+            componentName: 'DatasetInfo (ErrorBoundary)',
             componentStack: info.componentStack,
             datasetId: dataset.id
           }
@@ -555,7 +540,17 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
       };
       moduleEventBus.emit(event);
     } catch (error) {
-      console.error('Error running analysis:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Error running analysis'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        {
+          componentName: 'DataAnalysisSystem',
+          action: 'handleRunAnalysis',
+          configId: selectedConfig?.id,
+          configType: selectedConfig?.type,
+        }
+      );
 
       // Emit analysis error event
       const event: StandardizedEvent = {

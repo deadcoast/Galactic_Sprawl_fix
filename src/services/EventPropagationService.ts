@@ -1,6 +1,6 @@
 import { AbstractBaseService } from '../lib/services/BaseService';
 import { componentRegistryService } from './ComponentRegistryService';
-import { ErrorType, errorLoggingService } from './ErrorLoggingService';
+import { errorLoggingService, ErrorSeverity, ErrorType } from './ErrorLoggingService';
 
 export interface EventSubscription {
   eventType: string;
@@ -70,8 +70,8 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
           
           // Set up a custom error handler using the provided error logging service
           this.customErrorHandler = (error: Error, context?: Record<string, unknown>) => {
-            errorLogging.logError(error, ErrorType.RUNTIME, undefined, {
-              service: 'EventPropagationService',
+            errorLogging.logError(error, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
+              service: this.metadata.name,
               ...context
             });
           };
@@ -103,7 +103,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.total_subscriptions = Array.from(this.subscriptions.values()).reduce(
       (sum, subs) => sum + subs.length,
       0
@@ -124,7 +124,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
         if (!this.metadata.metrics) {
           this.metadata.metrics = {};
         }
-        const metrics = this.metadata.metrics;
+        const {metrics} = this.metadata;
         metrics.total_subscriptions = Array.from(this.subscriptions.values()).reduce(
           (sum, subs) => sum + subs.length,
           0
@@ -143,7 +143,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.total_events_emitted = (metrics.total_events_emitted ?? 0) + 1;
     metrics.last_event_timestamp = Date.now();
     this.metadata.metrics = metrics;
@@ -193,7 +193,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.total_events_processed = (metrics.total_events_processed ?? 0) + 1;
     metrics.last_processed_timestamp = Date.now();
     this.metadata.metrics = metrics;
@@ -204,7 +204,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const metrics = this.metadata.metrics;
+    const {metrics} = this.metadata;
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
     this.metadata.metrics = metrics;
@@ -223,7 +223,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
 
     // Log error in development
     if (process.env.NODE_ENV === 'development') {
-      console.error('[EventPropagationService] Error:', error);
+      // console.error('[EventPropagationService] Error:', error); // Keep commented out as it's logged above
     }
   }
 }

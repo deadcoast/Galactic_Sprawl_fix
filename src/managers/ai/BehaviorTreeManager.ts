@@ -1,6 +1,11 @@
-import { TypedEventEmitter } from '../../lib/events/EventEmitter';
+import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { Position } from '../../types/core/GameTypes';
+import {
+    BehaviorActionStartedEventData,
+    BehaviorNodeExecutedEventData,
+    EventType
+} from '../../types/events/EventTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
 
 interface BehaviorNode {
@@ -27,21 +32,12 @@ interface BehaviorContext {
   cooldowns: Record<string, number>;
 }
 
-export interface BehaviorEvents {
-  nodeExecuted: { nodeId: string; success: boolean };
-  treeCompleted: { unitId: string; success: boolean };
-  actionStarted: { unitId: string; actionType: string };
-  actionCompleted: { unitId: string; actionType: string };
-  [key: string]: unknown;
-}
-
-export class BehaviorTreeManager extends TypedEventEmitter<BehaviorEvents> {
+export class BehaviorTreeManager {
   private static instance: BehaviorTreeManager;
   private trees: Map<string, BehaviorNode> = new Map();
   private contexts: Map<string, BehaviorContext> = new Map();
 
   private constructor() {
-    super();
     this.initializeDefaultTrees();
   }
 
@@ -234,7 +230,13 @@ export class BehaviorTreeManager extends TypedEventEmitter<BehaviorEvents> {
       case 'action':
         if (node.execute) {
           node.execute(context);
-          this.emit('nodeExecuted', { nodeId: node.id, success: true });
+          const eventData: BehaviorNodeExecutedEventData = { nodeId: node.id, success: true, unitId: context.unit.id };
+          eventSystem.publish({
+              type: EventType.BEHAVIOR_NODE_EXECUTED,
+              managerId: 'BehaviorTreeManager',
+              timestamp: Date.now(),
+              data: eventData
+          });
           return true;
         }
         return false;
@@ -332,21 +334,39 @@ export class BehaviorTreeManager extends TypedEventEmitter<BehaviorEvents> {
 
     const readyWeapon = context.unit.weapons.find(w => w.status === 'ready');
     if (readyWeapon) {
-      this.emit('actionStarted', { unitId: context.unit.id, actionType: 'attack' });
+      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'attack' };
+      eventSystem.publish({
+          type: EventType.BEHAVIOR_ACTION_STARTED,
+          managerId: 'BehaviorTreeManager',
+          timestamp: Date.now(),
+          data: eventData
+      });
       // Weapon firing logic handled by combat manager
     }
   }
 
   private activateStealth(context: BehaviorContext): void {
     if (!context.cooldowns['stealth']) {
-      this.emit('actionStarted', { unitId: context.unit.id, actionType: 'stealth' });
+      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'stealth' };
+      eventSystem.publish({
+          type: EventType.BEHAVIOR_ACTION_STARTED,
+          managerId: 'BehaviorTreeManager',
+          timestamp: Date.now(),
+          data: eventData
+      });
       context.cooldowns['stealth'] = Date.now() + 10000; // 10 second cooldown
     }
   }
 
   private performSurpriseAttack(context: BehaviorContext): void {
     if (context.unit.target) {
-      this.emit('actionStarted', { unitId: context.unit.id, actionType: 'surprise_attack' });
+      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'surprise_attack' };
+      eventSystem.publish({
+          type: EventType.BEHAVIOR_ACTION_STARTED,
+          managerId: 'BehaviorTreeManager',
+          timestamp: Date.now(),
+          data: eventData
+      });
       // Surprise attack bonus handled by combat manager
     }
   }
@@ -361,27 +381,51 @@ export class BehaviorTreeManager extends TypedEventEmitter<BehaviorEvents> {
 
     if (newFormation !== context.currentFormation.type) {
       context.currentFormation.type = newFormation;
-      this.emit('actionStarted', { unitId: context.unit.id, actionType: 'formation_change' });
+      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'formation_change' };
+      eventSystem.publish({
+          type: EventType.BEHAVIOR_ACTION_STARTED,
+          managerId: 'BehaviorTreeManager',
+          timestamp: Date.now(),
+          data: eventData
+      });
     }
   }
 
   private formAttackPattern(context: BehaviorContext): void {
     if (context.nearbyAllies.length >= 3) {
-      this.emit('actionStarted', { unitId: context.unit.id, actionType: 'form_attack_pattern' });
+      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'form_attack_pattern' };
+      eventSystem.publish({
+          type: EventType.BEHAVIOR_ACTION_STARTED,
+          managerId: 'BehaviorTreeManager',
+          timestamp: Date.now(),
+          data: eventData
+      });
       // Formation pattern handled by fleet manager
     }
   }
 
   private executeCoordinatedStrike(context: BehaviorContext): void {
     if (context.unit.target && context.nearbyAllies.length >= 2) {
-      this.emit('actionStarted', { unitId: context.unit.id, actionType: 'coordinated_strike' });
+      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'coordinated_strike' };
+      eventSystem.publish({
+          type: EventType.BEHAVIOR_ACTION_STARTED,
+          managerId: 'BehaviorTreeManager',
+          timestamp: Date.now(),
+          data: eventData
+      });
       // Coordinated attack handled by combat manager
     }
   }
 
   private formDefensivePattern(context: BehaviorContext): void {
     if (context.nearbyAllies.length >= 2) {
-      this.emit('actionStarted', { unitId: context.unit.id, actionType: 'form_defensive_pattern' });
+      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'form_defensive_pattern' };
+      eventSystem.publish({
+          type: EventType.BEHAVIOR_ACTION_STARTED,
+          managerId: 'BehaviorTreeManager',
+          timestamp: Date.now(),
+          data: eventData
+      });
       // Defensive formation handled by fleet manager
     }
   }
@@ -392,7 +436,13 @@ export class BehaviorTreeManager extends TypedEventEmitter<BehaviorEvents> {
     );
 
     if (lowShieldAllies.length > 0) {
-      this.emit('actionStarted', { unitId: context.unit.id, actionType: 'shield_boost' });
+      const eventData: BehaviorActionStartedEventData = { unitId: context.unit.id, actionType: 'shield_boost' };
+      eventSystem.publish({
+          type: EventType.BEHAVIOR_ACTION_STARTED,
+          managerId: 'BehaviorTreeManager',
+          timestamp: Date.now(),
+          data: eventData
+      });
       // Shield boost handled by combat manager
     }
   }

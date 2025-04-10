@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
-import { ResourceManager } from '../../managers/game/ResourceManager';
+import { getResourceManager } from '../../managers/ManagerRegistry';
 import { moduleManager } from '../../managers/module/ModuleManager';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Create an instance of ResourceManager
-const resourceManager = new ResourceManager();
+const resourceManager = getResourceManager();
 
 /**
  * Automation rule types
@@ -226,7 +227,17 @@ export function useModuleAutomation(
       // Get the module
       const module = moduleManager.getModule(rule.moduleId);
       if (!module) {
-        console.error(`[ModuleAutomation] Module ${rule.moduleId} not found`);
+        errorLoggingService.logError(
+          new Error(`[ModuleAutomation] Module ${rule.moduleId} not found`),
+          ErrorType.CONFIGURATION,
+          ErrorSeverity.MEDIUM,
+          {
+            componentName: 'useModuleAutomation',
+            action: 'executeRuleAction',
+            ruleId: rule.id,
+            ruleType: rule.type,
+          }
+        );
         return;
       }
 

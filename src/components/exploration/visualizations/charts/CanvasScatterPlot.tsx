@@ -2,6 +2,7 @@ import { Typography, useTheme } from '@mui/material';
 import { debounce } from 'lodash';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../../services/ErrorLoggingService';
 import { ChartDataRecord } from '../../../../types/exploration/AnalysisComponentTypes';
 import { BaseChartProps } from './BaseChart';
 
@@ -204,10 +205,14 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
 
   // Check WebGL support
   useEffect(() => {
-    if (!useWebGL) return;
+    if (!useWebGL) {
+      return;
+    }
 
     const canvas = webglCanvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
 
     try {
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -219,7 +224,12 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
         setCanUseWebGL(false);
       }
     } catch (e) {
-      console.error('Error initializing WebGL:', e);
+      errorLoggingService.logError(
+        e instanceof Error ? e : new Error('Error initializing WebGL'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        { componentName: 'CanvasScatterPlot', action: 'useEffect (webgl init)' }
+      );
       setCanUseWebGL(false);
     }
   }, [useWebGL]);
@@ -241,7 +251,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
         return padding.top + normalizedValue * canvasHeight * zoom + pan.y;
       },
       size: (value: number) => {
-        if (!sizeKey) return sizeRange[0];
+        if (!sizeKey) {
+          return sizeRange[0];
+        }
         const normalizedValue = (value - domains.size[0]) / (domains.size[1] - domains.size[0]);
         return sizeRange[0] + normalizedValue * (sizeRange[1] - sizeRange[0]);
       },
@@ -271,7 +283,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   // Initialize WebGL
   const initWebGL = useCallback(() => {
     const gl = glRef.current;
-    if (!gl) return false;
+    if (!gl) {
+      return false;
+    }
 
     // Clear to black
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -321,7 +335,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
     const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
 
-    if (!vertexShader || !fragmentShader) return false;
+    if (!vertexShader || !fragmentShader) {
+      return false;
+    }
 
     // Set shader source
     gl.shaderSource(vertexShader, vertexShaderSource);
@@ -333,18 +349,30 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
 
     // Check if shaders compiled successfully
     if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-      console.error('Vertex shader compilation failed:', gl.getShaderInfoLog(vertexShader));
+      errorLoggingService.logError(
+        new Error(`Vertex shader compilation failed: ${gl.getShaderInfoLog(vertexShader)}`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        { componentName: 'CanvasScatterPlot', action: 'initWebGL', shaderType: 'vertex' }
+      );
       return false;
     }
 
     if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-      console.error('Fragment shader compilation failed:', gl.getShaderInfoLog(fragmentShader));
+      errorLoggingService.logError(
+        new Error(`Fragment shader compilation failed: ${gl.getShaderInfoLog(fragmentShader)}`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        { componentName: 'CanvasScatterPlot', action: 'initWebGL', shaderType: 'fragment' }
+      );
       return false;
     }
 
     // Create program
     const program = gl.createProgram();
-    if (!program) return false;
+    if (!program) {
+      return false;
+    }
 
     // Attach shaders
     gl.attachShader(program, vertexShader);
@@ -355,7 +383,12 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
 
     // Check if program linked successfully
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error('Program linking failed:', gl.getProgramInfoLog(program));
+      errorLoggingService.logError(
+        new Error(`WebGL program linking failed: ${gl.getProgramInfoLog(program)}`),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        { componentName: 'CanvasScatterPlot', action: 'initWebGL', operation: 'linkProgram' }
+      );
       return false;
     }
 
@@ -367,7 +400,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
 
   // Update canvas dimensions when container size changes
   const updateDimensions = useCallback(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) {
+      return;
+    }
 
     const { width, height } = containerRef.current.getBoundingClientRect();
     setDimensions({ width, height });
@@ -410,10 +445,14 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   // Render with 2D Canvas context
   const renderCanvas2D = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !data) return;
+    if (!canvas || !data) {
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -566,7 +605,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   const renderWebGL = useCallback(() => {
     const gl = glRef.current;
     const canvas = webglCanvasRef.current;
-    if (!gl || !canvas || !data || data?.length === 0) return;
+    if (!gl || !canvas || !data || data?.length === 0) {
+      return;
+    }
 
     // Clear canvas
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -666,7 +707,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   // Handle canvas click for point selection
   const handleClick = useCallback(
     (_e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!onElementClick || !hoveredPoint) return;
+      if (!onElementClick || !hoveredPoint) {
+        return;
+      }
       onElementClick(hoveredPoint, 0);
     },
     [onElementClick, hoveredPoint]
@@ -675,7 +718,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   // Handle mouse down for panning
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!interactive) return;
+      if (!interactive) {
+        return;
+      }
 
       setIsDragging(true);
       setDragStart({ x: e.clientX, y: e.clientY });
@@ -691,7 +736,9 @@ export const CanvasScatterPlot: React.FC<CanvasScatterPlotProps> = ({
   // Handle mouse move for panning
   const handleMouseMoveForPan = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!canvasRef.current) return;
+      if (!canvasRef.current) {
+        return;
+      }
 
       const rect = canvasRef.current.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;

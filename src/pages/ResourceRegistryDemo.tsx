@@ -7,7 +7,7 @@
 
 import * as React from 'react';
 import { useEffect } from 'react';
-import { ResourceRegistryUI } from '../components/ResourceRegistryUI';
+import { ResourceRegistryUI } from '../components/ui/ResourceRegistryUI';
 import { ResourceRegistry } from '../registry/ResourceRegistry';
 import { ResourceCategory, ResourceType } from '../types/resources/ResourceTypes';
 

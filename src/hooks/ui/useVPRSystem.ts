@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { useScalingSystem } from '../game/useScalingSystem';
 
 interface VPRSystemState {
@@ -113,7 +114,16 @@ export function useVPRSystem() {
 
   // Error boundary fallback
   const handleError = useCallback((error: Error, moduleId: string) => {
-    console.error(`VPR System Error in module ${moduleId}:`, error);
+    errorLoggingService.logError(
+      error,
+      ErrorType.RUNTIME,
+      ErrorSeverity.HIGH,
+      {
+        componentName: 'useVPRSystem',
+        action: 'handleError',
+        moduleId,
+      }
+    );
 
     setSystemState(prev => ({
       ...prev,

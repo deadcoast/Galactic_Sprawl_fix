@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
-import { EventEmitter } from '../../lib/events/EventEmitter';
+import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { EntityPool } from '../../lib/optimization/EntityPool';
 import { Position } from '../../types/core/GameTypes';
+import { EventType, ParticleSystemUpdateEventData } from '../../types/events/EventTypes';
 
 interface Particle {
   id: string;
@@ -17,24 +18,15 @@ interface Particle {
   reset(): void;
 }
 
-interface ParticleSystemEvents {
-  particleSpawned: { particle: Particle };
-  particleUpdated: { particle: Particle };
-  particleDied: { particle: Particle };
-  systemUpdated: { activeCount: number };
-  [key: string]: unknown;
-}
-
 /**
  * Manages particle systems with efficient pooling
  */
-export class ParticleSystemManager extends EventEmitter<ParticleSystemEvents> {
+export class ParticleSystemManager {
   private particlePool: EntityPool<Particle>;
   private systems: Map<string, ParticleSystem> = new Map();
   private lastUpdate: number = 0;
 
   constructor(initialPoolSize: number = 1000) {
-    super();
     this.particlePool = new EntityPool<Particle>(() => this.createParticle(), initialPoolSize);
 
     // Debug logging
@@ -104,9 +96,15 @@ export class ParticleSystemManager extends EventEmitter<ParticleSystemEvents> {
       totalActiveParticles += system.getActiveParticleCount();
     });
 
-    this.emit('systemUpdated', {
+    const eventData: ParticleSystemUpdateEventData = {
       activeCount: totalActiveParticles,
-    } as ParticleSystemEvents['systemUpdated']);
+    };
+    eventSystem.publish({
+      type: EventType.PARTICLE_SYSTEM_UPDATED,
+      managerId: 'ParticleSystemManager',
+      timestamp: Date.now(),
+      data: eventData,
+    });
   }
 
   /**

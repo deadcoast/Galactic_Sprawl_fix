@@ -1,8 +1,7 @@
 import { EventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import { Position } from '../../types/core/GameTypes';
-import { ResourceType } from '../../types/resources/ResourceTypes';
-import { FlowNode, FlowNodeType } from '../../types/resources/StandardizedResourceTypes';
+import { FlowNode, FlowNodeType, ResourceType } from '../../types/resources/ResourceTypes';
 import { ResourceFlowManager } from '../resource/ResourceFlowManager';
 import { ResourceThresholdManager, ThresholdConfig } from '../resource/ResourceThresholdManager';
 import { MiningShipManagerImpl } from './MiningShipManagerImpl';
@@ -350,6 +349,75 @@ export class MiningResourceIntegration {
     }
 
     return [];
+  }
+
+  private createFlowNodeForShip(shipId: string): FlowNode {
+    // Create a simplified FlowNode representation for the ship
+    const flowNode: FlowNode = {
+      id: shipId,
+      type: FlowNodeType.PRODUCER,
+      resources: {},
+    };
+    return flowNode;
+  }
+
+  private processMiningOutput(shipId: string, elapsedTime: number): void {
+    const shipData = this.miningShipManager.getShipData(shipId);
+    if (!shipData || shipData.status !== ShipStatus.MINING || !shipData.currentTarget) {
+      return;
+    }
+
+    const miningRate = this.getEffectiveMiningRate(shipData);
+    const amountProduced = miningRate * (elapsedTime / 1000); // Assume rate is per second
+
+    if (amountProduced > 0) {
+      this.handleResourceOutput({
+        resourceType: shipData.currentTarget.resourceType,
+        amount: amountProduced,
+        sourceId: shipId,
+      }).slice();
+    }
+  }
+
+  private handleResourceOutput(output: { resourceType: ResourceType; amount: number; sourceId: string }): void {
+    if (!this.resourceFlowManager) {
+      console.error(
+        '[MiningResourceIntegration] ResourceFlowManager not initialized.'
+      );
+      return;
+    }
+
+    // Use ResourceFlowManager to handle the produced resource
+    // This might involve creating a resource transfer event or directly updating a node
+    try {
+      // Option 1: Create a transfer (if applicable, e.g., to a storage node)
+      // this.resourceFlowManager.createResourceTransfer(...);
+
+      // Option 2: Directly update the source node (if representing ship inventory)
+      this.resourceFlowManager.updateResourceAmount(
+        output.sourceId,
+        output.resourceType,
+        output.amount
+      );
+
+      // Emit an event indicating resource production
+      this.publishEvent({
+        type: EventType.RESOURCE_PRODUCED,
+        moduleId: 'MiningResourceIntegration',
+        moduleType: 'integration' as ModuleType, // Adjust as necessary
+        timestamp: Date.now(),
+        data: {
+          sourceId: output.sourceId,
+          resourceType: output.resourceType,
+          amount: output.amount,
+        },
+      });
+    } catch (error) {
+      this.logError(
+        `Error handling resource output for ship ${output.sourceId}: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
+    }
   }
 }
 

@@ -2,7 +2,8 @@ import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
-import { ModuleEvent, ModuleEventType } from '../../../lib/modules/ModuleEvents';
+import { ModuleEvent, ModuleEventType } from '../../../lib/events/ModuleEventBus';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 
 export interface EventLogProps {
   /**
@@ -133,7 +134,9 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
 
   // Handle container resizing
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) {
+      return;
+    }
 
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -169,14 +172,21 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
 
   // Load more events
   const loadMore = async () => {
-    if (isLoadingMore || !loadMoreEvents || !hasMoreEvents) return;
+    if (isLoadingMore || !loadMoreEvents || !hasMoreEvents) {
+      return;
+    }
 
     setIsLoadingMore(true);
     try {
       const hasMore = await loadMoreEvents();
       setHasMoreEvents(hasMore);
     } catch (error) {
-      console.error('Failed to load more events', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to load more events'),
+        ErrorType.NETWORK,
+        ErrorSeverity.MEDIUM,
+        { componentName: 'VirtualizedEventLog', action: 'loadMore' }
+      );
     } finally {
       setIsLoadingMore(false);
     }
@@ -247,7 +257,9 @@ export const VirtualizedEventLog: React.FC<EventLogProps> = ({
   // Row virtualization component
   const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
     const event = displayedEvents[index];
-    if (!event) return null;
+    if (!event) {
+      return null;
+    }
 
     const eventId = event?.moduleId + event?.timestamp;
     const isExpanded = expandedEventIds.has(eventId);

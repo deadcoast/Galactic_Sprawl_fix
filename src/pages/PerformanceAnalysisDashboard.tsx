@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import UserBehaviorCorrelationView from '../components/ui/performance/UserBehaviorCorrelationView';
+import { ErrorSeverity, ErrorType, errorLoggingService } from '../services/ErrorLoggingService';
 import { SessionPerformanceData } from '../services/telemetry/SessionPerformanceTracker';
 import { ResourceType } from './../types/resources/ResourceTypes';
 
@@ -35,7 +36,15 @@ const PerformanceAnalysisDashboard: React.FC = () => {
 
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching performance data:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Error fetching performance data'),
+          ErrorType.NETWORK,
+          ErrorSeverity.MEDIUM,
+          {
+            componentName: 'PerformanceAnalysisDashboard',
+            action: 'fetchPerformanceData',
+          }
+        );
         setIsLoading(false);
       }
     };

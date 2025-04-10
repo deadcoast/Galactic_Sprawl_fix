@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 import { SessionPerformanceData } from '../../../services/telemetry/SessionPerformanceTracker';
 import {
   BehaviorPerformanceCorrelation,
@@ -75,7 +76,12 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
 
         setIsLoading(false);
       } catch (error) {
-        console.error('Error analyzing user behavior correlations:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Error analyzing user behavior correlations'),
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          { componentName: 'UserBehaviorCorrelationView', action: 'analyzeDataEffect' }
+        );
         setIsLoading(false);
       }
     }, 0);
@@ -178,7 +184,9 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
    * Set up the correlation visualization chart
    */
   const setupCorrelationChart = () => {
-    if (!correlationChartRef.current) return;
+    if (!correlationChartRef.current) {
+      return;
+    }
 
     // Clear previous chart
     d3.select(correlationChartRef.current).select('svg').remove();
@@ -188,7 +196,9 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
       correlation => significanceFilter === 'all' || correlation.significance === significanceFilter
     );
 
-    if (filteredCorrelations.length === 0) return;
+    if (filteredCorrelations.length === 0) {
+      return;
+    }
 
     // Set up dimensions
     const chartWidth = Math.min(width - 40, 700);
@@ -295,7 +305,9 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
    * Set up the pattern visualization chart
    */
   const setupPatternChart = () => {
-    if (!patternChartRef.current) return;
+    if (!patternChartRef.current) {
+      return;
+    }
 
     // Clear previous chart
     d3.select(patternChartRef.current).select('svg').remove();
@@ -305,7 +317,9 @@ const UserBehaviorCorrelationView: React.FC<UserBehaviorCorrelationViewProps> = 
       pattern => patternTypeFilter === 'all' || pattern.patternType === patternTypeFilter
     );
 
-    if (filteredPatterns.length === 0) return;
+    if (filteredPatterns.length === 0) {
+      return;
+    }
 
     // Sort patterns by impact score
     const sortedPatterns = [...filteredPatterns].sort((a, b) => b.impactScore - a.impactScore);

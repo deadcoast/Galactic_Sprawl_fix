@@ -1,11 +1,12 @@
 import { eventSystem } from '../lib/events/UnifiedEventSystem';
 import { Singleton } from '../lib/patterns/Singleton';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../services/ErrorLoggingService';
 import { ModuleType } from '../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../types/events/EventTypes';
 import { ResourceState, ResourceTransfer } from '../types/resources/ResourceTypes';
 import {
-  ensureStringResourceType,
-  toStringResourceType,
+    ensureStringResourceType,
+    toStringResourceType,
 } from '../utils/resources/ResourceTypeConverter';
 import { ResourceType } from './../types/resources/ResourceTypes';
 import { ResourceFlowSubsystem } from './subsystems/ResourceFlowSubsystem';
@@ -150,7 +151,12 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
 
       this.isInitialized = true;
     } catch (error) {
-      console.error('Failed to initialize ResourceSystem:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to initialize ResourceSystem'),
+        ErrorType.INITIALIZATION,
+        ErrorSeverity.CRITICAL,
+        { componentName: 'ResourceSystem', action: 'initialize' }
+      );
       throw error;
     }
   }
@@ -181,7 +187,12 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
 
       this.isInitialized = false;
     } catch (error) {
-      console.error('Failed to dispose ResourceSystem:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to dispose ResourceSystem'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        { componentName: 'ResourceSystem', action: 'dispose' }
+      );
       throw error;
     }
   }
@@ -196,7 +207,12 @@ export class ResourceSystem extends Singleton<ResourceSystem> {
 
     this.optimizationInterval = setInterval(() => {
       this.flow.optimizeFlows().catch(error => {
-        console.error('Error in flow optimization:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Error in flow optimization'),
+          ErrorType.RUNTIME,
+          ErrorSeverity.MEDIUM,
+          { componentName: 'ResourceSystem', action: 'optimizeFlowsInterval' }
+        );
       });
     }, this.config.optimizationInterval);
   }

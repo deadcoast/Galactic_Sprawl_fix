@@ -1,18 +1,24 @@
 import { Subject } from 'rxjs';
 import { thresholdEvents } from '../../contexts/ThresholdTypes';
 import {
-  AutomationCondition,
-  EventConditionValue,
-  StatusConditionValue,
-  TimeConditionValue,
+    AutomationCondition,
+    EventConditionValue,
+    StatusConditionValue,
+    TimeConditionValue,
 } from '../../managers/game/AutomationManager';
-import { ResourceManager } from '../../managers/game/ResourceManager';
+import { getResourceManager } from '../../managers/ManagerRegistry';
 import { MiningShipManagerImpl } from '../../managers/mining/MiningShipManagerImpl';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
-// Create a resourceManager instance
-const resourceManager = new ResourceManager();
+// Mock event bus - replace with actual event bus implementation
+const mockEventBus = {
+  getHistory: () => [],
+};
+
+// Mock resource manager - replace with actual instance
+// const resourceManager = new ResourceManager();
+const resourceManager = getResourceManager(); // Use registry accessor
 
 // Create a subject to handle condition state
 const conditionState = new Subject<{

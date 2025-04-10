@@ -9,7 +9,7 @@ import { useScalingSystem } from '../../../../hooks/game/useScalingSystem';
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { ResourceTransferManager } from '../../../../managers/resource/ResourceTransferManager';
 import { MiningResource } from '../../../../types/mining/MiningTypes';
-import { ResourceType } from './../../../../types/resources/ResourceTypes';
+import { ResourceType } from '../../../../types/resources/ResourceTypes';
 import { AutomationMonitor } from './AutomationMonitor';
 import { MiningControls } from './MiningControls';
 import { MiningMap } from './MiningMap';
@@ -144,7 +144,9 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
 
   // Use resourcesByType to filter resources by type
   const filteredResources = useMemo(() => {
-    if (filter === 'all') return mockResources;
+    if (filter === 'all') {
+      return mockResources;
+    }
     return resourcesByType[filter] ?? [];
   }, [filter, mockResources, resourcesByType]);
 
@@ -172,6 +174,13 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
       });
     };
   }, []);
+
+  const resourceOptions = [
+    { id: ResourceType.MINERALS, label: 'Minerals', icon: Database },
+    { id: ResourceType.GAS, label: 'Gas', icon: Database },
+    { id: ResourceType.PLASMA, label: 'Plasma', icon: Database },
+    { id: ResourceType.EXOTIC, label: 'Exotic Materials', icon: AlertTriangle },
+  ];
 
   return (
     <div className="fixed inset-4 flex overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md">
@@ -228,12 +237,7 @@ function MineralProcessingCentreContent({ tier }: MineralProcessingCentreProps) 
 
         {/* Resource Type Filters */}
         <div className="mb-6 flex space-x-2">
-          {[
-            { id: 'all', label: 'All Resources', icon: Database },
-            { id: 'mineral', label: 'Minerals', icon: Database },
-            { id: ResourceType.GAS, label: 'Gas', icon: Database },
-            { id: ResourceType.EXOTIC, label: 'Exotic', icon: AlertTriangle },
-          ].map(({ id, label, icon: Icon }) => (
+          {resourceOptions.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setFilter(id as ResourceFilter)}

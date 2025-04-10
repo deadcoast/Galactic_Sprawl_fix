@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
-  ResourceTotals,
-  SerializedResource,
-  SerializedResourceState,
-  SerializedThreshold,
-  isSerializedResourceState,
-  serializeResourceMap,
-  validateResourceState,
+    isSerializedResourceState,
+    ResourceTotals,
+    SerializedResource,
+    SerializedResourceState,
+    SerializedThreshold,
+    serializeResourceMap,
+    validateResourceState,
 } from '../../types/resources/ResourceSerializationTypes';
 import {
-  ResourceState,
-  ResourceThreshold,
-  ResourceTransfer,
-  ResourceType,
+    ResourceState,
+    ResourceThreshold,
+    ResourceTransfer,
+    ResourceType,
 } from '../../types/resources/ResourceTypes';
 
 /**
@@ -242,7 +243,12 @@ export function useResourceTracking(options: ResourceTrackingOptions = {}): Reso
 
       localStorage.setItem('resources', JSON.stringify(serializedState));
     } catch (err) {
-      console.error('Failed to save resources:', err);
+      errorLoggingService.logError(
+        err instanceof Error ? err : new Error('Failed to save resources to localStorage'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.MEDIUM,
+        { componentName: 'useResourceTracking', action: 'saveStateEffect' }
+      );
     }
   }, [state, isLoading]);
 

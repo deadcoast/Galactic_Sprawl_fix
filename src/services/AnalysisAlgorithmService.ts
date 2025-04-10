@@ -11,20 +11,21 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import {
-  AnalysisConfig,
-  AnalysisResult,
-  ClusteringAnalysisConfig,
-  ComparisonAnalysisConfig,
-  CorrelationAnalysisConfig,
-  DataPoint,
-  Dataset,
-  DistributionAnalysisConfig,
-  PredictionAnalysisConfig,
-  ResourceMappingAnalysisConfig,
-  SectorAnalysisConfig,
-  TrendAnalysisConfig,
+    AnalysisConfig,
+    AnalysisResult,
+    ClusteringAnalysisConfig,
+    ComparisonAnalysisConfig,
+    CorrelationAnalysisConfig,
+    DataPoint,
+    Dataset,
+    DistributionAnalysisConfig,
+    PredictionAnalysisConfig,
+    ResourceMappingAnalysisConfig,
+    SectorAnalysisConfig,
+    TrendAnalysisConfig,
 } from '../types/exploration/DataAnalysisTypes';
 import { ResourceType } from '../types/resources/ResourceTypes';
+import { ErrorSeverity, ErrorType, errorLoggingService } from './ErrorLoggingService'; // Added import
 
 /**
  * Interface for algorithm options
@@ -109,7 +110,13 @@ export class AnalysisAlgorithmService {
         const worker = new Worker(new URL('../workers/AnalysisWorker.ts', import.meta.url));
         this.workerPool.push(worker);
       } catch (error) {
-        console.error('Failed to create worker:', error);
+        // Replace console.error with errorLoggingService.logError
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Failed to create analysis worker'),
+          ErrorType.INITIALIZATION,
+          ErrorSeverity.HIGH,
+          { componentName: 'AnalysisAlgorithmService', action: 'initWorkerPool' }
+        );
       }
     }
   }
@@ -438,7 +445,7 @@ export class AnalysisAlgorithmService {
     const { xAxis, yAxis, groupBy, timeRange, aggregation } = config.parameters;
 
     // Filter data points based on time range
-    let dataPoints = dataset.dataPoints;
+    let {dataPoints} = dataset;
     if (timeRange) {
       dataPoints = dataPoints.filter(dp => dp.date >= timeRange[0] && dp.date <= timeRange[1]);
     }
@@ -595,8 +602,12 @@ export class AnalysisAlgorithmService {
       const aValue = extractor(a);
       const bValue = extractor(b);
 
-      if (aValue === undefined) return 1;
-      if (bValue === undefined) return -1;
+      if (aValue === undefined) {
+        return 1;
+      }
+      if (bValue === undefined) {
+        return -1;
+      }
 
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         return aValue - bValue;
@@ -917,7 +928,9 @@ export class AnalysisAlgorithmService {
    * Using an efficient divide-and-conquer algorithm (merge sort based)
    */
   private countInversions(arr: number[]): number {
-    if (arr.length <= 1) return 0;
+    if (arr.length <= 1) {
+      return 0;
+    }
 
     const mid = Math.floor(arr.length / 2);
     const left = arr.slice(0, mid);
@@ -943,8 +956,12 @@ export class AnalysisAlgorithmService {
     }
 
     // Copy remaining elements
-    while (i < left.length) merged[k++] = left[i++];
-    while (j < right.length) merged[k++] = right[j++];
+    while (i < left.length) {
+        merged[k++] = left[i++];
+    }
+    while (j < right.length) {
+        merged[k++] = right[j++];
+    }
 
     // Copy merged array back to original
     for (let i = 0; i < merged.length; i++) {
@@ -959,7 +976,9 @@ export class AnalysisAlgorithmService {
    */
   private rankValuesOptimized(values: number[]): number[] {
     const n = values.length;
-    if (n <= 1) return values.slice();
+    if (n <= 1) {
+      return values.slice();
+    }
 
     // Create indexed values
     const indexedValues = values.map((value, index) => ({ value, index }));
@@ -972,7 +991,7 @@ export class AnalysisAlgorithmService {
 
     let i = 0;
     while (i < n) {
-      const value = indexedValues[i].value;
+      const {value} = indexedValues[i];
 
       // Find all values equal to the current value
       let j = i + 1;
@@ -1250,7 +1269,9 @@ export class AnalysisAlgorithmService {
    * Normalize feature vectors using z-score normalization
    */
   private normalizeFeatureVectors(vectors: number[][]): number[][] {
-    if (vectors.length === 0) return [];
+    if (vectors.length === 0) {
+      return [];
+    }
 
     const dimensions = vectors[0].length;
     const means = new Array(dimensions).fill(0);
@@ -1436,7 +1457,9 @@ export class AnalysisAlgorithmService {
         const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
         const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
 
-        if (magnitudeA === 0 || magnitudeB === 0) return 1; // Maximum distance
+        if (magnitudeA === 0 || magnitudeB === 0) {
+          return 1;
+        } // Maximum distance
         return 1 - dotProduct / (magnitudeA * magnitudeB);
       }
 
@@ -1449,10 +1472,14 @@ export class AnalysisAlgorithmService {
    * Check if two arrays are equal
    */
   private arraysEqual(a: unknown[], b: unknown[]): boolean {
-    if (a.length !== b.length) return false;
+    if (a.length !== b.length) {
+      return false;
+    }
 
     for (let i = 0; i < a.length; i++) {
-      if (a[i] !== b[i]) return false;
+      if (a[i] !== b[i]) {
+        return false;
+      }
     }
 
     return true;
@@ -1576,8 +1603,12 @@ export class AnalysisAlgorithmService {
       const aValue = this.getPropertyByPath(a, property);
       const bValue = this.getPropertyByPath(b, property);
 
-      if (aValue === undefined) return 1;
-      if (bValue === undefined) return -1;
+      if (aValue === undefined) {
+        return 1;
+      }
+      if (bValue === undefined) {
+        return -1;
+      }
 
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         return aValue - bValue;
@@ -1598,7 +1629,9 @@ export class AnalysisAlgorithmService {
 
     for (const point of dataPoints) {
       const value = this.getPropertyByPath(point, property);
-      if (value === undefined) continue;
+      if (value === undefined) {
+        continue;
+      }
 
       const groupKey = String(value);
       if (!groups[groupKey]) {
@@ -1752,7 +1785,7 @@ export class AnalysisAlgorithmService {
 
     let i = 0;
     while (i < indexedValues.length) {
-      const value = indexedValues[i].value;
+      const {value} = indexedValues[i];
 
       // Find all values equal to the current value
       let j = i + 1;
@@ -1959,7 +1992,9 @@ export class AnalysisAlgorithmService {
     for (const [group, groupData] of Object.entries(groups)) {
       const { values, trendLine } = groupData;
 
-      if (values.length === 0) continue;
+      if (values.length === 0) {
+        continue;
+      }
 
       // Add insight about trend direction
       if (Math.abs(trendLine.slope) < 0.001) {
@@ -2550,14 +2585,13 @@ export class AnalysisAlgorithmService {
       // Skip singular matrix
       if (Math.abs(pivot) < 1e-10) {
         // Return identity matrix (fallback)
-        const identityMatrix = Array(n)
-          .fill(0)
-          .map((_, i) =>
-            Array(n)
-              .fill(0)
-              .map((_, j) => (i === j ? 1 : 0))
-          );
-        return identityMatrix;
+        return Array(n)
+                  .fill(0)
+                  .map((_, i) =>
+                    Array(n)
+                      .fill(0)
+                      .map((_, j) => (i === j ? 1 : 0))
+                  );
       }
 
       // Scale pivot row
@@ -2948,7 +2982,7 @@ export class AnalysisAlgorithmService {
     );
 
     if (metrics.r2 !== undefined) {
-      const r2 = metrics.r2;
+      const {r2} = metrics;
       if (r2 > 0.8) {
         insights.push(
           `The model explains ${(r2 * 100).toFixed(1)}% of the variance in the data, indicating a strong fit.`
@@ -3083,8 +3117,7 @@ export class AnalysisAlgorithmService {
 
     // Find the bounds of the area
     resourcePoints.forEach(point => {
-      const x = point.coordinates.x;
-      const y = point.coordinates.y;
+      const {x, y} = point.coordinates;
 
       minX = Math.min(minX, x);
       maxX = Math.max(maxX, x);
@@ -3246,7 +3279,7 @@ export class AnalysisAlgorithmService {
     const totalResources = Object.values(resourceTypeDensity).reduce((sum, val) => sum + val, 0);
 
     Object.keys(resourceTypeDensity).forEach(type => {
-      resourceTypeDensity[type] = resourceTypeDensity[type] / totalResources;
+      resourceTypeDensity[type] /= totalResources;
     });
 
     // Generate insights
