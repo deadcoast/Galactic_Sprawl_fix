@@ -16,7 +16,7 @@
 import * as d3 from 'd3';
 import { performance } from 'perf_hooks';
 import { ResourceFlowManager } from '../../../managers/resource/ResourceFlowManager';
-import { FlowNodeType, ResourceType } from '../../../types/resources/ResourceTypes';
+import { FlowNode, FlowNodeType, ResourceState, ResourceType, createResourceState } from '../../../types/resources/ResourceTypes';
 
 /**
  * Performance benchmark result
@@ -323,52 +323,62 @@ export function createTestResourceNetwork(
     ResourceType.TITANIUM,
   ]
 ): ResourceFlowManager {
-  // Create a resource flow manager
+  // Use getInstance to get the singleton
   const manager = ResourceFlowManager.getInstance();
 
-  // Generate node IDs
+  // Clear existing network for clean benchmark
+  manager.getNodes().forEach(node => manager.unregisterNode(node.id));
+  manager.getConnections().forEach(conn => manager.unregisterConnection(conn.id));
+
+  // Create nodes
   const nodeIds = Array.from({ length: nodeCount }, (_, i) => `node-${i}`);
-
-  // Create nodes with different types
-  const producers = Math.floor(nodeCount * 0.3);
-  const consumers = Math.floor(nodeCount * 0.3);
-  const storage = Math.floor(nodeCount * 0.2);
-  const converters = nodeCount - producers - consumers - storage;
-
-  // Add nodes to manager
   for (let i = 0; i < nodeCount; i++) {
     const nodeId = nodeIds[i];
     let nodeType: FlowNodeType;
 
-    if (i < producers) {
+    // Assign node types
+    if (i < nodeCount * 0.2) {
       nodeType = FlowNodeType.PRODUCER;
-    } else if (i < producers + consumers) {
+    } else if (i < nodeCount * 0.5) {
       nodeType = FlowNodeType.CONSUMER;
-    } else if (i < producers + consumers + storage) {
+    } else if (i < nodeCount * 0.8) {
       nodeType = FlowNodeType.STORAGE;
     } else {
       nodeType = FlowNodeType.CONVERTER;
     }
 
-    // Determine resource type
-    const resourceType = resourceTypes[i % resourceTypes.length];
+    // Determine specific resource type for this node
+    const specificResourceType = resourceTypes[i % resourceTypes.length];
 
-    // Create resource map
-    const resourceMap = new Map<ResourceType, number>();
-    resourceMap.set(resourceType, 100); // Initial resource amount
+    // Create a full resources record with default states for all types
+    const resourcesRecord = {} as Record<ResourceType, ResourceState>; // Initialize as empty object cast to type
+    for (const enumValue of Object.values(ResourceType).filter(
+        value => typeof value === 'string' && isNaN(parseInt(value))
+    ) as ResourceType[]) {
+        // Use createResourceState with default values (e.g., 0 current amount)
+        resourcesRecord[enumValue] = createResourceState(enumValue, 0); 
+    }
+
+    // Set the specific resource state for this node (e.g., current amount)
+    if (resourcesRecord[specificResourceType]) {
+        resourcesRecord[specificResourceType].current = 100; // Set initial amount for this node's type
+    } else {
+        // If somehow the specific type wasn't in the enum iteration, create it
+        resourcesRecord[specificResourceType] = createResourceState(specificResourceType, 100);
+    }
 
     // Create and register node
-    manager.registerNode({
+    const newNode: FlowNode = {
       id: nodeId,
       type: nodeType,
       active: true,
-      resources: resourceMap,
+      resources: resourcesRecord, // Assign the fully populated record
       capacity: 1000,
-      currentLoad: 0,
-      efficiency: 0.8 + Math.random() * 0.2,
-      status: 'active',
-      name: `Node ${nodeId}`,
-    });
+      x: Math.random() * 1000, // Use random positions for better visualization testing
+      y: Math.random() * 1000,
+      // metadata: { name: `Node ${nodeId}` } // Add optional metadata if needed by interface
+    };
+    manager.registerNode(newNode);
   }
 
   // Create connections

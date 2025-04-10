@@ -43,7 +43,7 @@ export interface ErrorMetadata {
   route?: string; // Current route/URL
   action?: string; // Action being performed when error occurred
   timestamp?: number; // When the error occurred
-  additionalData?: Record<string, unknown>; // Any additional context
+  additionalData?: Record<string, unknown>; // unknown additional context
   recoveryStrategy?: string; // Recovery strategy being applied
   originalError?: string; // Original error message when handling recovery errors
   filename?: string; // Filename where error occurred (for global errors)
@@ -83,13 +83,6 @@ class ErrorLoggingServiceImpl extends AbstractBaseService<ErrorLoggingServiceImp
     this.errorLog = [];
   }
 
-  // Add standard getInstance method to comply with Singleton pattern from base class
-  public static override getInstance(): ErrorLoggingServiceImpl {
-    // Explicitly call super.getInstance with the correct 'this' context
-    // Using 'as any' to bypass complex static typing issues with Singleton<T>
-    return super.getInstance.call(this) as any;
-  }
-
   public logError(
     error: Error,
     type: ErrorType = ErrorType.UNKNOWN,
@@ -117,15 +110,77 @@ class ErrorLoggingServiceImpl extends AbstractBaseService<ErrorLoggingServiceImp
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
-    metrics[`errors_${type}`] = (metrics[`errors_${type}`] ?? 0) + 1;
-    metrics[`errors_${severity}`] = (metrics[`errors_${severity}`] ?? 0) + 1;
+    const { metrics } = this.metadata;
+    metrics[ `errors_${type}` ] = (metrics[ `errors_${type}` ] ?? 0) + 1;
+    metrics[ `errors_${severity}` ] = (metrics[ `errors_${severity}` ] ?? 0) + 1;
     this.metadata.metrics = metrics;
 
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.error('Error logged:', entry);
     }
+  }
+
+  /**
+   * Logs a warning message.
+   *
+   * @param message The warning message string.
+   * @param metadata Optional metadata associated with the warning.
+   */
+  public logWarn(message: string, metadata?: Record<string, unknown>): void {
+    // Update metrics
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const { metrics } = this.metadata;
+    metrics[ 'warnings_logged' ] = (metrics[ 'warnings_logged' ] ?? 0) + 1;
+    this.metadata.metrics = metrics;
+
+    // Log to console
+    console.warn('[WARN]', message, metadata ?? '');
+  }
+
+  /**
+   * Logs an informational message.
+   *
+   * @param message The info message string.
+   * @param metadata Optional metadata associated with the message.
+   */
+  public logInfo(message: string, metadata?: Record<string, unknown>): void {
+    // Update metrics
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const { metrics } = this.metadata;
+    metrics[ 'info_logged' ] = (metrics[ 'info_logged' ] ?? 0) + 1;
+    this.metadata.metrics = metrics;
+
+    // Log to console
+    console.info('[INFO]', message, metadata ?? '');
+  }
+
+  /**
+   * Logs a debug message.
+   *
+   * @param message The debug message string.
+   * @param metadata Optional metadata associated with the message.
+   */
+  public logDebug(message: string, metadata?: Record<string, unknown>): void {
+    // Only log debug messages in development environment
+    if (process.env.NODE_ENV !== 'development') {
+      return;
+    }
+
+    // Update metrics
+    if (!this.metadata.metrics) {
+      this.metadata.metrics = {};
+    }
+    const { metrics } = this.metadata;
+    metrics[ 'debug_logged' ] = (metrics[ 'debug_logged' ] ?? 0) + 1;
+    this.metadata.metrics = metrics;
+
+    // Log to console
+    console.debug('[DEBUG]', message, metadata ?? '');
   }
 
   public getErrors(type?: ErrorType, severity?: ErrorSeverity, limit = 100): ErrorLogEntry[] {

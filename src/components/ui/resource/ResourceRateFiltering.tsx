@@ -229,13 +229,20 @@ export const ResourceRateFiltering: React.FC<ResourceRateFilteringProps> = ({
       return [];
     }
 
-    return Object.keys(allResourceRates)
-      .map(key =>
-        ResourceTypeHelpers.stringToEnum(
-          key.toUpperCase() as Parameters<typeof ResourceTypeHelpers.stringToEnum>[0]
-        )
-      )
-      .filter(passesFilter);
+    // Get all defined ResourceType enum values
+    const allEnumValues = Object.values(ResourceType).filter(
+      // Filter out potential numeric keys if the enum has them (TypeScript specific)
+      value => typeof value === 'string' && isNaN(parseInt(value))
+    ) as ResourceType[];
+
+    // Filter enums based on presence in allResourceRates and the current rate filter
+    return allEnumValues.filter(enumValue => {
+      // The enum value itself is the string key (e.g., ResourceType.MINERALS is 'MINERALS')
+      const stringKey = enumValue as string;
+      // Check if the resource exists in the rates data and passes the rate filter
+      // Use Object.prototype.hasOwnProperty.call for safe property checking
+      return Object.prototype.hasOwnProperty.call(allResourceRates, stringKey) && passesFilter(enumValue);
+    });
   };
 
   const availableResources = getAvailableResources();

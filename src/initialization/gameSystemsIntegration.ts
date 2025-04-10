@@ -2,7 +2,7 @@ import { moduleEventBus } from '../lib/modules/ModuleEvents';
 import { CombatManager } from '../managers/ManagerRegistry';
 import { gameLoopManager, UpdatePriority } from '../managers/game/GameLoopManager';
 import { ResourceManager } from '../managers/game/ResourceManager';
-import { TechTreeManager } from '../managers/game/techTreeManager';
+import { isTechTreeNodeUnlockedEvent, TechTreeManager } from '../managers/game/techTreeManager';
 import { MiningResourceIntegration } from '../managers/mining/MiningResourceIntegration';
 import { MiningShipManagerImpl } from '../managers/mining/MiningShipManagerImpl';
 import { ResourceCostManager } from '../managers/resource/ResourceCostManager';
@@ -12,6 +12,8 @@ import { ResourceIntegration } from '../managers/resource/ResourceIntegration';
 import { ResourcePoolManager } from '../managers/resource/ResourcePoolManager';
 import { ResourceStorageManager } from '../managers/resource/ResourceStorageManager';
 import { ResourceThresholdManager } from '../managers/resource/ResourceThresholdManager';
+import { errorLoggingService } from '../services/ErrorLoggingService';
+import { EventType } from '../types/events/EventTypes';
 import { getSystemCommunication, SystemMessage } from '../utils/events/EventCommunication';
 import { EventPriorityQueue } from '../utils/events/EventFiltering';
 import { getService } from '../utils/services/ServiceAccess';
@@ -20,26 +22,26 @@ import { ResourceType } from './../types/resources/ResourceTypes';
 // Define types for message payloads
 interface ResourceUpdatePayload {
   resourceType: ResourceType;
-  [key: string]: unknown;
+  [ key: string ]: unknown;
 }
 
 interface MiningUpdatePayload {
   shipId: string;
-  [key: string]: unknown;
+  [ key: string ]: unknown;
 }
 
 interface CombatUpdatePayload {
   type: string;
-  [key: string]: unknown;
+  [ key: string ]: unknown;
 }
 
 interface TechUpdatePayload {
   nodeId: string;
   node?: {
     category: string;
-    [key: string]: unknown;
+    [ key: string ]: unknown;
   };
-  [key: string]: unknown;
+  [ key: string ]: unknown;
 }
 
 // Type Guards
@@ -76,7 +78,7 @@ function isTechUpdatePayload(payload: unknown): payload is TechUpdatePayload {
   }
   // Check 'node' structure only if it exists
   if ('node' in payload) {
-    const {node} = payload as Record<string, unknown>;
+    const { node } = payload as Record<string, unknown>;
     if (typeof node !== 'object' || node === null || !('category' in node)) {
       // Node exists but has wrong structure - treat as invalid for safety?
       // Or allow it if partial node updates are possible?
@@ -149,7 +151,7 @@ export function integrateWithGameSystems(): () => void {
               console.error('Invalid resource update payload:', message.payload);
               return;
             }
-            const {payload} = message;
+            const { payload } = message;
 
             console.warn(`Resource update message received: ${payload.resourceType}`);
 
@@ -209,7 +211,7 @@ export function integrateWithGameSystems(): () => void {
             console.error('Invalid mining update payload:', message.payload);
             return;
           }
-          const {payload} = message;
+          const { payload } = message;
 
           console.warn(`Mining update message received: ${payload.shipId}`);
 
@@ -272,7 +274,7 @@ export function integrateWithGameSystems(): () => void {
             console.error('Invalid combat update payload:', message.payload);
             return;
           }
-          const {payload} = message;
+          const { payload } = message;
 
           console.warn(`Combat update message received: ${payload.type}`);
 
@@ -333,7 +335,7 @@ export function integrateWithGameSystems(): () => void {
 
   // Get the TechTreeManager instance
   const techTreeManager = TechTreeManager.getInstance();
-  
+
   if (techTreeManager) {
     // Tech unlocked listener
     const techUnlockedListener = (data: unknown) => {
@@ -351,7 +353,7 @@ export function integrateWithGameSystems(): () => void {
         }
 
         console.log('Tech unlocked:', payload.nodeId, payload.node?.category);
-        
+
         // Notify the rest of the game that a tech was unlocked
         moduleEventBus.emit({
           type: 'TECH_UNLOCKED',
@@ -360,32 +362,32 @@ export function integrateWithGameSystems(): () => void {
           timestamp: Date.now(),
           data: payload
         });
-        
+
         // Handle different tech categories
-        switch(payload.node.category) {
+        switch (payload.node.category) {
           case 'mining':
           case 'miningFleet':
             // Notify mining systems of the new tech
             console.log('Mining tech unlocked:', payload.nodeId);
             break;
-            
+
           case 'warFleet':
           case 'weapons':
           case 'defense':
             // Notify combat systems of the new tech
             console.log('Combat tech unlocked:', payload.nodeId);
             break;
-            
+
           case 'infrastructure':
             // Notify resource and production systems
             console.log('Infrastructure tech unlocked:', payload.nodeId);
             break;
-            
+
           case 'special':
             // Special techs might need custom handling
             console.log('Special tech unlocked:', payload.nodeId);
             break;
-            
+
           default:
             // Unknown category
             console.log('Unknown tech category unlocked:', payload.node.category);
@@ -397,10 +399,10 @@ export function integrateWithGameSystems(): () => void {
         );
       }
     };
-    
+
     // Register the listener using subscribe
     techTreeManager.on('nodeUnlocked', techUnlockedListener);
-    
+
     // Register tech system event handlers
     const unregisterTechHandler = techSystemComm.registerHandler(
       'tech-update',
@@ -410,7 +412,7 @@ export function integrateWithGameSystems(): () => void {
             console.error('Invalid tech update payload:', message.payload);
             return;
           }
-          const {payload} = message;
+          const { payload } = message;
 
           console.warn(`Tech update message received: ${payload.nodeId}`);
 
@@ -492,4 +494,83 @@ function getCombatEventPriority(type: string): number {
     default:
       return 2; // Default to NORMAL priority
   }
+}
+
+function setupCrossManagerCommunication() {
+  // Example: Technology unlocks affecting mining efficiency
+  eventSystem.subscribe(EventType.TECH_NODE_UNLOCKED, (payload: unknown) => {
+    // Tech Tree Updates
+    if (isTechTreeNodeUnlockedEvent(payload)) {
+      // Ensure node exists before proceeding
+      if (!payload.node) {
+        errorLoggingService.logWarn('Received TECH_NODE_UNLOCKED event without node data', {
+          system: 'gameSystemsIntegration',
+          event: EventType.TECH_NODE_UNLOCKED,
+          nodeId: payload.nodeId,
+          payload: payload,
+        });
+        return; // Exit if node is missing
+      }
+
+      const techManager = TechTreeManager.getInstance();
+      techManager?.updateNodeStatus(payload.nodeId, true);
+      errorLoggingService.logInfo(`Tech unlocked: ${payload.nodeId}`, {
+        system: 'gameSystemsIntegration',
+        event: EventType.TECH_NODE_UNLOCKED,
+        nodeId: payload.nodeId,
+        category: payload.node.category,
+      });
+
+      // Trigger downstream effects based on tech category
+      switch (payload.node.category) {
+        case 'mining':
+        case 'miningFleet':
+          errorLoggingService.logInfo(`Mining tech unlocked: ${payload.nodeId}`, {
+            system: 'gameSystemsIntegration',
+            event: EventType.TECH_NODE_UNLOCKED,
+            nodeId: payload.nodeId,
+            category: payload.node.category,
+          });
+          // Example: Unlock new mining modules or improve efficiency
+          break;
+        case 'combat':
+          errorLoggingService.logInfo(`Combat tech unlocked: ${payload.nodeId}`, {
+            system: 'gameSystemsIntegration',
+            event: EventType.TECH_NODE_UNLOCKED,
+            nodeId: payload.nodeId,
+            category: 'combat',
+          });
+          // Example: Unlock new weapons or ship classes
+          break;
+        case 'infrastructure':
+          errorLoggingService.logInfo(`Infrastructure tech unlocked: ${payload.nodeId}`, {
+            system: 'gameSystemsIntegration',
+            event: EventType.TECH_NODE_UNLOCKED,
+            nodeId: payload.nodeId,
+            category: 'infrastructure',
+          });
+          // Example: Improve building speed or resource storage
+          break;
+        case 'special':
+          errorLoggingService.logInfo(`Special tech unlocked: ${payload.nodeId}`, {
+            system: 'gameSystemsIntegration',
+            event: EventType.TECH_NODE_UNLOCKED,
+            nodeId: payload.nodeId,
+            category: 'special',
+          });
+          // Example: Trigger unique game events or unlock powerful abilities
+          break;
+        default:
+          errorLoggingService.logWarn(`Unknown tech category unlocked: ${payload.node.category}`, {
+            system: 'gameSystemsIntegration',
+            event: EventType.TECH_NODE_UNLOCKED,
+            nodeId: payload.nodeId,
+            category: payload.node.category,
+          });
+      }
+    }
+    // ... (rest of the event handlers)
+  });
+
+  // ... other event subscriptions
 }

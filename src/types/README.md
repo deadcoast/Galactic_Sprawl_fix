@@ -114,7 +114,7 @@ WeaponInstance
 
 3. **Combat System**
    - Uses weapon types through re-exports
-   - `CombatUnit` represents any entity in combat
+   - `CombatUnit` represents unknown entity in combat
    - `CombatEffect` uses core `Effect` type
 
 ## Best Practices

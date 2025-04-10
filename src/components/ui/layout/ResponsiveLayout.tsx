@@ -167,7 +167,7 @@ export interface ResponsiveLayoutProps {
   animationDuration?: number;
   
   /**
-   * How many columns to use for the grid (automatic grid layout when specified)
+   * How munknown columns to use for the grid (automatic grid layout when specified)
    */
   columns?: number | {
     xs?: number;

@@ -483,7 +483,7 @@ export class LongSessionMemoryTracker {
 
     // Calculate means
     const meanX = xValuesNormalized.reduce((sum, x) => sum + x, 0) / n;
-    const meanY = yValues.reduce((sum, y) => sum + y, 0) / n;
+    const meunknown = yValues.reduce((sum, y) => sum + y, 0) / n;
 
     // Calculate sums for regression formula
     let numerator = 0;
@@ -496,7 +496,7 @@ export class LongSessionMemoryTracker {
       const y = yValues[i];
 
       const xDiff = x - meanX;
-      const yDiff = y - meanY;
+      const yDiff = y - meunknown;
 
       numerator += xDiff * yDiff;
       denominator += xDiff * xDiff;
@@ -505,12 +505,12 @@ export class LongSessionMemoryTracker {
 
     // Avoid division by zero
     if (denominator === 0) {
-      return { slope: 0, intercept: meanY, correlation: 0 };
+      return { slope: 0, intercept: meunknown, correlation: 0 };
     }
 
     // Calculate regression parameters
     const slope = numerator / denominator;
-    const intercept = meanY - slope * meanX;
+    const intercept = meunknown - slope * meanX;
 
     // Calculate predicted values and sum of squared errors
     for (let i = 0; i < n; i++) {

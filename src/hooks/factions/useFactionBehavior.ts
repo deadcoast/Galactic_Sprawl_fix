@@ -7,38 +7,41 @@ import { Position } from '../../types/core/GameTypes';
 import { CommonShipStats, ShipStatus as CommonShipStatus } from '../../types/ships/CommonShipTypes';
 import { FactionFleet, FactionShip, FactionShipClass } from '../../types/ships/FactionShipTypes';
 import {
-    FactionBehaviorConfig,
-    FactionBehaviorType,
-    FactionId,
-    FactionState,
+  FactionBehaviorConfig,
+  FactionBehaviorType,
+  FactionId,
+  FactionState,
 } from '../../types/ships/FactionTypes';
 import {
-    WeaponCategory,
-    WeaponConfig,
-    WeaponInstance,
-    WeaponMount,
-    WeaponMountPosition,
-    WeaponMountSize,
-    WeaponSystem,
+  WeaponCategory,
+  WeaponConfig,
+  WeaponInstance,
+  WeaponMount,
+  WeaponMountPosition,
+  WeaponMountSize,
+  WeaponSystem,
 } from '../../types/weapons/WeaponTypes';
 import { getDistance } from '../../utils/geometry';
 import {
-    convertToFactionCombatUnit,
-    convertWeaponSystemToMount,
-    isFactionCombatUnit,
+  convertToFactionCombatUnit,
+  convertWeaponSystemToMount,
+  isFactionCombatUnit,
 } from '../../utils/typeConversions';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Import faction event types and interfaces
 import {
-    FactionBehaviorChangedEvent,
-    FactionCombatTacticsEvent,
-    FactionEventType,
-    FactionFleetEvent,
-    FactionRelationshipEvent,
-    FactionResourceEvent,
-    FactionTerritoryEvent,
+  FactionBehaviorChangedEvent,
+  FactionCombatTacticsEvent,
+  FactionEventType,
+  FactionFleetEvent,
+  FactionRelationshipEvent,
+  FactionResourceEvent,
+  FactionTerritoryEvent,
 } from '../../types/events/FactionEvents';
+
+// Added import for factionConfigs
+import { factionConfigs } from '../../config/factions/factions';
 
 /**
  * FACTION BEHAVIOR SYSTEM
@@ -843,7 +846,7 @@ function getInitialState(factionId: FactionId): FactionStateType {
 }
 
 function getTransitions(factionId: FactionId): StateMachineTransition[] {
-  return STATE_TRANSITIONS[factionId];
+  return STATE_TRANSITIONS[factionId] || [];
 }
 
 function handleStateMachineTransition(
@@ -877,7 +880,7 @@ function handleStateMachineTriggers(state: FactionBehaviorState): void {
   // Faction-specific triggers
   switch (state.id) {
     case 'equator-horizon':
-      if (calculatePlayerPower() > FACTION_CONFIGS[state.id].specialRules.powerThreshold!) {
+      if (calculatePlayerPower() > factionConfigs[state.id].specialRules.powerThreshold!) {
         triggers.add('POWER_THRESHOLD_EXCEEDED');
       }
       break;
@@ -1062,14 +1065,14 @@ export function useFactionBehavior(factionId: FactionId) {
       'lost-nova': 0,
       'equator-horizon': 0,
     },
-    specialRules: FACTION_CONFIGS[factionId].specialRules,
+    specialRules: factionConfigs[factionId].specialRules,
     behaviorState: {
-      aggression: FACTION_CONFIGS[factionId].baseAggression,
-      expansion: FACTION_CONFIGS[factionId].expansionRate,
-      trading: FACTION_CONFIGS[factionId].tradingPreference,
+      aggression: factionConfigs[factionId].behavior.baseAggression,
+      expansion: factionConfigs[factionId].behavior.expansionRate,
+      trading: factionConfigs[factionId].behavior.tradingPreference,
       currentTactic: 'defend',
       lastAction: 'initialized',
-      nextAction: 'patrol',
+      nextAction: 'evaluate',
     },
     stats: {
       totalShips: 0,
@@ -1382,7 +1385,7 @@ export function useFactionBehavior(factionId: FactionId) {
         break;
     }
 
-    if (shouldSpawnNewShip(behavior, FACTION_CONFIGS[behavior.id])) {
+    if (shouldSpawnNewShip(behavior, factionConfigs[behavior.id])) {
       const spawnPoint = selectSpawnPoint(behavior.territory);
       factionManager.spawnShip(behavior.id, spawnPoint);
     }
@@ -1462,7 +1465,7 @@ function calculateRelationships(
   const baseFactionModifier = factionModifiers[factionId] ?? 0;
 
   Object.keys(currentRelationships).forEach(otherFactionId => {
-    const otherFaction = FACTION_CONFIGS[otherFactionId as FactionId];
+    const otherFaction = factionConfigs[otherFactionId as FactionId];
     if (!otherFaction) {
       return;
     }
@@ -1492,7 +1495,7 @@ function calculateRelationships(
       }
     }
 
-    // Apply the base faction modifier and any specific changes
+    // Apply the base faction modifier and unknown specific changes
     updatedRelationships[otherFactionId as FactionId] += baseFactionModifier + relationshipChange;
 
     // Clamp values between -1 and 1
@@ -1935,9 +1938,10 @@ function selectSpawnPoint(territory: FactionTerritory): Position {
 // Helper function to check if should spawn new ship
 function shouldSpawnNewShip(
   state: FactionBehaviorState,
-  config: (typeof FACTION_CONFIGS)[FactionId]
+  config: FactionConfig
 ): boolean {
-  if (state.stats.totalShips >= config.maxShips) {
+  // Corrected access to maxShips (Line ~1943)
+  if (state.stats.totalShips >= config.spawnConditions.maxShips) {
     return false;
   }
 

@@ -145,7 +145,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   // Position state for the tooltip
   const [position, setPosition] = useState({ top: 0, left: 0 });
   
-  // Clear any existing timers
+  // Clear unknown existing timers
   const clearTimers = useCallback(() => {
     if (showTimeoutRef.current !== null) {
       window.clearTimeout(showTimeoutRef.current);

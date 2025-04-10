@@ -13,29 +13,29 @@ import { moduleEventBus } from '../../../../lib/events/ModuleEventBus';
 import { EventType } from '../../../../types/events/EventTypes';
 import { StandardizedEvent } from '../../../../types/events/StandardizedEvents';
 import {
-    AnalysisResult,
-    AnalysisType,
-    Anomaly,
-    DetailLevel,
-    ExplorationStatus,
-    MapSelection,
-    MapTheme,
-    MapViewport,
-    MapVisualSettings,
-    Planet,
-    ResourceDeposit,
-    Sector,
-    StarSystem,
-    TradeRoute,
+  AnalysisResult,
+  AnalysisType,
+  Anomaly,
+  DetailLevel,
+  ExplorationStatus,
+  MapSelection,
+  MapTheme,
+  MapViewport,
+  MapVisualSettings,
+  Planet,
+  ResourceDeposit,
+  Sector,
+  StarSystem,
+  TradeRoute,
 } from '../../../../types/exploration/unified';
 import { cn } from '../../../../utils/cn';
 import { ExplorationProvider, useExploration } from '../context/ExplorationContext';
 import {
-    BaseAnalysisVisualizer,
-    BaseDataTable,
-    BaseMap,
-    type DataColumn,
-    type MapLayer,
+  BaseAnalysisVisualizer,
+  BaseDataTable,
+  BaseMap,
+  type DataColumn,
+  type MapLayer,
 } from '../core';
 
 // View mode for the system
@@ -1513,7 +1513,7 @@ const GalaxyExplorationSystemInner: React.FC<
   // Cleanup subscriptions on unmount
   useEffect(() => {
     return () => {
-          // Any cleanup needed for event subscriptions
+          // unknown cleanup needed for event subscriptions
         };
   }, []);
 

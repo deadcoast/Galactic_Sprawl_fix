@@ -274,7 +274,7 @@ export function useModulesWithStatus() {
 
     // Subscribe to module status changes
     const unsubscribe = moduleManager.subscribeToEvent(EventType.MODULE_STATUS_CHANGED, () => {
-      // Refresh all modules when any module status changes
+      // Refresh all modules when unknown module status changes
       fetchModulesWithStatus();
     });
 
@@ -329,7 +329,7 @@ export function useModuleAlerts(alertLevel?: 'info' | 'warning' | 'error' | 'cri
 
     // Subscribe to error events
     const unsubscribe = moduleManager.subscribeToEvent(EventType.ERROR_OCCURRED, () => {
-      // Refresh alerts when any error occurs
+      // Refresh alerts when unknown error occurs
       fetchModuleAlerts();
     });
 

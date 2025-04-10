@@ -300,7 +300,7 @@ export function RealTimeMapUpdates({
   // Set up real-time updates
   useEffect(() => {
     if (!autoRefresh) {
-      // Clear any existing intervals
+      // Clear unknown existing intervals
       if (updateIntervals.current.main) {
         clearInterval(updateIntervals.current.main);
         updateIntervals.current.main = null;
@@ -417,7 +417,7 @@ export function RealTimeMapUpdates({
         );
         setErrorCount(prev => prev + 1);
 
-        // If we have too many consecutive errors, mark as disconnected
+        // If we have too munknown consecutive errors, mark as disconnected
         if (errorCount > 3) {
           setIsConnected(false);
         }

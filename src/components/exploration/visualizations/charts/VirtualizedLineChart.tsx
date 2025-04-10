@@ -207,7 +207,7 @@ export const VirtualizedLineChart = React.memo(function VirtualizedLineChart({
       return record;
     });
 
-    // Calculate how many points to display based on available space
+    // Calculate how munknown points to display based on available space
     const downsampleFactor = Math.ceil(processedData.length / maxDisplayedPoints);
 
     // No downsampling needed

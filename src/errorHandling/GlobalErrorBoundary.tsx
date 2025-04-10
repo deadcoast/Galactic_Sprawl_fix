@@ -13,7 +13,7 @@ export interface GlobalErrorBoundaryProps extends Omit<ErrorBoundaryProps, 'cont
  * Global application error boundary
  *
  * This component is designed to be used at the application root level
- * to catch any unhandled errors that bubble up through the component tree.
+ * to catch unknown unhandled errors that bubble up through the component tree.
  */
 export const GlobalErrorBoundary: React.FC<GlobalErrorBoundaryProps> = ({
   children,
@@ -30,7 +30,7 @@ export const GlobalErrorBoundary: React.FC<GlobalErrorBoundaryProps> = ({
       return;
     }
 
-    // Otherwise, just clear any application state as needed
+    // Otherwise, just clear unknown application state as needed
     // This could include resetting global state, clearing caches, etc.
   };
 

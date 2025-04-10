@@ -60,7 +60,7 @@ export interface EnvironmentalFactors {
 
 /**
  * Calculate the effective scan radius for a unit based on its scanner class,
- * any tech bonuses, and environmental factors.
+ * unknown tech bonuses, and environmental factors.
  *
  * @param scannerClass The class of scanner equipped on the unit
  * @param techBonuses Optional percentage bonus from technology (1.0 = no bonus, 1.5 = 50% bonus)

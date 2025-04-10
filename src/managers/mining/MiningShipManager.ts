@@ -93,7 +93,7 @@ export class MiningShipManagerImpl {
     this.ships.delete(shipId);
     shipBehaviorManager.unregisterShip(shipId);
 
-    // Clean up any tasks
+    // Clean up unknown tasks
     Array.from(this.tasks.values())
       .filter(task => task.shipId === shipId)
       .forEach(task => this.tasks.delete(task.id));
@@ -121,7 +121,7 @@ export class MiningShipManagerImpl {
         this.dispatchShipToResource(availableShip.id, resourceId);
       }
     } else if (details.type === 'above_maximum') {
-      // Recall any ships mining this resource
+      // Recall unknown ships mining this resource
       const assignedShipId = this.nodeAssignments.get(resourceId);
       if (assignedShipId) {
         this.recallShip(assignedShipId);
@@ -151,7 +151,7 @@ export class MiningShipManagerImpl {
       case ResourceType.ENERGY:
           return ResourceType.ENERGY;
       default:
-         // Try to map any other string to enum, default to MINERALS
+         // Try to map unknown other string to enum, default to MINERALS
         try {
            return ResourceTypeHelpers.stringToEnum(resourceStr as ResourceTypeString) || ResourceType.MINERALS;
         } catch {

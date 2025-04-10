@@ -133,7 +133,7 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
     // Update node in the map
     this.techNodes.set(nodeId, node);
 
-    // Cancel any ongoing research
+    // Cancel unknown ongoing research
     this.cancelResearch(nodeId);
 
     // Emit unlocked event
@@ -539,8 +539,8 @@ export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
   }
 
   /**
-   * Check if the player has unlocked any war ship salvage technologies
-   * @returns True if any war ship salvage tech is unlocked
+   * Check if the player has unlocked unknown war ship salvage technologies
+   * @returns True if unknown war ship salvage tech is unlocked
    */
   public hasWarShipSalvage(): boolean {
     return Array.from(this.unlockedNodes.values()).some(

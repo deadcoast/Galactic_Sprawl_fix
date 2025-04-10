@@ -53,7 +53,7 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 
 // Mock console.error during tests to catch unexpected errors
 const originalConsoleError = console.error;
-console.error = (...args: any[]) => {
+console.error = (...args: unknown[]) => {
   // Fail tests on prop type errors
   if (
     typeof args[0] === 'string' && 

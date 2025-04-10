@@ -73,7 +73,7 @@ const OptimizationComparisonView: React.FC<OptimizationComparisonViewProps> = ({
     setupCharts();
 
     return () => {
-      // Cleanup any running animations
+      // Cleanup unknownnown running animations
       if (isRunning) {
         stopComparison();
       }

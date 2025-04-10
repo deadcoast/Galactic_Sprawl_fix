@@ -324,7 +324,7 @@ export class ParticleSystem {
       return;
     }
 
-    // Clear any existing particles for this transition
+    // Clear unknown existing particles for this transition
     this.particles.forEach((particle, id) => {
       if (particle.group === transitionId) {
         this.particles.delete(id);

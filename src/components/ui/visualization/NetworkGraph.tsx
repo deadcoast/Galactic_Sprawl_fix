@@ -16,7 +16,7 @@ export interface NetworkNode {
   position?: { x: number; y: number };
   fixed?: boolean;
   metadata?: Record<string, string | number | boolean>;
-  data?: Record<string, unknown>; // Replace any with Record<string, unknown>
+  data?: Record<string, unknown>; // Replace unknownnown with Record<string, unknown>
 }
 
 // Network edge/link interface
@@ -30,7 +30,7 @@ export interface NetworkEdge {
   bidirectional?: boolean;
   weight?: number;
   metadata?: Record<string, string | number | boolean>;
-  data?: Record<string, unknown>; // Replace any with Record<string, unknown>
+  data?: Record<string, unknown>; // Replace unknown with Record<string, unknown>
 }
 
 // NetworkGraph props
@@ -560,7 +560,7 @@ export function NetworkGraph({
       }
     }
     
-    // Reset if not hovering over anything
+    // Reset if not hovering over unknownthing
     if (!foundNode && !foundEdge && !dragNode) {
       setHoveredNode(null);
       setHoveredEdge(null);

@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 import {
-  BudgetAdjustmentRecommendation,
-  DynamicBudgetAdjuster,
-  PerformanceStatistics,
-  PerformanceTelemetryConfig,
+    BudgetAdjustmentRecommendation,
+    DynamicBudgetAdjuster,
+    PerformanceStatistics,
+    PerformanceTelemetryConfig,
 } from '../../../utils/performance/benchmarks/DynamicBudgetAdjustment';
 import { PerformanceBudget } from '../../../utils/performance/benchmarks/PerformanceBudgets';
 import { Button } from '../common/Button';
@@ -170,7 +171,17 @@ export const DynamicBudgetAdjustmentPanel: React.FC<DynamicBudgetAdjustmentPanel
         console.warn(`Adjusting budget buffer to ${updatedConfig.budgetBuffer}`);
       }
     } catch (error) {
-      console.error("Failed to update telemetry configuration:", error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Failed to update telemetry configuration'),
+        ErrorType.CONFIGURATION,
+        ErrorSeverity.MEDIUM,
+        {
+          componentName: 'DynamicBudgetAdjustmentPanel',
+          action: 'handleConfigChange',
+          newConfig,
+          currentConfig: telemetryConfig,
+        }
+      );
     }
 
     // Refresh the analysis

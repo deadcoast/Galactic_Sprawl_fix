@@ -524,7 +524,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({
       };
 
       /**
-       * IMPORTANT: The use of 'any' in the subscribe calls is intentional and necessary
+       * IMPORTANT: The use of 'unknown' in the subscribe calls is intentional and necessary
        * due to a type incompatibility between GameManagerEventType and EventType.
        *
        * The proper solution would be to:
@@ -537,32 +537,32 @@ export const GameProvider: React.FC<GameProviderProps> = ({
 
       // Subscribe to individual event types - this approach works with the test mocks
       const unsubStarted = gameEvents.subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        startedEventType as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
+        startedEventType as unknown,
         createSafeHandler(event => handleGameStarted(event, dispatch))
       );
 
       const unsubPaused = gameEvents.subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        pausedEventType as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
+        pausedEventType as unknown,
         createSafeHandler(event => handleGamePaused(event, dispatch))
       );
 
       const unsubResumed = gameEvents.subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        resumedEventType as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
+        resumedEventType as unknown,
         createSafeHandler(event => handleGameResumed(event, dispatch))
       );
 
       const unsubStopped = gameEvents.subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        stoppedEventType as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
+        stoppedEventType as unknown,
         createSafeHandler(event => handleGameStopped(event, dispatch))
       );
 
       const unsubTimeUpdated = gameEvents.subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        timeUpdatedEventType as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
+        timeUpdatedEventType as unknown,
         createSafeHandler(event => handleTimeUpdated(event, dispatch))
       );
 
@@ -631,8 +631,8 @@ export const useGameActions = () => {
      * with discriminated union types. We know the context has a manager property but
      * TypeScript cannot infer this properly from the union type.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (context as any).manager || gameManager;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
+    return (context as unknown).manager || gameManager;
   }, [context]);
 
   return {

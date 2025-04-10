@@ -63,7 +63,7 @@ export class ModuleAttachmentManager {
       `[ModuleAttachmentManager] Module ${moduleId} attached to building ${buildingId} at point ${attachmentPointId}`
     );
 
-    // Clear any previews or highlights for this building
+    // Clear unknown previews or highlights for this building
     if (buildingId && typeof buildingId === 'string') {
       this.clearAttachmentVisualization(buildingId);
     }

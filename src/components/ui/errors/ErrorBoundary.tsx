@@ -8,9 +8,9 @@
  */
 
 import * as React from 'react';
-import { Component, ReactNode, ErrorInfo } from 'react';
-import { ErrorType, ErrorSeverity, errorLoggingService } from '../../../services/ErrorLoggingService';
-import { FallbackProps, ErrorFallback } from './ErrorFallback';
+import { Component, ErrorInfo, ReactNode } from 'react';
+import { ErrorSeverity, ErrorType, errorLoggingService } from '../../../services/ErrorLoggingService';
+import { ErrorFallback, FallbackProps } from './ErrorFallback';
 
 /**
  * Props for the ErrorBoundary component
@@ -105,8 +105,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     // Log the error if logging is not suppressed
     if (!suppressLogging) {
-      console.error(`Error in component ${componentName}:`, error);
-      console.error('Component stack:', errorInfo.componentStack);
+      // Remove redundant console.error calls
+      // console.error(`Error in component ${componentName}:`, error);
+      // console.error('Component stack:', errorInfo.componentStack);
       
       // Log to error logging service
       errorLoggingService.logError(

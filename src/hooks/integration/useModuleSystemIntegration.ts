@@ -201,7 +201,7 @@ export function useModules(moduleType?: ModuleType) {
     
     const unsubscribes = moduleEventTypes.map(eventType => 
       moduleEventBus.subscribe(eventType, (_event) => {
-        // Refetch all modules when any module event occurs
+        // Refetch all modules when unknown module event occurs
         fetchModules();
       })
     );

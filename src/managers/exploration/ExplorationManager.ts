@@ -550,7 +550,7 @@ export class ExplorationManager extends AbstractBaseManager<ExplorationEvent> {
     const ship = this.shipManager.getShipById(shipId);
     if (!ship) return false;
 
-    // Cancel any active scan operations
+    // Cancel unknown active scan operations
     this.cancelScanOperationsForShip(shipId);
 
     // Unassign the ship in the ship manager

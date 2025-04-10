@@ -279,8 +279,8 @@ export class MultitabPerformanceTestSuite {
       let fps = 0;
 
       // Memory usage (if available)
-      if ((tabWindow.performance as any).memory) {
-        memoryUsage = (tabWindow.performance as any).memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
+      if ((tabWindow.performance as unknown).memory) {
+        memoryUsage = (tabWindow.performance as unknown).memory.usedJSHeapSize / (1024 * 1024); // Convert to MB
         this.updateMetric(tabId, 'memory', memoryUsage);
       }
 

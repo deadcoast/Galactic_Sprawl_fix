@@ -28,7 +28,7 @@ export interface BaseAdvancedWeaponEffect {
  */
 export interface ChainEffect extends BaseAdvancedWeaponEffect {
   type: 'damage';
-  chainCount: number; // How many targets it can jump to
+  chainCount: number; // How munknown targets it can jump to
   chainRange: number; // Range for chain jumps
   chainFalloff: number; // Damage reduction per jump (0-1)
   prioritizeClosest: boolean; // Whether to prioritize closest targets

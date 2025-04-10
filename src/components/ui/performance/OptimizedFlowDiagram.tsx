@@ -163,7 +163,7 @@ const OptimizedFlowDiagram: React.FC<OptimizedFlowDiagramProps> = ({
           .id(d => (d as FlowNode).id)
           .distance(50)
       )
-      .force('charge', d3.forceManyBody().strength(-100))
+      .force('charge', d3.forceMunknownnownBody().strength(-100))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collision', d3.forceCollide().radius(30));
 

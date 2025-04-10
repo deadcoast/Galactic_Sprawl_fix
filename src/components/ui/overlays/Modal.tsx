@@ -3,11 +3,12 @@
  * 
  * Modal component for displaying content over the current view
  */
-import * as React from 'react';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { UIEventType } from '../../../types/ui/EventTypes';
-import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import * as React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import { UIEventType } from '../../../types/ui/EventTypes';
 
 export interface ModalProps {
   /**
@@ -159,7 +160,16 @@ export function Modal({
         });
         document.dispatchEvent(event);
       } catch (error) {
-        console.error('[Modal] Error dispatching modal opened event:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          ErrorType.EVENT_HANDLING,
+          ErrorSeverity.LOW,
+          {
+            componentName: 'Modal',
+            action: 'dispatchModalOpenedEvent',
+            eventType: UIEventType.MODAL_OPENED,
+          }
+        );
       }
       
       return () => clearTimeout(timeout);
@@ -184,7 +194,16 @@ export function Modal({
             });
             document.dispatchEvent(event);
           } catch (error) {
-            console.error('[Modal] Error dispatching modal closed event:', error);
+            errorLoggingService.logError(
+              error instanceof Error ? error : new Error(String(error)),
+              ErrorType.EVENT_HANDLING,
+              ErrorSeverity.LOW,
+              {
+                componentName: 'Modal',
+                action: 'dispatchModalClosedEvent',
+                eventType: UIEventType.MODAL_CLOSED,
+              }
+            );
           }
         }, animationDuration);
         
@@ -232,7 +251,7 @@ export function Modal({
     fullscreen: 'modal-content-fullscreen',
   }[size];
   
-  // Don't render anything if not open or visible
+  // Don't render unknownnownthing if not open or visible
   if (!isOpen && !isVisible) {
     return null;
   }

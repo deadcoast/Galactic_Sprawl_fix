@@ -1,8 +1,8 @@
 import { ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
-    AutomationRule,
-    EmitEventValue,
-    EventConditionValue,
+  AutomationRule,
+  EmitEventValue,
+  EventConditionValue,
 } from '../../managers/game/AutomationManager';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -309,7 +309,7 @@ export const colonyRules: AutomationRule[] = [
         target: INITIATE_RESEARCH_EVENT,
         value: {
           moduleId: 'colony',
-          moduleType: 'research', // Use string literal 'research' (from ResourceType.RESEARCH)
+          moduleType: ResourceType.RESEARCH,
           eventType: INITIATE_RESEARCH_EVENT,
           data: {
             type: ResourceType.RESEARCH,

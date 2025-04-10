@@ -96,7 +96,7 @@ describe('ErrorBoundary Component', () => {
     // Check that error was logged
     expect(errorLoggingService.logError).toHaveBeenCalledTimes(1);
     expect(errorLoggingService.logError).toHaveBeenCalledWith(
-      expect.any(Error),
+      expect.unknown(Error),
       ErrorType.RUNTIME,
       ErrorSeverity.MEDIUM,
       expect.objectContaining({
@@ -128,9 +128,9 @@ describe('ErrorBoundary Component', () => {
     // Check that onError was called
     expect(handleError).toHaveBeenCalledTimes(1);
     expect(handleError).toHaveBeenCalledWith(
-      expect.any(Error),
+      expect.unknown(Error),
       expect.objectContaining({
-        componentStack: expect.any(String),
+        componentStack: expect.unknown(String),
       })
     );
     

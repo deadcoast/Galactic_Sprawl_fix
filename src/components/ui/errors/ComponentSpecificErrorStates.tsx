@@ -6,10 +6,10 @@
  */
 
 import * as React from 'react';
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import { ComponentErrorState, DataFetchErrorState, VisualizationErrorState } from './ComponentErrorState';
 import { ErrorBoundary } from './ErrorBoundary';
-import { ComponentErrorState, VisualizationErrorState, DataFetchErrorState } from './ComponentErrorState';
-import { ErrorType, ErrorSeverity } from '../../../services/ErrorLoggingService';
 
 // Error state for the Chart component
 export interface ChartErrorProps {
@@ -127,7 +127,7 @@ export interface ResourceGraphProps {
   /** Whether data is loading */
   isLoading?: boolean;
   
-  /** Error, if any */
+  /** Error, if unknownnown */
   error?: Error | null;
   
   /** Width of the graph */

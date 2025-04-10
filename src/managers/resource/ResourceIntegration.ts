@@ -1,16 +1,16 @@
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
-    FlowConnection,
-    FlowNode,
-    FlowNodeType,
-    ResourcePriorityConfig,
-    ResourceState,
-    ResourceTransfer,
-    ResourceType,
-    ResourceTypeString,
-    FlowNode as StandardizedFlowNode,
-    toEnumResourceType,
+  FlowConnection,
+  FlowNode,
+  FlowNodeType,
+  ResourcePriorityConfig,
+  ResourceState,
+  ResourceTransfer,
+  ResourceType,
+  ResourceTypeString,
+  FlowNode as StandardizedFlowNode,
+  toEnumResourceType,
 } from '../../types/resources/ResourceTypes';
 import { ResourceManager } from '../game/ResourceManager';
 import { ResourceCostManager } from './ResourceCostManager';
@@ -377,6 +377,8 @@ export class ResourceIntegration {
         resources: { ...emptyResources, [enumType]: resourceState },
         priority: resourcePriority,
         active: true,
+        x: 0,
+        y: 0,
       };
       this.flowManager.registerNode(this.adaptFlowNode(producerNode));
 
@@ -387,6 +389,8 @@ export class ResourceIntegration {
         resources: { ...emptyResources, [enumType]: resourceState },
         priority: resourcePriority,
         active: true,
+        x: 0,
+        y: 0,
       };
       this.flowManager.registerNode(this.adaptFlowNode(consumerNode));
 
@@ -398,6 +402,8 @@ export class ResourceIntegration {
         priority: resourcePriority,
         capacity: resourceState.max,
         active: true,
+        x: 0,
+        y: 0,
       };
       this.flowManager.registerNode(this.adaptFlowNode(storageNode));
 
@@ -427,7 +433,7 @@ export class ResourceIntegration {
       this.flowManager.registerConnection(consumptionConnection);
 
       // Update resource state in flow manager
-      this.flowManager.updateResourceState(enumType, resourceState);
+      this.flowManager.updateNodeResourceState(enumType, resourceState);
     });
   }
 
@@ -461,7 +467,7 @@ export class ResourceIntegration {
     });
 
     // Update in flow manager
-    this.flowManager.updateResourceState(enumType, state);
+    this.flowManager.updateNodeResourceState(enumType, state);
 
     // Update in cost manager
     this.costManager.updateResourceState(enumType, state);

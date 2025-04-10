@@ -8,6 +8,7 @@ import {
   TRANSFER_CONFIG,
 } from '../../config/resource/ResourceConfig';
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
+import { errorLoggingService } from '../../services/ErrorLoggingService';
 import { EventHandler } from '../../types/events/EventEmitterInterface';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import {
@@ -16,9 +17,7 @@ import {
   ResourceProduction as ImportedResourceProduction,
   ResourceTransfer as ImportedResourceTransfer,
   ResourceState,
-  ResourceThreshold,
-  ResourceTypeHelpers,
-  ResourceTypeString,
+  ResourceThreshold
 } from '../../types/resources/ResourceTypes';
 import {
   ensureEnumResourceType,
@@ -30,7 +29,7 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Define ResourceManagerConfig interface based on the config structure
 interface ResourceManagerConfig {
-  defaultResourceLimits?: Record<ResourceType, { min: number; max: number }>;
+  defaultResourceLimits?: Record<ResourceType, { min: number; max: number; }>;
   // Add other config properties as needed
 }
 
@@ -260,8 +259,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   protected async onInitialize(_dependencies?: unknown): Promise<void> {
     // Initialize resources with config limits
     if (this.config.defaultResourceLimits) {
-      Object.entries(this.config.defaultResourceLimits).forEach(([type, limits]) => {
-        const resourceType = ResourceType[type as keyof typeof ResourceType];
+      Object.entries(this.config.defaultResourceLimits).forEach(([ type, limits ]) => {
+        const resourceType = ResourceType[ type as keyof typeof ResourceType ];
         if (limits && typeof limits.min === 'number' && typeof limits.max === 'number') {
           this.initializeResource(resourceType, limits.min, limits.max);
         }
@@ -317,7 +316,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    */
   protected async onDispose(): Promise<void> {
     // Stop all production intervals
-    for (const [_id, interval] of this.productionIntervals.entries()) {
+    for (const [ _id, interval ] of this.productionIntervals.entries()) {
       clearInterval(interval);
     }
     this.productionIntervals.clear();
@@ -514,28 +513,32 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    */
   setStorageEfficiency(level: keyof typeof STORAGE_EFFICIENCY): void {
     const oldEfficiency = this.storageEfficiency;
-    this.storageEfficiency = STORAGE_EFFICIENCY[level];
+    this.storageEfficiency = STORAGE_EFFICIENCY[ level ];
 
     // Update max capacities with new efficiency
     if (this.config.defaultResourceLimits) {
-      for (const [type, limits] of Object.entries(this.config.defaultResourceLimits)) {
-        // Convert string type to ResourceType
-        let resourceType: ResourceType;
-        try {
-          // Try to convert directly if it's already in the correct format
-          resourceType = type as unknown as ResourceType;
-        } catch (_e) {
-          // If that fails, try to use the helper
-          resourceType = ResourceTypeHelpers.stringToEnum(type.toLowerCase() as ResourceTypeString);
-        }
+      // Iterate through ResourceType enum values
+      for (const resourceType of Object.values(ResourceType).filter(
+        value => typeof value === 'string' && isNaN(parseInt(value))
+      ) as ResourceType[]) {
+        // Check if this resource type exists as a key in the config
+        const limits = this.config.defaultResourceLimits[ resourceType ];
 
-        const state = this.resources.get(resourceType);
-        if (state && limits && typeof limits.max === 'number') {
-          const oldMax = state.max;
-          state.max = limits.max * this.storageEfficiency;
-          console.warn(
-            `[ResourceManager] Updated ${type} storage capacity: ${oldMax.toFixed(2)} -> ${state.max.toFixed(2)}`
-          );
+        if (limits && typeof limits.max === 'number') {
+          const state = this.resources.get(resourceType);
+          if (state) {
+            const oldMax = state.max;
+            state.max = limits.max * this.storageEfficiency;
+            // Use console.info or a dedicated logger instead of warn if this is expected behavior
+            errorLoggingService.logInfo(
+              `[ResourceManager] Updated ${resourceType} storage capacity: ${oldMax.toFixed(2)} -> ${state.max.toFixed(2)}`,
+              {
+                service: 'ResourceManager',
+                method: 'setStorageEfficiency',
+                resourceType: resourceType,
+              }
+            );
+          }
         }
       }
     }
@@ -679,7 +682,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    * Gets resource transfer history
    */
   getTransferHistory(): ResourceTransfer[] {
-    return [...this.transfers];
+    return [ ...this.transfers ];
   }
 
   /**
@@ -850,7 +853,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       apply: () => {
         // Convert Map entries to array to avoid MapIterator error
         const resourceEntries = Array.from(this.resources.entries());
-        for (const [type, state] of resourceEntries) {
+        for (const [ type, state ] of resourceEntries) {
           const usage = this.calculateResourceUsage(type);
           const currentProduction = state.production;
           const targetProduction = usage * 1.2; // 20% buffer
@@ -880,7 +883,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
       apply: () => {
         // Convert Map entries to array to avoid MapIterator error
         const resourceEntries = Array.from(this.resources.entries());
-        for (const [type, state] of resourceEntries) {
+        for (const [ type, state ] of resourceEntries) {
           if (state.current / state.max > RESOURCE_THRESHOLDS.HIGH) {
             const consumers = Array.from(this.consumptions.values())
               .filter(c => {
@@ -921,7 +924,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
             state: this.resources.get(this.ensureResourceType(r.type)),
           }));
 
-          // Check if any source is below threshold
+          // Check if unknown source is below threshold
           const belowThreshold = sourceStates.some(
             s => s.state && s.state.current / s.state.max < RESOURCE_THRESHOLDS.LOW
           );
@@ -968,7 +971,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    * Calculates production efficiency
    */
   private calculateProductionEfficiency(): number {
-    const efficiencies = Array.from(this.resources.entries()).map(([type, state]) => {
+    const efficiencies = Array.from(this.resources.entries()).map(([ type, state ]) => {
       const usage = this.calculateResourceUsage(type);
       const { production } = state;
       return usage > 0 ? Math.min(production / usage, 1.5) : 1.0;
@@ -981,7 +984,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    * Calculates consumption efficiency
    */
   private calculateConsumptionEfficiency(): number {
-    const efficiencies = Array.from(this.resources.entries()).map(([type, state]) => {
+    const efficiencies = Array.from(this.resources.entries()).map(([ type, state ]) => {
       const usage = this.calculateResourceUsage(type);
       return usage > 0 ? Math.min(state.current / (usage * 10), 1.0) : 1.0;
     });
@@ -1049,7 +1052,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
     // Update performance metrics for each resource
     const resourceEntries = Array.from(this.resources.entries());
-    for (const [type, state] of resourceEntries) {
+    for (const [ type, state ] of resourceEntries) {
       const usage = this.calculateResourceUsage(type);
 
       // Convert string type to enum type for the performance monitor
@@ -1065,7 +1068,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
     // Handle production with configured rates
     const productionEntries = Array.from(this.productions.entries());
-    for (const [id, production] of productionEntries) {
+    for (const [ id, production ] of productionEntries) {
       if (!this.checkThresholds(production.conditions)) {
         continue;
       }
@@ -1080,7 +1083,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
     // Handle consumption with configured rates
     const consumptionEntries = Array.from(this.consumptions.entries());
-    for (const [id, consumption] of consumptionEntries) {
+    for (const [ id, consumption ] of consumptionEntries) {
       if (!this.checkThresholds(consumption.conditions)) {
         continue;
       }
@@ -1099,7 +1102,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
             type: consumption.type,
             amount,
             consumer: id,
-            priority: RESOURCE_PRIORITIES[consumption.type as ResourceType],
+            priority: RESOURCE_PRIORITIES[ consumption.type as ResourceType ],
           },
         });
       }
@@ -1107,7 +1110,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
     // Handle flows with configured transfer settings
     const flowEntries = Array.from(this.flows.entries());
-    for (const [id, flow] of flowEntries) {
+    for (const [ id, flow ] of flowEntries) {
       if (!this.checkThresholds(flow.conditions)) {
         console.warn(`[ResourceManager] Flow ${id} skipped due to threshold conditions`);
         continue;
@@ -1161,7 +1164,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    * Schedules a production cycle with configured intervals
    */
   scheduleProduction(id: string, production: ResourceProduction): void {
-    // Clear any existing interval
+    // Clear unknown existing interval
     this.clearProductionSchedule(id);
 
     // Register the production
@@ -1170,7 +1173,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     // Set up the interval
     const interval = setInterval(() => {
       if (this.checkThresholds(production.conditions)) {
-        const baseRate = DEFAULT_PRODUCTION_RATES[production.type];
+        const baseRate = DEFAULT_PRODUCTION_RATES[ production.type ];
         const amount = baseRate * production.amount;
         // Add resource using the enum type directly
         this.addResource(production.type, amount);
@@ -1184,8 +1187,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     this.productionIntervals.set(id, interval);
 
     console.warn(
-      `[ResourceManager] Scheduled production for ${id} every ${
-        production.interval || PRODUCTION_INTERVALS.NORMAL
+      `[ResourceManager] Scheduled production for ${id} every ${production.interval || PRODUCTION_INTERVALS.NORMAL
       }ms`
     );
   }
@@ -1209,7 +1211,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    */
   scheduleFlow(id: string, flow: ResourceFlow): boolean {
     try {
-      // Clear any existing flow
+      // Clear unknown existing flow
       this.clearFlowSchedule(id);
 
       // Validate flow configuration
@@ -1233,8 +1235,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
         this.productionIntervals.set(`${id}-${resource.type}`, interval);
 
         console.warn(
-          `[ResourceManager] Scheduled flow for ${resource.type} from ${flow.source} to ${
-            flow.target
+          `[ResourceManager] Scheduled flow for ${resource.type} from ${flow.source} to ${flow.target
           } every ${resource.interval || TRANSFER_CONFIG_WITH_MIN.DEFAULT_INTERVAL}ms`
         );
       });
@@ -1251,8 +1252,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    */
   private clearFlowSchedule(id: string): void {
     const intervals = Array.from(this.productionIntervals.entries())
-      .filter(entry => entry[0].startsWith(`${id}-`))
-      .map(entry => entry[1]);
+      .filter(entry => entry[ 0 ].startsWith(`${id}-`))
+      .map(entry => entry[ 1 ]);
 
     intervals.forEach(interval => {
       clearInterval(interval);
@@ -1269,8 +1270,8 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
     // Convert Map entries to array to avoid MapIterator error
     const resourceEntries = Array.from(this.resources.entries());
-    for (const [type, state] of resourceEntries) {
-      resources[type] = state.current;
+    for (const [ type, state ] of resourceEntries) {
+      resources[ type ] = state.current;
     }
 
     return resources;
@@ -1279,7 +1280,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   public getAllResourceStates(): Record<ResourceType, ResourceState> {
     const states: Record<ResourceType, ResourceState> = {} as Record<ResourceType, ResourceState>;
     this.resources.forEach((state, type) => {
-      states[type] = { ...state };
+      states[ type ] = { ...state };
     });
     return states;
   }
@@ -1290,10 +1291,10 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    */
   public getAllResourceRates(): Record<
     ResourceType,
-    { production: number; consumption: number; net: number }
+    { production: number; consumption: number; net: number; }
   > {
-    const rates: Record<ResourceType, { production: number; consumption: number; net: number }> =
-      {} as Record<ResourceType, { production: number; consumption: number; net: number }>;
+    const rates: Record<ResourceType, { production: number; consumption: number; net: number; }> =
+      {} as Record<ResourceType, { production: number; consumption: number; net: number; }>;
 
     // Initialize with default rates for all resource types
     // Use string keys and then cast to StringResourceType to avoid TS error
@@ -1311,7 +1312,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     resourceTypes.forEach(typeKey => {
       const type = typeKey as ResourceType;
       const state = this.getResourceState(type);
-      rates[type] = {
+      rates[ type ] = {
         production: state?.production ?? 0,
         consumption: state?.consumption ?? 0,
         net: (state?.production ?? 0) - (state?.consumption ?? 0),
@@ -1360,7 +1361,7 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   // Helper function to ensure type safety when converting resource types
   private ensureResourceType(type: ResourceType | string): ResourceType {
     if (typeof type === 'string') {
-      return ResourceType[type as keyof typeof ResourceType];
+      return ResourceType[ type as keyof typeof ResourceType ];
     }
     return type;
   }

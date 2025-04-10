@@ -206,51 +206,51 @@ export class DiscoveryClassification {
     return ResourceType.IRON; // Placeholder
   }
 
-  private determineArtifactOrigin(discovery: Discovery): string {
+  private determineArtifactOrigin(_discovery: Discovery): string {
     return 'Unknown Origin'; // Placeholder
   }
 
-  private estimateArtifactAge(discovery: Discovery): number {
+  private estimateArtifactAge(_discovery: Discovery): number {
     return 1000; // Placeholder
   }
 
-  private determineAnomalyType(discovery: Discovery): string {
+  private determineAnomalyType(_discovery: Discovery): string {
     return 'Unknown Anomaly'; // Placeholder
   }
 
-  private measureAnomalyIntensity(discovery: Discovery): number {
+  private measureAnomalyIntensity(_discovery: Discovery): number {
     return 0.5; // Placeholder
   }
 
-  private determineDerelictType(discovery: Discovery): string {
+  private determineDerelictType(_discovery: Discovery): string {
     return 'Unknown Vessel'; // Placeholder
   }
 
-  private assessDerelictCondition(discovery: Discovery): number {
+  private assessDerelictCondition(_discovery: Discovery): number {
     return 0.7; // Placeholder
   }
 
-  private determinePhenomenonType(discovery: Discovery): string {
+  private determinePhenomenonType(_discovery: Discovery): string {
     return 'Unknown Phenomenon'; // Placeholder
   }
 
-  private assessPhenomenonStability(discovery: Discovery): number {
+  private assessPhenomenonStability(_discovery: Discovery): number {
     return 0.6; // Placeholder
   }
 
-  private calculatePurity(composition: Map<string, number>): number {
+  private calculatePurity(_composition: Map<string, number>): number {
     return 0.8; // Placeholder
   }
 
-  private calculateDensity(pressure: number, temperature: number): number {
+  private calculateDensity(_pressure: number, _temperature: number): number {
     return 0.9; // Placeholder
   }
 
-  private calculateAccessibility(location: Vector3D): number {
+  private calculateAccessibility(_location: Vector3D): number {
     return 0.7; // Placeholder
   }
 
-  private analyzeSpectralProfile(metadata: unknown): SpectralProfile {
+  private analyzeSpectralProfile(_metadata: unknown): SpectralProfile {
     return {
       wavelengths: [],
       intensities: [],
@@ -258,7 +258,7 @@ export class DiscoveryClassification {
     };
   }
 
-  private analyzeDensityProfile(metadata: unknown): DensityProfile {
+  private analyzeDensityProfile(_metadata: unknown): DensityProfile {
     return {
       average: 0,
       variation: 0,
@@ -266,7 +266,7 @@ export class DiscoveryClassification {
     };
   }
 
-  private analyzeThermalProfile(metadata: unknown): ThermalProfile {
+  private analyzeThermalProfile(_metadata: unknown): ThermalProfile {
     return {
       temperature: 0,
       conductivity: 0,
@@ -274,11 +274,11 @@ export class DiscoveryClassification {
     };
   }
 
-  private identifyElements(metadata: unknown): ElementProfile[] {
+  private identifyElements(_metadata: unknown): ElementProfile[] {
     return [];
   }
 
-  private analyzeStructure(metadata: unknown): StructureAnalysis {
+  private analyzeStructure(_metadata: unknown): StructureAnalysis {
     return {
       crystallinity: 0,
       porosity: 0,
@@ -298,12 +298,13 @@ export class DiscoveryClassification {
     return 0.95; // Placeholder
   }
 
-  private determineEnhancementStrategies(result: ClassificationResult): EnhancementStrategy[] {
+  private determineEnhancementStrategies(_result: ClassificationResult): EnhancementStrategy[] {
     return []; // Placeholder
   }
 
-  private updateAnalysisResult(discoveryId: string, enhancedResult: ClassificationResult): void {
-    this.analysisCache.set(discoveryId, enhancedResult);
+  private updateAnalysisResult(_discoveryId: string, _enhancedResult: ClassificationResult): void {
+    // this.analysisCache.set(discoveryId, enhancedResult);
+    // Placeholder: Implementation needed
   }
 
   private createClassification(discovery: Discovery, result: ClassificationResult): Classification {

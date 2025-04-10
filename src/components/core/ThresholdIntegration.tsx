@@ -1,12 +1,10 @@
-import * as React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useThreshold } from '../../contexts/ThresholdContext';
-import { ResourceManager } from '../../managers/game/ResourceManager';
+import { getResourceManager } from '../../managers/ManagerRegistry';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 interface ThresholdIntegrationProps {
-  resourceManager: ResourceManager;
   children: React.ReactNode;
 }
 
@@ -18,9 +16,11 @@ interface ThresholdIntegrationProps {
  * - Propagation of threshold violations from ThresholdContext to ResourceManager
  * - Automatic resource management based on threshold settings
  */
-export function ThresholdIntegration({ resourceManager, children }: ThresholdIntegrationProps) {
+export function ThresholdIntegration({ children }: ThresholdIntegrationProps) {
   const { state, dispatch } = useThreshold();
-  const [isInitialized, setIsInitialized] = useState(false);
+  const resourceManager = getResourceManager();
+  const [isInitialized, setIsInitialized] = React.useState(false);
+  const previousResourceState = useRef<Map<string, number>>(new Map());
 
   // Initialize connection between ResourceManager and ThresholdContext
   useEffect(() => {

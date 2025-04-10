@@ -148,7 +148,7 @@ export const DataAnalysisProvider: React.FC<DataAnalysisProviderProps> = ({
   // Delete a dataset
   const deleteDataset = useCallback((id: string): void => {
     setDatasets(prev => prev.filter(dataset => dataset.id !== id));
-    // Also delete any analysis configs that use this dataset
+    // Also delete unknown analysis configs that use this dataset
     setAnalysisConfigs(prev => prev.filter(config => config.datasetId !== id));
   }, []);
 

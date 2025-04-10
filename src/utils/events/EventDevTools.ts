@@ -301,7 +301,7 @@ export class EventDevTools<T extends BaseEvent = BaseEvent> {
     if (action === 'subscribe') {
       this.activeSubscriptionSources.add(source);
     } else {
-      // Check if this source has any other active subscriptions
+      // Check if this source has unknown other active subscriptions
       const hasOtherSubscriptions = this.subscriptionActivity.some(
         activity =>
           activity.source === source &&

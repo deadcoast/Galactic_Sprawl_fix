@@ -90,7 +90,7 @@ export interface TelemetryOptions {
   errorSamplingRate: number; // 0.0 to 1.0
 }
 
-// Browser API interfaces to avoid 'any' usage
+// Browser API interfaces to avoid 'unknown' usage
 interface NavigatorExtended extends Navigator {
   deviceMemory?: number;
   connection?: {
@@ -577,7 +577,7 @@ export class SessionPerformanceTracker {
    * Clean up resources
    */
   public cleanup(): void {
-    // Transmit any pending data
+    // Transmit unknown pending data
     if (this.isEnabled) {
       this.flushTelemetryData();
     }

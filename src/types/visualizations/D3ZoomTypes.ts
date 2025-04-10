@@ -8,7 +8,7 @@
  * while maintaining compatibility with D3's zoom behavior API.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-unknown */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import * as d3 from 'd3';
@@ -25,7 +25,7 @@ export interface TypedZoomEvent<
   // @ts-ignore - Element type constraint issue with d3's BaseType
   Element extends d3.BaseType,
   Datum,
-  // @ts-ignore - d3's Element constraint is incompatible with TypeScript's Element type
+// @ts-ignore - d3's Element constraint is incompatible with TypeScript's Element type
 > extends d3.D3ZoomEvent<Element, Datum> {
   // Additional type-safe properties can be added here
   sourceEvent: Event;
@@ -124,7 +124,7 @@ export function createTypedZoomBehavior<Element extends d3.BaseType, Datum = unk
   // Set scale extent (min/max zoom level)
   const minScale = config.scaleExtentMin ?? 0.1;
   const maxScale = config.scaleExtentMax ?? 8;
-  zoom.scaleExtent([minScale, maxScale]);
+  zoom.scaleExtent([ minScale, maxScale ]);
 
   // Apply filter if provided
   if (config.filter) {
@@ -136,8 +136,8 @@ export function createTypedZoomBehavior<Element extends d3.BaseType, Datum = unk
     // If wheelZoom is false, we need to filter out wheel events
     if (!config.wheelZoom) {
       const originalFilter = zoom.filter();
-      // The any cast is necessary here due to d3's complex typing
-      zoom.filter(function (this: any, event: any) {
+      // The unknown cast is necessary here due to d3's complex typing
+      zoom.filter(function (this: unknown, event: unknown) {
         // @ts-ignore - d3 event type issues
         return event.type !== 'wheel' && originalFilter.call(this, event);
       });
@@ -150,9 +150,12 @@ export function createTypedZoomBehavior<Element extends d3.BaseType, Datum = unk
       zoom.interpolate(d3.interpolateZoom);
     } else {
       // Create a no-op interpolator for when double-click zoom is disabled
-      // The any cast is necessary because d3's typings are very strict about the interpolator
-      const noopInterpolator = () => d3.zoomIdentity;
-      zoom.interpolate(noopInterpolator as any);
+      // Define the interpolator with a signature matching D3's expectation
+      const noopInterpolator = (a: d3.ZoomView, b: d3.ZoomView): ((t: number) => d3.ZoomView) => {
+        // Return the identity transform as a ZoomView: [tx, ty, k]
+        return (_t: number) => [ 0, 0, 1 ];
+      };
+      zoom.interpolate(noopInterpolator); // Removed 'as unknown'
     }
   }
 
@@ -189,13 +192,13 @@ export function applyZoomBehavior<
  * @returns A properly typed D3 zoom behavior for SVG elements
  */
 // @ts-ignore - d3 type constraints require us to ignore some type errors
-export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement, Datum = unknown>(
+export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement, Datum = any>(
   config: ZoomBehaviorConfig<Element, Datum> & {
     /**
      * Target element (usually a group) to transform during zoom
      * If not provided, zooming will apply to the element the zoom behavior is attached to
      */
-    targetElement?: d3.Selection<SVGGElement, unknown, any, unknown>;
+    targetElement?: d3.Selection<SVGGElement, unknown, any, any>;
 
     /**
      * Whether to enable panning
@@ -213,7 +216,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
      * Extent of the viewable area [x, y, width, height]
      * Defaults to the element's viewport
      */
-    extent?: [[number, number], [number, number]];
+    extent?: [ [ number, number ], [ number, number ] ];
   } = {}
 ): d3.ZoomBehavior<Element, Datum> {
   // Create base zoom behavior
@@ -222,7 +225,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
   // Configure SVG-specific options
   if (config.enablePan === false) {
     // Disable panning by only allowing scaling transformations
-    zoom.on('zoom', (event: any) => {
+    zoom.on('zoom', (event: TypedZoomEvent<Element, Datum>) => {
       const transform = event.transform;
       const newTransform = d3.zoomIdentity.scale(transform.k);
 
@@ -234,17 +237,17 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
       if (config.onZoom) {
         // Create a modified event with the new transform
         const modifiedEvent = Object.assign({}, event, { transform: newTransform });
-        config.onZoom(modifiedEvent as TypedZoomEvent<Element, Datum>);
+        config.onZoom(modifiedEvent);
       }
     });
   } else if (config.targetElement) {
     // Apply normal pan/zoom transformation to target element
-    zoom.on('zoom', (event: any) => {
+    zoom.on('zoom', (event: TypedZoomEvent<Element, Datum>) => {
       config.targetElement!.attr('transform', event.transform.toString());
 
       // Call the original zoom handler if provided
       if (config.onZoom) {
-        config.onZoom(event as TypedZoomEvent<Element, Datum>);
+        config.onZoom(event);
       }
     });
   }
@@ -258,7 +261,7 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
   if (config.constrainPan) {
     const originalZoom = zoom.on('zoom');
 
-    zoom.on('zoom', function (this: any, event: any) {
+    zoom.on('zoom', function (this: unknown, event: TypedZoomEvent<Element, Datum>) {
       // Constrain the transform to prevent content from leaving viewport
       const transform = event.transform;
       const constrainedTransform = constrainTransform(transform, config.extent);
@@ -286,11 +289,11 @@ export function createSvgZoomBehavior<Element extends SVGElement = SVGSVGElement
  */
 function constrainTransform(
   transform: d3.ZoomTransform,
-  extent?: [[number, number], [number, number]]
+  extent?: [ [ number, number ], [ number, number ] ]
 ): d3.ZoomTransform {
   if (!extent) return transform;
 
-  const [[x0, y0], [x1, y1]] = extent;
+  const [ [ x0, y0 ], [ x1, y1 ] ] = extent;
   const width = x1 - x0;
   const height = y1 - y0;
 
@@ -313,13 +316,13 @@ function constrainTransform(
 // @ts-ignore - d3 type constraints require us to ignore some type errors
 export function createSimulationZoomBehavior<
   Element extends SVGElement = SVGSVGElement,
-  Datum = unknown,
+  Datum = any,
 >(
   config: ZoomBehaviorConfig<Element, Datum> & {
     /**
      * The container group that holds all simulation elements
      */
-    container: d3.Selection<SVGGElement, unknown, any, unknown>;
+    container: d3.Selection<SVGGElement, unknown, any, any>;
 
     /**
      * Function to update the simulation view after zoom/pan

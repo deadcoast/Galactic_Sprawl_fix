@@ -1,193 +1,11 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  Ship,
-  ShipHangarManager,
-  ShipStatus,
-  ShipType,
-} from '../../../../managers/ships/ShipHangarManager';
-import { Effect } from '../../../../types/core/GameTypes';
-import { WeaponCategory, WeaponStatus } from '../../../../types/weapons/WeaponTypes';
-import ResourceVisualization from '../../../ui/visualization/ResourceVisualization';
-import { ResourceType } from './../../../../types/resources/ResourceTypes';
-
-interface HangarWeaponSystem {
-  id: string;
-  name: string;
-  damage: number;
-  range: number;
-  cooldown: number;
-  type: WeaponCategory;
-  status: WeaponStatus;
-}
-
-// Extended Ability interface with id
-interface ShipAbility {
-  id: string;
-  name: string;
-  description: string;
-  cooldown: number;
-  duration: number;
-  effect: Effect;
-  active: boolean;
-}
-
-// Custom ship interface for UI purposes
-interface CustomShip {
-  id: string;
-  name: string;
-  type: string; // Using string to allow for custom ship types in the UI
-  level: number;
-  health: number;
-  maxHealth: number;
-  fuel: number;
-  maxFuel: number;
-  crew: number;
-  maxCrew: number;
-  status: string; // Using string to allow for custom statuses in the UI
-  location?: string;
-  destination?: string;
-  cargo?: {
-    capacity: number;
-    resources: Map<ResourceType, number>;
-  };
-  weapons?: HangarWeaponSystem[];
-  shields?: number;
-  maxShields?: number;
-  speed?: number;
-  range?: number;
-  description?: string;
-  image?: string;
-  effects?: Effect[];
-  isSelected?: boolean;
-  // Additional UI properties
-  tier?: number;
-  hull?: number;
-  maxHull?: number;
-  shield?: number;
-  maxShield?: number;
-  abilities?: ShipAbility[];
-  alerts?: string[];
-}
-
-// Mock data for development and testing purposes
-const _mockShips: CustomShip[] = [
-  {
-    id: '1',
-    name: 'Spitfire Alpha',
-    type: ShipType.FIGHTER,
-    tier: 1,
-    status: ShipStatus.DOCKED,
-    hull: 100,
-    maxHull: 100,
-    shield: 50,
-    maxShield: 50,
-    weapons: [
-      {
-        id: '1',
-        name: 'Laser Cannon',
-        damage: 10,
-        range: 5,
-        cooldown: 2,
-        type: 'beamWeapon',
-        status: 'ready',
-      },
-    ],
-    abilities: [
-      {
-        id: '1',
-        name: 'Boost',
-        description: 'Increases speed by 50% for 5 seconds',
-        cooldown: 10,
-        duration: 5,
-        active: false,
-        effect: {
-          id: 'boost-effect',
-          type: 'speed',
-          duration: 5,
-          magnitude: 1.5,
-        },
-      },
-    ],
-    alerts: ['Low fuel', 'Shield damaged'],
-    level: 1,
-    health: 100,
-    maxHealth: 100,
-    fuel: 50,
-    maxFuel: 100,
-    crew: 5,
-    maxCrew: 5,
-    cargo: {
-      resources: new Map([
-        [ResourceType.IRON, 10],
-        [ResourceType.COPPER, 5],
-      ]),
-      capacity: 100,
-    },
-  },
-  {
-    id: '2',
-    name: 'Star Voyager',
-    type: ShipType.CRUISER,
-    tier: 2,
-    status: ShipStatus.DEPLOYED,
-    hull: 80,
-    maxHull: 150,
-    shield: 30,
-    maxShield: 100,
-    weapons: [
-      {
-        id: '1',
-        name: 'Plasma Cannon',
-        damage: 20,
-        range: 8,
-        cooldown: 3,
-        type: 'plasmaCannon',
-        status: 'charging',
-      },
-      {
-        id: '2',
-        name: 'Missile Launcher',
-        damage: 30,
-        range: 10,
-        cooldown: 5,
-        type: 'rockets',
-        status: 'ready',
-      },
-    ],
-    abilities: [
-      {
-        id: '1',
-        name: 'Shield Boost',
-        description: 'Regenerates shields by 20%',
-        cooldown: 15,
-        duration: 0,
-        active: false,
-        effect: {
-          id: 'shield-boost-effect',
-          type: 'shield',
-          duration: 0,
-          magnitude: 0.2,
-        },
-      },
-    ],
-    level: 2,
-    health: 80,
-    maxHealth: 150,
-    fuel: 70,
-    maxFuel: 150,
-    crew: 15,
-    maxCrew: 20,
-    cargo: {
-      resources: new Map([
-        [ResourceType.TITANIUM, 20],
-        [ResourceType.URANIUM, 5],
-      ]),
-      capacity: 200,
-    },
-    destination: 'Alpha Centauri',
-  },
-];
+  getShipHangarManager
+} from '../../../../managers/ManagerRegistry';
+import { ShipHangarBay } from '../../../../types/buildings/ShipHangarTypes';
+import { CommonShip, ShipStatus } from '../../../../types/ships/CommonShipTypes';
+import { PlayerShipClass } from '../../../../types/ships/PlayerShipTypes';
 
 interface ShipHangarProps {
   hangarId: string;
@@ -195,190 +13,159 @@ interface ShipHangarProps {
 }
 
 /**
- * ShipHangar Component
- *
- * This component demonstrates how to use the ShipHangarManager with the standardized event system.
+ * Ship Hangar Component
+ * Displays ships and allows interaction
  */
-const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 }) => {
-  // Create a state to store the ships
-  const [ships, setShips] = useState<CustomShip[]>([]);
-  // Create a state to store the selected ship
-  const [selectedShip, setSelectedShip] = useState<CustomShip | null>(null);
-  // Create a state to store the hangar manager
-  const [hangarManager] = useState(() => new ShipHangarManager(hangarId, capacity));
-  // Create a state to track if the component is mounted
-  const [isMounted, setIsMounted] = useState(false);
+export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) => {
+  const hangarManager = getShipHangarManager();
 
-  // Initialize the component
+  const [ships, setShips] = useState<CommonShip[]>([]);
+  const [selectedShip, setSelectedShip] = useState<CommonShip | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [showCreateUI, setShowCreateUI] = useState(false);
+  const [newShipName, setNewShipName] = useState('');
+  const [selectedClassToBuild, setSelectedClassToBuild] = useState<PlayerShipClass>(PlayerShipClass.SCOUT);
+
+  const fetchShips = useCallback(async () => {
+    try {
+      const currentShips = hangarManager.getDockedShips ? hangarManager.getDockedShips() : [];
+      if (isMounted) {
+        setShips(currentShips);
+      }
+    } catch (error) {
+      console.error("Failed to fetch ships:", error);
+    }
+  }, [hangarManager, isMounted]);
+
   useEffect(() => {
     setIsMounted(true);
 
-    // Subscribe to events
-    const shipAddedUnsubscribe = hangarManager.on('ship:added', ({ ship }) => {
+    const handleShipAdded = ({ ship, bay }: { ship: CommonShip; bay: ShipHangarBay }) => {
       if (isMounted) {
-        setShips(prevShips => [...prevShips, toCustomShip(ship)]);
+        setShips(prevShips => [...prevShips, ship]);
       }
-    });
+    };
 
-    const shipRemovedUnsubscribe = hangarManager.on('ship:removed', ({ shipId }) => {
+    const handleShipRemoved = ({ ship, bay }: { ship: CommonShip; bay: ShipHangarBay }) => {
       if (isMounted) {
-        setShips(prevShips => prevShips.filter(ship => ship.id !== shipId));
-        if (selectedShip && selectedShip.id === shipId) {
+        setShips(prevShips => prevShips.filter(s => s.id !== ship.id));
+        if (selectedShip && selectedShip.id === ship.id) {
           setSelectedShip(null);
         }
       }
-    });
+    };
 
-    const shipUpdatedUnsubscribe = hangarManager.on('ship:updated', ({ ship }) => {
-      if (isMounted) {
-        setShips(prevShips => prevShips.map(s => (s.id === ship.id ? toCustomShip(ship) : s)));
-        if (selectedShip && selectedShip.id === ship.id) {
-          setSelectedShip(ship);
-        }
-      }
-    });
+    const handleShipRepairCompleted = ({ shipId }: { shipId: string }) => {
+      console.log(`Ship ${shipId} repair completed, refetching list.`);
+      fetchShips();
+    };
 
-    // Add some sample ships
-    const scout = hangarManager.createShip('Scout Alpha', ShipType.SCOUT);
-    const fighter = hangarManager.createShip('Fighter Beta', ShipType.FIGHTER);
-    const cruiser = hangarManager.createShip('Cruiser Gamma', ShipType.CRUISER);
+    const handleShipUpgradeCompleted = ({ shipId }: { shipId: string }) => {
+      console.log(`Ship ${shipId} upgrade completed, refetching list.`);
+      fetchShips();
+    };
 
-    hangarManager.addShip(scout);
-    hangarManager.addShip(fighter);
-    hangarManager.addShip(cruiser);
+    hangarManager.on('shipDocked', handleShipAdded);
+    hangarManager.on('shipLaunched', handleShipRemoved);
+    hangarManager.on('repairCompleted', handleShipRepairCompleted);
+    hangarManager.on('upgradeCompleted', handleShipUpgradeCompleted);
 
-    // Load some cargo onto the cruiser
-    if (cruiser.cargo) {
-      hangarManager.loadCargo(cruiser.id, ResourceType.MINERALS, 50);
-      hangarManager.loadCargo(cruiser.id, ResourceType.ENERGY, 25);
-    }
+    fetchShips();
 
-    // Cleanup function
     return () => {
-      shipAddedUnsubscribe();
-      shipRemovedUnsubscribe();
-      shipUpdatedUnsubscribe();
+      hangarManager.off('shipDocked', handleShipAdded);
+      hangarManager.off('shipLaunched', handleShipRemoved);
+      hangarManager.off('repairCompleted', handleShipRepairCompleted);
+      hangarManager.off('upgradeCompleted', handleShipUpgradeCompleted);
       setIsMounted(false);
     };
-  }, [hangarId, capacity, hangarManager, isMounted]);
+  }, [hangarId, capacity, hangarManager, selectedShip, fetchShips]);
 
-  // Handle ship selection
-  const handleSelectShip = (ship: CustomShip) => {
+  const handleSelectShip = (ship: CommonShip) => {
     setSelectedShip(ship);
   };
 
-  // Handle ship deployment
   const handleDeployShip = () => {
     if (selectedShip) {
       const destination = prompt('Enter destination:');
       if (destination) {
-        hangarManager.deployShip(toShip(selectedShip).id, destination);
+        hangarManager.deployShip(selectedShip.id, destination);
       }
     }
   };
 
-  // Handle ship docking
   const handleDockShip = () => {
     if (selectedShip) {
-      hangarManager.dockShip(toShip(selectedShip).id);
+      hangarManager.dockShip(selectedShip.id);
     }
   };
 
-  // Handle ship repair
   const handleRepairShip = () => {
     if (selectedShip) {
-      hangarManager.repairShip(toShip(selectedShip).id, 10);
+      hangarManager.repairShip(selectedShip.id, 10);
     }
   };
 
-  // Handle ship refueling
   const handleRefuelShip = () => {
     if (selectedShip) {
-      hangarManager.refuelShip(toShip(selectedShip).id, 10);
+      hangarManager.refuelShip(selectedShip.id, 10);
     }
   };
 
-  // Handle ship upgrade
   const handleUpgradeShip = () => {
     if (selectedShip) {
-      hangarManager.upgradeShip(toShip(selectedShip).id);
+      hangarManager.upgradeShip(selectedShip.id);
     }
   };
 
-  // Handle ship removal
   const handleRemoveShip = () => {
     if (selectedShip) {
       if (window.confirm(`Are you sure you want to remove ${selectedShip.name}?`)) {
-        hangarManager.removeShip(toShip(selectedShip).id);
+        hangarManager.removeShip(selectedShip.id);
       }
     }
   };
 
-  // Handle creating a new ship
-  const handleCreateShip = () => {
-    const name = prompt('Enter ship name:');
-    if (!name) return;
-
-    const typeOptions = Object.values(ShipType);
-    const typeIndex = parseInt(
-      prompt(
-        `Enter ship type (0-${typeOptions.length - 1}):\n${typeOptions.map((type, index) => `${index}: ${type}`).join('\n')}`
-      ) || '0'
-    );
-    const type = typeOptions[typeIndex] || ShipType.SCOUT;
-
-    const newShip = hangarManager.createShip(name, type as ShipType);
-    hangarManager.addShip(newShip);
+  const handleConfirmBuildNewShip = () => {
+    if (!newShipName || !selectedClassToBuild) {
+        alert('Please enter a name and select a class.');
+        return;
+    }
+    try {
+        const newShip = hangarManager.createShip(newShipName, selectedClassToBuild);
+        hangarManager.addShip(newShip);
+        setNewShipName('');
+        setShowCreateUI(false);
+        fetchShips();
+    } catch (error) {
+        console.error("Failed to create ship:", error);
+        alert(`Error creating ship: ${error instanceof Error ? error.message : String(error)}`);
+    }
   };
 
-  // Convert between Ship and CustomShip
-  const toCustomShip = (ship: Ship): CustomShip => {
-    return {
-      ...ship,
-      // Add any additional UI-specific properties
-      weapons: [],
-      shields: 100,
-      maxShields: 100,
-      speed: 10,
-      range: 5,
-      description: 'A standard ship',
-      image: '',
-      effects: [],
-      isSelected: false,
-    };
+  const getStatusColor = (status: ShipStatus) => {
+    switch (status) {
+      case ShipStatus.READY:
+        return 'bg-green-500';
+      case ShipStatus.ENGAGING:
+        return 'bg-red-600';
+      case ShipStatus.PATROLLING:
+        return 'bg-blue-500';
+      case ShipStatus.RETREATING:
+        return 'bg-orange-500';
+      case ShipStatus.DISABLED:
+        return 'bg-gray-600';
+      case ShipStatus.DAMAGED:
+        return 'bg-red-500';
+      case ShipStatus.REPAIRING:
+        return 'bg-yellow-500';
+      case ShipStatus.UPGRADING:
+        return 'bg-indigo-500';
+      default:
+        return 'bg-gray-500';
+    }
   };
 
-  const toShip = (customShip: CustomShip): Ship => {
-    return {
-      id: customShip.id,
-      name: customShip.name,
-      type: customShip.type as unknown as ShipType, // Convert string to ShipType
-      level: customShip.level,
-      health: customShip.health,
-      maxHealth: customShip.maxHealth,
-      fuel: customShip.fuel,
-      maxFuel: customShip.maxFuel,
-      crew: customShip.crew,
-      maxCrew: customShip.maxCrew,
-      status: customShip.status as unknown as ShipStatus, // Convert string to ShipStatus
-      location: customShip.location,
-      destination: customShip.destination,
-      cargo: customShip.cargo,
-    };
-  };
-
-  // Update the status comparisons
-  const getStatusColor = (status: string) => {
-    if (status === ShipStatus.DOCKED) return 'bg-green-500';
-    if (status === ShipStatus.DEPLOYED) return 'bg-blue-500';
-    if (status === ShipStatus.DAMAGED) return 'bg-red-500';
-    if (status === ShipStatus.REPAIRING) return 'bg-yellow-500';
-    if (status === ShipStatus.REFUELING) return 'bg-purple-500';
-    if (status === ShipStatus.UPGRADING) return 'bg-indigo-500';
-    return 'bg-gray-500';
-  };
-
-  // Render the component
   return (
     <div className="ship-hangar rounded-lg bg-gray-800 p-4 text-white">
       <div className="mb-4 flex items-center justify-between">
@@ -389,170 +176,139 @@ const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 }) => {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {/* Ship List */}
-        <div className="col-span-1 rounded bg-gray-700 p-3">
+        <div className="col-span-1 rounded bg-gray-700 p-3 flex flex-col">
           <h3 className="mb-2 text-lg font-semibold">Ships</h3>
-          <div className="max-h-80 space-y-2 overflow-y-auto">
+          <div className="flex-grow max-h-80 space-y-2 overflow-y-auto mb-3">
             {ships.map(ship => (
               <div
                 key={ship.id}
-                className={`cursor-pointer rounded p-2 ${selectedShip?.id === ship.id ? 'bg-blue-600' : 'bg-gray-600 hover:bg-gray-500'}`}
+                className={`cursor-pointer rounded p-2 transition-colors ${selectedShip?.id === ship.id ? 'bg-indigo-600' : 'bg-gray-600 hover:bg-gray-500'}`}
                 onClick={() => handleSelectShip(ship)}
               >
-                <div className="font-medium">{ship.name}</div>
-                <div className="flex justify-between text-xs">
-                  <span>{ship.type}</span>
-                  <span>Level {ship.level}</span>
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{ship.name}</span>
+                  <span className={`ml-2 rounded px-2 py-0.5 text-xs ${getStatusColor(ship.status)}`}>
+                    {ship.status}
+                  </span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span className={getStatusColor(ship.status)}>{ship.status}</span>
-                  {ship.destination && <span>→ {ship.destination}</span>}
-                </div>
+                <div className="text-xs text-gray-400">Category: {ship.category}</div>
               </div>
             ))}
           </div>
-          <button
-            className="mt-2 w-full rounded bg-green-600 py-1 hover:bg-green-500"
-            onClick={handleCreateShip}
-          >
-            Create New Ship
-          </button>
+
+          {showCreateUI ? (
+            <div className="mt-auto border-t border-gray-600 pt-3">
+                <h4 className="text-md font-semibold mb-2">Create New Ship</h4>
+                <input
+                    type="text"
+                    placeholder="Ship Name"
+                    value={newShipName}
+                    onChange={(e) => setNewShipName(e.target.value)}
+                    className="w-full p-2 rounded bg-gray-800 border border-gray-600 mb-2 text-white"
+                />
+                <select
+                    value={selectedClassToBuild}
+                    onChange={(e) => setSelectedClassToBuild(e.target.value as PlayerShipClass)}
+                    className="w-full p-2 rounded bg-gray-800 border border-gray-600 mb-2 text-white"
+                >
+                    {Object.keys(PlayerShipClass).map((key) => (
+                        <option key={key} value={PlayerShipClass[key as keyof typeof PlayerShipClass]}>
+                            {key}
+                        </option>
+                    ))}
+                </select>
+                <div className="flex justify-end gap-2">
+                    <button
+                        onClick={() => setShowCreateUI(false)}
+                        className="rounded bg-gray-600 px-3 py-1 text-sm font-semibold hover:bg-gray-500"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleConfirmBuildNewShip}
+                        className="rounded bg-indigo-600 px-3 py-1 text-sm font-semibold hover:bg-indigo-700"
+                    >
+                        Confirm Build
+                    </button>
+                </div>
+            </div>
+          ) : (
+            <button
+                onClick={() => setShowCreateUI(true)}
+                className="mt-auto w-full rounded bg-green-600 py-2 text-sm font-semibold hover:bg-green-700"
+            >
+                Build New Ship
+            </button>
+          )}
         </div>
 
-        {/* Ship Details */}
         <div className="col-span-2 rounded bg-gray-700 p-3">
           {selectedShip ? (
             <div>
-              <h3 className="mb-2 text-lg font-semibold">{selectedShip.name}</h3>
-
-              <div className="mb-4 grid grid-cols-2 gap-2">
-                <div className="rounded bg-gray-600 p-2">
-                  <div className="text-xs text-gray-400">Type</div>
-                  <div>{selectedShip.type}</div>
-                </div>
-                <div className="rounded bg-gray-600 p-2">
-                  <div className="text-xs text-gray-400">Level</div>
-                  <div>{selectedShip.level}</div>
-                </div>
-                <div className="rounded bg-gray-600 p-2">
-                  <div className="text-xs text-gray-400">Health</div>
-                  <div className="flex items-center">
-                    <div className="mr-2 h-2.5 w-full rounded-full bg-gray-300">
-                      <div
-                        className={`h-2.5 rounded-full ${selectedShip.health === 0 ? 'bg-red-600' : 'bg-green-600'}`}
-                        style={{
-                          width: `${(selectedShip.health / selectedShip.maxHealth) * 100}%`,
-                        }}
-                      ></div>
-                    </div>
-                    <span>
-                      {selectedShip.health} / {selectedShip.maxHealth}
-                    </span>
-                  </div>
-                </div>
-                <div className="rounded bg-gray-600 p-2">
-                  <div className="text-xs text-gray-400">Fuel</div>
-                  <div className="flex items-center">
-                    <div className="mr-2 h-2.5 w-full rounded-full bg-gray-300">
-                      <div
-                        className="h-2.5 rounded-full bg-yellow-400"
-                        style={{ width: `${(selectedShip.fuel / selectedShip.maxFuel) * 100}%` }}
-                      ></div>
-                    </div>
-                    <span>
-                      {selectedShip.fuel} / {selectedShip.maxFuel}
-                    </span>
-                  </div>
-                </div>
-                <div className="rounded bg-gray-600 p-2">
-                  <div className="text-xs text-gray-400">Crew</div>
-                  <div>
-                    {selectedShip.crew} / {selectedShip.maxCrew}
-                  </div>
-                </div>
-                <div className="rounded bg-gray-600 p-2">
-                  <div className="text-xs text-gray-400">Status</div>
-                  <div>{selectedShip.status}</div>
-                </div>
+              <h3 className="mb-2 text-lg font-semibold">{selectedShip.name} Details</h3>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                  <p>ID:</p><p className="text-gray-300">{selectedShip.id}</p>
+                  <p>Category:</p><p className="text-gray-300">{selectedShip.category}</p>
+                  <p>Status:</p><p className="text-gray-300">{selectedShip.status}</p>
+                  <p>Speed:</p><p className="text-gray-300">{selectedShip.stats.speed}</p>
+                  <p>Turn Rate:</p><p className="text-gray-300">{selectedShip.stats.turnRate}</p>
+                  <p>Cargo:</p><p className="text-gray-300">{selectedShip.stats.cargo}</p>
+                  <p>Energy:</p><p className="text-gray-300">{selectedShip.stats.energy} / {selectedShip.stats.maxEnergy}</p>
+                  <p>Shield:</p><p className="text-gray-300">{selectedShip.stats.defense.shield}</p>
+                  <p>Armor:</p><p className="text-gray-300">{selectedShip.stats.defense.armor}</p>
+                  <p>Evasion:</p><p className="text-gray-300">{selectedShip.stats.defense.evasion}</p>
+                  {selectedShip.stats.defense.regeneration !== undefined && (
+                      <><p>Regen:</p><p className="text-gray-300">{selectedShip.stats.defense.regeneration}/s</p></>
+                  )}
               </div>
 
-              {/* Cargo Section */}
-              {selectedShip.cargo && (
-                <div className="mb-4">
-                  <h4 className="mb-1 font-medium">Cargo</h4>
-                  <div className="rounded bg-gray-600 p-2">
-                    <div className="mb-1 text-xs text-gray-400">
-                      Capacity:{' '}
-                      {Array.from(selectedShip.cargo.resources.values()).reduce(
-                        (sum, amount) => sum + amount,
-                        0
-                      )}{' '}
-                      / {selectedShip.cargo.capacity}
-                    </div>
-                    <div className="space-y-1">
-                      {Array.from(selectedShip.cargo.resources.entries()).map(
-                        ([resourceType, amount]) => (
-                          <div key={resourceType.toString()} className="flex items-center">
-                            <ResourceVisualization type={resourceType} value={amount} />
-                          </div>
-                        )
-                      )}
-                      {selectedShip.cargo.resources.size === 0 && (
-                        <div className="text-sm text-gray-400">No cargo</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-2">
-                {selectedShip.status === ShipStatus.DOCKED && (
+              <div className="mt-4 space-x-2">
                   <button
-                    className="rounded bg-blue-600 py-1 hover:bg-blue-500"
-                    onClick={handleDeployShip}
+                      onClick={handleDeployShip}
+                      disabled={!selectedShip || selectedShip.status !== ShipStatus.READY}
+                      className="rounded bg-green-500 px-3 py-1 text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Deploy
+                      Deploy
                   </button>
-                )}
-                {selectedShip.status === ShipStatus.DEPLOYED && (
+                   <button
+                      onClick={handleDockShip}
+                      disabled={!selectedShip || selectedShip.status === ShipStatus.READY || selectedShip.status === ShipStatus.DISABLED}
+                      className="rounded bg-blue-500 px-3 py-1 text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                      Dock
+                  </button>
                   <button
-                    className="rounded bg-blue-600 py-1 hover:bg-blue-500"
-                    onClick={handleDockShip}
+                      onClick={handleRepairShip}
+                      disabled={!selectedShip || selectedShip.status !== ShipStatus.DAMAGED}
+                      className="rounded bg-yellow-500 px-3 py-1 text-sm hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Dock
+                      Repair
                   </button>
-                )}
-                <button
-                  className="rounded bg-green-600 py-1 hover:bg-green-500"
-                  onClick={handleRepairShip}
-                  disabled={selectedShip.health === selectedShip.maxHealth}
-                >
-                  Repair
-                </button>
-                <button
-                  className="rounded bg-yellow-600 py-1 hover:bg-yellow-500"
-                  onClick={handleRefuelShip}
-                  disabled={selectedShip.fuel === selectedShip.maxFuel}
-                >
-                  Refuel
-                </button>
-                <button
-                  className="rounded bg-purple-600 py-1 hover:bg-purple-500"
-                  onClick={handleUpgradeShip}
-                >
-                  Upgrade
-                </button>
-                <button
-                  className="rounded bg-red-600 py-1 hover:bg-red-500"
-                  onClick={handleRemoveShip}
-                >
-                  Remove
-                </button>
+                  <button
+                      onClick={handleRefuelShip}
+                      disabled={!selectedShip || selectedShip.status === ShipStatus.DISABLED}
+                      className="rounded bg-purple-500 px-3 py-1 text-sm hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                      Refuel
+                  </button>
+                  <button
+                      onClick={handleUpgradeShip}
+                      disabled={!selectedShip || selectedShip.status !== ShipStatus.READY}
+                      className="rounded bg-indigo-500 px-3 py-1 text-sm hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                      Upgrade
+                  </button>
+                  <button
+                      onClick={handleRemoveShip}
+                      disabled={!selectedShip}
+                      className="rounded bg-red-500 px-3 py-1 text-sm hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                      Remove
+                  </button>
               </div>
             </div>
           ) : (
-            <div className="py-8 text-center text-gray-400">Select a ship to view details</div>
+            <p className="text-center text-gray-400">Select a ship to view details</p>
           )}
         </div>
       </div>

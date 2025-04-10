@@ -1,19 +1,19 @@
 import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableSortLabel,
-  Typography,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TableSortLabel,
+    Typography,
 } from '@mui/material';
 import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList } from 'react-window';
-import { ChartDataRecord } from '../../../types/exploration/AnalysisComponentTypes';
+import { ChartDataRecord } from '../../../../types/exploration/AnalysisComponentTypes';
 
 // Sorting directions
 type Order = 'asc' | 'desc';

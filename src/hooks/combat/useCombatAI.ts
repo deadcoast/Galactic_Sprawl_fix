@@ -6,7 +6,7 @@ import { CombatUnitDamageEvent, CombatUnitStatusEvent } from '../../types/events
 import { FactionId } from '../../types/ships/FactionTypes';
 import { WeaponCategory, WeaponStatus } from '../../types/weapons/WeaponTypes';
 
-// Define formation interface to replace any type
+// Define formation interface to replace unknown type
 interface UnitFormation {
   type: 'offensive' | 'defensive' | 'balanced';
   spacing: number;

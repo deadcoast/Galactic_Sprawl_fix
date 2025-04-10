@@ -30,7 +30,7 @@ export interface ValidationError {
  * Represents a schema property definition
  */
 export interface SchemaProperty {
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'function' | 'date' | 'any';
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'function' | 'date' | 'unknown';
   required?: boolean;
   nullable?: boolean;
   min?: number;
@@ -105,12 +105,12 @@ export const linkSchema: Schema = {
   description: 'Schema for D3 simulation link data',
   properties: {
     source: {
-      type: 'any', // Can be string or object
+      type: 'unknown', // Can be string or object
       required: true,
       validate: value => value !== null && value !== undefined,
     },
     target: {
-      type: 'any', // Can be string or object
+      type: 'unknown', // Can be string or object
       required: true,
       validate: value => value !== null && value !== undefined,
     },
@@ -480,7 +480,7 @@ export function extendSchema(baseSchema: Schema, extension: Partial<Schema>): Sc
  * Helper function to validate type
  */
 function validateType(value: unknown, type: SchemaProperty['type']): boolean {
-  if (type === 'any') return true;
+  if (type === 'unknown') return true;
 
   switch (type) {
     case 'string':

@@ -33,6 +33,7 @@ import {
   stringToEnumResourceType,
 } from '../../utils/resources/ResourceTypeConverter';
 // Import ExtendedResourceConversionRecipe
+import { errorLoggingService } from '../../services/ErrorLoggingService';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ExtendedResourceConversionRecipe } from '../../types/resources/ResourceConversionTypes';
 
@@ -47,7 +48,7 @@ function initializeResourceRecord(): Record<ResourceType, ResourceState> {
   // Iterate over numeric enum values
   for (const typeValue of Object.values(ResourceType)) {
     if (typeof typeValue === 'number') {
-      record[typeValue as ResourceType] = createDefaultResourceState();
+      record[ typeValue as ResourceType ] = createDefaultResourceState();
     }
   }
   return record as Record<ResourceType, ResourceState>; // Cast after initialization
@@ -90,10 +91,10 @@ export interface IResourceFlowManager {
   getConnection(id: string): FlowConnection | undefined;
   createFlow(flow: ResourceFlow): boolean;
   optimizeFlows(): Promise<FlowOptimizationResult>;
-  getAllResourceStates(): Map<string, { available: number }>;
+  getAllResourceStates(): Map<string, { available: number; }>;
   getAllConversionRecipes(): Array<{
-    input: { type: string; amount: number };
-    output: { type: string; amount: number };
+    input: { type: string; amount: number; };
+    output: { type: string; amount: number; };
   }>;
   setConversionRate(sourceType: string, targetType: string, rate: number): void;
 }
@@ -103,8 +104,8 @@ interface ConversionResult {
   success: boolean;
   processId: string;
   recipeId: string;
-  outputsProduced?: { type: ResourceTypeString; amount: number }[];
-  byproductsProduced?: { type: ResourceTypeString; amount: number }[];
+  outputsProduced?: { type: ResourceTypeString; amount: number; }[];
+  byproductsProduced?: { type: ResourceTypeString; amount: number; }[];
   error?: string;
 }
 
@@ -130,18 +131,18 @@ interface GeoFlowNode extends FlowNode, SpatialObject {
  */
 export interface ResourceFlowEvent extends BaseEvent {
   type:
-    | 'RESOURCE_FLOW_INITIALIZED'
-    | 'RESOURCE_FLOW_OPTIMIZED'
-    | 'RESOURCE_NODE_REGISTERED'
-    | 'RESOURCE_NODE_UPDATED'
-    | 'RESOURCE_NODE_UNREGISTERED'
-    | 'RESOURCE_CONNECTION_REGISTERED'
-    | 'RESOURCE_CONNECTION_UPDATED'
-    | 'RESOURCE_CONNECTION_UNREGISTERED'
-    | 'RESOURCE_CONVERSION_STARTED'
-    | 'RESOURCE_CONVERSION_COMPLETED'
-    | 'RESOURCE_CONVERSION_FAILED'
-    | 'RESOURCE_TRANSFER_COMPLETED';
+  | 'RESOURCE_FLOW_INITIALIZED'
+  | 'RESOURCE_FLOW_OPTIMIZED'
+  | 'RESOURCE_NODE_REGISTERED'
+  | 'RESOURCE_NODE_UPDATED'
+  | 'RESOURCE_NODE_UNREGISTERED'
+  | 'RESOURCE_CONNECTION_REGISTERED'
+  | 'RESOURCE_CONNECTION_UPDATED'
+  | 'RESOURCE_CONNECTION_UNREGISTERED'
+  | 'RESOURCE_CONVERSION_STARTED'
+  | 'RESOURCE_CONVERSION_COMPLETED'
+  | 'RESOURCE_CONVERSION_FAILED'
+  | 'RESOURCE_TRANSFER_COMPLETED';
   nodeId?: string;
   connectionId?: string;
   resourceType?: ResourceTypeString | ResourceType;
@@ -167,8 +168,7 @@ type ResourceConvertersMap = Map<string, string[]>;
 // @ts-expect-error The Singleton class has a type compatibility issue that needs to be addressed at a higher level
 export class ResourceFlowManager
   extends AbstractBaseManager<ResourceFlowEvent>
-  implements IResourceFlowManager
-{
+  implements IResourceFlowManager {
   // Singleton instance
   private static _instance: ResourceFlowManager | null = null;
 
@@ -204,7 +204,7 @@ export class ResourceFlowManager
   // Caching
   private resourceCache: Map<
     ResourceTypeString,
-    { state: ResourceState; lastUpdated: number; expiresAt: number }
+    { state: ResourceState; lastUpdated: number; expiresAt: number; }
   > = new Map();
   private cacheTTL = 5000; // 5 seconds
 
@@ -319,10 +319,10 @@ export class ResourceFlowManager
     // Register resource flow manager with registry integration
     // Cast to a specific interface to avoid circular dependency issues
     interface MinimalResourceFlowManager {
-      getAllResourceStates?: () => Map<string, { available: number }>;
+      getAllResourceStates?: () => Map<string, { available: number; }>;
       getAllConversionRecipes?: () => Array<{
-        input: { type: string; amount: number };
-        output: { type: string; amount: number };
+        input: { type: string; amount: number; };
+        output: { type: string; amount: number; };
       }>;
       setConversionRate?: (sourceType: string, targetType: string, rate: number) => void;
     }
@@ -368,11 +368,11 @@ export class ResourceFlowManager
    * Update the manager state
    */
   protected onUpdate(deltaTime: number): void {
-    // Process any pending conversions
+    // Process unknown pending conversions
     this.processConversions();
 
-    // Update any active chains
-    for (const [chainId, chainStatus] of this.chainExecutions.entries()) {
+    // Update unknown active chains
+    for (const [ chainId, chainStatus ] of this.chainExecutions.entries()) {
       if (chainStatus.active && !chainStatus.paused) {
         this.updateChainProgress(chainId);
       }
@@ -492,8 +492,8 @@ export class ResourceFlowManager
   public registerNode(node: FlowNode): boolean {
     // Ensure resources is a Record, not a Map
     if (!node.id || typeof node.resources !== 'object' || node.resources === null || Array.isArray(node.resources) || Object.keys(node.resources).length === 0) {
-        this.handleError(new Error('Invalid flow node: resources must be a non-empty Record'), { node });
-        return false;
+      this.handleError(new Error('Invalid flow node: resources must be a non-empty Record'), { node });
+      return false;
     }
 
     this.nodes.set(node.id, node);
@@ -511,7 +511,7 @@ export class ResourceFlowManager
 
     // Invalidate cache for affected resource types
     for (const resourceType of Object.keys(node.resources)) {
-        this.invalidateCache(resourceType as ResourceType);
+      this.invalidateCache(resourceType as ResourceType);
     }
 
     // Publish event using correct EventType
@@ -545,7 +545,7 @@ export class ResourceFlowManager
     const connectionEntries = Array.from(this.connections.entries());
     const removedConnections: FlowConnection[] = [];
 
-    for (const [connectionId, connection] of connectionEntries) {
+    for (const [ connectionId, connection ] of connectionEntries) {
       if (connection.source === id || connection.target === id) {
         this.connections.delete(connectionId);
         removedConnections.push(connection);
@@ -605,16 +605,16 @@ export class ResourceFlowManager
     const sourceNode = this.nodes.get(connection.source);
     // Check if sourceNode.resources is a valid Record before accessing keys
     if (
-        sourceNode?.resources &&
-        typeof sourceNode.resources === 'object' &&
-        !Array.isArray(sourceNode.resources) && // Ensure it's not an array
-        connection.resourceTypes &&
-        !connection.resourceTypes.every(type => Object.prototype.hasOwnProperty.call(sourceNode.resources, type))
+      sourceNode?.resources &&
+      typeof sourceNode.resources === 'object' &&
+      !Array.isArray(sourceNode.resources) && // Ensure it's not an array
+      connection.resourceTypes &&
+      !connection.resourceTypes.every(type => Object.prototype.hasOwnProperty.call(sourceNode.resources, type))
     ) {
-        console.warn(
-            `Source node ${connection.source} does not have all resource types ${connection.resourceTypes.join(', ')}`
-        );
-        return false;
+      console.warn(
+        `Source node ${connection.source} does not have all resource types ${connection.resourceTypes.join(', ')}`
+      );
+      return false;
     }
 
     this.connections.set(connection.id, connection);
@@ -640,7 +640,7 @@ export class ResourceFlowManager
     }
 
     // Get resource types before removing
-    const {resourceTypes} = connection;
+    const { resourceTypes } = connection;
 
     this.connections.delete(id);
 
@@ -710,7 +710,7 @@ export class ResourceFlowManager
     // Convert priority to ResourcePriorityConfig if it's a number
     if (typeof adaptedConnection.priority === 'number') {
       adaptedConnection.priority = {
-        type: adaptedConnection.resourceTypes ? adaptedConnection.resourceTypes[0] : ResourceType.ENERGY,
+        type: adaptedConnection.resourceTypes ? adaptedConnection.resourceTypes[ 0 ] : ResourceType.ENERGY,
         priority: adaptedConnection.priority,
         consumers: [],
       };
@@ -773,7 +773,7 @@ export class ResourceFlowManager
           const standardizedResourceStates = new Map<StandardizedResourceType, ResourceState>();
 
           // Convert keys from ResourceType to StandardizedResourceType
-          for (const [key, value] of this.resourceStates.entries()) {
+          for (const [ key, value ] of this.resourceStates.entries()) {
             // This is a simplified conversion - in a real implementation, you would need to map
             // the string resource types to the corresponding enum values
             standardizedResourceStates.set(key as unknown as StandardizedResourceType, value);
@@ -947,12 +947,12 @@ export class ResourceFlowManager
         const standardizedDemand: Partial<Record<StandardizedResourceType, number>> = {};
 
         // Convert keys from ResourceType to StandardizedResourceType
-        Object.entries(availability).forEach(([key, value]) => {
-          standardizedAvailability[key as unknown as StandardizedResourceType] = value;
+        Object.entries(availability).forEach(([ key, value ]) => {
+          standardizedAvailability[ key as unknown as StandardizedResourceType ] = value;
         });
 
-        Object.entries(demand).forEach(([key, value]) => {
-          standardizedDemand[key as unknown as StandardizedResourceType] = value;
+        Object.entries(demand).forEach(([ key, value ]) => {
+          standardizedDemand[ key as unknown as StandardizedResourceType ] = value;
         });
 
         const result = await this.workerUtil.optimizeFlowRates(
@@ -982,7 +982,7 @@ export class ResourceFlowManager
       // Use resourceTypes array, assuming the first type is relevant here
       if (currentRate > 0 && connection.resourceTypes && connection.resourceTypes.length > 0) {
         const transfer: ResourceTransfer = {
-          type: this.safeResourceTypeConversion(connection.resourceTypes[0]), // Use first type
+          type: this.safeResourceTypeConversion(connection.resourceTypes[ 0 ]), // Use first type
           source: connection.source,
           target: connection.target,
           amount: currentRate,
@@ -1015,28 +1015,28 @@ export class ResourceFlowManager
       const modifiers = converter.configuration.efficiencyModifiers;
 
       // Apply general modifiers
-      if (modifiers['global']) {
-        efficiency *= modifiers['global'];
+      if (modifiers[ 'global' ]) {
+        efficiency *= modifiers[ 'global' ];
       }
 
       // Apply recipe-specific modifiers
-      if (modifiers[recipe.id]) {
-        efficiency *= modifiers[recipe.id];
+      if (modifiers[ recipe.id ]) {
+        efficiency *= modifiers[ recipe.id ];
       }
 
       // Apply resource-specific modifiers
       for (const input of recipe.inputs) {
         // Check modifier for ResourceType enum value
         const enumType = input.type; // Assuming input.type is already ResourceType enum
-        if (modifiers[enumType]) {
-          efficiency *= modifiers[enumType];
+        if (modifiers[ enumType ]) {
+          efficiency *= modifiers[ enumType ];
         }
       }
     }
 
     // Apply dynamic efficiency based on resource quality (simulated)
     const qualityFactors = this.calculateResourceQualityFactors(recipe.inputs);
-    for (const [_resourceType, factor] of Object.entries(qualityFactors)) {
+    for (const [ _resourceType, factor ] of Object.entries(qualityFactors)) {
       efficiency *= factor;
     }
 
@@ -1061,25 +1061,25 @@ export class ResourceFlowManager
 
     // Check resource states for converter's resources
     if (converter.resources && typeof converter.resources === 'object') {
-        // Use Object.entries for Record iteration
-        for (const [resourceTypeStr] of Object.entries(converter.resources)) {
-            const resourceType = this.safeResourceTypeConversion(resourceTypeStr as ResourceTypeString); // Convert string key to enum
-            const convertedType = this.convertResourceType(resourceType);
-            const state = this.getGlobalResourceState(convertedType); // Use renamed global state getter
-            if (state) {
-                // Calculate resource utilization
-                const utilization = state.consumption / Math.max(state.production, 0.001);
+      // Use Object.entries for Record iteration
+      for (const [ resourceTypeStr ] of Object.entries(converter.resources)) {
+        const resourceType = this.safeResourceTypeConversion(resourceTypeStr as ResourceTypeString); // Convert string key to enum
+        const convertedType = this.convertResourceType(resourceType);
+        const state = this.getGlobalResourceState(convertedType); // Use renamed global state getter
+        if (state) {
+          // Calculate resource utilization
+          const utilization = state.consumption / Math.max(state.production, 0.001);
 
-                // High utilization reduces efficiency
-                if (utilization > 0.9) {
-                    stressFactor *= 0.9;
-                }
-                // Low utilization increases efficiency
-                else if (utilization < 0.5) {
-                    stressFactor *= 1.1;
-                }
-            }
+          // High utilization reduces efficiency
+          if (utilization > 0.9) {
+            stressFactor *= 0.9;
+          }
+          // Low utilization increases efficiency
+          else if (utilization < 0.5) {
+            stressFactor *= 1.1;
+          }
         }
+      }
     }
 
     // Clamp to reasonable range
@@ -1090,7 +1090,7 @@ export class ResourceFlowManager
    * Calculate quality factors for input resources
    */
   private calculateResourceQualityFactors(
-    inputs: { type: StandardizedResourceType | ResourceTypeString; amount: number }[]
+    inputs: { type: StandardizedResourceType | ResourceTypeString; amount: number; }[]
   ): Record<string, number> {
     const qualityFactors: Record<string, number> = {};
 
@@ -1102,7 +1102,7 @@ export class ResourceFlowManager
       // In the future, this would be based on actual resource quality attributes
       const baseQuality = 1.0;
       const randomVariation = Math.random() * 0.2 - 0.1; // -10% to +10%
-      qualityFactors[convertedType] = baseQuality + randomVariation;
+      qualityFactors[ convertedType ] = baseQuality + randomVariation;
     }
 
     return qualityFactors;
@@ -1175,38 +1175,29 @@ export class ResourceFlowManager
       return false;
     }
 
-    // Create nodes if they don't exist
+    // Register source node if it doesn't exist
     if (!this.nodes.has(flow.source)) {
-      // Initialize the resources record correctly
-      const resourcesRecord = initializeResourceRecord();
-      // Populate specific resources based on the flow, assuming producer
-      flow.resources.forEach(r => {
-        resourcesRecord[r.type] = { ...resourcesRecord[r.type], production: r.amount };
-      });
-
       this.registerNode({
         id: flow.source,
         type: FlowNodeType.PRODUCER,
-        capacity: 100,
-        resources: resourcesRecord,
+        capacity: 1000, // Example capacity
+        resources: {} as Record<ResourceType, ResourceState>, // Initialize empty resources
         active: true,
+        x: 0, // Add default x
+        y: 0, // Add default y
       });
     }
 
+    // Register target node if it doesn't exist
     if (!this.nodes.has(flow.target)) {
-      // Initialize the resources record correctly
-      const resourcesRecord = initializeResourceRecord();
-      // Populate specific resources based on the flow, assuming consumer
-      flow.resources.forEach(r => {
-        resourcesRecord[r.type] = { ...resourcesRecord[r.type], consumption: r.amount };
-      });
-
       this.registerNode({
         id: flow.target,
-        type: FlowNodeType.CONSUMER,
-        capacity: 100,
-        resources: resourcesRecord,
+        type: FlowNodeType.CONSUMER, // Or STORAGE, depending on context
+        capacity: 1000, // Example capacity
+        resources: {} as Record<ResourceType, ResourceState>, // Initialize empty resources
         active: true,
+        x: 0, // Add default x
+        y: 0, // Add default y
       });
     }
 
@@ -1216,14 +1207,14 @@ export class ResourceFlowManager
       const connectionId = `${flow.source}-${flow.target}-${resource.type}`;
       // Remove the incorrect 'resourceType' property
       const connection: FlowConnection = {
-          id: connectionId,
-          source: flow.source,
-          target: flow.target,
-          resourceTypes: [resource.type],
-          maxRate: resource.amount,
-          currentRate: 0,
-          priority: { type: resource.type, priority: 1, consumers: [] },
-          active: true,
+        id: connectionId,
+        source: flow.source,
+        target: flow.target,
+        resourceTypes: [ resource.type ],
+        maxRate: resource.amount,
+        currentRate: 0,
+        priority: { type: resource.type, priority: 1, consumers: [] },
+        active: true,
       };
 
       const registered = this.registerConnection(connection);
@@ -1293,26 +1284,26 @@ export class ResourceFlowManager
   // Module event handlers
   private handleModuleCreated = (data: unknown) => {
     // Handle module creation
-    const moduleData = data as { id: string; type: ModuleType };
+    const moduleData = data as { id: string; type: ModuleType; };
     // Register module as appropriate node type based on module type
     this.registerModuleAsNode(moduleData.id, moduleData.type);
   };
 
   private handleModuleUpdated = (data: unknown) => {
     // Handle module update
-    const moduleData = data as { id: string; changes: unknown };
+    const moduleData = data as { id: string; changes: unknown; };
     this.updateNodeFromModule(moduleData.id, moduleData.changes);
   };
 
   private handleModuleDestroyed = (data: unknown) => {
     // Handle module destruction
-    const moduleData = data as { id: string };
+    const moduleData = data as { id: string; };
     this.unregisterNode(moduleData.id);
   };
 
   private handleModuleStateChanged = (data: unknown) => {
     // Handle module state change (enabled/disabled)
-    const moduleData = data as { id: string; active: boolean };
+    const moduleData = data as { id: string; active: boolean; };
     this.setNodeActive(moduleData.id, moduleData.active);
   };
 
@@ -1372,7 +1363,7 @@ export class ResourceFlowManager
    * Start the processing interval for conversion processes
    */
   private startProcessingInterval(interval: number): void {
-    // Clear any existing interval
+    // Clear unknown existing interval
     if (this.processingInterval) {
       clearInterval(this.processingInterval);
     }
@@ -1390,7 +1381,7 @@ export class ResourceFlowManager
     const now = Date.now();
     const updatedProcesses: ExtendedResourceConversionProcess[] = [];
 
-    // Check if any paused processes are ready to resume
+    // Check if unknown paused processes are ready to resume
     for (const process of this.processingQueue) {
       if (process.paused) {
         // Check if it's time to resume the process
@@ -1427,7 +1418,7 @@ export class ResourceFlowManager
     if (this.converterNodes.size > 0) {
       const activeConnections = Array.from(this.connections.values()).filter(c => c.active);
 
-      for (const [_id, converter] of this.converterNodes.entries()) {
+      for (const [ _id, converter ] of this.converterNodes.entries()) {
         // Skip inactive converters
         if (converter.active === false) {
           continue;
@@ -1477,11 +1468,11 @@ export class ResourceFlowManager
 
     // 3. Try to start new conversions if idle capacity exists
     try {
-        this.tryStartConversions(converter); // Call helper to check/start new jobs
+      this.tryStartConversions(converter); // Call helper to check/start new jobs
     } catch (error) {
-        console.error(`[RFM] Error trying to start conversions on converter ${converter.id}:`, error);
-        // Optionally update converter status to indicate an error
-        // converter.status = ... error state ...
+      console.error(`[RFM] Error trying to start conversions on converter ${converter.id}:`, error);
+      // Optionally update converter status to indicate an error
+      // converter.status = ... error state ...
     }
 
     // 4. Update overall node status based on activity?
@@ -1533,8 +1524,8 @@ export class ResourceFlowManager
 
     // Find bottlenecks (resources where demand exceeds availability)
     for (const type in demand) {
-      const demandValue = demand[type as ResourceTypeString] ?? 0;
-      const availabilityValue = availability[type as ResourceTypeString] ?? 0;
+      const demandValue = demand[ type as ResourceTypeString ] ?? 0;
+      const availabilityValue = availability[ type as ResourceTypeString ] ?? 0;
 
       if (demandValue > availabilityValue * 1.1) {
         // 10% threshold to avoid minor imbalances
@@ -1554,10 +1545,10 @@ export class ResourceFlowManager
    *
    * @returns Map of resource types to their states
    */
-  public getAllResourceStates(): Map<string, { available: number }> {
-    const result = new Map<string, { available: number }>();
+  public getAllResourceStates(): Map<string, { available: number; }> {
+    const result = new Map<string, { available: number; }>();
 
-    for (const [type, state] of this.resourceStates.entries()) {
+    for (const [ type, state ] of this.resourceStates.entries()) {
       result?.set(type, {
         available: state.current ?? 0,
       });
@@ -1573,20 +1564,20 @@ export class ResourceFlowManager
    * @returns Array of conversion recipes
    */
   public getAllConversionRecipes(): Array<{
-    input: { type: string; amount: number };
-    output: { type: string; amount: number };
+    input: { type: string; amount: number; };
+    output: { type: string; amount: number; };
   }> {
     const result: Array<{
-      input: { type: string; amount: number };
-      output: { type: string; amount: number };
+      input: { type: string; amount: number; };
+      output: { type: string; amount: number; };
     }> = [];
 
     // Convert conversion recipes to the expected format
-    for (const [_recipeId, recipe] of this.conversionRecipes.entries()) {
+    for (const [ _recipeId, recipe ] of this.conversionRecipes.entries()) {
       if (recipe.inputs.length > 0 && recipe.outputs.length > 0) {
         // For simplicity, we're just using the first input and output
-        const input = recipe.inputs[0];
-        const output = recipe.outputs[0];
+        const input = recipe.inputs[ 0 ];
+        const output = recipe.outputs[ 0 ];
 
         result?.push({
           input: {
@@ -1620,7 +1611,7 @@ export class ResourceFlowManager
     if (this.conversionRecipes.has(recipeId)) {
       // Update existing recipe
       const recipe = this.conversionRecipes.get(recipeId)!;
-      recipe.outputs[0].amount = rate;
+      recipe.outputs[ 0 ].amount = rate;
       this.conversionRecipes.set(recipeId, recipe);
     } else {
       // Create new recipe
@@ -1667,18 +1658,18 @@ export class ResourceFlowManager
 
     // Ensure the node has a resources Record, initialize if not
     if (!node.resources) {
-        node.resources = initializeResourceRecord(); // Correct initialization
+      node.resources = initializeResourceRecord(); // Correct initialization
     }
 
     // Check if the resource type is already in the node using hasOwnProperty
     if (Object.prototype.hasOwnProperty.call(node.resources, enumType)) {
-        return true; // Already exists
+      return true; // Already exists
     }
 
     // Add the resource type to the node with a default state if it wasn't initialized above
     // (This branch might be redundant now with initializeResourceRecord, but safe to keep)
-    if (!node.resources[enumType]) {
-        node.resources[enumType] = createDefaultResourceState();
+    if (!node.resources[ enumType ]) {
+      node.resources[ enumType ] = createDefaultResourceState();
     }
 
     this.nodes.set(nodeId, node); // Update the node in the map
@@ -1843,10 +1834,10 @@ export class ResourceFlowManager
    */
   public getNodeResourceEntries(
     nodeId: string
-  ): [ResourceType, ResourceState][] | null {
+  ): [ ResourceType, ResourceState ][] | null {
     const node = this.nodes.get(nodeId);
     // Use Object.entries for Record iteration
-    return node ? (Object.entries(node.resources) as [ResourceType, ResourceState][]) : null;
+    return node ? (Object.entries(node.resources) as [ ResourceType, ResourceState ][]) : null;
   }
 
   /**
@@ -1857,7 +1848,7 @@ export class ResourceFlowManager
     resourceType: ResourceType
   ): ResourceState | undefined {
     const node = this.nodes.get(nodeId);
-    return node?.resources[resourceType];
+    return node?.resources[ resourceType ];
   }
 
   /**
@@ -1882,66 +1873,66 @@ export class ResourceFlowManager
       return false;
     }
 
-    const currentState = node.resources[resourceType];
+    const currentState = node.resources[ resourceType ];
     if (!currentState) {
       // Assuming ResourceState has a constructor or a default structure
       // We might need a helper function like createResourceState from ResourceTypes.ts
-      node.resources[resourceType] = {
+      node.resources[ resourceType ] = {
         ...createDefaultResourceState(),
         ...newState,
       };
     } else {
-        Object.assign(currentState, newState);
+      Object.assign(currentState, newState);
     }
     this.nodes.set(nodeId, node); // Update the map
     return true;
   }
 
-    /**
-     * Update the amount of a specific resource type in a node.
-     */
-    public updateResourceAmount(
-        nodeId: string,
-        resourceType: ResourceType,
-        deltaAmount: number
-    ): boolean {
-        const node = this.nodes.get(nodeId);
-        if (!node || !node.resources) { // Check if node.resources exists
-          return false;
-        }
-
-        let currentState = node.resources[resourceType];
-        const defaultMax = 1000; // Using a default max capacity
-
-        if (!currentState) {
-            // If resource doesn't exist, initialize it
-            currentState = createDefaultResourceState();
-            currentState.max = defaultMax;
-            node.resources[resourceType] = currentState;
-        }
-
-        currentState.current = Math.max(
-            currentState.min,
-            Math.min(currentState.max, currentState.current + deltaAmount)
-        );
-
-        this.nodes.set(nodeId, node); // Update the map
-
-        // Emit event using publish with correct EventType
-        this.publish({
-            type: EventType.RESOURCE_UPDATED, // Corrected
-            timestamp: Date.now(),
-            moduleId: this.id,
-            moduleType: 'resource-manager' as ModuleType,
-            data: {
-                nodeId,
-                resourceType,
-                newState: currentState, // Use the updated state
-            }
-        });
-
-        return true;
+  /**
+   * Update the amount of a specific resource type in a node.
+   */
+  public updateResourceAmount(
+    nodeId: string,
+    resourceType: ResourceType,
+    deltaAmount: number
+  ): boolean {
+    const node = this.nodes.get(nodeId);
+    if (!node || !node.resources) { // Check if node.resources exists
+      return false;
     }
+
+    let currentState = node.resources[ resourceType ];
+    const defaultMax = 1000; // Using a default max capacity
+
+    if (!currentState) {
+      // If resource doesn't exist, initialize it
+      currentState = createDefaultResourceState();
+      currentState.max = defaultMax;
+      node.resources[ resourceType ] = currentState;
+    }
+
+    currentState.current = Math.max(
+      currentState.min,
+      Math.min(currentState.max, currentState.current + deltaAmount)
+    );
+
+    this.nodes.set(nodeId, node); // Update the map
+
+    // Emit event using publish with correct EventType
+    this.publish({
+      type: EventType.RESOURCE_UPDATED, // Corrected
+      timestamp: Date.now(),
+      moduleId: this.id,
+      moduleType: 'resource-manager' as ModuleType,
+      data: {
+        nodeId,
+        resourceType,
+        newState: currentState, // Use the updated state
+      }
+    });
+
+    return true;
+  }
 
 
   /**
@@ -1970,7 +1961,7 @@ export class ResourceFlowManager
     const consumers: string[] = [];
     const visited: Set<string> = new Set();
 
-    const queue: string[] = [sourceNodeId];
+    const queue: string[] = [ sourceNodeId ];
     visited.add(sourceNodeId);
 
     while (queue.length > 0) {
@@ -1983,7 +1974,7 @@ export class ResourceFlowManager
           connection.source === currentNodeId &&
           !connection.resourceTypes.includes(resourceType) // Check if resourceType is NOT handled
         ) {
-            continue; // Skip if connection doesn't handle the resource or is incoming
+          continue; // Skip if connection doesn't handle the resource or is incoming
         }
 
         const targetNodeId = connection.target;
@@ -1994,17 +1985,27 @@ export class ResourceFlowManager
           if (targetNode && targetNode.resources) { // Ensure targetNode.resources exists
             // Check if target node consumes this resource type
             // Placeholder check: assumes targetNode.resources indicates consumption needs
-            if (targetNode.resources[resourceType]?.consumption > 0) {
+            if (targetNode.resources[ resourceType ]?.consumption > 0) {
               consumers.push(targetNodeId);
             }
-             // Continue searching downstream even if not a direct consumer
-             queue.push(targetNodeId);
+            // Continue searching downstream even if not a direct consumer
+            queue.push(targetNodeId);
           }
         }
       }
     }
 
-    return consumers;
+    // If no consumers are explicitly found, log it (this might indicate an issue or expected termination)
+    errorLoggingService.logInfo(
+      `No consumers found for ${ResourceType[ resourceType ]} from ${sourceNodeId}.`,
+      {
+        service: 'ResourceFlowManager',
+        method: 'findConsumersForResource',
+        sourceNodeId,
+        resourceType: ResourceType[ resourceType ],
+      }
+    );
+    return [];
   }
 
   /**
@@ -2015,20 +2016,19 @@ export class ResourceFlowManager
    * @param {number} amountToDistribute - The total amount to distribute.
    * @returns {boolean} True if distribution was successful, false otherwise.
    */
-   public distributeResource(
+  public distributeResource(
     sourceNodeId: string,
     resourceType: ResourceType,
     amountToDistribute: number
   ): boolean {
     const sourceNode = this.nodes.get(sourceNodeId);
-    if (!sourceNode?.resources[resourceType] || sourceNode.resources[resourceType].current < amountToDistribute) {
-      console.warn(`[ResourceFlowManager] Insufficient ${ResourceType[resourceType]} at source ${sourceNodeId}.`); // Use enum name for logging
-      return false; // Not enough resource at source
+    if (!sourceNode?.resources[ resourceType ] || sourceNode.resources[ resourceType ].current < amountToDistribute) {
+      console.warn(`[ResourceFlowManager] Insufficient ${ResourceType[ resourceType ]} at source ${sourceNodeId}.`); // Use enum name for logging
     }
 
     const potentialConsumers = this.findPotentialConsumers(sourceNodeId, resourceType);
     if (potentialConsumers.length === 0) {
-      console.log(`[ResourceFlowManager] No consumers found for ${ResourceType[resourceType]} from ${sourceNodeId}.`); // Use enum name
+      console.log(`[ResourceFlowManager] No consumers found for ${ResourceType[ resourceType ]} from ${sourceNodeId}.`); // Use enum name
       return false; // No consumers found
     }
 
@@ -2038,8 +2038,8 @@ export class ResourceFlowManager
       const nodeB = this.nodes.get(b);
       // Adjust priority access based on actual data structure (assuming node.priority exists)
       // Use a default priority if not present
-      const priorityA = (typeof nodeA?.priority === 'number' ? nodeA.priority : (nodeA?.priority as { priority?: number })?.priority) ?? 0;
-      const priorityB = (typeof nodeB?.priority === 'number' ? nodeB.priority : (nodeB?.priority as { priority?: number })?.priority) ?? 0;
+      const priorityA = (typeof nodeA?.priority === 'number' ? nodeA.priority : (nodeA?.priority as { priority?: number; })?.priority) ?? 0;
+      const priorityB = (typeof nodeB?.priority === 'number' ? nodeB.priority : (nodeB?.priority as { priority?: number; })?.priority) ?? 0;
 
       return priorityB - priorityA;
     });
@@ -2066,7 +2066,7 @@ export class ResourceFlowManager
         continue;
       } // No direct connection handling this resource
 
-      const consumerState = consumerNode.resources[resourceType];
+      const consumerState = consumerNode.resources[ resourceType ];
       const capacity = consumerState ? consumerState.max - consumerState.current : (consumerNode.capacity ?? Infinity); // Use node capacity if specific resource state missing
       const maxFlow = connection.maxRate ?? Infinity; // Use connection maxRate
 
@@ -2080,19 +2080,19 @@ export class ResourceFlowManager
         if (sourceUpdated && targetUpdated) {
           remainingAmount -= amountToSend;
           distributedSuccessfully = true;
-           // Emit transfer event using publish with correct EventType
-           this.publish({
-               type: EventType.RESOURCE_TRANSFERRED, // Corrected
-               timestamp: Date.now(),
-               moduleId: this.id,
-               moduleType: 'resource-manager' as ModuleType,
-               data: {
-                   sourceId: sourceNodeId,
-                   targetId: consumerId,
-                   resourceType,
-                   amount: amountToSend,
-               }
-           });
+          // Emit transfer event using publish with correct EventType
+          this.publish({
+            type: EventType.RESOURCE_TRANSFERRED, // Corrected
+            timestamp: Date.now(),
+            moduleId: this.id,
+            moduleType: 'resource-manager' as ModuleType,
+            data: {
+              sourceId: sourceNodeId,
+              targetId: consumerId,
+              resourceType,
+              amount: amountToSend,
+            }
+          });
 
         } else {
           console.error(`[ResourceFlowManager] Failed to update resource amounts during transfer from ${sourceNodeId} to ${consumerId}.`);
@@ -2100,24 +2100,24 @@ export class ResourceFlowManager
         }
       }
     }
-     // Update source node state after distribution loop
-     if (distributedSuccessfully) {
-         const finalSourceState = this.getNodeResourceState(sourceNodeId, resourceType); // Use renamed node-specific getter
-         if (finalSourceState) {
-             // Emit update event using publish with correct EventType
-             this.publish({
-                 type: EventType.RESOURCE_UPDATED, // Corrected
-                 timestamp: Date.now(),
-                 moduleId: this.id,
-                 moduleType: 'resource-manager' as ModuleType,
-                 data: {
-                     nodeId: sourceNodeId,
-                     resourceType,
-                     newState: finalSourceState,
-                 }
-             });
-         }
-     }
+    // Update source node state after distribution loop
+    if (distributedSuccessfully) {
+      const finalSourceState = this.getNodeResourceState(sourceNodeId, resourceType); // Use renamed node-specific getter
+      if (finalSourceState) {
+        // Emit update event using publish with correct EventType
+        this.publish({
+          type: EventType.RESOURCE_UPDATED, // Corrected
+          timestamp: Date.now(),
+          moduleId: this.id,
+          moduleType: 'resource-manager' as ModuleType,
+          data: {
+            nodeId: sourceNodeId,
+            resourceType,
+            newState: finalSourceState,
+          }
+        });
+      }
+    }
 
     return distributedSuccessfully;
   }

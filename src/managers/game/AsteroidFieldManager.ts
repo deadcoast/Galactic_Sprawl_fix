@@ -614,7 +614,7 @@ export class AsteroidFieldManager {
       miningEfficiency: 1.0,
     };
 
-    // Check if ship is in any asteroid field
+    // Check if ship is in unknown asteroid field
     for (const field of Array.from(this.state.fields.values())) {
       if (field.status === 'depleted') {
         continue;

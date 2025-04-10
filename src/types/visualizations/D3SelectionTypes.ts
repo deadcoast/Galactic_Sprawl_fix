@@ -8,8 +8,8 @@
  * while maintaining compatibility with D3's selection API.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// D3's complex typings require using 'any' in some places to bridge the gap
+/* eslint-disable @typescript-eslint/no-explicit-unknown */
+// D3's complex typings require using 'unknown' in some places to bridge the gap
 // between D3's native API and our type-safe wrappers
 
 import * as d3 from 'd3';
@@ -56,7 +56,7 @@ export function selectGroup(
 }
 
 /**
- * Type-safe selection creator for any SVG element
+ * Type-safe selection creator for unknown SVG element
  *
  * @param selector CSS selector string
  * @returns A properly typed D3 selection
@@ -104,7 +104,7 @@ export function selectAllGroups(
 }
 
 /**
- * Type-safe selection creator for any multiple SVG elements
+ * Type-safe selection creator for unknown multiple SVG elements
  *
  * @param selector CSS selector string
  * @returns A properly typed D3 selection
@@ -128,8 +128,8 @@ export function bindData<GElement extends Element, Datum, PElement extends Eleme
   data: Datum[],
   key?: ((datum: Datum, index: number, groups: Datum[]) => string) | string
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
-  // D3 has very complex typings that are hard to satisfy without 'any'
-  return selection.data(data, key as any);
+  // D3 has very complex typings that are hard to satisfy without 'unknown'
+  return selection.data(data, key as unknown);
 }
 
 /**
@@ -160,8 +160,8 @@ export function joinElements<
   exit?: (selection: d3.Selection<GElement, Datum, PElement, PDatum>) => void
 ): d3.Selection<Element, Datum, PElement, PDatum> {
   // Use simpler implementation with type assertions where needed
-  // D3 join uses complex typings that are difficult to satisfy without 'any'
-  const joined = selection.join(elementType) as any;
+  // D3 join uses complex typings that are difficult to satisfy without 'unknown'
+  const joined = selection.join(elementType) as unknown;
 
   if (enter && selection.enter().size()) {
     enter(selection.enter());
@@ -172,8 +172,8 @@ export function joinElements<
   }
 
   if (exit && selection.exit().size()) {
-    // D3's exit selection has complex typings that require using any
-    exit(selection.exit() as any);
+    // D3's exit selection has complex typings that require using unknown
+    exit(selection.exit() as unknown);
   }
 
   return joined;
@@ -263,12 +263,12 @@ export function addEventHandler<GElement extends Element, Datum, PElement extend
   listener: (event: Event, d: Datum, i: number, g: GElement[]) => void
 ): d3.Selection<GElement, Datum, PElement, PDatum> {
   // D3 has complex event handler typings that are hard to satisfy with exact types
-  // Using any is required to bridge the gap between D3's API and our custom interface
+  // Using unknown is required to bridge the gap between D3's API and our custom interface
   return selection.on(eventType, function (this: GElement, event: Event, d: Datum) {
     const i = d3.select(this).attr('data-index') ? +d3.select(this).attr('data-index')! : 0;
     const g = [this] as GElement[];
     listener(event, d, i, g);
-  } as any);
+  } as unknown);
 }
 
 /**
@@ -389,12 +389,12 @@ export function createSelectionBuilder<
      */
     on(eventType: string, listener: (event: Event, d: Datum, i: number, g: GElement[]) => void) {
       // D3 has complex event handler typings that are hard to satisfy with exact types
-      // Using any is required to bridge the gap between D3's API and our custom interface
+      // Using unknown is required to bridge the gap between D3's API and our custom interface
       selection.on(eventType, function (this: GElement, event: Event, d: Datum) {
         const i = d3.select(this).attr('data-index') ? +d3.select(this).attr('data-index')! : 0;
         const g = [this] as GElement[];
         listener(event, d, i, g);
-      } as any);
+      } as unknown);
       return this;
     },
 

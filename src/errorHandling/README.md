@@ -15,7 +15,7 @@ This directory contains a comprehensive error handling system for the applicatio
 
 ## Higher-Order Components and Utilities
 
-- **withErrorBoundary**: HOC to wrap any component with an error boundary
+- **withErrorBoundary**: HOC to wrap unknown component with an error boundary
 - **createTypedErrorBoundary**: Creates a typed error boundary for a specific component
 - **createSafeComponents**: Utility to create safer versions of multiple components
 - **createSpecializedErrorBoundary**: Creates a specialized error boundary for specific use cases

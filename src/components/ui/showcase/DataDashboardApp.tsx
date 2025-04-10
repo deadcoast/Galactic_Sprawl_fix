@@ -5,22 +5,25 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // Import optimization utilities
 import {
-  animationQualityManager,
-  QualitySettings,
+    animationQualityManager,
+    QualitySettings,
 } from '../../../utils/performance/D3AnimationQualityManager';
 
 // Import type-safe D3 utilities
 import { AnimationConfig } from '../../../types/visualizations/D3AnimationTypes';
 import { createSimulationDragBehavior } from '../../../types/visualizations/D3DragTypes';
 import {
-  d3Accessors,
-  SimulationLinkDatum,
-  SimulationNodeDatum,
+    d3Accessors,
+    SimulationLinkDatum,
+    SimulationNodeDatum
 } from '../../../types/visualizations/D3Types';
 import {
-  createSvgZoomBehavior,
-  getFitToViewportTransform,
+    createSvgZoomBehavior,
+    getFitToViewportTransform
 } from '../../../types/visualizations/D3ZoomTypes';
+
+// Fix import path for error logging service
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 
 // Type definitions
 interface DataDashboardAppProps {
@@ -334,95 +337,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
   const [hierarchyLayoutType, setHierarchyLayoutType] =
     useState<ExtendedQualitySettings['hierarchyLayout']>('tree');
 
-  // Memoized world map data
-  const _worldMapData = useMemo(() => {
-    return {
-      features: [],
-      type: 'FeatureCollection',
-    };
-  }, []);
-
-  // Define visualization initialization functions early to avoid "used before declaration" errors
-  const initializeTimeSeriesVisualization = useCallback(() => {
-    console.warn('Initializing time series visualization');
-    // Implementation would go here
-  }, [timeSeriesData, selectedEntities, timeRange, optimizationsEnabled, qualitySettings]);
-
-  const initializeGeoVisualization = useCallback(() => {
-    console.warn('Initializing geo visualization');
-    // Implementation would go here
-  }, [geoData, selectedEntities, optimizationsEnabled, qualitySettings]);
-
-  // Event handlers
-  const handleViewChange = (view: VisualizationType) => {
-    setCurrentView(view);
-  };
-
-  const toggleAnimation = () => {
-    setIsAnimating(!isAnimating);
-  };
-
-  const toggleOptimizations = () => {
-    setOptimizationsEnabled(!optimizationsEnabled);
-  };
-
-  // Define entity selection handler here before it's used in the visualization functions
-  const handleEntitySelection = (entityId: string) => {
-    setSelectedEntities(prev => {
-      if (prev.includes(entityId)) {
-        return prev.filter(id => id !== entityId);
-      } else {
-        return [...prev, entityId];
-      }
-    });
-  };
-
-  const _handleTimeRangeChange = useCallback((range: [Date, Date]) => {
-    // Implementation
-  }, []);
-
-  const handleFilterChange = (value: number) => {
-    setFilterValue(value);
-  };
-
-  // Load data
-  useEffect(() => {
-    // In a real application, this would be an API call
-    // For now, we'll generate synthetic data
-
-    // Generate network data
-    const networkData = generateNetworkData(50, 100);
-    setNetworkData(networkData);
-
-    // Generate time series data
-    const timeSeriesData = generateTimeSeriesData(100);
-    setTimeSeriesData(timeSeriesData);
-
-    // Generate geo data
-    const geoData = generateGeoData(200);
-    setGeoData(geoData);
-
-    // Generate hierarchy data
-    const hierarchyData = generateHierarchyData(100);
-    setHierarchyData(hierarchyData);
-
-    // Mark data as loaded
-    setDataLoaded(true);
-  }, []);
-
-  // Register with animation quality manager
-  useEffect(() => {
-    if (optimizationsEnabled) {
-      animationQualityManager.registerAnimation('data-dashboard', settings => {
-        setQualitySettings(settings);
-      });
-    }
-
-    return () => {
-      animationQualityManager.unregisterAnimation('data-dashboard');
-    };
-  }, [optimizationsEnabled]);
-
+  // Define data conversion functions before they are used in initialization callbacks
   /**
    * Converts network data to D3-compatible format with proper typing
    * This creates new objects with additional properties needed for D3
@@ -508,199 +423,6 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
   }, [networkData, optimizationsEnabled, qualitySettings]);
 
   /**
-   * Initialize the network visualization with a force-directed graph
-   * This uses D3's force layout with type-safe implementation
-   */
-  const initializeNetworkVisualization = useCallback(() => {
-    if (!networkRef.current || networkData.nodes.length === 0) return;
-
-    console.warn('Initializing network visualization with force-directed graph');
-
-    // Clear previous visualization
-    d3.select(networkRef.current).selectAll('*').remove();
-
-    // Get the container dimensions
-    const svgWidth = width;
-    const svgHeight = height * 0.8; // 80% of total height for the visualization
-
-    // Convert data to D3 format with proper typing
-    const { nodes, links, nodeMap } = convertNetworkDataToD3Format();
-
-    // Create the SVG container
-    const svg = d3
-      .select(networkRef.current)
-      .attr('width', svgWidth)
-      .attr('height', svgHeight)
-      .attr('viewBox', [0, 0, svgWidth, svgHeight])
-      .attr('style', 'max-width: 100%; height: auto; font: 10px sans-serif;');
-
-    // Create a group for zoom/pan transformations
-    const g = svg.append('g').attr('class', 'network-container');
-
-    // Create the zoom behavior with type safety
-    const zoom = createSvgZoomBehavior<SVGSVGElement>({
-      scaleExtentMin: 0.1,
-      scaleExtentMax: 5,
-      targetElement: g,
-      constrainPan: true,
-    });
-
-    // Apply zoom to the SVG
-    svg.call(zoom);
-
-    // Initial transform to fit content
-    const initialTransform = getFitToViewportTransform(
-      svgWidth,
-      svgHeight,
-      svgWidth,
-      svgHeight,
-      50
-    );
-    svg.call(zoom.transform, initialTransform);
-
-    // Create link elements
-    const link = g
-      .append('g')
-      .attr('class', 'links')
-      .selectAll('line')
-      .data(links)
-      .enter()
-      .append('line')
-      .attr('stroke', d => d.color || '#999')
-      .attr('stroke-opacity', 0.6)
-      .attr('stroke-width', d => d.width || 1);
-
-    // Create node elements
-    const node = g
-      .append('g')
-      .attr('class', 'nodes')
-      .selectAll('circle')
-      .data(nodes)
-      .enter()
-      .append('circle')
-      .attr('r', d => d.radius || 5)
-      .attr('fill', d => d.color || '#666')
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 1.5)
-      .classed('selected', d => selectedEntities.includes(d.id));
-
-    // Add titles for tooltips
-    node.append('title').text(d => `${d.id} (${d.group})\nValue: ${d.value}`);
-
-    // Cast to ExtendedQualitySettings to use the additional properties
-    const extendedSettings = qualitySettings as ExtendedQualitySettings;
-    const showLabels =
-      extendedSettings.showLabels !== undefined ? extendedSettings.showLabels : true; // Default to true
-    const textScaleFactor = extendedSettings.textScaleFactor || 1; // Default to 1
-
-    // Create text labels based on quality settings
-    if (showLabels) {
-      const labels = g
-        .append('g')
-        .attr('class', 'labels')
-        .selectAll('text')
-        .data(nodes.filter(n => n.value > filterValue)) // Only label significant nodes
-        .enter()
-        .append('text')
-        .attr('dx', 12)
-        .attr('dy', '.35em')
-        .text(d => d.id)
-        .style('font-size', `${10 * textScaleFactor}px`)
-        .style('fill', '#333');
-    }
-
-    // Create the force simulation with proper typing
-    const simulation = d3
-      .forceSimulation<D3NetworkNode>(nodes)
-      .force(
-        'link',
-        d3
-          .forceLink<D3NetworkNode, _D3Link>(links)
-          .id(d => d.id)
-          .distance(d => 30 + d.value)
-      )
-      .force(
-        'charge',
-        d3.forceManyBody().strength(d => {
-          // Safely access the size property by casting to D3NetworkNode
-          const node = d as D3NetworkNode;
-          return -30 * (node.size || 1);
-        })
-      )
-      .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2))
-      .force(
-        'collision',
-        d3.forceCollide<D3NetworkNode>().radius(d => (d.radius || 5) + 2)
-      );
-
-    // Create drag behavior with type safety
-    const drag = createSimulationDragBehavior<D3NetworkNode, SVGCircleElement>(simulation);
-
-    // Apply the drag behavior with proper type casting
-    node.call(drag as CircleDragBehavior);
-
-    // Node click handler
-    node.on('click', (event, d) => {
-      event?.stopPropagation(); // Prevent triggering container click
-      handleEntitySelection(d.id);
-    });
-
-    // Update function for the simulation
-    simulation.on('tick', () => {
-      // Use safe accessors to prevent type errors
-      link
-        .attr('x1', d =>
-          d3Accessors.getX(typeof d.source === 'string' ? nodeMap.get(d.source) : d.source)
-        )
-        .attr('y1', d =>
-          d3Accessors.getY(typeof d.source === 'string' ? nodeMap.get(d.source) : d.source)
-        )
-        .attr('x2', d =>
-          d3Accessors.getX(typeof d.target === 'string' ? nodeMap.get(d.target) : d.target)
-        )
-        .attr('y2', d =>
-          d3Accessors.getY(typeof d.target === 'string' ? nodeMap.get(d.target) : d.target)
-        );
-
-      node.attr('cx', d => d3Accessors.getX(d)).attr('cy', d => d3Accessors.getY(d));
-
-      // Update labels position if they exist
-      if (showLabels) {
-        g.selectAll('.labels text')
-          .attr('x', d => d3Accessors.getX(d))
-          .attr('y', d => d3Accessors.getY(d));
-      }
-    });
-
-    // Store simulation reference for cleanup
-    simulationRef.current = simulation;
-
-    // Animation toggle
-    if (!isAnimating) {
-      simulation.alpha(0).stop();
-    }
-
-    // Cleanup function for when component unmounts or view changes
-    return () => {
-      if (simulationRef.current) {
-        simulationRef.current.stop();
-        simulationRef.current = null;
-      }
-    };
-  }, [
-    networkData,
-    width,
-    height,
-    selectedEntities,
-    filterValue,
-    isAnimating,
-    optimizationsEnabled,
-    qualitySettings,
-    convertNetworkDataToD3Format,
-    handleEntitySelection,
-  ]);
-
-  /**
    * Converts time series data to D3-compatible format with proper typing
    * Creates points and series objects needed for D3 visualization
    */
@@ -748,39 +470,41 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
   /**
    * Converts geographic data to D3-compatible format with proper typing
-   * This creates points objects needed for D3 geo visualization
    */
   const convertGeoDataToD3Format = useCallback(() => {
-    // Create color mapping for consistent colors per category
+    // Color mapping for categories
     const categoryColors: Record<string, string> = {
-      customers: '#4285F4', // Blue
-      sales: '#EA4335', // Red
-      partners: '#34A853', // Green
+      commerce: '#4285F4', // Blue
+      customers: '#EA4335', // Red
+      sales: '#34A853', // Green
     };
 
     // Convert points with proper typing
     const points: D3GeoPoint[] = geoData.map(point => {
+      // Calculate radius based on population
+      const radius = Math.sqrt(point.population) / 10;
       // Get color based on category
       const color = categoryColors[point.category] || '#9AA0A6';
 
       // Create D3 geo point with proper typing
-      const d3Point: D3GeoPoint = {
+      const d3GeoPoint: D3GeoPoint = {
         id: point.id,
-        coordinates: [point.longitude, point.latitude], // GeoJSON uses [longitude, latitude]
+        coordinates: [point.longitude, point.latitude],
         value: point.value,
         category: point.category,
         color,
+        radius,
         region: point.region,
         population: point.population,
         originalData: point,
       };
 
-      return d3Point;
+      return d3GeoPoint;
     });
 
-    // Group points by category for styling and filtering
-    const categories = Array.from(new Set(points.map(p => p.category)));
-    const geoCategories: GeoCategory[] = categories.map(category => {
+    // Group points by category
+    const categoriesList = Array.from(new Set(points.map(p => p.category)));
+    const geoCategories: GeoCategory[] = categoriesList.map(category => {
       return {
         category,
         color: categoryColors[category] || '#9AA0A6',
@@ -850,15 +574,78 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     });
 
     // Return the root of the hierarchy (should be only one)
-    return rootNodes[0];
+    return rootNodes.length > 0 ? rootNodes[0] : null;
   }, [hierarchyData]);
+
+  // Define event handlers before visualization initializers
+  const handleViewChange = (view: VisualizationType) => {
+    setCurrentView(view);
+  };
+
+  const toggleAnimation = () => {
+    setIsAnimating(!isAnimating);
+  };
+
+  const toggleOptimizations = () => {
+    setOptimizationsEnabled(!optimizationsEnabled);
+  };
+
+  const handleEntitySelection = (entityId: string) => {
+    setSelectedEntities(prev => {
+      if (prev.includes(entityId)) {
+        return prev.filter(id => id !== entityId);
+      } else {
+        return [...prev, entityId];
+      }
+    });
+  };
+
+  const handleTimeRangeChange = useCallback((range: [Date, Date]) => {
+    setTimeRange(range);
+    errorLoggingService.logInfo('Time range changed', {
+      component: 'DataDashboardApp',
+      action: 'handleTimeRangeChange',
+      newRange: range,
+    });
+  }, []);
+
+  const handleFilterChange = (value: number) => {
+    setFilterValue(value);
+  };
+
+  // Define visualization initialization functions early to avoid "used before declaration" errors
+  const initializeTimeSeriesVisualization = useCallback(() => {
+    console.warn('Initializing time series visualization');
+    const { points, series } = convertTimeSeriesDataToD3Format();
+    errorLoggingService.logDebug('Processed Time Series Data', {
+      component: 'DataDashboardApp',
+      method: 'initializeTimeSeriesVisualization',
+      pointsCount: points.length,
+      seriesCount: series.length,
+    });
+    // Implementation would use points and series here
+  }, [timeSeriesData, selectedEntities, timeRange, optimizationsEnabled, qualitySettings, convertTimeSeriesDataToD3Format]);
+
+  const initializeGeoVisualization = useCallback(() => {
+    console.warn('Initializing geo visualization');
+    const { points, geoCategories } = convertGeoDataToD3Format();
+    errorLoggingService.logDebug('Processed Geo Data', {
+      component: 'DataDashboardApp',
+      method: 'initializeGeoVisualization',
+      pointsCount: points.length,
+      categoriesCount: geoCategories.length,
+    });
+    // Implementation would use points and categories here
+    // Also uses worldMapData state
+  }, [geoData, selectedEntities, optimizationsEnabled, qualitySettings, worldMapData, convertGeoDataToD3Format]);
 
   /**
    * Creates a hierarchical visualization with tree or treemap layout
    * Uses D3's hierarchical layouts with proper type safety
    */
   const initializeHierarchyVisualization = useCallback(() => {
-    if (!hierarchyRef.current || hierarchyData.length === 0) return;
+    const rootNodeData = convertHierarchyDataToD3Format();
+    if (!hierarchyRef.current || hierarchyData.length === 0 || !rootNodeData) return;
 
     console.warn(`Initializing hierarchical visualization with ${hierarchyLayoutType} layout`);
 
@@ -887,9 +674,6 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         ? extendedSettings.includeSizeEncoding
         : true;
     const treeOrientation = extendedSettings.treeOrientation || 'vertical';
-
-    // Convert hierarchy data to D3 format (proper tree structure)
-    const rootNode = convertHierarchyDataToD3Format();
 
     // Create the SVG container
     const svg = d3
@@ -959,7 +743,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
 
     const depthColorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-    // (...args: unknown[]) => unknown to determine node color based on settings
+    // Function to determine node color based on settings
     const getNodeColor = (d: HierarchyDatum): string => {
       switch (nodeColor) {
         case 'byValue':
@@ -972,8 +756,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       }
     };
 
-    // Create hierarchy from the rootNode using d3.hierarchy
-    const root = d3.hierarchy<D3HierarchyNode>(rootNode) as unknown as HierarchyDatum;
+    // Create hierarchy from the rootNodeData using d3.hierarchy
+    const root = d3.hierarchy<D3HierarchyNode>(rootNodeData) as unknown as HierarchyDatum;
 
     // Apply filtering if needed
     // Apply filter to only include nodes that match selectedEntities
@@ -1088,7 +872,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       });
 
       // Add zoom behavior
-      const zoom = createSvgZoomBehavior<SVGSVGElement>({
+      const zoom = createSvgZoomBehavior<SVGSVGElement>({ // Explicitly type element
         scaleExtentMin: 0.5,
         scaleExtentMax: 8,
         targetElement: zoomG,
@@ -1161,14 +945,19 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
           target: [target.y, target.x],
         };
 
+        // Define the link generator instance
+        const horizontalLinkGenerator = d3.linkHorizontal<D3LinkData, [number, number]>()
+            .source(d => d.source)
+            .target(d => d.target);
+
         switch (linkStyle) {
           case 'straight':
-            return d3.linkHorizontal()(linkData);
+            return horizontalLinkGenerator(linkData);
           case 'step':
             return `M${source.y},${source.x} V${target.x} H${target.y}`;
           case 'diagonal':
           default:
-            return d3.linkHorizontal()(linkData);
+            return horizontalLinkGenerator(linkData);
         }
       };
 
@@ -1177,7 +966,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         .append('g')
         .attr('class', 'links')
         .selectAll('path')
-        .data(root.links())
+        .data(root.links()) // root.links() returns {source, target}
         .enter()
         .append('path')
         .attr('d', d => {
@@ -1195,7 +984,8 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
             },
           } as CustomHierarchyPointLink;
 
-          return linkGenerator(link);
+          const pathData = linkGenerator(link);
+          return pathData === null ? '' : pathData; // Return empty string if generator returns null
         })
         .attr('fill', 'none')
         .attr('stroke', '#ccc')
@@ -1250,7 +1040,7 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
       });
 
       // Add zoom behavior
-      const zoom = createSvgZoomBehavior<SVGSVGElement>({
+      const zoom = createSvgZoomBehavior<SVGSVGElement>({ // Explicitly type element
         scaleExtentMin: 0.5,
         scaleExtentMax: 8,
         targetElement: zoomG,
@@ -1350,43 +1140,199 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     handleEntitySelection,
   ]);
 
-  // Initialize visualizations once data is loaded
-  useEffect(() => {
-    if (!dataLoaded) return;
+  /**
+   * Initialize the network visualization with a force-directed graph
+   * This uses D3's force layout with type-safe implementation
+   */
+  const initializeNetworkVisualization = useCallback(() => {
+    if (!networkRef.current || networkData.nodes.length === 0) return;
 
-    // Initialize visualizations based on current view
-    switch (currentView) {
-      case VisualizationType.NETWORK:
-        initializeNetworkVisualization();
-        break;
-      case VisualizationType.TIMESERIES:
-        initializeTimeSeriesVisualization();
-        break;
-      case VisualizationType.GEOSPATIAL:
-        initializeGeoVisualization();
-        break;
-      case VisualizationType.HIERARCHY:
-        initializeHierarchyVisualization();
-        break;
+    console.warn('Initializing network visualization with force-directed graph');
+
+    // Clear previous visualization
+    d3.select(networkRef.current).selectAll('*').remove();
+
+    // Get the container dimensions
+    const svgWidth = width;
+    const svgHeight = height * 0.8; // 80% of total height for the visualization
+
+    // Convert data to D3 format with proper typing
+    const { nodes, links, nodeMap } = convertNetworkDataToD3Format();
+
+    // Create the SVG container
+    const svg = d3
+      .select(networkRef.current)
+      .attr('width', svgWidth)
+      .attr('height', svgHeight)
+      .attr('viewBox', [0, 0, svgWidth, svgHeight])
+      .attr('style', 'max-width: 100%; height: auto; font: 10px sans-serif;');
+
+    // Create a group for zoom/pan transformations
+    const g = svg.append('g').attr('class', 'network-container');
+
+    // Create the zoom behavior with type safety
+    const zoom = createSvgZoomBehavior<SVGSVGElement>({ // Explicitly type element
+      scaleExtentMin: 0.1,
+      scaleExtentMax: 5,
+      targetElement: g,
+      constrainPan: true,
+    });
+
+    // Apply zoom to the SVG
+    svg.call(zoom);
+
+    // Initial transform to fit content
+    const initialTransform = getFitToViewportTransform(
+      svgWidth,
+      svgHeight,
+      svgWidth,
+      svgHeight,
+      50
+    );
+    svg.call(zoom.transform, initialTransform);
+
+    // Create link elements
+    const link = g
+      .append('g')
+      .attr('class', 'links')
+      .selectAll('line')
+      .data(links)
+      .enter()
+      .append('line')
+      .attr('stroke', d => d.color || '#999')
+      .attr('stroke-opacity', 0.6)
+      .attr('stroke-width', d => d.width || 1);
+
+    // Create node elements
+    const node = g
+      .append('g')
+      .attr('class', 'nodes')
+      .selectAll('circle')
+      .data(nodes)
+      .enter()
+      .append('circle')
+      .attr('r', d => d.radius || 5)
+      .attr('fill', d => d.color || '#666')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 1.5)
+      .classed('selected', d => selectedEntities.includes(d.id));
+
+    // Add titles for tooltips
+    node.append('title').text(d => `${d.id} (${d.group})\nValue: ${d.value}`);
+
+    // Cast to ExtendedQualitySettings to use the additional properties
+    const extendedSettings = qualitySettings as ExtendedQualitySettings;
+    const showLabels =
+      extendedSettings.showLabels !== undefined ? extendedSettings.showLabels : true; // Default to true
+    const textScaleFactor = extendedSettings.textScaleFactor || 1; // Default to 1
+
+    // Create text labels based on quality settings
+    if (showLabels) {
+      const labels = g // Removed underscore from variable name
+        .append('g')
+        .attr('class', 'labels')
+        .selectAll('text')
+        .data(nodes.filter(n => n.value > filterValue)) // Only label significant nodes
+        .enter()
+        .append('text')
+        .attr('dx', 12)
+        .attr('dy', '.35em')
+        .text(d => d.id)
+        .style('font-size', `${10 * textScaleFactor}px`)
+        .style('fill', '#333');
     }
+
+    // Create the force simulation with proper typing
+    const simulation = d3
+      .forceSimulation<D3NetworkNode>(nodes)
+      .force(
+        'link',
+        d3
+          .forceLink<D3NetworkNode, _D3Link>(links)
+          .id(d => d.id)
+          .distance(d => 30 + d.value)
+      )
+      .force(
+        'charge',
+        d3.forceManyBody<D3NetworkNode>().strength((d: D3NetworkNode) => {
+          // Safely access the size property (no need for cast now)
+          return -30 * (d.size || 1);
+        })
+      )
+      .force('center', d3.forceCenter(svgWidth / 2, svgHeight / 2))
+      .force(
+        'collision',
+        d3.forceCollide<D3NetworkNode>().radius(d => (d.radius || 5) + 2)
+      );
+
+    // Create drag behavior with type safety
+    const drag = createSimulationDragBehavior<D3NetworkNode, SVGCircleElement>(simulation);
+
+    // Apply the drag behavior with proper type casting
+    node.call(drag as CircleDragBehavior);
+
+    // Node click handler
+    node.on('click', (event, d) => {
+      event?.stopPropagation(); // Prevent triggering container click
+      handleEntitySelection(d.id);
+    });
+
+    // Update function for the simulation
+    simulation.on('tick', () => {
+      // Use safe accessors to prevent type errors
+      link
+        .attr('x1', d =>
+          d3Accessors.getX(typeof d.source === 'string' ? nodeMap.get(d.source) : d.source)
+        )
+        .attr('y1', d =>
+          d3Accessors.getY(typeof d.source === 'string' ? nodeMap.get(d.source) : d.source)
+        )
+        .attr('x2', d =>
+          d3Accessors.getX(typeof d.target === 'string' ? nodeMap.get(d.target) : d.target)
+        )
+        .attr('y2', d =>
+          d3Accessors.getY(typeof d.target === 'string' ? nodeMap.get(d.target) : d.target)
+        );
+
+      node.attr('cx', d => d3Accessors.getX(d)).attr('cy', d => d3Accessors.getY(d));
+
+      // Update labels position if they exist
+      if (showLabels) {
+        g.selectAll('.labels text')
+          .attr('x', d => d3Accessors.getX(d))
+          .attr('y', d => d3Accessors.getY(d));
+      }
+    });
+
+    // Store simulation reference for cleanup
+    simulationRef.current = simulation;
+
+    // Animation toggle
+    if (!isAnimating) {
+      simulation.alpha(0).stop();
+    }
+
+    // Cleanup function for when component unmounts or view changes
+    return () => {
+      if (simulationRef.current) {
+        simulationRef.current.stop();
+        simulationRef.current = null;
+      }
+    };
   }, [
-    dataLoaded,
-    currentView,
     networkData,
-    timeSeriesData,
-    geoData,
-    hierarchyData,
+    width,
+    height,
     selectedEntities,
-    timeRange,
+    filterValue,
+    isAnimating,
     optimizationsEnabled,
     qualitySettings,
-    initializeNetworkVisualization,
-    initializeTimeSeriesVisualization,
-    initializeGeoVisualization,
-    initializeHierarchyVisualization,
-    hierarchyLayoutType,
+    convertNetworkDataToD3Format,
+    handleEntitySelection,
   ]);
 
+   // Define data generation functions before they are used in useEffect
   // Generate mock network data
   const generateNetworkData = (nodeCount: number, linkCount: number) => {
     const nodes: NetworkNode[] = [];
@@ -1575,6 +1521,81 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
     return data;
   };
 
+  // Load data
+  useEffect(() => {
+    // In a real application, this would be an API call
+    // For now, we'll generate synthetic data
+
+    // Generate network data
+    const networkData = generateNetworkData(50, 100);
+    setNetworkData(networkData);
+
+    // Generate time series data
+    const timeSeriesData = generateTimeSeriesData(100);
+    setTimeSeriesData(timeSeriesData);
+
+    // Generate geo data
+    const geoData = generateGeoData(200);
+    setGeoData(geoData);
+
+    // Generate hierarchy data
+    const hierarchyData = generateHierarchyData(100);
+    setHierarchyData(hierarchyData);
+
+    // Mark data as loaded
+    setDataLoaded(true);
+  }, [generateTimeSeriesData]); // Added dependency
+
+  // Register with animation quality manager
+  useEffect(() => {
+    if (optimizationsEnabled) {
+      animationQualityManager.registerAnimation('data-dashboard', settings => {
+        setQualitySettings(settings);
+      });
+    }
+
+    return () => {
+      animationQualityManager.unregisterAnimation('data-dashboard');
+    };
+  }, [optimizationsEnabled]);
+
+  // Initialize visualizations once data is loaded
+  useEffect(() => {
+    if (!dataLoaded) return;
+
+    // Initialize visualizations based on current view
+    switch (currentView) {
+      case VisualizationType.NETWORK:
+        initializeNetworkVisualization();
+        break;
+      case VisualizationType.TIMESERIES:
+        initializeTimeSeriesVisualization();
+        break;
+      case VisualizationType.GEOSPATIAL:
+        initializeGeoVisualization();
+        break;
+      case VisualizationType.HIERARCHY:
+        initializeHierarchyVisualization();
+        break;
+    }
+  }, [
+    dataLoaded,
+    currentView,
+    networkData,
+    timeSeriesData,
+    geoData,
+    hierarchyData,
+    selectedEntities,
+    timeRange,
+    optimizationsEnabled,
+    qualitySettings,
+    initializeNetworkVisualization,
+    initializeTimeSeriesVisualization,
+    initializeGeoVisualization,
+    initializeHierarchyVisualization,
+    hierarchyLayoutType,
+  ]);
+
   // Load world map data once
   useEffect(() => {
     // In a real application, this would load from an API or local file
@@ -1586,7 +1607,17 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
         const data = await response?.json();
         setWorldMapData(data);
       } catch (error) {
-        console.error('Error loading world map data:', error);
+        // Replace console.error with errorLoggingService.logError
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Failed to load world map data'),
+          ErrorType.NETWORK,
+          ErrorSeverity.MEDIUM,
+          {
+            componentName: 'DataDashboardApp',
+            action: 'fetchWorldMapData',
+            url: 'https://unpkg.com/world-atlas@2.0.2/countries-110m.json',
+          }
+        );
         // Fallback to null if fetch fails
         setWorldMapData(null);
       }
@@ -1833,6 +1864,28 @@ export const DataDashboardApp: React.FC<DataDashboardAppProps> = ({
               onChange={() => {}}
               style={{ width: '100%' }}
             />
+          </div>
+
+          <div className="time-range-controls">
+            <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>Time Range</h3>
+            <div
+              style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}
+            >
+              <span>{timeRange[0].toLocaleDateString()}</span>
+              <span>{timeRange[1].toLocaleDateString()}</span>
+            </div>
+            {/* Add placeholder button for time range change */}
+            <button
+              onClick={() =>
+                handleTimeRangeChange([
+                  new Date(2022, Math.floor(Math.random() * 12), 1),
+                  new Date(2023, Math.floor(Math.random() * 12), 1),
+                ])
+              }
+              className="ml-4 rounded bg-purple-500 px-2 py-1 text-sm text-white hover:bg-purple-600"
+            >
+              Change Time Range (Dummy)
+            </button>
           </div>
         </div>
       </div>

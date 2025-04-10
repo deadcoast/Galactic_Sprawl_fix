@@ -133,7 +133,7 @@ export class CanvasRenderer implements ChartRenderer {
       this.initialize(container, options);
     }
 
-    // Cancel any pending animation frame
+    // Cancel unknown pending animation frame
     if (this.animationFrame !== null) {
       cancelAnimationFrame(this.animationFrame);
     }
@@ -210,7 +210,7 @@ export class CanvasRenderer implements ChartRenderer {
   }
 
   /**
-   * Destroys the renderer, cleaning up any resources
+   * Destroys the renderer, cleaning up unknown resources
    */
   public destroy(): void {
     if (this.animationFrame !== null) {
@@ -242,7 +242,7 @@ export class CanvasRenderer implements ChartRenderer {
    * Initialize the canvas renderer
    */
   private initialize(container: HTMLElement, options: ChartOptions): void {
-    // Clean existing canvas if any
+    // Clean existing canvas if unknown
     const existingCanvas = container.querySelector('canvas');
     if (existingCanvas) {
       container.removeChild(existingCanvas);
@@ -1109,7 +1109,7 @@ export class CanvasRenderer implements ChartRenderer {
       return;
     }
 
-    // Remove existing tooltip if any
+    // Remove existing tooltip if unknown
     if (this.tooltipElement) {
       this.tooltipElement.remove();
     }

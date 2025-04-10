@@ -1,13 +1,14 @@
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 import {
-  BenchmarkResult,
-  createPerformanceVisualization,
-  detectPerformanceRegressions,
-  loadBenchmarkResults,
-  ResourceFlowBenchmarkResult,
-  runResourceFlowBenchmark,
-  saveBenchmarkResults,
+    BenchmarkResult,
+    createPerformanceVisualization,
+    detectPerformanceRegressions,
+    loadBenchmarkResults,
+    ResourceFlowBenchmarkResult,
+    runResourceFlowBenchmark,
+    saveBenchmarkResults,
 } from '../../../utils/performance/benchmarks/PerformanceBenchmarkTools';
 
 interface BenchmarkConfigOption {
@@ -153,7 +154,21 @@ const PerformanceBenchmarkDashboard: React.FC<PerformanceBenchmarkDashboardProps
         );
       }
     } catch (error) {
-      console.error('Error running benchmark:', error);
+      errorLoggingService.logError(
+        error instanceof Error ? error : new Error('Error running benchmark'),
+        ErrorType.RUNTIME,
+        ErrorSeverity.HIGH,
+        {
+          componentName: 'PerformanceBenchmarkDashboard',
+          action: 'runBenchmark',
+          selectedBenchmark,
+          customNodeCount,
+          customConnectionCount,
+          batchSize,
+          cacheTTL,
+          iterations,
+        }
+      );
     } finally {
       setIsRunning(false);
       setCurrentProgress(100);

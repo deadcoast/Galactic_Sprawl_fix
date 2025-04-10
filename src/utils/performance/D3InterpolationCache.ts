@@ -111,7 +111,7 @@ function isValidCacheConfig(config: unknown): config is InterpolationCacheConfig
 }
 
 /**
- * Base memoization cache for any interpolation function
+ * Base memoization cache for unknown interpolation function
  */
 export class InterpolationCache<T> {
   private cache = new Map<string, CacheEntry<T>>();
@@ -728,7 +728,7 @@ export function createMemoizedInterpolators(
 }
 
 /**
- * Helper to create a memoized D3 interpolator for any method
+ * Helper to create a memoized D3 interpolator for unknown method
  */
 export function memoizeD3Interpolator<T>(
   interpolatorFactory: (a: unknown, b: unknown) => (t: number) => T,

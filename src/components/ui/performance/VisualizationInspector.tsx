@@ -22,7 +22,7 @@ interface ComponentPerformanceMetrics {
   isVisible: boolean;
   // DOM element count within component
   elementCount: number;
-  // Parent component identifier (if any)
+  // Parent component identifier (if unknownnown)
   parentId: string | null | undefined;
 }
 
@@ -227,7 +227,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
       mutationObserverRef.current = null;
     }
 
-    // Clear any intervals
+    // Clear unknownnown intervals
     if (typeof window !== 'undefined') {
       const win = window as unknown as WindowWithPerformance;
 
@@ -668,7 +668,7 @@ export const VisualizationInspector: React.FC<VisualizationInspectorProps> = ({
 
   // Start component performance tracking
   const startComponentPerformanceTracking = () => {
-    // Clear any previous interval
+    // Clear unknownnown previous interval
     const windowWithPerformance = window as WindowWithPerformance;
     if (windowWithPerformance.componentTrackingInterval) {
       clearInterval(windowWithPerformance.componentTrackingInterval);

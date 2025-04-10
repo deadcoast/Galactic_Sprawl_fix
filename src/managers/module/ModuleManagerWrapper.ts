@@ -30,9 +30,9 @@ export function convertToModule(baseModule: BaseModule | undefined): Module | un
 
   // Extract optional properties with type safety
   // Some properties exist in the runtime but not in the type definition
-  const baseModuleAny = baseModule as BaseModule & Record<string, unknown>;
-  const buildingId = baseModuleAny.buildingId as string | undefined;
-  const attachmentPointId = baseModuleAny.attachmentPointId as string | undefined;
+  const baseModuleunknown = baseModule as BaseModule & Record<string, unknown>;
+  const buildingId = baseModuleunknown.buildingId as string | undefined;
+  const attachmentPointId = baseModuleunknown.attachmentPointId as string | undefined;
 
   // Convert status from string to ModuleStatus enum if needed
   const status: ModuleStatus | 'active' | 'constructing' | 'inactive' = baseModule.status;

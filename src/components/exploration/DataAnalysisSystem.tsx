@@ -1,12 +1,12 @@
 import {
-    Button,
-    CircularProgress,
-    Divider,
-    Grid,
-    Paper,
-    Tab,
-    Tabs,
-    Typography,
+  Button,
+  CircularProgress,
+  Divider,
+  Grid,
+  Paper,
+  Tab,
+  Tabs,
+  Typography,
 } from '@mui/material';
 import { Compass, Database, Layers, Map, RadioTower } from 'lucide-react';
 import * as React from 'react';
@@ -17,10 +17,10 @@ import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/Er
 import { EventType } from '../../types/events/EventTypes';
 import { StandardizedEvent } from '../../types/events/StandardizedEvents';
 import {
-    AnalysisConfig,
-    AnalysisResult,
-    DataPoint,
-    Dataset,
+  AnalysisConfig,
+  AnalysisResult,
+  DataPoint,
+  Dataset,
 } from '../../types/exploration/DataAnalysisTypes';
 import AnalysisConfigManager from './AnalysisConfigManager';
 import DataFilterPanel from './DataFilterPanel';
@@ -652,7 +652,7 @@ export function DataAnalysisSystem({ className = '' }: DataAnalysisSystemProps) 
   // Cleanup subscriptions on unmount
   useEffect(() => {
     const cleanup = () => {
-      // Any cleanup needed for event subscriptions
+      // unknown cleanup needed for event subscriptions
     };
 
     return cleanup;

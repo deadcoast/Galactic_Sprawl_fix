@@ -107,7 +107,7 @@ If you need to create a virtualized component for a specific data structure:
 
 1. Import the base VirtualizedList component
 2. Wrap it with specific rendering logic for your data type
-3. Handle any special interactions or styling
+3. Handle unknown special interactions or styling
 4. Export a memoized version of your component
 
 Example:

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { SHIP_BLUEPRINTS, ShipBlueprint } from '../../config/ShipBlueprints';
 import { WeaponEffectType } from '../../effects/types_effects/WeaponEffects';
-import { TypedEventEmitter } from '../../lib/events/EventEmitter';
+import { BaseTypedEventEmitter } from '../../lib/modules/BaseTypedEventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
   ShipHangarManager as IShipHangarManager,
@@ -35,6 +35,8 @@ import { ResourceManager } from '../game/ResourceManager';
 import { TechTreeManager } from '../game/techTreeManager';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 import { OfficerManager } from './OfficerManager';
+// Import error logging service
+import { errorLoggingService } from '../../services/ErrorLoggingService';
 
 // Extend CommonShip to include state
 interface ShipWithState extends CommonShip {
@@ -83,9 +85,8 @@ const DEFAULT_COMBAT_SHIP_DESIGN = SHIP_BLUEPRINTS.find(bp => bp.category === 'w
  * Handles ship production, docking, and hangar bay management
  */
 export class ShipHangarManager
-  extends TypedEventEmitter<ShipHangarEvents>
-  implements IShipHangarManager
-{
+  extends BaseTypedEventEmitter<ShipHangarEvents>
+  implements IShipHangarManager {
   private state: ShipHangarState;
   private resourceManager: ResourceManager;
   private officerManager: OfficerManager;
@@ -207,7 +208,7 @@ export class ShipHangarManager
     if (this.techTreeInstance) {
       this.techTreeInstance.on('nodeUnlocked', ((event: {
         nodeId: string;
-        node: { type: string; tier: number };
+        node: { type: string; tier: number; };
       }) => {
         if (event?.node.type === 'hangar') {
           this.handleTierUpgrade(event?.node.tier as Tier);
@@ -254,7 +255,7 @@ export class ShipHangarManager
    * Handle module activation
    */
   private handleModuleActivation(moduleId: string): void {
-    console.warn(`[ShipHangarManager] Module ${moduleId} activated`);
+    errorLoggingService.logWarn(`[ShipHangarManager] Module ${moduleId} activated`);
     const oldEfficiency = this.state.resourceEfficiency;
     const oldSpeed = this.state.buildSpeedMultiplier;
 
@@ -262,7 +263,7 @@ export class ShipHangarManager
     this.state.resourceEfficiency *= 0.9; // 10% reduction in resource costs
     this.state.buildSpeedMultiplier *= 1.1; // 10% increase in build speed
 
-    console.warn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
+    errorLoggingService.logWarn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
       Resource Efficiency: ${oldEfficiency.toFixed(2)} -> ${this.state.resourceEfficiency.toFixed(2)}
       Build Speed: ${oldSpeed.toFixed(2)} -> ${this.state.buildSpeedMultiplier.toFixed(2)}`);
   }
@@ -271,7 +272,7 @@ export class ShipHangarManager
    * Handle module deactivation
    */
   private handleModuleDeactivation(moduleId: string): void {
-    console.warn(`[ShipHangarManager] Module ${moduleId} deactivated`);
+    errorLoggingService.logWarn(`[ShipHangarManager] Module ${moduleId} deactivated`);
     const oldEfficiency = this.state.resourceEfficiency;
     const oldSpeed = this.state.buildSpeedMultiplier;
 
@@ -279,7 +280,7 @@ export class ShipHangarManager
     this.state.resourceEfficiency /= 0.9; // Remove 10% reduction
     this.state.buildSpeedMultiplier /= 1.1; // Remove 10% increase
 
-    console.warn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
+    errorLoggingService.logWarn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
       Resource Efficiency: ${oldEfficiency.toFixed(2)} -> ${this.state.resourceEfficiency.toFixed(2)}
       Build Speed: ${oldSpeed.toFixed(2)} -> ${this.state.buildSpeedMultiplier.toFixed(2)}`);
   }
@@ -288,7 +289,7 @@ export class ShipHangarManager
    * Handle module status change
    */
   private handleModuleStatusChange(moduleId: string, status: string): void {
-    console.warn(`[ShipHangarManager] Module ${moduleId} status changed to ${status}`);
+    errorLoggingService.logWarn(`[ShipHangarManager] Module ${moduleId} status changed to ${status}`);
     const oldEfficiency = this.state.resourceEfficiency;
     const oldSpeed = this.state.buildSpeedMultiplier;
 
@@ -310,7 +311,7 @@ export class ShipHangarManager
         break;
     }
 
-    console.warn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
+    errorLoggingService.logWarn(`[ShipHangarManager] Efficiency changes for module ${moduleId}:
       Resource Efficiency: ${oldEfficiency.toFixed(2)} -> ${this.state.resourceEfficiency.toFixed(2)}
       Build Speed: ${oldSpeed.toFixed(2)} -> ${this.state.buildSpeedMultiplier.toFixed(2)}`);
   }
@@ -322,11 +323,11 @@ export class ShipHangarManager
     // This should be moved to a configuration file
     switch (tier) {
       case 1:
-        return ['spitflare', 'void-dredger-miner', 'andromeda-cutter'];
+        return [ 'spitflare', 'void-dredger-miner', 'andromeda-cutter' ];
       case 2:
-        return ['star-schooner', 'orion-frigate'];
+        return [ 'star-schooner', 'orion-frigate' ];
       case 3:
-        return ['harbringer-galleon', 'midway-carrier', 'mother-earth-revenge'];
+        return [ 'harbringer-galleon', 'midway-carrier', 'mother-earth-revenge' ];
       default:
         return [];
     }
@@ -360,7 +361,7 @@ export class ShipHangarManager
 
       // Find an assigned officer that meets the requirements
       let hasQualifiedOfficer = false;
-      for (const [shipId, officerId] of Array.from(this.assignedOfficers.entries())) {
+      for (const [ shipId, officerId ] of Array.from(this.assignedOfficers.entries())) {
         const officer = this.officerManager.getOfficer(officerId);
         const ship = this.getDockedShips().find(s => s.id === shipId);
         if (
@@ -420,7 +421,7 @@ export class ShipHangarManager
       return;
     }
 
-    const item = this.state.buildQueue[index];
+    const item = this.state.buildQueue[ index ];
 
     // Calculate refund based on progress
     const refundedResources = item?.resourceCost.map(cost => ({
@@ -474,7 +475,7 @@ export class ShipHangarManager
    * Get the current build queue
    */
   public getBuildQueue(): ShipBuildQueueItem[] {
-    return [...this.state.buildQueue];
+    return [ ...this.state.buildQueue ];
   }
 
   /**
@@ -583,7 +584,7 @@ export class ShipHangarManager
     for (const bay of this.state.bays) {
       const index = bay.ships.findIndex(ship => ship.id === shipId);
       if (index !== -1) {
-        const ship = bay.ships[index];
+        const ship = bay.ships[ index ];
         bay.ships.splice(index, 1);
         bay.status = 'available';
         this.emit('shipLaunched', { ship, bay });
@@ -654,7 +655,7 @@ export class ShipHangarManager
    * Get all hangar bays
    */
   public getBays(): ShipHangarBay[] {
-    return [...this.state.bays];
+    return [ ...this.state.bays ];
   }
 
   /**
@@ -832,7 +833,7 @@ export class ShipHangarManager
       'Andromeda Cutter': 'andromeda-cutter',
     };
 
-    return classMap[ship.name] || 'spitflare'; // Default to spitflare if name not found
+    return classMap[ ship.name ] || 'spitflare'; // Default to spitflare if name not found
   }
 
   private getShipCategory(shipClass: PlayerShipClass): PlayerShipCategory {
@@ -846,7 +847,7 @@ export class ShipHangarManager
   }
 
   private createWeaponMount(
-    weapon: { name: string; damage: number; range: number; cooldown: number },
+    weapon: { name: string; damage: number; range: number; cooldown: number; },
     tier: number
   ): WeaponMount {
     const damageEffect: WeaponEffectType = {
@@ -868,7 +869,7 @@ export class ShipHangarManager
       rateOfFire: 1 / weapon.cooldown,
       energyCost: 5,
       cooldown: weapon.cooldown,
-      effects: [damageEffect],
+      effects: [ damageEffect ],
       special: {
         armorPenetration: 0,
         shieldDamageBonus: 0,
@@ -880,7 +881,7 @@ export class ShipHangarManager
     const weaponState: WeaponState = {
       status: 'ready' as WeaponStatus,
       currentStats: weaponStats,
-      effects: [damageEffect],
+      effects: [ damageEffect ],
       currentAmmo: undefined,
       maxAmmo: undefined,
     };
@@ -906,7 +907,7 @@ export class ShipHangarManager
       size: 'medium' as WeaponMountSize,
       position: 'front' as WeaponMountPosition,
       rotation: 0,
-      allowedCategories: ['machineGun' as WeaponCategory],
+      allowedCategories: [ 'machineGun' as WeaponCategory ],
       currentWeapon: weaponInstance,
     };
   }
@@ -997,7 +998,7 @@ export class ShipHangarManager
    * Start repairing a ship
    */
   public startRepair(shipId: string): void {
-    // Find the ship in any bay
+    // Find the ship in unknown bay
     let targetShip: CommonShip | undefined;
     let targetBay: ShipHangarBay | undefined;
 
@@ -1011,7 +1012,7 @@ export class ShipHangarManager
     }
 
     if (!targetShip || !targetBay) {
-      throw new Error('Ship not found in any bay');
+      throw new Error('Ship not found in unknown bay');
     }
 
     if (targetShip.status !== 'damaged') {
@@ -1309,7 +1310,7 @@ export class ShipHangarManager
     }
 
     if (!targetShip || !targetBay) {
-      throw new Error('Ship not found in any bay');
+      throw new Error('Ship not found in unknown bay');
     }
 
     // Consume resources
@@ -1559,11 +1560,11 @@ export class ShipHangarManager
    * Get active abilities for a ship
    */
   public getActiveAbilities(shipId: string): string[] {
-    const shipAbilities = Array.from(this.activeAbilities.entries()).filter(([key]) =>
+    const shipAbilities = Array.from(this.activeAbilities.entries()).filter(([ key ]) =>
       key.startsWith(`${shipId}-`)
     );
 
-    return shipAbilities.map(([key]) => key.split('-')[1]);
+    return shipAbilities.map(([ key ]) => key.split('-')[ 1 ]);
   }
 
   /**
@@ -1571,13 +1572,13 @@ export class ShipHangarManager
    */
   public cancelShipAbilities(shipId: string): void {
     // Find all active abilities for this ship
-    const shipAbilities = Array.from(this.activeAbilities.entries()).filter(([key]) =>
+    const shipAbilities = Array.from(this.activeAbilities.entries()).filter(([ key ]) =>
       key.startsWith(`${shipId}-`)
     );
 
     // Deactivate each ability
-    shipAbilities.forEach(([key]) => {
-      const abilityName = key.split('-')[1];
+    shipAbilities.forEach(([ key ]) => {
+      const abilityName = key.split('-')[ 1 ];
       this.deactivateAbility(shipId, abilityName);
     });
   }
@@ -1784,7 +1785,7 @@ export class ShipHangarManager
    * Set up maintenance timer for a bay
    */
   private setupBayMaintenance(bay: ShipHangarBay): void {
-    // Clear existing timer if any
+    // Clear existing timer if unknown
     const existingTimer = this.bayMaintenanceTimers.get(bay.id);
     if (existingTimer) {
       clearTimeout(existingTimer.timer);
@@ -2079,7 +2080,7 @@ export class ShipHangarManager
     this.activeAbilities.forEach((active, key) => {
       clearTimeout(active.timer);
       // Parse shipId and ability name from compound key
-      const [shipId, abilityName] = key.split('-');
+      const [ shipId, abilityName ] = key.split('-');
       const ship = this.getDockedShips().find(s => s.id === shipId);
       if (ship) {
         const ability = ship.abilities.find(a => a.name === abilityName);
@@ -2095,7 +2096,7 @@ export class ShipHangarManager
     this.abilityCooldowns.forEach((cooldown, key) => {
       clearTimeout(cooldown.timer);
       // Parse shipId and ability name from compound key
-      const [shipId, abilityName] = key.split('-');
+      const [ shipId, abilityName ] = key.split('-');
       const ship = this.getDockedShips().find(s => s.id === shipId);
       if (ship) {
         const ability = ship.abilities.find(a => a.name === abilityName);
@@ -2140,10 +2141,10 @@ export class ShipHangarManager
     this.bayMaintenanceTimers.clear();
 
     // Clean up officer assignments and remove bonuses
-    for (const [shipId, officerId] of Array.from(this.assignedOfficers.entries())) {
+    for (const [ shipId, officerId ] of Array.from(this.assignedOfficers.entries())) {
       const ship = this.getDockedShips().find(s => s.id === shipId);
       if (ship) {
-        this.removeOfficerBonuses(ship); // Remove any active bonuses
+        this.removeOfficerBonuses(ship); // Remove unknown active bonuses
         this.officerManager.assignOfficer(officerId, null as unknown as string); // Free up the officer
       }
       this.unassignOfficer(shipId);
@@ -2154,9 +2155,9 @@ export class ShipHangarManager
   /**
    * Get all assigned officers
    */
-  public getAssignedOfficers(): { shipId: string; officerId: string }[] {
-    const assignments: { shipId: string; officerId: string }[] = [];
-    for (const [shipId, officerId] of Array.from(this.assignedOfficers.entries())) {
+  public getAssignedOfficers(): { shipId: string; officerId: string; }[] {
+    const assignments: { shipId: string; officerId: string; }[] = [];
+    for (const [ shipId, officerId ] of Array.from(this.assignedOfficers.entries())) {
       assignments.push({ shipId, officerId });
     }
     return assignments;
@@ -2243,7 +2244,7 @@ export class ShipHangarManager
 
   public hasOfficerMeetingRequirements(minLevel: number, specialization: string): boolean {
     // Check all assigned officers for one that meets requirements
-    for (const [_, officerId] of Array.from(this.assignedOfficers.entries())) {
+    for (const [ _, officerId ] of Array.from(this.assignedOfficers.entries())) {
       const officer = this.officerManager.getOfficer(officerId);
       if (officer && officer.level >= minLevel && officer.specialization === specialization) {
         return true;
@@ -2269,17 +2270,17 @@ export class ShipHangarManager
     if (!requirements.prerequisites?.technology || !this.techTreeInstance) {
       return true; // No tech requirements or tech tree unavailable
     }
-    
+
     const missingTech = requirements.prerequisites.technology.filter(
       techId => !this.techTreeInstance?.getNode(techId)?.unlocked
     );
-    
+
     return missingTech.length === 0;
   }
 
   private getRequirementsStatus(requirements: ShipBuildRequirements): RequirementCheckResult[] {
     const result: RequirementCheckResult[] = [];
-    
+
     // Check tech requirements
     if (requirements.prerequisites?.technology && this.techTreeInstance) {
       requirements.prerequisites.technology.forEach((tech: string) => {
@@ -2290,9 +2291,9 @@ export class ShipHangarManager
         });
       });
     }
-    
+
     // Rest of method...
-    
+
     return result;
   }
 
@@ -2302,10 +2303,16 @@ export class ShipHangarManager
    */
   private addShipDesign(design: ShipBlueprint | undefined): void {
     if (!design) {
-      console.warn('[ShipHangarManager] Attempted to add undefined ship design');
+      errorLoggingService.logWarn('[ShipHangarManager] Attempted to add undefined ship design');
       return;
     }
     // Implementation details would go here
-    console.log(`Added ship design: ${design.name}`);
+    // this.shipDesigns.set(design.id, design); // Commented out: Property 'shipDesigns' does not exist.
+
+    errorLoggingService.logInfo('Added ship design (details in metadata)', {
+      service: 'ShipHangarManager',
+      method: 'addShipDesign',
+      design: design, // Log the design object itself for context
+    });
   }
 }

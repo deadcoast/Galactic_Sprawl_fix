@@ -54,8 +54,8 @@ interface ReconShipCoordinationProps {
   formations?: Formation[];
   onCreateFormation: (name: string, type: string, shipIds: string[], leaderId: string) => void;
   onDisbandFormation: (formationId: string) => void;
-  _onAddShipToFormation: (shipId: string, formationId: string) => void;
-  _onRemoveShipFromFormation: (shipId: string, formationId: string) => void;
+  onAddShipToFormation: (shipId: string, formationId: string) => void;
+  onRemoveShipFromFormation: (shipId: string, formationId: string) => void;
   onStartCoordinatedScan: (sectorId: string, shipIds: string[]) => void;
   onShareTask?: (
     sourceShipId: string,
@@ -72,8 +72,8 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
   formations = [],
   onCreateFormation,
   onDisbandFormation,
-  _onAddShipToFormation,
-  _onRemoveShipFromFormation,
+  onAddShipToFormation,
+  onRemoveShipFromFormation,
   onStartCoordinatedScan,
   onShareTask,
   onAutoDistributeTasks,
@@ -88,7 +88,7 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
   const [formationType, setFormationType] = useState<string>('exploration');
   const [selectedShipIds, setSelectedShipIds] = useState<string[]>([]);
   const [selectedLeaderId, setSelectedLeaderId] = useState<string>('');
-  const [_prioritizeFormations, _setPrioritizeFormations] = useState(true);
+  const [prioritizeFormations, setPrioritizeFormations] = useState(true);
 
   // Derived state
   const availableShips = useMemo(() => {
@@ -184,14 +184,14 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
   // Cleanup subscriptions on unmount
   useEffect(() => {
     const cleanup = () => {
-      // Any cleanup needed for event subscriptions
+      // unknown cleanup needed for event subscriptions
     };
 
     return cleanup;
   }, []);
 
   // Add a button or UI element to use the handleShareTask function
-  const _renderTaskSharingControls = () => {
+  const renderTaskSharingControls = () => {
     if (activeTab !== 'coordination' || !selectedShipIds.length) return null;
 
     return (
@@ -341,18 +341,26 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
     return (
       <div className="space-y-4">
         {formations.map(formation => {
-          const leader = getFormationLeader(formation);
           const effectiveness = getFormationEffectiveness(formation);
           const status = getFormationStatus(formation);
 
           return (
-            <div key={formation.id} className="rounded border p-4">
+            <div
+              key={formation.id}
+              className={`rounded border p-4 cursor-pointer transition-colors ${
+                selectedFormationId === formation.id
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+              }`}
+              onClick={() => handleFormationSelect(formation.id)}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">{formation.name}</h4>
                   <p className="text-sm text-gray-500">Type: {formation.type}</p>
                   <p className="text-sm text-gray-500">Status: {status}</p>
                   <p className="text-sm text-gray-500">Effectiveness: {effectiveness.toFixed(1)}</p>
+                  <p className="text-sm text-gray-500">Leader: {getFormationLeader(formation)?.name ?? 'N/A'}</p>
                 </div>
                 <div className="flex space-x-2">
                   <button
@@ -386,7 +394,7 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
 
   const handleAutoDistributeClick = () => {
     const unexploredSectorIds = getUnexploredSectors().map(sector => sector.id);
-    handleAutoDistributeTasks(unexploredSectorIds, true);
+    handleAutoDistributeTasks(unexploredSectorIds, prioritizeFormations);
   };
 
   const renderCoordinationTab = () => {
@@ -446,6 +454,9 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
             Start Coordinated Scan
           </button>
         </div>
+
+        {/* Render Task Sharing Controls */}
+        {renderTaskSharingControls()}
       </div>
     );
   };
@@ -456,6 +467,20 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
         <div className="mb-4">
           <h3 className="text-lg font-medium">Auto-Distribution</h3>
           <p className="text-sm text-gray-500">Automatically distribute tasks to available ships</p>
+        </div>
+
+        {/* Add checkbox for prioritization */}
+        <div className="mb-4 flex items-center">
+          <input
+            type="checkbox"
+            id="prioritizeFormationsCheckbox"
+            checked={prioritizeFormations}
+            onChange={e => setPrioritizeFormations(e.target.checked)}
+            className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <label htmlFor="prioritizeFormationsCheckbox" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Prioritize formations for tasks
+          </label>
         </div>
 
         <div className="mb-4">
@@ -471,7 +496,7 @@ export const ReconShipCoordination: React.FC<ReconShipCoordinationProps> = ({
     );
   };
 
-  const renderShipDetails = (ship: ReconShip) => {
+  const _renderShipDetails = (ship: ReconShip) => {
     return (
       <div key={ship.id} className="mb-4 rounded-lg bg-gray-800 p-4">
         <h4 className="mb-2 text-lg font-semibold text-white">{ship.name}</h4>

@@ -9,10 +9,11 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  MultitabLaunchConfig,
-  MultitabPerformanceLauncher,
+    MultitabLaunchConfig,
+    MultitabPerformanceLauncher,
 } from '../../components/performance/MultitabPerformanceLauncher';
 import { MultitabPerformanceResults } from '../../components/performance/MultitabPerformanceResults';
+import { errorLoggingService } from '../../services/ErrorLoggingService';
 import { MultitabPerformanceResult } from '../../tests/performance/MultitabPerformanceTestSuite';
 
 type ResultSet = MultitabPerformanceResult[] | Record<string, MultitabPerformanceResult[]>;
@@ -43,7 +44,7 @@ const MultitabPerformanceTestPage: React.FC = () => {
     try {
       localStorage.setItem('multitab_performance_results', JSON.stringify(newResults));
     } catch (e) {
-      console.warn('Failed to store test results in localStorage:', e);
+      errorLoggingService.logWarn('Failed to store test results in localStorage:', { error: e });
     }
   };
 
@@ -60,7 +61,7 @@ const MultitabPerformanceTestPage: React.FC = () => {
   const handleLaunch = (config: MultitabLaunchConfig) => {
     setIsRunning(true);
     // Implementation would go here to actually launch the test
-    console.warn('Launching test with config:', config);
+    errorLoggingService.logWarn('Launching test', { config });
 
     // Simulate a test running for a few seconds
     setTimeout(() => {
@@ -76,7 +77,7 @@ const MultitabPerformanceTestPage: React.FC = () => {
         setResults(JSON.parse(savedResults));
       }
     } catch (e) {
-      console.warn('Failed to load previous test results:', e);
+      errorLoggingService.logWarn('Failed to load previous test results:', { error: e });
     }
   }, []);
 

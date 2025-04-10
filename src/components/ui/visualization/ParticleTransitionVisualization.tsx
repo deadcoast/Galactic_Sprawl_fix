@@ -171,7 +171,7 @@ export const ParticleTransitionVisualization: React.FC<ParticleTransitionVisuali
 
   // Initialize particle system
   useEffect(() => {
-    // Clean up any existing system
+    // Clean up unknownnownnownnown existing system
     if (particleSystemRef.current) {
       particleSystemRef.current.dispose();
     }

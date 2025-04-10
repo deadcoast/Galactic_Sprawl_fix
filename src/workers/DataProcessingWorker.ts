@@ -63,7 +63,7 @@ interface FilteringPayload {
     operator: '==' | '!=' | '>' | '<' | '>=' | '<=' | 'contains' | 'startsWith' | 'endsWith';
     value: unknown;
   }[];
-  matchAll: boolean; // If true, all conditions must match (AND), otherwise any condition must match (OR)
+  matchAll: boolean; // If true, all conditions must match (AND), otherwise unknown condition must match (OR)
 }
 
 // Listen for messages from the main thread
@@ -240,7 +240,7 @@ function filterData(payload: FilteringPayload): Record<string, unknown>[] {
     // Combine results based on matchAll
     return matchAll
       ? results.every(result => result) // AND logic - all must match
-      : results.some(result => result); // OR logic - any can match
+      : results.some(result => result); // OR logic - unknown can match
   });
 }
 

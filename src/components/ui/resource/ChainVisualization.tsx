@@ -163,7 +163,7 @@ const ChainVisualization: React.FC<ChainVisualizationProps> = ({
           .id(d => d.id)
           .distance(100)
       )
-      .force('charge', d3.forceManyBody().strength(-300))
+      .force('charge', d3.forceMunknownnownBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('x', d3.forceX())
       .force('y', d3.forceY());

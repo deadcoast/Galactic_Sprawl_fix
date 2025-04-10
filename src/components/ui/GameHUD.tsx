@@ -144,12 +144,10 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
   const vprSystem = useVPRSystem();
   
   // Local state
-  const [activeMenu, setActiveMenu] = useState<MenuCategory | null>(null);
   const [activeCategory, setActiveCategory] = useState<MenuCategory | null>(null);
   const [showTechTree, setShowTechTree] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [tooltipInfo, setTooltipInfo] = useState<{ text: string; position: Position } | null>(null);
   const [showTooltip, setShowTooltip] = useState<{ id: string; x: number; y: number } | null>(null);
   
   // Lazy load heavy components to improve initial load time
@@ -168,9 +166,6 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
     () => import('./visualization/ResourceVisualization'),
     []
   );
-  
-  // Using direct import for SettingsPanel since we have the component defined above
-  const settingsLoading = false;
   
   // Define simple type here to avoid import issues
   type MiniMapStarStatus = 'locked' | 'unlocked' | 'colonized' | 'hostile';
@@ -887,36 +882,31 @@ export function GameHUD({ empireName, onToggleSprawlView, onToggleVPRView }: Gam
       </div>
 
       {/* Tech Tree Modal */}
-      {showTechTree && TechTreeComponent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-6">
-          <div className="max-h-[90vh] max-w-[90vw] overflow-auto rounded-lg border border-gray-700 bg-gray-900 shadow-lg">
-            <TechTreeComponent visible={showTechTree} onClose={() => setShowTechTree(false)} />
-          </div>
+      {showTechTree && (
+        <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-8">
+          {techTreeLoading ? (
+            <div className="text-white">Loading Tech Tree...</div>
+          ) : (
+            TechTreeComponent && <TechTreeComponent visible={showTechTree} onClose={toggleTechTree} />
+          )}
         </div>
       )}
 
       {/* Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-6">
-          <div className="max-h-[90vh] max-w-[90vw] overflow-auto rounded-lg border border-gray-700 bg-gray-900 shadow-lg">
-            <div className="flex items-center justify-between border-b border-gray-700 p-4">
-              <h2 className="text-xl font-bold text-white">Settings</h2>
-              <button
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-800 hover:text-white"
-                onClick={() => setShowSettings(false)}
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-6">
-              <_SettingsPanel />
-            </div>
-          </div>
+        <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-8">
+          <_SettingsPanel />
+          <button
+            onClick={toggleSettings}
+            className="absolute top-4 right-4 text-gray-400 hover:text-white"
+          >
+            <X size={24} />
+          </button>
         </div>
       )}
 
       {/* Mini Map (if needed) */}
-      {!miniMapLoading && MiniMapComponent && activeMenu === 'exploration' && (
+      {!miniMapLoading && MiniMapComponent && activeCategory === 'exploration' && (
         <div className="absolute bottom-4 right-4 h-64 w-64 rounded-lg border border-gray-700 bg-gray-900 shadow-lg">
           <MiniMapComponent
             stars={[

@@ -543,7 +543,7 @@ export function DiscoveryClassification({
                   rows={3}
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="Add any additional notes about this classification..."
+                  placeholder="Add unknown additional notes about this classification..."
                 />
               </div>
 

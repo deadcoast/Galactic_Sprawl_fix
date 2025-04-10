@@ -61,7 +61,7 @@ class RecoveryServiceImpl extends AbstractBaseService<RecoveryServiceImpl> {
       this.metadata.metrics = {};
     }
 
-    // Load any existing snapshots from localStorage
+    // Load unknown existing snapshots from localStorage
     try {
       const savedSnapshots = localStorage.getItem('recovery_snapshots');
       if (savedSnapshots) {

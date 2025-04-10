@@ -29,7 +29,7 @@ export interface DataFetchResult<T> {
   data: T | null;
   /** Whether data is currently being fetched */
   isLoading: boolean;
-  /** Any error that occurred during fetching */
+  /** unknown error that occurred during fetching */
   error: Error | null;
   /** (...args: unknown[]) => unknown to manually trigger a fetch */
   fetch: () => Promise<void>;

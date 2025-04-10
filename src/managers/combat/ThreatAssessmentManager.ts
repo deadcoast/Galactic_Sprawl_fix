@@ -149,7 +149,7 @@ export class ThreatAssessmentManagerImpl implements ThreatAssessmentManager {
    * Private constructor to enforce singleton pattern
    */
   private constructor() {
-    // Initialize any required setup
+    // Initialize unknown required setup
   }
   
   /**

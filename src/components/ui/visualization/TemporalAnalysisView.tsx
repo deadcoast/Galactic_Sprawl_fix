@@ -188,7 +188,7 @@ const TemporalAnalysisView: React.FC<TemporalAnalysisViewProps> = ({
     // Select SVG element with proper typing
     const svg = d3.select<SVGSVGElement, unknown>(svgRef.current);
 
-    // Clear any existing elements
+    // Clear unknown existing elements
     svg.selectAll('*').remove();
 
     // Add chart group with margins

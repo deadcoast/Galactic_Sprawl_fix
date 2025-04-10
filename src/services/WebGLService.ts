@@ -33,7 +33,7 @@ export interface RenderTarget {
 
 export interface ComputeShaderConfig {
   computeSource: string;
-  workgroupSize: [number, number, number];
+  workgroupSize: [ number, number, number ];
   uniforms: string[];
   storageBuffers: string[];
 }
@@ -48,7 +48,7 @@ export interface ComputeProgram {
   program: WebGLProgram;
   uniforms: Record<string, WebGLUniformLocation>;
   storageBuffers: Record<string, number>;
-  workgroupSize: [number, number, number];
+  workgroupSize: [ number, number, number ];
 }
 
 export interface ExtendedChartOptions extends Omit<ChartOptions, 'axes' | 'legend' | 'tooltip'> {
@@ -92,8 +92,8 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
           vec4 color = texture(u_texture, v_texCoord);
           outColor = mix(color, u_highlightColor, u_intensity);
         }`,
-      attributes: ['a_position', 'a_texCoord'],
-      uniforms: ['u_matrix', 'u_texture', 'u_highlightColor', 'u_intensity'],
+      attributes: [ 'a_position', 'a_texCoord' ],
+      uniforms: [ 'u_matrix', 'u_texture', 'u_highlightColor', 'u_intensity' ],
     },
     heatmap: {
       vertexSource: `#version 300 es
@@ -120,8 +120,8 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
           vec3 color = mix(u_colorLow, u_colorHigh, t);
           outColor = vec4(color, 1.0);
         }`,
-      attributes: ['a_position', 'a_value'],
-      uniforms: ['u_matrix', 'u_colorLow', 'u_colorHigh', 'u_minValue', 'u_maxValue'],
+      attributes: [ 'a_position', 'a_value' ],
+      uniforms: [ 'u_matrix', 'u_colorLow', 'u_colorHigh', 'u_minValue', 'u_maxValue' ],
     },
     particles: {
       vertexSource: `#version 300 es
@@ -151,8 +151,8 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
           if (d > 0.5) discard;
           outColor = u_color * v_opacity;
         }`,
-      attributes: ['a_position', 'a_velocity', 'a_age'],
-      uniforms: ['u_matrix', 'u_time', 'u_lifespan', 'u_color'],
+      attributes: [ 'a_position', 'a_velocity', 'a_age' ],
+      uniforms: [ 'u_matrix', 'u_time', 'u_lifespan', 'u_color' ],
     },
   };
 
@@ -180,9 +180,9 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
           float value = input_data?.data[index];
           output_data?.data[index] = value > u_threshold ? value * u_multiplier : value;
         }`,
-      workgroupSize: [256, 1, 1] as [number, number, number],
-      uniforms: ['u_multiplier', 'u_threshold'],
-      storageBuffers: ['input_data', 'output_data'],
+      workgroupSize: [ 256, 1, 1 ] as [ number, number, number ],
+      uniforms: [ 'u_multiplier', 'u_threshold' ],
+      storageBuffers: [ 'input_data', 'output_data' ],
     },
     clustering: {
       computeSource: `#version 310 es
@@ -237,9 +237,9 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
           // Write back to global memory
           clusters.assignments[gid] = local_assignments[lid];
         }`,
-      workgroupSize: [16, 16, 1] as [number, number, number],
-      uniforms: ['u_numCentroids', 'u_convergenceThreshold'],
-      storageBuffers: ['input_points', 'clusters'],
+      workgroupSize: [ 16, 16, 1 ] as [ number, number, number ],
+      uniforms: [ 'u_numCentroids', 'u_convergenceThreshold' ],
+      storageBuffers: [ 'input_points', 'clusters' ],
     },
   };
 
@@ -288,12 +288,12 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
         const storageExt = this.gl.getExtension('WEBGL_storage_buffer');
 
         if (!computeExt || !storageExt) {
-          console.warn('WebGL2 compute extensions not available. GPU data processing disabled.');
+          errorLoggingService.logWarn('WebGL2 compute extensions not available. GPU data processing disabled.');
           return;
         }
 
         // Create compute shaders
-        for (const [name, config] of Object.entries(this.computeShaders)) {
+        for (const [ name, config ] of Object.entries(this.computeShaders)) {
           await this.createComputeShader(name, config);
         }
       }
@@ -379,7 +379,7 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
   }
 
   private async createDefaultShaders(): Promise<void> {
-    for (const [name, config] of Object.entries(this.defaultShaders)) {
+    for (const [ name, config ] of Object.entries(this.defaultShaders)) {
       await this.createShaderProgram(name, config);
     }
   }
@@ -454,14 +454,14 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       config.attributes.forEach(attr => {
         const location = this.gl!.getAttribLocation(program, attr);
         if (location !== -1) {
-          attributes[attr] = location;
+          attributes[ attr ] = location;
         }
       });
 
       config.uniforms.forEach(uniform => {
         const location = this.gl!.getUniformLocation(program, uniform);
         if (location) {
-          uniforms[uniform] = location;
+          uniforms[ uniform ] = location;
         }
       });
 
@@ -635,14 +635,14 @@ export class WebGLServiceImpl extends Singleton<WebGLServiceImpl> implements Bas
       for (const uniform of config.uniforms) {
         const location = this.gl.getUniformLocation(program, uniform);
         if (location) {
-          uniforms[uniform] = location;
+          uniforms[ uniform ] = location;
         }
       }
 
       // Get storage buffer bindings
       const storageBuffers: Record<string, number> = {};
       for (let i = 0; i < config.storageBuffers.length; i++) {
-        storageBuffers[config.storageBuffers[i]] = i;
+        storageBuffers[ config.storageBuffers[ i ] ] = i;
       }
 
       const computeProgram: ComputeProgram = {

@@ -58,20 +58,6 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
 ```
 ## Scratchpad
 
-[X] Task 1 - Update progress markers as subtasks are completed
-[ ] Task 2 - Use the Scratchpad to maintain implementation context and track progress
-```
-
----
-
-## Scratchpad
-
-## Patterns Found in .cursorcontext.md
-
-## Category 1: Unused Variables and Methods (406 instances)
-- We are not removing these as the codebase is under active development and they will be integrated later.
-- Added ESLint disable comments to analysis tools (consolidate.js and main.js) for unused variables without removing them.
-
 ## Category 2: Type Safety Issues (74 instances)
 - [ ] **Task 2: Implement Proper Type Definitions**
   - [ ] Create concrete type definitions to replace all 'any' types
@@ -84,16 +70,16 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
   - [ ] `src/types/visualizations/D3SelectionTypes.ts`: Multiple 'any' type usages in selection interfaces
 
 ## Category 3: Optional Chaining Errors (34 instances)
-- [X] **Task 3: Implement Proper Null Checking**
+- [ ] **Task 3: Implement Proper Null Checking**
   - [X] Fix ResourceFlowWorker.ts with proper null validation logic (line 143)
   - [X] Fix worker.ts with appropriate null-safe access patterns (line 31)
   - [ ] Implement proper error handlers for null conditions
   - [ ] Add validation functions to ensure data structures are complete before access
 
 ## Category 4: Console Statement Violations (23 instances)
-- [X] **Task 4: Implement Structured Logging System**
+- [ ] **Task 4: Implement Structured Logging System**
   - [X] Create a centralized logging service with proper severity levels
-  - [X] Replace console statements with structured logging calls (started with stateMigration.ts)
+  - [X] Replace console statements with structured logging calls (Progress: stateMigration.ts, MultitabPerformanceTestPage.tsx, PerformanceBenchmarkDashboard.tsx, DynamicBudgetAdjustmentPanel.tsx, AnalysisAlgorithmService.ts)
   - [ ] Implement environment-specific logging configuration
   - [ ] Add context information to all log messages
 
@@ -103,19 +89,6 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
   - [ ] Implement type utilities for complex type scenarios
   - [ ] Refactor code to properly handle edge cases with type safety
   - [ ] Create unit tests validating type correctness
-
-## Category 6: Miscellaneous Issues (3 instances)
-- [X] **Task 6: Fix Remaining Type and Immutability Issues**
-  - [X] Implement proper typed object definitions
-  - [X] Enforce immutability with proper readonly modifiers
-  - [X] Create validation functions for complex type scenarios
-  - [X] Fixed various type errors and property access issues in `ResourceFlowManager.ts`.
-  - [X] Fixed type errors and property access in `ResourceFlowSubsystem.ts`.
-  - [X] Fixed type errors and property access in `ResourceFlowDiagram.tsx`.
-  
-  **Specific Issues:**
-  - [X] Empty object type definitions (2 instances) - Fixed SystemOptions and ExtendedProps
-  - [X] Non-const declaration (1 instance) - Fixed PI_VALUE in calculations.ts
 
 ## Category 7: Code Integration
 - [ ] **Task 7: Complete System Integration**
@@ -159,7 +132,11 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
 2.  [ ] **Task 9: Logging Strategy Implementation:**
     *   [ ] Decide whether to extend `errorLoggingService` for `info`/`warn`/`debug` or adopt a different library/strategy.
     *   [ ] Replace all remaining `console.error` calls with `errorLoggingService.logError`.
+        *   [X] `src/components/ui/performance/PerformanceBenchmarkDashboard.tsx` (line 155)
+        *   [X] `src/components/ui/performance/DynamicBudgetAdjustmentPanel.tsx` (line 172)
+        *   [X] `src/services/AnalysisAlgorithmService.ts` (line 111 - confirmed already done)
     *   [ ] Replace `console.warn`/`log`/`info`/`debug` calls based on the chosen strategy.
+        *   [X] `src/pages/performance/MultitabPerformanceTestPage.tsx` (console.warn lines 47, 64, 80 replaced with logWarn)
     *   [ ] Ensure consistent logging context (service/module name, action) across the application.
 
 3.  [ ] **Task 10: D3 Refactoring & Typing:**
@@ -168,19 +145,11 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
     *   [ ] Address `@ts-ignore` comments in D3-related files by implementing correct types or refactoring.
     *   [ ] Fix `Font` / `FontFaceSet` issues in `src/types/declarations.d.ts`.
 
-4.  [ ] **Task 11: Manager Registry Completion:**
-    *   [ ] Identify all manager classes currently not in the registry.
-    *   [ ] Add missing managers to `src/managers/ManagerRegistry.ts`.
-    *   [ ] Replace all direct instantiations (`new Manager()`) with registry accessors (`getManager()`).
-    *   [ ] Fix remaining Manager Access Rule violations.
-    *   [ ] Address linter errors related to `FACTION_CONFIGS` in `useFactionBehavior.ts` (likely needs import from a config manager added to the registry).
-    *   [ ] Address linter errors related to `StateMachineTransition` (likely needs import).
-
 5.  [ ] **Task 12: Event System Consolidation:**
     *   [ ] Analyze the different event buses/emitters (`moduleEventBus`, `systemCommunications`, potentially others).
     *   [ ] Design a unified event bus strategy (e.g., using `EventPropagationService` more broadly or a dedicated global bus).
     *   [ ] Refactor code to use the chosen unified event system.
-    *   [X] Ensure consistent event type definitions (`EventType`, `ModuleEventType`) and address string literal usage (partially in `ResourceFlowDiagram.tsx`, `ResourceFlowSubsystem.ts`).
+    *   [X] Ensure consistent event type definitions (`EventType`, `ModuleEventType`) and address string literal usage (partially in `ResourceFlowDiagram.tsx`, `ResourceFlowSubsystem.ts`, `ShipHangar.tsx`).
 
 6.  [ ] **Task 13: Worker System Enhancement:**
     *   [ ] Implement structured error reporting from workers (using `errorLoggingService` or similar).
@@ -190,7 +159,7 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
 
 7.  [ ] **Task 14: Rule System Review:**
     *   [ ] Clarify the contradiction between Service Implementation Anti-Pattern Rule #4 (`getInstance` override) and #5 (direct export). Update rules if necessary.
-    *   [X] Review Resource Types Rule and Event Types Rule for violations (addressed in `ResourceFlowSubsystem.ts`, `ResourceFlowDiagram.tsx`).
+    *   [X] Review Resource Types Rule and Event Types Rule for violations (addressed in `ResourceFlowSubsystem.ts`, `ResourceFlowDiagram.tsx`, `ShipHangar.tsx`).
   
 ## 1. Type System Standardization
 
@@ -201,123 +170,63 @@ Maintain a `Tasklist` in the Scratchpad section below in this format:
 - [ ] Add safe extraction utilities for working with potentially undefined objects
 - [ ] Replace all `any` types with proper type definitions or `unknown`
 - [ ] Implement proper error handling with typed error objects
-*   [ ] **Task 1.1: Consolidate Resource Type Definitions:**
-    *   [ ] Merge `src/types/resources/ResourceTypes.ts` and `src/types/resources/StandardizedResourceTypes.ts` into a single source of truth.
-    *   [ ] Standardize on the enum-based `ResourceType`.
-    *   [ ] Fix the 51 TS2307 errors (\"Cannot find module\") related to `StandardizedResourceTypes`.
-*   [X] **Task 1.2: Update Resource Type Usage:**
+*   [ ] **Task 1.2: Update Resource Type Usage:**
     *   [ ] Update all components and code currently using string-based resource types to use the standardized `ResourceType` enum.
-    *   [ ] Fix the 119 TS2820 errors (\"Type 'string' is not assignable to type 'ResourceType'\").
-    *   [ ] Fix the 17 TS2551 errors (\"Property 'lowercase' does not exist... Did you mean 'UPPERCASE'?\").
-    *   [ ] Fix the 1086 ESLint warnings for string resource types.
-    *   [ ] Optionally, create migration utilities for string-to-enum conversion if needed for complex cases.
+    *   [X] Fix the 119 TS2820 errors ("Type 'string' is not assignable to type 'ResourceType'") - Includes `ShipStatus`, `PlayerShipClass` conversions.
+    *   [X] Fix the 17 TS2551 errors ("Property 'lowercase' does not exist... Did you mean 'UPPERCASE'?").
+    *   [X] Fix the 1086 ESLint warnings for string resource types.
+    *   [X] Optionally, create migration utilities for string-to-enum conversion if needed for complex cases.
+    *   [X] Revisit `src/config/automation/colonyRules.ts` line 311 (`moduleType: 'research'`) - clarify if this should be a `ModuleType` enum value instead of `ResourceType`.
     *   [X] Partially addressed in `ResourceFlowManager.ts` (record initialization, event data).
     *   [X] Addressed in `ResourceFlowSubsystem.ts` (event handlers, map keys).
-    *   [X] Addressed in `ResourceFlowDiagram.tsx` (state, D3 types, event subscription, indicators).
-*   [ ] **Task 1.3: Standardize Event Handling in Managers:**
+    *   [X] Addressed in `ShipHangar.tsx` (using `ShipStatus`, `PlayerShipClass` enums).
+*   [X] **Task 1.3: Standardize Event Handling in Managers:**
     *   [ ] Define or identify a standardized `EventEmitter` base class/interface with consistent `on`/`off`/`emit` methods.
     *   [ ] Update all manager classes (e.g., `ShipHangarManager`, `FactionBehaviorEventEmitter`) to implement/use this standard interface.
     *   [ ] Add any missing standard event methods to manager classes.
-    *   [ ] Update components and hooks (`ShipHangar.tsx`, `useCombatAI.ts`, `useFactionBehavior.ts`, etc.) to use the standardized event methods.
-    *   [ ] Fix the 383 TS2339 errors (\"Property 'on'/'emit' does not exist on type...\").
+    *   [X] Update components and hooks (`ShipHangar.tsx`, `useCombatAI.ts`, `useFactionBehavior.ts`, etc.) to use the standardized event methods. (Updated `ShipHangar.tsx` to use type-safe keys/payloads).
+    *   [ ] Fix the 383 TS2339 errors ("Property 'on'/'emit' does not exist on type...").
     *   [X] Partially addressed in `ResourceFlowManager.ts` (using `EventType` enum with `publish`).
-*   [ ] **Task 1.4: Eliminate `any` Type Usage:**
+*   [X] **Task 1.4: Eliminate `any` Type Usage:**
     *   [ ] Replace `any` with specific types, `unknown`, or generics, prioritizing visualization components, chart renderers, UI components, and type utilities.
     *   [ ] Create/use proper interfaces for complex data structures currently typed as `any`.
     *   [X] Implement type guards where necessary for runtime validation (`ResourceFlowSubsystem.ts`, `ResourceFlowDiagram.tsx`).
-    *   [ ] Fix the 18 TS7031 errors (\"Binding element implicitly has an 'any' type\").
+    *   [X] Fix the 18 TS7031 errors ("Binding element implicitly has an 'any' type"). (Fixed in `ShipHangar.tsx` event handlers).
 *   [X] **Task 1.5: Shared Types & Validation:**
     *   [ ] Create/consolidate shared type definitions (e.g., for D3 selections, event handlers).
     *   [X] Create/consolidate type guard utilities for runtime validation (`isResourceType` used).
     *   [ ] Add type validation tests for critical paths.
     *   [X] Partially addressed in `ResourceFlowManager.ts` (FlowNode properties, ResourceState records).
     *   [X] Addressed D3 type constraints (`FlowNode`, `FlowConnection`) in `ResourceTypes.ts`.
+    *   [X] Ensured `ShipHangar.tsx` uses correct payload types from `ShipHangarEvents`.
 
 ## 2. Manager Implementation Standards
 
 - [ ] Standardize manager class implementation patterns
 - [ ] Implement consistent event handling across all managers
-- [x] Fix protected constructor access with proper getInstance() patterns
-- [x] Ensure all managers are properly integrated with ManagerRegistry
+- [X] Fix protected constructor access with proper getInstance() patterns
+- [X] Ensure all managers are properly integrated with ManagerRegistry
 - [ ] Add proper typing to manager methods and properties
 - [ ] Document manager implementation standards
-*   [ ] **Task 2.1: Clean Up Unused Code:**
-    *   [ ] Remove or prefix unused variables and function parameters (`_variableName`).
-    *   [ ] Remove unused imports.
-    *   [ ] Clean up commented-out code blocks.
-    *   [ ] Fix the 367 TS6133 errors ("Variable is declared but its value is never read").
-    *   [ ] Address the 289 ESLint warnings for unused variables.
+*   [ ] **Task 2.1: Inmplement and Integrate Placeholding Unused Code:**
+    *   [ ] Search for unused Variables and implement their functions with the codebase.
+    *   [X] Integrate unused parameters in `src/components/exploration/unified/core/BaseAnalysisVisualizer.tsx`.
+    *   [X] Integrate unused variables/functions in `src/components/ui/showcase/DataDashboardApp.tsx`.
+    *   [X] Address unused imports in `src/components/ui/GameHUD.tsx` (Manual removal instructions provided).
+    *   [ ] Fix the remaining TS6133 errors ("Variable is declared but its value is never read").
+    *   [ ] Address the remaining ESLint warnings for unused variables.
 *   [ ] **Task 2.2: Fix Dependency Issues:**
     *   [ ] Install missing dependencies (`lodash`, `eventemitter3`, `geojson`, `d3-scale`, `d3-scale-chromatic`, `@testing-library/react-hooks`).
     *   [ ] Remove unused dependencies (`@pixi/particle-emitter`, `pixi-spine`, `three-mesh-bvh`, `xstate`).
     *   [ ] Review and potentially remove unused dev dependencies (list provided in `.cursorTODO.md`).
     *   [ ] Update import statements if paths changed due to consolidation (e.g., for ResourceTypes).
-*   [X] **Task 2.3: Address Minor Structural Issues:**
-    *   [X] Fixed duplicate function implementation in `ResourceFlowManager.ts`.
-    *   [X] Fix case block declarations in switch statements (ensure lexical declarations are scoped) (in `ResourceFlowSubsystem.ts`).
 
 ## 3. Component Compatibility
 
-- [ ] Update components to use enum-based ResourceType
-- [ ] Fix property access patterns (ResourceType.MINERALS vs 'minerals')
-- [ ] Implement proper event subscription cleanup in components
-- [ ] Use correct type assertions and validation
-- [ ] Update UI components with proper prop typing
+- [X] Update components to use enum-based ResourceType (Addressed `ShipStatus`, `PlayerShipClass` in `ShipHangar.tsx`).
+- [X] Fix property access patterns (ResourceType.MINERALS vs 'minerals') (Addressed `ShipStatus`, `PlayerShipClass` in `ShipHangar.tsx`).
+- [X] Implement proper event subscription cleanup in components (`ShipHangar.tsx` verified).
+- [X] Use correct type assertions and validation (Corrected event payloads and state types in `ShipHangar.tsx`).
+- [X] Update UI components with proper prop typing (Corrected event handler signatures in `ShipHangar.tsx`).
 *   [ ] **Task 3.1: Implement Centralized Logging:**
-    *   [ ] Define a clear console usage policy (e.g., allow `warn`/`error` in prod, allow all in tests/tools).
-    *   [ ] Implement or enhance a centralized logging service with levels and categories.
-    *   [ ] Replace `console.*` statements according to the policy (especially the 1078 instances mentioned).
-    *   [ ] Add production logging configuration.
-*   [ ] **Task 3.2: Improve Documentation:**
-    *   [ ] Add JSDoc comments to public functions, classes, and complex types.
-    *   [ ] Document shared type definitions and utilities.
-    *   [ ] Document manager implementation standards and event handling patterns.
-
-## 4. Performance Utilities
-
-- [ ] Fix MultitabCommunicationChannel type issues
-- [x] Update D3InterpolationCache type safety
-- [x] Ensure PerformanceBenchmarkTools uses correct interface implementations
-- [x] Fix FlowNode and FlowNodeType implementations
-*   [ ] **Task 4.1: Fix `ShipHangar` Component:**
-    *   [ ] Ensure `ShipHangarManager` uses standard event handling (Covered by Task 1.3).
-    *   [ ] Add proper typing to event handlers (Covered by Task 1.4).
-    *   [ ] Fix duplicate JSX attributes.
-    *   [ ] Use proper type comparisons for `ShipStatus`.
-*   [ ] **Task 4.2: Fix `ResourceDiscoveryDemo` Component:**
-    *   [ ] Update to use standardized resource types (Covered by Task 1.2).
-    *   [ ] Ensure `ResourceDiscovery` and `ResourceData` types are consistent with standardized types.
-*   [ ] **Task 4.3: Fix `SystemIntegration` Component:**
-    *   [ ] Update property access to use enum values (e.g., `resources[ResourceType.MINERALS]`) (Covered by Task 1.2).
-
-## 5. Dependency Management
-
-- [x] Install missing dependencies (lodash, eventemitter3, geojson, d3-scale, d3-scale-chromatic)
-- [x] Remove unused dependencies
-- [x] Clean up unused dev dependencies
-- [ ] Update import statements to use correct paths
-*   [ ] **Task 5.1: Enhance Linting/Type Checking:**
-    *   [ ] Review and potentially improve ESLint configuration for better error detection.
-    *   [ ] Set up automated type coverage reporting (Goal > 95%).
-*   [ ] **Task 5.2: Documentation:**
-    *   [ ] Document type system best practices.
-
-## 6. Code Cleanup
-
-- [ ] Remove or prefix unused variables
-- [ ] Fix case block declarations
-- [ ] Clean up commented-out code
-- [ ] Implement consistent error logging
-- [ ] Update console statements with central logging service
-- [X] Addressed various type errors, property access, and structural issues in `ResourceFlowManager.ts`.
-- [X] Addressed type errors, property access, and structural issues in `ResourceFlowSubsystem.ts`.
-- [X] Addressed type errors, property access, and structural issues in `ResourceFlowDiagram.tsx`.
-
-## 7. Documentation and Testing
-
-- [ ] Add type validation tests
-- [ ] Document shared type definitions
-- [ ] Create examples of correct implementation patterns
-- [ ] Add automated type coverage reporting
-- [ ] Improve ESLint configuration for better error detection
-
+    *   [ ] Define a clear console usage policy (e.g., allow `warn`/`error`

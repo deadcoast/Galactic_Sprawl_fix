@@ -259,7 +259,7 @@ export function AutomatedSectorScanner({
           resourcesDiscovered: prev.resourcesDiscovered + (scannedSector.resources?.length ?? 0),
         }));
 
-        // Notify of any anomalies
+        // Notify of unknown anomalies
         scannedSector.anomalies?.forEach(anomaly => {
           onAnomalyDetected(scannedSector.id, anomaly);
         });

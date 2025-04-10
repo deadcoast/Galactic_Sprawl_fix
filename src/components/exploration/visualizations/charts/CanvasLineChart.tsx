@@ -167,7 +167,7 @@ interface HoveredPoint {
 
 /**
  * CanvasLineChart is a high-performance line chart using Canvas rendering
- * instead of SVG, optimized for time series with many data points.
+ * instead of SVG, optimized for time series with munknown data points.
  */
 export const CanvasLineChart: React.FC<CanvasLineChartProps> = ({
   data,

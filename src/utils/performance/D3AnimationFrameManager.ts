@@ -349,7 +349,7 @@ export function createAnimationFrameManager(config: AnimationFrameManagerConfig 
   }
 
   /**
-   * Check if there are any running animations
+   * Check if there are unknown running animations
    */
   function hasRunningAnimations(): boolean {
     return Array.from(animations.values()).some(anim => anim.status === 'running');

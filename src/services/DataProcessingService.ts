@@ -77,23 +77,21 @@ export class DataProcessingService {
    * Handle messages received from the web worker
    */
   private handleWorkerMessage = (event: MessageEvent): void => {
-    const { id, result, error } = event?.data;
+    const { id, error, data } = event.data;
 
-    // Look up the pending request
-    const request = this.pendingRequests.get(id);
-    if (!request) {
-      console.warn(`Received response for unknown request ID: ${id}`);
-      return;
-    }
+    if (this.pendingRequests.has(id)) {
+      const { resolve, reject } = this.pendingRequests.get(id)!;
 
-    // Remove the request from the pending map
-    this.pendingRequests.delete(id);
-
-    // Resolve or reject the promise
-    if (error) {
-      request.reject(new Error(error));
+      if (error) {
+        // Ensure rejection is always an Error instance
+        const errorToSend = error instanceof Error ? error : new Error(String(error ?? 'Worker Error'));
+        reject(errorToSend);
+      } else {
+        // Resolves with whatever 'data' the worker sent
+        resolve(data);
+      }
     } else {
-      request.resolve(result);
+      errorLoggingService.logWarn(`Received response for unknown request ID: ${id}`);
     }
   };
 

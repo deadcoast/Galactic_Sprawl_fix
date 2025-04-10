@@ -36,7 +36,7 @@ declare global {
     // Combat system managers
     combatManager?: CombatManager;
 
-    // Add any other global properties here as needed
+    // Add unknown other global properties here as needed
   }
 }
 

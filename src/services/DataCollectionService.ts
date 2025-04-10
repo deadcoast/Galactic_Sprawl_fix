@@ -555,7 +555,7 @@ export class DataCollectionService {
     // Create enhanced metadata
     let metadata: Record<string, PropertyType> = {};
 
-    // Add any existing metadata from anomaly.data
+    // Add unknown existing metadata from anomaly.data
     if (typeof anomaly.data === 'object' && anomaly.data !== null) {
       Object.entries(anomaly.data).forEach(([key, value]) => {
         if (

@@ -179,7 +179,7 @@ export const ModuleCard = memo(function ModuleCard({
             )}
           </div>
 
-          {/* Show alerts if any */}
+          {/* Show alerts if unknownnown */}
           {alerts && alerts.length > 0 && (
             <div className="module-card__alerts">
               <h4 className="module-card__section-title">Alerts ({alerts.length})</h4>

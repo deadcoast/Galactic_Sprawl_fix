@@ -6,7 +6,7 @@
  */
 
 import { ResourceType } from '../resources/ResourceTypes';
-import { ShipStatus, ShipType } from '../ships/ShipTypes';
+import { ShipCategory, ShipStatus } from '../ships/ShipTypes';
 
 /**
  * Ship cargo interface
@@ -22,7 +22,7 @@ export interface ShipCargo {
 export interface Ship {
   id: string;
   name: string;
-  type: ShipType;
+  type: ShipCategory;
   level: number;
   health: number;
   maxHealth: number;
@@ -123,12 +123,12 @@ export interface ShipEvents {
    * Emitted when a new ship type becomes available
    */
   'ship-type:available': {
-    shipType: ShipType;
+    shipType: ShipCategory;
     requirements: Record<string, unknown>;
   };
 
   /**
-   * Index signature for any other events
+   * Index signature for unknown other events
    */
-  [key: string]: unknown;
+  [ key: string ]: unknown;
 }

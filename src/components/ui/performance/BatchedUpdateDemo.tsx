@@ -503,7 +503,7 @@ const BatchedUpdateDemo: React.FC<BatchedUpdateDemoProps> = ({ width = 900, heig
         </ul>
         <p>
           This results in smoother animations with higher frame rates, especially for complex
-          visualizations with many elements and frequent updates.
+          visualizations with munknownnown elements and frequent updates.
         </p>
       </div>
     </div>

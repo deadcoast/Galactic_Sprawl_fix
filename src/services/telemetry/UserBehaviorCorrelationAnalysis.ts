@@ -324,7 +324,7 @@ export class UserBehaviorCorrelationAnalysis {
 
     // Calculate means
     const meanX = xValues.reduce((sum, x) => sum + x, 0) / n;
-    const meanY = yValues.reduce((sum, y) => sum + y, 0) / n;
+    const meunknown = yValues.reduce((sum, y) => sum + y, 0) / n;
 
     // Calculate covariance and variances
     let covariance = 0;
@@ -333,7 +333,7 @@ export class UserBehaviorCorrelationAnalysis {
 
     for (let i = 0; i < n; i++) {
       const diffX = xValues[i] - meanX;
-      const diffY = yValues[i] - meanY;
+      const diffY = yValues[i] - meunknown;
 
       covariance += diffX * diffY;
       varianceX += diffX * diffX;

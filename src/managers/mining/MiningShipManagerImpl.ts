@@ -1,7 +1,7 @@
-import { ThresholdEvent, thresholdEvents } from '../../contexts/ThresholdTypes';
 import { shipBehaviorManager } from '../../lib/ai/shipBehavior';
 import { shipMovementManager } from '../../lib/ai/shipMovement';
 import { eventSystem } from '../../lib/events/UnifiedEventSystem';
+import { ThresholdEvent, thresholdEvents } from '../../services/ResourceThresholdMonitor';
 import { Position } from '../../types/core/GameTypes';
 import {
   EventType,
@@ -13,13 +13,11 @@ import {
   MiningTaskCompletedEventData
 } from '../../types/events/EventTypes';
 import {
-  ResourceType,
-  ResourceTypeHelpers,
-  ResourceTypeString
+  ResourceType
 } from '../../types/resources/ResourceTypes';
 
-// Define ship status and task status as enums for type safety
-enum ShipStatus {
+// Export ShipStatus for use by related modules like MiningResourceIntegration
+export enum ShipStatus {
   IDLE = 'idle',
   MINING = 'mining',
   RETURNING = 'returning',
@@ -86,7 +84,7 @@ export class MiningShipManagerImpl {
         this.dispatchShipToResource(availableShip.id, resourceId);
       }
     } else if (details.type === 'above_maximum') {
-      // Recall any ships mining this resource
+      // Recall unknown ships mining this resource
       const assignedShipId = this.nodeAssignments.get(resourceId);
       if (assignedShipId) {
         this.recallShip(assignedShipId);
@@ -188,7 +186,7 @@ export class MiningShipManagerImpl {
     this.ships.delete(shipId);
     shipBehaviorManager.unregisterShip(shipId);
 
-    // Clean up any tasks
+    // Clean up unknown tasks
     Array.from(this.tasks.values())
       .filter(task => task.shipId === shipId)
       .forEach(task => {
@@ -302,13 +300,16 @@ export class MiningShipManagerImpl {
       case ResourceType.ENERGY:
         return ResourceType.ENERGY;
       // Add other expected ResourceType enum values here if needed
-      default:
-         // Try to map any other string to enum, default to MINERALS
-        try {
-           return ResourceTypeHelpers.stringToEnum(resourceStr as ResourceTypeString) || ResourceType.MINERALS;
-        } catch {
-            return ResourceType.MINERALS; // Fallback
+      default: {
+        // Check if the nodeId string matches unknown ResourceType enum value
+        const upperNodeId = resourceStr.toUpperCase(); // Use resourceStr which is nodeId
+        if (Object.values(ResourceType).includes(upperNodeId as ResourceType)) {
+          return upperNodeId as ResourceType;
         }
+        // Fallback if the string doesn't match unknown known ResourceType
+        console.warn(`[MiningShipManagerImpl] Unknown resource type inferred from nodeId: ${nodeId}. Defaulting to MINERALS.`);
+        return ResourceType.MINERALS;
+      }
     }
   }
 

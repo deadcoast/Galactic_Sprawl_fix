@@ -39,7 +39,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     // Log the error to the console - REMOVED as it's handled by onError or default logging service
     // console.error('Global error caught by GlobalErrorBoundary:', error, errorInfo);
 
-    // Send the error to any error logging service
+    // Send the error to unknownnown error logging service
     if (this.props?.onError) {
       this.props?.onError(error, errorInfo);
     } else {

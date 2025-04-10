@@ -6,6 +6,7 @@
  */
 
 import { AbstractBaseManager } from '../../lib/managers/BaseManager';
+import { errorLoggingService } from '../../services/ErrorLoggingService'; // Import the service
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import {
@@ -188,7 +189,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     }
 
     // Get the current step
-    const {currentStepIndex} = status;
+    const { currentStepIndex } = status;
     if (currentStepIndex >= status.recipeIds.length) {
       // Chain is complete
       status.completed = true;
@@ -196,8 +197,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
       return;
     }
 
-    const currentRecipeId = status.recipeIds[currentStepIndex];
-    const stepStatus = status.stepStatus[currentStepIndex];
+    const currentRecipeId = status.recipeIds[ currentStepIndex ];
+    const stepStatus = status.stepStatus[ currentStepIndex ];
 
     // If step is already in progress or completed, skip
     if (stepStatus.status !== 'pending') {
@@ -220,7 +221,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
         converter.status &&
         converter.configuration &&
         converter.status.activeProcesses.length >=
-          converter.configuration.maxConcurrentProcesses
+        converter.configuration.maxConcurrentProcesses
       ) {
         continue;
       }
@@ -283,27 +284,27 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     }
 
     try {
-        const flowManager = ResourceFlowManager.getInstance();
-        const allNodes = flowManager.getNodes(); 
-        // Filter for nodes of type CONVERTER
-        const allConverters = allNodes.filter(
-            (node: FlowNode): node is ConverterFlowNode => node.type === FlowNodeType.CONVERTER
-        );
+      const flowManager = ResourceFlowManager.getInstance();
+      const allNodes = flowManager.getNodes();
+      // Filter for nodes of type CONVERTER
+      const allConverters = allNodes.filter(
+        (node: FlowNode): node is ConverterFlowNode => node.type === FlowNodeType.CONVERTER
+      );
 
-        // Filter converters based on supportedRecipeIds
-        const suitableConverters = allConverters.filter((converter: ConverterFlowNode) => {
-            // Check if the converter explicitly supports the recipe ID
-            return converter.supportedRecipeIds?.includes(recipeId);
-        });
+      // Filter converters based on supportedRecipeIds
+      const suitableConverters = allConverters.filter((converter: ConverterFlowNode) => {
+        // Check if the converter explicitly supports the recipe ID
+        return converter.supportedRecipeIds?.includes(recipeId);
+      });
 
-        if (suitableConverters.length === 0) {
-             console.warn(`[RCM] No suitable converters found supporting recipe ${recipeId}`);
-        }
+      if (suitableConverters.length === 0) {
+        console.warn(`[RCM] No suitable converters found supporting recipe ${recipeId}`);
+      }
 
-        return suitableConverters;
+      return suitableConverters;
     } catch (error) {
-        console.error(`[RCM] Error fetching or filtering converters for recipe ${recipeId}:`, error);
-        return [];
+      console.error(`[RCM] Error fetching or filtering converters for recipe ${recipeId}:`, error);
+      return [];
     }
   }
 
@@ -326,7 +327,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
   private processConversions(): void {
     // Process each active conversion
     for (let i = 0; i < this.processingQueue.length; i++) {
-      const process = this.processingQueue[i];
+      const process = this.processingQueue[ i ];
       if (!process.active || process.paused) {
         continue;
       }
@@ -379,28 +380,28 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     // Get the converter (needed for efficiency calculation if not already stored in process)
     // Assuming we can retrieve the node info from the flow manager using process.sourceId
     let efficiency = process.appliedEfficiency; // Use pre-calculated if available
-    if (efficiency === undefined || efficiency === null) { 
-        // Recalculate if not applied earlier (e.g., if _applyEfficiencyToProcess wasn't called)
-        try {
-            const converterNode = ResourceFlowManager.getInstance().getNode(process.sourceId);
-            if (converterNode && converterNode.type === FlowNodeType.CONVERTER) {
-                 efficiency = this.calculateConverterEfficiency(converterNode as ConverterFlowNode, recipe);
-                 process.appliedEfficiency = efficiency; // Store it back
-            } else {
-                console.warn(`[RCM] Converter node ${process.sourceId} not found or invalid for efficiency calc.`);
-                efficiency = 0; // Default to 0 if converter not found
-            }
-        } catch (error) {
-             console.error(`[RCM] Error getting converter/calculating efficiency for process ${process.processId}:`, error);
-             efficiency = 0; // Default to 0 on error
+    if (efficiency === undefined || efficiency === null) {
+      // Recalculate if not applied earlier (e.g., if _applyEfficiencyToProcess wasn't called)
+      try {
+        const converterNode = ResourceFlowManager.getInstance().getNode(process.sourceId);
+        if (converterNode && converterNode.type === FlowNodeType.CONVERTER) {
+          efficiency = this.calculateConverterEfficiency(converterNode as ConverterFlowNode, recipe);
+          process.appliedEfficiency = efficiency; // Store it back
+        } else {
+          console.warn(`[RCM] Converter node ${process.sourceId} not found or invalid for efficiency calc.`);
+          efficiency = 0; // Default to 0 if converter not found
         }
+      } catch (error) {
+        console.error(`[RCM] Error getting converter/calculating efficiency for process ${process.processId}:`, error);
+        efficiency = 0; // Default to 0 on error
+      }
     }
     efficiency = Math.max(0, Math.min(efficiency, 2)); // Clamp efficiency
 
     // Adjust outputs based on efficiency
     const efficientOutputs = recipe.outputs.map(output => ({
-        ...output,
-        amount: Math.floor(output.amount * efficiency) // Apply efficiency, ensure integer amount
+      ...output,
+      amount: Math.floor(output.amount * efficiency) // Apply efficiency, ensure integer amount
     }));
 
     // Publish completion event with *efficient* outputs
@@ -421,9 +422,9 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     });
 
     // Update chain execution if this process is part of a chain
-    for (const [chainId, chainStatus] of this.chainExecutions.entries()) {
+    for (const [ chainId, chainStatus ] of this.chainExecutions.entries()) {
       for (let i = 0; i < chainStatus.stepStatus.length; i++) {
-        const step = chainStatus.stepStatus[i];
+        const step = chainStatus.stepStatus[ i ];
         if (step.processId === process.processId) {
           // Mark step as complete
           step.status = 'completed';
@@ -458,9 +459,9 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
   private _applyEfficiencyToProcess(process: ResourceConversionProcess, converterNode: FlowNode): void {
     // 1. Verify the node is actually a converter
     if (converterNode.type !== FlowNodeType.CONVERTER) {
-        console.error(`[RCM] Attempted to apply efficiency using a non-converter node (${converterNode.id}) for process ${process.processId}`);
-        process.appliedEfficiency = 0; // Or handle error appropriately
-        return;
+      console.error(`[RCM] Attempted to apply efficiency using a non-converter node (${converterNode.id}) for process ${process.processId}`);
+      process.appliedEfficiency = 0; // Or handle error appropriately
+      return;
     }
     // Cast to ConverterFlowNode after check
     const converter = converterNode as ConverterFlowNode;
@@ -475,15 +476,25 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
 
     // 3. Calculate efficiency
     try {
-        const efficiency = this.calculateConverterEfficiency(converter, recipe);
-        // 4. Apply the calculated efficiency to the process
-        process.appliedEfficiency = Math.max(0, Math.min(efficiency, 2)); // Clamp efficiency (e.g., 0% to 200%)
-        
-        console.log(`[RCM] Applied efficiency ${process.appliedEfficiency.toFixed(2)} to process ${process.processId} on converter ${converter.id}`);
+      const efficiency = this.calculateConverterEfficiency(converter, recipe);
+      // 4. Apply the calculated efficiency to the process
+      process.appliedEfficiency = Math.max(0, Math.min(efficiency, 2)); // Clamp efficiency (e.g., 0% to 200%)
+
+      // Log the efficiency application for debugging/monitoring
+      errorLoggingService.logInfo(
+        `Applied efficiency ${process.appliedEfficiency.toFixed(2)} to process ${process.processId} on converter ${converter.id}`,
+        {
+          service: 'ResourceConversionManager',
+          method: 'applyEfficiency',
+          processId: process.processId,
+          converterId: converter.id,
+          efficiency: process.appliedEfficiency,
+        }
+      );
 
     } catch (error) {
-        console.error(`[RCM] Error calculating efficiency for process ${process.processId} on converter ${converter.id}:`, error);
-        process.appliedEfficiency = 0; // Default to 0 on error
+      console.error(`[RCM] Error calculating efficiency for process ${process.processId} on converter ${converter.id}:`, error);
+      process.appliedEfficiency = 0; // Default to 0 on error
     }
   }
 
@@ -517,17 +528,17 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
 
     // Apply converter config modifiers
     if (converter.configuration?.efficiencyModifiers) {
-      const recipeModifier = converter.configuration.efficiencyModifiers[recipe.id] || 1;
+      const recipeModifier = converter.configuration.efficiencyModifiers[ recipe.id ] || 1;
       efficiency *= recipeModifier;
     }
 
     // Apply resource quality factors
     // Cast to the required type to fix the type compatibility issue
-    const inputs = recipe.inputs as unknown as { type: ResourceType | number; amount: number }[];
+    const inputs = recipe.inputs as unknown as { type: ResourceType | number; amount: number; }[];
     const qualityFactors = this.calculateResourceQualityFactors(inputs);
 
     // Apply quality factors
-    Object.entries(qualityFactors).forEach(([_key, value]) => {
+    Object.entries(qualityFactors).forEach(([ _key, value ]) => {
       efficiency *= value;
     });
 
@@ -542,7 +553,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
    * Calculate resource quality factors for a set of inputs
    */
   private calculateResourceQualityFactors(
-    _inputs: { type: ResourceType | number; amount: number }[]
+    _inputs: { type: ResourceType | number; amount: number; }[]
   ): Record<string, number> {
     // Implementation would calculate quality factors
     // For now, return a placeholder object
@@ -641,9 +652,9 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
           step => step.processId === processId
         );
         if (stepIndex !== -1) {
-          chainStatus.stepStatus[stepIndex].status = status;
+          chainStatus.stepStatus[ stepIndex ].status = status;
           if (status === 'completed' || status === 'failed') {
-            chainStatus.stepStatus[stepIndex].endTime = Date.now();
+            chainStatus.stepStatus[ stepIndex ].endTime = Date.now();
           }
           // Update overall chain progress
           chainStatus.progress = this.calculateChainProgress(chainStatus);

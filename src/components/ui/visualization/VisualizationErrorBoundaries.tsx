@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { ErrorInfo } from 'react';
-import ResourceDistributionChart from '../resource/ResourceDistributionChart';
+import ResourceDistributionChart from '../../exploration/visualizations/charts/ResourceDistributionChart';
 import {
-  createTypedErrorBoundary,
-  D3VisualizationErrorBoundary,
-  ErrorFallbackProps,
+    createTypedErrorBoundary,
+    D3VisualizationErrorBoundary,
+    ErrorFallbackProps,
 } from './D3VisualizationErrorBoundary';
 import FlowDiagram from './FlowDiagram';
 import TemporalAnalysisView from './TemporalAnalysisView';
@@ -93,7 +93,7 @@ export const SafeTemporalAnalysisView = createTypedErrorBoundary(
 );
 
 /**
- * Wraps any D3 visualization component with an error boundary
+ * Wraps unknown D3 visualization component with an error boundary
  *
  * @param Component The component to wrap
  * @param componentName Name of the component for error reporting

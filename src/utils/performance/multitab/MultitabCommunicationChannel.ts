@@ -444,7 +444,7 @@ export class MultitabCommunicationChannel {
   }
 
   /**
-   * Check if there are any active tabs (including this one)
+   * Check if there are unknown active tabs (including this one)
    */
   public getActiveTabCount(): number {
     return this.knownTabs.size;

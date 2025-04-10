@@ -1,9 +1,12 @@
 import { EventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { Position } from '../../types/core/GameTypes';
-import { FlowNode, FlowNodeType, ResourceType } from '../../types/resources/ResourceTypes';
+import { EventType } from '../../types/events/EventTypes';
+import { FlowNode, FlowNodeType, ResourceState, ResourceType } from '../../types/resources/ResourceTypes';
 import { ResourceFlowManager } from '../resource/ResourceFlowManager';
 import { ResourceThresholdManager, ThresholdConfig } from '../resource/ResourceThresholdManager';
+import { ShipStatus } from '../ships/ShipHangarManager';
 import { MiningShipManagerImpl } from './MiningShipManagerImpl';
 
 // Define interfaces for the types we need
@@ -352,11 +355,15 @@ export class MiningResourceIntegration {
   }
 
   private createFlowNodeForShip(shipId: string): FlowNode {
-    // Create a simplified FlowNode representation for the ship
+    // Basic implementation - requires refinement based on actual ship data structure
     const flowNode: FlowNode = {
       id: shipId,
-      type: FlowNodeType.PRODUCER,
-      resources: {},
+      type: FlowNodeType.PRODUCER, // Assuming mining ships are producers
+      resources: {} as Record<ResourceType, ResourceState>, // Initialize properly later
+      x: 0, // Add default x
+      y: 0, // Add default y
+      active: true,
+      // Add other relevant properties based on ship data if needed
     };
     return flowNode;
   }

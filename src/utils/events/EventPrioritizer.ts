@@ -127,7 +127,7 @@ export interface PrioritizerMetrics {
   avgProcessingTimeMs: number;
 
   /**
-   * Max processing time for any event (ms)
+   * Max processing time for unknown event (ms)
    */
   maxProcessingTimeMs: number;
 

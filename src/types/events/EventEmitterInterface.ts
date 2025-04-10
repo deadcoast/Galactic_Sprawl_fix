@@ -9,13 +9,13 @@ import { EventType } from './EventTypes';
 
 /**
  * Type definition for an event handler function
- * @template T The type of data associated with the event (defaults to any)
+ * @template T The type of data associated with the event (defaults to unknown)
  */
 export type EventHandler<T> = (data: T) => void;
 
 /**
  * Type definition for an event predicate function used for filtering
- * @template T The type of data associated with the event (defaults to any)
+ * @template T The type of data associated with the event (defaults to unknown)
  */
 export type EventPredicate<T> = (data: T) => boolean;
 

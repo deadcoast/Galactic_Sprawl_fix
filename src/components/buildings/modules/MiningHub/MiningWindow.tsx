@@ -630,7 +630,7 @@ export function MiningWindow() {
                   handleFilterChange(e.target.value as FilterOption),
               },
               React.createElement('option', { value: 'all' }, 'All Resources'),
-              React.createElement('option', { value: 'mineral' }, 'Minerals'),
+              React.createElement('option', { value: ResourceType.MINERALS }, 'Minerals'),
               React.createElement('option', { value: ResourceType.GAS }, 'Gas'),
               React.createElement('option', { value: ResourceType.EXOTIC }, 'Exotic')
             )

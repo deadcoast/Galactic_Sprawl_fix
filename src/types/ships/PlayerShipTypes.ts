@@ -6,16 +6,21 @@ import {
   CommonShipStats,
 } from './CommonShipTypes';
 
-// Player Ship Classes
-export type PlayerShipClass =
-  | 'harbringer-galleon'
-  | 'midway-carrier'
-  | 'mother-earth-revenge'
-  | 'orion-frigate'
-  | 'spitflare'
-  | 'star-schooner'
-  | 'void-dredger-miner'
-  | 'andromeda-cutter';
+// Player Ship Classes - Changed from type alias to enum
+export enum PlayerShipClass {
+  HARBRINGER_GALLEON = 'harbringer-galleon',
+  MIDWAY_CARRIER = 'midway-carrier',
+  MOTHER_EARTH_REVENGE = 'mother-earth-revenge',
+  ORION_FRIGATE = 'orion-frigate',
+  SPITFLARE = 'spitflare',
+  STAR_SCHOONER = 'star-schooner',
+  VOID_DREDGER_MINER = 'void-dredger-miner',
+  ANDROMEDA_CUTTER = 'andromeda-cutter',
+  // Add placeholder/default if needed
+  SCOUT = 'scout', // Added SCOUT based on usage in ShipHangar.tsx
+  FIGHTER = 'fighter', // Added FIGHTER based on usage in ShipHangar.tsx
+  CRUISER = 'cruiser', // Added CRUISER based on usage in ShipHangar.tsx
+}
 
 // Player Ship Categories
 export type PlayerShipCategory = 'war' | 'recon' | 'mining';

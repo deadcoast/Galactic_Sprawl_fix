@@ -26,7 +26,7 @@ export interface BaseService {
   initialize(dependencies?: Record<string, unknown>): Promise<void>;
 
   /**
-   * Dispose of any resources used by the service
+   * Dispose of unknown resources used by the service
    */
   dispose(): Promise<void>;
 

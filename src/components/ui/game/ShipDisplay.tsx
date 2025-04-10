@@ -31,6 +31,7 @@ import {
     Zap
 } from 'lucide-react';
 import * as React from 'react';
+import { errorLoggingService } from '../../../services/ErrorLoggingService';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
 import { Ship } from '../../../types/ships/Ship';
 
@@ -73,7 +74,6 @@ const SHIP_TYPE_ICONS: Record<string, React.ReactNode> = {
   'recon': <Eye className="h-5 w-5" />,
   'mining': <Box className="h-5 w-5" />,
   'war': <Shield className="h-5 w-5" />,
-  'ENERGY': <Zap className="h-5 w-5" />
 };
 
 const resourceIcons: Record<ResourceType, JSX.Element> = {
@@ -235,20 +235,28 @@ export function ShipDisplay({
       {showControls && (
         <div className="ship-display__controls mt-3 pt-3 border-t border-gray-200 flex gap-2">
           <button 
-            className="ship-display__control-btn px-3 py-1 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition-colors"
+            className="ship-display__control-btn px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 rounded"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('Assign task clicked');
+              errorLoggingService.logInfo('Assign task clicked', {
+                component: 'ShipDisplay',
+                action: 'assignTask',
+                shipId: ship.id,
+              });
             }}
           >
             Assign Task
           </button>
           
           <button 
-            className="ship-display__control-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition-colors"
+            className="ship-display__control-btn px-3 py-1 text-sm bg-gray-600 hover:bg-gray-700 rounded"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('Details clicked');
+              errorLoggingService.logInfo('Details clicked', {
+                component: 'ShipDisplay',
+                action: 'viewDetails',
+                shipId: ship.id,
+              });
             }}
           >
             Details
@@ -256,14 +264,15 @@ export function ShipDisplay({
           
           {ship.stealthActive !== undefined && (
             <button 
-              className={`ship-display__control-btn px-3 py-1 rounded-md text-sm transition-colors ${
-                ship.stealthActive 
-                  ? 'bg-green-500 text-white hover:bg-green-600' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
+              className={`ship-display__control-btn px-3 py-1 text-sm rounded ${ship.stealthActive ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-600 hover:bg-gray-700'}`}
               onClick={(e) => {
                 e.stopPropagation();
-                console.log('Toggle stealth clicked');
+                errorLoggingService.logInfo('Toggle stealth clicked', {
+                  component: 'ShipDisplay',
+                  action: 'toggleStealth',
+                  shipId: ship.id,
+                  newState: !ship.stealthActive,
+                });
               }}
             >
               {ship.stealthActive ? 'Stealth On' : 'Stealth Off'}

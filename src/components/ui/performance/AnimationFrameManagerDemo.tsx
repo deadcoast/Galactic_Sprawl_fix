@@ -82,7 +82,7 @@ const AnimationFrameManagerDemo: React.FC<AnimationFrameManagerDemoProps> = ({
   useEffect(() => {
     if (!svgRef.current) return;
 
-    // Clear any existing content
+    // Clear unknownnown existing content
     d3.select(svgRef.current).selectAll('*').remove();
 
     // Set up container

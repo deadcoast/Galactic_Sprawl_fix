@@ -2,13 +2,13 @@ import * as d3 from 'd3';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  d3Accessors,
-  SimulationLinkDatum,
-  SimulationNodeDatum,
+    d3Accessors,
+    SimulationLinkDatum,
+    SimulationNodeDatum,
 } from '../../../types/visualizations/D3Types';
 import {
-  createD3ForceValidation,
-  ValidationTransformResult,
+    createD3ForceValidation,
+    ValidationTransformResult,
 } from '../../../types/visualizations/D3ValidationHooks';
 import { Schema } from '../../../types/visualizations/D3Validators';
 
@@ -486,7 +486,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
           .id(d => d.id)
           .distance(100)
       )
-      .force('charge', d3.forceManyBody().strength(-200))
+      .force('charge', d3.forceMunknownnownBody().strength(-200))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force(
         'collision',

@@ -116,7 +116,7 @@ const shaderMaterial = (
 
   // This is a mock implementation that returns a component
   return (props: ShaderMaterialProps) => {
-    // Merge the default uniforms with any provided in props
+    // Merge the default uniforms with unknown provided in props
     const mergedUniforms = { ...processedUniforms, ...props?.uniforms };
 
     // Use the provided shaders or fall back to the defaults
@@ -364,7 +364,7 @@ function Shield({ active, health, color, impact }: Omit<ShieldEffectProps, 'size
       Sphere,
       { args: [1, 64, 64] },
       React.createElement('shaderMaterial', {
-        // Cast the ref to a more specific type to avoid the 'any' linter error
+        // Cast the ref to a more specific type to avoid the 'unknown' linter error
         ref: materialRef as unknown as CustomElementRef<HTMLElement>,
         transparent: true,
         depthWrite: false,

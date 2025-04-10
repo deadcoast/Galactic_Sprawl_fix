@@ -271,7 +271,7 @@ interface ModuleProviderProps {
   initialState?: Partial<ModuleState>;
 }
 
-// Type-safe helper for event subscriptions that accepts any event bus type
+// Type-safe helper for event subscriptions that accepts unknown event bus type
 function subscribeToModuleEvent(
   eventBus: {
     subscribe: (eventType: EventType | '*', handler: (event: BaseEvent) => void) => () => void;
@@ -281,23 +281,8 @@ function subscribeToModuleEvent(
 ): () => void {
   // Convert ModuleEventType to EventType using our helper function
   const convertedType = moduleEventToEventType(eventType) as EventType;
-  // Safely subscribe with any event bus type
+  // Safely subscribe with unknown event bus type
   return eventBus.subscribe(convertedType, handler);
-}
-
-// Helper for type-safe dispatch of legacy actions
-// This function is replaced by the useDispatchLegacyAction hook below
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _dispatchLegacyAction(moduleId: string, action: string, data?: unknown): void {
-  console.warn('[ModuleContext] Legacy dispatch is deprecated, use moduleManager instead');
-  const module = moduleManager.getModule(moduleId);
-  
-  if (!module) {
-    console.error(`[ModuleContext] Module not found: ${moduleId}`);
-    return;
-  }
-  
-  // Implementation is moved to the useDispatchLegacyAction hook
 }
 
 /**

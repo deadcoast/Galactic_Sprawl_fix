@@ -1,4 +1,5 @@
-import { EventEmitter } from '../events/EventEmitter';
+import { BaseEvent } from '../events/UnifiedEventSystem';
+import { AbstractBaseManager } from '../managers/BaseManager';
 
 export interface ViewportState {
   scale: number;
@@ -22,7 +23,7 @@ export interface HighlightState {
 }
 
 export interface ColorScale {
-  domain: [number, number];
+  domain: [ number, number ];
   range: string[];
   type: 'linear' | 'ordinal';
 }
@@ -41,19 +42,11 @@ export type ChartEventType =
   | 'highlight-change'
   | 'color-scale-change';
 
-export interface ChartEvent {
+export interface ChartEvent extends BaseEvent {
   type: ChartEventType;
   chartId: string;
   state: Partial<ChartState>;
   propagate?: boolean;
-}
-
-interface ChartEvents {
-  [key: string]: ChartEvent;
-  [key: `${string}:viewport-change`]: ChartEvent;
-  [key: `${string}:brush-change`]: ChartEvent;
-  [key: `${string}:highlight-change`]: ChartEvent;
-  [key: `${string}:color-scale-change`]: ChartEvent;
 }
 
 /**
@@ -65,23 +58,14 @@ interface ChartEvents {
  * - Synchronized highlighting
  * - Shared color scales
  */
-export class ChartCoordinationManager {
-  private static instance: ChartCoordinationManager;
-  private eventEmitter: EventEmitter<ChartEvents>;
+export class ChartCoordinationManager extends AbstractBaseManager<ChartEvent> {
   private charts: Map<string, ChartState>;
   private linkedGroups: Map<string, Set<string>>;
 
-  private constructor() {
-    this.eventEmitter = new EventEmitter<ChartEvents>();
+  protected constructor() {
+    super('ChartCoordinationManager');
     this.charts = new Map();
     this.linkedGroups = new Map();
-  }
-
-  public static getInstance(): ChartCoordinationManager {
-    if (!ChartCoordinationManager.instance) {
-      ChartCoordinationManager.instance = new ChartCoordinationManager();
-    }
-    return ChartCoordinationManager.instance;
   }
 
   /**
@@ -162,25 +146,19 @@ export class ChartCoordinationManager {
   }
 
   /**
-   * Subscribe to chart events
+   * Subscribe to chart events for a specific chart
    */
-  public subscribe(
+  public subscribeToChartEvents(
     chartId: string,
     eventType: ChartEventType,
     callback: (event: ChartEvent) => void
   ): () => void {
-    const eventName = `${chartId}:${eventType}` as keyof ChartEvents;
-    const unsubscribe = (event: ChartEvent) => callback(event);
-    this.eventEmitter.on(eventName, unsubscribe);
-    return () => this.eventEmitter.off(eventName, unsubscribe);
-  }
-
-  /**
-   * Emit a chart event
-   */
-  public emit(event: ChartEvent): void {
-    const eventName = `${event?.chartId}:${event?.type}` as keyof ChartEvents;
-    this.eventEmitter.emit(eventName, event);
+    const unsubscribe = super.subscribe<ChartEvent>(eventType, (event) => {
+      if (event.chartId === chartId) {
+        callback(event);
+      }
+    });
+    return unsubscribe;
   }
 
   /**
@@ -202,9 +180,8 @@ export class ChartCoordinationManager {
    * Notify a chart of state updates
    */
   private notifyChartUpdate(chartId: string, update: Partial<ChartState>): void {
-    // Determine event type based on what changed
     if (update.viewport) {
-      this.emit({
+      this.publish({
         type: 'viewport-change',
         chartId,
         state: { viewport: update.viewport },
@@ -212,7 +189,7 @@ export class ChartCoordinationManager {
       });
     }
     if (update.brush) {
-      this.emit({
+      this.publish({
         type: 'brush-change',
         chartId,
         state: { brush: update.brush },
@@ -220,7 +197,7 @@ export class ChartCoordinationManager {
       });
     }
     if (update.highlight) {
-      this.emit({
+      this.publish({
         type: 'highlight-change',
         chartId,
         state: { highlight: update.highlight },
@@ -228,7 +205,7 @@ export class ChartCoordinationManager {
       });
     }
     if (update.colorScales) {
-      this.emit({
+      this.publish({
         type: 'color-scale-change',
         chartId,
         state: { colorScales: update.colorScales },
@@ -236,4 +213,19 @@ export class ChartCoordinationManager {
       });
     }
   }
+
+  // --- AbstractBaseManager Implementation ---
+  protected async onInitialize(_dependencies?: Record<string, unknown>): Promise<void> {
+    console.warn('ChartCoordinationManager initialized');
+  }
+
+  protected onUpdate(_deltaTime: number): void {
+    // Update logic, if any
+  }
+
+  protected async onDispose(): Promise<void> {
+    this.charts.clear();
+    this.linkedGroups.clear();
+  }
+  // --- End AbstractBaseManager Implementation ---
 }

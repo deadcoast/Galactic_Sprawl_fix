@@ -29,7 +29,7 @@ import { LineChart } from './charts/LineChart';
 import { PredictionVisualization } from './charts/PredictionVisualization';
 import { ResourceMappingVisualization } from './charts/ResourceMappingVisualization';
 import { ScatterPlot } from './charts/ScatterPlot';
-import { VirtualizedDataTable } from './VirtualizedDataTable';
+import { VirtualizedDataTable } from './charts/VirtualizedDataTable';
 
 // Define the maximum number of data points to display at once
 const MAX_DATA_POINTS = 100;
@@ -512,7 +512,7 @@ export function AnalysisVisualization({
     if (analysisType === 'resourceMapping' && config.type === 'resourceMapping') {
       const resourceMappingConfig = config as ResourceMappingAnalysisConfig;
 
-      // Use the config for any specific settings from the config
+      // Use the config for unknown specific settings from the config
       const configTitle = resourceMappingConfig.name || 'Resource Mapping Analysis';
 
       // Safely extract resource mapping data with proper type checking

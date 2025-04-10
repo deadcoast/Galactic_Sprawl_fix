@@ -128,7 +128,7 @@ export type StrictPartial<T> = {
 };
 
 /**
- * Data transformation utilities - for safely working with any type
+ * Data transformation utilities - for safely working with unknown type
  */
 export function safeMapRecord<T extends Record<string, unknown>, U>(
   record: T,
@@ -215,7 +215,7 @@ export function createEnumParser<T extends Record<string, string | number>>(
     const enumValue = enumObj[value as keyof T];
     if (enumValue !== undefined) return enumValue;
 
-    // Check if the value itself matches any enum value
+    // Check if the value itself matches unknown enum value
     if (validValues.includes(value as T[keyof T])) {
       return value as T[keyof T];
     }

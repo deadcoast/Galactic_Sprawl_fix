@@ -63,12 +63,12 @@ export {
  *
  * Higher-Order Components and Utilities:
  *
- * - withErrorBoundary: HOC to wrap any component with an error boundary
+ * - withErrorBoundary: HOC to wrap unknown component with an error boundary
  * - createTypedErrorBoundary: Creates a typed error boundary for a specific component
  *
  * Usage Guidelines:
  *
- * 1. Use the GlobalErrorBoundary at the application root level to catch any unhandled errors
+ * 1. Use the GlobalErrorBoundary at the application root level to catch unknown unhandled errors
  * 2. Use specialized error boundaries for specific contexts closer to where errors might occur
  * 3. Provide custom fallback UIs when appropriate for your component
  * 4. Always include reset functionality to allow users to recover from errors

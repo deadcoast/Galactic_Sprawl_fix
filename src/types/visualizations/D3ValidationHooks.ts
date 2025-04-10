@@ -51,7 +51,7 @@ export interface ValidationTransformResult<T> {
   data: T;
   /** Whether validation passed */
   valid: boolean;
-  /** Validation errors (if any) */
+  /** Validation errors (if unknown) */
   errors: string[];
   /** Original validation result */
   validationResult?: ValidationResult;
@@ -344,7 +344,7 @@ export function withStepValidation<InputType, OutputType>(
       // Run transformation with progress validation
       transformedData = transformFn(data, onProgress);
 
-      // Return result with errors if any
+      // Return result with errors if unknown
       return {
         data: transformedData,
         valid: errors.length === 0,

@@ -278,7 +278,7 @@ export const PredictionVisualization: React.FC<PredictionVisualizationProps> = R
     const virtualizedChartData = useMemo(() => {
       return timeSeriesData.map(point => ({
         ...point,
-        // Add any additional required properties to make it compatible with ChartDataRecord
+        // Add unknown additional required properties to make it compatible with ChartDataRecord
       }));
     }, [timeSeriesData]);
 

@@ -93,8 +93,8 @@ export function useManager<T>(
               await managerInstance.initialize();
             }
           } else {
-            // If no isInitialized method, try to initialize anyway
-            // Many managers can handle multiple initialize calls
+            // If no isInitialized method, try to initialize unknownway
+            // Munknown managers can handle multiple initialize calls
             await managerInstance.initialize();
           }
         }

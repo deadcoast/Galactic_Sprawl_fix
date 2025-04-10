@@ -681,7 +681,7 @@ export class WebGLShaderManager {
    * @param renderCallback (...args: unknown[]) => unknown to call on each animation frame
    */
   public startAnimationLoop(renderCallback: () => void): void {
-    // Stop any existing animation loop
+    // Stop unknown existing animation loop
     this.stopAnimationLoop();
 
     // Animation frame handler
@@ -715,7 +715,7 @@ export class WebGLShaderManager {
    * Dispose of WebGL resources
    */
   public dispose(): void {
-    // Stop any running animation
+    // Stop unknown running animation
     this.stopAnimationLoop();
 
     // Clean up WebGL resources

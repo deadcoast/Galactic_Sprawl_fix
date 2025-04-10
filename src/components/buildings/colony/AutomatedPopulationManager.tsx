@@ -79,7 +79,7 @@ export function AutomatedPopulationManager({
     // Ensure we don't exceed max population
     const adjustedGrowth = Math.min(rawGrowth, maxPopulation - currentPopulation);
 
-    // Ensure at least 1 population growth if any growth is possible
+    // Ensure at least 1 population growth if unknown growth is possible
     return Math.max(1, adjustedGrowth);
   }, [currentPopulation, maxPopulation, growthRate]);
 

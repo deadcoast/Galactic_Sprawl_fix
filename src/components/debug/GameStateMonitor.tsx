@@ -94,7 +94,7 @@ export function GameStateMonitor({
     };
   }, [maxEvents, systemInfo.lastUpdate]);
 
-  // Don't render anything if collapsed
+  // Don't render unknownthing if collapsed
   if (!isExpanded) {
     return (
       <button

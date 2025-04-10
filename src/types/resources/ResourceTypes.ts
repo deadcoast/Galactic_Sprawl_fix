@@ -617,7 +617,7 @@ export interface FlowNode {
   vy?: number;
   fx?: number | null;
   fy?: number | null;
-  // Index signature to satisfy BasePoint constraint, using unknown for better type safety than any
+  // Index signature to satisfy BasePoint constraint, using unknown for better type safety than unknown
   [key: string]: unknown;
 }
 

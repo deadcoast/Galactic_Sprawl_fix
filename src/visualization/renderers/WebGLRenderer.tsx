@@ -236,7 +236,7 @@ export class WebGLRenderer implements ChartRenderer {
   }
 
   /**
-   * Destroys the renderer, cleaning up any resources
+   * Destroys the renderer, cleaning up unknown resources
    */
   public destroy(): void {
     try {
@@ -1719,7 +1719,7 @@ export class WebGLRenderer implements ChartRenderer {
   ): void {
     if (!this.canvas) return;
 
-    // Remove existing tooltip if any
+    // Remove existing tooltip if unknown
     if (this.tooltipElement) {
       this.tooltipElement.remove();
     }

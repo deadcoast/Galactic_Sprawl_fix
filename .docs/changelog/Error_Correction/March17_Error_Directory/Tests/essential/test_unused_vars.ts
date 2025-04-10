@@ -5,7 +5,7 @@
  */
 
 // Unused function parameter
-function processData(data: any, _options: any): void {
+function processData(data: unknown, _options: unknown): void {
   // options is never used
   console.log(`Processing data: ${data}`);
 }
@@ -39,10 +39,10 @@ const getFirstItem = (items: string[]) => {
 
 // Unused variable in class
 class DataProcessor {
-  private data: any;
-  private _config: any; // config is never used
+  private data: unknown;
+  private _config: unknown; // config is never used
 
-  constructor(data: any, config: any) {
+  constructor(data: unknown, config: unknown) {
     this.data = data;
     this._config = config;
   }
@@ -76,7 +76,7 @@ function safelyProcess(fn: () => void): void {
 }
 
 // Unused variable in for loop
-function findIndex(array: any[], value: any): number {
+function findIndex(array: unknown[], value: unknown): number {
   for (let i = 0; i < array.length; i++) {
     const _item = array[i]; // Could use array[i] directly
     if (array[i] === value) {
@@ -93,12 +93,11 @@ console.log(`${name} is ${age} years old`);
 
 // Export to avoid unused export warnings
 export {
-  DataProcessor,
-  calculateTotal,
-  findIndex,
+  calculateTotal, DataProcessor, findIndex,
   getFirstItem,
   getUserInfo,
   processArray,
   processData,
-  safelyProcess,
+  safelyProcess
 };
+

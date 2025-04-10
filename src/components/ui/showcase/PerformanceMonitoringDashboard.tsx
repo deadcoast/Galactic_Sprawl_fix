@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 
 // Import optimization utilities
 import {
-  animationFrameManager,
-  FrameInfo,
+    animationFrameManager,
+    FrameInfo,
 } from '../../../utils/performance/D3AnimationFrameManager';
 
 // Type definitions
@@ -301,7 +301,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
       };
 
       setDetectedIssues(prev => {
-        // Don't add too many similar issues
+        // Don't add too munknownnown similar issues
         const recentSimilarIssue = prev.find(
           issue => issue.type === newIssue.type && now - issue.timestamp < 5000
         );
@@ -331,7 +331,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
       };
 
       setDetectedIssues(prev => {
-        // Don't add too many similar issues
+        // Don't add too munknownnown similar issues
         const recentSimilarIssue = prev.find(
           issue => issue.type === newIssue.type && now - issue.timestamp < 5000
         );
@@ -366,7 +366,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
       };
 
       setDetectedIssues(prev => {
-        // Don't add too many similar issues
+        // Don't add too munknownnown similar issues
         const recentSimilarIssue = prev.find(
           issue => issue.type === newIssue.type && now - issue.timestamp < 5000
         );

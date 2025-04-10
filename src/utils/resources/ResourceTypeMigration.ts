@@ -107,7 +107,7 @@ export function generateMigrationGuide(): string {
   guide += `| ResourceType.EXOTIC | ResourceType.EXOTIC |\n`;
 
   guide += `\n## Migration Steps\n\n`;
-  guide += `1. Update imports to use ResourceTypes instead of any other resource type definition\n`;
+  guide += `1. Update imports to use ResourceTypes instead of unknown other resource type definition\n`;
   guide += `2. Replace string literals with enum values using the mapping table above\n`;
   guide += `3. Update function signatures to use the enum type\n`;
   guide += `4. Use the migration utility functions for complex cases\n`;

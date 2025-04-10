@@ -622,7 +622,7 @@ export class GlobalAutomationManager {
    * Update method called by the game loop
    */
   private update(_deltaTime: number, _elapsedTime: number): void {
-    // Process any pending routines
+    // Process unknown pending routines
     // The queue itself handles the execution
   }
 

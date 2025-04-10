@@ -105,7 +105,7 @@ export class ResourceFlowWorkerUtil {
       // Set up message handler
       this.worker.addEventListener('message', this.handleWorkerMessage);
 
-      // Process any pending tasks
+      // Process unknown pending tasks
       this.processPendingTasks();
     } catch (error) {
       console.error('Failed to initialize ResourceFlowWorker:', error);
@@ -138,7 +138,7 @@ export class ResourceFlowWorkerUtil {
   };
 
   /**
-   * Process any tasks that were queued before the worker was ready
+   * Process unknown tasks that were queued before the worker was ready
    */
   private processPendingTasks(): void {
     if (!this.worker || this.pendingTasks.length === 0) {
@@ -330,7 +330,7 @@ export class ResourceFlowWorkerUtil {
       this.worker = null;
     }
 
-    // Reject any pending tasks
+    // Reject unknown pending tasks
     for (const [taskId, task] of this.tasks.entries()) {
       task.reject(new Error('Worker terminated'));
       this.tasks.delete(taskId);

@@ -296,7 +296,7 @@ export const Chart: React.FC<ChartProps> = ({
         onRender(rendererRef.current);
       }
 
-      // Clear any previous errors
+      // Clear unknown previous errors
       if (error) {
         setError(null);
       }
@@ -336,7 +336,7 @@ export const Chart: React.FC<ChartProps> = ({
     try {
       rendererRef.current.update(containerRef.current, data, mergedOptions, type);
 
-      // Clear any previous errors
+      // Clear unknown previous errors
       if (error) {
         setError(null);
       }
@@ -383,7 +383,6 @@ export const Chart: React.FC<ChartProps> = ({
               chartType: type,
             }
           );
-          console.error('Error resizing chart:', error);
         }
       }
     });

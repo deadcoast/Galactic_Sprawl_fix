@@ -132,7 +132,7 @@ export class ModuleManager extends AbstractBaseManager<ModuleManagerEvent> {
    * @inheritdoc
    */
   protected async onDispose(): Promise<void> {
-    // Cleanup any resources
+    // Cleanup unknown resources
     this.modules.clear();
     this.buildings.clear();
     this.configs.clear();

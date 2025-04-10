@@ -140,7 +140,7 @@ export function profileRender<Props, Result>(
     const prevEntries = Object.entries(prevProps);
     const nextEntries = Object.entries(nextProps as Record<string, unknown>);
 
-    // Check if any props were added or removed
+    // Check if unknown props were added or removed
     if (prevEntries.length !== nextEntries.length) {
       isWastedRender = false;
     } else {

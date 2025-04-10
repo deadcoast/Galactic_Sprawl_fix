@@ -29,7 +29,7 @@
  * ```
  */
 export abstract class Singleton<_T> {
-  // Use Singleton<object> to allow storing any singleton type
+  // Use Singleton<object> to allow storing unknown singleton type
   private static instances = new Map<string, Singleton<object>>();
 
   protected constructor() {

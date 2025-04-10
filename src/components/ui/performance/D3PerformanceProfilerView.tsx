@@ -10,13 +10,15 @@ import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FlowData } from '../../../types/visualizations/FlowTypes';
 import {
-  ForceSimulationProfiler,
-  memoizedD3Accessors,
-  PerformanceProfile,
-  profileCoordinateAccess,
-  profileDOMOperations,
+    ForceSimulationProfiler,
+    memoizedD3Accessors,
+    PerformanceProfile,
+    profileCoordinateAccess,
+    profileDOMOperations,
 } from '../../../utils/performance/D3PerformanceProfiler';
 import FlowDiagram from '../visualization/FlowDiagram';
+// Add import for error logging service
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 
 // Sample flow data for testing
 const generateTestFlowData = (nodeCount: number, linkCount: number): FlowData => {
@@ -92,7 +94,7 @@ const D3PerformanceProfilerView: React.FC = () => {
           const mockSimulation = d3
             .forceSimulation<d3.SimulationNodeDatum>()
             .force('link', d3.forceLink())
-            .force('charge', d3.forceManyBody())
+            .force('charge', d3.forceMunknownnownBody())
             .force('center', d3.forceCenter());
 
           // Profile force simulation
@@ -128,7 +130,20 @@ const D3PerformanceProfilerView: React.FC = () => {
         setProfileData(profileResult);
         setIsProfileRunning(false);
       } catch (error) {
-        console.error('Error during profiling:', error);
+        // Replace console.error with errorLoggingService.logError
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error('Error during profiling'),
+          ErrorType.RUNTIME,
+          ErrorSeverity.HIGH,
+          {
+            componentName: 'D3PerformanceProfilerView',
+            action: 'runProfiling',
+            profilingMethod,
+            nodeCount,
+            linkCount,
+            iterations,
+          }
+        );
         setIsProfileRunning(false);
       }
     }, 100);

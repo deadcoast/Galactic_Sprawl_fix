@@ -1,14 +1,14 @@
 import {
-  AlertTriangle,
-  Battery,
-  Beaker,
-  CheckCircle,
-  Cpu,
-  Leaf,
-  Package,
-  TrendingDown,
-  TrendingUp,
-  Users,
+    AlertTriangle,
+    Battery,
+    Beaker,
+    CheckCircle,
+    Cpu,
+    Leaf,
+    Package,
+    TrendingDown,
+    TrendingUp,
+    Users,
 } from 'lucide-react';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 

@@ -1,10 +1,10 @@
 import * as d3 from 'd3';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useComponentLifecycle } from '../../../hooks/ui/useComponentLifecycle';
-import { useComponentRegistration } from '../../../hooks/ui/useComponentRegistration';
-import { moduleEventBus } from '../../../lib/modules/ModuleEvents';
-import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
-import { EventType } from '../../../types/events/EventTypes';
+import { useComponentLifecycle } from '../../../../hooks/ui/useComponentLifecycle';
+import { useComponentRegistration } from '../../../../hooks/ui/useComponentRegistration';
+import { moduleEventBus } from '../../../../lib/modules/ModuleEvents';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../../services/ErrorLoggingService';
+import { EventType } from '../../../../types/events/EventTypes';
 import {
   FlowConnection,
   FlowNode,
@@ -12,17 +12,17 @@ import {
   ResourceState,
   ResourceType,
   ResourceTypeHelpers
-} from '../../../types/resources/ResourceTypes';
+} from '../../../../types/resources/ResourceTypes';
 import {
   NetworkData
-} from '../../../types/visualization/CommonTypes';
+} from '../../../../types/visualization/CommonTypes';
 import {
   isResourceType,
   ResourceTypeConverter
 } from '../../../utils/resources/resourceValidation';
 import DataTransitionParticleSystem, {
   DataPoint
-} from '../visualization/DataTransitionParticleSystem';
+} from '../../../ui/visualization/DataTransitionParticleSystem';
 
 interface ResourceFlowDiagramProps {
   width?: number;
@@ -83,8 +83,8 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       console.warn('ResourceFlowDiagram mounted');
       fetchResourceFlowData();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return moduleEventBus.subscribe('*' as any, (event: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-unknownnown
+      return moduleEventBus.subscribe('*' as unknownnown, (eveunknown unknown) => {
               if (!event || typeof event.type === 'undefined') {
                 return;
               }
@@ -171,7 +171,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       return;
     }
 
-    // Clear any existing visualization
+    // Clear unknownnown existing visualization
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -200,7 +200,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
           .id(d => d.id)
           .distance(100)
       )
-      .force('charge', d3.forceManyBody().strength(-300))
+      .force('charge', d3.forceMunknownnownBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collision', d3.forceCollide().radius(40));
 

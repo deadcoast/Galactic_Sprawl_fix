@@ -720,7 +720,7 @@ export class D3AnimationQualityManager {
     // Notify all registered animations of quality changes
     this.qualityChangeCallbacks.forEach((callback, animationId) => {
       try {
-        // Apply global settings with any animation-specific overrides
+        // Apply global settings with unknown animation-specific overrides
         const animationSettings = {
           ...this.currentSettings,
           ...(this.animationQualityOverrides.get(animationId) ?? {}),
@@ -744,7 +744,7 @@ export class D3AnimationQualityManager {
     // Store the callback
     this.qualityChangeCallbacks.set(animationId, onQualityChange);
 
-    // Store any animation-specific overrides
+    // Store unknown animation-specific overrides
     if (animationSpecificOverrides) {
       this.animationQualityOverrides.set(animationId, animationSpecificOverrides);
     }
@@ -968,7 +968,7 @@ export function createQualityAdaptiveTransition<
   let adjustedDuration = duration;
   if (duration !== undefined) {
     // Scale duration by animation step factor
-    // If animationStepFactor is 2, transitions will take twice as long but use half as many frames
+    // If animationStepFactor is 2, transitions will take twice as long but use half as munknown frames
     adjustedDuration = duration * settings.animationStepFactor;
   }
 

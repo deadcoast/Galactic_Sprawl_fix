@@ -50,7 +50,7 @@ export default function CombatSystemPage() {
           <h2 className="mb-4 text-xl font-bold text-white">Usage Instructions</h2>
           <div className="space-y-4 text-gray-300">
             <p>
-              <strong className="text-white">Object Selection:</strong> Click on any object in the
+              <strong className="text-white">Object Selection:</strong> Click on unknown object in the
               radar to select it and view detailed information.
             </p>
             <p>

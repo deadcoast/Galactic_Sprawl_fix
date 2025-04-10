@@ -1,15 +1,15 @@
 import { motion } from 'framer-motion';
 import {
-  Apple,
-  ChevronDown,
-  ChevronUp,
-  Heart,
-  Home,
-  Info,
-  Leaf,
-  Minus,
-  Plus,
-  Zap,
+    Apple,
+    ChevronDown,
+    ChevronUp,
+    Heart,
+    Home,
+    Info,
+    Leaf,
+    Minus,
+    Plus,
+    Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import { ResourceType } from './../../../types/resources/ResourceTypes';

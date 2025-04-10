@@ -479,7 +479,7 @@ export class ResourcePoolManager {
             console.warn(
               `[ResourcePoolManager] Container ${id} cannot accept resource type ${resourceType}`
             );
-            return { id, priority: 0 }; // Zero priority means it won't receive any allocation
+            return { id, priority: 0 }; // Zero priority means it won't receive unknown allocation
           }
         }
 

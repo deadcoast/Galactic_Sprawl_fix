@@ -351,7 +351,7 @@ export const ClassificationProvider: React.FC<ClassificationProviderProps> = ({
   // Delete a taxonomy category
   const deleteTaxonomyCategory = useCallback(
     (id: string) => {
-      // Check if there are any classifications using this category
+      // Check if there are unknown classifications using this category
       const usedInClassifications = classifications.some(
         classification => classification.categoryId === id
       );

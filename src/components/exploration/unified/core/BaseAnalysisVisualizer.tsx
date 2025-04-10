@@ -11,8 +11,16 @@
 
 import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
+import { VisualizationErrorBoundary } from '../../../../errorHandling/specialized/VisualizationErrorBoundary';
+import { ChartDataRecord } from '../../../../types/exploration/AnalysisComponentTypes';
 import { AnalysisResult, AnalysisType, Insight } from '../../../../types/exploration/unified';
 import { cn } from '../../../../utils/cn';
+import { Chart, ChartData } from '../../../ui/visualization/Chart';
+import { NetworkEdge, NetworkGraph, NetworkNode } from '../../../ui/visualization/NetworkGraph';
+import { BarChart as BarChartComponent } from '../../visualizations/charts/BarChart';
+import { HeatMap } from '../../visualizations/charts/HeatMap';
+import { LineChart as LineChartComponent } from '../../visualizations/charts/LineChart';
+import { ScatterPlot } from '../../visualizations/charts/ScatterPlot';
 
 // Visualization types
 export type VisualizationType =
@@ -44,6 +52,9 @@ export interface VisualizationOptions {
   memoryOptimized?: boolean;
   xAxis?: string;
   yAxis?: string;
+  xAxisKey?: string;
+  yAxisKeys?: string[];
+  title?: string;
   [key: string]: unknown;
 }
 
@@ -155,49 +166,151 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
 
   // Default renderers for visualization types
   const defaultRenderers: Record<VisualizationType, VisualizationRenderer> = {
-    bar: (_data, _width, _height, _options) => (
-      <div className="flex h-full items-center justify-center">
-        <p className="italic text-gray-500">Bar chart visualization (placeholder)</p>
+    bar: (data: Record<string, unknown>, chartWidth: number, chartHeight: number, options?: VisualizationOptions) => {
+      if (!Array.isArray(data)) {
+        return <VisualizationErrorBoundary fallback={<p>Invalid data format for Bar Chart.</p>}><div /></VisualizationErrorBoundary>;
+      }
+      return (
+        <BarChartComponent
+          data={data as Record<string, unknown>[]}
+          width={chartWidth}
+          height={chartHeight}
+          xAxisKey={(options?.xAxisKey as string) || 'label'}
+          yAxisKeys={(options?.yAxisKeys as string[]) || ['value']}
+          {...(options as Record<string, unknown>)}
+        />
+      );
+    },
+
+    line: (data: Record<string, unknown>, chartWidth: number, chartHeight: number, options?: VisualizationOptions) => {
+      if (!Array.isArray(data)) {
+        return <VisualizationErrorBoundary fallback={<p>Invalid data format for Line Chart.</p>}><div /></VisualizationErrorBoundary>;
+      }
+      return (
+        <LineChartComponent
+          data={data as Record<string, unknown>[]}
+          width={chartWidth}
+          height={chartHeight}
+          xAxisKey={(options?.xAxisKey as string) || 'label'}
+          yAxisKeys={(options?.yAxisKeys as string[]) || ['value']}
+          {...(options as Record<string, unknown>)}
+        />
+      );
+    },
+
+    scatter: (data: Record<string, unknown>, chartWidth: number, chartHeight: number, options?: VisualizationOptions) => {
+      if (!Array.isArray(data)) {
+        return <VisualizationErrorBoundary fallback={<p>Invalid data format for Scatter Plot.</p>}><div /></VisualizationErrorBoundary>;
+      }
+      return (
+        <ScatterPlot
+          data={data as Record<string, unknown>[]}
+          width={chartWidth}
+          height={chartHeight}
+          xAxisKey={(options?.xAxisKey as string) || 'x'}
+          yAxisKey={(options?.yAxisKey as string) || 'y'}
+          {...(options as Record<string, unknown>)}
+        />
+      );
+    },
+
+    pie: (data: Record<string, unknown>, chartWidth: number, chartHeight: number, options?: VisualizationOptions) => {
+      if (!Array.isArray(data)) {
+        return <VisualizationErrorBoundary fallback={<p>Invalid data format for Pie Chart.</p>}><div /></VisualizationErrorBoundary>;
+      }
+      // Transform data into the ChartData format
+      const chartData: ChartData = {
+        datasets: [
+          {
+            label: options?.title as string || 'Pie Chart Data',
+            // Assuming input data is like [{ label: string, value: number, color?: string }]
+            data: data.map(item => ({
+              label: item.label as string || 'Unknown', 
+              value: item.value as number || 0,
+              color: item.color as string | undefined,
+            })),
+          },
+        ],
+      };
+
+      return (
+        <Chart
+          data={chartData}
+          width={chartWidth}
+          height={chartHeight}
+          type="pie"
+          colors={options?.colors as string[] | undefined}
+          animated={options?.animate as boolean | undefined}
+          showLegend={options?.showLegend as boolean | undefined}
+          showTooltips={options?.showTooltip as boolean | undefined}
+          backgroundColor={options?.backgroundColor as string | undefined}
+        />
+      );
+    },
+
+    radar: (data: Record<string, unknown>, width: number, height: number, options?: VisualizationOptions) => (
+      // Reverted to placeholder as the generic Chart component does not support 'radar'
+      <div className="flex h-full flex-col items-center justify-center">
+        <p className="italic text-gray-500">Radar chart placeholder</p>
+        <p className="text-xs italic text-gray-400">
+          (Data: {typeof data}, Size: {width}x{height}, Colors: {options?.colors?.length ?? 0})
+        </p>
       </div>
     ),
 
-    line: (_data, _width, _height, _options) => (
-      <div className="flex h-full items-center justify-center">
-        <p className="italic text-gray-500">Line chart visualization (placeholder)</p>
-      </div>
-    ),
+    heatmap: (data: Record<string, unknown>, chartWidth: number, chartHeight: number, options?: VisualizationOptions) => {
+      // Heatmap expects data structured differently, often a grid or list of {x, y, value}
+      // We'll assume data is already in a suitable format or pre-processed.
+      if (!Array.isArray(data) && typeof data !== 'object') {
+        return <VisualizationErrorBoundary fallback={<p>Invalid data format for Heatmap.</p>}><div /></VisualizationErrorBoundary>;
+      }
+      // Heatmap component might expect an array, handle object data if necessary
+      const heatmapData = Array.isArray(data) ? data : Object.values(data || {});
 
-    scatter: (_data, _width, _height, _options) => (
-      <div className="flex h-full items-center justify-center">
-        <p className="italic text-gray-500">Scatter plot visualization (placeholder)</p>
-      </div>
-    ),
+      return (
+        <HeatMap
+          data={heatmapData as ChartDataRecord[]}
+          width={chartWidth}
+          height={chartHeight}
+          valueKey={(options?.valueKey as string) || 'value'} // Default to 'value'
+          xKey={(options?.xKey as string) || 'x'} // Default to 'x'
+          yKey={(options?.yKey as string) || 'y'} // Default to 'y'
+          // Pass other heatmap-specific options if available
+          {...(options as Record<string, unknown>)}
+        />
+      );
+    },
 
-    pie: (_data, _width, _height, _options) => (
-      <div className="flex h-full items-center justify-center">
-        <p className="italic text-gray-500">Pie chart visualization (placeholder)</p>
-      </div>
-    ),
+    network: (data: Record<string, unknown>, width: number, height: number, options?: VisualizationOptions) => {
+      // Validate data structure for network graph
+      const networkData = data as { nodes?: NetworkNode[]; edges?: NetworkEdge[] }; // Type assertion
+      if (
+        !networkData ||
+        typeof networkData !== 'object' ||
+        !Array.isArray(networkData.nodes) ||
+        !Array.isArray(networkData.edges)
+      ) {
+        return (
+          <VisualizationErrorBoundary fallback={<p>Invalid data format for Network Graph.</p>}>
+            <div className="flex h-full items-center justify-center text-red-500">
+              Invalid data format for Network Graph. Expected object with 'nodes' and 'edges' arrays.
+            </div>
+          </VisualizationErrorBoundary>
+        );
+      }
 
-    radar: (_data, _width, _height, _options) => (
-      <div className="flex h-full items-center justify-center">
-        <p className="italic text-gray-500">Radar chart visualization (placeholder)</p>
-      </div>
-    ),
+      return (
+        <NetworkGraph
+          nodes={networkData.nodes}
+          edges={networkData.edges}
+          width={width}
+          height={height}
+          {...(options as Omit<VisualizationOptions, 'nodes' | 'edges'>)} // Spread remaining options
+        />
+      );
+    },
 
-    heatmap: (_data, _width, _height, _options) => (
-      <div className="flex h-full items-center justify-center">
-        <p className="italic text-gray-500">Heatmap visualization (placeholder)</p>
-      </div>
-    ),
-
-    network: (_data, _width, _height, _options) => (
-      <div className="flex h-full items-center justify-center">
-        <p className="italic text-gray-500">Network visualization (placeholder)</p>
-      </div>
-    ),
-
-    table: (data, _width, _height, _options) => {
+    table: (data: Record<string, unknown>, width: number, height: number) => {
       // Extract keys and values for table
       const keys = Object.keys(data);
 
@@ -229,9 +342,12 @@ export const BaseAnalysisVisualizer: React.FC<BaseAnalysisVisualizerProps> = ({
       );
     },
 
-    custom: (_data, _width, _height, _options) => (
-      <div className="flex h-full items-center justify-center">
-        <p className="italic text-gray-500">Custom visualization</p>
+    custom: (data: Record<string, unknown>, width: number, height: number, options?: VisualizationOptions) => (
+      <div className="flex h-full flex-col items-center justify-center">
+        <p className="italic text-gray-500">Custom visualization placeholder</p>
+        <p className="text-xs italic text-gray-400">
+          (Data: {typeof data}, Size: {width}x{height}, CustomOption: {String(options?.customProp ?? 'N/A')})
+        </p>
       </div>
     ),
   };

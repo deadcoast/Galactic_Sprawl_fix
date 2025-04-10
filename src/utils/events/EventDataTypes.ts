@@ -234,7 +234,7 @@ export interface EventDataTypeMap {
   GAME_PAUSED: GamePausedEventData;
   GAME_RESUMED: GameResumedEventData;
   GAME_STOPPED: GameStoppedEventData;
-  [key: string]: BaseEventData; // Allow any string key but require BaseEventData minimum structure
+  [key: string]: BaseEventData; // Allow unknown string key but require BaseEventData minimum structure
 }
 
 /**

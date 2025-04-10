@@ -7,10 +7,10 @@
  * UI element types, offering appropriate fallback UI and error messages.
  */
 
+import { AlertCircle, AlertTriangle, FileX, RefreshCw } from 'lucide-react';
 import * as React from 'react';
-import { AlertTriangle, RefreshCw, XCircle, AlertCircle, Database, FileX } from 'lucide-react';
 import { forwardRef, useCallback } from 'react';
-import { ErrorType, ErrorSeverity, errorLoggingService } from '../../../services/ErrorLoggingService';
+import { ErrorSeverity, ErrorType, errorLoggingService } from '../../../services/ErrorLoggingService';
 
 /**
  * Base props for all error state components

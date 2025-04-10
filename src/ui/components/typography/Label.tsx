@@ -5,9 +5,10 @@
  */
 import * as React from 'react';
 import { forwardRef, useMemo } from 'react';
-import { 
-  BaseComponentProps,
-  TextComponentProps
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import {
+    BaseComponentProps,
+    TextComponentProps
 } from '../../../types/ui/ComponentTypes';
 
 /**
@@ -152,7 +153,15 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(
       try {
         onClick?.(event);
       } catch (error) {
-        console.error('[Label] Error in onClick handler:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          ErrorType.UI,
+          ErrorSeverity.LOW,
+          {
+            componentName: 'Label',
+            action: 'onClick',
+          }
+        );
       }
     };
     

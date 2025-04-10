@@ -1,15 +1,15 @@
 import { motion } from 'framer-motion';
 import {
-  Frown,
-  Heart,
-  Home,
-  Meh,
-  Shield,
-  Smile,
-  ThumbsDown,
-  ThumbsUp,
-  Utensils,
-  Zap,
+    Frown,
+    Heart,
+    Home,
+    Meh,
+    Shield,
+    Smile,
+    ThumbsDown,
+    ThumbsUp,
+    Utensils,
+    Zap,
 } from 'lucide-react';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 

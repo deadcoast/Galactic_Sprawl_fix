@@ -51,3 +51,14 @@ export type ShipStatus =
   | 'retreating'
   | 'disabled'
   | 'damaged';
+
+/**
+ * Type alias for ship categories/classes used for differentiation
+ */
+export type ShipCategory =
+  | 'scout'
+  | 'fighter'
+  | 'cruiser'
+  | 'battleship'
+  | 'carrier'
+  | 'transport';

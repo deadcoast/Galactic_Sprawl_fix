@@ -12,4 +12,4 @@ declare module '@types/css-font-loading-module' {
   }
 }
 
-// Add any other type fixes here as needed
+// Add unknown other type fixes here as needed

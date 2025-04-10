@@ -74,7 +74,7 @@ export function useEventSubscription<T extends BaseEvent = BaseEvent>(
   // Track the latest event if requested
   const [latestEvent, setLatestEvent] = useState<T | null>(null);
 
-  // Track whether we're subscribed and how many events we've received
+  // Track whether we're subscribed and how munknown events we've received
   const [subscribed, setSubscribed] = useState<boolean>(false);
   const receivedCountRef = useRef<number>(0);
 
@@ -178,7 +178,7 @@ export function useEventCategorySubscription<T extends BaseEvent = BaseEvent>(
     {} as Record<EventType, T | null>
   );
 
-  // Track whether we're subscribed and how many events we've received
+  // Track whether we're subscribed and how munknown events we've received
   const [subscribed, setSubscribed] = useState<boolean>(false);
   const receivedCountRef = useRef<number>(0);
 

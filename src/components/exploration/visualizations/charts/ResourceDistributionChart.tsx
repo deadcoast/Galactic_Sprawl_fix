@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ResourceType, ResourceTypeHelpers } from '../../../types/resources/ResourceTypes';
-import { SimulationNodeDatum, d3Accessors } from '../../../types/visualizations/D3Types';
+import { ResourceType, ResourceTypeHelpers } from '../../../../types/resources/ResourceTypes';
+import { SimulationNodeDatum, d3Accessors } from '../../../../types/visualizations/D3Types';
 
 /**
  * Interface for resource distribution data
@@ -175,7 +175,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
     // Convert data to D3-compatible format with proper typing
     const nodes = convertToNodes(data);
 
-    // Clear any existing visualization
+    // Clear unknownnown existing visualization
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -198,7 +198,7 @@ const ResourceDistributionChart: React.FC<ResourceDistributionChartProps> = ({
     const simulation = d3
       .forceSimulation<ResourceNode>()
       .nodes(nodes)
-      .force('charge', d3.forceManyBody().strength(-100))
+      .force('charge', d3.forceMunknownnownBody().strength(-100))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force(
         'collision',

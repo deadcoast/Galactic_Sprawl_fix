@@ -88,7 +88,7 @@ const AnimationPerformanceProfilerDemo: React.FC<AnimationPerformanceProfilerDem
       return;
     }
 
-    // Clear any existing content
+    // Clear unknownnown existing content
     d3.select(svgRef.current).selectAll('*').remove();
 
     // Create profiler if enabled

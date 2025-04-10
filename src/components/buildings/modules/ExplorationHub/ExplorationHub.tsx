@@ -92,7 +92,7 @@ interface AdvancedFilters {
   minResourcePotential: number;
   minHabitabilityScore: number;
   hasAnomalies: boolean;
-  anomalySeverity: 'any' | 'low' | 'medium' | 'high';
+  anomalySeverity: 'unknown' | 'low' | 'medium' | 'high';
   lastScannedWithin: number; // hours
   resourceTypes: string[];
 }
@@ -443,7 +443,7 @@ export function ExplorationHub() {
     minResourcePotential: 0,
     minHabitabilityScore: 0,
     hasAnomalies: false,
-    anomalySeverity: 'any',
+    anomalySeverity: 'unknown',
     lastScannedWithin: 24,
     resourceTypes: [],
   });
@@ -681,7 +681,7 @@ export function ExplorationHub() {
         if (advancedFilters.hasAnomalies && anomalies.length === 0) {
           return false;
         }
-        if (advancedFilters.anomalySeverity !== 'any') {
+        if (advancedFilters.anomalySeverity !== 'unknown') {
           const hasMatchingSeverity = anomalies.some(
             a => a.severity === advancedFilters.anomalySeverity
           );
@@ -994,7 +994,7 @@ export function ExplorationHub() {
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center space-x-2 rounded-lg px-3 py-2 ${
                 Object.values(advancedFilters).some(v =>
-                  Array.isArray(v) ? v.length > 0 : v !== 0 && v !== false && v !== 'any'
+                  Array.isArray(v) ? v.length > 0 : v !== 0 && v !== false && v !== 'unknown'
                 )
                   ? 'bg-teal-600 text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
@@ -1074,12 +1074,12 @@ export function ExplorationHub() {
                       onChange={e =>
                         setAdvancedFilters(prev => ({
                           ...prev,
-                          anomalySeverity: e.target.value as 'any' | 'low' | 'medium' | 'high',
+                          anomalySeverity: e.target.value as 'unknown' | 'low' | 'medium' | 'high',
                         }))
                       }
                       className="w-full rounded bg-gray-700 px-2 py-1 text-sm text-white"
                     >
-                      <option value="any">Any Severity</option>
+                      <option value="unknown">unknown Severity</option>
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
                       <option value="high">High</option>
@@ -1098,7 +1098,7 @@ export function ExplorationHub() {
                     }
                     className="w-full rounded bg-gray-700 px-2 py-1 text-sm text-white"
                   >
-                    <option value={0}>Any Time</option>
+                    <option value={0}>unknown Time</option>
                     <option value={24}>24 Hours</option>
                     <option value={72}>3 Days</option>
                     <option value={168}>1 Week</option>

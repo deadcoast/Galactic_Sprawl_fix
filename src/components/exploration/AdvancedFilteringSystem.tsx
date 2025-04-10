@@ -7,7 +7,7 @@ import { ResourceType } from './../../types/resources/ResourceTypes';
 const ANOMALY_TYPES = ['artifact', 'signal', 'phenomenon'] as const;
 type AnomalyType = (typeof ANOMALY_TYPES)[number];
 const ANOMALY_SEVERITIES = ['low', 'medium', 'high'] as const;
-type AnomalySeverity = (typeof ANOMALY_SEVERITIES)[number] | 'any';
+type AnomalySeverity = (typeof ANOMALY_SEVERITIES)[number] | 'unknown';
 
 // Resource types from the game's resource system
 const RESOURCE_TYPES: ResourceType[] = [
@@ -19,7 +19,7 @@ const RESOURCE_TYPES: ResourceType[] = [
 
 // Time periods for "last scanned" filter
 const TIME_PERIODS = [
-  { label: 'Any time', value: 0 },
+  { label: 'unknown time', value: 0 },
   { label: 'Last hour', value: 1 },
   { label: 'Last 6 hours', value: 6 },
   { label: 'Last 24 hours', value: 24 },
@@ -75,7 +75,7 @@ export function AdvancedFilteringSystem({
     if (filters.minResourcePotential > 0) count++;
     if (filters.minHabitabilityScore > 0) count++;
     if (filters.hasAnomalies) count++;
-    if (filters.anomalySeverity !== 'any') count++;
+    if (filters.anomalySeverity !== 'unknown') count++;
     if (filters.lastScannedWithin > 0) count++;
     if (filters.resourceTypes.length > 0) count++;
     if (filters.statusFilter !== 'all') count++;
@@ -114,7 +114,7 @@ export function AdvancedFilteringSystem({
         ...filters,
         hasAnomalies: checked,
         // Reset anomaly severity if unchecking anomalies
-        anomalySeverity: checked ? filters.anomalySeverity : 'any',
+        anomalySeverity: checked ? filters.anomalySeverity : 'unknown',
       });
     },
     [filters, onFiltersChange]
@@ -380,14 +380,14 @@ export function AdvancedFilteringSystem({
                   <label className="mb-1 block text-xs text-gray-400">Anomaly Severity</label>
                   <div className="flex flex-wrap gap-2">
                     <button
-                      onClick={() => handleAnomalySeverityChange('any')}
+                      onClick={() => handleAnomalySeverityChange('unknown')}
                       className={`rounded-full px-3 py-1 text-xs ${
-                        filters.anomalySeverity === 'any'
+                        filters.anomalySeverity === 'unknown'
                           ? 'bg-blue-600 text-white'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
-                      Any
+                      unknown
                     </button>
                     {ANOMALY_SEVERITIES.map(severity => (
                       <button
@@ -470,7 +470,7 @@ export const defaultAdvancedFilters: AdvancedFilters = {
   minHabitabilityScore: 0,
   hasAnomalies: false,
   anomalyTypes: [],
-  anomalySeverity: 'any',
+  anomalySeverity: 'unknown',
   lastScannedWithin: 0,
   resourceTypes: [],
   statusFilter: 'all',

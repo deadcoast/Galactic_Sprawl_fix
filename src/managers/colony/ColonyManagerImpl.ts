@@ -3,11 +3,11 @@ import { AbstractBaseManager } from '../../lib/managers/BaseManager';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { BaseEvent, EventType } from '../../types/events/EventTypes';
 import { automationManager } from '../game/AutomationManager';
-import { ResourceManager } from '../game/ResourceManager';
+import { getResourceManager } from '../ManagerRegistry';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
 // Create an instance of ResourceManager
-const resourceManager = new ResourceManager();
+const resourceManager = getResourceManager();
 
 interface ColonyStats {
   population: number;

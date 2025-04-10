@@ -4,12 +4,12 @@
  * ResourceGrid component for displaying multiple resources in a grid layout
  * Uses standardized UI components and resource type safety
  */
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ResourceType } from '../../../types/resources/ResourceTypes';
-import { ResourceDisplay } from './ResourceDisplay';
-import { ResourceBar } from './ResourceBar';
 import { Grid, GridTemplate } from '../../../ui/components/layout/Grid';
 import { useVirtualization } from '../../../utils/performance/ComponentOptimizer';
+import { ResourceBar } from './ResourceBar';
+import { ResourceDisplay } from './ResourceDisplay';
 
 export type ResourceDisplayMode = 'compact' | 'detailed' | 'bars';
 

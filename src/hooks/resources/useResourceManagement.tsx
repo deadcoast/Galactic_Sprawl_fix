@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ResourceManager } from '../../managers/game/ResourceManager';
+import { getResourceManager, ResourceManager } from '../../managers/ManagerRegistry';
 import {
-  ResourceIntegration,
   createResourceIntegration,
+  ResourceIntegration,
 } from '../../managers/resource/ResourceIntegration';
 import {
   ResourceState,
@@ -49,6 +49,10 @@ const defaultResourceState: ResourceState = {
 export function useResourceManagement() {
   const [resourceStates, setResourceStates] = useState<Map<ResourceType, ResourceState>>(new Map());
   const [isInitialized, setIsInitialized] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Replace direct instantiation with registry access
+  const resourceManager = getResourceManager();
 
   // Get or create the resource integration
   const integration = useMemo(() => getResourceIntegration(), []);

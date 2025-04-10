@@ -222,7 +222,7 @@ const MemoryOptimizedCanvasChart: React.FC<MemoryOptimizedCanvasChartProps> = ({
         return inputData as ChartDataRecord[];
       }
 
-      // Calculate how many points to keep
+      // Calculate how munknown points to keep
       const targetPoints = Math.max(2, Math.floor(inputData.length * quality));
 
       // If we have fewer points than target, use all

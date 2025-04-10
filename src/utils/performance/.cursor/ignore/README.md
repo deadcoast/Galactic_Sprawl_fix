@@ -17,7 +17,7 @@ The D3BatchedUpdates.ts file contains numerous TypeScript errors related to:
 For now, we've added TypeScript and ESLint directives at the top of the file:
 
 ```typescript
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-unknown */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 ```
@@ -53,7 +53,7 @@ Create accurate type definitions that match D3's complex method signatures:
 
 ### 5. Remove Type Assertions
 
-- Replace `as any` with proper type guards and narrowing
+- Replace `as unknown` with proper type guards and narrowing
 - Use type predicates where appropriate
 
 ### 6. Fix Constraint Issues

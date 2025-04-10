@@ -90,7 +90,7 @@ export const ResourceRatesTrends: React.FC<ResourceRatesTrendsProps> = ({
 
   // Set up periodic data collection
   useEffect(() => {
-    // Clear any existing interval
+    // Clear unknownnown existing interval
     if (historyIntervalRef.current !== null) {
       window.clearInterval(historyIntervalRef.current);
     }

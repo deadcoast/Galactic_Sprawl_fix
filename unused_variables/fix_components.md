@@ -2,6 +2,71 @@
 
 ## src/components/exploration/unified/core/BaseAnalysisVisualizer.tsx
 
+## Task List: Address Unused Variables in Components (from fix_components.md)
+
+- [X] `src/components/exploration/unified/core/BaseAnalysisVisualizer.tsx`
+- [X] `src/components/ui/showcase/DataDashboardApp.tsx`
+- [ ] `src/components/exploration/ReconShipCoordination.tsx`
+- [X] `src/components/ui/GameHUD.tsx`
+- [ ] `src/components/ui/visualization/TemporalAnalysisView.tsx`
+- [ ] `src/components/ui/performance/OptimizationComparisonView.tsx`
+- [ ] `src/components/ui/performance/VisualizationInspector.tsx`
+- [ ] `src/components/ui/visualization/FlowDiagram.tsx`
+- [ ] `src/components/ui/resource/ResourceVisualizationEnhanced.tsx`
+- [ ] `src/components/buildings/colony/ColonyMap.tsx`
+- [ ] `src/components/exploration/visualizations/charts/MemoryOptimizedCanvasChart.tsx`
+- [ ] `src/components/ui/resource/ResourceForecastingVisualization.tsx`
+- [ ] `src/components/ui/event/VirtualizedEventLog.tsx`
+- [ ] `src/components/ui/tech/TechVisualFeedback.tsx`
+- [ ] `src/components/ui/visualization/DataTransitionParticleSystem.tsx`
+- [ ] `src/components/ui/visualizations/NetworkGraph.tsx`
+- [ ] `src/components/visualization/AnomalyVisualization.tsx`
+- [ ] `src/components/buildings/colony/AutomatedPopulationManager.tsx`
+- [ ] `src/components/buildings/colony/PopulationGrowthModule.tsx`
+- [ ] `src/components/core/SystemIntegration.tsx`
+- [ ] `src/components/exploration/ExplorationDataManager.tsx`
+- [ ] `src/components/ui/ResourceEventMonitor.tsx`
+- [ ] `src/components/ui/errors/ComponentErrorState.tsx`
+- [ ] `src/components/ui/errors/ComponentSpecificErrorStates.tsx`
+- [ ] `src/components/ui/game/ShipDisplay.tsx`
+- [ ] `src/components/ui/performance/BatchedUpdateDemo.tsx`
+- [ ] `src/components/ui/resource/ResourceGrid.tsx`
+- [ ] `src/components/ui/resource/ResourceManagementDashboard.tsx`
+- [ ] `src/components/ui/showcase/PerformanceMonitoringDashboard.tsx`
+- [ ] `src/components/ui/visualizations/LazyNetworkGraph.tsx`
+- [ ] `src/components/buildings/colony/GrowthRateModifiers.tsx`
+- [ ] `src/components/buildings/colony/ResourceDashboard.tsx`
+- [ ] `src/components/buildings/colony/SatisfactionMeter.tsx`
+- [ ] `src/components/buildings/colony/TradeRouteVisualization.tsx`
+- [ ] `src/components/buildings/modules/ExplorationHub/ExplorationHub.tsx`
+- [ ] `src/components/buildings/modules/ExplorationHub/MissionReplay.tsx`
+- [ ] `src/components/buildings/modules/MiningHub/MiningWindow.tsx`
+- [ ] `src/components/buildings/modules/hangar/ShipHangar.tsx`
+- [ ] `src/components/exploration/AnalysisConfigManager.tsx`
+- [ ] `src/components/exploration/AnomalyAnalysis.tsx`
+- [ ] `src/components/exploration/DataAnalysisSystem.tsx`
+- [ ] `src/components/exploration/DatasetManager.tsx`
+- [ ] `src/components/exploration/DetailedAnomalyAnalysis.tsx`
+- [ ] `src/components/exploration/visualizations/charts/CanvasLineChart.tsx`
+- [ ] `src/components/exploration/visualizations/charts/CanvasScatterPlot.tsx`
+- [ ] `src/components/exploration/visualizations/charts/ScatterPlot.tsx`
+- [ ] `src/components/exploration/visualizations/withMemoryManagement.tsx`
+- [ ] `src/components/performance/MultitabPerformanceResults.tsx`
+- [ ] `src/components/ships/base/BaseShip.tsx`
+- [ ] `src/components/ships/player/variants/warships/OrionFrigate.tsx`
+- [ ] `src/components/ships/player/variants/warships/Spitflare.tsx`
+- [ ] `src/components/ships/player/variants/warships/StarSchooner.tsx`
+- [ ] `src/components/ui/VPRErrorBoundary.tsx`
+- [ ] `src/components/ui/errors/NetworkErrorFallback.tsx`
+- [ ] `src/components/ui/modules/ModuleCard.tsx`
+- [ ] `src/components/ui/performance/DynamicBudgetAdjustmentPanel.tsx`
+- [ ] `src/components/ui/virtualized/VirtualizedList.tsx`
+- [ ] `src/components/ui/visualization/AnimationTypeSafetyDemo.tsx`
+- [ ] `src/components/ui/visualization/ChartCoordinationDemo.tsx`
+- [ ] `src/components/ui/visualization/HeatMapDensityVisualization.tsx`
+- [ ] `src/components/ui/visualization/ParticleTransitionVisualization.tsx`
+- [ ] `src/components/ui/visualizations/Chart.tsx`
+
 Total unused variables: 35
 
 - `_data` (Line 158): Already prefixed with underscore, consider using in code or removing

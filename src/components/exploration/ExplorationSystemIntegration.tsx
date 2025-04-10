@@ -91,7 +91,7 @@ export function ExplorationSystemIntegration({
       }
 
       // Anomaly severity filter
-      if (filters.anomalySeverity !== 'any') {
+      if (filters.anomalySeverity !== 'unknown') {
         const hasMatchingSeverity = sector.anomalies.some(
           anomaly => anomaly.severity === filters.anomalySeverity
         );

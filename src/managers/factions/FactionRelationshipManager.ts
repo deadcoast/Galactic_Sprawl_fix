@@ -3,11 +3,11 @@ import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import {
-    EventType,
-    FactionConflictRecordedEventData,
-    FactionRelationshipChangedEventData,
-    FactionTradeEstablishedEventData,
-    FactionTreatyStatusChangedEventData
+  EventType,
+  FactionConflictRecordedEventData,
+  FactionRelationshipChangedEventData,
+  FactionTradeEstablishedEventData,
+  FactionTreatyStatusChangedEventData
 } from '../../types/events/EventTypes';
 import { ResourceType } from '../../types/resources/ResourceTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
@@ -136,12 +136,12 @@ export class FactionRelationshipManager {
   }
 
   private getRelationshipKey(factionId: FactionId, targetId: FactionId): string {
-    return [factionId, targetId].sort().join('-');
+    return [ factionId, targetId ].sort().join('-');
   }
 
   private getInitialRelationshipValue(factionId: FactionId, targetId: FactionId): number {
-    const faction = factionConfigs[factionId];
-    const target = factionConfigs[targetId];
+    const faction = factionConfigs[ factionId ];
+    const target = factionConfigs[ targetId ];
 
     if (faction.specialRules.alwaysHostile || target.specialRules.alwaysHostile) {
       return -0.5; // Start hostile
@@ -166,7 +166,7 @@ export class FactionRelationshipManager {
   public getTreatyStatus(
     factionId: FactionId,
     targetId: FactionId
-  ): RelationshipState['treatyStatus'] {
+  ): RelationshipState[ 'treatyStatus' ] {
     const key = this.getRelationshipKey(factionId, targetId);
     return this.relationships.get(key)?.treatyStatus || 'none';
   }
@@ -255,7 +255,7 @@ export class FactionRelationshipManager {
     }
 
     const oldStatus = state.treatyStatus;
-    let newStatus: RelationshipState['treatyStatus'] = 'none';
+    let newStatus: RelationshipState[ 'treatyStatus' ] = 'none';
 
     // Determine new status based on relationship value
     if (state.value >= 0.8) {
@@ -306,8 +306,8 @@ export class FactionRelationshipManager {
       // Improve relationship based on trade
       const relationshipChange =
         (Math.min(0.1, amount / 1000) *
-          (factionConfigs[factionId].behavior.tradingPreference +
-            factionConfigs[targetId].behavior.tradingPreference)) /
+          (factionConfigs[ factionId ].behavior.tradingPreference +
+            factionConfigs[ targetId ].behavior.tradingPreference)) /
         2;
 
       this.modifyRelationship(factionId, targetId, relationshipChange, 'trade');
@@ -342,8 +342,8 @@ export class FactionRelationshipManager {
       // Worsen relationship based on conflict
       const relationshipChange =
         (-Math.min(0.2, severity / 100) *
-          (factionConfigs[factionId].behavior.baseAggression +
-            factionConfigs[targetId].behavior.baseAggression)) /
+          (factionConfigs[ factionId ].behavior.baseAggression +
+            factionConfigs[ targetId ].behavior.baseAggression)) /
         2;
 
       this.modifyRelationship(factionId, targetId, relationshipChange, `conflict_${type}`);
@@ -366,11 +366,11 @@ export class FactionRelationshipManager {
   public canEstablishTreaty(
     factionId: FactionId,
     targetId: FactionId,
-    type: RelationshipState['treatyStatus']
+    type: RelationshipState[ 'treatyStatus' ]
   ): boolean {
     const relationship = this.getRelationship(factionId, targetId);
-    const faction = factionConfigs[factionId];
-    const target = factionConfigs[targetId];
+    const faction = factionConfigs[ factionId ];
+    const target = factionConfigs[ targetId ];
 
     // Check for special rules that prevent treaties
     if (faction.specialRules.alwaysHostile || target.specialRules.alwaysHostile) {
@@ -401,7 +401,7 @@ export class FactionRelationshipManager {
     factionId: FactionId,
     targetId: FactionId,
     action: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute',
-    resources?: { type: string; amount: number }[]
+    resources?: { type: string; amount: number; }[]
   ): boolean {
     const key = this.getRelationshipKey(factionId, targetId);
     const state = this.relationships.get(key);
@@ -410,8 +410,8 @@ export class FactionRelationshipManager {
       return false;
     }
 
-    const faction = factionConfigs[factionId];
-    const target = factionConfigs[targetId];
+    const faction = factionConfigs[ factionId ];
+    const target = factionConfigs[ targetId ];
 
     // Check if action is allowed based on special rules
     if (
@@ -487,19 +487,19 @@ export class FactionRelationshipManager {
     type: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute';
     name: string;
     description: string;
-    requirements: { type: string; value: number }[];
+    requirements: { type: string; value: number; }[];
     available: boolean;
   }[] {
     const relationship = this.getRelationship(factionId, targetId);
     const treatyStatus = this.getTreatyStatus(factionId, targetId);
-    const faction = factionConfigs[factionId];
-    const target = factionConfigs[targetId];
+    const faction = factionConfigs[ factionId ];
+    const target = factionConfigs[ targetId ];
 
     const actions: {
       type: 'ceasefire' | 'tradeRoute' | 'alliance' | 'tribute';
       name: string;
       description: string;
-      requirements: { type: string; value: number }[];
+      requirements: { type: string; value: number; }[];
       available: boolean;
     }[] = [];
 

@@ -2,8 +2,9 @@ import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
-import { ModuleEvent, ModuleEventType } from '../../../lib/events/ModuleEventBus';
+import { ModuleEvent } from '../../../lib/events/ModuleEventBus';
 import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
+import { EventType } from '../../../types/events/EventTypes';
 
 export interface EventLogProps {
   /**
@@ -76,7 +77,7 @@ export interface EventLogProps {
   /**
    * Event type filter
    */
-  eventTypeFilter?: ModuleEventType[];
+  eventTypeFilter?: EventType[];
 }
 
 /**

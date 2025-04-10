@@ -1,4 +1,5 @@
 import { ComponentType, useEffect, useState } from 'react';
+import { errorLoggingService } from '../../../services/ErrorLoggingService';
 import { BaseChartProps } from './charts/BaseChart';
 
 /**
@@ -63,10 +64,14 @@ export function withMemoryManagement<P extends BaseChartProps>(
       const size = estimateSize(props?.data);
       setMemoryUsage(size);
 
-      // Log memory usage if enabled
       if (enableLogging) {
-        console.log(
-          `[MemoryManager] Memory usage: ${Math.round(size / 1024 / 1024)}MB, Cleanup level: ${autoCleanupLevel}`
+        errorLoggingService.logInfo(
+          `[MemoryManager] Memory usage: ${Math.round(size / 1024 / 1024)}MB, Cleanup level: ${autoCleanupLevel}`,
+          {
+            component: 'withMemoryManagement',
+            memoryUsageMB: Math.round(size / 1024 / 1024),
+            cleanupLevel: autoCleanupLevel,
+          }
         );
       }
     }, [props?.data, enableLogging, autoCleanupLevel]);

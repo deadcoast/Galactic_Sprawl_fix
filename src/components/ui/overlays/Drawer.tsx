@@ -3,11 +3,12 @@
  * 
  * Drawer component for sliding side panels
  */
+import { X } from 'lucide-react';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../../services/ErrorLoggingService';
 import { UIEventType } from '../../../types/ui/EventTypes';
-import { X } from 'lucide-react';
 
 export type DrawerPlacement = 'left' | 'right' | 'top' | 'bottom';
 
@@ -187,7 +188,17 @@ export function Drawer({
         });
         document.dispatchEvent(event);
       } catch (error) {
-        console.error('[Drawer] Error dispatching drawer opened event:', error);
+        errorLoggingService.logError(
+          error instanceof Error ? error : new Error(String(error)),
+          ErrorType.EVENT_HANDLING,
+          ErrorSeverity.LOW,
+          {
+            componentName: 'Drawer',
+            action: 'dispatchDrawerOpenedEvent',
+            eventType: UIEventType.MODAL_OPENED,
+            drawerId: title || 'drawer',
+          }
+        );
       }
       
       return () => clearTimeout(timeout);
@@ -220,7 +231,17 @@ export function Drawer({
             });
             document.dispatchEvent(event);
           } catch (error) {
-            console.error('[Drawer] Error dispatching drawer closed event:', error);
+            errorLoggingService.logError(
+              error instanceof Error ? error : new Error(String(error)),
+              ErrorType.EVENT_HANDLING,
+              ErrorSeverity.LOW,
+              {
+                componentName: 'Drawer',
+                action: 'dispatchDrawerClosedEvent',
+                eventType: UIEventType.MODAL_CLOSED,
+                drawerId: title || 'drawer',
+              }
+            );
           }
         }, animationDuration);
         
@@ -257,7 +278,7 @@ export function Drawer({
     }
   };
   
-  // Don't render anything if not open or visible
+  // Don't render unknownnownthing if not open or visible
   if (!isOpen && !isVisible) {
     return null;
   }

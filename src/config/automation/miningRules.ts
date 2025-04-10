@@ -478,6 +478,786 @@ export const miningRules: AutomationRule[] = [
       },
       {
         type: 'RESOURCE_ABOVE',
+        target: 'credits', // Keep as string literal 'credits'
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits', // Keep as string literal 'credits'
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits', // Keep as string literal 'credits'
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits', // Keep as string literal 'credits'
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
         target: 'credits',
         value: 10000,
       },
@@ -492,6 +1272,7146 @@ export const miningRules: AutomationRule[] = [
           eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
           data: {
             type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Mining Ship Maintenance
+  {
+    id: 'mining-ship-maintenance',
+    moduleId: 'mineral-processing',
+    name: 'Mining Ship Maintenance',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'SHIP_MAINTENANCE_NEEDED',
+        value: {
+          eventType: 'SHIP_MAINTENANCE_NEEDED',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'PERFORM_SHIP_MAINTENANCE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'PERFORM_SHIP_MAINTENANCE' as ModuleEventType,
+          data: {
+            type: 'maintenance',
+            priority: 3,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000, // Check every minute
+  },
+
+  // Automated Mining Expansion
+  {
+    id: 'automated-mining-expansion',
+    moduleId: 'mineral-processing',
+    name: 'Automated Mining Expansion',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_ABOVE',
+        target: 'credits',
+        value: 10000,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EXPAND_MINING_OPERATIONS',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EXPAND_MINING_OPERATIONS' as ModuleEventType,
+          data: {
+            type: 'expansion',
+            priority: 2,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 300000, // Check every 5 minutes
+  },
+
+  // Resource Depletion Management
+  {
+    id: 'depletion-management',
+    moduleId: 'mineral-processing',
+    name: 'Resource Depletion Management',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'RESOURCE_NODE_DEPLETING',
+        value: {
+          eventType: 'RESOURCE_NODE_DEPLETING',
+          eventData: {
+            timeElapsed: 60000,
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'FIND_NEW_RESOURCE_NODE',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'FIND_NEW_RESOURCE_NODE' as ModuleEventType,
+          data: {
+            type: 'exploration',
+            priority: 1,
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 60000,
+  },
+
+  // Emergency Resource Collection
+  {
+    id: 'emergency-collection',
+    moduleId: 'mineral-processing',
+    name: 'Emergency Resource Collection',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.MINERALS,
+        value: 100, // Critical low
+      },
+      {
+        type: 'RESOURCE_BELOW',
+        target: ResourceType.ENERGY,
+        value: 50, // Critical low
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'EMERGENCY_MINING_PROTOCOL',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'EMERGENCY_MINING_PROTOCOL' as ModuleEventType,
+          data: {
+            type: 'emergency',
+            priority: 5, // Highest priority
+          },
+        } as EmitEventValue,
+      },
+    ],
+    interval: 5000, // Check frequently
+  },
+
+  // Asteroid Field Scanning
+  {
+    id: 'asteroid-field-scanning',
+    moduleId: 'mineral-processing',
+    name: 'Asteroid Field Scanning',
+    enabled: true,
+    conditions: [
+      {
+        type: 'MODULE_ACTIVE',
+        target: 'mineral-processing',
+      },
+      {
+        type: 'EVENT_OCCURRED',
+        target: 'NEW_ASTEROID_FIELD_DETECTED',
+        value: {
+          eventType: 'NEW_ASTEROID_FIELD_DETECTED',
+          eventData: {
+            timeElapsed: 300000, // Last 5 minutes
+          },
+        } as EventConditionValue,
+      },
+    ],
+    actions: [
+      {
+        type: 'EMIT_EVENT',
+        target: 'SCAN_ASTEROID_FIELD',
+        value: {
+          moduleId: 'mineral-processing',
+          moduleType: 'mineral' as ModuleType,
+          eventType: 'SCAN_ASTEROID_FIELD' as ModuleEventType,
+          data: {
+            type: 'scanning',
             priority: 2,
           },
         } as EmitEventValue,

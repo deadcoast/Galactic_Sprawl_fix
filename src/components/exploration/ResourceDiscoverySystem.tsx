@@ -1,8 +1,8 @@
 import { Database, Droplet, Leaf, Loader, Search, Sparkles, Zap } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ensureStringResourceType } from '../../utils/resources/ResourceTypeMigration';
 import { ResourceType } from './../../types/resources/ResourceTypes';
+// Import error logging service
 
 // Interfaces
 interface ResourceDiscovery {
@@ -22,10 +22,10 @@ interface ResourceDiscovery {
 interface RawResourceData {
   signalStrength: number; // 0-1 scale
   signalType:
-    | 'mineral'
+    | ResourceType.MINERALS
     | ResourceType.ENERGY
     | ResourceType.GAS
-    | 'organic'
+    | ResourceType.ORGANIC
     | ResourceType.EXOTIC
     | 'unknown';
   signalPattern: 'concentrated' | 'scattered' | 'veins' | 'unknown';
@@ -111,7 +111,7 @@ const resourceNames: Record<string, string[]> = {
     'Chlorine Vents',
     'Sulfur Dioxide Pockets',
   ],
-  organic: [
+  [ResourceType.ORGANIC]: [
     'Bacterial Colonies',
     'Fungal Growths',
     'Plant Analogs',
@@ -166,23 +166,6 @@ const resourceNames: Record<string, string[]> = {
   ],
 };
 
-// For backward compatibility - maintain string keys for resourceNames
-// This will be removed in a future update
-Object.entries(resourceNames).forEach(([key, value]) => {
-  if (typeof key === 'string' && key !== 'organic') {
-    try {
-      const enumKey = Object.values(ResourceType).find(
-        enumValue => enumValue.toString() === key.toUpperCase()
-      );
-      if (enumKey && !resourceNames[enumKey]) {
-        resourceNames[enumKey] = value;
-      }
-    } catch (e) {
-      console.warn(`Failed to create enum key for ${key}`);
-    }
-  }
-});
-
 export function ResourceDiscoverySystem({
   discoveries,
   sectors,
@@ -208,23 +191,17 @@ export function ResourceDiscoverySystem({
       case 'low':
         return {
           processingSpeed: 50, // ms between processing steps
-          animationDuration: 300,
-          maxDataPoints: 50,
           confidenceDecimalPlaces: 1,
         };
       case 'high':
         return {
           processingSpeed: 20,
-          animationDuration: 500,
-          maxDataPoints: 200,
           confidenceDecimalPlaces: 3,
         };
       case 'medium':
       default:
         return {
           processingSpeed: 35,
-          animationDuration: 400,
-          maxDataPoints: 100,
           confidenceDecimalPlaces: 2,
         };
     }
@@ -306,7 +283,7 @@ export function ResourceDiscoverySystem({
   // Generate processed resource data from raw data
   const generateProcessedData = (discovery: ResourceDiscovery): ResourceData[] => {
     return discovery.rawData.map(raw => {
-      // Determine resource type
+      // Determine resource type - Simplified logic
       let type: ResourceType;
       if (raw.signalType === 'unknown') {
         // Select a random resource type from the valid ResourceType values
@@ -316,31 +293,19 @@ export function ResourceDiscoverySystem({
           ResourceType.GAS,
           ResourceType.PLASMA,
           ResourceType.EXOTIC,
+          ResourceType.ORGANIC, // Added ORGANIC to potential random types
         ];
         type = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
-      } else if (raw.signalType === 'mineral') {
-        type = ResourceType.MINERALS; // Convert 'mineral' to ResourceType.MINERALS
-      } else if (raw.signalType === 'organic') {
-        // Handle 'organic' which is not in ResourceType
-        type = ResourceType.MINERALS; // Map to a valid ResourceType
-      } else if (raw.signalType === ResourceType.GAS) {
-        type = ResourceType.GAS;
-      } else if (raw.signalType === ResourceType.ENERGY) {
-        type = ResourceType.ENERGY;
-      } else if (raw.signalType === ResourceType.EXOTIC) {
-        type = ResourceType.EXOTIC;
       } else {
-        // Default case
-        type = ResourceType.MINERALS;
+        // Directly use the enum value from signalType
+        type = raw.signalType;
       }
 
       // Generate resource name based on type
-      const typeString = ensureStringResourceType(type);
+      // Try to get names directly from the enum key
+      let nameOptions = resourceNames[type]; // Directly use the enum as key
 
-      // Try to get names directly from the enum key first
-      let nameOptions = resourceNames[type] || resourceNames[typeString];
-
-      // Fallback to minerals if no names found
+      // Fallback to minerals if no names found (should be rare now)
       if (!nameOptions) {
         nameOptions = resourceNames[ResourceType.MINERALS];
       }
@@ -435,28 +400,30 @@ export function ResourceDiscoverySystem({
   };
 
   // Get resource type icon - updated to handle enum values directly
-  const getResourceTypeIcon = (type: ResourceType | string) => {
-    // If it's a string, emit a deprecation warning
-    if (typeof type === 'string') {
-      console.warn(
-        `Using string resource type '${type}' is deprecated. Use ResourceType enum instead.`
-      );
-    }
+  const getResourceTypeIcon = (type: ResourceType | 'unknown') => {
+    // Remove deprecation warning and string conversion
+    // if (typeof type === 'string') {
+    //   console.warn(
+    //     `Using string resource type '${type}' is deprecated. Use ResourceType enum instead.`
+    //   );
+    // }
 
-    // Convert to string if it's an enum
-    const typeString = typeof type === 'string' ? type : ensureStringResourceType(type);
-
-    switch (typeString) {
+    // Switch directly on ResourceType or 'unknown'
+    switch (type) {
       case ResourceType.MINERALS:
         return <Database className="h-4 w-4 text-blue-400" />;
       case ResourceType.ENERGY:
         return <Zap className="h-4 w-4 text-yellow-400" />;
       case ResourceType.GAS:
         return <Droplet className="h-4 w-4 text-cyan-400" />;
-      case 'organic':
+      case ResourceType.ORGANIC:
         return <Leaf className="h-4 w-4 text-green-400" />;
       case ResourceType.EXOTIC:
         return <Sparkles className="h-4 w-4 text-purple-400" />;
+      case ResourceType.PLASMA: // Added missing case
+        return <Zap className="h-4 w-4 text-orange-400" />; // Example icon/color
+      case 'unknown': // Handle unknown case explicitly
+        return <Search className="h-4 w-4 text-gray-400" />;
       default:
         return <Search className="h-4 w-4 text-gray-400" />;
     }
@@ -564,13 +531,13 @@ export function ResourceDiscoverySystem({
                       <span
                         key={index}
                         className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs ${
-                          raw.signalType === 'mineral'
+                          raw.signalType === ResourceType.MINERALS
                             ? 'bg-blue-900/50 text-blue-200'
                             : raw.signalType === ResourceType.ENERGY
                               ? 'bg-yellow-900/50 text-yellow-200'
                               : raw.signalType === ResourceType.GAS
                                 ? 'bg-cyan-900/50 text-cyan-200'
-                                : raw.signalType === 'organic'
+                                : raw.signalType === ResourceType.ORGANIC
                                   ? 'bg-green-900/50 text-green-200'
                                   : raw.signalType === ResourceType.EXOTIC
                                     ? 'bg-purple-900/50 text-purple-200'
@@ -683,6 +650,7 @@ export function ResourceDiscoverySystem({
                           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                             <div>
                               <span className="text-gray-400">Type:</span>{' '}
+                              {/* Display ResourceType enum value */}
                               <span className="text-white">{resource.type}</span>
                             </div>
                             <div>

@@ -101,7 +101,7 @@ export function useMultiEventSubscription(
         message: 'Failed to set up event subscriptions'
       });
       
-      // Clean up any successful subscriptions
+      // Clean up unknown successful subscriptions
       unsubscribes.forEach(unsubscribe => unsubscribe());
       
       // Return empty cleanup function
@@ -130,7 +130,7 @@ export function useEventMonitor(options: {
     const typesToMonitor = eventTypes || Object.values(EventType);
     
     // Subscribe to events
-    const unsubscribe = moduleEventBus.subscribeToMany(
+    const unsubscribe = moduleEventBus.subscribeToMunknown(
       typesToMonitor,
       (event: BaseEvent) => {
         // Apply filter if provided

@@ -359,7 +359,7 @@ export function createEnhancedComponentProfiler(
           if (entry.name.includes(componentName)) {
             // Process interaction metrics
             if (entry.entryType === 'first-input' && interactionMetrics.firstInputDelay === null) {
-              // Use type assertion with specific interface instead of 'any'
+              // Use type assertion with specific interface instead of 'unknown'
               const typedEntry = entry as PerformanceEntryWithProcessing;
               interactionMetrics.firstInputDelay = typedEntry.processingStart - typedEntry.startTime;
             } else if (entry.entryType === 'event') {
@@ -604,7 +604,7 @@ export function createEnhancedComponentProfiler(
       interactionObserver = null;
     }
 
-    // Clear any pending timers following cleanup pattern
+    // Clear unknown pending timers following cleanup pattern
     if (reportingTimer) {
       clearTimeout(reportingTimer);
       reportingTimer = null;
@@ -847,7 +847,7 @@ export function withEnhancedProfiling<Props extends object>(
           prevProps: P | null,
           nextProps: P
         ) => R)<Props, React.ReactElement>(
-          // Use Props type instead of any
+          // Use Props type instead of unknown
           (renderProps: Props) => React.createElement(Component, renderProps),
           prevPropsRef.current,
           props

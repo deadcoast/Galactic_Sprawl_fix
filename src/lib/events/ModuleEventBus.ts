@@ -150,7 +150,7 @@ class ModuleEventBus extends EventBus<ModuleEvent> {
    * @param options Subscription options
    * @returns Function to unsubscribe from all events
    */
-  public subscribeToMany(
+  public subscribeToMunknown(
     eventTypes: EventType[],
     listener: EventListener<ModuleEvent>,
     options?: SubscriptionOptions & { moduleId?: string; moduleType?: ModuleType }

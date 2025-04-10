@@ -30,6 +30,7 @@ import { IntegrationErrorHandler } from './components/core/IntegrationErrorHandl
 import ResourceVisualization from './components/ui/visualization/ResourceVisualization';
 import { useComponentProfiler } from './hooks/ui/useComponentProfiler';
 import { useProfilingOverlay } from './hooks/ui/useProfilingOverlay';
+import { getResourceManager, getShipHangarManager } from './managers/ManagerRegistry';
 import { errorLoggingService, ErrorSeverity, ErrorType } from './services/ErrorLoggingService';
 import { eventPropagationService } from './services/EventPropagationService';
 import { recoveryService } from './services/RecoveryService';
@@ -108,7 +109,8 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useGameDispatch();
   const [isInitialized, setIsInitialized] = React.useState(false);
   const moduleDispatch = useModuleDispatch();
-  const [resourceManagerInstance] = React.useState(() => new ResourceManager());
+  const [initializationError, setInitializationError] = React.useState<Error | null>(null);
+  const resourceManagerInstance = getResourceManager();
 
   useEffect(() => {
     const initializeGame = async () => {
@@ -220,14 +222,15 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
 
           // Initialize the ship hangar manager
           console.warn('Initializing ship hangar manager...');
-          const shipHangarManager = new ShipHangarManager(resourceManagerInstance, officerManager);
+          const shipHangarManager = getShipHangarManager();
 
           // Register the ship hangar manager with the global window object for development access
           if (process.env.NODE_ENV === 'development') {
             // Make manager available for debugging
+            // Cast to unknown to resolve type mismatch for debug assignment
             (
               window as Window & typeof globalThis & { shipHangarManager: ShipHangarManager }
-            ).shipHangarManager = shipHangarManager;
+            ).shipHangarManager = shipHangarManager as unknown; // Reverted to unknown cast
           }
 
           // Initialize event propagation service
@@ -307,6 +310,8 @@ const GameInitializer = ({ children }: { children: React.ReactNode }) => {
             error: error instanceof Error ? error.message : String(error),
           };
           recoveryService.createSnapshot(snapshot, { reason: 'Error during initialization' });
+
+          setInitializationError(error instanceof Error ? error : new Error(String(error)));
         }
       }
     };
@@ -352,7 +357,7 @@ const handleGlobalError = (error: Error, errorInfo: React.ErrorInfo) => {
 // A wrapper for the GameLayout component to provide the required props
 const GameLayoutWrapper = () => {
   // Use component profiler to track performance
-  const profiler = useComponentProfiler('GameLayoutWrapper', {
+  const _profiler = useComponentProfiler('GameLayoutWrapper', {
     enabled: process.env.NODE_ENV === 'development',
     logToConsole: true,
     slowRenderThreshold: 16
@@ -369,7 +374,7 @@ const GameLayoutWrapper = () => {
 
 export default function App() {
   // Enable app-level profiling with React Profiler API
-  const profilerRef = React.createRef<typeof Profiler>();
+  // const profilerRef = React.createRef<typeof Profiler>(); // Removed unused ref
   
   // Set up callback for the React Profiler
   const handleProfilerRender = (
@@ -433,3 +438,22 @@ export default function App() {
     </div>
   );
 }
+
+// Resource Provider - Consider if this is needed if ResourceManager is a global singleton
+interface ResourceProviderProps {
+  children: React.ReactNode;
+  /* resourceManager: ResourceManager; // Potentially remove prop */
+}
+
+const ResourceContext = React.createContext<ResourceManager | null>(null);
+
+export const ResourceProvider: React.FC<ResourceProviderProps> = ({
+  children,
+  /* resourceManager */ // Removed prop
+}) => {
+  // Access the singleton instance directly
+  const resourceManager = getResourceManager();
+  return (
+    <ResourceContext.Provider value={resourceManager}>{children}</ResourceContext.Provider>
+  );
+};

@@ -195,7 +195,7 @@ export function Popover({
     if (isOpen) {
       setInternalOpen(true);
       
-      // Trigger any open callback
+      // Trigger unknownnown open callback
       const timeout = setTimeout(() => {
         onOpen?.();
       }, animationDuration);

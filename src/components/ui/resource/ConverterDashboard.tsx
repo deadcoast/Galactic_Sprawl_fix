@@ -91,7 +91,7 @@ interface ConverterDashboardProps {
   efficiencyFactors: EfficiencyFactors;
   // For visualization
   selectedChain?: {
-    chain: ChainStatus; // Using the ChainStatus interface instead of any
+    chain: ChainStatus; // Using the ChainStatus interface instead of unknownnown
     converters: Record<string, FlowNode>;
     recipes: Record<string, ResourceConversionRecipe>;
   };

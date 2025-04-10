@@ -40,7 +40,7 @@ interface ErrorBoundaryState {
 /**
  * Error Boundary component
  *
- * This component catches JavaScript errors anywhere in its child component tree,
+ * This component catches JavaScript errors unknownwhere in its child component tree,
  * logs those errors, and displays a fallback UI instead of the component tree that crashed.
  */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -115,7 +115,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return true;
     }
 
-    // Check if any of the values have changed
+    // Check if unknown of the values have changed
     return prevResetKeys.some((value, index) => value !== nextResetKeys[index]);
   }
 

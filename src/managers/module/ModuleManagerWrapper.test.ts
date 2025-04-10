@@ -6,7 +6,7 @@ import { ModuleManager } from './ModuleManager';
 import { ModuleManagerWrapper, convertToModule, convertToModules } from './ModuleManagerWrapper';
 import type { Mock } from 'vitest';
 
-// Define a mock interface for the ModuleManager to avoid 'any'
+// Define a mock interface for the ModuleManager to avoid 'unknown'
 interface MockModuleManager {
   getActiveModules: () => BaseModule[];
   getModule?: (id: string) => BaseModule | undefined;

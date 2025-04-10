@@ -222,7 +222,7 @@ export class EventFilter {
     const candidates = indices.map(index => events[index]);
 
     // Apply additional filtering for time range and custom filter
-    // This ensures we catch any events that might have been missed by the bucketed time index
+    // This ensures we catch unknown events that might have been missed by the bucketed time index
     let filteredCandidates = candidates;
 
     // Apply time range filtering if specified

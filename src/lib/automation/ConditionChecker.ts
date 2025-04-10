@@ -1,13 +1,12 @@
 import { Subject } from 'rxjs';
 import { thresholdEvents } from '../../contexts/ThresholdTypes';
 import {
-    AutomationCondition,
-    EventConditionValue,
-    StatusConditionValue,
-    TimeConditionValue,
+  AutomationCondition,
+  EventConditionValue,
+  StatusConditionValue,
+  TimeConditionValue,
 } from '../../managers/game/AutomationManager';
 import { getResourceManager } from '../../managers/ManagerRegistry';
-import { MiningShipManagerImpl } from '../../managers/mining/MiningShipManagerImpl';
 import { moduleManager } from '../../managers/module/ModuleManager';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 
@@ -106,22 +105,24 @@ interface MiningEvent {
   data?: Record<string, unknown>;
 }
 
+/**
+ * Checks conditions for automation rules.
+ */
 export class ConditionChecker {
   private lastCheckedTimes: Map<string, number> = new Map();
+  private checkIntervals: Map<string, number> = new Map();
 
-  /**
-   * Mining manager reference for checking mining-related conditions
-   * This will be used in future implementations to:
-   * 1. Check resource extraction rates for mining ships
-   * 2. Verify mining ship assignments to resource nodes
-   * 3. Optimize mining operations based on automation rules
-   * 4. Trigger mining ship reassignments when conditions are met
-   * 5. Monitor mining efficiency and adjust strategies
-   */
-  private _miningManager?: MiningShipManagerImpl;
+  // Removed type annotations
+  private resourceThresholdManager: /* ResourceThresholdManager */ unknown;
+  private factionRelationshipManager: /* FactionRelationshipManager */ unknown;
 
-  constructor(_miningManager?: MiningShipManagerImpl) {
-    this._miningManager = _miningManager;
+  constructor(
+    // Removed type annotations
+    resourceThresholdManager: /* ResourceThresholdManager */ unknown,
+    factionRelationshipManager: /* FactionRelationshipManager */ unknown
+  ) {
+    this.resourceThresholdManager = resourceThresholdManager;
+    this.factionRelationshipManager = factionRelationshipManager;
 
     // Subscribe to threshold events
     thresholdEvents.subscribe(event => {
@@ -247,24 +248,6 @@ export class ConditionChecker {
     const conditionValue = condition.value as unknown;
     const eventValue = conditionValue as EventConditionValue;
     const { eventType, eventData } = eventValue;
-
-    // Check if this is a mining-related event and use _miningManager if available
-    if (this._miningManager && typeof eventType === 'string' && eventType.includes('mining')) {
-      // Check mining-specific events using the mining manager
-      // Use type assertion to access potential getRecentEvents method
-      const miningManagerWithEvents = this._miningManager as unknown as {
-        getRecentEvents?: () => MiningEvent[];
-      };
-
-      // If getRecentEvents exists, use it; otherwise, return an empty array
-      const miningEvents = miningManagerWithEvents.getRecentEvents?.() ?? [];
-
-      return miningEvents.some(
-        (event: MiningEvent) =>
-          event?.type === eventType &&
-          (!eventData || this.matchEventData(event?.data ?? {}, eventData))
-      );
-    }
 
     // For non-mining events, check the general event log
     // This is a placeholder for future implementation

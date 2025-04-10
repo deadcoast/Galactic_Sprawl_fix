@@ -396,7 +396,7 @@ export class LongSessionMemoryTestSuite {
 
     // Create large arrays and objects multiple times
     const dataSize = this.getDataSize();
-    const containers: any[] = [];
+    const containers: unknown[] = [];
 
     for (let i = 0; i < this.config.iterations; i++) {
       // Creating potentially leaky objects
@@ -638,12 +638,12 @@ export class LongSessionMemoryTestSuite {
     const memoryBefore = this.getMemoryUsage();
 
     // Create objects with circular references
-    const objects: any[] = [];
+    const objects: unknown[] = [];
 
     for (let i = 0; i < this.config.iterations; i++) {
-      const parent: any = { name: `parent-${i}`, children: [] };
-      const child1: any = { name: `child1-${i}`, parent: parent };
-      const child2: any = { name: `child2-${i}`, parent: parent, sibling: child1 };
+      const parent: unknown = { name: `parent-${i}`, children: [] };
+      const child1: unknown = { name: `child1-${i}`, parent: parent };
+      const child2: unknown = { name: `child2-${i}`, parent: parent, sibling: child1 };
 
       child1.sibling = child2;
       parent.children.push(child1, child2);
@@ -652,7 +652,7 @@ export class LongSessionMemoryTestSuite {
 
       // Create deeper circular structures
       if (i % 2 === 0) {
-        const deepStructure: any = { level: 0 };
+        const deepStructure: unknown = { level: 0 };
         let current = deepStructure;
 
         for (let j = 1; j < 20; j++) {
@@ -682,7 +682,7 @@ export class LongSessionMemoryTestSuite {
     if (this.config.allowGC) {
       objects.forEach(obj => {
         if (obj.children) {
-          obj.children.forEach((child: any) => {
+          obj.children.forEach((child: unknown) => {
             child.parent = null;
             child.sibling = null;
           });
@@ -735,7 +735,7 @@ export class LongSessionMemoryTestSuite {
 
   private getMemoryUsage(): number {
     if (window.performance && window.performance.memory) {
-      return (window.performance as any).memory.usedJSHeapSize;
+      return (window.performance as unknown).memory.usedJSHeapSize;
     }
     return 0;
   }

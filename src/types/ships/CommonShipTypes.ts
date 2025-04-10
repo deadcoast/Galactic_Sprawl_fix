@@ -14,16 +14,18 @@ export type ShipCategory = 'war' | 'recon' | 'mining';
 // Re-export weapon type for backward compatibility
 export type WeaponType = WeaponTypeBase;
 
-// Ship Status
-export type ShipStatus =
-  | 'ready'
-  | 'engaging'
-  | 'patrolling'
-  | 'retreating'
-  | 'disabled'
-  | 'damaged'
-  | 'repairing'
-  | 'upgrading';
+// Ship Status - Changed from type alias to enum
+export enum ShipStatus {
+  READY = 'ready',
+  ENGAGING = 'engaging',
+  PATROLLING = 'patrolling',
+  RETREATING = 'retreating',
+  DISABLED = 'disabled',
+  DAMAGED = 'damaged',
+  REPAIRING = 'repairing',
+  UPGRADING = 'upgrading',
+  // Add other relevant statuses if needed (e.g., DOCKED, DEPLOYED? Check if these are handled elsewhere)
+}
 
 // Common Ship Stats Interface
 export interface CommonShipStats extends BaseStats {

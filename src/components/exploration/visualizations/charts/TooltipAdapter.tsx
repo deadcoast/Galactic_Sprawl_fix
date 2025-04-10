@@ -32,7 +32,7 @@ interface TooltipAdapterProps<T> extends ChartTooltipProps {
 }
 
 /**
- * Generic tooltip adapter that can work with any data type
+ * Generic tooltip adapter that can work with unknown data type
  */
 export function TooltipAdapter<T>({
   active,

@@ -53,7 +53,7 @@ export const MultitabPerformanceLauncher: React.FC<MultitabPerformanceLauncherPr
       <Title level={5}>Multitab Performance Test Launcher</Title>
       <form onSubmit={handleSubmit}>
         <Space direction="vertical" style={{ width: '100%' }} size="large">
-          <Form.Item label="Number of Tabs" help="How many tabs to open (1-10)">
+          <Form.Item label="Number of Tabs" help="How munknown tabs to open (1-10)">
             <InputNumber
               value={config.tabCount}
               onChange={(value: number | null) => handleChange('tabCount', value || 1)}

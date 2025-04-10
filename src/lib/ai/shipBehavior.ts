@@ -1,7 +1,8 @@
 import { EventEmitter } from '../../lib/events/EventEmitter';
-import { TechTreeManager } from '../../managers/game/techTreeManager';
+import { getTechTreeManager } from '../../managers/ManagerRegistry';
 import { Salvage } from '../../types/combat/SalvageTypes';
 import {
+  CommonShip,
   CommonShipCapabilities,
   getDefaultCapabilities,
   getShipCategory,
@@ -80,8 +81,8 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
         const capabilities = getDefaultCapabilities(category);
 
         // War ships can salvage if they have the cutting laser
-        const techTreeInstance = TechTreeManager.getInstance();
-        if (category === 'war' && techTreeInstance && techTreeInstance.hasWarShipSalvage()) {
+        const techTreeManager = getTechTreeManager();
+        if (category === 'war' && techTreeManager && techTreeManager.isUnlocked('cutting_laser')) {
           capabilities.canSalvage = true;
         }
 
@@ -193,6 +194,13 @@ class ShipBehaviorManagerImpl extends EventEmitter<ShipBehaviorEvents> {
 
   public getTargetingShip(salvageId: string): string | undefined {
     return this.salvageTargets.get(salvageId);
+  }
+
+  execute(ship: CommonShip, dt: number): unknown /* State */ {
+    const techTreeManager = getTechTreeManager();
+    const hasAdvancedMining = techTreeManager.isUnlocked('advanced_mining_lasers');
+
+    // ... rest of the execution logic ...
   }
 }
 

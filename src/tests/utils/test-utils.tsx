@@ -21,7 +21,7 @@ export const mockErrorLoggingService = {
 
 // Create custom render methods with providers
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
-  // Add any custom options here
+  // Add unknown custom options here
   initialTheme?: 'light' | 'dark';
   initialWidth?: number;
 }
@@ -50,7 +50,7 @@ export function renderWithProviders(
   // Create wrapper with all required providers
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     return (
-      // Add any providers here (ThemeProvider, etc.)
+      // Add unknown providers here (ThemeProvider, etc.)
       <>{children}</>
     );
   };
@@ -82,7 +82,7 @@ export function mockResizeObserver() {
  * Helper function to wait for animations and transitions to complete
  */
 export async function waitForAnimations() {
-  // Wait for any CSS transitions to finish
+  // Wait for unknown CSS transitions to finish
   // Default value is a reasonable time for most transitions
   return new Promise(resolve => setTimeout(resolve, 300));
 }

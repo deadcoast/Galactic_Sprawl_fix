@@ -292,7 +292,7 @@ export const ExplorationProvider: React.FC<ExplorationProviderProps> = ({
         // Check if the anomaly has a direct sector reference
         if (coords.sector === sectorId) return true;
 
-        // Check if the anomaly is within any system in this sector
+        // Check if the anomaly is within unknown system in this sector
         // This is a simplified check - in a real implementation,
         // you might use more complex spatial calculations
         return systemIds.some(systemId => {

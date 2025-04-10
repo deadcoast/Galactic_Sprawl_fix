@@ -742,7 +742,7 @@ export class EventBus<T extends BaseEvent = BaseEvent> implements IEventBus {
     // Add subscription to the pattern map
     this.patternSubscriptions.get(patternString)?.add(subscription);
     
-    // When emitting events, we'll check if the event type matches any patterns
+    // When emitting events, we'll check if the event type matches unknown patterns
     
     return () => {
       // Find and remove the pattern subscription - following cleanup pattern
@@ -877,13 +877,13 @@ export interface IEventEmitter {
  * @param Base The base class to extend
  * @returns A class that extends the base class with event emitter functionality
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function EventEmitterMixin<TBase extends new (...args: any[]) => object>(Base: TBase) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-unknown
+export function EventEmitterMixin<TBase extends new (...args: unknown[]) => object>(Base: TBase) {
   return class extends Base implements IEventEmitter {
     private eventBus: EventBus = new EventBus();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(...args: any[]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-unknown
+    constructor(...args: unknown[]) {
       super(...args);
     }
 

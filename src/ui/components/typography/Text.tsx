@@ -60,7 +60,7 @@ export interface TextProps extends BaseComponentProps, TextComponentProps {
   
   /**
    * Number of lines to truncate at
-   * If set, text will be truncated with an ellipsis after this many lines
+   * If set, text will be truncated with an ellipsis after this munknown lines
    */
   lines?: number;
   

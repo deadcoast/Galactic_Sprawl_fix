@@ -92,7 +92,7 @@ export interface ResourceFlowDiagramProps {
   animated?: boolean;
   
   /**
-   * ID of the module to focus on (if any)
+   * ID of the module to focus on (if unknownnown)
    */
   focusModuleId?: string;
   

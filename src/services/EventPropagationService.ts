@@ -14,7 +14,7 @@ export interface EventSubscription {
  */
 class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationServiceImpl> {
   private subscriptions: Map<string, EventSubscription[]> = new Map();
-  private eventQueue: Array<{ type: string; data: unknown }> = [];
+  private eventQueue: Array<{ type: string; data: unknown; }> = [];
   private isProcessing = false;
   private customErrorHandler?: (error: Error, context?: Record<string, unknown>) => void;
 
@@ -34,11 +34,11 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
       total_events_processed: 0,
       total_errors: 0,
     };
-    
+
     // Check if we have access to the component registry service
     if (dependencies && 'componentRegistry' in dependencies) {
       const componentRegistry = dependencies.componentRegistry as typeof componentRegistryService;
-      
+
       // Notify registry that this service is available (using existing method rather than non-existent registerService)
       if (componentRegistry) {
         // Register the service availability as an event
@@ -47,27 +47,27 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
           serviceName: 'EventPropagationService',
           timestamp: Date.now(),
         });
-        console.warn('[EventPropagationService] Notified component registry of initialization');
+        errorLoggingService.logWarn('[EventPropagationService] Notified component registry of initialization');
       }
     } else {
       // Log that we're initializing without component registry
-      console.warn('[EventPropagationService] Initializing without component registry dependency');
+      errorLoggingService.logWarn('[EventPropagationService] Initializing without component registry dependency');
     }
-    
+
     // Handle other dependencies that might be passed in
     if (dependencies) {
       // Log the dependencies we received
       const dependencyNames = Object.keys(dependencies).join(', ');
-      console.warn(`[EventPropagationService] Initialized with dependencies: ${dependencyNames || 'none'}`);
-      
+      errorLoggingService.logWarn(`[EventPropagationService] Initialized with dependencies: ${dependencyNames || 'none'}`);
+
       // Initialize with error logging service if provided
       if ('errorLogging' in dependencies) {
         const errorLogging = dependencies.errorLogging as typeof errorLoggingService;
-        
+
         // Configure error handling with the error logging service
         if (errorLogging) {
-          console.warn('[EventPropagationService] Error logging service available');
-          
+          errorLoggingService.logWarn('[EventPropagationService] Error logging service available');
+
           // Set up a custom error handler using the provided error logging service
           this.customErrorHandler = (error: Error, context?: Record<string, unknown>) => {
             errorLogging.logError(error, ErrorType.RUNTIME, ErrorSeverity.MEDIUM, {
@@ -103,7 +103,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_subscriptions = Array.from(this.subscriptions.values()).reduce(
       (sum, subs) => sum + subs.length,
       0
@@ -124,7 +124,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
         if (!this.metadata.metrics) {
           this.metadata.metrics = {};
         }
-        const {metrics} = this.metadata;
+        const { metrics } = this.metadata;
         metrics.total_subscriptions = Array.from(this.subscriptions.values()).reduce(
           (sum, subs) => sum + subs.length,
           0
@@ -143,7 +143,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_events_emitted = (metrics.total_events_emitted ?? 0) + 1;
     metrics.last_event_timestamp = Date.now();
     this.metadata.metrics = metrics;
@@ -193,7 +193,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_events_processed = (metrics.total_events_processed ?? 0) + 1;
     metrics.last_processed_timestamp = Date.now();
     this.metadata.metrics = metrics;
@@ -204,7 +204,7 @@ class EventPropagationServiceImpl extends AbstractBaseService<EventPropagationSe
     if (!this.metadata.metrics) {
       this.metadata.metrics = {};
     }
-    const {metrics} = this.metadata;
+    const { metrics } = this.metadata;
     metrics.total_errors = (metrics.total_errors ?? 0) + 1;
     metrics.last_error_timestamp = Date.now();
     this.metadata.metrics = metrics;
