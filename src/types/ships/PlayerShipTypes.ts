@@ -1,10 +1,6 @@
 import { Tier } from '../core/GameTypes';
-import {
-  CommonShip,
-  CommonShipAbility,
-  CommonShipDisplayStats,
-  CommonShipStats,
-} from './CommonShipTypes';
+import { CommonShipAbility, CommonShipDisplayStats, CommonShipStats } from './CommonShipTypes';
+import { UnifiedShipStatus } from './UnifiedShipTypes';
 
 // Player Ship Classes - Changed from type alias to enum
 export enum PlayerShipClass {
@@ -20,13 +16,13 @@ export enum PlayerShipClass {
   SCOUT = 'scout', // Added SCOUT based on usage in ShipHangar.tsx
   FIGHTER = 'fighter', // Added FIGHTER based on usage in ShipHangar.tsx
   CRUISER = 'cruiser', // Added CRUISER based on usage in ShipHangar.tsx
+  // Add the specific mining ship classes
+  ROCK_BREAKER = 'rock-breaker', // Added MS-RB12G
+  VOID_DREDGER = 'void-dredger', // Added MVVD (Note: VOID_DREDGER_MINER already exists, clarify if VOID_DREDGER is separate or rename existing)
 }
 
 // Player Ship Categories
 export type PlayerShipCategory = 'war' | 'recon' | 'mining';
-
-// Player Ship Status
-export type PlayerShipStatus = 'ready' | 'engaging' | 'patrolling' | 'retreating' | 'disabled';
 
 // Player Ship Stats
 export interface PlayerShipStats extends CommonShipStats {
@@ -45,8 +41,19 @@ export interface PlayerShipAbility extends CommonShipAbility {
 export type PlayerShipDisplayStats = CommonShipDisplayStats;
 
 // Player Ship Interface
-export interface PlayerShip extends CommonShip {
+export interface PlayerShip /* extends CommonShip */ {
+  // Redefine common properties needed from CommonShip
+  id: string;
+  name: string;
+  category: string; // Or PlayerShipCategory?
+  position: { x: number; y: number };
+  rotation?: number;
+  // Add FactionId if needed from CommonShip
+  // faction?: FactionId;
+  // Add PlayerShip specific properties
   class: PlayerShipClass;
+  // Use UnifiedShipStatus
+  status: UnifiedShipStatus;
   stats: PlayerShipStats;
   abilities: PlayerShipAbility[];
   upgrades: string[];

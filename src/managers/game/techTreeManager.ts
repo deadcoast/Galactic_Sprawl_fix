@@ -3,7 +3,7 @@
  * Tech tree manager handles technology research, unlocking, and synergy calculations
  */
 
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 
 /**
  * Tech tree node interface
@@ -57,7 +57,7 @@ type TechTreeEvents = {
  * @context: tech-system.manager, manager-registry
  * Manager for the tech tree system
  */
-export class TechTreeManager extends BaseTypedEventEmitter<TechTreeEvents> {
+export class TechTreeManager extends TypedEventEmitter<TechTreeEvents> {
   private static instance: TechTreeManager | null = null;
   private unlockedNodes: Set<string> = new Set();
   private techNodes: Map<string, TechNode> = new Map();

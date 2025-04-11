@@ -36,7 +36,9 @@ export type WeaponCategory =
   | 'beamWeapon'
   | 'pulseWeapon'
   | 'disruptor'
-  | 'ionCannon';
+  | 'ionCannon'
+  | 'energyLaser'
+  | 'missileLauncher';
 
 /**
  * Specific weapon variants within each category
@@ -193,6 +195,7 @@ export interface WeaponState {
   effects: WeaponEffectType[];
   currentAmmo?: number;
   maxAmmo?: number;
+  lastFiredTime?: number;
 }
 
 /**
@@ -265,6 +268,8 @@ export const WEAPON_COLORS: Record<WeaponCategory, string> = {
   pulseWeapon: 'lime',
   disruptor: 'teal',
   ionCannon: 'cyan',
+  energyLaser: 'yellow',
+  missileLauncher: 'orange',
 } as const;
 
 export const UPGRADE_COLORS: Record<WeaponUpgradeType, string> = {

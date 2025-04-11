@@ -1,3 +1,4 @@
+import { PlayerShipClass } from '../ships/PlayerShipTypes';
 import { ResourceType } from './../resources/ResourceTypes';
 
 /**
@@ -40,7 +41,7 @@ export interface MiningResource {
 export interface MiningShip {
   id: string;
   name: string;
-  type: 'rockBreaker' | 'voidDredger';
+  type: PlayerShipClass.ROCK_BREAKER | PlayerShipClass.VOID_DREDGER;
   status: 'idle' | 'mining' | 'returning' | 'maintenance';
   capacity: number;
   currentLoad: number;

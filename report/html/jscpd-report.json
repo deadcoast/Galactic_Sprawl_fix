@@ -10404,7 +10404,7 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "src/managers/combat/WarShipManagerImpl.ts": {
+          "src/managers/combat/CombatShipManagerImpl.ts": {
             "lines": 514,
             "tokens": 4643,
             "sources": 1,
@@ -10656,7 +10656,7 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "src/lib/modules/BaseTypedEventEmitter.ts": {
+          "src/lib/modules/TypedEventEmitter.ts": {
             "lines": 105,
             "tokens": 886,
             "sources": 1,
@@ -10752,7 +10752,7 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "src/lib/events/BaseTypedEventEmitter.ts": {
+          "src/lib/events/EventEmitter.ts": {
             "lines": 89,
             "tokens": 455,
             "sources": 1,
@@ -23967,7 +23967,7 @@
       "fragment": "readyWeapon.state.status = 'cooling';\n        readyWeapon.state.currentStats.cooldown = Date.now();\n        ship.energy -=\n          readyWeapon.config.baseStats.energyCost * (ship.techBonuses?.energyEfficiency || 1);\n\n        // Update combat stats\n        ship.combatStats.damageDealt +=\n          readyWeapon.config.baseStats.damage * (ship.techBonuses?.weaponEfficiency || 1);\n      }\n    }\n  }\n\n  private",
       "tokens": 0,
       "firstFile": {
-        "name": "src/managers/combat/WarShipManagerImpl.ts",
+        "name": "src/managers/combat/CombatShipManagerImpl.ts",
         "start": 317,
         "end": 329,
         "startLoc": {
@@ -23982,7 +23982,7 @@
         }
       },
       "secondFile": {
-        "name": "src/managers/combat/WarShipManagerImpl.ts",
+        "name": "src/managers/combat/CombatShipManagerImpl.ts",
         "start": 202,
         "end": 214,
         "startLoc": {

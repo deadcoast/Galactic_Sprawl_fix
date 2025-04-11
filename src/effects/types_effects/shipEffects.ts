@@ -53,6 +53,7 @@ export const DAMAGE_BOOST_EFFECT: BaseEffect = {
   description: 'Increases weapon damage',
   magnitude: 1.8,
   duration: 12,
+  active: false,
 };
 
 export const SHIELD_FIELD_EFFECT: BaseAreaEffect = {
@@ -62,6 +63,7 @@ export const SHIELD_FIELD_EFFECT: BaseAreaEffect = {
   description: 'Creates a powerful shield field',
   magnitude: 2.0,
   duration: 15,
+  active: false,
   radius: 500,
   position: { x: 0, y: 0 },
 };
@@ -73,6 +75,7 @@ export const SPEED_BOOST_EFFECT: BaseEffect = {
   description: 'Increases movement speed',
   magnitude: 1.5,
   duration: 5,
+  active: false,
 };
 
 export const STEALTH_EFFECT: BaseEffect = {
@@ -82,6 +85,7 @@ export const STEALTH_EFFECT: BaseEffect = {
   description: 'Reduces detection range',
   magnitude: 1.0,
   duration: 8,
+  active: false,
 };
 
 export const SPEED_REDUCTION_EFFECT: BaseAreaEffect = {
@@ -91,6 +95,7 @@ export const SPEED_REDUCTION_EFFECT: BaseAreaEffect = {
   description: 'Creates a field that slows enemies',
   magnitude: 0.6,
   duration: 9,
+  active: false,
   radius: 300,
   position: { x: 0, y: 0 },
 };

@@ -59,7 +59,7 @@ export function optimizeForceSimulation(
   // Optimize force distances based on node count
   const nodeCount = simulation.nodes().length;
   const linkForce = simulation.force('link');
-  const chargeForce = simulation.force('charge') as d3.ForceMunknownBody<d3.SimulationNodeDatum>;
+  const chargeForce = simulation.force('charge') as d3.ForceManyBody<d3.SimulationNodeDatum>;
 
   if (linkForce && 'distance' in linkForce) {
     // Adjust link distance based on node count

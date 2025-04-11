@@ -1,8 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import { SHIP_BLUEPRINTS, ShipBlueprint } from '../../config/ShipBlueprints';
 import { WeaponEffectType } from '../../effects/types_effects/WeaponEffects';
-import { BaseTypedEventEmitter } from '../../lib/modules/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus } from '../../lib/modules/ModuleEvents';
+import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import {
   ShipHangarManager as IShipHangarManager,
   ShipBuildQueueItem,
@@ -40,8 +41,6 @@ import { ResourceManager } from '../game/ResourceManager';
 import { TechTreeManager } from '../game/techTreeManager';
 import { ResourceType } from './../../types/resources/ResourceTypes';
 import { OfficerManager } from './OfficerManager';
-// Import error logging service
-import { errorLoggingService } from '../../services/ErrorLoggingService';
 
 // Extend CommonShip to include state
 interface ShipWithState extends CommonShip {
@@ -96,7 +95,7 @@ const DEFAULT_COMBAT_SHIP_DESIGN = SHIP_BLUEPRINTS.find(
  * Handles ship production, docking, and hangar bay management
  */
 export class ShipHangarManager
-  extends BaseTypedEventEmitter<ShipHangarEvents>
+  extends TypedEventEmitter<ShipHangarEvents>
   implements IShipHangarManager
 {
   private state: ShipHangarState;
@@ -747,8 +746,21 @@ export class ShipHangarManager
     // Get ship blueprint
     const blueprint = SHIP_BLUEPRINTS.find((bp: ShipBlueprint) => bp.shipClass === item?.shipClass);
     if (!blueprint) {
+      // Use standard error logging service, passing an Error object
+      errorLoggingService.logError(
+        new Error(`Blueprint not found for class: ${item?.shipClass}`),
+        ErrorType.CONFIGURATION, // Specify ErrorType
+        ErrorSeverity.MEDIUM, // Specify ErrorSeverity
+        {
+          // Context object
+          service: 'ShipHangarManager',
+          method: 'completeBuild',
+          shipClass: item?.shipClass,
+        }
+      );
       throw new Error(`No blueprint found for ship class: ${item?.shipClass}`);
     }
+    const baseStats = blueprint.baseStats;
 
     // Find an available bay
     const availableBay = this.state.bays.find(
@@ -763,70 +775,54 @@ export class ShipHangarManager
       id: uuidv4(),
       name: blueprint.name,
       category: blueprint.category,
-      status: 'ready',
+      status: ShipStatus.READY,
       stats: {
-        health: blueprint.baseStats.hull,
-        maxHealth: blueprint.baseStats.hull,
-        shield: blueprint.baseStats.shield,
-        maxShield: blueprint.baseStats.shield,
-        energy: blueprint.baseStats.energy,
-        maxEnergy: blueprint.baseStats.energy,
-        speed: blueprint.baseStats.speed,
-        turnRate: 2,
-        cargo: blueprint.baseStats.cargo ?? 0,
+        // Use hull from baseStats for health
+        health: baseStats.hull,
+        maxHealth: baseStats.hull,
+        shield: baseStats.shield,
+        maxShield: baseStats.shield,
+        energy: baseStats.energy,
+        maxEnergy: baseStats.energy,
+        speed: baseStats.speed,
+        turnRate: 1, // Provide default as turnRate is not in baseStats
+        cargo: baseStats.cargo ?? 0,
+        defense: {
+          armor: 50, // Default value
+          shield: baseStats.shield,
+          evasion: 0.1, // Default value
+          regeneration: 0, // Default value
+        },
+        mobility: {
+          speed: baseStats.speed,
+          turnRate: 1, // Provide default as turnRate is not in baseStats
+          acceleration: baseStats.speed * 0.2, // Default derived value
+        },
         weapons: (blueprint.weapons ?? []).map(weapon =>
           this.createWeaponMount(weapon, blueprint.tier)
         ),
-        abilities:
-          blueprint.abilities?.map(ability => ({
-            id: uuidv4(),
-            name: ability.name,
-            description: ability.description,
-            cooldown: ability.cooldown,
-            duration: ability.duration,
-            active: false,
-            effect: {
-              id: uuidv4(),
-              name: ability.name,
-              description: ability.description,
-              type: 'ability',
-              magnitude: 1,
-              duration: ability.duration,
-              active: false,
-              cooldown: ability.cooldown,
-            },
-          })) ?? [],
-        defense: {
-          armor: Math.floor(blueprint.baseStats.hull * 0.3),
-          shield: blueprint.baseStats.shield,
-          evasion: 0.2,
-          regeneration: Math.floor(blueprint.baseStats.shield * 0.02),
-        },
-        mobility: {
-          speed: blueprint.baseStats.speed,
-          turnRate: 2,
-          acceleration: blueprint.baseStats.speed * 0.5,
-        },
-      },
-      abilities:
-        blueprint.abilities?.map(ability => ({
-          id: uuidv4(),
+        // Restore the abilities array inside stats
+        abilities: (blueprint.abilities || []).map(ability => ({
+          id: `ability-${ability.name.toLowerCase().replace(/\s+/g, '-')}-${uuidv4()}`,
           name: ability.name,
           description: ability.description,
           cooldown: ability.cooldown,
           duration: ability.duration,
           active: false,
+          // Add name and description to the effect object
           effect: {
-            id: uuidv4(),
-            name: ability.name,
-            description: ability.description,
-            type: 'ability',
-            magnitude: 1,
+            id: `effect-${ability.name.toLowerCase().replace(/\s+/g, '-')}-${uuidv4()}`,
+            name: ability.name, // Use ability name
+            description: ability.description, // Use ability description
+            type: 'buff', // Assuming type is consistent
+            magnitude: 1, // Assuming default magnitude
             duration: ability.duration,
             active: false,
             cooldown: ability.cooldown,
           },
-        })) ?? [],
+        })),
+      },
+      officerBonuses: undefined,
     };
 
     // Add ship to bay
@@ -955,25 +951,25 @@ export class ShipHangarManager
       turnRate: 2,
       cargo: blueprint.baseStats.cargo ?? 0,
       weapons,
-      abilities:
-        blueprint.abilities?.map(ability => ({
-          id: uuidv4(),
-          name: ability.name,
-          description: ability.description,
-          cooldown: ability.cooldown,
+      abilities: (blueprint.abilities || []).map(ability => ({
+        id: `ability-${ability.name.toLowerCase().replace(/\s+/g, '-')}-${uuidv4()}`,
+        name: ability.name,
+        description: ability.description,
+        cooldown: ability.cooldown,
+        duration: ability.duration,
+        active: false,
+        // Add name and description to the effect object
+        effect: {
+          id: `effect-${ability.name.toLowerCase().replace(/\s+/g, '-')}-${uuidv4()}`,
+          name: ability.name, // Use ability name
+          description: ability.description, // Use ability description
+          type: 'buff', // Assuming type is consistent
+          magnitude: 1, // Assuming default magnitude
           duration: ability.duration,
           active: false,
-          effect: {
-            id: uuidv4(),
-            name: ability.name,
-            description: ability.description,
-            type: 'ability',
-            magnitude: 1,
-            duration: ability.duration,
-            active: false,
-            cooldown: ability.cooldown,
-          },
-        })) ?? [],
+          cooldown: ability.cooldown,
+        },
+      })),
       defense: {
         armor: Math.floor(blueprint.baseStats.hull * 0.3),
         shield: blueprint.baseStats.shield,
@@ -1466,12 +1462,14 @@ export class ShipHangarManager
    */
   public activateAbility(shipId: string, abilityName: string): void {
     const ship = this.findShipById(shipId);
-    if (!ship || !ship.abilities) {
+    // Access abilities via stats
+    if (!ship || !ship.stats || !ship.stats.abilities) {
       this.emit('error', { message: `Ship ${shipId} not found or has no abilities` });
       return;
     }
 
-    const ability = ship.abilities.find(a => a.name === abilityName);
+    // Access abilities via stats
+    const ability = ship.stats.abilities.find(a => a.name === abilityName);
     if (!ability) {
       this.emit('error', { message: `Ability ${abilityName} not found on ship ${shipId}` });
       return;
@@ -1531,9 +1529,7 @@ export class ShipHangarManager
    * Deactivate a ship's ability
    */
   private deactivateAbility(shipId: string, abilityName: string): void {
-    // Find the ship
     let targetShip: CommonShip | undefined;
-
     for (const bay of this.state.bays) {
       const ship = bay.ships.find(s => s.id === shipId);
       if (ship) {
@@ -1542,16 +1538,20 @@ export class ShipHangarManager
       }
     }
 
-    if (!targetShip) {
-      console.error('Ship not found for ability deactivation');
+    if (!targetShip || !targetShip.stats) {
+      // Check for stats existence
+      console.error('Ship not found or stats missing for ability deactivation');
       return;
     }
 
-    // Find and update the ability
-    const ability = targetShip.abilities.find(a => a.name === abilityName);
+    // Find and update the ability via stats
+    const ability = targetShip.stats.abilities.find(a => a.name === abilityName);
     if (ability) {
       ability.active = false;
-      ability.effect.active = false;
+      if (ability.effect) {
+        // Check if effect exists before modifying
+        ability.effect.active = false;
+      }
     }
 
     // Clean up active ability
@@ -2034,7 +2034,15 @@ export class ShipHangarManager
   ): void {
     if (bonuses.combatEffectiveness) {
       // Apply combat bonuses
-      ship.stats.weapons?.forEach(mount => {
+      // Access abilities via stats
+      ship.stats?.abilities?.forEach((ability: CommonShipAbility) => {
+        // Modify ability effect based on combat effectiveness if needed
+        // Example: Increase effect magnitude or duration
+        if (ability.effect) {
+          ability.effect.magnitude *= 1 + bonuses.combatEffectiveness!;
+        }
+      });
+      ship.stats?.weapons?.forEach(mount => {
         if (mount.currentWeapon) {
           const stats = mount.currentWeapon.state.currentStats;
           stats.damage *= 1 + bonuses.combatEffectiveness!;
@@ -2051,13 +2059,22 @@ export class ShipHangarManager
    * Remove officer bonuses from a ship
    */
   private removeOfficerBonuses(ship: CommonShip): void {
-    if (!ship.officerBonuses) {
+    if (!ship.officerBonuses || !ship.stats) {
+      // Check for stats
       return;
     }
 
     if (ship.officerBonuses.combatEffectiveness) {
       // Remove combat bonuses
-      ship.stats.weapons?.forEach(mount => {
+      // Access abilities via stats
+      ship.stats?.abilities?.forEach((ability: CommonShipAbility) => {
+        // Revert ability effect modifications if needed
+        // Example: Divide effect magnitude by (1 + bonuses.combatEffectiveness!)
+        if (ability.effect) {
+          ability.effect.magnitude /= 1 + ship.officerBonuses!.combatEffectiveness!;
+        }
+      });
+      ship.stats?.weapons?.forEach(mount => {
         if (mount.currentWeapon) {
           const stats = mount.currentWeapon.state.currentStats;
           stats.damage /= 1 + ship.officerBonuses!.combatEffectiveness!;
@@ -2110,11 +2127,15 @@ export class ShipHangarManager
       // Parse shipId and ability name from compound key
       const [shipId, abilityName] = key.split('-');
       const ship = this.getDockedShips().find(s => s.id === shipId);
-      if (ship) {
-        const ability = ship.abilities.find(a => a.name === abilityName);
+      if (ship && ship.stats?.abilities) {
+        // Ensure stats and abilities exist
+        const ability = ship.stats.abilities.find((a: CommonShipAbility) => a.name === abilityName);
         if (ability) {
           ability.active = false;
-          ability.effect.active = false;
+          if (ability.effect) {
+            // Check if effect exists
+            ability.effect.active = false;
+          }
         }
       }
     });
@@ -2126,9 +2147,11 @@ export class ShipHangarManager
       // Parse shipId and ability name from compound key
       const [shipId, abilityName] = key.split('-');
       const ship = this.getDockedShips().find(s => s.id === shipId);
-      if (ship) {
-        const ability = ship.abilities.find(a => a.name === abilityName);
-        if (ability) {
+      if (ship && ship.stats?.abilities) {
+        // Ensure stats and abilities exist
+        const ability = ship.stats.abilities.find((a: CommonShipAbility) => a.name === abilityName);
+        if (ability && ability.effect) {
+          // Check if effect exists
           ability.effect.cooldown = 0; // Reset cooldown
         }
       }
@@ -2205,7 +2228,8 @@ export class ShipHangarManager
     switch (effect.type) {
       case 'buff':
         if (effect.name.includes('damage')) {
-          ship.stats.weapons?.forEach(mount => {
+          // Check if stats and weapons exist
+          ship.stats?.weapons?.forEach(mount => {
             if (mount.currentWeapon) {
               mount.currentWeapon.state.currentStats.damage *= 1 + effect.magnitude;
             }
@@ -2214,7 +2238,10 @@ export class ShipHangarManager
         break;
       case 'debuff':
         if (effect.name.includes('shield')) {
-          ship.stats.shield *= 1 - effect.magnitude;
+          // Check if stats exists before modifying
+          if (ship.stats) {
+            ship.stats.shield *= 1 - effect.magnitude;
+          }
         }
         break;
       case 'status':
@@ -2246,7 +2273,8 @@ export class ShipHangarManager
     switch (effect.type) {
       case 'buff':
         if (effect.name.includes('damage')) {
-          ship.stats.weapons?.forEach(mount => {
+          // Check if stats and weapons exist
+          ship.stats?.weapons?.forEach(mount => {
             if (mount.currentWeapon) {
               mount.currentWeapon.state.currentStats.damage /= 1 + effect.magnitude;
             }
@@ -2255,7 +2283,10 @@ export class ShipHangarManager
         break;
       case 'debuff':
         if (effect.name.includes('shield')) {
-          ship.stats.shield /= 1 - effect.magnitude;
+          // Check if stats exists before modifying
+          if (ship.stats) {
+            ship.stats.shield /= 1 - effect.magnitude;
+          }
         }
         break;
     }
@@ -2272,7 +2303,8 @@ export class ShipHangarManager
 
   public hasOfficerMeetingRequirements(minLevel: number, specialization: string): boolean {
     // Check all assigned officers for one that meets requirements
-    for (const [_, officerId] of Array.from(this.assignedOfficers.entries())) {
+    // Iterate over values directly
+    for (const officerId of this.assignedOfficers.values()) {
       const officer = this.officerManager.getOfficer(officerId);
       if (officer && officer.level >= minLevel && officer.specialization === specialization) {
         return true;
@@ -2370,12 +2402,12 @@ export class ShipHangarManager
    * Create a new ship based on its class and add it to the hangar.
    */
   public createShip(shipClass: PlayerShipClass): CommonShip | null {
-    // Find blueprint based on enum
     const blueprint = SHIP_BLUEPRINTS.find(bp => bp.shipClass === shipClass);
     if (!blueprint) {
-      // Use standard error logging service, passing an Error object
       errorLoggingService.logError(
-        new Error(`Blueprint not found for class: ${shipClass}`), // Wrap message in Error()
+        new Error(`Blueprint not found for class: ${shipClass}`),
+        ErrorType.CONFIGURATION,
+        ErrorSeverity.HIGH,
         {
           service: 'ShipHangarManager',
           method: 'createShip',
@@ -2385,48 +2417,67 @@ export class ShipHangarManager
       return null;
     }
 
-    // Define base stats using defaults for missing properties
     const baseStats = blueprint.baseStats;
-
-    const newShip: CommonShip = {
-      id: crypto.randomUUID(), // Generate ID
-      class: shipClass, // Use enum
-      name: `${blueprint.name} #${this.getDockedShips().length + 1}`, // Use docked ship count
-      status: ShipStatus.READY, // Use enum
-      // Ensure all required stats are present, merging from blueprint
-      stats: {
-        maxHealth: baseStats.hull ?? 0, // Use hull, provide default
-        health: baseStats.hull ?? 0, // Use hull, provide default
-        maxShield: baseStats.shield ?? 0,
-        shield: baseStats.shield ?? 0,
-        maxEnergy: baseStats.energy ?? 0,
-        energy: baseStats.energy ?? 0,
-        speed: baseStats.speed ?? 0,
-        turnRate: baseStats.turnRate ?? 0, // Add default if missing
-        acceleration: baseStats.acceleration ?? 0, // Add default if missing
-        cargoCapacity: baseStats.cargo ?? 0,
-        scanRange: baseStats.scanRange ?? 0,
-        miningYield: baseStats.miningRate ?? 0,
-        shieldRegenRate: baseStats.shieldRegenRate ?? 0,
-        energyRegenRate: baseStats.energyRegenRate ?? 0,
-        armor: baseStats.armor ?? 0,
-        evasion: baseStats.evasion ?? 0,
-      },
-      abilities: blueprint.abilities ?? [], // Use blueprint abilities or default
-      weapons: [], // Example: Initialize empty, potentially populate from blueprint later
-      modules: [], // Example: Initialize empty
-      category: blueprint.category, // Derive from blueprint
+    const mobilityStats = {
+      // Define mobility stats based on blueprint or defaults
+      speed: baseStats.speed ?? 100,
+      turnRate: 1, // Default value or get from blueprint if available
+      acceleration: (baseStats.speed ?? 100) * 0.2, // Default derived value
     };
 
-    // ... add ship to hangar logic (needs implementation) ...
-    // For now, just logging the creation
+    const newShip: CommonShip = {
+      id: crypto.randomUUID(),
+      name: `${blueprint.name} #${this.getDockedShips().length + 1}`,
+      status: ShipStatus.READY,
+      category: blueprint.category,
+      stats: {
+        // Use hull for health
+        maxHealth: baseStats.hull ?? 100,
+        health: baseStats.hull ?? 100,
+        maxShield: baseStats.shield ?? 50,
+        shield: baseStats.shield ?? 50,
+        maxEnergy: baseStats.energy ?? 100,
+        energy: baseStats.energy ?? 100,
+        speed: mobilityStats.speed, // Use mobility speed
+        turnRate: mobilityStats.turnRate, // Use mobility turnRate
+        cargo: baseStats.cargo ?? 100,
+        defense: {
+          armor: 50, // Default value
+          shield: baseStats.shield ?? 50,
+          evasion: 0.1, // Default value
+          regeneration: 0, // Default value
+        },
+        mobility: mobilityStats, // Assign the created mobility object
+        weapons: [],
+        abilities: (blueprint.abilities || []).map(ability => ({
+          id: `ability-${ability.name.toLowerCase().replace(/\s+/g, '-')}-${uuidv4()}`,
+          name: ability.name,
+          description: ability.description,
+          cooldown: ability.cooldown,
+          duration: ability.duration,
+          active: false,
+          // Add name and description to the effect object
+          effect: {
+            id: `effect-${ability.name.toLowerCase().replace(/\s+/g, '-')}-${uuidv4()}`,
+            name: ability.name, // Use ability name
+            description: ability.description, // Use ability description
+            type: 'buff', // Assuming type is consistent
+            magnitude: 1, // Assuming default magnitude
+            duration: ability.duration,
+            active: false,
+            cooldown: ability.cooldown,
+          },
+        })),
+      },
+      officerBonuses: undefined,
+    };
+
     errorLoggingService.logInfo('Created new ship (details in metadata)', {
       service: 'ShipHangarManager',
       method: 'createShip',
-      ship: newShip, // Should be correctly defined now
+      ship: newShip,
     });
 
-    // Explicitly return the created ship to satisfy linter
     return newShip;
   }
 }

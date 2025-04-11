@@ -4,7 +4,7 @@
  * This manager handles faction behavior using the standardized event system.
  */
 
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import {
   FactionCombatTactics,
   FactionEvents,
@@ -17,7 +17,7 @@ import { FactionBehaviorType, FactionId } from '../../types/ships/FactionTypes';
 /**
  * Faction behavior manager class that uses standardized types and events
  */
-export class FactionBehaviorManager extends BaseTypedEventEmitter<FactionEvents> {
+export class FactionBehaviorManager extends TypedEventEmitter<FactionEvents> {
   private factions: Map<FactionId, FactionState> = new Map();
 
   /**

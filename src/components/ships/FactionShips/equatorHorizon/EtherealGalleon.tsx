@@ -1,13 +1,13 @@
-import { Wind } from 'lucide-react';
+import { Anchor } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { EquatorHorizonShip } from '../../common/EquatorHorizonShip';
 
 interface EtherealGalleonProps {
   id: string;
-  status: ShipStatus;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -38,28 +38,13 @@ export function EtherealGalleon({
   onRetreat,
   onSpecialAbility,
 }: EtherealGalleonProps) {
-  const [etherealWindsActive, setEtherealWindsActive] = useState(false);
+  const [aetherAnchorActive, setAetherAnchorActive] = useState(false);
 
   useEffect(() => {
-    if (status === 'disabled') {
-      setEtherealWindsActive(false);
+    if (status === UnifiedShipStatus.DISABLED) {
+      setAetherAnchorActive(false);
     }
   }, [status]);
-
-  const mapStatus = (status: ShipStatus) => {
-    switch (status) {
-      case 'engaging':
-        return 'engaging';
-      case 'patrolling':
-        return 'patrolling';
-      case 'retreating':
-        return 'retreating';
-      case 'disabled':
-        return 'disabled';
-      default:
-        return 'patrolling';
-    }
-  };
 
   return (
     <div className="relative">
@@ -67,7 +52,7 @@ export function EtherealGalleon({
         id={id}
         name="Ethereal Galleon"
         type="etherealGalleon"
-        status={mapStatus(status)}
+        status={status}
         health={health}
         maxHealth={maxHealth}
         shield={shield}
@@ -80,29 +65,29 @@ export function EtherealGalleon({
         onRetreat={onRetreat}
         onFire={onFire}
         onSpecialAbility={() => {
-          setEtherealWindsActive(!etherealWindsActive);
+          setAetherAnchorActive(!aetherAnchorActive);
           onSpecialAbility?.();
         }}
       >
         <div className="status-effects">
-          {etherealWindsActive && (
+          {aetherAnchorActive && (
             <div className="status-effect">
-              <Wind className="icon" />
-              <span>Ethereal Winds Active</span>
+              <Anchor className="icon" />
+              <span>Aether Anchor Active</span>
             </div>
           )}
         </div>
         <div className="action-buttons">
           <button
-            className={`ability-button ${etherealWindsActive ? 'active' : ''}`}
+            className={`ability-button ${aetherAnchorActive ? 'active' : ''}`}
             onClick={() => {
-              setEtherealWindsActive(!etherealWindsActive);
+              setAetherAnchorActive(!aetherAnchorActive);
               onSpecialAbility?.();
             }}
-            disabled={status === 'disabled'}
+            disabled={status === UnifiedShipStatus.DISABLED}
           >
-            <Wind className="icon" />
-            <span>Ethereal Winds</span>
+            <Anchor className="icon" />
+            <span>Aether Anchor</span>
           </button>
         </div>
       </EquatorHorizonShip>

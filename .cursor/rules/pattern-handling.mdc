@@ -7,6 +7,7 @@ alwaysApply: false
 description: This document provides implementation examples of Event Handling patterns as used in the Galactic Sprawl codebase. These patterns ensure type-safe event communication between different systems.
 globs: src/components/**/*.tsx, src/hooks/**/*.ts, src/services/**/*.ts, src/managers/**/*.ts, src/types/**/*.ts, src/utils/**/*.ts, src/workers/**/*.ts, src/lib/**/*.ts, src/pages/**/*.tsx, src/contexts/**/*.tsx, src/styles/**/*.css, src/config/**/*.ts, src/tests/**/*.test.ts, src/tests/**/*.test.tsx
 ---
+
 ## Overview
 
 

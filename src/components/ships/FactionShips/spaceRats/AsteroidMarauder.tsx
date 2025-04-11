@@ -1,12 +1,14 @@
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Bomb, Shield } from 'lucide-react';
+import { useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { SpaceRatShip } from '../../common/SpaceRatShip';
 
 interface AsteroidMarauderProps {
   id: string;
-  status: ShipStatus;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -20,6 +22,13 @@ interface AsteroidMarauderProps {
   position: { x: number; y: number };
   rotation: number;
 }
+
+const createFactionBehavior = (behavior: string): FactionBehaviorConfig => {
+  return {
+    formation: 'standard',
+    behavior: behavior as FactionBehaviorType,
+  };
+};
 
 export function AsteroidMarauder({
   id,
@@ -37,21 +46,10 @@ export function AsteroidMarauder({
   onRetreat,
   onSpecialAbility,
 }: AsteroidMarauderProps) {
-  // Map the full ShipStatus to SpaceRatShip's more limited status type
-  const mapStatus = (status: ShipStatus): 'engaging' | 'patrolling' | 'retreating' | 'disabled' => {
-    switch (status) {
-      case 'damaged':
-        return 'disabled';
-      case 'idle':
-      case 'ready':
-        return 'patrolling';
-      case 'engaging':
-      case 'patrolling':
-      case 'retreating':
-      case 'disabled':
-        return status;
-    }
-  };
+  const [scrapShieldActive, setScrapShieldActive] = useState(false);
+  const [riggedExplosivesActive, setRiggedExplosivesActive] = useState(false);
+
+  const tactics = createFactionBehavior('ambush');
 
   return (
     <div className="relative">
@@ -60,7 +58,7 @@ export function AsteroidMarauder({
         id={id}
         name="Asteroid Marauder"
         type="asteroidMarauder"
-        status={mapStatus(status)}
+        status={status}
         health={health}
         maxHealth={maxHealth}
         shield={shield}
@@ -77,22 +75,49 @@ export function AsteroidMarauder({
       />
 
       {/* Warning indicator for damaged state */}
-      {status === 'damaged' && (
+      {status === UnifiedShipStatus.DAMAGED && (
         <div className="absolute top-0 right-0 p-2">
           <AlertTriangle className="h-6 w-6 animate-pulse text-yellow-500" />
         </div>
       )}
 
-      {/* Action Buttons */}
-      <div className="absolute right-4 bottom-4 left-4 flex gap-2">
+      {/* Status Effects & Action Buttons */}
+      <div className="status-effects">
+        {scrapShieldActive && (
+          <div className="status-effect">
+            <Shield className="icon" />
+            <span>Scrap Shield Active</span>
+          </div>
+        )}
+        {riggedExplosivesActive && (
+          <div className="status-effect">
+            <Bomb className="icon" />
+            <span>Explosives Rigged</span>
+          </div>
+        )}
+      </div>
+      <div className="action-buttons grid grid-cols-2 gap-2">
         <button
-          onClick={onSpecialAbility}
-          disabled={
-            status === 'disabled' || status === 'damaged' || stats.energy <= stats.maxEnergy * 0.5
-          }
-          className="flex-1 rounded-lg bg-blue-500/20 px-4 py-2 text-blue-300 hover:bg-blue-500/30 disabled:opacity-50"
+          className={`ability-button ${scrapShieldActive ? 'active' : ''}`}
+          onClick={() => {
+            setScrapShieldActive(!scrapShieldActive);
+            onSpecialAbility?.();
+          }}
+          disabled={status === UnifiedShipStatus.DISABLED}
         >
-          Boost
+          <Shield className="icon" />
+          <span>Scrap Shield</span>
+        </button>
+        <button
+          className={`ability-button ${riggedExplosivesActive ? 'active' : ''}`}
+          onClick={() => {
+            setRiggedExplosivesActive(!riggedExplosivesActive);
+            onSpecialAbility?.();
+          }}
+          disabled={status === UnifiedShipStatus.DISABLED}
+        >
+          <Bomb className="icon" />
+          <span>Rig Explosives</span>
         </button>
       </div>
     </div>

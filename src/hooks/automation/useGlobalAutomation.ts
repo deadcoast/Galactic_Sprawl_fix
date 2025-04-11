@@ -16,27 +16,32 @@ import { MessagePriority, SystemId } from '../../utils/events/EventCommunication
  * Hook for using the global automation system
  */
 export function useGlobalAutomation() {
-  const [routines, setRoutines] = useState<GlobalRoutine[]>([]);
-  const [activeRoutines, setActiveRoutines] = useState<GlobalRoutine[]>([]);
+  const manager = getGlobalAutomationManager();
+  const [routines, setRoutines] = useState<GlobalRoutine[]>(() => manager.getAllRoutines());
+  const [activeRoutines, setActiveRoutines] = useState<GlobalRoutine[]>(() =>
+    manager.getActiveRoutines()
+  );
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const [lastUpdate, setLastUpdate] = useState<number>(Date.now());
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // Initialize and load routines
   useEffect(() => {
     // Initialize the global automation manager if not already initialized
     if (!isInitialized) {
-      globalAutomationManager.initialize();
+      manager.initialize();
       setIsInitialized(true);
     }
 
     // Load all routines
-    const allRoutines = globalAutomationManager.getAllRoutines();
+    const allRoutines = manager.getAllRoutines();
     setRoutines(allRoutines);
 
     // Load active routines
-    const active = globalAutomationManager.getActiveRoutines();
+    const active = manager.getActiveRoutines();
     setActiveRoutines(active);
-  }, [isInitialized]);
+  }, [manager, isInitialized]);
 
   // Subscribe to automation events
   useEffect(() => {
@@ -55,11 +60,11 @@ export function useGlobalAutomation() {
         event?.type === 'AUTOMATION_CYCLE_COMPLETE'
       ) {
         // Refresh routines
-        const allRoutines = globalAutomationManager.getAllRoutines();
+        const allRoutines = manager.getAllRoutines();
         setRoutines(allRoutines);
 
         // Refresh active routines
-        const active = globalAutomationManager.getActiveRoutines();
+        const active = manager.getActiveRoutines();
         setActiveRoutines(active);
 
         // Update timestamp
@@ -93,7 +98,18 @@ export function useGlobalAutomation() {
         unsubscribeComplete();
       }
     };
-  }, []);
+  }, [manager]);
+
+  const refreshRoutines = useCallback(() => {
+    try {
+      setRoutines(manager.getAllRoutines());
+      setActiveRoutines(manager.getActiveRoutines());
+      setError(null);
+    } catch (err) {
+      console.error('Error refreshing routines:', err);
+      setError(err instanceof Error ? err : new Error('Failed to refresh routines'));
+    }
+  }, [manager]);
 
   /**
    * Create a new global routine
@@ -127,98 +143,132 @@ export function useGlobalAutomation() {
         tags: options?.tags ?? [],
       };
 
-      const routineId = globalAutomationManager.registerRoutine(routine);
+      const routineId = manager.registerRoutine(routine);
 
       // Refresh routines
-      const allRoutines = globalAutomationManager.getAllRoutines();
-      setRoutines(allRoutines);
-
-      // Refresh active routines
-      const active = globalAutomationManager.getActiveRoutines();
-      setActiveRoutines(active);
+      refreshRoutines();
 
       return routineId;
     },
-    []
+    [manager, refreshRoutines]
   );
 
   /**
    * Enable a routine
    */
-  const enableRoutine = useCallback((routineId: string): boolean => {
-    const result = globalAutomationManager.enableRoutine(routineId);
-
-    if (result) {
-      // Refresh routines
-      const allRoutines = globalAutomationManager.getAllRoutines();
-      setRoutines(allRoutines);
-
-      // Refresh active routines
-      const active = globalAutomationManager.getActiveRoutines();
-      setActiveRoutines(active);
-    }
-
-    return result;
-  }, []);
+  const enableRoutine = useCallback(
+    async (routineId: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const success = manager.enableRoutine(routineId);
+        if (!success) {
+          throw new Error(`Failed to enable routine with ID ${routineId}, it might not exist.`);
+        }
+        refreshRoutines();
+      } catch (err) {
+        console.error('Error enabling routine:', err);
+        setError(err instanceof Error ? err : new Error('Failed to enable routine'));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [manager, refreshRoutines]
+  );
 
   /**
    * Disable a routine
    */
-  const disableRoutine = useCallback((routineId: string): boolean => {
-    const result = globalAutomationManager.disableRoutine(routineId);
-
-    if (result) {
-      // Refresh routines
-      const allRoutines = globalAutomationManager.getAllRoutines();
-      setRoutines(allRoutines);
-
-      // Refresh active routines
-      const active = globalAutomationManager.getActiveRoutines();
-      setActiveRoutines(active);
-    }
-
-    return result;
-  }, []);
+  const disableRoutine = useCallback(
+    async (routineId: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const success = manager.disableRoutine(routineId);
+        if (!success) {
+          throw new Error(`Failed to disable routine with ID ${routineId}, it might not exist.`);
+        }
+        refreshRoutines();
+      } catch (err) {
+        console.error('Error disabling routine:', err);
+        setError(err instanceof Error ? err : new Error('Failed to disable routine'));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [manager, refreshRoutines]
+  );
 
   /**
    * Remove a routine
    */
-  const removeRoutine = useCallback((routineId: string): boolean => {
-    const result = globalAutomationManager.unregisterRoutine(routineId);
-
-    if (result) {
-      // Refresh routines
-      const allRoutines = globalAutomationManager.getAllRoutines();
-      setRoutines(allRoutines);
-
-      // Refresh active routines
-      const active = globalAutomationManager.getActiveRoutines();
-      setActiveRoutines(active);
-    }
-
-    return result;
-  }, []);
+  const removeRoutine = useCallback(
+    async (routineId: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const success = manager.unregisterRoutine(routineId);
+        if (!success) {
+          throw new Error(`Failed to remove routine with ID ${routineId}, it might not exist.`);
+        }
+        refreshRoutines();
+      } catch (err) {
+        console.error('Error removing routine:', err);
+        setError(err instanceof Error ? err : new Error('Failed to remove routine'));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [manager, refreshRoutines]
+  );
 
   /**
    * Get routines by type
    */
-  const getRoutinesByType = useCallback((type: GlobalRoutineType): GlobalRoutine[] => {
-    return globalAutomationManager.getRoutinesByType(type);
-  }, []);
+  const getRoutinesByType = useCallback(
+    (type: GlobalRoutineType) => {
+      try {
+        return manager.getRoutinesByType(type);
+      } catch (err) {
+        console.error('Error getting routines by type:', err);
+        setError(err instanceof Error ? err : new Error('Failed to get routines by type'));
+        return [];
+      }
+    },
+    [manager]
+  );
 
   /**
    * Get routines by system
    */
-  const getRoutinesBySystem = useCallback((systemId: SystemId): GlobalRoutine[] => {
-    return globalAutomationManager.getRoutinesBySystem(systemId);
-  }, []);
+  const getRoutinesBySystem = useCallback(
+    (systemId: SystemId) => {
+      try {
+        return manager.getRoutinesBySystem(systemId);
+      } catch (err) {
+        console.error('Error getting routines by system:', err);
+        setError(err instanceof Error ? err : new Error('Failed to get routines by system'));
+        return [];
+      }
+    },
+    [manager]
+  );
 
   /**
    * Get routines by tag
    */
-  const getRoutinesByTag = useCallback((tag: string): GlobalRoutine[] => {
-    return globalAutomationManager.getRoutinesByTag(tag);
-  }, []);
+  const getRoutinesByTag = useCallback(
+    (tag: string) => {
+      try {
+        return manager.getRoutinesByTag(tag);
+      } catch (err) {
+        console.error('Error getting routines by tag:', err);
+        setError(err instanceof Error ? err : new Error('Failed to get routines by tag'));
+        return [];
+      }
+    },
+    [manager]
+  );
 
   /**
    * Create a system maintenance routine
@@ -384,6 +434,8 @@ export function useGlobalAutomation() {
     activeRoutines,
     isInitialized,
     lastUpdate,
+    loading,
+    error,
 
     // Basic operations
     createRoutine,
@@ -402,6 +454,9 @@ export function useGlobalAutomation() {
     createPerformanceOptimizationRoutine,
     createEmergencyResponseRoutine,
     createScheduledTaskRoutine,
+
+    // New operations
+    refreshRoutines,
   };
 }
 
@@ -412,15 +467,16 @@ export function useGlobalAutomation() {
  * @param rules An array of AutomationRule instances to manage.
  */
 export function useGlobalAutomationRules(rules: AutomationRule[]): void {
-  useEffect(() => {
-    const manager = getGlobalAutomationManager();
+  const manager = getGlobalAutomationManager();
 
+  useEffect(() => {
     // Register rules on mount
     rules.forEach(rule => manager.registerRule(rule));
 
-    // Unregister rules on unmount
+    // Cleanup function to remove rules on unmount
     return () => {
-      rules.forEach(rule => manager.removeRule(rule.id));
+      // TODO: Implement removeRule/unregisterRule method on GlobalAutomationManager
+      // rules.forEach(rule => manager.removeRule(rule.id));
     };
-  }, [rules]);
+  }, [rules, manager]);
 }

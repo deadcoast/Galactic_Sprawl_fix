@@ -2,13 +2,13 @@ import { ReactNode, useCallback, useRef } from 'react';
 import * as THREE from 'three';
 import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
-import { ShipStatus } from '../../../types/ships/CommonShipTypes';
 import {
   FactionShip,
   FactionShipStats,
   SpaceRatsShipClass,
 } from '../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../types/ships/FactionTypes';
+import { UnifiedShipStatus } from '../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../types/weapons/WeaponTypes';
 import { FactionShipBase } from './FactionShipBase';
 
@@ -19,7 +19,7 @@ interface SpaceRatShipProps {
   id: string;
   name: string;
   type: SpaceRatsShipClass;
-  status: ShipStatus;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -175,34 +175,44 @@ export function SpaceRatShip({
     position,
     rotation,
     stats,
-    // Add the required abilities property
+    // Populate abilities array correctly
     abilities: [
       {
-        id: 'rage-mode-ability',
-        name: 'Rage Mode',
-        description: 'Increases damage output at the cost of defense',
-        cooldown: 15,
-        duration: 10,
-        active: hasEffect('rage-mode'),
+        id: 'scavenge-ability',
+        name: 'Scavenge',
+        description: 'Increases resource gain from destroyed ships',
+        cooldown: 60,
+        duration: 300, // Long duration passive-like
+        active: hasEffect('scavenge'),
+        // Add missing properties to effect object
         effect: {
-          id: 'rage-mode-effect',
-          type: 'damage',
-          duration: 10,
-          magnitude: 1.5,
+          id: 'scavenge',
+          name: 'Scavenge Effect',
+          description: 'Bonus resource gain',
+          type: 'buff', // Assuming 'buff' or a specific effect type
+          magnitude: 0.2, // Example magnitude (e.g., 20% bonus)
+          duration: 300,
+          active: hasEffect('scavenge'),
+          cooldown: 0,
         },
       },
       {
-        id: 'scrap-shield-ability',
-        name: 'Scrap Shield',
-        description: 'Temporary shield boost from scrap metal',
-        cooldown: 20,
-        duration: 8,
-        active: hasEffect('scrap-shield'),
+        id: 'swarm-tactics-ability',
+        name: 'Swarm Tactics',
+        description: 'Increases speed and evasion when near allies',
+        cooldown: 45,
+        duration: 15,
+        active: hasEffect('swarm-tactics'),
+        // Add missing properties to effect object
         effect: {
-          id: 'scrap-shield-effect',
-          type: 'shield',
-          duration: 8,
-          magnitude: 2.0,
+          id: 'swarm-tactics',
+          name: 'Swarm Tactics Effect',
+          description: 'Increased speed & evasion',
+          type: 'buff', // Assuming 'buff' or a specific effect type
+          magnitude: 0.15, // Example magnitude (e.g., 15% increase)
+          duration: 15,
+          active: hasEffect('swarm-tactics'),
+          cooldown: 0,
         },
       },
     ],

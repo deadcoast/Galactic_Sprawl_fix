@@ -1,7 +1,7 @@
 ---
 description: 
-globs: **/*.ts, **/*.tsx
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 ---
 description: Code Quality Guidelines

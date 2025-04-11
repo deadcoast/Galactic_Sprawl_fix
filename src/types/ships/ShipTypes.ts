@@ -40,17 +40,8 @@ export interface ShipLoadout {
   weaponTypes?: WeaponType[];
 }
 
-/**
- * All possible ship status states
- */
-export type ShipStatus =
-  | 'idle'
-  | 'ready'
-  | 'engaging'
-  | 'patrolling'
-  | 'retreating'
-  | 'disabled'
-  | 'damaged';
+// Re-export the complete ShipStatus enum from CommonShipTypes
+export { ShipStatus } from './CommonShipTypes';
 
 /**
  * Type alias for ship categories/classes used for differentiation

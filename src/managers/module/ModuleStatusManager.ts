@@ -1,4 +1,4 @@
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { moduleManager } from './ModuleManager';
 
@@ -106,8 +106,8 @@ export interface ModuleStatusManagerEvents extends Record<string, unknown> {
  * Module status manager
  * Manages the status tracking, history, and notifications for modules
  */
-// Extend BaseTypedEventEmitter
-export class ModuleStatusManager extends BaseTypedEventEmitter<ModuleStatusManagerEvents> {
+// Extend TypedEventEmitter
+export class ModuleStatusManager extends TypedEventEmitter<ModuleStatusManagerEvents> {
   private static instance: ModuleStatusManager | null = null; // Add for singleton
 
   private moduleStatuses: Map<string, ModuleStatusDetails>;
@@ -672,7 +672,7 @@ export class ModuleStatusManager extends BaseTypedEventEmitter<ModuleStatusManag
     });
     this.unsubscribeHandles = []; // Clear the array
 
-    // BaseTypedEventEmitter handles its own listener cleanup
+    // TypedEventEmitter handles its own listener cleanup
     this.clearAllListeners();
 
     // Clear data

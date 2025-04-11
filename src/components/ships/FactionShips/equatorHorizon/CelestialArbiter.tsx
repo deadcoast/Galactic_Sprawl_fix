@@ -1,13 +1,13 @@
 import { Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { EquatorHorizonShip } from '../../common/EquatorHorizonShip';
 
 interface CelestialArbiterProps {
   id: string;
-  status: ShipStatus;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -41,25 +41,10 @@ export function CelestialArbiter({
   const [celestialJudgementActive, setCelestialJudgementActive] = useState(false);
 
   useEffect(() => {
-    if (status === 'disabled') {
+    if (status === UnifiedShipStatus.DISABLED) {
       setCelestialJudgementActive(false);
     }
   }, [status]);
-
-  const mapStatus = (status: ShipStatus) => {
-    switch (status) {
-      case 'engaging':
-        return 'engaging';
-      case 'patrolling':
-        return 'patrolling';
-      case 'retreating':
-        return 'retreating';
-      case 'disabled':
-        return 'disabled';
-      default:
-        return 'patrolling';
-    }
-  };
 
   return (
     <div className="relative">
@@ -67,7 +52,7 @@ export function CelestialArbiter({
         id={id}
         name="Celestial Arbiter"
         type="celestialArbiter"
-        status={mapStatus(status)}
+        status={status}
         health={health}
         maxHealth={maxHealth}
         shield={shield}
@@ -99,7 +84,7 @@ export function CelestialArbiter({
               setCelestialJudgementActive(!celestialJudgementActive);
               onSpecialAbility?.();
             }}
-            disabled={status === 'disabled'}
+            disabled={status === UnifiedShipStatus.DISABLED}
           >
             <Sun className="icon" />
             <span>Celestial Judgement</span>

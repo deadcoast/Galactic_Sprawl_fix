@@ -46,7 +46,7 @@ GAME MECHANICS REFERENCES
 ### Combat System [~60% Complete]
 
 - Combat manager: src/managers/combat/combatManager.ts
-- War ship manager: src/managers/combat/WarShipManagerImpl.ts
+- War ship manager: src/managers/combat/CombatShipManagerImpl.ts
 - Fleet AI hooks: src/hooks/factions/useFleetAI.ts
 - Faction behavior: src/hooks/factions/useFactionBehavior.ts
 - Features implemented:

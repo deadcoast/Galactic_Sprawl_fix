@@ -1,4 +1,4 @@
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   BaseModule,
@@ -127,7 +127,7 @@ export interface SubModuleManagerEvents extends Record<string, unknown> {
  * SubModuleManager
  * Manages the creation, attachment, activation, and effects of sub-modules
  */
-export class SubModuleManager extends BaseTypedEventEmitter<SubModuleManagerEvents> {
+export class SubModuleManager extends TypedEventEmitter<SubModuleManagerEvents> {
   private static instance: SubModuleManager | null = null; // Add for singleton
 
   private subModules: Map<string, SubModule>;

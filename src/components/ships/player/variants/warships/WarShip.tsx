@@ -11,7 +11,8 @@ interface WeaponSystem {
   status: WeaponStatus;
 }
 
-interface WarShipProps {
+// Export the props interface
+export interface WarShipProps {
   ship: {
     id: string;
     name: string;

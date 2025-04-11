@@ -4,7 +4,7 @@
  * This manager handles combat operations using the standardized event system.
  */
 
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { Position } from '../../types/core/GameTypes';
 import { CombatEvents, CombatUnitStatus } from '../../types/events/CombatEvents';
 import { FactionId } from '../../types/ships/FactionTypes';
@@ -51,7 +51,7 @@ export interface CombatWeapon {
  * @context: combat-system, manager-registry
  * Combat manager class that uses standardized types and events
  */
-export class CombatManager extends BaseTypedEventEmitter<CombatEvents> {
+export class CombatManager extends TypedEventEmitter<CombatEvents> {
   private units: Map<string, CombatUnit> = new Map();
 
   public constructor() {

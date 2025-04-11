@@ -97,9 +97,9 @@ TESTING FRAMEWORK REFERENCES
 - Combat Manager Tests: `src/tests/managers/combat/combatManager.test.ts`
   Purpose: Test combat system management
   Dependencies: Vitest, CombatManager mock
-- War Ship Manager Tests: `src/tests/managers/combat/WarShipManagerImpl.test.ts`
+- War Ship Manager Tests: `src/tests/managers/combat/CombatShipManagerImpl.test.ts`
   Purpose: Test war ship management
-  Dependencies: Vitest, WarShipManagerImpl mock
+  Dependencies: Vitest, CombatShipManagerImpl mock
 - Fleet AI Tests: `src/tests/hooks/factions/useFleetAI.test.ts`
   Purpose: Test fleet AI behavior
   Dependencies: Vitest, useFleetAI mock

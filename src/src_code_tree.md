@@ -513,7 +513,7 @@ src/
 │   │   └── BaseContext.tsx
 │   ├── events/
 │   │   ├── BaseEventEmitter.ts
-│   │   ├── BaseTypedEventEmitter.ts
+│   │   ├── TypedEventEmitter.ts
 │   │   ├── EventBatcher.ts
 │   │   ├── EventBus.ts
 │   │   ├── EventBusTypes.ts
@@ -524,7 +524,7 @@ src/
 │   │   ├── BaseManager.ts
 │   │   └── ServiceRegistry.ts
 │   ├── modules/
-│   │   ├── BaseTypedEventEmitter.ts
+│   │   ├── TypedEventEmitter.ts
 │   │   └── ModuleEvents.ts
 │   ├── optimization/
 │   │   ├── EntityPool.ts
@@ -555,7 +555,7 @@ src/
 │   │   ├── EnvironmentalHazardManager.ts
 │   │   ├── ObjectDetectionSystem.ts
 │   │   ├── ThreatAssessmentManager.ts
-│   │   └── WarShipManagerImpl.ts
+│   │   └── CombatShipManagerImpl.ts
 │   ├── effects/
 │   │   ├── EffectLifecycleManager.ts
 │   │   └── ParticleSystemManager.ts

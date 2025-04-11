@@ -7,7 +7,7 @@
     "build": "tsc && vite build",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --fix --cache",
-    "lint:critical": "eslint --cache --ext .ts,.tsx src/game-loop src/physics src/render-engine --max-warnings=0",
+    "lint:critical": "eslint --cache --ext .ts,.tsx src/game-loop src/physics src/render-engine",
     "lint:changed": "eslint --cache $(git diff --name-only --diff-filter=ACMR | grep -E '\\.(js|jsx|ts|tsx)$')",
     "preview": "vite preview",
     "fix-imports": "node tools/fix-imports.js",

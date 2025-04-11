@@ -17,8 +17,9 @@ import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { ContextMenuItem, useContextMenu } from '../../../../components/ui/ContextMenu';
 import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
-import { MiningResource } from '../../../../types/mining/MiningTypes';
+import { MiningResource, MiningShip } from '../../../../types/mining/MiningTypes';
 import { ResourceType } from './../../../../types/resources/ResourceTypes';
+import { PlayerShipClass } from './../../../../types/ships/PlayerShipTypes';
 import { MiningMap } from './MiningMap';
 import { MiningTutorial } from './MiningTutorial';
 import { ResourceNode } from './ResourceNode';
@@ -82,17 +83,6 @@ interface Resource {
   };
 }
 
-interface MiningShip {
-  id: string;
-  name: string;
-  type: 'rockBreaker' | 'voidDredger';
-  status: 'idle' | 'mining' | 'returning' | 'maintenance';
-  capacity: number;
-  currentLoad: number;
-  targetNode?: string;
-  efficiency: number;
-}
-
 const mockResources: Resource[] = [
   {
     id: 'iron-belt-1',
@@ -133,7 +123,7 @@ const mockShips: MiningShip[] = [
   {
     id: 'rb-1',
     name: 'Rock Breaker Alpha',
-    type: 'rockBreaker',
+    type: PlayerShipClass.ROCK_BREAKER,
     status: 'mining',
     capacity: 1000,
     currentLoad: 450,
@@ -143,7 +133,7 @@ const mockShips: MiningShip[] = [
   {
     id: 'vd-1',
     name: 'Void Dredger Beta',
-    type: 'voidDredger',
+    type: PlayerShipClass.VOID_DREDGER,
     status: 'returning',
     capacity: 2000,
     currentLoad: 1800,
@@ -184,7 +174,7 @@ interface ResourceDragData {
 interface _ShipDragData {
   id: string;
   name: string;
-  type: 'rockBreaker' | 'voidDredger';
+  type: PlayerShipClass.ROCK_BREAKER | PlayerShipClass.VOID_DREDGER;
   efficiency: number;
 }
 
@@ -213,7 +203,7 @@ const createDragData = (type: 'resource' | 'ship', data: BaseDragDataInput): Dra
     return {
       id: data?.id ?? '',
       name: data?.name ?? '',
-      type: 'rockBreaker',
+      type: PlayerShipClass.ROCK_BREAKER,
       efficiency: typeof data?.efficiency === 'number' ? data?.efficiency : 1.0,
     } as _ShipDragData;
   }

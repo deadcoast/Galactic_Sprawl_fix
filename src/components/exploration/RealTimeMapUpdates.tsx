@@ -4,7 +4,7 @@ import { useTooltip } from '../../hooks/ui/useTooltip';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { errorLoggingService, ErrorSeverity, ErrorType } from '../../services/ErrorLoggingService';
 import { ResourceType } from '../../types/resources/ResourceTypes';
-import { ResourceTypeConverter } from '../../utils/ResourceTypeConverter';
+import { ResourceTypeConverter } from '../../utils/resources/ResourceTypeConverter';
 
 // Define ModuleEvent interface
 interface ModuleEvent {

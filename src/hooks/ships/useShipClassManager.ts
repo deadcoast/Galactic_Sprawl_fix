@@ -1,14 +1,14 @@
 import { useCallback, useState } from 'react';
 import { shipClassConfigs } from '../../config/factions/factionConfig';
-import { shipClassFactory } from '../../factories/ships/ShipClassFactory';
-import { CombatUnit } from '../../types/combat/CombatTypes';
+import { shipFactory } from '../../factories/ships/ShipFactory';
 import { Position } from '../../types/core/GameTypes';
 import { FactionShipClass } from '../../types/ships/FactionShipTypes';
 import { FactionId } from '../../types/ships/FactionTypes';
+import { UnifiedShip } from '../../types/ships/UnifiedShipTypes';
 
 interface FleetComposition {
   factionId: FactionId;
-  ships: CombatUnit[];
+  ships: UnifiedShip[];
   formation: {
     type: 'offensive' | 'defensive' | 'balanced';
     spacing: number;
@@ -36,7 +36,7 @@ export function useShipClassManager() {
       position: Position,
       formation: { type: 'offensive' | 'defensive' | 'balanced'; spacing: number; facing: number }
     ) => {
-      const ships = shipClassFactory.createFleet(factionId, shipClasses, position, formation);
+      const ships = shipFactory.createFleet(factionId, shipClasses, position, formation);
       const fleetId = `${factionId}-fleet-${Date.now()}`;
 
       setFleets(prev => ({
@@ -58,15 +58,14 @@ export function useShipClassManager() {
       setFleets(prev => {
         const fleet = prev[fleetId];
         if (!fleet) {
+          console.warn(`Fleet with ID ${fleetId} not found.`);
           return prev;
         }
 
-        const newShip = shipClassFactory.createShip(
-          shipClass,
-          fleet.factionId,
+        const newShip = shipFactory.createShip(shipClass, {
           position,
-          fleet.formation
-        );
+          factionId: fleet.factionId,
+        });
 
         return {
           ...prev,

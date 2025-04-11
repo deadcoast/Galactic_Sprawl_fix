@@ -3,9 +3,9 @@ import { useShipState } from '../../../contexts/ShipContext';
 import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
 import { useShipActions } from '../../../hooks/ships/useShipActions';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
-import { ShipStatus } from '../../../types/ships/CommonShipTypes';
-import type { FactionShip, FactionShipProps } from '../../../types/ships/FactionShipTypes';
+import type { FactionShipProps } from '../../../types/ships/FactionShipTypes';
 import { FactionId } from '../../../types/ships/FactionTypes';
+import { UnifiedShipStatus } from '../../../types/ships/UnifiedShipTypes';
 import { AbilityButtonContainer } from '../../ui/buttons/AbilityButton';
 import { StatusEffectContainer } from '../../ui/status/StatusEffect';
 import { BaseShip } from '../base/BaseShip';
@@ -22,25 +22,34 @@ const FACTION_COLORS: Record<FactionId, string> = {
 } as const;
 
 /**
- * Maps the full ShipStatus to the limited status type used by BaseShip
+ * Maps the full UnifiedShipStatus to the limited status type used by BaseShip
+ * TODO: Update BaseShip to accept UnifiedShipStatus directly?
  */
 function mapShipStatus(
-  status: ShipStatus | FactionShip['status']
+  status: UnifiedShipStatus
 ): 'engaging' | 'patrolling' | 'retreating' | 'disabled' {
   switch (status) {
-    case 'engaging':
+    case UnifiedShipStatus.ENGAGING:
+    case UnifiedShipStatus.ATTACKING:
       return 'engaging';
-    case 'patrolling':
+    case UnifiedShipStatus.PATROLLING:
+    case UnifiedShipStatus.IDLE:
+    case UnifiedShipStatus.READY:
       return 'patrolling';
-    case 'retreating':
+    case UnifiedShipStatus.RETREATING:
+    case UnifiedShipStatus.RETURNING:
+    case UnifiedShipStatus.WITHDRAWING:
       return 'retreating';
-    case 'disabled':
+    case UnifiedShipStatus.DISABLED:
+    case UnifiedShipStatus.DAMAGED:
+    case UnifiedShipStatus.REPAIRING:
+    case UnifiedShipStatus.UPGRADING:
+    case UnifiedShipStatus.MAINTENANCE:
       return 'disabled';
-    case 'damaged':
-    case 'repairing':
-    case 'upgrading':
-      return 'disabled';
-    case 'ready':
+    case UnifiedShipStatus.MINING:
+    case UnifiedShipStatus.SCANNING:
+    case UnifiedShipStatus.INVESTIGATING:
+      return 'patrolling';
     default:
       return 'patrolling';
   }

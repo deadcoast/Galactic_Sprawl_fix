@@ -1,13 +1,13 @@
-import { Star } from 'lucide-react';
+import { Sparkles, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { EquatorHorizonShip } from '../../common/EquatorHorizonShip';
 
 interface StellarEquinoxProps {
   id: string;
-  status: ShipStatus;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -39,27 +39,14 @@ export function StellarEquinox({
   onSpecialAbility,
 }: StellarEquinoxProps) {
   const [stellarConvergenceActive, setStellarConvergenceActive] = useState(false);
+  const [stellarFlareActive, setStellarFlareActive] = useState(false);
 
   useEffect(() => {
-    if (status === 'disabled') {
+    if (status === UnifiedShipStatus.DISABLED) {
       setStellarConvergenceActive(false);
+      setStellarFlareActive(false);
     }
   }, [status]);
-
-  const mapStatus = (status: ShipStatus) => {
-    switch (status) {
-      case 'engaging':
-        return 'engaging';
-      case 'patrolling':
-        return 'patrolling';
-      case 'retreating':
-        return 'retreating';
-      case 'disabled':
-        return 'disabled';
-      default:
-        return 'patrolling';
-    }
-  };
 
   return (
     <div className="relative">
@@ -67,7 +54,7 @@ export function StellarEquinox({
         id={id}
         name="Stellar Equinox"
         type="stellarEquinox"
-        status={mapStatus(status)}
+        status={status}
         health={health}
         maxHealth={maxHealth}
         shield={shield}
@@ -81,6 +68,7 @@ export function StellarEquinox({
         onFire={onFire}
         onSpecialAbility={() => {
           setStellarConvergenceActive(!stellarConvergenceActive);
+          setStellarFlareActive(!stellarFlareActive);
           onSpecialAbility?.();
         }}
       >
@@ -91,15 +79,22 @@ export function StellarEquinox({
               <span>Stellar Convergence Active</span>
             </div>
           )}
+          {stellarFlareActive && (
+            <div className="status-effect">
+              <Sparkles className="icon" />
+              <span>Stellar Flare Active</span>
+            </div>
+          )}
         </div>
         <div className="action-buttons">
           <button
             className={`ability-button ${stellarConvergenceActive ? 'active' : ''}`}
             onClick={() => {
               setStellarConvergenceActive(!stellarConvergenceActive);
+              setStellarFlareActive(!stellarFlareActive);
               onSpecialAbility?.();
             }}
-            disabled={status === 'disabled'}
+            disabled={status === UnifiedShipStatus.DISABLED}
           >
             <Star className="icon" />
             <span>Stellar Convergence</span>

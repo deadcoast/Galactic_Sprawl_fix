@@ -1,15 +1,15 @@
-import { Zap } from 'lucide-react';
+import { Ghost, Skull, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { LostNovaShip } from '../../common/LostNovaShip';
 import { ResourceType } from './../../../../types/resources/ResourceTypes';
 
 interface DarkMatterReaperProps {
   id: string;
-  status: ShipStatus;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -70,6 +70,8 @@ export function DarkMatterReaper({
   rotation,
 }: DarkMatterReaperProps) {
   const [voidPulseActive, setVoidPulseActive] = useState(false);
+  const [voidShroudActive, setVoidShroudActive] = useState(false);
+  const [entropyCascadeActive, setEntropyCascadeActive] = useState(false);
 
   // Use the base stats for scaling calculations
   const healthScaling = maxHealth / _baseHealth;
@@ -85,8 +87,10 @@ export function DarkMatterReaper({
   };
 
   useEffect(() => {
-    if (status === 'disabled') {
+    if (status === UnifiedShipStatus.DISABLED) {
       setVoidPulseActive(false);
+      setVoidShroudActive(false);
+      setEntropyCascadeActive(false);
     }
 
     // Log weapon and shield scaling for debugging
@@ -98,21 +102,6 @@ export function DarkMatterReaper({
     });
   }, [status, healthScaling, shieldScaling, speedScaling, weaponConfig]);
 
-  const mapStatus = (status: ShipStatus) => {
-    switch (status) {
-      case 'engaging':
-        return 'engaging';
-      case 'patrolling':
-        return 'patrolling';
-      case 'retreating':
-        return 'retreating';
-      case 'disabled':
-        return 'disabled';
-      default:
-        return 'patrolling';
-    }
-  };
-
   // Create a proper FactionBehaviorConfig for tactics
   const tactics = createFactionBehavior('stealth');
 
@@ -122,7 +111,7 @@ export function DarkMatterReaper({
         id={id}
         name="Dark Matter Reaper"
         type="darkMatterReaper"
-        status={mapStatus(status)}
+        status={status}
         health={health}
         maxHealth={maxHealth}
         shield={shield}
@@ -137,6 +126,8 @@ export function DarkMatterReaper({
         onFire={onFire}
         onSpecialAbility={() => {
           setVoidPulseActive(!voidPulseActive);
+          setVoidShroudActive(!voidShroudActive);
+          setEntropyCascadeActive(!entropyCascadeActive);
           onSpecialAbility?.();
         }}
       >
@@ -147,18 +138,52 @@ export function DarkMatterReaper({
               <span>Void Pulse Active</span>
             </div>
           )}
+          {voidShroudActive && (
+            <div className="status-effect">
+              <Ghost className="icon" />
+              <span>Void Shroud Active</span>
+            </div>
+          )}
+          {entropyCascadeActive && (
+            <div className="status-effect">
+              <Skull className="icon" />
+              <span>Entropy Cascade Active</span>
+            </div>
+          )}
         </div>
-        <div className="action-buttons">
+        <div className="action-buttons grid grid-cols-2 gap-2">
           <button
             className={`ability-button ${voidPulseActive ? 'active' : ''}`}
             onClick={() => {
               setVoidPulseActive(!voidPulseActive);
               onSpecialAbility?.();
             }}
-            disabled={status === 'disabled'}
+            disabled={status === UnifiedShipStatus.DISABLED}
           >
             <Zap className="icon" />
             <span>Void Pulse</span>
+          </button>
+          <button
+            className={`ability-button ${voidShroudActive ? 'active' : ''}`}
+            onClick={() => {
+              setVoidShroudActive(!voidShroudActive);
+              onSpecialAbility?.();
+            }}
+            disabled={status === UnifiedShipStatus.DISABLED}
+          >
+            <Ghost className="icon" />
+            <span>Void Shroud</span>
+          </button>
+          <button
+            className={`ability-button ${entropyCascadeActive ? 'active' : ''}`}
+            onClick={() => {
+              setEntropyCascadeActive(!entropyCascadeActive);
+              onSpecialAbility?.();
+            }}
+            disabled={status === UnifiedShipStatus.DISABLED}
+          >
+            <Skull className="icon" />
+            <span>Entropy Cascade</span>
           </button>
         </div>
       </LostNovaShip>

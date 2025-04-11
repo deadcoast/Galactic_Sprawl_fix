@@ -13,11 +13,14 @@ import {
   FlowConnection,
   FlowNode,
   FlowNodeType as ResourceFlowNodeType,
-  ResourceState,
   ResourceType,
   ResourceTypeInfo,
 } from '../../../../types/resources/ResourceTypes';
 import { NetworkData } from '../../../../types/visualization/CommonTypes';
+import {
+  createSvgZoomBehavior,
+  TypedZoomEvent,
+} from '../../../../types/visualizations/D3ZoomTypes';
 import { ResourceTypeConverter } from '../../../../utils/resources/ResourceTypeConverter';
 import DataTransitionParticleSystem, {
   DataPoint,
@@ -56,7 +59,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
   onNodeClick,
   onConnectionClick,
 }) => {
-  const svgRef = useRef<SVGSVGElement>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
   const [networkData, setNetworkData] = useState<NetworkData<FlowNode, FlowConnection>>({
     nodes: [],
     links: [],
@@ -68,20 +71,16 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
     FlowNode,
     FlowConnection
   > | null>(null);
+  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const _connectionsContainer = useRef<SVGGElement | null>(null);
+  const _particleContainer = useRef<SVGGElement | null>(null);
+  const _tooltipRef = useRef<HTMLDivElement | null>(null);
+  const previousParticlesRef = useRef<Set<string> | null>(null);
 
-  // Register with component registry
-  useComponentRegistration({
-    type: ResourceType.MINERALS,
-    eventSubscriptions: [
-      EventType.RESOURCE_FLOW_UPDATED,
-      EventType.RESOURCE_NODE_ADDED,
-      EventType.RESOURCE_NODE_REMOVED,
-      EventType.RESOURCE_CONNECTION_ADDED,
-      EventType.RESOURCE_CONNECTION_REMOVED,
-      EventType.RESOURCE_FLOW_OPTIMIZATION_COMPLETED,
-    ],
-    updatePriority: 'medium',
-  });
+  const componentId = 'ResourceFlowDiagram';
+
+  // Register component
+  useComponentRegistration(componentId, 'ResourceFlowDiagram');
 
   useComponentLifecycle({
     onMount: () => {
@@ -145,7 +144,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
           { componentName: 'ResourceFlowDiagram', action: 'fetchResourceFlowData' }
         );
       }
-    }, []); // Keep dependencies empty for now
+    }, 0);
   }, []);
 
   // Convert network data to particle data points
@@ -187,14 +186,18 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
 
     // Add zoom behavior
     if (interactive) {
-      const zoom = d3
-        .zoom<SVGSVGElement, unknown>()
-        .scaleExtent([0.1, 4])
-        .on('zoom', event => {
-          container.attr('transform', event?.transform);
-        });
-
-      svg.call(zoom);
+      zoomRef.current = createSvgZoomBehavior<SVGSVGElement>({
+        scaleExtentMin: 0.1,
+        scaleExtentMax: 4,
+        onZoom: (event: TypedZoomEvent<SVGSVGElement, unknown>) => {
+          container.attr('transform', event.transform.toString());
+        },
+      });
+      if (zoomRef.current) {
+        svg.call(zoomRef.current);
+      }
+    } else {
+      svg.on('.zoom', null);
     }
 
     // Create D3 force simulation with specific types
@@ -327,7 +330,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
 
       // Filter and validate keys - check existence in converter map
       const validResourceTypeStrings = resourceKeys.filter(
-        key => key in ResourceTypeConverter.STRING_TO_ENUM_MAP
+        key => ResourceTypeConverter.stringToEnum(key) !== undefined
       );
 
       validResourceTypeStrings.forEach((resourceTypeString, i) => {
@@ -347,7 +350,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
             .attr('cy', y)
             .attr('r', 5)
             // Pass the enum member to getResourceColor
-            .attr('fill', getResourceColor(resourceTypeEnum));
+            .attr('fill', () => getResourceColor(resourceTypeEnum));
         }
       });
     });
@@ -396,7 +399,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
         typeGroup
           .append('circle')
           .attr('r', 8)
-          .attr('fill', d => getNodeFill(tempNode as FlowNode));
+          .attr('fill', () => getNodeFill(tempNode as FlowNode));
 
         typeGroup.append('text').attr('x', 15).attr('y', 5).text(type);
       });
@@ -417,7 +420,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
           .append('rect')
           .attr('width', 15)
           .attr('height', 5)
-          .attr('fill', d => getResourceColor(type));
+          .attr('fill', () => getResourceColor(type));
 
         resourceGroup
           .append('text')
@@ -476,6 +479,26 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
     return networkData ? getParticleDataPoints(networkData) : [];
   }, [networkData, getParticleDataPoints]);
 
+  const _drawParticles = useCallback((particles: DataPoint[]) => {
+    // Store current particle IDs for the next render cycle
+    const currentParticleIds = new Set(particles.map(p => p.id));
+    previousParticlesRef.current = currentParticleIds;
+
+    // Clean up particles that no longer exist
+    const previousParticleIds = previousParticlesRef.current || new Set();
+    const particlesToRemove = Array.from(previousParticleIds).filter(
+      id => !currentParticleIds.has(id)
+    );
+
+    // Add back the particle removal logic
+    if (particlesToRemove.length > 0) {
+      d3.select(_particleContainer.current)
+        .selectAll('.particle')
+        .filter(p => particlesToRemove.includes((p as DataPoint).id))
+        .remove();
+    }
+  }, []);
+
   if (loading) {
     return <div>Loading Resource Flow...</div>;
   }
@@ -489,7 +512,7 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       <svg ref={svgRef} width={width} height={height}></svg>
       {previousNetworkData && currentParticles.length > 0 && (
         <DataTransitionParticleSystem
-          sourceData={previousParticles}
+          sourceData={previousNetworkData ? getParticleDataPoints(previousNetworkData) : []}
           targetData={currentParticles}
           onTransitionComplete={handleTransitionComplete}
           width={width}
@@ -499,127 +522,6 @@ const ResourceFlowDiagram: React.FC<ResourceFlowDiagramProps> = ({
       )}
     </div>
   );
-};
-
-// Function to generate mock data - should use FlowNode and FlowConnection
-const generateMockFlowData = (): NetworkData<FlowNode, FlowConnection> => {
-  // Helper to create a default ResourceState
-  const createDefaultResourceState = (overrides: Partial<ResourceState> = {}): ResourceState => ({
-    current: 0,
-    max: 1000,
-    min: 0,
-    production: 0,
-    consumption: 0,
-    ...overrides,
-  });
-
-  // Helper to create a full resources record for a node
-  const createNodeResources = (
-    specificResources: Partial<Record<ResourceType, Partial<ResourceState>>>
-  ): Record<ResourceType, ResourceState> => {
-    const allResources = {} as Record<ResourceType, ResourceState>;
-    for (const resType of Object.values(ResourceType)) {
-      allResources[resType] = createDefaultResourceState(specificResources[resType]);
-    }
-    return allResources;
-  };
-
-  const nodes: FlowNode[] = [
-    {
-      id: 'producer1',
-      type: ResourceFlowNodeType.PRODUCER,
-      resources: createNodeResources({ [ResourceType.MINERALS]: { production: 10 } }),
-      active: true,
-      x: 100,
-      y: 100,
-    },
-    {
-      id: 'consumer1',
-      type: ResourceFlowNodeType.CONSUMER,
-      resources: createNodeResources({ [ResourceType.MINERALS]: { consumption: 5 } }),
-      active: true,
-      x: 300,
-      y: 100,
-    },
-    {
-      id: 'storage1',
-      type: ResourceFlowNodeType.STORAGE,
-      resources: createNodeResources({ [ResourceType.MINERALS]: { current: 500 } }),
-      active: true,
-      x: 100,
-      y: 300,
-    },
-    {
-      id: 'converter1',
-      type: ResourceFlowNodeType.CONVERTER,
-      resources: createNodeResources({
-        [ResourceType.MINERALS]: { consumption: 2 },
-        [ResourceType.ENERGY]: { production: 1 },
-      }),
-      active: true,
-      x: 300,
-      y: 300,
-    },
-    {
-      id: 'producer2',
-      type: ResourceFlowNodeType.PRODUCER,
-      resources: createNodeResources({ [ResourceType.ENERGY]: { production: 10 } }),
-      active: true,
-      x: 500,
-      y: 100,
-    },
-  ];
-
-  const links: FlowConnection[] = [
-    {
-      id: 'link1',
-      source: 'producer1',
-      target: 'consumer1',
-      resourceTypes: [ResourceType.MINERALS],
-      maxRate: 5,
-      currentRate: 5,
-      active: true,
-    },
-    {
-      id: 'link2',
-      source: 'producer1',
-      target: 'storage1',
-      resourceTypes: [ResourceType.MINERALS],
-      maxRate: 10,
-      currentRate: 5,
-      active: true,
-    },
-    {
-      id: 'link3',
-      source: 'storage1',
-      target: 'converter1',
-      resourceTypes: [ResourceType.MINERALS],
-      maxRate: 2,
-      currentRate: 2,
-      active: true,
-    },
-    {
-      id: 'link4',
-      source: 'producer2',
-      target: 'converter1',
-      resourceTypes: [ResourceType.ENERGY],
-      maxRate: 10,
-      currentRate: 1,
-      active: true,
-    },
-  ];
-
-  // Assign x, y positions for nodes if not already set by D3
-  nodes.forEach(node => {
-    if (typeof node.x === 'undefined') {
-      node.x = Math.random() * 600 + 100;
-    }
-    if (typeof node.y === 'undefined') {
-      node.y = Math.random() * 400 + 100;
-    }
-  });
-
-  return { nodes, links };
 };
 
 // --- Local Helper Functions ---

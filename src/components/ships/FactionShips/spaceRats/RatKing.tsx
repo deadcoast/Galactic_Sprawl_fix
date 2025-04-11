@@ -1,8 +1,9 @@
-import { SkullIcon } from 'lucide-react';
+import { Crown, Skull } from 'lucide-react';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { SpaceRatShip } from '../../common/SpaceRatShip';
 
@@ -10,7 +11,7 @@ interface RatKingProps {
   id: string;
   name: string;
   type: 'ratKing';
-  status: ShipStatus;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -45,35 +46,31 @@ export const RatKing: React.FC<RatKingProps> = ({
   position,
   rotation,
 }) => {
-  const [plagueRatsActive, setPlagueRatsActive] = useState(false);
+  const [rallyCryActive, setRallyCryActive] = useState(false);
+  const [callReinforcementsActive, setCallReinforcementsActive] = useState(false);
 
   useEffect(() => {
-    if (status === 'disabled') {
-      setPlagueRatsActive(false);
+    if (status === UnifiedShipStatus.DISABLED) {
+      setRallyCryActive(false);
+      setCallReinforcementsActive(false);
     }
   }, [status]);
 
-  const mapStatus = (status: ShipStatus) => {
-    switch (status) {
-      case 'engaging':
-        return 'engaging';
-      case 'patrolling':
-        return 'patrolling';
-      case 'retreating':
-        return 'retreating';
-      case 'disabled':
-        return 'disabled';
-      default:
-        return 'patrolling';
-    }
+  const createFactionBehavior = (behaviorType: FactionBehaviorType): FactionBehaviorConfig => {
+    return {
+      formation: 'leader-standard',
+      behavior: behaviorType,
+    };
   };
+
+  const tactics = createFactionBehavior('aggressive');
 
   return (
     <SpaceRatShip
       id={id}
       name={name}
       type={type}
-      status={mapStatus(status)}
+      status={status}
       health={health}
       maxHealth={maxHealth}
       shield={shield}
@@ -89,24 +86,41 @@ export const RatKing: React.FC<RatKingProps> = ({
       tactics={tactics}
     >
       <div className="status-effects">
-        {plagueRatsActive && (
+        {rallyCryActive && (
           <div className="status-effect">
-            <SkullIcon className="icon" />
-            <span>Plague Rats Active</span>
+            <Crown className="icon" />
+            <span>Rally Cry Active</span>
+          </div>
+        )}
+        {callReinforcementsActive && (
+          <div className="status-effect">
+            <Skull className="icon" />
+            <span>Calling Reinforcements</span>
           </div>
         )}
       </div>
-      <div className="action-buttons">
+      <div className="action-buttons grid grid-cols-2 gap-2">
         <button
-          className={`ability-button ${plagueRatsActive ? 'active' : ''}`}
+          className={`ability-button ${rallyCryActive ? 'active' : ''}`}
           onClick={() => {
-            setPlagueRatsActive(!plagueRatsActive);
+            setRallyCryActive(!rallyCryActive);
             onSpecialAbility?.();
           }}
-          disabled={status === 'disabled'}
+          disabled={status === UnifiedShipStatus.DISABLED}
         >
-          <SkullIcon className="icon" />
-          <span>Release Plague Rats</span>
+          <Crown className="icon" />
+          <span>Rally Cry</span>
+        </button>
+        <button
+          className={`ability-button ${callReinforcementsActive ? 'active' : ''}`}
+          onClick={() => {
+            setCallReinforcementsActive(!callReinforcementsActive);
+            onSpecialAbility?.();
+          }}
+          disabled={status === UnifiedShipStatus.DISABLED}
+        >
+          <Skull className="icon" />
+          <span>Call Reinforcements</span>
         </button>
       </div>
     </SpaceRatShip>

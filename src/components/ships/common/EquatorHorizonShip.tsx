@@ -3,10 +3,9 @@ import { ReactNode, useCallback } from 'react';
 import { CombatEffectType } from '../../../effects/types_effects/EffectTypes';
 import { createEffect, isDamageEffect } from '../../../effects/util_effects/effectUtils';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
-import { Effect } from '../../../types/core/GameTypes';
-import { ShipStatus } from '../../../types/ships/CommonShipTypes';
 import { EquatorHorizonShipClass, FactionShipStats } from '../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionId } from '../../../types/ships/FactionTypes';
+import { UnifiedShipStatus } from '../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../types/weapons/WeaponTypes';
 import { createDamageEffect } from '../../../utils/weapons/weaponEffectUtils';
 import { AbilityButton } from '../../ui/buttons/AbilityButton';
@@ -18,7 +17,7 @@ interface EquatorHorizonShipProps {
   id: string;
   name: string;
   type: EquatorHorizonShipClass;
-  status: 'engaging' | 'patrolling' | 'retreating' | 'disabled';
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -186,34 +185,13 @@ export function EquatorHorizonShip({
     onSpecialAbility?.();
   }, [hasEffect, removeEffect, addEffect, onSpecialAbility]);
 
-  let displayStatus: ShipStatus = ShipStatus.PATROLLING;
-  if (status === 'engaging') {
-    displayStatus = ShipStatus.ENGAGING;
-  } else if (status === 'retreating') {
-    displayStatus = ShipStatus.RETREATING;
-  } else if (status === 'disabled') {
-    displayStatus = ShipStatus.DISABLED;
-  }
-
   return (
     <FactionShipBase
       ship={{
         id,
         name,
-        class: type,
-        faction: 'equator-horizon' as FactionId,
-        status: displayStatus,
-        tactics: {
-          formation: 'balanced',
-          behavior: 'defensive',
-        } as FactionBehaviorConfig,
         category: 'war',
-        health,
-        maxHealth,
-        shield,
-        maxShield,
-        position,
-        rotation,
+        stats: stats,
         abilities: [
           {
             id: 'overcharge-ability',
@@ -224,10 +202,14 @@ export function EquatorHorizonShip({
             active: hasEffect('overcharge'),
             effect: {
               id: 'overcharge',
+              name: 'Overcharge Effect',
+              description: 'Boosted weapon damage',
               type: 'damage',
               magnitude: 1.4,
               duration: 10,
-            } as Effect,
+              active: hasEffect('overcharge'),
+              cooldown: 0,
+            },
           },
           {
             id: 'reinforced-shields-ability',
@@ -238,13 +220,30 @@ export function EquatorHorizonShip({
             active: hasEffect('reinforced-shields'),
             effect: {
               id: 'reinforced-shields',
+              name: 'Reinforced Shields Effect',
+              description: 'Boosted shield strength',
               type: 'shield',
               magnitude: 1.5,
               duration: 15,
-            } as Effect,
+              active: hasEffect('reinforced-shields'),
+              cooldown: 0,
+            },
           },
         ],
-        stats,
+        displayStats: undefined,
+        class: type,
+        faction: 'equator-horizon' as FactionId,
+        status: status,
+        tactics: {
+          formation: 'balanced',
+          behavior: 'defensive',
+        } as FactionBehaviorConfig,
+        health,
+        maxHealth,
+        shield,
+        maxShield,
+        position,
+        rotation,
       }}
       onEngage={onEngage}
       onRetreat={onRetreat}

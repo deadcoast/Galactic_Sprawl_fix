@@ -188,7 +188,7 @@ Total unused variables: 1
 
 - `__RuntimeCondition` (Line 33): Already prefixed with underscore, consider using in code or removing
 
-## src/lib/events/BaseTypedEventEmitter.ts
+## src/lib/events/EventEmitter.ts
 
 Total unused variables: 1
 
@@ -644,4 +644,3 @@ Total unused variables: 1
 Total unused variables: 1
 
 - `CommonShipAbility` (Line 38): Parameter defined but unused, prefix with underscore or remove
-

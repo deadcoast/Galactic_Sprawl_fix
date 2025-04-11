@@ -180,7 +180,7 @@ SHIP SYSTEM REFERENCES
     Used By: useFactionBehavior, FactionRelationshipManager
   - Weapon Types: src/types/weapons/WeaponTypes.ts
     Purpose: Weapon system type definitions
-    Used By: combatManager, WarShipManager
+    Used By: combatManager, CombatShipManager
   - Type Conversions: src/utils/typeConversions.ts
     Purpose: Type conversion utilities
     Used By: All combat and faction systems
@@ -337,7 +337,7 @@ SHIP SYSTEM REFERENCES
        Used By: useFactionBehavior, FactionRelationshipManager
      - Weapon Types: src/types/weapons/WeaponTypes.ts
        Purpose: Weapon system type definitions
-       Used By: combatManager, WarShipManager
+       Used By: combatManager, CombatShipManager
      - Type Conversions: src/utils/typeConversions.ts
        Purpose: Type conversion utilities
        Used By: All combat and faction systems

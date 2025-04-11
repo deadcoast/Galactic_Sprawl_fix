@@ -164,7 +164,7 @@
 /Users/deadcoast/CursorProjects/Galactic_Sprawl/src/hooks/useWorker.ts
   22:3  warning  'onProgress' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
 
-/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/events/BaseTypedEventEmitter.ts
+/Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/events/EventEmitter.ts
   64:42  warning  'event' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
 
 /Users/deadcoast/CursorProjects/Galactic_Sprawl/src/lib/modules/ModuleEvents.ts

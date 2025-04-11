@@ -1,4 +1,4 @@
-import { BaseTypedEventEmitter } from '../../lib/modules/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { Position } from '../../types/core/GameTypes';
 import { WeaponCategory, WeaponVariant } from '../../types/weapons/WeaponTypes';
 import { effectLifecycleManager } from '../effects/EffectLifecycleManager';
@@ -22,7 +22,7 @@ interface WeaponEffectConfig {
   quality?: 'low' | 'medium' | 'high';
 }
 
-export class WeaponEffectManager extends BaseTypedEventEmitter<WeaponEffectEvents> {
+export class WeaponEffectManager extends TypedEventEmitter<WeaponEffectEvents> {
   private static instance: WeaponEffectManager;
   private activeEffects: Map<string, Set<string>>;
   private effectConfigs: Map<WeaponCategory, Map<WeaponVariant, WeaponEffectConfig>>;

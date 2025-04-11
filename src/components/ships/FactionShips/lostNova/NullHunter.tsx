@@ -1,14 +1,14 @@
-import { Target } from 'lucide-react';
+import { Skull, Target } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { LostNovaShip } from '../../common/LostNovaShip';
 
 interface NullHunterProps {
   id: string;
-  status: ShipStatus;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -47,30 +47,15 @@ export function NullHunter({
   position,
   rotation,
 }: NullHunterProps) {
-  const [voidTrackingActive, setVoidTrackingActive] = useState(false);
+  const [targetLockActive, setTargetLockActive] = useState(false);
   const [nullFieldActive, setNullFieldActive] = useState(false);
 
   useEffect(() => {
-    if (status === 'disabled') {
-      setVoidTrackingActive(false);
+    if (status === UnifiedShipStatus.DISABLED) {
+      setTargetLockActive(false);
       setNullFieldActive(false);
     }
   }, [status]);
-
-  const mapStatus = (status: ShipStatus) => {
-    switch (status) {
-      case 'engaging':
-        return 'engaging';
-      case 'patrolling':
-        return 'patrolling';
-      case 'retreating':
-        return 'retreating';
-      case 'disabled':
-        return 'disabled';
-      default:
-        return 'patrolling';
-    }
-  };
 
   // Create a proper FactionBehaviorConfig for tactics
   const tactics = createFactionBehavior('aggressive');
@@ -81,7 +66,7 @@ export function NullHunter({
         id={id}
         name="Null Hunter"
         type="nullsRevenge"
-        status={mapStatus(status)}
+        status={status}
         health={health}
         maxHealth={maxHealth}
         shield={shield}
@@ -100,30 +85,30 @@ export function NullHunter({
         }}
       >
         <div className="status-effects">
-          {voidTrackingActive && (
+          {targetLockActive && (
             <div className="status-effect">
               <Target className="icon" />
-              <span>Void Tracking Active</span>
+              <span>Target Lock Active</span>
             </div>
           )}
           {nullFieldActive && (
             <div className="status-effect">
-              <Target className="icon" />
+              <Skull className="icon" />
               <span>Null Field Active</span>
             </div>
           )}
         </div>
-        <div className="action-buttons">
+        <div className="action-buttons grid grid-cols-2 gap-2">
           <button
-            className={`ability-button ${voidTrackingActive ? 'active' : ''}`}
+            className={`ability-button ${targetLockActive ? 'active' : ''}`}
             onClick={() => {
-              setVoidTrackingActive(!voidTrackingActive);
+              setTargetLockActive(!targetLockActive);
               onSpecialAbility?.();
             }}
-            disabled={status === 'disabled'}
+            disabled={status === UnifiedShipStatus.DISABLED}
           >
             <Target className="icon" />
-            <span>Void Tracking</span>
+            <span>Target Lock</span>
           </button>
           <button
             className={`ability-button ${nullFieldActive ? 'active' : ''}`}
@@ -131,9 +116,9 @@ export function NullHunter({
               setNullFieldActive(!nullFieldActive);
               onSpecialAbility?.();
             }}
-            disabled={status === 'disabled'}
+            disabled={status === UnifiedShipStatus.DISABLED}
           >
-            <Target className="icon" />
+            <Skull className="icon" />
             <span>Null Field</span>
           </button>
         </div>

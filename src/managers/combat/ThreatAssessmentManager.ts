@@ -1,4 +1,4 @@
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { CombatUnit } from '../../types/combat/CombatTypes';
 import { getDistance } from '../../utils/combat/scanRadiusUtils';
 import { DetectableObject } from './ObjectDetectionSystem';
@@ -128,7 +128,7 @@ export interface ThreatAssessmentManager {
  * Implementation of the threat assessment manager following the singleton pattern
  */
 export class ThreatAssessmentManagerImpl
-  extends BaseTypedEventEmitter<ThreatAssessmentEventMap>
+  extends TypedEventEmitter<ThreatAssessmentEventMap>
   implements ThreatAssessmentManager
 {
   // Maps observerId -> targetId -> assessment

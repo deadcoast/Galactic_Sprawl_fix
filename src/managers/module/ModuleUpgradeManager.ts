@@ -1,4 +1,4 @@
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { ModuleType } from '../../types/buildings/ModuleTypes';
 import { ResourceManager } from '../game/ResourceManager';
@@ -145,7 +145,7 @@ export interface ModuleUpgradeManagerEvents extends Record<string, unknown> {
  * Module upgrade manager
  * Manages upgrade paths, requirements, and effects for modules
  */
-export class ModuleUpgradeManager extends BaseTypedEventEmitter<ModuleUpgradeManagerEvents> {
+export class ModuleUpgradeManager extends TypedEventEmitter<ModuleUpgradeManagerEvents> {
   private static instance: ModuleUpgradeManager | null = null; // Add for singleton
 
   private upgradePaths: Map<ModuleType, ModuleUpgradePath>;
@@ -630,7 +630,7 @@ export class ModuleUpgradeManager extends BaseTypedEventEmitter<ModuleUpgradeMan
     });
     this.unsubscribeHandles = [];
 
-    // BaseTypedEventEmitter handles its own listener cleanup
+    // TypedEventEmitter handles its own listener cleanup
     this.clearAllListeners();
 
     console.warn('[ModuleUpgradeManager] Disposed and cleaned up subscriptions/timers.');

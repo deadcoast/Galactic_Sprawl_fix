@@ -1,4 +1,4 @@
-import { BaseTypedEventEmitter } from '../../lib/modules/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { moduleEventBus } from '../../lib/modules/ModuleEvents';
 import {
   CombatWeaponStats,
@@ -58,7 +58,7 @@ const WEAPON_CATEGORIES: WeaponCategory[] = [
   'ionCannon',
 ];
 
-export class WeaponUpgradeManager extends BaseTypedEventEmitter<WeaponUpgradeEvents> {
+export class WeaponUpgradeManager extends TypedEventEmitter<WeaponUpgradeEvents> {
   private static instance: WeaponUpgradeManager;
   private upgradeTrees: UpgradeTree;
   private weaponExperience: Map<string, number> = new Map();

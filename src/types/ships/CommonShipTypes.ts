@@ -1,4 +1,4 @@
-import { BaseStats, Effect, Tier } from '../core/GameTypes';
+import { Effect, Tier } from '../core/GameTypes';
 import { ResourceCost } from '../resources/ResourceTypes';
 import { WeaponMount, WeaponType as WeaponTypeBase } from '../weapons/WeaponTypes';
 import { ResourceType } from './../resources/ResourceTypes';
@@ -9,44 +9,50 @@ export interface ShipType {
 }
 
 // Ship Categories
-export type ShipCategory = 'war' | 'recon' | 'mining';
+export type ShipCategory = 'war' | 'mining' | 'recon' | 'transport' | 'support' | 'utility';
 
 // Re-export weapon type for backward compatibility
 export type WeaponType = WeaponTypeBase;
 
 // Ship Status - Changed from type alias to enum
 export enum ShipStatus {
-  READY = 'ready',
+  IDLE = 'idle',
+  MOVING = 'moving',
+  MINING = 'mining',
+  SCANNING = 'scanning',
   ENGAGING = 'engaging',
-  PATROLLING = 'patrolling',
-  RETREATING = 'retreating',
-  DISABLED = 'disabled',
-  DAMAGED = 'damaged',
   REPAIRING = 'repairing',
   UPGRADING = 'upgrading',
-  // Add other relevant statuses if needed (e.g., DOCKED, DEPLOYED? Check if these are handled elsewhere)
+  DAMAGED = 'damaged',
+  DESTROYED = 'destroyed',
+  READY = 'ready',
 }
 
 // Common Ship Stats Interface
-export interface CommonShipStats extends BaseStats {
+export interface CommonShipStats {
+  health: number;
+  maxHealth: number;
+  shield: number;
+  maxShield: number;
   energy: number;
   maxEnergy: number;
   speed: number;
   turnRate: number;
-  cargo: number;
+  cargo?: number | ShipCargo; // Can be number or ShipCargo
   weapons: WeaponMount[];
   abilities: CommonShipAbility[];
   defense: {
     armor: number;
     shield: number;
     evasion: number;
-    regeneration?: number;
+    regeneration: number;
   };
   mobility: {
     speed: number;
     turnRate: number;
     acceleration: number;
   };
+  [key: string]: any; // Allow additional stats
 }
 
 // Common Weapon Stats
@@ -68,7 +74,16 @@ export interface CommonShipAbility {
   cooldown: number;
   duration: number;
   active: boolean;
-  effect: Effect;
+  effect: {
+    id: string;
+    name: string;
+    description: string;
+    type: string;
+    magnitude: number;
+    duration: number;
+    active?: boolean;
+    cooldown?: number;
+  };
 }
 
 // Common Display Stats Interface (for UI components)
@@ -102,12 +117,12 @@ export interface CommonShip {
   category: ShipCategory;
   status: ShipStatus;
   stats: CommonShipStats;
-  abilities: CommonShipAbility[];
   officerBonuses?: {
     buildSpeed?: number;
     resourceEfficiency?: number;
     combatEffectiveness?: number;
   };
+  [key: string]: any; // Allow additional properties
 }
 
 // Common Ship Capabilities
@@ -152,6 +167,11 @@ export function getDefaultCapabilities(category: ShipCategory): CommonShipCapabi
         canMine: true,
         canJump: false,
       };
+    // Add cases for transport, support, utility if specific defaults are needed
+    default:
+      // Ensure exhaustive check or throw error for unhandled categories
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      throw new Error(`Unhandled ship category: ${category}`);
   }
 }
 
@@ -194,4 +214,10 @@ export interface ShipUpgradeInfo {
   stats: ShipUpgradeStats;
   resourceCost: ResourceCost[];
   visualUpgrades: ShipVisualUpgrade[];
+}
+
+// Define ShipCargo interface
+export interface ShipCargo {
+  capacity: number;
+  resources: Map<ResourceType, number>;
 }

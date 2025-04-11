@@ -158,7 +158,8 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
     }
 
     // Create chain execution status
-    const status: ChainExecutionStatus = {
+    const executionStatus: ChainExecutionStatus = {
+      executionId: `chain-exec-${chainId}-${Date.now()}`,
       chainId,
       active: true,
       paused: false,
@@ -179,7 +180,7 @@ export class ResourceConversionManager extends AbstractBaseManager<BaseEvent> {
       })),
     };
 
-    this.chainExecutions.set(chainId, status);
+    this.chainExecutions.set(chainId, executionStatus);
 
     // Start the first step
     this.processNextChainStep(chainId);

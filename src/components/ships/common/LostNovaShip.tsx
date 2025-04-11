@@ -2,13 +2,13 @@ import { ReactNode, useCallback, useRef } from 'react';
 import * as THREE from 'three';
 import { BaseEffect } from '../../../effects/types_effects/EffectTypes';
 import { useShipEffects } from '../../../hooks/ships/useShipEffects';
-import { ShipStatus } from '../../../types/ships/CommonShipTypes';
 import {
   FactionShip,
   FactionShipStats,
   LostNovaShipClass,
 } from '../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../types/ships/FactionTypes';
+import { UnifiedShipStatus } from '../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../types/weapons/WeaponTypes';
 import { ResourceType } from './../../../types/resources/ResourceTypes';
 import { FactionShipBase } from './FactionShipBase';
@@ -20,7 +20,7 @@ interface LostNovaShipProps {
   id: string;
   name: string;
   type: LostNovaShipClass;
-  status: ShipStatus;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -175,34 +175,42 @@ export function LostNovaShip({
     position,
     rotation,
     stats,
-    // Add the required abilities property
+    // Populate abilities array correctly
     abilities: [
       {
-        id: 'void-pulse-ability',
-        name: 'Void Pulse',
-        description: 'Disrupts enemy shields and cloaking',
-        cooldown: 10,
-        duration: 8,
-        active: hasEffect('void-pulse'),
+        id: 'void-shroud-ability',
+        name: 'Void Shroud',
+        description: 'Temporarily increases evasion and stealth',
+        cooldown: 25,
+        duration: 10,
+        active: hasEffect('void-shroud'),
         effect: {
-          id: 'void-pulse-effect',
-          type: 'jamming',
-          duration: 8,
-          magnitude: 1.5,
+          id: 'void-shroud',
+          name: 'Void Shroud Effect',
+          description: 'Increased evasion & stealth',
+          type: 'buff',
+          magnitude: 0.3,
+          duration: 10,
+          active: hasEffect('void-shroud'),
+          cooldown: 0,
         },
       },
       {
-        id: 'stealth-field-ability',
-        name: 'Stealth Field',
-        description: 'Reduces detection range of enemy ships',
-        cooldown: 15,
-        duration: 12,
-        active: hasEffect('stealth-field'),
+        id: 'entropy-cascade-ability',
+        name: 'Entropy Cascade',
+        description: 'Deals damage over time to nearby enemies',
+        cooldown: 30,
+        duration: 8,
+        active: hasEffect('entropy-cascade'),
         effect: {
-          id: 'stealth-field-effect',
-          type: 'stealth',
-          duration: 12,
-          magnitude: 2.0,
+          id: 'entropy-cascade',
+          name: 'Entropy Cascade Effect',
+          description: 'Area damage over time',
+          type: 'damage',
+          magnitude: 15,
+          duration: 8,
+          active: hasEffect('entropy-cascade'),
+          cooldown: 0,
         },
       },
     ],

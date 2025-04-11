@@ -1,11 +1,11 @@
 ---
 description: 
-globs: **/*.ts
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 ---
 description: TypeScript coding standards and best practices for modern web development
-globs: **/*.ts, **/*.tsx, **/*.d.ts
+globs: **/*.ts
 ---
 
 # TypeScript Best Practices

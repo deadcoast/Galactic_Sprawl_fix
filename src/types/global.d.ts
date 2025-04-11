@@ -7,7 +7,7 @@
 
 import { CombatManager } from '../managers/ManagerRegistry';
 import { ResourceManager } from '../managers/game/ResourceManager';
-import { MiningShipManagerImpl } from '../managers/mining/MiningShipManagerImpl';
+import { MiningShipManagerImpl } from '../managers/mining/MiningShipManager';
 import { ResourceCostManager } from '../managers/resource/ResourceCostManager';
 import { ResourceExchangeManager } from '../managers/resource/ResourceExchangeManager';
 import { ResourceFlowManager } from '../managers/resource/ResourceFlowManager';

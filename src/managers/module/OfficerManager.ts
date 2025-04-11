@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { OFFICER_TRAITS, SQUAD_CONFIG, TRAINING_CONFIG } from '../../config/OfficerConfig';
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import { TechTreeManager } from '../../managers/game/techTreeManager';
 import type { ModuleType } from '../../types/buildings/ModuleTypes';
@@ -20,7 +20,7 @@ import type {
  * Implementation of the Officer Manager
  */
 export class OfficerManager
-  extends BaseTypedEventEmitter<OfficerManagerEvents>
+  extends TypedEventEmitter<OfficerManagerEvents>
   implements IOfficerManager
 {
   private officers: Map<string, Officer> = new Map();

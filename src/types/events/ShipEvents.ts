@@ -7,6 +7,7 @@
 
 import { ResourceType } from '../resources/ResourceTypes';
 import { ShipCategory, ShipStatus } from '../ships/ShipTypes';
+export { ShipStatus };
 
 /**
  * Ship cargo interface
@@ -172,7 +173,7 @@ export interface ShipManagerEvents {
   //   ship: Ship; // Include the removed ship details
   // };
 
-  // Add index signature to satisfy BaseTypedEventEmitter constraint
+  // Add index signature to satisfy TypedEventEmitter constraint
   [key: string]: unknown;
 }
 

@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { useCallback, useEffect, useState } from 'react';
-import { getShipHangarManager } from '../../../../managers/ManagerRegistry';
-import { ShipHangarBay } from '../../../../types/buildings/ShipHangarTypes';
-import { CommonShip, ShipStatus } from '../../../../types/ships/CommonShipTypes';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { getResourceManager } from '../../../../managers/ManagerRegistry';
+import { OfficerManager } from '../../../../managers/module/OfficerManager';
+import { StandardShipHangarManager } from '../../../../managers/ships/ShipManager';
 import { PlayerShipClass } from '../../../../types/ships/PlayerShipTypes';
+import { UnifiedShip, UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
 
 interface ShipHangarProps {
   hangarId: string;
@@ -12,23 +13,29 @@ interface ShipHangarProps {
 
 /**
  * Ship Hangar Component
- * Displays ships and allows interaction
+ * Displays ships and allows interaction using UnifiedShip types and StandardShipHangarManager
  */
-export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) => {
-  const hangarManager = getShipHangarManager();
+export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity = 10 }) => {
+  const resourceManager = useMemo(() => getResourceManager(), []);
+  const officerManager = useMemo(() => new OfficerManager(), []);
 
-  const [ships, setShips] = useState<CommonShip[]>([]);
-  const [selectedShip, setSelectedShip] = useState<CommonShip | null>(null);
+  const hangarManager = useMemo(() => {
+    console.log(`Creating StandardShipHangarManager for hangar: ${hangarId}`);
+    return new StandardShipHangarManager(hangarId, capacity, resourceManager, officerManager);
+  }, [hangarId, capacity, resourceManager, officerManager]);
+
+  const [ships, setShips] = useState<UnifiedShip[]>([]);
+  const [selectedShip, setSelectedShip] = useState<UnifiedShip | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [showCreateUI, setShowCreateUI] = useState(false);
   const [newShipName, setNewShipName] = useState('');
   const [selectedClassToBuild, setSelectedClassToBuild] = useState<PlayerShipClass>(
-    PlayerShipClass.SCOUT
+    PlayerShipClass.STAR_SCHOONER
   );
 
   const fetchShips = useCallback(async () => {
     try {
-      const currentShips = hangarManager.getDockedShips ? hangarManager.getDockedShips() : [];
+      const currentShips = hangarManager.getAllShips();
       if (isMounted) {
         setShips(currentShips);
       }
@@ -39,49 +46,14 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) =>
 
   useEffect(() => {
     setIsMounted(true);
-
-    const handleShipAdded = ({ ship, bay }: { ship: CommonShip; bay: ShipHangarBay }) => {
-      if (isMounted) {
-        setShips(prevShips => [...prevShips, ship]);
-      }
-    };
-
-    const handleShipRemoved = ({ ship, bay }: { ship: CommonShip; bay: ShipHangarBay }) => {
-      if (isMounted) {
-        setShips(prevShips => prevShips.filter(s => s.id !== ship.id));
-        if (selectedShip && selectedShip.id === ship.id) {
-          setSelectedShip(null);
-        }
-      }
-    };
-
-    const handleShipRepairCompleted = ({ shipId }: { shipId: string }) => {
-      console.log(`Ship ${shipId} repair completed, refetching list.`);
-      fetchShips();
-    };
-
-    const handleShipUpgradeCompleted = ({ shipId }: { shipId: string }) => {
-      console.log(`Ship ${shipId} upgrade completed, refetching list.`);
-      fetchShips();
-    };
-
-    hangarManager.on('shipDocked', handleShipAdded);
-    hangarManager.on('shipLaunched', handleShipRemoved);
-    hangarManager.on('repairCompleted', handleShipRepairCompleted);
-    hangarManager.on('upgradeCompleted', handleShipUpgradeCompleted);
-
     fetchShips();
 
     return () => {
-      hangarManager.off('shipDocked', handleShipAdded);
-      hangarManager.off('shipLaunched', handleShipRemoved);
-      hangarManager.off('repairCompleted', handleShipRepairCompleted);
-      hangarManager.off('upgradeCompleted', handleShipUpgradeCompleted);
       setIsMounted(false);
     };
-  }, [hangarId, capacity, hangarManager, selectedShip, fetchShips]);
+  }, [hangarManager, fetchShips]);
 
-  const handleSelectShip = (ship: CommonShip) => {
+  const handleSelectShip = (ship: UnifiedShip) => {
     setSelectedShip(ship);
   };
 
@@ -90,31 +62,22 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) =>
       const destination = prompt('Enter destination:');
       if (destination) {
         hangarManager.deployShip(selectedShip.id, destination);
+        fetchShips();
       }
     }
   };
 
-  const handleDockShip = () => {
+  const handleSetReady = () => {
     if (selectedShip) {
-      hangarManager.dockShip(selectedShip.id);
+      hangarManager.changeShipStatus(selectedShip.id, UnifiedShipStatus.READY);
+      fetchShips();
     }
   };
 
   const handleRepairShip = () => {
     if (selectedShip) {
-      hangarManager.repairShip(selectedShip.id, 10);
-    }
-  };
-
-  const handleRefuelShip = () => {
-    if (selectedShip) {
-      hangarManager.refuelShip(selectedShip.id, 10);
-    }
-  };
-
-  const handleUpgradeShip = () => {
-    if (selectedShip) {
-      hangarManager.upgradeShip(selectedShip.id);
+      hangarManager.repairShip(selectedShip.id, 50);
+      fetchShips();
     }
   };
 
@@ -122,6 +85,8 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) =>
     if (selectedShip) {
       if (window.confirm(`Are you sure you want to remove ${selectedShip.name}?`)) {
         hangarManager.removeShip(selectedShip.id);
+        setSelectedShip(null);
+        fetchShips();
       }
     }
   };
@@ -132,36 +97,49 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) =>
       return;
     }
     try {
-      const newShip = hangarManager.createShip(newShipName, selectedClassToBuild);
-      hangarManager.addShip(newShip);
-      setNewShipName('');
-      setShowCreateUI(false);
-      fetchShips();
+      const buildOptions = {
+        name: newShipName,
+        position: { x: 0, y: 0 },
+      };
+      const newShip = hangarManager.buildShip(selectedClassToBuild, buildOptions);
+
+      if (newShip) {
+        setNewShipName('');
+        setShowCreateUI(false);
+        fetchShips();
+      } else {
+        alert('Failed to build ship. Check console for details.');
+      }
     } catch (error) {
       console.error('Failed to create ship:', error);
       alert(`Error creating ship: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
-  const getStatusColor = (status: ShipStatus) => {
+  const getStatusColor = (status: UnifiedShipStatus) => {
     switch (status) {
-      case ShipStatus.READY:
+      case UnifiedShipStatus.READY:
         return 'bg-green-500';
-      case ShipStatus.ENGAGING:
+      case UnifiedShipStatus.ENGAGING:
+      case UnifiedShipStatus.ATTACKING:
         return 'bg-red-600';
-      case ShipStatus.PATROLLING:
-        return 'bg-blue-500';
-      case ShipStatus.RETREATING:
+      case UnifiedShipStatus.RETURNING:
+      case UnifiedShipStatus.WITHDRAWING:
         return 'bg-orange-500';
-      case ShipStatus.DISABLED:
+      case UnifiedShipStatus.DISABLED:
         return 'bg-gray-600';
-      case ShipStatus.DAMAGED:
+      case UnifiedShipStatus.DAMAGED:
         return 'bg-red-500';
-      case ShipStatus.REPAIRING:
+      case UnifiedShipStatus.REPAIRING:
         return 'bg-yellow-500';
-      case ShipStatus.UPGRADING:
+      case UnifiedShipStatus.UPGRADING:
         return 'bg-indigo-500';
+      case UnifiedShipStatus.IDLE:
+        return 'bg-blue-500';
+      case UnifiedShipStatus.MAINTENANCE:
+        return 'bg-teal-500';
       default:
+        console.warn(`[ShipHangar] Encountered unexpected ship status: ${status}`);
         return 'bg-gray-500';
     }
   };
@@ -171,7 +149,7 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) =>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold">Ship Hangar: {hangarId}</h2>
         <div className="text-sm">
-          Ships: {ships.length} / {hangarManager.getCapacity()}
+          Ships: {ships.length} / {capacity}
         </div>
       </div>
 
@@ -213,9 +191,9 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) =>
                 onChange={e => setSelectedClassToBuild(e.target.value as PlayerShipClass)}
                 className="mb-2 w-full rounded border border-gray-600 bg-gray-800 p-2 text-white"
               >
-                {Object.keys(PlayerShipClass).map(key => (
-                  <option key={key} value={PlayerShipClass[key as keyof typeof PlayerShipClass]}>
-                    {key}
+                {Object.values(PlayerShipClass).map(value => (
+                  <option key={value} value={value}>
+                    {value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </option>
                 ))}
               </select>
@@ -237,7 +215,8 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) =>
           ) : (
             <button
               onClick={() => setShowCreateUI(true)}
-              className="mt-auto w-full rounded bg-green-600 py-2 text-sm font-semibold hover:bg-green-700"
+              disabled={ships.length >= capacity}
+              className="mt-auto w-full rounded bg-green-600 py-2 text-sm font-semibold hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-500 disabled:opacity-50"
             >
               Build New Ship
             </button>
@@ -250,31 +229,58 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) =>
               <h3 className="mb-2 text-lg font-semibold">{selectedShip.name} Details</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                 <p>ID:</p>
-                <p className="text-gray-300">{selectedShip.id}</p>
+                <p className="truncate text-gray-300" title={selectedShip.id}>
+                  {selectedShip.id}
+                </p>
                 <p>Category:</p>
                 <p className="text-gray-300">{selectedShip.category}</p>
                 <p>Status:</p>
                 <p className="text-gray-300">{selectedShip.status}</p>
-                <p>Speed:</p>
-                <p className="text-gray-300">{selectedShip.stats.speed}</p>
-                <p>Turn Rate:</p>
-                <p className="text-gray-300">{selectedShip.stats.turnRate}</p>
-                <p>Cargo:</p>
-                <p className="text-gray-300">{selectedShip.stats.cargo}</p>
-                <p>Energy:</p>
+                <p>Level:</p>
+                <p className="text-gray-300">{selectedShip.level ?? 'N/A'}</p>
+                <p>Health:</p>
                 <p className="text-gray-300">
-                  {selectedShip.stats.energy} / {selectedShip.stats.maxEnergy}
+                  {selectedShip.stats?.health?.toFixed(0) ?? 'N/A'} /{' '}
+                  {selectedShip.stats?.maxHealth?.toFixed(0) ?? 'N/A'}
                 </p>
                 <p>Shield:</p>
-                <p className="text-gray-300">{selectedShip.stats.defense.shield}</p>
-                <p>Armor:</p>
-                <p className="text-gray-300">{selectedShip.stats.defense.armor}</p>
-                <p>Evasion:</p>
-                <p className="text-gray-300">{selectedShip.stats.defense.evasion}</p>
-                {selectedShip.stats.defense.regeneration !== undefined && (
+                <p className="text-gray-300">
+                  {selectedShip.stats?.shield?.toFixed(0) ?? 'N/A'} /{' '}
+                  {selectedShip.stats?.maxShield?.toFixed(0) ?? 'N/A'}
+                </p>
+                <p>Energy/Fuel:</p>
+                <p className="text-gray-300">
+                  {selectedShip.stats?.energy?.toFixed(0) ?? 'N/A'} /{' '}
+                  {selectedShip.stats?.maxEnergy?.toFixed(0) ?? 'N/A'}
+                </p>
+                <p>Crew:</p>
+                <p className="text-gray-300">
+                  {selectedShip.crew ?? 'N/A'} / {selectedShip.maxCrew ?? 'N/A'}
+                </p>
+                {selectedShip.location && (
                   <>
-                    <p>Regen:</p>
-                    <p className="text-gray-300">{selectedShip.stats.defense.regeneration}/s</p>
+                    <p>Location:</p>
+                    <p className="text-gray-300">{selectedShip.location}</p>
+                  </>
+                )}
+                {selectedShip.destination && (
+                  <>
+                    <p>Destination:</p>
+                    <p className="text-gray-300">{selectedShip.destination}</p>
+                  </>
+                )}
+                {selectedShip.cargo && (
+                  <>
+                    <p>Cargo:</p>
+                    <p className="text-gray-300">
+                      {selectedShip.cargo.resources instanceof Map
+                        ? Array.from(selectedShip.cargo.resources.values()).reduce(
+                            (a, b) => a + b,
+                            0
+                          )
+                        : 'N/A'}{' '}
+                      / {selectedShip.cargo.capacity ?? 'N/A'}
+                    </p>
                   </>
                 )}
               </div>
@@ -282,42 +288,32 @@ export const ShipHangar: React.FC<ShipHangarProps> = ({ hangarId, capacity }) =>
               <div className="mt-4 space-x-2">
                 <button
                   onClick={handleDeployShip}
-                  disabled={!selectedShip || selectedShip.status !== ShipStatus.READY}
+                  disabled={!selectedShip || selectedShip.status !== UnifiedShipStatus.READY}
                   className="rounded bg-green-500 px-3 py-1 text-sm hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Deploy
                 </button>
                 <button
-                  onClick={handleDockShip}
+                  onClick={handleSetReady}
                   disabled={
                     !selectedShip ||
-                    selectedShip.status === ShipStatus.READY ||
-                    selectedShip.status === ShipStatus.DISABLED
+                    selectedShip.status === UnifiedShipStatus.READY ||
+                    selectedShip.status === UnifiedShipStatus.ENGAGING ||
+                    selectedShip.status === UnifiedShipStatus.DISABLED ||
+                    selectedShip.status === UnifiedShipStatus.ATTACKING ||
+                    selectedShip.status === UnifiedShipStatus.RETURNING ||
+                    selectedShip.status === UnifiedShipStatus.WITHDRAWING
                   }
                   className="rounded bg-blue-500 px-3 py-1 text-sm hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Dock
+                  Set Ready
                 </button>
                 <button
                   onClick={handleRepairShip}
-                  disabled={!selectedShip || selectedShip.status !== ShipStatus.DAMAGED}
+                  disabled={!selectedShip || selectedShip.status !== UnifiedShipStatus.DAMAGED}
                   className="rounded bg-yellow-500 px-3 py-1 text-sm hover:bg-yellow-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Repair
-                </button>
-                <button
-                  onClick={handleRefuelShip}
-                  disabled={!selectedShip || selectedShip.status === ShipStatus.DISABLED}
-                  className="rounded bg-purple-500 px-3 py-1 text-sm hover:bg-purple-600 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Refuel
-                </button>
-                <button
-                  onClick={handleUpgradeShip}
-                  disabled={!selectedShip || selectedShip.status !== ShipStatus.READY}
-                  className="rounded bg-indigo-500 px-3 py-1 text-sm hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Upgrade
                 </button>
                 <button
                   onClick={handleRemoveShip}

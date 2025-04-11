@@ -4,7 +4,7 @@ import { gameLoopManager, UpdatePriority } from '../managers/game/GameLoopManage
 import { ResourceManager } from '../managers/game/ResourceManager';
 import { isTechTreeNodeUnlockedEvent, TechTreeManager } from '../managers/game/techTreeManager';
 import { MiningResourceIntegration } from '../managers/mining/MiningResourceIntegration';
-import { MiningShipManagerImpl } from '../managers/mining/MiningShipManagerImpl';
+import { MiningShipManagerImpl } from '../managers/mining/MiningShipManager';
 import { ResourceCostManager } from '../managers/resource/ResourceCostManager';
 import { ResourceExchangeManager } from '../managers/resource/ResourceExchangeManager';
 import { ResourceFlowManager } from '../managers/resource/ResourceFlowManager';

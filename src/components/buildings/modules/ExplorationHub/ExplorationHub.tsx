@@ -17,12 +17,12 @@ import { ContextMenuItem, useContextMenu } from '../../../../components/ui/Conte
 import { Draggable, DragItem, DropTarget } from '../../../../components/ui/DragAndDrop';
 import { useTooltipContext } from '../../../../components/ui/tooltip-context';
 import { explorationRules } from '../../../../config/automation/explorationRules';
-import { StarSystem } from '../../../../managers/exploration/ExplorationManagerImpl';
+import { StarSystem } from '../../../../managers/exploration/ExplorationManager';
 import {
+  ReconShipEvent,
   ReconShipManagerImpl,
-  Ship as ReconShipType,
-  ShipEvent,
-} from '../../../../managers/exploration/ReconShipManagerImpl';
+  ReconShip as ReconShipType,
+} from '../../../../managers/exploration/ReconShipManager';
 import { automationManager } from '../../../../managers/game/AutomationManager';
 import { BaseEvent, EventType } from '../../../../types/events/EventTypes';
 import { SectorType } from '../../../../types/exploration/ExplorationTypes';
@@ -609,7 +609,7 @@ export function ExplorationHub() {
   // Update task completion handler
   useEffect(() => {
     const handleTaskCompleted = (event: BaseEvent) => {
-      const { shipId, ship } = event?.data as ShipEvent['data'];
+      const { shipId, ship } = event?.data as ReconShipEvent['data'];
       if (!shipId || !ship?.assignedSectorId) return;
 
       setShips((prevShips: ReconShip[]) =>
@@ -887,7 +887,7 @@ export function ExplorationHub() {
 
   // Register ships with ReconShipManager
   useEffect(() => {
-    ships.forEach(ship => {
+    ships.forEach((ship: ReconShip) => {
       reconManager.registerShip(ship);
     });
   }, [ships, reconManager]);

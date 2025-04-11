@@ -1,13 +1,9 @@
 import { Tier } from '../core/GameTypes';
 import { CombatWeaponStats, WeaponInstance } from '../weapons/WeaponTypes';
-import {
-  CommonShip,
-  CommonShipAbility,
-  CommonShipDisplayStats,
-  CommonShipStats,
-} from './CommonShipTypes';
+import { CommonShipAbility, CommonShipDisplayStats, CommonShipStats } from './CommonShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType, FactionId } from './FactionTypes';
 import { ShipStats, ShipType } from './ShipTypes';
+import { UnifiedShipStatus } from './UnifiedShipTypes';
 
 export interface FactionConfig {
   id: FactionId;
@@ -136,10 +132,16 @@ export interface FactionShipAbility extends CommonShipAbility {
 export type FactionShipDisplayStats = CommonShipDisplayStats;
 
 // Faction Ship Interface
-export interface FactionShip extends CommonShip {
+export interface FactionShip /* extends CommonShip */ {
   id: string;
+  name: string;
+  category: string;
+  stats: CommonShipStats;
+  abilities?: CommonShipAbility[];
+  displayStats?: FactionShipDisplayStats;
   faction: FactionId;
   class: FactionShipClass;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;

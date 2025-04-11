@@ -24,12 +24,7 @@ import {
 } from '../../../../types/exploration/AnalysisComponentTypes';
 import { DataPoint } from '../../../../types/exploration/DataAnalysisTypes';
 import { ResourceType, ResourceTypeString } from '../../../../types/resources/ResourceTypes';
-import {
-  ensureStringResourceType,
-  isEnumResourceType,
-  isStringResourceType,
-} from '../../../../utils/resources/ResourceTypeMigration';
-import { ResourceTypeConverter } from '../../../../utils/ResourceTypeConverter';
+import { ResourceTypeConverter } from '../../../../utils/resources/ResourceTypeConverter';
 import { BaseChart } from './BaseChart';
 import { HeatMap } from './HeatMap';
 import { ScatterPlot } from './ScatterPlot';
@@ -115,14 +110,17 @@ const resourceTypeColors: Record<ResourceType, string> = {
 // Define a function to get color for a resource type
 const getResourceColor = (resourceType: ResourceType | ResourceTypeString): string => {
   // Handle both string and enum resource types
-  if (isEnumResourceType(resourceType)) {
+  if (Object.values(ResourceType).includes(resourceType as ResourceType)) {
     return resourceTypeColors[resourceType] || '#999999';
-  } else if (isStringResourceType(resourceType)) {
+  } else if (
+    typeof resourceType === 'string' &&
+    !Object.values(ResourceType).includes(resourceType as ResourceType)
+  ) {
     // Convert string to enum and get color
     const enumType = ResourceTypeConverter.stringToEnum(resourceType);
     return enumType ? resourceTypeColors[enumType] || '#999999' : '#999999';
   }
-  return '#999999'; // Default color
+  return '#999999'; // Restore default color return
 };
 
 /**
@@ -154,12 +152,14 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
         // Fix the type mismatch by using a more generic approach
         const resourceData = cell.resources.find(r => {
           // Convert both to string for comparison to avoid type mismatches
-          const resourceTypeStr = isEnumResourceType(r.type)
-            ? ensureStringResourceType(r.type)
+          const resourceTypeStr = Object.values(ResourceType).includes(r.type as ResourceType)
+            ? ResourceTypeConverter.enumToString(r.type)
             : String(r.type);
 
-          const selectedTypeStr = isEnumResourceType(selectedResourceType)
-            ? ensureStringResourceType(selectedResourceType)
+          const selectedTypeStr = Object.values(ResourceType).includes(
+            selectedResourceType as ResourceType
+          )
+            ? ResourceTypeConverter.enumToString(selectedResourceType as ResourceType)
             : String(selectedResourceType);
 
           return resourceTypeStr === selectedTypeStr;
@@ -453,7 +453,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
               value={
                 typeof selectedResourceType === 'string'
                   ? selectedResourceType
-                  : ensureStringResourceType(selectedResourceType)
+                  : ResourceTypeConverter.enumToString(selectedResourceType as ResourceType)
               }
               onChange={handleResourceTypeChange}
               displayEmpty
@@ -461,10 +461,7 @@ export const ResourceMappingVisualization: React.FC<ResourceMappingVisualization
             >
               <MenuItem value="all">All Resources</MenuItem>
               {data?.resourceTypes.map((type: ResourceType) => (
-                <MenuItem
-                  key={type}
-                  value={isEnumResourceType(type) ? ensureStringResourceType(type) : type}
-                >
+                <MenuItem key={type} value={ResourceTypeConverter.enumToString(type)}>
                   {type}
                 </MenuItem>
               ))}

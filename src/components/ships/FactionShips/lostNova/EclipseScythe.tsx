@@ -1,14 +1,14 @@
-import { Moon } from 'lucide-react';
+import { Ghost, Skull } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FactionShipStats } from '../../../../types/ships/FactionShipTypes';
 import { FactionBehaviorConfig, FactionBehaviorType } from '../../../../types/ships/FactionTypes';
-import { ShipStatus } from '../../../../types/ships/ShipTypes';
+import { UnifiedShipStatus } from '../../../../types/ships/UnifiedShipTypes';
 import { WeaponMount } from '../../../../types/weapons/WeaponTypes';
 import { LostNovaShip } from '../../common/LostNovaShip';
 
 interface EclipseScytheProps {
   id: string;
-  status: ShipStatus;
+  status: UnifiedShipStatus;
   health: number;
   maxHealth: number;
   shield: number;
@@ -47,28 +47,15 @@ export function EclipseScythe({
   position,
   rotation,
 }: EclipseScytheProps) {
-  const [shadowVeilActive, setShadowVeilActive] = useState(false);
+  const [voidShroudActive, setVoidShroudActive] = useState(false);
+  const [entropyCascadeActive, setEntropyCascadeActive] = useState(false);
 
   useEffect(() => {
-    if (status === 'disabled') {
-      setShadowVeilActive(false);
+    if (status === UnifiedShipStatus.DISABLED) {
+      setVoidShroudActive(false);
+      setEntropyCascadeActive(false);
     }
   }, [status]);
-
-  const mapStatus = (status: ShipStatus) => {
-    switch (status) {
-      case 'engaging':
-        return 'engaging';
-      case 'patrolling':
-        return 'patrolling';
-      case 'retreating':
-        return 'retreating';
-      case 'disabled':
-        return 'disabled';
-      default:
-        return 'patrolling';
-    }
-  };
 
   // Create a proper FactionBehaviorConfig for tactics
   const tactics = createFactionBehavior('hit-and-run');
@@ -79,7 +66,7 @@ export function EclipseScythe({
         id={id}
         name="Eclipse Scythe"
         type="eclipseScythe"
-        status={mapStatus(status)}
+        status={status}
         health={health}
         maxHealth={maxHealth}
         shield={shield}
@@ -93,29 +80,47 @@ export function EclipseScythe({
         onRetreat={onRetreat}
         onFire={onFire}
         onSpecialAbility={() => {
-          setShadowVeilActive(!shadowVeilActive);
+          setVoidShroudActive(!voidShroudActive);
+          setEntropyCascadeActive(!entropyCascadeActive);
           onSpecialAbility?.();
         }}
       >
         <div className="status-effects">
-          {shadowVeilActive && (
+          {voidShroudActive && (
             <div className="status-effect">
-              <Moon className="icon" />
-              <span>Shadow Veil Active</span>
+              <Ghost className="icon" />
+              <span>Void Shroud Active</span>
+            </div>
+          )}
+          {entropyCascadeActive && (
+            <div className="status-effect">
+              <Skull className="icon" />
+              <span>Entropy Cascade Active</span>
             </div>
           )}
         </div>
-        <div className="action-buttons">
+        <div className="action-buttons grid grid-cols-2 gap-2">
           <button
-            className={`ability-button ${shadowVeilActive ? 'active' : ''}`}
+            className={`ability-button ${voidShroudActive ? 'active' : ''}`}
             onClick={() => {
-              setShadowVeilActive(!shadowVeilActive);
+              setVoidShroudActive(!voidShroudActive);
               onSpecialAbility?.();
             }}
-            disabled={status === 'disabled'}
+            disabled={status === UnifiedShipStatus.DISABLED}
           >
-            <Moon className="icon" />
-            <span>Shadow Veil</span>
+            <Ghost className="icon" />
+            <span>Void Shroud</span>
+          </button>
+          <button
+            className={`ability-button ${entropyCascadeActive ? 'active' : ''}`}
+            onClick={() => {
+              setEntropyCascadeActive(!entropyCascadeActive);
+              onSpecialAbility?.();
+            }}
+            disabled={status === UnifiedShipStatus.DISABLED}
+          >
+            <Skull className="icon" />
+            <span>Entropy Cascade</span>
           </button>
         </div>
       </LostNovaShip>

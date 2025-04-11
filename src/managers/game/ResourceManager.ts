@@ -366,13 +366,12 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
    * @param max Maximum value
    */
   private initializeResource(type: ResourceType, min: number, max: number): void {
-    // Ensure we're using the enum resource type
     const resourceType = ensureEnumResourceType(type);
 
-    // Create resource state if it doesn't exist
     if (!this.resources.has(resourceType)) {
       this.resources.set(resourceType, {
         current: min,
+        capacity: max,
         max,
         min,
         production: 0,
@@ -398,48 +397,43 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
   /**
    * Set the amount of a resource
+   * Ensures the amount stays within min/max bounds
    */
   setResourceAmount(type: ResourceType, amount: number): void {
-    const state = this.resources.get(type);
-    if (!state) {
-      this.logResourceError('set-amount', {
+    const resourceType = ensureEnumResourceType(type);
+    const state = this.resources.get(resourceType);
+    if (state) {
+      const oldAmount = state.current;
+      // Ensure amount is clamped between min and max
+      const newAmount = Math.max(state.min, Math.min(state.max, amount));
+
+      if (oldAmount !== newAmount) {
+        state.current = newAmount;
+
+        // Use publish method inherited from AbstractBaseManager
+        this.publish({
+          type: EventType.RESOURCE_UPDATED,
+          resourceType: resourceType,
+          moduleId: this.id,
+          moduleType: 'resource-manager',
+          timestamp: Date.now(),
+          data: {
+            type: ensureStringResourceType(resourceType),
+            oldAmount,
+            newAmount,
+            state,
+          },
+        });
+
+        // Check thresholds after updating amount
+        this.checkThresholds();
+      }
+    } else {
+      this.logResourceError(`set-${resourceType}`, {
         code: 'INVALID_RESOURCE',
-        message: `Invalid resource type: ${type}`,
+        message: `Resource ${resourceType} not found.`,
       });
-      return;
     }
-
-    // Clamp amount between min and max
-    const clampedAmount = Math.max(state.min, Math.min(state.max, amount));
-    state.current = clampedAmount;
-
-    // Update the resource state
-    this.resources.set(type, state);
-
-    // Publish resource update event
-    this.publish({
-      type: EventType.RESOURCE_UPDATED,
-      resourceType: type,
-      moduleId: this.id,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      amount: clampedAmount,
-      data: {
-        previous: state.current,
-        current: clampedAmount,
-        min: state.min,
-        max: state.max,
-      },
-    });
-
-    // Update performance metrics
-    resourcePerformanceMonitor.recordMetrics(
-      type,
-      state.production,
-      state.consumption,
-      this.calculateTransferRate(type),
-      clampedAmount / state.max
-    );
   }
 
   /**
@@ -542,34 +536,58 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
         }
       }
     }
-
-    this.publish({
-      type: EventType.RESOURCE_THRESHOLD_CHANGED,
-      moduleId: this.id,
-      moduleType: 'resource-manager',
-      timestamp: Date.now(),
-      data: {
-        type: 'storage_efficiency',
-        oldValue: oldEfficiency,
-        newValue: this.storageEfficiency,
-      },
-    });
   }
 
-  /**
-   * Handles and logs resource operation errors
-   */
   private logResourceError(id: string, error: ResourceError): void {
     this.errors.set(id, error);
-    console.error(`[ResourceManager] Error in ${id}:`, error.message);
-
+    console.error(`[ResourceManager] Error (${id}): ${error.message}`, error.details);
+    // Use publish method inherited from AbstractBaseManager
     this.publish({
       type: EventType.ERROR_OCCURRED,
-      moduleId: id,
+      // Add a default resourceType for general errors
+      resourceType: ResourceType.MINERALS, // Or choose another appropriate default
+      moduleId: this.id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
       data: error,
     });
+  }
+
+  private setResourceThreshold(
+    type: ResourceType,
+    thresholdType: 'min' | 'max',
+    value: number
+  ): void {
+    const resourceType = ensureEnumResourceType(type);
+    const state = this.resources.get(resourceType);
+    if (state) {
+      const oldValue = state[thresholdType];
+      if (oldValue !== value) {
+        state[thresholdType] = value;
+        // Clamp current value if necessary
+        state.current = Math.max(state.min, Math.min(state.max, state.current));
+
+        // Use publish method inherited from AbstractBaseManager
+        this.publish({
+          type: EventType.RESOURCE_THRESHOLD_CHANGED,
+          resourceType: resourceType,
+          moduleId: this.id,
+          moduleType: 'resource-manager',
+          timestamp: Date.now(),
+          data: {
+            type: ensureStringResourceType(resourceType),
+            oldValue,
+            newValue: value,
+          },
+        });
+      }
+    } else {
+      // Use the newly added method
+      this.logResourceError(`set-threshold-${resourceType}`, {
+        code: 'INVALID_RESOURCE',
+        message: `Resource ${resourceType} not found when setting threshold.`,
+      });
+    }
   }
 
   /**
@@ -720,11 +738,14 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   registerProduction(id: string, production: ResourceProduction): void {
     const oldProduction = this.productions.get(id);
     this.productions.set(id, production);
+    this.scheduleProduction(id, production);
 
-    // Emit production registration event
+    // Use publish method inherited from AbstractBaseManager
     this.publish({
       type: EventType.RESOURCE_PRODUCTION_REGISTERED,
-      moduleId: id,
+      // Infer resourceType from production data
+      resourceType: ensureEnumResourceType(production.type),
+      moduleId: this.id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
       data: {
@@ -732,10 +753,6 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
         oldProduction,
       },
     });
-
-    console.warn(
-      `[ResourceManager] Registered production for ${production.type}: ${production.amount}/tick every ${production.interval}ms`
-    );
   }
 
   /**
@@ -745,10 +762,12 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     const oldConsumption = this.consumptions.get(id);
     this.consumptions.set(id, consumption);
 
-    // Emit consumption registration event
+    // Use publish method inherited from AbstractBaseManager
     this.publish({
       type: EventType.RESOURCE_CONSUMPTION_REGISTERED,
-      moduleId: id,
+      // Infer resourceType from consumption data
+      resourceType: ensureEnumResourceType(consumption.type),
+      moduleId: this.id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
       data: {
@@ -756,10 +775,6 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
         oldConsumption,
       },
     });
-
-    console.warn(
-      `[ResourceManager] Registered consumption for ${consumption.type}: ${consumption.amount}/tick every ${consumption.interval}ms`
-    );
   }
 
   /**
@@ -768,11 +783,14 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   registerFlow(id: string, flow: ResourceFlow): void {
     const oldFlow = this.flows.get(id);
     this.flows.set(id, flow);
+    this.scheduleFlow(id, flow);
 
-    // Emit flow registration event
+    // Use publish method inherited from AbstractBaseManager
     this.publish({
       type: EventType.RESOURCE_FLOW_REGISTERED,
-      moduleId: id,
+      // Add a default resourceType for flows (might involve multiple types)
+      resourceType: ResourceType.MINERALS, // Or handle differently if possible
+      moduleId: this.id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
       data: {
@@ -780,10 +798,6 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
         oldFlow,
       },
     });
-
-    console.warn(
-      `[ResourceManager] Registered flow from ${flow.source} to ${flow.target} for ${flow.resources.length} resource types`
-    );
   }
 
   /**
@@ -792,10 +806,15 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   unregisterProduction(id: string): void {
     const production = this.productions.get(id);
     if (production) {
+      this.clearProductionSchedule(id);
       this.productions.delete(id);
+
+      // Use publish method inherited from AbstractBaseManager
       this.publish({
         type: EventType.RESOURCE_PRODUCTION_UNREGISTERED,
-        moduleId: id,
+        // Infer resourceType from production data
+        resourceType: ensureEnumResourceType(production.type),
+        moduleId: this.id,
         moduleType: 'resource-manager',
         timestamp: Date.now(),
         data: { production },
@@ -810,9 +829,13 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
     const consumption = this.consumptions.get(id);
     if (consumption) {
       this.consumptions.delete(id);
+
+      // Use publish method inherited from AbstractBaseManager
       this.publish({
         type: EventType.RESOURCE_CONSUMPTION_UNREGISTERED,
-        moduleId: id,
+        // Infer resourceType from consumption data
+        resourceType: ensureEnumResourceType(consumption.type),
+        moduleId: this.id,
         moduleType: 'resource-manager',
         timestamp: Date.now(),
         data: { consumption },
@@ -826,10 +849,15 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
   unregisterFlow(id: string): void {
     const flow = this.flows.get(id);
     if (flow) {
+      this.clearFlowSchedule(id);
       this.flows.delete(id);
+
+      // Use publish method inherited from AbstractBaseManager
       this.publish({
         type: EventType.RESOURCE_FLOW_UNREGISTERED,
-        moduleId: id,
+        // Add a default resourceType for flows
+        resourceType: ResourceType.MINERALS, // Or handle differently
+        moduleId: this.id,
         moduleType: 'resource-manager',
         timestamp: Date.now(),
         data: { flow },
@@ -1028,9 +1056,11 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
 
     this.optimizationMetrics.lastOptimizationTime = Date.now();
 
-    // Emit optimization metrics
+    // Use publish method inherited from AbstractBaseManager
     this.publish({
       type: EventType.RESOURCE_FLOW_OPTIMIZATION_COMPLETED,
+      // Add a default resourceType for optimization event
+      resourceType: ResourceType.MINERALS, // Or handle differently
       moduleId: this.id,
       moduleType: 'resource-manager',
       timestamp: Date.now(),
@@ -1038,9 +1068,11 @@ export class ResourceManager extends AbstractBaseManager<ResourceManagerEvent> {
         productionEfficiency: this.optimizationMetrics.productionEfficiency,
         consumptionEfficiency: this.optimizationMetrics.consumptionEfficiency,
         transferEfficiency: this.optimizationMetrics.transferEfficiency,
-        metrics: this.optimizationMetrics,
+        metrics: this.getStats(),
       },
     });
+
+    console.warn('[ResourceManager] Optimizations completed.');
   }
 
   /**

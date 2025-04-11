@@ -1,7 +1,7 @@
 ---
 description: 
-globs: **/*.tsx,**/*.jsx,components/**/*
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 ---
 description: React best practices and patterns for modern web applications

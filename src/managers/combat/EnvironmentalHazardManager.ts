@@ -17,7 +17,7 @@ import {
   SplittingHazard,
   WeatherHazardEffect,
 } from '../../effects/types_effects/EnvironmentalHazardEffects';
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 // Remove eventSystem import
 // import { eventSystem } from '../../lib/events/UnifiedEventSystem';
 import { Position } from '../../types/core/GameTypes';
@@ -37,7 +37,7 @@ import {
  * Manager class for environmental hazards in combat
  */
 // Extend Base Class
-export class EnvironmentalHazardManager extends BaseTypedEventEmitter<EnvironmentalHazardManagerEvents> {
+export class EnvironmentalHazardManager extends TypedEventEmitter<EnvironmentalHazardManagerEvents> {
   // Remove static instance field
   // private static instance: EnvironmentalHazardManager;
 

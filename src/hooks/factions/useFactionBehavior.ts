@@ -42,6 +42,16 @@ import {
 
 // Added import for factionConfigs
 import { factionConfigs } from '../../config/factions/factions';
+import { UnifiedShipStatus } from '../../types/ships/UnifiedShipTypes'; // Import UnifiedShipStatus
+
+// Define the state machine transition type here
+type StateMachineTransition =
+  | {
+      currentState: FactionStateType;
+      event: FactionEvent;
+      nextState: FactionStateType;
+    }
+  | any;
 
 /**
  * FACTION BEHAVIOR SYSTEM
@@ -2207,49 +2217,69 @@ function updateFleets(units: CombatUnit[]): FactionFleet[] {
       const factionUnits = nearbyUnits.map(u =>
         convertToFactionCombatUnit(u, 'neutral', u.type as FactionShipClass)
       );
-      const factionShips: FactionShip[] = factionUnits.map(u => ({
-        id: u.id,
-        name: `${u.type}`,
-        category: 'war',
-        status: 'ready' as CommonShipStatus,
-        faction: u.faction,
-        class: u.class,
-        health: u.stats.health,
-        maxHealth: u.stats.maxHealth,
-        shield: u.stats.shield,
-        maxShield: u.stats.maxShield,
-        position: u.position,
-        rotation: u.rotation,
-        tactics: {
-          formation: 'defensive',
-          behavior: 'defensive',
-        },
-        stats: {
+      const factionShips: FactionShip[] = factionUnits.map(u => {
+        // Cast u.class to ShipClass (string union) for getShipBehaviorStats
+        const baseStats = getShipBehaviorStats(u.class as unknown as ShipClass);
+
+        // Map raw behavior to valid FactionBehaviorType
+        const rawBehavior = u.tactics?.behavior;
+        let mappedBehavior: FactionBehaviorType;
+
+        if (rawBehavior === 'attack') {
+          mappedBehavior = 'aggressive' as FactionBehaviorType;
+        } else if (rawBehavior === 'defend') {
+          mappedBehavior = 'defend' as FactionBehaviorType; // Add cast
+        } else {
+          mappedBehavior = 'defend' as FactionBehaviorType; // Add cast
+        }
+
+        const shipTactics: FactionBehaviorConfig = {
+          formation: u.tactics?.formation || 'balanced',
+          behavior: mappedBehavior, // Use the mapped value
+          target: u.tactics?.target,
+        };
+
+        return {
+          id: u.id,
+          name: `${u.class}`,
+          category: 'war',
+          status: UnifiedShipStatus.READY,
+          faction: u.faction,
+          class: u.class,
           health: u.stats.health,
           maxHealth: u.stats.maxHealth,
           shield: u.stats.shield,
           maxShield: u.stats.maxShield,
-          energy: 100,
-          maxEnergy: 100,
-          cargo: 100,
-          speed: u.stats.speed,
-          turnRate: u.stats.turnRate,
-          defense: {
-            armor: 100,
+          position: u.position,
+          rotation: u.rotation ?? 0,
+          tactics: shipTactics,
+          stats: {
+            health: u.stats.health,
+            maxHealth: u.stats.maxHealth,
             shield: u.stats.shield,
-            evasion: 0.3,
-            regeneration: 1,
-          },
-          mobility: {
+            maxShield: u.stats.maxShield,
+            energy: baseStats?.energy ?? 100,
+            maxEnergy: baseStats?.energy ?? 100,
             speed: u.stats.speed,
             turnRate: u.stats.turnRate,
-            acceleration: 50,
+            cargo: baseStats?.cargo ?? 0,
+            defense: {
+              armor: u.stats.armor,
+              shield: u.stats.shield,
+              evasion: u.stats.evasion,
+              regeneration: baseStats?.defense?.regeneration ?? 1,
+            },
+            mobility: {
+              speed: u.stats.speed,
+              turnRate: u.stats.turnRate,
+              acceleration: baseStats?.mobility?.acceleration ?? 50,
+            },
+            weapons: [],
+            abilities: [],
           },
-          weapons: [],
           abilities: [],
-        },
-        abilities: [],
-      }));
+        };
+      });
 
       fleets.push({
         ships: factionShips,

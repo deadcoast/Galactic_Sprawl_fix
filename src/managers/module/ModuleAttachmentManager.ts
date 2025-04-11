@@ -1,4 +1,4 @@
-import { BaseTypedEventEmitter } from '../../lib/events/BaseTypedEventEmitter';
+import { TypedEventEmitter } from '../../lib/events/EventEmitter';
 import { ModuleEvent, moduleEventBus, ModuleEventType } from '../../lib/modules/ModuleEvents';
 import {
   BaseModule,
@@ -67,7 +67,7 @@ export interface AttachmentResult {
  * Module Attachment Manager
  * Handles the attachment of modules to buildings, including validation, visualization, and event handling
  */
-export class ModuleAttachmentManager extends BaseTypedEventEmitter<ModuleAttachmentManagerEvents> {
+export class ModuleAttachmentManager extends TypedEventEmitter<ModuleAttachmentManagerEvents> {
   private static instance: ModuleAttachmentManager | null = null; // Add for singleton
 
   private visualizationOptions: AttachmentVisualizationOptions;
@@ -123,8 +123,8 @@ export class ModuleAttachmentManager extends BaseTypedEventEmitter<ModuleAttachm
       this.unsubscribeModuleDetached();
       this.unsubscribeModuleDetached = null;
     }
-    // BaseTypedEventEmitter handles its own listener cleanup
-    this.clearAllListeners(); // Ensure BaseTypedEventEmitter cleans up
+    // TypedEventEmitter handles its own listener cleanup
+    this.clearAllListeners(); // Ensure TypedEventEmitter cleans up
 
     // Clear internal state
     this.previewModule = null;

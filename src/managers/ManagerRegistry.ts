@@ -20,9 +20,7 @@ import { AsteroidFieldManager } from './game/AsteroidFieldManager';
 import { AutomationManager } from './game/AutomationManager';
 import { ResourceManager } from './game/ResourceManager';
 import { TechTreeManager } from './game/techTreeManager';
-import { MiningShipManagerImpl } from './mining/MiningShipManagerImpl';
-import { OfficerManager } from './module/OfficerManager';
-import { ShipHangarManager } from './module/ShipHangarManager';
+import { MiningShipManager } from './mining/MiningShipManager';
 import { ResourceConversionManager } from './resource/ResourceConversionManager';
 import { ResourceFlowManager } from './resource/ResourceFlowManager';
 
@@ -38,9 +36,8 @@ let globalAutomationManagerInstance: GlobalAutomationManager | null = null;
 let factionBehaviorManagerInstance: FactionBehaviorManager | null = null;
 let asteroidFieldManagerInstance: AsteroidFieldManager | null = null;
 let resourceFlowManagerInstance: ResourceFlowManager | null = null;
-let shipHangarManagerInstance: ShipHangarManager | null = null;
 let resourceConversionManagerInstance: ResourceConversionManager | null = null;
-let miningShipManagerInstance: MiningShipManagerImpl | null = null;
+let miningShipManagerInstance: MiningShipManager | null = null;
 
 /**
  * Get the singleton instance of CombatManager
@@ -129,8 +126,8 @@ export function getAutomationManager(): AutomationManager {
  */
 export function getGlobalAutomationManager(): GlobalAutomationManager {
   if (!globalAutomationManagerInstance) {
-    // Use getInstance() with type assertion to bypass linter error
-    globalAutomationManagerInstance = (GlobalAutomationManager as any).getInstance();
+    // Use getInstance() directly
+    globalAutomationManagerInstance = GlobalAutomationManager.getInstance();
   }
   return globalAutomationManagerInstance!;
 }
@@ -172,30 +169,13 @@ export function getResourceFlowManager(): ResourceFlowManager {
 }
 
 /**
- * Get the singleton instance of ShipHangarManager
- * @returns The ShipHangarManager instance
- */
-export function getShipHangarManager(): ShipHangarManager {
-  if (!shipHangarManagerInstance) {
-    // Get dependencies from the registry
-    const resourceManager = getResourceManager();
-    // Instantiate OfficerManager using its public constructor
-    const officerManager = new OfficerManager();
-
-    // Instantiate ShipHangarManager with dependencies
-    shipHangarManagerInstance = new ShipHangarManager(resourceManager, officerManager);
-  }
-  return shipHangarManagerInstance!;
-}
-
-/**
  * Get the singleton instance of MiningShipManagerImpl
  * @returns The MiningShipManagerImpl instance
  */
-export function getMiningShipManager(): MiningShipManagerImpl {
+export function getMiningShipManager(): MiningShipManager {
   if (!miningShipManagerInstance) {
-    // Use getInstance() with type assertion to bypass linter error
-    miningShipManagerInstance = (MiningShipManagerImpl as any).getInstance();
+    // Use getInstance() directly
+    miningShipManagerInstance = MiningShipManager.getInstance();
   }
   return miningShipManagerInstance!;
 }
@@ -235,7 +215,6 @@ export function resetManagers(): void {
   factionBehaviorManagerInstance = null;
   asteroidFieldManagerInstance = null;
   resourceFlowManagerInstance = null;
-  shipHangarManagerInstance = null;
   resourceConversionManagerInstance = null;
   // Reset mining ship manager instance
   miningShipManagerInstance = null;
@@ -252,11 +231,10 @@ export type {
   EffectLifecycleManager,
   FactionBehaviorManager,
   GlobalAutomationManager,
-  MiningShipManagerImpl,
+  MiningShipManager,
   ObjectDetectionSystem,
   ResourceConversionManager,
   ResourceFlowManager,
-  ShipHangarManager,
   TechTreeManager,
   ThreatAssessmentManager,
 };

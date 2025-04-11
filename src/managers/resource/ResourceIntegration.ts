@@ -360,6 +360,7 @@ export class ResourceIntegration {
             current: 0,
             max: 0,
             min: 0,
+            capacity: 0,
             production: 0,
             consumption: 0,
             rate: 0,
